@@ -1,0 +1,8 @@
+*.pem
+*.key
+nohup.out
+.vscode
+*.db
+*.bak
+vendor
+*.swp
