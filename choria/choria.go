@@ -14,7 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	log "github.com/Sirupsen/logrus"
+	log "github.com/sirupsen/logrus"
 )
 
 // Choria is a utilty encompasing mcollective and choria config and various utilities
