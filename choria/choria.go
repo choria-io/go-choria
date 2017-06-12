@@ -8,10 +8,12 @@ import (
 	"io/ioutil"
 	"net"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -24,8 +26,25 @@ type Choria struct {
 
 // Server is a representation of a network server host and port
 type Server struct {
-	Host string
-	Port int
+	Host   string
+	Port   int
+	Scheme string
+}
+
+// URL creates a correct url from the server if scheme is known
+func (s *Server) URL() (u *url.URL, err error) {
+	if s.Scheme == "" {
+		return u, fmt.Errorf("Server %s:%d has no scheme, cannot make a URL", s.Host, s.Port)
+	}
+
+	ustring := fmt.Sprintf("%s://%s:%d", s.Scheme, s.Host, s.Port)
+
+	u, err = url.Parse(ustring)
+	if err != nil {
+		return u, fmt.Errorf("Could not parse %s: %s", ustring, err.Error())
+	}
+
+	return
 }
 
 // New sets up a Choria with all its config loaded and so forth
@@ -98,6 +117,51 @@ func (c *Choria) QuerySrvRecords(records []string) ([]Server, error) {
 	}
 
 	return servers, nil
+}
+
+// NetworkBrokerPeers are peers in the broker cluster resolved from
+// _mcollective-broker._tcp or from the plugin config
+func (c *Choria) NetworkBrokerPeers() (servers []Server, err error) {
+	servers, err = c.QuerySrvRecords([]string{"_mcollective-broker._tcp"})
+	if err != nil {
+		log.Errorf("SRV lookup for _mcollective-broker._tcp failed: %s", err.Error())
+		err = nil
+	}
+
+	if len(servers) == 0 {
+		for _, server := range c.Config.Choria.NetworkPeers {
+			parsed, err := url.Parse(server)
+			if err != nil {
+				return servers, fmt.Errorf("Could not parse network peer %s: %s", server, err.Error())
+			}
+
+			host, sport, err := net.SplitHostPort(parsed.Host)
+			if err != nil {
+				return servers, fmt.Errorf("Could not parse network peer %s: %s", server, err.Error())
+			}
+
+			port, err := strconv.Atoi(sport)
+			if err != nil {
+				return servers, fmt.Errorf("Could not parse network peer %s: %s", server, err.Error())
+			}
+
+			fmt.Printf("%#v\n", parsed)
+			s := Server{
+				Host:   host,
+				Port:   port,
+				Scheme: parsed.Scheme,
+			}
+
+			servers = append(servers, s)
+		}
+	}
+
+	for _, s := range servers {
+		fmt.Printf("%s:%d\n", s.Host, s.Port)
+		s.Scheme = "nats"
+	}
+
+	return
 }
 
 // DiscoveryServer is the server configured as a discovery proxy

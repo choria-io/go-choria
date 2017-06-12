@@ -1,6 +1,8 @@
-hash: bf70020a442b88e783f44a8b1aeb21c38c42feccc7cef651b9ad347917271ca8
-updated: 2017-06-12T13:18:46.38496313+02:00
+hash: 428c972481596a6f27fdd55355e04eeaa4cbeb270640ead0d871501b71902e45
+updated: 2017-06-12T13:24:04.118929419+02:00
 imports:
+- name: github.com/nats-io/gnatsd
+  version: 5dcad241bcd7fff3aac6e9f8b47350f071f5fd38
 - name: github.com/sirupsen/logrus
   version: 202f25545ea4cf9b191ff7f846df5d87c9382c2b
 - name: golang.org/x/crypto
