@@ -48,6 +48,13 @@ type ChoriaPluginConfig struct {
 	PrivilegedUsers   []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split"`
 	CertnameWhitelist []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split"`
 	Serializer        string   `confkey:"plugin.choria.security.serializer"` // TODO support enums
+
+	// network broker
+	NetworkClientPort   int      `confkey:"plugin.choria.network_client_port" default:"4222"`
+	NetworkPeerPort     int      `confkey:"plugin.choria.network_peer_port" default:"5222"`
+	NetworkPeerUser     string   `confkey:"plugin.choria.network_peer_user"`
+	NetworkPeerPassword string   `confkey:"plugin.choria.network_peer_password"`
+	NetworkPeers        []string `confkey:"plugin.choria.network_peers" type:"comma_split"`
 }
 
 // MCollectiveConfig represents MCollective configuration
