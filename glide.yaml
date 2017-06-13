@@ -7,6 +7,8 @@ import:
   - ssh/terminal
 - package: github.com/nats-io/gnatsd
   version: ^0.9.6
+- package: gopkg.in/alecthomas/kingpin.v2
+  version: ^2.2.4
 testImport:
 - package: github.com/stretchr/testify
   version: ^1.1.4
