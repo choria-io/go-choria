@@ -17,8 +17,8 @@ type Server struct {
 }
 
 // NewServer creates a new instance of the Server struct with a fully configured NATS embedded
-func NewServer(c *choria.Choria) (s Server, err error) {
-	s = Server{
+func NewServer(c *choria.Choria, debug bool) (s *Server, err error) {
+	s = &Server{
 		choria: c,
 		opts:   &gnatsd.Options{},
 	}
@@ -27,7 +27,7 @@ func NewServer(c *choria.Choria) (s Server, err error) {
 	s.opts.Port = c.Config.Choria.NetworkClientPort
 	s.opts.Logtime = false
 
-	if c.Config.LogLevel == "debug" {
+	if debug || c.Config.LogLevel == "debug" {
 		s.opts.Debug = true
 	}
 

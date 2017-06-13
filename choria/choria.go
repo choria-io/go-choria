@@ -63,6 +63,44 @@ func New(path string) (*Choria, error) {
 	return &c, nil
 }
 
+// SetupLogging configures logging based on mcollective config directives
+// currently only file and console behaviours are supported
+func (c *Choria) SetupLogging(debug bool) (err error) {
+	log.SetOutput(os.Stdout)
+
+	if c.Config.LogFile != "" {
+		log.SetFormatter(&log.JSONFormatter{})
+
+		file, err := os.OpenFile(c.Config.LogFile, os.O_CREATE|os.O_WRONLY, 0666)
+		if err != nil {
+			return fmt.Errorf("Could not set up logging: %s", err.Error())
+		}
+
+		log.SetOutput(file)
+	}
+
+	switch c.Config.LogLevel {
+	case "debug":
+		log.SetLevel(log.DebugLevel)
+	case "info":
+		log.SetLevel(log.InfoLevel)
+	case "warn":
+		log.SetLevel(log.WarnLevel)
+	case "error":
+		log.SetLevel(log.ErrorLevel)
+	case "fatal":
+		log.SetLevel(log.FatalLevel)
+	default:
+		log.SetLevel(log.WarnLevel)
+	}
+
+	if debug {
+		log.SetLevel(log.DebugLevel)
+	}
+
+	return
+}
+
 // TrySrvLookup will attempt to lookup a series of names returning the first found
 // if SRV lookups are disabled or nothing is found the default will be returned
 func (c *Choria) TrySrvLookup(names []string, defaultSrv Server) (Server, error) {
@@ -145,7 +183,6 @@ func (c *Choria) NetworkBrokerPeers() (servers []Server, err error) {
 				return servers, fmt.Errorf("Could not parse network peer %s: %s", server, err.Error())
 			}
 
-			fmt.Printf("%#v\n", parsed)
 			s := Server{
 				Host:   host,
 				Port:   port,
@@ -157,7 +194,6 @@ func (c *Choria) NetworkBrokerPeers() (servers []Server, err error) {
 	}
 
 	for _, s := range servers {
-		fmt.Printf("%s:%d\n", s.Host, s.Port)
 		s.Scheme = "nats"
 	}
 
