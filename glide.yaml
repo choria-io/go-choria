@@ -1,16 +1,22 @@
 package: github.com/choria-io/go-choria
 import:
 - package: github.com/sirupsen/logrus
-  version: ^1.0.0
+  version: ^1
 - package: golang.org/x/crypto
   subpackages:
   - ssh/terminal
 - package: github.com/nats-io/gnatsd
-  version: ^0.9.6
+  version: ^0.9
 - package: gopkg.in/alecthomas/kingpin.v2
-  version: ^2.2.4
-testImport:
+  version: ^2
 - package: github.com/stretchr/testify
-  version: ^1.1.4
+  version: ^1
   subpackages:
   - assert
+- package: github.com/nats-io/go-nats
+  version: ^1
+- package: github.com/satori/go.uuid
+  version: ^1.1.0
+- package: github.com/tidwall/gjson
+- package: github.com/tidwall/match
+- package: github.com/xeipuuv/gojsonschema

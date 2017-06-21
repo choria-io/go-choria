@@ -1,0 +1,84 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema#",
+    "description": "Choria Transport version 1",
+    "title": "TransportV1",
+    "type":"object",
+    "required":[
+        "protocol",
+        "data",
+        "headers"
+    ],
+    "properties": {
+        "protocol": {
+            "type":"string",
+            "enum": [
+                "choria:transport:1"
+            ]
+        },
+        "data": {
+            "type":"string",
+            "description": "Base64 encoded JSON representation of the SecureRequestV1 or SecureReplyV1"
+        },
+        "headers": {
+            "type":"object",
+            "properties": {
+                "reply-to": {
+                    "type":"string",
+                    "description": "NATS destination where replies should be sent if this is a request",
+                    "minLength": 1
+                },
+                "mc_sender": {
+                    "type":"string",
+                    "description": "The configured identity of the sender",
+                    "minLength": 1
+                },
+                "seen-by": {
+                    "type":"array",
+                    "description": "Tracks nodes this message travelled through",
+                    "items": [
+                        {
+                            "type":"string",
+                            "description": "The incoming end point - typically a NATS server name. Blank string if this is where a message starts like a request"
+                        },
+                        {
+                            "type":"string",
+                            "description": "The processing node - the identity of a server, client or broker processing this message"
+                        },
+                        {
+                            "type":"string",
+                            "description": "The outgoing end point - typically a NATS server name. Blank string if this is where the message ends like a client receiving a reply"
+                        }
+                    ]
+                },
+                "federation": {
+                    "description": "Optional headers set to support Federation.",
+                    "type":"object",
+                    "required":[
+                        "req"
+                    ],
+                    "properties": {
+                        "req": {
+                            "type":"string",
+                            "description": "The request ID of the contained Secure Request or Secure Reply.  Used for logging mainly",
+                            "minLength": 32,
+                            "maxLength": 32
+                        },
+                        "reply-to": {
+                            "type":"string",
+                            "description": "Used by Federation to record the original reply-to header",
+                            "minLength": 1
+                        },
+                        "targets": {
+                            "type":"array",
+                            "description": "List of targets the message should be sent to, these are mcollective identities",
+                            "items": {
+                                "type":"string",
+                                "description": "Node identities this message should be dispatched to"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

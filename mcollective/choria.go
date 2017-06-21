@@ -1,27 +1,22 @@
-package choria
+package mcollective
 
 import (
-	"crypto/tls"
-	"crypto/x509"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"net"
-	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
-	"os/user"
-	"path/filepath"
 	"strconv"
 	"strings"
 
+	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
 
 // Choria is a utilty encompasing mcollective and choria config and various utilities
 type Choria struct {
-	Config *MCollectiveConfig
+	Config *MCOConfig
 }
 
 // Server is a representation of a network server host and port
@@ -61,6 +56,70 @@ func New(path string) (*Choria, error) {
 	c.Config = config
 
 	return &c, nil
+}
+
+// IsFederated determiens if the configuration is setting up any Federation collectives
+func (c *Choria) IsFederated() (result bool) {
+	if len(c.FederationCollectives()) == 0 {
+		return false
+	}
+
+	return true
+}
+
+// FederationCollectives determines the known Federation Member
+// Collectives based on the CHORIA_FED_COLLECTIVE environment
+// variable or the choria.federation.collectives config item
+func (c *Choria) FederationCollectives() (collectives []string) {
+	var found []string
+
+	env := os.Getenv("CHORIA_FED_COLLECTIVE")
+
+	if env != "" {
+		found = strings.Split(env, ",")
+	}
+
+	if len(found) == 0 {
+		found = c.Config.Choria.FederationCollectives
+	}
+
+	for _, collective := range found {
+		collectives = append(collectives, strings.TrimSpace(collective))
+	}
+
+	return
+}
+
+// FederationMiddlewareServers determines the correct Federation Middleware Servers
+//
+// It does this by:
+//
+//    * looking for choria.federation_middleware_hosts configuration
+//	  * Doing SRV lookups of  _mcollective-federation_server._tcp and _x-puppet-mcollective_federation._tcp
+func (c *Choria) FederationMiddlewareServers() (servers []Server, err error) {
+	configured := c.Config.Choria.FederationMiddlewareHosts
+	if len(configured) > 0 {
+		s, err := StringHostsToServers(configured, "nats")
+		if err != nil {
+			return servers, fmt.Errorf("Could not parse configured Federation Middleware: %s", err.Error())
+		}
+
+		for _, server := range s {
+			servers = append(servers, server)
+		}
+	}
+
+	if len(servers) == 0 {
+		if servers, err = c.QuerySrvRecords([]string{"_mcollective-server._tcp", "_x-puppet-mcollective._tcp"}); err != nil {
+			return servers, fmt.Errorf("Could not resolve Federation Middleware Server SRV records: %s", err.Error())
+		}
+	}
+
+	for _, s := range servers {
+		s.Scheme = "nats"
+	}
+
+	return
 }
 
 // SetupLogging configures logging based on mcollective config directives
@@ -225,74 +284,6 @@ func (c *Choria) ProxiedDiscovery() bool {
 	return c.Config.Choria.DiscoveryProxy
 }
 
-// Certname determines the choria certname
-func (c *Choria) Certname() string {
-	certname := c.Config.Identity
-
-	currentUser, _ := user.Current()
-
-	if currentUser.Uid != "0" {
-		if u, ok := os.LookupEnv("USER"); ok {
-			certname = fmt.Sprintf("%s.mcollective", u)
-		}
-	}
-
-	if u, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
-		certname = u
-	}
-
-	return certname
-}
-
-// CAPath determines the path to the CA file
-func (c *Choria) CAPath() (string, error) {
-	ssl, err := c.SSLDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.Join(ssl, "certs", "ca.pem"), nil
-}
-
-// ClientPrivateKey determines the location to the client cert
-func (c *Choria) ClientPrivateKey() (string, error) {
-	ssl, err := c.SSLDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.Join(ssl, "private_keys", fmt.Sprintf("%s.pem", c.Certname())), nil
-}
-
-// ClientPublicCert determines the location to the client cert
-func (c *Choria) ClientPublicCert() (string, error) {
-	ssl, err := c.SSLDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.Join(ssl, "certs", fmt.Sprintf("%s.pem", c.Certname())), nil
-}
-
-// SSLDir determines the AIO SSL directory
-func (c *Choria) SSLDir() (string, error) {
-	if c.Config.Choria.SSLDir != "" {
-		return c.Config.Choria.SSLDir, nil
-	}
-
-	u, _ := user.Current()
-	if u.Uid == "0" {
-		path, err := c.PuppetSetting("ssldir")
-		if err != nil {
-			return "", err
-		}
-
-		return path, nil
-	}
-
-	return filepath.Join(u.HomeDir, ".puppetlabs", "etc", "puppet", "ssl"), nil
-}
-
 // PuppetSetting retrieves a config setting by shelling out to puppet apply --configprint
 func (c *Choria) PuppetSetting(setting string) (string, error) {
 	args := []string{"apply", "--configprint", setting}
@@ -310,7 +301,7 @@ func (c *Choria) FacterDomain() (string, error) {
 	cmd := c.FacterCmd()
 
 	if cmd == "" {
-		return "", errors.New("Could ont find your facter command")
+		return "", errors.New("Could not find your facter command")
 	}
 
 	out, err := exec.Command(cmd, "networking.domain").Output()
@@ -336,36 +327,23 @@ func (c *Choria) FacterCmd() string {
 	return path
 }
 
-// SSLContext creates a SSL context loaded with our certs and ca
-func (c *Choria) SSLContext() (*http.Transport, error) {
-	pub, _ := c.ClientPublicCert()
-	pri, _ := c.ClientPrivateKey()
-	ca, _ := c.CAPath()
+// Creates a new RequestID
+func (c *Choria) NewRequestID() string {
+	return strings.Replace(uuid.NewV4().String(), "-", "", -1)
+}
 
-	cert, err := tls.LoadX509KeyPair(pub, pri)
+// CallerID determines the cert based callerid
+func (c *Choria) CallerID() string {
+	return fmt.Sprintf("choria=%s", c.Certname())
+}
 
-	if err != nil {
-		return &http.Transport{}, errors.New("Could not load certificate " + pub + " and key " + pri + ": " + err.Error())
+// HasCollective determines if a collective is known in the configuration
+func (c Choria) HasCollective(collective string) bool {
+	for _, c := range c.Config.Collectives {
+		if c == collective {
+			return true
+		}
 	}
 
-	caCert, err := ioutil.ReadFile(ca)
-
-	if err != nil {
-		return &http.Transport{}, err
-	}
-
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-
-	tlsConfig := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		RootCAs:      caCertPool,
-		MinVersion:   tls.VersionTLS12,
-	}
-
-	tlsConfig.BuildNameToCertificate()
-
-	transport := &http.Transport{TLSClientConfig: tlsConfig}
-
-	return transport, nil
+	return false
 }

@@ -1,4 +1,4 @@
-package choria
+package mcollective
 
 import (
 	"os"

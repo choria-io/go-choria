@@ -1,4 +1,4 @@
-package choria
+package mcollective
 
 import (
 	"bufio"
@@ -24,7 +24,7 @@ type ChoriaPluginConfig struct {
 	PuppetCAPort     int    `confkey:"plugin.choria.puppetca_port" default:"8140"`
 	PuppetDBHost     string `confkey:"plugin.choria.puppetdb_host" default:"puppet"`
 	PuppetDBPort     int    `confkey:"plugin.choria.puppetdb_port" default:"8081"`
-	SSLDir           string `confkey:"plugin.choria.ssl_dir"`
+	SSLDir           string `confkey:"plugin.choria.ssldir"`
 	UseSRVRecords    bool   `confkey:"plugin.choria.use_srv" default:"true"`
 	SRVDomain        string `confkey:"plugin.choria.srv_domain"`
 
@@ -55,10 +55,13 @@ type ChoriaPluginConfig struct {
 	NetworkPeerUser     string   `confkey:"plugin.choria.network_peer_user"`
 	NetworkPeerPassword string   `confkey:"plugin.choria.network_peer_password"`
 	NetworkPeers        []string `confkey:"plugin.choria.network_peers" type:"comma_split"`
+	BrokerNetwork       bool     `confkey:"plugin.choria.broker_network" default:"false"`
+	BrokerFederation    bool     `confkey:"plugin.choria.broker_federation" default:"false"`
+	BrokerDiscovery     bool     `confkey:"plugin.choria.broker_discovery" default:"false"`
 }
 
-// MCollectiveConfig represents MCollective configuration
-type MCollectiveConfig struct {
+// MCOConfig represents MCollective configuration
+type MCOConfig struct {
 	Registration              string   `confkey:"registration" default:"Agentlist" type:"title_string"`
 	RegistrationCollective    string   `confkey:"registration_collective"`
 	RegisterInterval          int      `confkey:"registerinterval" default:"0"`
@@ -99,6 +102,8 @@ type MCollectiveConfig struct {
 	SoftShutdownTimeout       int      `confkey:"soft_shutdown_timeout"`
 	ActivateAgents            bool     `confkey:"activate_agents" default:"true"`
 
+	ConfigFile string
+
 	// list of all the options that were actually set
 	setOptions []string
 
@@ -108,7 +113,7 @@ type MCollectiveConfig struct {
 // HasOption determines if a specific option was set from a config key.
 // The option given would be something like `plugin.choria.use_srv`
 // and true would indicate that it was set by config vs using defaults
-func (c *MCollectiveConfig) HasOption(option string) bool {
+func (c *MCOConfig) HasOption(option string) bool {
 	for _, i := range c.setOptions {
 		if i == option {
 			return true
@@ -119,8 +124,9 @@ func (c *MCollectiveConfig) HasOption(option string) bool {
 }
 
 // NewConfig parses a config file and return the config
-func NewConfig(path string) (*MCollectiveConfig, error) {
+func NewConfig(path string) (*MCOConfig, error) {
 	mcollective := newMcollective()
+	mcollective.ConfigFile = path
 
 	// TODO i think probably parse config can walk 'mcollective' recursively
 	err := parseConfig(path, mcollective, "", &mcollective.setOptions)
@@ -192,8 +198,8 @@ func parseConfigContents(content io.Reader, config interface{}, prefix string, f
 	}
 }
 
-func newMcollective() *MCollectiveConfig {
-	m := &MCollectiveConfig{Choria: newChoria()}
+func newMcollective() *MCOConfig {
+	m := &MCOConfig{Choria: newChoria()}
 	setDefaults(m)
 
 	if terminal.IsTerminal(int(os.Stdout.Fd())) {

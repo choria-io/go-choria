@@ -1,0 +1,35 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "description": "Choria Secure Request version 1",
+    "title":"SecureRequestV1",
+    "type":"object",
+    "required":[
+        "protocol",
+        "message",
+        "signature",
+        "pubcert"
+    ],
+    "properties": {
+         "protocol": {
+             "type":"string",
+             "enum": [
+                 "choria:secure:request:1"
+             ]
+         },
+         "message": {
+             "type":"string",
+             "description": "Base64 encoded JSON version of a RequestV1",
+             "minLength":1
+         },
+         "signature": {
+             "type":"string",
+             "description": "Base 64 encoded SHA256 PKCS1v15 signature made with the users Private Key",
+             "minLength": 1
+         },
+         "pubcert": {
+             "type":"string",
+             "description": "PEM encoded Public Certificate for the user producing the message",
+             "minLength": 1
+         }
+    }
+}

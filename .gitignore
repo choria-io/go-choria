@@ -6,3 +6,5 @@ nohup.out
 *.bak
 vendor
 *.swp
+go-choria
+choria
