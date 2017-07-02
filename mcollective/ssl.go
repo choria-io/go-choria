@@ -17,6 +17,7 @@ import (
 	"path/filepath"
 )
 
+// SignString signs a message using a SHA256 PKCS1v15 protocol
 func (c *Choria) SignString(str []byte) (signature []byte, err error) {
 	pkpem, err := c.ClientPrivateKeyPEM()
 	if err != nil {

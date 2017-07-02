@@ -27,6 +27,7 @@ type Message struct {
 	choria            *Choria
 }
 
+// NewMessageFromRequest constructs a Message based on a Request
 func NewMessageFromRequest(req protocol.Request, choria *Choria) (msg *Message, err error) {
 	msg, err = NewMessage("", req.Agent(), req.Collective(), "request", nil, choria)
 	if err != nil {
@@ -42,6 +43,7 @@ func NewMessageFromRequest(req protocol.Request, choria *Choria) (msg *Message, 
 	return
 }
 
+// NewMessage constructs a basic Message instance
 func NewMessage(payload string, agent string, collective string, msgType string, request *Message, choria *Choria) (msg *Message, err error) {
 	msg = &Message{
 		Payload:         payload,
@@ -75,7 +77,7 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 		}
 	}
 
-	err, _ = msg.Validate()
+	_, err = msg.Validate()
 	if err != nil {
 		return
 	}
@@ -83,22 +85,24 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 	return
 }
 
-func (m Message) Validate() (error, bool) {
+// Validate tests the Message and makes sure its settings are sane
+func (m Message) Validate() (bool, error) {
 	if m.Agent == "" {
-		return fmt.Errorf("Agent has not been set"), false
+		return false, fmt.Errorf("Agent has not been set")
 	}
 
 	if m.collective == "" {
-		return fmt.Errorf("Collective has not been set"), false
+		return false, fmt.Errorf("Collective has not been set")
 	}
 
 	if !m.choria.HasCollective(m.collective) {
-		return fmt.Errorf("%s is not on the list of known collectives", m.collective), false
+		return false, fmt.Errorf("%s is not on the list of known collectives", m.collective)
 	}
 
-	return nil, true
+	return true, nil
 }
 
+// SetBase64Payload sets the payload for the message, use it if the payload is Base64 encoded
 func (m *Message) SetBase64Payload(payload string) error {
 	str, err := base64.StdEncoding.DecodeString(payload)
 	if err != nil {
@@ -110,10 +114,12 @@ func (m *Message) SetBase64Payload(payload string) error {
 	return nil
 }
 
+// Base64Payload retrieves the payload Base64 encoded
 func (m Message) Base64Payload() string {
 	return base64.StdEncoding.EncodeToString([]byte(m.Payload))
 }
 
+// SetExpectedMsgID sets the Request ID that is expected from the reply data
 func (m *Message) SetExpectedMsgID(id string) error {
 	if m.Type() != "reply" {
 		return fmt.Errorf("Can only store expected message ID for reply messages")
@@ -124,10 +130,12 @@ func (m *Message) SetExpectedMsgID(id string) error {
 	return nil
 }
 
+// ExpectedMessageID retrieves the expected message ID
 func (m Message) ExpectedMessageID() string {
 	return m.expectedMessageID
 }
 
+// SetReplyTo sets the NATS target where replies to this message should go
 func (m *Message) SetReplyTo(replyTo string) error {
 	if !(m.Type() == "request" || m.Type() == "direct_request") {
 		return fmt.Errorf("Custom reply to targets can only be set for requests")
@@ -138,10 +146,12 @@ func (m *Message) SetReplyTo(replyTo string) error {
 	return nil
 }
 
+// ReplyTo retrieve the NATS reply target
 func (m Message) ReplyTo() string {
 	return m.replyTo
 }
 
+// SetCollective sets the sub collective this message is targeting
 func (m *Message) SetCollective(collective string) error {
 	if !m.choria.HasCollective(collective) {
 		return fmt.Errorf("%s is not on the list of known collectives", m.collective)
@@ -152,10 +162,12 @@ func (m *Message) SetCollective(collective string) error {
 	return nil
 }
 
+// Collective retrieves the sub collective this message is targeting
 func (m Message) Collective() string {
 	return m.collective
 }
 
+// SetType sets the mssage type. One message, request, direct_request or reply
 func (m *Message) SetType(msgType string) (err error) {
 	if !(msgType == "message" || msgType == "request" || msgType == "direct_request" || msgType == "reply") {
 		return fmt.Errorf("%s is not a valid message type", msgType)
@@ -175,6 +187,7 @@ func (m *Message) SetType(msgType string) (err error) {
 	return
 }
 
+// Type retrieves the message type
 func (m Message) Type() string {
 	return m.msgType
 }
