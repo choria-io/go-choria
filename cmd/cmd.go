@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/mcollective"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -20,7 +20,7 @@ const version = "0.0.1"
 var cli = application{}
 var debug = false
 var configFile = ""
-var Choria *choria.Choria
+var choria *mcollective.Choria
 
 func ParseCLI() (err error) {
 	cli.app = kingpin.New("choria", "Choria Orchestration System")
@@ -42,15 +42,14 @@ func ParseCLI() (err error) {
 	}
 
 	if configFile == "" {
-		configFile = choria.UserConfig()
+		configFile = mcollective.UserConfig()
 	}
 
-	Choria, err = choria.New(configFile)
-	if err != nil {
+	if choria, err = mcollective.New(configFile); err != nil {
 		return fmt.Errorf("Could not initialize Choria: %s", err.Error())
 	}
 
-	if err = Choria.SetupLogging(debug); err != nil {
+	if err = choria.SetupLogging(debug); err != nil {
 		return fmt.Errorf("Could not set up logging: %s", err.Error())
 	}
 
@@ -62,8 +61,8 @@ func Run() (err error) {
 
 	for _, cmd := range cli.commands {
 		if cmd.FullCommand() == cli.command {
-			err = cmd.Run()
 			ran = true
+			err = cmd.Run()
 		}
 	}
 

@@ -1,0 +1,54 @@
+{
+    "$schema": "http://json-schema.org/draft-04/schema",
+    "description": "Choria Reply version 1",
+    "title": "ReplyV1",
+    "type":"object",
+    "required":[
+        "protocol",
+        "message",
+        "envelope"
+    ],
+    "properties": {
+        "protocol": {
+            "type":"string",
+            "enum": [
+                "choria:reply:1"
+            ]
+        },
+        "message": {
+            "type":"string",
+            "description": "The data being sent to the Agent, should already be JSON encoded.",
+            "minLength":1
+        },
+        "envelope": {
+            "type":"object",
+            "required":[
+                "requestid",
+                "senderid",
+                "agent",
+                "time"
+            ],
+            "properties": {
+                "requestid": {
+                    "type":"string",
+                    "description": "Globally unique Request ID",
+                    "minLength": 32,
+                    "maxLength": 32
+                },
+                "senderid": {
+                    "type": "string",
+                    "description": "The identity of the machine that sent this message"
+                },
+                "agent": {
+                    "type":"string",
+                    "description": "The name of the agent on the server that sent this message",
+                    "minLength": 1
+                },
+                "time": {
+                    "type":"integer",
+                    "description": "Unix time stamp of UTC time when the reply was made"
+                }
+            }
+        }
+    }
+}

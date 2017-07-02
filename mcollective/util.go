@@ -1,11 +1,14 @@
-package choria
+package mcollective
 
 import (
 	"errors"
+	"fmt"
+	"net"
 	"os"
 	"os/user"
 	"path/filepath"
 	"regexp"
+	"strconv"
 	"strings"
 )
 
@@ -71,4 +74,29 @@ func SliceGroups(input []string, size int, fn func(group []string)) {
 		chunk := input[i*size : i*size+size]
 		fn(chunk)
 	}
+}
+
+// StringHostsToServers converts an array of servers like host:123 into an array of Server structs
+func StringHostsToServers(hosts []string, scheme string) (servers []Server, err error) {
+	for _, s := range hosts {
+		host, sport, err := net.SplitHostPort(s)
+		if err != nil {
+			return servers, fmt.Errorf("could not parse host %s: %s", s, err.Error())
+		}
+
+		port, err := strconv.Atoi(sport)
+		if err != nil {
+			return servers, fmt.Errorf("could not host port %s: %s", s, err.Error())
+		}
+
+		server := Server{
+			Host:   host,
+			Port:   port,
+			Scheme: scheme,
+		}
+
+		servers = append(servers, server)
+	}
+
+	return
 }

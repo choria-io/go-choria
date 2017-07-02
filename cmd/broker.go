@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
+	"sync"
 
-	"github.com/choria-io/go-choria/network"
+	"github.com/choria-io/go-choria/broker/network"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -37,14 +38,43 @@ func (r *brokerRunCommand) Setup() (err error) {
 }
 
 func (r *brokerRunCommand) Run() (err error) {
-	r.server, err = network.NewServer(Choria, debug)
+	net := choria.Config.Choria.BrokerNetwork
+	discovery := choria.Config.Choria.BrokerDiscovery
+	federation := choria.Config.Choria.BrokerFederation
+
+	if !net && !discovery && !federation {
+		return fmt.Errorf("All broker features are disabled")
+	}
+
+	if net {
+		if err = r.runBroker(); err != nil {
+			return fmt.Errorf("Starting the network broker failed: %s", err.Error())
+		}
+	}
+
+	if federation {
+		log.Warn("The Broker is configured to support Federation but it's not been implemented yet.")
+	}
+
+	if discovery {
+		log.Warn("The Broker is configured to support Discovery but it's not been implemented yet.")
+	}
+
+	return
+}
+
+func (r *brokerRunCommand) runBroker() (err error) {
+	r.server, err = network.NewServer(choria, debug)
 	if err != nil {
 		return fmt.Errorf("Could not set up Choria Network Broker: %s", err.Error())
 	}
 
-	log.Debug("Starting goroutine for the NATS broker")
+	var wg sync.WaitGroup
 
-	go r.server.Start()
+	wg.Add(1)
+	go r.server.Start(&wg)
+
+	wg.Wait()
 
 	return
 }

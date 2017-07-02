@@ -2,8 +2,9 @@ package network
 
 import (
 	"fmt"
+	"sync"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/mcollective"
 	log "github.com/sirupsen/logrus"
 
 	gnatsd "github.com/nats-io/gnatsd/server"
@@ -13,11 +14,11 @@ import (
 type Server struct {
 	gnatsd *gnatsd.Server
 	opts   *gnatsd.Options
-	choria *choria.Choria
+	choria *mcollective.Choria
 }
 
 // NewServer creates a new instance of the Server struct with a fully configured NATS embedded
-func NewServer(c *choria.Choria, debug bool) (s *Server, err error) {
+func NewServer(c *mcollective.Choria, debug bool) (s *Server, err error) {
 	s = &Server{
 		choria: c,
 		opts:   &gnatsd.Options{},
@@ -47,11 +48,15 @@ func NewServer(c *choria.Choria, debug bool) (s *Server, err error) {
 	return
 }
 
-// Start the embedded NATS instance
-func (s *Server) Start() {
-	log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, choria.UserConfig())
+// Start the embedded NATS instance, this is a blocking call until it exits
+func (s *Server) Start(wg *sync.WaitGroup) {
+	log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, mcollective.UserConfig())
 
 	s.gnatsd.Start()
+
+	wg.Done()
+
+	log.Warn("Choria Network Broker has been shut down")
 }
 
 func (s *Server) setupCluster() (err error) {
@@ -74,6 +79,14 @@ func (s *Server) setupCluster() (err error) {
 
 		s.opts.Routes = append(s.opts.Routes, u)
 	}
+
+	// Remove any host/ip that points to itself in Route
+	newroutes, err := gnatsd.RemoveSelfReference(s.opts.Cluster.Port, s.opts.Routes)
+	if err != nil {
+		return fmt.Errorf("Could not remove own Self from cluster configuration: %s", err.Error())
+	}
+
+	s.opts.Routes = newroutes
 
 	return
 }
