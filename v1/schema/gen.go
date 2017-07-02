@@ -37,6 +37,8 @@ func main() {
 
 	fname := os.Args[len(os.Args)-1]
 
+	fmt.Printf("Attempting to generate Base64 encoded JSON Schemas in %s...\n", fname)
+
 	infile, err := os.Open(fname)
 	if err != nil {
 		log.Fatalf("Could not open %s: %s", fname, err.Error())
@@ -78,4 +80,6 @@ func main() {
 	infile.Close()
 
 	os.Rename(tmpfile.Name(), infile.Name())
+
+	fmt.Println("..done")
 }
