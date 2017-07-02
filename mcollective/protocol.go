@@ -8,12 +8,14 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+// NewMessage creates a new Message associated with this Choria instance
 func (c *Choria) NewMessage(payload string, agent string, collective string, msgType string, request *Message) (msg *Message, err error) {
 	msg, err = NewMessage(payload, agent, collective, msgType, request, c)
 
 	return
 }
 
+// NewRequest creates a new Request complying with a specific protocol version like protocol.RequestV1
 func (c *Choria) NewRequest(version string, agent string, senderid string, callerid string, ttl int, requestid string, collective string) (request protocol.Request, err error) {
 	switch version {
 	case protocol.RequestV1:
@@ -25,6 +27,7 @@ func (c *Choria) NewRequest(version string, agent string, senderid string, calle
 	return
 }
 
+// NewRequestFromMessage creates a new Request with the Message settings preloaded complying with a specific protocol version like protocol.RequestV1
 func (c *Choria) NewRequestFromMessage(version string, msg *Message) (req protocol.Request, err error) {
 	if !(msg.Type() == "request" || msg.Type() == "direct_request") {
 		err = fmt.Errorf("Cannot use `%s` message to construct a Request", msg.Type())
@@ -47,6 +50,7 @@ func (c *Choria) NewRequestFromMessage(version string, msg *Message) (req protoc
 	return
 }
 
+// NewReply creates a new Reply complying with a specific protocol version like protocol.ReplyV1
 func (c *Choria) NewReply(version string, request protocol.Request) (reply protocol.Reply, err error) {
 	switch version {
 	case protocol.ReplyV1:
@@ -58,6 +62,7 @@ func (c *Choria) NewReply(version string, request protocol.Request) (reply proto
 	return
 }
 
+// NewReplyFromMessage creates a new Reply with the Message settings preloaded complying with a specific protocol version like protocol.ReplyV1
 func (c *Choria) NewReplyFromMessage(version string, msg *Message) (rep protocol.Reply, err error) {
 	if msg.Type() != "reply" {
 		err = fmt.Errorf("Cannot use `%s` message to construct a Reply", msg.Type())
@@ -80,6 +85,7 @@ func (c *Choria) NewReplyFromMessage(version string, msg *Message) (rep protocol
 	return
 }
 
+// NewReplyFromSecureReply creates a new Reply from the JSON payload of SecureReply, the version will match what is in the JSON payload
 func (c *Choria) NewReplyFromSecureReply(sr protocol.SecureReply) (reply protocol.Reply, err error) {
 	switch sr.Version() {
 	case protocol.SecureReplyV1:
@@ -91,20 +97,20 @@ func (c *Choria) NewReplyFromSecureReply(sr protocol.SecureReply) (reply protoco
 	return
 }
 
-func (c *Choria) NewSecureReply(version string, reply protocol.Reply) (secure protocol.SecureReply, err error) {
-	switch version {
-	case protocol.SecureReplyV1:
+// NewSecureReply creates a new SecureReply with the given Reply message as payload
+func (c *Choria) NewSecureReply(reply protocol.Reply) (secure protocol.SecureReply, err error) {
+	switch reply.Version() {
+	case protocol.ReplyV1:
 		secure, err = v1.NewSecureReply(reply)
 	default:
-		err = fmt.Errorf("Do not know how to create a SecureReply version %s", version)
+		err = fmt.Errorf("Do not know how to create a SecureReply based on a Reply version %s", reply.Version())
 	}
 
 	return
 }
 
+// NewSecureReplyFromTransport creates a new SecureReply from the JSON payload of TransportMessage, the version SecureReply will be the same as the TransportMessage
 func (c *Choria) NewSecureReplyFromTransport(message protocol.TransportMessage) (secure protocol.SecureReply, err error) {
-	// TODO: Check its actually a reply in the data
-
 	switch message.Version() {
 	case protocol.TransportV1:
 		secure, err = v1.NewSecureReplyFromTransport(message)
@@ -116,6 +122,7 @@ func (c *Choria) NewSecureReplyFromTransport(message protocol.TransportMessage) 
 	return
 }
 
+// NewSecureRequest creates a new SecureRequest with the given Request message as payload
 func (c *Choria) NewSecureRequest(request protocol.Request) (secure protocol.SecureRequest, err error) {
 	switch request.Version() {
 	case protocol.RequestV1:
@@ -137,9 +144,8 @@ func (c *Choria) NewSecureRequest(request protocol.Request) (secure protocol.Sec
 	return
 }
 
+// NewSecureRequestFromTransport creates a new SecureRequest from the JSON payload of TransportMessage, the version SecureRequest will be the same as the TransportMessage
 func (c *Choria) NewSecureRequestFromTransport(message protocol.TransportMessage) (secure protocol.SecureRequest, err error) {
-	// TODO: Check its actually a request in the data
-
 	switch message.Version() {
 	case protocol.SecureRequestV1:
 		secure, err = v1.NewSecureRequestFromTransport(message)
@@ -150,6 +156,7 @@ func (c *Choria) NewSecureRequestFromTransport(message protocol.TransportMessage
 	return
 }
 
+// NewTransportForSecureRequest creates a new TransportMessage with a SecureRequest as payload.  The Transport will be the same version as the SecureRequest
 func (c *Choria) NewTransportForSecureRequest(request protocol.SecureRequest) (message protocol.TransportMessage, err error) {
 	switch request.Version() {
 	case protocol.SecureRequestV1:
@@ -162,6 +169,7 @@ func (c *Choria) NewTransportForSecureRequest(request protocol.SecureRequest) (m
 	return
 }
 
+// NewTransportForSecureReply creates a new TransportMessage with a SecureReply as payload.  The Transport will be the same version as the SecureRequest
 func (c *Choria) NewTransportForSecureReply(reply protocol.SecureReply) (message protocol.TransportMessage, err error) {
 	switch reply.Version() {
 	case protocol.SecureReplyV1:
@@ -174,6 +182,7 @@ func (c *Choria) NewTransportForSecureReply(reply protocol.SecureReply) (message
 	return
 }
 
+// NewTransportMessage creates a new TransportMessage complying with a specific protocol version like protocol.TransportV1
 func (c *Choria) NewTransportMessage(version string) (message protocol.TransportMessage, err error) {
 	switch version {
 	case protocol.TransportV1:
@@ -185,6 +194,7 @@ func (c *Choria) NewTransportMessage(version string) (message protocol.Transport
 	return
 }
 
+// NewTransportFromJSON creates a new TransportMessage from a JSON payload.  The version will match what is in the payload
 func (c *Choria) NewTransportFromJSON(data string) (message protocol.TransportMessage, err error) {
 	version := gjson.Get(data, "protocol").String()
 

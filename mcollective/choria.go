@@ -327,7 +327,7 @@ func (c *Choria) FacterCmd() string {
 	return path
 }
 
-// Creates a new RequestID
+// NewRequestID Creates a new RequestID
 func (c *Choria) NewRequestID() string {
 	return strings.Replace(uuid.NewV4().String(), "-", "", -1)
 }
