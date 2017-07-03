@@ -8,56 +8,76 @@ import (
 	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
-	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/tidwall/gjson"
+
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 )
 
-func TestSecureReply(t *testing.T) {
-	request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-	request.SetMessage(`{"test":1}`)
+var _ = Describe("SecureReply", func() {
+	It("Should create valid replies", func() {
+		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		request.SetMessage(`{"test":1}`)
 
-	reply, err := NewReply(request)
-	assert.Nil(t, err)
-	rj, err := reply.JSON()
-	assert.Nil(t, err)
+		reply, err := NewReply(request)
+		Expect(err).ToNot(HaveOccurred())
 
-	sha := sha256.Sum256([]byte(rj))
+		rj, err := reply.JSON()
+		Expect(err).ToNot(HaveOccurred())
 
-	sreply, _ := NewSecureReply(reply)
-	sj, err := sreply.JSON()
-	assert.Nil(t, err)
+		sha := sha256.Sum256([]byte(rj))
 
-	assert.Equal(t, "choria:secure:reply:1", gjson.Get(sj, "protocol").String())
-	assert.Equal(t, rj, gjson.Get(sj, "message").String())
-	assert.Equal(t, base64.StdEncoding.EncodeToString(sha[:]), gjson.Get(sj, "hash").String())
-	assert.True(t, sreply.Valid())
-}
+		sreply, _ := NewSecureReply(reply)
+		sj, err := sreply.JSON()
+		Expect(err).ToNot(HaveOccurred())
 
-func TestSecureRequest(t *testing.T) {
-	r, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-	r.SetMessage(`{"test":1}`)
-	rj, err := r.JSON()
-	assert.Nil(t, err)
+		Expect(gjson.Get(sj, "protocol").String()).To(Equal(protocol.SecureReplyV1))
+		Expect(gjson.Get(sj, "message").String()).To(Equal(rj))
+		Expect(gjson.Get(sj, "hash").String()).To(Equal(base64.StdEncoding.EncodeToString(sha[:])))
+		Expect(sreply.Valid()).To(BeTrue())
+	})
+})
 
-	sr, _ := NewSecureRequest(r, "testdata/ssl/certs/rip.mcollective.pem", "testdata/ssl/private_keys/rip.mcollective.pem")
-	sj, err := sr.JSON()
-	assert.Nil(t, err)
+var _ = Describe("SecureRequest", func() {
+	It("Should create a valid SecureRequest", func() {
+		r, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		r.SetMessage(`{"test":1}`)
+		rj, err := r.JSON()
+		Expect(err).ToNot(HaveOccurred())
 
-	pubf, _ := readFile("testdata/ssl/certs/rip.mcollective.pem")
-	privf, _ := readFile("testdata/ssl/private_keys/rip.mcollective.pem")
+		sr, err := NewSecureRequest(r, "testdata/ssl/certs/rip.mcollective.pem", "testdata/ssl/private_keys/rip.mcollective.pem")
+		Expect(err).ToNot(HaveOccurred())
 
-	// what signString() is doing lets just verify it
-	pem, _ := pem.Decode(privf)
-	pk, err := x509.ParsePKCS1PrivateKey(pem.Bytes)
-	assert.Nil(t, err)
-	rng := rand.Reader
-	hashed := sha256.Sum256([]byte(rj))
-	signature, _ := rsa.SignPKCS1v15(rng, pk, crypto.SHA256, hashed[:])
+		sj, err := sr.JSON()
+		Expect(err).ToNot(HaveOccurred())
 
-	assert.Equal(t, "choria:secure:request:1", gjson.Get(sj, "protocol").String())
-	assert.Equal(t, rj, gjson.Get(sj, "message").String())
-	assert.Equal(t, string(pubf), gjson.Get(sj, "pubcert").String())
-	assert.Equal(t, base64.StdEncoding.EncodeToString(signature), gjson.Get(sj, "signature").String())
-}
+		pubf, _ := readFile("testdata/ssl/certs/rip.mcollective.pem")
+		privf, _ := readFile("testdata/ssl/private_keys/rip.mcollective.pem")
+
+		// what signString() is doing lets just verify it
+		pem, _ := pem.Decode(privf)
+		pk, err := x509.ParsePKCS1PrivateKey(pem.Bytes)
+		Expect(err).ToNot(HaveOccurred())
+		rng := rand.Reader
+		hashed := sha256.Sum256([]byte(rj))
+		signature, _ := rsa.SignPKCS1v15(rng, pk, crypto.SHA256, hashed[:])
+
+		Expect(gjson.Get(sj, "protocol").String()).To(Equal(protocol.SecureRequestV1))
+		Expect(gjson.Get(sj, "message").String()).To(Equal(rj))
+		Expect(gjson.Get(sj, "pubcert").String()).To(Equal(string(pubf)))
+		Expect(gjson.Get(sj, "signature").String()).To(Equal(base64.StdEncoding.EncodeToString(signature)))
+	})
+
+	Measure("SecureRequest creation time", func(b Benchmarker) {
+		r, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		r.SetMessage(`{"test":1}`)
+
+		runtime := b.Time("runtime", func() {
+			NewSecureRequest(r, "testdata/ssl/certs/rip.mcollective.pem", "testdata/ssl/private_keys/rip.mcollective.pem")
+		})
+
+		Expect(runtime.Seconds()).Should(BeNumerically("<", 0.5))
+	}, 10)
+})

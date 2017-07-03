@@ -26,7 +26,7 @@ type transportHeaders struct {
 }
 
 type federationTransportHeader struct {
-	RequestID string   `json:"req"`
+	RequestID string   `json:"req",omitempty`
 	ReplyTo   string   `json:"reply-to,omitempty"`
 	Targets   []string `json:"target,omitempty"`
 }
@@ -208,6 +208,13 @@ func (m *transportMessage) JSON() (body string, err error) {
 	}
 
 	return
+}
+
+func (m *transportMessage) SetUnfederated() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.Headers.Federation = nil
 }
 
 // Version retreives the protocol version for this message
