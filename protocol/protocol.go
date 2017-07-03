@@ -13,7 +13,7 @@ const (
 )
 
 // Additional to these the package for a specific version must also provide these constructors
-// with signature matching those in v1/constructors.go
+// with signature matching those in v1/constructors.go these are in use by mcollective/protocol.gos
 
 // Request is a core MCollective Request containing JSON serialized agent payload
 type Request interface {
@@ -37,7 +37,7 @@ type Request interface {
 	Filter() (*Filter, bool)
 	JSON() (string, error)
 	Version() string
-	IsValidJSON(data string) (error)
+	IsValidJSON(data string) error
 }
 
 // Reply is a core MCollective Reply containing JSON serialized agent payload
@@ -51,7 +51,7 @@ type Reply interface {
 	Time() time.Time
 	JSON() (string, error)
 	Version() string
-	IsValidJSON(data string) (error)
+	IsValidJSON(data string) error
 }
 
 // SecureRequest is a container for the Request.  It serializes and signs the
@@ -66,7 +66,7 @@ type SecureRequest interface {
 	Valid() bool
 	JSON() (string, error)
 	Version() string
-	IsValidJSON(data string) (error)
+	IsValidJSON(data string) error
 }
 
 // SecureReply is a container for a Reply.  It's the reply counter part of a
@@ -78,7 +78,7 @@ type SecureReply interface {
 	JSON() (string, error)
 	Message() string
 	Version() string
-	IsValidJSON(data string) (error)
+	IsValidJSON(data string) error
 }
 
 // TransportMessage is a container for SecureRequests and SecureReplies it
@@ -92,6 +92,7 @@ type TransportMessage interface {
 	SetReplyTo(reply string)
 	SetSender(sender string)
 
+	SetUnfederated()
 	SetFederationRequestID(id string)
 	SetFederationReplyTo(reply string)
 	SetFederationTargets(targets []string)

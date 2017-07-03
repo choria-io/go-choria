@@ -56,8 +56,9 @@ type ChoriaPluginConfig struct {
 	NetworkPeerPassword string   `confkey:"plugin.choria.network_peer_password"`
 	NetworkPeers        []string `confkey:"plugin.choria.network_peers" type:"comma_split"`
 	BrokerNetwork       bool     `confkey:"plugin.choria.broker_network" default:"false"`
-	BrokerFederation    bool     `confkey:"plugin.choria.broker_federation" default:"false"`
 	BrokerDiscovery     bool     `confkey:"plugin.choria.broker_discovery" default:"false"`
+	BrokerFederation    bool     `confkey:"plugin.choria.broker_federation" default:"false"`
+	FederationCluster   string   `confkey:"plugin.choria.broker_federation_cluster" default:"mcollective"`
 }
 
 // MCOConfig represents MCollective configuration

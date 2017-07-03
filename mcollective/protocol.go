@@ -50,13 +50,13 @@ func (c *Choria) NewRequestFromMessage(version string, msg *Message) (req protoc
 	return
 }
 
-// NewReply creates a new Reply complying with a specific protocol version like protocol.ReplyV1
-func (c *Choria) NewReply(version string, request protocol.Request) (reply protocol.Reply, err error) {
-	switch version {
-	case protocol.ReplyV1:
+// NewReply creates a new Reply, the version will match that of the given request
+func (c *Choria) NewReply(request protocol.Request) (reply protocol.Reply, err error) {
+	switch request.Version() {
+	case protocol.RequestV1:
 		reply, err = v1.NewReply(request)
 	default:
-		err = fmt.Errorf("Do not know how to create a Reply version %s", version)
+		err = fmt.Errorf("Do not know how to create a Reply version %s", request.Version())
 	}
 
 	return
@@ -79,7 +79,7 @@ func (c *Choria) NewReplyFromMessage(version string, msg *Message) (rep protocol
 		return
 	}
 
-	rep, err = c.NewReply(version, req)
+	rep, err = c.NewReply(req)
 	rep.SetMessage(msg.Base64Payload())
 
 	return
