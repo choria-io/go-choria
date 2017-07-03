@@ -50,11 +50,10 @@ func NewServer(c *mcollective.Choria, debug bool) (s *Server, err error) {
 
 // Start the embedded NATS instance, this is a blocking call until it exits
 func (s *Server) Start(wg *sync.WaitGroup) {
+	defer wg.Done()
 	log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, mcollective.UserConfig())
 
 	s.gnatsd.Start()
-
-	wg.Done()
 
 	log.Warn("Choria Network Broker has been shut down")
 }

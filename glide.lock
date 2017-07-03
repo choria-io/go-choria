@@ -1,5 +1,5 @@
-hash: 122504be1a42c8f1f3e804d59cf4cdc17660aeef8beb4d331fb7fd1d1775308b
-updated: 2017-07-02T11:54:48.576325272+02:00
+hash: c9684fe8d76b0d3a3b8b5d11334b3153468f7973831ad4bf97c6b473503f5625
+updated: 2017-07-14T14:58:33.158144357+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -20,14 +20,44 @@ imports:
 - name: github.com/nats-io/nuid
   version: 289cccf02c178dc782430d534e3c1f5b72af807f
   repo: https://github.com/nats-io/nuid
+- name: github.com/onsi/ginkgo
+  version: 77a8c1e5c40d6bb6c5eb4dd4bdce9763564f6298
+  subpackages:
+  - config
+  - internal/codelocation
+  - internal/containernode
+  - internal/failer
+  - internal/leafnodes
+  - internal/remote
+  - internal/spec
+  - internal/spec_iterator
+  - internal/specrunner
+  - internal/suite
+  - internal/testingtproxy
+  - internal/writer
+  - reporters
+  - reporters/stenographer
+  - reporters/stenographer/support/go-colorable
+  - reporters/stenographer/support/go-isatty
+  - types
+- name: github.com/onsi/gomega
+  version: 334b8f472b3af5d541c5642701c1e29e2126f486
+  subpackages:
+  - format
+  - internal/assertion
+  - internal/asyncassertion
+  - internal/oraclematcher
+  - internal/testingtsupport
+  - matchers
+  - matchers/support/goraph/bipartitegraph
+  - matchers/support/goraph/edge
+  - matchers/support/goraph/node
+  - matchers/support/goraph/util
+  - types
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/sirupsen/logrus
-  version: 202f25545ea4cf9b191ff7f846df5d87c9382c2b
-- name: github.com/stretchr/testify
-  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
-  subpackages:
-  - assert
+  version: a3f95b5c423586578a4e099b11a46c2479628cac
 - name: github.com/tidwall/gjson
   version: c784c417818f59d6597274642d8ac1d09efc9b01
 - name: github.com/tidwall/match
@@ -49,11 +79,5 @@ imports:
 - name: gopkg.in/alecthomas/kingpin.v2
   version: 7f0871f2e17818990e4eed73f9b5c2f429501228
 testImports:
-- name: github.com/davecgh/go-spew
-  version: 6d212800a42e8ab5c146b8ace3490ee17e5225f9
-  subpackages:
-  - spew
-- name: github.com/pmezard/go-difflib
-  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
-  subpackages:
-  - difflib
+- name: gopkg.in/yaml.v2
+  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b

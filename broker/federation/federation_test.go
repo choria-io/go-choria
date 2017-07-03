@@ -1,24 +1,36 @@
 package federation
 
 import (
+	"io/ioutil"
 	"testing"
 	"time"
 
 	"github.com/choria-io/go-choria/mcollective"
-	"github.com/stretchr/testify/assert"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	log "github.com/sirupsen/logrus"
 )
 
-func TestNewFederationBroker(t *testing.T) {
-	choria, err := mcollective.New("testdata/federation.cfg")
-	assert.Nil(t, err)
+func TestFederation(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
 
-	fb, err := NewFederationBroker("test_cluster", "test_instance", choria)
-	assert.Nil(t, err)
-
-	assert.Equal(t, "unknown", fb.Stats.Status)
-	assert.Equal(t, "unknown", fb.Stats.CollectiveStats.ConnectedServer)
-	assert.Equal(t, "unknown", fb.Stats.FederationStats.ConnectedServer)
-
-	d, _ := time.ParseDuration("1s")
-	assert.WithinDuration(t, fb.Stats.StartTime, time.Now(), d)
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Federation Suite")
 }
+
+var _ = Describe("Federation Broker", func() {
+	It("Should initialize correctly", func() {
+		log.SetOutput(ioutil.Discard)
+
+		choria, err := mcollective.New("testdata/federation.cfg")
+		Expect(err).ToNot(HaveOccurred())
+
+		fb, err := NewFederationBroker("test_cluster", "test_instance", choria)
+		Expect(err).ToNot(HaveOccurred())
+
+		Expect(fb.Stats.Status).To(Equal("unknown"))
+		Expect(fb.Stats.CollectiveStats.ConnectedServer).To(Equal("unknown"))
+		Expect(fb.Stats.FederationStats.ConnectedServer).To(Equal("unknown"))
+		Expect(fb.Stats.StartTime).To(BeTemporally("~", time.Now()))
+	})
+})

@@ -42,6 +42,10 @@ func (c *Choria) SignString(str []byte) (signature []byte, err error) {
 
 // Certname determines the choria certname
 func (c *Choria) Certname() string {
+	if certname, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
+		return certname
+	}
+
 	certname := c.Config.Identity
 
 	currentUser, _ := user.Current()
@@ -50,10 +54,6 @@ func (c *Choria) Certname() string {
 		if u, ok := os.LookupEnv("USER"); ok {
 			certname = fmt.Sprintf("%s.mcollective", u)
 		}
-	}
-
-	if u, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
-		certname = u
 	}
 
 	return certname
