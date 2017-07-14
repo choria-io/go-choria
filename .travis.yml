@@ -1,11 +1,14 @@
 language: go
+env:
+  - "MCOLLECTIVE_CERTNAME=rip.mcollective"
 go:
   - 1.8
   - tip
 install:
   - go get github.com/Masterminds/glide
+  - go get github.com/onsi/ginkgo/ginkgo
 before_script:
 script:
   - glide install
   - go build .
-  - go test $(glide novendor)
+  - ginkgo -p -skipMeasurements -v $(glide novendor)

@@ -1,35 +1,48 @@
 package v1
 
 import (
-	"testing"
+	"time"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/choria-io/go-choria/protocol"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"
 )
 
-func TestRequest(t *testing.T) {
-	request, _ := NewRequest("test", "go.tests", "choria=test", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-	filter, filtered := request.Filter()
+var _ = Describe("Request", func() {
+	It("Should construct the correct request", func() {
+		request, _ := NewRequest("test", "go.tests", "choria=test", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		filter, filtered := request.Filter()
 
-	request.SetMessage("hello world")
+		request.SetMessage("hello world")
 
-	j, _ := request.JSON()
+		j, _ := request.JSON()
 
-	assert.Equal(t, "choria:request:1", gjson.Get(j, "protocol").String())
-	assert.Equal(t, "hello world", request.Message())
-	assert.Equal(t, 32, len(request.RequestID()))
-	assert.Equal(t, "go.tests", request.SenderID())
-	assert.Equal(t, "choria=test", request.CallerID())
-	assert.Equal(t, "mcollective", request.Collective())
-	assert.Equal(t, "test", request.Agent())
-	assert.Equal(t, 120, request.TTL())
-	assert.NotZero(t, request.Time())
-	assert.False(t, filtered)
-	assert.True(t, filter.Empty())
+		Expect(gjson.Get(j, "protocol").String()).To(Equal(protocol.RequestV1))
+		Expect(request.Message()).To(Equal("hello world"))
+		Expect(len(request.RequestID())).To(Equal(32))
+		Expect(request.SenderID()).To(Equal("go.tests"))
+		Expect(request.CallerID()).To(Equal("choria=test"))
+		Expect(request.Collective()).To(Equal("mcollective"))
+		Expect(request.Agent()).To(Equal("test"))
+		Expect(request.TTL()).To(Equal(120))
+		Expect(request.Time()).To(BeTemporally("~", time.Now(), time.Second))
+		Expect(filtered).To(BeFalse())
+		Expect(filter.Empty()).To(BeTrue())
 
-	filter.AddAgentFilter("rpcutil")
-	filter, filtered = request.Filter()
+		filter.AddAgentFilter("rpcutil")
+		filter, filtered = request.Filter()
 
-	assert.True(t, filtered)
-	assert.NotNil(t, filter)
-}
+		Expect(filtered).To(BeTrue())
+		Expect(filter).ToNot(BeNil())
+	})
+
+	Measure("Request creation time", func(b Benchmarker) {
+		runtime := b.Time("runtime", func() {
+			request, _ := NewRequest("test", "go.tests", "choria=test", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+			request.SetMessage(`{"hello":"world"}`)
+		})
+
+		Expect(runtime.Nanoseconds()).Should(BeNumerically("<", 100000))
+	}, 1000)
+})

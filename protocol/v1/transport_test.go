@@ -1,64 +1,82 @@
 package v1
 
 import (
-	"testing"
-
-	"github.com/stretchr/testify/assert"
+	"github.com/choria-io/go-choria/protocol"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"
 )
 
-func TestTransportReply(t *testing.T) {
-	request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-	request.SetMessage(`{"message":1}`)
-	reply, _ := NewReply(request)
-	sreply, _ := NewSecureReply(reply)
-	treply, _ := NewTransportMessage("rip.mcollective")
-	treply.SetReplyData(sreply)
+var _ = Describe("TransportMessage", func() {
+	It("Should support reply data", func() {
+		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		request.SetMessage(`{"message":1}`)
+		reply, _ := NewReply(request)
+		sreply, _ := NewSecureReply(reply)
+		treply, _ := NewTransportMessage("rip.mcollective")
+		treply.SetReplyData(sreply)
 
-	sj, err := sreply.JSON()
-	assert.Nil(t, err)
-	j, err := treply.JSON()
-	assert.Nil(t, err)
+		sj, err := sreply.JSON()
+		Expect(err).ToNot(HaveOccurred())
 
-	assert.Equal(t, "choria:transport:1", gjson.Get(j, "protocol").String())
-	assert.Equal(t, "rip.mcollective", gjson.Get(j, "headers.mc_sender").String())
+		j, err := treply.JSON()
+		Expect(err).ToNot(HaveOccurred())
 
-	d, err := treply.Message()
-	assert.Nil(t, err)
+		Expect(gjson.Get(j, "protocol").String()).To(Equal(protocol.TransportV1))
+		Expect(gjson.Get(j, "headers.mc_sender").String()).To(Equal("rip.mcollective"))
 
-	assert.Equal(t, sj, d)
-}
+		d, err := treply.Message()
+		Expect(err).ToNot(HaveOccurred())
 
-func TestTransportRequest(t *testing.T) {
-	request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-	request.SetMessage(`{"message":1}`)
-	srequest, _ := NewSecureRequest(request, "testdata/ssl/certs/rip.mcollective.pem", "testdata/ssl/private_keys/rip.mcollective.pem")
-	trequest, _ := NewTransportMessage("rip.mcollective")
-	trequest.SetRequestData(srequest)
+		Expect(d).To(Equal(sj))
+	})
 
-	sj, _ := srequest.JSON()
-	j, _ := trequest.JSON()
+	It("Should support request data", func() {
+		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		request.SetMessage(`{"message":1}`)
+		srequest, _ := NewSecureRequest(request, "testdata/ssl/certs/rip.mcollective.pem", "testdata/ssl/private_keys/rip.mcollective.pem")
+		trequest, _ := NewTransportMessage("rip.mcollective")
+		trequest.SetRequestData(srequest)
 
-	assert.Equal(t, "choria:transport:1", gjson.Get(j, "protocol").String())
-	assert.Equal(t, "rip.mcollective", gjson.Get(j, "headers.mc_sender").String())
+		sj, _ := srequest.JSON()
+		j, _ := trequest.JSON()
 
-	d, err := trequest.Message()
-	assert.Nil(t, err)
+		Expect(gjson.Get(j, "protocol").String()).To(Equal(protocol.TransportV1))
+		Expect(gjson.Get(j, "headers.mc_sender").String()).To(Equal("rip.mcollective"))
 
-	assert.Equal(t, sj, d)
-}
+		d, err := trequest.Message()
+		Expect(err).ToNot(HaveOccurred())
 
-func TestTransportFromJSON(t *testing.T) {
-	request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-	srequest, _ := NewSecureRequest(request, "testdata/ssl/certs/rip.mcollective.pem", "testdata/ssl/private_keys/rip.mcollective.pem")
-	trequest, _ := NewTransportMessage("rip.mcollective")
-	trequest.SetRequestData(srequest)
+		Expect(d).To(Equal(sj))
+	})
 
-	j, _ := trequest.JSON()
+	It("Should support creation from JSON data", func() {
+		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		srequest, _ := NewSecureRequest(request, "testdata/ssl/certs/rip.mcollective.pem", "testdata/ssl/private_keys/rip.mcollective.pem")
+		trequest, _ := NewTransportMessage("rip.mcollective")
+		trequest.SetRequestData(srequest)
 
-	_, err := NewTransportFromJSON(j)
-	assert.Nil(t, err)
+		j, _ := trequest.JSON()
 
-	_, err = NewTransportFromJSON(`{"protocol": 1}`)
-	assert.Equal(t, "Supplied JSON document is not a valid Transport message: data: data is required, headers: headers is required, protocol: Invalid type. Expected: string, given: integer", err.Error())
-}
+		_, err := NewTransportFromJSON(j)
+		Expect(err).ToNot(HaveOccurred())
+
+		_, err = NewTransportFromJSON(`{"protocol": 1}`)
+		Expect(err).To(MatchError("Supplied JSON document is not a valid Transport message: data: data is required, headers: headers is required, protocol: Invalid type. Expected: string, given: integer"))
+	})
+
+	Measure("Transport creation", func(b Benchmarker) {
+		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		request.SetMessage(`{"message":1}`)
+		srequest, _ := NewSecureRequest(request, "testdata/ssl/certs/rip.mcollective.pem", "testdata/ssl/private_keys/rip.mcollective.pem")
+		trequest, _ := NewTransportMessage("rip.mcollective")
+		trequest.SetRequestData(srequest)
+
+		runtime := b.Time("runtime", func() {
+			trequest, _ := NewTransportMessage("rip.mcollective")
+			trequest.SetRequestData(srequest)
+		})
+
+		Expect(runtime.Nanoseconds()).Should(BeNumerically("<", 1000000))
+	}, 10)
+})
