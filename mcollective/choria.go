@@ -44,8 +44,6 @@ func (s *Server) URL() (u *url.URL, err error) {
 
 // New sets up a Choria with all its config loaded and so forth
 func New(path string) (*Choria, error) {
-	// TODO check SSL sanity
-
 	c := Choria{}
 
 	config, err := NewConfig(path)
@@ -54,6 +52,11 @@ func New(path string) (*Choria, error) {
 	}
 
 	c.Config = config
+
+	if errors, ok := c.CheckSSLSetup(); !ok {
+		err = fmt.Errorf("SSL setup is not valid, %d errors encountered: %s", len(errors), strings.Join(errors, ", "))
+		return &c, err
+	}
 
 	return &c, nil
 }

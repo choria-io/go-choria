@@ -1,5 +1,5 @@
 hash: c9684fe8d76b0d3a3b8b5d11334b3153468f7973831ad4bf97c6b473503f5625
-updated: 2017-07-14T14:58:33.158144357+02:00
+updated: 2017-07-15T10:56:08.712644503+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -80,4 +80,4 @@ imports:
   version: 7f0871f2e17818990e4eed73f9b5c2f429501228
 testImports:
 - name: gopkg.in/yaml.v2
-  version: cd8b52f8269e0feb286dfeef29f8fe4d5b397e0b
+  version: 3b4ad1db5b2a649883ff3782f5f9f6fb52be71af
