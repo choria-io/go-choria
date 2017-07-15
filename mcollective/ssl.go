@@ -17,6 +17,44 @@ import (
 	"path/filepath"
 )
 
+// CheckSSLSetup validates the various SSL files and directories exist and are well formed
+func (c *Choria) CheckSSLSetup() (errors []string, ok bool) {
+	if _, err := c.SSLDir(); err != nil {
+		errors = append(errors, fmt.Sprintf("SSL Directory does not exist: %s", err.Error()))
+		return errors, false
+	}
+
+	if c, err := c.ClientPublicCert(); err == nil {
+		if _, err := os.Stat(c); err != nil {
+			errors = append(errors, fmt.Sprintf("The Public Certificate %s does not exist", c))
+		}
+	} else {
+		errors = append(errors, fmt.Sprintf("Could not determine Public Certificate path: %s", err.Error()))
+	}
+
+	if c, err := c.ClientPrivateKey(); err == nil {
+		if _, err := os.Stat(c); err != nil {
+			errors = append(errors, fmt.Sprintf("The Private Key %s does not exist", c))
+		}
+	} else {
+		errors = append(errors, fmt.Sprintf("Could not determine Private Certificate path: %s", err.Error()))
+	}
+
+	if c, err := c.CAPath(); err == nil {
+		if _, err := os.Stat(c); err != nil {
+			errors = append(errors, fmt.Sprintf("The CA %s does not exist", c))
+		}
+	} else {
+		errors = append(errors, fmt.Sprintf("Could not determine CA path: %s", err.Error()))
+	}
+
+	if len(errors) == 0 {
+		ok = true
+	}
+
+	return errors, ok
+}
+
 // SignString signs a message using a SHA256 PKCS1v15 protocol
 func (c *Choria) SignString(str []byte) (signature []byte, err error) {
 	pkpem, err := c.ClientPrivateKeyPEM()
