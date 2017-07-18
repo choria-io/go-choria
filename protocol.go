@@ -67,6 +67,7 @@ type SecureRequest interface {
 	JSON() (string, error)
 	Version() string
 	IsValidJSON(data string) error
+	Message() string
 }
 
 // SecureReply is a container for a Reply.  It's the reply counter part of a
