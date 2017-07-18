@@ -2,88 +2,56 @@ package federation
 
 import (
 	"fmt"
-	"sync"
 
 	log "github.com/sirupsen/logrus"
 )
 
-// RequestTransformer transforms federated requests from the Federation into the format that
-// will be published to the Collective
-type RequestTransformer struct {
-	chainbase
+func NewChoriaRequestTransformer(workers int, capacity int, broker *FederationBroker, logger *log.Entry) (*pooledWorker, error) {
+	worker, err := PooledWorkerFactory("choria_request_transformer", workers, Unconnected, capacity, broker, logger, func(self *pooledWorker, i int, logger *log.Entry) {
+		defer self.wg.Done()
 
-	// The number of worker go procs that will be created to consume requests from the channel.  Defaults 10
-	Workers int
-}
+		for {
+			var cm chainmessage
 
-func (self *RequestTransformer) process(cm chainmessage, name string) (chainmessage, error) {
-	req, federated := cm.Message.FederationRequestID()
-	if !federated {
-		return chainmessage{}, fmt.Errorf("%s received a message from %s that is not federated", name, cm.Message.SenderID())
-	}
+			select {
+			case cm = <-self.in:
+			case <-self.done:
+				logger.Infof("Worker routine %s exiting", self.Name())
+				return
+			}
 
-	targets, _ := cm.Message.FederationTargets()
-	if len(targets) == 0 {
-		return chainmessage{}, fmt.Errorf("%s received a message %s from %s that does not have any targets", name, req, cm.Message.SenderID())
-	}
+			req, federated := cm.Message.FederationRequestID()
+			if !federated {
+				logger.Errorf("Received a message from %s that is not federated", cm.Message.SenderID())
+				continue
+			}
 
-	replyto := cm.Message.ReplyTo()
-	if replyto == "" {
-		return chainmessage{}, fmt.Errorf("%s received a message %s with no reply-to set", name, req)
-	}
+			targets, _ := cm.Message.FederationTargets()
+			if len(targets) == 0 {
+				logger.Errorf("Received a message %s from %s that does not have any targets", req, cm.Message.SenderID())
+				continue
+			}
 
-	cm.RequestID = req
-	cm.Targets = targets
-	cm.Message.SetFederationTargets([]string{})
-	cm.Message.SetFederationReplyTo(replyto)
-	cm.Message.SetReplyTo("federation.reply.target") // TODO
+			replyto := cm.Message.ReplyTo()
+			if replyto == "" {
+				logger.Errorf("Received a message %s with no reply-to set", req)
+				continue
+			}
 
-	return cm, nil
-}
+			cm.Seen = append(cm.Seen, self.Name())
+			cm.RequestID = req
+			cm.Targets = targets
 
-func (self *RequestTransformer) processor(instance int, wg *sync.WaitGroup) {
-	defer wg.Done()
+			cm.Message.SetFederationTargets([]string{})
+			cm.Message.SetFederationReplyTo(replyto)
+			cm.Message.SetReplyTo(fmt.Sprintf("choria.federation.%s.collective", self.broker.Name))
 
-	name := fmt.Sprintf("%s:%d", self.Name(), instance)
+			logger.Infof("Received request message '%s' via %s with %d targets", cm.RequestID, cm.Message.SenderID(), len(cm.Targets))
 
-	for {
-		cm, err := self.process(<-self.in, name)
-		if err != nil {
-			log.Error(err.Error())
-			continue
+			self.out <- cm
 		}
 
-		log.Infof("%s received request message %s", name, cm.RequestID)
+	})
 
-		self.out <- cm
-	}
-}
-
-func (self *RequestTransformer) Run() error {
-	wg := sync.WaitGroup{}
-
-	for i := 0; i < self.Workers; i++ {
-		wg.Add(1)
-		go self.processor(i, &wg)
-	}
-
-	wg.Wait()
-
-	return nil
-}
-
-func (self *RequestTransformer) Init(cluster string, instance string) error {
-	self.in = make(chan chainmessage, 1000)
-	self.out = make(chan chainmessage, 1000)
-	self.name = fmt.Sprintf("%s:%s choria_request_transformer", cluster, instance)
-
-	if self.Workers == 0 {
-		self.Workers = 10
-	}
-
-	log.Infof("Initialized %s with %d workers", self.name, self.Workers)
-
-	self.initialized = true
-
-	return nil
+	return worker, err
 }

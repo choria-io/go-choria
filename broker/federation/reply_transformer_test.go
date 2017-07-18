@@ -1,7 +1,8 @@
 package federation
 
 import (
-	"io/ioutil"
+	"bufio"
+	"bytes"
 
 	log "github.com/sirupsen/logrus"
 
@@ -12,19 +13,22 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-var _ = Describe("ReplyTransformer", func() {
+var _ = Describe("Reply Transformer", func() {
 	var (
 		choria      *mcollective.Choria
 		request     protocol.Request
 		reply       protocol.Reply
 		sreply      protocol.SecureReply
-		transformer ReplyTransformer
+		transformer *pooledWorker
 		in          chainmessage
 		err         error
+		logtxt      *bufio.Writer
+		logbuf      *bytes.Buffer
+		logger      *log.Entry
 	)
 
 	BeforeEach(func() {
-		log.SetOutput(ioutil.Discard)
+		logger, logtxt, logbuf = newDiscardLogger()
 
 		choria, err = mcollective.New("testdata/federation.cfg")
 		Expect(err).ToNot(HaveOccurred())
@@ -42,9 +46,17 @@ var _ = Describe("ReplyTransformer", func() {
 		in.Message, err = choria.NewTransportForSecureReply(sreply)
 		Expect(err).ToNot(HaveOccurred())
 
-		err = transformer.Init("testing", "1")
+		broker, _ := NewFederationBroker("test", choria)
+
+		transformer, err = NewChoriaReplyTransformer(1, 10, broker, logger)
 		Expect(err).ToNot(HaveOccurred())
-	})
+
+		go transformer.Run()
+	}, 10)
+
+	AfterEach(func() {
+		transformer.Quit()
+	}, 10)
 
 	It("should correctly transform a message", func() {
 		tr, err := choria.NewTransportForSecureReply(sreply)
@@ -56,8 +68,8 @@ var _ = Describe("ReplyTransformer", func() {
 		in.Message = tr
 		in.RequestID = reply.RequestID()
 
-		out, err := transformer.process(in, "tester:1")
-		Expect(err).ToNot(HaveOccurred())
+		transformer.Input() <- in
+		out := <-transformer.Output()
 
 		Expect(out.Targets).To(Equal([]string{"mcollective.reply"}))
 
@@ -67,16 +79,25 @@ var _ = Describe("ReplyTransformer", func() {
 	})
 
 	It("should fail for unfederated messages", func() {
-		_, err = transformer.process(in, "tester:1")
+		transformer.Input() <- in
 
-		Expect(err).To(MatchError("tester:1 received a message from rip.mcollective that is not federated"))
+		waitForLogLines(logtxt, logbuf)
+
+		Expect(logbuf.String()).To(MatchRegexp("Received a message from rip.mcollective that is not federated"))
 	})
 
 	It("Should fail for messages with no reply-to", func() {
 		in.Message.SetFederationRequestID("80a1ac20463745c0b12cfe6e3db61dff")
+		transformer.Input() <- in
 
-		_, err = transformer.process(in, "tester:1")
+		waitForLogLines(logtxt, logbuf)
 
-		Expect(err).To(MatchError("tester:1 received a message 80a1ac20463745c0b12cfe6e3db61dff with no reply-to set"))
+		Expect(logbuf.String()).To(MatchRegexp("Received message 80a1ac20463745c0b12cfe6e3db61dff with no reply-to set"))
+	})
+
+	It("Should support Quit", func() {
+		transformer.Quit()
+		waitForLogLines(logtxt, logbuf)
+		Expect(logbuf.String()).To(MatchRegexp("Worker routine choria_reply_transformer exiting"))
 	})
 })

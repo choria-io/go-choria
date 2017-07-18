@@ -216,33 +216,44 @@ func (c *Choria) SSLDir() (string, error) {
 	return filepath.Join(u.HomeDir, ".puppetlabs", "etc", "puppet", "ssl"), nil
 }
 
-// SSLContext creates a SSL context loaded with our certs and ca
-func (c *Choria) SSLContext() (*http.Transport, error) {
+//TLSConfig creates a TLS configuration for use by NATS, HTTPS etc
+func (c *Choria) TLSConfig() (tlsc *tls.Config, err error) {
 	pub, _ := c.ClientPublicCert()
 	pri, _ := c.ClientPrivateKey()
 	ca, _ := c.CAPath()
 
 	cert, err := tls.LoadX509KeyPair(pub, pri)
 	if err != nil {
-		return &http.Transport{}, errors.New("Could not load certificate " + pub + " and key " + pri + ": " + err.Error())
+		err = errors.New("Could not load certificate " + pub + " and key " + pri + ": " + err.Error())
+		return
 	}
 
 	caCert, err := ioutil.ReadFile(ca)
 
 	if err != nil {
-		return &http.Transport{}, err
+		return
 	}
 
 	caCertPool := x509.NewCertPool()
 	caCertPool.AppendCertsFromPEM(caCert)
 
-	tlsConfig := &tls.Config{
+	tlsc = &tls.Config{
 		Certificates: []tls.Certificate{cert},
 		RootCAs:      caCertPool,
 		MinVersion:   tls.VersionTLS12,
 	}
 
-	tlsConfig.BuildNameToCertificate()
+	tlsc.BuildNameToCertificate()
+
+	return
+}
+
+// SSLContext creates a SSL context loaded with our certs and ca
+func (c *Choria) SSLContext() (*http.Transport, error) {
+	tlsConfig, err := c.TLSConfig()
+	if err != nil {
+		return &http.Transport{}, err
+	}
 
 	transport := &http.Transport{TLSClientConfig: tlsConfig}
 

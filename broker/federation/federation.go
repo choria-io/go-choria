@@ -1,32 +1,35 @@
 package federation
 
 import (
-	"errors"
-	"fmt"
 	"sync"
 	"time"
 
 	"github.com/choria-io/go-choria/mcollective"
+	log "github.com/sirupsen/logrus"
 )
 
-// Publisher implements a publisher to some middleware
-type connector interface {
+const (
+	Unconnected = iota
+	Federation
+	Collective
+)
+
+type transformer interface {
 	chainable
 	runable
 }
 
-// Transformer transforms a message format by adding headers or rewriting it etc
-type transformer interface {
+type connector interface {
 	chainable
 	runable
 }
 
 type FederationBroker struct {
 	Stats   *Stats
+	choria  *mcollective.Choria
 	statsMu sync.Mutex
 
-	clusterName  string
-	instanceName string
+	Name string
 
 	fedIn         connector
 	fedOut        connector
@@ -35,12 +38,15 @@ type FederationBroker struct {
 
 	requestT transformer
 	replyT   transformer
+
+	logger *log.Entry
 }
 
-func NewFederationBroker(clusterName string, instanceName string, choria *mcollective.Choria) (broker *FederationBroker, err error) {
+func NewFederationBroker(clusterName string, choria *mcollective.Choria) (broker *FederationBroker, err error) {
 	broker = &FederationBroker{
-		clusterName:  clusterName,
-		instanceName: instanceName,
+		Name:   clusterName,
+		choria: choria,
+		logger: log.WithFields(log.Fields{"cluster": clusterName, "component": "federation"}),
 		Stats: &Stats{
 			ConfigFile:      &choria.Config.ConfigFile,
 			StartTime:       time.Now(),
@@ -50,81 +56,31 @@ func NewFederationBroker(clusterName string, instanceName string, choria *mcolle
 		},
 	}
 
-	broker.initReplyTransformer()
-	broker.initRequestTransformer()
-
 	return
 }
 
 func (self *FederationBroker) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	self.fedIn = &RequestGenerator{}
-	self.fedIn.Init(self.clusterName, self.instanceName)
-
-	self.fedOut = &LoggingPublisher{}
-	self.fedOut.Init(self.clusterName, self.instanceName)
-
+	// requests from federation
+	self.fedIn, _ = NewChoriaNatsIngest(10, Federation, 10000, self, nil)
+	self.collectiveOut, _ = NewChoriaNatsEgest(10, Collective, 10000, self, nil)
+	self.requestT, _ = NewChoriaRequestTransformer(10, 1000, self, nil)
 	self.fedIn.To(self.requestT)
-	self.requestT.To(self.fedOut)
+	self.requestT.To(self.collectiveOut)
 
-	self.startRequestTransformer()
-	go self.fedOut.Run()
-	go self.fedIn.Run()
-}
-
-func (self *FederationBroker) initRequestTransformer() (err error) {
-	if self.requestT == nil {
-		self.requestT = &RequestTransformer{}
-		if err = self.requestT.Init(self.clusterName, self.instanceName); err != nil {
-			err = fmt.Errorf("RequestTransformer initialization failed: %s", err.Error())
-			return
-		}
-
-	}
-
-	if !self.requestT.Ready() {
-		err = errors.New("RequestTransformer did not become Ready after initialization")
-	}
-
-	return
-}
-
-func (self *FederationBroker) initReplyTransformer() (err error) {
-	if self.replyT == nil {
-		self.replyT = &ReplyTransformer{}
-		if err = self.replyT.Init(self.clusterName, self.instanceName); err != nil {
-			err = fmt.Errorf("ReplyTransformer initialization failed: %s", err.Error())
-			return
-		}
-
-	}
-
-	if !self.replyT.Ready() {
-		err = errors.New("ReplyTransformer did not become Ready after initialization")
-	}
-
-	return
-}
-
-func (self *FederationBroker) startRequestTransformer() (err error) {
-	if err = self.initRequestTransformer(); err != nil {
-		err = fmt.Errorf("Could not initialize: %s", err.Error())
-		return
-	}
+	// replies from collective
+	self.collectiveIn, _ = NewChoriaNatsIngest(10, Collective, 10000, self, nil)
+	self.fedOut, _ = NewChoriaNatsEgest(10, Federation, 10000, self, nil)
+	self.replyT, _ = NewChoriaReplyTransformer(10, 1000, self, nil)
+	self.collectiveIn.To(self.replyT)
+	self.replyT.To(self.fedOut)
 
 	go self.requestT.Run()
-
-	return
-}
-
-func (self *FederationBroker) startReplyTransformer() (err error) {
-	if err = self.initReplyTransformer(); err != nil {
-		err = fmt.Errorf("Could not initialize: %s", err.Error())
-		return
-	}
-
 	go self.replyT.Run()
-
-	return
+	go self.collectiveOut.Run()
+	go self.collectiveIn.Run()
+	go self.requestT.Run()
+	go self.fedOut.Run()
+	self.fedIn.Run()
 }

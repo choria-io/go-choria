@@ -53,9 +53,12 @@ func New(path string) (*Choria, error) {
 
 	c.Config = config
 
+	if err = c.SetupLogging(false); err != nil {
+		return &c, fmt.Errorf("Could not set up logging: %s", err.Error())
+	}
+
 	if errors, ok := c.CheckSSLSetup(); !ok {
-		err = fmt.Errorf("SSL setup is not valid, %d errors encountered: %s", len(errors), strings.Join(errors, ", "))
-		return &c, err
+		return &c, fmt.Errorf("SSL setup is not valid, %d errors encountered: %s", len(errors), strings.Join(errors, ", "))
 	}
 
 	return &c, nil
@@ -118,8 +121,47 @@ func (c *Choria) FederationMiddlewareServers() (servers []Server, err error) {
 		}
 	}
 
-	for _, s := range servers {
+	for i, s := range servers {
 		s.Scheme = "nats"
+		servers[i] = s
+	}
+
+	return
+}
+
+// MiddlewareServers determines the correct Middleware Servers
+//
+// It does this by:
+//
+//    * looking for choria.federation_middleware_hosts configuration
+//	  * Doing SRV lookups of _mcollective-server._tcp and __x-puppet-mcollective._tcp
+//    * Defaulting to puppet:4222
+func (c *Choria) MiddlewareServers() (servers []Server, err error) {
+	configured := c.Config.Choria.MiddlewareHosts
+	if len(configured) > 0 {
+		s, err := StringHostsToServers(configured, "nats")
+		if err != nil {
+			return servers, fmt.Errorf("Could not parse configured Middleware: %s", err.Error())
+		}
+
+		for _, server := range s {
+			servers = append(servers, server)
+		}
+	}
+
+	if len(servers) == 0 {
+		if servers, err = c.QuerySrvRecords([]string{"_mcollective-server._tcp", "_x-puppet-mcollective._tcp"}); err != nil {
+			log.Warnf("Could not resolve Middleware Server SRV records: %s", err.Error())
+		}
+	}
+
+	if len(servers) == 0 {
+		servers = []Server{Server{Host: "puppet", Port: 4222}}
+	}
+
+	for i, s := range servers {
+		s.Scheme = "nats"
+		servers[i] = s
 	}
 
 	return
@@ -204,9 +246,10 @@ func (c *Choria) QuerySrvRecords(records []string) ([]Server, error) {
 		record := q + "." + domain
 		log.Debugf("Attempting SRV lookup for %s", record)
 
-		cname, addrs, err := net.LookupSRV(record, "", "")
+		cname, addrs, err := net.LookupSRV("", "", record)
 		if err != nil {
-			return servers, err
+			log.Debugf("Failed to resolve %s: %s", record, err.Error())
+			continue
 		}
 
 		log.Debugf("Found %d SRV records for %s", len(addrs), cname)
@@ -255,8 +298,9 @@ func (c *Choria) NetworkBrokerPeers() (servers []Server, err error) {
 		}
 	}
 
-	for _, s := range servers {
+	for i, s := range servers {
 		s.Scheme = "nats"
+		servers[i] = s
 	}
 
 	return

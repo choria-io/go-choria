@@ -1,7 +1,8 @@
 package federation
 
 import (
-	"io/ioutil"
+	"bufio"
+	"bytes"
 
 	"github.com/choria-io/go-choria/mcollective"
 	"github.com/choria-io/go-choria/protocol"
@@ -16,13 +17,16 @@ var _ = Describe("RequestTransformer", func() {
 		choria      *mcollective.Choria
 		request     protocol.Request
 		srequest    protocol.SecureRequest
-		transformer RequestTransformer
+		transformer *pooledWorker
 		in          chainmessage
 		err         error
+		logtxt      *bufio.Writer
+		logbuf      *bytes.Buffer
+		logger      *log.Entry
 	)
 
 	BeforeEach(func() {
-		log.SetOutput(ioutil.Discard)
+		logger, logtxt, logbuf = newDiscardLogger()
 
 		choria, err = mcollective.New("testdata/federation.cfg")
 		Expect(err).ToNot(HaveOccurred())
@@ -38,9 +42,17 @@ var _ = Describe("RequestTransformer", func() {
 		in.Message, err = choria.NewTransportForSecureRequest(srequest)
 		Expect(err).ToNot(HaveOccurred())
 
-		err = transformer.Init("testing", "1")
+		broker, _ := NewFederationBroker("testing", choria)
+
+		transformer, err = NewChoriaRequestTransformer(1, 10, broker, logger)
 		Expect(err).ToNot(HaveOccurred())
-	})
+
+		go transformer.Run()
+	}, 10)
+
+	AfterEach(func() {
+		transformer.Quit()
+	}, 10)
 
 	It("should correctly transform a message", func() {
 		tr, err := choria.NewTransportForSecureRequest(srequest)
@@ -53,10 +65,10 @@ var _ = Describe("RequestTransformer", func() {
 		in.Message = tr
 		in.RequestID = request.RequestID()
 
-		out, err := transformer.process(in, "tester:1")
-		Expect(err).ToNot(HaveOccurred())
+		transformer.Input() <- in
+		out := <-transformer.Output()
 
-		Expect(out.Message.ReplyTo()).To(Equal("federation.reply.target"))
+		Expect(out.Message.ReplyTo()).To(Equal("choria.federation.testing.collective"))
 
 		id, _ := out.Message.FederationRequestID()
 		Expect(id).To(Equal(request.RequestID()))
@@ -70,24 +82,34 @@ var _ = Describe("RequestTransformer", func() {
 	})
 
 	It("should fail for unfederated messages", func() {
-		_, err = transformer.process(in, "tester:1")
+		transformer.Input() <- in
+		waitForLogLines(logtxt, logbuf)
 
-		Expect(err).To(MatchError("tester:1 received a message from rip.mcollective that is not federated"))
+		Expect(logbuf.String()).To(MatchRegexp("Received a message from rip.mcollective that is not federated"))
 	})
 
 	It("Should fail for messages with no targets", func() {
 		in.Message.SetFederationRequestID("80a1ac20463745c0b12cfe6e3db61dff")
-		_, err = transformer.process(in, "tester:1")
+		transformer.Input() <- in
 
-		Expect(err).To(MatchError("tester:1 received a message 80a1ac20463745c0b12cfe6e3db61dff from rip.mcollective that does not have any targets"))
+		waitForLogLines(logtxt, logbuf)
+
+		Expect(logbuf.String()).To(MatchRegexp("Received a message 80a1ac20463745c0b12cfe6e3db61dff from rip.mcollective that does not have any targets"))
 	})
 
 	It("Should fail for messages with no reply-to", func() {
 		in.Message.SetFederationRequestID("80a1ac20463745c0b12cfe6e3db61dff")
 		in.Message.SetFederationTargets([]string{"reply.1"})
 
-		_, err = transformer.process(in, "tester:1")
+		transformer.Input() <- in
+		waitForLogLines(logtxt, logbuf)
 
-		Expect(err).To(MatchError("tester:1 received a message 80a1ac20463745c0b12cfe6e3db61dff with no reply-to set"))
+		Expect(logbuf.String()).To(MatchRegexp("Received a message 80a1ac20463745c0b12cfe6e3db61dff with no reply-to set"))
+	})
+
+	It("Should support Quit", func() {
+		transformer.Quit()
+		waitForLogLines(logtxt, logbuf)
+		Expect(logbuf.String()).To(MatchRegexp("Worker routine choria_request_transformer exiting"))
 	})
 })

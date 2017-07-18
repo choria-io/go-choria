@@ -37,16 +37,22 @@
                     "description": "Tracks nodes this message travelled through",
                     "items": [
                         {
-                            "type":"string",
-                            "description": "The incoming end point - typically a NATS server name. Blank string if this is where a message starts like a request"
-                        },
-                        {
-                            "type":"string",
-                            "description": "The processing node - the identity of a server, client or broker processing this message"
-                        },
-                        {
-                            "type":"string",
-                            "description": "The outgoing end point - typically a NATS server name. Blank string if this is where the message ends like a client receiving a reply"
+                            "type":"array",
+                            "description": "Triplet of from, via and to",
+                            "items": [
+                                {
+                                    "type":"string",
+                                    "description": "The incoming end point - typically a NATS server name. Blank string if this is where a message starts like a request"
+                                },
+                                {
+                                    "type":"string",
+                                    "description": "The processing node - the identity of a server, client or broker processing this message"
+                                },
+                                {
+                                    "type":"string",
+                                    "description": "The outgoing end point - typically a NATS server name. Blank string if this is where the message ends like a client receiving a reply"
+                                }                                
+                            ]
                         }
                     ]
                 },
