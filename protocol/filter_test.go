@@ -9,7 +9,7 @@ import (
 
 func TestProtocol(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Federation Suite")
+	RunSpecs(t, "Protocol")
 }
 
 var _ = Describe("Filter", func() {

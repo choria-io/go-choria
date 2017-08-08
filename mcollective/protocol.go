@@ -97,6 +97,18 @@ func (c *Choria) NewReplyFromSecureReply(sr protocol.SecureReply) (reply protoco
 	return
 }
 
+// NewRequestFromSecureReply creates a new Reply from the JSON payload of SecureReply, the version will match what is in the JSON payload
+func (c *Choria) NewRequestFromSecureRequest(sr protocol.SecureRequest) (request protocol.Request, err error) {
+	switch sr.Version() {
+	case protocol.SecureRequestV1:
+		request, err = v1.NewRequestFromSecureRequest(sr)
+	default:
+		err = fmt.Errorf("Do not know how to create a Reply version %s", sr.Version())
+	}
+
+	return
+}
+
 // NewSecureReply creates a new SecureReply with the given Reply message as payload
 func (c *Choria) NewSecureReply(reply protocol.Reply) (secure protocol.SecureReply, err error) {
 	switch reply.Version() {
@@ -147,12 +159,12 @@ func (c *Choria) NewSecureRequest(request protocol.Request) (secure protocol.Sec
 }
 
 // NewSecureRequestFromTransport creates a new SecureRequest from the JSON payload of TransportMessage, the version SecureRequest will be the same as the TransportMessage
-func (c *Choria) NewSecureRequestFromTransport(message protocol.TransportMessage) (secure protocol.SecureRequest, err error) {
+func (c *Choria) NewSecureRequestFromTransport(message protocol.TransportMessage, skipvalidate bool) (secure protocol.SecureRequest, err error) {
 	switch message.Version() {
-	case protocol.SecureRequestV1:
-		secure, err = v1.NewSecureRequestFromTransport(message)
+	case protocol.TransportV1:
+		secure, err = v1.NewSecureRequestFromTransport(message, skipvalidate)
 	default:
-		err = fmt.Errorf("Do not know how to create a SecureReply version %s", message.Version())
+		err = fmt.Errorf("Do not know how to create a SecureReply from a TransportMessage version %s", message.Version())
 	}
 
 	return
@@ -190,7 +202,7 @@ func (c *Choria) NewTransportMessage(version string) (message protocol.Transport
 	case protocol.TransportV1:
 		message, err = v1.NewTransportMessage(c.Certname())
 	default:
-		err = fmt.Errorf("Do not know how to create a Transport version %s", version)
+		err = fmt.Errorf("Do not know how to create a Transport version '%s'", version)
 	}
 
 	return
@@ -204,7 +216,7 @@ func (c *Choria) NewTransportFromJSON(data string) (message protocol.TransportMe
 	case protocol.TransportV1:
 		message, err = v1.NewTransportFromJSON(data)
 	default:
-		err = fmt.Errorf("Do not know how to create a Transport version %s", version)
+		err = fmt.Errorf("Do not know how to create a TransportMessage from an expected JSON format message with content: %s", data)
 	}
 
 	return

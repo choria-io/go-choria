@@ -49,10 +49,6 @@ func ParseCLI() (err error) {
 		return fmt.Errorf("Could not initialize Choria: %s", err.Error())
 	}
 
-	if err = choria.SetupLogging(debug); err != nil {
-		return fmt.Errorf("Could not set up logging: %s", err.Error())
-	}
-
 	return
 }
 

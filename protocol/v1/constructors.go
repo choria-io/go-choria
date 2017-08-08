@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/protocol"
+	log "github.com/sirupsen/logrus"
 )
 
 // NewRequest creates a choria:request:1
@@ -71,7 +72,7 @@ func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err e
 
 	err = r.IsValidJSON(sr.Message())
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the Securereply is not a valid Reply message: %s", err.Error())
+		err = fmt.Errorf("The JSON body from the SecureReply is not a valid Reply message: %s", err.Error())
 		return
 	}
 
@@ -82,6 +83,36 @@ func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err e
 	}
 
 	rep = r
+
+	return
+}
+
+// NewRequestFromSecureRequest creates a choria::request:1 based on the data contained in a SecureRequest
+func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Request, err error) {
+	if sr.Version() != protocol.SecureRequestV1 {
+		err = fmt.Errorf("Cannot create a version 1 SecureRequest from a %s SecureRequest", sr.Version())
+		return
+	}
+
+	r := &request{
+		Protocol: protocol.RequestV1,
+		Envelope: &requestEnvelope{},
+	}
+
+	log.Debug(sr.Message())
+	err = r.IsValidJSON(sr.Message())
+	if err != nil {
+		err = fmt.Errorf("The JSON body from the SecureRequest is not a valid Request message: %s", err.Error())
+		return
+	}
+
+	err = json.Unmarshal([]byte(sr.Message()), r)
+	if err != nil {
+		err = fmt.Errorf("Could not parse JSON data from Secure Request: %s", err.Error())
+		return
+	}
+
+	req = r
 
 	return
 }
@@ -155,7 +186,7 @@ func NewSecureRequest(request protocol.Request, publicCert string, privateCert s
 }
 
 // NewSecureRequestFromTransport creates a new choria:secure:request:1 from the data contained in a Transport message
-func NewSecureRequestFromTransport(message protocol.TransportMessage) (secure protocol.SecureRequest, err error) {
+func NewSecureRequestFromTransport(message protocol.TransportMessage, skipvalidate bool) (secure protocol.SecureRequest, err error) {
 	secure = &secureRequest{}
 
 	data, err := message.Message()
@@ -174,8 +205,10 @@ func NewSecureRequestFromTransport(message protocol.TransportMessage) (secure pr
 		return
 	}
 
-	if !secure.Valid() {
-		err = fmt.Errorf("SecureRequest message created from the Transport Message is not valid")
+	if !skipvalidate {
+		if !secure.Valid() {
+			err = fmt.Errorf("SecureRequest message created from the Transport Message is not valid")
+		}
 	}
 
 	return

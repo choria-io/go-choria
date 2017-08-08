@@ -58,7 +58,7 @@ func (r *brokerRunCommand) Run() (err error) {
 	}
 
 	if federation {
-		log.Info("Starting Federation Broker")
+		log.Infof("Starting Federation Broker on cluster %s", choria.Config.Choria.FederationCluster)
 		if err = r.runFederation(wg); err != nil {
 			return fmt.Errorf("Starting the federation broker failed: %s", err.Error())
 		}
@@ -74,7 +74,7 @@ func (r *brokerRunCommand) Run() (err error) {
 }
 
 func (r *brokerRunCommand) runFederation(wg *sync.WaitGroup) (err error) {
-	r.federation, err = federation.NewFederationBroker(choria.Config.Choria.FederationCluster, "1", choria)
+	r.federation, err = federation.NewFederationBroker(choria.Config.Choria.FederationCluster, choria)
 	if err != nil {
 		return fmt.Errorf("Could not set up Choria Federation Broker: %s", err.Error())
 	}
