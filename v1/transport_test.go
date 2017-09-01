@@ -11,7 +11,7 @@ var _ = Describe("TransportMessage", func() {
 	It("Should support reply data", func() {
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		request.SetMessage(`{"message":1}`)
-		reply, _ := NewReply(request)
+		reply, _ := NewReply(request, "testing")
 		sreply, _ := NewSecureReply(reply)
 		treply, _ := NewTransportMessage("rip.mcollective")
 		treply.SetReplyData(sreply)
