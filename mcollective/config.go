@@ -109,6 +109,12 @@ type MCOConfig struct {
 	setOptions []string
 
 	Choria *ChoriaPluginConfig
+
+	// options that are not user configurable via config files but can be
+	// used by things like the emulator to set up a TLS free setup
+	DisableTLS       bool
+	DisableTLSVerify bool
+	OverrideCertname string
 }
 
 // HasOption determines if a specific option was set from a config key.

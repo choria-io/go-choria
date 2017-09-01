@@ -32,9 +32,12 @@ func NewServer(c *mcollective.Choria, debug bool) (s *Server, err error) {
 		s.opts.Debug = true
 	}
 
-	err = s.setupTLS()
-	if err != nil {
-		return s, fmt.Errorf("Could not setup TLS: %s", err.Error())
+	if c.Config.DisableTLS {
+		log.Warn("Disabling TLS on the NATS broker")
+		err = s.setupTLS()
+		if err != nil {
+			return s, fmt.Errorf("Could not setup TLS: %s", err.Error())
+		}
 	}
 
 	err = s.setupCluster()

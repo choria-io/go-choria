@@ -21,7 +21,7 @@ var _ = Describe("SecureReply", func() {
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		request.SetMessage(`{"test":1}`)
 
-		reply, err := NewReply(request)
+		reply, err := NewReply(request, "testing")
 		Expect(err).ToNot(HaveOccurred())
 
 		rj, err := reply.JSON()

@@ -80,6 +80,10 @@ func (c *Choria) SignString(str []byte) (signature []byte, err error) {
 
 // Certname determines the choria certname
 func (c *Choria) Certname() string {
+	if c.Config.OverrideCertname != "" {
+		return c.Config.OverrideCertname
+	}
+
 	if certname, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
 		return certname
 	}
@@ -241,6 +245,10 @@ func (c *Choria) TLSConfig() (tlsc *tls.Config, err error) {
 		Certificates: []tls.Certificate{cert},
 		RootCAs:      caCertPool,
 		MinVersion:   tls.VersionTLS12,
+	}
+
+	if c.Config.DisableTLSVerify {
+		tlsc.InsecureSkipVerify = true
 	}
 
 	tlsc.BuildNameToCertificate()

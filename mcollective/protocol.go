@@ -15,6 +15,51 @@ func (c *Choria) NewMessage(payload string, agent string, collective string, msg
 	return
 }
 
+func (c *Choria) NewTransportFromMessage(msg *Message, request protocol.Request) (protocol.TransportMessage, error) {
+	reply, err := c.NewReply(request)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+	}
+
+	reply.SetMessage(msg.Payload)
+
+	sreply, err := c.NewSecureReply(reply)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+	}
+
+	transport, err := c.NewTransportForSecureReply(sreply)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+	}
+
+	return transport, nil
+}
+
+func (c *Choria) NewMessageFromTransportJSON(payload []byte) (msg *Message, err error) {
+	transport, err := c.NewTransportFromJSON(string(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	srequest, err := c.NewSecureRequestFromTransport(transport, false)
+	if err != nil {
+		return nil, err
+	}
+
+	request, err := c.NewRequestFromSecureRequest(srequest)
+	if err != nil {
+		return nil, err
+	}
+
+	msg, err = NewMessageFromRequest(request, transport.ReplyTo(), c)
+	if err != nil {
+		return nil, err
+	}
+
+	return
+}
+
 // NewRequest creates a new Request complying with a specific protocol version like protocol.RequestV1
 func (c *Choria) NewRequest(version string, agent string, senderid string, callerid string, ttl int, requestid string, collective string) (request protocol.Request, err error) {
 	switch version {
@@ -54,7 +99,7 @@ func (c *Choria) NewRequestFromMessage(version string, msg *Message) (req protoc
 func (c *Choria) NewReply(request protocol.Request) (reply protocol.Reply, err error) {
 	switch request.Version() {
 	case protocol.RequestV1:
-		reply, err = v1.NewReply(request)
+		reply, err = v1.NewReply(request, c.Certname())
 	default:
 		err = fmt.Errorf("Do not know how to create a Reply version %s", request.Version())
 	}

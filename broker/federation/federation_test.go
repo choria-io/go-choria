@@ -53,6 +53,10 @@ type stubConnection struct {
 	mu          *sync.Mutex
 }
 
+func (s *stubConnection) Receive() *mcollective.ConnectorMessage {
+	return nil
+}
+
 func (s *stubConnection) PublishToQueueSub(name string, msg *mcollective.ConnectorMessage) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
