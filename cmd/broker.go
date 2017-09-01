@@ -16,6 +16,9 @@ type brokerCommand struct {
 type brokerRunCommand struct {
 	command
 
+	disableTls       bool
+	disableTlsVerify bool
+
 	server     *network.Server
 	federation *federation.FederationBroker
 }
@@ -35,6 +38,8 @@ func (b *brokerCommand) Run() (err error) {
 func (r *brokerRunCommand) Setup() (err error) {
 	if broker, ok := cmdWithFullCommand("broker"); ok {
 		r.cmd = broker.Cmd().Command("run", "Runs a Choria Network Broker instance").Default()
+		r.cmd.Flag("disable-tls", "Disables TLS").Hidden().Default("false").BoolVar(&r.disableTls)
+		r.cmd.Flag("disable-ssl-verification", "Disables SSL Verification").Hidden().Default("false").BoolVar(&r.disableTlsVerify)
 	}
 
 	return
@@ -48,6 +53,16 @@ func (r *brokerRunCommand) Run() (err error) {
 
 	if !net && !discovery && !federation {
 		return fmt.Errorf("All broker features are disabled")
+	}
+
+	if r.disableTls {
+		choria.Config.DisableTLS = true
+		log.Warn("Running with TLS disabled, not compatible with production use Choria.")
+	}
+
+	if r.disableTlsVerify {
+		choria.Config.DisableTLSVerify = true
+		log.Warn("Running with TLS Verification disabled, not compatible with production use Choria.")
 	}
 
 	if net {
