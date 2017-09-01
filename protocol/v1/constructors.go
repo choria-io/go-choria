@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/protocol"
-	log "github.com/sirupsen/logrus"
 )
 
 // NewRequest creates a choria:request:1
@@ -31,7 +30,7 @@ func NewRequest(agent string, senderid string, callerid string, ttl int, request
 }
 
 // NewReply creates a choria:reply:1 based on a previous Request
-func NewReply(request protocol.Request) (rep protocol.Reply, err error) {
+func NewReply(request protocol.Request, certname string) (rep protocol.Reply, err error) {
 	if request.Version() != protocol.RequestV1 {
 		err = fmt.Errorf("Cannot create a version 1 Reply from a %s request", request.Version())
 		return
@@ -41,7 +40,7 @@ func NewReply(request protocol.Request) (rep protocol.Reply, err error) {
 		Protocol: protocol.ReplyV1,
 		Envelope: &replyEnvelope{
 			RequestID: request.RequestID(),
-			SenderID:  request.SenderID(),
+			SenderID:  certname,
 			Agent:     request.Agent(),
 			Time:      time.Now().UTC().Unix(),
 		},
@@ -99,7 +98,6 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Reques
 		Envelope: &requestEnvelope{},
 	}
 
-	log.Debug(sr.Message())
 	err = r.IsValidJSON(sr.Message())
 	if err != nil {
 		err = fmt.Errorf("The JSON body from the SecureRequest is not a valid Request message: %s", err.Error())

@@ -26,7 +26,7 @@ type transportHeaders struct {
 }
 
 type federationTransportHeader struct {
-	RequestID string   `json:"req",omitempty`
+	RequestID string   `json:"req,omitempty"`
 	ReplyTo   string   `json:"reply-to,omitempty"`
 	Targets   []string `json:"target,omitempty"`
 }

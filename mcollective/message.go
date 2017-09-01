@@ -28,16 +28,25 @@ type Message struct {
 }
 
 // NewMessageFromRequest constructs a Message based on a Request
-func NewMessageFromRequest(req protocol.Request, choria *Choria) (msg *Message, err error) {
-	msg, err = NewMessage("", req.Agent(), req.Collective(), "request", nil, choria)
+func NewMessageFromRequest(req protocol.Request, replyto string, choria *Choria) (msg *Message, err error) {
+	reqm, err := NewMessage(req.Message(), req.Agent(), req.Collective(), "request", nil, choria)
 	if err != nil {
-		return
+		return msg, err
+	}
+
+	if replyto != "" {
+		reqm.replyTo = replyto
+	}
+
+	msg, err = NewMessage(req.Message(), req.Agent(), req.Collective(), "reply", reqm, choria)
+	if err != nil {
+		return msg, err
 	}
 
 	msg.RequestID = req.RequestID()
 	msg.TTL = req.TTL()
 	msg.Filter, _ = req.Filter()
-	msg.SenderID = req.SenderID()
+	msg.SenderID = choria.Config.Identity
 	msg.SetBase64Payload(req.Message())
 
 	return
@@ -70,6 +79,7 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 	} else {
 		msg.Request = request
 		msg.Agent = request.Agent
+		msg.replyTo = request.ReplyTo()
 		msg.SetType("reply")
 		err = msg.SetCollective(request.collective)
 		if err != nil {
@@ -188,6 +198,11 @@ func (m *Message) SetType(msgType string) (err error) {
 }
 
 // Type retrieves the message type
-func (m Message) Type() string {
+func (m *Message) Type() string {
 	return m.msgType
+}
+
+// String creates a string representation of the message for logs etc
+func (m *Message) String() string {
+	return fmt.Sprintf("%s from %s@%s for agent %s", m.RequestID, m.CallerID, m.SenderID, m.Agent)
 }

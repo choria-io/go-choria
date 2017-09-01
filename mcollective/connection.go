@@ -1,10 +1,12 @@
 package mcollective
 
 import (
+	"crypto/tls"
 	"fmt"
 	"net/url"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/nats-io/nats"
 	log "github.com/sirupsen/logrus"
@@ -22,6 +24,7 @@ type Connector interface {
 	Unsubscribe(name string) error
 
 	PublishRaw(target string, data []byte) error
+	Receive() *ConnectorMessage
 
 	ConnectedServer() string
 	SetServers(func() ([]Server, error))
@@ -214,10 +217,14 @@ func (self *Connection) Connect() (err error) {
 	self.conMu.Lock()
 	defer self.conMu.Unlock()
 
-	tlsc, err := self.choria.TLSConfig()
-	if err != nil {
-		err = fmt.Errorf("Could not create TLS Config: %s", err.Error())
-		return
+	var tlsc *tls.Config
+
+	if !self.choria.Config.DisableTLS {
+		tlsc, err = self.choria.TLSConfig()
+		if err != nil {
+			err = fmt.Errorf("Could not create TLS Config: %s", err.Error())
+			return err
+		}
 	}
 
 	urls := []string{}
@@ -238,27 +245,32 @@ func (self *Connection) Connect() (err error) {
 		urls = append(urls, url.String())
 	}
 
-	for {
-		self.nats, err = nats.Connect(strings.Join(urls, ", "),
-			nats.Secure(tlsc),
-			nats.MaxReconnects(-1),
-			nats.Name(self.name),
-			nats.DisconnectHandler(func(nc *nats.Conn) {
-				self.logger.Warnf("NATS client connection got disconnected: %s", nc.LastError())
-			}),
-			nats.ReconnectHandler(func(nc *nats.Conn) {
-				self.logger.Warnf("NATS client reconnected after a previous disconnection, connected to %s", nc.ConnectedUrl())
-			}),
-			nats.ClosedHandler(func(nc *nats.Conn) {
-				self.logger.Warnf("NATS client connection closed: %s", nc.LastError())
-			}),
-			nats.ErrorHandler(func(nc *nats.Conn, sub *nats.Subscription, err error) {
-				self.logger.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrl(), err.Error())
-			}),
-		)
+	options := []nats.Option{
+		nats.MaxReconnects(-1),
+		nats.Name(self.name),
+		nats.DisconnectHandler(func(nc *nats.Conn) {
+			self.logger.Warnf("NATS client connection got disconnected: %s", nc.LastError())
+		}),
+		nats.ReconnectHandler(func(nc *nats.Conn) {
+			self.logger.Warnf("NATS client reconnected after a previous disconnection, connected to %s", nc.ConnectedUrl())
+		}),
+		nats.ClosedHandler(func(nc *nats.Conn) {
+			self.logger.Warnf("NATS client connection closed: %s", nc.LastError())
+		}),
+		nats.ErrorHandler(func(nc *nats.Conn, sub *nats.Subscription, err error) {
+			self.logger.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrl(), err.Error())
+		}),
+	}
 
+	if !self.choria.Config.DisableTLS {
+		options = append(options, nats.Secure(tlsc))
+	}
+
+	for {
+		self.nats, err = nats.Connect(strings.Join(urls, ", "), options...)
 		if err != nil {
 			self.logger.Warnf("Initial connection to the NATS broker cluster failed: %s", err.Error())
+			time.Sleep(time.Second)
 			continue
 		}
 
