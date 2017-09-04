@@ -57,8 +57,10 @@ func New(path string) (*Choria, error) {
 		return &c, fmt.Errorf("Could not set up logging: %s", err.Error())
 	}
 
-	if errors, ok := c.CheckSSLSetup(); !ok {
-		return &c, fmt.Errorf("SSL setup is not valid, %d errors encountered: %s", len(errors), strings.Join(errors, ", "))
+	if config.DisableTLS {
+		if errors, ok := c.CheckSSLSetup(); !ok {
+			return &c, fmt.Errorf("SSL setup is not valid, %d errors encountered: %s", len(errors), strings.Join(errors, ", "))
+		}
 	}
 
 	return &c, nil
