@@ -15,8 +15,24 @@ const (
 // Additional to these the package for a specific version must also provide these constructors
 // with signature matching those in v1/constructors.go these are in use by mcollective/protocol.gos
 
+// Federable is any kind of message that can carry federation headers
+type Federable interface {
+	SetFederationRequestID(id string)
+	SetFederationReplyTo(reply string)
+	SetFederationTargets(targets []string)
+	SetUnfederated()
+
+	FederationRequestID() (string, bool)
+	FederationReplyTo() (string, bool)
+	FederationTargets() ([]string, bool)
+
+	IsFederated() bool
+}
+
 // Request is a core MCollective Request containing JSON serialized agent payload
 type Request interface {
+	Federable
+
 	SetMessage(message string)
 	SetCallerID(id string)
 	SetCollective(collective string)
@@ -42,6 +58,8 @@ type Request interface {
 
 // Reply is a core MCollective Reply containing JSON serialized agent payload
 type Reply interface {
+	Federable
+
 	SetMessage(message string)
 
 	Message() string
@@ -87,26 +105,20 @@ type SecureReply interface {
 // names and such, it's also Federation aware and can track reply to targets,
 // who saw it etc
 type TransportMessage interface {
+	Federable
+
 	SetReplyData(reply SecureReply) error
 	SetRequestData(request SecureRequest) error
 
 	SetReplyTo(reply string)
 	SetSender(sender string)
 
-	SetUnfederated()
-	SetFederationRequestID(id string)
-	SetFederationReplyTo(reply string)
-	SetFederationTargets(targets []string)
 	RecordNetworkHop(in string, processor string, out string)
 
 	ReplyTo() string
 	SenderID() string
 	SeenBy() [][3]string
 	Message() (string, error)
-
-	FederationRequestID() (string, bool)
-	FederationReplyTo() (string, bool)
-	FederationTargets() ([]string, bool)
 
 	IsValidJSON(data string) error
 	JSON() (string, error)

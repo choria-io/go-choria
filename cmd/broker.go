@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"sync"
 
 	"github.com/choria-io/go-choria/broker/federation"
@@ -18,6 +20,7 @@ type brokerRunCommand struct {
 
 	disableTls       bool
 	disableTlsVerify bool
+	pidFile          string
 
 	server     *network.Server
 	federation *federation.FederationBroker
@@ -40,6 +43,7 @@ func (r *brokerRunCommand) Setup() (err error) {
 		r.cmd = broker.Cmd().Command("run", "Runs a Choria Network Broker instance").Default()
 		r.cmd.Flag("disable-tls", "Disables TLS").Hidden().Default("false").BoolVar(&r.disableTls)
 		r.cmd.Flag("disable-ssl-verification", "Disables SSL Verification").Hidden().Default("false").BoolVar(&r.disableTlsVerify)
+		r.cmd.Flag("pid", "Write running PID to a file").StringVar(&r.pidFile)
 	}
 
 	return
@@ -53,6 +57,13 @@ func (r *brokerRunCommand) Run() (err error) {
 
 	if !net && !discovery && !federation {
 		return fmt.Errorf("All broker features are disabled")
+	}
+
+	if r.pidFile != "" {
+		err := ioutil.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)
+		if err != nil {
+			return fmt.Errorf("Could not write PID: %s", err.Error())
+		}
 	}
 
 	if r.disableTls {

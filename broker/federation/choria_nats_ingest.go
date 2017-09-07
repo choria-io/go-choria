@@ -8,7 +8,7 @@ import (
 )
 
 func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *FederationBroker, logger *log.Entry) (*pooledWorker, error) {
-	worker, err := PooledWorkerFactory("choria_nats_egest", workers, mode, capacity, broker, logger, func(self *pooledWorker, i int, logger *log.Entry) {
+	worker, err := PooledWorkerFactory("choria_nats_ingest", workers, mode, capacity, broker, logger, func(self *pooledWorker, i int, logger *log.Entry) {
 		defer self.wg.Done()
 
 		nc, err := self.connection.NewConnector(self.servers, self.Name(), logger)

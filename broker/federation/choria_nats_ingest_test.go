@@ -110,7 +110,7 @@ var _ = Describe("Choria NATS Ingest", func() {
 
 		Expect(out.Message).To(Equal(transport))
 		Expect(out.RequestID).To(Equal(request.RequestID()))
-		Expect(out.Seen).To(Equal([]string{"nats://stub:4222", "choria_nats_egest"}))
+		Expect(out.Seen).To(Equal([]string{"nats://stub:4222", "choria_nats_ingest"}))
 	}, 1)
 
 })

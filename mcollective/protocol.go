@@ -52,6 +52,8 @@ func (c *Choria) NewMessageFromTransportJSON(payload []byte) (msg *Message, err 
 		return nil, err
 	}
 
+	protocol.CopyFederationData(transport, request)
+
 	msg, err = NewMessageFromRequest(request, transport.ReplyTo(), c)
 	if err != nil {
 		return nil, err

@@ -60,6 +60,8 @@ func NewFederationBroker(clusterName string, choria *mcollective.Choria) (broker
 }
 
 func (self *FederationBroker) Start(wg *sync.WaitGroup) {
+	self.logger.Infof("Starting Federation Broker %s", self.Name)
+	
 	defer wg.Done()
 
 	// requests from federation
