@@ -24,7 +24,8 @@ type Message struct {
 	replyTo           string
 	collective        string
 	msgType           string // message, request, direct_request, reply
-	choria            *Choria
+
+	choria *Choria
 }
 
 // NewMessageFromRequest constructs a Message based on a Request
@@ -96,7 +97,7 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 }
 
 // Validate tests the Message and makes sure its settings are sane
-func (m Message) Validate() (bool, error) {
+func (m *Message) Validate() (bool, error) {
 	if m.Agent == "" {
 		return false, fmt.Errorf("Agent has not been set")
 	}
