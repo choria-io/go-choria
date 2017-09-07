@@ -19,14 +19,63 @@ type request struct {
 }
 
 type requestEnvelope struct {
-	RequestID  string           `json:"requestid"`
-	SenderID   string           `json:"senderid"`
-	CallerID   string           `json:"callerid"`
-	Collective string           `json:"collective"`
-	Agent      string           `json:"agent"`
-	TTL        int              `json:"ttl"`
-	Time       int64            `json:"time"`
-	Filter     *protocol.Filter `json:"filter"`
+	RequestID  string                     `json:"requestid"`
+	SenderID   string                     `json:"senderid"`
+	CallerID   string                     `json:"callerid"`
+	Collective string                     `json:"collective"`
+	Agent      string                     `json:"agent"`
+	TTL        int                        `json:"ttl"`
+	Time       int64                      `json:"time"`
+	Filter     *protocol.Filter           `json:"filter"`
+	Federation *federationTransportHeader `json:"federation,omitempty"`
+}
+
+// FederationTargets retrieves the list of targets this message is destined for
+func (m *request) FederationTargets() (targets []string, federated bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.Envelope.Federation == nil {
+		federated = false
+		return
+	}
+
+	federated = true
+	targets = m.Envelope.Federation.Targets
+
+	return
+}
+
+// FederationReply retrieves the reply to string set by the federation broker
+func (m *request) FederationReplyTo() (replyto string, federated bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.Envelope.Federation == nil {
+		federated = false
+		return
+	}
+
+	federated = true
+	replyto = m.Envelope.Federation.ReplyTo
+
+	return
+}
+
+// FederationRequestID retrieves the federation specific requestid
+func (m *request) FederationRequestID() (id string, federated bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.Envelope.Federation == nil {
+		federated = false
+		return
+	}
+
+	federated = true
+	id = m.Envelope.Federation.RequestID
+
+	return
 }
 
 // SetRequestID sets the request ID for this message
@@ -37,6 +86,57 @@ func (r *request) SetRequestID(id string) {
 	r.Envelope.RequestID = id
 
 	return
+}
+
+// SetFederationTargets sets the list of hosts this message should go to.
+//
+// Federation brokers will duplicate the message and send one for each target
+func (m *request) SetFederationTargets(targets []string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.Envelope.Federation == nil {
+		m.Envelope.Federation = &federationTransportHeader{}
+	}
+
+	m.Envelope.Federation.Targets = targets
+}
+
+// SetFederationReplyTo stores the original reply-to destination in the federation headers
+func (m *request) SetFederationReplyTo(reply string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.Envelope.Federation == nil {
+		m.Envelope.Federation = &federationTransportHeader{}
+	}
+
+	m.Envelope.Federation.ReplyTo = reply
+}
+
+// SetFederationRequestID sets the request ID for federation purposes
+func (m *request) SetFederationRequestID(id string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.Envelope.Federation == nil {
+		m.Envelope.Federation = &federationTransportHeader{}
+	}
+
+	m.Envelope.Federation.RequestID = id
+}
+
+// IsFederated determines if this message is federated
+func (m *request) IsFederated() bool {
+	return m.Envelope.Federation != nil
+}
+
+// SetUnfederated removes any federation information from the message
+func (m *request) SetUnfederated() {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.Envelope.Federation = nil
 }
 
 // SetMessage set the message body thats contained in this request.  It should be JSON encoded text

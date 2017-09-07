@@ -44,6 +44,11 @@ func (m *transportMessage) Message() (data string, err error) {
 	return
 }
 
+// IsFederated determines if this message is federated
+func (m *transportMessage) IsFederated() bool {
+	return m.Headers.Federation != nil
+}
+
 // FederationTargets retrieves the list of targets this message is destined for
 func (m *transportMessage) FederationTargets() (targets []string, federated bool) {
 	m.mu.Lock()
@@ -210,6 +215,7 @@ func (m *transportMessage) JSON() (body string, err error) {
 	return
 }
 
+// SetUnfederated removes any federation information from the message
 func (m *transportMessage) SetUnfederated() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
