@@ -22,7 +22,18 @@ type replyEnvelope struct {
 	Agent     string `json:"agent"`
 	Time      int64  `json:"time"`
 
+	seenBy     [][3]string
 	federation *federationTransportHeader
+}
+
+// RecordNetworkHop appends a hop onto the list of those who processed this message
+func (m *reply) RecordNetworkHop(in string, processor string, out string) {
+	m.Envelope.seenBy = append(m.Envelope.seenBy, [3]string{in, processor, out})
+}
+
+// NetworkHops returns a list of tuples this messaged travelled through
+func (m *reply) NetworkHops() [][3]string {
+	return m.Envelope.seenBy
 }
 
 // SetMessage sets the data to be stored in the Reply.  It should be JSON encoded already.
