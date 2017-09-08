@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/protocol"
-	log "github.com/sirupsen/logrus"
 )
 
 // NewRequest creates a choria:request:1
@@ -241,11 +240,6 @@ func NewTransportFromJSON(data string) (message protocol.TransportMessage, err e
 	err = json.Unmarshal([]byte(data), &msg)
 	if err != nil {
 		return
-	}
-
-	log.Debugf("%#v", msg.Headers)
-	if msg.Headers.Federation != nil {
-		log.Debugf("%#v", msg.Headers.Federation)
 	}
 
 	message = msg

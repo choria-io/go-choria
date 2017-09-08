@@ -18,4 +18,8 @@ func CopyFederationData(from Federable, to Federable) {
 	if targets, ok := from.FederationTargets(); ok {
 		to.SetFederationTargets(targets)
 	}
+
+	for _, hop := range from.NetworkHops() {
+		to.RecordNetworkHop(hop[0], hop[1], hop[2])
+	}
 }
