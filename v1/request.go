@@ -19,15 +19,27 @@ type request struct {
 }
 
 type requestEnvelope struct {
-	RequestID  string                     `json:"requestid"`
-	SenderID   string                     `json:"senderid"`
-	CallerID   string                     `json:"callerid"`
-	Collective string                     `json:"collective"`
-	Agent      string                     `json:"agent"`
-	TTL        int                        `json:"ttl"`
-	Time       int64                      `json:"time"`
-	Filter     *protocol.Filter           `json:"filter"`
-	Federation *federationTransportHeader `json:"federation,omitempty"`
+	RequestID  string           `json:"requestid"`
+	SenderID   string           `json:"senderid"`
+	CallerID   string           `json:"callerid"`
+	Collective string           `json:"collective"`
+	Agent      string           `json:"agent"`
+	TTL        int              `json:"ttl"`
+	Time       int64            `json:"time"`
+	Filter     *protocol.Filter `json:"filter"`
+
+	seenBy     [][3]string
+	federation *federationTransportHeader
+}
+
+// RecordNetworkHop appends a hop onto the list of those who processed this message
+func (m *request) RecordNetworkHop(in string, processor string, out string) {
+	m.Envelope.seenBy = append(m.Envelope.seenBy, [3]string{in, processor, out})
+}
+
+// NetworkHops returns a list of tuples this messaged travelled through
+func (m *request) NetworkHops() [][3]string {
+	return m.Envelope.seenBy
 }
 
 // FederationTargets retrieves the list of targets this message is destined for
@@ -35,13 +47,13 @@ func (m *request) FederationTargets() (targets []string, federated bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if m.Envelope.Federation == nil {
+	if m.Envelope.federation == nil {
 		federated = false
 		return
 	}
 
 	federated = true
-	targets = m.Envelope.Federation.Targets
+	targets = m.Envelope.federation.Targets
 
 	return
 }
@@ -51,13 +63,13 @@ func (m *request) FederationReplyTo() (replyto string, federated bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if m.Envelope.Federation == nil {
+	if m.Envelope.federation == nil {
 		federated = false
 		return
 	}
 
 	federated = true
-	replyto = m.Envelope.Federation.ReplyTo
+	replyto = m.Envelope.federation.ReplyTo
 
 	return
 }
@@ -67,13 +79,13 @@ func (m *request) FederationRequestID() (id string, federated bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if m.Envelope.Federation == nil {
+	if m.Envelope.federation == nil {
 		federated = false
 		return
 	}
 
 	federated = true
-	id = m.Envelope.Federation.RequestID
+	id = m.Envelope.federation.RequestID
 
 	return
 }
@@ -95,11 +107,11 @@ func (m *request) SetFederationTargets(targets []string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if m.Envelope.Federation == nil {
-		m.Envelope.Federation = &federationTransportHeader{}
+	if m.Envelope.federation == nil {
+		m.Envelope.federation = &federationTransportHeader{}
 	}
 
-	m.Envelope.Federation.Targets = targets
+	m.Envelope.federation.Targets = targets
 }
 
 // SetFederationReplyTo stores the original reply-to destination in the federation headers
@@ -107,11 +119,11 @@ func (m *request) SetFederationReplyTo(reply string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if m.Envelope.Federation == nil {
-		m.Envelope.Federation = &federationTransportHeader{}
+	if m.Envelope.federation == nil {
+		m.Envelope.federation = &federationTransportHeader{}
 	}
 
-	m.Envelope.Federation.ReplyTo = reply
+	m.Envelope.federation.ReplyTo = reply
 }
 
 // SetFederationRequestID sets the request ID for federation purposes
@@ -119,16 +131,16 @@ func (m *request) SetFederationRequestID(id string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	if m.Envelope.Federation == nil {
-		m.Envelope.Federation = &federationTransportHeader{}
+	if m.Envelope.federation == nil {
+		m.Envelope.federation = &federationTransportHeader{}
 	}
 
-	m.Envelope.Federation.RequestID = id
+	m.Envelope.federation.RequestID = id
 }
 
 // IsFederated determines if this message is federated
 func (m *request) IsFederated() bool {
-	return m.Envelope.Federation != nil
+	return m.Envelope.federation != nil
 }
 
 // SetUnfederated removes any federation information from the message
@@ -136,7 +148,7 @@ func (m *request) SetUnfederated() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	m.Envelope.Federation = nil
+	m.Envelope.federation = nil
 }
 
 // SetMessage set the message body thats contained in this request.  It should be JSON encoded text

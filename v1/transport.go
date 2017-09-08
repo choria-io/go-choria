@@ -197,6 +197,11 @@ func (m *transportMessage) RecordNetworkHop(in string, processor string, out str
 	m.Headers.SeenBy = append(m.Headers.SeenBy, [3]string{in, processor, out})
 }
 
+// NetworkHops returns a list of tuples this messaged travelled through
+func (m *transportMessage) NetworkHops() [][3]string {
+	return m.Headers.SeenBy
+}
+
 // JSON creates a JSON encoded message
 func (m *transportMessage) JSON() (body string, err error) {
 	j, err := json.Marshal(m)

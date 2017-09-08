@@ -26,6 +26,9 @@ type Federable interface {
 	FederationReplyTo() (string, bool)
 	FederationTargets() ([]string, bool)
 
+	RecordNetworkHop(in string, processor string, out string)
+	NetworkHops() [][3]string
+
 	IsFederated() bool
 }
 
@@ -112,8 +115,6 @@ type TransportMessage interface {
 
 	SetReplyTo(reply string)
 	SetSender(sender string)
-
-	RecordNetworkHop(in string, processor string, out string)
 
 	ReplyTo() string
 	SenderID() string
