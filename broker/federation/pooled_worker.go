@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/choria-io/go-choria/mcollective"
+	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/protocol"
 	log "github.com/sirupsen/logrus"
 )
@@ -46,9 +46,9 @@ type pooledWorker struct {
 	log         *log.Entry
 	wg          *sync.WaitGroup
 
-	choria     *mcollective.Choria
-	connection mcollective.ConnectionManager
-	servers    func() ([]mcollective.Server, error)
+	choria     *choria.Framework
+	connection choria.ConnectionManager
+	servers    func() ([]choria.Server, error)
 
 	worker func(self *pooledWorker, instance int, logger *log.Entry)
 }
@@ -84,11 +84,11 @@ func (self *pooledWorker) Run() error {
 		// look up here so it hits the name servers once only
 		switch self.mode {
 		case Federation:
-			self.servers = func() ([]mcollective.Server, error) {
+			self.servers = func() ([]choria.Server, error) {
 				return self.choria.FederationMiddlewareServers()
 			}
 		case Collective:
-			self.servers = func() ([]mcollective.Server, error) {
+			self.servers = func() ([]choria.Server, error) {
 				return self.choria.MiddlewareServers()
 			}
 		default:

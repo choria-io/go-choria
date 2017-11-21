@@ -5,5 +5,4 @@ nohup.out
 vendor
 *.swp
 go-choria
-choria
 *.coverprofile

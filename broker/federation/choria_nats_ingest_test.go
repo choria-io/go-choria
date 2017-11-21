@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 
-	"github.com/choria-io/go-choria/mcollective"
+	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/protocol"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -18,7 +18,7 @@ var _ = Describe("Choria NATS Ingest", func() {
 		transport protocol.TransportMessage
 		connector *pooledWorker
 		manager   *stubConnectionManager
-		in        *mcollective.ConnectorMessage
+		in        *choria.ConnectorMessage
 		err       error
 		logtxt    *bufio.Writer
 		logbuf    *bytes.Buffer
@@ -29,26 +29,26 @@ var _ = Describe("Choria NATS Ingest", func() {
 	BeforeEach(func() {
 		logger, logtxt, logbuf = newDiscardLogger()
 
-		request, err = choria.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, choria.NewRequestID(), "mcollective")
+		request, err = c.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, c.NewRequestID(), "mcollective")
 		Expect(err).ToNot(HaveOccurred())
 		request.SetMessage(`{"hello":"world"}`)
 
-		srequest, err = choria.NewSecureRequest(request)
+		srequest, err = c.NewSecureRequest(request)
 		Expect(err).ToNot(HaveOccurred())
 
-		transport, err = choria.NewTransportForSecureRequest(srequest)
+		transport, err = c.NewTransportForSecureRequest(srequest)
 		Expect(err).ToNot(HaveOccurred())
 		transport.SetFederationRequestID(request.RequestID())
 
 		j, err := transport.JSON()
 		Expect(err).ToNot(HaveOccurred())
 
-		in = &mcollective.ConnectorMessage{
+		in = &choria.ConnectorMessage{
 			Data:    []byte(j),
 			Subject: "test",
 		}
 
-		broker, _ = NewFederationBroker("test", choria)
+		broker, _ = NewFederationBroker("test", c)
 		connector, err = NewChoriaNatsIngest(1, Federation, 10, broker, logger)
 		Expect(err).ToNot(HaveOccurred())
 

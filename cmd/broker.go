@@ -18,8 +18,8 @@ type brokerCommand struct {
 type brokerRunCommand struct {
 	command
 
-	disableTls       bool
-	disableTlsVerify bool
+	disableTLS       bool
+	disableTLSVerify bool
 	pidFile          string
 
 	server     *network.Server
@@ -41,8 +41,8 @@ func (b *brokerCommand) Run() (err error) {
 func (r *brokerRunCommand) Setup() (err error) {
 	if broker, ok := cmdWithFullCommand("broker"); ok {
 		r.cmd = broker.Cmd().Command("run", "Runs a Choria Network Broker instance").Default()
-		r.cmd.Flag("disable-tls", "Disables TLS").Hidden().Default("false").BoolVar(&r.disableTls)
-		r.cmd.Flag("disable-ssl-verification", "Disables SSL Verification").Hidden().Default("false").BoolVar(&r.disableTlsVerify)
+		r.cmd.Flag("disable-tls", "Disables TLS").Hidden().Default("false").BoolVar(&r.disableTLS)
+		r.cmd.Flag("disable-ssl-verification", "Disables SSL Verification").Hidden().Default("false").BoolVar(&r.disableTLSVerify)
 		r.cmd.Flag("pid", "Write running PID to a file").StringVar(&r.pidFile)
 	}
 
@@ -50,9 +50,9 @@ func (r *brokerRunCommand) Setup() (err error) {
 }
 
 func (r *brokerRunCommand) Run() (err error) {
-	net := choria.Config.Choria.BrokerNetwork
-	discovery := choria.Config.Choria.BrokerDiscovery
-	federation := choria.Config.Choria.BrokerFederation
+	net := c.Config.Choria.BrokerNetwork
+	discovery := c.Config.Choria.BrokerDiscovery
+	federation := c.Config.Choria.BrokerFederation
 	wg := &sync.WaitGroup{}
 
 	if !net && !discovery && !federation {
@@ -66,13 +66,13 @@ func (r *brokerRunCommand) Run() (err error) {
 		}
 	}
 
-	if r.disableTls {
-		choria.Config.DisableTLS = true
+	if r.disableTLS {
+		c.Config.DisableTLS = true
 		log.Warn("Running with TLS disabled, not compatible with production use Choria.")
 	}
 
-	if r.disableTlsVerify {
-		choria.Config.DisableTLSVerify = true
+	if r.disableTLSVerify {
+		c.Config.DisableTLSVerify = true
 		log.Warn("Running with TLS Verification disabled, not compatible with production use Choria.")
 	}
 
@@ -84,7 +84,7 @@ func (r *brokerRunCommand) Run() (err error) {
 	}
 
 	if federation {
-		log.Infof("Starting Federation Broker on cluster %s", choria.Config.Choria.FederationCluster)
+		log.Infof("Starting Federation Broker on cluster %s", c.Config.Choria.FederationCluster)
 		if err = r.runFederation(wg); err != nil {
 			return fmt.Errorf("Starting the federation broker failed: %s", err.Error())
 		}
@@ -100,7 +100,7 @@ func (r *brokerRunCommand) Run() (err error) {
 }
 
 func (r *brokerRunCommand) runFederation(wg *sync.WaitGroup) (err error) {
-	r.federation, err = federation.NewFederationBroker(choria.Config.Choria.FederationCluster, choria)
+	r.federation, err = federation.NewFederationBroker(c.Config.Choria.FederationCluster, c)
 	if err != nil {
 		return fmt.Errorf("Could not set up Choria Federation Broker: %s", err.Error())
 	}
@@ -112,7 +112,7 @@ func (r *brokerRunCommand) runFederation(wg *sync.WaitGroup) (err error) {
 }
 
 func (r *brokerRunCommand) runBroker(wg *sync.WaitGroup) (err error) {
-	r.server, err = network.NewServer(choria, debug)
+	r.server, err = network.NewServer(c, debug)
 	if err != nil {
 		return fmt.Errorf("Could not set up Choria Network Broker: %s", err.Error())
 	}

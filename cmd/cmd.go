@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/choria-io/go-choria/mcollective"
+	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -20,7 +20,7 @@ const version = "0.0.1"
 var cli = application{}
 var debug = false
 var configFile = ""
-var choria *mcollective.Choria
+var c *choria.Framework
 
 func ParseCLI() (err error) {
 	cli.app = kingpin.New("choria", "Choria Orchestration System")
@@ -42,10 +42,10 @@ func ParseCLI() (err error) {
 	}
 
 	if configFile == "" {
-		configFile = mcollective.UserConfig()
+		configFile = choria.UserConfig()
 	}
 
-	if choria, err = mcollective.New(configFile); err != nil {
+	if c, err = choria.New(configFile); err != nil {
 		return fmt.Errorf("Could not initialize Choria: %s", err.Error())
 	}
 

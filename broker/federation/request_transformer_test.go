@@ -4,7 +4,7 @@ import (
 	"bufio"
 	"bytes"
 
-	"github.com/choria-io/go-choria/mcollective"
+	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/protocol"
 
 	. "github.com/onsi/ginkgo"
@@ -14,7 +14,7 @@ import (
 
 var _ = Describe("RequestTransformer", func() {
 	var (
-		choria      *mcollective.Choria
+		c           *choria.Framework
 		request     protocol.Request
 		srequest    protocol.SecureRequest
 		transformer *pooledWorker
@@ -28,21 +28,21 @@ var _ = Describe("RequestTransformer", func() {
 	BeforeEach(func() {
 		logger, logtxt, logbuf = newDiscardLogger()
 
-		choria, err = mcollective.New("testdata/federation.cfg")
+		c, err = choria.New("testdata/federation.cfg")
 		Expect(err).ToNot(HaveOccurred())
 
-		request, err = choria.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, choria.NewRequestID(), "mcollective")
+		request, err = c.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, c.NewRequestID(), "mcollective")
 		Expect(err).ToNot(HaveOccurred())
 
 		request.SetMessage(`{"hello":"world"}`)
 
-		srequest, err = choria.NewSecureRequest(request)
+		srequest, err = c.NewSecureRequest(request)
 		Expect(err).ToNot(HaveOccurred())
 
-		in.Message, err = choria.NewTransportForSecureRequest(srequest)
+		in.Message, err = c.NewTransportForSecureRequest(srequest)
 		Expect(err).ToNot(HaveOccurred())
 
-		broker, _ := NewFederationBroker("testing", choria)
+		broker, _ := NewFederationBroker("testing", c)
 
 		transformer, err = NewChoriaRequestTransformer(1, 10, broker, logger)
 		Expect(err).ToNot(HaveOccurred())
@@ -55,7 +55,7 @@ var _ = Describe("RequestTransformer", func() {
 	}, 10)
 
 	It("should correctly transform a message", func() {
-		tr, err := choria.NewTransportForSecureRequest(srequest)
+		tr, err := c.NewTransportForSecureRequest(srequest)
 		Expect(err).ToNot(HaveOccurred())
 
 		tr.SetFederationRequestID(request.RequestID())

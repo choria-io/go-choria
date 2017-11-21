@@ -1,4 +1,4 @@
-package mcollective
+package choria
 
 import (
 	"encoding/base64"
@@ -25,11 +25,11 @@ type Message struct {
 	collective        string
 	msgType           string // message, request, direct_request, reply
 
-	choria *Choria
+	choria *Framework
 }
 
 // NewMessageFromRequest constructs a Message based on a Request
-func NewMessageFromRequest(req protocol.Request, replyto string, choria *Choria) (msg *Message, err error) {
+func NewMessageFromRequest(req protocol.Request, replyto string, choria *Framework) (msg *Message, err error) {
 	reqm, err := NewMessage(req.Message(), req.Agent(), req.Collective(), "request", nil, choria)
 	if err != nil {
 		return msg, err
@@ -54,7 +54,7 @@ func NewMessageFromRequest(req protocol.Request, replyto string, choria *Choria)
 }
 
 // NewMessage constructs a basic Message instance
-func NewMessage(payload string, agent string, collective string, msgType string, request *Message, choria *Choria) (msg *Message, err error) {
+func NewMessage(payload string, agent string, collective string, msgType string, request *Message, choria *Framework) (msg *Message, err error) {
 	msg = &Message{
 		Payload:         payload,
 		RequestID:       choria.NewRequestID(),
@@ -97,113 +97,113 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 }
 
 // Validate tests the Message and makes sure its settings are sane
-func (m *Message) Validate() (bool, error) {
-	if m.Agent == "" {
+func (self *Message) Validate() (bool, error) {
+	if self.Agent == "" {
 		return false, fmt.Errorf("Agent has not been set")
 	}
 
-	if m.collective == "" {
+	if self.collective == "" {
 		return false, fmt.Errorf("Collective has not been set")
 	}
 
-	if !m.choria.HasCollective(m.collective) {
-		return false, fmt.Errorf("%s is not on the list of known collectives", m.collective)
+	if !self.choria.HasCollective(self.collective) {
+		return false, fmt.Errorf("%s is not on the list of known collectives", self.collective)
 	}
 
 	return true, nil
 }
 
 // SetBase64Payload sets the payload for the message, use it if the payload is Base64 encoded
-func (m *Message) SetBase64Payload(payload string) error {
+func (self *Message) SetBase64Payload(payload string) error {
 	str, err := base64.StdEncoding.DecodeString(payload)
 	if err != nil {
 		return fmt.Errorf("Could not decode supplied payload using base64: %s", err.Error())
 	}
 
-	m.Payload = string(str)
+	self.Payload = string(str)
 
 	return nil
 }
 
 // Base64Payload retrieves the payload Base64 encoded
-func (m Message) Base64Payload() string {
-	return base64.StdEncoding.EncodeToString([]byte(m.Payload))
+func (self *Message) Base64Payload() string {
+	return base64.StdEncoding.EncodeToString([]byte(self.Payload))
 }
 
 // SetExpectedMsgID sets the Request ID that is expected from the reply data
-func (m *Message) SetExpectedMsgID(id string) error {
-	if m.Type() != "reply" {
+func (self *Message) SetExpectedMsgID(id string) error {
+	if self.Type() != "reply" {
 		return fmt.Errorf("Can only store expected message ID for reply messages")
 	}
 
-	m.expectedMessageID = id
+	self.expectedMessageID = id
 
 	return nil
 }
 
 // ExpectedMessageID retrieves the expected message ID
-func (m Message) ExpectedMessageID() string {
-	return m.expectedMessageID
+func (self *Message) ExpectedMessageID() string {
+	return self.expectedMessageID
 }
 
 // SetReplyTo sets the NATS target where replies to this message should go
-func (m *Message) SetReplyTo(replyTo string) error {
-	if !(m.Type() == "request" || m.Type() == "direct_request") {
+func (self *Message) SetReplyTo(replyTo string) error {
+	if !(self.Type() == "request" || self.Type() == "direct_request") {
 		return fmt.Errorf("Custom reply to targets can only be set for requests")
 	}
 
-	m.replyTo = replyTo
+	self.replyTo = replyTo
 
 	return nil
 }
 
 // ReplyTo retrieve the NATS reply target
-func (m Message) ReplyTo() string {
-	return m.replyTo
+func (self *Message) ReplyTo() string {
+	return self.replyTo
 }
 
 // SetCollective sets the sub collective this message is targeting
-func (m *Message) SetCollective(collective string) error {
-	if !m.choria.HasCollective(collective) {
-		return fmt.Errorf("%s is not on the list of known collectives", m.collective)
+func (self *Message) SetCollective(collective string) error {
+	if !self.choria.HasCollective(collective) {
+		return fmt.Errorf("%s is not on the list of known collectives", self.collective)
 	}
 
-	m.collective = collective
+	self.collective = collective
 
 	return nil
 }
 
 // Collective retrieves the sub collective this message is targeting
-func (m Message) Collective() string {
-	return m.collective
+func (self *Message) Collective() string {
+	return self.collective
 }
 
 // SetType sets the mssage type. One message, request, direct_request or reply
-func (m *Message) SetType(msgType string) (err error) {
+func (self *Message) SetType(msgType string) (err error) {
 	if !(msgType == "message" || msgType == "request" || msgType == "direct_request" || msgType == "reply") {
 		return fmt.Errorf("%s is not a valid message type", msgType)
 	}
 
 	if msgType == "direct_request" {
-		if len(m.DiscoveredHosts) == 0 {
+		if len(self.DiscoveredHosts) == 0 {
 			return fmt.Errorf("direct_request message type can only be set if DiscoveredHosts have been set")
 		}
 
-		m.Filter = &protocol.Filter{}
-		m.Filter.AddAgentFilter(m.Agent)
+		self.Filter = &protocol.Filter{}
+		self.Filter.AddAgentFilter(self.Agent)
 	}
 
-	m.msgType = msgType
+	self.msgType = msgType
 
 	return
 }
 
 // Type retrieves the message type
-func (m *Message) Type() string {
-	return m.msgType
+func (self *Message) Type() string {
+	return self.msgType
 }
 
 // String creates a string representation of the message for logs etc
-func (m *Message) String() string {
-	return fmt.Sprintf("%s from %s@%s for agent %s", m.RequestID, m.CallerID, m.SenderID, m.Agent)
+func (self *Message) String() string {
+	return fmt.Sprintf("%s from %s@%s for agent %s", self.RequestID, self.CallerID, self.SenderID, self.Agent)
 }

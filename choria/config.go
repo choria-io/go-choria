@@ -1,4 +1,4 @@
-package mcollective
+package choria
 
 import (
 	"bufio"
@@ -61,8 +61,8 @@ type ChoriaPluginConfig struct {
 	FederationCluster   string   `confkey:"plugin.choria.broker_federation_cluster" default:"mcollective"`
 }
 
-// MCOConfig represents MCollective configuration
-type MCOConfig struct {
+// Config represents Choria configuration
+type Config struct {
 	Registration              string   `confkey:"registration" default:"Agentlist" type:"title_string"`
 	RegistrationCollective    string   `confkey:"registration_collective"`
 	RegisterInterval          int      `confkey:"registerinterval" default:"0"`
@@ -120,8 +120,8 @@ type MCOConfig struct {
 // HasOption determines if a specific option was set from a config key.
 // The option given would be something like `plugin.choria.use_srv`
 // and true would indicate that it was set by config vs using defaults
-func (c *MCOConfig) HasOption(option string) bool {
-	for _, i := range c.setOptions {
+func (self *Config) HasOption(option string) bool {
+	for _, i := range self.setOptions {
 		if i == option {
 			return true
 		}
@@ -131,8 +131,8 @@ func (c *MCOConfig) HasOption(option string) bool {
 }
 
 // NewConfig parses a config file and return the config
-func NewConfig(path string) (*MCOConfig, error) {
-	mcollective := newMcollective()
+func NewConfig(path string) (*Config, error) {
+	mcollective := newConfig()
 	mcollective.ConfigFile = path
 
 	// TODO i think probably parse config can walk 'mcollective' recursively
@@ -205,8 +205,8 @@ func parseConfigContents(content io.Reader, config interface{}, prefix string, f
 	}
 }
 
-func newMcollective() *MCOConfig {
-	m := &MCOConfig{Choria: newChoria()}
+func newConfig() *Config {
+	m := &Config{Choria: newChoria()}
 	setDefaults(m)
 
 	if terminal.IsTerminal(int(os.Stdout.Fd())) {
