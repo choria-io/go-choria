@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/nats-io/nats"
 	log "github.com/sirupsen/logrus"
 )
@@ -24,6 +25,8 @@ type Connector interface {
 	Unsubscribe(name string) error
 
 	PublishRaw(target string, data []byte) error
+	Publish(msg *Message) error
+
 	Receive() *ConnectorMessage
 
 	ConnectedServer() string
@@ -198,6 +201,73 @@ func (self *Connection) Receive() *ConnectorMessage {
 // PublishRaw allows any data to be published to any target
 func (self *Connection) PublishRaw(target string, data []byte) error {
 	return self.nats.Publish(target, data)
+}
+
+func (self *Connection) Publish(msg *Message) error {
+	transport, err := msg.Transport()
+	if err != nil {
+		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
+	}
+
+	// TODO: transport.RecordNetworkHop()
+
+	if transport.IsFederated() {
+		return self.publishFederated(msg, transport)
+	}
+
+	return self.publishConnected(msg, transport)
+}
+
+func (self *Connection) publishFederated(msg *Message, transport protocol.TransportMessage) error {
+	return fmt.Errorf("Cannot publish Message %s: publishing federates messages is not supported", msg.RequestID)
+}
+
+func (self *Connection) publishConnected(msg *Message, transport protocol.TransportMessage) error {
+	if msg.Type() == "direct_request" {
+		return fmt.Errorf("Cannot publish Message %s: publishing direct_request messages is not supported", msg.RequestID)
+	} else {
+		j, err := transport.JSON()
+		if err != nil {
+			return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
+		}
+
+		target, err := self.targetForMessage(msg, "")
+		if err != nil {
+			return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
+		}
+
+		return self.PublishRaw(target, []byte(j))
+	}
+}
+
+func (self *Connection) targetForMessage(msg *Message, identity string) (string, error) {
+	if msg.Type() == "reply" {
+		if msg.ReplyTo() == "" {
+			return "", fmt.Errorf("Do not know how to reply, no reply-to header has been set on message %s", msg.RequestID)
+		}
+
+		return msg.ReplyTo(), nil
+
+	} else if msg.Type() == "request" {
+		return self.agentBroadcastTarget(msg.Collective(), msg.Agent), nil
+
+	} else if msg.Type() == "direct_request" {
+		return self.nodeDirectedTarget(msg.Collective(), identity), nil
+	}
+
+	return "", fmt.Errorf("Do not know how to determine the target for Message %s with type %s", msg.RequestID, msg.Type())
+}
+
+func (self *Connection) nodeDirectedTarget(collective string, identity string) string {
+	return fmt.Sprintf("%s.node.%s", collective, identity)
+}
+
+func (self *Connection) agentBroadcastTarget(collective string, agent string) string {
+	return fmt.Sprintf("%s.broadcast.agent.%s", collective, agent)
+}
+
+func (self *Connection) replyTarget(collective string, identity string) string {
+	return fmt.Sprintf("%s.reply.%s.%s", collective, identity, self.choria.NewRequestID())
 }
 
 // ConnectedServer returns the URL of the current server that the library is connected to, "unknown" when not initialized

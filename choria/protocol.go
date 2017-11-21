@@ -15,27 +15,6 @@ func (self *Framework) NewMessage(payload string, agent string, collective strin
 	return
 }
 
-func (self *Framework) NewTransportFromMessage(msg *Message, request protocol.Request) (protocol.TransportMessage, error) {
-	reply, err := self.NewReply(request)
-	if err != nil {
-		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
-	}
-
-	reply.SetMessage(msg.Payload)
-
-	sreply, err := self.NewSecureReply(reply)
-	if err != nil {
-		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
-	}
-
-	transport, err := self.NewTransportForSecureReply(sreply)
-	if err != nil {
-		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
-	}
-
-	return transport, nil
-}
-
 func (self *Framework) NewMessageFromTransportJSON(payload []byte) (msg *Message, err error) {
 	transport, err := self.NewTransportFromJSON(string(payload))
 	if err != nil {
@@ -241,6 +220,52 @@ func (self *Framework) NewTransportForSecureReply(reply protocol.SecureReply) (m
 	}
 
 	return
+}
+
+// NewReplyTransportForMessage creates a new Transport message based on a Message and the request its a reply to
+//
+// The new transport message will have the same version as the request its based on
+func (self *Framework) NewReplyTransportForMessage(msg *Message, request protocol.Request) (protocol.TransportMessage, error) {
+	reply, err := self.NewReply(request)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+	}
+
+	reply.SetMessage(msg.Payload)
+
+	sreply, err := self.NewSecureReply(reply)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+	}
+
+	transport, err := self.NewTransportForSecureReply(sreply)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+	}
+
+	protocol.CopyFederationData(request, transport)
+
+	return transport, nil
+}
+
+// NewRequestTransportForMessage creates a new versioned Transport message based on a Message
+func (self *Framework) NewRequestTransportForMessage(msg *Message, version string) (protocol.TransportMessage, error) {
+	req, err := self.NewRequestFromMessage(version, msg)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+	}
+
+	sr, err := self.NewSecureRequest(req)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+	}
+
+	transport, err := self.NewTransportForSecureRequest(sr)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+	}
+
+	return transport, nil
 }
 
 // NewTransportMessage creates a new TransportMessage complying with a specific protocol version like protocol.TransportV1

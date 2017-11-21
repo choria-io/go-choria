@@ -118,6 +118,10 @@ func (s *stubConnection) PublishRaw(target string, data []byte) error {
 	return nil
 }
 
+func (s *stubConnection) Publish(msg *choria.Message) error {
+	return nil
+}
+
 func (s *stubConnection) Connect() error {
 	return nil
 }

@@ -2,7 +2,7 @@ language: go
 env:
   - "MCOLLECTIVE_CERTNAME=rip.mcollective"
 go:
-  - 1.8
+  - 1.9
   - tip
 install:
   - go get github.com/Masterminds/glide

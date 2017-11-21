@@ -37,12 +37,12 @@ func NewFilter() *Filter {
 }
 
 // Empty determines if a filter is empty - that is all its contained filter arrays are empty
-func (f *Filter) Empty() bool {
-	if f.Fact == nil && f.Class == nil && f.Agent == nil && f.Identity == nil && f.Compound == nil {
+func (self *Filter) Empty() bool {
+	if self.Fact == nil && self.Class == nil && self.Agent == nil && self.Identity == nil && self.Compound == nil {
 		return true
 	}
 
-	if len(f.Fact) == 0 && len(f.Class) == 0 && len(f.Agent) == 0 && len(f.Identity) == 0 && len(f.Compound) == 0 {
+	if len(self.Fact) == 0 && len(self.Class) == 0 && len(self.Agent) == 0 && len(self.Identity) == 0 && len(self.Compound) == 0 {
 		return true
 	}
 
@@ -50,31 +50,31 @@ func (f *Filter) Empty() bool {
 }
 
 // CompoundFilters retrieve the list of compound filters
-func (f *Filter) CompoundFilters() []string {
-	return f.Compound
+func (self *Filter) CompoundFilters() []string {
+	return self.Compound
 }
 
 // IdentityFilters retrieve the list of identity filters
-func (f *Filter) IdentityFilters() []string {
-	return f.Identity
+func (self *Filter) IdentityFilters() []string {
+	return self.Identity
 }
 
 // AgentFilters retrieve the list of agent filters
-func (f *Filter) AgentFilters() []string {
-	return f.Agent
+func (self *Filter) AgentFilters() []string {
+	return self.Agent
 }
 
 // ClassFilters retrieve the list of class filters
-func (f *Filter) ClassFilters() []string {
-	return f.Class
+func (self *Filter) ClassFilters() []string {
+	return self.Class
 }
 
 // FactFilters retrieve the list of fact filters
-func (f *Filter) FactFilters() [][3]string {
+func (self *Filter) FactFilters() [][3]string {
 	var filter [][3]string
 	filter = [][3]string{}
 
-	for _, f := range f.Fact {
+	for _, f := range self.Fact {
 		filter = append(filter, [3]string{f.Fact, f.Operator, f.Value})
 	}
 
@@ -82,51 +82,51 @@ func (f *Filter) FactFilters() [][3]string {
 }
 
 // AddCompoundFilter appends a filter to the compound filters
-func (f *Filter) AddCompoundFilter(query string) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
+func (self *Filter) AddCompoundFilter(query string) {
+	self.mu.Lock()
+	defer self.mu.Unlock()
 
-	if !f.contains(query, f.Compound) {
-		f.Compound = append(f.Compound, query)
+	if !self.contains(query, self.Compound) {
+		self.Compound = append(self.Compound, query)
 	}
 }
 
 // AddIdentityFilter appends a filter to the identity filters
-func (f *Filter) AddIdentityFilter(id string) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
+func (self *Filter) AddIdentityFilter(id string) {
+	self.mu.Lock()
+	defer self.mu.Unlock()
 
-	if !f.contains(id, f.Identity) {
-		f.Identity = append(f.Identity, id)
+	if !self.contains(id, self.Identity) {
+		self.Identity = append(self.Identity, id)
 	}
 }
 
 // AddAgentFilter appends a filter to the agent filters
-func (f *Filter) AddAgentFilter(agent string) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
+func (self *Filter) AddAgentFilter(agent string) {
+	self.mu.Lock()
+	defer self.mu.Unlock()
 
-	if !f.contains(agent, f.Agent) {
-		f.Agent = append(f.Agent, agent)
+	if !self.contains(agent, self.Agent) {
+		self.Agent = append(self.Agent, agent)
 	}
 }
 
 // AddClassFilter appends a filter to the class filters
-func (f *Filter) AddClassFilter(class string) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
+func (self *Filter) AddClassFilter(class string) {
+	self.mu.Lock()
+	defer self.mu.Unlock()
 
-	if !f.contains(class, f.Class) {
-		f.Class = append(f.Class, class)
+	if !self.contains(class, self.Class) {
+		self.Class = append(self.Class, class)
 	}
 }
 
 // AddFactFilter appends a filter to the fact filters
-func (f *Filter) AddFactFilter(fact string, operator string, value string) (err error) {
-	f.mu.Lock()
-	defer f.mu.Unlock()
+func (self *Filter) AddFactFilter(fact string, operator string, value string) (err error) {
+	self.mu.Lock()
+	defer self.mu.Unlock()
 
-	if !f.contains(operator, []string{">=", "<=", "<", ">", "!=", "==", "=~"}) {
+	if !self.contains(operator, []string{">=", "<=", "<", ">", "!=", "==", "=~"}) {
 		err = fmt.Errorf("%s is not a valid fact operator", operator)
 		return
 	}
@@ -137,12 +137,12 @@ func (f *Filter) AddFactFilter(fact string, operator string, value string) (err 
 		Value:    value,
 	}
 
-	f.Fact = append(f.Fact, filter)
+	self.Fact = append(self.Fact, filter)
 
 	return
 }
 
-func (f *Filter) contains(needle string, haystack []string) bool {
+func (self *Filter) contains(needle string, haystack []string) bool {
 	for _, i := range haystack {
 		if i == needle {
 			return true

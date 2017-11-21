@@ -2,11 +2,13 @@ package choria
 
 import (
 	"encoding/base64"
+	"errors"
 	"fmt"
 
 	"github.com/choria-io/go-choria/protocol"
 )
 
+// Message represents a Choria message
 type Message struct {
 	Payload string
 	Agent   string
@@ -24,6 +26,8 @@ type Message struct {
 	replyTo           string
 	collective        string
 	msgType           string // message, request, direct_request, reply
+	req               protocol.Request
+	protoVersion      string
 
 	choria *Framework
 }
@@ -49,6 +53,7 @@ func NewMessageFromRequest(req protocol.Request, replyto string, choria *Framewo
 	msg.Filter, _ = req.Filter()
 	msg.SenderID = choria.Config.Identity
 	msg.SetBase64Payload(req.Message())
+	msg.req = req
 
 	return
 }
@@ -94,6 +99,45 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 	}
 
 	return
+}
+
+// Transport creates a TransportMessage for this Message
+//
+// In the case of a reply Message made using NewMessage the Transport will have
+// the same version as the request that made it.  If you made the Message using
+// some other way then look at choria.NewReplyTransportForMessage.
+//
+// For requests you need to set the protocol version using SetProtocolVersion()
+// before calling Transport
+func (self *Message) Transport() (protocol.TransportMessage, error) {
+	if self.msgType == "request" || self.msgType == "direct_request" {
+		return self.requestTransport()
+	} else if self.msgType == "reply" {
+		return self.replyTransport()
+	}
+
+	return nil, fmt.Errorf("Do not know how to make a Transport for a %s type Message", self.msgType)
+}
+
+func (self *Message) requestTransport() (protocol.TransportMessage, error) {
+	if self.protoVersion == "" {
+		return nil, errors.New("Cannot create a Request Transport without a version, please set it using SetProtocolVersion()")
+	}
+
+	return self.choria.NewRequestTransportForMessage(self, self.protoVersion)
+}
+
+func (self *Message) replyTransport() (protocol.TransportMessage, error) {
+	if self.req == nil {
+		return nil, fmt.Errorf("Cannot create a Transport, no request were stored in the message")
+	}
+
+	return self.choria.NewReplyTransportForMessage(self, self.req)
+}
+
+// SetProtocolVersion sets the version of the protocol that will be used by Transport()
+func (self *Message) SetProtocolVersion(version string) {
+	self.protoVersion = version
 }
 
 // Validate tests the Message and makes sure its settings are sane
