@@ -27,21 +27,21 @@ var _ = Describe("Choria NATS Egest", func() {
 	BeforeEach(func() {
 		logger, logtxt, logbuf = newDiscardLogger()
 
-		request, err = choria.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, choria.NewRequestID(), "mcollective")
+		request, err = c.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, c.NewRequestID(), "mcollective")
 		Expect(err).ToNot(HaveOccurred())
 		request.SetMessage(`{"hello":"world"}`)
 
-		reply, err = choria.NewReply(request)
+		reply, err = c.NewReply(request)
 		Expect(err).ToNot(HaveOccurred())
 
-		sreply, err = choria.NewSecureReply(reply)
+		sreply, err = c.NewSecureReply(reply)
 		Expect(err).ToNot(HaveOccurred())
 
 		in = chainmessage{}
-		in.Message, err = choria.NewTransportForSecureReply(sreply)
+		in.Message, err = c.NewTransportForSecureReply(sreply)
 		Expect(err).ToNot(HaveOccurred())
 
-		broker, _ := NewFederationBroker("test", choria)
+		broker, _ := NewFederationBroker("test", c)
 		connector, err = NewChoriaNatsEgest(1, Unconnected, 10, broker, logger)
 		Expect(err).ToNot(HaveOccurred())
 

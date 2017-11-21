@@ -1,4 +1,4 @@
-package mcollective
+package choria
 
 import (
 	"crypto/tls"
@@ -51,7 +51,7 @@ type Connection struct {
 	name              string
 	nats              *nats.Conn
 	logger            *log.Entry
-	choria            *Choria
+	choria            *Framework
 	subscriptions     map[string]*nats.Subscription
 	chanSubscriptions map[string]*channelSubscription
 	outbox            chan *nats.Msg
@@ -63,7 +63,7 @@ type Connection struct {
 // NewConnector creates a new NATS connector
 //
 // It will attempt to connect to the given servers and will keep trying till it manages to do so
-func (self *Choria) NewConnector(servers func() ([]Server, error), name string, logger *log.Entry) (conn Connector, err error) {
+func (self *Framework) NewConnector(servers func() ([]Server, error), name string, logger *log.Entry) (conn Connector, err error) {
 	conn = &Connection{
 		name:              name,
 		servers:           servers,

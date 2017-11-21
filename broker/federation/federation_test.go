@@ -8,16 +8,16 @@ import (
 	"testing"
 	"time"
 
-	"github.com/choria-io/go-choria/mcollective"
+	"github.com/choria-io/go-choria/choria"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 )
 
-var choria *mcollective.Choria
+var c *choria.Framework
 
 func init() {
-	choria, _ = mcollective.New("testdata/federation.cfg")
+	c, _ = choria.New("testdata/federation.cfg")
 }
 
 func newDiscardLogger() (*log.Entry, *bufio.Writer, *bytes.Buffer) {
@@ -48,22 +48,22 @@ type stubConnectionManager struct {
 type stubConnection struct {
 	Outq        chan [2]string
 	Subs        map[string][3]string
-	SubChannels map[string]chan *mcollective.ConnectorMessage
+	SubChannels map[string]chan *choria.ConnectorMessage
 	name        string
 	mu          *sync.Mutex
 }
 
-func (s *stubConnection) Receive() *mcollective.ConnectorMessage {
+func (s *stubConnection) Receive() *choria.ConnectorMessage {
 	return nil
 }
 
-func (s *stubConnection) PublishToQueueSub(name string, msg *mcollective.ConnectorMessage) {
+func (s *stubConnection) PublishToQueueSub(name string, msg *choria.ConnectorMessage) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	c, ok := s.SubChannels[name]
 	if !ok {
-		s.SubChannels[name] = make(chan *mcollective.ConnectorMessage, 1000)
+		s.SubChannels[name] = make(chan *choria.ConnectorMessage, 1000)
 		c = s.SubChannels[name]
 	}
 
@@ -98,7 +98,7 @@ func (s *stubConnection) Unsubscribe(name string) error {
 	return nil
 }
 
-func (s *stubConnection) ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *mcollective.ConnectorMessage, error) {
+func (s *stubConnection) ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *choria.ConnectorMessage, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -106,7 +106,7 @@ func (s *stubConnection) ChanQueueSubscribe(name string, subject string, group s
 
 	_, ok := s.SubChannels[name]
 	if !ok {
-		s.SubChannels[name] = make(chan *mcollective.ConnectorMessage, 1000)
+		s.SubChannels[name] = make(chan *choria.ConnectorMessage, 1000)
 	}
 
 	return s.SubChannels[name], nil
@@ -126,16 +126,16 @@ func (s *stubConnection) SetName(name string) {
 	s.name = name
 }
 
-func (s *stubConnection) SetServers(resolver func() ([]mcollective.Server, error)) {}
+func (s *stubConnection) SetServers(resolver func() ([]choria.Server, error)) {}
 
-func (s *stubConnectionManager) NewConnector(servers func() ([]mcollective.Server, error), name string, logger *log.Entry) (conn mcollective.Connector, err error) {
+func (s *stubConnectionManager) NewConnector(servers func() ([]choria.Server, error), name string, logger *log.Entry) (conn choria.Connector, err error) {
 	if s.connection != nil {
 		return s.connection, nil
 	}
 
 	conn = &stubConnection{
 		Outq:        make(chan [2]string, 64),
-		SubChannels: make(map[string]chan *mcollective.ConnectorMessage),
+		SubChannels: make(map[string]chan *choria.ConnectorMessage),
 		Subs:        make(map[string][3]string),
 		mu:          &sync.Mutex{},
 	}
@@ -148,7 +148,7 @@ func (s *stubConnectionManager) NewConnector(servers func() ([]mcollective.Serve
 func (s *stubConnectionManager) Init() *stubConnectionManager {
 	s.connection = &stubConnection{
 		Outq:        make(chan [2]string, 64),
-		SubChannels: make(map[string]chan *mcollective.ConnectorMessage),
+		SubChannels: make(map[string]chan *choria.ConnectorMessage),
 		Subs:        make(map[string][3]string),
 		mu:          &sync.Mutex{},
 	}
@@ -166,10 +166,10 @@ var _ = Describe("Federation Broker", func() {
 	It("Should initialize correctly", func() {
 		log.SetOutput(ioutil.Discard)
 
-		choria, err := mcollective.New("testdata/federation.cfg")
+		c, err := choria.New("testdata/federation.cfg")
 		Expect(err).ToNot(HaveOccurred())
 
-		fb, err := NewFederationBroker("test_cluster", choria)
+		fb, err := NewFederationBroker("test_cluster", c)
 		Expect(err).ToNot(HaveOccurred())
 
 		Expect(fb.Stats.Status).To(Equal("unknown"))

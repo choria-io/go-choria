@@ -1,4 +1,4 @@
-package mcollective
+package choria
 
 import (
 	"crypto"
@@ -18,13 +18,13 @@ import (
 )
 
 // CheckSSLSetup validates the various SSL files and directories exist and are well formed
-func (c *Choria) CheckSSLSetup() (errors []string, ok bool) {
-	if _, err := c.SSLDir(); err != nil {
+func (self *Framework) CheckSSLSetup() (errors []string, ok bool) {
+	if _, err := self.SSLDir(); err != nil {
 		errors = append(errors, fmt.Sprintf("SSL Directory does not exist: %s", err.Error()))
 		return errors, false
 	}
 
-	if c, err := c.ClientPublicCert(); err == nil {
+	if c, err := self.ClientPublicCert(); err == nil {
 		if _, err := os.Stat(c); err != nil {
 			errors = append(errors, fmt.Sprintf("The Public Certificate %s does not exist", c))
 		}
@@ -32,7 +32,7 @@ func (c *Choria) CheckSSLSetup() (errors []string, ok bool) {
 		errors = append(errors, fmt.Sprintf("Could not determine Public Certificate path: %s", err.Error()))
 	}
 
-	if c, err := c.ClientPrivateKey(); err == nil {
+	if c, err := self.ClientPrivateKey(); err == nil {
 		if _, err := os.Stat(c); err != nil {
 			errors = append(errors, fmt.Sprintf("The Private Key %s does not exist", c))
 		}
@@ -40,7 +40,7 @@ func (c *Choria) CheckSSLSetup() (errors []string, ok bool) {
 		errors = append(errors, fmt.Sprintf("Could not determine Private Certificate path: %s", err.Error()))
 	}
 
-	if c, err := c.CAPath(); err == nil {
+	if c, err := self.CAPath(); err == nil {
 		if _, err := os.Stat(c); err != nil {
 			errors = append(errors, fmt.Sprintf("The CA %s does not exist", c))
 		}
@@ -56,8 +56,8 @@ func (c *Choria) CheckSSLSetup() (errors []string, ok bool) {
 }
 
 // SignString signs a message using a SHA256 PKCS1v15 protocol
-func (c *Choria) SignString(str []byte) (signature []byte, err error) {
-	pkpem, err := c.ClientPrivateKeyPEM()
+func (self *Framework) SignString(str []byte) (signature []byte, err error) {
+	pkpem, err := self.ClientPrivateKeyPEM()
 	if err != nil {
 		return
 	}
@@ -79,16 +79,16 @@ func (c *Choria) SignString(str []byte) (signature []byte, err error) {
 }
 
 // Certname determines the choria certname
-func (c *Choria) Certname() string {
-	if c.Config.OverrideCertname != "" {
-		return c.Config.OverrideCertname
+func (self *Framework) Certname() string {
+	if self.Config.OverrideCertname != "" {
+		return self.Config.OverrideCertname
 	}
 
 	if certname, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
 		return certname
 	}
 
-	certname := c.Config.Identity
+	certname := self.Config.Identity
 
 	currentUser, _ := user.Current()
 
@@ -102,8 +102,8 @@ func (c *Choria) Certname() string {
 }
 
 // CAPath determines the path to the CA file
-func (c *Choria) CAPath() (string, error) {
-	ssl, err := c.SSLDir()
+func (self *Framework) CAPath() (string, error) {
+	ssl, err := self.SSLDir()
 	if err != nil {
 		return "", err
 	}
@@ -112,8 +112,8 @@ func (c *Choria) CAPath() (string, error) {
 }
 
 // ClientPrivateKeyPEM returns the PEM data for the Client Private Key
-func (c *Choria) ClientPrivateKeyPEM() (pb *pem.Block, err error) {
-	key, err := c.ClientPrivateKey()
+func (self *Framework) ClientPrivateKeyPEM() (pb *pem.Block, err error) {
+	key, err := self.ClientPrivateKey()
 	if err != nil {
 		return pb, fmt.Errorf("Could not read Client Private Key PEM data: %s", err.Error())
 	}
@@ -132,8 +132,8 @@ func (c *Choria) ClientPrivateKeyPEM() (pb *pem.Block, err error) {
 }
 
 // ClientPublicCertPEM returns the PEM data for the Client Public Certificate
-func (c *Choria) ClientPublicCertPEM() (pb *pem.Block, err error) {
-	cert, err := c.ClientPublicCert()
+func (self *Framework) ClientPublicCertPEM() (pb *pem.Block, err error) {
+	cert, err := self.ClientPublicCert()
 	if err != nil {
 		return pb, fmt.Errorf("Could not read Client Private Key PEM data: %s", err.Error())
 	}
@@ -152,8 +152,8 @@ func (c *Choria) ClientPublicCertPEM() (pb *pem.Block, err error) {
 }
 
 // ClientPrivateKeyTXT reads the private key file as text
-func (c *Choria) ClientPrivateKeyTXT() (cert []byte, err error) {
-	file, err := c.ClientPrivateKey()
+func (self *Framework) ClientPrivateKeyTXT() (cert []byte, err error) {
+	file, err := self.ClientPrivateKey()
 	if err != nil {
 		return cert, fmt.Errorf("Could not read Client Private Key PEM data: %s", err.Error())
 	}
@@ -167,18 +167,18 @@ func (c *Choria) ClientPrivateKeyTXT() (cert []byte, err error) {
 }
 
 // ClientPrivateKey determines the location to the client cert
-func (c *Choria) ClientPrivateKey() (string, error) {
-	ssl, err := c.SSLDir()
+func (self *Framework) ClientPrivateKey() (string, error) {
+	ssl, err := self.SSLDir()
 	if err != nil {
 		return "", err
 	}
 
-	return filepath.Join(ssl, "private_keys", fmt.Sprintf("%s.pem", c.Certname())), nil
+	return filepath.Join(ssl, "private_keys", fmt.Sprintf("%s.pem", self.Certname())), nil
 }
 
 // ClientPublicCertTXT reads the public certificate file as text
-func (c *Choria) ClientPublicCertTXT() (cert []byte, err error) {
-	file, err := c.ClientPublicCert()
+func (self *Framework) ClientPublicCertTXT() (cert []byte, err error) {
+	file, err := self.ClientPublicCert()
 	if err != nil {
 		return cert, fmt.Errorf("Could not read Client Public Certificate PEM data: %s", err.Error())
 	}
@@ -192,24 +192,24 @@ func (c *Choria) ClientPublicCertTXT() (cert []byte, err error) {
 }
 
 // ClientPublicCert determines the location to the client cert
-func (c *Choria) ClientPublicCert() (string, error) {
-	ssl, err := c.SSLDir()
+func (self *Framework) ClientPublicCert() (string, error) {
+	ssl, err := self.SSLDir()
 	if err != nil {
 		return "", err
 	}
 
-	return filepath.Join(ssl, "certs", fmt.Sprintf("%s.pem", c.Certname())), nil
+	return filepath.Join(ssl, "certs", fmt.Sprintf("%s.pem", self.Certname())), nil
 }
 
 // SSLDir determines the AIO SSL directory
-func (c *Choria) SSLDir() (string, error) {
-	if c.Config.Choria.SSLDir != "" {
-		return c.Config.Choria.SSLDir, nil
+func (self *Framework) SSLDir() (string, error) {
+	if self.Config.Choria.SSLDir != "" {
+		return self.Config.Choria.SSLDir, nil
 	}
 
 	u, _ := user.Current()
 	if u.Uid == "0" {
-		path, err := c.PuppetSetting("ssldir")
+		path, err := self.PuppetSetting("ssldir")
 		if err != nil {
 			return "", err
 		}
@@ -221,10 +221,10 @@ func (c *Choria) SSLDir() (string, error) {
 }
 
 //TLSConfig creates a TLS configuration for use by NATS, HTTPS etc
-func (c *Choria) TLSConfig() (tlsc *tls.Config, err error) {
-	pub, _ := c.ClientPublicCert()
-	pri, _ := c.ClientPrivateKey()
-	ca, _ := c.CAPath()
+func (self *Framework) TLSConfig() (tlsc *tls.Config, err error) {
+	pub, _ := self.ClientPublicCert()
+	pri, _ := self.ClientPrivateKey()
+	ca, _ := self.CAPath()
 
 	cert, err := tls.LoadX509KeyPair(pub, pri)
 	if err != nil {
@@ -247,7 +247,7 @@ func (c *Choria) TLSConfig() (tlsc *tls.Config, err error) {
 		MinVersion:   tls.VersionTLS12,
 	}
 
-	if c.Config.DisableTLSVerify {
+	if self.Config.DisableTLSVerify {
 		tlsc.InsecureSkipVerify = true
 	}
 
@@ -257,8 +257,8 @@ func (c *Choria) TLSConfig() (tlsc *tls.Config, err error) {
 }
 
 // SSLContext creates a SSL context loaded with our certs and ca
-func (c *Choria) SSLContext() (*http.Transport, error) {
-	tlsConfig, err := c.TLSConfig()
+func (self *Framework) SSLContext() (*http.Transport, error) {
+	tlsConfig, err := self.TLSConfig()
 	if err != nil {
 		return &http.Transport{}, err
 	}

@@ -3,7 +3,7 @@ package federation
 import (
 	"fmt"
 
-	"github.com/choria-io/go-choria/mcollective"
+	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -35,7 +35,7 @@ func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *Federation
 		}
 
 		for {
-			var msg *mcollective.ConnectorMessage
+			var msg *choria.ConnectorMessage
 
 			select {
 			case msg = <-natsch:

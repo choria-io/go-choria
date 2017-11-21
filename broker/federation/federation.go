@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/mcollective"
+	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -26,7 +26,7 @@ type connector interface {
 
 type FederationBroker struct {
 	Stats   *Stats
-	choria  *mcollective.Choria
+	choria  *choria.Framework
 	statsMu sync.Mutex
 
 	Name string
@@ -42,7 +42,7 @@ type FederationBroker struct {
 	logger *log.Entry
 }
 
-func NewFederationBroker(clusterName string, choria *mcollective.Choria) (broker *FederationBroker, err error) {
+func NewFederationBroker(clusterName string, choria *choria.Framework) (broker *FederationBroker, err error) {
 	broker = &FederationBroker{
 		Name:   clusterName,
 		choria: choria,
@@ -61,7 +61,7 @@ func NewFederationBroker(clusterName string, choria *mcollective.Choria) (broker
 
 func (self *FederationBroker) Start(wg *sync.WaitGroup) {
 	self.logger.Infof("Starting Federation Broker %s", self.Name)
-	
+
 	defer wg.Done()
 
 	// requests from federation

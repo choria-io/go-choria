@@ -3,7 +3,7 @@ package federation
 import (
 	"strings"
 
-	"github.com/choria-io/go-choria/mcollective"
+	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -11,7 +11,7 @@ func NewChoriaNatsEgest(workers int, mode int, capacity int, broker *FederationB
 	worker, err := PooledWorkerFactory("choria_nats_egest", workers, mode, capacity, broker, logger, func(self *pooledWorker, i int, logger *log.Entry) {
 		defer self.wg.Done()
 
-		var nc mcollective.Connector
+		var nc choria.Connector
 		var err error
 
 		nc, err = self.connection.NewConnector(self.servers, self.Name(), logger)

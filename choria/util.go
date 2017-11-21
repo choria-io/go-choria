@@ -1,4 +1,4 @@
-package mcollective
+package choria
 
 import (
 	"errors"
