@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/choria-io/go-choria/mcollective"
+	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
 
 	gnatsd "github.com/nats-io/gnatsd/server"
@@ -14,11 +14,11 @@ import (
 type Server struct {
 	gnatsd *gnatsd.Server
 	opts   *gnatsd.Options
-	choria *mcollective.Choria
+	choria *choria.Framework
 }
 
 // NewServer creates a new instance of the Server struct with a fully configured NATS embedded
-func NewServer(c *mcollective.Choria, debug bool) (s *Server, err error) {
+func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 	s = &Server{
 		choria: c,
 		opts:   &gnatsd.Options{},
@@ -55,7 +55,7 @@ func NewServer(c *mcollective.Choria, debug bool) (s *Server, err error) {
 // Start the embedded NATS instance, this is a blocking call until it exits
 func (s *Server) Start(wg *sync.WaitGroup) {
 	defer wg.Done()
-	log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, mcollective.UserConfig())
+	log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, s.choria.Config.ConfigFile)
 
 	s.gnatsd.Start()
 
