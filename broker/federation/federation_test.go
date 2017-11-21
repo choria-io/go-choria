@@ -126,6 +126,14 @@ func (s *stubConnection) Connect() error {
 	return nil
 }
 
+func (s *stubConnection) Close() {
+	return
+}
+
+func (s *stubConnection) ReplyTarget(msg *choria.Message) string {
+	return ""
+}
+
 func (s *stubConnection) SetName(name string) {
 	s.name = name
 }

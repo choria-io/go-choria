@@ -15,7 +15,7 @@ import (
 
 // ConnectionManager is capable of being a factory for connection, mcollective.Choria is one
 type ConnectionManager interface {
-	NewConnector(ervers func() ([]Server, error), name string, logger *log.Entry) (conn Connector, err error)
+	NewConnector(servers func() ([]Server, error), name string, logger *log.Entry) (conn Connector, err error)
 }
 
 // Connector is the interface a connector must implement to be valid be it NATS, Stomp, Testing etc
@@ -23,6 +23,8 @@ type Connector interface {
 	ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *ConnectorMessage, error)
 	Subscribe(name string, subject string, group string) error
 	Unsubscribe(name string) error
+
+	ReplyTarget(msg *Message) string
 
 	PublishRaw(target string, data []byte) error
 	Publish(msg *Message) error
@@ -33,6 +35,7 @@ type Connector interface {
 	SetServers(func() ([]Server, error))
 	SetName(name string)
 	Connect() (err error)
+	Close()
 }
 
 type ConnectorMessage struct {
@@ -55,6 +58,7 @@ type Connection struct {
 	nats              *nats.Conn
 	logger            *log.Entry
 	choria            *Framework
+	config            *Config
 	subscriptions     map[string]*nats.Subscription
 	chanSubscriptions map[string]*channelSubscription
 	outbox            chan *nats.Msg
@@ -72,6 +76,7 @@ func (self *Framework) NewConnector(servers func() ([]Server, error), name strin
 		servers:           servers,
 		logger:            logger,
 		choria:            self,
+		config:            self.Config,
 		subscriptions:     make(map[string]*nats.Subscription),
 		chanSubscriptions: make(map[string]*channelSubscription),
 		outbox:            make(chan *nats.Msg, 1000),
@@ -203,15 +208,17 @@ func (self *Connection) PublishRaw(target string, data []byte) error {
 	return self.nats.Publish(target, data)
 }
 
+// Publish inspects a Message and publish it according to its Type
 func (self *Connection) Publish(msg *Message) error {
 	transport, err := msg.Transport()
+
 	if err != nil {
 		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
 	}
 
-	// TODO: transport.RecordNetworkHop()
+	transport.RecordNetworkHop(self.ConnectedServer(), self.choria.Config.Identity, self.ConnectedServer())
 
-	if transport.IsFederated() {
+	if self.choria.IsFederated() {
 		return self.publishFederated(msg, transport)
 	}
 
@@ -219,25 +226,129 @@ func (self *Connection) Publish(msg *Message) error {
 }
 
 func (self *Connection) publishFederated(msg *Message, transport protocol.TransportMessage) error {
-	return fmt.Errorf("Cannot publish Message %s: publishing federates messages is not supported", msg.RequestID)
+	if msg.Type() == "direct_request" {
+		return self.publishFederatedDirect(msg, transport)
+	}
+
+	return self.publishFederatedBroadcast(msg, transport)
+}
+
+func (self *Connection) publishFederatedDirect(msg *Message, transport protocol.TransportMessage) error {
+	var err error
+
+	SliceGroups(msg.DiscoveredHosts, 200, func(nodes []string) {
+		targets := []string{}
+		var j string
+
+		for i := range nodes {
+			if nodes[i] == "" {
+				break
+			}
+
+			targets = append(targets, self.nodeDirectedTarget(msg.collective, nodes[i]))
+		}
+
+		transport.SetFederationRequestID(msg.RequestID)
+		transport.SetFederationTargets(targets)
+
+		j, err = transport.JSON()
+		if err != nil {
+			err = fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
+			return
+		}
+
+		for _, federation := range self.choria.FederationCollectives() {
+			target := self.federationTarget(federation, "federation")
+
+			log.Infof("Sending a federated direct message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
+
+			err = self.PublishRaw(target, []byte(j))
+			if err != nil {
+				err = fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
+				return
+			}
+		}
+	})
+
+	return err
+}
+
+func (self *Connection) publishFederatedBroadcast(msg *Message, transport protocol.TransportMessage) error {
+	target, err := self.targetForMessage(msg, "")
+	if err != nil {
+		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
+	}
+
+	transport.SetFederationRequestID(msg.RequestID)
+	transport.SetFederationTargets([]string{target})
+
+	j, err := transport.JSON()
+	if err != nil {
+		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
+	}
+
+	for _, federation := range self.choria.FederationCollectives() {
+		target := self.federationTarget(federation, "federation")
+
+		log.Infof("Sending a federated broadcast message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
+
+		err = self.PublishRaw(target, []byte(j))
+		if err != nil {
+			return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
+		}
+	}
+
+	return nil
 }
 
 func (self *Connection) publishConnected(msg *Message, transport protocol.TransportMessage) error {
 	if msg.Type() == "direct_request" {
-		return fmt.Errorf("Cannot publish Message %s: publishing direct_request messages is not supported", msg.RequestID)
-	} else {
-		j, err := transport.JSON()
-		if err != nil {
-			return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
-		}
-
-		target, err := self.targetForMessage(msg, "")
-		if err != nil {
-			return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
-		}
-
-		return self.PublishRaw(target, []byte(j))
+		return self.publishConnectedDirect(msg, transport)
 	}
+
+	return self.publishConnectedBroadcast(msg, transport)
+}
+
+func (self *Connection) publishConnectedBroadcast(msg *Message, transport protocol.TransportMessage) error {
+	j, err := transport.JSON()
+	if err != nil {
+		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
+	}
+
+	target, err := self.targetForMessage(msg, "")
+	if err != nil {
+		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
+	}
+
+	log.Infof("Sending a broadcast message to NATS target '%s' for message %s type %s", target, msg.RequestID, msg.Type())
+
+	return self.PublishRaw(target, []byte(j))
+
+}
+
+func (self *Connection) publishConnectedDirect(msg *Message, transport protocol.TransportMessage) error {
+	j, err := transport.JSON()
+	if err != nil {
+		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
+	}
+
+	rawmsg := []byte(j)
+
+	for _, host := range msg.DiscoveredHosts {
+		target, err := self.targetForMessage(msg, host)
+		if err != nil {
+			return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
+		}
+
+		log.Infof("Sending a direct message to %s via NATS target '%s' for message %s type %s", host, target, msg.RequestID, msg.Type())
+
+		err = self.PublishRaw(target, rawmsg)
+		if err != nil {
+			return fmt.Errorf("Could not publish directed message %s to %s: %s", msg.RequestID, host, err.Error())
+		}
+	}
+
+	return nil
 }
 
 func (self *Connection) targetForMessage(msg *Message, identity string) (string, error) {
@@ -266,8 +377,12 @@ func (self *Connection) agentBroadcastTarget(collective string, agent string) st
 	return fmt.Sprintf("%s.broadcast.agent.%s", collective, agent)
 }
 
-func (self *Connection) replyTarget(collective string, identity string) string {
-	return fmt.Sprintf("%s.reply.%s.%s", collective, identity, self.choria.NewRequestID())
+func (self *Connection) ReplyTarget(msg *Message) string {
+	return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), msg.SenderID, self.choria.NewRequestID())
+}
+
+func (self *Connection) federationTarget(federation string, side string) string {
+	return fmt.Sprintf("choria.federation.%s.%s", federation, side)
 }
 
 // ConnectedServer returns the URL of the current server that the library is connected to, "unknown" when not initialized
@@ -350,4 +465,13 @@ func (self *Connection) Connect() (err error) {
 	}
 
 	return
+}
+
+// Close closes the NATS connection after flushing what needed to be sent
+func (self *Connection) Close() {
+	self.logger.Debug("Flushing pending NATS messages before close")
+	self.nats.Flush()
+
+	self.logger.Debug("Closing NATS connection")
+	self.nats.Close()
 }

@@ -124,7 +124,18 @@ func (self *Message) requestTransport() (protocol.TransportMessage, error) {
 		return nil, errors.New("Cannot create a Request Transport without a version, please set it using SetProtocolVersion()")
 	}
 
-	return self.choria.NewRequestTransportForMessage(self, self.protoVersion)
+	if self.replyTo == "" {
+		return nil, errors.New("Cannot create a Transport, no reply-to was set, please use SetReplyTo()")
+	}
+
+	transport, err := self.choria.NewRequestTransportForMessage(self, self.protoVersion)
+	if err != nil {
+		return nil, fmt.Errorf("Could not create a Transport: %s", err.Error())
+	}
+
+	transport.SetReplyTo(self.ReplyTo())
+
+	return transport, nil
 }
 
 func (self *Message) replyTransport() (protocol.TransportMessage, error) {
