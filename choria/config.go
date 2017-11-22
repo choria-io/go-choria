@@ -59,13 +59,16 @@ type ChoriaPluginConfig struct {
 	BrokerDiscovery     bool     `confkey:"plugin.choria.broker_discovery" default:"false"`
 	BrokerFederation    bool     `confkey:"plugin.choria.broker_federation" default:"false"`
 	FederationCluster   string   `confkey:"plugin.choria.broker_federation_cluster" default:"mcollective"`
+
+	// registration
+	FileContentRegistrationData string `confkey:"plugin.choria.registration.file_content.data" default:""`
 }
 
 // Config represents Choria configuration
 type Config struct {
-	Registration              string   `confkey:"registration" default:"Agentlist" type:"title_string"`
+	Registration              string   `confkey:"registration" default:""`
 	RegistrationCollective    string   `confkey:"registration_collective"`
-	RegisterInterval          int      `confkey:"registerinterval" default:"0"`
+	RegisterInterval          int      `confkey:"registerinterval" default:"300"`
 	RegistrationSplay         bool     `confkey:"registration_splay" default:"false"`
 	Collectives               []string `confkey:"collectives" type:"comma_split" default:"mcollective"`
 	MainCollective            string   `confkey:"main_collective"`
@@ -156,6 +159,10 @@ func NewConfig(path string) (*Config, error) {
 
 	if mcollective.MainCollective == "" {
 		mcollective.MainCollective = mcollective.Collectives[0]
+	}
+
+	if mcollective.RegistrationCollective == "" {
+		mcollective.RegistrationCollective = mcollective.Collectives[0]
 	}
 
 	// TODO other loglevels, not needed for this project

@@ -33,7 +33,7 @@ var _ = Describe("NewConfig", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		Expect(c.Choria.DiscoveryHost).To(Equal("pdb.example.com"))
-		Expect(c.Registration).To(Equal("Foo"))
+		Expect(c.Registration).To(Equal("foo"))
 		Expect(c.RegisterInterval).To(Equal(10))
 		Expect(c.RegistrationSplay).To(BeTrue())
 		Expect(c.Collectives).To(Equal([]string{"c_1", "c_2", "c_3"}))
