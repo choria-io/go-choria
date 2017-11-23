@@ -139,6 +139,10 @@ func (self *Framework) FederationMiddlewareServers() (servers []Server, err erro
 //	  * Doing SRV lookups of _mcollective-server._tcp and __x-puppet-mcollective._tcp
 //    * Defaulting to puppet:4222
 func (self *Framework) MiddlewareServers() (servers []Server, err error) {
+	if self.IsFederated() {
+		return self.FederationMiddlewareServers()
+	}
+
 	configured := self.Config.Choria.MiddlewareHosts
 	if len(configured) > 0 {
 		s, err := StringHostsToServers(configured, "nats")
@@ -239,9 +243,14 @@ func (self *Framework) QuerySrvRecords(records []string) ([]Server, error) {
 		return servers, errors.New("SRV lookups are disabled in the configuration file")
 	}
 
-	domain, err := self.FacterDomain()
-	if err != nil {
-		return servers, err
+	domain := self.Config.Choria.SRVDomain
+	var err error
+
+	if self.Config.Choria.SRVDomain == "" {
+		domain, err = self.FacterDomain()
+		if err != nil {
+			return servers, err
+		}
 	}
 
 	for _, q := range records {
