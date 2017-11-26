@@ -1,6 +1,7 @@
 package federation
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"sync"
@@ -16,12 +17,11 @@ type chainable interface {
 	To(output chainable) error
 	Input() chan chainmessage
 	Output() chan chainmessage
-	Quit()
 }
 
 type runable interface {
 	Init(workers int, broker *FederationBroker) error
-	Run() error
+	Run(ctx context.Context) error
 	Ready() bool
 }
 
@@ -36,7 +36,6 @@ type pooledWorker struct {
 	name        string
 	in          chan chainmessage
 	out         chan chainmessage
-	done        chan interface{}
 	initialized bool
 	broker      *FederationBroker
 	mode        int
@@ -50,10 +49,10 @@ type pooledWorker struct {
 	connection choria.ConnectionManager
 	servers    func() ([]choria.Server, error)
 
-	worker func(self *pooledWorker, instance int, logger *log.Entry)
+	worker func(ctx context.Context, self *pooledWorker, instance int, logger *log.Entry)
 }
 
-func PooledWorkerFactory(name string, workers int, mode int, capacity int, broker *FederationBroker, logger *log.Entry, worker func(*pooledWorker, int, *log.Entry)) (*pooledWorker, error) {
+func PooledWorkerFactory(name string, workers int, mode int, capacity int, broker *FederationBroker, logger *log.Entry, worker func(context.Context, *pooledWorker, int, *log.Entry)) (*pooledWorker, error) {
 	w := &pooledWorker{
 		name:     name,
 		mode:     mode,
@@ -68,7 +67,7 @@ func PooledWorkerFactory(name string, workers int, mode int, capacity int, broke
 	return w, err
 }
 
-func (self *pooledWorker) Run() error {
+func (self *pooledWorker) Run(ctx context.Context) error {
 	self.mu.Lock()
 	defer self.mu.Unlock()
 
@@ -107,7 +106,7 @@ func (self *pooledWorker) Run() error {
 	for i := 0; i < self.workers; i++ {
 		self.wg.Add(1)
 
-		go self.worker(self, i, self.log.WithFields(log.Fields{"worker_instance": i}))
+		go self.worker(ctx, self, i, self.log.WithFields(log.Fields{"worker_instance": i}))
 	}
 
 	self.wg.Wait()
@@ -141,7 +140,6 @@ func (self *pooledWorker) Init(workers int, broker *FederationBroker) (err error
 
 	self.in = make(chan chainmessage, self.capacity)
 	self.out = make(chan chainmessage, self.capacity)
-	self.done = make(chan interface{})
 
 	self.initialized = true
 
@@ -186,14 +184,4 @@ func (self *pooledWorker) Input() chan chainmessage {
 
 func (self *pooledWorker) Output() chan chainmessage {
 	return self.out
-}
-
-func (self *pooledWorker) Quit() {
-	// no way to determine if a channel is closed
-	// and tests will call this multiple times sometimes
-	// so the unfortunate sanest thing here is just to
-	// recover and throw away
-	defer func() { recover() }()
-
-	close(self.done)
 }

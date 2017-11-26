@@ -6,9 +6,9 @@ import (
 	"io/ioutil"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/nats-io/go-nats"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
@@ -140,6 +140,10 @@ func (s *stubConnection) SetName(name string) {
 
 func (s *stubConnection) SetServers(resolver func() ([]choria.Server, error)) {}
 
+func (s *stubConnection) Nats() *nats.Conn {
+	return &nats.Conn{}
+}
+
 func (s *stubConnectionManager) NewConnector(servers func() ([]choria.Server, error), name string, logger *log.Entry) (conn choria.Connector, err error) {
 	if s.connection != nil {
 		return s.connection, nil
@@ -181,12 +185,7 @@ var _ = Describe("Federation Broker", func() {
 		c, err := choria.New("testdata/federation.cfg")
 		Expect(err).ToNot(HaveOccurred())
 
-		fb, err := NewFederationBroker("test_cluster", c)
+		_, err = NewFederationBroker("test_cluster", c)
 		Expect(err).ToNot(HaveOccurred())
-
-		Expect(fb.Stats.Status).To(Equal("unknown"))
-		Expect(fb.Stats.CollectiveStats.ConnectedServer).To(Equal("unknown"))
-		Expect(fb.Stats.FederationStats.ConnectedServer).To(Equal("unknown"))
-		Expect(fb.Stats.StartTime).To(BeTemporally("~", time.Now()))
 	})
 })

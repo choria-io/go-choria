@@ -3,7 +3,6 @@ package federation
 import (
 	"context"
 	"sync"
-	"time"
 
 	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
@@ -26,7 +25,6 @@ type connector interface {
 }
 
 type FederationBroker struct {
-	Stats   *Stats
 	choria  *choria.Framework
 	statsMu sync.Mutex
 
@@ -48,13 +46,6 @@ func NewFederationBroker(clusterName string, choria *choria.Framework) (broker *
 		Name:   clusterName,
 		choria: choria,
 		logger: log.WithFields(log.Fields{"cluster": clusterName, "component": "federation"}),
-		Stats: &Stats{
-			ConfigFile:      &choria.Config.ConfigFile,
-			StartTime:       time.Now(),
-			Status:          "unknown",
-			CollectiveStats: &WorkerStats{ConnectedServer: "unknown"},
-			FederationStats: &WorkerStats{ConnectedServer: "unknown"},
-		},
 	}
 
 	return
@@ -79,11 +70,11 @@ func (self *FederationBroker) Start(ctx context.Context, wg *sync.WaitGroup) {
 	self.collectiveIn.To(self.replyT)
 	self.replyT.To(self.fedOut)
 
-	go self.requestT.Run()
-	go self.replyT.Run()
-	go self.collectiveOut.Run()
-	go self.collectiveIn.Run()
-	go self.requestT.Run()
-	go self.fedOut.Run()
-	self.fedIn.Run()
+	go self.requestT.Run(ctx)
+	go self.replyT.Run(ctx)
+	go self.collectiveOut.Run(ctx)
+	go self.collectiveIn.Run(ctx)
+	go self.requestT.Run(ctx)
+	go self.fedOut.Run(ctx)
+	self.fedIn.Run(ctx)
 }

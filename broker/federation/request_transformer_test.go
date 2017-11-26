@@ -3,6 +3,7 @@ package federation
 import (
 	"bufio"
 	"bytes"
+	"context"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/protocol"
@@ -23,9 +24,12 @@ var _ = Describe("RequestTransformer", func() {
 		logtxt      *bufio.Writer
 		logbuf      *bytes.Buffer
 		logger      *log.Entry
+		ctx         context.Context
+		cancel      func()
 	)
 
 	BeforeEach(func() {
+		ctx, cancel = context.WithCancel(context.Background())
 		logger, logtxt, logbuf = newDiscardLogger()
 
 		c, err = choria.New("testdata/federation.cfg")
@@ -47,11 +51,11 @@ var _ = Describe("RequestTransformer", func() {
 		transformer, err = NewChoriaRequestTransformer(1, 10, broker, logger)
 		Expect(err).ToNot(HaveOccurred())
 
-		go transformer.Run()
+		go transformer.Run(ctx)
 	}, 10)
 
 	AfterEach(func() {
-		transformer.Quit()
+		cancel()
 	}, 10)
 
 	It("should correctly transform a message", func() {
@@ -108,7 +112,7 @@ var _ = Describe("RequestTransformer", func() {
 	})
 
 	It("Should support Quit", func() {
-		transformer.Quit()
+		cancel()
 		waitForLogLines(logtxt, logbuf)
 		Expect(logbuf.String()).To(MatchRegexp("Worker routine choria_request_transformer exiting"))
 	})

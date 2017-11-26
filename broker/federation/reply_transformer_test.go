@@ -3,6 +3,7 @@ package federation
 import (
 	"bufio"
 	"bytes"
+	"context"
 
 	log "github.com/sirupsen/logrus"
 
@@ -25,9 +26,12 @@ var _ = Describe("Reply Transformer", func() {
 		logtxt      *bufio.Writer
 		logbuf      *bytes.Buffer
 		logger      *log.Entry
+		ctx         context.Context
+		cancel      func()
 	)
 
 	BeforeEach(func() {
+		ctx, cancel = context.WithCancel(context.Background())
 		logger, logtxt, logbuf = newDiscardLogger()
 
 		c, err = choria.New("testdata/federation.cfg")
@@ -51,11 +55,11 @@ var _ = Describe("Reply Transformer", func() {
 		transformer, err = NewChoriaReplyTransformer(1, 10, broker, logger)
 		Expect(err).ToNot(HaveOccurred())
 
-		go transformer.Run()
+		go transformer.Run(ctx)
 	}, 10)
 
 	AfterEach(func() {
-		transformer.Quit()
+		cancel()
 	}, 10)
 
 	It("should correctly transform a message", func() {
@@ -96,7 +100,7 @@ var _ = Describe("Reply Transformer", func() {
 	})
 
 	It("Should support Quit", func() {
-		transformer.Quit()
+		cancel()
 		waitForLogLines(logtxt, logbuf)
 		Expect(logbuf.String()).To(MatchRegexp("Worker routine choria_reply_transformer exiting"))
 	})
