@@ -1,6 +1,7 @@
 package federation
 
 import (
+	"context"
 	"sync"
 	"time"
 
@@ -59,7 +60,7 @@ func NewFederationBroker(clusterName string, choria *choria.Framework) (broker *
 	return
 }
 
-func (self *FederationBroker) Start(wg *sync.WaitGroup) {
+func (self *FederationBroker) Start(ctx context.Context, wg *sync.WaitGroup) {
 	self.logger.Infof("Starting Federation Broker %s", self.Name)
 
 	defer wg.Done()

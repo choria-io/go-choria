@@ -1,11 +1,13 @@
 package cmd
 
 import (
+	"sync"
+
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
 
 type command struct {
-	Run   func() error
+	Run   func(wg *sync.WaitGroup) error
 	Setup func() error
 
 	cmd *kingpin.CmdClause
@@ -13,7 +15,7 @@ type command struct {
 
 type runableCmd interface {
 	Setup() error
-	Run() error
+	Run(wg *sync.WaitGroup) error
 	FullCommand() string
 	Cmd() *kingpin.CmdClause
 }

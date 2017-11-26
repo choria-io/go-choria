@@ -9,7 +9,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/nats-io/nats"
+	"github.com/nats-io/go-nats"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -36,6 +36,8 @@ type Connector interface {
 	SetName(name string)
 	Connect() (err error)
 	Close()
+
+	Nats() *nats.Conn
 }
 
 type ConnectorMessage struct {
@@ -97,6 +99,10 @@ func (self *Connection) SetServers(resolver func() ([]Server, error)) {
 
 func (self *Connection) SetName(name string) {
 	self.name = name
+}
+
+func (self *Connection) Nats() *nats.Conn {
+	return self.nats
 }
 
 // copies the incoming nats.Msg format messages on a channel subscription to its Message formatted output
@@ -387,7 +393,7 @@ func (self *Connection) federationTarget(federation string, side string) string 
 
 // ConnectedServer returns the URL of the current server that the library is connected to, "unknown" when not initialized
 func (self *Connection) ConnectedServer() string {
-	if self.nats == nil {
+	if self.Nats == nil {
 		return "unknown"
 	}
 

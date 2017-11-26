@@ -1,8 +1,12 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
+	"sync"
+	"syscall"
 
 	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
@@ -21,6 +25,10 @@ var cli = application{}
 var debug = false
 var configFile = ""
 var c *choria.Framework
+var config *choria.Config
+var ctx context.Context
+var cancel func()
+var wg *sync.WaitGroup
 
 func ParseCLI() (err error) {
 	cli.app = kingpin.New("choria", "Choria Orchestration System")
@@ -49,22 +57,46 @@ func ParseCLI() (err error) {
 		return fmt.Errorf("Could not initialize Choria: %s", err.Error())
 	}
 
+	config = c.Config
+
 	return
 }
 
 func Run() (err error) {
+	wg = &sync.WaitGroup{}
+	sigs := make(chan os.Signal, 1)
 	ran := false
+	ctx, cancel = context.WithCancel(context.Background())
+
+	defer cancel()
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
 
 	for _, cmd := range cli.commands {
 		if cmd.FullCommand() == cli.command {
 			ran = true
-			err = cmd.Run()
+
+			wg.Add(1)
+			err = cmd.Run(wg)
 		}
 	}
 
 	if !ran {
 		err = fmt.Errorf("Could not run the CLI: Invalid command %s", cli.command)
 	}
+
+	if err != nil {
+		log.Errorf("Shutting down due to: %s", err.Error())
+		cancel()
+	}
+
+	select {
+	case <-ctx.Done():
+	case sig := <-sigs:
+		log.Infof("Shutting down on %s", sig)
+		cancel()
+	}
+
+	wg.Wait()
 
 	return
 }

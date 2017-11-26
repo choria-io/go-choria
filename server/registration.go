@@ -67,6 +67,7 @@ func (self *Instance) registrationWorker() {
 			}
 
 			msg.SetProtocolVersion(protocol.RequestV1)
+			msg.SetReplyTo("dev.null")
 
 			self.logger.Debugf("Publishing %d bytes of registration data to collective %s", len(*data), self.config.RegistrationCollective)
 
