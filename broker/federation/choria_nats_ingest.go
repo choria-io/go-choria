@@ -1,6 +1,7 @@
 package federation
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/choria-io/go-choria/choria"
@@ -8,10 +9,10 @@ import (
 )
 
 func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *FederationBroker, logger *log.Entry) (*pooledWorker, error) {
-	worker, err := PooledWorkerFactory("choria_nats_ingest", workers, mode, capacity, broker, logger, func(self *pooledWorker, i int, logger *log.Entry) {
+	worker, err := PooledWorkerFactory("choria_nats_ingest", workers, mode, capacity, broker, logger, func(ctx context.Context, self *pooledWorker, i int, logger *log.Entry) {
 		defer self.wg.Done()
 
-		nc, err := self.connection.NewConnector(self.servers, self.Name(), logger)
+		nc, err := self.connection.NewConnector(ctx, self.servers, self.Name(), logger)
 		if err != nil {
 			logger.Errorf("Could not start NATS connection for worker %d: %s", i, err.Error())
 			return
@@ -39,7 +40,7 @@ func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *Federation
 
 			select {
 			case msg = <-natsch:
-			case <-self.done:
+			case <-ctx.Done():
 				logger.Infof("Worker routine %s exiting", self.Name())
 				return
 			}

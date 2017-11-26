@@ -1,5 +1,5 @@
-hash: bfb587c2f2ab02d4469b1d1d98b0eb93ae31e60e7a09bdddfb2a9809569a40f0
-updated: 2017-11-20T14:03:26.782848768+01:00
+hash: 260e3b958dad7e29b3a98f945bf106f4b2135b8ad7b419a086388473ddde6eaf
+updated: 2017-11-26T13:47:03.811497019+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -7,6 +7,12 @@ imports:
   - parse
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
+- name: github.com/gogo/protobuf
+  version: 971cbfd2e72b513a28c74af7462aee0800248d69
+  subpackages:
+  - gogoproto
+  - proto
+  - protoc-gen-gogo/descriptor
 - name: github.com/nats-io/gnatsd
   version: 12a5ced612f30aa511906c0de12a124233752f70
   subpackages:
@@ -20,6 +26,10 @@ imports:
   subpackages:
   - encoders/builtin
   - util
+- name: github.com/nats-io/go-nats-streaming
+  version: 88fd0ce51e45a3a711b737174fd951944c91f085
+  subpackages:
+  - pb
 - name: github.com/nats-io/nats
   version: 29f9728a183bf3fa7e809e14edac00b33be72088
   subpackages:
@@ -27,7 +37,6 @@ imports:
   - util
 - name: github.com/nats-io/nuid
   version: 289cccf02c178dc782430d534e3c1f5b72af807f
-  repo: https://github.com/nats-io/nuid
 - name: github.com/onsi/ginkgo
   version: 77a8c1e5c40d6bb6c5eb4dd4bdce9763564f6298
   subpackages:
@@ -82,6 +91,10 @@ imports:
   - bcrypt
   - blowfish
   - ssh/terminal
+- name: golang.org/x/net
+  version: c7086645de248775cbf2373cf5ca4d2fa664b8c1
+  subpackages:
+  - context
 - name: golang.org/x/sys
   version: f7928cfef4d09d1b080aa2b6fd3ca9ba1567c733
   subpackages:

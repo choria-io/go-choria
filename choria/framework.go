@@ -118,7 +118,7 @@ func (self *Framework) FederationMiddlewareServers() (servers []Server, err erro
 	}
 
 	if len(servers) == 0 {
-		if servers, err = self.QuerySrvRecords([]string{"_mcollective-server._tcp", "_x-puppet-mcollective._tcp"}); err != nil {
+		if servers, err = self.QuerySrvRecords([]string{"_mcollective-federation_server._tcp", "_x-puppet-mcollective_federation._tcp"}); err != nil {
 			return servers, fmt.Errorf("Could not resolve Federation Middleware Server SRV records: %s", err.Error())
 		}
 	}

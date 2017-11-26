@@ -3,6 +3,7 @@ package federation
 import (
 	"bufio"
 	"bytes"
+	"context"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/protocol"
@@ -24,9 +25,12 @@ var _ = Describe("Choria NATS Ingest", func() {
 		logbuf    *bytes.Buffer
 		logger    *log.Entry
 		broker    *FederationBroker
+		ctx       context.Context
+		cancel    func()
 	)
 
 	BeforeEach(func() {
+		ctx, cancel = context.WithCancel(context.Background())
 		logger, logtxt, logbuf = newDiscardLogger()
 
 		request, err = c.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, c.NewRequestID(), "mcollective")
@@ -56,11 +60,11 @@ var _ = Describe("Choria NATS Ingest", func() {
 		manager.Init()
 		connector.connection = manager
 
-		go connector.Run()
+		go connector.Run(ctx)
 	}, 1)
 
 	AfterEach(func() {
-		connector.Quit()
+		cancel()
 	}, 1)
 
 	It("Should fail for invalid JSON", func() {
@@ -88,20 +92,21 @@ var _ = Describe("Choria NATS Ingest", func() {
 	})
 
 	It("Should subscribe to the right target in Collective mode", func() {
-		connector.Quit()
+		cancel()
+		ctx, cancel = context.WithCancel(context.Background())
 
 		connector, _ := NewChoriaNatsIngest(1, Collective, 10, broker, logger)
 		manager := &stubConnectionManager{}
 		manager.Init()
 		connector.connection = manager
 
-		go connector.Run()
+		go connector.Run(ctx)
 
 		manager.connection.PublishToQueueSub("ingest", in)
 		<-connector.Output()
 		Expect(manager.connection.Subs["ingest"]).To(Equal([3]string{"ingest", "choria.federation.test.collective", "test_collective"}))
 
-		connector.Quit()
+		cancel()
 	})
 
 	It("Should subscribe and process the message", func() {

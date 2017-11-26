@@ -15,7 +15,7 @@ func (self *Framework) NewMessage(payload string, agent string, collective strin
 	return
 }
 
-func (self *Framework) NewMessageFromTransportJSON(payload []byte) (msg *Message, err error) {
+func (self *Framework) NewRequestMessageFromTransportJSON(payload []byte) (msg *Message, err error) {
 	transport, err := self.NewTransportFromJSON(string(payload))
 	if err != nil {
 		return nil, err
@@ -39,6 +39,50 @@ func (self *Framework) NewMessageFromTransportJSON(payload []byte) (msg *Message
 	}
 
 	return
+}
+
+// NewReplyFromTransportJSON creates a new Reply from a transport JSON
+func (self *Framework) NewReplyFromTransportJSON(payload []byte) (msg protocol.Reply, err error) {
+	transport, err := self.NewTransportFromJSON(string(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	sreply, err := self.NewSecureReplyFromTransport(transport)
+	if err != nil {
+		return nil, err
+	}
+
+	reply, err := self.NewReplyFromSecureReply(sreply)
+	if err != nil {
+		return nil, err
+	}
+
+	protocol.CopyFederationData(transport, reply)
+
+	return reply, nil
+}
+
+// NewRequestFromTransportJSON creates a new Request from transport JSON
+func (self *Framework) NewRequestFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Request, err error) {
+	transport, err := self.NewTransportFromJSON(string(payload))
+	if err != nil {
+		return nil, err
+	}
+
+	sreq, err := self.NewSecureRequestFromTransport(transport, skipvalidate)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := self.NewRequestFromSecureRequest(sreq)
+	if err != nil {
+		return nil, err
+	}
+
+	protocol.CopyFederationData(transport, req)
+
+	return req, nil
 }
 
 // NewRequest creates a new Request complying with a specific protocol version like protocol.RequestV1

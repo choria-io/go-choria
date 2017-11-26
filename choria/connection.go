@@ -1,6 +1,7 @@
 package choria
 
 import (
+	"context"
 	"crypto/tls"
 	"fmt"
 	"net/url"
@@ -9,13 +10,13 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/nats-io/nats"
+	"github.com/nats-io/go-nats"
 	log "github.com/sirupsen/logrus"
 )
 
 // ConnectionManager is capable of being a factory for connection, mcollective.Choria is one
 type ConnectionManager interface {
-	NewConnector(servers func() ([]Server, error), name string, logger *log.Entry) (conn Connector, err error)
+	NewConnector(ctx context.Context, servers func() ([]Server, error), name string, logger *log.Entry) (conn Connector, err error)
 }
 
 // Connector is the interface a connector must implement to be valid be it NATS, Stomp, Testing etc
@@ -34,8 +35,10 @@ type Connector interface {
 	ConnectedServer() string
 	SetServers(func() ([]Server, error))
 	SetName(name string)
-	Connect() (err error)
+	Connect(ctx context.Context) (err error)
 	Close()
+
+	Nats() *nats.Conn
 }
 
 type ConnectorMessage struct {
@@ -70,7 +73,7 @@ type Connection struct {
 // NewConnector creates a new NATS connector
 //
 // It will attempt to connect to the given servers and will keep trying till it manages to do so
-func (self *Framework) NewConnector(servers func() ([]Server, error), name string, logger *log.Entry) (conn Connector, err error) {
+func (self *Framework) NewConnector(ctx context.Context, servers func() ([]Server, error), name string, logger *log.Entry) (conn Connector, err error) {
 	conn = &Connection{
 		name:              name,
 		servers:           servers,
@@ -86,7 +89,7 @@ func (self *Framework) NewConnector(servers func() ([]Server, error), name strin
 		conn.SetName(self.Config.Identity)
 	}
 
-	err = conn.Connect()
+	err = conn.Connect(ctx)
 
 	return conn, err
 }
@@ -97,6 +100,10 @@ func (self *Connection) SetServers(resolver func() ([]Server, error)) {
 
 func (self *Connection) SetName(name string) {
 	self.name = name
+}
+
+func (self *Connection) Nats() *nats.Conn {
+	return self.nats
 }
 
 // copies the incoming nats.Msg format messages on a channel subscription to its Message formatted output
@@ -387,7 +394,7 @@ func (self *Connection) federationTarget(federation string, side string) string 
 
 // ConnectedServer returns the URL of the current server that the library is connected to, "unknown" when not initialized
 func (self *Connection) ConnectedServer() string {
-	if self.nats == nil {
+	if self.Nats == nil {
 		return "unknown"
 	}
 
@@ -398,7 +405,7 @@ func (self *Connection) ConnectedServer() string {
 //
 // This will block until connected - basically forever should it never work.  Due to short comings
 // in the NATS library logging about failures is not optimal
-func (self *Connection) Connect() (err error) {
+func (self *Connection) Connect(ctx context.Context) (err error) {
 	self.conMu.Lock()
 	defer self.conMu.Unlock()
 
@@ -455,6 +462,12 @@ func (self *Connection) Connect() (err error) {
 		self.nats, err = nats.Connect(strings.Join(urls, ", "), options...)
 		if err != nil {
 			self.logger.Warnf("Initial connection to the NATS broker cluster failed: %s", err.Error())
+
+			if ctx.Err() != nil {
+				err = fmt.Errorf("Initial connection cancelled due to shut down")
+				return
+			}
+
 			time.Sleep(time.Second)
 			continue
 		}

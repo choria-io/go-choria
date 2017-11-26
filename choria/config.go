@@ -62,6 +62,9 @@ type ChoriaPluginConfig struct {
 
 	// registration
 	FileContentRegistrationData string `confkey:"plugin.choria.registration.file_content.data" default:""`
+
+	// adapters
+	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split"`
 }
 
 // Config represents Choria configuration
@@ -108,8 +111,8 @@ type Config struct {
 
 	ConfigFile string
 
-	// list of all the options that were actually set
-	setOptions []string
+	// the options exactly as they were found in the config files
+	rawOpts map[string]string
 
 	Choria *ChoriaPluginConfig
 
@@ -124,57 +127,66 @@ type Config struct {
 // The option given would be something like `plugin.choria.use_srv`
 // and true would indicate that it was set by config vs using defaults
 func (self *Config) HasOption(option string) bool {
-	for _, i := range self.setOptions {
-		if i == option {
-			return true
-		}
+	_, ok := self.rawOpts[option]
+
+	return ok
+}
+
+// Option retrieves the raw string representation of a given option
+// from that was loaded from the configuration
+func (self *Config) Option(option string, deflt string) string {
+	v, ok := self.rawOpts[option]
+
+	if !ok {
+		return deflt
 	}
 
-	return false
+	return v
 }
 
 // NewConfig parses a config file and return the config
 func NewConfig(path string) (*Config, error) {
-	mcollective := newConfig()
-	mcollective.ConfigFile = path
+	c := newConfig()
+	c.ConfigFile = path
+	c.rawOpts = make(map[string]string)
 
 	// TODO i think probably parse config can walk 'mcollective' recursively
-	err := parseConfig(path, mcollective, "", &mcollective.setOptions)
+	err := parseConfig(path, c, "", c.rawOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	err = parseConfig(path, mcollective.Choria, "", &mcollective.setOptions)
+	err = parseConfig(path, c.Choria, "", c.rawOpts)
 	if err != nil {
 		return nil, err
 	}
 
 	choriaPConf := filepath.Join(filepath.Dir(path), "plugin.d", "choria.cfg")
 	if _, err := os.Stat(choriaPConf); err == nil {
-		err = parseConfig(choriaPConf, mcollective.Choria, "plugin.choria", &mcollective.setOptions)
+		err = parseConfig(choriaPConf, c.Choria, "plugin.choria", c.rawOpts)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	if mcollective.MainCollective == "" {
-		mcollective.MainCollective = mcollective.Collectives[0]
+	if c.MainCollective == "" {
+		c.MainCollective = c.Collectives[0]
 	}
 
-	if mcollective.RegistrationCollective == "" {
-		mcollective.RegistrationCollective = mcollective.Collectives[0]
+	if c.RegistrationCollective == "" {
+		c.RegistrationCollective = c.Collectives[0]
 	}
 
 	// TODO other loglevels, not needed for this project
-	if mcollective.LogLevel == "debug" {
+	if c.LogLevel == "debug" {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	return mcollective, nil
+	return c, nil
 }
 
 // parse a config file and fill in the given config structure based on its tags
-func parseConfig(path string, config interface{}, prefix string, found *[]string) error {
+func parseConfig(path string, config interface{}, prefix string, found map[string]string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -186,7 +198,7 @@ func parseConfig(path string, config interface{}, prefix string, found *[]string
 	return nil
 }
 
-func parseConfigContents(content io.Reader, config interface{}, prefix string, found *[]string) {
+func parseConfigContents(content io.Reader, config interface{}, prefix string, found map[string]string) {
 	scanner := bufio.NewScanner(content)
 	itemr := regexp.MustCompile(`(.+?)\s*=\s*(.+)`)
 	skipr := regexp.MustCompile(`^#|^$`)
@@ -206,7 +218,7 @@ func parseConfigContents(content io.Reader, config interface{}, prefix string, f
 				}
 
 				setItemWithKey(config, key, matches[2])
-				*found = append(*found, key)
+				found[key] = matches[2]
 			}
 		}
 	}

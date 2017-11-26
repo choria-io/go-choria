@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"os"
+	"sync"
 
 	"github.com/choria-io/go-choria/server"
 	log "github.com/sirupsen/logrus"
@@ -26,7 +27,7 @@ func (b *serverCommand) Setup() (err error) {
 	return
 }
 
-func (b *serverCommand) Run() (err error) {
+func (b *serverCommand) Run(wg *sync.WaitGroup) (err error) {
 	return
 }
 
@@ -42,16 +43,19 @@ func (r *serverRunCommand) Setup() (err error) {
 	return
 }
 
-func (r *serverRunCommand) Run() (err error) {
+func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
+	defer wg.Done()
+
 	instance, err := server.NewInstance(c)
 	if err != nil {
 		log.Errorf("Could not start choria: %s", err.Error())
 		os.Exit(1)
 	}
 
-	log.Infof("%#v", instance)
+	wg.Add(1)
+	instance.Run(ctx, wg)
 
-	select {}
+	return nil
 }
 
 func init() {

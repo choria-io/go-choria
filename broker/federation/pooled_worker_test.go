@@ -1,6 +1,7 @@
 package federation
 
 import (
+	"context"
 	"io/ioutil"
 
 	. "github.com/onsi/ginkgo"
@@ -16,9 +17,9 @@ var _ = Describe("Pooled Worker", func() {
 		logger := log.WithFields(log.Fields{"test": "true"})
 		broker := &FederationBroker{}
 
-		s, _ = PooledWorkerFactory("socket", 1, Unconnected, 1000, broker, logger, func(w *pooledWorker, i int, l *log.Entry) {})
-		l, _ = PooledWorkerFactory("left", 1, Unconnected, 1000, broker, logger, func(w *pooledWorker, i int, l *log.Entry) {})
-		r, _ = PooledWorkerFactory("right", 1, Unconnected, 1000, broker, logger, func(w *pooledWorker, i int, l *log.Entry) {})
+		s, _ = PooledWorkerFactory("socket", 1, Unconnected, 1000, broker, logger, func(ctx context.Context, w *pooledWorker, i int, l *log.Entry) {})
+		l, _ = PooledWorkerFactory("left", 1, Unconnected, 1000, broker, logger, func(ctx context.Context, w *pooledWorker, i int, l *log.Entry) {})
+		r, _ = PooledWorkerFactory("right", 1, Unconnected, 1000, broker, logger, func(ctx context.Context, w *pooledWorker, i int, l *log.Entry) {})
 	}, 10)
 
 	It("Should correctly initialize", func() {

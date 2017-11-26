@@ -1,13 +1,14 @@
 package federation
 
 import (
+	"context"
 	"fmt"
 
 	log "github.com/sirupsen/logrus"
 )
 
 func NewChoriaRequestTransformer(workers int, capacity int, broker *FederationBroker, logger *log.Entry) (*pooledWorker, error) {
-	worker, err := PooledWorkerFactory("choria_request_transformer", workers, Unconnected, capacity, broker, logger, func(self *pooledWorker, i int, logger *log.Entry) {
+	worker, err := PooledWorkerFactory("choria_request_transformer", workers, Unconnected, capacity, broker, logger, func(ctx context.Context, self *pooledWorker, i int, logger *log.Entry) {
 		defer self.wg.Done()
 
 		for {
@@ -15,7 +16,7 @@ func NewChoriaRequestTransformer(workers int, capacity int, broker *FederationBr
 
 			select {
 			case cm = <-self.in:
-			case <-self.done:
+			case <-ctx.Done():
 				logger.Infof("Worker routine %s exiting", self.Name())
 				return
 			}

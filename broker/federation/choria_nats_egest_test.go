@@ -3,6 +3,7 @@ package federation
 import (
 	"bufio"
 	"bytes"
+	"context"
 
 	"github.com/choria-io/go-choria/protocol"
 	. "github.com/onsi/ginkgo"
@@ -22,9 +23,12 @@ var _ = Describe("Choria NATS Egest", func() {
 		logtxt    *bufio.Writer
 		logbuf    *bytes.Buffer
 		logger    *log.Entry
+		ctx       context.Context
+		cancel    func()
 	)
 
 	BeforeEach(func() {
+		ctx, cancel = context.WithCancel(context.Background())
 		logger, logtxt, logbuf = newDiscardLogger()
 
 		request, err = c.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, c.NewRequestID(), "mcollective")
@@ -48,11 +52,11 @@ var _ = Describe("Choria NATS Egest", func() {
 		manager = &stubConnectionManager{}
 		connector.connection = manager
 
-		go connector.Run()
+		go connector.Run(ctx)
 	}, 10)
 
 	AfterEach(func() {
-		connector.Quit()
+		cancel()
 	}, 10)
 
 	It("Should send the message to every target", func() {
@@ -84,7 +88,7 @@ var _ = Describe("Choria NATS Egest", func() {
 	})
 
 	It("Should support Quit", func() {
-		connector.Quit()
+		cancel()
 		waitForLogLines(logtxt, logbuf)
 		Expect(logbuf.String()).To(MatchRegexp("Worker routine choria_nats_egest exiting"))
 	})

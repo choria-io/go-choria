@@ -1,6 +1,7 @@
 package network
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -53,7 +54,7 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 }
 
 // Start the embedded NATS instance, this is a blocking call until it exits
-func (s *Server) Start(wg *sync.WaitGroup) {
+func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, s.choria.Config.ConfigFile)
 
