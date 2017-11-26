@@ -1,7 +1,8 @@
 package server
 
 import (
-	"fmt"
+	"context"
+	"sync"
 
 	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
@@ -12,7 +13,7 @@ type Instance struct {
 	c           *choria.Framework
 	connector   choria.Connector
 	config      *choria.Config
-	logger      *log.Entry
+	log         *log.Entry
 	servers     []*choria.Server
 	registrator Registrator
 }
@@ -23,34 +24,23 @@ func NewInstance(c *choria.Framework) (i *Instance, err error) {
 		config: c.Config,
 	}
 
-	i.logger = log.WithFields(log.Fields{"identity": c.Config.Identity, "component": "server"})
-	i.logger.Infof("Choria version %s starting with config %s", "x.x.x", c.Config.ConfigFile)
-
-	if err := i.initialConnect(); err != nil {
-		return nil, fmt.Errorf("Initial NATS connection failed: %s", err.Error())
-	}
-
-	if err := i.startRegistration(); err != nil {
-		return nil, fmt.Errorf("Could not initialize registration: %s", err.Error())
-	}
+	i.log = log.WithFields(log.Fields{"identity": c.Config.Identity, "component": "server"})
+	i.log.Infof("Choria version %s starting with config %s", "x.x.x", c.Config.ConfigFile)
 
 	return i, nil
 }
 
-func (self *Instance) initialConnect() error {
-	servers := func() ([]choria.Server, error) {
-		return self.c.MiddlewareServers()
+func (self *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	if err := self.initialConnect(ctx); err != nil {
+		self.log.Errorf("Initial NATS connection failed: %s", err.Error())
+		return
 	}
 
-	_, err := servers()
-	if err != nil {
-		return fmt.Errorf("Could not find initial NATS servers: %s", err.Error())
+	wg.Add(1)
+	if err := self.startRegistration(ctx, wg); err != nil {
+		self.log.Errorf("Could not initialize registration: %s", err.Error())
+		return
 	}
-
-	self.connector, err = self.c.NewConnector(servers, self.c.Certname(), self.logger)
-	if err != nil {
-		return fmt.Errorf("Could not create connector: %s", err.Error())
-	}
-
-	return nil
 }

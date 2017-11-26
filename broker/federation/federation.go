@@ -76,5 +76,5 @@ func (self *FederationBroker) Start(ctx context.Context, wg *sync.WaitGroup) {
 	go self.collectiveIn.Run(ctx)
 	go self.requestT.Run(ctx)
 	go self.fedOut.Run(ctx)
-	self.fedIn.Run(ctx)
+	go self.fedIn.Run(ctx)
 }

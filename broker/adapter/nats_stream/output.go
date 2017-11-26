@@ -94,7 +94,7 @@ func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) erro
 
 	go sc.disconnectWatch(ctx)
 
-	nc, err := cm.NewConnector(sc.servers, sc.clientID, sc.log)
+	nc, err := cm.NewConnector(ctx, sc.servers, sc.clientID, sc.log)
 	if err != nil {
 		return fmt.Errorf("Could not start NATS connection: %s", err.Error())
 	}

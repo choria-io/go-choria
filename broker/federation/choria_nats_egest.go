@@ -15,7 +15,7 @@ func NewChoriaNatsEgest(workers int, mode int, capacity int, broker *FederationB
 		var nc choria.Connector
 		var err error
 
-		nc, err = self.connection.NewConnector(self.servers, self.Name(), logger)
+		nc, err = self.connection.NewConnector(ctx, self.servers, self.Name(), logger)
 		if err != nil {
 			logger.Errorf("Could not start NATS connection for worker %d: %s", i, err.Error())
 			return

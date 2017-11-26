@@ -44,15 +44,18 @@ func (r *serverRunCommand) Setup() (err error) {
 }
 
 func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
+	defer wg.Done()
+
 	instance, err := server.NewInstance(c)
 	if err != nil {
 		log.Errorf("Could not start choria: %s", err.Error())
 		os.Exit(1)
 	}
 
-	log.Infof("%#v", instance)
+	wg.Add(1)
+	instance.Run(ctx, wg)
 
-	select {}
+	return nil
 }
 
 func init() {

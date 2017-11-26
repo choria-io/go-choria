@@ -3,6 +3,7 @@ package federation
 import (
 	"bufio"
 	"bytes"
+	"context"
 	"io/ioutil"
 	"sync"
 	"testing"
@@ -122,7 +123,7 @@ func (s *stubConnection) Publish(msg *choria.Message) error {
 	return nil
 }
 
-func (s *stubConnection) Connect() error {
+func (s *stubConnection) Connect(ctx context.Context) error {
 	return nil
 }
 
@@ -144,7 +145,7 @@ func (s *stubConnection) Nats() *nats.Conn {
 	return &nats.Conn{}
 }
 
-func (s *stubConnectionManager) NewConnector(servers func() ([]choria.Server, error), name string, logger *log.Entry) (conn choria.Connector, err error) {
+func (s *stubConnectionManager) NewConnector(ctx context.Context, servers func() ([]choria.Server, error), name string, logger *log.Entry) (conn choria.Connector, err error) {
 	if s.connection != nil {
 		return s.connection, nil
 	}
