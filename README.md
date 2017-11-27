@@ -31,15 +31,19 @@ plugin.choria.broker_network = true
 # port it listens on for clients, this is the default when not set
 plugin.choria.network.client_port = 4222 
 
-# port it listens on for other choria brokers for clustering purposes
+# port it listens on for other choria brokers for clustering purposes, this is the default when not set
 plugin.choria.network.peer_port = 5222
 
 # other brokers in a cluster
 plugin.choria.network.peers = nats://choria1:5222, nats://choria2:5222, nats://choria3:5222
 
-# username and password for cluster connections
+# username and password for cluster connections, no need for this typically, it would use CA validated TLS
+# allowing only certs signed by your CA to connect
 plugin.choria.network.peer_user = choria_cluster
 plugin.choria.network.peer_password = s£cret
+
+# enables the typical NATS stats/status port
+plugin.choria.network.monitor_port = 8222
 ```
 
 ## Federation Broker
