@@ -9,6 +9,7 @@ import (
 	"syscall"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/version"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -18,8 +19,6 @@ type application struct {
 	command  string
 	commands []runableCmd
 }
-
-const version = "0.0.1"
 
 var cli = application{}
 var debug = false
@@ -32,7 +31,7 @@ var wg *sync.WaitGroup
 
 func ParseCLI() (err error) {
 	cli.app = kingpin.New("choria", "Choria Orchestration System")
-	cli.app.Version(version)
+	cli.app.Version(version.Version)
 	cli.app.Author("R.I.Pienaar <rip@devco.net>")
 	cli.app.Flag("debug", "Enable debug logging").Short('d').BoolVar(&debug)
 	cli.app.Flag("config", "Config file to use").StringVar(&configFile)

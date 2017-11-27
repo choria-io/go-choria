@@ -482,6 +482,11 @@ func (self *Connection) Connect(ctx context.Context) (err error) {
 
 // Close closes the NATS connection after flushing what needed to be sent
 func (self *Connection) Close() {
+	for s := range self.chanSubscriptions {
+		self.logger.Debugf("Stopping channel subscription %s", s)
+		self.chanSubscriptions[s].quit <- true
+	}
+
 	self.logger.Debug("Flushing pending NATS messages before close")
 	self.nats.Flush()
 

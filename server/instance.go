@@ -25,7 +25,6 @@ func NewInstance(c *choria.Framework) (i *Instance, err error) {
 	}
 
 	i.log = log.WithFields(log.Fields{"identity": c.Config.Identity, "component": "server"})
-	i.log.Infof("Choria version %s starting with config %s", "x.x.x", c.Config.ConfigFile)
 
 	return i, nil
 }

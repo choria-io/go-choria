@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/server"
+	"github.com/choria-io/go-choria/version"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -51,6 +52,8 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		log.Errorf("Could not start choria: %s", err.Error())
 		os.Exit(1)
 	}
+
+	log.Infof("Choria Server version %s starting with config %s", version.Version, c.Config.ConfigFile)
 
 	wg.Add(1)
 	instance.Run(ctx, wg)
