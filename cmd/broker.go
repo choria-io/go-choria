@@ -72,12 +72,12 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	if r.disableTLS {
 		c.Config.DisableTLS = true
-		log.Warn("Running with TLS disabled, not compatible with production use Choria.")
+		log.Warn("Running with TLS disabled, not compatible with production use.")
 	}
 
 	if r.disableTLSVerify {
 		c.Config.DisableTLSVerify = true
-		log.Warn("Running with TLS Verification disabled, not compatible with production use Choria.")
+		log.Warn("Running with TLS Verification disabled, not compatible with production use.")
 	}
 
 	if len(adapters) > 0 {
