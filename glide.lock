@@ -1,5 +1,5 @@
 hash: 260e3b958dad7e29b3a98f945bf106f4b2135b8ad7b419a086388473ddde6eaf
-updated: 2017-11-26T13:47:03.811497019+01:00
+updated: 2017-11-27T21:26:03.805228+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -36,7 +36,7 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/nats-io/nuid
-  version: 289cccf02c178dc782430d534e3c1f5b72af807f
+  version: 33c603157d6fd1b0ac2599bcc4a286b36479a06d
 - name: github.com/onsi/ginkgo
   version: 77a8c1e5c40d6bb6c5eb4dd4bdce9763564f6298
   subpackages:
@@ -76,15 +76,15 @@ imports:
 - name: github.com/sirupsen/logrus
   version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
 - name: github.com/tidwall/gjson
-  version: be96719f990978a867f52c48f29d43f6b591da28
+  version: 67e2a63ac70d273b6bc7589f12f07180bc9fc189
 - name: github.com/tidwall/match
-  version: 173748da739a410c5b0b813b956f89ff94730b4c
+  version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
   version: 6fe8760cad3569743d51ddbb243b26f8456742dc
 - name: github.com/xeipuuv/gojsonreference
   version: e02fc20de94c78484cd5ffb007f8af96be030a45
 - name: github.com/xeipuuv/gojsonschema
-  version: 0c8571ac0ce161a5feb57375a9cdf148c98c0f70
+  version: 212d8a0df7acfab8bdd190a7a69f0ab7376edcc8
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
