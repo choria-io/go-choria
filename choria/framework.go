@@ -181,7 +181,7 @@ func (self *Framework) SetupLogging(debug bool) (err error) {
 	if self.Config.LogFile != "" {
 		log.SetFormatter(&log.JSONFormatter{})
 
-		file, err := os.OpenFile(self.Config.LogFile, os.O_CREATE|os.O_WRONLY, 0666)
+		file, err := os.OpenFile(self.Config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
 			return fmt.Errorf("Could not set up logging: %s", err.Error())
 		}

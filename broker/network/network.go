@@ -33,9 +33,7 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 		s.opts.Debug = true
 	}
 
-	if c.Config.DisableTLS {
-		log.Warn("Disabling TLS on the NATS broker")
-	} else {
+	if !c.Config.DisableTLS {
 		err = s.setupTLS()
 		if err != nil {
 			return s, fmt.Errorf("Could not setup TLS: %s", err.Error())
@@ -81,6 +79,7 @@ func (s *Server) setupCluster() (err error) {
 			return fmt.Errorf("Could not parse Peer configuration: %s", err.Error())
 		}
 
+		log.Infof("Adding %s as network peer", u.String())
 		s.opts.Routes = append(s.opts.Routes, u)
 	}
 

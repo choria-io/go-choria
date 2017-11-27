@@ -64,12 +64,12 @@ func ParseCLI() (err error) {
 
 func Run() (err error) {
 	wg = &sync.WaitGroup{}
-	sigs := make(chan os.Signal, 1)
 	ran := false
-	ctx, cancel = context.WithCancel(context.Background())
 
+	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	go interruptWatcher()
 
 	for _, cmd := range cli.commands {
 		if cmd.FullCommand() == cli.command {
@@ -91,14 +91,26 @@ func Run() (err error) {
 
 	select {
 	case <-ctx.Done():
-	case sig := <-sigs:
-		log.Infof("Shutting down on %s", sig)
-		cancel()
 	}
 
 	wg.Wait()
 
 	return
+}
+
+func interruptWatcher() {
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+
+	for {
+		select {
+		case sig := <-sigs:
+			log.Infof("Shutting down on %s", sig)
+			cancel()
+		case <-ctx.Done():
+			return
+		}
+	}
 }
 
 // digs in the application.commands structure looking for a entry with
