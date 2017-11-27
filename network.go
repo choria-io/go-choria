@@ -16,12 +16,14 @@ type Server struct {
 	gnatsd *gnatsd.Server
 	opts   *gnatsd.Options
 	choria *choria.Framework
+	config *choria.Config
 }
 
 // NewServer creates a new instance of the Server struct with a fully configured NATS embedded
 func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 	s = &Server{
 		choria: c,
+		config: c.Config,
 		opts:   &gnatsd.Options{},
 	}
 
@@ -38,6 +40,10 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 		if err != nil {
 			return s, fmt.Errorf("Could not setup TLS: %s", err.Error())
 		}
+	}
+
+	if c.Config.Choria.NetworkMonitorPort > 0 {
+		s.opts.HTTPPort = c.Config.Choria.NetworkMonitorPort
 	}
 
 	err = s.setupCluster()
