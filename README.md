@@ -55,7 +55,7 @@ plugin.choria.broker_federation_cluster = production
 plugin.choria.federation.instance = 1
 ```
 
-## Protocol Adapter
+## Protocol Adapter
 
 The Protocol Adapter is a new feature that exist to adapt Choria traffic into other systems.  The initial use case is to receive all Registration data within a specific Collective and publish those into NATS Streaming.
 
