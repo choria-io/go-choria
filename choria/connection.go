@@ -19,6 +19,10 @@ type ConnectionManager interface {
 	NewConnector(ctx context.Context, servers func() ([]Server, error), name string, logger *log.Entry) (conn Connector, err error)
 }
 
+type PublishingConnector interface {
+	Publish(msg *Message) error
+}
+
 // Connector is the interface a connector must implement to be valid be it NATS, Stomp, Testing etc
 type Connector interface {
 	ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *ConnectorMessage, error)

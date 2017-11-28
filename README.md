@@ -42,7 +42,7 @@ plugin.choria.network.peers = nats://choria1:5222, nats://choria2:5222, nats://c
 plugin.choria.network.peer_user = choria_cluster
 plugin.choria.network.peer_password = s£cret
 
-# enables the typical NATS stats/status port
+# enables the typical NATS stats/status port, default, set to 0 to disable
 plugin.choria.network.monitor_port = 8222
 ```
 
@@ -65,7 +65,8 @@ The Protocol Adapter is a new feature that exist to adapt Choria traffic into ot
 
 I imagine a number of other scenarios:
 
-  * Publishing registration data to Kafka
+  * Publishing registration data to Kafka, Lambda, Search systems, other CMDB
+  * Updating PuppetDB facts more frequently than node runs to optimize discovery against it
   * Setting up generic listeners like `choria.adapter.elk` that can be used to receive replies and publish them into ELK.  You can do `mco rpc ... --reply-to choria.adapter.elk --nr` which would then not show the results to the user but instead publish them to ELK
 
 Here we configure the NATS Streaming Adapter.  It listens for `request` messages from the old school MCollective Registration system and republish those messages into NATS Streaming where you can process them at a more leisurely pace and configure retention to your own needs.
@@ -87,4 +88,19 @@ plugin.choria.adapter.discovery.stream.workers = 10 # default
 plugin.choria.adapter.discovery.ingest.topic = mcollective.broadcast.agent.discovery
 plugin.choria.adapter.discovery.ingest.protocol = request # or reply
 plugin.choria.adapter.discovery.ingest.workers = 10 # default
+```
+
+## Choria Server
+
+This will eventually replace `mcollectived`, for now all it can do is publish registration data.
+
+You run it with `choria server run --config server.cfg`
+
+Apart from all the usual stuff about identity, logfile etc, you can enable the new registration publisher like this, it just publishes registration data found in the file every 10 seconds:
+
+```ini
+registration = file_content
+registerinterval = 10
+registration_splay = true
+plugin.choria.registration.file_content.data = /tmp/json_registration.json
 ```

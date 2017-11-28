@@ -162,7 +162,7 @@ func (self *Message) Validate() (bool, error) {
 	}
 
 	if !self.choria.HasCollective(self.collective) {
-		return false, fmt.Errorf("%s is not on the list of known collectives", self.collective)
+		return false, fmt.Errorf("'%s' is not on the list of known collectives", self.collective)
 	}
 
 	return true, nil
@@ -220,7 +220,7 @@ func (self *Message) ReplyTo() string {
 // SetCollective sets the sub collective this message is targeting
 func (self *Message) SetCollective(collective string) error {
 	if !self.choria.HasCollective(collective) {
-		return fmt.Errorf("%s is not on the list of known collectives", self.collective)
+		return fmt.Errorf("Cannot set collective to '%s', it is not on the list of known collectives", self.collective)
 	}
 
 	self.collective = collective
