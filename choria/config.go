@@ -61,6 +61,9 @@ type ChoriaPluginConfig struct {
 	BrokerFederation    bool     `confkey:"plugin.choria.broker_federation" default:"false"`
 	FederationCluster   string   `confkey:"plugin.choria.broker_federation_cluster" default:"mcollective"`
 
+	// discovery
+	FactSourceFile string `confkey:"plugin.yaml"`
+
 	// registration
 	FileContentRegistrationData string `confkey:"plugin.choria.registration.file_content.data" default:""`
 
@@ -88,7 +91,7 @@ type Config struct {
 	Color                     bool     `confkey:"color" default:"true"`
 	Daemonize                 bool     `confkey:"daemonize" default:"false"`
 	SecurityProvider          string   `confkey:"securityprovider" default:"psk" type:"title_string"`
-	FactSource                string   `confkey:"factsource" default:"yaml" type:"title_string"`
+	FactSource                string   `confkey:"factsource" default:"yaml" default:"yaml"`
 	Connector                 string   `confkey:"connector" default:"nats" type:"title_string"`
 	ClassesFile               string   `confkey:"classesfile" default:"/opt/puppetlabs/puppet/cache/state/classes.txt"`
 	DiscoveryTimeout          int      `confkey:"discovery_timeout" default:"2"`

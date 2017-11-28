@@ -27,15 +27,12 @@ func (sr *StubRegistrator) RegistrationData() (*[]byte, error) {
 
 var _ = Describe("pollAndPublish", func() {
 	var (
-		conn connectortest.StubPublishingConnector
-		reg  StubRegistrator
+		conn *connectortest.StubPublishingConnector
+		reg  *StubRegistrator
 		err  error
 	)
 
-	BeforeEach(func() {
-		conn = connectortest.StubPublishingConnector{}
-		reg = StubRegistrator{}
-
+	BeforeSuite(func() {
 		choria, err = framework.New("/dev/null")
 		Expect(err).ToNot(HaveOccurred())
 
@@ -50,21 +47,27 @@ var _ = Describe("pollAndPublish", func() {
 		logrus.SetLevel(logrus.FatalLevel)
 	})
 
+	BeforeEach(func() {
+		conn = &connectortest.StubPublishingConnector{}
+		reg = &StubRegistrator{}
+		setup(choria, conn, log)
+	})
+
 	It("Should do nothing when the RegistrationData poll failed", func() {
 		reg.Err = errors.New("Simulated error")
-		pollAndPublish(&reg, &conn)
+		pollAndPublish(reg)
 		Expect(conn.PublishedMsgs).To(BeEmpty())
 	})
 
 	It("Should do nothing for nil data", func() {
 		reg.Dat = nil
-		pollAndPublish(&reg, &conn)
+		pollAndPublish(reg)
 		Expect(conn.PublishedMsgs).To(BeEmpty())
 	})
 
 	It("Should do nothing for empty data", func() {
 		reg.Dat = &[]byte{}
-		pollAndPublish(&reg, &conn)
+		pollAndPublish(reg)
 		Expect(conn.PublishedMsgs).To(BeEmpty())
 	})
 
@@ -72,7 +75,7 @@ var _ = Describe("pollAndPublish", func() {
 		dat := []byte("hello world")
 		reg.Dat = &dat
 
-		pollAndPublish(&reg, &conn)
+		pollAndPublish(reg)
 		Expect(conn.PublishedMsgs).ToNot(BeEmpty())
 
 		msg := conn.PublishedMsgs[0]
@@ -87,6 +90,6 @@ var _ = Describe("pollAndPublish", func() {
 		reg.Dat = &dat
 
 		conn.SetNextError("simulated failure")
-		pollAndPublish(&reg, &conn)
+		pollAndPublish(reg)
 	})
 })
