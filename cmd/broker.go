@@ -37,6 +37,8 @@ func (b *brokerCommand) Setup() (err error) {
 }
 
 func (b *brokerCommand) Run(wg *sync.WaitGroup) (err error) {
+	defer wg.Done()
+
 	return
 }
 
@@ -56,11 +58,10 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	net := config.Choria.BrokerNetwork
-	discovery := config.Choria.BrokerDiscovery
 	federation := config.Choria.BrokerFederation
 	adapters := config.Choria.Adapters
 
-	if !net && !discovery && !federation && len(adapters) == 0 {
+	if !net && !federation && len(adapters) == 0 {
 		return fmt.Errorf("All broker features are disabled")
 	}
 
@@ -102,10 +103,6 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		if err = r.runFederation(ctx, wg); err != nil {
 			return fmt.Errorf("Starting the federation broker failed: %s", err.Error())
 		}
-	}
-
-	if discovery {
-		log.Warn("The Broker is configured to support Discovery but it's not been implemented yet.")
 	}
 
 	return

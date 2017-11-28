@@ -81,8 +81,6 @@ func (na *nats) connect(ctx context.Context, cm choria.ConnectionManager) error 
 		return fmt.Errorf("Shutdown called")
 	}
 
-	go na.disconnectWatch(ctx)
-
 	var err error
 
 	na.conn, err = cm.NewConnector(ctx, na.servers, na.name, na.log)
@@ -96,12 +94,6 @@ func (na *nats) connect(ctx context.Context, cm choria.ConnectionManager) error 
 	}
 
 	return nil
-}
-
-func (na *nats) disconnectWatch(ctx context.Context) {
-	<-ctx.Done()
-
-	na.disconnect()
 }
 
 func (na *nats) disconnect() {
@@ -136,6 +128,7 @@ func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
 
 		case <-ctx.Done():
 			na.disconnect()
+
 			return
 		}
 	}

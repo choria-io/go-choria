@@ -92,8 +92,6 @@ func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) erro
 		return fmt.Errorf("Shutdown called")
 	}
 
-	go sc.disconnectWatch(ctx)
-
 	nc, err := cm.NewConnector(ctx, sc.servers, sc.clientID, sc.log)
 	if err != nil {
 		return fmt.Errorf("Could not start NATS connection: %s", err.Error())
@@ -119,12 +117,6 @@ func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) erro
 	sc.log.Infof("%s connected to NATS Stream", sc.clientID)
 
 	return nil
-}
-
-func (sc *stream) disconnectWatch(ctx context.Context) {
-	<-ctx.Done()
-
-	sc.disconnect()
 }
 
 func (sc *stream) disconnect() {
@@ -158,6 +150,7 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 			}
 		case <-ctx.Done():
 			sc.disconnect()
+
 			return
 		}
 	}

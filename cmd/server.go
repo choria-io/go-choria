@@ -29,6 +29,8 @@ func (b *serverCommand) Setup() (err error) {
 }
 
 func (b *serverCommand) Run(wg *sync.WaitGroup) (err error) {
+	defer wg.Done()
+
 	return
 }
 

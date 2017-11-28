@@ -88,10 +88,6 @@ func Run() (err error) {
 		cancel()
 	}
 
-	select {
-	case <-ctx.Done():
-	}
-
 	wg.Wait()
 
 	return
