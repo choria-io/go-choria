@@ -1,13 +1,20 @@
-package server
+package registration
 
 import (
 	"errors"
+	"testing"
 
-	"github.com/choria-io/go-choria/choria"
+	framework "github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/choria/connectortest"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
+
+func TestFileContent(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Server/Registration")
+}
 
 type StubRegistrator struct {
 	Err error
@@ -20,43 +27,44 @@ func (sr *StubRegistrator) RegistrationData() (*[]byte, error) {
 
 var _ = Describe("pollAndPublish", func() {
 	var (
-		conn   StubPublishingConnector
-		reg    StubRegistrator
-		server *Instance
+		conn connectortest.StubPublishingConnector
+		reg  StubRegistrator
+		err  error
 	)
 
 	BeforeEach(func() {
-		conn = StubPublishingConnector{}
+		conn = connectortest.StubPublishingConnector{}
 		reg = StubRegistrator{}
 
-		choria, err := choria.New("/dev/null")
-		choria.Config.Collectives = []string{"test_collective"}
-		choria.Config.MainCollective = "test_collective"
-		choria.Config.RegistrationCollective = "test_collective"
-		choria.Config.Identity = "test.example.net"
-
-		Expect(err).ToNot(HaveOccurred())
-		server, err = NewInstance(choria)
+		choria, err = framework.New("/dev/null")
 		Expect(err).ToNot(HaveOccurred())
 
-		log.SetLevel(log.FatalLevel)
+		config = choria.Config
+		config.DisableTLS = true
+		config.OverrideCertname = "test.example.net"
+		config.Collectives = []string{"test_collective"}
+		config.MainCollective = "test_collective"
+		config.RegistrationCollective = "test_collective"
+
+		log = logrus.WithFields(logrus.Fields{"test": true})
+		logrus.SetLevel(logrus.FatalLevel)
 	})
 
 	It("Should do nothing when the RegistrationData poll failed", func() {
 		reg.Err = errors.New("Simulated error")
-		server.pollAndPublish(&reg, &conn)
+		pollAndPublish(&reg, &conn)
 		Expect(conn.PublishedMsgs).To(BeEmpty())
 	})
 
 	It("Should do nothing for nil data", func() {
 		reg.Dat = nil
-		server.pollAndPublish(&reg, &conn)
+		pollAndPublish(&reg, &conn)
 		Expect(conn.PublishedMsgs).To(BeEmpty())
 	})
 
 	It("Should do nothing for empty data", func() {
 		reg.Dat = &[]byte{}
-		server.pollAndPublish(&reg, &conn)
+		pollAndPublish(&reg, &conn)
 		Expect(conn.PublishedMsgs).To(BeEmpty())
 	})
 
@@ -64,7 +72,7 @@ var _ = Describe("pollAndPublish", func() {
 		dat := []byte("hello world")
 		reg.Dat = &dat
 
-		server.pollAndPublish(&reg, &conn)
+		pollAndPublish(&reg, &conn)
 		Expect(conn.PublishedMsgs).ToNot(BeEmpty())
 
 		msg := conn.PublishedMsgs[0]
@@ -79,6 +87,6 @@ var _ = Describe("pollAndPublish", func() {
 		reg.Dat = &dat
 
 		conn.SetNextError("simulated failure")
-		server.pollAndPublish(&reg, &conn)
+		pollAndPublish(&reg, &conn)
 	})
 })

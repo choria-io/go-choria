@@ -90,7 +90,7 @@ plugin.choria.adapter.discovery.ingest.protocol = request # or reply
 plugin.choria.adapter.discovery.ingest.workers = 10 # default
 ```
 
-## Choria Server
+## Choria Server
 
 This will eventually replace `mcollectived`, for now all it can do is publish registration data.
 
