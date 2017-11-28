@@ -28,13 +28,6 @@ var config *framework.Config
 var connector framework.PublishingConnector
 var registrator Registrator
 
-func setup(c *framework.Framework, conn framework.PublishingConnector, logger *logrus.Entry) {
-	log = logger.WithFields(logrus.Fields{"subsystem": "registration"})
-	choria = c
-	config = c.Config
-	connector = conn
-}
-
 func Start(ctx context.Context, wg *sync.WaitGroup, c *framework.Framework, conn framework.PublishingConnector, logger *logrus.Entry) error {
 	setup(c, conn, logger)
 
@@ -64,6 +57,13 @@ func Start(ctx context.Context, wg *sync.WaitGroup, c *framework.Framework, conn
 	return nil
 }
 
+func setup(c *framework.Framework, conn framework.PublishingConnector, logger *logrus.Entry) {
+	log = logger.WithFields(logrus.Fields{"subsystem": "registration"})
+	choria = c
+	config = c.Config
+	connector = conn
+}
+
 func registrationWorker(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
@@ -74,13 +74,13 @@ func registrationWorker(ctx context.Context, wg *sync.WaitGroup) {
 		time.Sleep(sleepTime * time.Second)
 	}
 
-	pollAndPublish(registrator, connector)
+	pollAndPublish(registrator)
 
 	for {
 		select {
 		case <-time.Tick(time.Duration(config.RegisterInterval) * time.Second):
 			log.Debugf("Starting registration publishing process")
-			pollAndPublish(registrator, connector)
+			pollAndPublish(registrator)
 		case <-ctx.Done():
 			log.Infof("Existing on shut down")
 			return
@@ -88,7 +88,7 @@ func registrationWorker(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func pollAndPublish(provider RegistrationDataProvider, connection framework.PublishingConnector) {
+func pollAndPublish(provider RegistrationDataProvider) {
 	data, err := provider.RegistrationData()
 	if err != nil {
 		log.Errorf("Could not extract registration data: %s", err.Error())
@@ -116,7 +116,7 @@ func pollAndPublish(provider RegistrationDataProvider, connection framework.Publ
 
 	log.Debugf("Publishing %d bytes of registration data to collective %s", len(*data), config.RegistrationCollective)
 
-	err = connection.Publish(msg)
+	err = connector.Publish(msg)
 	if err != nil {
 		log.Warnf("Could not publish registration Message: %s", err.Error())
 		return
