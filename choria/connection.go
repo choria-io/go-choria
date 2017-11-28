@@ -445,14 +445,24 @@ func (self *Connection) Connect(ctx context.Context) (err error) {
 		nats.MaxReconnects(-1),
 		nats.Name(self.name),
 		nats.DisconnectHandler(func(nc *nats.Conn) {
-			self.logger.Warnf("NATS client connection got disconnected: %s", nc.LastError())
+			err = nc.LastError()
+
+			if err != nil {
+				self.logger.Warnf("NATS client connection got disconnected: %s", nc.LastError())
+			}
 		}),
+
 		nats.ReconnectHandler(func(nc *nats.Conn) {
 			self.logger.Warnf("NATS client reconnected after a previous disconnection, connected to %s", nc.ConnectedUrl())
 		}),
+
 		nats.ClosedHandler(func(nc *nats.Conn) {
-			self.logger.Warnf("NATS client connection closed: %s", nc.LastError())
+			err = nc.LastError()
+			if err != nil {
+				self.logger.Warnf("NATS client connection closed: %s", nc.LastError())
+			}
 		}),
+
 		nats.ErrorHandler(func(nc *nats.Conn, sub *nats.Subscription, err error) {
 			self.logger.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrl(), err.Error())
 		}),
