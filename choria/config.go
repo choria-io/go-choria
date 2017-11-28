@@ -175,7 +175,7 @@ func NewConfig(path string) (*Config, error) {
 	}
 
 	if c.RegistrationCollective == "" {
-		c.RegistrationCollective = c.Collectives[0]
+		c.RegistrationCollective = c.MainCollective
 	}
 
 	// TODO other loglevels, not needed for this project
