@@ -16,13 +16,13 @@ type FileContent struct {
 	l        *log.Entry
 }
 
-func NewFileContent(c *choria.Framework, logger *log.Entry) (*FileContent, error) {
-	if c.Config.Choria.FileContentRegistrationData == "" {
+func NewFileContent(c *choria.Config, logger *log.Entry) (*FileContent, error) {
+	if c.Choria.FileContentRegistrationData == "" {
 		return nil, fmt.Errorf("File Content Registration is enabled but no source data is configured, please set plugin.choria.registration.file_content.data")
 	}
 
 	reg := &FileContent{}
-	reg.Init(c.Config, logger)
+	reg.Init(c, logger)
 
 	return reg, nil
 }
@@ -37,8 +37,14 @@ func (self *FileContent) Init(c *choria.Config, logger *log.Entry) {
 }
 
 func (self *FileContent) RegistrationData() (*[]byte, error) {
-	if _, err := os.Stat(self.dataFile); os.IsNotExist(err) {
+	fstat, err := os.Stat(self.dataFile)
+	if os.IsNotExist(err) {
 		self.l.Infof("Could not find data file %s for registration, skipping", self.dataFile)
+		return nil, nil
+	}
+
+	if fstat.Size() == 0 {
+		self.l.Infof("Data file %s is empty, skipping", self.dataFile)
 		return nil, nil
 	}
 
