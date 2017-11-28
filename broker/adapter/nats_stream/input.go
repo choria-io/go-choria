@@ -18,13 +18,13 @@ type nats struct {
 	group   string
 
 	input chan *choria.ConnectorMessage
-	work  chan *adaptable
+	work  chan adaptable
 
 	log  *log.Entry
 	conn choria.Connector
 }
 
-func newIngest(name string, work chan *adaptable, logger *log.Entry) ([]*nats, error) {
+func newIngest(name string, work chan adaptable, logger *log.Entry) ([]*nats, error) {
 	prefix := fmt.Sprintf("plugin.choria.adapter.%s.ingest.", name)
 
 	instances, err := strconv.Atoi(config.Option(prefix+"workers", "10"))
@@ -132,7 +132,7 @@ func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
 				continue
 			}
 
-			na.work <- &msg
+			na.work <- msg
 
 		case <-ctx.Done():
 			na.disconnect()
