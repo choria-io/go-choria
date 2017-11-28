@@ -45,7 +45,7 @@ type NatStream struct {
 	streams []*stream
 	ingests []*nats
 
-	work chan *adaptable
+	work chan adaptable
 
 	log *log.Entry
 }
@@ -59,7 +59,7 @@ func Create(name string, choria *choria.Framework) (*NatStream, error) {
 
 	adapter := &NatStream{
 		log:  log.WithFields(log.Fields{"component": "nats_stream_adapter", "name": name}),
-		work: make(chan *adaptable, 1000),
+		work: make(chan adaptable, 1000),
 	}
 
 	var err error

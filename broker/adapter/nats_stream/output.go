@@ -24,17 +24,17 @@ type stream struct {
 	log       *log.Entry
 	name      string
 
-	work chan *adaptable
+	work chan adaptable
 	quit chan bool
 }
 
 type msg struct {
-	Message *[]byte `json:"body"`
-	Sender  string  `json:"sender"`
-	Time    string  `json:"time"`
+	Message string    `json:"data"`
+	Sender  string    `json:"sender"`
+	Time    time.Time `json:"time"`
 }
 
-func newStream(name string, work chan *adaptable, logger *log.Entry) ([]*stream, error) {
+func newStream(name string, work chan adaptable, logger *log.Entry) ([]*stream, error) {
 	prefix := fmt.Sprintf("plugin.choria.adapter.%s.stream.", name)
 
 	instances, err := strconv.Atoi(config.Option(prefix+"workers", "10"))
@@ -139,8 +139,14 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 
 	for {
 		select {
-		case msg := <-sc.work:
-			j, err := json.Marshal(msg)
+		case r := <-sc.work:
+			m := msg{
+				Message: r.Message(),
+				Sender:  r.SenderID(),
+				Time:    r.Time().UTC(),
+			}
+
+			j, err := json.Marshal(m)
 			if err != nil {
 				sc.log.Warnf("Cannot JSON encode message for publishing to STAN, discarding: %s", err.Error())
 				continue
