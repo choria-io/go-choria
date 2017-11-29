@@ -22,103 +22,107 @@ type RegistrationDataProvider interface {
 	RegistrationData() (*[]byte, error)
 }
 
-var log *logrus.Entry
-var choria *framework.Framework
-var config *framework.Config
-var connector framework.PublishingConnector
-var registrator Registrator
+type Manager struct {
+	log         *logrus.Entry
+	choria      *framework.Framework
+	cfg         *framework.Config
+	connector   framework.PublishingConnector
+	registrator Registrator
+}
 
-func Start(ctx context.Context, wg *sync.WaitGroup, c *framework.Framework, conn framework.PublishingConnector, logger *logrus.Entry) error {
-	setup(c, conn, logger)
+func New(c *framework.Framework, conn framework.PublishingConnector, logger *logrus.Entry) *Manager {
+	r := &Manager{
+		log:       logger.WithFields(logrus.Fields{"subsystem": "registration"}),
+		choria:    c,
+		cfg:       c.Config,
+		connector: conn,
+	}
 
+	return r
+}
+
+func (reg *Manager) Start(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	if config.RegistrationCollective == "" {
-		config.RegistrationCollective = config.MainCollective
+	if reg.cfg.RegistrationCollective == "" {
+		reg.cfg.RegistrationCollective = reg.cfg.MainCollective
 	}
 
 	var err error
 
-	switch config.Registration {
+	switch reg.cfg.Registration {
 	case "":
 		return nil
 	case "file_content":
-		registrator, err = registration.NewFileContent(config, log)
+		reg.registrator, err = registration.NewFileContent(reg.cfg, reg.log)
 		if err != nil {
 			return fmt.Errorf("Cannot start File Content Registrator: %s", err.Error())
 		}
 	default:
-		return fmt.Errorf("Unknown registration plugin: %s", config.Registration)
+		return fmt.Errorf("Unknown registration plugin: %s", reg.cfg.Registration)
 	}
 
 	wg.Add(1)
-	go registrationWorker(ctx, wg)
+	go reg.registrationWorker(ctx, wg)
 
 	return nil
 }
 
-func setup(c *framework.Framework, conn framework.PublishingConnector, logger *logrus.Entry) {
-	log = logger.WithFields(logrus.Fields{"subsystem": "registration"})
-	choria = c
-	config = c.Config
-	connector = conn
-}
-
-func registrationWorker(ctx context.Context, wg *sync.WaitGroup) {
+func (reg *Manager) registrationWorker(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	log.Infof("Starting registration %s with interval %d", config.Registration, config.RegisterInterval)
+	reg.log.Infof("Starting registration %s with interval %d", reg.cfg.Registration, reg.cfg.RegisterInterval)
 
-	if config.RegistrationSplay {
-		sleepTime := time.Duration(rand.Intn(config.RegisterInterval))
+	if reg.cfg.RegistrationSplay {
+		sleepTime := time.Duration(rand.Intn(reg.cfg.RegisterInterval))
 		time.Sleep(sleepTime * time.Second)
 	}
 
-	pollAndPublish(registrator)
+	reg.pollAndPublish(reg.registrator)
 
 	for {
 		select {
-		case <-time.Tick(time.Duration(config.RegisterInterval) * time.Second):
-			log.Debugf("Starting registration publishing process")
-			pollAndPublish(registrator)
+		case <-time.Tick(time.Duration(reg.cfg.RegisterInterval) * time.Second):
+			reg.log.Debugf("Starting registration publishing process")
+			reg.pollAndPublish(reg.registrator)
 		case <-ctx.Done():
-			log.Infof("Existing on shut down")
+			reg.log.Infof("Existing on shut down")
 			return
 		}
 	}
 }
 
-func pollAndPublish(provider RegistrationDataProvider) {
+func (reg *Manager) pollAndPublish(provider RegistrationDataProvider) {
 	data, err := provider.RegistrationData()
 	if err != nil {
-		log.Errorf("Could not extract registration data: %s", err.Error())
+		reg.log.Errorf("Could not extract registration data: %s", err.Error())
 		return
 	}
 
 	if data == nil {
-		log.Warnf("Received nil data from Registratoin Plugin, skipping")
+		reg.log.Warnf("Received nil data from Registratoin Plugin, skipping")
 		return
 	}
 
 	if len(*data) == 0 {
-		log.Warnf("Received empty data from Registratoin Plugin, skipping")
+		reg.log.Warnf("Received empty data from Registratoin Plugin, skipping")
 		return
 	}
 
-	msg, err := framework.NewMessage(string(*data), "discovery", config.RegistrationCollective, "request", nil, choria)
+	msg, err := framework.NewMessage(string(*data), "discovery", reg.cfg.RegistrationCollective, "request", nil, reg.choria)
 	if err != nil {
-		log.Warnf("Could not create Message for registration data: %s", err.Error())
+		reg.log.Warnf("Could not create Message for registration data: %s", err.Error())
 		return
 	}
 
 	msg.SetProtocolVersion(protocol.RequestV1)
 	msg.SetReplyTo("dev.null")
 
-	log.Debugf("Publishing %d bytes of registration data to collective %s", len(*data), config.RegistrationCollective)
+	reg.log.Debugf("Publishing %d bytes of registration data to collective %s", len(*data), reg.cfg.RegistrationCollective)
 
-	err = connector.Publish(msg)
+	err = reg.connector.Publish(msg)
 	if err != nil {
-		log.Warnf("Could not publish registration Message: %s", err.Error())
+		reg.log.Warnf("Could not publish registration Message: %s", err.Error())
 		return
 	}
 }

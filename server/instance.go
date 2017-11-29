@@ -10,19 +10,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// Instance is a independant copy of Choria
+// Instance is an independant copy of Choria
 type Instance struct {
-	c         *choria.Framework
-	connector choria.Connector
-	config    *choria.Config
-	log       *log.Entry
-	servers   []*choria.Server
+	c            *choria.Framework
+	connector    choria.Connector
+	cfg          *choria.Config
+	log          *log.Entry
+	servers      []*choria.Server
+	registration *registration.Manager
 }
 
 func NewInstance(c *choria.Framework) (i *Instance, err error) {
 	i = &Instance{
-		c:      c,
-		config: c.Config,
+		c:   c,
+		cfg: c.Config,
 	}
 
 	i.log = log.WithFields(log.Fields{"identity": c.Config.Identity, "component": "server"})
@@ -30,17 +31,19 @@ func NewInstance(c *choria.Framework) (i *Instance, err error) {
 	return i, nil
 }
 
-func (self *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
+func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	if err := self.initialConnect(ctx); err != nil {
-		self.log.Errorf("Initial NATS connection failed: %s", err.Error())
+	if err := srv.initialConnect(ctx); err != nil {
+		srv.log.Errorf("Initial NATS connection failed: %s", err.Error())
 		return
 	}
 
+	srv.registration = registration.New(srv.c, srv.connector, srv.log)
+
 	wg.Add(1)
-	if err := registration.Start(ctx, wg, self.c, self.connector, self.log); err != nil {
-		self.log.Errorf("Could not initialize registration: %s", err.Error())
+	if err := srv.registration.Start(ctx, wg); err != nil {
+		srv.log.Errorf("Could not initialize registration: %s", err.Error())
 		return
 	}
 }
