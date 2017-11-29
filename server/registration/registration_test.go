@@ -27,21 +27,25 @@ func (sr *StubRegistrator) RegistrationData() (*[]byte, error) {
 
 var _ = Describe("pollAndPublish", func() {
 	var (
-		conn *connectortest.StubPublishingConnector
-		reg  *StubRegistrator
-		err  error
+		conn    *connectortest.StubPublishingConnector
+		reg     *StubRegistrator
+		err     error
+		choria  *framework.Framework
+		cfg     *framework.Config
+		log     *logrus.Entry
+		manager *Manager
 	)
 
 	BeforeSuite(func() {
 		choria, err = framework.New("/dev/null")
 		Expect(err).ToNot(HaveOccurred())
 
-		config = choria.Config
-		config.DisableTLS = true
-		config.OverrideCertname = "test.example.net"
-		config.Collectives = []string{"test_collective"}
-		config.MainCollective = "test_collective"
-		config.RegistrationCollective = "test_collective"
+		cfg = choria.Config
+		cfg.DisableTLS = true
+		cfg.OverrideCertname = "test.example.net"
+		cfg.Collectives = []string{"test_collective"}
+		cfg.MainCollective = "test_collective"
+		cfg.RegistrationCollective = "test_collective"
 
 		log = logrus.WithFields(logrus.Fields{"test": true})
 		logrus.SetLevel(logrus.FatalLevel)
@@ -50,24 +54,24 @@ var _ = Describe("pollAndPublish", func() {
 	BeforeEach(func() {
 		conn = &connectortest.StubPublishingConnector{}
 		reg = &StubRegistrator{}
-		setup(choria, conn, log)
+		manager = New(choria, conn, log)
 	})
 
 	It("Should do nothing when the RegistrationData poll failed", func() {
 		reg.Err = errors.New("Simulated error")
-		pollAndPublish(reg)
+		manager.pollAndPublish(reg)
 		Expect(conn.PublishedMsgs).To(BeEmpty())
 	})
 
 	It("Should do nothing for nil data", func() {
 		reg.Dat = nil
-		pollAndPublish(reg)
+		manager.pollAndPublish(reg)
 		Expect(conn.PublishedMsgs).To(BeEmpty())
 	})
 
 	It("Should do nothing for empty data", func() {
 		reg.Dat = &[]byte{}
-		pollAndPublish(reg)
+		manager.pollAndPublish(reg)
 		Expect(conn.PublishedMsgs).To(BeEmpty())
 	})
 
@@ -75,7 +79,7 @@ var _ = Describe("pollAndPublish", func() {
 		dat := []byte("hello world")
 		reg.Dat = &dat
 
-		pollAndPublish(reg)
+		manager.pollAndPublish(reg)
 		Expect(conn.PublishedMsgs).ToNot(BeEmpty())
 
 		msg := conn.PublishedMsgs[0]
@@ -90,6 +94,6 @@ var _ = Describe("pollAndPublish", func() {
 		reg.Dat = &dat
 
 		conn.SetNextError("simulated failure")
-		pollAndPublish(reg)
+		manager.pollAndPublish(reg)
 	})
 })

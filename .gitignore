@@ -7,3 +7,4 @@ vendor
 go-choria
 *.coverprofile
 ping
+choria-*-*-*
