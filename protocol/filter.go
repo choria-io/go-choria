@@ -7,7 +7,7 @@ import (
 
 // FactFilter is how a fact match is represented to the Filter
 type FactFilter struct {
-	Fact     string `json:"facts"`
+	Fact     string `json:"fact"`
 	Operator string `json:"operator"`
 	Value    string `json:"value"`
 }

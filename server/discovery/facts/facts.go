@@ -6,21 +6,36 @@ import (
 	"os"
 	"strings"
 
+	"github.com/choria-io/go-choria/choria"
+	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 
 	"github.com/ghodss/yaml"
-	"github.com/sirupsen/logrus"
 )
 
-var file string
-var log *logrus.Entry
+// Match match fact filters in a OR manner, only nodes that have all
+// the matching facts will be true here
+func Match(filters [][3]string, fw *choria.Framework, log *logrus.Entry) bool {
+	matched := false
+	var err error
 
-func Setup(source string, logger *logrus.Entry) {
-	file = source
-	log = logger.WithFields(logrus.Fields{"facts_source": "yaml"})
+	for _, filter := range filters {
+		matched, err = HasFact(filter[0], filter[1], filter[2], fw.Config.Choria.FactSourceFile)
+		if err != nil {
+			log.Warnf("Failed to match fact '%#v': %s", filter, err.Error())
+			return false
+		}
+
+		if matched == false {
+			log.Debug("Failed to match fact filter '%#v'", filter)
+			break
+		}
+	}
+
+	return matched
 }
 
-func HasFact(fact string, operator string, value string) (bool, error) {
+func HasFact(fact string, operator string, value string, file string) (bool, error) {
 	if file == "" {
 		return false, fmt.Errorf("Cannot do fact discovery there is no file configured")
 	}
