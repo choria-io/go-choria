@@ -9,10 +9,10 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Identity")
+	RunSpecs(t, "Server/Discovery/Identity")
 }
 
-var _ = Describe("Identity", func() {
+var _ = Describe("Server/Discovery/Identity", func() {
 	It("Should support regex", func() {
 		Expect(Match([]string{"foo", "bar", "/example/"}, "tests.example.net")).To(BeTrue())
 		Expect(Match([]string{"foo", "bar", "/baz/"}, "tests.example.net")).To(BeFalse())

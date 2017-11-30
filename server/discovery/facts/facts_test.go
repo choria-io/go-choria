@@ -12,10 +12,10 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Facts")
+	RunSpecs(t, "Server/Discovery/Facts")
 }
 
-var _ = Describe("Facts", func() {
+var _ = Describe("Server/Discovery/Facts", func() {
 	var (
 		t   func(fact, op, val string) (bool, error)
 		fw  *choria.Framework

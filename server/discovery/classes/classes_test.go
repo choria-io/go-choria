@@ -10,10 +10,10 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Classes")
+	RunSpecs(t, "Server/Discovery/Classes")
 }
 
-var _ = Describe("Classes", func() {
+var _ = Describe("Server/Discovery/Classes", func() {
 	var log *logrus.Entry
 
 	BeforeEach(func() {
