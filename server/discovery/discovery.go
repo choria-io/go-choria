@@ -32,7 +32,6 @@ func New(framework *choria.Framework, logger *logrus.Entry) *Manager {
 func (mgr *Manager) ShouldProcess(request protocol.Request, knownAgents []string) bool {
 	filter, _ := request.Filter()
 	passed := 0
-	failed := 0
 
 	if filter.Empty() {
 		mgr.log.Debugf("Matching request %s with empty filter", request.RequestID())
@@ -45,7 +44,7 @@ func (mgr *Manager) ShouldProcess(request protocol.Request, knownAgents []string
 			passed++
 		} else {
 			mgr.log.Debugf("Not matching request %s with class filters '%#v'", request.RequestID(), filter.ClassFilters())
-			failed++
+			return false
 		}
 	}
 
@@ -55,7 +54,7 @@ func (mgr *Manager) ShouldProcess(request protocol.Request, knownAgents []string
 			passed++
 		} else {
 			mgr.log.Debugf("Not matching request %s with agent filters '%#v'", request.RequestID(), filter.AgentFilters())
-			failed++
+			return false
 		}
 	}
 
@@ -65,7 +64,7 @@ func (mgr *Manager) ShouldProcess(request protocol.Request, knownAgents []string
 			passed++
 		} else {
 			mgr.log.Debugf("Not matching request %s with identity filters '%#v'", request.RequestID(), filter.IdentityFilters())
-			failed++
+			return false
 		}
 	}
 
@@ -75,14 +74,14 @@ func (mgr *Manager) ShouldProcess(request protocol.Request, knownAgents []string
 			passed++
 		} else {
 			mgr.log.Debugf("Not matching request %s based on fact filters '%#v'", request.RequestID(), filter.FactFilters())
-			failed++
+			return false
 		}
 	}
 
 	if len(filter.CompoundFilters()) > 0 {
 		mgr.log.Warnf("Compound filters are not supported, not matching request %s with filter '%#v'", request.RequestID(), filter.CompoundFilters())
-		failed++
+		return false
 	}
 
-	return failed == 0 && passed > 0
+	return passed > 0
 }
