@@ -18,8 +18,6 @@ task :build do
   sha = `git rev-parse --short HEAD`.chomp
   date = Time.now.strftime("%F %T %z")
 
-  Rake::Task["test"].execute
-
   sh "go build -o %s -ldflags '-X github.com/choria-io/go-choria/version.Version=%s -X github.com/choria-io/go-choria/version.SHA=%s -X \"github.com/choria-io/go-choria/version.BuildDate=%s\"'" % [
     output_name(version), version, sha, date
   ]
