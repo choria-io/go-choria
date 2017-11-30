@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/registration"
 
 	log "github.com/sirupsen/logrus"
@@ -18,6 +19,9 @@ type Instance struct {
 	log          *log.Entry
 	servers      []*choria.Server
 	registration *registration.Manager
+	agents       map[string]*agents.Agent
+
+	agentmu *sync.Mutex
 }
 
 func NewInstance(c *choria.Framework) (i *Instance, err error) {

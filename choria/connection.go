@@ -19,8 +19,16 @@ type ConnectionManager interface {
 	NewConnector(ctx context.Context, servers func() ([]Server, error), name string, logger *log.Entry) (conn Connector, err error)
 }
 
-type PublishingConnector interface {
+// PublishableConnector provides the minimal Connector features to enable publishing of choria.Message instances
+type PublishableConnector interface {
 	Publish(msg *Message) error
+}
+
+// AgentConnector provides the minimal Connector features for subscribing and unsubscribing agents
+type AgentConnector interface {
+	Subscribe(name string, subject string, group string) error
+	Unsubscribe(name string) error
+	AgentBroadcastTarget(collective string, agent string) string
 }
 
 // Connector is the interface a connector must implement to be valid be it NATS, Stomp, Testing etc
@@ -285,7 +293,7 @@ func (self *Connection) publishFederatedDirect(msg *Message, transport protocol.
 }
 
 func (self *Connection) publishFederatedBroadcast(msg *Message, transport protocol.TransportMessage) error {
-	target, err := self.targetForMessage(msg, "")
+	target, err := self.TargetForMessage(msg, "")
 	if err != nil {
 		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
 	}
@@ -326,7 +334,7 @@ func (self *Connection) publishConnectedBroadcast(msg *Message, transport protoc
 		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
 	}
 
-	target, err := self.targetForMessage(msg, "")
+	target, err := self.TargetForMessage(msg, "")
 	if err != nil {
 		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
 	}
@@ -346,7 +354,7 @@ func (self *Connection) publishConnectedDirect(msg *Message, transport protocol.
 	rawmsg := []byte(j)
 
 	for _, host := range msg.DiscoveredHosts {
-		target, err := self.targetForMessage(msg, host)
+		target, err := self.TargetForMessage(msg, host)
 		if err != nil {
 			return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
 		}
@@ -362,7 +370,7 @@ func (self *Connection) publishConnectedDirect(msg *Message, transport protocol.
 	return nil
 }
 
-func (self *Connection) targetForMessage(msg *Message, identity string) (string, error) {
+func (self *Connection) TargetForMessage(msg *Message, identity string) (string, error) {
 	if msg.Type() == "reply" {
 		if msg.ReplyTo() == "" {
 			return "", fmt.Errorf("Do not know how to reply, no reply-to header has been set on message %s", msg.RequestID)
@@ -371,7 +379,7 @@ func (self *Connection) targetForMessage(msg *Message, identity string) (string,
 		return msg.ReplyTo(), nil
 
 	} else if msg.Type() == "request" {
-		return self.agentBroadcastTarget(msg.Collective(), msg.Agent), nil
+		return self.AgentBroadcastTarget(msg.Collective(), msg.Agent), nil
 
 	} else if msg.Type() == "direct_request" {
 		return self.nodeDirectedTarget(msg.Collective(), identity), nil
@@ -384,7 +392,7 @@ func (self *Connection) nodeDirectedTarget(collective string, identity string) s
 	return fmt.Sprintf("%s.node.%s", collective, identity)
 }
 
-func (self *Connection) agentBroadcastTarget(collective string, agent string) string {
+func (self *Connection) AgentBroadcastTarget(collective string, agent string) string {
 	return fmt.Sprintf("%s.broadcast.agent.%s", collective, agent)
 }
 
