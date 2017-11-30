@@ -6,13 +6,13 @@ import (
 	"github.com/choria-io/go-choria/choria"
 )
 
-type StubPublishingConnector struct {
+type PublishableConnector struct {
 	PublishedMsgs []*choria.Message
 
 	nextErr error
 }
 
-func (st *StubPublishingConnector) Publish(msg *choria.Message) error {
+func (st *PublishableConnector) Publish(msg *choria.Message) error {
 	st.PublishedMsgs = append(st.PublishedMsgs, msg)
 
 	var err error
@@ -25,6 +25,6 @@ func (st *StubPublishingConnector) Publish(msg *choria.Message) error {
 	return err
 }
 
-func (st *StubPublishingConnector) SetNextError(err string) {
+func (st *PublishableConnector) SetNextError(err string) {
 	st.nextErr = errors.New(err)
 }

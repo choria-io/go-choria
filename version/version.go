@@ -8,3 +8,6 @@ var SHA = "unknown"
 
 // BuildDate is when it was build
 var BuildDate = "unknown"
+
+// License is the official Open Source Initiave license abbreciation
+var License = "Apache-2.0"

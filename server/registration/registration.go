@@ -26,11 +26,11 @@ type Manager struct {
 	log         *logrus.Entry
 	choria      *framework.Framework
 	cfg         *framework.Config
-	connector   framework.PublishingConnector
+	connector   framework.PublishableConnector
 	registrator Registrator
 }
 
-func New(c *framework.Framework, conn framework.PublishingConnector, logger *logrus.Entry) *Manager {
+func New(c *framework.Framework, conn framework.PublishableConnector, logger *logrus.Entry) *Manager {
 	r := &Manager{
 		log:       logger.WithFields(logrus.Fields{"subsystem": "registration"}),
 		choria:    c,
