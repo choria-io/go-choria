@@ -78,5 +78,5 @@ var _ = Describe("TransportMessage", func() {
 		})
 
 		Expect(runtime.Nanoseconds()).Should(BeNumerically("<", 1000000))
-	}, 10)
+	}, 100)
 })
