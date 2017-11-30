@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"context"
+	"fmt"
 	"io/ioutil"
 	"sync"
 	"testing"
@@ -69,6 +70,14 @@ func (s *stubConnection) PublishToQueueSub(name string, msg *choria.ConnectorMes
 	}
 
 	c <- msg
+}
+
+func (s *stubConnection) AgentBroadcastTarget(collective string, agent string) string {
+	return fmt.Sprintf("%s.broadcast.agent.%s", collective, agent)
+}
+
+func (s *stubConnection) NodeDirectedTarget(collective string, identity string) string {
+	return fmt.Sprintf("%s.node.%s", collective, identity)
 }
 
 func (s *stubConnection) ConnectedServer() string {

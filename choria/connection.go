@@ -37,7 +37,9 @@ type Connector interface {
 	Subscribe(name string, subject string, group string) error
 	Unsubscribe(name string) error
 
+	AgentBroadcastTarget(collective string, agent string) string
 	ReplyTarget(msg *Message) string
+	NodeDirectedTarget(collective string, identity string) string
 
 	PublishRaw(target string, data []byte) error
 	Publish(msg *Message) error
@@ -264,7 +266,7 @@ func (self *Connection) publishFederatedDirect(msg *Message, transport protocol.
 				break
 			}
 
-			targets = append(targets, self.nodeDirectedTarget(msg.collective, nodes[i]))
+			targets = append(targets, self.NodeDirectedTarget(msg.collective, nodes[i]))
 		}
 
 		transport.SetFederationRequestID(msg.RequestID)
@@ -382,13 +384,13 @@ func (self *Connection) TargetForMessage(msg *Message, identity string) (string,
 		return self.AgentBroadcastTarget(msg.Collective(), msg.Agent), nil
 
 	} else if msg.Type() == "direct_request" {
-		return self.nodeDirectedTarget(msg.Collective(), identity), nil
+		return self.NodeDirectedTarget(msg.Collective(), identity), nil
 	}
 
 	return "", fmt.Errorf("Do not know how to determine the target for Message %s with type %s", msg.RequestID, msg.Type())
 }
 
-func (self *Connection) nodeDirectedTarget(collective string, identity string) string {
+func (self *Connection) NodeDirectedTarget(collective string, identity string) string {
 	return fmt.Sprintf("%s.node.%s", collective, identity)
 }
 

@@ -46,6 +46,8 @@ func (a *Manager) RegisterAgent(name string, agent Agent, conn choria.AgentConne
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
+	a.log.Infof("Registering new agent %s of type %s", name, agent.Metadata().Name)
+
 	if _, found := a.agents[name]; found {
 		return fmt.Errorf("Agent %s is already registered", name)
 	}
@@ -60,6 +62,13 @@ func (a *Manager) RegisterAgent(name string, agent Agent, conn choria.AgentConne
 	return nil
 }
 
+// Subscribes an agent to all its targets on the connector.  Should any subscription fail
+// all the preceding subscriptions for this agents is unsubscribes and an error returned.
+// Errors during the unsub is just ignored because it's quite possible that they would fail
+// too but this avoids problems of messages arriving we did not expect.
+//
+// In practise though this is something done during bootstrap and failure here should exit
+// the whole instance, so it's probably not needed
 func (a *Manager) subscribeAgent(name string, agent Agent, conn choria.AgentConnector) error {
 	if _, found := a.subs[name]; found {
 		return fmt.Errorf("Could not subscribe agent %s, it's already subscribed", name)

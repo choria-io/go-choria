@@ -13,7 +13,7 @@ func (srv *Instance) initialConnect(ctx context.Context) error {
 	}
 
 	servers := func() ([]choria.Server, error) {
-		return srv.c.MiddlewareServers()
+		return srv.fw.MiddlewareServers()
 	}
 
 	_, err := servers()
@@ -21,7 +21,7 @@ func (srv *Instance) initialConnect(ctx context.Context) error {
 		return fmt.Errorf("Could not find initial NATS servers: %s", err.Error())
 	}
 
-	srv.connector, err = srv.c.NewConnector(ctx, servers, srv.c.Certname(), srv.log)
+	srv.connector, err = srv.fw.NewConnector(ctx, servers, srv.fw.Certname(), srv.log)
 	if err != nil {
 		return fmt.Errorf("Could not create connector: %s", err.Error())
 	}

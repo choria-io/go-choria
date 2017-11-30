@@ -41,7 +41,7 @@ func (da *Agent) Metadata() *agents.Metadata {
 	return da.meta
 }
 
-func (da *Agent) HandleAgentMsg(msg *choria.Message) (*[]byte, error) {
+func (da *Agent) Handle(msg *choria.Message) (*[]byte, error) {
 	if strings.Contains(msg.Payload, "ping") {
 		r := []byte("pong")
 		return &r, nil

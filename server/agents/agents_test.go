@@ -56,7 +56,7 @@ var _ = Describe("Server/Agents", func() {
 		conn = &connectortest.AgentConnector{}
 		conn.Init()
 
-		agent = &stubAgent{}
+		agent = &stubAgent{meta: &Metadata{}}
 	})
 
 	It("should not subscribe the agent twice", func() {
