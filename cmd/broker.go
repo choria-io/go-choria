@@ -10,7 +10,7 @@ import (
 	"github.com/choria-io/go-choria/broker/adapter"
 	"github.com/choria-io/go-choria/broker/federation"
 	"github.com/choria-io/go-choria/broker/network"
-	"github.com/choria-io/go-choria/version"
+	"github.com/choria-io/go-choria/build"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -65,7 +65,7 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("All broker features are disabled")
 	}
 
-	log.Infof("Choria Broker version %s starting with config %s", version.Version, c.Config.ConfigFile)
+	log.Infof("Choria Broker version %s starting with config %s", build.Version, c.Config.ConfigFile)
 
 	if r.pidFile != "" {
 		err := ioutil.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)

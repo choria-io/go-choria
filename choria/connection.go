@@ -289,13 +289,14 @@ func (self *Connection) Outbox() chan *nats.Msg {
 
 // PublishRaw allows any data to be published to any target
 func (self *Connection) PublishRaw(target string, data []byte) error {
+	log.Debugf("Publishing %d bytes to %s", len(data), target)
+
 	return self.nats.Publish(target, data)
 }
 
 // Publish inspects a Message and publish it according to its Type
 func (self *Connection) Publish(msg *Message) error {
 	transport, err := msg.Transport()
-
 	if err != nil {
 		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
 	}

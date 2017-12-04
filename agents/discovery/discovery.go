@@ -4,12 +4,12 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/go-choria/version"
 )
 
 type Agent struct {
@@ -24,8 +24,8 @@ func New(log *logrus.Entry) (*Agent, error) {
 			Name:        "discovery",
 			Description: "Discovery Agent",
 			Author:      "R.I.Pienaar <rip@devco.net>",
-			Version:     version.Version,
-			License:     version.License,
+			Version:     build.Version,
+			License:     build.License,
 			Timeout:     2,
 			URL:         "http://choria.io",
 		},

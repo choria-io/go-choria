@@ -40,7 +40,7 @@ func (fc *FileContent) Init(c *choria.Config, logger *logrus.Entry) {
 	fc.dataFile = c.Choria.FileContentRegistrationData
 	fc.log = logger.WithFields(logrus.Fields{"registration": "file_content", "source": fc.dataFile})
 
-	fc.log.Infof("Configured JSON Registration", fc.dataFile)
+	fc.log.Infof("Configured File Content Registration with source %s", fc.dataFile)
 }
 
 // Start stats a publishing loop
