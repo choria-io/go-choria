@@ -7,40 +7,50 @@ import (
 	"sync"
 	"time"
 
-	framework "github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/registration"
+	"github.com/choria-io/go-choria/server/data"
 	"github.com/sirupsen/logrus"
 )
 
+// Registrator is a full managed registration plugin
 type Registrator interface {
-	Init(cfg *framework.Config, l *logrus.Entry)
-	RegistrationData() (*[]byte, error)
+	Init(cfg *choria.Config, l *logrus.Entry)
+	Start(context.Context, *sync.WaitGroup, int, chan *data.RegistrationItem)
 }
 
+// RegistrationDataProvider is a provider for data that can be registered
+// into a running server instance using AddRegistrationProvider()
 type RegistrationDataProvider interface {
-	RegistrationData() (*[]byte, error)
+	Start(context.Context, *sync.WaitGroup, int, chan *data.RegistrationItem)
 }
 
+// Manager of registration plugins
 type Manager struct {
 	log         *logrus.Entry
-	choria      *framework.Framework
-	cfg         *framework.Config
-	connector   framework.PublishableConnector
+	choria      *choria.Framework
+	cfg         *choria.Config
+	connector   choria.PublishableConnector
 	registrator Registrator
+	datac       chan *data.RegistrationItem
 }
 
-func New(c *framework.Framework, conn framework.PublishableConnector, logger *logrus.Entry) *Manager {
+// New creates a new instance of the registration subsystem manager
+func New(c *choria.Framework, conn choria.PublishableConnector, logger *logrus.Entry) *Manager {
 	r := &Manager{
 		log:       logger.WithFields(logrus.Fields{"subsystem": "registration"}),
 		choria:    c,
 		cfg:       c.Config,
 		connector: conn,
+		datac:     make(chan *data.RegistrationItem, 5),
 	}
 
 	return r
 }
 
+// Start initializes the fully managed registration plugins and start publishing
+// their data
 func (reg *Manager) Start(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
@@ -49,42 +59,52 @@ func (reg *Manager) Start(ctx context.Context, wg *sync.WaitGroup) error {
 	}
 
 	var err error
+	var registrator Registrator
 
-	switch reg.cfg.Registration {
-	case "":
-		return nil
-	case "file_content":
-		reg.registrator, err = registration.NewFileContent(reg.cfg, reg.log)
-		if err != nil {
-			return fmt.Errorf("Cannot start File Content Registrator: %s", err.Error())
+	for _, rtype := range reg.cfg.Registration {
+		switch rtype {
+		case "":
+			return nil
+		case "file_content":
+			registrator, err = registration.NewFileContent(reg.cfg, reg.log)
+			if err != nil {
+				return fmt.Errorf("Cannot start File Content Registrator: %s", err.Error())
+			}
+		default:
+			return fmt.Errorf("Unknown registration plugin: %s", reg.cfg.Registration)
 		}
-	default:
-		return fmt.Errorf("Unknown registration plugin: %s", reg.cfg.Registration)
-	}
 
-	wg.Add(1)
-	go reg.registrationWorker(ctx, wg)
+		reg.log.Infof("Starting registration worker for %s", rtype)
+		reg.RegisterProvider(ctx, wg, registrator)
+	}
 
 	return nil
 }
 
-func (reg *Manager) registrationWorker(ctx context.Context, wg *sync.WaitGroup) {
+// RegisterProvider creates a publisher for a new provider
+func (reg *Manager) RegisterProvider(ctx context.Context, wg *sync.WaitGroup, provider RegistrationDataProvider) error {
+	wg.Add(1)
+	go reg.registrationWorker(ctx, wg, provider)
+
+	return nil
+}
+
+func (reg *Manager) registrationWorker(ctx context.Context, wg *sync.WaitGroup, registrator RegistrationDataProvider) {
 	defer wg.Done()
 
-	reg.log.Infof("Starting registration %s with interval %d", reg.cfg.Registration, reg.cfg.RegisterInterval)
-
 	if reg.cfg.RegistrationSplay {
+		reg.log.Infof("Sleeping %d seconds before first poll due to RegistrationSplay", reg.cfg.RegisterInterval)
 		sleepTime := time.Duration(rand.Intn(reg.cfg.RegisterInterval))
 		time.Sleep(sleepTime * time.Second)
 	}
 
-	reg.pollAndPublish(reg.registrator)
+	wg.Add(1)
+	go registrator.Start(ctx, wg, reg.cfg.RegisterInterval, reg.datac)
 
 	for {
 		select {
-		case <-time.Tick(time.Duration(reg.cfg.RegisterInterval) * time.Second):
-			reg.log.Debugf("Starting registration publishing process")
-			reg.pollAndPublish(reg.registrator)
+		case msg := <-reg.datac:
+			reg.publish(msg)
 		case <-ctx.Done():
 			reg.log.Infof("Existing on shut down")
 			return
@@ -92,24 +112,27 @@ func (reg *Manager) registrationWorker(ctx context.Context, wg *sync.WaitGroup) 
 	}
 }
 
-func (reg *Manager) pollAndPublish(provider RegistrationDataProvider) {
-	data, err := provider.RegistrationData()
-	if err != nil {
-		reg.log.Errorf("Could not extract registration data: %s", err.Error())
-		return
-	}
-
-	if data == nil {
+func (reg *Manager) publish(rmsg *data.RegistrationItem) {
+	if rmsg == nil {
 		reg.log.Warnf("Received nil data from Registratoin Plugin, skipping")
 		return
 	}
 
-	if len(*data) == 0 {
+	if rmsg.Data == nil {
+		reg.log.Warnf("Received nil data from Registratoin Plugin, skipping")
+		return
+	}
+
+	if len(*rmsg.Data) == 0 {
 		reg.log.Warnf("Received empty data from Registratoin Plugin, skipping")
 		return
 	}
 
-	msg, err := framework.NewMessage(string(*data), "registration", reg.cfg.RegistrationCollective, "request", nil, reg.choria)
+	if rmsg.TargetAgent == "" {
+		rmsg.TargetAgent = "registration"
+	}
+
+	msg, err := choria.NewMessage(string(*rmsg.Data), rmsg.TargetAgent, reg.cfg.RegistrationCollective, "request", nil, reg.choria)
 	if err != nil {
 		reg.log.Warnf("Could not create Message for registration data: %s", err.Error())
 		return
@@ -118,7 +141,7 @@ func (reg *Manager) pollAndPublish(provider RegistrationDataProvider) {
 	msg.SetProtocolVersion(protocol.RequestV1)
 	msg.SetReplyTo("dev.null")
 
-	reg.log.Debugf("Publishing %d bytes of registration data to collective %s", len(*data), reg.cfg.RegistrationCollective)
+	reg.log.Debugf("Publishing %d bytes of registration data to collective %s agent %s", len(*rmsg.Data), reg.cfg.RegistrationCollective, rmsg.TargetAgent)
 
 	err = reg.connector.Publish(msg)
 	if err != nil {

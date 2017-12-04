@@ -1,11 +1,13 @@
 package registration
 
 import (
+	"fmt"
 	"io/ioutil"
 	"os"
 	"testing"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/server/data"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
@@ -22,6 +24,7 @@ var _ = Describe("RegistrationData", func() {
 		c      *choria.Config
 		err    error
 		logger *log.Entry
+		msgs   chan *data.RegistrationItem
 	)
 
 	BeforeEach(func() {
@@ -32,18 +35,18 @@ var _ = Describe("RegistrationData", func() {
 		log.SetLevel(log.ErrorLevel)
 		logger = log.WithFields(log.Fields{})
 
+		msgs = make(chan *data.RegistrationItem, 1)
 	})
 
-	It("Should return nil when the data file is missing", func() {
+	It("Should return err when the data file is missing", func() {
 		c.Choria.FileContentRegistrationData = "/nonexisting"
 		reg.Init(c, log.WithFields(log.Fields{}))
 
-		data, err := reg.RegistrationData()
-		Expect(err).ToNot(HaveOccurred())
-		Expect(data).To(BeNil())
+		err := reg.publish(msgs)
+		Expect(err).To(MatchError("Could not find data file /nonexisting"))
 	})
 
-	It("Should return nil when the data file is empty", func() {
+	It("Should return err when the data file is empty", func() {
 		tmpfile, err := ioutil.TempFile("", "file_content_registration")
 		Expect(err).ToNot(HaveOccurred())
 		tmpfile.Close()
@@ -52,17 +55,18 @@ var _ = Describe("RegistrationData", func() {
 		c.Choria.FileContentRegistrationData = tmpfile.Name()
 		reg.Init(c, log.WithFields(log.Fields{}))
 
-		data, err := reg.RegistrationData()
-		Expect(err).ToNot(HaveOccurred())
-		Expect(data).To(BeNil())
+		err = reg.publish(msgs)
+		Expect(err).To(MatchError(fmt.Sprintf("Data file %s is empty", tmpfile.Name())))
 	})
 
 	It("Should read the file otherwise", func() {
 		c.Choria.FileContentRegistrationData = "testdata/sample.json"
 		reg.Init(c, log.WithFields(log.Fields{}))
 
-		data, err := reg.RegistrationData()
+		err = reg.publish(msgs)
 		Expect(err).ToNot(HaveOccurred())
-		Expect(string(*data)).To(Equal(`{"file": true}`))
+
+		msg := <-msgs
+		Expect(string(*msg.Data)).To(Equal(`{"file": true}`))
 	})
 })

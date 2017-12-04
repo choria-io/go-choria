@@ -1,22 +1,29 @@
 package registration
 
 import (
+	"context"
 	"fmt"
 	"io/ioutil"
 	"os"
+	"sync"
+	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	log "github.com/sirupsen/logrus"
+	"github.com/choria-io/go-choria/server/data"
+
+	"github.com/sirupsen/logrus"
 )
 
+// FileContent is a fully managed registration plugin for the choria server instance
+// it reads a file and publishing it to the collective regularly
 type FileContent struct {
 	dataFile string
-	interval int
 	c        *choria.Config
-	l        *log.Entry
+	log      *logrus.Entry
 }
 
-func NewFileContent(c *choria.Config, logger *log.Entry) (*FileContent, error) {
+// NewFileContent creates a new fully managed registration plugin instance
+func NewFileContent(c *choria.Config, logger *logrus.Entry) (*FileContent, error) {
 	if c.Choria.FileContentRegistrationData == "" {
 		return nil, fmt.Errorf("File Content Registration is enabled but no source data is configured, please set plugin.choria.registration.file_content.data")
 	}
@@ -27,31 +34,61 @@ func NewFileContent(c *choria.Config, logger *log.Entry) (*FileContent, error) {
 	return reg, nil
 }
 
-func (self *FileContent) Init(c *choria.Config, logger *log.Entry) {
-	self.c = c
-	self.interval = c.RegisterInterval
-	self.dataFile = c.Choria.FileContentRegistrationData
-	self.l = logger.WithFields(log.Fields{"registration": "file_content"})
+// Init sets up the plugin
+func (fc *FileContent) Init(c *choria.Config, logger *logrus.Entry) {
+	fc.c = c
+	fc.dataFile = c.Choria.FileContentRegistrationData
+	fc.log = logger.WithFields(logrus.Fields{"registration": "file_content", "source": fc.dataFile})
 
-	self.l.Infof("Configured JSON Registration with source file %s", self.dataFile)
+	fc.log.Infof("Configured JSON Registration", fc.dataFile)
 }
 
-func (self *FileContent) RegistrationData() (*[]byte, error) {
-	fstat, err := os.Stat(self.dataFile)
+// Start stats a publishing loop
+func (fc *FileContent) Start(ctx context.Context, wg *sync.WaitGroup, interval int, output chan *data.RegistrationItem) {
+	defer wg.Done()
+
+	err := fc.publish(output)
+	if err != nil {
+		fc.log.Errorf("Could not create registration data: %s", err.Error())
+	}
+
+	for {
+		select {
+		case <-time.Tick(time.Duration(interval) * time.Second):
+			err = fc.publish(output)
+			if err != nil {
+				fc.log.Errorf("Could not create registration data: %s", err.Error())
+			}
+
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
+func (fc *FileContent) publish(output chan *data.RegistrationItem) error {
+	fc.log.Infof("Starting file_content registration poll")
+
+	fstat, err := os.Stat(fc.dataFile)
 	if os.IsNotExist(err) {
-		self.l.Infof("Could not find data file %s for registration, skipping", self.dataFile)
-		return nil, nil
+		return fmt.Errorf("Could not find data file %s", fc.dataFile)
 	}
 
 	if fstat.Size() == 0 {
-		self.l.Infof("Data file %s is empty, skipping", self.dataFile)
-		return nil, nil
+		return fmt.Errorf("Data file %s is empty", fc.dataFile)
 	}
 
-	dat, err := ioutil.ReadFile(self.dataFile)
+	dat, err := ioutil.ReadFile(fc.dataFile)
 	if err != nil {
-		return nil, err
+		return nil
 	}
 
-	return &dat, nil
+	item := &data.RegistrationItem{
+		Data:        &dat,
+		TargetAgent: "registration",
+	}
+
+	output <- item
+
+	return nil
 }

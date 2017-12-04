@@ -73,7 +73,7 @@ type ChoriaPluginConfig struct {
 
 // Config represents Choria configuration
 type Config struct {
-	Registration              string   `confkey:"registration" default:""`
+	Registration              []string `confkey:"registration" type:"comma_split" default:""`
 	RegistrationCollective    string   `confkey:"registration_collective"`
 	RegisterInterval          int      `confkey:"registerinterval" default:"300"`
 	RegistrationSplay         bool     `confkey:"registration_splay" default:"false"`
