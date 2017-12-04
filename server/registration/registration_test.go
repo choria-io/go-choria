@@ -1,11 +1,11 @@
 package registration
 
 import (
-	"errors"
 	"testing"
 
 	framework "github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/choria/connectortest"
+	"github.com/choria-io/go-choria/server/data"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -16,20 +16,10 @@ func TestFileContent(t *testing.T) {
 	RunSpecs(t, "Server/Registration")
 }
 
-type StubRegistrator struct {
-	Err error
-	Dat *[]byte
-}
-
-func (sr *StubRegistrator) RegistrationData() (*[]byte, error) {
-	return sr.Dat, sr.Err
-}
-
 var _ = Describe("Server/Registration", func() {
-	var _ = Describe("pollAndPublish", func() {
+	var _ = Describe("publish", func() {
 		var (
 			conn    *connectortest.PublishableConnector
-			reg     *StubRegistrator
 			err     error
 			choria  *framework.Framework
 			cfg     *framework.Config
@@ -54,48 +44,46 @@ var _ = Describe("Server/Registration", func() {
 
 		BeforeEach(func() {
 			conn = &connectortest.PublishableConnector{}
-			reg = &StubRegistrator{}
 			manager = New(choria, conn, log)
 		})
 
-		It("Should do nothing when the RegistrationData poll failed", func() {
-			reg.Err = errors.New("Simulated error")
-			manager.pollAndPublish(reg)
+		It("Should do nothing when the message is nil", func() {
+			manager.publish(nil)
 			Expect(conn.PublishedMsgs).To(BeEmpty())
 		})
 
-		It("Should do nothing for nil data", func() {
-			reg.Dat = nil
-			manager.pollAndPublish(reg)
+		It("Should do nothing when the  data is nil", func() {
+			manager.publish(&data.RegistrationItem{})
 			Expect(conn.PublishedMsgs).To(BeEmpty())
 		})
 
 		It("Should do nothing for empty data", func() {
-			reg.Dat = &[]byte{}
-			manager.pollAndPublish(reg)
+			dat := []byte{}
+			manager.publish(&data.RegistrationItem{Data: &dat})
 			Expect(conn.PublishedMsgs).To(BeEmpty())
 		})
 
-		It("Should publish a message for the discovery agent when it finds data", func() {
+		It("Should publish to registration agent when not set", func() {
 			dat := []byte("hello world")
-			reg.Dat = &dat
+			manager.publish(&data.RegistrationItem{Data: &dat})
 
-			manager.pollAndPublish(reg)
-			Expect(conn.PublishedMsgs).ToNot(BeEmpty())
+			published := conn.PublishedMsgs[0]
+			Expect(published.Agent).To(Equal("registration"))
+		})
 
-			msg := conn.PublishedMsgs[0]
-			Expect(msg.Agent).To(Equal("registration"))
-			Expect(msg.Collective()).To(Equal("test_collective"))
-			Expect(msg.Payload).To(Equal("hello world"))
+		It("Should publish to the configured agent when set", func() {
+			dat := []byte("hello world")
+			manager.publish(&data.RegistrationItem{Data: &dat, TargetAgent: "ginkgo"})
 
+			published := conn.PublishedMsgs[0]
+			Expect(published.Agent).To(Equal("ginkgo"))
 		})
 
 		It("Should handle publish failures gracefully", func() {
 			dat := []byte("hello world")
-			reg.Dat = &dat
-
 			conn.SetNextError("simulated failure")
-			manager.pollAndPublish(reg)
+
+			manager.publish(&data.RegistrationItem{Data: &dat, TargetAgent: "ginkgo"})
 		})
 	})
 })

@@ -39,7 +39,7 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	i.log = log.WithFields(log.Fields{"identity": fw.Config.Identity, "component": "server"})
 	i.agents = agents.New(i.requests, fw, i.log)
 	i.discovery = discovery.New(fw, i.log)
-	
+
 	return i, nil
 }
 
@@ -76,6 +76,11 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 	}
 
 	go srv.processRequests(ctx, wg)
+}
+
+// AddRegistrationProvider adds a new provider for registration data to the registration subsystem
+func (srv *Instance) AddRegistrationProvider(ctx context.Context, wg *sync.WaitGroup, provider registration.RegistrationDataProvider) error {
+	return srv.registration.RegisterProvider(ctx, wg, provider)
 }
 
 func (srv *Instance) subscribeNode(ctx context.Context) error {
