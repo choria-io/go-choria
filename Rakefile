@@ -18,8 +18,20 @@ task :build do
   sha = `git rev-parse --short HEAD`.chomp
   date = Time.now.strftime("%F %T %z")
 
-  sh "go build -o %s -ldflags '-X github.com/choria-io/go-choria/version.Version=%s -X github.com/choria-io/go-choria/version.SHA=%s -X \"github.com/choria-io/go-choria/version.BuildDate=%s\"'" % [
-    output_name(version), version, sha, date
+  flags = [
+    "-X github.com/choria-io/go-choria/build.Version=%s" % version,
+    "-X github.com/choria-io/go-choria/build.SHA=%s" % sha,
+    "-X \"github.com/choria-io/go-choria/build.BuildDate=%s\"" % date
+]
+
+  if ENV["BUILD_XFLAGS"]
+    ENV["BUILD_XFLAGS"].split("|").each do |flag|
+      flags << "-X github.com/choria-io/go-choria/build.%s" % flag     
+    end
+  end
+
+  sh "go build -o %s -ldflags '%s'" % [
+    output_name(version), flags.join(" ")
   ]
 end
 

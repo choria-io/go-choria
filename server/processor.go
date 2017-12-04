@@ -69,6 +69,8 @@ func (srv *Instance) handleReply(reply *agents.AgentReply) {
 }
 
 func (srv *Instance) processRequests(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
 	replies := make(chan *agents.AgentReply, 100)
 
 	for {

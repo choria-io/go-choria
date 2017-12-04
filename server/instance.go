@@ -75,6 +75,7 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 		return
 	}
 
+	wg.Add(1)
 	go srv.processRequests(ctx, wg)
 }
 

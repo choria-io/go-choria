@@ -4,8 +4,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/server"
-	"github.com/choria-io/go-choria/version"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -49,13 +49,23 @@ func (r *serverRunCommand) Setup() (err error) {
 func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
+	if r.disableTLS {
+		c.Config.DisableTLS = true
+		log.Warn("Running with TLS disabled, not compatible with production use.")
+	}
+
+	if r.disableTLSVerify {
+		c.Config.DisableTLSVerify = true
+		log.Warn("Running with TLS Verification disabled, not compatible with production use.")
+	}
+
 	instance, err := server.NewInstance(c)
 	if err != nil {
 		log.Errorf("Could not start choria: %s", err.Error())
 		os.Exit(1)
 	}
 
-	log.Infof("Choria Server version %s starting with config %s", version.Version, c.Config.ConfigFile)
+	log.Infof("Choria Server version %s starting with config %s", build.Version, c.Config.ConfigFile)
 
 	wg.Add(1)
 	instance.Run(ctx, wg)

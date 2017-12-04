@@ -12,6 +12,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/choria-io/go-choria/build"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -179,6 +180,17 @@ func NewConfig(path string) (*Config, error) {
 
 	if c.RegistrationCollective == "" {
 		c.RegistrationCollective = c.MainCollective
+	}
+
+	if c.Identity == "" {
+		c.Identity, err = os.Hostname()
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	if build.TLS != "true" {
+		c.DisableTLS = true
 	}
 
 	// TODO other loglevels, not needed for this project

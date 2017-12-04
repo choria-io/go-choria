@@ -1,4 +1,4 @@
-package version
+package build
 
 // Version the application version
 var Version = "development"
@@ -11,3 +11,6 @@ var BuildDate = "unknown"
 
 // License is the official Open Source Initiave license abbreciation
 var License = "Apache-2.0"
+
+// Set to default to no TLS
+var TLS = "true"

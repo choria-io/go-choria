@@ -285,14 +285,14 @@ func (self *Framework) NewTransportForSecureReply(reply protocol.SecureReply) (m
 func (self *Framework) NewReplyTransportForMessage(msg *Message, request protocol.Request) (protocol.TransportMessage, error) {
 	reply, err := self.NewReply(request)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+		return nil, fmt.Errorf("Could not create Reply: %s", err.Error())
 	}
 
 	reply.SetMessage(msg.Payload)
 
 	sreply, err := self.NewSecureReply(reply)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+		return nil, fmt.Errorf("Could not create Secure Reply: %s", err.Error())
 	}
 
 	transport, err := self.NewTransportForSecureReply(sreply)
@@ -309,12 +309,12 @@ func (self *Framework) NewReplyTransportForMessage(msg *Message, request protoco
 func (self *Framework) NewRequestTransportForMessage(msg *Message, version string) (protocol.TransportMessage, error) {
 	req, err := self.NewRequestFromMessage(version, msg)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+		return nil, fmt.Errorf("Could not create Request: %s", err.Error())
 	}
 
 	sr, err := self.NewSecureRequest(req)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+		return nil, fmt.Errorf("Could not create Secure Request: %s", err.Error())
 	}
 
 	transport, err := self.NewTransportForSecureRequest(sr)

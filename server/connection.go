@@ -16,10 +16,12 @@ func (srv *Instance) initialConnect(ctx context.Context) error {
 		return srv.fw.MiddlewareServers()
 	}
 
-	_, err := servers()
+	tempsrv, err := servers()
 	if err != nil {
 		return fmt.Errorf("Could not find initial NATS servers: %s", err.Error())
 	}
+
+	srv.log.Infof("Initial servers: %#v", tempsrv)
 
 	srv.connector, err = srv.fw.NewConnector(ctx, servers, srv.fw.Certname(), srv.log)
 	if err != nil {
