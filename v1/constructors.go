@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/protocol"
 )
 
@@ -164,10 +165,14 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure prot
 
 // NewSecureRequest creates a choria:secure:request:1
 func NewSecureRequest(request protocol.Request, publicCert string, privateCert string) (secure protocol.SecureRequest, err error) {
-	pubcerttxt, err := readFile(publicCert)
-	if err != nil {
-		err = fmt.Errorf("Could not read public certificate: %s", err.Error())
-		return
+	pubcerttxt := []byte("insecure")
+
+	if build.Secure == "true" {
+		pubcerttxt, err = readFile(publicCert)
+		if err != nil {
+			err = fmt.Errorf("Could not read public certificate: %s", err.Error())
+			return
+		}
 	}
 
 	secure = &secureRequest{

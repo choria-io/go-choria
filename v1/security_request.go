@@ -18,6 +18,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/protocol"
 	log "github.com/sirupsen/logrus"
 )
@@ -51,14 +52,20 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 		return
 	}
 
-	signature, err := r.signString([]byte(j))
-	if err != nil {
-		err = fmt.Errorf("Could not sign message string: %s", err.Error())
-		return
+	r.Signature = "insecure"
+
+	if r.isSecure() {
+		var signature []byte
+
+		signature, err = r.signString([]byte(j))
+		if err != nil {
+			err = fmt.Errorf("Could not sign message string: %s", err.Error())
+			return
+		}
+		r.Signature = base64.StdEncoding.EncodeToString(signature)
 	}
 
 	r.MessageBody = string(j)
-	r.Signature = base64.StdEncoding.EncodeToString(signature)
 
 	return
 }
@@ -72,6 +79,11 @@ func (r *secureRequest) Message() string {
 func (r *secureRequest) Valid() bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+
+	if !r.isSecure() {
+		log.Debug("Bypassing validation on secure request due to build time flags")
+		return true
+	}
 
 	if r.cachePath == "" || r.caPath == "" {
 		log.Debug("SecureRequest validation failed - no cache path or ca path have been set")
@@ -368,4 +380,8 @@ func readFile(path string) (cert []byte, err error) {
 	}
 
 	return
+}
+
+func (r *secureRequest) isSecure() bool {
+	return build.Secure == "true"
 }
