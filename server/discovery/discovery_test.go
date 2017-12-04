@@ -28,7 +28,10 @@ var _ = Describe("Server/Discovery", func() {
 
 	BeforeSuite(func() {
 		log = logrus.WithFields(logrus.Fields{"test": true})
-		fw, err = choria.New("/dev/null")
+		cfg, err := choria.NewConfig("/dev/null")
+		cfg.DisableTLS = true
+
+		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
 		fw.Config.ClassesFile = "testdata/classes.txt"

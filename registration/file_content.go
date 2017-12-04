@@ -88,6 +88,8 @@ func (fc *FileContent) publish(output chan *data.RegistrationItem) error {
 		TargetAgent: "registration",
 	}
 
+	fc.log.Debugf("Publishing registration data: %s", string(*item.Data))
+
 	output <- item
 
 	return nil

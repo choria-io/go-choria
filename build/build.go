@@ -14,3 +14,6 @@ var License = "Apache-2.0"
 
 // Set to default to no TLS
 var TLS = "true"
+
+// Set to disable signing and certificates in the protocol
+var Secure = "true"

@@ -13,7 +13,9 @@ var _ = Describe("Protocol", func() {
 
 	BeforeEach(func() {
 		if j == nil {
-			c, err = New("/dev/null")
+			cfg, _ := NewConfig("/dev/null")
+			cfg.DisableTLS = true
+			c, err = NewWithConfig(cfg)
 			Expect(err).ToNot(HaveOccurred())
 
 			rm, err := NewMessage("ping", "discovery", "mcollective", "request", nil, c)
@@ -35,13 +37,4 @@ var _ = Describe("Protocol", func() {
 			j = &t
 		}
 	})
-
-	Measure("Transport from JSON", func(b Benchmarker) {
-		b.Time("runtime", func() {
-			t, err := c.NewTransportFromJSON(string(*j))
-			Expect(err).ToNot(HaveOccurred())
-			t.SenderID()
-		})
-
-	}, 10000)
 })
