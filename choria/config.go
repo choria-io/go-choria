@@ -45,8 +45,8 @@ type ChoriaPluginConfig struct {
 	RandomizeMiddlewareHosts  bool     `confkey:"plugin.choria.randomize_middleware_hosts" default:"false"`
 
 	// security plugin
-	PrivilegedUsers   []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split"`
-	CertnameWhitelist []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split"`
+	PrivilegedUsers   []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split" default:"\\.privileged.mcollective$"`
+	CertnameWhitelist []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split" default:"\\.mcollective$"`
 	Serializer        string   `confkey:"plugin.choria.security.serializer"` // TODO support enums
 
 	// network broker

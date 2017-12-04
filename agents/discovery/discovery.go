@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/server/agents"
@@ -41,11 +42,17 @@ func (da *Agent) Metadata() *agents.Metadata {
 	return da.meta
 }
 
-func (da *Agent) Handle(msg *choria.Message) (*[]byte, error) {
-	if strings.Contains(msg.Payload, "ping") {
-		r := []byte("pong")
-		return &r, nil
+func (da *Agent) Handle(msg *choria.Message, request protocol.Request, result chan *agents.AgentReply) {
+	reply := &agents.AgentReply{
+		Message: msg,
+		Request: request,
 	}
 
-	return nil, fmt.Errorf("unknown request: %s", msg)
+	if strings.Contains(msg.Payload, "ping") {
+		reply.Body = []byte("pong")
+	} else {
+		reply.Error = fmt.Errorf("Unknown request: %s", msg.Payload)
+	}
+
+	result <- reply
 }

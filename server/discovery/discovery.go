@@ -59,7 +59,7 @@ func (mgr *Manager) ShouldProcess(request protocol.Request, knownAgents []string
 	}
 
 	if len(filter.IdentityFilters()) > 0 {
-		if identity.Match(filter.IdentityFilters(), mgr.fw.Certname()) {
+		if identity.Match(filter.IdentityFilters(), mgr.cfg.Identity) {
 			mgr.log.Debugf("Matching request %s with identity filters '%#v'", request.RequestID(), filter.IdentityFilters())
 			passed++
 		} else {

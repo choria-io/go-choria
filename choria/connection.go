@@ -26,14 +26,29 @@ type PublishableConnector interface {
 
 // AgentConnector provides the minimal Connector features for subscribing and unsubscribing agents
 type AgentConnector interface {
-	Subscribe(name string, subject string, group string) error
+	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error
 	Unsubscribe(name string) error
 	AgentBroadcastTarget(collective string, agent string) string
+}
+
+type InstanceConnector interface {
+	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error
+	Unsubscribe(name string) error
+	Publish(msg *Message) error
+
+	AgentBroadcastTarget(collective string, agent string) string
+	NodeDirectedTarget(collective string, identity string) string
+
+	Outbox() chan *nats.Msg
+
+	Close()
 }
 
 // Connector is the interface a connector must implement to be valid be it NATS, Stomp, Testing etc
 type Connector interface {
 	ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *ConnectorMessage, error)
+	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error
+
 	Subscribe(name string, subject string, group string) error
 	Unsubscribe(name string) error
 
@@ -45,6 +60,7 @@ type Connector interface {
 	Publish(msg *Message) error
 
 	Receive() *ConnectorMessage
+	Outbox() chan *nats.Msg
 
 	ConnectedServer() string
 	SetServers(func() ([]Server, error))
@@ -159,6 +175,44 @@ func (self *Connection) ChanQueueSubscribe(name string, subject string, group st
 	return s.out, nil
 }
 
+// QueueSubscribe is a lot like ChanQueueSubscribe but you provide it the queue to dump messages in
+func (self *Connection) QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error {
+	self.subMu.Lock()
+	defer self.subMu.Unlock()
+
+	var err error
+
+	s := &channelSubscription{
+		in:   make(chan *nats.Msg, 5000),
+		out:  output,
+		quit: make(chan interface{}),
+	}
+
+	self.chanSubscriptions[name] = s
+
+	s.subscription, err = self.nats.ChanQueueSubscribe(subject, group, s.in)
+	if err != nil {
+		return fmt.Errorf("Could not subscribe to subscription %s: %s", name, err.Error())
+	}
+
+	copier := func(ctx context.Context, s *channelSubscription) {
+		for {
+			select {
+			case m := <-s.in:
+				s.out <- &ConnectorMessage{Data: m.Data, Reply: m.Reply, Subject: m.Subject}
+			case <-ctx.Done():
+				return
+			case <-s.quit:
+				return
+			}
+		}
+	}
+
+	go copier(ctx, s)
+
+	return err
+}
+
 func (self *Connection) Subscribe(name string, subject string, group string) error {
 	self.subMu.Lock()
 	defer self.subMu.Unlock()
@@ -222,6 +276,15 @@ func (self *Connection) Receive() *ConnectorMessage {
 	}
 
 	return message
+}
+
+// Outbox gives access to the outbox of raw nats messages
+// this is a bit of a hack for now because this connector was
+// written before I knew about contexts and all sorts of things
+// so this gets me going but I will soon have to rewrite this
+// whole connector mess into something better
+func (self *Connection) Outbox() chan *nats.Msg {
+	return self.outbox
 }
 
 // PublishRaw allows any data to be published to any target

@@ -1,15 +1,21 @@
 package connectortest
 
 import (
+	"context"
 	"fmt"
 	"sync"
+
+	"github.com/choria-io/go-choria/choria"
+	"github.com/nats-io/nats"
 )
 
 type AgentConnector struct {
 	Subscribes   [][3]string
 	Unsubscribes []string
-	ActibeSubs   map[string]string
+	ActiveSubs   map[string]string
 	NextErr      []error
+
+	Input chan *nats.Msg
 
 	mu *sync.Mutex
 }
@@ -17,12 +23,13 @@ type AgentConnector struct {
 func (a *AgentConnector) Init() {
 	a.Subscribes = [][3]string{}
 	a.Unsubscribes = []string{}
-	a.ActibeSubs = make(map[string]string)
+	a.ActiveSubs = make(map[string]string)
 	a.mu = &sync.Mutex{}
 	a.NextErr = []error{}
+	a.Input = make(chan *nats.Msg)
 }
 
-func (a *AgentConnector) Subscribe(name string, subject string, group string) error {
+func (a *AgentConnector) QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *choria.ConnectorMessage) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
@@ -32,11 +39,11 @@ func (a *AgentConnector) Subscribe(name string, subject string, group string) er
 		return err
 	}
 
-	if _, found := a.ActibeSubs[name]; found {
+	if _, found := a.ActiveSubs[name]; found {
 		return fmt.Errorf("%s already subscribed", name)
 	}
 
-	a.ActibeSubs[name] = subject
+	a.ActiveSubs[name] = subject
 
 	return nil
 }
@@ -45,11 +52,11 @@ func (a *AgentConnector) Unsubscribe(name string) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	if _, found := a.ActibeSubs[name]; !found {
+	if _, found := a.ActiveSubs[name]; !found {
 		return fmt.Errorf("%s is not subscribed", name)
 	}
 
-	delete(a.ActibeSubs, name)
+	delete(a.ActiveSubs, name)
 
 	a.Unsubscribes = append(a.Unsubscribes, name)
 

@@ -11,7 +11,6 @@ func Match(needles []string, certname string) bool {
 		if strings.HasPrefix(needle, "/") && strings.HasSuffix(needle, "/") {
 			needle = strings.TrimPrefix(needle, "/")
 			needle = strings.TrimSuffix(needle, "/")
-
 			if matched, _ := regexp.MatchString(needle, certname); matched {
 				return true
 			}

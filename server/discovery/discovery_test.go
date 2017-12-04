@@ -33,7 +33,7 @@ var _ = Describe("Server/Discovery", func() {
 
 		fw.Config.ClassesFile = "testdata/classes.txt"
 		fw.Config.Choria.FactSourceFile = "testdata/facts.yaml"
-		fw.Config.OverrideCertname = "test.example.net"
+		fw.Config.Identity = "test.example.net"
 	})
 
 	BeforeEach(func() {

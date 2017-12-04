@@ -109,7 +109,7 @@ func (reg *Manager) pollAndPublish(provider RegistrationDataProvider) {
 		return
 	}
 
-	msg, err := framework.NewMessage(string(*data), "discovery", reg.cfg.RegistrationCollective, "request", nil, reg.choria)
+	msg, err := framework.NewMessage(string(*data), "registration", reg.cfg.RegistrationCollective, "request", nil, reg.choria)
 	if err != nil {
 		reg.log.Warnf("Could not create Message for registration data: %s", err.Error())
 		return
