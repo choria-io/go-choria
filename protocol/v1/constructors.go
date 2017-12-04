@@ -186,8 +186,13 @@ func NewSecureRequest(request protocol.Request, publicCert string, privateCert s
 }
 
 // NewSecureRequestFromTransport creates a new choria:secure:request:1 from the data contained in a Transport message
-func NewSecureRequestFromTransport(message protocol.TransportMessage, skipvalidate bool) (secure protocol.SecureRequest, err error) {
-	secure = &secureRequest{}
+func NewSecureRequestFromTransport(message protocol.TransportMessage, caPath string, cachePath string, whitelistRegex []string, privilegedRegex []string, skipvalidate bool) (secure protocol.SecureRequest, err error) {
+	secure = &secureRequest{
+		caPath:          caPath,
+		cachePath:       cachePath,
+		whilelistRegex:  whitelistRegex,
+		privilegedRegex: privilegedRegex,
+	}
 
 	data, err := message.Message()
 	if err != nil {
@@ -207,7 +212,7 @@ func NewSecureRequestFromTransport(message protocol.TransportMessage, skipvalida
 
 	if !skipvalidate {
 		if !secure.Valid() {
-			err = fmt.Errorf("SecureRequest message created from the Transport Message is not valid")
+			err = fmt.Errorf("SecureRequest message created from the Transport Message did not pass security validation")
 		}
 	}
 

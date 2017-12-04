@@ -124,7 +124,7 @@ func (self *Framework) NewRequestFromMessage(version string, msg *Message) (req 
 func (self *Framework) NewReply(request protocol.Request) (reply protocol.Reply, err error) {
 	switch request.Version() {
 	case protocol.RequestV1:
-		reply, err = v1.NewReply(request, self.Certname())
+		reply, err = v1.NewReply(request, self.Config.Identity)
 	default:
 		err = fmt.Errorf("Do not know how to create a Reply version %s", request.Version())
 	}
@@ -232,7 +232,20 @@ func (self *Framework) NewSecureRequest(request protocol.Request) (secure protoc
 func (self *Framework) NewSecureRequestFromTransport(message protocol.TransportMessage, skipvalidate bool) (secure protocol.SecureRequest, err error) {
 	switch message.Version() {
 	case protocol.TransportV1:
-		secure, err = v1.NewSecureRequestFromTransport(message, skipvalidate)
+		var ca string
+		var cache string
+
+		ca, err = self.CAPath()
+		if err != nil {
+			return
+		}
+
+		cache, err = self.ClientCertCacheDir()
+		if err != nil {
+			return
+		}
+
+		secure, err = v1.NewSecureRequestFromTransport(message, ca, cache, self.Config.Choria.CertnameWhitelist, self.Config.Choria.PrivilegedUsers, skipvalidate)
 	default:
 		err = fmt.Errorf("Do not know how to create a SecureReply from a TransportMessage version %s", message.Version())
 	}
@@ -244,7 +257,7 @@ func (self *Framework) NewSecureRequestFromTransport(message protocol.TransportM
 func (self *Framework) NewTransportForSecureRequest(request protocol.SecureRequest) (message protocol.TransportMessage, err error) {
 	switch request.Version() {
 	case protocol.SecureRequestV1:
-		message, err = v1.NewTransportMessage(self.Certname())
+		message, err = v1.NewTransportMessage(self.Config.Identity)
 		message.SetRequestData(request)
 	default:
 		err = fmt.Errorf("Do not know how to create a Transport message for SecureRequest version %s", request.Version())
@@ -257,7 +270,7 @@ func (self *Framework) NewTransportForSecureRequest(request protocol.SecureReque
 func (self *Framework) NewTransportForSecureReply(reply protocol.SecureReply) (message protocol.TransportMessage, err error) {
 	switch reply.Version() {
 	case protocol.SecureReplyV1:
-		message, err = v1.NewTransportMessage(self.Certname())
+		message, err = v1.NewTransportMessage(self.Config.Identity)
 		message.SetReplyData(reply)
 	default:
 		err = fmt.Errorf("Do not know how to create a Transport message for SecureRequest version %s", reply.Version())
@@ -316,7 +329,7 @@ func (self *Framework) NewRequestTransportForMessage(msg *Message, version strin
 func (self *Framework) NewTransportMessage(version string) (message protocol.TransportMessage, err error) {
 	switch version {
 	case protocol.TransportV1:
-		message, err = v1.NewTransportMessage(self.Certname())
+		message, err = v1.NewTransportMessage(self.Config.Identity)
 	default:
 		err = fmt.Errorf("Do not know how to create a Transport version '%s'", version)
 	}

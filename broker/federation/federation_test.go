@@ -59,6 +59,10 @@ func (s *stubConnection) Receive() *choria.ConnectorMessage {
 	return nil
 }
 
+func (s *stubConnection) Outbox() chan *nats.Msg {
+	return make(chan *nats.Msg)
+}
+
 func (s *stubConnection) PublishToQueueSub(name string, msg *choria.ConnectorMessage) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -120,6 +124,10 @@ func (s *stubConnection) ChanQueueSubscribe(name string, subject string, group s
 	}
 
 	return s.SubChannels[name], nil
+}
+
+func (s *stubConnection) QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *choria.ConnectorMessage) error {
+	return nil
 }
 
 func (s *stubConnection) PublishRaw(target string, data []byte) error {

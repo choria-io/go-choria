@@ -7,6 +7,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server/agents"
+	"github.com/choria-io/go-choria/server/discovery"
 	"github.com/choria-io/go-choria/server/registration"
 
 	log "github.com/sirupsen/logrus"
@@ -15,25 +16,30 @@ import (
 // Instance is an independant copy of Choria
 type Instance struct {
 	fw           *choria.Framework
-	connector    choria.Connector
+	connector    choria.InstanceConnector
 	cfg          *choria.Config
 	log          *log.Entry
 	servers      []*choria.Server
 	registration *registration.Manager
 	agents       *agents.Manager
+	discovery    *discovery.Manager
+
+	requests chan *choria.ConnectorMessage
 
 	agentmu *sync.Mutex
 }
 
 func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	i = &Instance{
-		fw:  fw,
-		cfg: fw.Config,
+		fw:       fw,
+		cfg:      fw.Config,
+		requests: make(chan *choria.ConnectorMessage),
 	}
 
 	i.log = log.WithFields(log.Fields{"identity": fw.Config.Identity, "component": "server"})
-	i.agents = agents.New(fw, i.log)
-
+	i.agents = agents.New(i.requests, fw, i.log)
+	i.discovery = discovery.New(fw, i.log)
+	
 	return i, nil
 }
 
@@ -55,22 +61,24 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 		return
 	}
 
-	if err := srv.setupCoreAgents(); err != nil {
+	if err := srv.setupCoreAgents(ctx); err != nil {
 		srv.log.Errorf("Could not initialize initial core agents: %s", err.Error())
 		srv.connector.Close()
 
 		return
 	}
 
-	if err := srv.subscribeNode(); err != nil {
+	if err := srv.subscribeNode(ctx); err != nil {
 		srv.log.Errorf("Could not initialize node: %s", err.Error())
 		srv.connector.Close()
 
 		return
 	}
+
+	go srv.processRequests(ctx, wg)
 }
 
-func (srv *Instance) subscribeNode() error {
+func (srv *Instance) subscribeNode(ctx context.Context) error {
 	var err error
 
 	for _, collective := range srv.cfg.Collectives {
@@ -78,7 +86,7 @@ func (srv *Instance) subscribeNode() error {
 
 		srv.log.Infof("Subscribing node %s to %s", srv.cfg.Identity, target)
 
-		err = srv.connector.Subscribe(fmt.Sprintf("node.%s", collective), target, "")
+		err = srv.connector.QueueSubscribe(ctx, fmt.Sprintf("node.%s", collective), target, "", srv.requests)
 		if err != nil {
 			return fmt.Errorf("Could not subscribe to node directed targets: %s", err.Error())
 		}

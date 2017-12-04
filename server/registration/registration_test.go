@@ -84,7 +84,7 @@ var _ = Describe("Server/Registration", func() {
 			Expect(conn.PublishedMsgs).ToNot(BeEmpty())
 
 			msg := conn.PublishedMsgs[0]
-			Expect(msg.Agent).To(Equal("discovery"))
+			Expect(msg.Agent).To(Equal("registration"))
 			Expect(msg.Collective()).To(Equal("test_collective"))
 			Expect(msg.Payload).To(Equal("hello world"))
 

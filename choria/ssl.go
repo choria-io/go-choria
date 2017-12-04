@@ -220,7 +220,25 @@ func (self *Framework) SSLDir() (string, error) {
 	return filepath.Join(u.HomeDir, ".puppetlabs", "etc", "puppet", "ssl"), nil
 }
 
-//TLSConfig creates a TLS configuration for use by NATS, HTTPS etc
+// ClientCertCacheDir determines the cache directory for client certs and creates it
+// if it does not exist
+func (self *Framework) ClientCertCacheDir() (string, error) {
+	ssldir, err := self.SSLDir()
+	if err != nil {
+		return "", fmt.Errorf("Could not determine Client Certificate Cache Directory: %s", err.Error())
+	}
+
+	path := filepath.Join(ssldir, "choria_secuirty", "public_certs")
+
+	err = os.MkdirAll(path, os.FileMode(int(0755)))
+	if err != nil {
+		return "", fmt.Errorf("Could not create Client Certificate Cache Directory: %s", err)
+	}
+
+	return path, nil
+}
+
+// TLSConfig creates a TLS configuration for use by NATS, HTTPS etc
 func (self *Framework) TLSConfig() (tlsc *tls.Config, err error) {
 	pub, _ := self.ClientPublicCert()
 	pri, _ := self.ClientPrivateKey()

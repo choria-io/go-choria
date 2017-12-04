@@ -87,7 +87,7 @@ var _ = Describe("Reply Transformer", func() {
 
 		waitForLogLines(logtxt, logbuf)
 
-		Expect(logbuf.String()).To(MatchRegexp("Received a message from rip.mcollective that is not federated"))
+		Expect(logbuf.String()).To(MatchRegexp("Received a message from test.example.net that is not federated"))
 	})
 
 	It("Should fail for messages with no reply-to", func() {

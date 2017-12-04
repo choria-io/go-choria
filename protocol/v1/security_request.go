@@ -11,10 +11,15 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
+	"regexp"
+	"sort"
 	"strings"
 	"sync"
 
 	"github.com/choria-io/go-choria/protocol"
+	log "github.com/sirupsen/logrus"
 )
 
 // SecureRequest contains 1 serialized Request signed and with the public cert attached
@@ -26,7 +31,13 @@ type secureRequest struct {
 
 	publicCertPath  string
 	privateCertPath string
-	mu              sync.Mutex
+	caPath          string
+	cachePath       string
+
+	whilelistRegex  []string
+	privilegedRegex []string
+
+	mu sync.Mutex
 }
 
 // SetMessage sets the message contained in the Request and updates the signature
@@ -62,16 +73,40 @@ func (r *secureRequest) Valid() bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	signature, err := r.signString([]byte(r.MessageBody))
+	if r.cachePath == "" || r.caPath == "" {
+		log.Debug("SecureRequest validation failed - no cache path or ca path have been set")
+		return false
+	}
+
+	cachedpath, err := r.cacheClientCert()
 	if err != nil {
+		log.Errorf("Could not cache Client Certificate: %s", err.Error())
 		return false
 	}
 
-	if base64.StdEncoding.EncodeToString(signature) != r.Signature {
+	if cachedpath == "" {
+		log.Errorf("Could not cache Client Certificate, no cache file was created")
 		return false
 	}
 
-	return true
+	candidateCerts := append([]string{cachedpath}, r.privilegedCerts()...)
+
+	body := []byte(r.MessageBody)
+	sig := []byte(r.Signature)
+
+	for _, candidate := range candidateCerts {
+		if _, err := os.Stat(candidate); os.IsNotExist(err) {
+			continue
+		}
+
+		if r.verifySignature(body, sig, candidate) {
+			log.Debugf("Secure Request signature verified using %s", candidate)
+			return true
+		}
+
+		log.Debugf("Secure Request signature could not be verified using %s", candidate)
+	}
+	return false
 }
 
 // JSON creates a JSON encoded request
@@ -113,22 +148,168 @@ func (r *secureRequest) IsValidJSON(data string) (err error) {
 	return
 }
 
-func (r *secureRequest) privateKeyPEM() (pb *pem.Block, err error) {
-	keydat, err := readFile(r.privateCertPath)
+func (r *secureRequest) privilegedCerts() []string {
+	certs := []string{}
+
+	filepath.Walk(r.cachePath, func(path string, info os.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !info.IsDir() {
+			cert := []byte(strings.TrimSuffix(filepath.Base(path), ".pem"))
+
+			if r.matchAnyRegex(cert, r.privilegedRegex) {
+				certs = append(certs, path)
+			}
+		}
+
+		return nil
+	})
+
+	sort.Strings(certs)
+
+	return certs
+}
+
+func (r *secureRequest) matchAnyRegex(str []byte, regex []string) bool {
+	for _, reg := range regex {
+		if matched, _ := regexp.Match(reg, str); matched {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (r *secureRequest) cacheClientCert() (string, error) {
+	req, err := NewRequestFromSecureRequest(r)
 	if err != nil {
-		return pb, fmt.Errorf("Could not read Private Key %s: %s", r.privateCertPath, err.Error())
+		log.Errorf("Could not create Request to validate Secure Request with: %s", err.Error())
+		return "", err
+	}
+
+	certname, err := r.requestCallerCertname(req.CallerID())
+	if err != nil {
+		log.Errorf("Could not extract certname from caller: %s", err.Error())
+		return "", err
+	}
+
+	certfile := filepath.Join(r.cachePath, fmt.Sprintf("%s.pem", certname))
+
+	if _, err := os.Stat(certfile); !os.IsNotExist(err) {
+		return certfile, nil
+	}
+
+	if !r.shouldCacheClientCert(certname) {
+		return "", fmt.Errorf("Certificate %s did not pass validation", certname)
+	}
+
+	err = ioutil.WriteFile(certfile, []byte(r.PublicCertificate), os.FileMode(int(0644)))
+	if err != nil {
+		return "", fmt.Errorf("Could not cache client public certificate: %s", err.Error())
+	}
+
+	return certfile, nil
+}
+
+func (r *secureRequest) shouldCacheClientCert(name string) bool {
+	if !r.verifyCert([]byte(r.PublicCertificate), "") {
+		return false
+	}
+
+	if r.matchAnyRegex([]byte(name), r.privilegedRegex) {
+		log.Warnf("Caching privileged certificate %s", name)
+		return true
+	}
+
+	if !r.verifyCert([]byte(r.PublicCertificate), name) {
+		return false
+	}
+
+	if !r.matchAnyRegex([]byte(name), r.whilelistRegex) {
+		log.Warnf("Received certificate '%s' does not match the allowed list '%s'", name, r.whilelistRegex)
+		return false
+	}
+
+	return true
+}
+
+// verifies a certificate is signed with the configured CA and if
+// name is not "" that it matches the name given
+func (r *secureRequest) verifyCert(certpem []byte, name string) bool {
+	capem, err := ioutil.ReadFile(r.caPath)
+	if err != nil {
+		log.Errorf("Could not read CA '%s': %s", r.caPath, err.Error())
+		return false
+	}
+
+	roots := x509.NewCertPool()
+	if !roots.AppendCertsFromPEM(capem) {
+		log.Warnf("Could not use CA '%s' as PEM data: %s", r.caPath, err.Error())
+		return false
+	}
+
+	block, _ := pem.Decode(certpem)
+	if block == nil {
+		log.Warnf("Could not decode certificate '%s' PEM data: %s", name, err.Error())
+		return false
+	}
+
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		log.Warnf("Could not parse certificate '%s': %s", name, err.Error())
+		return false
+	}
+
+	opts := x509.VerifyOptions{
+		Roots: roots,
+	}
+
+	if name != "" {
+		opts.DNSName = name
+	}
+
+	_, err = cert.Verify(opts)
+	if err != nil {
+		log.Warnf("Certificate does not pass verification as '%s': %s", name, err.Error())
+		return false
+	}
+
+	return true
+}
+
+func (r *secureRequest) requestCallerCertname(caller string) (string, error) {
+	re := regexp.MustCompile("^choria=([\\w\\.\\-]+)")
+	match := re.FindStringSubmatch(caller)
+
+	if match == nil {
+		return "", fmt.Errorf("Could not find a valid certificate name in %s", caller)
+	}
+
+	return match[1], nil
+}
+
+func (r *secureRequest) decodePEM(certpath string) (pb *pem.Block, err error) {
+	if certpath == "" {
+		certpath = r.privateCertPath
+	}
+
+	keydat, err := readFile(certpath)
+	if err != nil {
+		return pb, fmt.Errorf("Could not read PEM data from %s: %s", certpath, err.Error())
 	}
 
 	pb, _ = pem.Decode(keydat)
 	if pb == nil {
-		return pb, fmt.Errorf("Failed to parse PEM data from key %s", r.privateCertPath)
+		return pb, fmt.Errorf("Failed to parse PEM data from key %s", certpath)
 	}
 
 	return
 }
 
 func (r *secureRequest) signString(str []byte) (signature []byte, err error) {
-	pkpem, err := r.privateKeyPEM()
+	pkpem, err := r.decodePEM("")
 	if err != nil {
 		return
 	}
@@ -147,6 +328,37 @@ func (r *secureRequest) signString(str []byte) (signature []byte, err error) {
 	}
 
 	return
+}
+
+func (r *secureRequest) verifySignature(str []byte, sig []byte, pubkeyPath string) bool {
+	pkpem, err := r.decodePEM(pubkeyPath)
+	if err != nil {
+		log.Errorf("Could not decode PEM data in public key %s: %s", pubkeyPath, err.Error())
+		return false
+	}
+
+	cert, err := x509.ParseCertificate(pkpem.Bytes)
+	if err != nil {
+		log.Errorf("Could not parse decoded PEM data for public key %s: %s", pubkeyPath, err.Error())
+		return false
+	}
+
+	rsaPublicKey := cert.PublicKey.(*rsa.PublicKey)
+	hashed := sha256.Sum256(str)
+
+	decodedsig, err := base64.StdEncoding.DecodeString(string(sig))
+	if err != nil {
+		log.Errorf("Could not decode signature base64 encoding: %s", err.Error())
+		return false
+	}
+
+	err = rsa.VerifyPKCS1v15(rsaPublicKey, crypto.SHA256, hashed[:], decodedsig)
+	if err != nil {
+		log.Errorf("Verification using %s failed: %s", pubkeyPath, err.Error())
+		return false
+	}
+
+	return true
 }
 
 func readFile(path string) (cert []byte, err error) {
