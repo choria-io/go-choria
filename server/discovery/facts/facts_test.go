@@ -17,10 +17,9 @@ func TestFileContent(t *testing.T) {
 
 var _ = Describe("Server/Discovery/Facts", func() {
 	var (
-		t   func(fact, op, val string) (bool, error)
-		fw  *choria.Framework
-		err error
-		l   *logrus.Entry
+		t  func(fact, op, val string) (bool, error)
+		fw *choria.Framework
+		l  *logrus.Entry
 	)
 
 	BeforeSuite(func() {
@@ -29,7 +28,10 @@ var _ = Describe("Server/Discovery/Facts", func() {
 		}
 
 		l = logrus.WithFields(logrus.Fields{"test": true})
-		fw, err = choria.New("/dev/null")
+		cfg, err := choria.NewConfig("/dev/null")
+		cfg.DisableTLS = true
+
+		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
 
 		fw.Config.Choria.FactSourceFile = "testdata/fact.yaml"

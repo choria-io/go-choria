@@ -44,20 +44,25 @@ func (self *Server) URL() (u *url.URL, err error) {
 
 // New sets up a Choria with all its config loaded and so forth
 func New(path string) (*Framework, error) {
-	c := Framework{}
-
 	config, err := NewConfig(path)
 	if err != nil {
-		return &c, err
+		return nil, err
 	}
 
-	c.Config = config
+	return NewWithConfig(config)
+}
 
-	if err = c.SetupLogging(false); err != nil {
+func NewWithConfig(config *Config) (*Framework, error) {
+	c := Framework{
+		Config: config,
+	}
+
+	err := c.SetupLogging(false)
+	if err != nil {
 		return &c, fmt.Errorf("Could not set up logging: %s", err.Error())
 	}
 
-	if config.DisableTLS {
+	if !config.DisableTLS {
 		if errors, ok := c.CheckSSLSetup(); !ok {
 			return &c, fmt.Errorf("SSL setup is not valid, %d errors encountered: %s", len(errors), strings.Join(errors, ", "))
 		}

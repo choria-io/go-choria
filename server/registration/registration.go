@@ -141,8 +141,6 @@ func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 	msg.SetProtocolVersion(protocol.RequestV1)
 	msg.SetReplyTo("dev.null")
 
-	reg.log.Debugf("Publishing %d bytes of registration data to collective %s agent %s", len(*rmsg.Data), reg.cfg.RegistrationCollective, rmsg.TargetAgent)
-
 	err = reg.connector.Publish(msg)
 	if err != nil {
 		reg.log.Warnf("Could not publish registration Message: %s", err.Error())

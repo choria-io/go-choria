@@ -5,6 +5,7 @@ import (
 
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/protocol/v1"
+	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 )
 
@@ -258,7 +259,17 @@ func (self *Framework) NewTransportForSecureRequest(request protocol.SecureReque
 	switch request.Version() {
 	case protocol.SecureRequestV1:
 		message, err = v1.NewTransportMessage(self.Config.Identity)
-		message.SetRequestData(request)
+		if err != nil {
+			logrus.Errorf("Failed to create transport from secure request: %s", err.Error())
+			return
+		}
+
+		err = message.SetRequestData(request)
+		if err != nil {
+			logrus.Errorf("Failed to create transport from secure request: %s", err.Error())
+			return
+		}
+
 	default:
 		err = fmt.Errorf("Do not know how to create a Transport message for SecureRequest version %s", request.Version())
 	}

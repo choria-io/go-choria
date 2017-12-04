@@ -61,10 +61,14 @@ var _ = Describe("Server/Agents", func() {
 	var ctx context.Context
 	var cancel func()
 	var fw *choria.Framework
-	var err error
 
 	BeforeEach(func() {
-		fw, err = choria.New("/dev/null")
+		cfg, err := choria.NewConfig("/dev/null")
+		Expect(err).ToNot(HaveOccurred())
+
+		cfg.DisableTLS = true
+
+		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 		fw.Config.Collectives = []string{"cone", "ctwo"}
 
