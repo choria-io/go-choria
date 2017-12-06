@@ -44,7 +44,7 @@ func (fc *FileContent) Init(c *choria.Config, logger *logrus.Entry) {
 }
 
 // Start stats a publishing loop
-func (fc *FileContent) Start(ctx context.Context, wg *sync.WaitGroup, interval int, output chan *data.RegistrationItem) {
+func (fc *FileContent) StartRegistration(ctx context.Context, wg *sync.WaitGroup, interval int, output chan *data.RegistrationItem) {
 	defer wg.Done()
 
 	err := fc.publish(output)
@@ -87,8 +87,6 @@ func (fc *FileContent) publish(output chan *data.RegistrationItem) error {
 		Data:        &dat,
 		TargetAgent: "registration",
 	}
-
-	fc.log.Debugf("Publishing registration data: %s", string(*item.Data))
 
 	output <- item
 

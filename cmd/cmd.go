@@ -31,7 +31,7 @@ var wg *sync.WaitGroup
 
 func ParseCLI() (err error) {
 	cli.app = kingpin.New("choria", "Choria Orchestration System")
-	cli.app.Version(fmt.Sprintf("version: %s\n\nlicense: %s\nbuilt: %s\nsha: %s\ntls: %s\nsecure: %s\n", build.Version, build.License, build.BuildDate, build.SHA, build.TLS, build.Secure))
+	cli.app.Version(build.String())
 	cli.app.Author("R.I.Pienaar <rip@devco.net>")
 	cli.app.Flag("debug", "Enable debug logging").Short('d').BoolVar(&debug)
 	cli.app.Flag("config", "Config file to use").StringVar(&configFile)

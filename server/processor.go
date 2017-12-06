@@ -61,6 +61,8 @@ func (srv *Instance) handleReply(reply *agents.AgentReply) {
 		return
 	}
 
+	msg.Payload = string(reply.Body)
+
 	err = srv.connector.Publish(msg)
 	if err != nil {
 		srv.log.Errorf("Publishing reply Message for %s failed: %s", reply.Message.RequestID, err.Error())

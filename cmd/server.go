@@ -1,6 +1,8 @@
 package cmd
 
 import (
+	"fmt"
+	"io/ioutil"
 	"os"
 	"sync"
 
@@ -66,6 +68,13 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	log.Infof("Choria Server version %s starting with config %s", build.Version, c.Config.ConfigFile)
+
+	if r.pidFile != "" {
+		err := ioutil.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)
+		if err != nil {
+			return fmt.Errorf("Could not write PID: %s", err.Error())
+		}
+	}
 
 	wg.Add(1)
 	instance.Run(ctx, wg)
