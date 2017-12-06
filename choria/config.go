@@ -66,7 +66,8 @@ type ChoriaPluginConfig struct {
 	FactSourceFile string `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml"`
 
 	// registration
-	FileContentRegistrationData string `confkey:"plugin.choria.registration.file_content.data" default:""`
+	FileContentRegistrationData   string `confkey:"plugin.choria.registration.file_content.data" default:""`
+	FileContentRegistrationTarget string `confkey:"plugin.choria.registration.file_content.target" default:""`
 
 	// adapters
 	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split"`

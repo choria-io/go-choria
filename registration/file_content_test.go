@@ -59,7 +59,7 @@ var _ = Describe("RegistrationData", func() {
 		Expect(err).To(MatchError(fmt.Sprintf("Data file %s is empty", tmpfile.Name())))
 	})
 
-	It("Should read the file otherwise", func() {
+	It("Should read the file and publish it to default location", func() {
 		c.Choria.FileContentRegistrationData = "testdata/sample.json"
 		reg.Init(c, log.WithFields(log.Fields{}))
 
@@ -68,5 +68,21 @@ var _ = Describe("RegistrationData", func() {
 
 		msg := <-msgs
 		Expect(string(*msg.Data)).To(Equal(`{"file": true}`))
+		Expect(msg.TargetAgent).To(Equal("registration"))
+	})
+
+	It("Should support custom targets", func() {
+		c.Choria.FileContentRegistrationData = "testdata/sample.json"
+		c.Choria.FileContentRegistrationTarget = "my.cmdb"
+
+		reg.Init(c, log.WithFields(log.Fields{}))
+
+		err = reg.publish(msgs)
+		Expect(err).ToNot(HaveOccurred())
+
+		msg := <-msgs
+		Expect(string(*msg.Data)).To(Equal(`{"file": true}`))
+		Expect(msg.TargetAgent).To(Equal(""))
+		Expect(msg.Destination).To(Equal("my.cmdb"))
 	})
 })

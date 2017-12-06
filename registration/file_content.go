@@ -85,7 +85,11 @@ func (fc *FileContent) publish(output chan *data.RegistrationItem) error {
 
 	item := &data.RegistrationItem{
 		Data:        &dat,
-		TargetAgent: "registration",
+		Destination: fc.c.Choria.FileContentRegistrationTarget,
+	}
+
+	if item.Destination == "" {
+		item.TargetAgent = "registration"
 	}
 
 	output <- item

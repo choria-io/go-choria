@@ -22,6 +22,8 @@ type Message struct {
 	RequestID       string
 	DiscoveredHosts []string
 
+	CustomTarget string
+
 	expectedMessageID string
 	replyTo           string
 	collective        string

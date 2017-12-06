@@ -303,6 +303,10 @@ func (self *Connection) Publish(msg *Message) error {
 
 	transport.RecordNetworkHop(self.ConnectedServer(), self.choria.Config.Identity, self.ConnectedServer())
 
+	if msg.CustomTarget != "" {
+		return self.publishConnectedBroadcast(msg, transport)
+	}
+
 	if self.choria.IsFederated() {
 		return self.publishFederated(msg, transport)
 	}
@@ -437,6 +441,10 @@ func (self *Connection) publishConnectedDirect(msg *Message, transport protocol.
 }
 
 func (self *Connection) TargetForMessage(msg *Message, identity string) (string, error) {
+	if msg.CustomTarget != "" {
+		return msg.CustomTarget, nil
+	}
+
 	if msg.Type() == "reply" {
 		if msg.ReplyTo() == "" {
 			return "", fmt.Errorf("Do not know how to reply, no reply-to header has been set on message %s", msg.RequestID)
