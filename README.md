@@ -28,6 +28,9 @@ SSL is setup to be compatible with Choria - ie. uses the Puppet certificates etc
 # enables the middleware broker
 plugin.choria.broker_network = true 
 
+# address for all the network ports, defaults to :: which should be fine for most so this is optional
+plugin.choria.network.listen_address = 0.0.0.0
+
 # port it listens on for clients, this is the default when not set
 plugin.choria.network.client_port = 4222 
 
