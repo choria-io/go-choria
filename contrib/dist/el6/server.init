@@ -1,0 +1,109 @@
+#!/bin/bash
+#
+# Init script for {{pkgname}}-server
+#
+### BEGIN INIT INFO
+# Provides:          {{pkgname}}-server
+# Required-Start:    $remote_fs $syslog
+# Required-Stop:     $remote_fs $syslog
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Choria.IO Orchestration Server
+# Description:       Choria.IO Orchestration Server
+### END INIT INFO
+
+# source function library
+. /etc/rc.d/init.d/functions
+
+prog="{{pkgname}}-server"
+user="root"
+exec="{{bindir}}/{{pkgname}}"
+pidfile="/var/run/${prog}.pid"
+lockfile="/var/lock/subsys/${prog}"
+logfile="/var/log/${prog}"
+conffile="{{etcdir}}/server.conf"
+
+# pull in sysconfig settings
+[ -e /etc/sysconfig/${prog} ] && . /etc/sysconfig/${prog}
+
+args="server --config=${conffile} --pid=${pidfile} ${EXTRA_OPTS}"
+
+export GOMAXPROCS=${GOMAXPROCS:-2}
+
+start() {
+    [ -x $exec ] || exit 5
+
+    [ -f $conffile ] || exit 6
+    [ -d $confdir ] || exit 6
+
+    umask 077
+
+    touch $logfile $pidfile
+
+    echo -n $"Starting ${prog}: "
+
+    daemon " { nohup $exec ${args} > $logfile 2>&1 & }"
+
+    RETVAL=$?
+    echo
+
+    [ $RETVAL -eq 0 ] && touch $lockfile
+
+    return $RETVAL
+}
+
+stop() {
+    echo -n $"Shutting down $prog: "
+    ## graceful shutdown with SIGINT
+    killproc -p $pidfile $exec -INT
+    RETVAL=$?
+    echo
+    [ $RETVAL -eq 0 ] && rm -f $lockfile
+    return $RETVAL
+}
+
+restart() {
+    stop
+    start
+}
+
+force_reload() {
+    restart
+}
+
+rh_status() {
+    status -p "$pidfile" -l $prog $exec
+}
+
+rh_status_q() {
+    rh_status >/dev/null 2>&1
+}
+
+case "$1" in
+    start)
+        rh_status_q && exit 0
+        $1
+        ;;
+    stop)
+        rh_status_q || exit 0
+        $1
+        ;;
+    restart)
+        $1
+        ;;
+    force-reload)
+        force_reload
+        ;;
+    status)
+        rh_status
+        ;;
+    condrestart|try-restart)
+        rh_status_q || exit 0
+        restart
+        ;;
+    *)
+        echo $"Usage: $0 {start|stop|status|restart|condrestart|try-restart|force-reload}"
+        exit 2
+esac
+
+exit $?
