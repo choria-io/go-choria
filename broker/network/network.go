@@ -27,7 +27,7 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 		opts:   &gnatsd.Options{},
 	}
 
-	s.opts.Host = "::"
+	s.opts.Host = c.Config.Choria.NetworkListenAddress
 	s.opts.Port = c.Config.Choria.NetworkClientPort
 	s.opts.Logtime = false
 
@@ -43,6 +43,7 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 	}
 
 	if c.Config.Choria.NetworkMonitorPort > 0 {
+		s.opts.HTTPHost = c.Config.Choria.NetworkListenAddress
 		s.opts.HTTPPort = c.Config.Choria.NetworkMonitorPort
 	}
 
@@ -68,7 +69,7 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (s *Server) setupCluster() (err error) {
-	s.opts.Cluster.Host = "::"
+	s.opts.Cluster.Host = s.config.Choria.NetworkListenAddress
 	s.opts.Cluster.NoAdvertise = true
 	s.opts.Cluster.Port = s.choria.Config.Choria.NetworkPeerPort
 	s.opts.Cluster.Username = s.choria.Config.Choria.NetworkPeerUser

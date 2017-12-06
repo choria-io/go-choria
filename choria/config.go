@@ -51,16 +51,17 @@ type ChoriaPluginConfig struct {
 	Serializer        string   `confkey:"plugin.choria.security.serializer"` // TODO support enums
 
 	// network broker
-	NetworkClientPort   int      `confkey:"plugin.choria.network.client_port" default:"4222"`
-	NetworkPeerPort     int      `confkey:"plugin.choria.network.peer_port" default:"5222"`
-	NetworkMonitorPort  int      `confkey:"plugin.choria.network.monitor_port" default:"8222"`
-	NetworkPeerUser     string   `confkey:"plugin.choria.network.peer_user"`
-	NetworkPeerPassword string   `confkey:"plugin.choria.network.peer_password"`
-	NetworkPeers        []string `confkey:"plugin.choria.network.peers" type:"comma_split"`
-	BrokerNetwork       bool     `confkey:"plugin.choria.broker_network" default:"false"`
-	BrokerDiscovery     bool     `confkey:"plugin.choria.broker_discovery" default:"false"`
-	BrokerFederation    bool     `confkey:"plugin.choria.broker_federation" default:"false"`
-	FederationCluster   string   `confkey:"plugin.choria.broker_federation_cluster" default:"mcollective"`
+	NetworkListenAddress string   `confkey:"plugin.choria.network.listen_address" default:"::"`
+	NetworkClientPort    int      `confkey:"plugin.choria.network.client_port" default:"4222"`
+	NetworkPeerPort      int      `confkey:"plugin.choria.network.peer_port" default:"5222"`
+	NetworkMonitorPort   int      `confkey:"plugin.choria.network.monitor_port" default:"8222"`
+	NetworkPeerUser      string   `confkey:"plugin.choria.network.peer_user"`
+	NetworkPeerPassword  string   `confkey:"plugin.choria.network.peer_password"`
+	NetworkPeers         []string `confkey:"plugin.choria.network.peers" type:"comma_split"`
+	BrokerNetwork        bool     `confkey:"plugin.choria.broker_network" default:"false"`
+	BrokerDiscovery      bool     `confkey:"plugin.choria.broker_discovery" default:"false"`
+	BrokerFederation     bool     `confkey:"plugin.choria.broker_federation" default:"false"`
+	FederationCluster    string   `confkey:"plugin.choria.broker_federation_cluster" default:"mcollective"`
 
 	// discovery
 	FactSourceFile string `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml"`
