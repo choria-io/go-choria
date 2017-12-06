@@ -18,23 +18,21 @@ You can now build your package, this shows how to customise paths, names etc.  D
 
 ```
 docker run -v `pwd`:/build \
-  -e VERSION=0.0.1 \
-  -e RELEASE=myco \
+  -e VERSION=0.0.1myco \
+  -e RELEASE=2 \
   -e DIST=el7 \
   -e NAME=myco-choria \
   -e BINDIR=/opt/myco/choria/bin \
   -e ETCDIR=/opt/myco/choria/etc \
-  -e ITERATION=2 \
   --rm rpmbuilder
 ```
 
 At the end you'll have:
 
 ```
--rw-r--r-- 1 root root  4661742 Dec  6 12:25 myco-choria-0.0.1-myco-Linux-amd64.tgz
--rw-r--r-- 1 root root     3891 Dec  6 12:25 myco-choria-broker-0.0.1-6myco.el7.x86_64.rpm
+-rw-r--r-- 1 root root     3891 Dec  6 12:25 myco-choria-broker-0.0.1-2myco.el7.x86_64.rpm
 -rw-r--r-- 1 root root  3599095 Dec  6 12:25 myco-choria-0.0.1-2myco.el7.x86_64.rpm
 -rw-r--r-- 1 root root  4649581 Dec  6 12:25 myco-choria-0.0.1-2myco.el7.src.rpm
 ```
 
-The binaries, logs, services, etc will all reflect your chosen name
+The binaries, logs, services, etc will all reflect your chosen name.
