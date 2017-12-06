@@ -140,6 +140,7 @@ func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 
 	msg.SetProtocolVersion(protocol.RequestV1)
 	msg.SetReplyTo("dev.null")
+	msg.CustomTarget = rmsg.Destination
 
 	err = reg.connector.Publish(msg)
 	if err != nil {
