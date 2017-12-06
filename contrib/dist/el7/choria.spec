@@ -2,13 +2,13 @@
 
 Name: %{pkgname}
 Version: %{version}
-Release: %{iteration}%{choria_release}.%{dist}
+Release: %{iteration}.%{dist}
 Summary: The Choria Orchestrator Server
 License: Apache-2.0
 URL: https://choria.io
 Group: System Tools
-Source0: %{pkgname}-%{version}-%{choria_release}-Linux-amd64.tgz
 Packager: R.I.Pienaar <rip@devco.net>
+Source0: %{pkgname}-%{version}-Linux-amd64.tgz
 BuildRoot: %{_tmppath}/%{pkgname}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %package broker
@@ -49,7 +49,7 @@ rm -rf %{buildroot}
 %{__install} -m0644 dist/choria-logrotate %{buildroot}/etc/logrotate.d/%{pkgname}
 %{__install} -m0640 dist/server.conf %{buildroot}%{etcdir}/server.conf
 %{__install} -m0640 dist/broker.conf %{buildroot}%{etcdir}/broker.conf
-%{__install} -m0755 choria-%{version}%{choria_release}-Linux-amd64 %{buildroot}%{bindir}/%{pkgname}
+%{__install} -m0755 choria-%{version}-Linux-amd64 %{buildroot}%{bindir}/%{pkgname}
 
 %clean
 rm -rf %{buildroot}
