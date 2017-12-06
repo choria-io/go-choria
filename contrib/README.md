@@ -2,8 +2,35 @@
 
 First build the binary, this cannot be cross compiled in real world so compile it on some linux machine:
 
+If you're new to building Go stuff then get go on your machine:
+
+```
+# visit golang.org and get the linux tarball
+tar -C /usr/local -xzf go1.9.2.linux-amd64.tar.gz
+
+yum -y install git rubygem-rake
+export GOPATH=~/go
+PATH=$PATH:/usr/local/go/bin:~/go/bin
+
+go get github.com/Masterminds/glide
+mkdir -p ${GOPATH}/src/github.com/choria-io
+cd ${GOPATH}/src/github.com/choria-io
+git clone https://github.com/choria-io/go-choria.git
+cd go-choria
+glide install
+```
+
 ```
 VERSION=0.0.1myco rake build
+./choria-0.0.1myco-Linux-amd64  --version
+version: 0.0.1myco
+
+license: Apache-2.0
+built: 2017-12-06 11:52:13 +0000
+sha: 04f46f3
+tls: true
+secure: true
+go: go1.9.2
 ```
 
 This will give you a binary like `choria-0.0.1myco-Linux-amd64`, put it in this directory.
