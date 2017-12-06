@@ -144,6 +144,8 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 				continue
 			}
 
+			sc.log.Debugf("Publishing registration data from %s to %s", m.Sender, sc.topic)
+
 			err = sc.conn.Publish(sc.topic, j)
 			if err != nil {
 				sc.log.Warnf("Could not publish message to STAN %s, discarding: %s", sc.topic, err.Error())

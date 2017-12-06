@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/sirupsen/logrus"
 )
 
 type transportMessage struct {
@@ -187,8 +186,6 @@ func (m *transportMessage) SetRequestData(request protocol.SecureRequest) (err e
 		err = fmt.Errorf("Could not JSON encode the Request structure for transport: %s", err.Error())
 		return
 	}
-
-	logrus.Debugf("JSON from secure request: %s", j)
 
 	m.Data = base64.StdEncoding.EncodeToString([]byte(j))
 

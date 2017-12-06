@@ -63,7 +63,7 @@ type ChoriaPluginConfig struct {
 	FederationCluster   string   `confkey:"plugin.choria.broker_federation_cluster" default:"mcollective"`
 
 	// discovery
-	FactSourceFile string `confkey:"plugin.yaml"`
+	FactSourceFile string `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml"`
 
 	// registration
 	FileContentRegistrationData string `confkey:"plugin.choria.registration.file_content.data" default:""`

@@ -80,8 +80,13 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 // AddRegistrationProvider adds a new provider for registration data to the registration subsystem
-func (srv *Instance) AddRegistrationProvider(ctx context.Context, wg *sync.WaitGroup, provider registration.RegistrationDataProvider) error {
+func (srv *Instance) RegisterRegistrationProvider(ctx context.Context, wg *sync.WaitGroup, provider registration.RegistrationDataProvider) error {
 	return srv.registration.RegisterProvider(ctx, wg, provider)
+}
+
+// RegisterAgent adds a new agent to the running instance
+func (srv *Instance) RegisterAgent(ctx context.Context, name string, agent agents.Agent) error {
+	return srv.agents.RegisterAgent(ctx, name, agent, srv.connector)
 }
 
 func (srv *Instance) subscribeNode(ctx context.Context) error {

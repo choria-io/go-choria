@@ -15,6 +15,8 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+
+	"github.com/sirupsen/logrus"
 )
 
 // CheckSSLSetup validates the various SSL files and directories exist and are well formed
@@ -90,7 +92,11 @@ func (self *Framework) Certname() string {
 
 	certname := self.Config.Identity
 
-	currentUser, _ := user.Current()
+	currentUser, err := user.Current()
+	if err != nil {
+		logrus.Warnf("Could not determine current user while determining certname, using %s: %s", err.Error(), certname)
+		return certname
+	}
 
 	if currentUser.Uid != "0" {
 		if u, ok := os.LookupEnv("USER"); ok {
@@ -203,6 +209,10 @@ func (self *Framework) ClientPublicCert() (string, error) {
 
 // SSLDir determines the AIO SSL directory
 func (self *Framework) SSLDir() (string, error) {
+	if !IsSecure() {
+		return "/nonexisting", nil
+	}
+
 	if self.Config.Choria.SSLDir != "" {
 		return self.Config.Choria.SSLDir, nil
 	}

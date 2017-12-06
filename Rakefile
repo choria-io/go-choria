@@ -1,3 +1,5 @@
+require "securerandom"
+
 task :default => [:test]
 
 desc "Run just tests no measurements"
@@ -17,11 +19,13 @@ task :build do
   version = ENV["VERSION"] || "development"
   sha = `git rev-parse --short HEAD`.chomp
   date = Time.now.strftime("%F %T %z")
+  buildid = SecureRandom.hex
 
   flags = [
     "-X github.com/choria-io/go-choria/build.Version=%s" % version,
     "-X github.com/choria-io/go-choria/build.SHA=%s" % sha,
-    "-X \"github.com/choria-io/go-choria/build.BuildDate=%s\"" % date
+    "-X \"github.com/choria-io/go-choria/build.BuildDate=%s\"" % date,
+    "-B 0x%s" % buildid
 ]
 
   if ENV["BUILD_XFLAGS"]

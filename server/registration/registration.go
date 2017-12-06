@@ -17,13 +17,13 @@ import (
 // Registrator is a full managed registration plugin
 type Registrator interface {
 	Init(cfg *choria.Config, l *logrus.Entry)
-	Start(context.Context, *sync.WaitGroup, int, chan *data.RegistrationItem)
+	StartRegistration(context.Context, *sync.WaitGroup, int, chan *data.RegistrationItem)
 }
 
 // RegistrationDataProvider is a provider for data that can be registered
 // into a running server instance using AddRegistrationProvider()
 type RegistrationDataProvider interface {
-	Start(context.Context, *sync.WaitGroup, int, chan *data.RegistrationItem)
+	StartRegistration(context.Context, *sync.WaitGroup, int, chan *data.RegistrationItem)
 }
 
 // Manager of registration plugins
@@ -99,7 +99,7 @@ func (reg *Manager) registrationWorker(ctx context.Context, wg *sync.WaitGroup, 
 	}
 
 	wg.Add(1)
-	go registrator.Start(ctx, wg, reg.cfg.RegisterInterval, reg.datac)
+	go registrator.StartRegistration(ctx, wg, reg.cfg.RegisterInterval, reg.datac)
 
 	for {
 		select {
