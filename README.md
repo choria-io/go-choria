@@ -101,6 +101,7 @@ Apart from all the usual stuff about identity, logfile etc, you can enable the n
 ```ini
 registration = file_content
 registerinterval = 10
-registration_splay = true
+registration_splay = true # optional, false by default
 plugin.choria.registration.file_content.data = /tmp/json_registration.json
+plugin.choria.registration.file_content.target = myco.cmdb # optional
 ```
