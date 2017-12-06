@@ -41,7 +41,9 @@ start() {
 
     echo -n $"Starting ${prog}: "
 
-    daemon " { nohup $exec ${args} > $logfile 2>&1 & }"
+    daemon \
+      --pidfile=${pidfile} \
+      " { nohup ${exec} ${args} > ${logfile} 2>&1 & }"
 
     RETVAL=$?
     echo

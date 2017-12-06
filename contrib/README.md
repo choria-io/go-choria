@@ -47,10 +47,11 @@ You can now build your package, this shows how to customise paths, names etc.  D
 docker run -v `pwd`:/build \
   -e VERSION=0.0.1myco \
   -e RELEASE=2 \
-  -e DIST=el7 \
+  -e DIST=el7 \                    # uses config/spec etc in dist/el7
   -e NAME=myco-choria \
   -e BINDIR=/opt/myco/choria/bin \
   -e ETCDIR=/opt/myco/choria/etc \
+  -e MANAGE_CONF=1 \               # set to zero to not add config files to the package
   --rm rpmbuilder
 ```
 
