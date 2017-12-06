@@ -34,6 +34,11 @@ then
   exit 1
 fi
 
+if [ -z $MANAGE_CONF ]
+then
+  MANAGE_CONF=1
+fi
+
 if [ ! -d /build ]
 then
   echo "/build is not mounted, cannot build"
@@ -64,7 +69,15 @@ cp -v /build/dist/${DIST}/* ${WORKDIR}/dist
 
 tar -cvzf ${TARBALL} ${WORKDIR}
 
-rpmbuild -D "version ${VERSION}" -D "iteration ${RELEASE}" -D "dist ${DIST}" -D "pkgname ${NAME}" -D "bindir ${BINDIR}" -D "etcdir ${ETCDIR}" -ta ${TARBALL}
+rpmbuild \
+  -D "version ${VERSION}" \
+  -D "iteration ${RELEASE}"\
+  -D "dist ${DIST}" \
+  -D "pkgname ${NAME}" \
+  -D "bindir ${BINDIR}" \
+  -D "etcdir ${ETCDIR}" \
+  -D "manage_conf ${MANAGE_CONF}" \
+  -ta ${TARBALL}
 
 cp -v ${TARBALL} /build
 cp -v /usr/src/redhat/RPMS/x86_64/* /build

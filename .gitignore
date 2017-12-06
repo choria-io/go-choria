@@ -8,3 +8,5 @@ go-choria
 *.coverprofile
 ping
 choria-*-*-*
+*.rpm
+*.tgz
