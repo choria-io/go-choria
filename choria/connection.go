@@ -349,7 +349,7 @@ func (self *Connection) publishFederatedDirect(msg *Message, transport protocol.
 		for _, federation := range self.choria.FederationCollectives() {
 			target := self.federationTarget(federation, "federation")
 
-			log.Infof("Sending a federated direct message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
+			log.Debugf("Sending a federated direct message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
 
 			err = self.PublishRaw(target, []byte(j))
 			if err != nil {
@@ -379,7 +379,7 @@ func (self *Connection) publishFederatedBroadcast(msg *Message, transport protoc
 	for _, federation := range self.choria.FederationCollectives() {
 		target := self.federationTarget(federation, "federation")
 
-		log.Infof("Sending a federated broadcast message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
+		log.Debugf("Sending a federated broadcast message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
 
 		err = self.PublishRaw(target, []byte(j))
 		if err != nil {
@@ -409,7 +409,7 @@ func (self *Connection) publishConnectedBroadcast(msg *Message, transport protoc
 		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
 	}
 
-	log.Infof("Sending a broadcast message to NATS target '%s' for message %s type %s", target, msg.RequestID, msg.Type())
+	log.Debugf("Sending a broadcast message to NATS target '%s' for message %s type %s", target, msg.RequestID, msg.Type())
 
 	return self.PublishRaw(target, []byte(j))
 
@@ -429,7 +429,7 @@ func (self *Connection) publishConnectedDirect(msg *Message, transport protocol.
 			return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err.Error())
 		}
 
-		log.Infof("Sending a direct message to %s via NATS target '%s' for message %s type %s", host, target, msg.RequestID, msg.Type())
+		log.Debugf("Sending a direct message to %s via NATS target '%s' for message %s type %s", host, target, msg.RequestID, msg.Type())
 
 		err = self.PublishRaw(target, rawmsg)
 		if err != nil {
