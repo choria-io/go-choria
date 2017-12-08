@@ -1,10 +1,5 @@
 package build
 
-import (
-	"fmt"
-	"runtime"
-)
-
 // Version the application version
 var Version = "development"
 
@@ -22,7 +17,3 @@ var TLS = "true"
 
 // Set to disable signing and certificates in the protocol
 var Secure = "true"
-
-func String() string {
-	return fmt.Sprintf("version: %s\n\nlicense: %s\nbuilt: %s\nsha: %s\ntls: %s\nsecure: %s\ngo: %s", Version, License, BuildDate, SHA, TLS, Secure, runtime.Version())
-}

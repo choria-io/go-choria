@@ -31,7 +31,7 @@ var wg *sync.WaitGroup
 
 func ParseCLI() (err error) {
 	cli.app = kingpin.New("choria", "Choria Orchestration System")
-	cli.app.Version(build.String())
+	cli.app.Version(build.Version)
 	cli.app.Author("R.I.Pienaar <rip@devco.net>")
 	cli.app.Flag("debug", "Enable debug logging").Short('d').BoolVar(&debug)
 	cli.app.Flag("config", "Config file to use").StringVar(&configFile)
@@ -41,6 +41,12 @@ func ParseCLI() (err error) {
 	}
 
 	cli.command = kingpin.MustParse(cli.app.Parse(os.Args[1:]))
+
+	// skip initialization for buildinfo, people might want to see this
+	// even if their SSL is invalid etc
+	if cli.command == "buildinfo" {
+		return
+	}
 
 	if debug {
 		log.SetOutput(os.Stdout)
