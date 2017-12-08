@@ -13,10 +13,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"os/user"
 	"path/filepath"
-
-	"github.com/sirupsen/logrus"
 )
 
 // CheckSSLSetup validates the various SSL files and directories exist and are well formed
@@ -92,13 +89,7 @@ func (self *Framework) Certname() string {
 
 	certname := self.Config.Identity
 
-	currentUser, err := user.Current()
-	if err != nil {
-		logrus.Warnf("Could not determine current user while determining certname, using %s: %s", err.Error(), certname)
-		return certname
-	}
-
-	if currentUser.Uid != "0" {
+	if os.Getuid() != 0 {
 		if u, ok := os.LookupEnv("USER"); ok {
 			certname = fmt.Sprintf("%s.mcollective", u)
 		}
@@ -217,8 +208,7 @@ func (self *Framework) SSLDir() (string, error) {
 		return self.Config.Choria.SSLDir, nil
 	}
 
-	u, _ := user.Current()
-	if u.Uid == "0" {
+	if os.Getuid() == 0 {
 		path, err := self.PuppetSetting("ssldir")
 		if err != nil {
 			return "", err
@@ -227,7 +217,11 @@ func (self *Framework) SSLDir() (string, error) {
 		return path, nil
 	}
 
-	return filepath.Join(u.HomeDir, ".puppetlabs", "etc", "puppet", "ssl"), nil
+	if os.Getenv("HOME") == "" {
+		return "", fmt.Errorf("Cannot determine home dir while looking for SSL Directory, no HOME environment is set.  Please set HOME or configure plugin.choria.ssldir.")
+	}
+
+	return filepath.Join(os.Getenv("HOME"), ".puppetlabs", "etc", "puppet", "ssl"), nil
 }
 
 // ClientCertCacheDir determines the cache directory for client certs and creates it
