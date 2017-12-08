@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"net"
 	"os"
-	"os/user"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -22,12 +22,14 @@ func IsSecure() bool {
 // UserConfig determines what is the active config file for a user
 // TODO: windows
 func UserConfig() string {
-	usr, _ := user.Current()
+	home, _ := HomeDir()
 
-	homeCfg := filepath.Join(usr.HomeDir, ".mcollective")
+	if home != "" {
+		homeCfg := filepath.Join(home, ".mcollective")
 
-	if FileExist(homeCfg) {
-		return homeCfg
+		if FileExist(homeCfg) {
+			return homeCfg
+		}
 	}
 
 	return filepath.Join("/etc/puppetlabs/mcollective/client.cfg")
@@ -106,4 +108,29 @@ func StringHostsToServers(hosts []string, scheme string) (servers []Server, err 
 	}
 
 	return
+}
+
+// HomeDir determines the home location without using the user package or requiring cgo
+//
+// On Unix it needs HOME set and on windows HOMEDRIVE and HOMEDIR
+func HomeDir() (string, error) {
+	if runtime.GOOS == "windows" {
+		drive := os.Getenv("HOMEDRIVE")
+		home := os.Getenv("HOMEDIR")
+
+		if home == "" || drive == "" {
+			return "", fmt.Errorf("Cannot determine home dir, ensure HOMEDRIVE and HOMEDIR is set")
+		}
+
+		return filepath.Join(os.Getenv("HOMEDRIVE"), os.Getenv("HOMEDIR")), nil
+	}
+
+	home := os.Getenv("HOME")
+
+	if home == "" {
+		return "", fmt.Errorf("Cannot determine home dir, ensure HOME is set")
+	}
+
+	return home, nil
+
 }
