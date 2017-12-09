@@ -17,9 +17,9 @@ type Agent struct {
 	log  *logrus.Entry
 }
 
-func New(log *logrus.Entry) (*Agent, error) {
+func New(mgr *agents.Manager) (*Agent, error) {
 	a := &Agent{
-		log: log.WithFields(logrus.Fields{"agent": "discovery"}),
+		log: mgr.Logger().WithFields(logrus.Fields{"agent": "discovery"}),
 		meta: &agents.Metadata{
 			Name:        "discovery",
 			Description: "Discovery Agent",

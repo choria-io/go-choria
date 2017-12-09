@@ -176,3 +176,11 @@ func (a *Manager) Dispatch(ctx context.Context, wg *sync.WaitGroup, replies chan
 		}
 	}
 }
+
+func (a *Manager) Logger() *logrus.Entry {
+	return a.log
+}
+
+func (a *Manager) Choria() *choria.Framework {
+	return a.fw
+}

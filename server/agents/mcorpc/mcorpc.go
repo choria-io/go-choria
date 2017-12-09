@@ -64,7 +64,7 @@ type Request struct {
 func New(name string, metadata *agents.Metadata, fw *choria.Framework, log *logrus.Entry) *Agent {
 	a := &Agent{
 		meta:    metadata,
-		Log:     logrus.WithFields(logrus.Fields{"agent": "name"}),
+		Log:     log.WithFields(logrus.Fields{"agent": name}),
 		actions: make(map[string]func(*Request, *Reply, *Agent, choria.ConnectorInfo)),
 		Choria:  fw,
 		Config:  fw.Config,
@@ -107,8 +107,11 @@ func (a *Agent) HandleMessage(msg *choria.Message, request protocol.Request, con
 	}
 
 	// TODO:
-	//	authorize
+	//  authorize
 	//  audit
+	//  timeouts
+
+	a.Log.Infof("Handling message %s for %s#%s from %s", msg.RequestID, a.Name(), rpcrequest.Action, request.CallerID())
 
 	action(rpcrequest, reply, a, conn)
 }

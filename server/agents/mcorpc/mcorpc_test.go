@@ -32,6 +32,7 @@ var _ = Describe("Server/Agents/McoRPC", func() {
 	BeforeEach(func() {
 		build.Secure = "false"
 		build.TLS = "false"
+
 		config, err := choria.NewConfig("/dev/null")
 		Expect(err).ToNot(HaveOccurred())
 		config.LogLevel = "fatal"
