@@ -42,7 +42,7 @@ func (da *Agent) Metadata() *agents.Metadata {
 	return da.meta
 }
 
-func (da *Agent) Handle(msg *choria.Message, request protocol.Request, result chan *agents.AgentReply) {
+func (da *Agent) HandleMessage(msg *choria.Message, request protocol.Request, conn choria.ConnectorInfo, result chan *agents.AgentReply) {
 	reply := &agents.AgentReply{
 		Message: msg,
 		Request: request,

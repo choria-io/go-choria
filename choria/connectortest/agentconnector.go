@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/nats-io/nats"
+	nats "github.com/nats-io/go-nats"
 )
 
 type AgentConnector struct {
@@ -81,4 +81,16 @@ func (a *AgentConnector) nexterr() error {
 	}
 
 	return err
+}
+
+func (a *AgentConnector) ConnectionOptions() nats.Options {
+	return nats.Options{}
+}
+
+func (a *AgentConnector) ConnectionStats() nats.Statistics {
+	return nats.Statistics{}
+}
+
+func (a *AgentConnector) ConnectedServer() string {
+	return "nats://nats.example.net:4222"
 }

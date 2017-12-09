@@ -29,6 +29,7 @@ type Instance struct {
 	agentmu *sync.Mutex
 }
 
+// NewInstance creates a new choria server instance
 func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	i = &Instance{
 		fw:       fw,
@@ -37,7 +38,6 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	}
 
 	i.log = log.WithFields(log.Fields{"identity": fw.Config.Identity, "component": "server"})
-	i.agents = agents.New(i.requests, fw, i.log)
 	i.discovery = discovery.New(fw, i.log)
 
 	return i, nil
@@ -51,6 +51,7 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 		return
 	}
 
+	srv.agents = agents.New(srv.requests, srv.fw, srv.connector, srv.log)
 	srv.registration = registration.New(srv.fw, srv.connector, srv.log)
 
 	wg.Add(1)

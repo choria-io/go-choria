@@ -15,7 +15,7 @@ import (
 type Agent interface {
 	Metadata() *Metadata
 	Name() string
-	Handle(*choria.Message, protocol.Request, chan *AgentReply)
+	HandleMessage(*choria.Message, protocol.Request, choria.ConnectorInfo, chan *AgentReply)
 }
 
 type AgentReply struct {
@@ -41,12 +41,13 @@ type Manager struct {
 	fw     *choria.Framework
 	log    *logrus.Entry
 	mu     *sync.Mutex
+	conn   choria.ConnectorInfo
 
 	requests chan *choria.ConnectorMessage
 }
 
 // New creates a new Agent Manager
-func New(requests chan *choria.ConnectorMessage, fw *choria.Framework, log *logrus.Entry) *Manager {
+func New(requests chan *choria.ConnectorMessage, fw *choria.Framework, conn choria.ConnectorInfo, log *logrus.Entry) *Manager {
 	return &Manager{
 		agents:   make(map[string]Agent),
 		subs:     make(map[string][]string),
@@ -54,6 +55,7 @@ func New(requests chan *choria.ConnectorMessage, fw *choria.Framework, log *logr
 		log:      log.WithFields(logrus.Fields{"subsystem": "agents"}),
 		mu:       &sync.Mutex{},
 		requests: requests,
+		conn:     conn,
 	}
 }
 
@@ -155,7 +157,7 @@ func (a *Manager) Dispatch(ctx context.Context, wg *sync.WaitGroup, replies chan
 	timeout, cancel := context.WithTimeout(context.Background(), td)
 	defer cancel()
 
-	go agent.Handle(msg, request, result)
+	go agent.HandleMessage(msg, request, a.conn, result)
 
 	select {
 	case reply := <-result:
