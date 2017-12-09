@@ -9,14 +9,14 @@ import (
 )
 
 func (srv *Instance) setupCoreAgents(ctx context.Context) error {
-	da, err := discovery.New(srv.log)
+	da, err := discovery.New(srv.agents)
 	if err != nil {
 		return fmt.Errorf("Could not setup initial agents: %s", err.Error())
 	}
 
 	srv.agents.RegisterAgent(ctx, "discovery", da, srv.connector)
 
-	cu, err := choriautil.New(srv.fw, srv.log)
+	cu, err := choriautil.New(srv.agents)
 	if err != nil {
 		return fmt.Errorf("Could not setup choria_util agent: %s", err.Error())
 	}

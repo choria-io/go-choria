@@ -10,7 +10,6 @@ import (
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/agents/mcorpc"
 	nats "github.com/nats-io/go-nats"
-	"github.com/sirupsen/logrus"
 )
 
 type info struct {
@@ -52,7 +51,7 @@ type cstats struct {
 	Reconnects uint64 `json:"reconnects"`
 }
 
-func New(fw *choria.Framework, log *logrus.Entry) (*mcorpc.Agent, error) {
+func New(mgr *agents.Manager) (*mcorpc.Agent, error) {
 	metadata := &agents.Metadata{
 		Name:        "choria_util",
 		Description: "Choria Utilities",
@@ -63,7 +62,7 @@ func New(fw *choria.Framework, log *logrus.Entry) (*mcorpc.Agent, error) {
 		URL:         "http://choria.io",
 	}
 
-	agent := mcorpc.New("choria_util", metadata, fw, log)
+	agent := mcorpc.New("choria_util", metadata, mgr.Choria(), mgr.Logger())
 
 	err := agent.RegisterAction("info", infoAction)
 	if err != nil {
