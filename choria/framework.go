@@ -80,6 +80,11 @@ func (self *Framework) IsFederated() (result bool) {
 	return true
 }
 
+// Logger creates a new logrus entry
+func (self *Framework) Logger(component string) *log.Entry {
+	return log.WithFields(log.Fields{"component": component})
+}
+
 // FederationCollectives determines the known Federation Member
 // Collectives based on the CHORIA_FED_COLLECTIVE environment
 // variable or the choria.federation.collectives config item

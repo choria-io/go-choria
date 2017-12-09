@@ -88,6 +88,14 @@ func (s *stubConnection) ConnectedServer() string {
 	return "nats://stub:4222"
 }
 
+func (s *stubConnection) ConnectionOptions() nats.Options {
+	return nats.Options{}
+}
+
+func (s *stubConnection) ConnectionStats() nats.Statistics {
+	return nats.Statistics{}
+}
+
 func (s *stubConnection) Subscribe(name string, subject string, group string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()

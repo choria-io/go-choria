@@ -26,21 +26,26 @@ type PublishableConnector interface {
 
 // AgentConnector provides the minimal Connector features for subscribing and unsubscribing agents
 type AgentConnector interface {
+	ConnectorInfo
+
 	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error
 	Unsubscribe(name string) error
 	AgentBroadcastTarget(collective string, agent string) string
 }
 
-type InstanceConnector interface {
-	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error
-	Unsubscribe(name string) error
-	Publish(msg *Message) error
+type ConnectorInfo interface {
+	ConnectedServer() string
+	ConnectionOptions() nats.Options
+	ConnectionStats() nats.Statistics
+}
 
-	AgentBroadcastTarget(collective string, agent string) string
+type InstanceConnector interface {
+	AgentConnector
+	PublishableConnector
+
 	NodeDirectedTarget(collective string, identity string) string
 
 	Outbox() chan *nats.Msg
-
 	Close()
 }
 
@@ -63,6 +68,9 @@ type Connector interface {
 	Outbox() chan *nats.Msg
 
 	ConnectedServer() string
+	ConnectionOptions() nats.Options
+	ConnectionStats() nats.Statistics
+
 	SetServers(func() ([]Server, error))
 	SetName(name string)
 	Connect(ctx context.Context) (err error)
@@ -122,6 +130,14 @@ func (self *Framework) NewConnector(ctx context.Context, servers func() ([]Serve
 	err = conn.Connect(ctx)
 
 	return conn, err
+}
+
+func (self *Connection) ConnectionOptions() nats.Options {
+	return self.nats.Opts
+}
+
+func (self *Connection) ConnectionStats() nats.Statistics {
+	return self.nats.Statistics
 }
 
 func (self *Connection) SetServers(resolver func() ([]Server, error)) {
@@ -484,7 +500,12 @@ func (self *Connection) ConnectedServer() string {
 		return "unknown"
 	}
 
-	return self.nats.ConnectedUrl()
+	url, err := url.Parse(self.nats.ConnectedUrl())
+	if err != nil {
+		return "unknown"
+	}
+
+	return fmt.Sprintf("%s:%s", strings.TrimSuffix(url.Hostname(), "."), url.Port())
 }
 
 // Connect creates a new connection to NATS.

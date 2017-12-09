@@ -30,7 +30,7 @@ func (s *stubAgent) Name() string {
 	return "stub"
 }
 
-func (s *stubAgent) Handle(msg *choria.Message, request protocol.Request, result chan *AgentReply) {
+func (s *stubAgent) HandleMessage(msg *choria.Message, request protocol.Request, ci choria.ConnectorInfo, result chan *AgentReply) {
 	if msg.Payload == "sleep" {
 		time.Sleep(10 * time.Second)
 	}
@@ -76,7 +76,7 @@ var _ = Describe("Server/Agents", func() {
 		ctx, cancel = context.WithCancel(context.Background())
 
 		logrus.SetLevel(logrus.FatalLevel)
-		mgr = New(requests, fw, logrus.WithFields(logrus.Fields{"testing": true}))
+		mgr = New(requests, fw, conn, logrus.WithFields(logrus.Fields{"testing": true}))
 		conn = &connectortest.AgentConnector{}
 		conn.Init()
 
