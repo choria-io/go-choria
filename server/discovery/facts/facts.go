@@ -35,6 +35,7 @@ func Match(filters [][3]string, fw *choria.Framework, log *logrus.Entry) bool {
 	return matched
 }
 
+// HasFact evaluates the expression against facts in the file
 func HasFact(fact string, operator string, value string, file string) (bool, error) {
 	if file == "" {
 		return false, fmt.Errorf("Cannot do fact discovery there is no file configured")
