@@ -214,6 +214,9 @@ func (self *Framework) SSLDir() (string, error) {
 			return "", err
 		}
 
+		// store it so future calls to this wil not call out to Puppet again
+		self.Config.Choria.SSLDir = path
+
 		return path, nil
 	}
 
