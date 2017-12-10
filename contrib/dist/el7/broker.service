@@ -7,7 +7,7 @@ StandardOutput=syslog
 StandardError=syslog
 User=root
 Group=root
-ExecStart={{bindir}}/{{pkgname}} broker --config={{etcdir}}/broker.cfg
+ExecStart={{bindir}}/{{pkgname}} broker --config={{etcdir}}/broker.conf
 
 [Install]
 WantedBy=multi-user.target
