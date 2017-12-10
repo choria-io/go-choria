@@ -38,7 +38,8 @@ rm -rf %{buildroot}
 %{__install} -m0644 dist/broker.sysconfig %{buildroot}/etc/sysconfig/%{pkgname}-broker
 %{__install} -m0755 dist/choria-logrotate %{buildroot}/etc/logrotate.d/%{pkgname}
 %if 0%{?manage_conf} > 0
-%{__install} -m0640 dist/choria.conf %{buildroot}%{etcdir}/choria.conf
+%{__install} -m0640 dist/server.conf %{buildroot}%{etcdir}/server.conf
+%{__install} -m0640 dist/broker.conf %{buildroot}%{etcdir}/broker.conf
 %endif
 %{__install} -m0755 choria-%{version}-Linux-amd64 %{buildroot}%{bindir}/%{pkgname}
 

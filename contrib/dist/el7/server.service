@@ -7,7 +7,7 @@ StandardOutput=syslog
 StandardError=syslog
 User=root
 Group=root
-ExecStart={{bindir}}/{{pkgname}} server --config={{etcdir}}/server.cfg
+ExecStart={{bindir}}/{{pkgname}} server --config={{etcdir}}/server.conf
 
 [Install]
 WantedBy=multi-user.target
