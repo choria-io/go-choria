@@ -2,6 +2,7 @@ package network
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"sync"
 
@@ -126,6 +127,8 @@ func (s *Server) setupTLS() (err error) {
 
 	if p, err := s.choria.ClientPrivateKey(); err == nil {
 		s.opts.TLSKey = p
+	} else {
+		return fmt.Errorf("Could not set the Private Key: %s", err.Error())
 	}
 
 	tc := gnatsd.TLSConfigOpts{}
@@ -136,10 +139,15 @@ func (s *Server) setupTLS() (err error) {
 	tc.Timeout = 2
 
 	if s.opts.TLSConfig, err = gnatsd.GenTLSConfig(&tc); err != nil {
-		return
+		return fmt.Errorf("Could not create NATS Server TLS Config: %s", err.Error())
 	}
 
 	s.opts.Cluster.TLSConfig = s.opts.TLSConfig
+	s.opts.Cluster.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
+	s.opts.Cluster.TLSConfig.RootCAs = s.opts.Cluster.TLSConfig.ClientCAs
+	s.opts.Cluster.TLSTimeout = tc.Timeout
+
+	log.Infof("%#v", tc)
 
 	return
 }
