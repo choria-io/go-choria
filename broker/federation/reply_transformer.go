@@ -2,6 +2,7 @@ package federation
 
 import (
 	"context"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -32,7 +33,7 @@ func NewChoriaReplyTransformer(workers int, capacity int, broker *FederationBrok
 				continue
 			}
 
-			cm.Seen = append(cm.Seen, self.Name())
+			cm.Seen = append(cm.Seen, fmt.Sprintf("%s:%d", self.Name(), i))
 			cm.Targets = []string{replyto}
 			cm.RequestID = req
 

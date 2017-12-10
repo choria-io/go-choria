@@ -2,6 +2,7 @@ package federation
 
 import (
 	"context"
+	"fmt"
 	"strings"
 
 	"github.com/choria-io/go-choria/choria"
@@ -38,11 +39,12 @@ func NewChoriaNatsEgest(workers int, mode int, capacity int, broker *FederationB
 
 			logger.Debugf("Publishing message '%s' to %d target(s)", cm.RequestID, len(cm.Targets))
 
-			cm.Seen = append(cm.Seen, self.Name())
+			cm.Seen = append(cm.Seen, fmt.Sprintf("%s:%d", self.Name(), i))
 			cm.Seen = append(cm.Seen, nc.ConnectedServer())
 
 			if len(cm.Seen) >= 3 {
-				cm.Message.RecordNetworkHop(cm.Seen[0], strings.Join(cm.Seen[1:len(cm.Seen)-1], ", "), cm.Seen[len(cm.Seen)-1])
+				mid := fmt.Sprintf("%s (%s)", self.choria.Config.Identity, strings.Join(cm.Seen[1:len(cm.Seen)-1], ", "))
+				cm.Message.RecordNetworkHop(cm.Seen[0], mid, cm.Seen[len(cm.Seen)-1])
 			}
 
 			j, err := cm.Message.JSON()

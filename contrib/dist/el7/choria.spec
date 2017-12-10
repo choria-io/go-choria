@@ -18,7 +18,7 @@ The Choria Orchestrator Server and Broker
 %setup -q
 
 %build
-for i in server.service broker.service choria.conf choria-logrotate; do
+for i in server.service broker.service broker.conf server.conf choria-logrotate; do
   sed -i 's!{{pkgname}}!%{pkgname}!' dist/${i}
   sed -i 's!{{bindir}}!%{bindir}!' dist/${i}
   sed -i 's!{{etcdir}}!%{etcdir}!' dist/${i}
@@ -64,7 +64,8 @@ fi
 
 %files
 %if 0%{?manage_conf} > 0
-%config(noreplace)%{etcdir}/choria.conf
+%config(noreplace)%{etcdir}/broker.conf
+%config(noreplace)%{etcdir}/server.conf
 %endif
 %{bindir}/%{pkgname}
 /etc/logrotate.d/%{pkgname}

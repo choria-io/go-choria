@@ -60,7 +60,7 @@ func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *Federation
 			cm := chainmessage{
 				Message:   message,
 				RequestID: reqid,
-				Seen:      []string{nc.ConnectedServer(), self.Name()},
+				Seen:      []string{nc.ConnectedServer(), fmt.Sprintf("%s:%d", self.Name(), i)},
 			}
 
 			logger.Debugf("Received message %s via %s", reqid, message.SenderID())
