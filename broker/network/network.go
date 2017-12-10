@@ -63,7 +63,12 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, s.choria.Config.ConfigFile)
 
-	s.gnatsd.Start()
+	go s.gnatsd.Start()
+
+	select {
+	case <-ctx.Done():
+		s.gnatsd.Shutdown()
+	}
 
 	log.Warn("Choria Network Broker has been shut down")
 }
