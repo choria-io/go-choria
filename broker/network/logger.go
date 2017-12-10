@@ -36,6 +36,6 @@ func (l Logger) Tracef(format string, v ...interface{}) {
 
 func newLogger() Logger {
 	return Logger{
-		log: log.WithFields(log.Fields{"component": "broker"}),
+		log: log.WithFields(log.Fields{"component": "network_broker"}),
 	}
 }
