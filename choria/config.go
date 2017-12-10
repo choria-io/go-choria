@@ -35,15 +35,17 @@ type ChoriaPluginConfig struct {
 	DiscoveryProxy bool   `confkey:"plugin.choria.discovery_proxy" default:"false"`
 
 	// federation
-	FederationCollectives []string `confkey:"plugin.choria.federation.collectives" type:"comma_split" environment:"CHORIA_FED_COLLECTIVE"`
-	StatsPort             int      `configkey:"plugin.choria.stats_port"`
+	FederationCollectives     []string `confkey:"plugin.choria.federation.collectives" type:"comma_split" environment:"CHORIA_FED_COLLECTIVE"`
+	FederationMiddlewareHosts []string `confkey:"plugin.choria.federation_middleware_hosts" type:"comma_split"`
+	FederationCluster         string   `confkey:"plugin.choria.federation.cluster" default:"mcollective"`
+
+	StatsPort int `configkey:"plugin.choria.stats_port"`
 
 	// nats connector
-	NatsUser                  string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`
-	NatsPass                  string   `confkey:"plugin.nats.pass" environment:"MCOLLECTIVE_NATS_PASSWORD"`
-	MiddlewareHosts           []string `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`
-	FederationMiddlewareHosts []string `confkey:"plugin.choria.federation_middleware_hosts" type:"comma_split"`
-	RandomizeMiddlewareHosts  bool     `confkey:"plugin.choria.randomize_middleware_hosts" default:"false"`
+	NatsUser                 string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`
+	NatsPass                 string   `confkey:"plugin.nats.pass" environment:"MCOLLECTIVE_NATS_PASSWORD"`
+	MiddlewareHosts          []string `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`
+	RandomizeMiddlewareHosts bool     `confkey:"plugin.choria.randomize_middleware_hosts" default:"false"`
 
 	// security plugin
 	PrivilegedUsers   []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split" default:"\\.privileged.mcollective$"`
@@ -61,7 +63,6 @@ type ChoriaPluginConfig struct {
 	BrokerNetwork        bool     `confkey:"plugin.choria.broker_network" default:"false"`
 	BrokerDiscovery      bool     `confkey:"plugin.choria.broker_discovery" default:"false"`
 	BrokerFederation     bool     `confkey:"plugin.choria.broker_federation" default:"false"`
-	FederationCluster    string   `confkey:"plugin.choria.broker_federation_cluster" default:"mcollective"`
 
 	// discovery
 	FactSourceFile string `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml"`

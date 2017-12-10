@@ -39,7 +39,7 @@ func NewChoriaRequestTransformer(workers int, capacity int, broker *FederationBr
 				continue
 			}
 
-			cm.Seen = append(cm.Seen, self.Name())
+			cm.Seen = append(cm.Seen, fmt.Sprintf("%s:%d", self.Name(), i))
 			cm.RequestID = req
 			cm.Targets = targets
 

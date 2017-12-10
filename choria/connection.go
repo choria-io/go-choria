@@ -181,6 +181,8 @@ func (self *Connection) ChanQueueSubscribe(name string, subject string, group st
 
 	self.chanSubscriptions[name] = s
 
+	self.logger.Debugf("Susbscribing to %s in group '%s' on server %s", subject, group, self.ConnectedServer())
+
 	s.subscription, err = self.nats.ChanQueueSubscribe(subject, group, s.in)
 	if err != nil {
 		return nil, fmt.Errorf("Could not subscribe to subscription %s: %s", name, err.Error())
@@ -205,6 +207,8 @@ func (self *Connection) QueueSubscribe(ctx context.Context, name string, subject
 	}
 
 	self.chanSubscriptions[name] = s
+
+	self.logger.Debugf("Susbscribing to %s in group '%s' on server %s", subject, group, self.ConnectedServer())
 
 	s.subscription, err = self.nats.ChanQueueSubscribe(subject, group, s.in)
 	if err != nil {
@@ -237,6 +241,8 @@ func (self *Connection) Subscribe(name string, subject string, group string) err
 	if ok {
 		return fmt.Errorf("Already have a subscription called '%s'", name)
 	}
+
+	self.logger.Debugf("Susbscribing to %s in group '%s' on server %s", subject, group, self.ConnectedServer())
 
 	sub, err := self.nats.ChanQueueSubscribe(subject, group, self.outbox)
 	if err != nil {
