@@ -1,5 +1,6 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2017/12/10|71    |Fix TLS network cluster                                                                                  |
 |2017/12/10|      |Release 0.0.2                                                                                            |
 |2017/12/10|67    |Distribute sample `broker.conf` and `server.conf`                                                        |
 |2017/12/10|65    |When running as root do not call `puppet apply` 100s of times                                            |
