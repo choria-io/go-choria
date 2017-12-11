@@ -39,7 +39,8 @@ type ChoriaPluginConfig struct {
 	FederationMiddlewareHosts []string `confkey:"plugin.choria.federation_middleware_hosts" type:"comma_split"`
 	FederationCluster         string   `confkey:"plugin.choria.federation.cluster" default:"mcollective"`
 
-	StatsPort int `configkey:"plugin.choria.stats_port"`
+	StatsListenAddress string `confkey:"plugin.choria.stats_address" default:"127.0.0.1"`
+	StatsPort          int    `confkey:"plugin.choria.stats_port" default:"0"`
 
 	// nats connector
 	NatsUser                 string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`
@@ -56,7 +57,6 @@ type ChoriaPluginConfig struct {
 	NetworkListenAddress string   `confkey:"plugin.choria.network.listen_address" default:"::"`
 	NetworkClientPort    int      `confkey:"plugin.choria.network.client_port" default:"4222"`
 	NetworkPeerPort      int      `confkey:"plugin.choria.network.peer_port" default:"5222"`
-	NetworkMonitorPort   int      `confkey:"plugin.choria.network.monitor_port" default:"8222"`
 	NetworkPeerUser      string   `confkey:"plugin.choria.network.peer_user"`
 	NetworkPeerPassword  string   `confkey:"plugin.choria.network.peer_password"`
 	NetworkPeers         []string `confkey:"plugin.choria.network.peers" type:"comma_split"`

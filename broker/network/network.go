@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"net/http"
 	"sync"
 
 	"github.com/choria-io/go-choria/choria"
@@ -14,10 +15,11 @@ import (
 
 // Server represents the Choria network broker server
 type Server struct {
-	gnatsd *gnatsd.Server
-	opts   *gnatsd.Options
-	choria *choria.Framework
-	config *choria.Config
+	gnatsd  *gnatsd.Server
+	opts    *gnatsd.Options
+	choria  *choria.Framework
+	config  *choria.Config
+	Started bool
 }
 
 // NewServer creates a new instance of the Server struct with a fully configured NATS embedded
@@ -43,9 +45,9 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 		}
 	}
 
-	if c.Config.Choria.NetworkMonitorPort > 0 {
-		s.opts.HTTPHost = c.Config.Choria.NetworkListenAddress
-		s.opts.HTTPPort = c.Config.Choria.NetworkMonitorPort
+	if c.Config.Choria.StatsPort > 0 {
+		s.opts.HTTPHost = c.Config.Choria.StatsListenAddress
+		s.opts.HTTPPort = c.Config.Choria.StatsPort
 	}
 
 	err = s.setupCluster()
@@ -59,12 +61,19 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 	return
 }
 
+// Exposes the gnatsd HTTP Handler
+func (s *Server) HTTPHandler() http.Handler {
+	return s.gnatsd.HTTPHandler()
+}
+
 // Start the embedded NATS instance, this is a blocking call until it exits
 func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, s.choria.Config.ConfigFile)
 
 	go s.gnatsd.Start()
+
+	s.Started = true
 
 	select {
 	case <-ctx.Done():
@@ -146,8 +155,6 @@ func (s *Server) setupTLS() (err error) {
 	s.opts.Cluster.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 	s.opts.Cluster.TLSConfig.RootCAs = s.opts.Cluster.TLSConfig.ClientCAs
 	s.opts.Cluster.TLSTimeout = tc.Timeout
-
-	log.Infof("%#v", tc)
 
 	return
 }

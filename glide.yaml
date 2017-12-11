@@ -28,3 +28,4 @@ import:
   subpackages:
   - encoders/builtin
   - util
+- package: github.com/rcrowley/go-metrics
