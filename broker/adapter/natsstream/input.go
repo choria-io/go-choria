@@ -1,4 +1,4 @@
-package nats_stream
+package natsstream
 
 import (
 	"context"
@@ -83,7 +83,7 @@ func (na *nats) connect(ctx context.Context, cm choria.ConnectionManager) error 
 
 	var err error
 
-	na.conn, err = cm.NewConnector(ctx, na.servers, na.name, na.log)
+	na.conn, err = cm.NewConnector(ctx, na.servers, fmt.Sprintf("choria adapter %s", na.name), na.log)
 	if err != nil {
 		return fmt.Errorf("Could not start NATS connection: %s", err.Error())
 	}

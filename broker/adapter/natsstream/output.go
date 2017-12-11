@@ -1,4 +1,4 @@
-package nats_stream
+package natsstream
 
 import (
 	"context"

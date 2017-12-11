@@ -77,7 +77,7 @@ Here we configure the NATS Streaming Adapter.  It listens for `request` messages
 ```ini
 # sets up a named adapter, you can run many of the same type
 plugin.choria.adapters = discovery
-plugin.choria.adapters.discovery.type = nats_stream
+plugin.choria.adapters.discovery.type = natsstream
 
 # configure this discovery adapter
 # in this case the adapter does NATS->NATS Streaming so you need to configure both sides

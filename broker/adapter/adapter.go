@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/choria-io/go-choria/broker/adapter/nats_stream"
+	"github.com/choria-io/go-choria/broker/adapter/natsstream"
 	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
 )
@@ -19,7 +19,7 @@ func RunAdapters(ctx context.Context, c *choria.Framework, wg *sync.WaitGroup) e
 
 		switch atype {
 		case "nats_stream":
-			n, err := nats_stream.Create(a, c)
+			n, err := natsstream.Create(a, c)
 			if err != nil {
 				return fmt.Errorf("Could not start nats_stream adapter: %s", err.Error())
 			}
