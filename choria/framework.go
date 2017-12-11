@@ -438,7 +438,7 @@ func (self *Framework) StartStats(handler http.Handler) {
 	}
 
 	if !self.stats {
-		log.Infof("Starting statistic reporting on port %d /debug/metrics", port)
+		log.Infof("Starting statistic reporting on port %d /choria/metrics", port)
 
 		expvar.NewString("version").Set(build.Version)
 		expvar.NewString("build_sha").Set(build.SHA)
@@ -446,10 +446,11 @@ func (self *Framework) StartStats(handler http.Handler) {
 		expvar.NewString("config").Set(self.Config.ConfigFile)
 
 		if handler == nil {
+			http.Handle("/choria/metrics", statistics.HTTPHandler())
 			go http.ListenAndServe(fmt.Sprintf("%s:%d", self.Config.Choria.StatsListenAddress, port), nil)
 		} else {
 			hh := handler.(*http.ServeMux)
-			hh.Handle("/debug/metrics", statistics.HTTPHandler())
+			hh.Handle("/choria/metrics", statistics.HTTPHandler())
 		}
 
 		self.stats = true

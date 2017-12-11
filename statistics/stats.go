@@ -49,7 +49,3 @@ func getOrCreate(name string, create func() interface{}) interface{} {
 func HTTPHandler() http.Handler {
 	return exp.ExpHandler(registry)
 }
-
-func init() {
-	exp.Exp(registry)
-}
