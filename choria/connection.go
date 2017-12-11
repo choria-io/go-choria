@@ -45,7 +45,6 @@ type InstanceConnector interface {
 
 	NodeDirectedTarget(collective string, identity string) string
 
-	Outbox() chan *nats.Msg
 	Close()
 }
 
@@ -511,7 +510,7 @@ func (self *Connection) ConnectedServer() string {
 		return "unknown"
 	}
 
-	return fmt.Sprintf("%s:%s", strings.TrimSuffix(url.Hostname(), "."), url.Port())
+	return fmt.Sprintf("nats://%s:%s", strings.TrimSuffix(url.Hostname(), "."), url.Port())
 }
 
 // Connect creates a new connection to NATS.

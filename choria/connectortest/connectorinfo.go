@@ -11,6 +11,10 @@ type ConnectorInfo struct {
 }
 
 func (i *ConnectorInfo) ConnectedServer() string {
+	if i.Server == "" {
+		i.Server = "test.example.net"
+	}
+
 	return i.Server
 }
 
