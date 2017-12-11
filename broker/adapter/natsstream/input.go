@@ -6,6 +6,8 @@ import (
 	"strconv"
 	"sync"
 
+	"github.com/choria-io/go-choria/statistics"
+
 	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
 )
@@ -57,7 +59,7 @@ func newIngest(name string, work chan adaptable, logger *log.Entry) ([]*nats, er
 	}
 
 	for i := 0; i < instances; i++ {
-		iname := fmt.Sprintf("%s_%d", name, i)
+		iname := fmt.Sprintf("%s.%d", name, i)
 		logger.Infof("Creating NATS Streaming Adapter %s %s Ingest instance %d / %d", name, topic, i, instances)
 
 		n := &nats{
@@ -106,26 +108,37 @@ func (na *nats) disconnect() {
 func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
+	ctr := statistics.Counter(fmt.Sprintf("adapter.%s.received", na.name))
+	ectr := statistics.Counter(fmt.Sprintf("adapter.%s.err", na.name))
+	bytes := statistics.Counter(fmt.Sprintf("adapter.%s.bytes", na.name))
+	timer := statistics.Timer(fmt.Sprintf("adapter.%s.time", na.name))
+
 	for {
 		select {
 		case cm := <-na.input:
-			rawmsg := cm.Data
-			var msg adaptable
-			var err error
+			timer.Time(func() {
+				rawmsg := cm.Data
+				var msg adaptable
+				var err error
 
-			if na.proto == "choria:request" {
-				msg, err = framework.NewRequestFromTransportJSON(rawmsg, true)
-			} else {
-				msg, err = framework.NewReplyFromTransportJSON(rawmsg)
-			}
+				bytes.Inc(int64(len(rawmsg)))
 
-			if err != nil {
-				na.log.Warnf("Could not process message, discarding: %s", err.Error())
-				continue
-			}
+				if na.proto == "choria:request" {
+					msg, err = framework.NewRequestFromTransportJSON(rawmsg, true)
+				} else {
+					msg, err = framework.NewReplyFromTransportJSON(rawmsg)
+				}
 
-			na.work <- msg
+				if err != nil {
+					na.log.Warnf("Could not process message, discarding: %s", err.Error())
+					ectr.Inc(1)
+					return
+				}
 
+				na.work <- msg
+
+				ctr.Inc(1)
+			})
 		case <-ctx.Done():
 			na.disconnect()
 

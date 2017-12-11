@@ -1,5 +1,5 @@
-hash: f9612b0fef27bfb20f0650753c13c8ee66f68e2bc69d884629eb7111573c5ec7
-updated: 2017-11-28T13:53:19.235399344+01:00
+hash: 79743ff5727f48da929543bd872da17a36fbe5e196d19f991a7f8b9ee9e5f6b5
+updated: 2017-12-11T15:39:15.867979867+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -13,7 +13,7 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/gogo/protobuf
-  version: 971cbfd2e72b513a28c74af7462aee0800248d69
+  version: 41168f6614b7bb144818ec8967b8c702705df564
   subpackages:
   - gogoproto
   - proto
@@ -32,7 +32,7 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/nats-io/go-nats-streaming
-  version: 88fd0ce51e45a3a711b737174fd951944c91f085
+  version: 43723aa09c43cec839e43583df07b1940c9f7651
   subpackages:
   - pb
 - name: github.com/nats-io/nats
@@ -73,10 +73,12 @@ imports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: github.com/rcrowley/go-metrics
+  version: e181e095bae94582363434144c61a9653aff6e50
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/sirupsen/logrus
-  version: f006c2ac4710855cf0f916dd6b77acf6b048dc6e
+  version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
 - name: github.com/tidwall/gjson
   version: be96719f990978a867f52c48f29d43f6b591da28
 - name: github.com/tidwall/match
@@ -94,7 +96,7 @@ imports:
   - blowfish
   - ssh/terminal
 - name: golang.org/x/net
-  version: fc492d2e106922eb3aa4bca863d55e882c087ae3
+  version: dc871a5d77e227f5bbf6545176ef3eeebf87e76e
   subpackages:
   - context
 - name: golang.org/x/sys
@@ -109,6 +111,6 @@ imports:
   - windows/svc/mgr
 - name: gopkg.in/alecthomas/kingpin.v2
   version: 1087e65c9441605df944fb12c33f0fe7072d18ca
-testImports:
 - name: gopkg.in/yaml.v2
   version: 287cf08546ab5e7e37d55a84f7ed3fd1db036de5
+testImports: []

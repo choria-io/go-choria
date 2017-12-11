@@ -39,7 +39,7 @@ type ChoriaPluginConfig struct {
 	FederationMiddlewareHosts []string `confkey:"plugin.choria.federation_middleware_hosts" type:"comma_split"`
 	FederationCluster         string   `confkey:"plugin.choria.federation.cluster" default:"mcollective"`
 
-	StatsPort int `configkey:"plugin.choria.stats_port"`
+	StatsPort int `confkey:"plugin.choria.stats_port" default:"0"`
 
 	// nats connector
 	NatsUser                 string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`

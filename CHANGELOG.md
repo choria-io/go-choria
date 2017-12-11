@@ -1,6 +1,5 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
-|2017/12/11|76    |Rename the `nats_stream` adapter to `natsstream`                                                         |
 |2017/12/10|73    |Federation brokers now correctly subscribe to the configured names                                       |
 |2017/12/10|71    |Fix TLS network cluster                                                                                  |
 |2017/12/10|      |Release 0.0.2                                                                                            |

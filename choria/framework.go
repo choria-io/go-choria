@@ -2,14 +2,18 @@ package choria
 
 import (
 	"errors"
+	"expvar"
 	"fmt"
 	"net"
+	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"strconv"
 	"strings"
+	"sync"
 
+	"github.com/choria-io/go-choria/build"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -17,6 +21,9 @@ import (
 // Framework is a utilty encompasing choria config and various utilities
 type Framework struct {
 	Config *Config
+
+	mu    *sync.Mutex
+	stats bool
 }
 
 // Server is a representation of a network server host and port
@@ -55,6 +62,7 @@ func New(path string) (*Framework, error) {
 func NewWithConfig(config *Config) (*Framework, error) {
 	c := Framework{
 		Config: config,
+		mu:     &sync.Mutex{},
 	}
 
 	err := c.SetupLogging(false)
@@ -414,4 +422,29 @@ func (self *Framework) HasCollective(collective string) bool {
 	}
 
 	return false
+}
+
+// StartStats starts serving exp stats and metrics on the configured statistics port
+func (self *Framework) StartStats() {
+	self.mu.Lock()
+	defer self.mu.Unlock()
+
+	port := self.Config.Choria.StatsPort
+
+	if port == 0 {
+		log.Infof("Statistics gathering disabled, set plugin.choria.stats_port")
+		return
+	}
+
+	if !self.stats {
+		log.Infof("Starting statistic reporting on port %d /debug/metrics", port)
+
+		expvar.NewString("version").Set(build.Version)
+		expvar.NewString("build_sha").Set(build.SHA)
+		expvar.NewString("build_date").Set(build.BuildDate)
+		expvar.NewString("config").Set(self.Config.ConfigFile)
+
+		go http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+		self.stats = true
+	}
 }

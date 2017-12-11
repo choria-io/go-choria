@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/statistics"
 	stan "github.com/nats-io/go-nats-streaming"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
@@ -129,27 +130,41 @@ func (sc *stream) disconnect() {
 func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
+	ctr := statistics.Counter(fmt.Sprintf("adapter.%s.output.published", sc.name))
+	ectr := statistics.Counter(fmt.Sprintf("adapter.%s.output.err", sc.name))
+	bytes := statistics.Counter(fmt.Sprintf("adapter.%s.output.bytes", sc.name))
+	timer := statistics.Timer(fmt.Sprintf("adapter.%s.output.time", sc.name))
+
 	for {
 		select {
 		case r := <-sc.work:
-			m := msg{
-				Message: r.Message(),
-				Sender:  r.SenderID(),
-				Time:    r.Time().UTC(),
-			}
+			timer.Time(func() {
+				m := msg{
+					Message: r.Message(),
+					Sender:  r.SenderID(),
+					Time:    r.Time().UTC(),
+				}
 
-			j, err := json.Marshal(m)
-			if err != nil {
-				sc.log.Warnf("Cannot JSON encode message for publishing to STAN, discarding: %s", err.Error())
-				continue
-			}
+				j, err := json.Marshal(m)
+				if err != nil {
+					sc.log.Warnf("Cannot JSON encode message for publishing to STAN, discarding: %s", err.Error())
+					ectr.Inc(1)
+					return
+				}
 
-			sc.log.Debugf("Publishing registration data from %s to %s", m.Sender, sc.topic)
+				sc.log.Debugf("Publishing registration data from %s to %s", m.Sender, sc.topic)
 
-			err = sc.conn.Publish(sc.topic, j)
-			if err != nil {
-				sc.log.Warnf("Could not publish message to STAN %s, discarding: %s", sc.topic, err.Error())
-			}
+				bytes.Inc(int64(len(j)))
+
+				err = sc.conn.Publish(sc.topic, j)
+				if err != nil {
+					sc.log.Warnf("Could not publish message to STAN %s, discarding: %s", sc.topic, err.Error())
+					ectr.Inc(1)
+					return
+				}
+
+				ctr.Inc(1)
+			})
 		case <-ctx.Done():
 			sc.disconnect()
 

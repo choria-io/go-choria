@@ -84,6 +84,8 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		log.Warn("Running with TLS Verification disabled, not compatible with production use.")
 	}
 
+	c.StartStats()
+
 	if len(adapters) > 0 {
 		log.Info("Starting Protocol Adapters")
 
@@ -125,7 +127,7 @@ func (r *brokerRunCommand) runFederation(ctx context.Context, wg *sync.WaitGroup
 	}
 
 	wg.Add(1)
-	r.federation.Start(ctx, wg)
+	go r.federation.Start(ctx, wg)
 
 	return
 }
