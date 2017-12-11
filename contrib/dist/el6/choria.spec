@@ -1,4 +1,11 @@
-%define  debug_package %{nil}
+%define debug_package %{nil}
+%define pkgname {{pkgname}}
+%define version {{version}}
+%define bindir {{bindir}}
+%define etcdir {{etcdir}}
+%define iteration {{iteration}}
+%define dist {{dist}}
+%define manage_conf {{manage_conf}}
 
 Name: %{pkgname}
 Version: %{version}
@@ -18,11 +25,6 @@ The Choria Orchestrator Server and Broker
 %setup -q
 
 %build
-for i in server.init broker.init server.conf broker.conf choria-logrotate; do
-  sed -i 's!{{pkgname}}!%{pkgname}!' dist/${i}
-  sed -i 's!{{bindir}}!%{bindir}!' dist/${i}
-  sed -i 's!{{etcdir}}!%{etcdir}!' dist/${i}
-done
 
 %install
 rm -rf %{buildroot}
