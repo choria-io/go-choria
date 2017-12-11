@@ -4,8 +4,10 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"sync"
+	"time"
 
 	"github.com/choria-io/go-choria/broker/adapter"
 	"github.com/choria-io/go-choria/broker/federation"
@@ -84,8 +86,6 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		log.Warn("Running with TLS Verification disabled, not compatible with production use.")
 	}
 
-	c.StartStats()
-
 	if len(adapters) > 0 {
 		log.Info("Starting Protocol Adapters")
 
@@ -99,6 +99,8 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 			return fmt.Errorf("Starting the network broker failed: %s", err.Error())
 		}
 	}
+
+	r.startStats()
 
 	if federation {
 		log.Infof("Starting Federation Broker on cluster %s", c.Config.Choria.FederationCluster)
@@ -142,6 +144,26 @@ func (r *brokerRunCommand) runBroker(ctx context.Context, wg *sync.WaitGroup) (e
 	go r.server.Start(ctx, wg)
 
 	return
+}
+
+func (r *brokerRunCommand) startStats() {
+	var handler http.Handler
+
+	if r.server != nil {
+		for {
+			if r.server.Started {
+				break
+			}
+
+			time.Sleep(100 * time.Millisecond)
+		}
+
+		handler = r.server.HTTPHandler()
+	} else {
+		handler = nil
+	}
+
+	c.StartStats(handler)
 }
 
 func init() {

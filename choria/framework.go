@@ -14,6 +14,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/statistics"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -425,7 +426,7 @@ func (self *Framework) HasCollective(collective string) bool {
 }
 
 // StartStats starts serving exp stats and metrics on the configured statistics port
-func (self *Framework) StartStats() {
+func (self *Framework) StartStats(handler http.Handler) {
 	self.mu.Lock()
 	defer self.mu.Unlock()
 
@@ -444,7 +445,13 @@ func (self *Framework) StartStats() {
 		expvar.NewString("build_date").Set(build.BuildDate)
 		expvar.NewString("config").Set(self.Config.ConfigFile)
 
-		go http.ListenAndServe(fmt.Sprintf(":%d", port), nil)
+		if handler == nil {
+			go http.ListenAndServe(fmt.Sprintf("%s:%d", self.Config.Choria.StatsListenAddress, port), nil)
+		} else {
+			hh := handler.(*http.ServeMux)
+			hh.Handle("/debug/metrics", statistics.HTTPHandler())
+		}
+
 		self.stats = true
 	}
 }

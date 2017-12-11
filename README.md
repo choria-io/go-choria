@@ -45,8 +45,11 @@ plugin.choria.network.peers = nats://choria1:5222, nats://choria2:5222, nats://c
 plugin.choria.network.peer_user = choria_cluster
 plugin.choria.network.peer_password = s£cret
 
-# enables the typical NATS stats/status port, default, set to 0 to disable
-plugin.choria.network.monitor_port = 8222
+# enables the typical NATS stats/status port, default is set to 0 and so disabled
+plugin.choria.stats_port = 8222
+
+# listens for stats to everyone, 127.0.0.1 by default
+plugin.choria.stats_address = 0.0.0.0
 ```
 
 ## Federation Broker

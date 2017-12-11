@@ -1,6 +1,7 @@
 package statistics
 
 import (
+	"net/http"
 	"sync"
 
 	metrics "github.com/rcrowley/go-metrics"
@@ -43,6 +44,10 @@ func getOrCreate(name string, create func() interface{}) interface{} {
 	registry.Register(name, m)
 
 	return m
+}
+
+func HTTPHandler() http.Handler {
+	return exp.ExpHandler(registry)
 }
 
 func init() {
