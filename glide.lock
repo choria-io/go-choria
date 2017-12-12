@@ -1,5 +1,5 @@
-hash: 11d6459db225fa39b23a692fba5e34784e7e613bb44d5c83b3bba06b8ecedcfb
-updated: 2017-12-12T11:29:31.358504652+01:00
+hash: c4be768e957f45fc7582a8024183b6018a6170788b19dd471faf07fa3f49b46e
+updated: 2017-12-12T21:25:34.50377+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -99,15 +99,12 @@ imports:
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
+  - log
   - model
 - name: github.com/prometheus/procfs
   version: a6e9df898b1336106c743392c48ee0b71f5c4efa
   subpackages:
   - xfs
-- name: github.com/rcrowley/go-metrics
-  version: e181e095bae94582363434144c61a9653aff6e50
-  subpackages:
-  - exp
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/sirupsen/logrus

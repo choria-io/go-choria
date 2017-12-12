@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"strings"
 
+	"github.com/choria-io/go-choria/broker/federation/stats"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/statistics"
+	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -23,19 +24,23 @@ func NewChoriaNatsEgest(workers int, mode int, capacity int, broker *FederationB
 			return
 		}
 
-		rctr := statistics.Counter(fmt.Sprintf("federation.nats_egest.%d.received", i))
-		pctr := statistics.Counter(fmt.Sprintf("federation.nats_egest.%d.published", i))
-		ectr := statistics.Counter(fmt.Sprintf("federation.nats_egest.%d.err", i))
-		timer := statistics.Timer(fmt.Sprintf("federation.nats_egest.%d.time", i))
+		workeri := fmt.Sprintf("%d", i)
+		rctr := stats.ReceivedMsgsCtr.WithLabelValues("nats_egest", workeri, "")
+		pctr := stats.PublishedMsgsCtr.WithLabelValues("nats_egest", workeri, "")
+		ectr := stats.ErrorCtr.WithLabelValues("nats_egest", workeri, "")
+		timer := stats.ProcessTime.WithLabelValues("nats_egest", workeri, "")
 
 		handler := func(cm chainmessage) {
+			obs := prometheus.NewTimer(timer)
+			defer obs.ObserveDuration()
+
 			if len(cm.Targets) == 0 {
 				logger.Errorf("Received message '%s' with no targets, discarding: %#v", cm.RequestID, cm)
-				ectr.Inc(1)
+				ectr.Inc()
 				return
 			}
 
-			rctr.Inc(1)
+			rctr.Inc()
 
 			logger.Debugf("Publishing message '%s' to %d target(s)", cm.RequestID, len(cm.Targets))
 
@@ -50,17 +55,17 @@ func NewChoriaNatsEgest(workers int, mode int, capacity int, broker *FederationB
 			j, err := cm.Message.JSON()
 			if err != nil {
 				logger.Errorf("Could not JSON encode message '%s': %s", cm.RequestID, err.Error())
-				ectr.Inc(1)
+				ectr.Inc()
 				return
 			}
 
 			for _, target := range cm.Targets {
 				if err = nc.PublishRaw(target, []byte(j)); err != nil {
 					logger.Errorf("Could not publish message '%s' to '%s': %s", cm.RequestID, target, err.Error())
-					ectr.Inc(1)
+					ectr.Inc()
 					continue
 				}
-				pctr.Inc(1)
+				pctr.Inc()
 			}
 		}
 
@@ -69,10 +74,7 @@ func NewChoriaNatsEgest(workers int, mode int, capacity int, broker *FederationB
 
 			select {
 			case cm = <-self.in:
-				timer.Time(func() {
-					handler(cm)
-				})
-
+				handler(cm)
 			case <-ctx.Done():
 				logger.Infof("Worker routine %s exiting", self.Name())
 				return

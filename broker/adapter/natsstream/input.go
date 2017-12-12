@@ -6,7 +6,8 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/choria-io/go-choria/statistics"
+	"github.com/choria-io/go-choria/broker/adapter/stats"
+	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
@@ -108,37 +109,43 @@ func (na *nats) disconnect() {
 func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	ctr := statistics.Counter(fmt.Sprintf("adapter.%s.received", na.name))
-	ectr := statistics.Counter(fmt.Sprintf("adapter.%s.err", na.name))
-	bytes := statistics.Counter(fmt.Sprintf("adapter.%s.bytes", na.name))
-	timer := statistics.Timer(fmt.Sprintf("adapter.%s.time", na.name))
+	bytes := stats.BytesCtr.WithLabelValues(na.name, "input")
+	ectr := stats.ErrorCtr.WithLabelValues(na.name, "input")
+	ctr := stats.ReceivedMsgsCtr.WithLabelValues(na.name, "input")
+	timer := stats.ProcessTime.WithLabelValues(na.name, "intput")
+
+	receiverf := func(cm *choria.ConnectorMessage) {
+		obs := prometheus.NewTimer(timer)
+		defer obs.ObserveDuration()
+
+		rawmsg := cm.Data
+		var msg adaptable
+		var err error
+
+		bytes.Add(float64(len(rawmsg)))
+
+		if na.proto == "choria:request" {
+			msg, err = framework.NewRequestFromTransportJSON(rawmsg, true)
+		} else {
+			msg, err = framework.NewReplyFromTransportJSON(rawmsg)
+		}
+
+		if err != nil {
+			na.log.Warnf("Could not process message, discarding: %s", err.Error())
+			ectr.Inc()
+			return
+		}
+
+		na.work <- msg
+
+		ctr.Inc()
+	}
 
 	for {
 		select {
 		case cm := <-na.input:
-			timer.Time(func() {
-				rawmsg := cm.Data
-				var msg adaptable
-				var err error
+			receiverf(cm)
 
-				bytes.Inc(int64(len(rawmsg)))
-
-				if na.proto == "choria:request" {
-					msg, err = framework.NewRequestFromTransportJSON(rawmsg, true)
-				} else {
-					msg, err = framework.NewReplyFromTransportJSON(rawmsg)
-				}
-
-				if err != nil {
-					na.log.Warnf("Could not process message, discarding: %s", err.Error())
-					ectr.Inc(1)
-					return
-				}
-
-				na.work <- msg
-
-				ctr.Inc(1)
-			})
 		case <-ctx.Done():
 			na.disconnect()
 
