@@ -1,5 +1,5 @@
-hash: 79743ff5727f48da929543bd872da17a36fbe5e196d19f991a7f8b9ee9e5f6b5
-updated: 2017-12-11T15:39:15.867979867+01:00
+hash: 11d6459db225fa39b23a692fba5e34784e7e613bb44d5c83b3bba06b8ecedcfb
+updated: 2017-12-12T11:29:31.358504652+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -7,6 +7,10 @@ imports:
   - parse
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
+- name: github.com/beorn7/perks
+  version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
+  subpackages:
+  - quantile
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
@@ -18,6 +22,14 @@ imports:
   - gogoproto
   - proto
   - protoc-gen-gogo/descriptor
+- name: github.com/golang/protobuf
+  version: 1e59b77b52bf8e4b449a57e6f79f21226d571845
+  subpackages:
+  - proto
+- name: github.com/matttproud/golang_protobuf_extensions
+  version: c12348ce28de40eed0136aa2b644d0ee0650e56c
+  subpackages:
+  - pbutil
 - name: github.com/nats-io/gnatsd
   version: 12a5ced612f30aa511906c0de12a124233752f70
   subpackages:
@@ -73,8 +85,29 @@ imports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: github.com/prometheus/client_golang
+  version: 661e31bf844dfca9aeba15f27ea8aa0d485ad212
+  subpackages:
+  - prometheus
+  - prometheus/promhttp
+- name: github.com/prometheus/client_model
+  version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
+  subpackages:
+  - go
+- name: github.com/prometheus/common
+  version: 2e54d0b93cba2fd133edc32211dcc32c06ef72ca
+  subpackages:
+  - expfmt
+  - internal/bitbucket.org/ww/goautoneg
+  - model
+- name: github.com/prometheus/procfs
+  version: a6e9df898b1336106c743392c48ee0b71f5c4efa
+  subpackages:
+  - xfs
 - name: github.com/rcrowley/go-metrics
   version: e181e095bae94582363434144c61a9653aff6e50
+  subpackages:
+  - exp
 - name: github.com/satori/go.uuid
   version: 879c5887cd475cd7864858769793b2ceb0d44feb
 - name: github.com/sirupsen/logrus

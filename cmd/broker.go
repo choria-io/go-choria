@@ -13,6 +13,7 @@ import (
 	"github.com/choria-io/go-choria/broker/federation"
 	"github.com/choria-io/go-choria/broker/network"
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/statistics"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -163,7 +164,7 @@ func (r *brokerRunCommand) startStats() {
 		handler = nil
 	}
 
-	c.StartStats(handler)
+	statistics.Start(c.Config, handler)
 }
 
 func init() {
