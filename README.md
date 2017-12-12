@@ -18,6 +18,10 @@ Sample configs are shown, subject to change
 
 Running `choria broker run --config /path/to/broker.cfg` will start the various broker components, you can safely run the Middleware Broker, Federation Broker and Protocol Adapter all in the same process.
 
+## Metrics
+
+When enabled a vast cache of metrics is exposed under `/choria/metrics` and `/choria/prometheus`, use `plugin.choria.stats_port` and `plugin.choria.stats_address` to enable
+
 ## NATS based Middleware Broker
 
 This sets up a managed NATS instance, it's functionally equivalent to just running NATS standalone but it's easier to get going and with fewer settings to consider.
