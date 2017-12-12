@@ -48,19 +48,20 @@ rm -rf %{buildroot}
 %post
 if [ $1 -eq 1 ] ; then
   systemctl --no-reload preset %{pkgname}-broker >/dev/null 2>&1 || :
+  systemctl --no-reload preset %{pkgname}-server >/dev/null 2>&1 || :
 fi
 
-if [ $1 -eq 1 ] ; then
-  systemctl --no-reload preset %{pkgname}-server >/dev/null 2>&1 || :
+/bin/systemctl --system daemon-reload >/dev/null 2>&1 || :
+
+if [ $1 -ge 1 ]; then
+  /bin/systemctl try-restart %{pkgname}-broker >/dev/null 2>&1 || :;
+  /bin/systemctl try-restart %{pkgname}-server >/dev/null 2>&1 || :;
 fi
 
 %preun
 if [ $1 -eq 0 ] ; then
-  systemctl --no-reload disable --now %{pkgname}-broker > /dev/null 2>&1 || :
-fi
-
-if [ $1 -eq 0 ] ; then
-  systemctl --no-reload disable --now %{pkgname}-server > /dev/null 2>&1 || :
+  systemctl --no-reload disable --now %{pkgname}-broker >/dev/null 2>&1 || :
+  systemctl --no-reload disable --now %{pkgname}-server >/dev/null 2>&1 || :
 fi
 
 %files
@@ -77,3 +78,4 @@ fi
 %changelog
 * Tue Dec 05 2017 R.I.Pienaar <rip@devco.net>
 - Initial Release
+

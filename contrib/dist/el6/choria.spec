@@ -55,9 +55,6 @@ rm -rf %{buildroot}
 %postun
 if [ "$1" -ge 1 ]; then
   /sbin/service %{pkgname}-broker condrestart &>/dev/null || :
-fi
-
-if [ "$1" -ge 1 ]; then
   /sbin/service %{pkgname}-server condrestart &>/dev/null || :
 fi
 
@@ -65,9 +62,6 @@ fi
 if [ "$1" = 0 ] ; then
   /sbin/service %{pkgname}-broker stop > /dev/null 2>&1
   /sbin/chkconfig --del %{pkgname}-broker || :
-fi
-
-if [ "$1" = 0 ] ; then
   /sbin/service %{pkgname}-server stop > /dev/null 2>&1
   /sbin/chkconfig --del %{pkgname}-server || :
 fi
