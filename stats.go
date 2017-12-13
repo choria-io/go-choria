@@ -128,6 +128,7 @@ func (s *Server) updatePrometheus() {
 	varz, err := s.getVarz()
 	if err != nil {
 		log.Errorf("Could not publish network broker stats: %s", err.Error())
+		return
 	}
 
 	ConnectionsGauge.Set(float64(varz.Connections))
@@ -140,5 +141,4 @@ func (s *Server) updatePrometheus() {
 	OutBytesGauge.Set(float64(varz.OutBytes))
 	SlowConsumerGauge.Set(float64(varz.SlowConsumers))
 	SubscriptionsGauge.Set(float64(varz.Subscriptions))
-
 }
