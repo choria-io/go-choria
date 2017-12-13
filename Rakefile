@@ -34,7 +34,7 @@ task :build do
     end
   end
 
-  sh "go build -o %s -ldflags '%s'" % [
+  sh "go build -race -o %s -ldflags '%s'" % [
     output_name(version), flags.join(" ")
   ]
 end

@@ -112,7 +112,7 @@ func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
 	bytes := stats.BytesCtr.WithLabelValues(na.name, "input")
 	ectr := stats.ErrorCtr.WithLabelValues(na.name, "input")
 	ctr := stats.ReceivedMsgsCtr.WithLabelValues(na.name, "input")
-	timer := stats.ProcessTime.WithLabelValues(na.name, "intput")
+	timer := stats.ProcessTime.WithLabelValues(na.name, "input")
 
 	receiverf := func(cm *choria.ConnectorMessage) {
 		obs := prometheus.NewTimer(timer)

@@ -110,13 +110,13 @@ func (s *Server) publishStats(ctx context.Context, interval time.Duration) {
 		return
 	}
 
-	timer := time.NewTimer(interval)
-
-	s.updatePrometheus()
+	ticker := time.NewTicker(interval)
 
 	for {
 		select {
-		case <-timer.C:
+		case <-ticker.C:
+			log.Debug("Starting NATS /varz poll")
+
 			s.updatePrometheus()
 		case <-ctx.Done():
 			return
