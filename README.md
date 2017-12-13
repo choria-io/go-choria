@@ -20,7 +20,7 @@ Running `choria broker run --config /path/to/broker.cfg` will start the various 
 
 ## Metrics
 
-When enabled a vast cache of metrics is exposed under `/choria/metrics` and `/choria/prometheus`, use `plugin.choria.stats_port` and `plugin.choria.stats_address` to enable
+When enabled a vast cache of Prometheus compatible metrics are exposed under `/choria/prometheus`, use `plugin.choria.stats_port` and `plugin.choria.stats_address` to enable
 
 ## NATS based Middleware Broker
 

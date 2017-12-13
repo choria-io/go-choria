@@ -83,3 +83,14 @@ func (self *FederationBroker) Start(ctx context.Context, wg *sync.WaitGroup) {
 		return
 	}
 }
+
+func nameForConnectionMode(mode int) string {
+	switch mode {
+	case Collective:
+		return "Collective"
+	case Federation:
+		return "Federation"
+	default:
+		return "Unconnected"
+	}
+}

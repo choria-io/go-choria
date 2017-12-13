@@ -14,9 +14,9 @@ func NewChoriaRequestTransformer(workers int, capacity int, broker *FederationBr
 		defer self.wg.Done()
 
 		workeri := fmt.Sprintf("%d", i)
-		rctr := stats.ReceivedMsgsCtr.WithLabelValues("choria_request_transformer", workeri, "")
-		ectr := stats.ErrorCtr.WithLabelValues("choria_request_transformer", workeri, "")
-		timer := stats.ProcessTime.WithLabelValues("choria_request_transformer", workeri, "")
+		rctr := stats.ReceivedMsgsCtr.WithLabelValues("choria_request_transformer", workeri, nameForConnectionMode(Unconnected))
+		ectr := stats.ErrorCtr.WithLabelValues("choria_request_transformer", workeri, nameForConnectionMode(Unconnected))
+		timer := stats.ProcessTime.WithLabelValues("choria_request_transformer", workeri, nameForConnectionMode(Unconnected))
 
 		workerf := func(cm chainmessage) {
 			obs := prometheus.NewTimer(timer)
