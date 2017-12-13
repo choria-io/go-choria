@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"sync"
+	"time"
 
 	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
@@ -15,10 +16,11 @@ import (
 
 // Server represents the Choria network broker server
 type Server struct {
-	gnatsd  *gnatsd.Server
-	opts    *gnatsd.Options
-	choria  *choria.Framework
-	config  *choria.Config
+	gnatsd *gnatsd.Server
+	opts   *gnatsd.Options
+	choria *choria.Framework
+	config *choria.Config
+
 	Started bool
 }
 
@@ -74,6 +76,8 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	go s.gnatsd.Start()
 
 	s.Started = true
+
+	s.publishStats(ctx, 10*time.Second)
 
 	select {
 	case <-ctx.Done():
