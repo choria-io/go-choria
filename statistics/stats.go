@@ -7,7 +7,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
-	"github.com/prometheus/common/log"
+	log "github.com/sirupsen/logrus"
 )
 
 var running = false
@@ -26,7 +26,7 @@ func Start(config *choria.Config, handler http.Handler) {
 	}
 
 	if !running {
-		log.Infof("Starting statistic reporting on port %d /choria/metrics", port)
+		log.Infof("Starting statistic reporting Prometheus statistics on port http://%s:%d/choria/prometheus", config.Choria.StatsListenAddress, port)
 
 		if handler == nil {
 			http.Handle("/choria/prometheus", promhttp.Handler())
