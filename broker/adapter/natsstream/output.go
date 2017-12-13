@@ -70,7 +70,7 @@ func newStream(name string, work chan adaptable, logger *log.Entry) ([]*stream, 
 			clusterID: clusterID,
 			clientID:  iname,
 			topic:     topic,
-			name:      name,
+			name:      fmt.Sprintf("%s.%d", name, i),
 			work:      work,
 			log:       logger.WithFields(log.Fields{"side": "stream", "instance": i}),
 		}
