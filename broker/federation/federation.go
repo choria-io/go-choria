@@ -80,6 +80,7 @@ func (self *FederationBroker) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	select {
 	case <-ctx.Done():
+		log.Warn("Choria Federation Broker shutting down")
 		return
 	}
 }

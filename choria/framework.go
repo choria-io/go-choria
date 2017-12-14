@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/srvcache"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
@@ -266,13 +267,16 @@ func (self *Framework) QuerySrvRecords(records []string) ([]Server, error) {
 		if err != nil {
 			return servers, err
 		}
+
+		// cache the result to speed things up
+		self.Config.Choria.SRVDomain = domain
 	}
 
 	for _, q := range records {
 		record := q + "." + domain
 		log.Debugf("Attempting SRV lookup for %s", record)
 
-		cname, addrs, err := net.LookupSRV("", "", record)
+		cname, addrs, err := srvcache.LookupSRV("", "", record, net.LookupSRV)
 		if err != nil {
 			log.Debugf("Failed to resolve %s: %s", record, err.Error())
 			continue

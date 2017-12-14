@@ -34,9 +34,16 @@ task :build do
     end
   end
 
-  sh "go build -race -o %s -ldflags '%s'" % [
-    output_name(version), flags.join(" ")
+  args = [
+    "-o %s" % output_name(version),
+    "-ldflags '%s'" % flags.join(" ")
   ]
+
+  args << "-race" if version == "development"
+
+  cmd = "go build %s" % args.join(" ")
+
+  sh cmd % [output_name(version), flags.join(" ")]
 end
 
 desc "Builds a Linux binary"
