@@ -101,14 +101,14 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		}
 	}
 
-	r.startStats()
-
 	if federation {
 		log.Infof("Starting Federation Broker on cluster %s", c.Config.Choria.FederationCluster)
 		if err = r.runFederation(ctx, wg); err != nil {
 			return fmt.Errorf("Starting the federation broker failed: %s", err.Error())
 		}
 	}
+
+	r.startStats()
 
 	return
 }
@@ -152,7 +152,7 @@ func (r *brokerRunCommand) startStats() {
 
 	if r.server != nil {
 		for {
-			if r.server.Started {
+			if r.server.Started() {
 				break
 			}
 

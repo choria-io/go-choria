@@ -21,15 +21,19 @@ type Server struct {
 	choria *choria.Framework
 	config *choria.Config
 
-	Started bool
+	started bool
+
+	mu *sync.Mutex
 }
 
 // NewServer creates a new instance of the Server struct with a fully configured NATS embedded
 func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 	s = &Server{
-		choria: c,
-		config: c.Config,
-		opts:   &gnatsd.Options{},
+		choria:  c,
+		config:  c.Config,
+		opts:    &gnatsd.Options{},
+		started: false,
+		mu:      &sync.Mutex{},
 	}
 
 	s.opts.Host = c.Config.Choria.NetworkListenAddress
@@ -75,7 +79,9 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	go s.gnatsd.Start()
 
-	s.Started = true
+	s.mu.Lock()
+	s.started = true
+	s.mu.Unlock()
 
 	s.publishStats(ctx, 10*time.Second)
 
@@ -161,4 +167,12 @@ func (s *Server) setupTLS() (err error) {
 	s.opts.Cluster.TLSTimeout = tc.Timeout
 
 	return
+}
+
+// Started determines if the server have been started
+func (s *Server) Started() bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.started
 }
