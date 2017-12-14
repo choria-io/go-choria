@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2017/12/13|      |Release 0.0.4                                                                                            |
+|2017/12/14|97    |Stats about the internals of the protocol are exposed                                                    |
 |2017/12/14|80    |When doing SRV lookups employ a cache to speed things up                                                 |
 |2017/12/14|92    |When shutting down daemons on rhel6 wait for them to exit and then KILL them after 5 seconds             |
 |2017/12/14|91    |Avoid race condition while determining if the network broker started                                     |
