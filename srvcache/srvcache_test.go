@@ -55,7 +55,7 @@ var _ = Describe("LookupSRV", func() {
 		_, found := cache[query{"", "", "another.example.net"}]
 		Expect(found).To(BeTrue())
 
-		MaxAge = time.Duration(-1 * time.Second)
+		maxage = time.Duration(-1 * time.Second)
 
 		_, addrs = retrieve(query{"", "", "another.example.net"})
 		Expect(addrs).To(BeNil())

@@ -48,6 +48,7 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 
 	j, err := request.JSON()
 	if err != nil {
+		protocolErrorCtr.Inc()
 		err = fmt.Errorf("Could not JSON encode reply message to store it in the Secure Request: %s", err.Error())
 		return
 	}
@@ -87,17 +88,20 @@ func (r *secureRequest) Valid() bool {
 
 	if r.cachePath == "" || r.caPath == "" {
 		log.Debug("SecureRequest validation failed - no cache path or ca path have been set")
+		protocolErrorCtr.Inc()
 		return false
 	}
 
 	cachedpath, err := r.cacheClientCert()
 	if err != nil {
 		log.Errorf("Could not cache Client Certificate: %s", err.Error())
+		protocolErrorCtr.Inc()
 		return false
 	}
 
 	if cachedpath == "" {
 		log.Errorf("Could not cache Client Certificate, no cache file was created")
+		protocolErrorCtr.Inc()
 		return false
 	}
 
@@ -113,11 +117,14 @@ func (r *secureRequest) Valid() bool {
 
 		if r.verifySignature(body, sig, candidate) {
 			log.Debugf("Secure Request signature verified using %s", candidate)
+			validCtr.Inc()
 			return true
 		}
 
 		log.Debugf("Secure Request signature could not be verified using %s", candidate)
 	}
+
+	invalidCtr.Inc()
 	return false
 }
 
@@ -125,6 +132,7 @@ func (r *secureRequest) Valid() bool {
 func (r *secureRequest) JSON() (body string, err error) {
 	j, err := json.Marshal(r)
 	if err != nil {
+		protocolErrorCtr.Inc()
 		err = fmt.Errorf("Could not JSON Marshal: %s", err.Error())
 		return
 	}
@@ -148,6 +156,7 @@ func (r *secureRequest) Version() string {
 func (r *secureRequest) IsValidJSON(data string) (err error) {
 	_, errors, err := schemas.Validate(schemas.SecureRequestV1, data)
 	if err != nil {
+		protocolErrorCtr.Inc()
 		err = fmt.Errorf("Could not validate SecureRequest JSON data: %s", err.Error())
 		return
 	}
@@ -198,12 +207,14 @@ func (r *secureRequest) cacheClientCert() (string, error) {
 	req, err := NewRequestFromSecureRequest(r)
 	if err != nil {
 		log.Errorf("Could not create Request to validate Secure Request with: %s", err.Error())
+		protocolErrorCtr.Inc()
 		return "", err
 	}
 
 	certname, err := r.requestCallerCertname(req.CallerID())
 	if err != nil {
 		log.Errorf("Could not extract certname from caller: %s", err.Error())
+		protocolErrorCtr.Inc()
 		return "", err
 	}
 
@@ -219,6 +230,7 @@ func (r *secureRequest) cacheClientCert() (string, error) {
 
 	err = ioutil.WriteFile(certfile, []byte(r.PublicCertificate), os.FileMode(int(0644)))
 	if err != nil {
+		protocolErrorCtr.Inc()
 		return "", fmt.Errorf("Could not cache client public certificate: %s", err.Error())
 	}
 
@@ -253,24 +265,28 @@ func (r *secureRequest) verifyCert(certpem []byte, name string) bool {
 	capem, err := ioutil.ReadFile(r.caPath)
 	if err != nil {
 		log.Errorf("Could not read CA '%s': %s", r.caPath, err.Error())
+		protocolErrorCtr.Inc()
 		return false
 	}
 
 	roots := x509.NewCertPool()
 	if !roots.AppendCertsFromPEM(capem) {
 		log.Warnf("Could not use CA '%s' as PEM data: %s", r.caPath, err.Error())
+		protocolErrorCtr.Inc()
 		return false
 	}
 
 	block, _ := pem.Decode(certpem)
 	if block == nil {
 		log.Warnf("Could not decode certificate '%s' PEM data: %s", name, err.Error())
+		protocolErrorCtr.Inc()
 		return false
 	}
 
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
 		log.Warnf("Could not parse certificate '%s': %s", name, err.Error())
+		protocolErrorCtr.Inc()
 		return false
 	}
 
@@ -284,6 +300,7 @@ func (r *secureRequest) verifyCert(certpem []byte, name string) bool {
 
 	_, err = cert.Verify(opts)
 	if err != nil {
+		invalidCertificateCtr.Inc()
 		log.Warnf("Certificate does not pass verification as '%s': %s", name, err.Error())
 		return false
 	}
@@ -296,6 +313,7 @@ func (r *secureRequest) requestCallerCertname(caller string) (string, error) {
 	match := re.FindStringSubmatch(caller)
 
 	if match == nil {
+		protocolErrorCtr.Inc()
 		return "", fmt.Errorf("Could not find a valid certificate name in %s", caller)
 	}
 
@@ -309,11 +327,13 @@ func (r *secureRequest) decodePEM(certpath string) (pb *pem.Block, err error) {
 
 	keydat, err := readFile(certpath)
 	if err != nil {
+		protocolErrorCtr.Inc()
 		return pb, fmt.Errorf("Could not read PEM data from %s: %s", certpath, err.Error())
 	}
 
 	pb, _ = pem.Decode(keydat)
 	if pb == nil {
+		protocolErrorCtr.Inc()
 		return pb, fmt.Errorf("Failed to parse PEM data from key %s", certpath)
 	}
 
@@ -328,6 +348,7 @@ func (r *secureRequest) signString(str []byte) (signature []byte, err error) {
 
 	pk, err := x509.ParsePKCS1PrivateKey(pkpem.Bytes)
 	if err != nil {
+		protocolErrorCtr.Inc()
 		err = fmt.Errorf("Could not parse private key PEM data: %s", err.Error())
 		return
 	}
@@ -336,6 +357,7 @@ func (r *secureRequest) signString(str []byte) (signature []byte, err error) {
 	hashed := sha256.Sum256(str)
 	signature, err = rsa.SignPKCS1v15(rng, pk, crypto.SHA256, hashed[:])
 	if err != nil {
+		protocolErrorCtr.Inc()
 		err = fmt.Errorf("Could not sign message: %s", err.Error())
 	}
 
@@ -345,12 +367,14 @@ func (r *secureRequest) signString(str []byte) (signature []byte, err error) {
 func (r *secureRequest) verifySignature(str []byte, sig []byte, pubkeyPath string) bool {
 	pkpem, err := r.decodePEM(pubkeyPath)
 	if err != nil {
+		protocolErrorCtr.Inc()
 		log.Errorf("Could not decode PEM data in public key %s: %s", pubkeyPath, err.Error())
 		return false
 	}
 
 	cert, err := x509.ParseCertificate(pkpem.Bytes)
 	if err != nil {
+		protocolErrorCtr.Inc()
 		log.Errorf("Could not parse decoded PEM data for public key %s: %s", pubkeyPath, err.Error())
 		return false
 	}
@@ -360,6 +384,7 @@ func (r *secureRequest) verifySignature(str []byte, sig []byte, pubkeyPath strin
 
 	decodedsig, err := base64.StdEncoding.DecodeString(string(sig))
 	if err != nil {
+		protocolErrorCtr.Inc()
 		log.Errorf("Could not decode signature base64 encoding: %s", err.Error())
 		return false
 	}
@@ -376,6 +401,7 @@ func (r *secureRequest) verifySignature(str []byte, sig []byte, pubkeyPath strin
 func readFile(path string) (cert []byte, err error) {
 	cert, err = ioutil.ReadFile(path)
 	if err != nil {
+		protocolErrorCtr.Inc()
 		err = fmt.Errorf("Could not read file %s: %s", path, err.Error())
 	}
 
