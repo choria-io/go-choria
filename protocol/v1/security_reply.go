@@ -27,6 +27,7 @@ func (r *secureReply) SetMessage(reply protocol.Reply) (err error) {
 
 	j, err := reply.JSON()
 	if err != nil {
+		protocolErrorCtr.Inc()
 		err = fmt.Errorf("Could not JSON encode reply message to store it in the Secure Reply: %s", err.Error())
 		return
 	}
@@ -50,9 +51,11 @@ func (r *secureReply) Valid() bool {
 
 	hash := sha256.Sum256([]byte(r.MessageBody))
 	if base64.StdEncoding.EncodeToString(hash[:]) == r.Hash {
+		validCtr.Inc()
 		return true
 	}
 
+	invalidCtr.Inc()
 	return false
 }
 
@@ -60,6 +63,7 @@ func (r *secureReply) Valid() bool {
 func (r *secureReply) JSON() (body string, err error) {
 	j, err := json.Marshal(r)
 	if err != nil {
+		protocolErrorCtr.Inc()
 		err = fmt.Errorf("Could not JSON Marshal: %s", err.Error())
 		return
 	}

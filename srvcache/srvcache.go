@@ -24,7 +24,7 @@ type entry struct {
 
 var cache = make(map[query]entry)
 var mu = &sync.Mutex{}
-var MaxAge = time.Duration(5 * time.Second)
+var maxage = time.Duration(5 * time.Second)
 
 var srvctr = prometheus.NewCounter(prometheus.CounterOpts{
 	Name: "choria_dns_srv_lookups",
@@ -79,12 +79,12 @@ func store(q query, cname string, addrs []*net.SRV) {
 func retrieve(q query) (string, []*net.SRV) {
 	entry, found := cache[q]
 	if !found {
-		log.Debugf("SRV cache miss on SRV record %#v in cache", q, cache)
+		log.Debugf("SRV cache miss on SRV record %#v in cache", q)
 		srvmiss.Inc()
 		return "", nil
 	}
 
-	if time.Now().Before(entry.time.Add(MaxAge)) {
+	if time.Now().Before(entry.time.Add(maxage)) {
 		log.Debugf("SRV cache hit on SRV record %#v", q)
 		srvhit.Inc()
 		return entry.cname, entry.addrs

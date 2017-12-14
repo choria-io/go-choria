@@ -25,11 +25,15 @@ func (s *jsonSchemas) Validate(schema []byte, data string) (result bool, errors 
 
 	validation, err := gojsonschema.Validate(js, d)
 	if err != nil {
+		badJsonCtr.Inc()
+		protocolErrorCtr.Inc()
 		err = fmt.Errorf("Could not validate incoming document: %s", err.Error())
 		return
 	}
 
 	if !validation.Valid() {
+		protocolErrorCtr.Inc()
+		invalidCtr.Inc()
 		for _, desc := range validation.Errors() {
 			errors = append(errors, desc.String())
 		}
