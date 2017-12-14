@@ -1,5 +1,6 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2017/12/14|91    |Avoid race condition while determining if the network broker started                                     |
 |2017/12/13|      |Release 0.0.3                                                                                            |
 |2017/12/12|81    |Export metrics on `/choria/metrics` and `/choria/prometheus` when enabled                                |
 |2017/12/10|73    |Federation brokers now correctly subscribe to the configured names                                       |
