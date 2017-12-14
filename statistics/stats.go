@@ -1,22 +1,85 @@
 package statistics
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
+	"runtime"
 	"sync"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/nats-io/gnatsd/server/pse"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
 
 var running = false
 var mu = &sync.Mutex{}
+var cfg *choria.Config
+
+type cinfo struct {
+	Build      buildinfo `json:"build"`
+	System     sysinfo   `json:"system"`
+	ConfigFile string    `json:"config_file"`
+	Identity   string    `json:"identity"`
+}
+
+type buildinfo struct {
+	Version   string `json:"version"`
+	SHA       string `json:"sha"`
+	BuildDate string `json:"build_date"`
+	License   string `json:"license"`
+	TLS       bool   `json:"tls"`
+	Secure    bool   `json:"secure"`
+	Go        string `json:"go"`
+}
+
+type sysinfo struct {
+	RSS   int64   `json:"rss"`
+	PCPU  float64 `json:"cpu_percent"`
+	Cores int     `json:"cpu_cores"`
+}
+
+func handleRoot(w http.ResponseWriter, r *http.Request) {
+	var rss, vss int64
+	var pcpu float64
+
+	pse.ProcUsage(&pcpu, &rss, &vss)
+
+	sinfo := cinfo{
+		ConfigFile: cfg.ConfigFile,
+		Identity:   cfg.Identity,
+		Build: buildinfo{
+			Version:   build.Version,
+			SHA:       build.SHA,
+			BuildDate: build.BuildDate,
+			License:   build.License,
+			TLS:       build.HasTLS(),
+			Secure:    build.IsSecure(),
+			Go:        runtime.Version(),
+		},
+		System: sysinfo{
+			RSS:   rss,
+			PCPU:  pcpu,
+			Cores: runtime.NumCPU(),
+		},
+	}
+
+	j, err := json.Marshal(sinfo)
+	if err != nil {
+		j = []byte(fmt.Sprintf(`{"error":%s}`, err.Error()))
+	}
+
+	fmt.Fprintf(w, string(j))
+}
 
 // Start starts serving exp stats and metrics on the configured statistics port
 func Start(config *choria.Config, handler http.Handler) {
 	mu.Lock()
 	defer mu.Unlock()
+
+	cfg = config
 
 	port := config.Choria.StatsPort
 
@@ -26,14 +89,16 @@ func Start(config *choria.Config, handler http.Handler) {
 	}
 
 	if !running {
-		log.Infof("Starting statistic reporting Prometheus statistics on port http://%s:%d/choria/prometheus", config.Choria.StatsListenAddress, port)
+		log.Infof("Starting statistic reporting Prometheus statistics on http://%s:%d/choria/", config.Choria.StatsListenAddress, port)
 
 		if handler == nil {
+			http.HandleFunc("/choria/", handleRoot)
 			http.Handle("/choria/prometheus", promhttp.Handler())
 
 			go http.ListenAndServe(fmt.Sprintf("%s:%d", config.Choria.StatsListenAddress, port), nil)
 		} else {
 			hh := handler.(*http.ServeMux)
+			hh.HandleFunc("/choria/", handleRoot)
 			hh.Handle("/choria/prometheus", promhttp.Handler())
 		}
 
