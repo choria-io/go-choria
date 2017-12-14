@@ -54,13 +54,25 @@ start() {
 }
 
 stop() {
-    echo -n $"Shutting down $prog: "
-    ## graceful shutdown with SIGINT
-    killproc -p $pidfile $exec -INT
-    RETVAL=$?
-    echo
-    [ $RETVAL -eq 0 ] && rm -f $lockfile
-    return $RETVAL
+  echo -n $"Shutting down $prog: "
+
+  if rh_status_q ; then
+    pid=$(cat "$pidfile")
+    kill -TERM $pid
+
+    for i in 1 2 3 4 5 ; do
+      rh_status_q || break
+      sleep 1
+    done
+
+    if rh_status_q ; then
+        echo "Timeout reached. Killing $prog (pid $pid) with SIGKILL."
+        kill -KILL $pid
+        echo "$prog killed with SIGKILL."
+    else
+      echo "$prog stopped."
+    fi
+  fi
 }
 
 restart() {
