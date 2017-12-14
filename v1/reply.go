@@ -79,6 +79,7 @@ func (r *reply) JSON() (body string, err error) {
 	j, err := json.Marshal(r)
 	if err != nil {
 		err = fmt.Errorf("Could not JSON Marshal: %s", err.Error())
+		protocolErrorCtr.Inc()
 		return
 	}
 
