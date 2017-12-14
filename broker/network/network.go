@@ -90,7 +90,7 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 		s.gnatsd.Shutdown()
 	}
 
-	log.Warn("Choria Network Broker has been shut down")
+	log.Warn("Choria Network Broker shutting down")
 }
 
 func (s *Server) setupCluster() (err error) {
