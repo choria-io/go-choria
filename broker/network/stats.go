@@ -14,75 +14,75 @@ import (
 )
 
 var (
-	ConnectionsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	connectionsGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "choria_network_connections",
 		Help: "Current connections on the network broker",
-	})
+	}, []string{"identity"})
 
-	TotalConnectionsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	totalConnectionsGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "choria_network_total_connections",
 		Help: "Total connections received since start",
-	})
+	}, []string{"identity"})
 
-	RoutesGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	routesGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "choria_network_routes",
 		Help: "Current active routes to other brokers",
-	})
+	}, []string{"identity"})
 
-	RemotesGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	remotesGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "choria_network_remotes",
 		Help: "Current active connections to other brokers",
-	})
+	}, []string{"identity"})
 
-	InMsgsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	inMsgsGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "choria_network_in_msgs",
 		Help: "Messages received by the network broker",
-	})
+	}, []string{"identity"})
 
-	OutMsgsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	outMsgsGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "choria_network_out_msgs",
 		Help: "Messages sent by the network broker",
-	})
+	}, []string{"identity"})
 
-	InBytesGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	inBytesGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "choria_network_in_bytes",
 		Help: "Total size of messages received by the network broker",
-	})
+	}, []string{"identity"})
 
-	OutBytesGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	outBytesGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "choria_network_out_bytes",
 		Help: "Total size of messages sent by the network broker",
-	})
+	}, []string{"identity"})
 
-	SlowConsumerGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	slowConsumerGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "choria_network_slow_consumers",
 		Help: "Total number of clients who were considered slow consumers",
-	})
+	}, []string{"identity"})
 
-	SubscriptionsGauge = prometheus.NewGauge(prometheus.GaugeOpts{
+	subscriptionsGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "choria_network_subscriptions",
 		Help: "Number of active subscriptions to subjects on this broker",
-	})
+	}, []string{"identity"})
 )
 
 func init() {
-	prometheus.MustRegister(ConnectionsGauge)
-	prometheus.MustRegister(TotalConnectionsGauge)
-	prometheus.MustRegister(RoutesGauge)
-	prometheus.MustRegister(RemotesGauge)
-	prometheus.MustRegister(InMsgsGauge)
-	prometheus.MustRegister(OutMsgsGauge)
-	prometheus.MustRegister(InBytesGauge)
-	prometheus.MustRegister(OutBytesGauge)
-	prometheus.MustRegister(SlowConsumerGauge)
-	prometheus.MustRegister(SubscriptionsGauge)
+	prometheus.MustRegister(connectionsGauge)
+	prometheus.MustRegister(totalConnectionsGauge)
+	prometheus.MustRegister(routesGauge)
+	prometheus.MustRegister(remotesGauge)
+	prometheus.MustRegister(inMsgsGauge)
+	prometheus.MustRegister(outMsgsGauge)
+	prometheus.MustRegister(inBytesGauge)
+	prometheus.MustRegister(outBytesGauge)
+	prometheus.MustRegister(slowConsumerGauge)
+	prometheus.MustRegister(subscriptionsGauge)
 }
 
 func (s *Server) getVarz() (*server.Varz, error) {
 	transport := &http.Transport{}
 	client := &http.Client{Transport: transport}
 
-	url := fmt.Sprintf("http://%s:%d/varz", s.opts.HTTPHost, s.opts.HTTPPort)
+	url := fmt.Sprintf("http://localhost:%d/varz", s.opts.HTTPPort)
 
 	resp, err := client.Get(url)
 	if err != nil {
@@ -131,14 +131,16 @@ func (s *Server) updatePrometheus() {
 		return
 	}
 
-	ConnectionsGauge.Set(float64(varz.Connections))
-	TotalConnectionsGauge.Set(float64(varz.TotalConnections))
-	RoutesGauge.Set(float64(varz.Routes))
-	RemotesGauge.Set(float64(varz.Remotes))
-	InMsgsGauge.Set(float64(varz.InMsgs))
-	OutMsgsGauge.Set(float64(varz.OutMsgs))
-	InBytesGauge.Set(float64(varz.InBytes))
-	OutBytesGauge.Set(float64(varz.OutBytes))
-	SlowConsumerGauge.Set(float64(varz.SlowConsumers))
-	SubscriptionsGauge.Set(float64(varz.Subscriptions))
+	i := s.config.Identity
+
+	connectionsGauge.WithLabelValues(i).Set(float64(varz.Connections))
+	totalConnectionsGauge.WithLabelValues(i).Set(float64(varz.TotalConnections))
+	routesGauge.WithLabelValues(i).Set(float64(varz.Routes))
+	remotesGauge.WithLabelValues(i).Set(float64(varz.Remotes))
+	inMsgsGauge.WithLabelValues(i).Set(float64(varz.InMsgs))
+	outMsgsGauge.WithLabelValues(i).Set(float64(varz.OutMsgs))
+	inBytesGauge.WithLabelValues(i).Set(float64(varz.InBytes))
+	outBytesGauge.WithLabelValues(i).Set(float64(varz.OutBytes))
+	slowConsumerGauge.WithLabelValues(i).Set(float64(varz.SlowConsumers))
+	subscriptionsGauge.WithLabelValues(i).Set(float64(varz.Subscriptions))
 }

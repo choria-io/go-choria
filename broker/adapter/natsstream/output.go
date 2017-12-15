@@ -131,10 +131,10 @@ func (sc *stream) disconnect() {
 func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	bytes := stats.BytesCtr.WithLabelValues(sc.name, "output")
-	ectr := stats.ErrorCtr.WithLabelValues(sc.name, "output")
-	ctr := stats.ReceivedMsgsCtr.WithLabelValues(sc.name, "output")
-	timer := stats.ProcessTime.WithLabelValues(sc.name, "output")
+	bytes := stats.BytesCtr.WithLabelValues(sc.name, "output", config.Identity)
+	ectr := stats.ErrorCtr.WithLabelValues(sc.name, "output", config.Identity)
+	ctr := stats.ReceivedMsgsCtr.WithLabelValues(sc.name, "output", config.Identity)
+	timer := stats.ProcessTime.WithLabelValues(sc.name, "output", config.Identity)
 
 	transformerf := func(r adaptable) {
 		obs := prometheus.NewTimer(timer)

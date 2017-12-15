@@ -109,10 +109,10 @@ func (na *nats) disconnect() {
 func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	bytes := stats.BytesCtr.WithLabelValues(na.name, "input")
-	ectr := stats.ErrorCtr.WithLabelValues(na.name, "input")
-	ctr := stats.ReceivedMsgsCtr.WithLabelValues(na.name, "input")
-	timer := stats.ProcessTime.WithLabelValues(na.name, "input")
+	bytes := stats.BytesCtr.WithLabelValues(na.name, "input", config.Identity)
+	ectr := stats.ErrorCtr.WithLabelValues(na.name, "input", config.Identity)
+	ctr := stats.ReceivedMsgsCtr.WithLabelValues(na.name, "input", config.Identity)
+	timer := stats.ProcessTime.WithLabelValues(na.name, "input", config.Identity)
 
 	receiverf := func(cm *choria.ConnectorMessage) {
 		obs := prometheus.NewTimer(timer)

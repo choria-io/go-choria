@@ -38,14 +38,16 @@ type FederationBroker struct {
 	requestT transformer
 	replyT   transformer
 
-	logger *log.Entry
+	identity string
+	logger   *log.Entry
 }
 
 func NewFederationBroker(clusterName string, choria *choria.Framework) (broker *FederationBroker, err error) {
 	broker = &FederationBroker{
-		Name:   clusterName,
-		choria: choria,
-		logger: log.WithFields(log.Fields{"cluster": clusterName, "component": "federation"}),
+		Name:     clusterName,
+		choria:   choria,
+		identity: choria.Config.Identity,
+		logger:   log.WithFields(log.Fields{"cluster": clusterName, "component": "federation"}),
 	}
 
 	return
@@ -88,10 +90,10 @@ func (self *FederationBroker) Start(ctx context.Context, wg *sync.WaitGroup) {
 func nameForConnectionMode(mode int) string {
 	switch mode {
 	case Collective:
-		return "Collective"
+		return "collective"
 	case Federation:
-		return "Federation"
+		return "federation"
 	default:
-		return "Unconnected"
+		return "unconnected"
 	}
 }

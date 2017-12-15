@@ -1,5 +1,8 @@
 require "securerandom"
 
+OWN_OS=`go env GOOS`.chomp
+OWN_ARCH=`go env GOARCH`.chomp
+
 task :default => [:test]
 
 desc "Run just tests no measurements"
@@ -39,7 +42,7 @@ task :build do
     "-ldflags '%s'" % flags.join(" ")
   ]
 
-  args << "-race" if version == "development"
+  args << "-race" if version == "development" && ENV["GOOS"] == OWN_OS
 
   cmd = "go build %s" % args.join(" ")
 
