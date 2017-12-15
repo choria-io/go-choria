@@ -13,6 +13,7 @@ import (
 	"unicode"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/srvcache"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -191,6 +192,8 @@ func NewConfig(path string) (*Config, error) {
 			return nil, err
 		}
 	}
+
+	srvcache.SetIdentity(c.Identity)
 
 	if build.TLS != "true" {
 		c.DisableTLS = true

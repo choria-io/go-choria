@@ -25,10 +25,10 @@ func NewChoriaNatsEgest(workers int, mode int, capacity int, broker *FederationB
 		}
 
 		workeri := fmt.Sprintf("%d", i)
-		rctr := stats.ReceivedMsgsCtr.WithLabelValues("nats_egest", workeri, nameForConnectionMode(mode))
-		pctr := stats.PublishedMsgsCtr.WithLabelValues("nats_egest", workeri, nameForConnectionMode(mode))
-		ectr := stats.ErrorCtr.WithLabelValues("nats_egest", workeri, nameForConnectionMode(mode))
-		timer := stats.ProcessTime.WithLabelValues("nats_egest", workeri, nameForConnectionMode(mode))
+		rctr := stats.ReceivedMsgsCtr.WithLabelValues("nats_egest", workeri, nameForConnectionMode(mode), self.broker.Name, self.broker.identity)
+		pctr := stats.PublishedMsgsCtr.WithLabelValues("nats_egest", workeri, nameForConnectionMode(mode), self.broker.Name, self.broker.identity)
+		ectr := stats.ErrorCtr.WithLabelValues("nats_egest", workeri, nameForConnectionMode(mode), self.broker.Name, self.broker.identity)
+		timer := stats.ProcessTime.WithLabelValues("nats_egest", workeri, nameForConnectionMode(mode), self.broker.Name, self.broker.identity)
 
 		handler := func(cm chainmessage) {
 			obs := prometheus.NewTimer(timer)
