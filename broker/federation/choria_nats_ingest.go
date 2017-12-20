@@ -38,9 +38,10 @@ func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *Federation
 		}
 
 		workeri := fmt.Sprintf("%d", i)
-		ctr := stats.ReceivedMsgsCtr.WithLabelValues("nats_ingest", workeri, nameForConnectionMode(mode), self.broker.Name, self.broker.identity)
-		ectr := stats.ErrorCtr.WithLabelValues("nats_ingest", workeri, nameForConnectionMode(mode), self.broker.Name, self.broker.identity)
-		timer := stats.ProcessTime.WithLabelValues("nats_ingest", workeri, nameForConnectionMode(mode), self.broker.Name, self.broker.identity)
+		mname := nameForConnectionMode(mode)
+		ctr := stats.ReceivedMsgsCtr.WithLabelValues("nats_ingest", workeri, mname, self.broker.Name, self.broker.identity)
+		ectr := stats.ErrorCtr.WithLabelValues("nats_ingest", workeri, mname, self.broker.Name, self.broker.identity)
+		timer := stats.ProcessTime.WithLabelValues("nats_ingest", workeri, mname, self.broker.Name, self.broker.identity)
 
 		handler := func(msg *choria.ConnectorMessage) {
 			obs := prometheus.NewTimer(timer)
