@@ -55,14 +55,6 @@ type stubConnection struct {
 	mu          *sync.Mutex
 }
 
-func (s *stubConnection) Receive() *choria.ConnectorMessage {
-	return nil
-}
-
-func (s *stubConnection) Outbox() chan *nats.Msg {
-	return make(chan *nats.Msg)
-}
-
 func (s *stubConnection) PublishToQueueSub(name string, msg *choria.ConnectorMessage) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
@@ -94,15 +86,6 @@ func (s *stubConnection) ConnectionOptions() nats.Options {
 
 func (s *stubConnection) ConnectionStats() nats.Statistics {
 	return nats.Statistics{}
-}
-
-func (s *stubConnection) Subscribe(name string, subject string, group string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	s.Subs[name] = [3]string{name, subject, group}
-
-	return nil
 }
 
 func (s *stubConnection) Unsubscribe(name string) error {
@@ -159,12 +142,6 @@ func (s *stubConnection) Close() {
 func (s *stubConnection) ReplyTarget(msg *choria.Message) string {
 	return ""
 }
-
-func (s *stubConnection) SetName(name string) {
-	s.name = name
-}
-
-func (s *stubConnection) SetServers(resolver func() ([]choria.Server, error)) {}
 
 func (s *stubConnection) Nats() *nats.Conn {
 	return &nats.Conn{}
