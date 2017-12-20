@@ -11,6 +11,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 
+	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/nats-io/go-nats"
 	log "github.com/sirupsen/logrus"
@@ -552,7 +553,11 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		options = append(options, nats.Secure(tlsc))
 	}
 
+	try := 0
+
 	for {
+		try++
+
 		conn.nats, err = nats.Connect(strings.Join(urls, ", "), options...)
 		if err != nil {
 			connInitialConnectCtr.WithLabelValues(conn.name).Inc()
@@ -564,7 +569,10 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 				return
 			}
 
-			time.Sleep(time.Second)
+			s := backoff.FiveSec.Duration(try)
+			conn.logger.Infof("Sleeping %s after failed connection attempt %d", s, try)
+			time.Sleep(s)
+
 			continue
 		}
 
