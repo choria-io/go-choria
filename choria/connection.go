@@ -9,6 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/prometheus/client_golang/prometheus"
+
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/nats-io/go-nats"
 	log "github.com/sirupsen/logrus"
@@ -93,6 +95,41 @@ type Connection struct {
 	subMu             sync.Mutex
 	conMu             sync.Mutex
 	recMu             sync.Mutex
+}
+
+var (
+	connInitialConnectCtr = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "choria_connector_initial_connection_attempts",
+		Help: "How many connection attempts were made before a connection was established",
+	}, []string{"name"})
+
+	connReconnectCtr = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "choria_connector_reconnections",
+		Help: "Number of times the connector reconnected to the middleware",
+	}, []string{"name"})
+
+	connClosedCtr = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "choria_connector_connection_closed",
+		Help: "Number of times the connection was closed",
+	}, []string{"name"})
+
+	connErrorCtr = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "choria_connector_errors",
+		Help: "Number of times the connection encountered an error",
+	}, []string{"name"})
+
+	connInitialConnectTime = prometheus.NewSummaryVec(prometheus.SummaryOpts{
+		Name: "choria_connector_initial_connect_time",
+		Help: "How long it took to establish the initial connection",
+	}, []string{"name"})
+)
+
+func init() {
+	prometheus.MustRegister(connInitialConnectCtr)
+	prometheus.MustRegister(connReconnectCtr)
+	prometheus.MustRegister(connClosedCtr)
+	prometheus.MustRegister(connErrorCtr)
+	prometheus.MustRegister(connInitialConnectTime)
 }
 
 // NewConnector creates a new NATS connector
@@ -430,7 +467,7 @@ func (conn *Connection) federationTarget(federation string, side string) string 
 
 // ConnectedServer returns the URL of the current server that the library is connected to, "unknown" when not initialized
 func (conn *Connection) ConnectedServer() string {
-	if conn.Nats == nil {
+	if conn.Nats() == nil {
 		return "unknown"
 	}
 
@@ -447,6 +484,9 @@ func (conn *Connection) ConnectedServer() string {
 // This will block until connected - basically forever should it never work.  Due to short comings
 // in the NATS library logging about failures is not optimal
 func (conn *Connection) Connect(ctx context.Context) (err error) {
+	obs := prometheus.NewTimer(connInitialConnectTime.WithLabelValues(conn.name))
+	defer obs.ObserveDuration()
+
 	conn.conMu.Lock()
 	defer conn.conMu.Unlock()
 
@@ -491,6 +531,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 		nats.ReconnectHandler(func(nc *nats.Conn) {
 			conn.logger.Warnf("NATS client reconnected after a previous disconnection, connected to %s", nc.ConnectedUrl())
+			connReconnectCtr.WithLabelValues(conn.name).Inc()
 		}),
 
 		nats.ClosedHandler(func(nc *nats.Conn) {
@@ -498,10 +539,12 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 			if err != nil {
 				conn.logger.Warnf("NATS client connection closed: %s", nc.LastError())
 			}
+			connClosedCtr.WithLabelValues(conn.name).Inc()
 		}),
 
 		nats.ErrorHandler(func(nc *nats.Conn, sub *nats.Subscription, err error) {
 			conn.logger.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrl(), err.Error())
+			connErrorCtr.WithLabelValues(conn.name).Inc()
 		}),
 	}
 
@@ -512,6 +555,8 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 	for {
 		conn.nats, err = nats.Connect(strings.Join(urls, ", "), options...)
 		if err != nil {
+			connInitialConnectCtr.WithLabelValues(conn.name).Inc()
+
 			conn.logger.Warnf("Initial connection to the NATS broker cluster failed: %s", err.Error())
 
 			if ctx.Err() != nil {
