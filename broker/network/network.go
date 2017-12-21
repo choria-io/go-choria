@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
 
@@ -39,6 +40,7 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 	s.opts.Host = c.Config.Choria.NetworkListenAddress
 	s.opts.Port = c.Config.Choria.NetworkClientPort
 	s.opts.Logtime = false
+	s.opts.MaxConn = build.MaxBrokerClients()
 
 	if debug || c.Config.LogLevel == "debug" {
 		s.opts.Debug = true

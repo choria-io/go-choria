@@ -1,5 +1,9 @@
 package build
 
+import (
+	"strconv"
+)
+
 // Version the application version
 var Version = "development"
 
@@ -18,6 +22,9 @@ var TLS = "true"
 // Secure controls the signing and validations of certificates in the protocol
 var Secure = "true"
 
+// maxBrokerClients defines the maximum clients a single choria broker will accept
+var maxBrokerClients = "50000"
+
 // IsSecure determines if this build will validate senders at protocol level
 func IsSecure() bool {
 	return Secure == "true"
@@ -26,4 +33,14 @@ func IsSecure() bool {
 // HasTLS determines if TLS should be used on the wire
 func HasTLS() bool {
 	return TLS == "true"
+}
+
+// MaxBrokerClients is the maximum number of clients the network broker may handle
+func MaxBrokerClients() int {
+	c, err := strconv.Atoi(maxBrokerClients)
+	if err != nil {
+		return 50000
+	}
+
+	return c
 }
