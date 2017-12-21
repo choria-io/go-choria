@@ -10,14 +10,7 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
-
-	"github.com/choria-io/go-choria/build"
 )
-
-// IsSecure determines if the build flag was set to true
-func IsSecure() bool {
-	return build.Secure == "true"
-}
 
 // UserConfig determines what is the active config file for a user
 // TODO: windows

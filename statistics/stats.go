@@ -26,13 +26,14 @@ type cinfo struct {
 }
 
 type buildinfo struct {
-	Version   string `json:"version"`
-	SHA       string `json:"sha"`
-	BuildDate string `json:"build_date"`
-	License   string `json:"license"`
-	TLS       bool   `json:"tls"`
-	Secure    bool   `json:"secure"`
-	Go        string `json:"go"`
+	Version          string `json:"version"`
+	SHA              string `json:"sha"`
+	BuildDate        string `json:"build_date"`
+	License          string `json:"license"`
+	TLS              bool   `json:"tls"`
+	Secure           bool   `json:"secure"`
+	Go               string `json:"go"`
+	MaxBrokerClients int    `json:"max_broker_clients"`
 }
 
 type sysinfo struct {
@@ -83,13 +84,14 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 		ConfigFile: cfg.ConfigFile,
 		Identity:   cfg.Identity,
 		Build: buildinfo{
-			Version:   build.Version,
-			SHA:       build.SHA,
-			BuildDate: build.BuildDate,
-			License:   build.License,
-			TLS:       build.HasTLS(),
-			Secure:    build.IsSecure(),
-			Go:        runtime.Version(),
+			Version:          build.Version,
+			SHA:              build.SHA,
+			BuildDate:        build.BuildDate,
+			License:          build.License,
+			TLS:              build.HasTLS(),
+			Secure:           build.IsSecure(),
+			Go:               runtime.Version(),
+			MaxBrokerClients: build.MaxBrokerClients(),
 		},
 		System: sysinfo{
 			RSS:   rss,
