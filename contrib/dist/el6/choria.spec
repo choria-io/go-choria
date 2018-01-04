@@ -74,9 +74,9 @@ fi
 %{bindir}/%{pkgname}
 /etc/logrotate.d/%{pkgname}
 /etc/init.d/%{pkgname}-server
-/etc/sysconfig/%{pkgname}-server
+%config(noreplace)/etc/sysconfig/%{pkgname}-server
 /etc/init.d/%{pkgname}-broker
-/etc/sysconfig/%{pkgname}-broker
+%config(noreplace)/etc/sysconfig/%{pkgname}-broker
 
 %changelog
 * Tue Dec 05 2017 R.I.Pienaar <rip@devco.net>
