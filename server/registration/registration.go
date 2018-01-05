@@ -93,8 +93,8 @@ func (reg *Manager) registrationWorker(ctx context.Context, wg *sync.WaitGroup, 
 	defer wg.Done()
 
 	if reg.cfg.RegistrationSplay {
-		reg.log.Infof("Sleeping %d seconds before first poll due to RegistrationSplay", reg.cfg.RegisterInterval)
 		sleepTime := time.Duration(rand.Intn(reg.cfg.RegisterInterval))
+		reg.log.Infof("Sleeping %d seconds before first poll due to RegistrationSplay", sleepTime)
 		time.Sleep(sleepTime * time.Second)
 	}
 
