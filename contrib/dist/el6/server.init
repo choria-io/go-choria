@@ -44,7 +44,7 @@ start() {
 
     daemon \
       --pidfile=${pidfile} \
-      " { nohup ${exec} ${args} > ${logfile} 2>&1 & }"
+      " { nohup ${exec} ${args} > ${logfile} 2>&1 & } ; sleep 0.5 ; [ -f ${pidfile} ]"
 
     RETVAL=$?
     echo
