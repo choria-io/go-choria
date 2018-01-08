@@ -34,9 +34,24 @@ then
   exit 1
 fi
 
+if [ -z $TARGET_DIST ]
+then
+  TARGET_DIST=${DIST}
+fi
+
 if [ -z $MANAGE_CONF ]
 then
   MANAGE_CONF=1
+fi
+
+if [ -z $TARGET_ARCH ]
+then
+  TARGET_ARCH="x86_64"
+fi
+
+if [ -z $CONTACT ]
+then
+  CONTACT="R.I.Pienaar <rip@devco.net>"
 fi
 
 if [ ! -d /build ]
@@ -52,8 +67,8 @@ then
 fi
 
 WORKDIR="${NAME}-${VERSION}"
-BINARY="/build/choria-${VERSION}-Linux-amd64"
-TARBALL="${NAME}-${VERSION}-Linux-amd64.tgz"
+BINARY="/build/choria-${VERSION}-linux-${TARGET_ARCH}"
+TARBALL="${NAME}-${VERSION}-linux-${TARGET_ARCH}.tgz"
 
 if [ ! -f ${BINARY} ]
 then
@@ -74,12 +89,20 @@ for i in $(find ${WORKDIR}/dist -type f); do
   sed -i "s!{{iteration}}!${RELEASE}!g" ${i}
   sed -i "s!{{dist}}!${DIST}!g" ${i}
   sed -i "s!{{manage_conf}}!${MANAGE_CONF}!g" ${i}
+  sed -i "s!{{target_dist}}!${TARGET_DIST}!g" ${i}
+  sed -i "s!{{target_arch}}!${TARGET_ARCH}!g" ${i}
+  sed -i "s!{{contact}}!${CONTACT}!g" ${i}
 done
 
 cp ${BINARY} ${WORKDIR}
 tar -cvzf ${TARBALL} ${WORKDIR}
 
-rpmbuild -ta ${TARBALL}
+if [ ! -z $TARGET_ARCH ]
+then
+  rpmbuild --target "${TARGET_ARCH}" -ta "${TARBALL}"
+else
+  rpmbuild -ta "${TARBALL}"
+fi
 
-cp -v /usr/src/redhat/RPMS/x86_64/* /build
+cp -v /usr/src/redhat/RPMS/*/* /build
 cp -v /usr/src/redhat/SRPMS/* /build

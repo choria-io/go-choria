@@ -6,16 +6,19 @@
 %define iteration {{iteration}}
 %define dist {{dist}}
 %define manage_conf {{manage_conf}}
+%define target_dist {{target_dist}}
+%define target_arch {{target_arch}}
+%define contact {{contact}}
 
 Name: %{pkgname}
 Version: %{version}
-Release: %{iteration}.%{dist}
+Release: %{iteration}.%{target_dist}
 Summary: The Choria Orchestrator Server
 License: Apache-2.0
 URL: https://choria.io
 Group: System Tools
-Packager: R.I.Pienaar <rip@devco.net>
-Source0: %{pkgname}-%{version}-Linux-amd64.tgz
+Packager: %{contact}
+Source0: %{pkgname}-%{version}-linux-%{target_arch}.tgz
 BuildRoot: %{_tmppath}/%{pkgname}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
@@ -40,7 +43,7 @@ rm -rf %{buildroot}
 %{__install} -m0640 dist/server.conf %{buildroot}%{etcdir}/server.conf
 %{__install} -m0640 dist/broker.conf %{buildroot}%{etcdir}/broker.conf
 %endif
-%{__install} -m0755 choria-%{version}-Linux-amd64 %{buildroot}%{bindir}/%{pkgname}
+%{__install} -m0755 choria-%{version}-linux-%{target_arch} %{buildroot}%{bindir}/%{pkgname}
 
 %clean
 rm -rf %{buildroot}
