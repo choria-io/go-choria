@@ -33,7 +33,7 @@ task :build do
 
   if ENV["BUILD_XFLAGS"]
     ENV["BUILD_XFLAGS"].split("|").each do |flag|
-      flags << "-X github.com/choria-io/go-choria/build.%s" % flag     
+      flags << "-X github.com/choria-io/go-choria/build.%s" % flag
     end
   end
 
@@ -42,7 +42,8 @@ task :build do
     "-ldflags '%s'" % flags.join(" ")
   ]
 
-  args << "-race" if version == "development" && ENV["GOOS"] == OWN_OS
+  args << "-race" if version == "development" && ENV["GOOS"] == OWN_OS && ENV["GOARCH"] == "amd64"
+
 
   cmd = "go build %s" % args.join(" ")
 
@@ -60,9 +61,15 @@ end
 def output_name(version)
   return ENV["OUTPUT"] if ENV["OUTPUT"]
 
+  arch_lookup = {
+    "amd64" => "x86_64",
+    "386" => "i686"
+  }
+
   if ENV["GOOS"] && ENV["GOARCH"]
-    return "choria-%s-%s-%s" % [version, ENV["GOOS"].capitalize, ENV["GOARCH"]]
+    return "choria-%s-%s-%s" % [version, ENV["GOOS"].downcase, arch_lookup.fetch(ENV["GOARCH"], ENV["GOARCH"])]
   else
     return "choria-%s" % [version]
   end
 end
+
