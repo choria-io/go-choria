@@ -51,6 +51,7 @@ type cstats struct {
 	Reconnects uint64 `json:"reconnects"`
 }
 
+// New creates a new choria_util agent
 func New(mgr *agents.Manager) (*mcorpc.Agent, error) {
 	metadata := &agents.Metadata{
 		Name:        "choria_util",

@@ -56,8 +56,9 @@ type Reply struct {
 // Request is a request as defined by the MCollective RPC system
 // NOTE: input arguments not yet handled
 type Request struct {
-	Agent  string `json:"agent"`
-	Action string `json:"action"`
+	Agent  string          `json:"agent"`
+	Action string          `json:"action"`
+	Data   json.RawMessage `json:"data"`
 }
 
 // New creates a new MCollective SimpleRPC compatible agent
@@ -112,6 +113,7 @@ func (a *Agent) HandleMessage(msg *choria.Message, request protocol.Request, con
 	//  timeouts
 
 	a.Log.Infof("Handling message %s for %s#%s from %s", msg.RequestID, a.Name(), rpcrequest.Action, request.CallerID())
+	a.Log.Debugf("%#v", string(rpcrequest.Data))
 
 	action(rpcrequest, reply, a, conn)
 }
@@ -161,4 +163,30 @@ func (a *Agent) parseIncomingMessage(msg string) (*Request, error) {
 	}
 
 	return r, nil
+}
+
+// ParseRequestData parses the request parameters received from the client into a target structure
+//
+// Example used in a action:
+//
+//   var rparams struct {
+//      Package string `json:"package"`
+//   }
+//
+//   if !mcorpc.ParseRequestData(&rparams, req, reply) {
+//     // the function already set appropriate errors on reply
+//	   return
+//   }
+//
+//   // do stuff with rparams.Package
+func ParseRequestData(target interface{}, request *Request, reply *Reply) bool {
+	err := json.Unmarshal(request.Data, target)
+	if err != nil {
+		reply.Statuscode = InvalidData
+		reply.Statusmsg = fmt.Sprintf("Could not parse request data for %s#%s: %s", request.Agent, request.Action, err)
+
+		return false
+	}
+
+	return true
 }

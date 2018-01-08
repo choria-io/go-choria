@@ -1,6 +1,8 @@
 package mcorpc
 
 import (
+	"encoding/json"
+
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/choria/connectortest"
@@ -118,6 +120,45 @@ var _ = Describe("Server/Agents/McoRPC", func() {
 		})
 
 		PIt("Should publish good messages")
+	})
+
+	var _ = Describe("ParseRequestData", func() {
+		It("Should handle valid data correctly", func() {
+			req := &Request{
+				Data: json.RawMessage(`{"hello":"world"}`),
+			}
+
+			reply := &Reply{}
+
+			var params struct {
+				Hello string `json:"hello"`
+			}
+
+			ok := ParseRequestData(&params, req, reply)
+
+			Expect(ok).To(BeTrue())
+			Expect(params.Hello).To(Equal("world"))
+		})
+
+		It("Should handle invalid data correctly", func() {
+			req := &Request{
+				Agent:  "test",
+				Action: "will_fail",
+				Data:   json.RawMessage(`fail`),
+			}
+
+			reply := &Reply{}
+
+			var params struct {
+				Hello string `json:"hello"`
+			}
+
+			ok := ParseRequestData(&params, req, reply)
+
+			Expect(ok).To(BeFalse())
+			Expect(reply.Statuscode).To(Equal(InvalidData))
+			Expect(reply.Statusmsg).To(Equal("Could not parse request data for test#will_fail: invalid character 'i' in literal false (expecting 'l')"))
+		})
 	})
 
 	var _ = Describe("newReply", func() {
