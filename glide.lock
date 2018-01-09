@@ -1,15 +1,10 @@
 hash: 828b6effdb2b5ad005236359aebe5de54abf8558eb48190f4692d2ebbb715d13
-updated: 2018-01-09T11:34:39.658806622+01:00
+updated: 2018-01-09T12:02:34.224893+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
-- name: github.com/choria-io/go-choria
-  version: 94c6798667c2585f0f8dd8c82070e580e3b17f4c
-  subpackages:
-  - build
-  - protocol
 - name: github.com/golang/protobuf
   version: 1e59b77b52bf8e4b449a57e6f79f21226d571845
   subpackages:

@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-protocol/protocol"
 )
 
 type transportMessage struct {

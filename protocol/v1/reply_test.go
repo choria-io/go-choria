@@ -3,7 +3,7 @@ package v1
 import (
 	"time"
 
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-protocol/protocol"
 	"github.com/tidwall/gjson"
 
 	. "github.com/onsi/ginkgo"

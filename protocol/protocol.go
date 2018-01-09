@@ -12,6 +12,14 @@ const (
 	TransportV1     = "choria:transport:1"
 )
 
+// Secure controls the signing and validations of certificates in the protocol
+var Secure = "true"
+
+// IsSecure determines if this build will validate senders at protocol level
+func IsSecure() bool {
+	return Secure == "true"
+}
+
 // Additional to these the package for a specific version must also provide these constructors
 // with signature matching those in v1/constructors.go these are in use by mcollective/protocol.gos
 
