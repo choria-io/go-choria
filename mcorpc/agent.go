@@ -3,36 +3,13 @@ package mcorpc
 import (
 	"encoding/json"
 	"fmt"
+	"os"
+	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-protocol/protocol"
 	"github.com/choria-io/go-choria/server/agents"
+	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
-)
-
-// StatusCode is a reply status as defined by MCollective SimpleRPC - integers 0 to 5
-//
-// See the constants OK, RPCAborted, UnknownRPCAction, MissingRPCData, InvalidRPCData and UnknownRPCError
-type StatusCode uint8
-
-const (
-	// OK is the reply status when all worked
-	OK = StatusCode(iota)
-
-	// Aborted is status for when the action could not run, most failures in an action should set this
-	Aborted
-
-	// UnknownAction is the status for unknown actions requested
-	UnknownAction
-
-	// MissingData is the status for missing input data
-	MissingData
-
-	// InvalidData is the status for invalid input data
-	InvalidData
-
-	// UnknownError is the status general failures in agents should set when things go bad
-	UnknownError
 )
 
 // Agent is an instance of the MCollective compatible RPC agents
@@ -45,20 +22,15 @@ type Agent struct {
 	actions map[string]func(*Request, *Reply, *Agent, choria.ConnectorInfo)
 }
 
-// Reply is the reply data as stipulated by MCollective RPC system.  The Data
-// has to be something that can be turned into JSON using the normal Marshal system
-type Reply struct {
-	Statuscode StatusCode  `json:"statuscode"`
-	Statusmsg  string      `json:"statusmsg"`
-	Data       interface{} `json:"data"`
-}
-
-// Request is a request as defined by the MCollective RPC system
-// NOTE: input arguments not yet handled
-type Request struct {
-	Agent  string          `json:"agent"`
-	Action string          `json:"action"`
-	Data   json.RawMessage `json:"data"`
+type AuditMessage struct {
+	TimeStamp   string          `json:"timestamp"`
+	RequestID   string          `json:"request_id"`
+	RequestTime int64           `json:"request_time"`
+	CallerID    string          `json:"caller"`
+	Sender      string          `json:"sender"`
+	Agent       string          `json:"agent"`
+	Action      string          `json:"action"`
+	Data        json.RawMessage `json:"data"`
 }
 
 // New creates a new MCollective SimpleRPC compatible agent
@@ -109,13 +81,61 @@ func (a *Agent) HandleMessage(msg *choria.Message, request protocol.Request, con
 
 	// TODO:
 	//  authorize
-	//  audit
 	//  timeouts
 
+	if a.Config.RPCAudit {
+		a.auditRequest(request, rpcrequest)
+	}
+
 	a.Log.Infof("Handling message %s for %s#%s from %s", msg.RequestID, a.Name(), rpcrequest.Action, request.CallerID())
-	a.Log.Debugf("%#v", string(rpcrequest.Data))
 
 	action(rpcrequest, reply, a, conn)
+}
+
+func (a *Agent) auditRequest(request protocol.Request, mcrequest *Request) {
+	if !a.Config.RPCAudit {
+		return
+	}
+
+	logfile := a.Config.Option("plugin.rpcaudit.logfile", "")
+
+	if logfile == "" {
+		a.Log.Warnf("MCollective RPC Auditing is enabled but no logfile is configured, skipping")
+		return
+	}
+
+	amsg := AuditMessage{
+		TimeStamp:   time.Now().UTC().Format("2006-01-02T15:04:05.000000-0700"),
+		RequestID:   request.RequestID(),
+		RequestTime: request.Time().UTC().Unix(),
+		CallerID:    request.CallerID(),
+		Sender:      request.SenderID(),
+		Agent:       mcrequest.Agent,
+		Action:      mcrequest.Action,
+		Data:        mcrequest.Data,
+	}
+
+	j, err := json.Marshal(amsg)
+	if err != nil {
+		a.Log.Warnf("Auditing is not functional because the auditing data could not be represented as JSON: %s", err)
+		return
+	}
+
+	auditLock.Lock()
+	defer auditLock.Unlock()
+
+	f, err := os.OpenFile(logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+	if err != nil {
+		a.Log.Warnf("Auditing is not functional because opening the logfile '%s' failed: %s", logfile, err)
+		return
+	}
+	defer f.Close()
+
+	_, err = f.Write(j)
+	if err != nil {
+		a.Log.Warnf("Auditing is not functional because writing to logfile '%s' failed: %s", logfile, err)
+		return
+	}
 }
 
 // Name retrieves the name of the agent
@@ -163,30 +183,4 @@ func (a *Agent) parseIncomingMessage(msg string) (*Request, error) {
 	}
 
 	return r, nil
-}
-
-// ParseRequestData parses the request parameters received from the client into a target structure
-//
-// Example used in a action:
-//
-//   var rparams struct {
-//      Package string `json:"package"`
-//   }
-//
-//   if !mcorpc.ParseRequestData(&rparams, req, reply) {
-//     // the function already set appropriate errors on reply
-//	   return
-//   }
-//
-//   // do stuff with rparams.Package
-func ParseRequestData(target interface{}, request *Request, reply *Reply) bool {
-	err := json.Unmarshal(request.Data, target)
-	if err != nil {
-		reply.Statuscode = InvalidData
-		reply.Statusmsg = fmt.Sprintf("Could not parse request data for %s#%s: %s", request.Agent, request.Action, err)
-
-		return false
-	}
-
-	return true
 }
