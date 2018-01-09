@@ -1,0 +1,15 @@
+package: github.com/choria-io/go-protocol
+import:
+- package: github.com/prometheus/client_golang
+  subpackages:
+  - prometheus
+- package: github.com/sirupsen/logrus
+  version: ^1
+- package: github.com/xeipuuv/gojsonschema
+testImport:
+- package: github.com/onsi/ginkgo
+  version: ^1
+- package: github.com/onsi/gomega
+  version: ^1
+- package: github.com/tidwall/gjson
+  version: ^1
