@@ -6,8 +6,8 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/choria/connectortest"
-	"github.com/choria-io/go-protocol/protocol"
 	"github.com/choria-io/go-choria/server/agents"
+	"github.com/choria-io/go-protocol/protocol"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"
@@ -17,10 +17,10 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Server/Agents/McoRPC")
+	RunSpecs(t, "McoRPC")
 }
 
-var _ = Describe("Server/Agents/McoRPC", func() {
+var _ = Describe("McoRPC", func() {
 	var (
 		agent  *Agent
 		fw     *choria.Framework

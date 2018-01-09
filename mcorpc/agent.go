@@ -3,10 +3,9 @@ package mcorpc
 import (
 	"encoding/json"
 	"fmt"
-	"os"
-	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/mcorpc/audit"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
@@ -20,17 +19,6 @@ type Agent struct {
 
 	meta    *agents.Metadata
 	actions map[string]func(*Request, *Reply, *Agent, choria.ConnectorInfo)
-}
-
-type AuditMessage struct {
-	TimeStamp   string          `json:"timestamp"`
-	RequestID   string          `json:"request_id"`
-	RequestTime int64           `json:"request_time"`
-	CallerID    string          `json:"caller"`
-	Sender      string          `json:"sender"`
-	Agent       string          `json:"agent"`
-	Action      string          `json:"action"`
-	Data        json.RawMessage `json:"data"`
 }
 
 // New creates a new MCollective SimpleRPC compatible agent
@@ -84,58 +72,12 @@ func (a *Agent) HandleMessage(msg *choria.Message, request protocol.Request, con
 	//  timeouts
 
 	if a.Config.RPCAudit {
-		a.auditRequest(request, rpcrequest)
+		audit.Request(request, rpcrequest.Agent, rpcrequest.Action, rpcrequest.Data, a.Config)
 	}
 
 	a.Log.Infof("Handling message %s for %s#%s from %s", msg.RequestID, a.Name(), rpcrequest.Action, request.CallerID())
 
 	action(rpcrequest, reply, a, conn)
-}
-
-func (a *Agent) auditRequest(request protocol.Request, mcrequest *Request) {
-	if !a.Config.RPCAudit {
-		return
-	}
-
-	logfile := a.Config.Option("plugin.rpcaudit.logfile", "")
-
-	if logfile == "" {
-		a.Log.Warnf("MCollective RPC Auditing is enabled but no logfile is configured, skipping")
-		return
-	}
-
-	amsg := AuditMessage{
-		TimeStamp:   time.Now().UTC().Format("2006-01-02T15:04:05.000000-0700"),
-		RequestID:   request.RequestID(),
-		RequestTime: request.Time().UTC().Unix(),
-		CallerID:    request.CallerID(),
-		Sender:      request.SenderID(),
-		Agent:       mcrequest.Agent,
-		Action:      mcrequest.Action,
-		Data:        mcrequest.Data,
-	}
-
-	j, err := json.Marshal(amsg)
-	if err != nil {
-		a.Log.Warnf("Auditing is not functional because the auditing data could not be represented as JSON: %s", err)
-		return
-	}
-
-	auditLock.Lock()
-	defer auditLock.Unlock()
-
-	f, err := os.OpenFile(logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
-	if err != nil {
-		a.Log.Warnf("Auditing is not functional because opening the logfile '%s' failed: %s", logfile, err)
-		return
-	}
-	defer f.Close()
-
-	_, err = f.WriteString(fmt.Sprintf("%s\n", string(j)))
-	if err != nil {
-		a.Log.Warnf("Auditing is not functional because writing to logfile '%s' failed: %s", logfile, err)
-		return
-	}
 }
 
 // Name retrieves the name of the agent
