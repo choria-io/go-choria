@@ -31,11 +31,19 @@ task :build do
     "-B 0x%s" % buildid
 ]
 
+  x_flags_map = {
+    "TLS" => "github.com/choria-io/go-choria/build.TLS",
+    "maxBrokerClients" => "github.com/choria-io/go-choria/build.maxBrokerClients",
+    "Secure" => "github.com/choria-io/go-choria/vendor/github.com/choria-io/go-protocol/protocol.Secure"
+  }
+
   if ENV["BUILD_XFLAGS"]
     ENV["BUILD_XFLAGS"].split("|").each do |flag|
-      abort("XFlags should be in the form project/package.variable=value") unless flag =~ /^([\w-]+)\/(\w+)\.(\w+)=(.+?)$/
+      var, value = flag.split("=")
 
-      flags << "-X github.com/choria-io/%s" % flag
+      abort("Unknown build flag %s" % var) unless x_flags_map.include?(var)
+
+      flags << '-X "%s=%s"' % [x_flags_map[var], value]
     end
   end
 
@@ -74,4 +82,3 @@ def output_name(version)
     return "choria-%s" % [version]
   end
 end
-

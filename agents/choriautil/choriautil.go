@@ -7,8 +7,8 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/go-choria/server/agents/mcorpc"
 	nats "github.com/nats-io/go-nats"
 )
 
