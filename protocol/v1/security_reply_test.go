@@ -4,7 +4,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-protocol/protocol"
 	"github.com/tidwall/gjson"
 
 	. "github.com/onsi/ginkgo"

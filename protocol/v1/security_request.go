@@ -18,8 +18,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-protocol/protocol"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -55,7 +54,7 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 
 	r.Signature = "insecure"
 
-	if r.isSecure() {
+	if protocol.IsSecure() {
 		var signature []byte
 
 		signature, err = r.signString([]byte(j))
@@ -81,7 +80,7 @@ func (r *secureRequest) Valid() bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if !r.isSecure() {
+	if !protocol.IsSecure() {
 		log.Debug("Bypassing validation on secure request due to build time flags")
 		return true
 	}
@@ -406,8 +405,4 @@ func readFile(path string) (cert []byte, err error) {
 	}
 
 	return
-}
-
-func (r *secureRequest) isSecure() bool {
-	return build.Secure == "true"
 }
