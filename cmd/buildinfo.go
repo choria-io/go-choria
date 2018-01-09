@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-protocol/protocol"
 )
 
 type buildinfoCommand struct {
@@ -33,9 +34,9 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Println("")
 	fmt.Println("Security Defaults:")
 	fmt.Printf("            TLS: %s\n", build.TLS)
-	fmt.Printf("  x509 Security: %s\n", build.Secure)
+	fmt.Printf("  x509 Security: %t\n", protocol.IsSecure())
 
-	if build.TLS != "true" || build.Secure != "true" {
+	if build.TLS != "true" || !protocol.IsSecure() {
 		fmt.Println("")
 		fmt.Println("NOTE: The security of this build is non standard, you might be running without adequate protocol level security.  Please ensure this is the build you intend to be using.")
 	}

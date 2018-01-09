@@ -1,5 +1,5 @@
-hash: c4be768e957f45fc7582a8024183b6018a6170788b19dd471faf07fa3f49b46e
-updated: 2017-12-12T21:25:34.50377+01:00
+hash: 7524fda6d40955397dab9c5eab5884b57d42e2991f928dd26443969fcda3a716
+updated: 2018-01-09T12:06:55.711283+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -11,13 +11,18 @@ imports:
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
+- name: github.com/choria-io/go-protocol
+  version: 72bc3ca9593e692e55a3f5dda61194803f54d619
+  subpackages:
+  - protocol
+  - protocol/v1
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
   - encoders/builtin
   - util
 - name: github.com/gogo/protobuf
-  version: 41168f6614b7bb144818ec8967b8c702705df564
+  version: 342cbe0a04158f6dcb03ca0079991a51a4248c02
   subpackages:
   - gogoproto
   - proto
@@ -39,16 +44,16 @@ imports:
   - server/pse
   - util
 - name: github.com/nats-io/go-nats
-  version: 29f9728a183bf3fa7e809e14edac00b33be72088
+  version: d66cb54e6b7bdd93f0b28afc8450d84c780dfb68
   subpackages:
   - encoders/builtin
   - util
 - name: github.com/nats-io/go-nats-streaming
-  version: 43723aa09c43cec839e43583df07b1940c9f7651
+  version: 6e620057a207bd61e992c1c5b6a2de7b6a4cb010
   subpackages:
   - pb
 - name: github.com/nats-io/nats
-  version: 29f9728a183bf3fa7e809e14edac00b33be72088
+  version: d66cb54e6b7bdd93f0b28afc8450d84c780dfb68
 - name: github.com/nats-io/nuid
   version: 289cccf02c178dc782430d534e3c1f5b72af807f
 - name: github.com/onsi/ginkgo
@@ -99,7 +104,6 @@ imports:
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
-  - log
   - model
 - name: github.com/prometheus/procfs
   version: a6e9df898b1336106c743392c48ee0b71f5c4efa
@@ -110,7 +114,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
 - name: github.com/tidwall/gjson
-  version: be96719f990978a867f52c48f29d43f6b591da28
+  version: e62d62a3e1e9f324346170bbc04333341f803dfb
 - name: github.com/tidwall/match
   version: 173748da739a410c5b0b813b956f89ff94730b4c
 - name: github.com/xeipuuv/gojsonpointer
@@ -140,7 +144,7 @@ imports:
   - windows/svc/eventlog
   - windows/svc/mgr
 - name: gopkg.in/alecthomas/kingpin.v2
-  version: 1087e65c9441605df944fb12c33f0fe7072d18ca
+  version: 947dcec5ba9c011838740e680966fd7087a71d0d
 - name: gopkg.in/yaml.v2
   version: 287cf08546ab5e7e37d55a84f7ed3fd1db036de5
 testImports: []

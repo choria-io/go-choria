@@ -33,7 +33,9 @@ task :build do
 
   if ENV["BUILD_XFLAGS"]
     ENV["BUILD_XFLAGS"].split("|").each do |flag|
-      flags << "-X github.com/choria-io/go-choria/build.%s" % flag
+      abort("XFlags should be in the form project/package.variable=value") unless flag =~ /^([\w-]+)\/(\w+)\.(\w+)=(.+?)$/
+
+      flags << "-X github.com/choria-io/%s" % flag
     end
   end
 

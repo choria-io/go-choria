@@ -9,6 +9,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-protocol/protocol"
 	"github.com/nats-io/gnatsd/server/pse"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
@@ -89,7 +90,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 			BuildDate:        build.BuildDate,
 			License:          build.License,
 			TLS:              build.HasTLS(),
-			Secure:           build.IsSecure(),
+			Secure:           protocol.IsSecure(),
 			Go:               runtime.Version(),
 			MaxBrokerClients: build.MaxBrokerClients(),
 		},

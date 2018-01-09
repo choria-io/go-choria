@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-protocol/protocol"
 )
 
 // Message represents a Choria message
