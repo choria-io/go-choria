@@ -131,7 +131,7 @@ func (a *Agent) auditRequest(request protocol.Request, mcrequest *Request) {
 	}
 	defer f.Close()
 
-	_, err = f.Write(j)
+	_, err = f.WriteString(fmt.Sprintf("%s\n", string(j)))
 	if err != nil {
 		a.Log.Warnf("Auditing is not functional because writing to logfile '%s' failed: %s", logfile, err)
 		return
