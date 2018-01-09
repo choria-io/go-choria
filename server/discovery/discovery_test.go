@@ -3,7 +3,7 @@ package discovery
 import (
 	"testing"
 
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-protocol/protocol"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/sirupsen/logrus"

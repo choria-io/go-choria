@@ -15,7 +15,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-protocol/protocol"
 )
 
 // CheckSSLSetup validates the various SSL files and directories exist and are well formed
@@ -202,7 +202,7 @@ func (self *Framework) ClientPublicCert() (string, error) {
 
 // SSLDir determines the AIO SSL directory
 func (self *Framework) SSLDir() (string, error) {
-	if !build.IsSecure() {
+	if !protocol.IsSecure() {
 		return "/nonexisting", nil
 	}
 

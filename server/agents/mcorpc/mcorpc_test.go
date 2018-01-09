@@ -6,7 +6,7 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/choria/connectortest"
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-protocol/protocol"
 	"github.com/choria-io/go-choria/server/agents"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -32,7 +32,7 @@ var _ = Describe("Server/Agents/McoRPC", func() {
 	)
 
 	BeforeEach(func() {
-		build.Secure = "false"
+		protocol.Secure = "false"
 		build.TLS = "false"
 
 		config, err := choria.NewConfig("/dev/null")

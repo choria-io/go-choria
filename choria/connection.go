@@ -12,7 +12,7 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/choria-io/go-choria/backoff"
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-protocol/protocol"
 	"github.com/nats-io/go-nats"
 	log "github.com/sirupsen/logrus"
 )

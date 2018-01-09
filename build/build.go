@@ -19,16 +19,12 @@ var License = "Apache-2.0"
 // TLS controls the NATS protocol level TLS
 var TLS = "true"
 
-// Secure controls the signing and validations of certificates in the protocol
-var Secure = "true"
-
 // maxBrokerClients defines the maximum clients a single choria broker will accept
 var maxBrokerClients = "50000"
 
-// IsSecure determines if this build will validate senders at protocol level
-func IsSecure() bool {
-	return Secure == "true"
-}
+// ProvisionBrokerURL defines where the daemon will connect when no configuration
+// and no SRV records direct it to a server
+var ProvisionBrokerURL = ""
 
 // HasTLS determines if TLS should be used on the wire
 func HasTLS() bool {

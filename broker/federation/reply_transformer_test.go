@@ -8,7 +8,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-protocol/protocol"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

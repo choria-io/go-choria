@@ -6,7 +6,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/server/agents"
