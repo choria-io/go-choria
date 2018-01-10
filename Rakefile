@@ -34,6 +34,7 @@ task :build do
   x_flags_map = {
     "TLS" => "github.com/choria-io/go-choria/build.TLS",
     "maxBrokerClients" => "github.com/choria-io/go-choria/build.maxBrokerClients",
+    "ProvisionBrokerURLs" => "github.com/choria-io/go-choria/build.ProvisionBrokerURLs",
     "Secure" => "github.com/choria-io/go-choria/vendor/github.com/choria-io/go-protocol/protocol.Secure"
   }
 

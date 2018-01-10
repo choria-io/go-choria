@@ -22,9 +22,8 @@ var TLS = "true"
 // maxBrokerClients defines the maximum clients a single choria broker will accept
 var maxBrokerClients = "50000"
 
-// ProvisionBrokerURL defines where the daemon will connect when no configuration
-// and no SRV records direct it to a server
-var ProvisionBrokerURL = ""
+// ProvisionBrokerURLs defines where the daemon will connect when choria.server.provision is true
+var ProvisionBrokerURLs = ""
 
 // HasTLS determines if TLS should be used on the wire
 func HasTLS() bool {

@@ -29,6 +29,7 @@ type ChoriaPluginConfig struct {
 	SSLDir           string `confkey:"plugin.choria.ssldir"`
 	UseSRVRecords    bool   `confkey:"plugin.choria.use_srv" default:"true"`
 	SRVDomain        string `confkey:"plugin.choria.srv_domain"`
+	Provision        bool   `confkey:"plugin.choria.server.provision" default:"false"`
 
 	// discovery proxy
 	DiscoveryHost  string `confkey:"plugin.choria.discovery_host" default:"puppet"`

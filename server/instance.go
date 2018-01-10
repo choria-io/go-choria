@@ -23,10 +23,11 @@ type Instance struct {
 	registration *registration.Manager
 	agents       *agents.Manager
 	discovery    *discovery.Manager
+	provisioning bool
 
 	requests chan *choria.ConnectorMessage
 
-	agentmu *sync.Mutex
+	mu *sync.Mutex
 }
 
 // NewInstance creates a new choria server instance
@@ -35,6 +36,7 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 		fw:       fw,
 		cfg:      fw.Config,
 		requests: make(chan *choria.ConnectorMessage),
+		mu:       &sync.Mutex{},
 	}
 
 	i.log = log.WithFields(log.Fields{"identity": fw.Config.Identity, "component": "server"})

@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/srvcache"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
@@ -145,6 +146,27 @@ func (self *Framework) FederationMiddlewareServers() (servers []Server, err erro
 	}
 
 	return
+}
+
+// ProvisioningServers determines the build time provisioning servers
+// when it's unset or results in an empty server list this will return
+// an error
+func (self *Framework) ProvisioningServers() ([]Server, error) {
+	if build.ProvisionBrokerURLs != "" {
+		s := strings.Split(build.ProvisionBrokerURLs, ",")
+		servers, err := StringHostsToServers(s, "nats")
+		if err != nil {
+			return servers, fmt.Errorf("Could not determine provisioning servers from %s: %s", build.ProvisionBrokerURLs, err)
+		}
+
+		if len(servers) == 0 {
+			return servers, fmt.Errorf("ProvisionBrokerURLs '%s' is not in the correct format, 0 server:port combinations were found", build.ProvisionBrokerURLs)
+		}
+
+		return servers, nil
+	}
+
+	return []Server{}, fmt.Errorf("ProvisionBrokerURLs was not set during compile time")
 }
 
 // MiddlewareServers determines the correct Middleware Servers

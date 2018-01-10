@@ -92,7 +92,7 @@ func StringHostsToServers(hosts []string, scheme string) (servers []Server, err 
 		}
 
 		server := Server{
-			Host:   host,
+			Host:   strings.TrimSpace(host),
 			Port:   port,
 			Scheme: scheme,
 		}
