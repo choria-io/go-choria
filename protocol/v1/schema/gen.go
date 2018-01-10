@@ -22,7 +22,7 @@ func writeSchema(schema string, variable string, outfile *os.File) {
 
 	infile, err := ioutil.ReadFile(fname)
 	if err != nil {
-		log.Fatalf("Could not open %s: %s", fname, err.Error())
+		log.Fatalf("Could not open %s: %s", fname, err)
 	}
 
 	encoded := base64.StdEncoding.EncodeToString(infile)
@@ -41,13 +41,13 @@ func main() {
 
 	infile, err := os.Open(fname)
 	if err != nil {
-		log.Fatalf("Could not open %s: %s", fname, err.Error())
+		log.Fatalf("Could not open %s: %s", fname, err)
 	}
 	defer infile.Close()
 
 	tmpfile, err := ioutil.TempFile("", "generate")
 	if err != nil {
-		log.Fatalf("Could not open tempfile: %s", err.Error())
+		log.Fatalf("Could not open tempfile: %s", err)
 	}
 	defer os.Remove(tmpfile.Name())
 

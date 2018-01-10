@@ -35,7 +35,7 @@ type federationTransportHeader struct {
 func (m *transportMessage) Message() (data string, err error) {
 	d, err := base64.StdEncoding.DecodeString(m.Data)
 	if err != nil {
-		err = fmt.Errorf("Could not base64 decode data received on the transport: %s", err.Error())
+		err = fmt.Errorf("Could not base64 decode data received on the transport: %s", err)
 		return
 	}
 
@@ -167,7 +167,7 @@ func (m *transportMessage) SetReplyData(reply protocol.SecureReply) (err error) 
 
 	j, err := reply.JSON()
 	if err != nil {
-		err = fmt.Errorf("Could not JSON encode the Reply structure for transport: %s", err.Error())
+		err = fmt.Errorf("Could not JSON encode the Reply structure for transport: %s", err)
 		return
 	}
 
@@ -183,7 +183,7 @@ func (m *transportMessage) SetRequestData(request protocol.SecureRequest) (err e
 
 	j, err := request.JSON()
 	if err != nil {
-		err = fmt.Errorf("Could not JSON encode the Request structure for transport: %s", err.Error())
+		err = fmt.Errorf("Could not JSON encode the Request structure for transport: %s", err)
 		return
 	}
 
@@ -206,14 +206,14 @@ func (m *transportMessage) NetworkHops() [][3]string {
 func (m *transportMessage) JSON() (body string, err error) {
 	j, err := json.Marshal(m)
 	if err != nil {
-		err = fmt.Errorf("Could not JSON Marshal: %s", err.Error())
+		err = fmt.Errorf("Could not JSON Marshal: %s", err)
 		return
 	}
 
 	body = string(j)
 
 	if err = m.IsValidJSON(body); err != nil {
-		err = fmt.Errorf("JSON produced from the Transport does not pass validation: %s", err.Error())
+		err = fmt.Errorf("JSON produced from the Transport does not pass validation: %s", err)
 		return
 	}
 
@@ -237,7 +237,7 @@ func (m *transportMessage) Version() string {
 func (m *transportMessage) IsValidJSON(data string) (err error) {
 	_, errors, err := schemas.Validate(schemas.TransportV1, data)
 	if err != nil {
-		err = fmt.Errorf("Could not validate Transport JSON data: %s", err.Error())
+		err = fmt.Errorf("Could not validate Transport JSON data: %s", err)
 		return
 	}
 

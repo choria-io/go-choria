@@ -78,7 +78,7 @@ func (r *reply) Time() time.Time {
 func (r *reply) JSON() (body string, err error) {
 	j, err := json.Marshal(r)
 	if err != nil {
-		err = fmt.Errorf("Could not JSON Marshal: %s", err.Error())
+		err = fmt.Errorf("Could not JSON Marshal: %s", err)
 		protocolErrorCtr.Inc()
 		return
 	}
@@ -86,7 +86,7 @@ func (r *reply) JSON() (body string, err error) {
 	body = string(j)
 
 	if err = r.IsValidJSON(body); err != nil {
-		err = fmt.Errorf("JSON produced from the Reply does not pass validation: %s", err.Error())
+		err = fmt.Errorf("JSON produced from the Reply does not pass validation: %s", err)
 		return
 	}
 
@@ -102,7 +102,7 @@ func (r *reply) Version() string {
 func (r *reply) IsValidJSON(data string) (err error) {
 	_, errors, err := schemas.Validate(schemas.ReplyV1, data)
 	if err != nil {
-		err = fmt.Errorf("Could not validate Reply JSON data: %s", err.Error())
+		err = fmt.Errorf("Could not validate Reply JSON data: %s", err)
 		return
 	}
 
