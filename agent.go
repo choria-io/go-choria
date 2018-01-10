@@ -11,6 +11,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Action is a function that implements a RPC Action
+type Action func(*Request, *Reply, *Agent, choria.ConnectorInfo)
+
 // Agent is an instance of the MCollective compatible RPC agents
 type Agent struct {
 	Log    *logrus.Entry
@@ -18,7 +21,7 @@ type Agent struct {
 	Choria *choria.Framework
 
 	meta    *agents.Metadata
-	actions map[string]func(*Request, *Reply, *Agent, choria.ConnectorInfo)
+	actions map[string]Action
 }
 
 // New creates a new MCollective SimpleRPC compatible agent
@@ -26,7 +29,7 @@ func New(name string, metadata *agents.Metadata, fw *choria.Framework, log *logr
 	a := &Agent{
 		meta:    metadata,
 		Log:     log.WithFields(logrus.Fields{"agent": name}),
-		actions: make(map[string]func(*Request, *Reply, *Agent, choria.ConnectorInfo)),
+		actions: make(map[string]Action),
 		Choria:  fw,
 		Config:  fw.Config,
 	}
@@ -35,7 +38,7 @@ func New(name string, metadata *agents.Metadata, fw *choria.Framework, log *logr
 }
 
 // RegisterAction registers an action into the agent
-func (a *Agent) RegisterAction(name string, f func(*Request, *Reply, *Agent, choria.ConnectorInfo)) error {
+func (a *Agent) RegisterAction(name string, f Action) error {
 	if _, ok := a.actions[name]; ok {
 		return fmt.Errorf("Cannot register action %s, it already exist", name)
 	}

@@ -12,7 +12,6 @@ package mcorpc
 import (
 	"encoding/json"
 	"fmt"
-	"sync"
 )
 
 // StatusCode is a reply status as defined by MCollective SimpleRPC - integers 0 to 5
@@ -55,8 +54,6 @@ type Request struct {
 	Action string          `json:"action"`
 	Data   json.RawMessage `json:"data"`
 }
-
-var auditLock = &sync.Mutex{}
 
 // ParseRequestData parses the request parameters received from the client into a target structure
 //
