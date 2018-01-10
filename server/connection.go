@@ -45,8 +45,7 @@ func (srv *Instance) brokerUrls() ([]choria.Server, error) {
 		if len(servers) > 0 {
 			srv.mu.Lock()
 			if !srv.provisioning {
-				srv.log.Infof("Enterpring provision mode with servers %v and federation disabled", servers)
-				srv.cfg.Choria.FederationCollectives = []string{}
+				srv.log.Infof("Entering provision mode with servers %v and federation disabled", servers)
 				srv.provisioning = true
 			}
 			srv.mu.Unlock()

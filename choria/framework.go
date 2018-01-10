@@ -64,6 +64,10 @@ func NewWithConfig(config *Config) (*Framework, error) {
 		mu:     &sync.Mutex{},
 	}
 
+	if config.Choria.Provision {
+		c.ConfigureProvisioning()
+	}
+
 	err := c.SetupLogging(false)
 	if err != nil {
 		return &c, fmt.Errorf("Could not set up logging: %s", err.Error())
@@ -76,6 +80,17 @@ func NewWithConfig(config *Config) (*Framework, error) {
 	}
 
 	return &c, nil
+}
+
+// ConfigureProvisioning adjusts the active configuration to match the
+// provisioning profile
+func (self *Framework) ConfigureProvisioning() {
+	self.Config.Choria.FederationCollectives = []string{}
+	self.Config.Collectives = []string{"provisioning"}
+	self.Config.MainCollective = "provisioning"
+	self.Config.RegisterInterval = 120
+	self.Config.RegistrationSplay = false
+	self.Config.Choria.FileContentRegistrationTarget = "choria.provisioning_data"
 }
 
 // IsFederated determiens if the configuration is setting up any Federation collectives
