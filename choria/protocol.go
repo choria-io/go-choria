@@ -236,14 +236,16 @@ func (self *Framework) NewSecureRequestFromTransport(message protocol.TransportM
 		var ca string
 		var cache string
 
-		ca, err = self.CAPath()
-		if err != nil {
-			return
-		}
+		if protocol.IsSecure() {
+			ca, err = self.CAPath()
+			if err != nil {
+				return
+			}
 
-		cache, err = self.ClientCertCacheDir()
-		if err != nil {
-			return
+			cache, err = self.ClientCertCacheDir()
+			if err != nil {
+				return
+			}
 		}
 
 		secure, err = v1.NewSecureRequestFromTransport(message, ca, cache, self.Config.Choria.CertnameWhitelist, self.Config.Choria.PrivilegedUsers, skipvalidate)

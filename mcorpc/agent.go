@@ -3,6 +3,7 @@ package mcorpc
 import (
 	"encoding/json"
 	"fmt"
+	"sort"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/mcorpc/audit"
@@ -11,6 +12,9 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Action is a function that implements a RPC Action
+type Action func(*Request, *Reply, *Agent, choria.ConnectorInfo)
+
 // Agent is an instance of the MCollective compatible RPC agents
 type Agent struct {
 	Log    *logrus.Entry
@@ -18,7 +22,7 @@ type Agent struct {
 	Choria *choria.Framework
 
 	meta    *agents.Metadata
-	actions map[string]func(*Request, *Reply, *Agent, choria.ConnectorInfo)
+	actions map[string]Action
 }
 
 // New creates a new MCollective SimpleRPC compatible agent
@@ -26,7 +30,7 @@ func New(name string, metadata *agents.Metadata, fw *choria.Framework, log *logr
 	a := &Agent{
 		meta:    metadata,
 		Log:     log.WithFields(logrus.Fields{"agent": name}),
-		actions: make(map[string]func(*Request, *Reply, *Agent, choria.ConnectorInfo)),
+		actions: make(map[string]Action),
 		Choria:  fw,
 		Config:  fw.Config,
 	}
@@ -35,7 +39,7 @@ func New(name string, metadata *agents.Metadata, fw *choria.Framework, log *logr
 }
 
 // RegisterAction registers an action into the agent
-func (a *Agent) RegisterAction(name string, f func(*Request, *Reply, *Agent, choria.ConnectorInfo)) error {
+func (a *Agent) RegisterAction(name string, f Action) error {
 	if _, ok := a.actions[name]; ok {
 		return fmt.Errorf("Cannot register action %s, it already exist", name)
 	}
@@ -53,7 +57,7 @@ func (a *Agent) HandleMessage(msg *choria.Message, request protocol.Request, con
 	reply := a.newReply()
 	defer a.publish(reply, msg, request, outbox)
 
-	rpcrequest, err := a.parseIncomingMessage(msg.Payload)
+	rpcrequest, err := a.parseIncomingMessage(msg.Payload, request)
 	if err != nil {
 		reply.Statuscode = InvalidData
 		reply.Statusmsg = fmt.Sprintf("Could not process request: %s", err.Error())
@@ -85,6 +89,19 @@ func (a *Agent) Name() string {
 	return a.meta.Name
 }
 
+// ActionNames returns a list of known actions in the agent
+func (a *Agent) ActionNames() []string {
+	actions := []string{}
+
+	for k := range a.actions {
+		actions = append(actions, k)
+	}
+
+	sort.Strings(actions)
+
+	return actions
+}
+
 // Metadata retrieves the agent metadata
 func (a *Agent) Metadata() *agents.Metadata {
 	return a.meta
@@ -94,6 +111,10 @@ func (a *Agent) publish(rpcreply *Reply, msg *choria.Message, request protocol.R
 	reply := &agents.AgentReply{
 		Message: msg,
 		Request: request,
+	}
+
+	if rpcreply.Data == nil {
+		rpcreply.Data = "{}"
 	}
 
 	j, err := json.Marshal(rpcreply)
@@ -116,12 +137,20 @@ func (a *Agent) newReply() *Reply {
 	return reply
 }
 
-func (a *Agent) parseIncomingMessage(msg string) (*Request, error) {
+func (a *Agent) parseIncomingMessage(msg string, request protocol.Request) (*Request, error) {
 	r := &Request{}
 
 	err := json.Unmarshal([]byte(msg), r)
 	if err != nil {
 		return nil, fmt.Errorf("Could not parse incoming message as a MCollective SimpleRPC Request: %s", err.Error())
+	}
+
+	r.CallerID = request.CallerID()
+	r.RequestID = request.RequestID()
+	r.SenderID = request.SenderID()
+
+	if r.Data == nil {
+		r.Data = json.RawMessage("{}")
 	}
 
 	return r, nil
