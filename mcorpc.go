@@ -50,9 +50,12 @@ type Reply struct {
 // Request is a request as defined by the MCollective RPC system
 // NOTE: input arguments not yet handled
 type Request struct {
-	Agent  string          `json:"agent"`
-	Action string          `json:"action"`
-	Data   json.RawMessage `json:"data"`
+	Agent     string          `json:"agent"`
+	Action    string          `json:"action"`
+	Data      json.RawMessage `json:"data"`
+	RequestID string          `json:"requestid"`
+	SenderID  string          `json:"senderid"`
+	CallerID  string          `json:"callerid"`
 }
 
 // ParseRequestData parses the request parameters received from the client into a target structure
