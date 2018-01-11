@@ -10,4 +10,4 @@ before_script:
 script:
   - glide install
   - go build .
-  - ginkgo -p -skipMeasurements -v $(glide novendor)
+  - ginkgo -skipMeasurements $(glide novendor)
