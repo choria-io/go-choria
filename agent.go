@@ -148,6 +148,10 @@ func (a *Agent) parseIncomingMessage(msg string, request protocol.Request) (*Req
 	r.CallerID = request.CallerID()
 	r.RequestID = request.RequestID()
 	r.SenderID = request.SenderID()
+	r.Collective = request.Collective()
+	r.TTL = request.TTL()
+	r.Time = request.Time()
+	r.Filter, _ = request.Filter()
 
 	if r.Data == nil {
 		r.Data = json.RawMessage("{}")
