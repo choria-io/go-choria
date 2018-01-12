@@ -67,7 +67,7 @@ func New(mgr *agents.Manager) (*mcorpc.Agent, error) {
 
 	err := agent.RegisterAction("info", infoAction)
 	if err != nil {
-		return nil, fmt.Errorf("Could not register info action: %s", err.Error())
+		return nil, fmt.Errorf("could not register info action: %s", err.Error())
 	}
 
 	return agent, nil
