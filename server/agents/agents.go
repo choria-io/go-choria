@@ -97,7 +97,7 @@ func (a *Manager) KnownAgents() []string {
 }
 
 // Subscribes an agent to all its targets on the connector.  Should any subscription fail
-// all the preceding subscriptions for this agents is unsubscribes and an error returned.
+// all the preceding subscriptions for this agents is unsubscribed and an error returned.
 // Errors during the unsub is just ignored because it's quite possible that they would fail
 // too but this avoids problems of messages arriving we did not expect.
 //

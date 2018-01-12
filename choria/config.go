@@ -66,9 +66,6 @@ type ChoriaPluginConfig struct {
 	BrokerDiscovery      bool     `confkey:"plugin.choria.broker_discovery" default:"false"`
 	BrokerFederation     bool     `confkey:"plugin.choria.broker_federation" default:"false"`
 
-	// discovery
-	FactSourceFile string `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml"`
-
 	// registration
 	FileContentRegistrationData   string `confkey:"plugin.choria.registration.file_content.data" default:""`
 	FileContentRegistrationTarget string `confkey:"plugin.choria.registration.file_content.target" default:""`
@@ -118,6 +115,7 @@ type Config struct {
 	SoftShutdown              bool     `confkey:"soft_shutdown" default:"false"`
 	SoftShutdownTimeout       int      `confkey:"soft_shutdown_timeout"`
 	ActivateAgents            bool     `confkey:"activate_agents" default:"true"`
+	FactSourceFile            string   `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml"`
 
 	ConfigFile string
 
@@ -200,7 +198,10 @@ func NewConfig(path string) (*Config, error) {
 		c.DisableTLS = true
 	}
 
-	// TODO other loglevels, not needed for this project
+	if c.LogLevel == "" {
+		c.LogLevel = "debug"
+	}
+
 	if c.LogLevel == "debug" {
 		log.SetLevel(log.DebugLevel)
 	}

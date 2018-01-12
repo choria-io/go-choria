@@ -34,7 +34,7 @@ var _ = Describe("Server/Discovery/Facts", func() {
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).NotTo(HaveOccurred())
 
-		fw.Config.Choria.FactSourceFile = "testdata/fact.yaml"
+		fw.Config.FactSourceFile = "testdata/fact.yaml"
 	})
 
 	var _ = Describe("Match", func() {

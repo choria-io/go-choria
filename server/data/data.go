@@ -5,7 +5,8 @@ type RegistrationItem struct {
 	// Data is the raw data to publish
 	Data *[]byte
 
-	// Destination is unused but will let you set custom NATS targets
+	// Destination let you set custom NATS targets, when this is not set
+	// the TargetAgent will be used to create a normal agent target
 	Destination string
 
 	// TargetAgent lets you pick where to send the data as a request
