@@ -115,3 +115,37 @@ registration_splay = true # optional, false by default
 plugin.choria.registration.file_content.data = /tmp/json_registration.json
 plugin.choria.registration.file_content.target = myco.cmdb # optional
 ```
+
+### Compiling in custom agents
+Agents can be written in Go and if you're building a custom binary you can include your agents
+in your binary.
+
+You'd patch in `server/my_agent.go` with the following contents:
+
+```go
+// +build acme
+
+package server
+
+import (
+	"github.com/acme/go-acme-agent/acme"
+)
+
+func init() {
+	registerAdditionalAgent(func(ctx context.Context, mgr *agents.Manager, connector choria.InstanceConnector, log *logrus.Entry) error {
+		log.Warn("Setting up the Acme agent")
+
+		a, err := acme.New(mgr)
+		if err != nil {
+			return fmt.Errorf("Could not create acme agent instance: %s", err)
+		}
+
+		mgr.RegisterAgent(ctx, "acme", a, connector)
+
+		return nil
+	})
+}
+```
+
+You'd `go get` this into the project and do `BUILD_TAGS=acme rake build`, the resulting
+binary will have the acme agent compiled in and started at bootup

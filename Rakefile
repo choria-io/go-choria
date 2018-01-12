@@ -53,8 +53,9 @@ task :build do
     "-ldflags '%s'" % flags.join(" ")
   ]
 
-  args << "-race" if version == "development" && ENV["GOOS"] == OWN_OS && ENV["GOARCH"] == "amd64"
+  args << "--tags '%s'" % ENV["BUILD_TAGS"] if ENV["BUILD_TAGS"]
 
+  args << "-race" if version == "development" && ENV["GOOS"] == OWN_OS && ENV["GOARCH"] == "amd64"
 
   cmd = "go build %s" % args.join(" ")
 
