@@ -3,8 +3,11 @@ package choria
 import (
 	"bufio"
 	"errors"
+	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"regexp"
@@ -131,51 +134,23 @@ type Config struct {
 	OverrideCertname string
 }
 
-// HasOption determines if a specific option was set from a config key.
-// The option given would be something like `plugin.choria.use_srv`
-// and true would indicate that it was set by config vs using defaults
-func (self *Config) HasOption(option string) bool {
-	_, ok := self.rawOpts[option]
-
-	return ok
-}
-
-// Option retrieves the raw string representation of a given option
-// from that was loaded from the configuration
-func (self *Config) Option(option string, deflt string) string {
-	v, ok := self.rawOpts[option]
-
-	if !ok {
-		return deflt
-	}
-
-	return v
-}
-
 // NewConfig parses a config file and return the config
 func NewConfig(path string) (*Config, error) {
 	c := newConfig()
 	c.ConfigFile = path
 	c.rawOpts = make(map[string]string)
 
-	// TODO i think probably parse config can walk 'mcollective' recursively
 	err := parseConfig(path, c, "", c.rawOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	err = parseConfig(path, c.Choria, "", c.rawOpts)
+	err = parseConfig(c.ConfigFile, c.Choria, "", c.rawOpts)
 	if err != nil {
 		return nil, err
 	}
 
-	choriaPConf := filepath.Join(filepath.Dir(path), "plugin.d", "choria.cfg")
-	if _, err := os.Stat(choriaPConf); err == nil {
-		err = parseConfig(choriaPConf, c.Choria, "plugin.choria", c.rawOpts)
-		if err != nil {
-			return nil, err
-		}
-	}
+	c.parseAllDotCfg()
 
 	if c.MainCollective == "" {
 		c.MainCollective = c.Collectives[0]
@@ -207,6 +182,76 @@ func NewConfig(path string) (*Config, error) {
 	}
 
 	return c, nil
+}
+
+// HasOption determines if a specific option was set from a config key.
+// The option given would be something like `plugin.choria.use_srv`
+// and true would indicate that it was set by config vs using defaults
+func (conf *Config) HasOption(option string) bool {
+	_, ok := conf.rawOpts[option]
+
+	return ok
+}
+
+// Option retrieves the raw string representation of a given option
+// from that was loaded from the configuration
+func (conf *Config) Option(option string, deflt string) string {
+	v, ok := conf.rawOpts[option]
+
+	if !ok {
+		return deflt
+	}
+
+	return v
+}
+
+// parseDotConfFile parses a file like /etc/..../plugin.d/package.cfg as if its full of
+// plugin.package.x = y lines and fill in a structure with the results if that structure
+// declares its options using the same tag structure as Config.
+//
+// If the supplied target structure is nil then the only side effect will be that the
+// supplied conf will be updated with the raw options so that HasOption() and Option()
+// can be used to extract the parsed settings
+func parseDotConfFile(plugin string, conf *Config, target interface{}) error {
+	cfgPath := filepath.Join(conf.dotdDir(), fmt.Sprintf("%s.cfg", plugin))
+	if _, err := os.Stat(cfgPath); err == nil {
+		err = parseConfig(cfgPath, target, fmt.Sprintf("plugin.%s", plugin), conf.rawOpts)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (conf *Config) parseAllDotCfg() error {
+	files, err := ioutil.ReadDir(conf.dotdDir())
+	if err != nil {
+		return err
+	}
+
+	for _, file := range files {
+		if strings.HasSuffix(file.Name(), ".cfg") {
+			base := path.Base(file.Name())
+			var target interface{}
+
+			if base == "choria.cfg" {
+				target = conf.Choria
+			}
+
+			plugin := strings.TrimSuffix(base, filepath.Ext(base))
+			err := parseDotConfFile(plugin, conf, target)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func (conf *Config) dotdDir() string {
+	return filepath.Join(filepath.Dir(conf.ConfigFile), "plugin.d")
 }
 
 // parse a config file and fill in the given config structure based on its tags
@@ -241,7 +286,10 @@ func parseConfigContents(content io.Reader, config interface{}, prefix string, f
 					key = prefix + "." + matches[1]
 				}
 
-				setItemWithKey(config, key, matches[2])
+				if config != nil {
+					setItemWithKey(config, key, matches[2])
+				}
+
 				found[key] = matches[2]
 			}
 		}
