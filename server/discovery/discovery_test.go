@@ -35,7 +35,7 @@ var _ = Describe("Server/Discovery", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		fw.Config.ClassesFile = "testdata/classes.txt"
-		fw.Config.Choria.FactSourceFile = "testdata/facts.yaml"
+		fw.Config.FactSourceFile = "testdata/facts.yaml"
 		fw.Config.Identity = "test.example.net"
 	})
 

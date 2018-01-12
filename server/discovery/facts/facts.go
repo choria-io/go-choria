@@ -20,7 +20,7 @@ func Match(filters [][3]string, fw *choria.Framework, log *logrus.Entry) bool {
 	var err error
 
 	for _, filter := range filters {
-		matched, err = HasFact(filter[0], filter[1], filter[2], fw.Config.Choria.FactSourceFile)
+		matched, err = HasFact(filter[0], filter[1], filter[2], fw.Config.FactSourceFile)
 		if err != nil {
 			log.Warnf("Failed to match fact '%#v': %s", filter, err.Error())
 			return false
