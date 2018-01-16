@@ -52,8 +52,6 @@ imports:
   version: 6e620057a207bd61e992c1c5b6a2de7b6a4cb010
   subpackages:
   - pb
-- name: github.com/nats-io/nats
-  version: d66cb54e6b7bdd93f0b28afc8450d84c780dfb68
 - name: github.com/nats-io/nuid
   version: 289cccf02c178dc782430d534e3c1f5b72af807f
 - name: github.com/onsi/ginkgo
