@@ -24,8 +24,6 @@ import:
   - context
 - package: github.com/onsi/gomega
   version: ~1.1.0
-- package: github.com/nats-io/nats
-  version: ^1.2.2
 - package: github.com/ghodss/yaml
   subpackages:
   - encoders/builtin
