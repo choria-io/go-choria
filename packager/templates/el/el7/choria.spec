@@ -1,24 +1,24 @@
 %define debug_package %{nil}
-%define pkgname {{pkgname}}
-%define version {{version}}
-%define bindir {{bindir}}
-%define etcdir {{etcdir}}
-%define iteration {{iteration}}
-%define dist {{dist}}
-%define manage_conf {{manage_conf}}
-%define target_dist {{target_dist}}
-%define target_arch {{target_arch}}
-%define contact {{contact}}
+%define pkgname {{cpkg_name}}
+%define version {{cpkg_version}}
+%define bindir {{cpkg_bindir}}
+%define etcdir {{cpkg_etcdir}}
+%define release {{cpkg_release}}
+%define dist {{cpkg_dist}}
+%define manage_conf {{cpkg_manage_conf}}
+%define binary {{cpkg_binary}}
+%define tarball {{cpkg_tarball}}
+%define contact {{cpkg_contact}}
 
 Name: %{pkgname}
 Version: %{version}
-Release: %{iteration}.%{target_dist}
+Release: %{release}.%{dist}
 Summary: The Choria Orchestrator Server
 License: Apache-2.0
 URL: https://choria.io
 Group: System Tools
 Packager: %{contact}
-Source0: %{pkgname}-%{version}-linux-%{target_arch}.tgz
+Source0: %{tarball}
 BuildRoot: %{_tmppath}/%{pkgname}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
@@ -43,7 +43,7 @@ rm -rf %{buildroot}
 %{__install} -m0640 dist/server.conf %{buildroot}%{etcdir}/server.conf
 %{__install} -m0640 dist/broker.conf %{buildroot}%{etcdir}/broker.conf
 %endif
-%{__install} -m0755 choria-%{version}-linux-%{target_arch} %{buildroot}%{bindir}/%{pkgname}
+%{__install} -m0755 %{binary} %{buildroot}%{bindir}/%{pkgname}
 
 %clean
 rm -rf %{buildroot}
