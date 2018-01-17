@@ -68,7 +68,7 @@ func reprovisionAction(req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.A
 	mu.Lock()
 	defer mu.Unlock()
 
-	if agent.Config.Choria.Provision {
+	if agent.Choria.ProvisionMode() {
 		abort("Server is already in provisioning mode, cannot enable provisioning mode again", reply)
 		return
 	}
@@ -111,7 +111,7 @@ func configureAction(req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Age
 	mu.Lock()
 	defer mu.Unlock()
 
-	if !agent.Config.Choria.Provision {
+	if !agent.Choria.ProvisionMode() {
 		abort("Cannot reconfigure a server that is not in provisioning mode", reply)
 		return
 	}
@@ -146,7 +146,7 @@ func restartAction(req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent
 	mu.Lock()
 	defer mu.Unlock()
 
-	if !agent.Config.Choria.Provision {
+	if !agent.Choria.ProvisionMode() {
 		abort("Cannot restart a server that is not in provisioning mode", reply)
 		return
 	}

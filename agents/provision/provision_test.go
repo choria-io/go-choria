@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"os"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
@@ -47,6 +48,8 @@ var _ = Describe("Agent/Provision", func() {
 		logrus.SetLevel(logrus.FatalLevel)
 
 		allowRestart = false
+		build.ProvisionModeDefault = "false"
+		build.ProvisionBrokerURLs = "nats://n1:4222"
 	})
 
 	AfterEach(func() {
@@ -67,7 +70,7 @@ var _ = Describe("Agent/Provision", func() {
 		})
 
 		It("Should refuse to restart nodes that just goes back into provision mode", func() {
-			cfg.Choria.Provision = true
+			build.ProvisionModeDefault = "true"
 			cfg.ConfigFile = "testdata/provisioning.cfg"
 
 			req := &mcorpc.Request{
@@ -83,7 +86,7 @@ var _ = Describe("Agent/Provision", func() {
 		})
 
 		It("Should restart with splay", func() {
-			cfg.Choria.Provision = true
+			build.ProvisionModeDefault = "true"
 			cfg.ConfigFile = "testdata/default.cfg"
 
 			req := &mcorpc.Request{
@@ -101,7 +104,7 @@ var _ = Describe("Agent/Provision", func() {
 
 	var _ = Describe("reprovisionAction", func() {
 		It("Should only reprovision nodes not in provisioning mode", func() {
-			cfg.Choria.Provision = true
+			build.ProvisionModeDefault = "true"
 
 			reprovisionAction(&mcorpc.Request{}, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
@@ -161,7 +164,7 @@ var _ = Describe("Agent/Provision", func() {
 		})
 
 		It("Should fail for unknown config files", func() {
-			cfg.Choria.Provision = true
+			build.ProvisionModeDefault = "true"
 			cfg.ConfigFile = ""
 
 			configureAction(&mcorpc.Request{}, reply, prov, nil)
@@ -171,7 +174,7 @@ var _ = Describe("Agent/Provision", func() {
 		})
 
 		It("Should fail for empty configuration", func() {
-			cfg.Choria.Provision = true
+			build.ProvisionModeDefault = "true"
 			cfg.ConfigFile = "/tmp/choria_test.cfg"
 
 			configureAction(&mcorpc.Request{Data: json.RawMessage("{}")}, reply, prov, nil)
@@ -181,7 +184,7 @@ var _ = Describe("Agent/Provision", func() {
 		})
 
 		It("Should write the configuration", func() {
-			cfg.Choria.Provision = true
+			build.ProvisionModeDefault = "true"
 			cfg.ConfigFile = "/tmp/choria_test.cfg"
 
 			req := &mcorpc.Request{

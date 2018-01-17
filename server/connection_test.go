@@ -34,7 +34,7 @@ var _ = Describe("ServerConnection", func() {
 		})
 
 		It("Should support provisioning", func() {
-			cfg.Choria.Provision = true
+			build.ProvisionModeDefault = "true"
 			build.ProvisionBrokerURLs = "nats1:4222, nats2:4222"
 
 			servers, err := srv.brokerUrls()
@@ -49,7 +49,7 @@ var _ = Describe("ServerConnection", func() {
 		})
 
 		It("Should fail gracefully for incorrect format provisioning servers", func() {
-			cfg.Choria.Provision = true
+			build.ProvisionModeDefault = "true"
 			build.ProvisionBrokerURLs = "invalid stuff"
 
 			servers, err := srv.brokerUrls()
@@ -64,7 +64,7 @@ var _ = Describe("ServerConnection", func() {
 		})
 
 		It("Should fail gracefully when no servers are compiled in but provisioning is on", func() {
-			cfg.Choria.Provision = true
+			build.ProvisionModeDefault = "true"
 			build.ProvisionBrokerURLs = ""
 
 			servers, err := srv.brokerUrls()

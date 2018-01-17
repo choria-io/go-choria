@@ -1,8 +1,3 @@
-require "securerandom"
-
-OWN_OS=`go env GOOS`.chomp
-OWN_ARCH=`go env GOARCH`.chomp
-
 task :default => [:test]
 
 desc "Run just tests no measurements"

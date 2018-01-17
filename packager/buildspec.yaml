@@ -2,6 +2,7 @@ flags_map:
   TLS: github.com/choria-io/go-choria/build.TLS
   maxBrokerClients: github.com/choria-io/go-choria/build.maxBrokerClients
   ProvisionBrokerURLs: github.com/choria-io/go-choria/build.ProvisionBrokerURLs
+  ProvisionModeDefault: github.com/choria-io/go-choria/build.ProvisionModeDefault
   Secure: github.com/choria-io/go-choria/vendor/github.com/choria-io/go-protocol/protocol.Secure
   Version: github.com/choria-io/go-choria/build.Version
   SHA: github.com/choria-io/go-choria/build.SHA
@@ -31,7 +32,7 @@ foss:
       etcdir: /etc/choria
       release: 1
       manage_conf: 1
-      contact: rip@devco.net
+      contact: R.I.Pienaar <rip@devco.net>
 
     el5_32:
       template: el/el6

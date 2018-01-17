@@ -31,7 +31,7 @@ func (srv *Instance) brokerUrls() ([]choria.Server, error) {
 	servers := []choria.Server{}
 	var err error
 
-	if srv.cfg.Choria.Provision {
+	if srv.fw.ProvisionMode() {
 		servers, err = srv.fw.ProvisioningServers()
 		if err != nil {
 			srv.log.Errorf("Could not determine provisioning broker urls while provisioning is configured: %s", err)

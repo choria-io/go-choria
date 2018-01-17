@@ -64,7 +64,7 @@ func NewWithConfig(config *Config) (*Framework, error) {
 		mu:     &sync.Mutex{},
 	}
 
-	if config.Choria.Provision {
+	if c.ProvisionMode() {
 		c.ConfigureProvisioning()
 	}
 
@@ -80,6 +80,22 @@ func NewWithConfig(config *Config) (*Framework, error) {
 	}
 
 	return &c, nil
+}
+
+// ProvisionMode determines if this instance is in provisioning mode
+// if the setting `plugin.choria.server.provision` is set at all then
+// the value of that is returned, else it the build time property
+// ProvisionDefault is consulted
+func (self *Framework) ProvisionMode() bool {
+	if build.ProvisionBrokerURLs == "" {
+		return false
+	}
+
+	if self.Config.HasOption("plugin.choria.server.provision") {
+		return self.Config.Choria.Provision
+	}
+
+	return build.ProvisionDefault()
 }
 
 // ConfigureProvisioning adjusts the active configuration to match the

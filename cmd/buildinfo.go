@@ -34,6 +34,7 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Println("")
 	fmt.Println("Server Settings:")
 	fmt.Printf("  Provisioning Brokers: %s\n", build.ProvisionBrokerURLs)
+	fmt.Printf("  Provisioning Default: %t\n", build.ProvisionDefault())
 	fmt.Println("")
 	fmt.Println("Security Defaults:")
 	fmt.Printf("            TLS: %s\n", build.TLS)
