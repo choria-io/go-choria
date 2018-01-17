@@ -1,5 +1,5 @@
 [Unit]
-Description=The Choria Orchestrator Server
+Description=The Choria Orchestrator Middleware Broker
 After=network.target
 
 [Service]
@@ -7,7 +7,7 @@ StandardOutput=syslog
 StandardError=syslog
 User=root
 Group=root
-ExecStart={{bindir}}/{{pkgname}} server --config={{etcdir}}/server.conf
+ExecStart={{cpkg_bindir}}/{{cpkg_name}} broker --config={{cpkg_etcdir}}/broker.conf
 
 [Install]
 WantedBy=multi-user.target
