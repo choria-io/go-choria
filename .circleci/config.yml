@@ -1,0 +1,154 @@
+version: 2
+jobs:
+  test:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      - MCOLLECTIVE_CERTNAME: rip.mcollective
+
+    steps:
+      - checkout
+      - setup_remote_docker
+      - run: go get github.com/Masterminds/glide
+      - run: go get github.com/onsi/ginkgo/ginkgo
+      - run: glide install
+      - run: ginkgo -r -skipMeasurements
+      - run: mkdir -p /tmp/workspace
+      - run: cd .. ; tar -czf /tmp/workspace/go-choria.tgz go-choria
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - go-choria.tgz
+
+  build_el6_64bit_rpms:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      - PACKAGE: el6_64
+      - BUILD: foss
+      - BUILDER: ripienaar/choria-packager:oel5-go9.2
+
+    steps: &std_build_steps
+      - setup_remote_docker
+
+      - attach_workspace:
+          at: /tmp/workspace
+
+      - run: docker create -v /go -v /build/artifacts --name store alpine:3.4 /bin/true
+      - run: cd .. ; tar -xzf /tmp/workspace/go-choria.tgz
+
+      - run: docker cp /go store:/
+
+      - run: |
+          if [ -z "${CIRCLE_TAG}" ]
+          then
+            VERSION=${CIRCLE_SHA1}
+          else
+            VERSION=${CIRCLE_TAG}
+          fi
+
+          docker run --volumes-from store --rm -e SOURCE_DIR=/go/src/github.com/choria-io/go-choria -e SHA1=${CIRCLE_SHA1} -e BUILD=${BUILD} -e VERSION=${VERSION} -e ARTIFACTS=/build/artifacts -e PACKAGE=${PACKAGE} ${BUILDER}
+
+      - run: |
+          mkdir -p /tmp/workspace/artifacts/${BUILD}/${PACKAGE}
+          for i in $(docker run --volumes-from store --rm ${BUILDER} ls /build/artifacts);do
+            docker cp store:/build/artifacts/${i} /tmp/workspace/artifacts/${BUILD}/${PACKAGE}
+          done
+          ls -l /tmp/workspace/artifacts/${BUILD}/${PACKAGE}
+
+      - persist_to_workspace:
+          root: /tmp/workspace
+          paths:
+            - artifacts
+
+  build_el6_32bit_rpms:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      - PACKAGE: el6_32
+      - BUILD: foss
+      - BUILDER: ripienaar/choria-packager:oel5-go9.2
+
+    steps:
+      *std_build_steps
+
+  build_el7_64bit_rpms:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      - PACKAGE: el7_64
+      - BUILD: foss
+      - BUILDER: ripienaar/choria-packager:oel5-go9.2
+
+    steps:
+      *std_build_steps
+
+  gather_artifacts:
+    docker:
+      - image: circleci/golang:1.9
+
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+
+      - run: ls /tmp/workspace
+
+      - store_artifacts:
+          path: /tmp/workspace
+
+workflows:
+  version: 2
+  test_and_ship:
+    jobs:
+      - test:
+          filters:
+            tags:
+              only: /.+/
+
+      - hold:
+          type: approval
+          requires:
+           - test
+          filters: &semver_only
+            tags:
+              only: /^\d+\.\d+\.\d+$/
+            branches:
+              ignore: /.*/
+
+      - build_el6_32bit_rpms:
+          filters:
+            *semver_only
+          requires:
+           - hold
+
+      - build_el6_64bit_rpms:
+          filters:
+            *semver_only
+          requires:
+           - hold
+
+      - build_el7_64bit_rpms:
+          filters:
+            *semver_only
+          requires:
+           - hold
+
+      - gather_artifacts:
+          requires:
+             - build_el6_32bit_rpms
+             - build_el6_64bit_rpms
+             - build_el7_64bit_rpms
+          filters:
+            *semver_only

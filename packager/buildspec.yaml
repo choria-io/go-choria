@@ -1,0 +1,70 @@
+flags_map:
+  TLS: github.com/choria-io/go-choria/build.TLS
+  maxBrokerClients: github.com/choria-io/go-choria/build.maxBrokerClients
+  ProvisionBrokerURLs: github.com/choria-io/go-choria/build.ProvisionBrokerURLs
+  Secure: github.com/choria-io/go-choria/vendor/github.com/choria-io/go-protocol/protocol.Secure
+  Version: github.com/choria-io/go-choria/build.Version
+  SHA: github.com/choria-io/go-choria/build.SHA
+  BuildTime: github.com/choria-io/go-choria/build.BuildDate
+
+foss:
+  compile_targets:
+    defaults:
+      output: choria-{{version}}-{{os}}-{{arch}}
+
+    64bit_linux:
+      os: linux
+      arch: amd64
+
+    32bit_linux:
+      os: linux
+      arch: 386
+
+    darwin:
+      os: darwin
+      arch: amd64
+
+  packages:
+    defaults:
+      name: choria
+      bindir: /usr/sbin
+      etcdir: /etc/choria
+      release: 1
+      manage_conf: 1
+      contact: rip@devco.net
+
+    el5_32:
+      template: el/el6
+      dist: el5
+      target_arch: i386
+      binary: 32bit_linux
+
+    el5_64:
+      template: el/el6
+      dist: el5
+      target_arch: x86_64
+      binary: 64bit_linux
+
+    el6_32:
+      template: el/el6
+      dist: el6
+      target_arch: i686
+      binary: 32bit_linux
+
+    el6_64:
+      template: el/el6
+      dist: el6
+      target_arch: x86_64
+      binary: 64bit_linux
+
+    el7_32:
+      template: el/el7
+      dist: el7
+      target_arch: i686
+      binary: 32bit_linux
+
+    el7_64:
+      template: el/el7
+      dist: el7
+      target_arch: x86_64
+      binary: 64bit_linux
