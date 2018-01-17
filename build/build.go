@@ -25,6 +25,10 @@ var maxBrokerClients = "50000"
 // ProvisionBrokerURLs defines where the daemon will connect when choria.server.provision is true
 var ProvisionBrokerURLs = ""
 
+// ProvisionModeDefault defines the value of plugin.choria.server.provision when it's not set
+// in the configuration file at all.
+var ProvisionModeDefault = "false"
+
 // HasTLS determines if TLS should be used on the wire
 func HasTLS() bool {
 	return TLS == "true"
@@ -38,4 +42,10 @@ func MaxBrokerClients() int {
 	}
 
 	return c
+}
+
+// ProvisionDefault defines the value of plugin.choria.server.provision when it's not set
+// in the configuration file at all.
+func ProvisionDefault() bool {
+	return ProvisionModeDefault == "true"
 }
