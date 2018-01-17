@@ -32,7 +32,7 @@ jobs:
     environment:
       - PACKAGE: el6_64
       - BUILD: foss
-      - BUILDER: ripienaar/choria-packager:oel5-go9.2
+      - BUILDER: ripienaar/choria-packager:el6-go9.2
 
     steps: &std_build_steps
       - setup_remote_docker
@@ -76,7 +76,35 @@ jobs:
     environment:
       - PACKAGE: el6_32
       - BUILD: foss
-      - BUILDER: ripienaar/choria-packager:oel5-go9.2
+      - BUILDER: ripienaar/choria-packager:el6-go9.2
+
+    steps:
+      *std_build_steps
+
+  build_el5_32bit_rpms:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      - PACKAGE: el5_32
+      - BUILD: foss
+      - BUILDER: ripienaar/choria-packager:el5-go9.2
+
+    steps:
+      *std_build_steps
+
+  build_el5_64bit_rpms:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      - PACKAGE: el5_64
+      - BUILD: foss
+      - BUILDER: ripienaar/choria-packager:el5-go9.2
 
     steps:
       *std_build_steps
@@ -90,7 +118,7 @@ jobs:
     environment:
       - PACKAGE: el7_64
       - BUILD: foss
-      - BUILDER: ripienaar/choria-packager:oel5-go9.2
+      - BUILDER: ripienaar/choria-packager:el7-go9.2
 
     steps:
       *std_build_steps
@@ -127,6 +155,18 @@ workflows:
             branches:
               ignore: /.*/
 
+      - build_el5_32bit_rpms:
+          filters:
+            *semver_only
+          requires:
+           - hold
+
+      - build_el5_64bit_rpms:
+          filters:
+            *semver_only
+          requires:
+           - hold
+
       - build_el6_32bit_rpms:
           filters:
             *semver_only
@@ -147,6 +187,8 @@ workflows:
 
       - gather_artifacts:
           requires:
+             - build_el5_32bit_rpms
+             - build_el5_64bit_rpms
              - build_el6_32bit_rpms
              - build_el6_64bit_rpms
              - build_el7_64bit_rpms
