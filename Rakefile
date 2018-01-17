@@ -15,72 +15,49 @@ task :test_and_measure do
   sh "ginkgo -r ."
 end
 
-desc "Builds a static binary"
+
+desc "Builds packages"
 task :build do
-  ENV["GOOS"] ||= `go env GOOS`.chomp
-  ENV["GOARCH"] ||= `go env GOARCH`.chomp
   version = ENV["VERSION"] || "development"
   sha = `git rev-parse --short HEAD`.chomp
-  date = Time.now.strftime("%F %T %z")
-  buildid = SecureRandom.hex
+  build = ENV["BUILD"] || "foss"
 
-  flags = [
-    "-X github.com/choria-io/go-choria/build.Version=%s" % version,
-    "-X github.com/choria-io/go-choria/build.SHA=%s" % sha,
-    "-X \"github.com/choria-io/go-choria/build.BuildDate=%s\"" % date,
-    "-B 0x%s" % buildid
-]
+  source = "/go/src/github.com/choria-io/go-choria"
 
-  x_flags_map = {
-    "TLS" => "github.com/choria-io/go-choria/build.TLS",
-    "maxBrokerClients" => "github.com/choria-io/go-choria/build.maxBrokerClients",
-    "ProvisionBrokerURLs" => "github.com/choria-io/go-choria/build.ProvisionBrokerURLs",
-    "Secure" => "github.com/choria-io/go-choria/vendor/github.com/choria-io/go-protocol/protocol.Secure"
-  }
-
-  if ENV["BUILD_XFLAGS"]
-    ENV["BUILD_XFLAGS"].split("|").each do |flag|
-      var, value = flag.split("=")
-
-      abort("Unknown build flag %s" % var) unless x_flags_map.include?(var)
-
-      flags << '-X "%s=%s"' % [x_flags_map[var], value]
+  ["el5_32", "el5_64", "el6_32", "el6_64", "el7_64"].each do |pkg|
+    if pkg =~ /^(.+?)_(.+)$/
+      builder = "ripienaar/choria-packager:%s-go9.2" % $1
+    else
+      builder = "ripienaar/choria-packager:el7-go9.2"
     end
-  end
 
-  args = [
-    "-o %s" % output_name(version),
-    "-ldflags '%s'" % flags.join(" ")
+    sh 'docker run --rm -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e PACKAGE=%s %s' % [
+      source,
+      source,
+      source,
+      sha,
+      build,
+      version,
+      pkg,
+      builder
+    ]
+  end
+end
+
+desc "Builds binaries"
+task :build_binaries do
+  version = ENV["VERSION"] || "development"
+  sha = `git rev-parse --short HEAD`.chomp
+  build = ENV["BUILD"] || "foss"
+
+  source = "/go/src/github.com/choria-io/go-choria"
+
+  sh 'docker run --rm  -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e BINARY_ONLY=1 ripienaar/choria-packager:el7-go9.2' % [
+    source,
+    source,
+    source,
+    sha,
+    build,
+    version
   ]
-
-  args << "--tags '%s'" % ENV["BUILD_TAGS"] if ENV["BUILD_TAGS"]
-
-  args << "-race" if version == "development" && ENV["GOOS"] == OWN_OS && ENV["GOARCH"] == "amd64"
-
-  cmd = "go build %s" % args.join(" ")
-
-  sh cmd % [output_name(version), flags.join(" ")]
-end
-
-desc "Builds a Linux binary"
-task :build_linux do
-  ENV["GOOS"] = "linux"
-  ENV["GOARCH"] = "amd64"
-
-  Rake::Task["build"].execute
-end
-
-def output_name(version)
-  return ENV["OUTPUT"] if ENV["OUTPUT"]
-
-  arch_lookup = {
-    "amd64" => "x86_64",
-    "386" => "i686"
-  }
-
-  if ENV["GOOS"] && ENV["GOARCH"]
-    return "choria-%s-%s-%s" % [version, ENV["GOOS"].downcase, arch_lookup.fetch(ENV["GOARCH"], ENV["GOARCH"])]
-  else
-    return "choria-%s" % [version]
-  end
 end
