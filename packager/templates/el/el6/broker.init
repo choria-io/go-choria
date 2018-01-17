@@ -1,9 +1,9 @@
 #!/bin/bash
 #
-# Init script for {{pkgname}}-broker
+# Init script for {{cpkg_name}}-broker
 #
 ### BEGIN INIT INFO
-# Provides:          {{pkgname}}-broker
+# Provides:          {{cpkg_name}}-broker
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
@@ -15,20 +15,18 @@
 # source function library
 . /etc/rc.d/init.d/functions
 
-prog="{{pkgname}}-broker"
+prog="{{cpkg_name}}-broker"
 user="root"
-exec="{{bindir}}/{{pkgname}}"
+exec="{{cpkg_bindir}}/{{cpkg_name}}"
 pidfile="/var/run/${prog}.pid"
 lockfile="/var/lock/subsys/${prog}"
 logfile="/var/log/${prog}"
-conffile="{{etcdir}}/broker.conf"
+conffile="{{cpkg_etcdir}}/broker.conf"
 
 # pull in sysconfig settings
 [ -e /etc/sysconfig/${prog} ] && . /etc/sysconfig/${prog}
 
 args="broker --config=${conffile} --pid=${pidfile} ${EXTRA_OPTS}"
-
-export GOMAXPROCS=${GOMAXPROCS:-2}
 
 start() {
     [ -x $exec ] || exit 5

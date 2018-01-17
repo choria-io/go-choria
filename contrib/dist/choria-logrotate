@@ -1,4 +1,0 @@
-/var/log/{{pkgname}}.log {
-  daily
-  rotate 10
-}
