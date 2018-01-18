@@ -20,7 +20,10 @@ func init() {
 	aamu = &sync.Mutex{}
 }
 
-func registerAdditionalAgent(i AgentInitializer) {
+// RegisterAdditionalAgent adds an agent to a running server
+// this should be used for compile time injection of agents
+// other than the ones that ship with choria
+func RegisterAdditionalAgent(i AgentInitializer) {
 	aamu.Lock()
 	defer aamu.Unlock()
 
