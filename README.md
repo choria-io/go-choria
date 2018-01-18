@@ -116,6 +116,61 @@ plugin.choria.registration.file_content.data = /tmp/json_registration.json
 plugin.choria.registration.file_content.target = myco.cmdb # optional
 ```
 
+### Custom binaries and packages
+
+The building and packaging is done using a set of commands ran in docker containers - so your builder needs docker, you can configure quite a lot about the build.
+
+To build a custom el7 rpm with custom paths and names and TLS/SSL turned off, you do create a section in `packager/buildspec.yaml` like this:
+
+```yaml
+orch:
+  compile_targets:
+    defaults:
+      output: acme-orch-{{version}}-{{os}}-{{arch}}
+      pre:
+        - go generate
+
+    64bit_linux:
+      os: linux
+      arch: amd64
+
+  packages:
+    defaults:
+      name: acme-orch
+      bindir: /usr/local/acme/orch/bin
+      etcdir: /usr/local/acme/orch/etc
+      release: 1
+      manage_conf: 1
+      contact: you@example.net
+      flags:
+        TLS: "false"
+        Secure: "false"
+
+    el7_64:
+      template: el/el7
+      dist: el7
+      target_arch: x86_64
+      binary: 64bit_linux
+```
+
+You can now build the whole thing:
+
+```bash
+BUILD=orch VERSION=1.0.0acme rake build
+```
+
+When you are done you will have:
+
+  * an rpm called `acme-orch-1.0.0acme-1.el7.x86_64.rpm`
+  * the binary will be `/usr/local/acme/bin/acme-orch`
+  * config files, log files, services all will be personalized around `acme-orch`
+  * It will not speak TLS
+  * It will not use Puppet certificates for security
+
+A number of things are customizable see the section at the top of the `buildspecification.yaml` and comments in the build file.
+
+In general you should only do this if you know what you are doing, have special needs, want custom agents etc
+
 ### Compiling in custom agents
 Agents can be written in Go and if you're building a custom binary you can include your agents
 in your binary.
@@ -129,4 +184,4 @@ agents:
   repo: github.com/acme/foo_agent/foo
 ```
 
-When you run `go generate` this will create the shim you need to compile your agent into the binary.
+When you run `go generate` (done during the building phase for you) this will create the shim you need to compile your agent into the binary.
