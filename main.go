@@ -1,5 +1,7 @@
 package main
 
+//go:generate go run server/gen_additional_agents.go
+
 import (
 	"os"
 

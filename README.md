@@ -120,32 +120,13 @@ plugin.choria.registration.file_content.target = myco.cmdb # optional
 Agents can be written in Go and if you're building a custom binary you can include your agents
 in your binary.
 
-You'd patch in `server/my_agent.go` with the following contents:
+During your CI or whatever you have to `glide get` the repo with your agent so it's available during compile, then create a file `packager/agents.yaml`:
 
-```go
-// +build acme
-
-package server
-
-import (
-	"github.com/acme/go-acme-agent/acme"
-)
-
-func init() {
-	registerAdditionalAgent(func(ctx context.Context, mgr *agents.Manager, connector choria.InstanceConnector, log *logrus.Entry) error {
-		log.Warn("Setting up the Acme agent")
-
-		a, err := acme.New(mgr)
-		if err != nil {
-			return fmt.Errorf("Could not create acme agent instance: %s", err)
-		}
-
-		mgr.RegisterAgent(ctx, "acme", a, connector)
-
-		return nil
-	})
-}
+```yaml
+---
+agents:
+- name: foo
+  repo: github.com/acme/foo_agent/foo
 ```
 
-You'd `go get` this into the project and do `BUILD_TAGS=acme rake build`, the resulting
-binary will have the acme agent compiled in and started at bootup
+When you run `go generate` this will create the shim you need to compile your agent into the binary.
