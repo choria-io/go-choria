@@ -1,6 +1,7 @@
 package mcorpc
 
 import (
+	"context"
 	"encoding/json"
 
 	"github.com/choria-io/go-choria/build"
@@ -29,6 +30,7 @@ var _ = Describe("McoRPC", func() {
 		outbox = make(chan *agents.AgentReply, 1)
 		ci     = &connectortest.ConnectorInfo{}
 		err    error
+		ctx    context.Context
 	)
 
 	BeforeEach(func() {
@@ -43,6 +45,7 @@ var _ = Describe("McoRPC", func() {
 
 		metadata := &agents.Metadata{Name: "test"}
 		agent = New("testing", metadata, fw, fw.Logger("test"))
+		ctx = context.Background()
 	})
 
 	It("Should have correct constants", func() {
@@ -56,7 +59,7 @@ var _ = Describe("McoRPC", func() {
 
 	var _ = Describe("RegisterAction", func() {
 		It("Should fail if the action already exist", func() {
-			action := func(req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
+			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
 			err := agent.RegisterAction("test", action)
 			Expect(err).ToNot(HaveOccurred())
 			err = agent.RegisterAction("test", action)
@@ -74,7 +77,7 @@ var _ = Describe("McoRPC", func() {
 
 		It("Should handle bad incoming data", func() {
 			msg.Payload = ""
-			agent.HandleMessage(msg, req, ci, outbox)
+			agent.HandleMessage(ctx, msg, req, ci, outbox)
 
 			reply := <-outbox
 			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("Could not process request: Could not parse incoming message as a MCollective SimpleRPC Request: unexpected end of JSON input"))
@@ -83,7 +86,7 @@ var _ = Describe("McoRPC", func() {
 
 		It("Should handle unknown actions", func() {
 			msg.Payload = `{"agent":"test", "action":"nonexisting"}`
-			agent.HandleMessage(msg, req, ci, outbox)
+			agent.HandleMessage(ctx, msg, req, ci, outbox)
 
 			reply := <-outbox
 			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("Unknown action nonexisting for agent test"))
@@ -91,7 +94,7 @@ var _ = Describe("McoRPC", func() {
 		})
 
 		It("Should call the action", func() {
-			action := func(req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {
+			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {
 				d := make(map[string]string)
 				d["test"] = "hello world"
 				reply.Data = &d
@@ -99,7 +102,7 @@ var _ = Describe("McoRPC", func() {
 
 			agent.RegisterAction("test", action)
 			msg.Payload = `{"agent":"test", "action":"test"}`
-			agent.HandleMessage(msg, req, ci, outbox)
+			agent.HandleMessage(ctx, msg, req, ci, outbox)
 
 			reply := <-outbox
 			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("OK"))

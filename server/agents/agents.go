@@ -15,7 +15,7 @@ import (
 type Agent interface {
 	Metadata() *Metadata
 	Name() string
-	HandleMessage(*choria.Message, protocol.Request, choria.ConnectorInfo, chan *AgentReply)
+	HandleMessage(context.Context, *choria.Message, protocol.Request, choria.ConnectorInfo, chan *AgentReply)
 }
 
 type AgentReply struct {
@@ -157,7 +157,7 @@ func (a *Manager) Dispatch(ctx context.Context, wg *sync.WaitGroup, replies chan
 	timeout, cancel := context.WithTimeout(context.Background(), td)
 	defer cancel()
 
-	go agent.HandleMessage(msg, request, a.conn, result)
+	go agent.HandleMessage(timeout, msg, request, a.conn, result)
 
 	select {
 	case reply := <-result:

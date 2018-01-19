@@ -1,6 +1,7 @@
 package mcorpc
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"sort"
@@ -13,7 +14,7 @@ import (
 )
 
 // Action is a function that implements a RPC Action
-type Action func(*Request, *Reply, *Agent, choria.ConnectorInfo)
+type Action func(context.Context, *Request, *Reply, *Agent, choria.ConnectorInfo)
 
 // Agent is an instance of the MCollective compatible RPC agents
 type Agent struct {
@@ -51,7 +52,7 @@ func (a *Agent) RegisterAction(name string, f Action) error {
 
 // HandleMessage attempts to parse a choria.Message as a MCollective SimpleRPC request and calls
 // the agents and actions associated with it
-func (a *Agent) HandleMessage(msg *choria.Message, request protocol.Request, conn choria.ConnectorInfo, outbox chan *agents.AgentReply) {
+func (a *Agent) HandleMessage(ctx context.Context, msg *choria.Message, request protocol.Request, conn choria.ConnectorInfo, outbox chan *agents.AgentReply) {
 	var err error
 
 	reply := a.newReply()
@@ -81,7 +82,7 @@ func (a *Agent) HandleMessage(msg *choria.Message, request protocol.Request, con
 
 	a.Log.Infof("Handling message %s for %s#%s from %s", msg.RequestID, a.Name(), rpcrequest.Action, request.CallerID())
 
-	action(rpcrequest, reply, a, conn)
+	action(ctx, rpcrequest, reply, a, conn)
 }
 
 // Name retrieves the name of the agent

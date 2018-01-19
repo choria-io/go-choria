@@ -30,7 +30,7 @@ func (s *stubAgent) Name() string {
 	return "stub"
 }
 
-func (s *stubAgent) HandleMessage(msg *choria.Message, request protocol.Request, ci choria.ConnectorInfo, result chan *AgentReply) {
+func (s *stubAgent) HandleMessage(ctx context.Context, msg *choria.Message, request protocol.Request, ci choria.ConnectorInfo, result chan *AgentReply) {
 	if msg.Payload == "sleep" {
 		time.Sleep(10 * time.Second)
 	}
