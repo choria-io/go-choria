@@ -129,6 +129,9 @@ orch:
       output: acme-orch-{{version}}-{{os}}-{{arch}}
       pre:
         - go generate
+      flags:
+        TLS: "false"
+        Secure: "false"
 
     64bit_linux:
       os: linux
@@ -142,9 +145,6 @@ orch:
       release: 1
       manage_conf: 1
       contact: you@example.net
-      flags:
-        TLS: "false"
-        Secure: "false"
 
     el7_64:
       template: el/el7
@@ -167,7 +167,7 @@ When you are done you will have:
   * It will not speak TLS
   * It will not use Puppet certificates for security
 
-A number of things are customizable see the section at the top of the `buildspecification.yaml` and comments in the build file.
+A number of things are customizable see the section at the top of the `buildspec.yaml` and comments in the build file.
 
 In general you should only do this if you know what you are doing, have special needs, want custom agents etc
 
