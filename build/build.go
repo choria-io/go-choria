@@ -29,6 +29,11 @@ var ProvisionBrokerURLs = ""
 // in the configuration file at all.
 var ProvisionModeDefault = "false"
 
+// ProvisionAgent determines if the supplied provisioning agent should be started
+// this lets you programatically or via the additional agents system supply your own
+// agent to perform the provisioning duties
+var ProvisionAgent = "true"
+
 // HasTLS determines if TLS should be used on the wire
 func HasTLS() bool {
 	return TLS == "true"

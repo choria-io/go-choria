@@ -25,7 +25,7 @@ func (srv *Instance) setupCoreAgents(ctx context.Context) error {
 
 	srv.agents.RegisterAgent(ctx, "choria_util", cu, srv.connector)
 
-	if build.ProvisionBrokerURLs != "" {
+	if build.ProvisionBrokerURLs != "" && build.ProvisionAgent == "true" {
 		pa, err := provision.New(srv.agents)
 		if err != nil {
 			return fmt.Errorf("Could not setup choria_provision agent: %s", err.Error())
