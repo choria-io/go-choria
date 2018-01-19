@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/choria-io/go-choria/choria"
@@ -97,21 +96,4 @@ func (srv *Instance) RegisterRegistrationProvider(ctx context.Context, wg *sync.
 // RegisterAgent adds a new agent to the running instance
 func (srv *Instance) RegisterAgent(ctx context.Context, name string, agent agents.Agent) error {
 	return srv.agents.RegisterAgent(ctx, name, agent, srv.connector)
-}
-
-func (srv *Instance) subscribeNode(ctx context.Context) error {
-	var err error
-
-	for _, collective := range srv.cfg.Collectives {
-		target := srv.connector.NodeDirectedTarget(collective, srv.cfg.Identity)
-
-		srv.log.Infof("Subscribing node %s to %s", srv.cfg.Identity, target)
-
-		err = srv.connector.QueueSubscribe(ctx, fmt.Sprintf("node.%s", collective), target, "", srv.requests)
-		if err != nil {
-			return fmt.Errorf("Could not subscribe to node directed targets: %s", err.Error())
-		}
-	}
-
-	return nil
 }

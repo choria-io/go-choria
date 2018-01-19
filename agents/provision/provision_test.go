@@ -1,6 +1,7 @@
 package provision
 
 import (
+	"context"
 	"encoding/json"
 	"os"
 
@@ -29,6 +30,7 @@ var _ = Describe("Agent/Provision", func() {
 		err      error
 		prov     *mcorpc.Agent
 		reply    *mcorpc.Reply
+		ctx      context.Context
 	)
 
 	BeforeEach(func() {
@@ -50,6 +52,7 @@ var _ = Describe("Agent/Provision", func() {
 		allowRestart = false
 		build.ProvisionModeDefault = "false"
 		build.ProvisionBrokerURLs = "nats://n1:4222"
+		ctx = context.Background()
 	})
 
 	AfterEach(func() {
@@ -64,7 +67,7 @@ var _ = Describe("Agent/Provision", func() {
 
 	var _ = Describe("restartAction", func() {
 		It("Should only restart nodes in provision mode", func() {
-			restartAction(&mcorpc.Request{}, reply, prov, nil)
+			restartAction(ctx, &mcorpc.Request{}, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
 			Expect(reply.Statusmsg).To(Equal("Cannot restart a server that is not in provisioning mode"))
 		})
@@ -80,7 +83,7 @@ var _ = Describe("Agent/Provision", func() {
 				SenderID:  "go.test",
 			}
 
-			restartAction(req, reply, prov, nil)
+			restartAction(ctx, req, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
 			Expect(reply.Statusmsg).To(Equal("Configuration testdata/provisioning.cfg enables provisioning, restart cannot continue"))
 		})
@@ -96,7 +99,7 @@ var _ = Describe("Agent/Provision", func() {
 				SenderID:  "go.test",
 			}
 
-			restartAction(req, reply, prov, nil)
+			restartAction(ctx, req, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 			Expect(reply.Data.(Reply).Message).To(MatchRegexp("Restarting Choria Server after \\d+s"))
 		})
@@ -106,14 +109,14 @@ var _ = Describe("Agent/Provision", func() {
 		It("Should only reprovision nodes not in provisioning mode", func() {
 			build.ProvisionModeDefault = "true"
 
-			reprovisionAction(&mcorpc.Request{}, reply, prov, nil)
+			reprovisionAction(ctx, &mcorpc.Request{}, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
 			Expect(reply.Statusmsg).To(Equal("Server is already in provisioning mode, cannot enable provisioning mode again"))
 		})
 
 		It("Should fail when the config file cannot be determined", func() {
 			cfg.ConfigFile = ""
-			reprovisionAction(&mcorpc.Request{}, reply, prov, nil)
+			reprovisionAction(ctx, &mcorpc.Request{}, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
 			Expect(reply.Statusmsg).To(Equal("Cannot determine the configuration file to manage"))
 		})
@@ -121,7 +124,7 @@ var _ = Describe("Agent/Provision", func() {
 		It("Should write a sane config file without registration by default", func() {
 			cfg.ConfigFile = "/tmp/choria_test.cfg"
 
-			reprovisionAction(&mcorpc.Request{}, reply, prov, nil)
+			reprovisionAction(ctx, &mcorpc.Request{}, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 
 			cfg, err := choria.NewConfig("/tmp/choria_test.cfg")
@@ -140,7 +143,7 @@ var _ = Describe("Agent/Provision", func() {
 			cfg.Choria.FileContentRegistrationData = "/tmp/choria_test.json"
 			cfg.Choria.FileContentRegistrationTarget = "default.registration"
 
-			reprovisionAction(&mcorpc.Request{}, reply, prov, nil)
+			reprovisionAction(ctx, &mcorpc.Request{}, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 
 			cfg, err := choria.NewConfig("/tmp/choria_test.cfg")
@@ -157,7 +160,7 @@ var _ = Describe("Agent/Provision", func() {
 		It("Should only allow configuration when in provision mode", func() {
 			cfg.Choria.Provision = false
 
-			configureAction(&mcorpc.Request{}, reply, prov, nil)
+			configureAction(ctx, &mcorpc.Request{}, reply, prov, nil)
 
 			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
 			Expect(reply.Statusmsg).To(Equal("Cannot reconfigure a server that is not in provisioning mode"))
@@ -167,7 +170,7 @@ var _ = Describe("Agent/Provision", func() {
 			build.ProvisionModeDefault = "true"
 			cfg.ConfigFile = ""
 
-			configureAction(&mcorpc.Request{}, reply, prov, nil)
+			configureAction(ctx, &mcorpc.Request{}, reply, prov, nil)
 
 			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
 			Expect(reply.Statusmsg).To(Equal("Cannot determine the configuration file to manage"))
@@ -177,7 +180,7 @@ var _ = Describe("Agent/Provision", func() {
 			build.ProvisionModeDefault = "true"
 			cfg.ConfigFile = "/tmp/choria_test.cfg"
 
-			configureAction(&mcorpc.Request{Data: json.RawMessage("{}")}, reply, prov, nil)
+			configureAction(ctx, &mcorpc.Request{Data: json.RawMessage("{}")}, reply, prov, nil)
 
 			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
 			Expect(reply.Statusmsg).To(Equal("Did not receive any configuration to write, cannot write a empty configuration file"))
@@ -195,7 +198,7 @@ var _ = Describe("Agent/Provision", func() {
 			}
 
 			Expect("/tmp/choria_test.cfg").ToNot(BeAnExistingFile())
-			configureAction(req, reply, prov, nil)
+			configureAction(ctx, req, reply, prov, nil)
 
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 			Expect(reply.Data.(Reply).Message).To(Equal("Wrote 3 lines to /tmp/choria_test.cfg"))

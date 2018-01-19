@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"context"
 	"fmt"
 	"strings"
 
@@ -42,7 +43,7 @@ func (da *Agent) Metadata() *agents.Metadata {
 	return da.meta
 }
 
-func (da *Agent) HandleMessage(msg *choria.Message, request protocol.Request, conn choria.ConnectorInfo, result chan *agents.AgentReply) {
+func (da *Agent) HandleMessage(ctx context.Context, msg *choria.Message, request protocol.Request, conn choria.ConnectorInfo, result chan *agents.AgentReply) {
 	reply := &agents.AgentReply{
 		Message: msg,
 		Request: request,

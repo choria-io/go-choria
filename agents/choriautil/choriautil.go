@@ -1,6 +1,7 @@
 package choriautil
 
 import (
+	"context"
 	"fmt"
 	"os"
 	"runtime"
@@ -73,7 +74,7 @@ func New(mgr *agents.Manager) (*mcorpc.Agent, error) {
 	return agent, nil
 }
 
-func infoAction(req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
 	c := agent.Config
 
 	domain, err := agent.Choria.FacterDomain()

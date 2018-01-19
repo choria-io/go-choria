@@ -1,6 +1,7 @@
 package provision
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
@@ -64,7 +65,7 @@ func New(mgr *agents.Manager) (*mcorpc.Agent, error) {
 	return agent, nil
 }
 
-func reprovisionAction(req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func reprovisionAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -107,7 +108,7 @@ func reprovisionAction(req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.A
 	reply.Data = Reply{fmt.Sprintf("Restarting after %ds", splay)}
 }
 
-func configureAction(req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -142,7 +143,7 @@ func configureAction(req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Age
 	reply.Data = Reply{fmt.Sprintf("Wrote %d lines to %s", lines, agent.Config.ConfigFile)}
 }
 
-func restartAction(req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func restartAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
 	mu.Lock()
 	defer mu.Unlock()
 
