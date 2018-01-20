@@ -18,9 +18,10 @@ type Action func(context.Context, *Request, *Reply, *Agent, choria.ConnectorInfo
 
 // Agent is an instance of the MCollective compatible RPC agents
 type Agent struct {
-	Log    *logrus.Entry
-	Config *choria.Config
-	Choria *choria.Framework
+	Log              *logrus.Entry
+	Config           *choria.Config
+	Choria           *choria.Framework
+	ServerInfoSource agents.ServerInfoSource
 
 	meta    *agents.Metadata
 	actions map[string]Action
@@ -39,6 +40,11 @@ func New(name string, metadata *agents.Metadata, fw *choria.Framework, log *logr
 	return a
 }
 
+// SetServerInfo stores the server info source that owns this agent
+func (a *Agent) SetServerInfo(si agents.ServerInfoSource) {
+	a.ServerInfoSource = si
+}
+
 // RegisterAction registers an action into the agent
 func (a *Agent) RegisterAction(name string, f Action) error {
 	if _, ok := a.actions[name]; ok {
@@ -48,6 +54,15 @@ func (a *Agent) RegisterAction(name string, f Action) error {
 	a.actions[name] = f
 
 	return nil
+}
+
+// MustRegisterAction registers an action and panics if it fails
+func (a *Agent) MustRegisterAction(name string, f Action) {
+	if _, ok := a.actions[name]; ok {
+		panic(fmt.Errorf("Cannot register action %s, it already exist", name))
+	}
+
+	a.actions[name] = f
 }
 
 // HandleMessage attempts to parse a choria.Message as a MCollective SimpleRPC request and calls
@@ -133,6 +148,7 @@ func (a *Agent) newReply() *Reply {
 	reply := &Reply{
 		Statuscode: OK,
 		Statusmsg:  "OK",
+		Data:       json.RawMessage(`{}`),
 	}
 
 	return reply
@@ -155,7 +171,7 @@ func (a *Agent) parseIncomingMessage(msg string, request protocol.Request) (*Req
 	r.Filter, _ = request.Filter()
 
 	if r.Data == nil {
-		r.Data = json.RawMessage("{}")
+		r.Data = json.RawMessage(`{}`)
 	}
 
 	return r, nil

@@ -66,10 +66,7 @@ func New(mgr *agents.Manager) (*mcorpc.Agent, error) {
 
 	agent := mcorpc.New("choria_util", metadata, mgr.Choria(), mgr.Logger())
 
-	err := agent.RegisterAction("info", infoAction)
-	if err != nil {
-		return nil, fmt.Errorf("could not register info action: %s", err.Error())
-	}
+	agent.MustRegisterAction("info", infoAction)
 
 	return agent, nil
 }

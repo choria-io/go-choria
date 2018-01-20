@@ -11,7 +11,7 @@ import (
 
 // Match classes on a AND basis
 func Match(needles []string, source string, log *logrus.Entry) bool {
-	classes, err := readClasses(source)
+	classes, err := ReadClasses(source)
 	if err != nil {
 		log.Warnf("Could not parse classes file %s: %s", source, err.Error())
 		return false
@@ -64,7 +64,8 @@ func hasClass(needle string, stack []string) bool {
 	return false
 }
 
-func readClasses(file string) ([]string, error) {
+// ReadClasses reads a given file and attempts to parse it as a typical classes file
+func ReadClasses(file string) ([]string, error) {
 	classes := []string{}
 
 	fh, err := os.Open(file)

@@ -9,6 +9,8 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
+	"github.com/choria-io/go-choria/server/serverinfotest"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -44,7 +46,7 @@ var _ = Describe("Agent/Provision", func() {
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
-		am = agents.New(requests, fw, nil, logrus.WithFields(logrus.Fields{"test": "1"}))
+		am = agents.New(requests, fw, nil, &serverinfotest.InfoSource{}, logrus.WithFields(logrus.Fields{"test": "1"}))
 		prov, err = New(am)
 		Expect(err).ToNot(HaveOccurred())
 		logrus.SetLevel(logrus.FatalLevel)
