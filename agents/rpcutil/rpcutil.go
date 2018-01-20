@@ -71,16 +71,16 @@ type DaemonStatsReply struct {
 	Agents      []string `json:"agents"`
 	PID         int      `json:"pid"`
 	Times       CPUTimes `json:"times"`
-	Validated   int      `json:"validated"`
-	Unvalidated int      `json:"unvalidated"`
-	Passed      int      `json:"passed"`
-	Filtered    int      `json:"filtered"`
 	StartTime   int64    `json:"starttime"`
 	Total       int      `json:"total"`
-	Replies     int      `json:"replies"`
 	ConfigFile  string   `json:"configfile"`
 	Version     string   `json:"version"`
-	TTLExpired  int      `json:"ttlexpired"`
+	Validated   float64  `json:"validated"`
+	Unvalidated float64  `json:"unvalidated"`
+	Passed      float64  `json:"passed"`
+	Filtered    float64  `json:"filtered"`
+	Replies     float64  `json:"replies"`
+	TTLExpired  float64  `json:"ttlexpired"`
 }
 
 // New creates a new rpcutil agent
@@ -117,14 +117,22 @@ func New(mgr *agents.Manager) (*mcorpc.Agent, error) {
 }
 
 func daemonStatsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+	stats := agent.ServerInfoSource.Stats()
+
 	output := &DaemonStatsReply{
-		Procs:      []string{fmt.Sprintf("Go %s with %d go procs on %d cores", runtime.Version(), runtime.NumGoroutine(), runtime.NumCPU())},
-		Agents:     agent.ServerInfoSource.KnownAgents(),
-		PID:        os.Getpid(),
-		Times:      CPUTimes{},
-		ConfigFile: agent.ServerInfoSource.ConfigFile(),
-		Version:    build.Version,
-		StartTime:  agent.ServerInfoSource.StartTime().Unix(),
+		Procs:       []string{fmt.Sprintf("Go %s with %d go procs on %d cores", runtime.Version(), runtime.NumGoroutine(), runtime.NumCPU())},
+		Agents:      agent.ServerInfoSource.KnownAgents(),
+		PID:         os.Getpid(),
+		Times:       CPUTimes{},
+		ConfigFile:  agent.ServerInfoSource.ConfigFile(),
+		Version:     build.Version,
+		StartTime:   agent.ServerInfoSource.StartTime().Unix(),
+		Validated:   stats.Valid,
+		Unvalidated: stats.Invalid,
+		Passed:      stats.Passed,
+		Filtered:    stats.Filtered,
+		Replies:     stats.Replies,
+		TTLExpired:  stats.TTLExpired,
 	}
 	reply.Data = output
 }

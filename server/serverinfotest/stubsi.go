@@ -40,3 +40,7 @@ func (si *InfoSource) Facts() json.RawMessage {
 func (si *InfoSource) StartTime() time.Time {
 	return time.Now()
 }
+
+func (si *InfoSource) Stats() agents.ServerStats {
+	return agents.ServerStats{}
+}

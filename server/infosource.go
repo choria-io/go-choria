@@ -7,6 +7,9 @@ import (
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/discovery/classes"
 	"github.com/choria-io/go-choria/server/discovery/facts"
+
+	"github.com/prometheus/client_golang/prometheus"
+	dto "github.com/prometheus/client_model/go"
 )
 
 // KnownAgents is a list of agents loaded into the server instance
@@ -49,4 +52,29 @@ func (srv *Instance) Facts() json.RawMessage {
 // StartTime is the time this instance were created
 func (srv *Instance) StartTime() time.Time {
 	return srv.startTime
+}
+
+func (srv *Instance) Stats() agents.ServerStats {
+	return agents.ServerStats{
+		Valid:      srv.getPromCtrValue(validatedCtr),
+		Invalid:    srv.getPromCtrValue(unvalidatedCtr),
+		Passed:     srv.getPromCtrValue(passedCtr),
+		Filtered:   srv.getPromCtrValue(filteredCtr),
+		Replies:    srv.getPromCtrValue(repliesCtr),
+		TTLExpired: srv.getPromCtrValue(ttlExpiredCtr),
+	}
+}
+
+func (srv *Instance) getPromCtrValue(ctr *prometheus.CounterVec) float64 {
+	pb := &dto.Metric{}
+	m, err := ctr.GetMetricWithLabelValues(srv.cfg.Identity)
+	if err != nil {
+		return 0
+	}
+
+	if m.Write(pb) != nil {
+		return 0
+	}
+
+	return pb.GetCounter().GetValue()
 }

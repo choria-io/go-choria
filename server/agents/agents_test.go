@@ -80,6 +80,10 @@ func (si *stubsi) StartTime() time.Time {
 	return time.Now()
 }
 
+func (si *stubsi) Stats() ServerStats {
+	return ServerStats{}
+}
+
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Server/Agents")
