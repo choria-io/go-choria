@@ -35,6 +35,9 @@ func New(mgr *agents.Manager) (*Agent, error) {
 	return a, nil
 }
 
+func (da *Agent) SetServerInfo(agents.ServerInfoSource) {
+}
+
 func (da *Agent) Name() string {
 	return da.meta.Name
 }

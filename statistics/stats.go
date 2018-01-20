@@ -49,7 +49,6 @@ func Start(config *choria.Config, handler http.Handler) {
 	defer mu.Unlock()
 
 	cfg = config
-
 	port := config.Choria.StatsPort
 
 	if port == 0 {

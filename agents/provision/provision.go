@@ -47,20 +47,9 @@ func New(mgr *agents.Manager) (*mcorpc.Agent, error) {
 
 	agent := mcorpc.New("choria_provision", metadata, mgr.Choria(), mgr.Logger())
 
-	err := agent.RegisterAction("configure", configureAction)
-	if err != nil {
-		return nil, fmt.Errorf("Could not register configure action: %s", err)
-	}
-
-	err = agent.RegisterAction("restart", restartAction)
-	if err != nil {
-		return nil, fmt.Errorf("Could not register restart action: %s", err)
-	}
-
-	err = agent.RegisterAction("reprovision", reprovisionAction)
-	if err != nil {
-		return nil, fmt.Errorf("Could not register reprovision action: %s", err)
-	}
+	agent.MustRegisterAction("configure", configureAction)
+	agent.MustRegisterAction("restart", restartAction)
+	agent.MustRegisterAction("reprovision", reprovisionAction)
 
 	return agent, nil
 }

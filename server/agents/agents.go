@@ -2,6 +2,7 @@ package agents
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sort"
 	"sync"
@@ -16,6 +17,17 @@ type Agent interface {
 	Metadata() *Metadata
 	Name() string
 	HandleMessage(context.Context, *choria.Message, protocol.Request, choria.ConnectorInfo, chan *AgentReply)
+	SetServerInfo(ServerInfoSource)
+}
+
+// ServerInfoSource provides data about a running server instance
+type ServerInfoSource interface {
+	KnownAgents() []string
+	AgentMetadata(string) (Metadata, bool)
+	ConfigFile() string
+	Classes() []string
+	Facts() json.RawMessage
+	StartTime() time.Time
 }
 
 type AgentReply struct {
@@ -26,36 +38,38 @@ type AgentReply struct {
 }
 
 type Metadata struct {
-	License     string
-	Author      string
-	Timeout     int
-	Name        string
-	Version     string
-	URL         string
-	Description string
+	License     string `json:"license"`
+	Author      string `json:"author"`
+	Timeout     int    `json:"timeout"`
+	Name        string `json:"name"`
+	Version     string `json:"version"`
+	URL         string `json:"url"`
+	Description string `json:"description"`
 }
 
 type Manager struct {
-	agents map[string]Agent
-	subs   map[string][]string
-	fw     *choria.Framework
-	log    *logrus.Entry
-	mu     *sync.Mutex
-	conn   choria.ConnectorInfo
+	agents     map[string]Agent
+	subs       map[string][]string
+	fw         *choria.Framework
+	log        *logrus.Entry
+	mu         *sync.Mutex
+	conn       choria.ConnectorInfo
+	serverInfo ServerInfoSource
 
 	requests chan *choria.ConnectorMessage
 }
 
 // New creates a new Agent Manager
-func New(requests chan *choria.ConnectorMessage, fw *choria.Framework, conn choria.ConnectorInfo, log *logrus.Entry) *Manager {
+func New(requests chan *choria.ConnectorMessage, fw *choria.Framework, conn choria.ConnectorInfo, srv ServerInfoSource, log *logrus.Entry) *Manager {
 	return &Manager{
-		agents:   make(map[string]Agent),
-		subs:     make(map[string][]string),
-		fw:       fw,
-		log:      log.WithFields(logrus.Fields{"subsystem": "agents"}),
-		mu:       &sync.Mutex{},
-		requests: requests,
-		conn:     conn,
+		agents:     make(map[string]Agent),
+		subs:       make(map[string][]string),
+		fw:         fw,
+		log:        log.WithFields(logrus.Fields{"subsystem": "agents"}),
+		mu:         &sync.Mutex{},
+		requests:   requests,
+		conn:       conn,
+		serverInfo: srv,
 	}
 }
 
@@ -65,6 +79,8 @@ func (a *Manager) RegisterAgent(ctx context.Context, name string, agent Agent, c
 	defer a.mu.Unlock()
 
 	a.log.Infof("Registering new agent %s of type %s", name, agent.Metadata().Name)
+
+	agent.SetServerInfo(a.serverInfo)
 
 	if _, found := a.agents[name]; found {
 		return fmt.Errorf("Agent %s is already registered", name)

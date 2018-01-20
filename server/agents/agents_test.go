@@ -2,6 +2,7 @@ package agents
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"sync"
@@ -20,6 +21,7 @@ import (
 type stubAgent struct {
 	meta      *Metadata
 	nextError string
+	si        ServerInfoSource
 }
 
 func (s *stubAgent) Metadata() *Metadata {
@@ -46,6 +48,36 @@ func (s *stubAgent) HandleMessage(ctx context.Context, msg *choria.Message, requ
 	}
 
 	result <- reply
+}
+
+func (s *stubAgent) SetServerInfo(si ServerInfoSource) {
+	s.si = si
+}
+
+type stubsi struct{}
+
+func (si *stubsi) KnownAgents() []string {
+	return []string{"stub_agent"}
+}
+
+func (si *stubsi) AgentMetadata(a string) (Metadata, bool) {
+	return Metadata{}, true
+}
+
+func (si *stubsi) ConfigFile() string {
+	return "/stub/config.cfg"
+}
+
+func (si *stubsi) Classes() []string {
+	return []string{"one", "two"}
+}
+
+func (si *stubsi) Facts() json.RawMessage {
+	return json.RawMessage(`{"stub":true}`)
+}
+
+func (si *stubsi) StartTime() time.Time {
+	return time.Now()
 }
 
 func TestFileContent(t *testing.T) {
@@ -76,7 +108,7 @@ var _ = Describe("Server/Agents", func() {
 		ctx, cancel = context.WithCancel(context.Background())
 
 		logrus.SetLevel(logrus.FatalLevel)
-		mgr = New(requests, fw, conn, logrus.WithFields(logrus.Fields{"testing": true}))
+		mgr = New(requests, fw, conn, &stubsi{}, logrus.WithFields(logrus.Fields{"testing": true}))
 		conn = &connectortest.AgentConnector{}
 		conn.Init()
 

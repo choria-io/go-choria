@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server/agents"
@@ -23,6 +24,7 @@ type Instance struct {
 	agents       *agents.Manager
 	discovery    *discovery.Manager
 	provisioning bool
+	startTime    time.Time
 
 	requests chan *choria.ConnectorMessage
 
@@ -32,10 +34,11 @@ type Instance struct {
 // NewInstance creates a new choria server instance
 func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	i = &Instance{
-		fw:       fw,
-		cfg:      fw.Config,
-		requests: make(chan *choria.ConnectorMessage),
-		mu:       &sync.Mutex{},
+		fw:        fw,
+		cfg:       fw.Config,
+		requests:  make(chan *choria.ConnectorMessage),
+		mu:        &sync.Mutex{},
+		startTime: time.Now(),
 	}
 
 	i.log = log.WithFields(log.Fields{"identity": fw.Config.Identity, "component": "server"})
@@ -52,7 +55,7 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 		return
 	}
 
-	srv.agents = agents.New(srv.requests, srv.fw, srv.connector, srv.log)
+	srv.agents = agents.New(srv.requests, srv.fw, srv.connector, srv, srv.log)
 	srv.registration = registration.New(srv.fw, srv.connector, srv.log)
 
 	wg.Add(1)
