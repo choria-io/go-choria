@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/choria-io/go-protocol/protocol"
 )
@@ -13,9 +14,10 @@ type Message struct {
 	Payload string
 	Agent   string
 
-	Request *Message
-	Filter  *protocol.Filter
-	TTL     int
+	Request   *Message
+	Filter    *protocol.Filter
+	TTL       int
+	TimeStamp time.Time
 
 	SenderID        string
 	CallerID        string
@@ -52,6 +54,7 @@ func NewMessageFromRequest(req protocol.Request, replyto string, choria *Framewo
 
 	msg.RequestID = req.RequestID()
 	msg.TTL = req.TTL()
+	msg.TimeStamp = req.Time()
 	msg.Filter, _ = req.Filter()
 	msg.SenderID = choria.Config.Identity
 	msg.SetBase64Payload(req.Message())
@@ -96,9 +99,6 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 	}
 
 	_, err = msg.Validate()
-	if err != nil {
-		return
-	}
 
 	return
 }
@@ -168,6 +168,13 @@ func (self *Message) Validate() (bool, error) {
 	}
 
 	return true, nil
+}
+
+// ValidateTTL validates the message age
+func (self *Message) ValidateTTL() bool {
+	earliest := time.Now().Add(-1 * time.Duration(self.TTL))
+
+	return self.TimeStamp.Before(earliest)
 }
 
 // SetBase64Payload sets the payload for the message, use it if the payload is Base64 encoded

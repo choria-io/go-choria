@@ -28,6 +28,16 @@ type ServerInfoSource interface {
 	Classes() []string
 	Facts() json.RawMessage
 	StartTime() time.Time
+	Stats() ServerStats
+}
+
+type ServerStats struct {
+	Valid      float64
+	Invalid    float64
+	Passed     float64
+	Filtered   float64
+	Replies    float64
+	TTLExpired float64
 }
 
 type AgentReply struct {
