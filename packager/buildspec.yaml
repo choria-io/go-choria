@@ -72,3 +72,13 @@ foss:
       dist: el7
       target_arch: x86_64
       binary: 64bit_linux
+
+    xenial_64:
+      template: debian/generic
+      target_arch: x86_64-linux-gnu
+      binary: 64bit_linux
+
+    stretch_64:
+      template: debian/generic
+      target_arch: x86_64-linux-gnu
+      binary: 64bit_linux

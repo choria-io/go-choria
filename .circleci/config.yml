@@ -123,6 +123,34 @@ jobs:
     steps:
       *std_build_steps
 
+  build_xenial_64bit_debs:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      - PACKAGE: xenial_64
+      - BUILD: foss
+      - BUILDER: ripienaar/choria-packager:xenial-go9.2
+
+    steps:
+      *std_build_steps
+
+  build_stretch_64bit_debs:
+    docker:
+      - image: circleci/golang:1.9
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      - PACKAGE: stretch_64
+      - BUILD: foss
+      - BUILDER: ripienaar/choria-packager:stretch-go9.2
+
+    steps:
+      *std_build_steps
+
   gather_artifacts:
     docker:
       - image: circleci/golang:1.9
@@ -185,6 +213,18 @@ workflows:
           requires:
            - hold
 
+      - build_xenial_64bit_debs:
+          filters:
+            *semver_only
+          requires:
+           - hold
+
+      - build_stretch_64bit_debs:
+          filters:
+            *semver_only
+          requires:
+           - hold
+
       - gather_artifacts:
           requires:
              - build_el5_32bit_rpms
@@ -192,5 +232,8 @@ workflows:
              - build_el6_32bit_rpms
              - build_el6_64bit_rpms
              - build_el7_64bit_rpms
+             - build_xenial_64bit_debs
+             - build_stretch_64bit_debs
+
           filters:
             *semver_only

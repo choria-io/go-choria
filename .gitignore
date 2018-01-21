@@ -12,3 +12,5 @@ choria-*-*-*
 *.tgz
 debug
 .DS_Store
+*.deb
+*.dsc

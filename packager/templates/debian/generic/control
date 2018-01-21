@@ -1,0 +1,11 @@
+Source: {{cpkg_name}}
+Section: net
+Priority: optional
+Maintainer: {{cpkg_contact}}
+Standards-Version: {{cpkg_version}}
+Homepage: https://choria.io/
+Build-Depends: debhelper (>=9), dh-systemd
+
+Package: {{cpkg_name}}
+Architecture: any
+Description: The Choria Orchestrator Server and Broker
