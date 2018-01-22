@@ -162,6 +162,26 @@ var _ = Describe("McoRPC", func() {
 			Expect(reply.Statuscode).To(Equal(InvalidData))
 			Expect(reply.Statusmsg).To(Equal("Could not parse request data for test#will_fail: invalid character 'i' in literal false (expecting 'l')"))
 		})
+
+		It("Should use the validator to validate structs", func() {
+			req := &Request{
+				Agent:  "test",
+				Action: "will_fail",
+				Data:   json.RawMessage(`{"hello":"foo > bar"}`),
+			}
+
+			reply := &Reply{}
+
+			var params struct {
+				Hello string `json:"hello" validate:"shellsafe"`
+			}
+
+			ok := ParseRequestData(&params, req, reply)
+
+			Expect(ok).To(BeFalse())
+			Expect(reply.Statuscode).To(Equal(InvalidData))
+			Expect(reply.Statusmsg).To(Equal("Validation failed: Hello shellsafe validation failed: may not contain '>'"))
+		})
 	})
 
 	var _ = Describe("newReply", func() {
