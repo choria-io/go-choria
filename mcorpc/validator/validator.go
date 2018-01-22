@@ -6,6 +6,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/choria-io/go-choria/mcorpc/validator/enum"
 	"github.com/choria-io/go-choria/mcorpc/validator/maxlength"
 	"github.com/choria-io/go-choria/mcorpc/validator/shellsafe"
 )
@@ -47,9 +48,12 @@ func validateStructValue(val reflect.Value) (bool, error) {
 			if ok, err := maxlength.ValidateStructField(valueField, validation); !ok {
 				return false, fmt.Errorf("%s maxlength validation failed: %s", typeField.Name, err)
 			}
+		} else if ok, _ := regexp.MatchString(`^enum=(.+,*?)+$`, validation); ok {
+			if ok, err := enum.ValidateStructField(valueField, validation); !ok {
+				return false, fmt.Errorf("%s enum validation failed: %s", typeField.Name, err)
+			}
 		}
 	}
 
 	return true, nil
-
 }
