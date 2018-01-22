@@ -3,7 +3,11 @@ package validator
 import (
 	"fmt"
 	"reflect"
+	"regexp"
 	"strings"
+
+	"github.com/choria-io/go-choria/mcorpc/validator/maxlength"
+	"github.com/choria-io/go-choria/mcorpc/validator/shellsafe"
 )
 
 // ValidateStruct validates all keys in a struct using their validate tag
@@ -21,7 +25,7 @@ func validateStructValue(val reflect.Value) (bool, error) {
 	for i := 0; i < val.NumField(); i++ {
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
-		validations := strings.Split(typeField.Tag.Get("validate"), ",")
+		validation := strings.TrimSpace(typeField.Tag.Get("validate"))
 
 		if valueField.Kind() == reflect.Struct {
 			ok, err := validateStructValue(valueField)
@@ -30,21 +34,18 @@ func validateStructValue(val reflect.Value) (bool, error) {
 			}
 		}
 
-		for _, validation := range validations {
-			validation = strings.TrimSpace(validation)
+		if validation == "" {
+			continue
+		}
 
-			if validation == "" {
-				continue
+		if validation == "shellsafe" {
+			if ok, err := shellsafe.ValidateStructField(valueField, validation); !ok {
+				return false, fmt.Errorf("%s shellsafe validation failed: %s", typeField.Name, err)
 			}
 
-			switch validation {
-			case "shellsafe":
-				if !ShellSafeValue(valueField) {
-					return false, fmt.Errorf("%s is not shellsafe", typeField.Name)
-				}
-
-			default:
-				return false, fmt.Errorf("unknown validator on %s: %s", typeField.Name, validation)
+		} else if ok, _ := regexp.MatchString(`^maxlength=\d+$`, validation); ok {
+			if ok, err := maxlength.ValidateStructField(valueField, validation); !ok {
+				return false, fmt.Errorf("%s maxlength validation failed: %s", typeField.Name, err)
 			}
 		}
 	}
