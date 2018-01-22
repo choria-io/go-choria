@@ -14,6 +14,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/choria-io/go-choria/mcorpc/validator"
 	"github.com/choria-io/go-protocol/protocol"
 )
 
@@ -70,10 +71,13 @@ type Request struct {
 
 // ParseRequestData parses the request parameters received from the client into a target structure
 //
+// Vaidation is supported, the example below does a `shellsafe` check on the data prior to returning
+// it, should the check fail appropriate errors will be set on the reply data
+//
 // Example used in a action:
 //
 //   var rparams struct {
-//      Package string `json:"package"`
+//      Package string `json:"package" validate:"shellsafe"`
 //   }
 //
 //   if !mcorpc.ParseRequestData(&rparams, req, reply) {
@@ -87,7 +91,14 @@ func ParseRequestData(target interface{}, request *Request, reply *Reply) bool {
 	if err != nil {
 		reply.Statuscode = InvalidData
 		reply.Statusmsg = fmt.Sprintf("Could not parse request data for %s#%s: %s", request.Agent, request.Action, err)
+		return false
+	}
 
+	ok, err := validator.ValidateStruct(target)
+	if !ok {
+		reply.Statuscode = InvalidData
+		reply.Statusmsg = fmt.Sprintf("Validation failed: %s", err)
+		fmt.Println("validation failed: " + err.Error())
 		return false
 	}
 
