@@ -14,8 +14,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/choria-io/go-choria/mcorpc/validator"
 	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-validator"
 )
 
 // StatusCode is a reply status as defined by MCollective SimpleRPC - integers 0 to 5
@@ -98,7 +98,6 @@ func ParseRequestData(target interface{}, request *Request, reply *Reply) bool {
 	if !ok {
 		reply.Statuscode = InvalidData
 		reply.Statusmsg = fmt.Sprintf("Validation failed: %s", err)
-		fmt.Println("validation failed: " + err.Error())
 		return false
 	}
 
