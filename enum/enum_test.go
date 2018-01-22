@@ -10,7 +10,7 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "McoRPC/Validator/Enum")
+	RunSpecs(t, "Validator/Enum")
 }
 
 var _ = Describe("ValidateSlice", func() {

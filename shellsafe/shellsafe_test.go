@@ -11,7 +11,7 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "McoRPC/Validator/ShellSafe")
+	RunSpecs(t, "Validator/ShellSafe")
 }
 
 var _ = Describe("Validate", func() {

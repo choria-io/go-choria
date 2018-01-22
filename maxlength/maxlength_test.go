@@ -10,7 +10,7 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "McoRPC/Validator/Maxlength")
+	RunSpecs(t, "Validator/Maxlength")
 }
 
 var _ = Describe("ValidateString", func() {
