@@ -1,5 +1,6 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/01/22|152   |Support automagic validation of structs received over the network, support shellsafe for now             |
 |2018/01/20|150   |Release 0.0.6                                                                                            |
 |2018/01/20|58    |A mostly compatible `rpcutil` agent was added                                                            |
 |2018/01/20|148   |The TTL of incoming request messages are checked                                                         |
