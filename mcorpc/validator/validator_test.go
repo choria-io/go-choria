@@ -19,12 +19,18 @@ var _ = Describe("ValidateStruct", func() {
 
 	type vdata struct {
 		SS string `validate:"shellsafe"`
+		ML string `validate:"maxlength=3"`
+
 		nest
 	}
 
 	var (
-		s = vdata{}
+		s vdata
 	)
+
+	BeforeEach(func() {
+		s = vdata{}
+	})
 
 	It("Should support nested structs", func() {
 		s.SS = "safe"
@@ -38,14 +44,21 @@ var _ = Describe("ValidateStruct", func() {
 		s.Nested = "un > safe"
 
 		ok, err = ValidateStruct(s)
-		Expect(err).To(MatchError("Nested is not shellsafe"))
+		Expect(err).To(MatchError("Nested shellsafe validation failed: may not contain '>'"))
 		Expect(ok).To(BeFalse())
 
 		s.SS = "un > safe"
 		s.Nested = "safe"
 
 		ok, err = ValidateStruct(s)
-		Expect(err).To(MatchError("SS is not shellsafe"))
+		Expect(err).To(MatchError("SS shellsafe validation failed: may not contain '>'"))
+		Expect(ok).To(BeFalse())
+	})
+
+	It("Should support maxlength", func() {
+		s.ML = "foo foo foo"
+		ok, err := ValidateStruct(s)
+		Expect(err).To(MatchError("ML maxlength validation failed: 11 characters, max allowed 3"))
 		Expect(ok).To(BeFalse())
 	})
 })
