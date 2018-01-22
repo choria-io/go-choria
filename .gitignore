@@ -11,3 +11,4 @@ choria-*-*-*
 *.rpm
 *.tgz
 debug
+.DS_Store

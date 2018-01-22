@@ -1,5 +1,5 @@
-hash: 7524fda6d40955397dab9c5eab5884b57d42e2991f928dd26443969fcda3a716
-updated: 2018-01-09T12:06:55.711283+01:00
+hash: 5f14e6cd1e1c0b260f7639d598bf25eb1e8f953a89dfc378c7e3b281994db76b
+updated: 2018-01-22T22:01:23.836357+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -16,13 +16,19 @@ imports:
   subpackages:
   - protocol
   - protocol/v1
+- name: github.com/choria-io/go-validator
+  version: 0ca75bc874f5b4b5ced1867f39640f0f25b2ced6
+  subpackages:
+  - enum
+  - maxlength
+  - shellsafe
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
   - encoders/builtin
   - util
 - name: github.com/gogo/protobuf
-  version: 342cbe0a04158f6dcb03ca0079991a51a4248c02
+  version: 26de2f9a7d3b1826f275e7a97c8cad5080589426
   subpackages:
   - gogoproto
   - proto
@@ -49,11 +55,11 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/nats-io/go-nats-streaming
-  version: 6e620057a207bd61e992c1c5b6a2de7b6a4cb010
+  version: ad2984cc18491c7674c7f69196b854fb71337738
   subpackages:
   - pb
 - name: github.com/nats-io/nuid
-  version: 289cccf02c178dc782430d534e3c1f5b72af807f
+  version: 33c603157d6fd1b0ac2599bcc4a286b36479a06d
 - name: github.com/onsi/ginkgo
   version: 77a8c1e5c40d6bb6c5eb4dd4bdce9763564f6298
   subpackages:
@@ -89,7 +95,7 @@ imports:
   - matchers/support/goraph/util
   - types
 - name: github.com/prometheus/client_golang
-  version: 661e31bf844dfca9aeba15f27ea8aa0d485ad212
+  version: 06bc6e01f4baf4ee783ffcd23abfcb0b0f9dfada
   subpackages:
   - prometheus
   - prometheus/promhttp
@@ -98,29 +104,29 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 2e54d0b93cba2fd133edc32211dcc32c06ef72ca
+  version: 89604d197083d4781071d3c65855d24ecfb0a563
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: a6e9df898b1336106c743392c48ee0b71f5c4efa
+  version: b15cd069a83443be3154b719d0cc9fe8117f09fb
   subpackages:
   - xfs
 - name: github.com/satori/go.uuid
-  version: 879c5887cd475cd7864858769793b2ceb0d44feb
+  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
   version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
 - name: github.com/tidwall/gjson
-  version: e62d62a3e1e9f324346170bbc04333341f803dfb
+  version: 5cd723d566400bc7ac450eb0c5b9edbb75a70750
 - name: github.com/tidwall/match
-  version: 173748da739a410c5b0b813b956f89ff94730b4c
+  version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
   version: 6fe8760cad3569743d51ddbb243b26f8456742dc
 - name: github.com/xeipuuv/gojsonreference
   version: e02fc20de94c78484cd5ffb007f8af96be030a45
 - name: github.com/xeipuuv/gojsonschema
-  version: 0c8571ac0ce161a5feb57375a9cdf148c98c0f70
+  version: 511d08a359d14c0dd9c4302af52ee9abb6f93c2a
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
@@ -128,7 +134,7 @@ imports:
   - blowfish
   - ssh/terminal
 - name: golang.org/x/net
-  version: dc871a5d77e227f5bbf6545176ef3eeebf87e76e
+  version: 5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec
   subpackages:
   - context
 - name: golang.org/x/sys
@@ -144,5 +150,5 @@ imports:
 - name: gopkg.in/alecthomas/kingpin.v2
   version: 947dcec5ba9c011838740e680966fd7087a71d0d
 - name: gopkg.in/yaml.v2
-  version: 287cf08546ab5e7e37d55a84f7ed3fd1db036de5
+  version: d670f9405373e636a5a2765eea47fac0c9bc91a4
 testImports: []
