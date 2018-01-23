@@ -14,23 +14,40 @@ func TestFileContent(t *testing.T) {
 	RunSpecs(t, "Validator")
 }
 
+type nest struct {
+	Nested string `validate:"shellsafe"`
+}
+
+type vdata struct {
+	SS   string   `validate:"shellsafe"`
+	ML   string   `validate:"maxlength=3"`
+	Enum []string `validate:"enum=one,two"`
+
+	nest
+}
+
+var s vdata
+
+var _ = Describe("ValidateStructField", func() {
+	BeforeEach(func() {
+		s = vdata{}
+	})
+
+	It("Should validate a specific field", func() {
+		s.ML = "too long"
+		ok, err := validator.ValidateStructField(s, "ML")
+		Expect(err).To(MatchError("ML maxlength validation failed: 8 characters, max allowed 3"))
+		Expect(ok).To(BeFalse())
+	})
+
+	It("Should handle unknown fields", func() {
+		ok, err := validator.ValidateStructField(s, "foo")
+		Expect(err).To(MatchError("unknown field foo"))
+		Expect(ok).To(BeFalse())
+	})
+})
+
 var _ = Describe("ValidateStruct", func() {
-	type nest struct {
-		Nested string `validate:"shellsafe"`
-	}
-
-	type vdata struct {
-		SS   string   `validate:"shellsafe"`
-		ML   string   `validate:"maxlength=3"`
-		Enum []string `validate:"enum=one,two"`
-
-		nest
-	}
-
-	var (
-		s vdata
-	)
-
 	BeforeEach(func() {
 		s = vdata{}
 	})
