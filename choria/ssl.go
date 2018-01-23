@@ -8,7 +8,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -21,7 +20,7 @@ import (
 // CheckSSLSetup validates the various SSL files and directories exist and are well formed
 func (self *Framework) CheckSSLSetup() (errors []string, ok bool) {
 	if _, err := self.SSLDir(); err != nil {
-		errors = append(errors, fmt.Sprintf("SSL Directory does not exist: %s", err.Error()))
+		errors = append(errors, fmt.Sprintf("SSL Directory does not exist: %s", err))
 		return errors, false
 	}
 
@@ -30,7 +29,7 @@ func (self *Framework) CheckSSLSetup() (errors []string, ok bool) {
 			errors = append(errors, fmt.Sprintf("The Public Certificate %s does not exist", c))
 		}
 	} else {
-		errors = append(errors, fmt.Sprintf("Could not determine Public Certificate path: %s", err.Error()))
+		errors = append(errors, fmt.Sprintf("Could not determine Public Certificate path: %s", err))
 	}
 
 	if c, err := self.ClientPrivateKey(); err == nil {
@@ -38,7 +37,7 @@ func (self *Framework) CheckSSLSetup() (errors []string, ok bool) {
 			errors = append(errors, fmt.Sprintf("The Private Key %s does not exist", c))
 		}
 	} else {
-		errors = append(errors, fmt.Sprintf("Could not determine Private Certificate path: %s", err.Error()))
+		errors = append(errors, fmt.Sprintf("Could not determine Private Certificate path: %s", err))
 	}
 
 	if c, err := self.CAPath(); err == nil {
@@ -46,7 +45,7 @@ func (self *Framework) CheckSSLSetup() (errors []string, ok bool) {
 			errors = append(errors, fmt.Sprintf("The CA %s does not exist", c))
 		}
 	} else {
-		errors = append(errors, fmt.Sprintf("Could not determine CA path: %s", err.Error()))
+		errors = append(errors, fmt.Sprintf("Could not determine CA path: %s", err))
 	}
 
 	if len(errors) == 0 {
@@ -65,7 +64,7 @@ func (self *Framework) SignString(str []byte) (signature []byte, err error) {
 
 	pk, err := x509.ParsePKCS1PrivateKey(pkpem.Bytes)
 	if err != nil {
-		err = fmt.Errorf("Could not parse private key PEM data: %s", err.Error())
+		err = fmt.Errorf("Could not parse private key PEM data: %s", err)
 		return
 	}
 
@@ -73,7 +72,7 @@ func (self *Framework) SignString(str []byte) (signature []byte, err error) {
 	hashed := sha256.Sum256(str)
 	signature, err = rsa.SignPKCS1v15(rng, pk, crypto.SHA256, hashed[:])
 	if err != nil {
-		err = fmt.Errorf("Could not sign message: %s", err.Error())
+		err = fmt.Errorf("Could not sign message: %s", err)
 	}
 
 	return
@@ -114,12 +113,12 @@ func (self *Framework) CAPath() (string, error) {
 func (self *Framework) ClientPrivateKeyPEM() (pb *pem.Block, err error) {
 	key, err := self.ClientPrivateKey()
 	if err != nil {
-		return pb, fmt.Errorf("Could not read Client Private Key PEM data: %s", err.Error())
+		return pb, fmt.Errorf("Could not read Client Private Key PEM data: %s", err)
 	}
 
 	keydat, err := ioutil.ReadFile(key)
 	if err != nil {
-		return pb, fmt.Errorf("Could not read Private Key %s: %s", key, err.Error())
+		return pb, fmt.Errorf("Could not read Private Key %s: %s", key, err)
 	}
 
 	pb, _ = pem.Decode(keydat)
@@ -134,12 +133,12 @@ func (self *Framework) ClientPrivateKeyPEM() (pb *pem.Block, err error) {
 func (self *Framework) ClientPublicCertPEM() (pb *pem.Block, err error) {
 	cert, err := self.ClientPublicCert()
 	if err != nil {
-		return pb, fmt.Errorf("Could not read Client Private Key PEM data: %s", err.Error())
+		return pb, fmt.Errorf("Could not read Client Private Key PEM data: %s", err)
 	}
 
 	certdat, err := ioutil.ReadFile(cert)
 	if err != nil {
-		err = fmt.Errorf("Could not read Public Certificate %s: %s", cert, err.Error())
+		err = fmt.Errorf("Could not read Public Certificate %s: %s", cert, err)
 	}
 
 	pb, _ = pem.Decode(certdat)
@@ -154,12 +153,12 @@ func (self *Framework) ClientPublicCertPEM() (pb *pem.Block, err error) {
 func (self *Framework) ClientPrivateKeyTXT() (cert []byte, err error) {
 	file, err := self.ClientPrivateKey()
 	if err != nil {
-		return cert, fmt.Errorf("Could not read Client Private Key PEM data: %s", err.Error())
+		return cert, fmt.Errorf("Could not read Client Private Key PEM data: %s", err)
 	}
 
 	cert, err = ioutil.ReadFile(file)
 	if err != nil {
-		err = fmt.Errorf("Could not read Public Certificate %s: %s", cert, err.Error())
+		err = fmt.Errorf("Could not read Public Certificate %s: %s", cert, err)
 	}
 
 	return
@@ -179,12 +178,12 @@ func (self *Framework) ClientPrivateKey() (string, error) {
 func (self *Framework) ClientPublicCertTXT() (cert []byte, err error) {
 	file, err := self.ClientPublicCert()
 	if err != nil {
-		return cert, fmt.Errorf("Could not read Client Public Certificate PEM data: %s", err.Error())
+		return cert, fmt.Errorf("Could not read Client Public Certificate PEM data: %s", err)
 	}
 
 	cert, err = ioutil.ReadFile(file)
 	if err != nil {
-		err = fmt.Errorf("Could not read Public Certificate %s: %s", cert, err.Error())
+		err = fmt.Errorf("Could not read Public Certificate %s: %s", cert, err)
 	}
 
 	return
@@ -234,7 +233,7 @@ func (self *Framework) SSLDir() (string, error) {
 func (self *Framework) ClientCertCacheDir() (string, error) {
 	ssldir, err := self.SSLDir()
 	if err != nil {
-		return "", fmt.Errorf("Could not determine Client Certificate Cache Directory: %s", err.Error())
+		return "", fmt.Errorf("Could not determine Client Certificate Cache Directory: %s", err)
 	}
 
 	path := filepath.Join(ssldir, "choria_secuirty", "public_certs")
@@ -255,7 +254,7 @@ func (self *Framework) TLSConfig() (tlsc *tls.Config, err error) {
 
 	cert, err := tls.LoadX509KeyPair(pub, pri)
 	if err != nil {
-		err = errors.New("Could not load certificate " + pub + " and key " + pri + ": " + err.Error())
+		err = fmt.Errorf("Could not load certificate %s and key %s: %s", pub, pri, err)
 		return
 	}
 

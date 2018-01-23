@@ -42,7 +42,7 @@ func (self *Server) URL() (u *url.URL, err error) {
 
 	u, err = url.Parse(ustring)
 	if err != nil {
-		return u, fmt.Errorf("Could not parse %s: %s", ustring, err.Error())
+		return u, fmt.Errorf("Could not parse %s: %s", ustring, err)
 	}
 
 	return
@@ -70,7 +70,7 @@ func NewWithConfig(config *Config) (*Framework, error) {
 
 	err := c.SetupLogging(false)
 	if err != nil {
-		return &c, fmt.Errorf("Could not set up logging: %s", err.Error())
+		return &c, fmt.Errorf("Could not set up logging: %s", err)
 	}
 
 	if !config.DisableTLS {
@@ -157,7 +157,7 @@ func (self *Framework) FederationMiddlewareServers() (servers []Server, err erro
 	if len(configured) > 0 {
 		s, err := StringHostsToServers(configured, "nats")
 		if err != nil {
-			return servers, fmt.Errorf("Could not parse configured Federation Middleware: %s", err.Error())
+			return servers, fmt.Errorf("Could not parse configured Federation Middleware: %s", err)
 		}
 
 		for _, server := range s {
@@ -167,7 +167,7 @@ func (self *Framework) FederationMiddlewareServers() (servers []Server, err erro
 
 	if len(servers) == 0 {
 		if servers, err = self.QuerySrvRecords([]string{"_mcollective-federation_server._tcp", "_x-puppet-mcollective_federation._tcp"}); err != nil {
-			return servers, fmt.Errorf("Could not resolve Federation Middleware Server SRV records: %s", err.Error())
+			return servers, fmt.Errorf("Could not resolve Federation Middleware Server SRV records: %s", err)
 		}
 	}
 
@@ -216,7 +216,7 @@ func (self *Framework) MiddlewareServers() (servers []Server, err error) {
 	if len(configured) > 0 {
 		s, err := StringHostsToServers(configured, "nats")
 		if err != nil {
-			return servers, fmt.Errorf("Could not parse configured Middleware: %s", err.Error())
+			return servers, fmt.Errorf("Could not parse configured Middleware: %s", err)
 		}
 
 		for _, server := range s {
@@ -226,7 +226,7 @@ func (self *Framework) MiddlewareServers() (servers []Server, err error) {
 
 	if len(servers) == 0 {
 		if servers, err = self.QuerySrvRecords([]string{"_mcollective-server._tcp", "_x-puppet-mcollective._tcp"}); err != nil {
-			log.Warnf("Could not resolve Middleware Server SRV records: %s", err.Error())
+			log.Warnf("Could not resolve Middleware Server SRV records: %s", err)
 		}
 	}
 
@@ -252,7 +252,7 @@ func (self *Framework) SetupLogging(debug bool) (err error) {
 
 		file, err := os.OpenFile(self.Config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
-			return fmt.Errorf("Could not set up logging: %s", err.Error())
+			return fmt.Errorf("Could not set up logging: %s", err)
 		}
 
 		log.SetOutput(file)
@@ -331,7 +331,7 @@ func (self *Framework) QuerySrvRecords(records []string) ([]Server, error) {
 
 		cname, addrs, err := srvcache.LookupSRV("", "", record, net.LookupSRV)
 		if err != nil {
-			log.Debugf("Failed to resolve %s: %s", record, err.Error())
+			log.Debugf("Failed to resolve %s: %s", record, err)
 			continue
 		}
 
@@ -350,7 +350,7 @@ func (self *Framework) QuerySrvRecords(records []string) ([]Server, error) {
 func (self *Framework) NetworkBrokerPeers() (servers []Server, err error) {
 	servers, err = self.QuerySrvRecords([]string{"_mcollective-broker._tcp"})
 	if err != nil {
-		log.Errorf("SRV lookup for _mcollective-broker._tcp failed: %s", err.Error())
+		log.Errorf("SRV lookup for _mcollective-broker._tcp failed: %s", err)
 		err = nil
 	}
 
@@ -358,17 +358,17 @@ func (self *Framework) NetworkBrokerPeers() (servers []Server, err error) {
 		for _, server := range self.Config.Choria.NetworkPeers {
 			parsed, err := url.Parse(server)
 			if err != nil {
-				return servers, fmt.Errorf("Could not parse network peer %s: %s", server, err.Error())
+				return servers, fmt.Errorf("Could not parse network peer %s: %s", server, err)
 			}
 
 			host, sport, err := net.SplitHostPort(parsed.Host)
 			if err != nil {
-				return servers, fmt.Errorf("Could not parse network peer %s: %s", server, err.Error())
+				return servers, fmt.Errorf("Could not parse network peer %s: %s", server, err)
 			}
 
 			port, err := strconv.Atoi(sport)
 			if err != nil {
-				return servers, fmt.Errorf("Could not parse network peer %s: %s", server, err.Error())
+				return servers, fmt.Errorf("Could not parse network peer %s: %s", server, err)
 			}
 
 			s := Server{
@@ -436,7 +436,7 @@ func (self *Framework) FacterDomain() (string, error) {
 
 	out, err := exec.Command(cmd, "networking.domain").Output()
 	if err != nil {
-		return "", errors.New("Could not resolve the server domain via facter: " + err.Error())
+		return "", fmt.Errorf("Could not resolve the server domain via facter: ", err)
 	}
 
 	return strings.Replace(string(out), "\n", "", -1), nil

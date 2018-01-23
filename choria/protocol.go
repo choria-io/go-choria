@@ -107,7 +107,7 @@ func (self *Framework) NewRequestFromMessage(version string, msg *Message) (req 
 
 	req, err = self.NewRequest(version, msg.Agent, msg.SenderID, msg.CallerID, msg.TTL, msg.RequestID, msg.Collective())
 	if err != nil {
-		return req, fmt.Errorf("Could not create a Request from a Message: %s", err.Error())
+		return req, fmt.Errorf("Could not create a Request from a Message: %s", err)
 	}
 
 	req.SetMessage(msg.Base64Payload())
@@ -262,13 +262,13 @@ func (self *Framework) NewTransportForSecureRequest(request protocol.SecureReque
 	case protocol.SecureRequestV1:
 		message, err = v1.NewTransportMessage(self.Config.Identity)
 		if err != nil {
-			logrus.Errorf("Failed to create transport from secure request: %s", err.Error())
+			logrus.Errorf("Failed to create transport from secure request: %s", err)
 			return
 		}
 
 		err = message.SetRequestData(request)
 		if err != nil {
-			logrus.Errorf("Failed to create transport from secure request: %s", err.Error())
+			logrus.Errorf("Failed to create transport from secure request: %s", err)
 			return
 		}
 
@@ -298,19 +298,19 @@ func (self *Framework) NewTransportForSecureReply(reply protocol.SecureReply) (m
 func (self *Framework) NewReplyTransportForMessage(msg *Message, request protocol.Request) (protocol.TransportMessage, error) {
 	reply, err := self.NewReply(request)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Reply: %s", err.Error())
+		return nil, fmt.Errorf("Could not create Reply: %s", err)
 	}
 
 	reply.SetMessage(msg.Payload)
 
 	sreply, err := self.NewSecureReply(reply)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Secure Reply: %s", err.Error())
+		return nil, fmt.Errorf("Could not create Secure Reply: %s", err)
 	}
 
 	transport, err := self.NewTransportForSecureReply(sreply)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+		return nil, fmt.Errorf("Could not create Transport: %s", err)
 	}
 
 	protocol.CopyFederationData(request, transport)
@@ -322,17 +322,17 @@ func (self *Framework) NewReplyTransportForMessage(msg *Message, request protoco
 func (self *Framework) NewRequestTransportForMessage(msg *Message, version string) (protocol.TransportMessage, error) {
 	req, err := self.NewRequestFromMessage(version, msg)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Request: %s", err.Error())
+		return nil, fmt.Errorf("Could not create Request: %s", err)
 	}
 
 	sr, err := self.NewSecureRequest(req)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Secure Request: %s", err.Error())
+		return nil, fmt.Errorf("Could not create Secure Request: %s", err)
 	}
 
 	transport, err := self.NewTransportForSecureRequest(sr)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Transport: %s", err.Error())
+		return nil, fmt.Errorf("Could not create Transport: %s", err)
 	}
 
 	return transport, nil

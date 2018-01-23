@@ -59,7 +59,7 @@ func ParseCLI() (err error) {
 	}
 
 	if c, err = choria.New(configFile); err != nil {
-		return fmt.Errorf("Could not initialize Choria: %s", err.Error())
+		return fmt.Errorf("Could not initialize Choria: %s", err)
 	}
 
 	config = c.Config
@@ -92,7 +92,7 @@ func Run() (err error) {
 	}
 
 	if err != nil {
-		log.Errorf("Shutting down due to: %s", err.Error())
+		log.Errorf("Shutting down due to: %s", err)
 		cancel()
 	}
 

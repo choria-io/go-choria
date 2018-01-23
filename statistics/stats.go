@@ -102,7 +102,7 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 	j, err := json.Marshal(sinfo)
 	if err != nil {
-		j = []byte(fmt.Sprintf(`{"error":%s}`, err.Error()))
+		j = []byte(fmt.Sprintf(`{"error":%s}`, err))
 	}
 
 	fmt.Fprintf(w, string(j))

@@ -68,7 +68,7 @@ func (reg *Manager) Start(ctx context.Context, wg *sync.WaitGroup) error {
 		case "file_content":
 			registrator, err = registration.NewFileContent(reg.cfg, reg.log)
 			if err != nil {
-				return fmt.Errorf("Cannot start File Content Registrator: %s", err.Error())
+				return fmt.Errorf("Cannot start File Content Registrator: %s", err)
 			}
 		default:
 			return fmt.Errorf("Unknown registration plugin: %s", reg.cfg.Registration)
@@ -134,7 +134,7 @@ func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 
 	msg, err := choria.NewMessage(string(*rmsg.Data), rmsg.TargetAgent, reg.cfg.RegistrationCollective, "request", nil, reg.choria)
 	if err != nil {
-		reg.log.Warnf("Could not create Message for registration data: %s", err.Error())
+		reg.log.Warnf("Could not create Message for registration data: %s", err)
 		return
 	}
 
@@ -144,7 +144,7 @@ func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 
 	err = reg.connector.Publish(msg)
 	if err != nil {
-		reg.log.Warnf("Could not publish registration Message: %s", err.Error())
+		reg.log.Warnf("Could not publish registration Message: %s", err)
 		return
 	}
 }

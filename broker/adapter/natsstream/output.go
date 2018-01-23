@@ -96,7 +96,7 @@ func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) erro
 
 	nc, err := cm.NewConnector(ctx, sc.servers, sc.clientID, sc.log)
 	if err != nil {
-		return fmt.Errorf("Could not start NATS connection: %s", err.Error())
+		return fmt.Errorf("Could not start NATS connection: %s", err)
 	}
 
 	sc.log.Infof("%s connecting to NATS Stream", sc.clientID)
@@ -108,7 +108,7 @@ func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) erro
 
 		sc.conn, err = stan.Connect(sc.clusterID, sc.clientID, stan.NatsConn(nc.Nats()))
 		if err != nil {
-			sc.log.Errorf("Could not create initial STAN connection, retrying: %s", err.Error())
+			sc.log.Errorf("Could not create initial STAN connection, retrying: %s", err)
 			time.Sleep(time.Second)
 			continue
 		}
@@ -148,7 +148,7 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 
 		j, err := json.Marshal(m)
 		if err != nil {
-			sc.log.Warnf("Cannot JSON encode message for publishing to STAN, discarding: %s", err.Error())
+			sc.log.Warnf("Cannot JSON encode message for publishing to STAN, discarding: %s", err)
 			ectr.Inc()
 			return
 		}
@@ -159,7 +159,7 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 
 		err = sc.conn.Publish(sc.topic, j)
 		if err != nil {
-			sc.log.Warnf("Could not publish message to STAN %s, discarding: %s", sc.topic, err.Error())
+			sc.log.Warnf("Could not publish message to STAN %s, discarding: %s", sc.topic, err)
 			ectr.Inc()
 			return
 		}

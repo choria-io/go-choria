@@ -132,7 +132,7 @@ func (self *Message) requestTransport() (protocol.TransportMessage, error) {
 
 	transport, err := self.choria.NewRequestTransportForMessage(self, self.protoVersion)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create a Transport: %s", err.Error())
+		return nil, fmt.Errorf("Could not create a Transport: %s", err)
 	}
 
 	transport.SetReplyTo(self.ReplyTo())
@@ -181,7 +181,7 @@ func (self *Message) ValidateTTL() bool {
 func (self *Message) SetBase64Payload(payload string) error {
 	str, err := base64.StdEncoding.DecodeString(payload)
 	if err != nil {
-		return fmt.Errorf("Could not decode supplied payload using base64: %s", err.Error())
+		return fmt.Errorf("Could not decode supplied payload using base64: %s", err)
 	}
 
 	self.Payload = string(str)

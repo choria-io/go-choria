@@ -31,8 +31,6 @@ import:
 - package: github.com/prometheus/client_golang
 - package: github.com/choria-io/go-protocol
   version: ^1.0.0
-- package: github.com/choria-io/go-validator
-  version: ^1.0.1
 - package: github.com/choria-io/go-confkey
-  version: ^1.0.0
+  version: ^1
 

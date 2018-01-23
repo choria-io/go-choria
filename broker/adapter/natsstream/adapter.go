@@ -66,12 +66,12 @@ func Create(name string, choria *choria.Framework) (*NatStream, error) {
 
 	adapter.streams, err = newStream(name, adapter.work, adapter.log)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create adapter %s: %s", name, err.Error())
+		return nil, fmt.Errorf("Could not create adapter %s: %s", name, err)
 	}
 
 	adapter.ingests, err = newIngest(name, adapter.work, adapter.log)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create adapter %s: %s", name, err.Error())
+		return nil, fmt.Errorf("Could not create adapter %s: %s", name, err)
 	}
 
 	return adapter, err
@@ -85,7 +85,7 @@ func (sa *NatStream) Init(ctx context.Context, cm choria.ConnectionManager) (err
 
 		err = worker.connect(ctx, cm)
 		if err != nil {
-			return fmt.Errorf("Failure during initial NATS Streaming connections: %s", err.Error())
+			return fmt.Errorf("Failure during initial NATS Streaming connections: %s", err)
 		}
 	}
 
@@ -96,7 +96,7 @@ func (sa *NatStream) Init(ctx context.Context, cm choria.ConnectionManager) (err
 
 		err = worker.connect(ctx, cm)
 		if err != nil {
-			return fmt.Errorf("Failure during NATS initial connections: %s", err.Error())
+			return fmt.Errorf("Failure during NATS initial connections: %s", err)
 		}
 	}
 

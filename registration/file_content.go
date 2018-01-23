@@ -49,7 +49,7 @@ func (fc *FileContent) StartRegistration(ctx context.Context, wg *sync.WaitGroup
 
 	err := fc.publish(output)
 	if err != nil {
-		fc.log.Errorf("Could not create registration data: %s", err.Error())
+		fc.log.Errorf("Could not create registration data: %s", err)
 	}
 
 	for {
@@ -57,7 +57,7 @@ func (fc *FileContent) StartRegistration(ctx context.Context, wg *sync.WaitGroup
 		case <-time.Tick(time.Duration(interval) * time.Second):
 			err = fc.publish(output)
 			if err != nil {
-				fc.log.Errorf("Could not create registration data: %s", err.Error())
+				fc.log.Errorf("Could not create registration data: %s", err)
 			}
 
 		case <-ctx.Done():

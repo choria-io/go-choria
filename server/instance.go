@@ -51,7 +51,7 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	if err := srv.initialConnect(ctx); err != nil {
-		srv.log.Errorf("Initial NATS connection failed: %s", err.Error())
+		srv.log.Errorf("Initial NATS connection failed: %s", err)
 		return
 	}
 
@@ -60,28 +60,28 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	wg.Add(1)
 	if err := srv.registration.Start(ctx, wg); err != nil {
-		srv.log.Errorf("Could not initialize registration: %s", err.Error())
+		srv.log.Errorf("Could not initialize registration: %s", err)
 		srv.connector.Close()
 
 		return
 	}
 
 	if err := srv.setupCoreAgents(ctx); err != nil {
-		srv.log.Errorf("Could not initialize initial core agents: %s", err.Error())
+		srv.log.Errorf("Could not initialize initial core agents: %s", err)
 		srv.connector.Close()
 
 		return
 	}
 
 	if err := srv.setupAdditionalAgents(ctx); err != nil {
-		srv.log.Errorf("Could not initialize initial additional agents: %s", err.Error())
+		srv.log.Errorf("Could not initialize initial additional agents: %s", err)
 		srv.connector.Close()
 
 		return
 	}
 
 	if err := srv.subscribeNode(ctx); err != nil {
-		srv.log.Errorf("Could not initialize node: %s", err.Error())
+		srv.log.Errorf("Could not initialize node: %s", err)
 		srv.connector.Close()
 
 		return

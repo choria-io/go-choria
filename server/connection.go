@@ -14,14 +14,14 @@ func (srv *Instance) initialConnect(ctx context.Context) error {
 
 	tempsrv, err := srv.brokerUrls()
 	if err != nil {
-		return fmt.Errorf("Could not find initial NATS servers: %s", err.Error())
+		return fmt.Errorf("Could not find initial NATS servers: %s", err)
 	}
 
 	srv.log.Infof("Initial servers: %#v", tempsrv)
 
 	srv.connector, err = srv.fw.NewConnector(ctx, srv.brokerUrls, srv.fw.Certname(), srv.log)
 	if err != nil {
-		return fmt.Errorf("Could not create connector: %s", err.Error())
+		return fmt.Errorf("Could not create connector: %s", err)
 	}
 
 	return nil
@@ -69,7 +69,7 @@ func (srv *Instance) subscribeNode(ctx context.Context) error {
 
 		err = srv.connector.QueueSubscribe(ctx, fmt.Sprintf("node.%s", collective), target, "", srv.requests)
 		if err != nil {
-			return fmt.Errorf("Could not subscribe to node directed targets: %s", err.Error())
+			return fmt.Errorf("Could not subscribe to node directed targets: %s", err)
 		}
 	}
 

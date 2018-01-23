@@ -76,7 +76,7 @@ func (a *Agent) HandleMessage(ctx context.Context, msg *choria.Message, request 
 	rpcrequest, err := a.parseIncomingMessage(msg.Payload, request)
 	if err != nil {
 		reply.Statuscode = InvalidData
-		reply.Statusmsg = fmt.Sprintf("Could not process request: %s", err.Error())
+		reply.Statusmsg = fmt.Sprintf("Could not process request: %s", err)
 		return
 	}
 
@@ -135,7 +135,7 @@ func (a *Agent) publish(rpcreply *Reply, msg *choria.Message, request protocol.R
 
 	j, err := json.Marshal(rpcreply)
 	if err != nil {
-		logrus.Errorf("Could not JSON encode reply: %s", err.Error())
+		logrus.Errorf("Could not JSON encode reply: %s", err)
 		reply.Error = err
 	}
 
@@ -159,7 +159,7 @@ func (a *Agent) parseIncomingMessage(msg string, request protocol.Request) (*Req
 
 	err := json.Unmarshal([]byte(msg), r)
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse incoming message as a MCollective SimpleRPC Request: %s", err.Error())
+		return nil, fmt.Errorf("Could not parse incoming message as a MCollective SimpleRPC Request: %s", err)
 	}
 
 	r.CallerID = request.CallerID()

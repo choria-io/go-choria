@@ -13,7 +13,7 @@ import (
 func Match(needles []string, source string, log *logrus.Entry) bool {
 	classes, err := ReadClasses(source)
 	if err != nil {
-		log.Warnf("Could not parse classes file %s: %s", source, err.Error())
+		log.Warnf("Could not parse classes file %s: %s", source, err)
 		return false
 	}
 
