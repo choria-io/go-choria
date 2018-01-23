@@ -13,6 +13,9 @@ import (
 	"strings"
 
 	"github.com/choria-io/go-validator/enum"
+	"github.com/choria-io/go-validator/ipaddress"
+	"github.com/choria-io/go-validator/ipv4"
+	"github.com/choria-io/go-validator/ipv6"
 	"github.com/choria-io/go-validator/maxlength"
 	"github.com/choria-io/go-validator/shellsafe"
 )
@@ -82,6 +85,21 @@ func validateStructField(valueField reflect.Value, typeField reflect.StructField
 	if validation == "shellsafe" {
 		if ok, err := shellsafe.ValidateStructField(valueField, validation); !ok {
 			return fmt.Errorf("%s shellsafe validation failed: %s", typeField.Name, err)
+		}
+
+	} else if validation == "ipv4" {
+		if ok, err := ipv4.ValidateStructField(valueField, validation); !ok {
+			return fmt.Errorf("%s IPv4 validation failed: %s", typeField.Name, err)
+		}
+
+	} else if validation == "ipv6" {
+		if ok, err := ipv6.ValidateStructField(valueField, validation); !ok {
+			return fmt.Errorf("%s IPv6 validation failed: %s", typeField.Name, err)
+		}
+
+	} else if validation == "ipaddress" {
+		if ok, err := ipaddress.ValidateStructField(valueField, validation); !ok {
+			return fmt.Errorf("%s IP address validation failed: %s", typeField.Name, err)
 		}
 
 	} else if ok, _ := regexp.MatchString(`^maxlength=\d+$`, validation); ok {
