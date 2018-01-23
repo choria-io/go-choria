@@ -9,7 +9,7 @@ import (
 type Request struct {
 	Command string   `validate:"shellsafe"`
 	Flags   []string `validate:"enum=debug,verbose"`
-	Args    string   `validate:"maxlength=128`
+	Args    string   `validate:"maxlength=128"`
 }
 
 func Example_struct() {
@@ -26,5 +26,14 @@ func Example_struct() {
 
 	fmt.Println("valid request")
 
-	// Output: valid request
+	ok, err = validator.ValidateStructField(r, "Command")
+	if !ok {
+		panic(err)
+	}
+
+	fmt.Println("valid field")
+
+	// Output:
+	// valid request
+	// valid field
 }

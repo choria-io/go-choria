@@ -28,38 +28,71 @@ func ValidateStruct(target interface{}) (bool, error) {
 	return validateStructValue(val)
 }
 
+// ValidateStructField validates one field in a struct
+func ValidateStructField(target interface{}, field string) (bool, error) {
+	val := reflect.ValueOf(target)
+
+	if val.Kind() == reflect.Ptr {
+		val = val.Elem()
+	}
+
+	valueField := val.FieldByName(field)
+	typeField, ok := val.Type().FieldByName(field)
+	if !ok {
+		return false, fmt.Errorf("unknown field %s", field)
+	}
+
+	validation := strings.TrimSpace(typeField.Tag.Get("validate"))
+
+	err := validateStructField(valueField, typeField, validation)
+	if err != nil {
+		return false, err
+	}
+
+	return true, nil
+}
+
 func validateStructValue(val reflect.Value) (bool, error) {
 	for i := 0; i < val.NumField(); i++ {
 		valueField := val.Field(i)
 		typeField := val.Type().Field(i)
 		validation := strings.TrimSpace(typeField.Tag.Get("validate"))
 
-		if valueField.Kind() == reflect.Struct {
-			ok, err := validateStructValue(valueField)
-			if !ok {
-				return ok, err
-			}
-		}
-
-		if validation == "" {
-			continue
-		}
-
-		if validation == "shellsafe" {
-			if ok, err := shellsafe.ValidateStructField(valueField, validation); !ok {
-				return false, fmt.Errorf("%s shellsafe validation failed: %s", typeField.Name, err)
-			}
-
-		} else if ok, _ := regexp.MatchString(`^maxlength=\d+$`, validation); ok {
-			if ok, err := maxlength.ValidateStructField(valueField, validation); !ok {
-				return false, fmt.Errorf("%s maxlength validation failed: %s", typeField.Name, err)
-			}
-		} else if ok, _ := regexp.MatchString(`^enum=(.+,*?)+$`, validation); ok {
-			if ok, err := enum.ValidateStructField(valueField, validation); !ok {
-				return false, fmt.Errorf("%s enum validation failed: %s", typeField.Name, err)
-			}
+		err := validateStructField(valueField, typeField, validation)
+		if err != nil {
+			return false, err
 		}
 	}
 
 	return true, nil
+}
+
+func validateStructField(valueField reflect.Value, typeField reflect.StructField, validation string) error {
+	if valueField.Kind() == reflect.Struct {
+		ok, err := validateStructValue(valueField)
+		if !ok {
+			return err
+		}
+	}
+
+	if validation == "" {
+		return nil
+	}
+
+	if validation == "shellsafe" {
+		if ok, err := shellsafe.ValidateStructField(valueField, validation); !ok {
+			return fmt.Errorf("%s shellsafe validation failed: %s", typeField.Name, err)
+		}
+
+	} else if ok, _ := regexp.MatchString(`^maxlength=\d+$`, validation); ok {
+		if ok, err := maxlength.ValidateStructField(valueField, validation); !ok {
+			return fmt.Errorf("%s maxlength validation failed: %s", typeField.Name, err)
+		}
+	} else if ok, _ := regexp.MatchString(`^enum=(.+,*?)+$`, validation); ok {
+		if ok, err := enum.ValidateStructField(valueField, validation); !ok {
+			return fmt.Errorf("%s enum validation failed: %s", typeField.Name, err)
+		}
+	}
+
+	return nil
 }
