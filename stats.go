@@ -86,20 +86,20 @@ func (s *Server) getVarz() (*server.Varz, error) {
 
 	resp, err := client.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("Could not get /varz stats: %s", err.Error())
+		return nil, fmt.Errorf("Could not get /varz stats: %s", err)
 	}
 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Could not get /varz stats: %s", err.Error())
+		return nil, fmt.Errorf("Could not get /varz stats: %s", err)
 	}
 
 	response := &server.Varz{}
 	err = json.Unmarshal(body, response)
 	if err != nil {
-		return nil, fmt.Errorf("Could not get /varz stats: %s", err.Error())
+		return nil, fmt.Errorf("Could not get /varz stats: %s", err)
 	}
 
 	return response, nil
@@ -127,7 +127,7 @@ func (s *Server) publishStats(ctx context.Context, interval time.Duration) {
 func (s *Server) updatePrometheus() {
 	varz, err := s.getVarz()
 	if err != nil {
-		log.Errorf("Could not publish network broker stats: %s", err.Error())
+		log.Errorf("Could not publish network broker stats: %s", err)
 		return
 	}
 
