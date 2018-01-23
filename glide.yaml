@@ -1,0 +1,6 @@
+package: github.com/choria-io/go-confkey
+import:
+- package: github.com/choria-io/go-validator
+  version: master
+- package: github.com/onsi/gomega
+  version: ^1.3.0
