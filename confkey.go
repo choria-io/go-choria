@@ -1,6 +1,8 @@
 // Package confkey looks for tags on a structure and set values
 // based on the tag rather than the struct item names
 //
+// Features
+//
 // Defaults are supported and can be fetched from the shell environment
 //
 // The tags can specify some formating like comma splits and other
@@ -10,6 +12,19 @@
 //
 // Validations can be done on a struct basis using the github.com/choria-io/go-validators
 // package
+//
+// A sample structure might look like this, the package contains utilities to
+// set values, apply defaults and perform validations
+//
+//    type Config struct {
+//        Loglevel string   `confkey:"loglevel" default:"warn" validate:"enum=debug,info,warn,error"`
+//        Mode     string   `confkey:"mode" default:"server" validate:"enum=server,client"`
+//        Servers  []string `confkey:"servers" type:"comma_split" environment:"SERVERS"`
+//        Path     []string `confkey:"path" type:"path_split" default:"/bin:/usr/bin"`
+//    }
+//
+// The utilities here will let you parse any config file that might have keys like loglevel etc
+// and map the string values read from the text file onto the structure
 package confkey
 
 import (
