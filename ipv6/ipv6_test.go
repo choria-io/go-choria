@@ -10,7 +10,7 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Validator/IPv4")
+	RunSpecs(t, "Validator/IPv6")
 }
 
 var _ = Describe("ValidateString", func() {

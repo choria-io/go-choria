@@ -9,7 +9,6 @@ package validator
 import (
 	"fmt"
 	"reflect"
-	"regexp"
 	"strings"
 
 	"github.com/choria-io/go-validator/enum"
@@ -17,6 +16,7 @@ import (
 	"github.com/choria-io/go-validator/ipv4"
 	"github.com/choria-io/go-validator/ipv6"
 	"github.com/choria-io/go-validator/maxlength"
+	"github.com/choria-io/go-validator/regex"
 	"github.com/choria-io/go-validator/shellsafe"
 )
 
@@ -102,11 +102,17 @@ func validateStructField(valueField reflect.Value, typeField reflect.StructField
 			return fmt.Errorf("%s IP address validation failed: %s", typeField.Name, err)
 		}
 
-	} else if ok, _ := regexp.MatchString(`^maxlength=\d+$`, validation); ok {
+	} else if strings.HasPrefix(validation, "regex") {
+		if ok, err := regex.ValidateStructField(valueField, validation); !ok {
+			return fmt.Errorf("%s regular expression validation failed: %s", typeField.Name, err)
+		}
+
+	} else if strings.HasPrefix(validation, "maxlength") {
 		if ok, err := maxlength.ValidateStructField(valueField, validation); !ok {
 			return fmt.Errorf("%s maxlength validation failed: %s", typeField.Name, err)
 		}
-	} else if ok, _ := regexp.MatchString(`^enum=(.+,*?)+$`, validation); ok {
+
+	} else if strings.HasPrefix(validation, "enum") {
 		if ok, err := enum.ValidateStructField(valueField, validation); !ok {
 			return fmt.Errorf("%s enum validation failed: %s", typeField.Name, err)
 		}
