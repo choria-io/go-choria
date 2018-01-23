@@ -22,6 +22,9 @@ type vdata struct {
 	SS   string   `validate:"shellsafe"`
 	ML   string   `validate:"maxlength=3"`
 	Enum []string `validate:"enum=one,two"`
+	IPv4 string   `validate:"ipv4"`
+	IPv6 string   `validate:"ipv6"`
+	IP   string   `validate:"ipaddress"`
 
 	nest
 }
@@ -30,7 +33,11 @@ var s vdata
 
 var _ = Describe("ValidateStructField", func() {
 	BeforeEach(func() {
-		s = vdata{}
+		s = vdata{
+			IPv4: "1.2.3.4",
+			IPv6: "2a00:1450:4003:807::200e",
+			IP:   "1.2.3.4",
+		}
 	})
 
 	It("Should validate a specific field", func() {
@@ -49,7 +56,11 @@ var _ = Describe("ValidateStructField", func() {
 
 var _ = Describe("ValidateStruct", func() {
 	BeforeEach(func() {
-		s = vdata{}
+		s = vdata{
+			IPv4: "1.2.3.4",
+			IPv6: "2a00:1450:4003:807::200e",
+			IP:   "1.2.3.4",
+		}
 	})
 
 	It("Should support nested structs", func() {
@@ -88,4 +99,26 @@ var _ = Describe("ValidateStruct", func() {
 		Expect(err).To(MatchError("Enum enum validation failed: 'four' is not in the allowed list: one, two"))
 		Expect(ok).To(BeFalse())
 	})
+
+	It("Should support ipv4", func() {
+		s.IPv4 = "2a00:1450:4003:807::200e"
+		ok, err := validator.ValidateStruct(s)
+		Expect(err).To(MatchError("IPv4 IPv4 validation failed: 2a00:1450:4003:807::200e is not an IPv4 address"))
+		Expect(ok).To(BeFalse())
+	})
+
+	It("Should support ipv6", func() {
+		s.IPv6 = "1.2.3.4"
+		ok, err := validator.ValidateStruct(s)
+		Expect(err).To(MatchError("IPv6 IPv6 validation failed: 1.2.3.4 is not an IPv6 address"))
+		Expect(ok).To(BeFalse())
+	})
+
+	It("Should support ipaddress", func() {
+		s.IP = "foo"
+		ok, err := validator.ValidateStruct(s)
+		Expect(err).To(MatchError("IP IP address validation failed: foo is not an IP address"))
+		Expect(ok).To(BeFalse())
+	})
+
 })

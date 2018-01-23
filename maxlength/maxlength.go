@@ -7,6 +7,7 @@ import (
 	"strconv"
 )
 
+// ValidateString validates that input is not longer than max
 func ValidateString(input string, max int) (bool, error) {
 	if len(input) > max {
 		return false, fmt.Errorf("%d characters, max allowed %d", len(input), max)
@@ -15,6 +16,7 @@ func ValidateString(input string, max int) (bool, error) {
 	return true, nil
 }
 
+// ValidateStructField validates value based on the tag in the form maxlength=10
 func ValidateStructField(value reflect.Value, tag string) (bool, error) {
 	re := regexp.MustCompile(`^maxlength=(\d+)$`)
 	parts := re.FindStringSubmatch(tag)
