@@ -1,5 +1,5 @@
-hash: 5f14e6cd1e1c0b260f7639d598bf25eb1e8f953a89dfc378c7e3b281994db76b
-updated: 2018-01-22T22:01:23.836357+01:00
+hash: 58af5f9f50a32e78977f3e6240b793d81e6523fee60e64dbd01d1f381169ad95
+updated: 2018-01-23T13:45:18.642274+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -11,13 +11,15 @@ imports:
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
+- name: github.com/choria-io/go-confkey
+  version: 41d786c3b3bcccd9ffe90d89549990ce48375065
 - name: github.com/choria-io/go-protocol
   version: 72bc3ca9593e692e55a3f5dda61194803f54d619
   subpackages:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-validator
-  version: 0ca75bc874f5b4b5ced1867f39640f0f25b2ced6
+  version: 6c645032d8dae1094eb242a8c100b767b9dd8dd4
   subpackages:
   - enum
   - maxlength
@@ -81,7 +83,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 334b8f472b3af5d541c5642701c1e29e2126f486
+  version: 003f63b7f4cff3fc95357005358af2de0f5fe152
   subpackages:
   - format
   - internal/assertion
@@ -118,7 +120,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
 - name: github.com/tidwall/gjson
-  version: 5cd723d566400bc7ac450eb0c5b9edbb75a70750
+  version: e62d62a3e1e9f324346170bbc04333341f803dfb
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
@@ -137,6 +139,9 @@ imports:
   version: 5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec
   subpackages:
   - context
+  - html
+  - html/atom
+  - html/charset
 - name: golang.org/x/sys
   version: f7928cfef4d09d1b080aa2b6fd3ca9ba1567c733
   subpackages:
@@ -151,4 +156,22 @@ imports:
   version: 947dcec5ba9c011838740e680966fd7087a71d0d
 - name: gopkg.in/yaml.v2
   version: d670f9405373e636a5a2765eea47fac0c9bc91a4
-testImports: []
+testImports:
+- name: golang.org/x/text
+  version: e19ae1496984b1c655b8044a65c0300a3c878dd3
+  subpackages:
+  - encoding
+  - encoding/charmap
+  - encoding/htmlindex
+  - encoding/internal
+  - encoding/internal/identifier
+  - encoding/japanese
+  - encoding/korean
+  - encoding/simplifiedchinese
+  - encoding/traditionalchinese
+  - encoding/unicode
+  - internal/tag
+  - internal/utf8internal
+  - language
+  - runes
+  - transform
