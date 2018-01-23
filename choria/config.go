@@ -2,18 +2,16 @@ package choria
 
 import (
 	"bufio"
-	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
-	"reflect"
 	"regexp"
-	"strconv"
 	"strings"
-	"unicode"
+
+	"github.com/choria-io/go-confkey"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/srvcache"
@@ -56,7 +54,7 @@ type ChoriaPluginConfig struct {
 	// security plugin
 	PrivilegedUsers   []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split" default:"\\.privileged.mcollective$"`
 	CertnameWhitelist []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split" default:"\\.mcollective$"`
-	Serializer        string   `confkey:"plugin.choria.security.serializer"` // TODO support enums
+	Serializer        string   `confkey:"plugin.choria.security.serializer" validate:"enum=json,yaml"`
 
 	// network broker
 	NetworkListenAddress string   `confkey:"plugin.choria.network.listen_address" default:"::"`
@@ -88,7 +86,7 @@ type Config struct {
 	LogFile                   string   `confkey:"logfile"`
 	KeepLogs                  int      `confkey:"keeplogs" default:"5"`
 	MaxLogSize                int      `confkey:"max_log_size" default:"2097152"`
-	LogLevel                  string   `confkey:"loglevel" default:"info"` // TODO support enums
+	LogLevel                  string   `confkey:"loglevel" default:"info" validate:"enum=debug,info,warn,error,fatal"`
 	LogFacility               string   `confkey:"logfacility" default:"user"`
 	LibDir                    []string `confkey:"libdir" type:"path_split"`
 	Identity                  string   `confkey:"identity"`
@@ -107,7 +105,7 @@ type Config struct {
 	RPCAuditProvider          string   `confkey:"rpcauditprovider" type:"title_string"`
 	RPCAuthorization          bool     `confkey:"rpcauthorization" default:"false"`
 	RPCAuthorizationProvider  string   `confkey:"rpcauthprovider" type:"title_string"`
-	RPCLimitMethod            string   `confkey:"rpclimitmethod" default:"first"` // TODO support enums
+	RPCLimitMethod            string   `confkey:"rpclimitmethod" default:"first"`
 	LoggerType                string   `confkey:"logger_type" default:"file"`
 	FactCacheTime             int      `confkey:"fact_cache_time" default:"300"`
 	SSLCipher                 string   `confkey:"ssl_cipher" default:"aes-256-cbc"`
@@ -287,7 +285,8 @@ func parseConfigContents(content io.Reader, config interface{}, prefix string, f
 				}
 
 				if config != nil {
-					setItemWithKey(config, key, matches[2])
+					// errors here are normal since items for Choria and Config are in the same file
+					confkey.SetStructFieldWithKey(config, key, matches[2])
 				}
 
 				found[key] = matches[2]
@@ -298,7 +297,11 @@ func parseConfigContents(content io.Reader, config interface{}, prefix string, f
 
 func newConfig() *Config {
 	m := &Config{Choria: newChoria()}
-	setDefaults(m)
+
+	err := confkey.SetStructDefaults(m)
+	if err != nil {
+		log.Errorf("Config creation failed: %s", err)
+	}
 
 	if terminal.IsTerminal(int(os.Stdout.Fd())) {
 		m.Color = false
@@ -309,134 +312,11 @@ func newConfig() *Config {
 
 func newChoria() *ChoriaPluginConfig {
 	c := &ChoriaPluginConfig{}
-	setDefaults(c)
+
+	err := confkey.SetStructDefaults(c)
+	if err != nil {
+		log.Errorf("Choria config creation failed: %s", err)
+	}
 
 	return c
-}
-
-// finds the struct key that matches the confkey on s and assign the value to it
-func setItemWithKey(s interface{}, key string, value interface{}) error {
-	item, err := itemWithKey(s, key)
-	if err != nil {
-		return err
-	}
-
-	if t, ok := tag(s, item, "environment"); ok {
-		if v, ok := os.LookupEnv(t); ok {
-			value = v
-		}
-	}
-
-	field := reflect.ValueOf(s).Elem().FieldByName(item)
-
-	switch field.Kind() {
-	case reflect.Slice:
-		ptr := field.Addr().Interface().(*[]string)
-
-		if t, ok := tag(s, item, "type"); ok {
-			switch t {
-			case "comma_split":
-				// specifically clear it since these are one line split like 'collectives'
-				*ptr = []string{}
-				vals := strings.Split(value.(string), ",")
-
-				for _, v := range vals {
-					*ptr = append(*ptr, strings.TrimSpace(v))
-				}
-
-			case "path_split":
-				// these are like libdir, either a one line split or a multiple occurance with splits
-				vals := strings.Split(value.(string), string(os.PathListSeparator))
-
-				for _, v := range vals {
-					*ptr = append(*ptr, strings.TrimSpace(v))
-				}
-			}
-		} else {
-			*ptr = append(*ptr, strings.TrimSpace(value.(string)))
-		}
-
-	case reflect.Int:
-		ptr := field.Addr().Interface().(*int)
-		i, err := strconv.Atoi(value.(string))
-		if err != nil {
-			return err
-		}
-		*ptr = i
-
-	case reflect.String:
-		ptr := field.Addr().Interface().(*string)
-		*ptr = value.(string)
-
-		if t, ok := tag(s, item, "type"); ok {
-			if t == "title_string" {
-				a := []rune(value.(string))
-				a[0] = unicode.ToUpper(a[0])
-				*ptr = string(a)
-			}
-		}
-
-	case reflect.Bool:
-		ptr := field.Addr().Interface().(*bool)
-		b, _ := StrToBool(value.(string))
-		*ptr = b
-	}
-
-	return nil
-}
-
-// determines the struct key name that is tagged with a certain confkey
-func itemWithKey(s interface{}, key string) (string, error) {
-	st := reflect.TypeOf(s)
-	if st.Kind() == reflect.Ptr {
-		st = st.Elem()
-	}
-
-	for i := 0; i <= st.NumField()-1; i++ {
-		field := st.Field(i)
-
-		if confkey, ok := field.Tag.Lookup("confkey"); ok {
-			if confkey == key {
-				return field.Name, nil
-			}
-		}
-	}
-
-	return "", errors.New("Can't find any structure element that holds " + key)
-}
-
-// extract defaults out of the tags and set them to the key
-func setDefaults(s interface{}) {
-	st := reflect.TypeOf(s).Elem()
-
-	for i := 0; i <= st.NumField()-1; i++ {
-		field := st.Field(i)
-
-		if key, ok := field.Tag.Lookup("confkey"); ok {
-			if value, ok := field.Tag.Lookup("default"); ok {
-				setItemWithKey(s, key, value)
-			}
-		}
-	}
-}
-
-// retrieve a tag for a struct field
-func tag(s interface{}, field string, tag string) (string, bool) {
-	st := reflect.TypeOf(s)
-
-	if st.Kind() == reflect.Ptr {
-		st = st.Elem()
-	}
-
-	for i := 0; i <= st.NumField()-1; i++ {
-		f := st.Field(i)
-
-		if f.Name == field {
-			if value, ok := f.Tag.Lookup(tag); ok {
-				return value, true
-			}
-		}
-	}
-
-	return "", false
 }
