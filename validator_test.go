@@ -25,7 +25,7 @@ type vdata struct {
 	IPv4 string   `validate:"ipv4"`
 	IPv6 string   `validate:"ipv6"`
 	IP   string   `validate:"ipaddress"`
-
+	RE   string   `validate:"regex=world$"`
 	nest
 }
 
@@ -37,6 +37,7 @@ var _ = Describe("ValidateStructField", func() {
 			IPv4: "1.2.3.4",
 			IPv6: "2a00:1450:4003:807::200e",
 			IP:   "1.2.3.4",
+			RE:   "hello world",
 		}
 	})
 
@@ -60,6 +61,7 @@ var _ = Describe("ValidateStruct", func() {
 			IPv4: "1.2.3.4",
 			IPv6: "2a00:1450:4003:807::200e",
 			IP:   "1.2.3.4",
+			RE:   "hello world",
 		}
 	})
 
@@ -121,4 +123,11 @@ var _ = Describe("ValidateStruct", func() {
 		Expect(ok).To(BeFalse())
 	})
 
+	It("Should support regex", func() {
+		s.RE = "1"
+		ok, err := validator.ValidateStruct(s)
+
+		Expect(err).To(MatchError("RE regular expression validation failed: input does not match 'world$'"))
+		Expect(ok).To(BeFalse())
+	})
 })

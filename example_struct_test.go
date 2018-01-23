@@ -11,6 +11,7 @@ type Request struct {
 	Flags   []string `validate:"enum=debug,verbose"`
 	Args    string   `validate:"maxlength=128"`
 	AnyIP   string   `validate:"ipaddress"` // can also check ipv4 and ipv6
+	User    string   `validate:"regex=^\\w+$"`
 }
 
 func Example_struct() {
@@ -19,6 +20,7 @@ func Example_struct() {
 		Flags:   []string{"debug"},
 		Args:    "hello world",
 		AnyIP:   "2a00:1450:4003:807::200e",
+		User:    "bob",
 	}
 
 	ok, err := validator.ValidateStruct(r)
