@@ -1,11 +1,15 @@
-hash: 79e47f09dfcf84ead661d52071602156f009b78cd026df3c12d600222eb87e0a
-updated: 2018-01-23T13:43:52.053486+01:00
+hash: 938fc372e1cb43fd2637c0b49db9c3fca56af37eb6715bff8aa87233d0f88199
+updated: 2018-01-23T18:59:55.057862+01:00
 imports:
 - name: github.com/choria-io/go-validator
-  version: 6c645032d8dae1094eb242a8c100b767b9dd8dd4
+  version: 99e0f793dd701e8cf45fd27624390ea43699e3b9
   subpackages:
   - enum
+  - ipaddress
+  - ipv4
+  - ipv6
   - maxlength
+  - regex
   - shellsafe
 - name: github.com/onsi/gomega
   version: 003f63b7f4cff3fc95357005358af2de0f5fe152
