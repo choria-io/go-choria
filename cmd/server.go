@@ -63,7 +63,7 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	instance, err := server.NewInstance(c)
 	if err != nil {
-		log.Errorf("Could not start choria: %s", err.Error())
+		log.Errorf("Could not start choria: %s", err)
 		os.Exit(1)
 	}
 
@@ -72,7 +72,7 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	if r.pidFile != "" {
 		err := ioutil.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)
 		if err != nil {
-			return fmt.Errorf("Could not write PID: %s", err.Error())
+			return fmt.Errorf("Could not write PID: %s", err)
 		}
 	}
 

@@ -49,7 +49,7 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 	if !c.Config.DisableTLS {
 		err = s.setupTLS()
 		if err != nil {
-			return s, fmt.Errorf("Could not setup TLS: %s", err.Error())
+			return s, fmt.Errorf("Could not setup TLS: %s", err)
 		}
 	}
 
@@ -60,7 +60,7 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 
 	err = s.setupCluster()
 	if err != nil {
-		return s, fmt.Errorf("Could not setup Clustering: %s", err.Error())
+		return s, fmt.Errorf("Could not setup Clustering: %s", err)
 	}
 
 	s.gnatsd = gnatsd.New(s.opts)
@@ -104,13 +104,13 @@ func (s *Server) setupCluster() (err error) {
 
 	peers, err := s.choria.NetworkBrokerPeers()
 	if err != nil {
-		return fmt.Errorf("Could not determine network broker peers: %s", err.Error())
+		return fmt.Errorf("Could not determine network broker peers: %s", err)
 	}
 
 	for _, p := range peers {
 		u, err := p.URL()
 		if err != nil {
-			return fmt.Errorf("Could not parse Peer configuration: %s", err.Error())
+			return fmt.Errorf("Could not parse Peer configuration: %s", err)
 		}
 
 		log.Infof("Adding %s as network peer", u.String())
@@ -120,7 +120,7 @@ func (s *Server) setupCluster() (err error) {
 	// Remove any host/ip that points to itself in Route
 	newroutes, err := gnatsd.RemoveSelfReference(s.opts.Cluster.Port, s.opts.Routes)
 	if err != nil {
-		return fmt.Errorf("Could not remove own Self from cluster configuration: %s", err.Error())
+		return fmt.Errorf("Could not remove own Self from cluster configuration: %s", err)
 	}
 
 	s.opts.Routes = newroutes
@@ -137,19 +137,19 @@ func (s *Server) setupTLS() (err error) {
 	if p, err := s.choria.CAPath(); err == nil {
 		s.opts.TLSCaCert = p
 	} else {
-		return fmt.Errorf("Could not set the CA: %s", err.Error())
+		return fmt.Errorf("Could not set the CA: %s", err)
 	}
 
 	if p, err := s.choria.ClientPublicCert(); err == nil {
 		s.opts.TLSCert = p
 	} else {
-		return fmt.Errorf("Could not set the Public Cert: %s", err.Error())
+		return fmt.Errorf("Could not set the Public Cert: %s", err)
 	}
 
 	if p, err := s.choria.ClientPrivateKey(); err == nil {
 		s.opts.TLSKey = p
 	} else {
-		return fmt.Errorf("Could not set the Private Key: %s", err.Error())
+		return fmt.Errorf("Could not set the Private Key: %s", err)
 	}
 
 	tc := gnatsd.TLSConfigOpts{}
@@ -160,7 +160,7 @@ func (s *Server) setupTLS() (err error) {
 	tc.Timeout = 2
 
 	if s.opts.TLSConfig, err = gnatsd.GenTLSConfig(&tc); err != nil {
-		return fmt.Errorf("Could not create NATS Server TLS Config: %s", err.Error())
+		return fmt.Errorf("Could not create NATS Server TLS Config: %s", err)
 	}
 
 	s.opts.Cluster.TLSConfig = s.opts.TLSConfig

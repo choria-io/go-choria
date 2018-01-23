@@ -21,14 +21,14 @@ func RunAdapters(ctx context.Context, c *choria.Framework, wg *sync.WaitGroup) e
 		case "nats_stream":
 			n, err := natsstream.Create(a, c)
 			if err != nil {
-				return fmt.Errorf("Could not start nats_stream adapter: %s", err.Error())
+				return fmt.Errorf("Could not start nats_stream adapter: %s", err)
 			}
 
 			log.Infof("Starting %s Protocol Adapter %s", atype, a)
 
 			err = n.Init(ctx, c)
 			if err != nil {
-				return fmt.Errorf("Could not initialize adapter %s: %s", a, err.Error())
+				return fmt.Errorf("Could not initialize adapter %s: %s", a, err)
 			}
 
 			wg.Add(1)

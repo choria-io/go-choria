@@ -1,5 +1,5 @@
-hash: 58af5f9f50a32e78977f3e6240b793d81e6523fee60e64dbd01d1f381169ad95
-updated: 2018-01-23T13:45:18.642274+01:00
+hash: f7ac776a398ae987b63ef6ae9d174451727a70cd88e0e64cca258ddfc9220a52
+updated: 2018-01-23T22:20:21.79437+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,17 +12,21 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-confkey
-  version: 41d786c3b3bcccd9ffe90d89549990ce48375065
+  version: 3a0ddeafbca44f8cd05f594ec7a6788913f0c1dc
 - name: github.com/choria-io/go-protocol
   version: 72bc3ca9593e692e55a3f5dda61194803f54d619
   subpackages:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-validator
-  version: 6c645032d8dae1094eb242a8c100b767b9dd8dd4
+  version: 99e0f793dd701e8cf45fd27624390ea43699e3b9
   subpackages:
   - enum
+  - ipaddress
+  - ipv4
+  - ipv6
   - maxlength
+  - regex
   - shellsafe
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7

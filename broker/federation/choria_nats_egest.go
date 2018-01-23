@@ -20,7 +20,7 @@ func NewChoriaNatsEgest(workers int, mode int, capacity int, broker *FederationB
 
 		nc, err = self.connection.NewConnector(ctx, self.servers, self.Name(), logger)
 		if err != nil {
-			logger.Errorf("Could not start NATS connection for worker %d: %s", i, err.Error())
+			logger.Errorf("Could not start NATS connection for worker %d: %s", i, err)
 			return
 		}
 
@@ -55,14 +55,14 @@ func NewChoriaNatsEgest(workers int, mode int, capacity int, broker *FederationB
 
 			j, err := cm.Message.JSON()
 			if err != nil {
-				logger.Errorf("Could not JSON encode message '%s': %s", cm.RequestID, err.Error())
+				logger.Errorf("Could not JSON encode message '%s': %s", cm.RequestID, err)
 				ectr.Inc()
 				return
 			}
 
 			for _, target := range cm.Targets {
 				if err = nc.PublishRaw(target, []byte(j)); err != nil {
-					logger.Errorf("Could not publish message '%s' to '%s': %s", cm.RequestID, target, err.Error())
+					logger.Errorf("Could not publish message '%s' to '%s': %s", cm.RequestID, target, err)
 					ectr.Inc()
 					continue
 				}

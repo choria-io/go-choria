@@ -73,7 +73,7 @@ func (self *pooledWorker) Run(ctx context.Context) error {
 
 	if !self.Ready() {
 		err := fmt.Errorf("Could not run %s as Init() has not been called or failed", self.Name())
-		self.log.Warn(err.Error())
+		self.log.Warn(err)
 		return err
 	}
 
@@ -92,13 +92,13 @@ func (self *pooledWorker) Run(ctx context.Context) error {
 			}
 		default:
 			err := errors.New("Do not know which middleware to connect to, Mode should be one of Federation or Collective")
-			self.log.Warn(err.Error())
+			self.log.Warn(err)
 			return err
 		}
 
 		if err != nil {
-			err = fmt.Errorf("Could not determine middleware servers: %s", err.Error())
-			self.log.Warn(err.Error())
+			err = fmt.Errorf("Could not determine middleware servers: %s", err)
+			self.log.Warn(err)
 			return err
 		}
 	}

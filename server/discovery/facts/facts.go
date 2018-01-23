@@ -23,7 +23,7 @@ func Match(filters [][3]string, fw *choria.Framework, log *logrus.Entry) bool {
 	for _, filter := range filters {
 		matched, err = HasFact(filter[0], filter[1], filter[2], fw.Config.FactSourceFile)
 		if err != nil {
-			log.Warnf("Failed to match fact '%#v': %s", filter, err.Error())
+			log.Warnf("Failed to match fact '%#v': %s", filter, err)
 			return false
 		}
 
@@ -48,13 +48,13 @@ func JSON(file string) (json.RawMessage, error) {
 
 	j, err := ioutil.ReadFile(file)
 	if err != nil {
-		return json.RawMessage("{}"), fmt.Errorf("Could not read facts file %s: %s", file, err.Error())
+		return json.RawMessage("{}"), fmt.Errorf("Could not read facts file %s: %s", file, err)
 	}
 
 	if strings.HasSuffix(file, "yaml") {
 		j, err = yaml.YAMLToJSON(j)
 		if err != nil {
-			return json.RawMessage("{}"), fmt.Errorf("Could not parse facts file %s as YAML: %s", file, err.Error())
+			return json.RawMessage("{}"), fmt.Errorf("Could not parse facts file %s as YAML: %s", file, err)
 		}
 	}
 

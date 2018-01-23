@@ -16,7 +16,7 @@ func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *Federation
 
 		nc, err := self.connection.NewConnector(ctx, self.servers, self.Name(), logger)
 		if err != nil {
-			logger.Errorf("Could not start NATS connection for worker %d: %s", i, err.Error())
+			logger.Errorf("Could not start NATS connection for worker %d: %s", i, err)
 			return
 		}
 
@@ -33,7 +33,7 @@ func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *Federation
 
 		natsch, err := nc.ChanQueueSubscribe("ingest", subj, grp, 64)
 		if err != nil {
-			logger.Errorf("Could not subscribe to %s: %s", subj, err.Error())
+			logger.Errorf("Could not subscribe to %s: %s", subj, err)
 			return
 		}
 
@@ -49,7 +49,7 @@ func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *Federation
 
 			message, err := self.choria.NewTransportFromJSON(string(msg.Data))
 			if err != nil {
-				logger.Warnf("Could not parse received message into a TransportMessage: %s", err.Error())
+				logger.Warnf("Could not parse received message into a TransportMessage: %s", err)
 				ectr.Inc()
 				return
 			}

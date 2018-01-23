@@ -42,7 +42,7 @@ func newIngest(name string, work chan adaptable, logger *log.Entry) ([]*nats, er
 
 	_, err = framework.MiddlewareServers()
 	if err != nil {
-		return nil, fmt.Errorf("Could not resolve initial server list: %s", err.Error())
+		return nil, fmt.Errorf("Could not resolve initial server list: %s", err)
 	}
 
 	servers := func() ([]choria.Server, error) {
@@ -88,12 +88,12 @@ func (na *nats) connect(ctx context.Context, cm choria.ConnectionManager) error 
 
 	na.conn, err = cm.NewConnector(ctx, na.servers, fmt.Sprintf("choria adapter %s", na.name), na.log)
 	if err != nil {
-		return fmt.Errorf("Could not start NATS connection: %s", err.Error())
+		return fmt.Errorf("Could not start NATS connection: %s", err)
 	}
 
 	na.input, err = na.conn.ChanQueueSubscribe(na.name, na.topic, na.group, 1000)
 	if err != nil {
-		return fmt.Errorf("Could not subscribe to %s: %s", na.topic, err.Error())
+		return fmt.Errorf("Could not subscribe to %s: %s", na.topic, err)
 	}
 
 	return nil
@@ -131,7 +131,7 @@ func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
 		}
 
 		if err != nil {
-			na.log.Warnf("Could not process message, discarding: %s", err.Error())
+			na.log.Warnf("Could not process message, discarding: %s", err)
 			ectr.Inc()
 			return
 		}

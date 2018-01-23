@@ -98,7 +98,7 @@ func (a *Manager) RegisterAgent(ctx context.Context, name string, agent Agent, c
 
 	err := a.subscribeAgent(ctx, name, agent, conn)
 	if err != nil {
-		return fmt.Errorf("Could not register agent %s: %s", name, err.Error())
+		return fmt.Errorf("Could not register agent %s: %s", name, err)
 	}
 
 	a.agents[name] = agent
@@ -148,7 +148,7 @@ func (a *Manager) subscribeAgent(ctx context.Context, name string, agent Agent, 
 				conn.Unsubscribe(sub)
 			}
 
-			return fmt.Errorf("Subscription failed: %s", err.Error())
+			return fmt.Errorf("Subscription failed: %s", err)
 		}
 
 		a.subs[name] = append(a.subs[name], subname)

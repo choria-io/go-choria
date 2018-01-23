@@ -1,7 +1,6 @@
 package choria
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"os"
@@ -49,7 +48,7 @@ func StrToBool(s string) (bool, error) {
 		return false, nil
 	}
 
-	return false, errors.New("Cannot convert string value '" + clean + "' into a boolean.")
+	return false, fmt.Errorf("cannot convert string value '%s' into a boolean", clean)
 }
 
 // SliceGroups takes a slice of words and make new chunks of given size
@@ -83,12 +82,12 @@ func StringHostsToServers(hosts []string, scheme string) (servers []Server, err 
 	for _, s := range hosts {
 		host, sport, err := net.SplitHostPort(s)
 		if err != nil {
-			return servers, fmt.Errorf("could not parse host %s: %s", s, err.Error())
+			return servers, fmt.Errorf("could not parse host %s: %s", s, err)
 		}
 
 		port, err := strconv.Atoi(sport)
 		if err != nil {
-			return servers, fmt.Errorf("could not host port %s: %s", s, err.Error())
+			return servers, fmt.Errorf("could not host port %s: %s", s, err)
 		}
 
 		server := Server{
