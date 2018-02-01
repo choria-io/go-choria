@@ -13,13 +13,15 @@ end
 
 desc "Builds packages"
 task :build do
-  version = ENV["VERSION"] || "development"
+  version = ENV["VERSION"] || "0.0.0"
   sha = `git rev-parse --short HEAD`.chomp
   build = ENV["BUILD"] || "foss"
+  packages = (ENV["PACKAGES"] || "").split(",")
+  packages = ["el5_32", "el5_64", "el6_32", "el6_64", "el7_64", "xenial_64", "xenial_64", "xenial_32"] if packages.empty?
 
   source = "/go/src/github.com/choria-io/go-choria"
 
-  ["el5_32", "el5_64", "el6_32", "el6_64", "el7_64"].each do |pkg|
+  packages.each do |pkg|
     if pkg =~ /^(.+?)_(.+)$/
       builder = "ripienaar/choria-packager:%s-go9.2" % $1
     else
@@ -41,7 +43,7 @@ end
 
 desc "Builds binaries"
 task :build_binaries do
-  version = ENV["VERSION"] || "development"
+  version = ENV["VERSION"] || "0.0.0"
   sha = `git rev-parse --short HEAD`.chomp
   build = ENV["BUILD"] || "foss"
 
