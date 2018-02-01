@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-protocol/protocol"
 	"github.com/choria-io/go-choria/registration"
 	"github.com/choria-io/go-choria/server/data"
+	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
 )
 
@@ -43,7 +43,7 @@ func New(c *choria.Framework, conn choria.PublishableConnector, logger *logrus.E
 		choria:    c,
 		cfg:       c.Config,
 		connector: conn,
-		datac:     make(chan *data.RegistrationItem, 5),
+		datac:     make(chan *data.RegistrationItem, 1),
 	}
 
 	return r
