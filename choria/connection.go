@@ -547,6 +547,16 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 			conn.logger.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrl(), err)
 			connErrorCtr.WithLabelValues(conn.name).Inc()
 		}),
+
+		// This is specifically set quite small, just about enough to handle short
+		// reconnects rather than the 8MB long buffer that's default.  30 000 nodes
+		// each sending several MB after reconnect is not what anyone wants
+		//
+		// See also https://github.com/nats-io/go-nats/issues/339
+		func(o *nats.Options) error {
+			o.ReconnectBufSize = 10 * 1024
+			return nil
+		},
 	}
 
 	if !conn.choria.Config.DisableTLS {
