@@ -100,7 +100,7 @@ func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 		SrvDomain:         c.Choria.SRVDomain,
 		MiddlewareServers: mservers,
 		Path:              os.Getenv("PATH"),
-		ChoriaVersion:     build.Version,
+		ChoriaVersion:     fmt.Sprintf("choria %s", build.Version),
 		UsingSrv:          c.Choria.UseSRVRecords,
 		ClientStats: &cstats{
 			InMsgs:     stats.InMsgs,
