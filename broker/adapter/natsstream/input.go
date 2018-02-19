@@ -136,6 +136,25 @@ func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
 			return
 		}
 
+		// If the work queue is full, perhaps due to the other side
+		// being slow or disconnected when we get full we will block
+		// and that will cause NATS to disconnect us as a slow consumer
+		//
+		// Since slow consumer disconnects discards a load of messages
+		// anyway we might as well discard them here and avoid all the
+		// disconnect/reconnect noise
+		//
+		// Essentially the NATS -> NATS Stream bridge functions as a
+		// broadcast to ordered queue bridge and by it's nature this
+		// side has to be careful to handle when the other side gets
+		// into a bad place.  The work channel has 1000 capacity so
+		// this gives us a good buffer to weather short lived storms
+		if len(na.work) == cap(na.work) {
+			na.log.Warn("Work queue is full, discarding message")
+			ectr.Inc()
+			return
+		}
+
 		na.work <- msg
 
 		ctr.Inc()
