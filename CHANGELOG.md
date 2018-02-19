@@ -1,5 +1,11 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/02/19|      |Release 0.0.7                                                                                            |
+|2018/02/19|165   |Discard NATS messages when the work buffer is full in the NATS Streaming adapter                         |
+|2018/02/19|166   |Remove unwanted debug output                                                                             |
+|2018/02/16|167   |Clarify the Choria flavor reported by choria_util#info                                                   |
+|2018/02/01|163   |Avoid large data storms after a reconnect cycle by limiting the publish buffer                           |
+|2018/02/01|151   |Add xenial and stretch packages                                                                          |
 |2018/01/22|152   |Support automagic validation of structs received over the network, support shellsafe for now             |
 |2018/01/20|150   |Release 0.0.6                                                                                            |
 |2018/01/20|58    |A mostly compatible `rpcutil` agent was added                                                            |
