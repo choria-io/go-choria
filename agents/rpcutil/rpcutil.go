@@ -148,8 +148,6 @@ func inventoryAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		Version:        build.Version,
 	}
 
-	agent.Log.Infof("%#v", *output)
-
 	reply.Data = output
 }
 
