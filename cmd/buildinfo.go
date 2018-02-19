@@ -6,6 +6,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-protocol/protocol"
+	gnatsd "github.com/nats-io/gnatsd/server"
 )
 
 type buildinfoCommand struct {
@@ -30,7 +31,8 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Printf("     License: %s\n", build.License)
 	fmt.Println("")
 	fmt.Println("Network Broker Settings:")
-	fmt.Printf("  Maximum Network Clients: %d\n", build.MaxBrokerClients())
+	fmt.Printf("       Maximum Network Clients: %d\n", build.MaxBrokerClients())
+	fmt.Printf("  Embedded NATS Server Version: %s\n", gnatsd.VERSION)
 	fmt.Println("")
 	fmt.Println("Server Settings:")
 	fmt.Printf("        Provisioning Brokers: %s\n", build.ProvisionBrokerURLs)
