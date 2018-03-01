@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+	"runtime"
 	"sync"
 
 	"github.com/choria-io/go-choria/build"
@@ -29,6 +30,7 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Printf("     Git SHA: %s\n", build.SHA)
 	fmt.Printf("  Build Date: %s\n", build.BuildDate)
 	fmt.Printf("     License: %s\n", build.License)
+	fmt.Printf("  Go Version: %s\n", runtime.Version())
 	fmt.Println("")
 	fmt.Println("Network Broker Settings:")
 	fmt.Printf("       Maximum Network Clients: %d\n", build.MaxBrokerClients())
