@@ -13,6 +13,8 @@ import (
 func (srv *Instance) handleRawMessage(ctx context.Context, wg *sync.WaitGroup, replies chan *agents.AgentReply, rawmsg *choria.ConnectorMessage) {
 	var msg *choria.Message
 
+	totalCtr.WithLabelValues(srv.cfg.Identity).Inc()
+
 	transport, err := srv.fw.NewTransportFromJSON(string(rawmsg.Data))
 	if err != nil {
 		srv.log.Errorf("Could not deceode message into transport: %s", err)

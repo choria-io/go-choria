@@ -72,9 +72,9 @@ type DaemonStatsReply struct {
 	PID         int      `json:"pid"`
 	Times       CPUTimes `json:"times"`
 	StartTime   int64    `json:"starttime"`
-	Total       int      `json:"total"`
 	ConfigFile  string   `json:"configfile"`
 	Version     string   `json:"version"`
+	Total       float64  `json:"total"`
 	Validated   float64  `json:"validated"`
 	Unvalidated float64  `json:"unvalidated"`
 	Passed      float64  `json:"passed"`
@@ -127,6 +127,7 @@ func daemonStatsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.R
 		ConfigFile:  agent.ServerInfoSource.ConfigFile(),
 		Version:     build.Version,
 		StartTime:   agent.ServerInfoSource.StartTime().Unix(),
+		Total:       stats.Total,
 		Validated:   stats.Valid,
 		Unvalidated: stats.Invalid,
 		Passed:      stats.Passed,

@@ -5,6 +5,11 @@ import (
 )
 
 var (
+	totalCtr = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "choria_server_total",
+		Help: "Total number of messages received from the network",
+	}, []string{"identity"})
+
 	validatedCtr = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "choria_server_validated",
 		Help: "Number of messages that were received and validated succesfully",
@@ -43,4 +48,5 @@ func init() {
 	prometheus.MustRegister(filteredCtr)
 	prometheus.MustRegister(repliesCtr)
 	prometheus.MustRegister(ttlExpiredCtr)
+	prometheus.MustRegister(totalCtr)
 }

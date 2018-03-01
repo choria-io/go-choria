@@ -32,6 +32,7 @@ type ServerInfoSource interface {
 }
 
 type ServerStats struct {
+	Total      float64
 	Valid      float64
 	Invalid    float64
 	Passed     float64
