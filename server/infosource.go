@@ -56,6 +56,7 @@ func (srv *Instance) StartTime() time.Time {
 
 func (srv *Instance) Stats() agents.ServerStats {
 	return agents.ServerStats{
+		Total:      srv.getPromCtrValue(totalCtr),
 		Valid:      srv.getPromCtrValue(validatedCtr),
 		Invalid:    srv.getPromCtrValue(unvalidatedCtr),
 		Passed:     srv.getPromCtrValue(passedCtr),
