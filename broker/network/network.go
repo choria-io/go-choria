@@ -64,7 +64,17 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 	}
 
 	s.gnatsd = gnatsd.New(s.opts)
-	s.gnatsd.SetLogger(newLogger(), s.opts.Debug, false)
+
+	// We always supply true for debug here because in our logger
+	// we intercept a few debug logs that really should have been
+	// info or warning ones.  This will hopefully be able to go
+	// back to normal once nats-io/gnatsd#622 is fixed
+	//
+	// this does though disable a performance optimisation in the
+	// nats logging classes where they don't call debug at all when
+	// not needed but I imagine logrus does not have a huge bottleneck
+	// in that area so its probably safe
+	s.gnatsd.SetLogger(newLogger(), true, false)
 
 	return
 }
