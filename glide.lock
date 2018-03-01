@@ -1,5 +1,5 @@
 hash: f7ac776a398ae987b63ef6ae9d174451727a70cd88e0e64cca258ddfc9220a52
-updated: 2018-01-23T22:20:21.79437+01:00
+updated: 2018-03-01T09:11:25.496351+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -34,13 +34,13 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/gogo/protobuf
-  version: 26de2f9a7d3b1826f275e7a97c8cad5080589426
+  version: c0656edd0d9eab7c66d1eb0c568f9039345796f7
   subpackages:
   - gogoproto
   - proto
   - protoc-gen-gogo/descriptor
 - name: github.com/golang/protobuf
-  version: 1e59b77b52bf8e4b449a57e6f79f21226d571845
+  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
   subpackages:
   - proto
 - name: github.com/matttproud/golang_protobuf_extensions
@@ -48,7 +48,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/nats-io/gnatsd
-  version: 12a5ced612f30aa511906c0de12a124233752f70
+  version: 02dd205a481e8f9957f15ec2667e8b80bafecc14
   subpackages:
   - conf
   - logger
@@ -61,7 +61,7 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/nats-io/go-nats-streaming
-  version: ad2984cc18491c7674c7f69196b854fb71337738
+  version: 6e620057a207bd61e992c1c5b6a2de7b6a4cb010
   subpackages:
   - pb
 - name: github.com/nats-io/nuid
@@ -101,7 +101,7 @@ imports:
   - matchers/support/goraph/util
   - types
 - name: github.com/prometheus/client_golang
-  version: 06bc6e01f4baf4ee783ffcd23abfcb0b0f9dfada
+  version: 967789050ba94deca04a5e84cce8ad472ce313c1
   subpackages:
   - prometheus
   - prometheus/promhttp
@@ -124,7 +124,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
 - name: github.com/tidwall/gjson
-  version: e62d62a3e1e9f324346170bbc04333341f803dfb
+  version: 87033efcaec6215741137e8ca61952c53ef2685d
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
