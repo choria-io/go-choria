@@ -23,9 +23,9 @@ task :build do
 
   packages.each do |pkg|
     if pkg =~ /^(.+?)_(.+)$/
-      builder = "ripienaar/choria-packager:%s-go9.2" % $1
+      builder = "choria/packager:%s-go9.2" % $1
     else
-      builder = "ripienaar/choria-packager:el7-go9.2"
+      builder = "choria/packager:el7-go9.2"
     end
 
     sh 'docker run --rm -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e PACKAGE=%s %s' % [
