@@ -18,14 +18,15 @@ task :build do
   build = ENV["BUILD"] || "foss"
   packages = (ENV["PACKAGES"] || "").split(",")
   packages = ["el5_32", "el5_64", "el6_32", "el6_64", "el7_64", "xenial_64", "xenial_64", "xenial_32"] if packages.empty?
+  go_version = ENV["GOVERSION"] || "1.10"
 
   source = "/go/src/github.com/choria-io/go-choria"
 
   packages.each do |pkg|
     if pkg =~ /^(.+?)_(.+)$/
-      builder = "choria/packager:%s-go9.2" % $1
+      builder = "choria/packager:%s-go%s" % [$1, go_version]
     else
-      builder = "choria/packager:el7-go9.2"
+      builder = "choria/packager:el7-go%s" % go_version
     end
 
     sh 'docker run --rm -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e PACKAGE=%s %s' % [
