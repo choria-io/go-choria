@@ -31,9 +31,10 @@ type stream struct {
 }
 
 type msg struct {
-	Message string    `json:"data"`
-	Sender  string    `json:"sender"`
-	Time    time.Time `json:"time"`
+	Protocol string    `json:"protocol"`
+	Data     string    `json:"data"`
+	Sender   string    `json:"sender"`
+	Time     time.Time `json:"time"`
 }
 
 func newStream(name string, work chan adaptable, logger *log.Entry) ([]*stream, error) {
@@ -141,9 +142,10 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 		defer obs.ObserveDuration()
 
 		m := msg{
-			Message: r.Message(),
-			Sender:  r.SenderID(),
-			Time:    r.Time().UTC(),
+			Protocol: "choria:adapters:natsstream:output:1",
+			Data:     r.Message(),
+			Sender:   r.SenderID(),
+			Time:     r.Time().UTC(),
 		}
 
 		j, err := json.Marshal(m)
