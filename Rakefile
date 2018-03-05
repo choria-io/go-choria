@@ -18,7 +18,7 @@ task :build do
   build = ENV["BUILD"] || "foss"
   packages = (ENV["PACKAGES"] || "").split(",")
   packages = ["el5_32", "el5_64", "el6_32", "el6_64", "el7_64", "xenial_64", "xenial_64", "xenial_32"] if packages.empty?
-  go_version = ENV["GOVERSION"] || "9.2"
+  go_version = ENV["GOVERSION"] || "1.10"
 
   source = "/go/src/github.com/choria-io/go-choria"
 

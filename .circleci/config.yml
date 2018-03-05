@@ -2,7 +2,7 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.9
+      - image: circleci/golang:1.10
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
@@ -32,7 +32,7 @@ jobs:
     environment:
       - PACKAGE: el6_64
       - BUILD: foss
-      - BUILDER: choria/packager:el6-go9.2
+      - BUILDER: choria/packager:el6-go1.10
 
     steps: &std_build_steps
       - setup_remote_docker
@@ -76,7 +76,7 @@ jobs:
     environment:
       - PACKAGE: el6_32
       - BUILD: foss
-      - BUILDER: choria/packager:el6-go9.2
+      - BUILDER: choria/packager:el6-go1.10
 
     steps:
       *std_build_steps
@@ -90,7 +90,7 @@ jobs:
     environment:
       - PACKAGE: el5_32
       - BUILD: foss
-      - BUILDER: choria/packager:el5-go9.2
+      - BUILDER: choria/packager:el5-go1.10
 
     steps:
       *std_build_steps
@@ -104,7 +104,7 @@ jobs:
     environment:
       - PACKAGE: el5_64
       - BUILD: foss
-      - BUILDER: choria/packager:el5-go9.2
+      - BUILDER: choria/packager:el5-go1.10
 
     steps:
       *std_build_steps
@@ -118,7 +118,7 @@ jobs:
     environment:
       - PACKAGE: el7_64
       - BUILD: foss
-      - BUILDER: choria/packager:el7-go9.2
+      - BUILDER: choria/packager:el7-go1.10
 
     steps:
       *std_build_steps
@@ -132,7 +132,7 @@ jobs:
     environment:
       - PACKAGE: xenial_64
       - BUILD: foss
-      - BUILDER: choria/packager:xenial-go9.2
+      - BUILDER: choria/packager:xenial-go1.10
 
     steps:
       *std_build_steps
@@ -146,7 +146,7 @@ jobs:
     environment:
       - PACKAGE: stretch_64
       - BUILD: foss
-      - BUILDER: choria/packager:stretch-go9.2
+      - BUILDER: choria/packager:stretch-go1.10
 
     steps:
       *std_build_steps
