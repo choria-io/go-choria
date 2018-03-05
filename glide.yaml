@@ -6,7 +6,7 @@ import:
   subpackages:
   - ssh/terminal
 - package: github.com/nats-io/gnatsd
-  version: ^1.0
+  version: ^1.0.4
 - package: gopkg.in/alecthomas/kingpin.v2
   version: ^2
 - package: github.com/nats-io/go-nats
