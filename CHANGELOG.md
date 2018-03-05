@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/03/05|      |Release 0.0.9                                                                                            |
+|2018/03/05|190   |Downgrade to Go 1.9.2 to avoid run away go routines                                                      |
 |2018/03/05|      |Release 0.0.8                                                                                            |
 |2018/03/05|187   |Create a schema for the NATS Stream Adapter and publish it in the messages                               |
 |2018/03/05|174   |Report the `mtime` of the file in the file content registration plugin, support compressing the data     |
