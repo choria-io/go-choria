@@ -1,7 +1,10 @@
 package registration
 
 import (
+	"bytes"
+	"compress/gzip"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -20,6 +23,15 @@ type FileContent struct {
 	dataFile string
 	c        *choria.Config
 	log      *logrus.Entry
+}
+
+// FileContentMessage contains message being published
+type FileContentMessage struct {
+	Mtime    int64   `json:"mtime"`
+	File     string  `json:"file"`
+	Protocol string  `json:"protocol"`
+	Content  *[]byte `json:"content,omitempty"`
+	ZContent *[]byte `json:"zcontent,omitempty"`
 }
 
 // NewFileContent creates a new fully managed registration plugin instance
@@ -43,7 +55,7 @@ func (fc *FileContent) Init(c *choria.Config, logger *logrus.Entry) {
 	fc.log.Infof("Configured File Content Registration with source '%s' and target '%s'", fc.dataFile, c.Choria.FileContentRegistrationTarget)
 }
 
-// Start stats a publishing loop
+// StartRegistration starts stats a publishing loop
 func (fc *FileContent) StartRegistration(ctx context.Context, wg *sync.WaitGroup, interval int, output chan *data.RegistrationItem) {
 	defer wg.Done()
 
@@ -71,20 +83,49 @@ func (fc *FileContent) publish(output chan *data.RegistrationItem) error {
 
 	fstat, err := os.Stat(fc.dataFile)
 	if os.IsNotExist(err) {
-		return fmt.Errorf("Could not find data file %s", fc.dataFile)
+		return fmt.Errorf("could not find data file %s", fc.dataFile)
 	}
 
 	if fstat.Size() == 0 {
-		return fmt.Errorf("Data file %s is empty", fc.dataFile)
+		return fmt.Errorf("data file %s is empty", fc.dataFile)
+	}
+
+	fstat, err = os.Stat(fc.dataFile)
+	if err != nil {
+		return fmt.Errorf("could not obtain file times: %s", err)
 	}
 
 	dat, err := ioutil.ReadFile(fc.dataFile)
 	if err != nil {
-		return nil
+		return fmt.Errorf("could not read file registration source %s: %s", fc.dataFile, err)
+	}
+
+	msg := &FileContentMessage{
+		Protocol: "choria:registration:filecontent:1",
+		File:     fc.dataFile,
+		Mtime:    fstat.ModTime().Unix(),
+	}
+
+	if fc.c.Choria.FileContentCompression {
+		zdat, err := fc.compress(dat)
+		if err != nil {
+			fc.log.Warnf("Could not compress file registration data: %s", err)
+		} else {
+			msg.ZContent = &zdat
+		}
+	}
+
+	if msg.ZContent == nil {
+		msg.Content = &dat
+	}
+
+	jdat, err := json.Marshal(msg)
+	if err != nil {
+		return fmt.Errorf("could not json marshal registration message: %s", err)
 	}
 
 	item := &data.RegistrationItem{
-		Data:        &dat,
+		Data:        &jdat,
 		Destination: fc.c.Choria.FileContentRegistrationTarget,
 	}
 
@@ -95,4 +136,27 @@ func (fc *FileContent) publish(output chan *data.RegistrationItem) error {
 	output <- item
 
 	return nil
+}
+
+func (fc *FileContent) compress(data []byte) ([]byte, error) {
+	var b bytes.Buffer
+
+	gz := gzip.NewWriter(&b)
+
+	_, err := gz.Write(data)
+	if err != nil {
+		return []byte{}, err
+	}
+
+	err = gz.Flush()
+	if err != nil {
+		return []byte{}, err
+	}
+
+	err = gz.Close()
+	if err != nil {
+		return []byte{}, err
+	}
+
+	return b.Bytes(), nil
 }
