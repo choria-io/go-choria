@@ -1,5 +1,14 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/03/05|      |Release 0.0.8                                                                                            |
+|2018/03/05|187   |Create a schema for the NATS Stream Adapter and publish it in the messages                               |
+|2018/03/05|174   |Report the `mtime` of the file in the file content registration plugin, support compressing the data     |
+|2018/03/02|183   |Update Go to `1.10`                                                                                      |
+|2018/03/01|180   |Show the Go version used to compile the binary in `buildinfo`                                            |
+|2018/03/01|173   |Record and expose the total number of messages received by the `server`                                  |
+|2018/03/01|176   |Intercept various `gnatsd` debug log messages and elevate them to notice and error                       |
+|2018/03/01|175   |Update embedded `gnatsd` to `1.0.6`                                                                      |
+|2018/02/19|171   |Show embedded `gnatsd` version in `buildinfo`                                                            |
 |2018/02/19|      |Release 0.0.7                                                                                            |
 |2018/02/19|165   |Discard NATS messages when the work buffer is full in the NATS Streaming adapter                         |
 |2018/02/19|166   |Remove unwanted debug output                                                                             |
