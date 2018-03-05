@@ -70,6 +70,7 @@ type ChoriaPluginConfig struct {
 	// registration
 	FileContentRegistrationData   string `confkey:"plugin.choria.registration.file_content.data" default:""`
 	FileContentRegistrationTarget string `confkey:"plugin.choria.registration.file_content.target" default:""`
+	FileContentCompression        bool   `confkey:"plugin.choria.registration.file_content.compression" default:"true"`
 
 	// adapters
 	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split"`
