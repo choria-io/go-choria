@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/03/06|      |Release 0.0.11                                                                                           |
+|2018/03/06|198   |Reuse http.Transport used to fetch gnatsd statistics to avoid a leak on recent go+gnatsd combination     |
 |2018/03/05|      |Release 0.0.10                                                                                           |
 |2018/03/05|194   |Revert `gnatsd` to `1.0.4`, upgrade Golang to `1.10`                                                     |
 |2018/03/05|      |Release 0.0.9                                                                                            |
