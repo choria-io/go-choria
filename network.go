@@ -17,10 +17,11 @@ import (
 
 // Server represents the Choria network broker server
 type Server struct {
-	gnatsd *gnatsd.Server
-	opts   *gnatsd.Options
-	choria *choria.Framework
-	config *choria.Config
+	gnatsd      *gnatsd.Server
+	opts        *gnatsd.Options
+	choria      *choria.Framework
+	config      *choria.Config
+	vzTransport *http.Transport
 
 	started bool
 
@@ -35,6 +36,10 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 		opts:    &gnatsd.Options{},
 		started: false,
 		mu:      &sync.Mutex{},
+		vzTransport: &http.Transport{
+			MaxIdleConns:    1,
+			IdleConnTimeout: 5 * time.Second,
+		},
 	}
 
 	s.opts.Host = c.Config.Choria.NetworkListenAddress
