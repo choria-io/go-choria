@@ -79,27 +79,29 @@ func init() {
 }
 
 func (s *Server) getVarz() (*server.Varz, error) {
-	transport := &http.Transport{}
-	client := &http.Client{Transport: transport}
+	client := &http.Client{
+		Transport: s.vzTransport,
+		Timeout:   time.Second * 1,
+	}
 
 	url := fmt.Sprintf("http://localhost:%d/varz", s.opts.HTTPPort)
 
 	resp, err := client.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("Could not get /varz stats: %s", err)
+		return nil, fmt.Errorf("could not get /varz stats: %s", err)
 	}
 
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, fmt.Errorf("Could not get /varz stats: %s", err)
+		return nil, fmt.Errorf("could not get /varz stats: %s", err)
 	}
 
 	response := &server.Varz{}
 	err = json.Unmarshal(body, response)
 	if err != nil {
-		return nil, fmt.Errorf("Could not get /varz stats: %s", err)
+		return nil, fmt.Errorf("could not get /varz stats: %s", err)
 	}
 
 	return response, nil
