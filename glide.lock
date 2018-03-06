@@ -48,7 +48,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/nats-io/gnatsd
-  version: 12a5ced612f30aa511906c0de12a124233752f70
+  version: 02dd205a481e8f9957f15ec2667e8b80bafecc14
   subpackages:
   - conf
   - logger
