@@ -5,7 +5,7 @@ import (
 )
 
 // Version the application version
-var Version = "0.0.10"
+var Version = "0.0.11"
 
 // SHA is the git reference used to build this package
 var SHA = "unknown"
