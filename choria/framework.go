@@ -55,6 +55,7 @@ func New(path string) (*Framework, error) {
 		return nil, err
 	}
 
+	// this is a demo change
 	return NewWithConfig(config)
 }
 
