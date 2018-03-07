@@ -418,7 +418,7 @@ func (self *Framework) ProxiedDiscovery() bool {
 func (self *Framework) PuppetSetting(setting string) (string, error) {
 	args := []string{"apply", "--configprint", setting}
 
-	out, err := exec.Command("puppet", args...).Output()
+	out, err := exec.Command(self.PuppetAIOCmd("puppet", "puppet"), args...).Output()
 	if err != nil {
 		return "", err
 	}
@@ -443,15 +443,24 @@ func (self *Framework) FacterDomain() (string, error) {
 }
 
 // FacterCmd finds the path to facter using first AIO path then a `which` like command
-// TODO: windows support
 func (self *Framework) FacterCmd() string {
-	if _, err := os.Stat("/opt/puppetlabs/bin/facter"); err == nil {
-		return "/opt/puppetlabs/bin/facter"
+	return self.PuppetAIOCmd("facter", "")
+}
+
+// PuppetAIOCmd looks up a command in the AIO paths, if it's not there
+// it will try PATH and finally return a default if not in PATH
+//
+// TODO: windows support
+func (self *Framework) PuppetAIOCmd(command string, def string) string {
+	aio_path := fmt.Sprintf("/opt/puppetlabs/bin/%s", command)
+
+	if _, err := os.Stat(aio_path); err == nil {
+		return aio_path
 	}
 
-	path, err := exec.LookPath("facter")
+	path, err := exec.LookPath(command)
 	if err != nil {
-		return ""
+		return def
 	}
 
 	return path
