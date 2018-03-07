@@ -3,10 +3,14 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"os/signal"
+	"path/filepath"
+	"runtime"
 	"sync"
 	"syscall"
+	"time"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
@@ -28,6 +32,7 @@ var config *choria.Config
 var ctx context.Context
 var cancel func()
 var wg *sync.WaitGroup
+var mu = &sync.Mutex{}
 
 func ParseCLI() (err error) {
 	cli.app = kingpin.New("choria", "Choria Orchestration System")
@@ -103,17 +108,40 @@ func Run() (err error) {
 
 func interruptWatcher() {
 	sigs := make(chan os.Signal, 1)
-	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
 
 	for {
 		select {
 		case sig := <-sigs:
-			log.Infof("Shutting down on %s", sig)
-			cancel()
+			switch sig {
+			case syscall.SIGINT, syscall.SIGTERM:
+				log.Infof("Shutting down on %s", sig)
+				cancel()
+			case syscall.SIGQUIT:
+				dumpGoRoutines()
+			}
 		case <-ctx.Done():
 			return
 		}
 	}
+}
+
+func dumpGoRoutines() {
+	mu.Lock()
+	defer mu.Unlock()
+
+	outname := filepath.Join(os.TempDir(), fmt.Sprintf("choria-threaddump-%d-%d.txt", os.Getpid(), time.Now().UnixNano()))
+
+	buf := make([]byte, 1<<20)
+	stacklen := runtime.Stack(buf, true)
+
+	err := ioutil.WriteFile(outname, buf[:stacklen], 0644)
+	if err != nil {
+		log.Errorf("Could not produce thread dump: %s", err)
+		return
+	}
+
+	log.Warnf("Produced thread dump to %s", outname)
 }
 
 // digs in the application.commands structure looking for a entry with
