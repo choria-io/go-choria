@@ -253,7 +253,7 @@ func (self *Message) SetType(msgType string) (err error) {
 			return fmt.Errorf("direct_request message type can only be set if DiscoveredHosts have been set")
 		}
 
-		self.Filter = &protocol.Filter{}
+		self.Filter = protocol.NewFilter()
 		self.Filter.AddAgentFilter(self.Agent)
 	}
 
