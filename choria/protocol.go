@@ -110,7 +110,7 @@ func (self *Framework) NewRequestFromMessage(version string, msg *Message) (req 
 		return req, fmt.Errorf("Could not create a Request from a Message: %s", err)
 	}
 
-	req.SetMessage(msg.Base64Payload())
+	req.SetMessage(msg.Payload)
 
 	if msg.Filter == nil || msg.Filter.Empty() {
 		req.NewFilter()
@@ -151,7 +151,7 @@ func (self *Framework) NewReplyFromMessage(version string, msg *Message) (rep pr
 	}
 
 	rep, err = self.NewReply(req)
-	rep.SetMessage(msg.Base64Payload())
+	rep.SetMessage(msg.Payload)
 
 	return
 }
