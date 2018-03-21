@@ -1,5 +1,10 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/03/21|      |Release 0.1.0                                                                                            |
+|2018/03/08|208   |Improve compatability with MCollective Choria by not base64 encoding payloads                            |
+|2018/03/08|207   |Ensure the filter is valid when creating `direct_request` messages                                       |
+|2018/03/07|204   |Support writing a thread dump to the OS temp dir on receiving SIGQUIT                                    |
+|2018/03/07|202   |Do not rely purely on `PATH` to find `puppet`, look in some standard paths as well                       |
 |2018/03/06|      |Release 0.0.11                                                                                           |
 |2018/03/06|198   |Reuse http.Transport used to fetch gnatsd statistics to avoid a leak on recent go+gnatsd combination     |
 |2018/03/05|      |Release 0.0.10                                                                                           |
