@@ -20,6 +20,14 @@ func IsSecure() bool {
 	return Secure == "true"
 }
 
+// ClientStrictValidation gives hints to the protocol implementations that
+// a client does not wish to be fully validated, this is because validation
+// can often be very slow so clients can elect to disable that.
+//
+// It's not mandatory for a specific version of implementation of the protocol
+// to do anything with this, so it's merely a hint
+var ClientStrictValidation = true
+
 // Additional to these the package for a specific version must also provide these constructors
 // with signature matching those in v1/constructors.go these are in use by mcollective/protocol.gos
 

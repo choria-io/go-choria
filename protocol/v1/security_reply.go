@@ -85,6 +85,10 @@ func (r *secureReply) Version() string {
 
 // IsValidJSON validates the given JSON data against the schema
 func (r *secureReply) IsValidJSON(data string) (err error) {
+	if !protocol.ClientStrictValidation {
+		return nil
+	}
+
 	_, errors, err := schemas.Validate(schemas.SecureReplyV1, data)
 	if err != nil {
 		err = fmt.Errorf("Could not validate SecureReply JSON data: %s", err.Error())
