@@ -1,5 +1,5 @@
 hash: 6db7f44383b0461f87d24a3b51c31a9b9e973ad39d89ac3308d365da34219814
-updated: 2018-03-26T15:00:49.579343+02:00
+updated: 2018-03-26T15:17:17.870477+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -49,7 +49,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/nats-io/gnatsd
-  version: 02dd205a481e8f9957f15ec2667e8b80bafecc14
+  version: add6d7930ae6d4bff8823b28999ea87bf1bfd23d
   subpackages:
   - conf
   - logger
@@ -57,7 +57,7 @@ imports:
   - server/pse
   - util
 - name: github.com/nats-io/go-nats
-  version: d66cb54e6b7bdd93f0b28afc8450d84c780dfb68
+  version: 062418ea1c2181f52dc0f954f6204370519a868b
   subpackages:
   - encoders/builtin
   - util
