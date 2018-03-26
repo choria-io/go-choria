@@ -49,6 +49,9 @@ plugin.choria.network.peers = nats://choria1:5222, nats://choria2:5222, nats://c
 plugin.choria.network.peer_user = choria_cluster
 plugin.choria.network.peer_password = s£cret
 
+# the NATS network write deadline time, generally this is best left untouched
+plugin.choria.network.write_deadline = 5s # default
+
 # enables the typical NATS stats/status port, default is set to 0 and so disabled
 plugin.choria.stats_port = 8222
 

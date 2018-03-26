@@ -1,5 +1,5 @@
 hash: 6db7f44383b0461f87d24a3b51c31a9b9e973ad39d89ac3308d365da34219814
-updated: 2018-03-05T15:52:29.328155+01:00
+updated: 2018-03-26T15:00:49.579343+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,15 +12,16 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-confkey
-  version: 3a0ddeafbca44f8cd05f594ec7a6788913f0c1dc
+  version: 1416c30a60054226a232e049eb5496d6d6afb5f2
 - name: github.com/choria-io/go-protocol
   version: 72bc3ca9593e692e55a3f5dda61194803f54d619
   subpackages:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-validator
-  version: 99e0f793dd701e8cf45fd27624390ea43699e3b9
+  version: 4ce2ef25983faa873cc4bcea0f1ef2a4273d42cc
   subpackages:
+  - duration
   - enum
   - ipaddress
   - ipv4
@@ -122,9 +123,9 @@ imports:
 - name: github.com/satori/go.uuid
   version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
-  version: d682213848ed68c0a260ca37d6dd5ace8423f5ba
+  version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
 - name: github.com/tidwall/gjson
-  version: 87033efcaec6215741137e8ca61952c53ef2685d
+  version: 01f00f129617a6fe98941fb920d6c760241b54d2
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
