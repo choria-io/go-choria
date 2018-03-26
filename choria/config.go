@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"regexp"
 	"strings"
+	"time"
 
 	"github.com/choria-io/go-confkey"
 
@@ -57,15 +58,16 @@ type ChoriaPluginConfig struct {
 	Serializer        string   `confkey:"plugin.choria.security.serializer" validate:"enum=json,yaml"`
 
 	// network broker
-	NetworkListenAddress string   `confkey:"plugin.choria.network.listen_address" default:"::"`
-	NetworkClientPort    int      `confkey:"plugin.choria.network.client_port" default:"4222"`
-	NetworkPeerPort      int      `confkey:"plugin.choria.network.peer_port" default:"5222"`
-	NetworkPeerUser      string   `confkey:"plugin.choria.network.peer_user"`
-	NetworkPeerPassword  string   `confkey:"plugin.choria.network.peer_password"`
-	NetworkPeers         []string `confkey:"plugin.choria.network.peers" type:"comma_split"`
-	BrokerNetwork        bool     `confkey:"plugin.choria.broker_network" default:"false"`
-	BrokerDiscovery      bool     `confkey:"plugin.choria.broker_discovery" default:"false"`
-	BrokerFederation     bool     `confkey:"plugin.choria.broker_federation" default:"false"`
+	NetworkListenAddress string        `confkey:"plugin.choria.network.listen_address" default:"::"`
+	NetworkClientPort    int           `confkey:"plugin.choria.network.client_port" default:"4222"`
+	NetworkPeerPort      int           `confkey:"plugin.choria.network.peer_port" default:"5222"`
+	NetworkPeerUser      string        `confkey:"plugin.choria.network.peer_user"`
+	NetworkPeerPassword  string        `confkey:"plugin.choria.network.peer_password"`
+	NetworkPeers         []string      `confkey:"plugin.choria.network.peers" type:"comma_split"`
+	NetworkWriteDeadline time.Duration `confkey:"plugin.choria.network.write_deadline" type:"duration" default:"5s"`
+	BrokerNetwork        bool          `confkey:"plugin.choria.broker_network" default:"false"`
+	BrokerDiscovery      bool          `confkey:"plugin.choria.broker_discovery" default:"false"`
+	BrokerFederation     bool          `confkey:"plugin.choria.broker_federation" default:"false"`
 
 	// registration
 	FileContentRegistrationData   string `confkey:"plugin.choria.registration.file_content.data" default:""`
