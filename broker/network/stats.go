@@ -2,13 +2,10 @@ package network
 
 import (
 	"context"
-	"encoding/json"
-	"fmt"
-	"io/ioutil"
-	"net/http"
 	"time"
 
 	"github.com/nats-io/gnatsd/server"
+	gnatsd "github.com/nats-io/gnatsd/server"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
@@ -79,32 +76,7 @@ func init() {
 }
 
 func (s *Server) getVarz() (*server.Varz, error) {
-	client := &http.Client{
-		Transport: s.vzTransport,
-		Timeout:   time.Second * 1,
-	}
-
-	url := fmt.Sprintf("http://localhost:%d/varz", s.opts.HTTPPort)
-
-	resp, err := client.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("could not get /varz stats: %s", err)
-	}
-
-	defer resp.Body.Close()
-
-	body, err := ioutil.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("could not get /varz stats: %s", err)
-	}
-
-	response := &server.Varz{}
-	err = json.Unmarshal(body, response)
-	if err != nil {
-		return nil, fmt.Errorf("could not get /varz stats: %s", err)
-	}
-
-	return response, nil
+	return s.gnatsd.Varz(&gnatsd.VarzOptions{})
 }
 
 func (s *Server) publishStats(ctx context.Context, interval time.Duration) {
@@ -117,7 +89,7 @@ func (s *Server) publishStats(ctx context.Context, interval time.Duration) {
 	for {
 		select {
 		case <-ticker.C:
-			log.Debug("Starting NATS /varz poll")
+			log.Debug("Starting NATS /varz update")
 
 			s.updatePrometheus()
 		case <-ctx.Done():
