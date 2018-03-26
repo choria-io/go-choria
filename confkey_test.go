@@ -1,6 +1,8 @@
 package confkey
 
 import (
+	"time"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -13,13 +15,14 @@ func TestFileContent(t *testing.T) {
 }
 
 type TestData struct {
-	PlainString string   `confkey:"plain_string" validate:"shellsafe"`
-	CommaSplit  []string `confkey:"comma_split" type:"comma_split"`
-	PathSplit   []string `confkey:"path_split" type:"path_split"`
-	StringEnum  string   `confkey:"loglevel" validate:"enum=debug,info,warn" default:"warn"`
-	Int         int      `confkey:"int"`
-	TitleString string   `confkey:"title_string" type:"title_string"`
-	Bool        bool     `confkey:"bool"`
+	PlainString string        `confkey:"plain_string" validate:"shellsafe"`
+	CommaSplit  []string      `confkey:"comma_split" type:"comma_split"`
+	PathSplit   []string      `confkey:"path_split" type:"path_split"`
+	StringEnum  string        `confkey:"loglevel" validate:"enum=debug,info,warn" default:"warn"`
+	Int         int           `confkey:"int"`
+	TitleString string        `confkey:"title_string" type:"title_string"`
+	Bool        bool          `confkey:"bool"`
+	T           time.Duration `confkey:"interval" type:"duration" default:"1h"`
 }
 
 var _ = Describe("Confkey", func() {
@@ -44,6 +47,7 @@ var _ = Describe("Confkey", func() {
 			err = SetStructDefaults(&d)
 			Expect(d.StringEnum).To(Equal("warn"))
 			Expect(d.PlainString).To(Equal(""))
+			Expect(d.T).To(Equal(time.Hour))
 		})
 	})
 
@@ -97,6 +101,20 @@ var _ = Describe("Confkey", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(d.Bool).To(Equal(false))
 			}
+		})
+
+		It("Should support durations", func() {
+			err := SetStructFieldWithKey(&d, "interval", "1s")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(d.T).To(Equal(1 * time.Second))
+
+			err = SetStructFieldWithKey(&d, "interval", "10")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(d.T).To(Equal(10 * time.Second))
+
+			err = SetStructFieldWithKey(&d, "interval", "1h")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(d.T).To(Equal(1 * time.Hour))
 		})
 	})
 })

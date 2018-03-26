@@ -8,7 +8,7 @@
 // The tags can specify some formating like comma splits and other
 // commonly seen patterns in config files.
 //
-// Conversion of []string, ints, strings and booleans are support
+// Conversion of []string, ints, strings, time.Duration and booleans are support
 //
 // Validations can be done on a struct basis using the github.com/choria-io/go-validators
 // package
@@ -17,10 +17,11 @@
 // set values, apply defaults and perform validations
 //
 //    type Config struct {
-//        Loglevel string   `confkey:"loglevel" default:"warn" validate:"enum=debug,info,warn,error"`
-//        Mode     string   `confkey:"mode" default:"server" validate:"enum=server,client"`
-//        Servers  []string `confkey:"servers" type:"comma_split" environment:"SERVERS"`
-//        Path     []string `confkey:"path" type:"path_split" default:"/bin:/usr/bin"`
+//        Loglevel string        `confkey:"loglevel" default:"warn" validate:"enum=debug,info,warn,error"`
+//        Mode     string        `confkey:"mode" default:"server" validate:"enum=server,client"`
+//        Servers  []string      `confkey:"servers" type:"comma_split" environment:"SERVERS"`
+//        Path     []string      `confkey:"path" type:"path_split" default:"/bin:/usr/bin"`
+//        I        time.Duration `confkey:"interval" type:"duration" default:"1h"`
 //    }
 //
 // The utilities here will let you parse any config file that might have keys like loglevel etc
@@ -35,6 +36,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 
 	validator "github.com/choria-io/go-validator"
@@ -124,6 +126,36 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 			return err
 		}
 		*ptr = i
+
+	case reflect.Int64:
+		if tag, ok := tag(target, item, "type"); ok {
+			if tag == "duration" {
+				ptr := field.Addr().Interface().(*time.Duration)
+
+				intonly, err := regexp.MatchString("\\A\\d+\\z", value.(string))
+				if err != nil {
+					return err
+				}
+
+				if intonly {
+					i, err := strconv.Atoi(value.(string))
+					if err != nil {
+						return err
+					}
+
+					*ptr = time.Second * time.Duration(i)
+
+					break
+				}
+
+				d, err := time.ParseDuration(value.(string))
+				if err != nil {
+					return err
+				}
+
+				*ptr = d
+			}
+		}
 
 	case reflect.String:
 		ptr := field.Addr().Interface().(*string)
