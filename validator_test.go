@@ -19,13 +19,14 @@ type nest struct {
 }
 
 type vdata struct {
-	SS   string   `validate:"shellsafe"`
-	ML   string   `validate:"maxlength=3"`
-	Enum []string `validate:"enum=one,two"`
-	IPv4 string   `validate:"ipv4"`
-	IPv6 string   `validate:"ipv6"`
-	IP   string   `validate:"ipaddress"`
-	RE   string   `validate:"regex=world$"`
+	SS       string   `validate:"shellsafe"`
+	ML       string   `validate:"maxlength=3"`
+	Enum     []string `validate:"enum=one,two"`
+	IPv4     string   `validate:"ipv4"`
+	IPv6     string   `validate:"ipv6"`
+	IP       string   `validate:"ipaddress"`
+	RE       string   `validate:"regex=world$"`
+	Duration string   `validate:"duration"`
 	nest
 }
 
@@ -34,10 +35,11 @@ var s vdata
 var _ = Describe("ValidateStructField", func() {
 	BeforeEach(func() {
 		s = vdata{
-			IPv4: "1.2.3.4",
-			IPv6: "2a00:1450:4003:807::200e",
-			IP:   "1.2.3.4",
-			RE:   "hello world",
+			IPv4:     "1.2.3.4",
+			IPv6:     "2a00:1450:4003:807::200e",
+			IP:       "1.2.3.4",
+			RE:       "hello world",
+			Duration: "1h",
 		}
 	})
 
@@ -58,10 +60,11 @@ var _ = Describe("ValidateStructField", func() {
 var _ = Describe("ValidateStruct", func() {
 	BeforeEach(func() {
 		s = vdata{
-			IPv4: "1.2.3.4",
-			IPv6: "2a00:1450:4003:807::200e",
-			IP:   "1.2.3.4",
-			RE:   "hello world",
+			IPv4:     "1.2.3.4",
+			IPv6:     "2a00:1450:4003:807::200e",
+			IP:       "1.2.3.4",
+			RE:       "hello world",
+			Duration: "1h",
 		}
 	})
 
@@ -128,6 +131,14 @@ var _ = Describe("ValidateStruct", func() {
 		ok, err := validator.ValidateStruct(s)
 
 		Expect(err).To(MatchError("RE regular expression validation failed: input does not match 'world$'"))
+		Expect(ok).To(BeFalse())
+	})
+
+	It("Should support regex", func() {
+		s.Duration = "1w"
+		ok, err := validator.ValidateStruct(s)
+
+		Expect(err).To(MatchError("Duration duration validation failed: time: unknown unit w in duration 1w"))
 		Expect(ok).To(BeFalse())
 	})
 })

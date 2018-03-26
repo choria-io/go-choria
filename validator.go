@@ -11,6 +11,7 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/choria-io/go-validator/duration"
 	"github.com/choria-io/go-validator/enum"
 	"github.com/choria-io/go-validator/ipaddress"
 	"github.com/choria-io/go-validator/ipv4"
@@ -115,6 +116,11 @@ func validateStructField(valueField reflect.Value, typeField reflect.StructField
 	} else if strings.HasPrefix(validation, "enum") {
 		if ok, err := enum.ValidateStructField(valueField, validation); !ok {
 			return fmt.Errorf("%s enum validation failed: %s", typeField.Name, err)
+		}
+
+	} else if strings.HasPrefix(validation, "duration") {
+		if ok, err := duration.ValidateStructField(valueField, validation); !ok {
+			return fmt.Errorf("%s duration validation failed: %s", typeField.Name, err)
 		}
 	}
 
