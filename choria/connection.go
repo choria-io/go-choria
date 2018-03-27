@@ -428,7 +428,7 @@ func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.
 	return nil
 }
 
-func (conn *Connection) TargetForMessage(msg *Message, identity string) (string, error) {
+func TargetForMessage(msg *Message, identity string) (string, error) {
 	if msg.CustomTarget != "" {
 		return msg.CustomTarget, nil
 	}
@@ -441,25 +441,41 @@ func (conn *Connection) TargetForMessage(msg *Message, identity string) (string,
 		return msg.ReplyTo(), nil
 
 	} else if msg.Type() == "request" {
-		return conn.AgentBroadcastTarget(msg.Collective(), msg.Agent), nil
+		return AgentBroadcastTarget(msg.Collective(), msg.Agent), nil
 
 	} else if msg.Type() == "direct_request" {
-		return conn.NodeDirectedTarget(msg.Collective(), identity), nil
+		return NodeDirectedTarget(msg.Collective(), identity), nil
 	}
 
 	return "", fmt.Errorf("Do not know how to determine the target for Message %s with type %s", msg.RequestID, msg.Type())
 }
 
-func (conn *Connection) NodeDirectedTarget(collective string, identity string) string {
+func (conn *Connection) TargetForMessage(msg *Message, identity string) (string, error) {
+	return TargetForMessage(msg, identity)
+}
+
+func NodeDirectedTarget(collective string, identity string) string {
 	return fmt.Sprintf("%s.node.%s", collective, identity)
 }
 
-func (conn *Connection) AgentBroadcastTarget(collective string, agent string) string {
+func (conn *Connection) NodeDirectedTarget(collective string, identity string) string {
+	return NodeDirectedTarget(collective, identity)
+}
+
+func AgentBroadcastTarget(collective string, agent string) string {
 	return fmt.Sprintf("%s.broadcast.agent.%s", collective, agent)
 }
 
+func (conn *Connection) AgentBroadcastTarget(collective string, agent string) string {
+	return AgentBroadcastTarget(collective, agent)
+}
+
+func ReplyTarget(msg *Message, requestid string) string {
+	return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), msg.SenderID, requestid)
+}
+
 func (conn *Connection) ReplyTarget(msg *Message) string {
-	return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), msg.SenderID, conn.choria.NewRequestID())
+	return ReplyTarget(msg, conn.choria.NewRequestID())
 }
 
 func (conn *Connection) federationTarget(federation string, side string) string {
