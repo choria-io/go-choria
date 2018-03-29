@@ -35,7 +35,7 @@ func (l Logger) Debugf(format string, v ...interface{}) {
 		return
 	}
 
-	if format == "Detected duplicate remote route %q" {
+	if format == "Detected duplicate remote route %q" || format == "Error flushing: %v" || format == "TLS handshake error: %v" {
 		l.Errorf(format, v)
 		return
 	}
