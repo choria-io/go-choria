@@ -147,6 +147,7 @@ func (s *Server) setupCluster() (err error) {
 func (s *Server) setupTLS() (err error) {
 	s.opts.TLS = true
 	s.opts.TLSVerify = true
+	s.opts.TLSTimeout = 2
 
 	// seems weird to set all this when the thing that it cares for is TlsConfig
 	// but that's what gnatsd main also does, so sticking with that pattern
@@ -173,7 +174,7 @@ func (s *Server) setupTLS() (err error) {
 	tc.CertFile = s.opts.TLSCert
 	tc.KeyFile = s.opts.TLSKey
 	tc.Verify = true
-	tc.Timeout = 2
+	tc.Timeout = s.opts.TLSTimeout
 
 	if s.opts.TLSConfig, err = gnatsd.GenTLSConfig(&tc); err != nil {
 		return fmt.Errorf("Could not create NATS Server TLS Config: %s", err)
@@ -182,7 +183,7 @@ func (s *Server) setupTLS() (err error) {
 	s.opts.Cluster.TLSConfig = s.opts.TLSConfig
 	s.opts.Cluster.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 	s.opts.Cluster.TLSConfig.RootCAs = s.opts.Cluster.TLSConfig.ClientCAs
-	s.opts.Cluster.TLSTimeout = tc.Timeout
+	s.opts.Cluster.TLSTimeout = s.opts.TLSTimeout
 
 	return
 }
