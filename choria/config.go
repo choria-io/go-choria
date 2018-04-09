@@ -162,9 +162,14 @@ func NewConfig(path string) (*Config, error) {
 	}
 
 	if c.Identity == "" {
-		c.Identity, err = os.Hostname()
-		if err != nil {
-			return nil, err
+		fqdn, _ := FacterFQDN()
+		if fqdn != "" {
+			c.Identity = fqdn
+		} else {
+			c.Identity, err = os.Hostname()
+			if err != nil {
+				return nil, err
+			}
 		}
 	}
 

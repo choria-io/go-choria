@@ -1,10 +1,12 @@
 package choria
 
 import (
+	"errors"
 	"fmt"
 	"net"
 	"net/url"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -144,4 +146,66 @@ func HomeDir() (string, error) {
 
 	return home, nil
 
+}
+
+// FacterStringFact looks up a facter fact, returns "" when unknown
+func FacterStringFact(fact string) (string, error) {
+	cmd := FacterCmd()
+
+	if cmd == "" {
+		return "", errors.New("could not find your facter command")
+	}
+
+	out, err := exec.Command(cmd, fact).Output()
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Replace(string(out), "\n", "", -1), nil
+}
+
+// FacterFQDN determines the machines fqdn by querying facter.  Returns "" when unknown
+func FacterFQDN() (string, error) {
+	return FacterStringFact("networking.fqdn")
+}
+
+// FacterDomain determines the machines domain by querying facter. Returns "" when unknown
+func FacterDomain() (string, error) {
+	return FacterStringFact("networking.domain")
+}
+
+// FacterCmd finds the path to facter using first AIO path then a `which` like command
+func FacterCmd() string {
+	return PuppetAIOCmd("facter", "")
+}
+
+// PuppetAIOCmd looks up a command in the AIO paths, if it's not there
+// it will try PATH and finally return a default if not in PATH
+//
+// TODO: windows support
+func PuppetAIOCmd(command string, def string) string {
+	aioPath := fmt.Sprintf("/opt/puppetlabs/bin/%s", command)
+
+	if _, err := os.Stat(aioPath); err == nil {
+		return aioPath
+	}
+
+	path, err := exec.LookPath(command)
+	if err != nil {
+		return def
+	}
+
+	return path
+}
+
+// PuppetSetting retrieves a config setting by shelling out to puppet apply --configprint
+func PuppetSetting(setting string) (string, error) {
+	args := []string{"apply", "--configprint", setting}
+
+	out, err := exec.Command(PuppetAIOCmd("puppet", "puppet"), args...).Output()
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Replace(string(out), "\n", "", -1), nil
 }
