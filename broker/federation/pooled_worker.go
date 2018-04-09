@@ -72,7 +72,7 @@ func (self *pooledWorker) Run(ctx context.Context) error {
 	defer self.mu.Unlock()
 
 	if !self.Ready() {
-		err := fmt.Errorf("Could not run %s as Init() has not been called or failed", self.Name())
+		err := fmt.Errorf("could not run %s as Init() has not been called or failed", self.Name())
 		self.log.Warn(err)
 		return err
 	}
@@ -80,7 +80,6 @@ func (self *pooledWorker) Run(ctx context.Context) error {
 	var err error
 
 	if self.mode != Unconnected {
-		// look up here so it hits the name servers once only
 		switch self.mode {
 		case Federation:
 			self.servers = func() ([]choria.Server, error) {
@@ -91,14 +90,27 @@ func (self *pooledWorker) Run(ctx context.Context) error {
 				return self.choria.MiddlewareServers()
 			}
 		default:
-			err := errors.New("Do not know which middleware to connect to, Mode should be one of Federation or Collective")
-			self.log.Warn(err)
+			err := errors.New("do not know which middleware to connect to, Mode should be one of Federation or Collective")
+			self.log.Error(err)
 			return err
 		}
 
 		if err != nil {
-			err = fmt.Errorf("Could not determine middleware servers: %s", err)
+			err = fmt.Errorf("could not determine middleware servers: %s", err)
 			self.log.Warn(err)
+			return err
+		}
+
+		srv, err := self.servers()
+		if err != nil {
+			err = fmt.Errorf("resolving initial middleware server list failed: %s", err)
+			self.log.Error(err)
+			return err
+		}
+
+		if len(srv) == 0 {
+			err = fmt.Errorf("no middleware servers were configured for %s, cannot continue", self.name)
+			self.log.Error(err)
 			return err
 		}
 	}
