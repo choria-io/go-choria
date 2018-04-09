@@ -60,6 +60,9 @@ var _ = Describe("Choria NATS Ingest", func() {
 		manager.Init()
 		connector.connection = manager
 
+		connector.choria.Config.Choria.FederationMiddlewareHosts = []string{"c1:4222", "c2:4222"}
+		connector.choria.Config.Choria.MiddlewareHosts = []string{"c3:4222", "c4:4222"}
+
 		go connector.Run(ctx)
 	}, 1)
 
@@ -117,5 +120,4 @@ var _ = Describe("Choria NATS Ingest", func() {
 		Expect(out.RequestID).To(Equal(request.RequestID()))
 		Expect(out.Seen).To(Equal([]string{"nats://stub:4222", "choria_nats_ingest:0"}))
 	}, 1)
-
 })
