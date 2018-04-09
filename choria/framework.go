@@ -6,7 +6,6 @@ import (
 	"net"
 	"net/url"
 	"os"
-	"os/exec"
 	"strconv"
 	"strings"
 	"sync"
@@ -416,35 +415,27 @@ func (self *Framework) ProxiedDiscovery() bool {
 
 // PuppetSetting retrieves a config setting by shelling out to puppet apply --configprint
 func (self *Framework) PuppetSetting(setting string) (string, error) {
-	args := []string{"apply", "--configprint", setting}
+	return PuppetSetting(setting)
+}
 
-	out, err := exec.Command(self.PuppetAIOCmd("puppet", "puppet"), args...).Output()
-	if err != nil {
-		return "", err
-	}
+// FacterStringFact looks up a facter fact, returns "" when unknown
+func (self *Framework) FacterStringFact(fact string) (string, error) {
+	return FacterStringFact(fact)
+}
 
-	return strings.Replace(string(out), "\n", "", -1), nil
+// FacterFQDN determines the machines fqdn by querying facter.  Returns "" when unknown
+func (self *Framework) FacterFQDN() (string, error) {
+	return FacterStringFact("networking.fqdn")
 }
 
 // FacterDomain determines the machines domain by querying facter. Returns "" when unknown
 func (self *Framework) FacterDomain() (string, error) {
-	cmd := self.FacterCmd()
-
-	if cmd == "" {
-		return "", errors.New("Could not find your facter command")
-	}
-
-	out, err := exec.Command(cmd, "networking.domain").Output()
-	if err != nil {
-		return "", fmt.Errorf("Could not resolve the server domain via facter: ", err)
-	}
-
-	return strings.Replace(string(out), "\n", "", -1), nil
+	return FacterStringFact("networking.domain")
 }
 
 // FacterCmd finds the path to facter using first AIO path then a `which` like command
 func (self *Framework) FacterCmd() string {
-	return self.PuppetAIOCmd("facter", "")
+	return PuppetAIOCmd("facter", "")
 }
 
 // PuppetAIOCmd looks up a command in the AIO paths, if it's not there
@@ -452,18 +443,7 @@ func (self *Framework) FacterCmd() string {
 //
 // TODO: windows support
 func (self *Framework) PuppetAIOCmd(command string, def string) string {
-	aio_path := fmt.Sprintf("/opt/puppetlabs/bin/%s", command)
-
-	if _, err := os.Stat(aio_path); err == nil {
-		return aio_path
-	}
-
-	path, err := exec.LookPath(command)
-	if err != nil {
-		return def
-	}
-
-	return path
+	return PuppetAIOCmd(command, def)
 }
 
 // NewRequestID Creates a new RequestID
