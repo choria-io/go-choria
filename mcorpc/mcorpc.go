@@ -46,9 +46,10 @@ const (
 // Reply is the reply data as stipulated by MCollective RPC system.  The Data
 // has to be something that can be turned into JSON using the normal Marshal system
 type Reply struct {
-	Statuscode StatusCode  `json:"statuscode"`
-	Statusmsg  string      `json:"statusmsg"`
-	Data       interface{} `json:"data"`
+	Statuscode      StatusCode  `json:"statuscode"`
+	Statusmsg       string      `json:"statusmsg"`
+	Data            interface{} `json:"data"`
+	DisableResponse bool        `json:"-"`
 }
 
 // Request is a request as defined by the MCollective RPC system.

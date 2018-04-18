@@ -50,8 +50,8 @@ func New(file string) (*DDL, error) {
 	return ddl, nil
 }
 
-// ActionList is a list of known actions defined by a DDL
-func (d *DDL) ActionList() []string {
+// ActionNames is a list of known actions defined by a DDL
+func (d *DDL) ActionNames() []string {
 	actions := []string{}
 
 	if d.Actions != nil {
