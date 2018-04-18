@@ -74,6 +74,10 @@ type ChoriaPluginConfig struct {
 	FileContentRegistrationTarget string `confkey:"plugin.choria.registration.file_content.target" default:""`
 	FileContentCompression        bool   `confkey:"plugin.choria.registration.file_content.compression" default:"true"`
 
+	// ruby compatibility
+	RubyAgentShim   string `confkey:"plugin.choria.rubyrpc.shim"`
+	RubyAgentConfig string `confkey:"plugin.choria.rubyrpc.config"`
+
 	// adapters
 	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split"`
 }

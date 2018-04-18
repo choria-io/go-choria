@@ -33,3 +33,7 @@ import:
   version: ^1.0.0
 - package: github.com/choria-io/go-confkey
   version: ^1
+- package: github.com/golang/mock
+  subpackages:
+  - gomock
+  - mockgen

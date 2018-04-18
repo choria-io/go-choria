@@ -8,6 +8,7 @@ import (
 	"github.com/choria-io/go-choria/agents/discovery"
 	"github.com/choria-io/go-choria/agents/provision"
 	"github.com/choria-io/go-choria/agents/rpcutil"
+	"github.com/choria-io/go-choria/mcorpc/ruby"
 
 	"github.com/choria-io/go-choria/build"
 )
@@ -42,6 +43,10 @@ func (srv *Instance) setupCoreAgents(ctx context.Context) error {
 
 		srv.agents.RegisterAgent(ctx, "choria_provision", pa, srv.connector)
 	}
+
+	srv.log.Info("Registering agents from the Ruby provider")
+	provider := ruby.New(srv.fw)
+	provider.RegisterAgents(ctx, srv.agents, srv.connector, srv.log)
 
 	return nil
 }

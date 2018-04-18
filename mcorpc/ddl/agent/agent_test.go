@@ -48,7 +48,7 @@ var _ = Describe("McoRPC/DDL/Agent", func() {
 
 	var _ = Describe("ActionList", func() {
 		It("Should return the correct list", func() {
-			Expect(pkg.ActionList()).To(Equal([]string{"apt_checkupdates", "apt_update", "checkupdates", "count", "install", "md5", "purge", "status", "uninstall", "update", "yum_checkupdates", "yum_clean"}))
+			Expect(pkg.ActionNames()).To(Equal([]string{"apt_checkupdates", "apt_update", "checkupdates", "count", "install", "md5", "purge", "status", "uninstall", "update", "yum_checkupdates", "yum_clean"}))
 		})
 	})
 
