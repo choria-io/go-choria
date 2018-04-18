@@ -124,6 +124,10 @@ func (a *Agent) Metadata() *agents.Metadata {
 }
 
 func (a *Agent) publish(rpcreply *Reply, msg *choria.Message, request protocol.Request, outbox chan *agents.AgentReply) {
+	if rpcreply.DisableResponse {
+		return
+	}
+
 	reply := &agents.AgentReply{
 		Message: msg,
 		Request: request,
