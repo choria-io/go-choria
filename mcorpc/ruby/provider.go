@@ -60,3 +60,8 @@ func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, 
 func (p *Provider) Agents() []*agent.DDL {
 	return p.agents
 }
+
+// Version reports the version for this provider
+func (p *Provider) Version() string {
+	return "MCollective Ruby Agent Compatibility Layer"
+}

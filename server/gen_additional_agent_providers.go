@@ -31,11 +31,9 @@ import (
 	ap "{{.Repo}}"
 
 	"github.com/choria-io/go-choria/server"
-	log "github.com/sirupsen/logrus"
 )
 
 func init() {
-	log.Info("Registering additional agent provider {{.Name}} from {{.Repo}}")
 	server.RegisterAdditionalAgentProvider(&ap.Provider{})
 }
 `
