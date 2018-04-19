@@ -34,12 +34,10 @@ func (srv *Instance) setupAdditionalAgents(ctx context.Context) error {
 	aamu.Lock()
 	defer aamu.Unlock()
 
-	if len(additionalAgents) > 0 {
-		for _, initializer := range additionalAgents {
-			err := initializer(ctx, srv.agents, srv.connector, srv.log)
-			if err != nil {
-				return err
-			}
+	for _, initializer := range additionalAgents {
+		err := initializer(ctx, srv.agents, srv.connector, srv.log)
+		if err != nil {
+			return err
 		}
 	}
 

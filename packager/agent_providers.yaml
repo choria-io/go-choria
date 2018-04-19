@@ -1,0 +1,4 @@
+---
+providers:
+  - name: rubymco
+    repo: github.com/choria-io/go-choria/mcorpc/ruby

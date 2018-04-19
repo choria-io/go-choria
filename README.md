@@ -188,3 +188,18 @@ agents:
 ```
 
 When you run `go generate` (done during the building phase for you) this will create the shim you need to compile your agent into the binary.
+
+### Compiling in custom agent providers
+Agent Providers allow entirely new ways of writing agents to be created.  An example is the one that runs old mcollective ruby agents
+within a choria instance.
+
+During your CI or whatever you have to `glide get` the repo with your agent so it's available during compile, then create a file `packager/agent_providers.yaml`:
+
+```yaml
+---
+providers:
+  - name: rubymco
+    repo: github.com/choria-io/go-choria/mcorpc/ruby
+```
+
+When you run `go generate` (done during the building phase for you) this will create the shim you need to compile your agent into the binary.

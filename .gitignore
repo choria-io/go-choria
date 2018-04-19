@@ -14,3 +14,4 @@ debug
 .DS_Store
 *.deb
 *.dsc
+additional_agent_provider_*.go

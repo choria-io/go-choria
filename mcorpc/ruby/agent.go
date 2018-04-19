@@ -13,6 +13,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/mcorpc"
 	"github.com/choria-io/go-choria/mcorpc/ddl/agent"
+	"github.com/choria-io/go-choria/server"
 )
 
 // ShimRequest is the request being published to the shim runner
@@ -37,7 +38,7 @@ type ShimRequestBody struct {
 }
 
 // NewRubyAgent creates a shim agent that calls to a old mcollective agent implemented in ruby
-func NewRubyAgent(ddl *agent.DDL, mgr AgentManager) (*mcorpc.Agent, error) {
+func NewRubyAgent(ddl *agent.DDL, mgr server.AgentManager) (*mcorpc.Agent, error) {
 	agent := mcorpc.New(ddl.Metadata.Name, ddl.Metadata, mgr.Choria(), mgr.Logger())
 
 	agent.Log.Debugf("Registering proxy actions for Ruby agent %s: %s", ddl.Metadata.Name, strings.Join(ddl.ActionNames(), ", "))
@@ -105,6 +106,7 @@ func rubyAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 	out, err := execution.Output()
 	if err != nil {
 		abortAction(fmt.Sprintf("Cannot run Ruby action %s: %s", action, err), agent, reply)
+		agent.Log.Errorf("Error from Ruby shim: %s", string(err.(*exec.ExitError).Stderr))
 		return
 	}
 
@@ -139,7 +141,7 @@ func newShimRequest(req *mcorpc.Request) ([]byte, error) {
 }
 
 func abortAction(reason string, agent *mcorpc.Agent, reply *mcorpc.Reply) {
-	agent.Log.Errorf(reason)
+	agent.Log.Error(reason)
 	reply.Statuscode = mcorpc.Aborted
 	reply.Statusmsg = reason
 }

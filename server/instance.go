@@ -80,6 +80,13 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 		return
 	}
 
+	if err := srv.setupAdditionalAgentProviders(ctx); err != nil {
+		srv.log.Errorf("Could not initialize initial additional agent providers: %s", err)
+		srv.connector.Close()
+
+		return
+	}
+
 	if err := srv.subscribeNode(ctx); err != nil {
 		srv.log.Errorf("Could not initialize node: %s", err)
 		srv.connector.Close()
