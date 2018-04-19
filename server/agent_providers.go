@@ -12,6 +12,7 @@ import (
 type AgentProvider interface {
 	Initialize(fw *choria.Framework, log *logrus.Entry)
 	RegisterAgents(ctx context.Context, mgr AgentManager, connector choria.InstanceConnector, log *logrus.Entry) error
+	Version() string
 }
 
 var additionalAgentProviders []AgentProvider
@@ -41,6 +42,7 @@ func (srv *Instance) setupAdditionalAgentProviders(ctx context.Context) error {
 	for _, provider := range additionalAgentProviders {
 		provider.Initialize(srv.fw, srv.log)
 
+		srv.log.Infof("Activating Agent Provider: %s", provider.Version())
 		err := provider.RegisterAgents(ctx, srv.agents, srv.connector, srv.log)
 		if err != nil {
 			return err
