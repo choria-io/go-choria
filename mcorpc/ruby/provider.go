@@ -5,15 +5,9 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/mcorpc/ddl/agent"
-	"github.com/choria-io/go-choria/server/agents"
+	"github.com/choria-io/go-choria/server"
 	"github.com/sirupsen/logrus"
 )
-
-type AgentManager interface {
-	RegisterAgent(ctx context.Context, name string, agent agents.Agent, conn choria.AgentConnector) error
-	Logger() *logrus.Entry
-	Choria() *choria.Framework
-}
 
 // agents we do not ever wish to load from ruby
 var denylist = []string{"rpcutil", "choria_util", "discovery"}
@@ -28,19 +22,23 @@ type Provider struct {
 
 // New creates a new provider that will find ruby agents in the configured libdirs
 func New(fw *choria.Framework) *Provider {
-	p := &Provider{
-		fw:  fw,
-		cfg: fw.Config,
-		log: logrus.WithFields(logrus.Fields{"provider": "ruby"}),
-	}
-
-	p.loadAgents(fw.Config.LibDir)
+	p := &Provider{}
+	p.Initialize(fw, logrus.WithFields(logrus.Fields{"provider": "ruby"}))
 
 	return p
 }
 
+// Initialize configures the agent provider
+func (p *Provider) Initialize(fw *choria.Framework, log *logrus.Entry) {
+	p.fw = fw
+	p.cfg = fw.Config
+	p.log = log.WithFields(logrus.Fields{"provider": "ruby"})
+
+	p.loadAgents(fw.Config.LibDir)
+}
+
 // RegisterAgents registers known ruby agents using a shimm agent
-func (p *Provider) RegisterAgents(ctx context.Context, mgr AgentManager, connector choria.InstanceConnector, log *logrus.Entry) error {
+func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, connector choria.InstanceConnector, log *logrus.Entry) error {
 	for _, ddl := range p.Agents() {
 		agent, err := NewRubyAgent(ddl, mgr)
 		if err != nil {
@@ -48,7 +46,11 @@ func (p *Provider) RegisterAgents(ctx context.Context, mgr AgentManager, connect
 			continue
 		}
 
-		mgr.RegisterAgent(ctx, agent.Name(), agent, connector)
+		err = mgr.RegisterAgent(ctx, agent.Name(), agent, connector)
+		if err != nil {
+			p.log.Errorf("Could not register Ruby agent %s: %s", ddl.Metadata.Name, err)
+			continue
+		}
 	}
 
 	return nil
