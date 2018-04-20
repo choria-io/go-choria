@@ -60,7 +60,7 @@ func rubyAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 	shim := agent.Config.Choria.RubyAgentShim
 	shimcfg := agent.Config.Choria.RubyAgentConfig
 
-	agent.Log.Debugf("Attempting to call Ruby agent %s", action)
+	agent.Log.Debugf("Attempting to call Ruby agent %s with a timeout %d", action, agent.Metadata().Timeout)
 
 	if shim == "" {
 		abortAction(fmt.Sprintf("Cannot call Ruby action %s: Ruby compatability shim was not configured", action), agent, reply)
@@ -103,20 +103,25 @@ func rubyAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 		io.WriteString(stdin, string(shimr))
 	}()
 
-	out, err := execution.Output()
+	stdout, err := execution.StdoutPipe()
 	if err != nil {
-		abortAction(fmt.Sprintf("Cannot run Ruby action %s: %s", action, err), agent, reply)
-		agent.Log.Errorf("Error from Ruby shim: %s", string(err.(*exec.ExitError).Stderr))
+		abortAction(fmt.Sprintf("Cannot open STDOUT from the Shim for Ruby action %s: %s", action, err), agent, reply)
 		return
 	}
 
-	if len(out) < 3 {
-		agent.Log.Debugf("No response data received from %s, surpressing replies", action)
-		reply.DisableResponse = true
+	if err := execution.Start(); err != nil {
+		abortAction(fmt.Sprintf("Cannot start the Shim for Ruby action %s: %s", action, err), agent, reply)
 		return
 	}
 
-	json.Unmarshal(out, reply)
+	if err := json.NewDecoder(stdout).Decode(reply); err != nil {
+		abortAction(fmt.Sprintf("Cannot decode output from Shim for Ruby action %s: %s", action, err), agent, reply)
+		return
+	}
+
+	go func() {
+		execution.Wait()
+	}()
 }
 
 func newShimRequest(req *mcorpc.Request) ([]byte, error) {
