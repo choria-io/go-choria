@@ -101,23 +101,6 @@ var _ = Describe("McoRPC/Ruby", func() {
 			Expect(rep.Statusmsg).To(Equal("Cannot call Ruby action one#status: Ruby compatability shim configuration file was not found in /nonexisting"))
 		})
 
-		It("Should fail when the shim exits non zero", func() {
-			fw.Config.Choria.RubyAgentShim = "testdata/nonzero_shim.sh"
-			fw.Config.Choria.RubyAgentConfig = "testdata/shim.cfg"
-
-			rubyAction(ctx, req, rep, agent, ci)
-			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
-			Expect(rep.Statusmsg).To(Equal("Cannot run Ruby action one#status: exit status 1"))
-		})
-
-		It("Should surpress replies when output is too short", func() {
-			fw.Config.Choria.RubyAgentShim = "testdata/badjson_shim.sh"
-			fw.Config.Choria.RubyAgentConfig = "testdata/shim.cfg"
-
-			rubyAction(ctx, req, rep, agent, ci)
-			Expect(rep.DisableResponse).To(BeTrue())
-		})
-
 		It("Should unmarshal the result", func() {
 			fw.Config.Choria.RubyAgentShim = "testdata/good_shim.sh"
 			fw.Config.Choria.RubyAgentConfig = "testdata/shim.cfg"

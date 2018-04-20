@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/sirupsen/logrus"
 )
@@ -33,6 +34,7 @@ func RegisterAdditionalAgentProvider(p AgentProvider) {
 	defer aapmu.Unlock()
 
 	additionalAgentProviders = append(additionalAgentProviders, p)
+	build.AgentProviders = append(build.AgentProviders, p.Version())
 }
 
 func (srv *Instance) setupAdditionalAgentProviders(ctx context.Context) error {

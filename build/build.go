@@ -1,6 +1,7 @@
 package build
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -33,6 +34,9 @@ var ProvisionModeDefault = "false"
 // this lets you programatically or via the additional agents system supply your own
 // agent to perform the provisioning duties
 var ProvisionAgent = "true"
+
+// AgentProviders are registered systems capable of extending choria with new agents
+var AgentProviders = []string{fmt.Sprintf("Golang MCollective Agent Compatibility version %s", Version)}
 
 // HasTLS determines if TLS should be used on the wire
 func HasTLS() bool {

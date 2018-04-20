@@ -75,8 +75,9 @@ type ChoriaPluginConfig struct {
 	FileContentCompression        bool   `confkey:"plugin.choria.registration.file_content.compression" default:"true"`
 
 	// ruby compatibility
-	RubyAgentShim   string `confkey:"plugin.choria.rubyrpc.shim"`
-	RubyAgentConfig string `confkey:"plugin.choria.rubyrpc.config"`
+	RubyAgentShim   string   `confkey:"plugin.choria.agent_provider.mcorpc.agent_shim"`
+	RubyAgentConfig string   `confkey:"plugin.choria.agent_provider.mcorpc.config"`
+	RubyLibdir      []string `confkey:"plugin.choria.agent_provider.mcorpc.libdir" type:"path_split"`
 
 	// adapters
 	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split"`

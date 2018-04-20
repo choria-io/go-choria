@@ -8,7 +8,7 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-var _ = Describe("ServerConnection", func() {
+var _ = Describe("Server/Connection", func() {
 	var _ = Describe("brokerUrls", func() {
 		var (
 			cfg *choria.Config

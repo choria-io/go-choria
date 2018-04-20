@@ -24,8 +24,7 @@ type agents struct {
 	Agents []agent
 }
 
-const ftempl = `
-// auto generated {{.Now}}
+const ftempl = `// auto generated {{.Now}}
 package main
 
 import (
