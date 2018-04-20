@@ -50,7 +50,7 @@ task :build_binaries do
 
   source = "/go/src/github.com/choria-io/go-choria"
 
-  sh 'docker run --rm  -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e BINARY_ONLY=1 ripienaar/choria-packager:el7-go9.2' % [
+  sh 'docker run --rm  -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e BINARY_ONLY=1 choria/packager:el7-go1.10' % [
     source,
     source,
     source,
