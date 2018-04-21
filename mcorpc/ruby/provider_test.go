@@ -63,6 +63,10 @@ var _ = Describe("McoRPC/Ruby", func() {
 			ctx = context.Background()
 		})
 
+		AfterEach(func() {
+			mockctl.Finish()
+		})
+
 		It("Should register all agents", func() {
 			agentMgr.EXPECT().RegisterAgent(ctx, "one", gomock.AssignableToTypeOf(agent), connector).Times(1)
 			agentMgr.EXPECT().RegisterAgent(ctx, "two", gomock.AssignableToTypeOf(agent), connector).Times(1)
@@ -70,9 +74,5 @@ var _ = Describe("McoRPC/Ruby", func() {
 			err := p.RegisterAgents(ctx, agentMgr, connector, logrus.WithFields(logrus.Fields{}))
 			Expect(err).ToNot(HaveOccurred())
 		})
-	})
-
-	AfterEach(func() {
-		mockctl.Finish()
 	})
 })

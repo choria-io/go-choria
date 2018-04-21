@@ -2,7 +2,9 @@ package ruby
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server"
@@ -34,7 +36,7 @@ func (p *Provider) Initialize(fw *choria.Framework, log *logrus.Entry) {
 	p.cfg = fw.Config
 	p.log = log.WithFields(logrus.Fields{"provider": "ruby"})
 
-	p.loadAgents(fw.Config.LibDir)
+	p.loadAgents(fw.Config.Choria.RubyLibdir)
 }
 
 // RegisterAgents registers known ruby agents using a shimm agent
@@ -63,5 +65,5 @@ func (p *Provider) Agents() []*agent.DDL {
 
 // Version reports the version for this provider
 func (p *Provider) Version() string {
-	return "MCollective Ruby Agent Compatibility Layer"
+	return fmt.Sprintf("Ruby MCollective Agent Compatibility version %s", build.Version)
 }
