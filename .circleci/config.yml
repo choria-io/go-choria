@@ -7,7 +7,7 @@ jobs:
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
-      - MCOLLECTIVE_CERTNAME: rip.mcollective
+      MCOLLECTIVE_CERTNAME: rip.mcollective
 
     steps:
       - checkout
@@ -30,9 +30,9 @@ jobs:
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
-      - PACKAGE: el6_64
-      - BUILD: foss
-      - BUILDER: choria/packager:el6-go1.10
+      PACKAGE: el6_64
+      BUILD: foss
+      BUILDER: choria/packager:el6-go1.10
 
     steps: &std_build_steps
       - setup_remote_docker
@@ -74,9 +74,9 @@ jobs:
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
-      - PACKAGE: el6_32
-      - BUILD: foss
-      - BUILDER: choria/packager:el6-go1.10
+      PACKAGE: el6_32
+      BUILD: foss
+      BUILDER: choria/packager:el6-go1.10
 
     steps:
       *std_build_steps
@@ -88,9 +88,9 @@ jobs:
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
-      - PACKAGE: el5_32
-      - BUILD: foss
-      - BUILDER: choria/packager:el5-go1.10
+      PACKAGE: el5_32
+      BUILD: foss
+      BUILDER: choria/packager:el5-go1.10
 
     steps:
       *std_build_steps
@@ -102,9 +102,9 @@ jobs:
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
-      - PACKAGE: el5_64
-      - BUILD: foss
-      - BUILDER: choria/packager:el5-go1.10
+      PACKAGE: el5_64
+      BUILD: foss
+      BUILDER: choria/packager:el5-go1.10
 
     steps:
       *std_build_steps
@@ -116,9 +116,9 @@ jobs:
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
-      - PACKAGE: el7_64
-      - BUILD: foss
-      - BUILDER: choria/packager:el7-go1.10
+      PACKAGE: el7_64
+      BUILD: foss
+      BUILDER: choria/packager:el7-go1.10
 
     steps:
       *std_build_steps
@@ -130,9 +130,9 @@ jobs:
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
-      - PACKAGE: xenial_64
-      - BUILD: foss
-      - BUILDER: choria/packager:xenial-go1.10
+      PACKAGE: xenial_64
+      BUILD: foss
+      BUILDER: choria/packager:xenial-go1.10
 
     steps:
       *std_build_steps
@@ -144,9 +144,9 @@ jobs:
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
-      - PACKAGE: stretch_64
-      - BUILD: foss
-      - BUILDER: choria/packager:stretch-go1.10
+      PACKAGE: stretch_64
+      BUILD: foss
+      BUILDER: choria/packager:stretch-go1.10
 
     steps:
       *std_build_steps
@@ -164,8 +164,62 @@ jobs:
       - store_artifacts:
           path: /tmp/workspace
 
+  nightly_packagecloud: &packagecloud_push
+    environment:
+      REPO: nightly
+
+    docker:
+      - image: circleci/ruby
+
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+
+      - run: gem install package_cloud
+
+      - run: |
+          for d in 6 7
+          do
+            for i in $(find /tmp/workspace -name \*.el${d}.\*.rpm | grep -v src.rpm)
+            do
+              package_cloud push choria/${REPO}/el/${d} ${i}
+            done
+          done
+
 workflows:
   version: 2
+  nightly:
+    triggers:
+      - schedule:
+          cron: "0 0 * * *"
+          filters:
+            branches:
+              only:
+                - master
+
+    jobs:
+      - test
+
+      - build_el7_64bit_rpms:
+          context: org-global
+          requires:
+            - test
+
+      - build_el6_64bit_rpms:
+          context: org-global
+          requires:
+           - test
+
+      - gather_artifacts:
+          requires:
+            - build_el6_64bit_rpms
+            - build_el7_64bit_rpms
+
+      - nightly_packagecloud:
+          requires:
+            - gather_artifacts
+
+
   test_and_ship:
     jobs:
       - test:
