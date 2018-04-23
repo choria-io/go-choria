@@ -1,5 +1,5 @@
 hash: a5ba9b274e87d48433e564684fde5561adf93b2aa8d5e106eb05983a951b8c7b
-updated: 2018-04-18T20:27:48.880102+02:00
+updated: 2018-04-23T14:36:06.516053+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -35,7 +35,7 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/gogo/protobuf
-  version: 99cb9b23110011cc45571c901ecae6f6f5e65cd3
+  version: c0656edd0d9eab7c66d1eb0c568f9039345796f7
   subpackages:
   - gogoproto
   - proto
@@ -46,7 +46,7 @@ imports:
   - gomock
   - mockgen
 - name: github.com/golang/protobuf
-  version: 1e59b77b52bf8e4b449a57e6f79f21226d571845
+  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
   subpackages:
   - proto
 - name: github.com/matttproud/golang_protobuf_extensions
@@ -130,7 +130,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
 - name: github.com/tidwall/gjson
-  version: 87033efcaec6215741137e8ca61952c53ef2685d
+  version: 01f00f129617a6fe98941fb920d6c760241b54d2
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
