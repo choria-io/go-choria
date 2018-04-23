@@ -66,8 +66,8 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 		return
 	}
 
-	if err := srv.setupCoreAgents(ctx); err != nil {
-		srv.log.Errorf("Could not initialize initial core agents: %s", err)
+	if err := srv.setupAdditionalAgentProviders(ctx); err != nil {
+		srv.log.Errorf("Could not initialize initial additional agent providers: %s", err)
 		srv.connector.Close()
 
 		return
@@ -75,13 +75,6 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	if err := srv.setupAdditionalAgents(ctx); err != nil {
 		srv.log.Errorf("Could not initialize initial additional agents: %s", err)
-		srv.connector.Close()
-
-		return
-	}
-
-	if err := srv.setupAdditionalAgentProviders(ctx); err != nil {
-		srv.log.Errorf("Could not initialize initial additional agent providers: %s", err)
 		srv.connector.Close()
 
 		return
@@ -98,7 +91,7 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 	go srv.processRequests(ctx, wg)
 }
 
-// AddRegistrationProvider adds a new provider for registration data to the registration subsystem
+// RegisterRegistrationProvider adds a new provider for registration data to the registration subsystem
 func (srv *Instance) RegisterRegistrationProvider(ctx context.Context, wg *sync.WaitGroup, provider registration.RegistrationDataProvider) error {
 	return srv.registration.RegisterProvider(ctx, wg, provider)
 }

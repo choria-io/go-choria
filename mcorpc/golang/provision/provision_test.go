@@ -20,10 +20,10 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Agent/Provision")
+	RunSpecs(t, "McoRPC/Golang/Provision")
 }
 
-var _ = Describe("Agent/Provision", func() {
+var _ = Describe("McoRPC/Golang/Provision", func() {
 	var (
 		mockctl  *gomock.Controller
 		requests chan *choria.ConnectorMessage
