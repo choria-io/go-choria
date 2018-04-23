@@ -46,11 +46,15 @@ jobs:
       - run: docker cp /go store:/
 
       - run: |
+          VERSION="${CIRCLE_TAG}"
+
           if [ -z "${CIRCLE_TAG}" ]
           then
             VERSION=${CIRCLE_SHA1}
-          else
-            VERSION=${CIRCLE_TAG}
+            if [ ! -z "${NIGHTLY}" ]
+            then
+              VERSION="0.99.0.$(date +'%Y%m%d')"
+            fi
           fi
 
           docker run --volumes-from store --rm -e SOURCE_DIR=/go/src/github.com/choria-io/go-choria -e SHA1=${CIRCLE_SHA1} -e BUILD=${BUILD} -e VERSION=${VERSION} -e ARTIFACTS=/build/artifacts -e PACKAGE=${PACKAGE} ${BUILDER}
