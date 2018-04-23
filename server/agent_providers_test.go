@@ -2,7 +2,6 @@ package server
 
 import (
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/choria"
 	"github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
@@ -13,9 +12,6 @@ var _ = Describe("Server/AgentProviders", func() {
 	var (
 		mockctl  *gomock.Controller
 		provider *MockAgentProvider
-		fw       *choria.Framework
-		srv      *Instance
-		err      error
 	)
 
 	BeforeEach(func() {
@@ -23,12 +19,6 @@ var _ = Describe("Server/AgentProviders", func() {
 
 		mockctl = gomock.NewController(GinkgoT())
 		provider = NewMockAgentProvider(mockctl)
-
-		fw, err = choria.New("/dev/null")
-		Expect(err).ToNot(HaveOccurred())
-
-		srv, err = NewInstance(fw)
-		Expect(err).ToNot(HaveOccurred())
 	})
 
 	AfterEach(func() {
