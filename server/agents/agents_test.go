@@ -2,15 +2,16 @@ package agents
 
 import (
 	"context"
-	"encoding/json"
+	json "encoding/json"
 	"errors"
 	"fmt"
 	"sync"
 	"testing"
-	"time"
+	time "time"
 
 	"github.com/choria-io/go-choria/choria/connectortest"
 	"github.com/choria-io/go-protocol/protocol"
+	gomock "github.com/golang/mock/gomock"
 
 	"github.com/choria-io/go-choria/choria"
 	. "github.com/onsi/ginkgo"
@@ -18,87 +19,25 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type stubAgent struct {
-	meta      *Metadata
-	nextError string
-	si        ServerInfoSource
-}
-
-func (s *stubAgent) Metadata() *Metadata {
-	return s.meta
-}
-
-func (s *stubAgent) Name() string {
-	return "stub"
-}
-
-func (s *stubAgent) HandleMessage(ctx context.Context, msg *choria.Message, request protocol.Request, ci choria.ConnectorInfo, result chan *AgentReply) {
-	if msg.Payload == "sleep" {
-		time.Sleep(10 * time.Second)
-	}
-
-	reply := &AgentReply{
-		Body:    []byte(fmt.Sprintf("pong %s", msg.Payload)),
-		Message: msg,
-		Request: request,
-	}
-
-	if s.nextError != "" {
-		reply.Error = fmt.Errorf(s.nextError)
-	}
-
-	result <- reply
-}
-
-func (s *stubAgent) SetServerInfo(si ServerInfoSource) {
-	s.si = si
-}
-
-type stubsi struct{}
-
-func (si *stubsi) KnownAgents() []string {
-	return []string{"stub_agent"}
-}
-
-func (si *stubsi) AgentMetadata(a string) (Metadata, bool) {
-	return Metadata{}, true
-}
-
-func (si *stubsi) ConfigFile() string {
-	return "/stub/config.cfg"
-}
-
-func (si *stubsi) Classes() []string {
-	return []string{"one", "two"}
-}
-
-func (si *stubsi) Facts() json.RawMessage {
-	return json.RawMessage(`{"stub":true}`)
-}
-
-func (si *stubsi) StartTime() time.Time {
-	return time.Now()
-}
-
-func (si *stubsi) Stats() ServerStats {
-	return ServerStats{}
-}
-
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Server/Agents")
 }
 
 var _ = Describe("Server/Agents", func() {
+	var mockctl *gomock.Controller
 	var mgr *Manager
 	var conn *connectortest.AgentConnector
-	var agent *stubAgent
+	var agent *MockAgent
 	var requests chan *choria.ConnectorMessage
 	var ctx context.Context
 	var cancel func()
 	var fw *choria.Framework
+	var handler func(ctx context.Context, msg *choria.Message, request protocol.Request, ci choria.ConnectorInfo, result chan *AgentReply)
 
 	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+
 		cfg, err := choria.NewConfig("/dev/null")
 		Expect(err).ToNot(HaveOccurred())
 
@@ -111,16 +50,50 @@ var _ = Describe("Server/Agents", func() {
 		requests = make(chan *choria.ConnectorMessage)
 		ctx, cancel = context.WithCancel(context.Background())
 
+		metadata := Metadata{
+			Author:      "stub@example.net",
+			Description: "Stub Agent",
+			License:     "Apache-2.0",
+			Name:        "stub_agent",
+			Timeout:     10,
+			URL:         "https://choria.io/",
+			Version:     "1.0.0",
+		}
+
+		handler = func(ctx context.Context, msg *choria.Message, request protocol.Request, ci choria.ConnectorInfo, result chan *AgentReply) {
+			if msg.Payload == "sleep" {
+				time.Sleep(10 * time.Second)
+			}
+
+			reply := &AgentReply{
+				Body:    []byte(fmt.Sprintf("pong %s", msg.Payload)),
+				Message: msg,
+				Request: request,
+			}
+
+			result <- reply
+		}
+
+		is := NewMockServerInfoSource(mockctl)
+		is.EXPECT().KnownAgents().Return([]string{"stub_agent"}).AnyTimes()
+		is.EXPECT().Classes().Return([]string{"one", "two"}).AnyTimes()
+		is.EXPECT().Facts().Return(json.RawMessage(`{"stub":true}`)).AnyTimes()
+		is.EXPECT().AgentMetadata("stub_agent").Return(metadata, true).AnyTimes()
+
 		logrus.SetLevel(logrus.FatalLevel)
-		mgr = New(requests, fw, conn, &stubsi{}, logrus.WithFields(logrus.Fields{"testing": true}))
+		mgr = New(requests, fw, conn, is, logrus.WithFields(logrus.Fields{"testing": true}))
 		conn = &connectortest.AgentConnector{}
 		conn.Init()
 
-		agent = &stubAgent{meta: &Metadata{}}
+		agent = NewMockAgent(mockctl)
+		agent.EXPECT().Metadata().Return(&metadata).AnyTimes()
+		agent.EXPECT().SetServerInfo(is).Return().AnyTimes()
+		agent.EXPECT().HandleMessage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(handler).AnyTimes()
 	})
 
 	AfterEach(func() {
 		cancel()
+		mockctl.Finish()
 	})
 
 	var _ = Describe("RegisterAgent", func() {
@@ -236,7 +209,11 @@ var _ = Describe("Server/Agents", func() {
 
 			msg.Payload = "sleep"
 			replyc := make(chan *AgentReply, 1)
-			go mgr.Dispatch(ctx, wg, replyc, msg, request)
+			go func() {
+				defer GinkgoRecover()
+				mgr.Dispatch(ctx, wg, replyc, msg, request)
+			}()
+
 			cancel()
 
 			reply := <-replyc
@@ -254,12 +231,14 @@ var _ = Describe("Server/Agents", func() {
 
 			msg.Payload = "sleep"
 			replyc := make(chan *AgentReply, 1)
-			go mgr.Dispatch(ctx, wg, replyc, msg, request)
+			go func() {
+				defer GinkgoRecover()
+				mgr.Dispatch(ctx, wg, replyc, msg, request)
+			}()
 
 			reply := <-replyc
 
 			Expect(reply.Error.Error()).To(MatchRegexp("exiting on 1s timeout"))
 		})
-
 	})
 })
