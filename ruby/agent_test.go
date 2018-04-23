@@ -8,8 +8,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/mcorpc"
 	ddl "github.com/choria-io/go-choria/mcorpc/ddl/agent"
-	"github.com/choria-io/go-choria/mcorpc/ruby/mocks"
-	srvmocks "github.com/choria-io/go-choria/server/mocks"
+	"github.com/choria-io/go-choria/server"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -19,7 +18,7 @@ import (
 var _ = Describe("McoRPC/Ruby", func() {
 	var (
 		mockctl  *gomock.Controller
-		agentMgr *srvmocks.MockAgentManager
+		agentMgr *server.MockAgentManager
 		fw       *choria.Framework
 		err      error
 		logger   *logrus.Entry
@@ -34,14 +33,17 @@ var _ = Describe("McoRPC/Ruby", func() {
 		logger = l.WithFields(logrus.Fields{})
 
 		mockctl = gomock.NewController(GinkgoT())
-		agentMgr = srvmocks.NewMockAgentManager(mockctl)
-		// connector = mocks.NewMockInstanceConnector(mockctl)
+		agentMgr = server.NewMockAgentManager(mockctl)
 
 		fw, err = choria.New("/dev/null")
 		Expect(err).ToNot(HaveOccurred())
 
 		agentMgr.EXPECT().Choria().Return(fw).AnyTimes()
 		agentMgr.EXPECT().Logger().Return(logger).AnyTimes()
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
 	})
 
 	var _ = Describe("rubyAction", func() {
@@ -59,7 +61,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 
 			rep = &mcorpc.Reply{}
 			ctx = context.Background()
-			ci = mocks.NewMockConnectorInfo(mockctl)
+			choria.NewMockConnectorInfo(mockctl)
 
 			ddl, err := ddl.New("testdata/lib1/mcollective/agent/one.json")
 			Expect(err).ToNot(HaveOccurred())

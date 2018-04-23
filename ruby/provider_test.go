@@ -6,11 +6,10 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/mcorpc"
+	"github.com/choria-io/go-choria/server"
 
 	"github.com/choria-io/go-choria/choria"
 
-	"github.com/choria-io/go-choria/mcorpc/ruby/mocks"
-	srvmocks "github.com/choria-io/go-choria/server/mocks"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,8 +19,8 @@ import (
 var _ = Describe("McoRPC/Ruby", func() {
 	var (
 		mockctl   *gomock.Controller
-		agentMgr  *srvmocks.MockAgentManager
-		connector *mocks.MockInstanceConnector
+		agentMgr  *server.MockAgentManager
+		connector *choria.MockInstanceConnector
 		fw        *choria.Framework
 		err       error
 		logger    *logrus.Entry
@@ -36,8 +35,8 @@ var _ = Describe("McoRPC/Ruby", func() {
 		logger = l.WithFields(logrus.Fields{})
 
 		mockctl = gomock.NewController(GinkgoT())
-		agentMgr = srvmocks.NewMockAgentManager(mockctl)
-		connector = mocks.NewMockInstanceConnector(mockctl)
+		agentMgr = server.NewMockAgentManager(mockctl)
+		connector = choria.NewMockInstanceConnector(mockctl)
 
 		fw, err = choria.New("/dev/null")
 		Expect(err).ToNot(HaveOccurred())
