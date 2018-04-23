@@ -15,6 +15,7 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/mcorpc"
+	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/sirupsen/logrus"
 )
@@ -34,7 +35,7 @@ type Reply struct {
 var mu = &sync.Mutex{}
 var allowRestart = true
 
-func New(mgr *agents.Manager) (*mcorpc.Agent, error) {
+func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 	metadata := &agents.Metadata{
 		Name:        "choria_provision",
 		Description: "Choria Provisioner",

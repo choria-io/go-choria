@@ -9,6 +9,7 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/mcorpc"
+	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
 	nats "github.com/nats-io/go-nats"
 )
@@ -53,7 +54,7 @@ type cstats struct {
 }
 
 // New creates a new choria_util agent
-func New(mgr *agents.Manager) (*mcorpc.Agent, error) {
+func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 	metadata := &agents.Metadata{
 		Name:        "choria_util",
 		Description: "Choria Utilities",

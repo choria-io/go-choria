@@ -7,6 +7,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
 
@@ -18,7 +19,7 @@ type Agent struct {
 	log  *logrus.Entry
 }
 
-func New(mgr *agents.Manager) (*Agent, error) {
+func New(mgr server.AgentManager) (*Agent, error) {
 	a := &Agent{
 		log: mgr.Logger().WithFields(logrus.Fields{"agent": "discovery"}),
 		meta: &agents.Metadata{

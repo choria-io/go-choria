@@ -19,10 +19,10 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Agent/RPCUtil")
+	RunSpecs(t, "McoRPC/Golang/RPCUtil")
 }
 
-var _ = Describe("Agent/RPCUtil", func() {
+var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 	var (
 		mockctl  *gomock.Controller
 		requests chan *choria.ConnectorMessage
