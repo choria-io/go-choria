@@ -9,7 +9,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/go-choria/server/serverinfotest"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -24,6 +24,7 @@ func TestFileContent(t *testing.T) {
 
 var _ = Describe("Agent/RPCUtil", func() {
 	var (
+		mockctl  *gomock.Controller
 		requests chan *choria.ConnectorMessage
 		cfg      *choria.Config
 		fw       *choria.Framework
@@ -32,9 +33,12 @@ var _ = Describe("Agent/RPCUtil", func() {
 		rpcutil  *mcorpc.Agent
 		reply    *mcorpc.Reply
 		ctx      context.Context
+		is       *agents.MockServerInfoSource
 	)
 
 	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+
 		requests = make(chan *choria.ConnectorMessage)
 		reply = &mcorpc.Reply{}
 
@@ -45,13 +49,33 @@ var _ = Describe("Agent/RPCUtil", func() {
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
-		am = agents.New(requests, fw, nil, &serverinfotest.InfoSource{}, logrus.WithFields(logrus.Fields{"test": "1"}))
+		am = agents.New(requests, fw, nil, agents.NewMockServerInfoSource(mockctl), logrus.WithFields(logrus.Fields{"test": "1"}))
 		rpcutil, err = New(am)
 		Expect(err).ToNot(HaveOccurred())
 		logrus.SetLevel(logrus.FatalLevel)
 
 		ctx = context.Background()
 		cfg.FactSourceFile = "testdata/facts.yaml"
+
+		metadata := agents.Metadata{
+			Author:      "stub@example.net",
+			Description: "Stub Agent",
+			License:     "Apache-2.0",
+			Name:        "stub_agent",
+			Timeout:     10,
+			URL:         "https://choria.io/",
+			Version:     "1.0.0",
+		}
+
+		is = agents.NewMockServerInfoSource(mockctl)
+		is.EXPECT().KnownAgents().Return([]string{"stub_agent"}).AnyTimes()
+		is.EXPECT().Classes().Return([]string{"one", "two"}).AnyTimes()
+		is.EXPECT().Facts().Return(json.RawMessage(`{"stub":true}`)).AnyTimes()
+		is.EXPECT().AgentMetadata("stub_agent").Return(metadata, true).AnyTimes()
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
 	})
 
 	var _ = Describe("New", func() {
@@ -65,7 +89,7 @@ var _ = Describe("Agent/RPCUtil", func() {
 			build.Version = "1.0.0"
 			cfg.Collectives = []string{"mcollective", "other"}
 
-			rpcutil.SetServerInfo(&serverinfotest.InfoSource{})
+			rpcutil.SetServerInfo(is)
 
 			inventoryAction(ctx, &mcorpc.Request{}, reply, rpcutil, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
@@ -83,7 +107,7 @@ var _ = Describe("Agent/RPCUtil", func() {
 
 	var _ = Describe("agentInventoryAction", func() {
 		It("Should get the right inventory", func() {
-			rpcutil.SetServerInfo(&serverinfotest.InfoSource{})
+			rpcutil.SetServerInfo(is)
 
 			agentInventoryAction(ctx, &mcorpc.Request{}, reply, rpcutil, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))

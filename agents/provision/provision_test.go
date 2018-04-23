@@ -9,7 +9,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/go-choria/server/serverinfotest"
+	"github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -25,6 +25,7 @@ func TestFileContent(t *testing.T) {
 
 var _ = Describe("Agent/Provision", func() {
 	var (
+		mockctl  *gomock.Controller
 		requests chan *choria.ConnectorMessage
 		cfg      *choria.Config
 		fw       *choria.Framework
@@ -36,6 +37,8 @@ var _ = Describe("Agent/Provision", func() {
 	)
 
 	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+
 		requests = make(chan *choria.ConnectorMessage)
 		reply = &mcorpc.Reply{}
 
@@ -46,7 +49,7 @@ var _ = Describe("Agent/Provision", func() {
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
-		am = agents.New(requests, fw, nil, &serverinfotest.InfoSource{}, logrus.WithFields(logrus.Fields{"test": "1"}))
+		am = agents.New(requests, fw, nil, agents.NewMockServerInfoSource(mockctl), logrus.WithFields(logrus.Fields{"test": "1"}))
 		prov, err = New(am)
 		Expect(err).ToNot(HaveOccurred())
 		logrus.SetLevel(logrus.FatalLevel)
@@ -59,6 +62,7 @@ var _ = Describe("Agent/Provision", func() {
 
 	AfterEach(func() {
 		os.Remove("/tmp/choria_test.cfg")
+		mockctl.Finish()
 	})
 
 	var _ = Describe("New", func() {
