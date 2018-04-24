@@ -1,5 +1,17 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/04/24|      |Release 0.2.0                                                                                            |
+|2018/04/23|243   |Create a compatability framework for MCollective Agents written in Ruby                                  |
+|2018/04/23|252   |Avoid logrotate errors when the package was installed but choria never ran                               |
+|2018/04/09|240   |When facter is available use it to determine the FQDN to improve default behaviour on debian like systems|
+|2018/04/09|236   |Allow `nats://host:port` and `host:port` to be used when referencing brokers                             |
+|2018/04/09|235   |Detect empty initial server list when starting federation brokers                                        |
+|2018/03/29|229   |Surface more NATS internal debug logs as notice and error                                                |
+|2018/03/29|228   |Increase TLS timeouts to 2 seconds to improve functioning over latency and heavily loaded servers        |
+|2018/03/26|199   |Do not use HTTP to fetch internal NATS stats                                                             |
+|2018/03/26|220   |Update gnats and go-nats to latest versions                                                              |
+|2018/03/26|222   |Allow the network broker write deadline to be configured                                                 |
+|2018/03/23|218   |Avoid rotating empty log files and ensure the newest log is the one being written too                    |
 |2018/03/21|      |Release 0.1.0                                                                                            |
 |2018/03/08|208   |Improve compatability with MCollective Choria by not base64 encoding payloads                            |
 |2018/03/08|207   |Ensure the filter is valid when creating `direct_request` messages                                       |
