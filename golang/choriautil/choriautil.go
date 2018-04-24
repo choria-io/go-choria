@@ -93,7 +93,7 @@ func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 	reply.Data = &info{
 		Security:          "choria",
 		Connector:         "choria",
-		ClientVersion:     fmt.Sprintf("choria %s", nats.Version),
+		ClientVersion:     nats.Version,
 		ClientFlavour:     fmt.Sprintf("go-nats %s", runtime.Version()),
 		ConnectedServer:   conn.ConnectedServer(),
 		FacterCommand:     agent.Choria.FacterCmd(),
