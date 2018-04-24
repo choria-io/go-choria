@@ -4,15 +4,15 @@ This is a daemon written in Go that will replace the traditional combination of 
 
 It will include at least:
 
-  * A vendored `NATS` instance fully managed by `server.cfg` with clustering support
+  * A vendored `gnatsd` instance fully managed by `server.cfg` with clustering support
   * A Federation Broker for the Choria protocol
   * An Protocol Adapter framework to rewrite message into other systems.  For eg. Discovery messages to NATS Streaming.
   * The `mcollectived` replacement that can run old ruby based agents
   * Everything using a Go implementation of the Choria Protocol so interop with the Ruby clients and servers are maintained.
 
-This is heavily in progress and not really usable yet for the general public.
-
 # Configuration
+
+This code base represents the current recommended Choria Broker and Federation and will soon also be the recommended Server component.  Follow [choria.io](https://choria.io) for the official means of installing and configuring it.
 
 Sample configs are shown, subject to change
 
@@ -105,7 +105,10 @@ plugin.choria.adapter.discovery.ingest.workers = 10 # default
 
 ## Choria Server
 
-This will eventually replace `mcollectived`, for now all it can do is publish registration data.
+This is a replacement `mcollectived`, that can host MCollective agents written in ruby along with a host of other features, notable absense:
+
+  * Compound filters do not work at all - those with -S
+  * Auditing and Authorization for MCollective compatible RPC agents written in Go is not implemented yet
 
 You run it with `choria server run --config server.cfg`
 
@@ -203,3 +206,43 @@ providers:
 ```
 
 When you run `go generate` (done during the building phase for you) this will create the shim you need to compile your agent into the binary.
+
+## Packages
+
+RPMs are hosted in the Choria yum repository for el6 and 7 64bit systems, the official choria Puppet module can configure these for you:
+
+```ini
+[choria_release]
+name=choria_release
+baseurl=https://packagecloud.io/choria/release/el/$releasever/$basearch
+repo_gpgcheck=1
+gpgcheck=0
+enabled=1
+gpgkey=https://packagecloud.io/choria/release/gpgkey
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+metadata_expire=300
+```
+
+## Nightly Builds
+
+Nightly RPMs are published for EL7 64bit in the following repo:
+
+```ini
+[choria_nightly]
+name=choria_nightly
+baseurl=https://packagecloud.io/choria/nightly/el/$releasever/$basearch
+repo_gpgcheck=1
+gpgcheck=0
+enabled=1
+gpgkey=https://packagecloud.io/choria/nightly/gpgkey
+sslverify=1
+sslcacert=/etc/pki/tls/certs/ca-bundle.crt
+metadata_expire=300
+```
+
+Nightly packages are versioned `0.99.0` with a date portion added:  `choria-0.99.0.20180126-1.el7.x86_64.rpm`
+
+## Thanks
+
+<img src="https://packagecloud.io/images/packagecloud-badge.png" width="158">
