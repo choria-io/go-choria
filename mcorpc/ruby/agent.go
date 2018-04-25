@@ -25,7 +25,7 @@ type ShimRequest struct {
 	CallerID   string           `json:"callerid"`
 	Collective string           `json:"collective"`
 	TTL        int              `json:"ttl"`
-	Time       int64            `json:"time"`
+	Time       int64            `json:"msgtime"`
 	Body       *ShimRequestBody `json:"body"`
 }
 
