@@ -107,6 +107,15 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 					*ptr = append(*ptr, strings.TrimSpace(v))
 				}
 
+			case "colon_split":
+				// these are like libdir, but we want to always use : to split and not
+				// os path like path_split would do
+				vals := strings.Split(value.(string), ":")
+
+				for _, v := range vals {
+					*ptr = append(*ptr, strings.TrimSpace(v))
+				}
+
 			case "path_split":
 				// these are like libdir, either a one line split or a multiple occurance with splits
 				vals := strings.Split(value.(string), string(os.PathListSeparator))

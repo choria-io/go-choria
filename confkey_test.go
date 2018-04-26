@@ -1,6 +1,7 @@
 package confkey
 
 import (
+	"runtime"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -18,6 +19,7 @@ type TestData struct {
 	PlainString string        `confkey:"plain_string" validate:"shellsafe"`
 	CommaSplit  []string      `confkey:"comma_split" type:"comma_split"`
 	PathSplit   []string      `confkey:"path_split" type:"path_split"`
+	ColonSplit  []string      `confkey:"colon_split" type:"colon_split"`
 	StringEnum  string        `confkey:"loglevel" validate:"enum=debug,info,warn" default:"warn"`
 	Int         int           `confkey:"int"`
 	TitleString string        `confkey:"title_string" type:"title_string"`
@@ -71,8 +73,22 @@ var _ = Describe("Confkey", func() {
 			Expect(d.CommaSplit).To(Equal([]string{"foo", "bar", "baz"}))
 		})
 
+		It("Should support colon_split", func() {
+			err := SetStructFieldWithKey(&d, "colon_split", "/foo:/bar:/baz")
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(d.ColonSplit).To(Equal([]string{"/foo", "/bar", "/baz"}))
+		})
+
 		It("Should support path_split", func() {
-			err := SetStructFieldWithKey(&d, "path_split", "/foo:/bar:/baz")
+			var err error
+
+			if runtime.GOOS == "windows" {
+				err = SetStructFieldWithKey(&d, "path_split", "/foo;/bar;/baz")
+			} else {
+				err = SetStructFieldWithKey(&d, "path_split", "/foo:/bar:/baz")
+			}
+
 			Expect(err).ToNot(HaveOccurred())
 			Expect(d.PathSplit).To(Equal([]string{"/foo", "/bar", "/baz"}))
 		})
