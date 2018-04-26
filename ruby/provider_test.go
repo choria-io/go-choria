@@ -21,6 +21,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 		mockctl   *gomock.Controller
 		agentMgr  *server.MockAgentManager
 		connector *choria.MockInstanceConnector
+		cfg       *choria.Config
 		fw        *choria.Framework
 		err       error
 		logger    *logrus.Entry
@@ -38,7 +39,9 @@ var _ = Describe("McoRPC/Ruby", func() {
 		agentMgr = server.NewMockAgentManager(mockctl)
 		connector = choria.NewMockInstanceConnector(mockctl)
 
-		fw, err = choria.New("/dev/null")
+		cfg, err = choria.NewDefaultConfig()
+		Expect(err).ToNot(HaveOccurred())
+		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
 		agentMgr.EXPECT().Choria().Return(fw).AnyTimes()

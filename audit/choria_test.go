@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"os"
+	"runtime"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-protocol/protocol/v1"
@@ -19,24 +20,30 @@ func TestFileContent(t *testing.T) {
 }
 
 var _ = Describe("McoRPC/Audit", func() {
-	BeforeEach(func() {
-		os.Remove("/tmp/rpc_audit.log")
-	})
-
 	It("Should correctly audit the request", func() {
-		cfg, err := choria.NewConfig("testdata/audit.cfg")
+		var cfg *choria.Config
+		var err error
+
+		if runtime.GOOS == "windows" {
+			cfg, err = choria.NewConfig("testdata/audit_windows.cfg")
+		} else {
+			cfg, err = choria.NewConfig("testdata/audit.cfg")
+		}
+
+		os.Remove(cfg.Option("plugin.rpcaudit.logfile", "/tmp/rpc_audit.log"))
+
 		Expect(err).ToNot(HaveOccurred())
 		Expect(cfg.RPCAudit).To(BeTrue())
-		Expect("/tmp/rpc_audit.log").ToNot(BeAnExistingFile())
+		Expect(cfg.Option("plugin.rpcaudit.logfile", "")).ToNot(BeAnExistingFile())
 
 		req, err := v1.NewRequest("test_agent", "test.node", "choria=rip.mcollective", 120, "uniq_req_id", "mcollective")
 		Expect(err).ToNot(HaveOccurred())
 
 		ok := Request(req, "test_agent", "test_action", json.RawMessage(`{"hello":"world"}`), cfg)
 		Expect(ok).To(BeTrue())
-		Expect("/tmp/rpc_audit.log").To(BeAnExistingFile())
+		Expect(cfg.Option("plugin.rpcaudit.logfile", "")).To(BeAnExistingFile())
 
-		j, err := ioutil.ReadFile("/tmp/rpc_audit.log")
+		j, err := ioutil.ReadFile(cfg.Option("plugin.rpcaudit.logfile", ""))
 		Expect(err).ToNot(HaveOccurred())
 
 		am := Message{}

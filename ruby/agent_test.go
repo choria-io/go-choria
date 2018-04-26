@@ -3,6 +3,8 @@ package ruby
 import (
 	"context"
 	"io/ioutil"
+	"path/filepath"
+	"runtime"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
@@ -19,6 +21,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 	var (
 		mockctl  *gomock.Controller
 		agentMgr *server.MockAgentManager
+		cfg      *choria.Config
 		fw       *choria.Framework
 		err      error
 		logger   *logrus.Entry
@@ -35,7 +38,9 @@ var _ = Describe("McoRPC/Ruby", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		agentMgr = server.NewMockAgentManager(mockctl)
 
-		fw, err = choria.New("/dev/null")
+		cfg, err = choria.NewDefaultConfig()
+		Expect(err).ToNot(HaveOccurred())
+		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
 		agentMgr.EXPECT().Choria().Return(fw).AnyTimes()
@@ -104,15 +109,20 @@ var _ = Describe("McoRPC/Ruby", func() {
 		})
 
 		It("Should unmarshal the result", func() {
-			fw.Config.Choria.RubyAgentShim = "testdata/good_shim.sh"
-			fw.Config.Choria.RubyAgentConfig = "testdata/shim.cfg"
+			if runtime.GOOS == "windows" {
+				fw.Config.Choria.RubyAgentShim = filepath.Join("testdata", "good_shim_windows.bat")
+			} else {
+				fw.Config.Choria.RubyAgentShim = filepath.Join("testdata", "good_shim.sh")
+			}
+
+			fw.Config.Choria.RubyAgentConfig = filepath.Join("testdata", "shim.cfg")
 
 			rubyAction(ctx, req, rep, agent, ci)
 
-			d := rep.Data.(map[string]interface{})
-
 			Expect(rep.Statusmsg).To(Equal("OK"))
 			Expect(rep.Statuscode).To(Equal(mcorpc.OK))
+
+			d := rep.Data.(map[string]interface{})
 			Expect(d["test"].(string)).To(Equal("ok"))
 		})
 	})
