@@ -12,7 +12,7 @@ type Config struct {
 	Loglevel string   `confkey:"loglevel" default:"warn" validate:"enum=debug,info,warn,error"`
 	Mode     string   `confkey:"mode" default:"server" validate:"enum=server,client"`
 	Servers  []string `confkey:"servers" type:"comma_split" environment:"SERVERS"`
-	Path     []string `confkey:"path" type:"path_split" default:"/bin:/usr/bin"`
+	Path     []string `confkey:"path" type:"path_split" default:"/bin:/usr/bin"` // can also be colon_split to always split on :
 }
 
 func Example_basic() {
