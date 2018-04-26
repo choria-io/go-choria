@@ -140,11 +140,22 @@ type Config struct {
 	OverrideCertname string
 }
 
+// NewDefaultConfig creates a empty configuration
+func NewDefaultConfig() (*Config, error) {
+	c := newConfig()
+
+	err := normalize(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
 // NewConfig parses a config file and return the config
 func NewConfig(path string) (*Config, error) {
 	c := newConfig()
 	c.ConfigFile = path
-	c.rawOpts = make(map[string]string)
 
 	err := parseConfig(path, c, "", c.rawOpts)
 	if err != nil {
@@ -157,6 +168,17 @@ func NewConfig(path string) (*Config, error) {
 	}
 
 	c.parseAllDotCfg()
+
+	err = normalize(c)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func normalize(c *Config) error {
+	var err error
 
 	if c.MainCollective == "" {
 		c.MainCollective = c.Collectives[0]
@@ -173,7 +195,7 @@ func NewConfig(path string) (*Config, error) {
 		} else {
 			c.Identity, err = os.Hostname()
 			if err != nil {
-				return nil, err
+				return err
 			}
 		}
 	}
@@ -192,7 +214,7 @@ func NewConfig(path string) (*Config, error) {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	return c, nil
+	return nil
 }
 
 // HasOption determines if a specific option was set from a config key.
@@ -309,7 +331,10 @@ func parseConfigContents(content io.Reader, config interface{}, prefix string, f
 }
 
 func newConfig() *Config {
-	m := &Config{Choria: newChoria()}
+	m := &Config{
+		Choria:  newChoria(),
+		rawOpts: make(map[string]string),
+	}
 
 	err := confkey.SetStructDefaults(m)
 	if err != nil {

@@ -3,7 +3,10 @@ package provision
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
+	"path/filepath"
+	"runtime"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
@@ -25,15 +28,17 @@ func TestFileContent(t *testing.T) {
 
 var _ = Describe("McoRPC/Golang/Provision", func() {
 	var (
-		mockctl  *gomock.Controller
-		requests chan *choria.ConnectorMessage
-		cfg      *choria.Config
-		fw       *choria.Framework
-		am       *agents.Manager
-		err      error
-		prov     *mcorpc.Agent
-		reply    *mcorpc.Reply
-		ctx      context.Context
+		mockctl   *gomock.Controller
+		requests  chan *choria.ConnectorMessage
+		cfg       *choria.Config
+		fw        *choria.Framework
+		am        *agents.Manager
+		err       error
+		prov      *mcorpc.Agent
+		reply     *mcorpc.Reply
+		ctx       context.Context
+		targetcfg string
+		targetlog string
 	)
 
 	BeforeEach(func() {
@@ -42,7 +47,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 		requests = make(chan *choria.ConnectorMessage)
 		reply = &mcorpc.Reply{}
 
-		cfg, err = choria.NewConfig("/dev/null")
+		cfg, err = choria.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
 		cfg.DisableTLS = true
 
@@ -58,10 +63,18 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 		build.ProvisionModeDefault = "false"
 		build.ProvisionBrokerURLs = "nats://n1:4222"
 		ctx = context.Background()
+
+		if runtime.GOOS == "windows" {
+			targetcfg = filepath.Join(os.Getenv("TMP"), "choria_test.cfg")
+			targetlog = filepath.Join(os.Getenv("TMP"), "choria_test.log")
+		} else {
+			targetcfg = "/tmp/choria_test.cfg"
+			targetlog = "/tmp/choria_test.log"
+		}
 	})
 
 	AfterEach(func() {
-		os.Remove("/tmp/choria_test.cfg")
+		os.Remove(targetcfg)
 		mockctl.Finish()
 	})
 
@@ -128,12 +141,12 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 		})
 
 		It("Should write a sane config file without registration by default", func() {
-			cfg.ConfigFile = "/tmp/choria_test.cfg"
+			cfg.ConfigFile = targetcfg
 
 			reprovisionAction(ctx, &mcorpc.Request{}, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 
-			cfg, err := choria.NewConfig("/tmp/choria_test.cfg")
+			cfg, err := choria.NewConfig(targetcfg)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.Choria.Provision).To(BeTrue())
 			Expect(cfg.Choria.FileContentRegistrationData).To(BeEmpty())
@@ -142,8 +155,8 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 		})
 
 		It("Should support setting a logfile and file_content registration", func() {
-			cfg.ConfigFile = "/tmp/choria_test.cfg"
-			cfg.LogFile = "/tmp/choria_test.log"
+			cfg.ConfigFile = targetcfg
+			cfg.LogFile = targetlog
 			cfg.LogLevel = "info"
 			cfg.Registration = []string{"file_content"}
 			cfg.Choria.FileContentRegistrationData = "/tmp/choria_test.json"
@@ -152,11 +165,11 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 			reprovisionAction(ctx, &mcorpc.Request{}, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 
-			cfg, err := choria.NewConfig("/tmp/choria_test.cfg")
+			cfg, err := choria.NewConfig(targetcfg)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.Choria.Provision).To(BeTrue())
 			Expect(cfg.LogLevel).To(Equal("debug"))
-			Expect(cfg.LogFile).To(Equal("/tmp/choria_test.log"))
+			Expect(cfg.LogFile).To(Equal(targetlog))
 			Expect(cfg.Registration).To(Equal([]string{"file_content"}))
 			Expect(cfg.Choria.FileContentRegistrationData).To(Equal("/tmp/choria_test.json"))
 		})
@@ -184,7 +197,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 
 		It("Should fail for empty configuration", func() {
 			build.ProvisionModeDefault = "true"
-			cfg.ConfigFile = "/tmp/choria_test.cfg"
+			cfg.ConfigFile = targetcfg
 
 			configureAction(ctx, &mcorpc.Request{Data: json.RawMessage("{}")}, reply, prov, nil)
 
@@ -194,7 +207,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 
 		It("Should write the configuration", func() {
 			build.ProvisionModeDefault = "true"
-			cfg.ConfigFile = "/tmp/choria_test.cfg"
+			cfg.ConfigFile = targetcfg
 
 			req := &mcorpc.Request{
 				Data:      json.RawMessage(`{"config":{"plugin.choria.server.provision":"0", "plugin.choria.srv_domain":"another.com"}}`),
@@ -203,14 +216,14 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 				SenderID:  "go.test",
 			}
 
-			Expect("/tmp/choria_test.cfg").ToNot(BeAnExistingFile())
+			Expect(targetcfg).ToNot(BeAnExistingFile())
 			configureAction(ctx, req, reply, prov, nil)
 
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
-			Expect(reply.Data.(Reply).Message).To(Equal("Wrote 3 lines to /tmp/choria_test.cfg"))
-			Expect("/tmp/choria_test.cfg").To(BeAnExistingFile())
+			Expect(reply.Data.(Reply).Message).To(Equal(fmt.Sprintf("Wrote 3 lines to %s", targetcfg)))
+			Expect(targetcfg).To(BeAnExistingFile())
 
-			cfg, err := choria.NewConfig("/tmp/choria_test.cfg")
+			cfg, err := choria.NewConfig(targetcfg)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.Choria.SRVDomain).To(Equal("another.com"))
 		})

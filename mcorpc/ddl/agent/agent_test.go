@@ -1,6 +1,7 @@
 package agent
 
 import (
+	"path"
 	"testing"
 	"time"
 
@@ -18,19 +19,19 @@ var _ = Describe("McoRPC/DDL/Agent", func() {
 	var err error
 
 	BeforeEach(func() {
-		pkg, err = New("testdata/package.json")
+		pkg, err = New(path.Join("testdata", "package.json"))
 		Expect(err).ToNot(HaveOccurred())
 	})
 
 	var _ = Describe("New", func() {
 		It("Should fail for missing json files", func() {
-			d, err := New("testdata/missing.json")
-			Expect(err).To(MatchError("could not load DDL data: open testdata/missing.json: no such file or directory"))
+			d, err := New(path.Join("testdata", "missing.json"))
+			Expect(err.Error()).To(MatchRegexp("could not load DDL data: open.+missing.json"))
 			Expect(d).To(BeNil())
 		})
 
 		It("Should fail for invalid json files", func() {
-			d, err := New("testdata/invalid.json")
+			d, err := New(path.Join("testdata", "invalid.json"))
 			Expect(err).To(MatchError("could not parse JSON data in testdata/invalid.json: unexpected end of JSON input"))
 			Expect(d).To(BeNil())
 		})

@@ -25,7 +25,7 @@ var _ = Describe("Choria", func() {
 
 	var _ = Describe("ProvisionMode", func() {
 		It("Should use the default when not configured and brokers are compiled in", func() {
-			c, err := NewConfig("/dev/null")
+			c, err := NewDefaultConfig()
 			Expect(err).ToNot(HaveOccurred())
 			c.DisableTLS = true
 

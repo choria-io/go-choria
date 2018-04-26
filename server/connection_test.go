@@ -18,7 +18,7 @@ var _ = Describe("Server/Connection", func() {
 		)
 
 		BeforeEach(func() {
-			cfg, err = choria.NewConfig("/dev/null")
+			cfg, err = choria.NewDefaultConfig()
 			Expect(err).ToNot(HaveOccurred())
 
 			cfg.DisableTLS = true

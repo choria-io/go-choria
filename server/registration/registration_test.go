@@ -28,7 +28,7 @@ var _ = Describe("Server/Registration", func() {
 		)
 
 		BeforeSuite(func() {
-			cfg, err = framework.NewConfig("/dev/null")
+			cfg, err = framework.NewDefaultConfig()
 			cfg.DisableTLS = true
 
 			choria, err = framework.NewWithConfig(cfg)

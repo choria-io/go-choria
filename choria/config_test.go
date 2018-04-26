@@ -1,6 +1,8 @@
 package choria
 
 import (
+	"runtime"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -8,7 +10,14 @@ import (
 var _ = Describe("Choria/Config", func() {
 	var _ = Describe("NewConfig", func() {
 		It("Should correctly parse config files", func() {
-			c, err := NewConfig("testdata/choria.cfg")
+			var c *Config
+			var err error
+
+			if runtime.GOOS == "windows" {
+				c, err = NewConfig("testdata/choria_windows.cfg")
+			} else {
+				c, err = NewConfig("testdata/choria.cfg")
+			}
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(c.Choria.DiscoveryHost).To(Equal("pdb.example.com"))

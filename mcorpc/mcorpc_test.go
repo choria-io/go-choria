@@ -37,7 +37,7 @@ var _ = Describe("McoRPC", func() {
 		protocol.Secure = "false"
 		build.TLS = "false"
 
-		config, err := choria.NewConfig("/dev/null")
+		config, err := choria.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
 		config.LogLevel = "fatal"
 		fw, err = choria.NewWithConfig(config)
