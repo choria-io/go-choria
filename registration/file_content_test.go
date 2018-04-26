@@ -28,7 +28,7 @@ var _ = Describe("RegistrationData", func() {
 	)
 
 	BeforeEach(func() {
-		c, err = choria.NewConfig("/dev/null")
+		c, err = choria.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
 
 		reg = &FileContent{}

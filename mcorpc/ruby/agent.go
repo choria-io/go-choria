@@ -86,6 +86,7 @@ func rubyAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 	defer cancel()
 
 	execution := exec.CommandContext(tctx, agent.Config.Choria.RubyAgentShim, "--config", shimcfg)
+
 	stdin, err := execution.StdinPipe()
 	if err != nil {
 		abortAction(fmt.Sprintf("Cannot create stdin while calling Ruby action %s: %s", action, err), agent, reply)

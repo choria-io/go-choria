@@ -38,7 +38,7 @@ var _ = Describe("Server/Agents", func() {
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 
-		cfg, err := choria.NewConfig("/dev/null")
+		cfg, err := choria.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
 
 		cfg.DisableTLS = true

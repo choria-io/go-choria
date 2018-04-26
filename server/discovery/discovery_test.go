@@ -28,7 +28,7 @@ var _ = Describe("Server/Discovery", func() {
 
 	BeforeSuite(func() {
 		log = logrus.WithFields(logrus.Fields{"test": true})
-		cfg, err := choria.NewConfig("/dev/null")
+		cfg, err := choria.NewDefaultConfig()
 		cfg.DisableTLS = true
 
 		fw, err = choria.NewWithConfig(cfg)

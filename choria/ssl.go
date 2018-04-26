@@ -106,7 +106,7 @@ func (self *Framework) CAPath() (string, error) {
 		return "", err
 	}
 
-	return filepath.Join(ssl, "certs", "ca.pem"), nil
+	return filepath.FromSlash((filepath.Join(ssl, "certs", "ca.pem"))), nil
 }
 
 // ClientPrivateKeyPEM returns the PEM data for the Client Private Key
@@ -171,7 +171,7 @@ func (self *Framework) ClientPrivateKey() (string, error) {
 		return "", err
 	}
 
-	return filepath.Join(ssl, "private_keys", fmt.Sprintf("%s.pem", self.Certname())), nil
+	return filepath.FromSlash((filepath.Join(ssl, "private_keys", fmt.Sprintf("%s.pem", self.Certname())))), nil
 }
 
 // ClientPublicCertTXT reads the public certificate file as text
@@ -196,13 +196,13 @@ func (self *Framework) ClientPublicCert() (string, error) {
 		return "", err
 	}
 
-	return filepath.Join(ssl, "certs", fmt.Sprintf("%s.pem", self.Certname())), nil
+	return filepath.FromSlash((filepath.Join(ssl, "certs", fmt.Sprintf("%s.pem", self.Certname())))), nil
 }
 
 // SSLDir determines the AIO SSL directory
 func (self *Framework) SSLDir() (string, error) {
 	if !protocol.IsSecure() {
-		return "/nonexisting", nil
+		return filepath.FromSlash("/nonexisting"), nil
 	}
 
 	if self.Config.Choria.SSLDir != "" {
@@ -216,16 +216,16 @@ func (self *Framework) SSLDir() (string, error) {
 		}
 
 		// store it so future calls to this wil not call out to Puppet again
-		self.Config.Choria.SSLDir = path
+		self.Config.Choria.SSLDir = filepath.FromSlash(path)
 
-		return path, nil
+		return self.Config.Choria.SSLDir, nil
 	}
 
 	if os.Getenv("HOME") == "" {
 		return "", fmt.Errorf("Cannot determine home dir while looking for SSL Directory, no HOME environment is set.  Please set HOME or configure plugin.choria.ssldir.")
 	}
 
-	return filepath.Join(os.Getenv("HOME"), ".puppetlabs", "etc", "puppet", "ssl"), nil
+	return filepath.FromSlash(filepath.Join(os.Getenv("HOME"), ".puppetlabs", "etc", "puppet", "ssl")), nil
 }
 
 // ClientCertCacheDir determines the cache directory for client certs and creates it
@@ -236,7 +236,7 @@ func (self *Framework) ClientCertCacheDir() (string, error) {
 		return "", fmt.Errorf("Could not determine Client Certificate Cache Directory: %s", err)
 	}
 
-	path := filepath.Join(ssldir, "choria_secuirty", "public_certs")
+	path := filepath.FromSlash(filepath.Join(ssldir, "choria_secuirty", "public_certs"))
 
 	err = os.MkdirAll(path, os.FileMode(int(0755)))
 	if err != nil {

@@ -13,7 +13,7 @@ var _ = Describe("Protocol", func() {
 
 	BeforeEach(func() {
 		if j == nil {
-			cfg, _ := NewConfig("/dev/null")
+			cfg, _ := NewDefaultConfig()
 			cfg.DisableTLS = true
 			c, err = NewWithConfig(cfg)
 			Expect(err).ToNot(HaveOccurred())
