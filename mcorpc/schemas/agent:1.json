@@ -1,0 +1,235 @@
+{
+    "$id": "https://choria.io/schemas/mcorpc/agent:1.json",
+    "type": "object",
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "definitions": {
+        "shortname": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "\\A[a-z0-9_]*\\Z"
+        },
+        "base_action_input": {
+            "type": "object",
+            "properties": {
+                "prompt": {
+                    "type": "string",
+                    "description": "When generating user interfaces use this text to prompt for information",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Short description of the specific input",
+                    "minLength": 1
+                },
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "string",
+                        "list",
+                        "boolean",
+                        "integer",
+                        "float",
+                        "number"
+                    ]
+                },
+                "optional": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "string_action_input": {
+            "allOf": [
+                {
+                    "$ref": "#/definition/base_action_input"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "validation": {
+                            "type": "string"
+                        },
+                        "maxlength": {
+                            "type": "number"
+                        }
+                    }
+                }
+            ]
+        },
+        "list_action_input": {
+            "allOf": [
+                {
+                    "$ref": "#/definition/base_action_input"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "list": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "properties": {
+        "metadata": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "description": "The Agent name",
+                    "$ref": "#/definitions/shortname"
+                },
+                "description": {
+                    "description": "Short description of the agent function",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "author": {
+                    "description": "The person or entity responsible for maintenance of this agent",
+                    "type": "string",
+                    "minLength": 1,
+                    "examples": [
+                        "R.I.Pienaar <rip@devco.net>"
+                    ]
+                },
+                "license": {
+                    "description": "The licence this agent is distributed under",
+                    "type": "string",
+                    "minLength": 1,
+                    "examples": [
+                        "Apache-2.0"
+                    ]
+                },
+                "version": {
+                    "description": "SemVer version of this agent",
+                    "type": "string",
+                    "pattern": "^(\\d+\\.)?(\\d+\\.)?(\\*|\\d+)$"
+                },
+                "url": {
+                    "description": "URL to visit for more information about the agent",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "timeout": {
+                    "description": "How long this agent is allowed to run",
+                    "type":"integer",
+                    "minimum": 2
+                }
+            },
+            "required": [
+                "name",
+                "description",
+                "author",
+                "license",
+                "version",
+                "url",
+                "timeout"
+            ]
+        },
+        "actions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "description": "The action name",
+                        "$ref": "#/definitions/shortname"
+                    },
+                    "description": {
+                        "description": "Short description of what the action does",
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "input": {
+                        "type": "object",
+                        "patternProperties": {
+                            "\\A[a-z0-9_]*\\Z": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/definition/base_action_input"
+                                    },
+                                    {
+                                        "$ref": "#/definition/string_action_input"
+                                    },
+                                    {
+                                        "$ref": "#/definition/list_action_input"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "output": {
+                        "type": "object",
+                        "properties": {
+                            "description": {
+                                "type": "string",
+                                "description": "Short description ofwhat the output means"
+                            },
+                            "default": {
+                                "anyOf": [
+                                    {
+                                        "type": "array"
+                                    },
+                                    {
+                                        "type": "boolean"
+                                    },
+                                    {
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "type": "null"
+                                    },
+                                    {
+                                        "type": "number"
+                                    },
+                                    {
+                                        "type": "object"
+                                    },
+                                    {
+                                        "type": "string"
+                                    }
+                                ]
+                            },
+                            "display_as": {
+                                "type":"string",
+                                "description": "Short token to identify the data in the output as"
+                            }
+                        }
+                    },
+                    "display": {
+                        "type": "string",
+                        "enum": [
+                            "ok",
+                            "failed",
+                            "always"
+                        ]
+                    },
+                    "aggregate": {
+                        "type":"object",
+                        "properties": {
+                            "function": {
+                                "type":"string",
+                                "description": "The name of the aggregation function to use",
+                            },
+                            "args": {
+                                "type":"array",
+                                "items": {
+                                    "type":"string"
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "description",
+                    "action",
+                    "input",
+                    "output"
+                ]
+            }
+        }
+    }
+}
