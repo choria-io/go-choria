@@ -19,14 +19,26 @@ install:
   - rmdir c:\go /s /q
   - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.msi
   - msiexec /i go%GOVERSION%.windows-amd64.msi /q
-  - set Path=C:\Ruby%RUBY_VERSION%\bin;c:\go\bin;c:\gopath\bin;%Path%
+  - set Path=c:\Program Files\go-msi;%WIX%\bin;C:\Ruby%RUBY_VERSION%\bin;c:\go\bin;c:\gopath\bin;%Path%
   # Install vendor dependencies
   - go get github.com/Masterminds/glide
   - go get github.com/onsi/ginkgo/ginkgo
+  - choco install changelog -y
+  - choco install go-msi -y
+  - glide install
 
 build: false
 deploy: false
 
 test_script:
-  - glide install
   - ginkgo -r -keepGoing -skipMeasurements
+
+build_script:
+  - go build
+  - xcopy packager\templates\windows\global\templates templates /I /E
+  - copy packager\templates\windows\global\wix.json .
+  - go-msi.exe make --msi go-choria.msi --version 0.99.0-20180430 --arch amd64
+
+artifacts:
+  - path: "*choria*.msi"
+    name: msi
