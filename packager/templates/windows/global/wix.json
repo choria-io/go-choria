@@ -1,0 +1,35 @@
+{
+  "product": "Choria",
+  "company": "choria.io",
+  "license": "LICENSE",
+  "upgrade-code": "05ef7206-36c5-4daa-9555-082d8370a3c0",
+  "files": {
+    "guid": "2603be85-28b3-4c31-9739-5b6f6377d093",
+    "items": [
+      "go-choria.exe"
+    ]
+  },
+  "directories": [
+    "templates"
+  ],
+  "env": {
+    "guid": "1f679ea2-9bbf-4409-a734-8563f9eac39f",
+    "vars": [
+      {
+        "name": "PATH",
+        "value": "[INSTALLDIR]",
+        "permanent": "no",
+        "system": "no",
+        "action": "set",
+        "part": "last"
+      }
+    ]
+  },
+  "shortcuts": {},
+  "choco": {
+    "description": "Choria Server and Broker",
+    "project-url": "https://github.com/choria-io/go-choria",
+    "tags": "automation",
+    "license-url": "https://github.com/choria-io/go-choria/blob/master/LICENSE"
+  }
+}
