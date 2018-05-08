@@ -16,7 +16,7 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "FileContent")
+	RunSpecs(t, "Registration")
 }
 
 var _ = Describe("RegistrationData", func() {

@@ -48,6 +48,10 @@ var _ = Describe("McoRPC/Ruby", func() {
 		agentMgr.EXPECT().Logger().Return(logger).AnyTimes()
 	})
 
+	AfterEach(func() {
+		mockctl.Finish()
+	})
+
 	var _ = Describe("RegisterAgents", func() {
 		var p Provider
 		var ctx context.Context
@@ -63,10 +67,6 @@ var _ = Describe("McoRPC/Ruby", func() {
 			Expect(p.Agents()).To(HaveLen(2))
 
 			ctx = context.Background()
-		})
-
-		AfterEach(func() {
-			mockctl.Finish()
 		})
 
 		It("Should register all agents", func() {

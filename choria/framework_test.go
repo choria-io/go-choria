@@ -8,9 +8,9 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestMCollective(t *testing.T) {
+func TestChoria(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "MCollective")
+	RunSpecs(t, "Choria Framework")
 }
 
 var _ = Describe("Choria", func() {

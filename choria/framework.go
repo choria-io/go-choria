@@ -10,6 +10,8 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/srvcache"
 	uuid "github.com/satori/go.uuid"
@@ -20,31 +22,11 @@ import (
 type Framework struct {
 	Config *Config
 
+	security SecurityProvider
+	log      *logrus.Logger
+
 	mu    *sync.Mutex
 	stats bool
-}
-
-// Server is a representation of a network server host and port
-type Server struct {
-	Host   string
-	Port   int
-	Scheme string
-}
-
-// URL creates a correct url from the server if scheme is known
-func (self *Server) URL() (u *url.URL, err error) {
-	if self.Scheme == "" {
-		return u, fmt.Errorf("Server %s:%d has no scheme, cannot make a URL", self.Host, self.Port)
-	}
-
-	ustring := fmt.Sprintf("%s://%s:%d", self.Scheme, self.Host, self.Port)
-
-	u, err = url.Parse(ustring)
-	if err != nil {
-		return u, fmt.Errorf("Could not parse %s: %s", ustring, err)
-	}
-
-	return
 }
 
 // New sets up a Choria with all its config loaded and so forth
@@ -69,12 +51,18 @@ func NewWithConfig(config *Config) (*Framework, error) {
 
 	err := c.SetupLogging(false)
 	if err != nil {
-		return &c, fmt.Errorf("Could not set up logging: %s", err)
+		return &c, fmt.Errorf("could not set up logging: %s", err)
+	}
+
+	c.security, err = NewSecurityProvider("puppet", &c, c.Logger("security"))
+	if err != nil {
+		return &c, fmt.Errorf("could not set up security framework: %s", err)
 	}
 
 	if !config.DisableTLS {
-		if errors, ok := c.CheckSSLSetup(); !ok {
-			return &c, fmt.Errorf("SSL setup is not valid, %d errors encountered: %s", len(errors), strings.Join(errors, ", "))
+		errors, ok := c.security.Validate()
+		if !ok {
+			return &c, fmt.Errorf("security setup is not valid, %d errors encountered: %s", len(errors), strings.Join(errors, ", "))
 		}
 	}
 
@@ -244,36 +232,38 @@ func (self *Framework) MiddlewareServers() (servers []Server, err error) {
 // SetupLogging configures logging based on choria config directives
 // currently only file and console behaviours are supported
 func (self *Framework) SetupLogging(debug bool) (err error) {
-	log.SetOutput(os.Stdout)
+	self.log = log.New()
+
+	self.log.Out = os.Stdout
 
 	if self.Config.LogFile != "" {
-		log.SetFormatter(&log.JSONFormatter{})
+		self.log.Formatter = &log.JSONFormatter{}
 
 		file, err := os.OpenFile(self.Config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
 			return fmt.Errorf("Could not set up logging: %s", err)
 		}
 
-		log.SetOutput(file)
+		self.log.Out = file
 	}
 
 	switch self.Config.LogLevel {
 	case "debug":
-		log.SetLevel(log.DebugLevel)
+		self.log.SetLevel(log.DebugLevel)
 	case "info":
-		log.SetLevel(log.InfoLevel)
+		self.log.SetLevel(log.InfoLevel)
 	case "warn":
-		log.SetLevel(log.WarnLevel)
+		self.log.SetLevel(log.WarnLevel)
 	case "error":
-		log.SetLevel(log.ErrorLevel)
+		self.log.SetLevel(log.ErrorLevel)
 	case "fatal":
-		log.SetLevel(log.FatalLevel)
+		self.log.SetLevel(log.FatalLevel)
 	default:
-		log.SetLevel(log.WarnLevel)
+		self.log.SetLevel(log.WarnLevel)
 	}
 
 	if debug {
-		log.SetLevel(log.DebugLevel)
+		self.log.SetLevel(log.DebugLevel)
 	}
 
 	return
@@ -411,6 +401,11 @@ func (self *Framework) ProxiedDiscovery() bool {
 	}
 
 	return self.Config.Choria.DiscoveryProxy
+}
+
+// Getuid returns the numeric user id of the caller
+func (self *Framework) Getuid() int {
+	return os.Getuid()
 }
 
 // PuppetSetting retrieves a config setting by shelling out to puppet apply --configprint
