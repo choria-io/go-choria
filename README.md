@@ -72,6 +72,7 @@ trequest.SetRequestData(srequest)
 // finally we can get the JSON data to send over the wire using whatever means we like
 j, _ := trequest.JSON()
 ```
+
 Now the JSON above gets sent to a node using any means you like, Choria uses NATS.  Decoding this is done as follows:
 
 ```go
