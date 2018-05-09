@@ -262,14 +262,14 @@ func (r *request) JSON() (body string, err error) {
 	j, err := json.Marshal(r)
 	if err != nil {
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not JSON Marshal: %s", err.Error())
+		err = fmt.Errorf("Could not JSON Marshal: %s", err)
 		return
 	}
 
 	body = string(j)
 
 	if err = r.IsValidJSON(body); err != nil {
-		err = fmt.Errorf("JSON produced from the Request does not pass validation: %s", err.Error())
+		err = fmt.Errorf("JSON produced from the Request does not pass validation: %s", err)
 		return
 	}
 
@@ -293,7 +293,7 @@ func (r *request) Version() string {
 func (r *request) IsValidJSON(data string) (err error) {
 	_, errors, err := schemas.Validate(schemas.RequestV1, data)
 	if err != nil {
-		err = fmt.Errorf("Could not validate Request JSON data: %s", err.Error())
+		err = fmt.Errorf("Could not validate Request JSON data: %s", err)
 		return
 	}
 

@@ -29,7 +29,7 @@ func (r *secureReply) SetMessage(reply protocol.Reply) (err error) {
 	j, err := reply.JSON()
 	if err != nil {
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not JSON encode reply message to store it in the Secure Reply: %s", err.Error())
+		err = fmt.Errorf("Could not JSON encode reply message to store it in the Secure Reply: %s", err)
 		return
 	}
 
@@ -65,14 +65,14 @@ func (r *secureReply) JSON() (body string, err error) {
 	j, err := json.Marshal(r)
 	if err != nil {
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not JSON Marshal: %s", err.Error())
+		err = fmt.Errorf("Could not JSON Marshal: %s", err)
 		return
 	}
 
 	body = string(j)
 
 	if err = r.IsValidJSON(body); err != nil {
-		err = fmt.Errorf("JSON produced from the SecureRequest does not pass validation: %s", err.Error())
+		err = fmt.Errorf("JSON produced from the SecureRequest does not pass validation: %s", err)
 		return
 	}
 
@@ -88,7 +88,7 @@ func (r *secureReply) Version() string {
 func (r *secureReply) IsValidJSON(data string) (err error) {
 	_, errors, err := schemas.Validate(schemas.SecureReplyV1, data)
 	if err != nil {
-		err = fmt.Errorf("Could not validate SecureReply JSON data: %s", err.Error())
+		err = fmt.Errorf("Could not validate SecureReply JSON data: %s", err)
 		return
 	}
 

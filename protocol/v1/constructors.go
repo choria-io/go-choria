@@ -50,7 +50,7 @@ func NewReply(request protocol.Request, certname string) (rep protocol.Reply, er
 
 	j, err := request.JSON()
 	if err != nil {
-		err = fmt.Errorf("Could not turn Request %s into a JSON document: %s", request.RequestID(), err.Error())
+		err = fmt.Errorf("Could not turn Request %s into a JSON document: %s", request.RequestID(), err)
 		return
 	}
 
@@ -73,13 +73,13 @@ func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err e
 
 	err = r.IsValidJSON(sr.Message())
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the SecureReply is not a valid Reply message: %s", err.Error())
+		err = fmt.Errorf("The JSON body from the SecureReply is not a valid Reply message: %s", err)
 		return
 	}
 
 	err = json.Unmarshal([]byte(sr.Message()), r)
 	if err != nil {
-		err = fmt.Errorf("Could not parse JSON data from Secure Reply: %s", err.Error())
+		err = fmt.Errorf("Could not parse JSON data from Secure Reply: %s", err)
 		return
 	}
 
@@ -102,13 +102,13 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Reques
 
 	err = r.IsValidJSON(sr.Message())
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the SecureRequest is not a valid Request message: %s", err.Error())
+		err = fmt.Errorf("The JSON body from the SecureRequest is not a valid Request message: %s", err)
 		return
 	}
 
 	err = json.Unmarshal([]byte(sr.Message()), r)
 	if err != nil {
-		err = fmt.Errorf("Could not parse JSON data from Secure Request: %s", err.Error())
+		err = fmt.Errorf("Could not parse JSON data from Secure Request: %s", err)
 		return
 	}
 
@@ -128,7 +128,7 @@ func NewSecureReply(reply protocol.Reply, security SecurityProvider) (secure pro
 
 	err = secure.SetMessage(reply)
 	if err != nil {
-		err = fmt.Errorf("Could not set message on SecureReply structure: %s", err.Error())
+		err = fmt.Errorf("Could not set message on SecureReply structure: %s", err)
 	}
 
 	return
@@ -151,7 +151,7 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure prot
 
 	err = secure.IsValidJSON(data)
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the TransportMessage is not a valid SecureReply message: %s", err.Error())
+		err = fmt.Errorf("The JSON body from the TransportMessage is not a valid SecureReply message: %s", err)
 		return
 	}
 
@@ -206,7 +206,7 @@ func NewSecureRequestFromTransport(message protocol.TransportMessage, security S
 
 	err = secure.IsValidJSON(data)
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the TransportMessage is not a valid SecureRequest message: %s", err.Error())
+		err = fmt.Errorf("The JSON body from the TransportMessage is not a valid SecureRequest message: %s", err)
 		return
 	}
 

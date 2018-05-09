@@ -27,7 +27,7 @@ func (s *jsonSchemas) Validate(schema []byte, data string) (result bool, errors 
 	if err != nil {
 		badJsonCtr.Inc()
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not validate incoming document: %s", err.Error())
+		err = fmt.Errorf("Could not validate incoming document: %s", err)
 		return
 	}
 

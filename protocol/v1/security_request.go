@@ -30,7 +30,7 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 	j, err := request.JSON()
 	if err != nil {
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not JSON encode reply message to store it in the Secure Request: %s", err.Error())
+		err = fmt.Errorf("Could not JSON encode reply message to store it in the Secure Request: %s", err)
 		return
 	}
 
@@ -41,7 +41,7 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 
 		signature, err = r.security.SignString(j)
 		if err != nil {
-			err = fmt.Errorf("Could not sign message string: %s", err.Error())
+			err = fmt.Errorf("Could not sign message string: %s", err)
 			return
 		}
 
@@ -77,14 +77,14 @@ func (r *secureRequest) Valid() bool {
 
 	certname, err := r.security.CallerIdentity(req.CallerID())
 	if err != nil {
-		log.Errorf("Could not extract certname from caller: %s", err.Error())
+		log.Errorf("Could not extract certname from caller: %s", err)
 		protocolErrorCtr.Inc()
 		return false
 	}
 
 	err = r.security.CachePublicData([]byte(r.PublicCertificate), certname)
 	if err != nil {
-		log.Errorf("Could not cache Client Certificate: %s", err.Error())
+		log.Errorf("Could not cache Client Certificate: %s", err)
 		protocolErrorCtr.Inc()
 		return false
 	}
@@ -110,14 +110,14 @@ func (r *secureRequest) JSON() (body string, err error) {
 	j, err := json.Marshal(r)
 	if err != nil {
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not JSON Marshal: %s", err.Error())
+		err = fmt.Errorf("Could not JSON Marshal: %s", err)
 		return
 	}
 
 	body = string(j)
 
 	if err = r.IsValidJSON(body); err != nil {
-		err = fmt.Errorf("JSON produced from the SecureRequest does not pass validation: %s", err.Error())
+		err = fmt.Errorf("JSON produced from the SecureRequest does not pass validation: %s", err)
 		return
 	}
 
@@ -134,7 +134,7 @@ func (r *secureRequest) IsValidJSON(data string) (err error) {
 	_, errors, err := schemas.Validate(schemas.SecureRequestV1, data)
 	if err != nil {
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not validate SecureRequest JSON data: %s", err.Error())
+		err = fmt.Errorf("Could not validate SecureRequest JSON data: %s", err)
 		return
 	}
 
