@@ -150,40 +150,16 @@ func (s *Server) setupTLS() (err error) {
 	s.opts.TLSVerify = true
 	s.opts.TLSTimeout = 2
 
-	// seems weird to set all this when the thing that it cares for is TlsConfig
-	// but that's what gnatsd main also does, so sticking with that pattern
-	if p, err := s.choria.CAPath(); err == nil {
-		s.opts.TLSCaCert = p
-	} else {
-		return fmt.Errorf("Could not set the CA: %s", err)
+	tlsc, err := s.choria.TLSConfig()
+	if err != nil {
+		return err
 	}
 
-	if p, err := s.choria.ClientPublicCert(); err == nil {
-		s.opts.TLSCert = p
-	} else {
-		return fmt.Errorf("Could not set the Public Cert: %s", err)
-	}
-
-	if p, err := s.choria.ClientPrivateKey(); err == nil {
-		s.opts.TLSKey = p
-	} else {
-		return fmt.Errorf("Could not set the Private Key: %s", err)
-	}
-
-	tc := gnatsd.TLSConfigOpts{}
-	tc.CaFile = s.opts.TLSCaCert
-	tc.CertFile = s.opts.TLSCert
-	tc.KeyFile = s.opts.TLSKey
-	tc.Verify = true
-	tc.Timeout = s.opts.TLSTimeout
-
-	if s.opts.TLSConfig, err = gnatsd.GenTLSConfig(&tc); err != nil {
-		return fmt.Errorf("Could not create NATS Server TLS Config: %s", err)
-	}
+	s.opts.TLSConfig = tlsc
 
 	s.opts.Cluster.TLSConfig = s.opts.TLSConfig
 	s.opts.Cluster.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
-	s.opts.Cluster.TLSConfig.RootCAs = s.opts.Cluster.TLSConfig.ClientCAs
+	s.opts.Cluster.TLSConfig.RootCAs = tlsc.ClientCAs
 	s.opts.Cluster.TLSTimeout = s.opts.TLSTimeout
 
 	return

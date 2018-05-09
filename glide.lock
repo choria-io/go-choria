@@ -1,5 +1,5 @@
-hash: a5ba9b274e87d48433e564684fde5561adf93b2aa8d5e106eb05983a951b8c7b
-updated: 2018-04-23T14:36:06.516053+02:00
+hash: d0e7dac829e186f645d976d6db971e77d78590532855adf634c902106e9024e5
+updated: 2018-05-09T17:06:42.927674+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -14,7 +14,7 @@ imports:
 - name: github.com/choria-io/go-confkey
   version: 1416c30a60054226a232e049eb5496d6d6afb5f2
 - name: github.com/choria-io/go-protocol
-  version: 72bc3ca9593e692e55a3f5dda61194803f54d619
+  version: 33a764a88cb2fccbceb6424e2397c8fc57dbd1ce
   subpackages:
   - protocol
   - protocol/v1
@@ -41,7 +41,7 @@ imports:
   - proto
   - protoc-gen-gogo/descriptor
 - name: github.com/golang/mock
-  version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c
+  version: 22bbf0ddf08105dfa364d0a2fa619dfa71014af5
   subpackages:
   - gomock
   - mockgen

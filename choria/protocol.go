@@ -184,7 +184,7 @@ func (self *Framework) NewRequestFromSecureRequest(sr protocol.SecureRequest) (r
 func (self *Framework) NewSecureReply(reply protocol.Reply) (secure protocol.SecureReply, err error) {
 	switch reply.Version() {
 	case protocol.ReplyV1:
-		secure, err = v1.NewSecureReply(reply)
+		secure, err = v1.NewSecureReply(reply, self.security)
 	default:
 		err = fmt.Errorf("Do not know how to create a SecureReply based on a Reply version %s", reply.Version())
 	}
@@ -209,19 +209,7 @@ func (self *Framework) NewSecureReplyFromTransport(message protocol.TransportMes
 func (self *Framework) NewSecureRequest(request protocol.Request) (secure protocol.SecureRequest, err error) {
 	switch request.Version() {
 	case protocol.RequestV1:
-		var pub, pri string
-
-		pub, err = self.ClientPublicCert()
-		if err != nil {
-			return secure, err
-		}
-
-		pri, err = self.ClientPrivateKey()
-		if err != nil {
-			return secure, err
-		}
-
-		secure, err = v1.NewSecureRequest(request, pub, pri)
+		secure, err = v1.NewSecureRequest(request, self.security)
 	default:
 		err = fmt.Errorf("Do not know how to create a SecureReply from a Request with version %s", request.Version())
 	}
@@ -233,22 +221,7 @@ func (self *Framework) NewSecureRequest(request protocol.Request) (secure protoc
 func (self *Framework) NewSecureRequestFromTransport(message protocol.TransportMessage, skipvalidate bool) (secure protocol.SecureRequest, err error) {
 	switch message.Version() {
 	case protocol.TransportV1:
-		var ca string
-		var cache string
-
-		if protocol.IsSecure() {
-			ca, err = self.CAPath()
-			if err != nil {
-				return
-			}
-
-			cache, err = self.ClientCertCacheDir()
-			if err != nil {
-				return
-			}
-		}
-
-		secure, err = v1.NewSecureRequestFromTransport(message, ca, cache, self.Config.Choria.CertnameWhitelist, self.Config.Choria.PrivilegedUsers, skipvalidate)
+		secure, err = v1.NewSecureRequestFromTransport(message, self.security, skipvalidate)
 	default:
 		err = fmt.Errorf("Do not know how to create a SecureReply from a TransportMessage version %s", message.Version())
 	}
