@@ -50,7 +50,7 @@ func NewReply(request protocol.Request, certname string) (rep protocol.Reply, er
 
 	j, err := request.JSON()
 	if err != nil {
-		err = fmt.Errorf("Could not turn Request %s into a JSON document: %s", request.RequestID(), err)
+		err = fmt.Errorf("Could not turn Request %s into a JSON document: %s", request.RequestID(), err.Error())
 		return
 	}
 
@@ -73,13 +73,13 @@ func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err e
 
 	err = r.IsValidJSON(sr.Message())
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the SecureReply is not a valid Reply message: %s", err)
+		err = fmt.Errorf("The JSON body from the SecureReply is not a valid Reply message: %s", err.Error())
 		return
 	}
 
 	err = json.Unmarshal([]byte(sr.Message()), r)
 	if err != nil {
-		err = fmt.Errorf("Could not parse JSON data from Secure Reply: %s", err)
+		err = fmt.Errorf("Could not parse JSON data from Secure Reply: %s", err.Error())
 		return
 	}
 
@@ -102,13 +102,13 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Reques
 
 	err = r.IsValidJSON(sr.Message())
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the SecureRequest is not a valid Request message: %s", err)
+		err = fmt.Errorf("The JSON body from the SecureRequest is not a valid Request message: %s", err.Error())
 		return
 	}
 
 	err = json.Unmarshal([]byte(sr.Message()), r)
 	if err != nil {
-		err = fmt.Errorf("Could not parse JSON data from Secure Request: %s", err)
+		err = fmt.Errorf("Could not parse JSON data from Secure Request: %s", err.Error())
 		return
 	}
 
@@ -117,19 +117,24 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Reques
 	return
 }
 
+// TODO
+
 // NewSecureReply creates a choria:secure:reply:1
-func NewSecureReply(reply protocol.Reply) (secure protocol.SecureReply, err error) {
+func NewSecureReply(reply protocol.Reply, security SecurityProvider) (secure protocol.SecureReply, err error) {
 	secure = &secureReply{
 		Protocol: protocol.SecureReplyV1,
+		security: security,
 	}
 
 	err = secure.SetMessage(reply)
 	if err != nil {
-		err = fmt.Errorf("Could not set message on SecureReply structure: %s", err)
+		err = fmt.Errorf("Could not set message on SecureReply structure: %s", err.Error())
 	}
 
 	return
 }
+
+// TODO
 
 // NewSecureReplyFromTransport creates a new choria:secure:reply:1 from the data contained in a Transport message
 func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure protocol.SecureReply, err error) {
@@ -146,7 +151,7 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure prot
 
 	err = secure.IsValidJSON(data)
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the TransportMessage is not a valid SecureReply message: %s", err)
+		err = fmt.Errorf("The JSON body from the TransportMessage is not a valid SecureReply message: %s", err.Error())
 		return
 	}
 
@@ -162,40 +167,36 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure prot
 	return
 }
 
-// NewSecureRequest creates a choria:secure:request:1
-func NewSecureRequest(request protocol.Request, publicCert string, privateCert string) (secure protocol.SecureRequest, err error) {
-	pubcerttxt := []byte("insecure")
+// TODO
 
-	if protocol.IsSecure() {
-		pubcerttxt, err = readFile(publicCert)
-		if err != nil {
-			err = fmt.Errorf("Could not read public certificate: %s", err)
-			return
-		}
+// NewSecureRequest creates a choria:secure:request:1
+func NewSecureRequest(request protocol.Request, security SecurityProvider) (secure protocol.SecureRequest, err error) {
+	pub, err := security.PublicCertTXT()
+	if err != nil {
+		err = fmt.Errorf("could not retrieve Public Certificate from the security subsystem: %s", err)
+		return
 	}
 
 	secure = &secureRequest{
 		Protocol:          protocol.SecureRequestV1,
-		PublicCertificate: string(pubcerttxt),
-		publicCertPath:    publicCert,
-		privateCertPath:   privateCert,
+		PublicCertificate: string(pub),
+		security:          security,
 	}
 
 	err = secure.SetMessage(request)
 	if err != nil {
-		err = fmt.Errorf("Could not set message SecureRequest structure: %s", err)
+		err = fmt.Errorf("could not set message SecureRequest structure: %s", err)
 	}
 
 	return
 }
 
+// TODO
+
 // NewSecureRequestFromTransport creates a new choria:secure:request:1 from the data contained in a Transport message
-func NewSecureRequestFromTransport(message protocol.TransportMessage, caPath string, cachePath string, whitelistRegex []string, privilegedRegex []string, skipvalidate bool) (secure protocol.SecureRequest, err error) {
+func NewSecureRequestFromTransport(message protocol.TransportMessage, security SecurityProvider, skipvalidate bool) (secure protocol.SecureRequest, err error) {
 	secure = &secureRequest{
-		caPath:          caPath,
-		cachePath:       cachePath,
-		whilelistRegex:  whitelistRegex,
-		privilegedRegex: privilegedRegex,
+		security: security,
 	}
 
 	data, err := message.Message()
@@ -205,7 +206,7 @@ func NewSecureRequestFromTransport(message protocol.TransportMessage, caPath str
 
 	err = secure.IsValidJSON(data)
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the TransportMessage is not a valid SecureRequest message: %s", err)
+		err = fmt.Errorf("The JSON body from the TransportMessage is not a valid SecureRequest message: %s", err.Error())
 		return
 	}
 

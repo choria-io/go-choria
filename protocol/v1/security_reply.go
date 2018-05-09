@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"crypto/sha256"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -17,6 +16,8 @@ type secureReply struct {
 	MessageBody string `json:"message"`
 	Hash        string `json:"hash"`
 
+	security SecurityProvider
+
 	mu sync.Mutex
 }
 
@@ -28,11 +29,11 @@ func (r *secureReply) SetMessage(reply protocol.Reply) (err error) {
 	j, err := reply.JSON()
 	if err != nil {
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not JSON encode reply message to store it in the Secure Reply: %s", err)
+		err = fmt.Errorf("Could not JSON encode reply message to store it in the Secure Reply: %s", err.Error())
 		return
 	}
 
-	hash := sha256.Sum256([]byte(j))
+	hash := r.security.ChecksumString(j)
 	r.MessageBody = string(j)
 	r.Hash = base64.StdEncoding.EncodeToString(hash[:])
 
@@ -49,7 +50,7 @@ func (r *secureReply) Valid() bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	hash := sha256.Sum256([]byte(r.MessageBody))
+	hash := r.security.ChecksumString(r.MessageBody)
 	if base64.StdEncoding.EncodeToString(hash[:]) == r.Hash {
 		validCtr.Inc()
 		return true
@@ -64,14 +65,14 @@ func (r *secureReply) JSON() (body string, err error) {
 	j, err := json.Marshal(r)
 	if err != nil {
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not JSON Marshal: %s", err)
+		err = fmt.Errorf("Could not JSON Marshal: %s", err.Error())
 		return
 	}
 
 	body = string(j)
 
 	if err = r.IsValidJSON(body); err != nil {
-		err = fmt.Errorf("JSON produced from the SecureRequest does not pass validation: %s", err)
+		err = fmt.Errorf("JSON produced from the SecureRequest does not pass validation: %s", err.Error())
 		return
 	}
 
@@ -85,13 +86,9 @@ func (r *secureReply) Version() string {
 
 // IsValidJSON validates the given JSON data against the schema
 func (r *secureReply) IsValidJSON(data string) (err error) {
-	if !protocol.ClientStrictValidation {
-		return nil
-	}
-
 	_, errors, err := schemas.Validate(schemas.SecureReplyV1, data)
 	if err != nil {
-		err = fmt.Errorf("Could not validate SecureReply JSON data: %s", err)
+		err = fmt.Errorf("Could not validate SecureReply JSON data: %s", err.Error())
 		return
 	}
 

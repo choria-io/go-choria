@@ -35,7 +35,7 @@ type federationTransportHeader struct {
 func (m *transportMessage) Message() (data string, err error) {
 	d, err := base64.StdEncoding.DecodeString(m.Data)
 	if err != nil {
-		err = fmt.Errorf("Could not base64 decode data received on the transport: %s", err)
+		err = fmt.Errorf("Could not base64 decode data received on the transport: %s", err.Error())
 		return
 	}
 
@@ -167,7 +167,7 @@ func (m *transportMessage) SetReplyData(reply protocol.SecureReply) (err error) 
 
 	j, err := reply.JSON()
 	if err != nil {
-		err = fmt.Errorf("Could not JSON encode the Reply structure for transport: %s", err)
+		err = fmt.Errorf("Could not JSON encode the Reply structure for transport: %s", err.Error())
 		return
 	}
 
@@ -183,7 +183,7 @@ func (m *transportMessage) SetRequestData(request protocol.SecureRequest) (err e
 
 	j, err := request.JSON()
 	if err != nil {
-		err = fmt.Errorf("Could not JSON encode the Request structure for transport: %s", err)
+		err = fmt.Errorf("Could not JSON encode the Request structure for transport: %s", err.Error())
 		return
 	}
 
@@ -206,14 +206,14 @@ func (m *transportMessage) NetworkHops() [][3]string {
 func (m *transportMessage) JSON() (body string, err error) {
 	j, err := json.Marshal(m)
 	if err != nil {
-		err = fmt.Errorf("Could not JSON Marshal: %s", err)
+		err = fmt.Errorf("Could not JSON Marshal: %s", err.Error())
 		return
 	}
 
 	body = string(j)
 
 	if err = m.IsValidJSON(body); err != nil {
-		err = fmt.Errorf("JSON produced from the Transport does not pass validation: %s", err)
+		err = fmt.Errorf("JSON produced from the Transport does not pass validation: %s", err.Error())
 		return
 	}
 
@@ -235,13 +235,9 @@ func (m *transportMessage) Version() string {
 
 // IsValidJSON validates the given JSON data against the Transport schema
 func (m *transportMessage) IsValidJSON(data string) (err error) {
-	if !protocol.ClientStrictValidation {
-		return nil
-	}
-
 	_, errors, err := schemas.Validate(schemas.TransportV1, data)
 	if err != nil {
-		err = fmt.Errorf("Could not validate Transport JSON data: %s", err)
+		err = fmt.Errorf("Could not validate Transport JSON data: %s", err.Error())
 		return
 	}
 

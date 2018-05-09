@@ -2,17 +2,32 @@ package v1
 
 import (
 	"github.com/choria-io/go-protocol/protocol"
+	gomock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"
 )
 
 var _ = Describe("TransportMessage", func() {
+	var mockctl *gomock.Controller
+	var security *MockSecurityProvider
+
+	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+		security = NewMockSecurityProvider(mockctl)
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
+	})
+
 	It("Should support reply data", func() {
+		security.EXPECT().ChecksumString(gomock.Any()).Return([]byte("stub checksum")).AnyTimes()
+
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		request.SetMessage(`{"message":1}`)
 		reply, _ := NewReply(request, "testing")
-		sreply, _ := NewSecureReply(reply)
+		sreply, _ := NewSecureReply(reply, security)
 		treply, _ := NewTransportMessage("rip.mcollective")
 		treply.SetReplyData(sreply)
 
@@ -32,9 +47,12 @@ var _ = Describe("TransportMessage", func() {
 	})
 
 	It("Should support request data", func() {
+		security.EXPECT().PublicCertTXT().Return([]byte("stub cert"), nil).AnyTimes()
+		security.EXPECT().SignString(gomock.Any()).Return([]byte("stub sig"), nil).AnyTimes()
+
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		request.SetMessage(`{"message":1}`)
-		srequest, _ := NewSecureRequest(request, "testdata/ssl/certs/rip.mcollective.pem", "testdata/ssl/private_keys/rip.mcollective.pem")
+		srequest, _ := NewSecureRequest(request, security)
 		trequest, _ := NewTransportMessage("rip.mcollective")
 		trequest.SetRequestData(srequest)
 
@@ -51,8 +69,11 @@ var _ = Describe("TransportMessage", func() {
 	})
 
 	It("Should support creation from JSON data", func() {
+		security.EXPECT().PublicCertTXT().Return([]byte("stub cert"), nil).AnyTimes()
+		security.EXPECT().SignString(gomock.Any()).Return([]byte("stub sig"), nil).AnyTimes()
+
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-		srequest, _ := NewSecureRequest(request, "testdata/ssl/certs/rip.mcollective.pem", "testdata/ssl/private_keys/rip.mcollective.pem")
+		srequest, _ := NewSecureRequest(request, security)
 		trequest, _ := NewTransportMessage("rip.mcollective")
 		trequest.SetRequestData(srequest)
 
@@ -68,7 +89,7 @@ var _ = Describe("TransportMessage", func() {
 	Measure("Transport creation", func(b Benchmarker) {
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		request.SetMessage(`{"message":1}`)
-		srequest, _ := NewSecureRequest(request, "testdata/ssl/certs/rip.mcollective.pem", "testdata/ssl/private_keys/rip.mcollective.pem")
+		srequest, _ := NewSecureRequest(request, security)
 		trequest, _ := NewTransportMessage("rip.mcollective")
 		trequest.SetRequestData(srequest)
 
