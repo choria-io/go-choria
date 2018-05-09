@@ -6,8 +6,6 @@ import (
 	"strings"
 	"sync"
 	"time"
-
-	"github.com/choria-io/go-protocol/protocol"
 )
 
 type reply struct {
@@ -102,10 +100,6 @@ func (r *reply) Version() string {
 
 // IsValidJSON validates the given JSON data against the schema
 func (r *reply) IsValidJSON(data string) (err error) {
-	if !protocol.ClientStrictValidation {
-		return nil
-	}
-
 	_, errors, err := schemas.Validate(schemas.ReplyV1, data)
 	if err != nil {
 		err = fmt.Errorf("Could not validate Reply JSON data: %s", err)

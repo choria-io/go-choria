@@ -117,10 +117,13 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Reques
 	return
 }
 
+// TODO
+
 // NewSecureReply creates a choria:secure:reply:1
-func NewSecureReply(reply protocol.Reply) (secure protocol.SecureReply, err error) {
+func NewSecureReply(reply protocol.Reply, security SecurityProvider) (secure protocol.SecureReply, err error) {
 	secure = &secureReply{
 		Protocol: protocol.SecureReplyV1,
+		security: security,
 	}
 
 	err = secure.SetMessage(reply)
@@ -130,6 +133,8 @@ func NewSecureReply(reply protocol.Reply) (secure protocol.SecureReply, err erro
 
 	return
 }
+
+// TODO
 
 // NewSecureReplyFromTransport creates a new choria:secure:reply:1 from the data contained in a Transport message
 func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure protocol.SecureReply, err error) {
@@ -162,40 +167,36 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure prot
 	return
 }
 
-// NewSecureRequest creates a choria:secure:request:1
-func NewSecureRequest(request protocol.Request, publicCert string, privateCert string) (secure protocol.SecureRequest, err error) {
-	pubcerttxt := []byte("insecure")
+// TODO
 
-	if protocol.IsSecure() {
-		pubcerttxt, err = readFile(publicCert)
-		if err != nil {
-			err = fmt.Errorf("Could not read public certificate: %s", err)
-			return
-		}
+// NewSecureRequest creates a choria:secure:request:1
+func NewSecureRequest(request protocol.Request, security SecurityProvider) (secure protocol.SecureRequest, err error) {
+	pub, err := security.PublicCertTXT()
+	if err != nil {
+		err = fmt.Errorf("could not retrieve Public Certificate from the security subsystem: %s", err)
+		return
 	}
 
 	secure = &secureRequest{
 		Protocol:          protocol.SecureRequestV1,
-		PublicCertificate: string(pubcerttxt),
-		publicCertPath:    publicCert,
-		privateCertPath:   privateCert,
+		PublicCertificate: string(pub),
+		security:          security,
 	}
 
 	err = secure.SetMessage(request)
 	if err != nil {
-		err = fmt.Errorf("Could not set message SecureRequest structure: %s", err)
+		err = fmt.Errorf("could not set message SecureRequest structure: %s", err)
 	}
 
 	return
 }
 
+// TODO
+
 // NewSecureRequestFromTransport creates a new choria:secure:request:1 from the data contained in a Transport message
-func NewSecureRequestFromTransport(message protocol.TransportMessage, caPath string, cachePath string, whitelistRegex []string, privilegedRegex []string, skipvalidate bool) (secure protocol.SecureRequest, err error) {
+func NewSecureRequestFromTransport(message protocol.TransportMessage, security SecurityProvider, skipvalidate bool) (secure protocol.SecureRequest, err error) {
 	secure = &secureRequest{
-		caPath:          caPath,
-		cachePath:       cachePath,
-		whilelistRegex:  whitelistRegex,
-		privilegedRegex: privilegedRegex,
+		security: security,
 	}
 
 	data, err := message.Message()

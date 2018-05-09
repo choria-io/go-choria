@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 
 	"github.com/choria-io/go-protocol/protocol"
+	gomock "github.com/golang/mock/gomock"
 	"github.com/tidwall/gjson"
 
 	. "github.com/onsi/ginkgo"
@@ -12,6 +13,18 @@ import (
 )
 
 var _ = Describe("SecureReply", func() {
+	var mockctl *gomock.Controller
+	var security *MockSecurityProvider
+
+	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+		security = NewMockSecurityProvider(mockctl)
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
+	})
+
 	It("Should create valid replies", func() {
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		request.SetMessage(`{"test":1}`)
@@ -24,7 +37,9 @@ var _ = Describe("SecureReply", func() {
 
 		sha := sha256.Sum256([]byte(rj))
 
-		sreply, _ := NewSecureReply(reply)
+		security.EXPECT().ChecksumString(rj).Return(sha[:]).AnyTimes()
+
+		sreply, _ := NewSecureReply(reply, security)
 		sj, err := sreply.JSON()
 		Expect(err).ToNot(HaveOccurred())
 
