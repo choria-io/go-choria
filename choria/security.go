@@ -1,10 +1,12 @@
 package choria
 
 import (
+	context "context"
 	"crypto/tls"
 	"encoding/pem"
 	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/sirupsen/logrus"
 )
@@ -57,6 +59,10 @@ type SecurityProvider interface {
 	// SSLContext produce a http.Transport for the current identity using it's certificates etc
 	SSLContext() (*http.Transport, error)
 
+	// HTTPClient creates a standard HTTP client with optional security, it will
+	// be set to use the CA and client certs for auth.
+	HTTPClient(secure bool) (*http.Client, error)
+
 	// VerifyCertificate validates that a certificate is signed by a known CA
 	VerifyCertificate(certpem []byte, identity string) (error, bool)
 
@@ -73,6 +79,12 @@ type SecurityProvider interface {
 
 	// CachedPublicData retrieves a previously cached certificate
 	CachedPublicData(identity string) ([]byte, error)
+
+	// Enroll creates a new cert with the active identity and attempt to enroll it with the security system
+	// if there's a process of waiting for the certificate to be signed for example this should wait
+	// no more than wait.  cb gets called on every attempt to download a cert with the attempt number
+	// as argument
+	Enroll(ctx context.Context, wait time.Duration, cb func(int)) error
 }
 
 // NewSecurityProvider creates a new instance of a security provider

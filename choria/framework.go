@@ -59,7 +59,7 @@ func NewWithConfig(config *Config) (*Framework, error) {
 		return &c, fmt.Errorf("could not set up security framework: %s", err)
 	}
 
-	if !config.DisableTLS {
+	if !(config.DisableSecurityProviderVerify || config.DisableTLS) {
 		errors, ok := c.security.Validate()
 		if !ok {
 			return &c, fmt.Errorf("security setup is not valid, %d errors encountered: %s", len(errors), strings.Join(errors, ", "))
@@ -327,7 +327,7 @@ func (self *Framework) QuerySrvRecords(records []string) ([]Server, error) {
 		log.Debugf("Found %d SRV records for %s", len(addrs), cname)
 
 		for _, a := range addrs {
-			servers = append(servers, Server{Host: a.Target, Port: int(a.Port)})
+			servers = append(servers, Server{Host: strings.TrimRight(a.Target, "."), Port: int(a.Port)})
 		}
 	}
 
