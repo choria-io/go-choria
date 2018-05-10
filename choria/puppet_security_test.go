@@ -2,8 +2,10 @@ package choria
 
 import (
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/base64"
 	"encoding/pem"
+	"errors"
 	"fmt"
 	"io/ioutil"
 	"os"
@@ -19,14 +21,14 @@ import (
 
 var _ = Describe("PuppetSSL", func() {
 	var mockctl *gomock.Controller
-	var settings *MockpuppetSettingsProvider
+	var settings *MocksettingsProvider
 	var cfg *Config
 	var err error
 	var prov *PuppetSecurity
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		settings = NewMockpuppetSettingsProvider(mockctl)
+		settings = NewMocksettingsProvider(mockctl)
 
 		cfg, err = NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
@@ -463,6 +465,137 @@ var _ = Describe("PuppetSSL", func() {
 			}
 
 			Expect(prov.privilegedCerts()).To(Equal(expected))
+		})
+	})
+
+	Describe("writeCSR", func() {
+		It("should not write over existing CSRs", func() {
+			prov.conf.OverrideCertname = "na.mcollective"
+
+			kpath, err := prov.privateKeyPath()
+			Expect(err).ToNot(HaveOccurred())
+			csrpath, err := prov.csrPath()
+			Expect(err).ToNot(HaveOccurred())
+
+			defer os.Remove(kpath)
+			defer os.Remove(csrpath)
+
+			key, err := prov.writePrivateKey()
+			Expect(err).ToNot(HaveOccurred())
+
+			prov.conf.OverrideCertname = "rip.mcollective"
+			err = prov.writeCSR(key, "rip.mcollective", "choria.io")
+
+			Expect(err).To(MatchError("a certificate request already exist for rip.mcollective"))
+		})
+
+		It("Should create a valid CSR", func() {
+			prov.conf.OverrideCertname = "na.mcollective"
+
+			kpath, err := prov.privateKeyPath()
+			Expect(err).ToNot(HaveOccurred())
+			csrpath, err := prov.csrPath()
+			Expect(err).ToNot(HaveOccurred())
+
+			defer os.Remove(kpath)
+			defer os.Remove(csrpath)
+
+			key, err := prov.writePrivateKey()
+			Expect(err).ToNot(HaveOccurred())
+
+			err = prov.writeCSR(key, "na.mcollective", "choria.io")
+			Expect(err).ToNot(HaveOccurred())
+
+			csrpem, err := ioutil.ReadFile(csrpath)
+			Expect(err).ToNot(HaveOccurred())
+
+			pb, _ := pem.Decode(csrpem)
+
+			req, err := x509.ParseCertificateRequest(pb.Bytes)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(req.Subject.CommonName).To(Equal("na.mcollective"))
+			Expect(req.Subject.OrganizationalUnit).To(Equal([]string{"choria.io"}))
+		})
+	})
+
+	Describe("writePrivateKey", func() {
+		It("Should not write over existing private keys", func() {
+			prov.conf.OverrideCertname = "rip.mcollective"
+			key, err := prov.writePrivateKey()
+			Expect(err).To(MatchError("a private key already exist for rip.mcollective"))
+			Expect(key).To(BeNil())
+		})
+
+		It("Should create new keys", func() {
+			prov.conf.OverrideCertname = "na.mcollective"
+
+			path, err := prov.privateKeyPath()
+			defer os.Remove(path)
+
+			key, err := prov.writePrivateKey()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(key).ToNot(BeNil())
+			Expect(path).To(BeAnExistingFile())
+		})
+	})
+
+	Describe("csrExists", func() {
+		It("Should detect existing keys", func() {
+			prov.conf.OverrideCertname = "rip.mcollective"
+			Expect(prov.csrExists()).To(BeTrue())
+		})
+
+		It("Should detect absent keys", func() {
+			prov.conf.OverrideCertname = "na.mcollective"
+			Expect(prov.csrExists()).To(BeFalse())
+		})
+	})
+
+	Describe("privateKeyExists", func() {
+		It("Should detect existing keys", func() {
+			prov.conf.OverrideCertname = "rip.mcollective"
+			Expect(prov.privateKeyExists()).To(BeTrue())
+		})
+
+		It("Should detect absent keys", func() {
+			prov.conf.OverrideCertname = "na.mcollective"
+			Expect(prov.privateKeyExists()).To(BeFalse())
+		})
+	})
+
+	Describe("puppetCA", func() {
+		It("Should use supplied config", func() {
+			cfg.rawOpts["plugin.choria.puppetca_host"] = "set"
+			cfg.rawOpts["plugin.choria.puppetca_port"] = "set"
+
+			s := prov.puppetCA()
+			Expect(s.Host).To(Equal("puppet"))
+			Expect(s.Port).To(Equal(8140))
+			Expect(s.Scheme).To(Equal("https"))
+		})
+
+		It("Should return defaults when SRV fails", func() {
+			settings.EXPECT().QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"}).Return([]Server{}, errors.New("simulated error"))
+
+			s := prov.puppetCA()
+			Expect(s.Host).To(Equal("puppet"))
+			Expect(s.Port).To(Equal(8140))
+			Expect(s.Scheme).To(Equal("https"))
+		})
+
+		It("Should use SRV records", func() {
+			ans := []Server{
+				Server{"p1", 8080, "http"},
+				Server{"p2", 8080, "http"},
+			}
+
+			settings.EXPECT().QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"}).Return(ans, errors.New("simulated error"))
+
+			s := prov.puppetCA()
+			Expect(s.Host).To(Equal("p1"))
+			Expect(s.Port).To(Equal(8080))
+			Expect(s.Scheme).To(Equal("http"))
+
 		})
 	})
 })

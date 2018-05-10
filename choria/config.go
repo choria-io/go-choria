@@ -135,8 +135,18 @@ type Config struct {
 
 	// options that are not user configurable via config files but can be
 	// used by things like the emulator to set up a TLS free setup
-	DisableTLS       bool
+
+	// DisableSecurityProviderVerify skips calling security provider Validate()
+	DisableSecurityProviderVerify bool
+
+	// DisableTLS turns off TLS and skips calling security provider Validate()
+	DisableTLS bool
+
+	// DisableTLSVerify turns off CA validation etc in TLS connections
 	DisableTLSVerify bool
+
+	// OverrideCertname sets a arbitrary certname and short circuits calling Puppet etc
+	// this is mainly used by tests to adjust the certname on the fly
 	OverrideCertname string
 }
 

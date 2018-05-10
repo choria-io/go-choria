@@ -1,12 +1,16 @@
 package choria
 
 import (
+	"bytes"
+	context "context"
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/asn1"
 	"encoding/pem"
 	"errors"
 	"fmt"
@@ -17,7 +21,9 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"time"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
 )
@@ -33,6 +39,7 @@ type PuppetSecurity struct {
 type settingsProvider interface {
 	PuppetSetting(string) (string, error)
 	Getuid() int
+	QuerySrvRecords(records []string) ([]Server, error)
 }
 
 // NewPuppetSecurity creates a new instance of the Puppet Security provider
@@ -46,6 +53,72 @@ func NewPuppetSecurity(fw settingsProvider, conf *Config, log *logrus.Entry) (*P
 	return p, nil
 }
 
+// Enroll sends a CSR to the PuppetCA and wait for it to be signed
+func (s *PuppetSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(int)) error {
+	err := s.createSSLDirectories()
+	if err != nil {
+		return fmt.Errorf("could not initialize ssl directories: %s", err)
+	}
+
+	if !(s.privateKeyExists() && s.csrExists() && s.publicCertExists()) {
+		s.log.Debugf("Creating a new CSR and submitting it to the CA for %s", s.Identity())
+		err = s.fetchCA()
+		if err != nil {
+			return fmt.Errorf("could not fetch CA: %s", err)
+		}
+
+		key, err := s.writePrivateKey()
+		if err != nil {
+			return fmt.Errorf("could not write a new private key: %s", err)
+		}
+
+		err = s.writeCSR(key, s.Identity(), "choria.io")
+		if err != nil {
+			return fmt.Errorf("could not write CSR: %s", err)
+		}
+
+		err = s.submitCSR()
+		if err != nil {
+			return fmt.Errorf("could not submit csr: %s", err)
+		}
+	}
+
+	timeout := time.NewTimer(wait).C
+	ticks := time.NewTicker(10 * time.Second).C
+
+	complete := make(chan int, 2)
+
+	attempt := 1
+
+	fetcher := func() {
+		cb(attempt)
+		attempt++
+
+		err := s.fetchCert()
+		if err != nil {
+			s.log.Debugf("Error while fetching cert on attempt %d: %s", attempt-1, err)
+			return
+		}
+
+		complete <- 1
+	}
+
+	fetcher()
+
+	for {
+		select {
+		case <-ctx.Done():
+			return fmt.Errorf("interrupted")
+		case <-timeout:
+			return fmt.Errorf("timed out waiting for a certificate")
+		case <-complete:
+			return nil
+		case <-ticks:
+			fetcher()
+		}
+	}
+}
+
 // Validate determines if the node represents a valid SSL configuration
 func (s *PuppetSecurity) Validate() ([]string, bool) {
 	errors := []string{}
@@ -57,7 +130,7 @@ func (s *PuppetSecurity) Validate() ([]string, bool) {
 	}
 
 	if c, err := s.publicCertPath(); err == nil {
-		if _, err := os.Stat(c); err != nil {
+		if !s.publicCertExists() {
 			errors = append(errors, fmt.Sprintf("public certificate %s does not exist", c))
 		}
 	} else {
@@ -65,7 +138,7 @@ func (s *PuppetSecurity) Validate() ([]string, bool) {
 	}
 
 	if c, err := s.privateKeyPath(); err == nil {
-		if _, err := os.Stat(c); err != nil {
+		if !s.privateKeyExists() {
 			errors = append(errors, fmt.Sprintf("private key %s does not exist", c))
 		}
 	} else {
@@ -73,7 +146,7 @@ func (s *PuppetSecurity) Validate() ([]string, bool) {
 	}
 
 	if c, err := s.caPath(); err == nil {
-		if _, err := os.Stat(c); err != nil {
+		if !s.caExists() {
 			errors = append(errors, fmt.Sprintf("CA %s does not exist", c))
 		}
 	} else {
@@ -394,31 +467,37 @@ func (s *PuppetSecurity) TLSConfig() (*tls.Config, error) {
 	pri, _ := s.privateKeyPath()
 	ca, _ := s.caPath()
 
-	cert, err := tls.LoadX509KeyPair(pub, pri)
-	if err != nil {
-		err = fmt.Errorf("could not load certificate %s and key %s: %s", pub, pri, err)
-		return nil, err
-	}
-
-	cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
-	if err != nil {
-		err = fmt.Errorf("error parsing certificate: %v", err)
-		return nil, err
-	}
-
-	caCert, err := ioutil.ReadFile(ca)
-	if err != nil {
-		return nil, err
-	}
-
-	caCertPool := x509.NewCertPool()
-	caCertPool.AppendCertsFromPEM(caCert)
-
 	tlsc := &tls.Config{
-		Certificates: []tls.Certificate{cert},
-		ClientCAs:    caCertPool,
-		RootCAs:      caCertPool,
-		MinVersion:   tls.VersionTLS12,
+		MinVersion: tls.VersionTLS12,
+	}
+
+	if s.privateKeyExists() && s.publicCertExists() {
+		cert, err := tls.LoadX509KeyPair(pub, pri)
+		if err != nil {
+			err = fmt.Errorf("could not load certificate %s and key %s: %s", pub, pri, err)
+			return nil, err
+		}
+
+		cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
+		if err != nil {
+			err = fmt.Errorf("error parsing certificate: %v", err)
+			return nil, err
+		}
+
+		tlsc.Certificates = []tls.Certificate{cert}
+	}
+
+	if s.caExists() {
+		caCert, err := ioutil.ReadFile(ca)
+		if err != nil {
+			return nil, err
+		}
+
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+
+		tlsc.ClientCAs = caCertPool
+		tlsc.RootCAs = caCertPool
 	}
 
 	if s.conf.DisableTLSVerify {
@@ -506,13 +585,61 @@ func (s *PuppetSecurity) caPath() (string, error) {
 	return filepath.FromSlash((filepath.Join(ssl, "certs", "ca.pem"))), nil
 }
 
-func (s *PuppetSecurity) privateKeyPath() (string, error) {
+func (s *PuppetSecurity) privateKeyDir() (string, error) {
 	ssl, err := s.sslDir()
 	if err != nil {
 		return "", err
 	}
 
-	return filepath.FromSlash((filepath.Join(ssl, "private_keys", fmt.Sprintf("%s.pem", s.Identity())))), nil
+	return filepath.FromSlash((filepath.Join(ssl, "private_keys"))), nil
+}
+
+func (s *PuppetSecurity) privateKeyPath() (string, error) {
+	dir, err := s.privateKeyDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.FromSlash(filepath.Join(dir, fmt.Sprintf("%s.pem", s.Identity()))), nil
+}
+
+func (s *PuppetSecurity) createSSLDirectories() error {
+	ssl, err := s.sslDir()
+	if err != nil {
+		return err
+	}
+
+	err = os.MkdirAll(ssl, 0771)
+	if err != nil {
+		return err
+	}
+
+	for _, dir := range []string{"certificate_requests", "certs", "public_keys"} {
+		path := filepath.FromSlash(filepath.Join(ssl, dir))
+		err = os.MkdirAll(path, 0755)
+		if err != nil {
+			return err
+		}
+	}
+
+	for _, dir := range []string{"private_keys", "private"} {
+		path := filepath.FromSlash(filepath.Join(ssl, dir))
+		err = os.MkdirAll(path, 0750)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *PuppetSecurity) csrPath() (string, error) {
+	ssl, err := s.sslDir()
+	if err != nil {
+		return "", err
+	}
+
+	return filepath.FromSlash((filepath.Join(ssl, "certificate_requests", fmt.Sprintf("%s.pem", s.Identity())))), nil
 }
 
 func (s *PuppetSecurity) publicCertPath() (string, error) {
@@ -570,6 +697,314 @@ func (s *PuppetSecurity) shouldCacheClientCert(data []byte, name string) bool {
 
 	if !MatchAnyRegex([]byte(name), s.conf.Choria.CertnameWhitelist) {
 		s.log.Warnf("Received certificate '%s' does not match the allowed list '%s'", name, s.conf.Choria.CertnameWhitelist)
+		return false
+	}
+
+	return true
+}
+
+func (s *PuppetSecurity) writeCSR(key *rsa.PrivateKey, cn string, ou string) error {
+	if s.csrExists() {
+		return fmt.Errorf("a certificate request already exist for %s", s.Identity())
+	}
+
+	path, err := s.csrPath()
+	if err != nil {
+		return fmt.Errorf("could not determine csr path: %s", err)
+	}
+
+	subj := pkix.Name{
+		CommonName:         cn,
+		OrganizationalUnit: []string{ou},
+	}
+
+	asn1Subj, err := asn1.Marshal(subj.ToRDNSequence())
+	if err != nil {
+		return fmt.Errorf("could not create subject: %s", err)
+	}
+
+	template := x509.CertificateRequest{
+		RawSubject:         asn1Subj,
+		SignatureAlgorithm: x509.SHA256WithRSA,
+	}
+
+	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, key)
+	if err != nil {
+		return fmt.Errorf("could not create csr: %s", err)
+	}
+
+	csr, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0640)
+	if err != nil {
+		return fmt.Errorf("could not open csr %s for writing: %s", path, err)
+	}
+	defer csr.Close()
+
+	err = pem.Encode(csr, &pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrBytes})
+	if err != nil {
+		return fmt.Errorf("could not encode csr into %s: %s", path, err)
+	}
+
+	return nil
+}
+
+func (s *PuppetSecurity) puppetCA() Server {
+	server := Server{
+		Host:   s.conf.Choria.PuppetCAHost,
+		Port:   s.conf.Choria.PuppetCAPort,
+		Scheme: "https",
+	}
+
+	// if either was specifically set and not using defaults then use whats there
+	if s.conf.HasOption("plugin.choria.puppetca_host") || s.conf.HasOption("plugin.choria.puppetca_port") {
+		return server
+	}
+
+	servers, err := s.fw.QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"})
+	if err != nil {
+		s.log.Warnf("Could not resolve Puppet CA SRV records: %s", err)
+	}
+
+	if len(servers) == 0 {
+		return server
+	}
+
+	if servers[0].Scheme == "" {
+		servers[0].Scheme = "https"
+	}
+
+	return servers[0]
+}
+
+func (s *PuppetSecurity) fetchCert() error {
+	if s.publicCertExists() {
+		return nil
+	}
+
+	server := s.puppetCA()
+	url := fmt.Sprintf("%s://%s:%d/puppet-ca/v1/certificate/%s?environment=production", server.Scheme, server.Host, server.Port, s.Identity())
+
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return fmt.Errorf("could not create http request: %s", err)
+	}
+
+	req.Header.Set("Content-Type", "text/plain")
+	req.Header.Set("User-Agent", fmt.Sprintf("Choria version %s http://choria.io", build.Version))
+
+	client, err := s.HTTPClient(server.Scheme == "https")
+	if err != nil {
+		return fmt.Errorf("could not set up HTTP connection: %s", err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("could not fetch certificate: %s", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("could not fetch certificate: %d", resp.StatusCode)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("could not read response body: %s", err)
+	}
+
+	path, err := s.publicCertPath()
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(path, body, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *PuppetSecurity) fetchCA() error {
+	if s.caExists() {
+		return nil
+	}
+
+	server := s.puppetCA()
+	url := fmt.Sprintf("%s://%s:%d/puppet-ca/v1/certificate/ca?environment=production", server.Scheme, server.Host, server.Port)
+
+	resp, err := http.Get(url)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("could not read response body: %s", err)
+	}
+
+	if resp.StatusCode != 200 {
+		return errors.New(string(body))
+	}
+
+	capath, err := s.caPath()
+	if err != nil {
+		return err
+	}
+
+	err = ioutil.WriteFile(capath, body, 0644)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *PuppetSecurity) submitCSR() error {
+	csr, err := s.csrTXT()
+	if err != nil {
+		return fmt.Errorf("could not read CSR: %s", err)
+	}
+
+	server := s.puppetCA()
+
+	url := fmt.Sprintf("%s://%s:%d/puppet-ca/v1/certificate_request/%s?environment=production", server.Scheme, server.Host, server.Port, s.Identity())
+
+	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(csr))
+	if err != nil {
+		return fmt.Errorf("could not create http request: %s", err)
+	}
+
+	req.Header.Set("Content-Type", "text/plain")
+	req.Header.Set("User-Agent", fmt.Sprintf("Choria version %s http://choria.io", build.Version))
+
+	req.Host = server.Host
+
+	client, err := s.HTTPClient(server.Scheme == "https")
+	if err != nil {
+		return fmt.Errorf("could not set up HTTP connection: %s", err)
+	}
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return fmt.Errorf("could not send CSR: %s", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode == 200 {
+		return nil
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return fmt.Errorf("could not read response body: %s", err)
+	}
+
+	if len(body) > 0 {
+		return fmt.Errorf("could not send CSR to %s://%s:%d: %s: %s", server.Scheme, server.Host, server.Port, resp.Status, string(body))
+	} else {
+		return fmt.Errorf("could not send CSR to %s://%s:%d: %s", server.Scheme, server.Host, server.Port, resp.Status)
+	}
+}
+
+// HTTPClient creates a standard HTTP client with optional security, it will
+// be set to use the CA and client certs for auth. servername should match the
+// remote hosts name for SNI
+func (s *PuppetSecurity) HTTPClient(secure bool) (*http.Client, error) {
+	client := &http.Client{}
+
+	if secure {
+		tlsc, err := s.TLSConfig()
+		if err != nil {
+			return nil, fmt.Errorf("could not set up HTTP connection: %s", err)
+		}
+
+		client.Transport = &http.Transport{TLSClientConfig: tlsc}
+	}
+
+	return client, nil
+}
+
+func (s *PuppetSecurity) csrTXT() ([]byte, error) {
+	path, err := s.csrPath()
+	if err != nil {
+		return nil, err
+	}
+
+	return ioutil.ReadFile(path)
+}
+
+func (s *PuppetSecurity) writePrivateKey() (*rsa.PrivateKey, error) {
+	if s.privateKeyExists() {
+		return nil, fmt.Errorf("a private key already exist for %s", s.Identity())
+	}
+
+	path, err := s.privateKeyPath()
+	if err != nil {
+		return nil, fmt.Errorf("could not determine private key path: %s", err)
+	}
+
+	key, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		return nil, fmt.Errorf("could not generate rsa key: %s", err)
+	}
+
+	pkcs := x509.MarshalPKCS1PrivateKey(key)
+
+	err = ioutil.WriteFile(path, pkcs, 0640)
+	if err != nil {
+		return nil, fmt.Errorf("could not write private key: %s", err)
+	}
+
+	return key, nil
+}
+
+func (s *PuppetSecurity) csrExists() bool {
+	path, err := s.csrPath()
+	if err != nil {
+		return false
+	}
+
+	if _, err := os.Stat(path); err != nil {
+		return false
+	}
+
+	return true
+}
+
+func (s *PuppetSecurity) privateKeyExists() bool {
+	path, err := s.privateKeyPath()
+	if err != nil {
+		return false
+	}
+
+	if _, err := os.Stat(path); err != nil {
+		return false
+	}
+
+	return true
+}
+
+func (s *PuppetSecurity) publicCertExists() bool {
+	path, err := s.publicCertPath()
+	if err != nil {
+		return false
+	}
+
+	if _, err := os.Stat(path); err != nil {
+		return false
+	}
+
+	return true
+}
+
+func (s *PuppetSecurity) caExists() bool {
+	path, err := s.caPath()
+	if err != nil {
+		return false
+	}
+
+	if _, err := os.Stat(path); err != nil {
 		return false
 	}
 
