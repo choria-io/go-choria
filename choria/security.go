@@ -92,6 +92,8 @@ func NewSecurityProvider(provider string, fw *Framework, log *logrus.Entry) (Sec
 	switch provider {
 	case "puppet":
 		return NewPuppetSecurity(fw, fw.Config, log)
+	case "file":
+		return NewFileSecurity(fw, fw.Config, log)
 	}
 
 	return nil, fmt.Errorf("unknown security provider: %s", provider)

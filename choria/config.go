@@ -79,6 +79,14 @@ type ChoriaPluginConfig struct {
 	RubyAgentConfig string   `confkey:"plugin.choria.agent_provider.mcorpc.config"`
 	RubyLibdir      []string `confkey:"plugin.choria.agent_provider.mcorpc.libdir" type:"path_split"`
 
+	SecurityProvider string `confkey:"plugin.security.provider" default:"puppet"`
+
+	// file security
+	FileSecurityCertificate string `confkey:"plugin.security.file.certificate"`
+	FileSecurityKey         string `confkey:"plugin.security.file.key"`
+	FileSecurityCA          string `confkey:"plugin.security.file.ca"`
+	FileSecurityCache       string `confkey:"plugin.security.file.cache"`
+
 	// adapters
 	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split"`
 }
