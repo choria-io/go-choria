@@ -22,6 +22,45 @@ Running `choria broker run --config /path/to/broker.cfg` will start the various 
 
 When enabled a vast cache of Prometheus compatible metrics are exposed under `/choria/prometheus`, use `plugin.choria.stats_port` and `plugin.choria.stats_address` to enable
 
+## Configurable Security Subsystems
+
+While the ruby Choria code only integrates with Puppet CA this daemon has multiple security systems and will in time not be tied to Puppet but will support SECP and FIPS compliance and more. The ruby code will gain parity in time.
+
+### General Settings
+
+Generally each provider will have it's own settings, there are a few system wide ones:
+
+|Setting|Default|Description|
+|-------|-------|-----------|
+|`plugin.security.provider`|`puppet`|The security provider to use, can be `puppet` or `file`|
+|`plugin.choria.security.privileged_users`|`\\.privileged.mcollective$`|Comma sep list of valid certificates for privileged client users.|
+|`plugin.choria.security.certname_whitelist`|`\\.mcollective$`|Comma sep list of valid certificates for normal client users.|
+
+### Puppet Security Provider
+
+This is today the default provider and works exactly like always for Choria, it supports enrolling with the Puppet CA via `choria enroll` and does basically what `puppet agent --waitforcert 10` would do.
+
+By default it will ask Puppet for its configured SSL directory and in there expect certificates, ca, keys etc in all the places Puppet will put them.
+
+It has relatively few settings since it's designed to just work with Puppet:
+
+|Setting|Default|Description|
+|-------|-------|-----------|
+|`plugin.choria.ssldir`|unset|Override the path to the Puppet SSL directory|
+|`plugin.choria.puppetca_host`|`puppet`|By default it will use SRV records to locate the Puppet CA, when set this overrides|
+|`plugin.choria.puppetca_port`|`8140`|By default it will use SRV records to locate the Puppet CA, when set this overrides|
+
+### File Security Provider
+
+The file security provider is designed for people who wish to place their SSL related files on nodes using non Puppet means, it does not support enrolling but supports entirely arbitrary locations.
+
+|Setting|Default|Description|
+|-------|-------|-----------|
+|`plugin.security.file.certificate`|unset|Path to the public certificate for the instance|
+|`plugin.security.file.key`|unset|Path to the private key for the instance|
+|`plugin.security.file.ca`|unset|Path to the CA to use|
+|`plugin.security.file.cache`|unset|Path to the directory to cache client certificates|
+
 ## NATS based Middleware Broker
 
 This sets up a managed NATS instance, it's functionally equivalent to just running NATS standalone but it's easier to get going and with fewer settings to consider.
