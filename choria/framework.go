@@ -266,6 +266,10 @@ func (self *Framework) SetupLogging(debug bool) (err error) {
 		self.log.SetLevel(log.DebugLevel)
 	}
 
+	log.SetFormatter(self.log.Formatter)
+	log.SetLevel(self.log.Level)
+	log.SetOutput(self.log.Out)
+
 	return
 }
 
