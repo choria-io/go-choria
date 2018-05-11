@@ -54,7 +54,7 @@ func NewWithConfig(config *Config) (*Framework, error) {
 		return &c, fmt.Errorf("could not set up logging: %s", err)
 	}
 
-	c.security, err = NewSecurityProvider("puppet", &c, c.Logger("security"))
+	c.security, err = NewSecurityProvider(config.Choria.SecurityProvider, &c, c.Logger("security"))
 	if err != nil {
 		return &c, fmt.Errorf("could not set up security framework: %s", err)
 	}
