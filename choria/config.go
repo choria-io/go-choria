@@ -52,11 +52,6 @@ type ChoriaPluginConfig struct {
 	MiddlewareHosts          []string `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`
 	RandomizeMiddlewareHosts bool     `confkey:"plugin.choria.randomize_middleware_hosts" default:"false"`
 
-	// security plugin
-	PrivilegedUsers   []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split" default:"\\.privileged.mcollective$"`
-	CertnameWhitelist []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split" default:"\\.mcollective$"`
-	Serializer        string   `confkey:"plugin.choria.security.serializer" validate:"enum=json,yaml"`
-
 	// network broker
 	NetworkListenAddress string        `confkey:"plugin.choria.network.listen_address" default:"::"`
 	NetworkClientPort    int           `confkey:"plugin.choria.network.client_port" default:"4222"`
@@ -79,7 +74,11 @@ type ChoriaPluginConfig struct {
 	RubyAgentConfig string   `confkey:"plugin.choria.agent_provider.mcorpc.config"`
 	RubyLibdir      []string `confkey:"plugin.choria.agent_provider.mcorpc.libdir" type:"path_split"`
 
-	SecurityProvider string `confkey:"plugin.security.provider" default:"puppet"`
+	// security plugin
+	SecurityProvider  string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file"`
+	PrivilegedUsers   []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split" default:"\\.privileged.mcollective$"`
+	CertnameWhitelist []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split" default:"\\.mcollective$"`
+	Serializer        string   `confkey:"plugin.choria.security.serializer" validate:"enum=json,yaml"`
 
 	// file security
 	FileSecurityCertificate string `confkey:"plugin.security.file.certificate"`
