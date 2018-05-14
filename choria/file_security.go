@@ -289,30 +289,30 @@ func (s *FileSecurity) privilegedCerts() []string {
 
 // VerifyCertificate verifies a certificate is signed with the configured CA and if
 // name is not "" that it matches the name given
-func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) (error, bool) {
+func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) error {
 	ca := s.caPath()
 	capem, err := ioutil.ReadFile(ca)
 	if err != nil {
 		s.log.Errorf("Could not read CA '%s': %s", s.caPath, err)
-		return errors.New(err.Error()), false
+		return err
 	}
 
 	roots := x509.NewCertPool()
 	if !roots.AppendCertsFromPEM(capem) {
 		s.log.Warnf("Could not use CA '%s' as PEM data: %s", ca, err)
-		return errors.New(err.Error()), false
+		return err
 	}
 
 	block, _ := pem.Decode(certpem)
 	if block == nil {
 		s.log.Warnf("Could not decode certificate '%s' PEM data: %s", name, err)
-		return errors.New(err.Error()), false
+		return err
 	}
 
 	cert, err := x509.ParseCertificate(block.Bytes)
 	if err != nil {
 		s.log.Warnf("Could not parse certificate '%s': %s", name, err)
-		return errors.New(err.Error()), false
+		return err
 	}
 
 	opts := x509.VerifyOptions{
@@ -326,10 +326,10 @@ func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) (error, bo
 	_, err = cert.Verify(opts)
 	if err != nil {
 		s.log.Warnf("Certificate does not pass verification as '%s': %s", name, err)
-		return errors.New(err.Error()), false
+		return err
 	}
 
-	return nil, true
+	return nil
 }
 
 // HTTPClient creates a standard HTTP client with optional security, it will
@@ -470,19 +470,19 @@ func (s *FileSecurity) caPath() string {
 func (s *FileSecurity) privateKeyExists() bool {
 	_, err := os.Stat(s.privateKeyPath())
 
-	return err == nil
+	return !os.IsNotExist(err)
 }
 
 func (s *FileSecurity) publicCertExists() bool {
 	_, err := os.Stat(s.publicCertPath())
 
-	return err == nil
+	return !os.IsNotExist(err)
 }
 
 func (s *FileSecurity) caExists() bool {
 	_, err := os.Stat(s.caPath())
 
-	return err == nil
+	return !os.IsNotExist(err)
 }
 
 func (s *FileSecurity) privateKeyPEM() (pb *pem.Block, err error) {
@@ -506,7 +506,7 @@ func (s *FileSecurity) certCacheDir() string {
 }
 
 func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) bool {
-	if err, ok := s.VerifyCertificate(data, ""); !ok {
+	if err := s.VerifyCertificate(data, ""); err != nil {
 		s.log.Warnf("Received certificate '%s' certiicate did not pass verification: %s", name, err)
 		return false
 	}
@@ -516,7 +516,7 @@ func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) bool {
 		return true
 	}
 
-	if err, ok := s.VerifyCertificate(data, name); !ok {
+	if err := s.VerifyCertificate(data, name); err != nil {
 		s.log.Warnf("Received certificate '%s' did not pass verification: %s", name, err)
 		return false
 	}

@@ -85,6 +85,10 @@ func (s *PuppetSecurity) reinit() error {
 
 // Enroll sends a CSR to the PuppetCA and wait for it to be signed
 func (s *PuppetSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(int)) error {
+	if s.privateKeyExists() && s.caExists() && s.publicCertExists() {
+		return errors.New("already have all files needed for SSL operations")
+	}
+
 	err := s.createSSLDirectories()
 	if err != nil {
 		return fmt.Errorf("could not initialize ssl directories: %s", err)
@@ -247,7 +251,7 @@ func (s *PuppetSecurity) cachePath(identity string) (string, error) {
 
 // VerifyCertificate verifies a certificate is signed with the configured CA and if
 // name is not "" that it matches the name given
-func (s *PuppetSecurity) VerifyCertificate(certpem []byte, name string) (error, bool) {
+func (s *PuppetSecurity) VerifyCertificate(certpem []byte, name string) error {
 	return s.fsec.VerifyCertificate(certpem, name)
 }
 
@@ -541,7 +545,16 @@ func (s *PuppetSecurity) fetchCA() error {
 	server := s.puppetCA()
 	url := fmt.Sprintf("%s://%s:%d/puppet-ca/v1/certificate/ca?environment=production", server.Scheme, server.Host, server.Port)
 
-	resp, err := http.Get(url)
+	// specifically disabling verification as at this point we do not have
+	// the CA needed to do verification, there's no choice in the matter
+	// really and this is just how its designed to work
+	tr := &http.Transport{
+		TLSClientConfig: &tls.Config{InsecureSkipVerify: true},
+	}
+
+	client := &http.Client{Transport: tr}
+
+	resp, err := client.Get(url)
 	if err != nil {
 		return err
 	}
@@ -647,9 +660,14 @@ func (s *PuppetSecurity) writePrivateKey() (*rsa.PrivateKey, error) {
 		return nil, fmt.Errorf("could not generate rsa key: %s", err)
 	}
 
-	pkcs := x509.MarshalPKCS1PrivateKey(key)
+	pemdata := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "RSA PRIVATE KEY",
+			Bytes: x509.MarshalPKCS1PrivateKey(key),
+		},
+	)
 
-	err = ioutil.WriteFile(path, pkcs, 0640)
+	err = ioutil.WriteFile(path, pemdata, 0640)
 	if err != nil {
 		return nil, fmt.Errorf("could not write private key: %s", err)
 	}

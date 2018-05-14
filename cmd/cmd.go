@@ -63,13 +63,17 @@ func ParseCLI() (err error) {
 		configFile = choria.UserConfig()
 	}
 
-	if c, err = choria.New(configFile); err != nil {
-		return fmt.Errorf("Could not initialize Choria: %s", err)
+	config, err = choria.NewConfig(configFile)
+	if err != nil {
+		return fmt.Errorf("Could not parse configuration: %s", err)
 	}
 
-	config = c.Config
-
-	c.SetupLogging(debug)
+	for _, cmd := range cli.commands {
+		err = cmd.Configure()
+		if err != nil {
+			return fmt.Errorf("%s failed to configure: %s", cmd.FullCommand(), err)
+		}
+	}
 
 	return
 }
@@ -82,6 +86,15 @@ func Run() (err error) {
 	defer cancel()
 
 	go interruptWatcher()
+
+	// we do this here so that the command setup has a chance to fiddle the config for
+	// things like disabling full verification of the security system during enrollment
+	c, err = choria.NewWithConfig(config)
+	if err != nil {
+		return fmt.Errorf("Could not initialize Choria: %s", err)
+	}
+
+	c.SetupLogging(debug)
 
 	for _, cmd := range cli.commands {
 		if cmd.FullCommand() == cli.command {

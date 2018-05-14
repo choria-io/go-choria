@@ -20,6 +20,10 @@ func (b *buildinfoCommand) Setup() (err error) {
 	return
 }
 
+func (b *buildinfoCommand) Configure() (err error) {
+	return nil
+}
+
 func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 

@@ -36,6 +36,12 @@ func (b *serverCommand) Run(wg *sync.WaitGroup) (err error) {
 	return
 }
 
+func (e *serverCommand) Configure() error {
+	config.DisableSecurityProviderVerify = true
+
+	return nil
+}
+
 // server run
 func (r *serverRunCommand) Setup() (err error) {
 	if broker, ok := cmdWithFullCommand("server"); ok {
@@ -46,6 +52,12 @@ func (r *serverRunCommand) Setup() (err error) {
 	}
 
 	return
+}
+
+func (e *serverRunCommand) Configure() error {
+	config.DisableSecurityProviderVerify = true
+
+	return nil
 }
 
 func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {

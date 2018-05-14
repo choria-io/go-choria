@@ -279,21 +279,19 @@ var _ = Describe("FileSSL", func() {
 		It("Should fail for foreign certs", func() {
 			pem, err = ioutil.ReadFile(filepath.Join("testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
-			err, verified := prov.VerifyCertificate(pem, "rip.mcollective")
-			Expect(verified).To(BeFalse())
+			err := prov.VerifyCertificate(pem, "rip.mcollective")
 			Expect(err).To(MatchError("x509: certificate signed by unknown authority"))
 
 		})
 
 		It("Should fail for invalid names", func() {
-			err, verified := prov.VerifyCertificate(pem, "bob")
+			err := prov.VerifyCertificate(pem, "bob")
 			Expect(err).To(MatchError("x509: certificate is valid for rip.mcollective, not bob"))
-			Expect(verified).To(BeFalse())
 		})
 
 		It("Should accept valid certs", func() {
-			_, verified := prov.VerifyCertificate(pem, "rip.mcollective")
-			Expect(verified).To(BeTrue())
+			err := prov.VerifyCertificate(pem, "rip.mcollective")
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 

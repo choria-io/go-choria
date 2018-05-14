@@ -21,14 +21,21 @@ func (e *enrollCommand) Setup() (err error) {
 	return
 }
 
+func (e *enrollCommand) Configure() error {
+	config.DisableSecurityProviderVerify = true
+
+	if e.cn != "" {
+		config.OverrideCertname = e.cn
+	}
+
+	return nil
+}
+
 func (e *enrollCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	if e.cn != "" {
-		c.Config.OverrideCertname = e.cn
-	}
+	fmt.Printf("Enrolling with the Security System using certname %s\n", c.Certname())
 
-	fmt.Println("Enrolling with the Security System")
 	err = c.Enroll(ctx, 250*time.Second, func(try int) { fmt.Printf("Attempting to download certificate for %s, try %d.\n", c.Certname(), try) })
 	if err != nil {
 		kingpin.Errorf("Could not enroll: %s", err)
