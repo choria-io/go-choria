@@ -1,5 +1,10 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/05/16|      |Release 0.3.0                                                                                            |
+|2018/05/08|287   |Create the concept of a Security Provider and create providers for Puppet and File, add `choria enroll`  |
+|2018/05/03|284   |On systemd based distributions ensure that upgrading choria with Puppet is more reliable                 |
+|2018/04/25|271   |Log rotation for `choria-*.log` which covers audit, ruby and more                                        |
+|2018/04/25|267   |Ensure that the ruby shim based agents have access to the correct request time                           |
 |2018/04/24|      |Release 0.2.0                                                                                            |
 |2018/04/23|243   |Create a compatability framework for MCollective Agents written in Ruby                                  |
 |2018/04/23|252   |Avoid logrotate errors when the package was installed but choria never ran                               |
