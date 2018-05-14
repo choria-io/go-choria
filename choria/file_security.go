@@ -18,6 +18,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/sirupsen/logrus"
@@ -28,6 +29,8 @@ type FileSecurity struct {
 	fw   settingsProvider
 	conf *Config
 	log  *logrus.Entry
+
+	mu *sync.Mutex
 }
 
 // NewFileSecurity creates a new instance of the Puppet Security provider
@@ -36,6 +39,7 @@ func NewFileSecurity(fw settingsProvider, conf *Config, log *logrus.Entry) (*Fil
 		fw:   fw,
 		conf: conf,
 		log:  log.WithFields(logrus.Fields{"ssl": "file"}),
+		mu:   &sync.Mutex{},
 	}
 
 	return p, nil
@@ -121,10 +125,7 @@ func (s *FileSecurity) VerifyByteSignature(dat []byte, sig []byte, identity stri
 		pubkeyPath, err = s.cachePath(identity)
 	}
 
-	if err != nil {
-		s.log.Errorf("Could not verify signature: %s", err)
-		return false
-	}
+	s.log.Debugf("Attempting to verify signature for %s using %s", identity, pubkeyPath)
 
 	pkpem, err := s.decodePEM(pubkeyPath)
 	if err != nil {
@@ -147,6 +148,7 @@ func (s *FileSecurity) VerifyByteSignature(dat []byte, sig []byte, identity stri
 		return false
 	}
 
+	s.log.Debugf("Verified signature from %s using %s", identity, pubkeyPath)
 	return true
 }
 
@@ -206,6 +208,9 @@ func (s *FileSecurity) CallerIdentity(caller string) (string, error) {
 
 // CachePublicData caches the public key for a identity
 func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	err := os.MkdirAll(s.certCacheDir(), os.FileMode(int(0755)))
 	if err != nil {
 		return fmt.Errorf("could not create Client Certificate Cache Directory: %s", err)
@@ -214,6 +219,12 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 	certfile, err := s.cachePath(identity)
 	if err != nil {
 		return err
+	}
+
+	_, err = os.Stat(certfile)
+	if err == nil {
+		s.log.Warnf("Already have a certificate in %s, refusing to overwrite with a new one", certfile)
+		return nil
 	}
 
 	if !s.shouldCacheClientCert(data, identity) {
@@ -225,11 +236,16 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 		return fmt.Errorf("could not cache client public certificate: %s", err.Error())
 	}
 
+	s.log.Infof("Cached certificate %s for %s", certfile, identity)
+
 	return nil
 }
 
 // CachedPublicData retrieves the previously cached public data for a given identity
 func (s *FileSecurity) CachedPublicData(identity string) ([]byte, error) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
 	certfile, err := s.cachePath(identity)
 	if err != nil {
 		return []byte{}, fmt.Errorf("could not cache public data: %s", err)
