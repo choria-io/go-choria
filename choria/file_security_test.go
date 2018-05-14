@@ -366,6 +366,7 @@ var _ = Describe("FileSSL", func() {
 
 			cpath, err := prov.cachePath("foreign")
 			Expect(err).ToNot(HaveOccurred())
+			defer os.Remove(cpath)
 
 			_, err = os.Stat(cpath)
 			Expect(err).To(HaveOccurred())
@@ -383,9 +384,37 @@ var _ = Describe("FileSSL", func() {
 
 			cpath, err := prov.cachePath("rip.mcollective")
 			Expect(err).ToNot(HaveOccurred())
+			defer os.Remove(cpath)
 
 			_, err = os.Stat(cpath)
 			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should not overwrite existing files", func() {
+			cfg.Choria.FileSecurityCache = os.TempDir()
+			pub := prov.publicCertPath()
+
+			pd, err := ioutil.ReadFile(pub)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = prov.CachePublicData(pd, "rip.mcollective")
+			Expect(err).ToNot(HaveOccurred())
+
+			cpath, err := prov.cachePath("rip.mcollective")
+			Expect(err).ToNot(HaveOccurred())
+			defer os.Remove(cpath)
+
+			// deliberatly change the file so that we can figure out if its being changed
+			// I'd check time stamps but they are per second so not much use
+			err = ioutil.WriteFile(cpath, []byte("too many secrets"), os.FileMode(int(0644)))
+			Expect(err).ToNot(HaveOccurred())
+
+			err = prov.CachePublicData(pd, "rip.mcollective")
+			Expect(err).ToNot(HaveOccurred())
+
+			stat, err := os.Stat(cpath)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(stat.Size()).To(Equal(int64(16)))
 		})
 	})
 
