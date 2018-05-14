@@ -64,7 +64,7 @@ type SecurityProvider interface {
 	HTTPClient(secure bool) (*http.Client, error)
 
 	// VerifyCertificate validates that a certificate is signed by a known CA
-	VerifyCertificate(certpem []byte, identity string) (error, bool)
+	VerifyCertificate(certpem []byte, identity string) error
 
 	// PublicCertPem retrieves pem data for the public certificate of the current identity
 	PublicCertPem() (*pem.Block, error)

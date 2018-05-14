@@ -18,6 +18,7 @@ type runableCmd interface {
 	Run(wg *sync.WaitGroup) error
 	FullCommand() string
 	Cmd() *kingpin.CmdClause
+	Configure() error
 }
 
 func (c *command) FullCommand() string {

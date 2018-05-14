@@ -41,7 +41,7 @@ imports:
   - proto
   - protoc-gen-gogo/descriptor
 - name: github.com/golang/mock
-  version: 22bbf0ddf08105dfa364d0a2fa619dfa71014af5
+  version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c
   subpackages:
   - gomock
   - mockgen

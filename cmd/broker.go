@@ -45,6 +45,10 @@ func (b *brokerCommand) Run(wg *sync.WaitGroup) (err error) {
 	return
 }
 
+func (b *brokerCommand) Configure() error {
+	return nil
+}
+
 // broker run
 func (r *brokerRunCommand) Setup() (err error) {
 	if broker, ok := cmdWithFullCommand("broker"); ok {
@@ -55,6 +59,10 @@ func (r *brokerRunCommand) Setup() (err error) {
 	}
 
 	return
+}
+
+func (b *brokerRunCommand) Configure() error {
+	return nil
 }
 
 func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
