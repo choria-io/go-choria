@@ -23,12 +23,15 @@ type FileContent struct {
 	dataFile string
 	c        *choria.Config
 	log      *logrus.Entry
+
+	prevMtime int64
 }
 
 // FileContentMessage contains message being published
 type FileContentMessage struct {
 	Mtime    int64   `json:"mtime"`
 	File     string  `json:"file"`
+	Updated  bool    `json:"updated"`
 	Protocol string  `json:"protocol"`
 	Content  *[]byte `json:"content,omitempty"`
 	ZContent *[]byte `json:"zcontent,omitempty"`
@@ -104,6 +107,18 @@ func (fc *FileContent) publish(output chan *data.RegistrationItem) error {
 		Protocol: "choria:registration:filecontent:1",
 		File:     fc.dataFile,
 		Mtime:    fstat.ModTime().Unix(),
+	}
+
+	// the first time it starts we just have no idea, so we set it to whatever
+	// it is now which would also avoid setting updated=true, we do not want a
+	// large fleet restart to mass trigger a needless full site replication
+	if fc.prevMtime == 0 {
+		fc.prevMtime = msg.Mtime
+	}
+
+	if msg.Mtime > fc.prevMtime {
+		msg.Updated = true
+		fc.prevMtime = msg.Mtime
 	}
 
 	if fc.c.Choria.FileContentCompression {
