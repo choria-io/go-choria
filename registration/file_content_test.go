@@ -7,6 +7,8 @@ import (
 	"testing"
 	"time"
 
+	"github.com/tidwall/gjson"
+
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server/data"
 	. "github.com/onsi/ginkgo"
@@ -68,7 +70,7 @@ var _ = Describe("RegistrationData", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		msg := <-msgs
-		Expect(string(*msg.Data)).To(Equal(`{"mtime":1511865541,"file":"testdata/sample.json","protocol":"choria:registration:filecontent:1","zcontent":"H4sIAAAAAAAA/6pWSsvMSVWyUigpKk2tBQAAAP//AQAA//9QwpuPDgAAAA=="}`))
+		Expect(string(*msg.Data)).To(Equal(`{"mtime":1511865541,"file":"testdata/sample.json","updated":false,"protocol":"choria:registration:filecontent:1","zcontent":"H4sIAAAAAAAA/6pWSsvMSVWyUigpKk2tBQAAAP//AQAA//9QwpuPDgAAAA=="}`))
 		Expect(msg.TargetAgent).To(Equal("registration"))
 	})
 
@@ -82,7 +84,7 @@ var _ = Describe("RegistrationData", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		msg := <-msgs
-		Expect(string(*msg.Data)).To(Equal(`{"mtime":1511865541,"file":"testdata/sample.json","protocol":"choria:registration:filecontent:1","zcontent":"H4sIAAAAAAAA/6pWSsvMSVWyUigpKk2tBQAAAP//AQAA//9QwpuPDgAAAA=="}`))
+		Expect(string(*msg.Data)).To(Equal(`{"mtime":1511865541,"file":"testdata/sample.json","updated":false,"protocol":"choria:registration:filecontent:1","zcontent":"H4sIAAAAAAAA/6pWSsvMSVWyUigpKk2tBQAAAP//AQAA//9QwpuPDgAAAA=="}`))
 		Expect(msg.TargetAgent).To(Equal(""))
 		Expect(msg.Destination).To(Equal("my.cmdb"))
 	})
@@ -96,7 +98,29 @@ var _ = Describe("RegistrationData", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		msg := <-msgs
-		Expect(string(*msg.Data)).To(Equal(`{"mtime":1511865541,"file":"testdata/sample.json","protocol":"choria:registration:filecontent:1","content":"eyJmaWxlIjogdHJ1ZX0="}`))
+		Expect(string(*msg.Data)).To(Equal(`{"mtime":1511865541,"file":"testdata/sample.json","updated":false,"protocol":"choria:registration:filecontent:1","content":"eyJmaWxlIjogdHJ1ZX0="}`))
 		Expect(msg.TargetAgent).To(Equal("registration"))
+	})
+
+	It("Should detect file updates", func() {
+		c.Choria.FileContentRegistrationData = "testdata/sample.json"
+		c.Choria.FileContentCompression = false
+		reg.Init(c, log.WithFields(log.Fields{}))
+
+		err = reg.publish(msgs)
+		Expect(err).ToNot(HaveOccurred())
+
+		msg := <-msgs
+		Expect(gjson.GetBytes(*msg.Data, "updated").Bool()).To(BeFalse())
+
+		err = os.Chtimes("testdata/sample.json", time.Now(), time.Now())
+		Expect(err).ToNot(HaveOccurred())
+
+		err = reg.publish(msgs)
+		Expect(err).ToNot(HaveOccurred())
+
+		msg = <-msgs
+
+		Expect(gjson.GetBytes(*msg.Data, "updated").Bool()).To(BeTrue())
 	})
 })
