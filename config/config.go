@@ -1,4 +1,4 @@
-package choria
+package config
 
 import (
 	"bufio"
@@ -15,6 +15,7 @@ import (
 	"github.com/choria-io/go-confkey"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/puppet"
 	"github.com/choria-io/go-choria/srvcache"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
@@ -206,7 +207,7 @@ func normalize(c *Config) error {
 	}
 
 	if c.Identity == "" {
-		fqdn, _ := FacterFQDN()
+		fqdn, _ := puppet.FacterFQDN()
 		if fqdn != "" {
 			c.Identity = fqdn
 		} else {

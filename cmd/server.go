@@ -37,7 +37,7 @@ func (b *serverCommand) Run(wg *sync.WaitGroup) (err error) {
 }
 
 func (e *serverCommand) Configure() error {
-	config.DisableSecurityProviderVerify = true
+	cfg.DisableSecurityProviderVerify = true
 
 	return nil
 }
@@ -55,7 +55,7 @@ func (r *serverRunCommand) Setup() (err error) {
 }
 
 func (e *serverRunCommand) Configure() error {
-	config.DisableSecurityProviderVerify = true
+	cfg.DisableSecurityProviderVerify = true
 
 	return nil
 }

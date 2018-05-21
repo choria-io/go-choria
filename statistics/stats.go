@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/nats-io/gnatsd/server/pse"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
@@ -17,7 +17,7 @@ import (
 
 var running = false
 var mu = &sync.Mutex{}
-var cfg *choria.Config
+var cfg *config.Config
 
 type cinfo struct {
 	Build      buildinfo `json:"build"`
@@ -44,7 +44,7 @@ type sysinfo struct {
 }
 
 // Start starts serving exp stats and metrics on the configured statistics port
-func Start(config *choria.Config, handler http.Handler) {
+func Start(config *config.Config, handler http.Handler) {
 	mu.Lock()
 	defer mu.Unlock()
 

@@ -22,10 +22,10 @@ func (e *enrollCommand) Setup() (err error) {
 }
 
 func (e *enrollCommand) Configure() error {
-	config.DisableSecurityProviderVerify = true
+	cfg.DisableSecurityProviderVerify = true
 
 	if e.cn != "" {
-		config.OverrideCertname = e.cn
+		cfg.OverrideCertname = e.cn
 	}
 
 	return nil

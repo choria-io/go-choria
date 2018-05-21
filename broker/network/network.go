@@ -10,6 +10,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	log "github.com/sirupsen/logrus"
 
 	gnatsd "github.com/nats-io/gnatsd/server"
@@ -20,7 +21,7 @@ type Server struct {
 	gnatsd      *gnatsd.Server
 	opts        *gnatsd.Options
 	choria      *choria.Framework
-	config      *choria.Config
+	config      *config.Config
 	vzTransport *http.Transport
 
 	started bool

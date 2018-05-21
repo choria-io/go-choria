@@ -10,6 +10,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/golang/mock/gomock"
@@ -30,7 +31,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 	var (
 		mockctl   *gomock.Controller
 		requests  chan *choria.ConnectorMessage
-		cfg       *choria.Config
+		cfg       *config.Config
 		fw        *choria.Framework
 		am        *agents.Manager
 		err       error
@@ -47,7 +48,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 		requests = make(chan *choria.ConnectorMessage)
 		reply = &mcorpc.Reply{}
 
-		cfg, err = choria.NewDefaultConfig()
+		cfg, err = config.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
 		cfg.DisableTLS = true
 
@@ -146,7 +147,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 			reprovisionAction(ctx, &mcorpc.Request{}, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 
-			cfg, err := choria.NewConfig(targetcfg)
+			cfg, err := config.NewConfig(targetcfg)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.Choria.Provision).To(BeTrue())
 			Expect(cfg.Choria.FileContentRegistrationData).To(BeEmpty())
@@ -165,7 +166,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 			reprovisionAction(ctx, &mcorpc.Request{}, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 
-			cfg, err := choria.NewConfig(targetcfg)
+			cfg, err := config.NewConfig(targetcfg)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.Choria.Provision).To(BeTrue())
 			Expect(cfg.LogLevel).To(Equal("debug"))
@@ -223,7 +224,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 			Expect(reply.Data.(Reply).Message).To(Equal(fmt.Sprintf("Wrote 3 lines to %s", targetcfg)))
 			Expect(targetcfg).To(BeAnExistingFile())
 
-			cfg, err := choria.NewConfig(targetcfg)
+			cfg, err := config.NewConfig(targetcfg)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.Choria.SRVDomain).To(Equal("another.com"))
 		})

@@ -11,7 +11,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server/data"
 
 	"github.com/sirupsen/logrus"
@@ -21,7 +21,7 @@ import (
 // it reads a file and publishing it to the collective regularly
 type FileContent struct {
 	dataFile string
-	c        *choria.Config
+	c        *config.Config
 	log      *logrus.Entry
 
 	prevMtime int64
@@ -38,7 +38,7 @@ type FileContentMessage struct {
 }
 
 // NewFileContent creates a new fully managed registration plugin instance
-func NewFileContent(c *choria.Config, logger *logrus.Entry) (*FileContent, error) {
+func NewFileContent(c *config.Config, logger *logrus.Entry) (*FileContent, error) {
 	if c.Choria.FileContentRegistrationData == "" {
 		return nil, fmt.Errorf("File Content Registration is enabled but no source data is configured, please set plugin.choria.registration.file_content.data")
 	}
@@ -50,7 +50,7 @@ func NewFileContent(c *choria.Config, logger *logrus.Entry) (*FileContent, error
 }
 
 // Init sets up the plugin
-func (fc *FileContent) Init(c *choria.Config, logger *logrus.Entry) {
+func (fc *FileContent) Init(c *config.Config, logger *logrus.Entry) {
 	fc.c = c
 	fc.dataFile = c.Choria.FileContentRegistrationData
 	fc.log = logger.WithFields(logrus.Fields{"registration": "file_content", "source": fc.dataFile})

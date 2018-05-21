@@ -10,6 +10,7 @@ import (
 	time "time"
 
 	"github.com/choria-io/go-choria/choria/connectortest"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-protocol/protocol"
 	gomock "github.com/golang/mock/gomock"
 
@@ -38,7 +39,7 @@ var _ = Describe("Server/Agents", func() {
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 
-		cfg, err := choria.NewDefaultConfig()
+		cfg, err := config.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
 
 		cfg.DisableTLS = true

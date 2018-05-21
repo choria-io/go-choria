@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/srvcache"
 )
 
 func (srv *Instance) initialConnect(ctx context.Context) error {
@@ -27,8 +27,8 @@ func (srv *Instance) initialConnect(ctx context.Context) error {
 	return nil
 }
 
-func (srv *Instance) brokerUrls() ([]choria.Server, error) {
-	servers := []choria.Server{}
+func (srv *Instance) brokerUrls() ([]srvcache.Server, error) {
+	servers := []srvcache.Server{}
 	var err error
 
 	if srv.fw.ProvisionMode() {

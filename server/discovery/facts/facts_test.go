@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/sirupsen/logrus"
 
 	. "github.com/onsi/ginkgo"
@@ -28,7 +29,7 @@ var _ = Describe("Server/Discovery/Facts", func() {
 		}
 
 		l = logrus.WithFields(logrus.Fields{"test": true})
-		cfg, err := choria.NewDefaultConfig()
+		cfg, err := config.NewDefaultConfig()
 		cfg.DisableTLS = true
 
 		fw, err = choria.NewWithConfig(cfg)

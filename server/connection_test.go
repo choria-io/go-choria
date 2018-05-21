@@ -3,6 +3,8 @@ package server
 import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/srvcache"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -11,14 +13,14 @@ import (
 var _ = Describe("Server/Connection", func() {
 	var _ = Describe("brokerUrls", func() {
 		var (
-			cfg *choria.Config
+			cfg *config.Config
 			fw  *choria.Framework
 			srv *Instance
 			err error
 		)
 
 		BeforeEach(func() {
-			cfg, err = choria.NewDefaultConfig()
+			cfg, err = config.NewDefaultConfig()
 			Expect(err).ToNot(HaveOccurred())
 
 			cfg.DisableTLS = true
@@ -40,9 +42,9 @@ var _ = Describe("Server/Connection", func() {
 			servers, err := srv.brokerUrls()
 			Expect(err).ToNot(HaveOccurred())
 
-			expected := []choria.Server{
-				choria.Server{Host: "nats1", Port: 4222, Scheme: "nats"},
-				choria.Server{Host: "nats2", Port: 4222, Scheme: "nats"},
+			expected := []srvcache.Server{
+				srvcache.Server{Host: "nats1", Port: 4222, Scheme: "nats"},
+				srvcache.Server{Host: "nats2", Port: 4222, Scheme: "nats"},
 			}
 
 			Expect(servers).To(Equal(expected))
@@ -55,9 +57,9 @@ var _ = Describe("Server/Connection", func() {
 			servers, err := srv.brokerUrls()
 			Expect(err).ToNot(HaveOccurred())
 
-			expected := []choria.Server{
-				choria.Server{Host: "d1", Port: 4222, Scheme: "nats"},
-				choria.Server{Host: "d2", Port: 4222, Scheme: "nats"},
+			expected := []srvcache.Server{
+				srvcache.Server{Host: "d1", Port: 4222, Scheme: "nats"},
+				srvcache.Server{Host: "d2", Port: 4222, Scheme: "nats"},
 			}
 
 			Expect(servers).To(Equal(expected))
@@ -70,9 +72,9 @@ var _ = Describe("Server/Connection", func() {
 			servers, err := srv.brokerUrls()
 			Expect(err).ToNot(HaveOccurred())
 
-			expected := []choria.Server{
-				choria.Server{Host: "d1", Port: 4222, Scheme: "nats"},
-				choria.Server{Host: "d2", Port: 4222, Scheme: "nats"},
+			expected := []srvcache.Server{
+				srvcache.Server{Host: "d1", Port: 4222, Scheme: "nats"},
+				srvcache.Server{Host: "d2", Port: 4222, Scheme: "nats"},
 			}
 
 			Expect(servers).To(Equal(expected))
@@ -82,9 +84,9 @@ var _ = Describe("Server/Connection", func() {
 			servers, err := srv.brokerUrls()
 			Expect(err).ToNot(HaveOccurred())
 
-			expected := []choria.Server{
-				choria.Server{Host: "d1", Port: 4222, Scheme: "nats"},
-				choria.Server{Host: "d2", Port: 4222, Scheme: "nats"},
+			expected := []srvcache.Server{
+				srvcache.Server{Host: "d1", Port: 4222, Scheme: "nats"},
+				srvcache.Server{Host: "d2", Port: 4222, Scheme: "nats"},
 			}
 
 			Expect(servers).To(Equal(expected))

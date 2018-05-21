@@ -11,6 +11,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/mcorpc"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
@@ -226,7 +227,7 @@ func incompatibleAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.
 	reply.Statusmsg = fmt.Sprintf("The %s action has not been implemented in the Go Choria server as it cannot be done in a compatible manner", req.Action)
 }
 
-func getFactValue(fact string, c *choria.Config) (interface{}, error) {
+func getFactValue(fact string, c *config.Config) (interface{}, error) {
 	_, value, err := facts.GetFact(fact, c.FactSourceFile)
 	if err != nil {
 		return nil, err

@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-protocol/protocol"
 	log "github.com/sirupsen/logrus"
 )
@@ -47,7 +48,7 @@ type pooledWorker struct {
 
 	choria     *choria.Framework
 	connection choria.ConnectionManager
-	servers    func() ([]choria.Server, error)
+	servers    func() ([]srvcache.Server, error)
 
 	worker func(ctx context.Context, self *pooledWorker, instance int, logger *log.Entry)
 }
@@ -82,11 +83,11 @@ func (self *pooledWorker) Run(ctx context.Context) error {
 	if self.mode != Unconnected {
 		switch self.mode {
 		case Federation:
-			self.servers = func() ([]choria.Server, error) {
+			self.servers = func() ([]srvcache.Server, error) {
 				return self.choria.FederationMiddlewareServers()
 			}
 		case Collective:
-			self.servers = func() ([]choria.Server, error) {
+			self.servers = func() ([]srvcache.Server, error) {
 				return self.choria.MiddlewareServers()
 			}
 		default:

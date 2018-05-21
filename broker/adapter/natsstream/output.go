@@ -11,6 +11,7 @@ import (
 
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/srvcache"
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/prometheus/client_golang/prometheus"
 	uuid "github.com/satori/go.uuid"
@@ -18,7 +19,7 @@ import (
 )
 
 type stream struct {
-	servers   func() ([]choria.Server, error)
+	servers   func() ([]srvcache.Server, error)
 	clusterID string
 	clientID  string
 	topic     string
@@ -40,22 +41,22 @@ type msg struct {
 func newStream(name string, work chan adaptable, logger *log.Entry) ([]*stream, error) {
 	prefix := fmt.Sprintf("plugin.choria.adapter.%s.stream.", name)
 
-	instances, err := strconv.Atoi(config.Option(prefix+"workers", "10"))
+	instances, err := strconv.Atoi(cfg.Option(prefix+"workers", "10"))
 	if err != nil {
 		return nil, fmt.Errorf("%s should be a integer number", prefix+"workers")
 	}
 
-	servers := config.Option(prefix+"servers", "")
+	servers := cfg.Option(prefix+"servers", "")
 	if servers == "" {
 		return nil, fmt.Errorf("No Stream servers configured, please set %s", prefix+"servers")
 	}
 
-	topic := config.Option(prefix+"topic", "")
+	topic := cfg.Option(prefix+"topic", "")
 	if topic == "" {
 		topic = name
 	}
 
-	clusterID := config.Option(prefix+"clusterid", "")
+	clusterID := cfg.Option(prefix+"clusterid", "")
 	if clusterID == "" {
 		return nil, fmt.Errorf("No ClusterID configured, please set %s", prefix+"clusterid'")
 	}
@@ -83,9 +84,9 @@ func newStream(name string, work chan adaptable, logger *log.Entry) ([]*stream, 
 	return workers, nil
 }
 
-func (sc *stream) resolver(parts []string) func() ([]choria.Server, error) {
+func (sc *stream) resolver(parts []string) func() ([]srvcache.Server, error) {
 	servers, err := choria.StringHostsToServers(parts, "nats")
-	return func() ([]choria.Server, error) {
+	return func() ([]srvcache.Server, error) {
 		return servers, err
 	}
 }
@@ -132,10 +133,10 @@ func (sc *stream) disconnect() {
 func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	bytes := stats.BytesCtr.WithLabelValues(sc.name, "output", config.Identity)
-	ectr := stats.ErrorCtr.WithLabelValues(sc.name, "output", config.Identity)
-	ctr := stats.ReceivedMsgsCtr.WithLabelValues(sc.name, "output", config.Identity)
-	timer := stats.ProcessTime.WithLabelValues(sc.name, "output", config.Identity)
+	bytes := stats.BytesCtr.WithLabelValues(sc.name, "output", cfg.Identity)
+	ectr := stats.ErrorCtr.WithLabelValues(sc.name, "output", cfg.Identity)
+	ctr := stats.ReceivedMsgsCtr.WithLabelValues(sc.name, "output", cfg.Identity)
+	timer := stats.ProcessTime.WithLabelValues(sc.name, "output", cfg.Identity)
 
 	transformerf := func(r adaptable) {
 		obs := prometheus.NewTimer(timer)

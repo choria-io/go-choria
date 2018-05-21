@@ -5,6 +5,7 @@ import (
 
 	framework "github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/choria/connectortest"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server/data"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -22,13 +23,13 @@ var _ = Describe("Server/Registration", func() {
 			conn    *connectortest.PublishableConnector
 			err     error
 			choria  *framework.Framework
-			cfg     *framework.Config
+			cfg     *config.Config
 			log     *logrus.Entry
 			manager *Manager
 		)
 
 		BeforeSuite(func() {
-			cfg, err = framework.NewDefaultConfig()
+			cfg, err = config.NewDefaultConfig()
 			cfg.DisableTLS = true
 
 			choria, err = framework.NewWithConfig(cfg)

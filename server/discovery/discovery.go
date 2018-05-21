@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server/discovery/agents"
 	"github.com/choria-io/go-choria/server/discovery/classes"
 	"github.com/choria-io/go-choria/server/discovery/facts"
@@ -14,7 +15,7 @@ import (
 // Manager manages the full discovery life cycle
 type Manager struct {
 	fw  *choria.Framework
-	cfg *choria.Config
+	cfg *config.Config
 	log *logrus.Entry
 }
 

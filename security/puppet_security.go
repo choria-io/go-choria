@@ -1,4 +1,4 @@
-package choria
+package security
 
 import (
 	"bytes"
@@ -20,6 +20,8 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
 )
@@ -28,21 +30,15 @@ import (
 // it supports enrollment the same way `puppet agent --waitforcert 10` does
 type PuppetSecurity struct {
 	fw   settingsProvider
-	conf *Config
+	conf *config.Config
 	log  *logrus.Entry
 
 	fsec  *FileSecurity
 	cache string
 }
 
-type settingsProvider interface {
-	PuppetSetting(string) (string, error)
-	Getuid() int
-	QuerySrvRecords(records []string) ([]Server, error)
-}
-
 // NewPuppetSecurity creates a new instance of the Puppet Security provider
-func NewPuppetSecurity(fw settingsProvider, conf *Config, log *logrus.Entry) (*PuppetSecurity, error) {
+func NewPuppetSecurity(fw settingsProvider, conf *config.Config, log *logrus.Entry) (*PuppetSecurity, error) {
 	p := &PuppetSecurity{
 		fw:   fw,
 		conf: conf,
@@ -460,8 +456,8 @@ func (s *PuppetSecurity) writeCSR(key *rsa.PrivateKey, cn string, ou string) err
 	return nil
 }
 
-func (s *PuppetSecurity) puppetCA() Server {
-	server := Server{
+func (s *PuppetSecurity) puppetCA() srvcache.Server {
+	server := srvcache.Server{
 		Host:   s.conf.Choria.PuppetCAHost,
 		Port:   s.conf.Choria.PuppetCAPort,
 		Scheme: "https",

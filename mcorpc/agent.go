@@ -7,6 +7,7 @@ import (
 	"sort"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/mcorpc/audit"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-protocol/protocol"
@@ -19,7 +20,7 @@ type Action func(context.Context, *Request, *Reply, *Agent, choria.ConnectorInfo
 // Agent is an instance of the MCollective compatible RPC agents
 type Agent struct {
 	Log              *logrus.Entry
-	Config           *choria.Config
+	Config           *config.Config
 	Choria           *choria.Framework
 	ServerInfoSource agents.ServerInfoSource
 

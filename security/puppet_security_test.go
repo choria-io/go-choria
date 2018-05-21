@@ -1,4 +1,4 @@
-package choria
+package security
 
 import (
 	"crypto/x509"
@@ -9,6 +9,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/choria-io/go-choria/config"
+	srvcache "github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
 
 	gomock "github.com/golang/mock/gomock"
@@ -19,7 +21,7 @@ import (
 var _ = Describe("PuppetSSL", func() {
 	var mockctl *gomock.Controller
 	var settings *MocksettingsProvider
-	var cfg *Config
+	var cfg *config.Config
 	var err error
 	var prov *PuppetSecurity
 	var l *logrus.Logger
@@ -28,7 +30,7 @@ var _ = Describe("PuppetSSL", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		settings = NewMocksettingsProvider(mockctl)
 
-		cfg, err = NewDefaultConfig()
+		cfg, err = config.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
 		cfg.Choria.SSLDir = filepath.Join("testdata", "good")
 		cfg.OverrideCertname = "rip.mcollective"
@@ -46,7 +48,7 @@ var _ = Describe("PuppetSSL", func() {
 	})
 
 	It("Should impliment the provider interface", func() {
-		f := func(p SecurityProvider) {}
+		f := func(p Provider) {}
 		f(prov)
 	})
 
@@ -219,9 +221,8 @@ var _ = Describe("PuppetSSL", func() {
 
 	Describe("puppetCA", func() {
 		It("Should use supplied config", func() {
-			cfg.rawOpts["plugin.choria.puppetca_host"] = "set"
-			cfg.rawOpts["plugin.choria.puppetca_port"] = "set"
-
+			prov.conf, err = config.NewConfig("testdata/puppetca.cfg")
+			Expect(err).To(Not(HaveOccurred()))
 			s := prov.puppetCA()
 			Expect(s.Host).To(Equal("puppet"))
 			Expect(s.Port).To(Equal(8140))
@@ -229,7 +230,7 @@ var _ = Describe("PuppetSSL", func() {
 		})
 
 		It("Should return defaults when SRV fails", func() {
-			settings.EXPECT().QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"}).Return([]Server{}, errors.New("simulated error"))
+			settings.EXPECT().QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"}).Return([]srvcache.Server{}, errors.New("simulated error"))
 
 			s := prov.puppetCA()
 			Expect(s.Host).To(Equal("puppet"))
@@ -238,9 +239,9 @@ var _ = Describe("PuppetSSL", func() {
 		})
 
 		It("Should use SRV records", func() {
-			ans := []Server{
-				Server{"p1", 8080, "http"},
-				Server{"p2", 8080, "http"},
+			ans := []srvcache.Server{
+				srvcache.Server{"p1", 8080, "http"},
+				srvcache.Server{"p2", 8080, "http"},
 			}
 
 			settings.EXPECT().QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"}).Return(ans, errors.New("simulated error"))

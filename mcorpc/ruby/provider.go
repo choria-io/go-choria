@@ -6,6 +6,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server"
 	"github.com/sirupsen/logrus"
@@ -17,7 +18,7 @@ var denylist = []string{"rpcutil", "choria_util", "discovery"}
 // Provider is a Agent Provider capable of executing old mcollective ruby agents
 type Provider struct {
 	fw     *choria.Framework
-	cfg    *choria.Config
+	cfg    *config.Config
 	log    *logrus.Entry
 	agents []*agent.DDL
 }
