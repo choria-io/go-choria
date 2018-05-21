@@ -1,4 +1,4 @@
-package choria
+package security
 
 import (
 	context "context"
@@ -8,11 +8,13 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/choria-io/go-choria/config"
+	srvcache "github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
 )
 
-// SecurityProvider provides a security plugin for the choria subsystem
-type SecurityProvider interface {
+// Provider provides a security plugin for the choria subsystem
+type Provider interface {
 	// Validate that the security provider is functional
 	Validate() ([]string, bool)
 
@@ -87,13 +89,20 @@ type SecurityProvider interface {
 	Enroll(ctx context.Context, wait time.Duration, cb func(int)) error
 }
 
+type settingsProvider interface {
+	PuppetSetting(string) (string, error)
+	Getuid() int
+	QuerySrvRecords(records []string) ([]srvcache.Server, error)
+	Configuration() *config.Config
+}
+
 // NewSecurityProvider creates a new instance of a security provider
-func NewSecurityProvider(provider string, fw *Framework, log *logrus.Entry) (SecurityProvider, error) {
+func NewSecurityProvider(provider string, fw settingsProvider, log *logrus.Entry) (Provider, error) {
 	switch provider {
 	case "puppet":
-		return NewPuppetSecurity(fw, fw.Config, log)
+		return NewPuppetSecurity(fw, fw.Configuration(), log)
 	case "file":
-		return NewFileSecurity(fw, fw.Config, log)
+		return NewFileSecurity(fw, fw.Configuration(), log)
 	}
 
 	return nil, fmt.Errorf("unknown security provider: %s", provider)

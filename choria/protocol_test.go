@@ -1,6 +1,7 @@
 package choria
 
 import (
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-protocol/protocol"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,7 +14,7 @@ var _ = Describe("Protocol", func() {
 
 	BeforeEach(func() {
 		if j == nil {
-			cfg, _ := NewDefaultConfig()
+			cfg, _ := config.NewDefaultConfig()
 			cfg.DisableTLS = true
 			c, err = NewWithConfig(cfg)
 			Expect(err).ToNot(HaveOccurred())

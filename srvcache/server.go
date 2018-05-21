@@ -1,4 +1,4 @@
-package choria
+package srvcache
 
 import (
 	"fmt"
@@ -13,12 +13,12 @@ type Server struct {
 }
 
 // URL creates a correct url from the server if scheme is known
-func (self *Server) URL() (u *url.URL, err error) {
-	if self.Scheme == "" {
-		return u, fmt.Errorf("Server %s:%d has no scheme, cannot make a URL", self.Host, self.Port)
+func (s *Server) URL() (u *url.URL, err error) {
+	if s.Scheme == "" {
+		return u, fmt.Errorf("Server %s:%d has no scheme, cannot make a URL", s.Host, s.Port)
 	}
 
-	ustring := fmt.Sprintf("%s://%s:%d", self.Scheme, self.Host, self.Port)
+	ustring := fmt.Sprintf("%s://%s:%d", s.Scheme, s.Host, s.Port)
 
 	u, err = url.Parse(ustring)
 	if err != nil {

@@ -1,5 +1,5 @@
-hash: d0e7dac829e186f645d976d6db971e77d78590532855adf634c902106e9024e5
-updated: 2018-05-09T17:06:42.927674+02:00
+hash: d4a7a03994c37dd41944eddbfdc73067170f99c486d58332c933b525b4b65556
+updated: 2018-05-21T15:26:08.969652+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,7 +12,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-confkey
-  version: 1416c30a60054226a232e049eb5496d6d6afb5f2
+  version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-protocol
   version: 33a764a88cb2fccbceb6424e2397c8fc57dbd1ce
   subpackages:
@@ -93,7 +93,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 003f63b7f4cff3fc95357005358af2de0f5fe152
+  version: 62bff4df71bdbc266561a0caee19f0594b17c240
   subpackages:
   - format
   - internal/assertion

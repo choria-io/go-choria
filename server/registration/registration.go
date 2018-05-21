@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/registration"
 	"github.com/choria-io/go-choria/server/data"
 	"github.com/choria-io/go-protocol/protocol"
@@ -16,7 +17,7 @@ import (
 
 // Registrator is a full managed registration plugin
 type Registrator interface {
-	Init(cfg *choria.Config, l *logrus.Entry)
+	Init(cfg *config.Config, l *logrus.Entry)
 	StartRegistration(context.Context, *sync.WaitGroup, int, chan *data.RegistrationItem)
 }
 
@@ -30,7 +31,7 @@ type RegistrationDataProvider interface {
 type Manager struct {
 	log         *logrus.Entry
 	choria      *choria.Framework
-	cfg         *choria.Config
+	cfg         *config.Config
 	connector   choria.PublishableConnector
 	registrator Registrator
 	datac       chan *data.RegistrationItem

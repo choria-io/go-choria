@@ -13,6 +13,8 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/security"
 	"github.com/choria-io/go-choria/srvcache"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
@@ -20,9 +22,9 @@ import (
 
 // Framework is a utilty encompasing choria config and various utilities
 type Framework struct {
-	Config *Config
+	Config *config.Config
 
-	security SecurityProvider
+	security security.Provider
 	log      *logrus.Logger
 
 	mu    *sync.Mutex
@@ -31,15 +33,15 @@ type Framework struct {
 
 // New sets up a Choria with all its config loaded and so forth
 func New(path string) (*Framework, error) {
-	config, err := NewConfig(path)
+	conf, err := config.NewConfig(path)
 	if err != nil {
 		return nil, err
 	}
 
-	return NewWithConfig(config)
+	return NewWithConfig(conf)
 }
 
-func NewWithConfig(config *Config) (*Framework, error) {
+func NewWithConfig(config *config.Config) (*Framework, error) {
 	c := Framework{
 		Config: config,
 		mu:     &sync.Mutex{},
@@ -54,7 +56,7 @@ func NewWithConfig(config *Config) (*Framework, error) {
 		return &c, fmt.Errorf("could not set up logging: %s", err)
 	}
 
-	c.security, err = NewSecurityProvider(config.Choria.SecurityProvider, &c, c.Logger("security"))
+	c.security, err = security.NewSecurityProvider(config.Choria.SecurityProvider, &c, c.Logger("security"))
 	if err != nil {
 		return &c, fmt.Errorf("could not set up security framework: %s", err)
 	}
@@ -139,7 +141,7 @@ func (self *Framework) FederationCollectives() (collectives []string) {
 //
 //    * looking for choria.federation_middleware_hosts configuration
 //	  * Doing SRV lookups of  _mcollective-federation_server._tcp and _x-puppet-mcollective_federation._tcp
-func (self *Framework) FederationMiddlewareServers() (servers []Server, err error) {
+func (self *Framework) FederationMiddlewareServers() (servers []srvcache.Server, err error) {
 	configured := self.Config.Choria.FederationMiddlewareHosts
 	if len(configured) > 0 {
 		s, err := StringHostsToServers(configured, "nats")
@@ -169,7 +171,7 @@ func (self *Framework) FederationMiddlewareServers() (servers []Server, err erro
 // ProvisioningServers determines the build time provisioning servers
 // when it's unset or results in an empty server list this will return
 // an error
-func (self *Framework) ProvisioningServers() ([]Server, error) {
+func (self *Framework) ProvisioningServers() ([]srvcache.Server, error) {
 	if build.ProvisionBrokerURLs != "" {
 		s := strings.Split(build.ProvisionBrokerURLs, ",")
 		servers, err := StringHostsToServers(s, "nats")
@@ -184,7 +186,7 @@ func (self *Framework) ProvisioningServers() ([]Server, error) {
 		return servers, nil
 	}
 
-	return []Server{}, fmt.Errorf("ProvisionBrokerURLs was not set during compile time")
+	return []srvcache.Server{}, fmt.Errorf("ProvisionBrokerURLs was not set during compile time")
 }
 
 // MiddlewareServers determines the correct Middleware Servers
@@ -194,7 +196,7 @@ func (self *Framework) ProvisioningServers() ([]Server, error) {
 //    * looking for choria.federation_middleware_hosts configuration
 //	  * Doing SRV lookups of _mcollective-server._tcp and __x-puppet-mcollective._tcp
 //    * Defaulting to puppet:4222
-func (self *Framework) MiddlewareServers() (servers []Server, err error) {
+func (self *Framework) MiddlewareServers() (servers []srvcache.Server, err error) {
 	if self.IsFederated() {
 		return self.FederationMiddlewareServers()
 	}
@@ -218,7 +220,7 @@ func (self *Framework) MiddlewareServers() (servers []Server, err error) {
 	}
 
 	if len(servers) == 0 {
-		servers = []Server{Server{Host: "puppet", Port: 4222}}
+		servers = []srvcache.Server{srvcache.Server{Host: "puppet", Port: 4222}}
 	}
 
 	for i, s := range servers {
@@ -275,7 +277,7 @@ func (self *Framework) SetupLogging(debug bool) (err error) {
 
 // TrySrvLookup will attempt to lookup a series of names returning the first found
 // if SRV lookups are disabled or nothing is found the default will be returned
-func (self *Framework) TrySrvLookup(names []string, defaultSrv Server) (Server, error) {
+func (self *Framework) TrySrvLookup(names []string, defaultSrv srvcache.Server) (srvcache.Server, error) {
 	if !self.Config.Choria.UseSRVRecords {
 		return defaultSrv, nil
 	}
@@ -298,8 +300,8 @@ func (self *Framework) TrySrvLookup(names []string, defaultSrv Server) (Server, 
 // thanks to facter domain or the configured domain.
 //
 // If the config disables SRV then a error is returned.
-func (self *Framework) QuerySrvRecords(records []string) ([]Server, error) {
-	servers := []Server{}
+func (self *Framework) QuerySrvRecords(records []string) ([]srvcache.Server, error) {
+	servers := []srvcache.Server{}
 
 	if !self.Config.Choria.UseSRVRecords {
 		return servers, errors.New("SRV lookups are disabled in the configuration file")
@@ -331,7 +333,7 @@ func (self *Framework) QuerySrvRecords(records []string) ([]Server, error) {
 		log.Debugf("Found %d SRV records for %s", len(addrs), cname)
 
 		for _, a := range addrs {
-			servers = append(servers, Server{Host: strings.TrimRight(a.Target, "."), Port: int(a.Port)})
+			servers = append(servers, srvcache.Server{Host: strings.TrimRight(a.Target, "."), Port: int(a.Port)})
 		}
 	}
 
@@ -340,7 +342,7 @@ func (self *Framework) QuerySrvRecords(records []string) ([]Server, error) {
 
 // NetworkBrokerPeers are peers in the broker cluster resolved from
 // _mcollective-broker._tcp or from the plugin config
-func (self *Framework) NetworkBrokerPeers() (servers []Server, err error) {
+func (self *Framework) NetworkBrokerPeers() (servers []srvcache.Server, err error) {
 	servers, err = self.QuerySrvRecords([]string{"_mcollective-broker._tcp"})
 	if err != nil {
 		log.Errorf("SRV lookup for _mcollective-broker._tcp failed: %s", err)
@@ -364,7 +366,7 @@ func (self *Framework) NetworkBrokerPeers() (servers []Server, err error) {
 				return servers, fmt.Errorf("Could not parse network peer %s: %s", server, err)
 			}
 
-			s := Server{
+			s := srvcache.Server{
 				Host:   host,
 				Port:   port,
 				Scheme: parsed.Scheme,
@@ -383,8 +385,8 @@ func (self *Framework) NetworkBrokerPeers() (servers []Server, err error) {
 }
 
 // DiscoveryServer is the server configured as a discovery proxy
-func (self *Framework) DiscoveryServer() (Server, error) {
-	s := Server{
+func (self *Framework) DiscoveryServer() (srvcache.Server, error) {
+	s := srvcache.Server{
 		Host: self.Config.Choria.DiscoveryHost,
 		Port: self.Config.Choria.DiscoveryPort,
 	}
@@ -464,4 +466,19 @@ func (self *Framework) HasCollective(collective string) bool {
 	}
 
 	return false
+}
+
+// OverrideCertname indicates if the user wish to force a specific certname, empty when not
+func (self *Framework) OverrideCertname() string {
+	return self.Config.OverrideCertname
+}
+
+// DisableTLSVerify indicates if the user whish to disable TLS verification
+func (self *Framework) DisableTLSVerify() bool {
+	return self.Config.DisableTLSVerify
+}
+
+// Configuration returns the active configuration
+func (self *Framework) Configuration() *config.Config {
+	return self.Config
 }

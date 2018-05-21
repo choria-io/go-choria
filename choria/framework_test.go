@@ -4,6 +4,7 @@ import (
 	"testing"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -16,7 +17,8 @@ func TestChoria(t *testing.T) {
 var _ = Describe("Choria", func() {
 	var _ = Describe("NewChoria", func() {
 		It("Should initialize choria correctly", func() {
-			c := newChoria()
+			cfg, _ := config.NewDefaultConfig()
+			c := cfg.Choria
 			Expect(c.DiscoveryHost).To(Equal("puppet"))
 			Expect(c.DiscoveryPort).To(Equal(8085))
 			Expect(c.UseSRVRecords).To(BeTrue())
@@ -25,7 +27,7 @@ var _ = Describe("Choria", func() {
 
 	var _ = Describe("ProvisionMode", func() {
 		It("Should use the default when not configured and brokers are compiled in", func() {
-			c, err := NewDefaultConfig()
+			c, err := config.NewDefaultConfig()
 			Expect(err).ToNot(HaveOccurred())
 			c.DisableTLS = true
 
@@ -40,7 +42,7 @@ var _ = Describe("Choria", func() {
 		})
 
 		It("Should use the configured value when set and when brokers are compiled in", func() {
-			c, err := NewConfig("testdata/provision.cfg")
+			c, err := config.NewConfig("testdata/provision.cfg")
 			Expect(err).ToNot(HaveOccurred())
 			c.DisableTLS = true
 
@@ -58,7 +60,7 @@ var _ = Describe("Choria", func() {
 		})
 
 		It("Should be false if there are no brokers", func() {
-			c, err := NewConfig("testdata/provision.cfg")
+			c, err := config.NewConfig("testdata/provision.cfg")
 			Expect(err).ToNot(HaveOccurred())
 			c.DisableTLS = true
 

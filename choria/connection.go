@@ -12,6 +12,8 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/choria-io/go-choria/backoff"
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/nats-io/go-nats"
 	log "github.com/sirupsen/logrus"
@@ -19,7 +21,7 @@ import (
 
 // ConnectionManager is capable of being a factory for connection, mcollective.Choria is one
 type ConnectionManager interface {
-	NewConnector(ctx context.Context, servers func() ([]Server, error), name string, logger *log.Entry) (conn Connector, err error)
+	NewConnector(ctx context.Context, servers func() ([]srvcache.Server, error), name string, logger *log.Entry) (conn Connector, err error)
 }
 
 // PublishableConnector provides the minimal Connector features to enable publishing of choria.Message instances
@@ -84,12 +86,12 @@ type channelSubscription struct {
 
 // Connection is a actual NATS connectoin handler, it implements Connector
 type Connection struct {
-	servers           func() ([]Server, error)
+	servers           func() ([]srvcache.Server, error)
 	name              string
 	nats              *nats.Conn
 	logger            *log.Entry
 	choria            *Framework
-	config            *Config
+	config            *config.Config
 	subscriptions     map[string]*nats.Subscription
 	chanSubscriptions map[string]*channelSubscription
 	outbox            chan *nats.Msg
@@ -136,7 +138,7 @@ func init() {
 // NewConnector creates a new NATS connector
 //
 // It will attempt to connect to the given servers and will keep trying till it manages to do so
-func (fw *Framework) NewConnector(ctx context.Context, servers func() ([]Server, error), name string, logger *log.Entry) (conn Connector, err error) {
+func (fw *Framework) NewConnector(ctx context.Context, servers func() ([]srvcache.Server, error), name string, logger *log.Entry) (conn Connector, err error) {
 	if name == "" {
 		name = fw.Config.Identity
 	}

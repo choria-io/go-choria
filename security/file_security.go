@@ -1,4 +1,4 @@
-package choria
+package security
 
 import (
 	context "context"
@@ -21,20 +21,21 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/config"
 	"github.com/sirupsen/logrus"
 )
 
 // FileSecurity impliments SecurityProvider using files on disk
 type FileSecurity struct {
 	fw   settingsProvider
-	conf *Config
+	conf *config.Config
 	log  *logrus.Entry
 
 	mu *sync.Mutex
 }
 
 // NewFileSecurity creates a new instance of the Puppet Security provider
-func NewFileSecurity(fw settingsProvider, conf *Config, log *logrus.Entry) (*FileSecurity, error) {
+func NewFileSecurity(fw settingsProvider, conf *config.Config, log *logrus.Entry) (*FileSecurity, error) {
 	p := &FileSecurity{
 		fw:   fw,
 		conf: conf,

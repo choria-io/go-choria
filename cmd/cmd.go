@@ -14,6 +14,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -28,7 +29,7 @@ var cli = application{}
 var debug = false
 var configFile = ""
 var c *choria.Framework
-var config *choria.Config
+var cfg *config.Config
 var ctx context.Context
 var cancel func()
 var wg *sync.WaitGroup
@@ -63,7 +64,7 @@ func ParseCLI() (err error) {
 		configFile = choria.UserConfig()
 	}
 
-	config, err = choria.NewConfig(configFile)
+	cfg, err = config.NewConfig(configFile)
 	if err != nil {
 		return fmt.Errorf("Could not parse configuration: %s", err)
 	}
@@ -89,7 +90,7 @@ func Run() (err error) {
 
 	// we do this here so that the command setup has a chance to fiddle the config for
 	// things like disabling full verification of the security system during enrollment
-	c, err = choria.NewWithConfig(config)
+	c, err = choria.NewWithConfig(cfg)
 	if err != nil {
 		return fmt.Errorf("Could not initialize Choria: %s", err)
 	}

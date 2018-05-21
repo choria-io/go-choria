@@ -9,7 +9,7 @@ import (
 
 	"github.com/tidwall/gjson"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server/data"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -24,13 +24,13 @@ func TestFileContent(t *testing.T) {
 var _ = Describe("RegistrationData", func() {
 	var (
 		reg  *FileContent
-		c    *choria.Config
+		c    *config.Config
 		err  error
 		msgs chan *data.RegistrationItem
 	)
 
 	BeforeEach(func() {
-		c, err = choria.NewDefaultConfig()
+		c, err = config.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
 
 		reg = &FileContent{}

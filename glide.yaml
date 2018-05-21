@@ -32,7 +32,7 @@ import:
 - package: github.com/choria-io/go-protocol
   version: 1.0.1
 - package: github.com/choria-io/go-confkey
-  version: ^1
+  version: ^1.2
 - package: github.com/golang/mock
   subpackages:
   - gomock

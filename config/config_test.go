@@ -1,11 +1,17 @@
-package choria
+package config
 
 import (
 	"runtime"
+	"testing"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
+
+func TestChoria(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Config")
+}
 
 var _ = Describe("Choria/Config", func() {
 	var _ = Describe("NewConfig", func() {

@@ -1,7 +1,6 @@
 package choria
 
 import (
-	"errors"
 	"fmt"
 	"net"
 	"net/url"
@@ -12,6 +11,9 @@ import (
 	"runtime"
 	"strconv"
 	"strings"
+
+	"github.com/choria-io/go-choria/puppet"
+	"github.com/choria-io/go-choria/srvcache"
 )
 
 // UserConfig determines what is the active config file for a user
@@ -84,7 +86,7 @@ func SliceGroups(input []string, size int, fn func(group []string)) {
 //
 // if an empty scheme is given the string will be parsed by a url parser and the embedded
 // scheme will be used, if that does not parse into a valid url then an error will be returned
-func StringHostsToServers(hosts []string, scheme string) (servers []Server, err error) {
+func StringHostsToServers(hosts []string, scheme string) (servers []srvcache.Server, err error) {
 	for _, s := range hosts {
 		detectedScheme := scheme
 
@@ -107,7 +109,7 @@ func StringHostsToServers(hosts []string, scheme string) (servers []Server, err 
 			return servers, fmt.Errorf("could not host port %s: %s", s, err)
 		}
 
-		server := Server{
+		server := srvcache.Server{
 			Host:   strings.TrimSpace(host),
 			Port:   port,
 			Scheme: detectedScheme,
@@ -150,18 +152,7 @@ func HomeDir() (string, error) {
 
 // FacterStringFact looks up a facter fact, returns "" when unknown
 func FacterStringFact(fact string) (string, error) {
-	cmd := FacterCmd()
-
-	if cmd == "" {
-		return "", errors.New("could not find your facter command")
-	}
-
-	out, err := exec.Command(cmd, fact).Output()
-	if err != nil {
-		return "", err
-	}
-
-	return strings.Replace(string(out), "\n", "", -1), nil
+	return puppet.FacterStringFact(fact)
 }
 
 // FacterFQDN determines the machines fqdn by querying facter.  Returns "" when unknown
@@ -176,7 +167,7 @@ func FacterDomain() (string, error) {
 
 // FacterCmd finds the path to facter using first AIO path then a `which` like command
 func FacterCmd() string {
-	return PuppetAIOCmd("facter", "")
+	return puppet.AIOCmd("facter", "")
 }
 
 // PuppetAIOCmd looks up a command in the AIO paths, if it's not there
@@ -184,18 +175,7 @@ func FacterCmd() string {
 //
 // TODO: windows support
 func PuppetAIOCmd(command string, def string) string {
-	aioPath := fmt.Sprintf("/opt/puppetlabs/bin/%s", command)
-
-	if _, err := os.Stat(aioPath); err == nil {
-		return aioPath
-	}
-
-	path, err := exec.LookPath(command)
-	if err != nil {
-		return def
-	}
-
-	return path
+	return puppet.AIOCmd(command, def)
 }
 
 // PuppetSetting retrieves a config setting by shelling out to puppet apply --configprint

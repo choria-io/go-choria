@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/nats-io/go-nats"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -147,7 +148,7 @@ func (s *stubConnection) Nats() *nats.Conn {
 	return &nats.Conn{}
 }
 
-func (s *stubConnectionManager) NewConnector(ctx context.Context, servers func() ([]choria.Server, error), name string, logger *log.Entry) (conn choria.Connector, err error) {
+func (s *stubConnectionManager) NewConnector(ctx context.Context, servers func() ([]srvcache.Server, error), name string, logger *log.Entry) (conn choria.Connector, err error) {
 	if s.connection != nil {
 		return s.connection, nil
 	}

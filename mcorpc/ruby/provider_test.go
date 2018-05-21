@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/mcorpc"
 	"github.com/choria-io/go-choria/server"
 
@@ -21,7 +22,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 		mockctl   *gomock.Controller
 		agentMgr  *server.MockAgentManager
 		connector *choria.MockInstanceConnector
-		cfg       *choria.Config
+		cfg       *config.Config
 		fw        *choria.Framework
 		err       error
 		logger    *logrus.Entry
@@ -39,7 +40,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 		agentMgr = server.NewMockAgentManager(mockctl)
 		connector = choria.NewMockInstanceConnector(mockctl)
 
-		cfg, err = choria.NewDefaultConfig()
+		cfg, err = config.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())

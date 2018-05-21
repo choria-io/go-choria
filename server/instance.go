@@ -6,9 +6,11 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/discovery"
 	"github.com/choria-io/go-choria/server/registration"
+	"github.com/choria-io/go-choria/srvcache"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -17,9 +19,9 @@ import (
 type Instance struct {
 	fw           *choria.Framework
 	connector    choria.InstanceConnector
-	cfg          *choria.Config
+	cfg          *config.Config
 	log          *log.Entry
-	servers      []*choria.Server
+	servers      []*srvcache.Server
 	registration *registration.Manager
 	agents       *agents.Manager
 	discovery    *discovery.Manager

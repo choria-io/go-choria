@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/broker/adapter/stats"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/choria-io/go-choria/choria"
@@ -14,7 +15,7 @@ import (
 )
 
 type nats struct {
-	servers func() ([]choria.Server, error)
+	servers func() ([]srvcache.Server, error)
 	topic   string
 	proto   string
 	name    string
@@ -30,12 +31,12 @@ type nats struct {
 func newIngest(name string, work chan adaptable, logger *log.Entry) ([]*nats, error) {
 	prefix := fmt.Sprintf("plugin.choria.adapter.%s.ingest.", name)
 
-	instances, err := strconv.Atoi(config.Option(prefix+"workers", "10"))
+	instances, err := strconv.Atoi(cfg.Option(prefix+"workers", "10"))
 	if err != nil {
 		return nil, fmt.Errorf("%s should be a integer number", prefix+"workers")
 	}
 
-	topic := config.Option(prefix+"topic", "")
+	topic := cfg.Option(prefix+"topic", "")
 	if topic == "" {
 		return nil, fmt.Errorf("No ingest topic configured, please set %s", prefix+"topic")
 	}
@@ -45,11 +46,11 @@ func newIngest(name string, work chan adaptable, logger *log.Entry) ([]*nats, er
 		return nil, fmt.Errorf("Could not resolve initial server list: %s", err)
 	}
 
-	servers := func() ([]choria.Server, error) {
+	servers := func() ([]srvcache.Server, error) {
 		return framework.MiddlewareServers()
 	}
 
-	proto := config.Option(prefix+"protocol", "reply")
+	proto := cfg.Option(prefix+"protocol", "reply")
 
 	workers := []*nats{}
 
@@ -109,10 +110,10 @@ func (na *nats) disconnect() {
 func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	bytes := stats.BytesCtr.WithLabelValues(na.name, "input", config.Identity)
-	ectr := stats.ErrorCtr.WithLabelValues(na.name, "input", config.Identity)
-	ctr := stats.ReceivedMsgsCtr.WithLabelValues(na.name, "input", config.Identity)
-	timer := stats.ProcessTime.WithLabelValues(na.name, "input", config.Identity)
+	bytes := stats.BytesCtr.WithLabelValues(na.name, "input", cfg.Identity)
+	ectr := stats.ErrorCtr.WithLabelValues(na.name, "input", cfg.Identity)
+	ctr := stats.ReceivedMsgsCtr.WithLabelValues(na.name, "input", cfg.Identity)
+	timer := stats.ProcessTime.WithLabelValues(na.name, "input", cfg.Identity)
 
 	receiverf := func(cm *choria.ConnectorMessage) {
 		obs := prometheus.NewTimer(timer)

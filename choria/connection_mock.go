@@ -6,10 +6,12 @@ package choria
 
 import (
 	context "context"
+	reflect "reflect"
+
+	"github.com/choria-io/go-choria/srvcache"
 	gomock "github.com/golang/mock/gomock"
 	go_nats "github.com/nats-io/go-nats"
 	logrus "github.com/sirupsen/logrus"
-	reflect "reflect"
 )
 
 // MockConnectionManager is a mock of ConnectionManager interface
@@ -36,7 +38,7 @@ func (m *MockConnectionManager) EXPECT() *MockConnectionManagerMockRecorder {
 }
 
 // NewConnector mocks base method
-func (m *MockConnectionManager) NewConnector(ctx context.Context, servers func() ([]Server, error), name string, logger *logrus.Entry) (Connector, error) {
+func (m *MockConnectionManager) NewConnector(ctx context.Context, servers func() ([]srvcache.Server, error), name string, logger *logrus.Entry) (Connector, error) {
 	ret := m.ctrl.Call(m, "NewConnector", ctx, servers, name, logger)
 	ret0, _ := ret[0].(Connector)
 	ret1, _ := ret[1].(error)

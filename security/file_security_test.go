@@ -1,4 +1,4 @@
-package choria
+package security
 
 import (
 	"crypto/tls"
@@ -9,13 +9,14 @@ import (
 	"os"
 	"path/filepath"
 
+	config "github.com/choria-io/go-choria/config"
 	gomock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 )
 
-func setSSL(c *Config, parent string, id string) {
+func setSSL(c *config.Config, parent string, id string) {
 	c.Choria.FileSecurityCertificate = filepath.Join(parent, "certs", fmt.Sprintf("%s.pem", id))
 	c.Choria.FileSecurityCA = filepath.Join(parent, "certs", "ca.pem")
 	c.Choria.FileSecurityCache = filepath.Join(parent, "choria_security", "public_certs")
@@ -25,7 +26,7 @@ func setSSL(c *Config, parent string, id string) {
 var _ = Describe("FileSSL", func() {
 	var mockctl *gomock.Controller
 	var settings *MocksettingsProvider
-	var cfg *Config
+	var cfg *config.Config
 	var err error
 	var prov *FileSecurity
 	var l *logrus.Logger
@@ -34,7 +35,7 @@ var _ = Describe("FileSSL", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		settings = NewMocksettingsProvider(mockctl)
 
-		cfg, err = NewDefaultConfig()
+		cfg, err = config.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
 		cfg.OverrideCertname = "rip.mcollective"
 		setSSL(cfg, filepath.Join("testdata", "good"), "rip.mcollective")
@@ -52,7 +53,7 @@ var _ = Describe("FileSSL", func() {
 	})
 
 	It("Should impliment the provider interface", func() {
-		f := func(p SecurityProvider) {}
+		f := func(p Provider) {}
 		f(prov)
 	})
 
