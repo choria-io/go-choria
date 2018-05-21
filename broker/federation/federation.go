@@ -53,32 +53,32 @@ func NewFederationBroker(clusterName string, choria *choria.Framework) (broker *
 	return
 }
 
-func (self *FederationBroker) Start(ctx context.Context, wg *sync.WaitGroup) {
-	self.logger.Infof("Starting Federation Broker %s", self.Name)
+func (fb *FederationBroker) Start(ctx context.Context, wg *sync.WaitGroup) {
+	fb.logger.Infof("Starting Federation Broker %s", fb.Name)
 
 	defer wg.Done()
 
 	// requests from federation
-	self.fedIn, _ = NewChoriaNatsIngest(10, Federation, 10000, self, nil)
-	self.collectiveOut, _ = NewChoriaNatsEgest(10, Collective, 10000, self, nil)
-	self.requestT, _ = NewChoriaRequestTransformer(10, 1000, self, nil)
-	self.fedIn.To(self.requestT)
-	self.requestT.To(self.collectiveOut)
+	fb.fedIn, _ = NewChoriaNatsIngest(10, Federation, 10000, fb, nil)
+	fb.collectiveOut, _ = NewChoriaNatsEgest(10, Collective, 10000, fb, nil)
+	fb.requestT, _ = NewChoriaRequestTransformer(10, 1000, fb, nil)
+	fb.fedIn.To(fb.requestT)
+	fb.requestT.To(fb.collectiveOut)
 
 	// replies from collective
-	self.collectiveIn, _ = NewChoriaNatsIngest(10, Collective, 10000, self, nil)
-	self.fedOut, _ = NewChoriaNatsEgest(10, Federation, 10000, self, nil)
-	self.replyT, _ = NewChoriaReplyTransformer(10, 1000, self, nil)
-	self.collectiveIn.To(self.replyT)
-	self.replyT.To(self.fedOut)
+	fb.collectiveIn, _ = NewChoriaNatsIngest(10, Collective, 10000, fb, nil)
+	fb.fedOut, _ = NewChoriaNatsEgest(10, Federation, 10000, fb, nil)
+	fb.replyT, _ = NewChoriaReplyTransformer(10, 1000, fb, nil)
+	fb.collectiveIn.To(fb.replyT)
+	fb.replyT.To(fb.fedOut)
 
-	go self.requestT.Run(ctx)
-	go self.replyT.Run(ctx)
-	go self.collectiveOut.Run(ctx)
-	go self.collectiveIn.Run(ctx)
-	go self.requestT.Run(ctx)
-	go self.fedOut.Run(ctx)
-	go self.fedIn.Run(ctx)
+	go fb.requestT.Run(ctx)
+	go fb.replyT.Run(ctx)
+	go fb.collectiveOut.Run(ctx)
+	go fb.collectiveIn.Run(ctx)
+	go fb.requestT.Run(ctx)
+	go fb.fedOut.Run(ctx)
+	go fb.fedIn.Run(ctx)
 
 	select {
 	case <-ctx.Done():

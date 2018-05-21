@@ -41,6 +41,7 @@ func New(path string) (*Framework, error) {
 	return NewWithConfig(conf)
 }
 
+// NewWithConfig creates a new instance of the framework with the supplied config instance
 func NewWithConfig(config *config.Config) (*Framework, error) {
 	c := Framework{
 		Config: config,
@@ -75,13 +76,13 @@ func NewWithConfig(config *config.Config) (*Framework, error) {
 // if the setting `plugin.choria.server.provision` is set at all then
 // the value of that is returned, else it the build time property
 // ProvisionDefault is consulted
-func (self *Framework) ProvisionMode() bool {
+func (fw *Framework) ProvisionMode() bool {
 	if build.ProvisionBrokerURLs == "" {
 		return false
 	}
 
-	if self.Config.HasOption("plugin.choria.server.provision") {
-		return self.Config.Choria.Provision
+	if fw.Config.HasOption("plugin.choria.server.provision") {
+		return fw.Config.Choria.Provision
 	}
 
 	return build.ProvisionDefault()
@@ -89,18 +90,18 @@ func (self *Framework) ProvisionMode() bool {
 
 // ConfigureProvisioning adjusts the active configuration to match the
 // provisioning profile
-func (self *Framework) ConfigureProvisioning() {
-	self.Config.Choria.FederationCollectives = []string{}
-	self.Config.Collectives = []string{"provisioning"}
-	self.Config.MainCollective = "provisioning"
-	self.Config.RegisterInterval = 120
-	self.Config.RegistrationSplay = false
-	self.Config.Choria.FileContentRegistrationTarget = "choria.provisioning_data"
+func (fw *Framework) ConfigureProvisioning() {
+	fw.Config.Choria.FederationCollectives = []string{}
+	fw.Config.Collectives = []string{"provisioning"}
+	fw.Config.MainCollective = "provisioning"
+	fw.Config.RegisterInterval = 120
+	fw.Config.RegistrationSplay = false
+	fw.Config.Choria.FileContentRegistrationTarget = "choria.provisioning_data"
 }
 
 // IsFederated determiens if the configuration is setting up any Federation collectives
-func (self *Framework) IsFederated() (result bool) {
-	if len(self.FederationCollectives()) == 0 {
+func (fw *Framework) IsFederated() (result bool) {
+	if len(fw.FederationCollectives()) == 0 {
 		return false
 	}
 
@@ -108,14 +109,14 @@ func (self *Framework) IsFederated() (result bool) {
 }
 
 // Logger creates a new logrus entry
-func (self *Framework) Logger(component string) *log.Entry {
+func (fw *Framework) Logger(component string) *log.Entry {
 	return log.WithFields(log.Fields{"component": component})
 }
 
 // FederationCollectives determines the known Federation Member
 // Collectives based on the CHORIA_FED_COLLECTIVE environment
 // variable or the choria.federation.collectives config item
-func (self *Framework) FederationCollectives() (collectives []string) {
+func (fw *Framework) FederationCollectives() (collectives []string) {
 	var found []string
 
 	env := os.Getenv("CHORIA_FED_COLLECTIVE")
@@ -125,7 +126,7 @@ func (self *Framework) FederationCollectives() (collectives []string) {
 	}
 
 	if len(found) == 0 {
-		found = self.Config.Choria.FederationCollectives
+		found = fw.Config.Choria.FederationCollectives
 	}
 
 	for _, collective := range found {
@@ -141,8 +142,8 @@ func (self *Framework) FederationCollectives() (collectives []string) {
 //
 //    * looking for choria.federation_middleware_hosts configuration
 //	  * Doing SRV lookups of  _mcollective-federation_server._tcp and _x-puppet-mcollective_federation._tcp
-func (self *Framework) FederationMiddlewareServers() (servers []srvcache.Server, err error) {
-	configured := self.Config.Choria.FederationMiddlewareHosts
+func (fw *Framework) FederationMiddlewareServers() (servers []srvcache.Server, err error) {
+	configured := fw.Config.Choria.FederationMiddlewareHosts
 	if len(configured) > 0 {
 		s, err := StringHostsToServers(configured, "nats")
 		if err != nil {
@@ -155,7 +156,7 @@ func (self *Framework) FederationMiddlewareServers() (servers []srvcache.Server,
 	}
 
 	if len(servers) == 0 {
-		if servers, err = self.QuerySrvRecords([]string{"_mcollective-federation_server._tcp", "_x-puppet-mcollective_federation._tcp"}); err != nil {
+		if servers, err = fw.QuerySrvRecords([]string{"_mcollective-federation_server._tcp", "_x-puppet-mcollective_federation._tcp"}); err != nil {
 			return servers, fmt.Errorf("Could not resolve Federation Middleware Server SRV records: %s", err)
 		}
 	}
@@ -171,7 +172,7 @@ func (self *Framework) FederationMiddlewareServers() (servers []srvcache.Server,
 // ProvisioningServers determines the build time provisioning servers
 // when it's unset or results in an empty server list this will return
 // an error
-func (self *Framework) ProvisioningServers() ([]srvcache.Server, error) {
+func (fw *Framework) ProvisioningServers() ([]srvcache.Server, error) {
 	if build.ProvisionBrokerURLs != "" {
 		s := strings.Split(build.ProvisionBrokerURLs, ",")
 		servers, err := StringHostsToServers(s, "nats")
@@ -196,12 +197,12 @@ func (self *Framework) ProvisioningServers() ([]srvcache.Server, error) {
 //    * looking for choria.federation_middleware_hosts configuration
 //	  * Doing SRV lookups of _mcollective-server._tcp and __x-puppet-mcollective._tcp
 //    * Defaulting to puppet:4222
-func (self *Framework) MiddlewareServers() (servers []srvcache.Server, err error) {
-	if self.IsFederated() {
-		return self.FederationMiddlewareServers()
+func (fw *Framework) MiddlewareServers() (servers []srvcache.Server, err error) {
+	if fw.IsFederated() {
+		return fw.FederationMiddlewareServers()
 	}
 
-	configured := self.Config.Choria.MiddlewareHosts
+	configured := fw.Config.Choria.MiddlewareHosts
 	if len(configured) > 0 {
 		s, err := StringHostsToServers(configured, "nats")
 		if err != nil {
@@ -214,7 +215,7 @@ func (self *Framework) MiddlewareServers() (servers []srvcache.Server, err error
 	}
 
 	if len(servers) == 0 {
-		if servers, err = self.QuerySrvRecords([]string{"_mcollective-server._tcp", "_x-puppet-mcollective._tcp"}); err != nil {
+		if servers, err = fw.QuerySrvRecords([]string{"_mcollective-server._tcp", "_x-puppet-mcollective._tcp"}); err != nil {
 			log.Warnf("Could not resolve Middleware Server SRV records: %s", err)
 		}
 	}
@@ -233,57 +234,57 @@ func (self *Framework) MiddlewareServers() (servers []srvcache.Server, err error
 
 // SetupLogging configures logging based on choria config directives
 // currently only file and console behaviours are supported
-func (self *Framework) SetupLogging(debug bool) (err error) {
-	self.log = log.New()
+func (fw *Framework) SetupLogging(debug bool) (err error) {
+	fw.log = log.New()
 
-	self.log.Out = os.Stdout
+	fw.log.Out = os.Stdout
 
-	if self.Config.LogFile != "" {
-		self.log.Formatter = &log.JSONFormatter{}
+	if fw.Config.LogFile != "" {
+		fw.log.Formatter = &log.JSONFormatter{}
 
-		file, err := os.OpenFile(self.Config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+		file, err := os.OpenFile(fw.Config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
 			return fmt.Errorf("Could not set up logging: %s", err)
 		}
 
-		self.log.Out = file
+		fw.log.Out = file
 	}
 
-	switch self.Config.LogLevel {
+	switch fw.Config.LogLevel {
 	case "debug":
-		self.log.SetLevel(log.DebugLevel)
+		fw.log.SetLevel(log.DebugLevel)
 	case "info":
-		self.log.SetLevel(log.InfoLevel)
+		fw.log.SetLevel(log.InfoLevel)
 	case "warn":
-		self.log.SetLevel(log.WarnLevel)
+		fw.log.SetLevel(log.WarnLevel)
 	case "error":
-		self.log.SetLevel(log.ErrorLevel)
+		fw.log.SetLevel(log.ErrorLevel)
 	case "fatal":
-		self.log.SetLevel(log.FatalLevel)
+		fw.log.SetLevel(log.FatalLevel)
 	default:
-		self.log.SetLevel(log.WarnLevel)
+		fw.log.SetLevel(log.WarnLevel)
 	}
 
 	if debug {
-		self.log.SetLevel(log.DebugLevel)
+		fw.log.SetLevel(log.DebugLevel)
 	}
 
-	log.SetFormatter(self.log.Formatter)
-	log.SetLevel(self.log.Level)
-	log.SetOutput(self.log.Out)
+	log.SetFormatter(fw.log.Formatter)
+	log.SetLevel(fw.log.Level)
+	log.SetOutput(fw.log.Out)
 
 	return
 }
 
 // TrySrvLookup will attempt to lookup a series of names returning the first found
 // if SRV lookups are disabled or nothing is found the default will be returned
-func (self *Framework) TrySrvLookup(names []string, defaultSrv srvcache.Server) (srvcache.Server, error) {
-	if !self.Config.Choria.UseSRVRecords {
+func (fw *Framework) TrySrvLookup(names []string, defaultSrv srvcache.Server) (srvcache.Server, error) {
+	if !fw.Config.Choria.UseSRVRecords {
 		return defaultSrv, nil
 	}
 
 	for _, q := range names {
-		a, err := self.QuerySrvRecords([]string{q})
+		a, err := fw.QuerySrvRecords([]string{q})
 		if err == nil {
 			log.Infof("Found %s:%d from %s SRV lookups", a[0].Host, a[0].Port, strings.Join(names, ", "))
 
@@ -300,24 +301,24 @@ func (self *Framework) TrySrvLookup(names []string, defaultSrv srvcache.Server) 
 // thanks to facter domain or the configured domain.
 //
 // If the config disables SRV then a error is returned.
-func (self *Framework) QuerySrvRecords(records []string) ([]srvcache.Server, error) {
+func (fw *Framework) QuerySrvRecords(records []string) ([]srvcache.Server, error) {
 	servers := []srvcache.Server{}
 
-	if !self.Config.Choria.UseSRVRecords {
+	if !fw.Config.Choria.UseSRVRecords {
 		return servers, errors.New("SRV lookups are disabled in the configuration file")
 	}
 
-	domain := self.Config.Choria.SRVDomain
+	domain := fw.Config.Choria.SRVDomain
 	var err error
 
-	if self.Config.Choria.SRVDomain == "" {
-		domain, err = self.FacterDomain()
+	if fw.Config.Choria.SRVDomain == "" {
+		domain, err = fw.FacterDomain()
 		if err != nil {
 			return servers, err
 		}
 
 		// cache the result to speed things up
-		self.Config.Choria.SRVDomain = domain
+		fw.Config.Choria.SRVDomain = domain
 	}
 
 	for _, q := range records {
@@ -342,15 +343,15 @@ func (self *Framework) QuerySrvRecords(records []string) ([]srvcache.Server, err
 
 // NetworkBrokerPeers are peers in the broker cluster resolved from
 // _mcollective-broker._tcp or from the plugin config
-func (self *Framework) NetworkBrokerPeers() (servers []srvcache.Server, err error) {
-	servers, err = self.QuerySrvRecords([]string{"_mcollective-broker._tcp"})
+func (fw *Framework) NetworkBrokerPeers() (servers []srvcache.Server, err error) {
+	servers, err = fw.QuerySrvRecords([]string{"_mcollective-broker._tcp"})
 	if err != nil {
 		log.Errorf("SRV lookup for _mcollective-broker._tcp failed: %s", err)
 		err = nil
 	}
 
 	if len(servers) == 0 {
-		for _, server := range self.Config.Choria.NetworkPeers {
+		for _, server := range fw.Config.Choria.NetworkPeers {
 			parsed, err := url.Parse(server)
 			if err != nil {
 				return servers, fmt.Errorf("Could not parse network peer %s: %s", server, err)
@@ -385,81 +386,79 @@ func (self *Framework) NetworkBrokerPeers() (servers []srvcache.Server, err erro
 }
 
 // DiscoveryServer is the server configured as a discovery proxy
-func (self *Framework) DiscoveryServer() (srvcache.Server, error) {
+func (fw *Framework) DiscoveryServer() (srvcache.Server, error) {
 	s := srvcache.Server{
-		Host: self.Config.Choria.DiscoveryHost,
-		Port: self.Config.Choria.DiscoveryPort,
+		Host: fw.Config.Choria.DiscoveryHost,
+		Port: fw.Config.Choria.DiscoveryPort,
 	}
 
-	if !self.ProxiedDiscovery() {
+	if !fw.ProxiedDiscovery() {
 		return s, errors.New("Proxy discovery is not enabled")
 	}
 
-	result, err := self.TrySrvLookup([]string{"_mcollective-discovery._tcp"}, s)
+	result, err := fw.TrySrvLookup([]string{"_mcollective-discovery._tcp"}, s)
 
 	return result, err
 }
 
 // ProxiedDiscovery determines if a client is configured for proxied discover
-func (self *Framework) ProxiedDiscovery() bool {
-	if self.Config.HasOption("plugin.choria.discovery_host") || self.Config.HasOption("plugin.choria.discovery_port") {
+func (fw *Framework) ProxiedDiscovery() bool {
+	if fw.Config.HasOption("plugin.choria.discovery_host") || fw.Config.HasOption("plugin.choria.discovery_port") {
 		return true
 	}
 
-	return self.Config.Choria.DiscoveryProxy
+	return fw.Config.Choria.DiscoveryProxy
 }
 
 // Getuid returns the numeric user id of the caller
-func (self *Framework) Getuid() int {
+func (fw *Framework) Getuid() int {
 	return os.Getuid()
 }
 
 // PuppetSetting retrieves a config setting by shelling out to puppet apply --configprint
-func (self *Framework) PuppetSetting(setting string) (string, error) {
+func (fw *Framework) PuppetSetting(setting string) (string, error) {
 	return PuppetSetting(setting)
 }
 
 // FacterStringFact looks up a facter fact, returns "" when unknown
-func (self *Framework) FacterStringFact(fact string) (string, error) {
+func (fw *Framework) FacterStringFact(fact string) (string, error) {
 	return FacterStringFact(fact)
 }
 
 // FacterFQDN determines the machines fqdn by querying facter.  Returns "" when unknown
-func (self *Framework) FacterFQDN() (string, error) {
+func (fw *Framework) FacterFQDN() (string, error) {
 	return FacterStringFact("networking.fqdn")
 }
 
 // FacterDomain determines the machines domain by querying facter. Returns "" when unknown
-func (self *Framework) FacterDomain() (string, error) {
+func (fw *Framework) FacterDomain() (string, error) {
 	return FacterStringFact("networking.domain")
 }
 
 // FacterCmd finds the path to facter using first AIO path then a `which` like command
-func (self *Framework) FacterCmd() string {
+func (fw *Framework) FacterCmd() string {
 	return PuppetAIOCmd("facter", "")
 }
 
 // PuppetAIOCmd looks up a command in the AIO paths, if it's not there
 // it will try PATH and finally return a default if not in PATH
-//
-// TODO: windows support
-func (self *Framework) PuppetAIOCmd(command string, def string) string {
+func (fw *Framework) PuppetAIOCmd(command string, def string) string {
 	return PuppetAIOCmd(command, def)
 }
 
 // NewRequestID Creates a new RequestID
-func (self *Framework) NewRequestID() string {
+func (fw *Framework) NewRequestID() string {
 	return strings.Replace(uuid.NewV4().String(), "-", "", -1)
 }
 
 // CallerID determines the cert based callerid
-func (self *Framework) CallerID() string {
-	return fmt.Sprintf("choria=%s", self.Certname())
+func (fw *Framework) CallerID() string {
+	return fmt.Sprintf("choria=%s", fw.Certname())
 }
 
 // HasCollective determines if a collective is known in the configuration
-func (self *Framework) HasCollective(collective string) bool {
-	for _, c := range self.Config.Collectives {
+func (fw *Framework) HasCollective(collective string) bool {
+	for _, c := range fw.Config.Collectives {
 		if c == collective {
 			return true
 		}
@@ -469,16 +468,16 @@ func (self *Framework) HasCollective(collective string) bool {
 }
 
 // OverrideCertname indicates if the user wish to force a specific certname, empty when not
-func (self *Framework) OverrideCertname() string {
-	return self.Config.OverrideCertname
+func (fw *Framework) OverrideCertname() string {
+	return fw.Config.OverrideCertname
 }
 
 // DisableTLSVerify indicates if the user whish to disable TLS verification
-func (self *Framework) DisableTLSVerify() bool {
-	return self.Config.DisableTLSVerify
+func (fw *Framework) DisableTLSVerify() bool {
+	return fw.Config.DisableTLSVerify
 }
 
 // Configuration returns the active configuration
-func (self *Framework) Configuration() *config.Config {
-	return self.Config
+func (fw *Framework) Configuration() *config.Config {
+	return fw.Config
 }

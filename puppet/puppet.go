@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"path/filepath"
+	"runtime"
 	"strings"
 )
 
@@ -41,10 +43,12 @@ func FacterCmd() string {
 
 // AIOCmd looks up a command in the AIO paths, if it's not there
 // it will try PATH and finally return a default if not in PATH
-//
-// TODO: windows support
 func AIOCmd(command string, def string) string {
-	aioPath := fmt.Sprintf("/opt/puppetlabs/bin/%s", command)
+	aioPath := filepath.Join("/opt/puppetlabs/bin", command)
+
+	if runtime.GOOS == "windows" {
+		aioPath = filepath.FromSlash(filepath.Join("C:/Program Files/Puppet Labs/Puppet/bin", fmt.Sprintf("%s.bat", command)))
+	}
 
 	if _, err := os.Stat(aioPath); err == nil {
 		return aioPath
