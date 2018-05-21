@@ -10,9 +10,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
 
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-protocol/protocol"
 )
 
@@ -31,7 +31,7 @@ type Message struct {
 }
 
 // Request writes a audit log to a configured log
-func Request(request protocol.Request, agent string, action string, data json.RawMessage, cfg *choria.Config) bool {
+func Request(request protocol.Request, agent string, action string, data json.RawMessage, cfg *config.Config) bool {
 	if !cfg.RPCAudit {
 		return false
 	}

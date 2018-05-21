@@ -6,7 +6,7 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-protocol/protocol/v1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,13 +21,13 @@ func TestFileContent(t *testing.T) {
 
 var _ = Describe("McoRPC/Audit", func() {
 	It("Should correctly audit the request", func() {
-		var cfg *choria.Config
+		var cfg *config.Config
 		var err error
 
 		if runtime.GOOS == "windows" {
-			cfg, err = choria.NewConfig("testdata/audit_windows.cfg")
+			cfg, err = config.NewConfig("testdata/audit_windows.cfg")
 		} else {
-			cfg, err = choria.NewConfig("testdata/audit.cfg")
+			cfg, err = config.NewConfig("testdata/audit.cfg")
 		}
 
 		os.Remove(cfg.Option("plugin.rpcaudit.logfile", "/tmp/rpc_audit.log"))

@@ -7,6 +7,7 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/choria/connectortest"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-protocol/protocol"
 	. "github.com/onsi/ginkgo"
@@ -37,7 +38,7 @@ var _ = Describe("McoRPC", func() {
 		protocol.Secure = "false"
 		build.TLS = "false"
 
-		config, err := choria.NewDefaultConfig()
+		config, err := config.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
 		config.LogLevel = "fatal"
 		fw, err = choria.NewWithConfig(config)

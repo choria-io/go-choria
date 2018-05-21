@@ -14,6 +14,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/mcorpc"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
@@ -149,7 +150,7 @@ func restartAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply
 		return
 	}
 
-	cfg, err := choria.NewConfig(agent.Config.ConfigFile)
+	cfg, err := config.NewConfig(agent.Config.ConfigFile)
 	if err != nil {
 		abort(fmt.Sprintf("Configuration %s could not be parsed, restart cannot continue: %s", agent.Config.ConfigFile, err), reply)
 		return
@@ -180,7 +181,7 @@ func abort(msg string, reply *mcorpc.Reply) {
 	reply.Statusmsg = msg
 }
 
-func writeConfig(config map[string]string, req *mcorpc.Request, cfg *choria.Config, log *logrus.Entry) (int, error) {
+func writeConfig(settings map[string]string, req *mcorpc.Request, cfg *config.Config, log *logrus.Entry) (int, error) {
 	cfile := cfg.ConfigFile
 
 	_, err := os.Stat(cfile)
@@ -209,7 +210,7 @@ func writeConfig(config map[string]string, req *mcorpc.Request, cfg *choria.Conf
 
 	written := 1
 
-	for k, v := range config {
+	for k, v := range settings {
 		log.Infof("Adding configuration: %s = %s", k, v)
 
 		_, err := fmt.Fprintf(tmpfile, "%s=%s\n", k, v)
@@ -225,7 +226,7 @@ func writeConfig(config map[string]string, req *mcorpc.Request, cfg *choria.Conf
 		return 0, fmt.Errorf("could not close temp file %s: %s", tmpfile.Name(), err)
 	}
 
-	_, err = choria.NewConfig(tmpfile.Name())
+	_, err = config.NewConfig(tmpfile.Name())
 	if err != nil {
 		return 0, fmt.Errorf("generated configuration could not be parsed: %s", err)
 	}

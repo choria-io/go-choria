@@ -7,6 +7,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/golang/mock/gomock"
@@ -26,7 +27,7 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 	var (
 		mockctl  *gomock.Controller
 		requests chan *choria.ConnectorMessage
-		cfg      *choria.Config
+		cfg      *config.Config
 		fw       *choria.Framework
 		am       *agents.Manager
 		err      error
@@ -42,7 +43,7 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 		requests = make(chan *choria.ConnectorMessage)
 		reply = &mcorpc.Reply{}
 
-		cfg, err = choria.NewConfig("testdata/test.cfg")
+		cfg, err = config.NewConfig("testdata/test.cfg")
 		Expect(err).ToNot(HaveOccurred())
 		cfg.DisableTLS = true
 
