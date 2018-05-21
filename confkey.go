@@ -73,6 +73,100 @@ func SetStructDefaults(target interface{}) error {
 	return nil
 }
 
+// StringFieldWithKey retrieves a string from target that matches key, "" when not found
+func StringFieldWithKey(target interface{}, key string) string {
+	item, err := fieldWithKey(target, key)
+	if err != nil {
+		return ""
+	}
+
+	field := reflect.ValueOf(target).Elem().FieldByName(item)
+
+	if field.Kind() == reflect.String {
+		ptr := field.Addr().Interface().(*string)
+
+		return string(*ptr)
+	}
+
+	return ""
+}
+
+// StringListWithKey retrieves a []string from target that matches key, empty when not found
+func StringListWithKey(target interface{}, key string) []string {
+	item, err := fieldWithKey(target, key)
+	if err != nil {
+		return []string{}
+	}
+
+	field := reflect.ValueOf(target).Elem().FieldByName(item)
+
+	if field.Kind() == reflect.Slice {
+		ptr := field.Addr().Interface().(*[]string)
+
+		if *ptr == nil {
+			return []string{}
+		}
+
+		return []string(*ptr)
+	}
+
+	return []string{}
+}
+
+// BoolWithKey retrieves a bool from target that matches key, false when not found
+func BoolWithKey(target interface{}, key string) bool {
+	item, err := fieldWithKey(target, key)
+	if err != nil {
+		return false
+	}
+
+	field := reflect.ValueOf(target).Elem().FieldByName(item)
+
+	if field.Kind() == reflect.Bool {
+		ptr := field.Addr().Interface().(*bool)
+
+		return bool(*ptr)
+	}
+
+	return false
+}
+
+// IntWithKey retrieves an int from target that matches key, 0 when not found
+func IntWithKey(target interface{}, key string) int {
+	item, err := fieldWithKey(target, key)
+	if err != nil {
+		return 0
+	}
+
+	field := reflect.ValueOf(target).Elem().FieldByName(item)
+
+	if field.Kind() == reflect.Int {
+		ptr := field.Addr().Interface().(*int)
+
+		return int(*ptr)
+	}
+
+	return 0
+}
+
+// Int64WithKey retrieves an int from target that matches key, 0 when not found
+func Int64WithKey(target interface{}, key string) int64 {
+	item, err := fieldWithKey(target, key)
+	if err != nil {
+		return 0
+	}
+
+	field := reflect.ValueOf(target).Elem().FieldByName(item)
+
+	if field.Kind() == reflect.Int64 {
+		ptr := field.Addr().Interface().(*int64)
+
+		return int64(*ptr)
+	}
+
+	return 0
+}
+
 // SetStructFieldWithKey finds the struct key that matches the confkey on target and assign the value to it
 func SetStructFieldWithKey(target interface{}, key string, value interface{}) error {
 	if reflect.TypeOf(target).Kind() != reflect.Ptr {
