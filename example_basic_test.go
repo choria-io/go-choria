@@ -56,6 +56,12 @@ func Example_basic() {
 	fmt.Printf("  servers: %s\n", strings.Join(c.Servers, ","))
 	fmt.Println("")
 
+	// getting a string by name
+	fmt.Println("Retrieved:")
+	fmt.Printf("  loglevel: %s\n", confkey.StringFieldWithKey(c, "loglevel"))
+	fmt.Printf("  servers: %s\n", strings.Join(confkey.StringListWithKey(c, "servers"), ","))
+	fmt.Println("")
+
 	// but you can also validate the entire struct if you like, perhaps you
 	// set some stuff directly to its fields
 	err = confkey.Validate(c)
@@ -81,6 +87,10 @@ func Example_basic() {
 	// Loaded:
 	//   loglevel: error
 	//   mode: client
+	//   servers: s1:1024,s2:1024
+	//
+	// Retrieved:
+	//   loglevel: error
 	//   servers: s1:1024,s2:1024
 	//
 	// valid

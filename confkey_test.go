@@ -22,6 +22,7 @@ type TestData struct {
 	ColonSplit  []string      `confkey:"colon_split" type:"colon_split"`
 	StringEnum  string        `confkey:"loglevel" validate:"enum=debug,info,warn" default:"warn"`
 	Int         int           `confkey:"int"`
+	Int64       int64         `confkey:"int64"`
 	TitleString string        `confkey:"title_string" type:"title_string"`
 	Bool        bool          `confkey:"bool"`
 	T           time.Duration `confkey:"interval" type:"duration" default:"1h"`
@@ -32,6 +33,65 @@ var _ = Describe("Confkey", func() {
 
 	BeforeEach(func() {
 		d = TestData{}
+	})
+
+	var _ = Describe("Int64WithKey", func() {
+		It("Should get the right int64", func() {
+			Expect(Int64WithKey(&d, "int64")).To(Equal(int64(0)))
+			d.Int64 = 10
+			Expect(Int64WithKey(&d, "int64")).To(Equal(int64(10)))
+		})
+
+		It("Should be 0 when not found", func() {
+			Expect(Int64WithKey(&d, "unknown")).To(Equal(int64(0)))
+		})
+	})
+
+	var _ = Describe("IntWithKey", func() {
+		It("Should get the right int", func() {
+			Expect(IntWithKey(&d, "int")).To(Equal(0))
+			d.Int = 10
+			Expect(IntWithKey(&d, "int")).To(Equal(10))
+		})
+
+		It("Should be 0 when not found", func() {
+			Expect(IntWithKey(&d, "unknown")).To(Equal(0))
+		})
+	})
+
+	var _ = Describe("BoolWithKey", func() {
+		It("Should get the right bool", func() {
+			d.Bool = false
+			Expect(BoolWithKey(&d, "bool")).To(BeFalse())
+			d.Bool = true
+			Expect(BoolWithKey(&d, "bool")).To(BeTrue())
+		})
+
+		It("Should be false when not found", func() {
+			Expect(BoolWithKey(&d, "unknown")).To(BeFalse())
+		})
+	})
+
+	var _ = Describe("StringListWithKey", func() {
+		It("Should get the right list", func() {
+			d.CommaSplit = []string{"one", "two"}
+			Expect(StringListWithKey(&d, "comma_split")).To(Equal([]string{"one", "two"}))
+		})
+
+		It("Should be empty when not found", func() {
+			Expect(StringListWithKey(&d, "unknown")).To(Equal([]string{}))
+		})
+	})
+
+	var _ = Describe("StringFieldWithKey", func() {
+		It("Should get the right string", func() {
+			d.StringEnum = "warn"
+			Expect(StringFieldWithKey(&d, "loglevel")).To(Equal("warn"))
+		})
+		It("Should be empty when not found", func() {
+			Expect(StringFieldWithKey(&d, "foo")).To(Equal(""))
+			Expect(StringFieldWithKey(&d, "loglevel")).To(Equal(""))
+		})
 	})
 
 	var _ = Describe("Validate", func() {
