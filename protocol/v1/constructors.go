@@ -117,8 +117,6 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Reques
 	return
 }
 
-// TODO
-
 // NewSecureReply creates a choria:secure:reply:1
 func NewSecureReply(reply protocol.Reply, security SecurityProvider) (secure protocol.SecureReply, err error) {
 	secure = &secureReply{
@@ -134,12 +132,8 @@ func NewSecureReply(reply protocol.Reply, security SecurityProvider) (secure pro
 	return
 }
 
-// TODO
-
 // NewSecureReplyFromTransport creates a new choria:secure:reply:1 from the data contained in a Transport message
 func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure protocol.SecureReply, err error) {
-	// TODO: validate the transport message holds a reply
-
 	secure = &secureReply{
 		Protocol: protocol.SecureReplyV1,
 	}
@@ -167,14 +161,16 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure prot
 	return
 }
 
-// TODO
-
 // NewSecureRequest creates a choria:secure:request:1
 func NewSecureRequest(request protocol.Request, security SecurityProvider) (secure protocol.SecureRequest, err error) {
-	pub, err := security.PublicCertTXT()
-	if err != nil {
-		err = fmt.Errorf("could not retrieve Public Certificate from the security subsystem: %s", err)
-		return
+	pub := []byte("insecure")
+
+	if protocol.IsSecure() {
+		pub, err = security.PublicCertTXT()
+		if err != nil {
+			err = fmt.Errorf("could not retrieve Public Certificate from the security subsystem: %s", err)
+			return
+		}
 	}
 
 	secure = &secureRequest{
@@ -190,8 +186,6 @@ func NewSecureRequest(request protocol.Request, security SecurityProvider) (secu
 
 	return
 }
-
-// TODO
 
 // NewSecureRequestFromTransport creates a new choria:secure:request:1 from the data contained in a Transport message
 func NewSecureRequestFromTransport(message protocol.TransportMessage, security SecurityProvider, skipvalidate bool) (secure protocol.SecureRequest, err error) {
