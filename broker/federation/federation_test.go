@@ -6,6 +6,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"sync"
 	"testing"
 
@@ -177,6 +178,7 @@ func (s *stubConnectionManager) Init() *stubConnectionManager {
 }
 func TestFederation(t *testing.T) {
 	log.SetOutput(ioutil.Discard)
+	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Federation")

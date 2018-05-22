@@ -2,11 +2,8 @@ package srvcache
 
 import (
 	"net"
-	"os"
 	"sync"
 	"time"
-
-	"github.com/prometheus/client_golang/prometheus"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -26,35 +23,6 @@ type entry struct {
 var cache = make(map[query]entry)
 var mu = &sync.Mutex{}
 var maxage = time.Duration(5 * time.Second)
-var identity string
-
-var srvctr = prometheus.NewCounterVec(prometheus.CounterOpts{
-	Name: "choria_dns_srv_lookups",
-	Help: "Number of SRV queries performed",
-}, []string{"identity"})
-
-var srvhit = prometheus.NewCounterVec(prometheus.CounterOpts{
-	Name: "choria_dns_srv_cachehits",
-	Help: "Number of SRV lookups served from the cache",
-}, []string{"identity"})
-
-var srvmiss = prometheus.NewCounterVec(prometheus.CounterOpts{
-	Name: "choria_dns_srv_cachemiss",
-	Help: "Number of SRV cache lookup misses",
-}, []string{"identity"})
-
-func init() {
-	h, err := os.Hostname()
-	if err != nil {
-		h = "unknown"
-	}
-
-	SetIdentity(h)
-
-	prometheus.MustRegister(srvctr)
-	prometheus.MustRegister(srvhit)
-	prometheus.MustRegister(srvmiss)
-}
 
 // LookupSRV is a wrapper around net.LookupSRV that does a 5 second cache
 func LookupSRV(service string, proto string, name string, resolver func(string, string, string) (string, []*net.SRV, error)) (string, []*net.SRV, error) {
@@ -83,14 +51,6 @@ func store(q query, cname string, addrs []*net.SRV) {
 		addrs: addrs,
 		time:  time.Now(),
 	}
-}
-
-// SetIdentity sets the identity to use when reporting cache stats
-func SetIdentity(id string) {
-	mu.Lock()
-	defer mu.Unlock()
-
-	identity = id
 }
 
 func retrieve(q query) (string, []*net.SRV) {

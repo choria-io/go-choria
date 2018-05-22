@@ -89,7 +89,7 @@ var _ = Describe("RequestTransformer", func() {
 		transformer.Input() <- in
 		waitForLogLines(logtxt, logbuf)
 
-		Expect(logbuf.String()).To(MatchRegexp("Received a message from test.example.net that is not federated"))
+		Expect(logbuf.String()).To(MatchRegexp("Received a message from rip.mcollective that is not federated"))
 	})
 
 	It("Should fail for messages with no targets", func() {
@@ -98,7 +98,7 @@ var _ = Describe("RequestTransformer", func() {
 
 		waitForLogLines(logtxt, logbuf)
 
-		Expect(logbuf.String()).To(MatchRegexp("Received a message 80a1ac20463745c0b12cfe6e3db61dff from test.example.net that does not have any targets"))
+		Expect(logbuf.String()).To(MatchRegexp("Received a message 80a1ac20463745c0b12cfe6e3db61dff from rip.mcollective that does not have any targets"))
 	})
 
 	It("Should fail for messages with no reply-to", func() {

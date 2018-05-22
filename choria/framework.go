@@ -10,11 +10,15 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-protocol/protocol"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/security"
+	fsec "github.com/choria-io/go-choria/security/file"
+	pupsec "github.com/choria-io/go-choria/security/puppet"
 	"github.com/choria-io/go-choria/srvcache"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
@@ -57,19 +61,38 @@ func NewWithConfig(config *config.Config) (*Framework, error) {
 		return &c, fmt.Errorf("could not set up logging: %s", err)
 	}
 
-	c.security, err = security.NewSecurityProvider(config.Choria.SecurityProvider, &c, c.Logger("security"))
+	err = c.setupSecurity()
 	if err != nil {
 		return &c, fmt.Errorf("could not set up security framework: %s", err)
 	}
 
-	if !(config.DisableSecurityProviderVerify || config.DisableTLS) {
-		errors, ok := c.security.Validate()
+	return &c, nil
+}
+
+func (fw *Framework) setupSecurity() error {
+	var err error
+
+	switch fw.Config.Choria.SecurityProvider {
+	case "puppet":
+		fw.security, err = pupsec.New(pupsec.WithResolver(fw), pupsec.WithChoriaConfig(fw.Config), pupsec.WithLog(fw.Logger("security")))
+	case "file":
+		fw.security, err = fsec.New(fsec.WithChoriaConfig(fw.Config), fsec.WithLog(fw.Logger("security")))
+	default:
+		err = fmt.Errorf("Unknown security provider %s", fw.Config.Choria.SecurityProvider)
+	}
+
+	if err != nil {
+		return err
+	}
+
+	if !(fw.Config.DisableSecurityProviderVerify || fw.Config.DisableTLS) && protocol.IsSecure() {
+		errors, ok := fw.security.Validate()
 		if !ok {
-			return &c, fmt.Errorf("security setup is not valid, %d errors encountered: %s", len(errors), strings.Join(errors, ", "))
+			return fmt.Errorf("security setup is not valid, %d errors encountered: %s", len(errors), strings.Join(errors, ", "))
 		}
 	}
 
-	return &c, nil
+	return nil
 }
 
 // ProvisionMode determines if this instance is in provisioning mode

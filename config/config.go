@@ -206,6 +206,16 @@ func normalize(c *Config) error {
 		c.RegistrationCollective = c.MainCollective
 	}
 
+	if c.OverrideCertname != "" {
+		c.Identity = c.OverrideCertname
+	}
+
+	if c.Identity == "" {
+		if certname, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
+			c.Identity = certname
+		}
+	}
+
 	if c.Identity == "" {
 		fqdn, _ := puppet.FacterFQDN()
 		if fqdn != "" {

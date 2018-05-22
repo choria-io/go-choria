@@ -1,6 +1,7 @@
 package registration
 
 import (
+	"os"
 	"testing"
 
 	framework "github.com/choria-io/go-choria/choria"
@@ -12,7 +13,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func TestFileContent(t *testing.T) {
+func TestRegistration(t *testing.T) {
+	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Server/Registration")
 }

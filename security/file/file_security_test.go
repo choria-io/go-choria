@@ -1,4 +1,4 @@
-package security
+package provider
 
 import (
 	"crypto/tls"
@@ -8,79 +8,116 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"testing"
 
-	config "github.com/choria-io/go-choria/config"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/security"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 )
 
-func setSSL(c *config.Config, parent string, id string) {
-	c.Choria.FileSecurityCertificate = filepath.Join(parent, "certs", fmt.Sprintf("%s.pem", id))
-	c.Choria.FileSecurityCA = filepath.Join(parent, "certs", "ca.pem")
-	c.Choria.FileSecurityCache = filepath.Join(parent, "choria_security", "public_certs")
-	c.Choria.FileSecurityKey = filepath.Join(parent, "private_keys", fmt.Sprintf("%s.pem", id))
+func TestFileSecurity(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Security/File")
+}
+
+func setSSL(c *Config, parent string, id string) {
+	c.Certificate = filepath.Join(parent, "certs", fmt.Sprintf("%s.pem", id))
+	c.CA = filepath.Join(parent, "certs", "ca.pem")
+	c.Cache = filepath.Join(parent, "choria_security", "public_certs")
+	c.Key = filepath.Join(parent, "private_keys", fmt.Sprintf("%s.pem", id))
+	c.AllowList = []string{"\\.mcollective$"}
+	c.PrivilegedUsers = []string{"\\.privileged.mcollective$"}
+	c.DisableTLSVerify = false
+	c.Identity = id
+	c.useFakeUID = true
+	c.fakeUID = 500
 }
 
 var _ = Describe("FileSSL", func() {
-	var mockctl *gomock.Controller
-	var settings *MocksettingsProvider
-	var cfg *config.Config
+	var cfg *Config
 	var err error
 	var prov *FileSecurity
 	var l *logrus.Logger
 
-	BeforeEach(func() {
-		mockctl = gomock.NewController(GinkgoT())
-		settings = NewMocksettingsProvider(mockctl)
+	var goodStub string
+	var nonexistingStub string
 
-		cfg, err = config.NewDefaultConfig()
+	BeforeEach(func() {
+		os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
+
+		goodStub = filepath.Join("..", "testdata", "good")
+		nonexistingStub = filepath.Join("..", "testdata", "nonexisting")
+
+		cfg = &Config{}
 		Expect(err).ToNot(HaveOccurred())
-		cfg.OverrideCertname = "rip.mcollective"
-		setSSL(cfg, filepath.Join("testdata", "good"), "rip.mcollective")
+		setSSL(cfg, goodStub, "rip.mcollective")
 
 		l = logrus.New()
 		l.Out = ioutil.Discard
 
-		prov, err = NewFileSecurity(settings, cfg, l.WithFields(logrus.Fields{}))
+		prov, err = New(WithConfig(cfg), WithLog(l.WithFields(logrus.Fields{})))
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	AfterEach(func() {
-		mockctl.Finish()
-		os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
+	It("Should impliment the provider interface", func() {
+		f := func(p security.Provider) {}
+		f(prov)
 	})
 
-	It("Should impliment the provider interface", func() {
-		f := func(p Provider) {}
-		f(prov)
+	Describe("WithChoriaConfig", func() {
+		It("Should support OverrideCertname", func() {
+			c, err := config.NewDefaultConfig()
+			Expect(err).ToNot(HaveOccurred())
+			c.OverrideCertname = "override.choria"
+			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(prov.conf.Identity).To(Equal("override.choria"))
+		})
+
+		It("Should copy all the relevant settings", func() {
+			c, err := config.NewDefaultConfig()
+			Expect(err).ToNot(HaveOccurred())
+
+			c.Choria.FileSecurityCA = "stub/ca.pem"
+			c.Choria.FileSecurityCache = "stub/cache"
+			c.Choria.FileSecurityCertificate = "stub/cert.pem"
+			c.Choria.FileSecurityKey = "stub/key.pem"
+			c.DisableTLSVerify = true
+
+			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(prov.conf.AllowList).To(Equal([]string{"\\.mcollective$"}))
+			Expect(prov.conf.PrivilegedUsers).To(Equal([]string{"\\.privileged.mcollective$"}))
+			Expect(prov.conf.CA).To(Equal("stub/ca.pem"))
+			Expect(prov.conf.Cache).To(Equal("stub/cache"))
+			Expect(prov.conf.Certificate).To(Equal("stub/cert.pem"))
+			Expect(prov.conf.Key).To(Equal("stub/key.pem"))
+			Expect(prov.conf.DisableTLSVerify).To(BeTrue())
+		})
 	})
 
 	Describe("Validate", func() {
 		It("Should handle missing files", func() {
-			setSSL(cfg, filepath.Join("testdata", "nonexisting"), "test.mcollective")
-
-			cfg.OverrideCertname = "test.mcollective"
-			prov, err = NewFileSecurity(settings, cfg, l.WithFields(logrus.Fields{}))
-
+			setSSL(cfg, nonexistingStub, "test.mcollective")
+			prov, err = New(WithConfig(cfg), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
-			settings.EXPECT().Getuid().Return(500).AnyTimes()
 			errs, ok := prov.Validate()
 
 			Expect(ok).To(BeFalse())
 			Expect(errs).To(HaveLen(3))
-			Expect(errs[0]).To(Equal(fmt.Sprintf("public certificate %s does not exist", cfg.Choria.FileSecurityCertificate)))
-			Expect(errs[1]).To(Equal(fmt.Sprintf("private key %s does not exist", cfg.Choria.FileSecurityKey)))
-			Expect(errs[2]).To(Equal(fmt.Sprintf("CA %s does not exist", cfg.Choria.FileSecurityCA)))
+			Expect(errs[0]).To(Equal(fmt.Sprintf("public certificate %s does not exist", cfg.Certificate)))
+			Expect(errs[1]).To(Equal(fmt.Sprintf("private key %s does not exist", cfg.Key)))
+			Expect(errs[2]).To(Equal(fmt.Sprintf("CA %s does not exist", cfg.CA)))
 		})
 
 		It("Should accept valid directories", func() {
-			cfg.OverrideCertname = "rip.mcollective"
-			setSSL(cfg, filepath.Join("testdata", "good"), "rip.mcollective")
+			setSSL(cfg, goodStub, "rip.mcollective")
 
-			settings.EXPECT().Getuid().Return(500).AnyTimes()
 			errs, ok := prov.Validate()
 			Expect(errs).To(HaveLen(0))
 			Expect(ok).To(BeTrue())
@@ -89,37 +126,27 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("Identity", func() {
 		It("Should support OverrideCertname", func() {
-			cfg.OverrideCertname = "bob.choria"
+			cfg.Identity = "bob.choria"
 
 			Expect(prov.Identity()).To(Equal("bob.choria"))
 		})
 
-		It("Should support MCOLLECTIVE_CERTNAME", func() {
-			cfg.OverrideCertname = ""
-			os.Setenv("MCOLLECTIVE_CERTNAME", "env.choria")
-			Expect(prov.Identity()).To(Equal("env.choria"))
-		})
-
 		It("Should support non root users", func() {
-			settings.EXPECT().Getuid().Return(500).AnyTimes()
-			cfg.OverrideCertname = ""
+			cfg.Identity = ""
 			os.Setenv("USER", "bob")
-			os.Unsetenv("MCOLLECTIVE_CERTNAME")
 			Expect(prov.Identity()).To(Equal("bob.mcollective"))
 		})
 
 		It("Should support root users", func() {
-			settings.EXPECT().Getuid().Return(0).AnyTimes()
-			os.Unsetenv("MCOLLECTIVE_CERTNAME")
+			cfg.fakeUID = 0
 			cfg.Identity = "node.example.net"
-			cfg.OverrideCertname = ""
 			Expect(prov.Identity()).To(Equal("node.example.net"))
 		})
 	})
 
 	Describe("CallerName", func() {
 		It("Should return the right caller name", func() {
-			cfg.OverrideCertname = "test.choria"
+			cfg.Identity = "test.choria"
 			Expect(prov.CallerName()).To(Equal("choria=test.choria"))
 		})
 	})
@@ -158,8 +185,7 @@ var _ = Describe("FileSSL", func() {
 		})
 
 		It("Should support cached certificates", func() {
-			cfg.OverrideCertname = "2.mcollective"
-			settings.EXPECT().Getuid().Return(500).AnyTimes()
+			cfg.Identity = "2.mcollective"
 
 			sig, err := base64.StdEncoding.DecodeString("Zq1F2bdXOAvB5Ca+iYCZ/BLYz2ZzbQP/V8kwQY0E3cuDrBDArX7UhUnBakzN+Msr7UyF+EkYmzvIi4KHnFBrgi7otM8Q5YMh5IT+IPaoHj3Rj/jorqD4g8ltZINqCUBWDN4wvSG98SxLyawV69gAK4SnP+oy7SU7zxuQiPwIMJ7lVoiQ3t+tiQAHUxeykQPw7WElLb+wPTb1k4DM3yRkijA9OeUk+3SVyl2sTCu5h/Lg0lcI372bkLDESlnhnvw7yuLD2SSncrEQrBdv/N2yEpY2fx1UKGlTrn9GH4MGA1GuzE1F87RH9P8ieeul6vI13BkBAlMk5KaGlmWpgiGri5UjCHHXMxEnXfwUcKFE+E6yVg4SbrJknkuJzNJduypMIep7YOnPHVLNIBZLuOUdJrRgBQ+Yb9mxPnEQHhOHeN0XHUcseRJEISqPkagpNx1xhOb7g3hsNyEvqibT/DZsc/2hyU2I/wG9fl26CnN9c12r1zInyCQYsU/wuIvjDtRZvTpLGJSJdgjSmTPzGmA/fKpAfOWObdsoLeorjF/pNweuc0x0JZMsBrZauldLL53wnnvllsFEmIAxs+RusoJ2UfW7WugZ7lXGISHTef6IHjukHgDBSbeGawVCnAgPbPz1dy42x04koUW3Bmz89fJ4/j+e49ijz7z3W/IercNeke4=")
 			Expect(err).ToNot(HaveOccurred())
@@ -171,8 +197,6 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("PrivilegedVerifyByteSignature", func() {
 		It("Should allow a privileged cert to act as someone else", func() {
-			settings.EXPECT().Getuid().Return(500).AnyTimes()
-
 			sig, err := base64.StdEncoding.DecodeString("4dSmCRsnZzJjqSLdXxCRufw+wh9BrbqMZfEkB9c0yLkqjuc6r2b3tl5bh28l2lm50nPcIKeMyVHh2pkhvVsnjTYVhEYGTBcJdhAf/4PQCCqllHfiD0i+EZNTC916P4C2TVFNw5kOx/qjz6KYBuBV0K0U5JG1L7rHmlSoJ1La9vs/x1RMLly91NYnPOtCpwSsAwRG6uGMnCQK/vGg+NiwIQpQrchCpVf6rrXSqqUrJzZc/SeNl42AA2EYbkq8ys79sye1w91BF07gX6n/gK/472tlTh9OK49GmLdi15oGiEOPbkCbPYm2hcWAJzdqGprCQAsYjuMfUByswxkthEw72Bp9tmSuc6P6QPLswkAeVi4NivQCm81CFEB0ZKl0WluJp5xEL9/mO9/Z/iUuvMRGQSbfIzi+8PVJeNIWsY8rzsDMdoIdwPD+vqVU7BhHxKXjAHq2nnhQCj35HuV2dN7n0MOy4A6H5kA4a8d5UVTBRMsFZ5s6Bo4/leFOlylgU2DIWq+DXdg05Zr98H9JulDM0epKEjLeowo5z5f2s7/eQymaSzdoW2zUhe9Hp0G0D8CkQUXm/RzjzLBTZ1fNQYIQGA9U6n+ApwBNHW9ClmlbbvcUb+Bw2rRHVgKM6+kUam+TLpLljuZkOY6wkk+h97aHYJyO7tOezyTuPPM5L3CDQ+M=")
 			Expect(err).ToNot(HaveOccurred())
 
@@ -278,7 +302,7 @@ var _ = Describe("FileSSL", func() {
 		})
 
 		It("Should fail for foreign certs", func() {
-			pem, err = ioutil.ReadFile(filepath.Join("testdata", "foreign.pem"))
+			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			err := prov.VerifyCertificate(pem, "rip.mcollective")
 			Expect(err).To(MatchError("x509: certificate signed by unknown authority"))
@@ -298,7 +322,7 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("PublicCertPem", func() {
 		It("Should return the correct pem data", func() {
-			dat, err := ioutil.ReadFile(cfg.Choria.FileSecurityCertificate)
+			dat, err := ioutil.ReadFile(cfg.Certificate)
 			Expect(err).ToNot(HaveOccurred())
 			pb, _ := pem.Decode(dat)
 			Expect(err).ToNot(HaveOccurred())
@@ -311,7 +335,7 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("shouldCacheClientCert", func() {
 		It("Should only accept valid certs signed by our ca", func() {
-			pd, err := ioutil.ReadFile(filepath.Join("testdata", "foreign.pem"))
+			pd, err := ioutil.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(prov.shouldCacheClientCert(pd, "foo")).To(BeFalse())
 
@@ -322,7 +346,7 @@ var _ = Describe("FileSSL", func() {
 		})
 
 		It("Should cache privileged certs", func() {
-			cfg.OverrideCertname = "1.privileged.mcollective"
+			cfg.Identity = "1.privileged.mcollective"
 
 			pub := prov.publicCertPath()
 
@@ -340,7 +364,7 @@ var _ = Describe("FileSSL", func() {
 		})
 
 		It("Should only cache certs thats on the allowed list", func() {
-			cfg.Choria.CertnameWhitelist = []string{"bob"}
+			cfg.AllowList = []string{"bob"}
 			pub := prov.publicCertPath()
 
 			pd, err := ioutil.ReadFile(pub)
@@ -359,8 +383,8 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("CachePublicData", func() {
 		It("Should not write untrusted files to disk", func() {
-			cfg.Choria.FileSecurityCache = os.TempDir()
-			pd, err := ioutil.ReadFile(filepath.Join("testdata", "foreign.pem"))
+			cfg.Cache = os.TempDir()
+			pd, err := ioutil.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			err = prov.CachePublicData(pd, "foreign")
 			Expect(err).To(MatchError("certificate 'foreign' did not pass validation"))
@@ -374,7 +398,7 @@ var _ = Describe("FileSSL", func() {
 		})
 
 		It("Should write trusted files to disk", func() {
-			cfg.Choria.FileSecurityCache = os.TempDir()
+			cfg.Cache = os.TempDir()
 			pub := prov.publicCertPath()
 
 			pd, err := ioutil.ReadFile(pub)
@@ -392,7 +416,7 @@ var _ = Describe("FileSSL", func() {
 		})
 
 		It("Should not overwrite existing files", func() {
-			cfg.Choria.FileSecurityCache = os.TempDir()
+			cfg.Cache = os.TempDir()
 			pub := prov.publicCertPath()
 
 			pd, err := ioutil.ReadFile(pub)
@@ -421,8 +445,7 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("CachedPublicData", func() {
 		It("Should read the correct file", func() {
-			cfg.Choria.FileSecurityCache = os.TempDir()
-			settings.EXPECT().Getuid().Return(500).AnyTimes()
+			cfg.Cache = os.TempDir()
 
 			pub := prov.publicCertPath()
 
@@ -440,8 +463,8 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("privilegedCerts", func() {
 		It("Should find the right certs", func() {
-			cfg.Choria.PrivilegedUsers = []string{"\\.privileged.mcollective$", "\\.super.mcollective$"}
-			cfg.Choria.CertnameWhitelist = []string{"\\.mcollective$"}
+			cfg.PrivilegedUsers = []string{"\\.privileged.mcollective$", "\\.super.mcollective$"}
+			cfg.AllowList = []string{"\\.mcollective$"}
 
 			expected := []string{
 				"1.privileged.mcollective",
@@ -456,15 +479,13 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("privateKeyExists", func() {
 		It("Should detect existing keys", func() {
-			prov.conf.OverrideCertname = "rip.mcollective"
-			setSSL(cfg, filepath.Join("testdata", "good"), "rip.mcollective")
+			setSSL(cfg, goodStub, "rip.mcollective")
 
 			Expect(prov.privateKeyExists()).To(BeTrue())
 		})
 
 		It("Should detect absent keys", func() {
-			prov.conf.OverrideCertname = "na.mcollective"
-			setSSL(cfg, filepath.Join("testdata", "good"), "na.mcollective")
+			setSSL(cfg, goodStub, "na.mcollective")
 
 			Expect(prov.privateKeyExists()).To(BeFalse())
 		})

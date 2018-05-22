@@ -1,4 +1,4 @@
-package security
+package provider
 
 import (
 	context "context"
@@ -27,23 +27,103 @@ import (
 
 // FileSecurity impliments SecurityProvider using files on disk
 type FileSecurity struct {
-	fw   settingsProvider
-	conf *config.Config
+	conf *Config
 	log  *logrus.Entry
 
 	mu *sync.Mutex
 }
 
-// NewFileSecurity creates a new instance of the Puppet Security provider
-func NewFileSecurity(fw settingsProvider, conf *config.Config, log *logrus.Entry) (*FileSecurity, error) {
-	p := &FileSecurity{
-		fw:   fw,
-		conf: conf,
-		log:  log.WithFields(logrus.Fields{"ssl": "file"}),
-		mu:   &sync.Mutex{},
+// Config is the configuration for FileSecurity
+type Config struct {
+	// Identity when not empty will force the identity to be used for validations etc
+	Identity string
+
+	// Certificate is the path to the public certificate
+	Certificate string
+
+	// Key is the path to the private key
+	Key string
+
+	// CA is the path to the Certificate Authority
+	CA string
+
+	// Cache is where known client certificates will be stored
+	Cache string
+
+	// PrivilegedUsers is a list of regular expressions that identity privilged users
+	PrivilegedUsers []string
+
+	// AllowList is a list of regular expressions that identity valid users to allow in
+	AllowList []string
+
+	// DisableTLSVerify disables TLS verify in HTTP clients etc
+	DisableTLSVerify bool
+
+	useFakeUID bool
+	fakeUID    int
+}
+
+// Option is a function that can configure the File Security Provider
+type Option func(*FileSecurity) error
+
+// WithChoriaConfig optionally configures the File Security Provider from settings found in a typical Choria configuration
+func WithChoriaConfig(c *config.Config) Option {
+	cfg := Config{
+		AllowList:        c.Choria.CertnameWhitelist,
+		CA:               c.Choria.FileSecurityCA,
+		Cache:            c.Choria.FileSecurityCache,
+		Certificate:      c.Choria.FileSecurityCertificate,
+		DisableTLSVerify: c.DisableTLSVerify,
+		Key:              c.Choria.FileSecurityKey,
+		PrivilegedUsers:  c.Choria.PrivilegedUsers,
 	}
 
-	return p, nil
+	cfg.Identity = c.Identity
+
+	if c.OverrideCertname != "" {
+		cfg.Identity = c.OverrideCertname
+	}
+
+	return WithConfig(&cfg)
+}
+
+// WithConfig optionally configures the File Security Provider using its native configuration format
+func WithConfig(c *Config) Option {
+	return func(fs *FileSecurity) error {
+		fs.conf = c
+
+		return nil
+	}
+}
+
+// WithLog configures a logger for the File Security Provider
+func WithLog(l *logrus.Entry) Option {
+	return func(fs *FileSecurity) error {
+		fs.log = l.WithFields(logrus.Fields{"ssl": "file"})
+
+		return nil
+	}
+}
+
+// New creates a new instance of the File Security provider
+func New(opts ...Option) (*FileSecurity, error) {
+	f := &FileSecurity{
+		mu: &sync.Mutex{},
+	}
+
+	for _, opt := range opts {
+		opt(f)
+	}
+
+	if f.conf == nil {
+		return nil, errors.New("configuration not given")
+	}
+
+	if f.log == nil {
+		return nil, errors.New("logger not given")
+	}
+
+	return f, nil
 }
 
 // Validate determines if the node represents a valid SSL configuration
@@ -224,7 +304,7 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 
 	_, err = os.Stat(certfile)
 	if err == nil {
-		s.log.Warnf("Already have a certificate in %s, refusing to overwrite with a new one", certfile)
+		s.log.Debugf("Already have a certificate in %s, refusing to overwrite with a new one", certfile)
 		return nil
 	}
 
@@ -261,23 +341,27 @@ func (s *FileSecurity) CachedPublicData(identity string) ([]byte, error) {
 
 // Identity determines the choria certname
 func (s *FileSecurity) Identity() string {
-	if s.conf.OverrideCertname != "" {
-		return s.conf.OverrideCertname
-	}
-
-	if certname, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
-		return certname
+	if s.conf.Identity != "" {
+		return s.conf.Identity
 	}
 
 	certname := s.conf.Identity
 
-	if s.fw.Getuid() != 0 {
+	if s.uid() != 0 {
 		if u, ok := os.LookupEnv("USER"); ok {
 			certname = fmt.Sprintf("%s.mcollective", u)
 		}
 	}
 
 	return certname
+}
+
+func (s *FileSecurity) uid() int {
+	if s.conf.useFakeUID {
+		return s.conf.fakeUID
+	}
+
+	return os.Geteuid()
 }
 
 func (s *FileSecurity) privilegedCerts() []string {
@@ -291,7 +375,7 @@ func (s *FileSecurity) privilegedCerts() []string {
 		if !info.IsDir() {
 			cert := []byte(strings.TrimSuffix(filepath.Base(path), ".pem"))
 
-			if MatchAnyRegex(cert, s.conf.Choria.PrivilegedUsers) {
+			if MatchAnyRegex(cert, s.conf.PrivilegedUsers) {
 				certs = append(certs, string(cert))
 			}
 		}
@@ -473,15 +557,15 @@ func (s *FileSecurity) decodePEM(certpath string) (*pem.Block, error) {
 }
 
 func (s *FileSecurity) privateKeyPath() string {
-	return filepath.FromSlash(s.conf.Choria.FileSecurityKey)
+	return filepath.FromSlash(s.conf.Key)
 }
 
 func (s *FileSecurity) publicCertPath() string {
-	return filepath.FromSlash(s.conf.Choria.FileSecurityCertificate)
+	return filepath.FromSlash(s.conf.Certificate)
 }
 
 func (s *FileSecurity) caPath() string {
-	return filepath.FromSlash(s.conf.Choria.FileSecurityCA)
+	return filepath.FromSlash(s.conf.CA)
 }
 
 func (s *FileSecurity) privateKeyExists() bool {
@@ -519,7 +603,7 @@ func (s *FileSecurity) privateKeyPEM() (pb *pem.Block, err error) {
 }
 
 func (s *FileSecurity) certCacheDir() string {
-	return filepath.FromSlash(s.conf.Choria.FileSecurityCache)
+	return filepath.FromSlash(s.conf.Cache)
 }
 
 func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) bool {
@@ -528,7 +612,7 @@ func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) bool {
 		return false
 	}
 
-	if MatchAnyRegex([]byte(name), s.conf.Choria.PrivilegedUsers) {
+	if MatchAnyRegex([]byte(name), s.conf.PrivilegedUsers) {
 		s.log.Warnf("Caching privileged certificate %s", name)
 		return true
 	}
@@ -538,8 +622,8 @@ func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) bool {
 		return false
 	}
 
-	if !MatchAnyRegex([]byte(name), s.conf.Choria.CertnameWhitelist) {
-		s.log.Warnf("Received certificate '%s' does not match the allowed list '%s'", name, s.conf.Choria.CertnameWhitelist)
+	if !MatchAnyRegex([]byte(name), s.conf.AllowList) {
+		s.log.Warnf("Received certificate '%s' does not match the allowed list '%s'", name, s.conf.AllowList)
 		return false
 	}
 
