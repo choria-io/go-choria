@@ -1,4 +1,4 @@
-package security
+package provider
 
 import (
 	"bytes"
@@ -16,33 +16,151 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
+	fsec "github.com/choria-io/go-choria/security/file"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
 )
 
+// Resolver provides DNS lookup facilities
+type Resolver interface {
+	QuerySrvRecords(records []string) ([]srvcache.Server, error)
+}
+
 // PuppetSecurity impliments SecurityProvider reusing AIO Puppet settings
 // it supports enrollment the same way `puppet agent --waitforcert 10` does
 type PuppetSecurity struct {
-	fw   settingsProvider
-	conf *config.Config
+	res  Resolver
+	conf *Config
 	log  *logrus.Entry
 
-	fsec  *FileSecurity
+	fsec  *fsec.FileSecurity
 	cache string
 }
 
-// NewPuppetSecurity creates a new instance of the Puppet Security provider
-func NewPuppetSecurity(fw settingsProvider, conf *config.Config, log *logrus.Entry) (*PuppetSecurity, error) {
-	p := &PuppetSecurity{
-		fw:   fw,
-		conf: conf,
-		log:  log.WithFields(logrus.Fields{"ssl": "puppet"}),
+// Config is the configuration for PuppetSecurity
+type Config struct {
+	// Identity when not empty will force the identity to be used for validations etc
+	Identity string
+
+	// SSLDir is the directory where Puppet stores it's SSL
+	SSLDir string
+
+	// PrivilegedUsers is a list of regular expressions that identity privilged users
+	PrivilegedUsers []string
+
+	// AllowList is a list of regular expressions that identity valid users to allow in
+	AllowList []string
+
+	// DisableTLSVerify disables TLS verify in HTTP clients etc
+	DisableTLSVerify bool
+
+	// PuppetCAHost is the hostname of the PuppetCA
+	PuppetCAHost string
+
+	// PuppetCAPort is the port of the PuppetCA
+	PuppetCAPort int
+
+	// DisableSRV prevents SRV lookups
+	DisableSRV bool
+
+	useFakeUID bool
+	fakeUID    int
+}
+
+// Option is a function that can configure the Puppet Security Provider
+type Option func(*PuppetSecurity) error
+
+// WithChoriaConfig optionally configures the Puppet Security Provider from settings found in a typical Choria configuration
+func WithChoriaConfig(c *config.Config) Option {
+	return func(p *PuppetSecurity) error {
+		cfg := Config{
+			AllowList:        c.Choria.CertnameWhitelist,
+			DisableTLSVerify: c.DisableTLSVerify,
+			PrivilegedUsers:  c.Choria.PrivilegedUsers,
+			SSLDir:           c.Choria.SSLDir,
+			PuppetCAHost:     c.Choria.PuppetCAHost,
+			PuppetCAPort:     c.Choria.PuppetCAPort,
+		}
+
+		if c.HasOption("plugin.choria.puppetca_host") || c.HasOption("plugin.choria.puppetca_port") {
+			cfg.DisableSRV = true
+		}
+
+		cfg.Identity = c.Identity
+
+		if c.OverrideCertname != "" {
+			cfg.Identity = c.OverrideCertname
+		}
+
+		if !protocol.IsSecure() {
+			cfg.SSLDir = filepath.FromSlash("/nonexisting")
+		}
+
+		if cfg.SSLDir == "" {
+			d, err := userSSlDir()
+			if err != nil {
+				return err
+			}
+
+			cfg.SSLDir = d
+		}
+
+		p.conf = &cfg
+
+		return nil
+	}
+}
+
+// WithConfig optionally configures the Puppet Security Provider using its native configuration format
+func WithConfig(c *Config) Option {
+	return func(p *PuppetSecurity) error {
+		p.conf = c
+
+		return nil
+	}
+}
+
+// WithLog configures a logger for the Puppet Security Provider
+func WithLog(l *logrus.Entry) Option {
+	return func(p *PuppetSecurity) error {
+		p.log = l.WithFields(logrus.Fields{"ssl": "puppet"})
+
+		return nil
+	}
+}
+
+// WithResolver configures a SRV resolver for the Puppet Security Provider
+func WithResolver(r Resolver) Option {
+	return func(p *PuppetSecurity) error {
+		p.res = r
+
+		return nil
+	}
+}
+
+// New creates a new instance of the Puppet Security Provider
+func New(opts ...Option) (*PuppetSecurity, error) {
+	p := &PuppetSecurity{}
+
+	for _, opt := range opts {
+		opt(p)
+	}
+
+	if p.conf == nil {
+		return nil, errors.New("configuration not given")
+	}
+
+	if p.log == nil {
+		return nil, errors.New("logger not given")
+	}
+
+	if p.res == nil {
+		return nil, errors.New("resolver not given")
 	}
 
 	return p, p.reinit()
@@ -51,27 +169,17 @@ func NewPuppetSecurity(fw settingsProvider, conf *config.Config, log *logrus.Ent
 func (s *PuppetSecurity) reinit() error {
 	var err error
 
-	s.conf.Choria.FileSecurityCA, err = s.caPath()
-	if err != nil {
-		return err
+	fc := fsec.Config{
+		AllowList:        s.conf.AllowList,
+		DisableTLSVerify: s.conf.DisableTLSVerify,
+		PrivilegedUsers:  s.conf.PrivilegedUsers,
+		CA:               s.caPath(),
+		Cache:            s.certCacheDir(),
+		Certificate:      s.publicCertPath(),
+		Key:              s.privateKeyPath(),
 	}
 
-	s.conf.Choria.FileSecurityCache, err = s.certCacheDir()
-	if err != nil {
-		return err
-	}
-
-	s.conf.Choria.FileSecurityCertificate, err = s.publicCertPath()
-	if err != nil {
-		return err
-	}
-
-	s.conf.Choria.FileSecurityKey, err = s.privateKeyPath()
-	if err != nil {
-		return err
-	}
-
-	s.fsec, err = NewFileSecurity(s.fw, s.conf, s.log)
+	s.fsec, err = fsec.New(fsec.WithConfig(&fc), fsec.WithLog(s.log))
 	if err != nil {
 		return err
 	}
@@ -153,11 +261,6 @@ func (s *PuppetSecurity) Enroll(ctx context.Context, wait time.Duration, cb func
 func (s *PuppetSecurity) Validate() ([]string, bool) {
 	errors := []string{}
 
-	if _, err := s.sslDir(); err != nil {
-		errors = append(errors, fmt.Sprintf("SSL Directory does not exist: %s", err))
-		return errors, false
-	}
-
 	ferrs, _ := s.fsec.Validate()
 	for _, err := range ferrs {
 		errors = append(errors, err)
@@ -227,22 +330,18 @@ func (s *PuppetSecurity) CachedPublicData(identity string) ([]byte, error) {
 	return s.fsec.CachedPublicData(identity)
 }
 
-func (s *PuppetSecurity) cachePath(identity string) (string, error) {
+func (s *PuppetSecurity) cachePath(identity string) string {
 	var cache string
-	var err error
 
-	if s.cache == "" {
-		cache, err = s.certCacheDir()
-		if err != nil {
-			return "", fmt.Errorf("cert cache dir does not exist: %s", err)
-		}
-	} else {
-		cache = s.cache
+	cache = s.cache
+
+	if cache == "" {
+		cache = s.certCacheDir()
 	}
 
 	certfile := filepath.Join(cache, fmt.Sprintf("%s.pem", identity))
 
-	return certfile, nil
+	return certfile
 }
 
 // VerifyCertificate verifies a certificate is signed with the configured CA and if
@@ -263,23 +362,27 @@ func (s *PuppetSecurity) PublicCertTXT() ([]byte, error) {
 
 // Identity determines the choria certname
 func (s *PuppetSecurity) Identity() string {
-	if s.conf.OverrideCertname != "" {
-		return s.conf.OverrideCertname
-	}
-
-	if certname, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
-		return certname
+	if s.conf.Identity != "" {
+		return s.conf.Identity
 	}
 
 	certname := s.conf.Identity
 
-	if s.fw.Getuid() != 0 {
+	if s.uid() != 0 {
 		if u, ok := os.LookupEnv("USER"); ok {
 			certname = fmt.Sprintf("%s.mcollective", u)
 		}
 	}
 
 	return certname
+}
+
+func (s *PuppetSecurity) uid() int {
+	if s.conf.useFakeUID {
+		return s.conf.fakeUID
+	}
+
+	return os.Geteuid()
 }
 
 // TLSConfig creates a TLS configuration for use by NATS, HTTPS etc
@@ -292,51 +395,26 @@ func (s *PuppetSecurity) SSLContext() (*http.Transport, error) {
 	return s.fsec.SSLContext()
 }
 
-func (s *PuppetSecurity) certCacheDir() (string, error) {
-	ssldir, err := s.sslDir()
-	if err != nil {
-		return "", fmt.Errorf("could not determine Client Certificate Cache Directory: %s", err)
-	}
-
-	path := filepath.FromSlash(filepath.Join(ssldir, "choria_security", "public_certs"))
-
-	return path, nil
+func (s *PuppetSecurity) certCacheDir() string {
+	return filepath.FromSlash(filepath.Join(s.sslDir(), "choria_security", "public_certs"))
 }
 
-func (s *PuppetSecurity) caPath() (string, error) {
-	ssl, err := s.sslDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.FromSlash((filepath.Join(ssl, "certs", "ca.pem"))), nil
+func (s *PuppetSecurity) caPath() string {
+	return filepath.FromSlash((filepath.Join(s.sslDir(), "certs", "ca.pem")))
 }
 
-func (s *PuppetSecurity) privateKeyDir() (string, error) {
-	ssl, err := s.sslDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.FromSlash((filepath.Join(ssl, "private_keys"))), nil
+func (s *PuppetSecurity) privateKeyDir() string {
+	return filepath.FromSlash((filepath.Join(s.sslDir(), "private_keys")))
 }
 
-func (s *PuppetSecurity) privateKeyPath() (string, error) {
-	dir, err := s.privateKeyDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.FromSlash(filepath.Join(dir, fmt.Sprintf("%s.pem", s.Identity()))), nil
+func (s *PuppetSecurity) privateKeyPath() string {
+	return filepath.FromSlash(filepath.Join(s.privateKeyDir(), fmt.Sprintf("%s.pem", s.Identity())))
 }
 
 func (s *PuppetSecurity) createSSLDirectories() error {
-	ssl, err := s.sslDir()
-	if err != nil {
-		return err
-	}
+	ssl := s.sslDir()
 
-	err = os.MkdirAll(ssl, 0771)
+	err := os.MkdirAll(ssl, 0771)
 	if err != nil {
 		return err
 	}
@@ -360,56 +438,16 @@ func (s *PuppetSecurity) createSSLDirectories() error {
 	return nil
 }
 
-func (s *PuppetSecurity) csrPath() (string, error) {
-	ssl, err := s.sslDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.FromSlash((filepath.Join(ssl, "certificate_requests", fmt.Sprintf("%s.pem", s.Identity())))), nil
+func (s *PuppetSecurity) csrPath() string {
+	return filepath.FromSlash((filepath.Join(s.sslDir(), "certificate_requests", fmt.Sprintf("%s.pem", s.Identity()))))
 }
 
-func (s *PuppetSecurity) publicCertPath() (string, error) {
-	ssl, err := s.sslDir()
-	if err != nil {
-		return "", err
-	}
-
-	return filepath.FromSlash((filepath.Join(ssl, "certs", fmt.Sprintf("%s.pem", s.Identity())))), nil
+func (s *PuppetSecurity) publicCertPath() string {
+	return filepath.FromSlash((filepath.Join(s.sslDir(), "certs", fmt.Sprintf("%s.pem", s.Identity()))))
 }
 
-func (s *PuppetSecurity) sslDir() (string, error) {
-	if !protocol.IsSecure() {
-		return filepath.FromSlash("/nonexisting"), nil
-	}
-
-	if s.conf.Choria.SSLDir != "" {
-		return s.conf.Choria.SSLDir, nil
-	}
-
-	if s.fw.Getuid() == 0 {
-		path, err := s.fw.PuppetSetting("ssldir")
-		if err != nil {
-			return "", err
-		}
-
-		// store it so future calls to this wil not call out to Puppet again
-		s.conf.Choria.SSLDir = filepath.FromSlash(path)
-
-		return s.conf.Choria.SSLDir, nil
-	}
-
-	homedir := os.Getenv("HOME")
-
-	if runtime.GOOS == "windows" {
-		if os.Getenv("HOMEDRIVE") == "" || os.Getenv("HOMEPATH") == "" {
-			return "", errors.New("cannot determine home dir while looking for SSL Directory, no HOMEDRIVE or HOMEPATH environment is set.  Please set HOME or configure plugin.choria.ssldir")
-		}
-
-		homedir = filepath.Join(os.Getenv("HOMEDRIVE"), os.Getenv("HOMEPATH"))
-	}
-
-	return filepath.FromSlash(filepath.Join(homedir, ".puppetlabs", "etc", "puppet", "ssl")), nil
+func (s *PuppetSecurity) sslDir() string {
+	return s.conf.SSLDir
 }
 
 func (s *PuppetSecurity) writeCSR(key *rsa.PrivateKey, cn string, ou string) error {
@@ -417,10 +455,7 @@ func (s *PuppetSecurity) writeCSR(key *rsa.PrivateKey, cn string, ou string) err
 		return fmt.Errorf("a certificate request already exist for %s", s.Identity())
 	}
 
-	path, err := s.csrPath()
-	if err != nil {
-		return fmt.Errorf("could not determine csr path: %s", err)
-	}
+	path := s.csrPath()
 
 	subj := pkix.Name{
 		CommonName:         cn,
@@ -458,17 +493,16 @@ func (s *PuppetSecurity) writeCSR(key *rsa.PrivateKey, cn string, ou string) err
 
 func (s *PuppetSecurity) puppetCA() srvcache.Server {
 	server := srvcache.Server{
-		Host:   s.conf.Choria.PuppetCAHost,
-		Port:   s.conf.Choria.PuppetCAPort,
+		Host:   s.conf.PuppetCAHost,
+		Port:   s.conf.PuppetCAPort,
 		Scheme: "https",
 	}
 
-	// if either was specifically set and not using defaults then use whats there
-	if s.conf.HasOption("plugin.choria.puppetca_host") || s.conf.HasOption("plugin.choria.puppetca_port") {
+	if s.conf.DisableSRV {
 		return server
 	}
 
-	servers, err := s.fw.QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"})
+	servers, err := s.res.QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"})
 	if err != nil {
 		s.log.Warnf("Could not resolve Puppet CA SRV records: %s", err)
 	}
@@ -520,12 +554,7 @@ func (s *PuppetSecurity) fetchCert() error {
 		return fmt.Errorf("could not read response body: %s", err)
 	}
 
-	path, err := s.publicCertPath()
-	if err != nil {
-		return err
-	}
-
-	err = ioutil.WriteFile(path, body, 0644)
+	err = ioutil.WriteFile(s.publicCertPath(), body, 0644)
 	if err != nil {
 		return err
 	}
@@ -565,12 +594,7 @@ func (s *PuppetSecurity) fetchCA() error {
 		return errors.New(string(body))
 	}
 
-	capath, err := s.caPath()
-	if err != nil {
-		return err
-	}
-
-	err = ioutil.WriteFile(capath, body, 0644)
+	err = ioutil.WriteFile(s.caPath(), body, 0644)
 	if err != nil {
 		return err
 	}
@@ -633,20 +657,10 @@ func (s *PuppetSecurity) HTTPClient(secure bool) (*http.Client, error) {
 }
 
 func (s *PuppetSecurity) csrTXT() ([]byte, error) {
-	path, err := s.csrPath()
-	if err != nil {
-		return nil, err
-	}
-
-	return ioutil.ReadFile(path)
+	return ioutil.ReadFile(s.csrPath())
 }
 
 func (s *PuppetSecurity) writePrivateKey() (*rsa.PrivateKey, error) {
-	path, err := s.privateKeyPath()
-	if err != nil {
-		return nil, fmt.Errorf("could not determine private key path: %s", err)
-	}
-
 	if s.privateKeyExists() {
 		return nil, fmt.Errorf("a private key already exist for %s", s.Identity())
 	}
@@ -663,7 +677,7 @@ func (s *PuppetSecurity) writePrivateKey() (*rsa.PrivateKey, error) {
 		},
 	)
 
-	err = ioutil.WriteFile(path, pemdata, 0640)
+	err = ioutil.WriteFile(s.privateKeyPath(), pemdata, 0640)
 	if err != nil {
 		return nil, fmt.Errorf("could not write private key: %s", err)
 	}
@@ -672,12 +686,7 @@ func (s *PuppetSecurity) writePrivateKey() (*rsa.PrivateKey, error) {
 }
 
 func (s *PuppetSecurity) csrExists() bool {
-	path, err := s.csrPath()
-	if err != nil {
-		return false
-	}
-
-	if _, err := os.Stat(path); err != nil {
+	if _, err := os.Stat(s.csrPath()); err != nil {
 		return false
 	}
 
@@ -685,13 +694,19 @@ func (s *PuppetSecurity) csrExists() bool {
 }
 
 func (s *PuppetSecurity) privateKeyExists() bool {
-	return s.fsec.privateKeyExists()
+	_, err := os.Stat(s.privateKeyPath())
+
+	return !os.IsNotExist(err)
 }
 
 func (s *PuppetSecurity) publicCertExists() bool {
-	return s.fsec.publicCertExists()
+	_, err := os.Stat(s.publicCertPath())
+
+	return !os.IsNotExist(err)
 }
 
 func (s *PuppetSecurity) caExists() bool {
-	return s.fsec.caExists()
+	_, err := os.Stat(s.caPath())
+
+	return !os.IsNotExist(err)
 }
