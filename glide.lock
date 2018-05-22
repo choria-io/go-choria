@@ -1,5 +1,5 @@
-hash: d4a7a03994c37dd41944eddbfdc73067170f99c486d58332c933b525b4b65556
-updated: 2018-05-21T15:26:08.969652+02:00
+hash: 40346adc88ad73f61e635e21bc707fee4f12f46b1835d3b77394618f3fbec617
+updated: 2018-05-22T17:34:15.206365+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -14,7 +14,7 @@ imports:
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-protocol
-  version: 33a764a88cb2fccbceb6424e2397c8fc57dbd1ce
+  version: b7292acc12958de22c268a49883e565aa667b402
   subpackages:
   - protocol
   - protocol/v1
