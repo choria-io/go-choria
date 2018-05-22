@@ -3,6 +3,7 @@ package mcorpc
 import (
 	"context"
 	"encoding/json"
+	"os"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
@@ -17,7 +18,8 @@ import (
 	"testing"
 )
 
-func TestFileContent(t *testing.T) {
+func TestMcoRPC(t *testing.T) {
+	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "McoRPC")
 }
