@@ -85,19 +85,4 @@ var _ = Describe("TransportMessage", func() {
 		_, err = NewTransportFromJSON(`{"protocol": 1}`)
 		Expect(err).To(MatchError("Supplied JSON document is not a valid Transport message: data: data is required, headers: headers is required, protocol: Invalid type. Expected: string, given: integer"))
 	})
-
-	Measure("Transport creation", func(b Benchmarker) {
-		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-		request.SetMessage(`{"message":1}`)
-		srequest, _ := NewSecureRequest(request, security)
-		trequest, _ := NewTransportMessage("rip.mcollective")
-		trequest.SetRequestData(srequest)
-
-		runtime := b.Time("runtime", func() {
-			trequest, _ := NewTransportMessage("rip.mcollective")
-			trequest.SetRequestData(srequest)
-		})
-
-		Expect(runtime.Nanoseconds()).Should(BeNumerically("<", 1000000))
-	}, 100)
 })

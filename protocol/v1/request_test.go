@@ -36,13 +36,4 @@ var _ = Describe("Request", func() {
 		Expect(filtered).To(BeTrue())
 		Expect(filter).ToNot(BeNil())
 	})
-
-	Measure("Request creation time", func(b Benchmarker) {
-		runtime := b.Time("runtime", func() {
-			request, _ := NewRequest("test", "go.tests", "choria=test", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-			request.SetMessage(`{"hello":"world"}`)
-		})
-
-		Expect(runtime.Nanoseconds()).Should(BeNumerically("<", 100000))
-	}, 1000)
 })
