@@ -3,6 +3,7 @@ package srvcache
 import (
 	"fmt"
 	"net"
+	"os"
 	"testing"
 	"time"
 
@@ -10,7 +11,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestMCollective(t *testing.T) {
+func TestSRVCache(t *testing.T) {
+	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "SRVCache")
 }

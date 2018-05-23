@@ -1,6 +1,7 @@
 package discovery
 
 import (
+	"os"
 	"testing"
 
 	"github.com/choria-io/go-protocol/protocol"
@@ -13,7 +14,8 @@ import (
 	. "github.com/onsi/gomega"
 )
 
-func TestFileContent(t *testing.T) {
+func Test(t *testing.T) {
+	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Server/Discovery")
 }

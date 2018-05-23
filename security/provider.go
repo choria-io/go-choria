@@ -4,13 +4,8 @@ import (
 	context "context"
 	"crypto/tls"
 	"encoding/pem"
-	"fmt"
 	"net/http"
 	"time"
-
-	"github.com/choria-io/go-choria/config"
-	srvcache "github.com/choria-io/go-choria/srvcache"
-	"github.com/sirupsen/logrus"
 )
 
 // Provider provides a security plugin for the choria subsystem
@@ -87,23 +82,4 @@ type Provider interface {
 	// no more than wait.  cb gets called on every attempt to download a cert with the attempt number
 	// as argument
 	Enroll(ctx context.Context, wait time.Duration, cb func(int)) error
-}
-
-type settingsProvider interface {
-	PuppetSetting(string) (string, error)
-	Getuid() int
-	QuerySrvRecords(records []string) ([]srvcache.Server, error)
-	Configuration() *config.Config
-}
-
-// NewSecurityProvider creates a new instance of a security provider
-func NewSecurityProvider(provider string, fw settingsProvider, log *logrus.Entry) (Provider, error) {
-	switch provider {
-	case "puppet":
-		return NewPuppetSecurity(fw, fw.Configuration(), log)
-	case "file":
-		return NewFileSecurity(fw, fw.Configuration(), log)
-	}
-
-	return nil, fmt.Errorf("unknown security provider: %s", provider)
 }
