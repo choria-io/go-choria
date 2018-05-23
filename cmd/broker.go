@@ -11,9 +11,9 @@ import (
 
 	"github.com/choria-io/go-choria/broker/adapter"
 	"github.com/choria-io/go-choria/broker/federation"
-	"github.com/choria-io/go-choria/broker/network"
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/statistics"
+	network "github.com/choria-io/go-network-broker"
 	log "github.com/sirupsen/logrus"
 )
 

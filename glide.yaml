@@ -38,3 +38,5 @@ import:
   subpackages:
   - gomock
   - mockgen
+- package: github.com/choria-io/go-network-broker
+  version: 0.0.1

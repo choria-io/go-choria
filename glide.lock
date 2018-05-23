@@ -1,5 +1,5 @@
-hash: 7578edd40ed3db6b82e9fbf86ad9f091ba0273409657e7c335ef0df645f28544
-updated: 2018-05-23T15:32:53.295108+02:00
+hash: 1b33a6c2b778bdd6546ecdfd698fa6222afb6abbe3e94e0618e942142e1fc59e
+updated: 2018-05-23T18:21:57.62194+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -13,6 +13,8 @@ imports:
   - quantile
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
+- name: github.com/choria-io/go-network-broker
+  version: 0e0b495828d2193713cb9758cdceaf493b43d0d8
 - name: github.com/choria-io/go-protocol
   version: b7292acc12958de22c268a49883e565aa667b402
   subpackages:
@@ -71,7 +73,7 @@ imports:
   subpackages:
   - pb
 - name: github.com/nats-io/nuid
-  version: 33c603157d6fd1b0ac2599bcc4a286b36479a06d
+  version: 28b996b57a46dd0c2aa3a3dc7fa8780878331d00
 - name: github.com/onsi/ginkgo
   version: fa5fabab2a1bfbd924faf4c067d07ae414e2aedf
   subpackages:
