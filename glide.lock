@@ -1,5 +1,5 @@
-hash: 40346adc88ad73f61e635e21bc707fee4f12f46b1835d3b77394618f3fbec617
-updated: 2018-05-22T17:34:15.206365+02:00
+hash: 7578edd40ed3db6b82e9fbf86ad9f091ba0273409657e7c335ef0df645f28544
+updated: 2018-05-23T15:32:53.295108+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -73,7 +73,7 @@ imports:
 - name: github.com/nats-io/nuid
   version: 33c603157d6fd1b0ac2599bcc4a286b36479a06d
 - name: github.com/onsi/ginkgo
-  version: 77a8c1e5c40d6bb6c5eb4dd4bdce9763564f6298
+  version: fa5fabab2a1bfbd924faf4c067d07ae414e2aedf
   subpackages:
   - config
   - internal/codelocation
