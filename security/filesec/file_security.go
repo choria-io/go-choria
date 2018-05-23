@@ -1,4 +1,9 @@
-package provider
+// Package filesec provides a manually configurable security Provider
+// it allows you set every paramter like key paths etc manually without
+// making any assumptions about your system
+//
+// It does not support any enrollment
+package filesec
 
 import (
 	context "context"

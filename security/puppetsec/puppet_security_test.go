@@ -1,4 +1,4 @@
-package provider
+package puppetsec
 
 import (
 	"crypto/x509"

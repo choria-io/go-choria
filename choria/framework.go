@@ -17,8 +17,8 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/security"
-	fsec "github.com/choria-io/go-choria/security/file"
-	pupsec "github.com/choria-io/go-choria/security/puppet"
+	"github.com/choria-io/go-choria/security/filesec"
+	"github.com/choria-io/go-choria/security/puppetsec"
 	"github.com/choria-io/go-choria/srvcache"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
@@ -74,9 +74,9 @@ func (fw *Framework) setupSecurity() error {
 
 	switch fw.Config.Choria.SecurityProvider {
 	case "puppet":
-		fw.security, err = pupsec.New(pupsec.WithResolver(fw), pupsec.WithChoriaConfig(fw.Config), pupsec.WithLog(fw.Logger("security")))
+		fw.security, err = puppetsec.New(puppetsec.WithResolver(fw), puppetsec.WithChoriaConfig(fw.Config), puppetsec.WithLog(fw.Logger("security")))
 	case "file":
-		fw.security, err = fsec.New(fsec.WithChoriaConfig(fw.Config), fsec.WithLog(fw.Logger("security")))
+		fw.security, err = filesec.New(filesec.WithChoriaConfig(fw.Config), filesec.WithLog(fw.Logger("security")))
 	default:
 		err = fmt.Errorf("Unknown security provider %s", fw.Config.Choria.SecurityProvider)
 	}
