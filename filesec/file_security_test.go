@@ -1,4 +1,4 @@
-package provider
+package filesec
 
 import (
 	"crypto/tls"
