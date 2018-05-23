@@ -1,4 +1,9 @@
-package provider
+// Package puppetsec provides a Puppet compatable Security Provider
+//
+// The provider supports enrolling into a Puppet CA by creating a
+// key and csr, sending it to the PuppetCA and waiting for it to
+// be signed and later it will download the certificate once signed
+package puppetsec
 
 import (
 	"bytes"
@@ -20,7 +25,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
-	fsec "github.com/choria-io/go-choria/security/file"
+	"github.com/choria-io/go-choria/security/filesec"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
@@ -38,7 +43,7 @@ type PuppetSecurity struct {
 	conf *Config
 	log  *logrus.Entry
 
-	fsec  *fsec.FileSecurity
+	fsec  *filesec.FileSecurity
 	cache string
 }
 
@@ -169,7 +174,7 @@ func New(opts ...Option) (*PuppetSecurity, error) {
 func (s *PuppetSecurity) reinit() error {
 	var err error
 
-	fc := fsec.Config{
+	fc := filesec.Config{
 		AllowList:        s.conf.AllowList,
 		DisableTLSVerify: s.conf.DisableTLSVerify,
 		PrivilegedUsers:  s.conf.PrivilegedUsers,
@@ -179,7 +184,7 @@ func (s *PuppetSecurity) reinit() error {
 		Key:              s.privateKeyPath(),
 	}
 
-	s.fsec, err = fsec.New(fsec.WithConfig(&fc), fsec.WithLog(s.log))
+	s.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(s.log))
 	if err != nil {
 		return err
 	}
