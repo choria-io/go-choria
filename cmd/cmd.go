@@ -51,6 +51,13 @@ func ParseCLI() (err error) {
 	// skip initialization for buildinfo, people might want to see this
 	// even if their SSL is invalid etc
 	if cli.command == "buildinfo" {
+		cfg, err = config.NewDefaultConfig()
+		if err != nil {
+			return fmt.Errorf("Could not create default configuration: %s", err)
+		}
+
+		cfg.DisableSecurityProviderVerify = true
+
 		return
 	}
 
