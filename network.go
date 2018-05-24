@@ -18,11 +18,10 @@ import (
 
 // Server represents the Choria network broker server
 type Server struct {
-	gnatsd      *gnatsd.Server
-	opts        *gnatsd.Options
-	choria      *choria.Framework
-	config      *config.Config
-	vzTransport *http.Transport
+	gnatsd *gnatsd.Server
+	opts   *gnatsd.Options
+	choria *choria.Framework
+	config *config.Config
 
 	started bool
 
@@ -37,10 +36,6 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 		opts:    &gnatsd.Options{},
 		started: false,
 		mu:      &sync.Mutex{},
-		vzTransport: &http.Transport{
-			MaxIdleConns:    1,
-			IdleConnTimeout: 5 * time.Second,
-		},
 	}
 
 	s.opts.Host = c.Config.Choria.NetworkListenAddress
@@ -87,7 +82,7 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 	return
 }
 
-// Exposes the gnatsd HTTP Handler
+// HTTPHandler Exposes the gnatsd HTTP Handler
 func (s *Server) HTTPHandler() http.Handler {
 	return s.gnatsd.HTTPHandler()
 }
@@ -148,7 +143,7 @@ func (s *Server) setupCluster() (err error) {
 
 func (s *Server) setupTLS() (err error) {
 	s.opts.TLS = true
-	s.opts.TLSVerify = true
+	s.opts.TLSVerify = !s.config.DisableTLSVerify
 	s.opts.TLSTimeout = 2
 
 	tlsc, err := s.choria.TLSConfig()
