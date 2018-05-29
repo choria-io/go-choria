@@ -198,26 +198,47 @@ func (s *PuppetSecurity) Enroll(ctx context.Context, wait time.Duration, cb func
 		return fmt.Errorf("could not initialize ssl directories: %s", err)
 	}
 
-	if !(s.privateKeyExists() && s.csrExists() && s.publicCertExists()) {
-		s.log.Debugf("Creating a new CSR and submitting it to the CA for %s", s.Identity())
+	var key *rsa.PrivateKey
+
+	if !s.privateKeyExists() {
+		s.log.Debugf("Creating a new Private Key %s", s.Identity())
+
+		key, err = s.writePrivateKey()
+		if err != nil {
+			return fmt.Errorf("could not write a new private key: %s", err)
+		}
+	}
+
+	if !s.caExists() {
+		s.log.Debug("Fetching CA")
+
 		err = s.fetchCA()
 		if err != nil {
 			return fmt.Errorf("could not fetch CA: %s", err)
 		}
+	}
 
-		key, err := s.writePrivateKey()
-		if err != nil {
-			return fmt.Errorf("could not write a new private key: %s", err)
-		}
+	previousCSR := s.csrExists()
+
+	if !previousCSR {
+		s.log.Debugf("Creating a new CSR for %s", s.Identity())
 
 		err = s.writeCSR(key, s.Identity(), "choria.io")
 		if err != nil {
 			return fmt.Errorf("could not write CSR: %s", err)
 		}
+	}
+
+	if !s.publicCertExists() {
+		s.log.Debug("Submitting CSR to the PuppetCA")
 
 		err = s.submitCSR()
 		if err != nil {
-			return fmt.Errorf("could not submit csr: %s", err)
+			if previousCSR {
+				s.log.Warnf("Submitting CSR failed, ignoring failure as this might be a continuation of a previous attempts: %s", err)
+			} else {
+				return fmt.Errorf("could not submit csr: %s", err)
+			}
 		}
 	}
 
