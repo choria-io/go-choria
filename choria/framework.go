@@ -16,10 +16,10 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/security"
-	"github.com/choria-io/go-choria/security/filesec"
-	"github.com/choria-io/go-choria/security/puppetsec"
 	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-security"
+	"github.com/choria-io/go-security/filesec"
+	"github.com/choria-io/go-security/puppetsec"
 	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
