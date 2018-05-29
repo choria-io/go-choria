@@ -1,0 +1,21 @@
+package: github.com/choria-io/go-security
+import:
+- package: github.com/choria-io/go-choria
+  subpackages:
+  - config
+  - puppet
+  - security/filesec
+  - srvcache
+- package: github.com/sirupsen/logrus
+  version: ^1
+- package: gopkg.in/alecthomas/kingpin.v2
+  version: ^2
+testImport:
+- package: github.com/golang/mock
+  version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c
+  subpackages:
+  - gomock
+- package: github.com/onsi/ginkgo
+  version: ^1
+- package: github.com/onsi/gomega
+  version: ^1
