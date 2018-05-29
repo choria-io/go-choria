@@ -10,8 +10,6 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/choria-io/go-protocol/protocol"
-
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/security"
 	srvcache "github.com/choria-io/go-choria/srvcache"
@@ -87,19 +85,6 @@ var _ = Describe("PuppetSSL", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.Identity).To(Equal("override.choria"))
-		})
-
-		It("Should support protocols that arent secure", func() {
-			protocol.Secure = "false"
-			defer func() { protocol.Secure = "true" }()
-
-			c, err := config.NewDefaultConfig()
-			Expect(err).ToNot(HaveOccurred())
-
-			prov, err = New(WithChoriaConfig(c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(prov.conf.SSLDir).To(Equal(filepath.FromSlash("/nonexisting")))
 		})
 
 		It("Should use the user SSL directory when not configured", func() {
@@ -289,6 +274,18 @@ var _ = Describe("PuppetSSL", func() {
 	Describe("puppetCA", func() {
 		It("Should use supplied config when SRV is disabled", func() {
 			cfg.DisableSRV = true
+			s := prov.puppetCA()
+			Expect(s.Host).To(Equal("puppet"))
+			Expect(s.Port).To(Equal(8140))
+			Expect(s.Scheme).To(Equal("https"))
+		})
+
+		It("Should use supplied config when no srv resolver is given", func() {
+			prov, err = New(WithConfig(cfg), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			resolver.EXPECT().QuerySrvRecords(gomock.Any()).Times(0)
+
 			s := prov.puppetCA()
 			Expect(s.Host).To(Equal("puppet"))
 			Expect(s.Port).To(Equal(8140))
