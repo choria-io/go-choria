@@ -1,5 +1,5 @@
-hash: c2a9779dc8cc0cbf9c94047d530febefa53d745ed77ed364faac99c0a14beab0
-updated: 2018-05-29T12:11:21.464703+02:00
+hash: 2a412acb3adac850adf2684018e2b5e8530cf2fff05952a31838b3f969673e50
+updated: 2018-05-29T12:59:26.663772+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -8,17 +8,15 @@ imports:
 - name: github.com/alecthomas/units
   version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/beorn7/perks
-  version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
+  version: 3a771d992973f24aa725d07868b467d1ddfceafb
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: d5acd2e7cbb8129768f8a486566356749da1d7d2
+  version: febc63588fc74351f9c74f8c4c5e67e383e9b779
   subpackages:
   - build
   - config
   - puppet
-  - security
-  - security/filesec
   - srvcache
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
@@ -34,7 +32,7 @@ imports:
   - regex
   - shellsafe
 - name: github.com/golang/protobuf
-  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
+  version: 3a3da3a4e26776cc22a79ef46d5d58477532dede
   subpackages:
   - proto
 - name: github.com/matttproud/golang_protobuf_extensions
@@ -42,7 +40,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/prometheus/client_golang
-  version: 967789050ba94deca04a5e84cce8ad472ce313c1
+  version: c51dc758d4bb30acacbef9eaa2b774969a135086
   subpackages:
   - prometheus
 - name: github.com/prometheus/client_model
@@ -50,14 +48,16 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 61f87aac8082fa8c3c5655c7608d7478d46ac2ad
+  version: 7600349dcfe1abd18d72d3a1770870d9800a7801
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: e645f4e5aaa8506fc71d6edbc5c4ff02c04c46f2
+  version: fe93d378a6b03758a2c1b65e86cf630bf78681c0
   subpackages:
+  - internal/util
+  - nfs
   - xfs
 - name: github.com/sirupsen/logrus
   version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
@@ -111,14 +111,14 @@ testImports:
   - matchers/support/goraph/util
   - types
 - name: golang.org/x/net
-  version: 5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec
+  version: dfa909b99c79129e1100513e5cd36307665e5723
   subpackages:
   - context
   - html
   - html/atom
   - html/charset
 - name: golang.org/x/text
-  version: e19ae1496984b1c655b8044a65c0300a3c878dd3
+  version: 5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877
   subpackages:
   - encoding
   - encoding/charmap
@@ -130,10 +130,12 @@ testImports:
   - encoding/simplifiedchinese
   - encoding/traditionalchinese
   - encoding/unicode
+  - internal/language
+  - internal/language/compact
   - internal/tag
   - internal/utf8internal
   - language
   - runes
   - transform
 - name: gopkg.in/yaml.v2
-  version: d670f9405373e636a5a2765eea47fac0c9bc91a4
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
