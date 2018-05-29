@@ -4,7 +4,6 @@ import:
   subpackages:
   - config
   - puppet
-  - security/filesec
   - srvcache
 - package: github.com/sirupsen/logrus
   version: ^1
