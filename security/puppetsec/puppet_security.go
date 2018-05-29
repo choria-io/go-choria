@@ -192,6 +192,11 @@ func (s *PuppetSecurity) reinit() error {
 	return nil
 }
 
+// Provider reports the name of the security provider
+func (s *PuppetSecurity) Provider() string {
+	return "puppet"
+}
+
 // Enroll sends a CSR to the PuppetCA and wait for it to be signed
 func (s *PuppetSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(int)) error {
 	if s.privateKeyExists() && s.caExists() && s.publicCertExists() {

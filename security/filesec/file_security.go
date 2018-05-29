@@ -131,6 +131,11 @@ func New(opts ...Option) (*FileSecurity, error) {
 	return f, nil
 }
 
+// Provider reports the name of the security provider
+func (s *FileSecurity) Provider() string {
+	return "file"
+}
+
 // Validate determines if the node represents a valid SSL configuration
 func (s *FileSecurity) Validate() ([]string, bool) {
 	errors := []string{}

@@ -64,6 +64,7 @@ var _ = Describe("FileSSL", func() {
 	It("Should impliment the provider interface", func() {
 		f := func(p security.Provider) {}
 		f(prov)
+		Expect(prov.Provider()).To(Equal("file"))
 	})
 
 	Describe("WithChoriaConfig", func() {
