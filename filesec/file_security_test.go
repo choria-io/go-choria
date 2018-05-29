@@ -11,7 +11,7 @@ import (
 	"testing"
 
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/security"
+	"github.com/choria-io/go-security"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
