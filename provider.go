@@ -10,6 +10,9 @@ import (
 
 // Provider provides a security plugin for the choria subsystem
 type Provider interface {
+	// Provider reports the name of the current security provider
+	Provider() string
+
 	// Validate that the security provider is functional
 	Validate() ([]string, bool)
 
