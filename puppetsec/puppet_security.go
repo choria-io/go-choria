@@ -7,7 +7,7 @@ package puppetsec
 
 import (
 	"bytes"
-	context "context"
+	"context"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
@@ -23,11 +23,9 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/security/filesec"
 	"github.com/choria-io/go-choria/srvcache"
-	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
 )
 
@@ -102,10 +100,6 @@ func WithChoriaConfig(c *config.Config) Option {
 			cfg.Identity = c.OverrideCertname
 		}
 
-		if !protocol.IsSecure() {
-			cfg.SSLDir = filepath.FromSlash("/nonexisting")
-		}
-
 		if cfg.SSLDir == "" {
 			d, err := userSSlDir()
 			if err != nil {
@@ -162,10 +156,6 @@ func New(opts ...Option) (*PuppetSecurity, error) {
 
 	if p.log == nil {
 		return nil, errors.New("logger not given")
-	}
-
-	if p.res == nil {
-		return nil, errors.New("resolver not given")
 	}
 
 	return p, p.reinit()
@@ -508,7 +498,7 @@ func (s *PuppetSecurity) puppetCA() srvcache.Server {
 		Scheme: "https",
 	}
 
-	if s.conf.DisableSRV {
+	if s.conf.DisableSRV || s.res == nil {
 		return server
 	}
 
@@ -542,7 +532,7 @@ func (s *PuppetSecurity) fetchCert() error {
 	}
 
 	req.Header.Set("Content-Type", "text/plain")
-	req.Header.Set("User-Agent", fmt.Sprintf("Choria version %s http://choria.io", build.Version))
+	req.Header.Set("User-Agent", "Choria Orchestrator - http://choria.io")
 
 	client, err := s.HTTPClient(server.Scheme == "https")
 	if err != nil {
@@ -628,7 +618,7 @@ func (s *PuppetSecurity) submitCSR() error {
 	}
 
 	req.Header.Set("Content-Type", "text/plain")
-	req.Header.Set("User-Agent", fmt.Sprintf("Choria version %s http://choria.io", build.Version))
+	req.Header.Set("User-Agent", "Choria Orchestrator - http://choria.io")
 
 	req.Host = server.Host
 
