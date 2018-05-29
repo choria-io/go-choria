@@ -24,8 +24,8 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/security/filesec"
 	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-security/filesec"
 	"github.com/sirupsen/logrus"
 )
 

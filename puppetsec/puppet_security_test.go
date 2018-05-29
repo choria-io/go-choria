@@ -11,8 +11,8 @@ import (
 	"testing"
 
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/security"
 	srvcache "github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-security"
 	"github.com/sirupsen/logrus"
 
 	gomock "github.com/golang/mock/gomock"
