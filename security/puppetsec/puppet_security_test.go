@@ -64,6 +64,7 @@ var _ = Describe("PuppetSSL", func() {
 	It("Should impliment the provider interface", func() {
 		f := func(p security.Provider) {}
 		f(prov)
+		Expect(prov.Provider()).To(Equal("puppet"))
 	})
 
 	Describe("WithChoriaConfig", func() {
