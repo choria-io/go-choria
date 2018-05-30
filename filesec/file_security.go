@@ -117,7 +117,10 @@ func New(opts ...Option) (*FileSecurity, error) {
 	}
 
 	for _, opt := range opts {
-		opt(f)
+		err := opt(f)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if f.conf == nil {
