@@ -15,6 +15,8 @@ foss:
       output: choria-{{version}}-{{os}}-{{arch}}
       pre:
         - go generate
+      post:
+        - "{{output}} buildinfo"
 
     64bit_linux:
       os: linux

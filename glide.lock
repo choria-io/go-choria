@@ -1,5 +1,5 @@
-hash: fadac4363383570f6b2b7e6784184c77579c05a56afecd6583598dcca404ecd2
-updated: 2018-05-29T12:44:12.556882+02:00
+hash: 6b447f3412c8c15958e39db881c1bddf28470c638409b3b6e27a6336643eae9d
+updated: 2018-05-30T10:31:34.77801+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -21,7 +21,7 @@ imports:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-security
-  version: 2f4cff397c5abc539b775a4c5c55f77f7a0d2449
+  version: 615ff9a3ca0cabc08289e491ef8f57b6a51031a7
   subpackages:
   - filesec
   - puppetsec
@@ -37,7 +37,7 @@ imports:
   - regex
   - shellsafe
 - name: github.com/ghodss/yaml
-  version: e9ed3c6dfb39bb1a32197cb10d527906fe4da4b6
+  version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
   - encoders/builtin
   - util
@@ -114,7 +114,7 @@ imports:
   - matchers/support/goraph/util
   - types
 - name: github.com/prometheus/client_golang
-  version: c51dc758d4bb30acacbef9eaa2b774969a135086
+  version: 967789050ba94deca04a5e84cce8ad472ce313c1
   subpackages:
   - prometheus
   - prometheus/promhttp
@@ -155,7 +155,7 @@ imports:
   - blowfish
   - ssh/terminal
 - name: golang.org/x/net
-  version: dfa909b99c79129e1100513e5cd36307665e5723
+  version: 89e543239a64caf31d3a6865872ea120b41446df
   subpackages:
   - context
   - html
