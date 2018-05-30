@@ -78,7 +78,7 @@ func (fw *Framework) setupSecurity() error {
 	case "file":
 		fw.security, err = filesec.New(filesec.WithChoriaConfig(fw.Config), filesec.WithLog(fw.Logger("security")))
 	default:
-		err = fmt.Errorf("Unknown security provider %s", fw.Config.Choria.SecurityProvider)
+		err = fmt.Errorf("unknown security provider %s", fw.Config.Choria.SecurityProvider)
 	}
 
 	if err != nil {
