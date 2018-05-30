@@ -22,6 +22,11 @@ func (e *enrollCommand) Setup() (err error) {
 }
 
 func (e *enrollCommand) Configure() error {
+	err = commonConfigure()
+	if err != nil {
+		return err
+	}
+
 	cfg.DisableSecurityProviderVerify = true
 
 	if e.cn != "" {

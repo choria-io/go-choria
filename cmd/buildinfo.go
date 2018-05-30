@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-protocol/protocol"
 	gnatsd "github.com/nats-io/gnatsd/server"
 )
@@ -21,7 +22,15 @@ func (b *buildinfoCommand) Setup() (err error) {
 }
 
 func (b *buildinfoCommand) Configure() (err error) {
-	return nil
+	cfg, err = config.NewDefaultConfig()
+	if err != nil {
+		return fmt.Errorf("Could not create default configuration: %s", err)
+	}
+
+	cfg.DisableSecurityProviderVerify = true
+	cfg.Choria.SecurityProvider = "file"
+
+	return
 }
 
 func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
