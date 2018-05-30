@@ -6,6 +6,7 @@ required_properties:
   - contact
   - dist
   - target_arch
+  - rpm_group
 
 artifacts:
  - /usr/src/redhat/**/*.rpm

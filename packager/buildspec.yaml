@@ -36,6 +36,7 @@ foss:
       release: 1
       manage_conf: 1
       contact: R.I.Pienaar <rip@devco.net>
+      rpm_group: System Environment/Base
 
     el5_32:
       template: el/el6

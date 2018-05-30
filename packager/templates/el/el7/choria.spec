@@ -9,6 +9,7 @@
 %define binary {{cpkg_binary}}
 %define tarball {{cpkg_tarball}}
 %define contact {{cpkg_contact}}
+%define pkggroup {{cpkg_rpm_group}}
 
 Name: %{pkgname}
 Version: %{version}
@@ -16,13 +17,15 @@ Release: %{release}.%{dist}
 Summary: The Choria Orchestrator Server
 License: Apache-2.0
 URL: https://choria.io
-Group: System Tools
+Group: %{pkggroup}
 Packager: %{contact}
 Source0: %{tarball}
 BuildRoot: %{_tmppath}/%{pkgname}-%{version}-%{release}-root-%(%{__id_u} -n)
 
 %description
 The Choria Orchestrator Server and Broker
+
+Please visit https://choria.io for more information
 
 %prep
 %setup -q
