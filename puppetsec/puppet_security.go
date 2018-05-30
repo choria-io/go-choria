@@ -147,7 +147,10 @@ func New(opts ...Option) (*PuppetSecurity, error) {
 	p := &PuppetSecurity{}
 
 	for _, opt := range opts {
-		opt(p)
+		err := opt(p)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if p.conf == nil {
