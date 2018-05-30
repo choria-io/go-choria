@@ -34,6 +34,7 @@ var ctx context.Context
 var cancel func()
 var wg *sync.WaitGroup
 var mu = &sync.Mutex{}
+var err error
 
 func ParseCLI() (err error) {
 	cli.app = kingpin.New("choria", "Choria Orchestration System")
@@ -48,19 +49,19 @@ func ParseCLI() (err error) {
 
 	cli.command = kingpin.MustParse(cli.app.Parse(os.Args[1:]))
 
-	// skip initialization for buildinfo, people might want to see this
-	// even if their SSL is invalid etc
-	if cli.command == "buildinfo" {
-		cfg, err = config.NewDefaultConfig()
-		if err != nil {
-			return fmt.Errorf("Could not create default configuration: %s", err)
+	for _, cmd := range cli.commands {
+		if cmd.FullCommand() == cli.command {
+			err = cmd.Configure()
+			if err != nil {
+				return fmt.Errorf("%s failed to configure: %s", cmd.FullCommand(), err)
+			}
 		}
-
-		cfg.DisableSecurityProviderVerify = true
-
-		return
 	}
 
+	return
+}
+
+func commonConfigure() error {
 	if debug {
 		log.SetOutput(os.Stdout)
 		log.SetLevel(log.DebugLevel)
@@ -76,14 +77,7 @@ func ParseCLI() (err error) {
 		return fmt.Errorf("Could not parse configuration: %s", err)
 	}
 
-	for _, cmd := range cli.commands {
-		err = cmd.Configure()
-		if err != nil {
-			return fmt.Errorf("%s failed to configure: %s", cmd.FullCommand(), err)
-		}
-	}
-
-	return
+	return nil
 }
 
 func Run() (err error) {

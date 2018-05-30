@@ -55,6 +55,11 @@ func (r *serverRunCommand) Setup() (err error) {
 }
 
 func (e *serverRunCommand) Configure() error {
+	err = commonConfigure()
+	if err != nil {
+		return err
+	}
+
 	cfg.DisableSecurityProviderVerify = true
 
 	return nil

@@ -62,7 +62,7 @@ func (r *brokerRunCommand) Setup() (err error) {
 }
 
 func (b *brokerRunCommand) Configure() error {
-	return nil
+	return commonConfigure()
 }
 
 func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
