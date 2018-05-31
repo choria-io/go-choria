@@ -1,5 +1,11 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/05/31|      |Release 0.4.0                                                                                            |
+|2018/05/29|320   |Make the enroll process more robust in the face of interruptions                                         |
+|2018/05/23|308   |Fix running `choria buildinfo`                                                                           |
+|2018/05/23|309   |Create `go-security` package with the Choria security providers for reuse in other eco system projects   |
+|2018/05/22|306   |Fix registration feature when running in insecure mode                                                   |
+|2018/05/18|302   |Include a hint when the source data for registration changed                                             |
 |2018/05/16|      |Release 0.3.0                                                                                            |
 |2018/05/08|287   |Create the concept of a Security Provider and create providers for Puppet and File, add `choria enroll`  |
 |2018/05/03|284   |On systemd based distributions ensure that upgrading choria with Puppet is more reliable                 |
