@@ -4,6 +4,7 @@ import (
 	"os"
 	"runtime"
 	"testing"
+	"time"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -28,6 +29,7 @@ var _ = Describe("Choria/Config", func() {
 			}
 			Expect(err).ToNot(HaveOccurred())
 
+			Expect(c.Choria.NetworkWriteDeadline).To(Equal(10 * time.Second))
 			Expect(c.Choria.DiscoveryHost).To(Equal("pdb.example.com"))
 			Expect(c.Registration).To(Equal([]string{"foo"}))
 			Expect(c.RegisterInterval).To(Equal(10))

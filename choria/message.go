@@ -40,7 +40,7 @@ type Message struct {
 func NewMessageFromRequest(req protocol.Request, replyto string, choria *Framework) (msg *Message, err error) {
 	reqm, err := NewMessage(req.Message(), req.Agent(), req.Collective(), "request", nil, choria)
 	if err != nil {
-		return msg, err
+		return msg, fmt.Errorf("could not create request message: %s", err)
 	}
 
 	if replyto != "" {
@@ -170,11 +170,13 @@ func (msg *Message) Validate() (bool, error) {
 	return true, nil
 }
 
-// ValidateTTL validates the message age
+// ValidateTTL validates the message age, true if the message should be allowed
 func (msg *Message) ValidateTTL() bool {
-	earliest := time.Now().Add(-1 * time.Duration(msg.TTL))
+	now := time.Now()
+	earliest := now.Add(-1 * time.Duration(msg.TTL) * time.Second)
+	latest := now.Add(time.Duration(msg.TTL) * time.Second)
 
-	return msg.TimeStamp.Before(earliest)
+	return msg.TimeStamp.Before(latest) && msg.TimeStamp.After(earliest)
 }
 
 // SetBase64Payload sets the payload for the message, use it if the payload is Base64 encoded
@@ -229,7 +231,7 @@ func (msg *Message) ReplyTo() string {
 // SetCollective sets the sub collective this message is targeting
 func (msg *Message) SetCollective(collective string) error {
 	if !msg.choria.HasCollective(collective) {
-		return fmt.Errorf("Cannot set collective to '%s', it is not on the list of known collectives", msg.collective)
+		return fmt.Errorf("Cannot set collective to '%s', it is not on the list of known collectives", collective)
 	}
 
 	msg.collective = collective
