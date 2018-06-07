@@ -577,6 +577,10 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		options = append(options, nats.Secure(tlsc))
 	}
 
+	if !conn.choria.Config.Choria.RandomizeMiddlewareHosts {
+		options = append(options, nats.DontRandomize())
+	}
+
 	try := 0
 
 	for {
