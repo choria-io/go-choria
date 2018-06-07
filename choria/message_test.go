@@ -30,6 +30,9 @@ var _ = Describe("Choria/Message", func() {
 		request.EXPECT().TTL().Return(60).AnyTimes()
 		request.EXPECT().Time().Return(now).AnyTimes()
 		request.EXPECT().Filter().Return(protocol.NewFilter(), true).AnyTimes()
+		request.EXPECT().Version().Return(protocol.RequestV1).AnyTimes()
+		request.EXPECT().IsFederated().Return(false).AnyTimes()
+		request.EXPECT().JSON().Return("{\"mock_request\": true}", nil).AnyTimes()
 
 		cfg, err := config.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
@@ -63,6 +66,275 @@ var _ = Describe("Choria/Message", func() {
 		})
 	})
 
+	Describe("NewMessage", func() {
+		It("Should handle replies", func() {
+			r, err := NewMessageFromRequest(request, "reply.to", fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "reply", r, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(m.Request).To(Equal(r))
+			Expect(m.Agent).To(Equal("test"))
+			Expect(m.replyTo).To(Equal("reply.to"))
+			Expect(m.Type()).To(Equal("reply"))
+			Expect(m.Collective()).To(Equal("test_collective"))
+		})
+
+		It("Should handle requests", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(m.Request).To(BeNil())
+			Expect(m.Agent).To(Equal("ginkgo"))
+			Expect(m.replyTo).To(Equal(""))
+			Expect(m.Type()).To(Equal("request"))
+			Expect(m.Collective()).To(Equal("test_collective"))
+		})
+
+		It("Should validate", func() {
+			_, err := NewMessage("hello world", "", "test_collective", "request", nil, fw)
+			Expect(err).To(MatchError("agent has not been set"))
+
+			_, err = NewMessage("hello world", "ginkgo", "mcollective", "request", nil, fw)
+			Expect(err).To(MatchError("cannot set collective to 'mcollective', it is not on the list of known collectives"))
+		})
+	})
+
+	Describe("Transport", func() {
+		It("Should support requests", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			m.SetProtocolVersion(protocol.RequestV1)
+			m.SetReplyTo("reply.to")
+
+			_, err = m.Transport()
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should support direct_requests", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			m.DiscoveredHosts = []string{"node1", "node2"}
+			err = m.SetType("direct_request")
+			Expect(err).ToNot(HaveOccurred())
+
+			m.SetProtocolVersion(protocol.RequestV1)
+			m.SetReplyTo("reply.to")
+
+			_, err = m.Transport()
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should support reply", func() {
+			req, err := fw.NewRequest(protocol.RequestV1, "test_agent", "sender.example.net", "test=sender", 60, fw.NewRequestID(), "test_collective")
+			Expect(err).ToNot(HaveOccurred())
+			req.SetMessage("hello world")
+
+			m, err := NewMessageFromRequest(req, "reply.to", fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			t, err := m.Transport()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(t).ToNot(BeNil())
+		})
+	})
+
+	Describe("requestTransport", func() {
+		It("Should require a version", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			_, err = m.requestTransport()
+			Expect(err).To(MatchError("cannot create a Request Transport without a version, please set it using SetProtocolVersion()"))
+		})
+
+		It("Should require a reply-to", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			m.SetProtocolVersion(protocol.RequestV1)
+
+			_, err = m.requestTransport()
+			Expect(err).To(MatchError("cannot create a Transport, no reply-to was set, please use SetReplyTo()"))
+
+		})
+
+		It("Should set up the transport", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			m.SetProtocolVersion(protocol.RequestV1)
+			m.SetReplyTo("reply.to")
+
+			t, err := m.requestTransport()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(t.ReplyTo()).To(Equal("reply.to"))
+			Expect(t.SenderID()).To(Equal("test.identity"))
+
+			j, err := t.JSON()
+			Expect(err).ToNot(HaveOccurred())
+			r, err := fw.NewRequestFromTransportJSON([]byte(j), true)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(r.Agent()).To(Equal("ginkgo"))
+			Expect(r.RequestID()).To(Equal(m.RequestID))
+		})
+	})
+
+	Describe("replyTransport", func() {
+		It("Should require a request", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "reply", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			_, err = m.replyTransport()
+			Expect(err).To(MatchError("cannot create a Transport, no request were stored in the message"))
+		})
+
+		It("Should set up the transport", func() {
+			req, err := fw.NewRequest(protocol.RequestV1, "test_agent", "sender.example.net", "test=sender", 60, fw.NewRequestID(), "test_collective")
+			Expect(err).ToNot(HaveOccurred())
+			req.SetMessage("hello world")
+
+			m, err := NewMessageFromRequest(req, "reply.to", fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			t, err := m.replyTransport()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(t).ToNot(BeNil())
+		})
+	})
+
+	Describe("SetProtocolVersion", func() {
+		It("Should set the version", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "reply", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(m.protoVersion).To(Equal(""))
+			m.SetProtocolVersion(protocol.ReplyV1)
+			Expect(m.protoVersion).To(Equal(protocol.ReplyV1))
+		})
+	})
+
+	Describe("Validate", func() {
+		It("Should validate the message", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "reply", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			m.collective = "foo"
+			ok, err := m.Validate()
+			Expect(ok).To(BeFalse())
+			Expect(err).To(MatchError("'foo' is not on the list of known collectives"))
+
+			m.collective = ""
+			ok, err = m.Validate()
+			Expect(ok).To(BeFalse())
+			Expect(err).To(MatchError("collective has not been set"))
+
+			m.Agent = ""
+			ok, err = m.Validate()
+			Expect(ok).To(BeFalse())
+			Expect(err).To(MatchError("agent has not been set"))
+		})
+	})
+
+	Describe("SetBase64Payload", func() {
+		It("Should store the correct payload", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "reply", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = m.SetBase64Payload("aGVsbG8gd29ybGQ=")
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(m.Payload).To(Equal("hello world"))
+		})
+
+		It("Should handle invalid base64", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "reply", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = m.SetBase64Payload("foo")
+			Expect(err).To(MatchError("could not decode supplied payload using base64: illegal base64 data at input byte 0"))
+		})
+	})
+
+	Describe("SetExpectedMsgID", func() {
+		It("Should only set it for reply messages", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = m.SetExpectedMsgID("x")
+			Expect(err).To(MatchError("can only store expected message ID for reply messages"))
+		})
+
+		It("Should store the expectation", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "reply", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = m.SetExpectedMsgID("x")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(m.ExpectedMessageID()).To(Equal("x"))
+		})
+	})
+
+	Describe("SetReplyTo", func() {
+		It("Should set it only for requests", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "reply", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = m.SetReplyTo("reply.to")
+			Expect(err).To(MatchError("custom reply to targets can only be set for requests"))
+		})
+
+		It("Should set it correctly", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = m.SetReplyTo("reply.to")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(m.ReplyTo()).To(Equal("reply.to"))
+		})
+	})
+
+	Describe("SetType", func() {
+		It("Should only allow valid types", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = m.SetType("bob")
+			Expect(err).To(MatchError("bob is not a valid message type"))
+
+			for _, t := range []string{"message", "request", "reply"} {
+				err = m.SetType(t)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(m.Type()).To(Equal(t))
+			}
+
+			err = m.SetType("direct_request")
+			Expect(err).To(MatchError("direct_request message type can only be set if DiscoveredHosts have been set"))
+
+			m.DiscoveredHosts = []string{"node1"}
+			err = m.SetType("direct_request")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(m.Type()).To(Equal("direct_request"))
+		})
+	})
+
+	Describe("SetCollective", func() {
+		It("Should only accept valid collectives", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = m.SetCollective("bob")
+			Expect(err).To(MatchError("cannot set collective to 'bob', it is not on the list of known collectives"))
+
+			err = m.SetCollective("test_collective")
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
 	Describe("ValidateTTL", func() {
 		It("Should allow messages within bounds", func() {
 			m, err := NewMessageFromRequest(request, "reply.to", fw)
@@ -70,6 +342,7 @@ var _ = Describe("Choria/Message", func() {
 
 			m.TimeStamp = now.Add(30 * time.Second)
 			Expect(m.ValidateTTL()).To(BeTrue())
+
 			m.TimeStamp = now.Add(-30 * time.Second)
 			Expect(m.ValidateTTL()).To(BeTrue())
 		})

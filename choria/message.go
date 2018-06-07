@@ -118,21 +118,21 @@ func (msg *Message) Transport() (protocol.TransportMessage, error) {
 		return msg.replyTransport()
 	}
 
-	return nil, fmt.Errorf("Do not know how to make a Transport for a %s type Message", msg.msgType)
+	return nil, fmt.Errorf("do not know how to make a Transport for a %s type Message", msg.msgType)
 }
 
 func (msg *Message) requestTransport() (protocol.TransportMessage, error) {
 	if msg.protoVersion == "" {
-		return nil, errors.New("Cannot create a Request Transport without a version, please set it using SetProtocolVersion()")
+		return nil, errors.New("cannot create a Request Transport without a version, please set it using SetProtocolVersion()")
 	}
 
 	if msg.replyTo == "" {
-		return nil, errors.New("Cannot create a Transport, no reply-to was set, please use SetReplyTo()")
+		return nil, errors.New("cannot create a Transport, no reply-to was set, please use SetReplyTo()")
 	}
 
 	transport, err := msg.choria.NewRequestTransportForMessage(msg, msg.protoVersion)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create a Transport: %s", err)
+		return nil, fmt.Errorf("could not create a Transport: %s", err)
 	}
 
 	transport.SetReplyTo(msg.ReplyTo())
@@ -142,7 +142,7 @@ func (msg *Message) requestTransport() (protocol.TransportMessage, error) {
 
 func (msg *Message) replyTransport() (protocol.TransportMessage, error) {
 	if msg.req == nil {
-		return nil, fmt.Errorf("Cannot create a Transport, no request were stored in the message")
+		return nil, fmt.Errorf("cannot create a Transport, no request were stored in the message")
 	}
 
 	return msg.choria.NewReplyTransportForMessage(msg, msg.req)
@@ -156,11 +156,11 @@ func (msg *Message) SetProtocolVersion(version string) {
 // Validate tests the Message and makes sure its settings are sane
 func (msg *Message) Validate() (bool, error) {
 	if msg.Agent == "" {
-		return false, fmt.Errorf("Agent has not been set")
+		return false, fmt.Errorf("agent has not been set")
 	}
 
 	if msg.collective == "" {
-		return false, fmt.Errorf("Collective has not been set")
+		return false, fmt.Errorf("collective has not been set")
 	}
 
 	if !msg.choria.HasCollective(msg.collective) {
@@ -183,7 +183,7 @@ func (msg *Message) ValidateTTL() bool {
 func (msg *Message) SetBase64Payload(payload string) error {
 	str, err := base64.StdEncoding.DecodeString(payload)
 	if err != nil {
-		return fmt.Errorf("Could not decode supplied payload using base64: %s", err)
+		return fmt.Errorf("could not decode supplied payload using base64: %s", err)
 	}
 
 	msg.Payload = string(str)
@@ -199,7 +199,7 @@ func (msg *Message) Base64Payload() string {
 // SetExpectedMsgID sets the Request ID that is expected from the reply data
 func (msg *Message) SetExpectedMsgID(id string) error {
 	if msg.Type() != "reply" {
-		return fmt.Errorf("Can only store expected message ID for reply messages")
+		return fmt.Errorf("can only store expected message ID for reply messages")
 	}
 
 	msg.expectedMessageID = id
@@ -215,7 +215,7 @@ func (msg *Message) ExpectedMessageID() string {
 // SetReplyTo sets the NATS target where replies to this message should go
 func (msg *Message) SetReplyTo(replyTo string) error {
 	if !(msg.Type() == "request" || msg.Type() == "direct_request") {
-		return fmt.Errorf("Custom reply to targets can only be set for requests")
+		return fmt.Errorf("custom reply to targets can only be set for requests")
 	}
 
 	msg.replyTo = replyTo
@@ -231,7 +231,7 @@ func (msg *Message) ReplyTo() string {
 // SetCollective sets the sub collective this message is targeting
 func (msg *Message) SetCollective(collective string) error {
 	if !msg.choria.HasCollective(collective) {
-		return fmt.Errorf("Cannot set collective to '%s', it is not on the list of known collectives", collective)
+		return fmt.Errorf("cannot set collective to '%s', it is not on the list of known collectives", collective)
 	}
 
 	msg.collective = collective
