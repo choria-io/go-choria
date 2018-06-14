@@ -1,5 +1,5 @@
-hash: c4f545f45e6fbd73689db7ba7ff1d441461f9bc781240865f7af011d12f75ac3
-updated: 2018-06-14T08:41:27.731854+02:00
+hash: 94fbfee889abe025440d1500485e71541e57b04d5300261211d229cacfceed57
+updated: 2018-06-14T12:43:44.881893+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -16,7 +16,7 @@ imports:
 - name: github.com/choria-io/go-network-broker
   version: 0e0b495828d2193713cb9758cdceaf493b43d0d8
 - name: github.com/choria-io/go-protocol
-  version: 709501946c6ceb1e4e5ec815f64f518d5b847305
+  version: c695d135e1fa74eb52f66a1bf35154dd1f8064d3
   subpackages:
   - protocol
   - protocol/v1
@@ -139,7 +139,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
 - name: github.com/tidwall/gjson
-  version: 01f00f129617a6fe98941fb920d6c760241b54d2
+  version: afaeb9562041a8018c74e006551143666aed08bf
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
