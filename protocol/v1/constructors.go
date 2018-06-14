@@ -133,9 +133,10 @@ func NewSecureReply(reply protocol.Reply, security SecurityProvider) (secure pro
 }
 
 // NewSecureReplyFromTransport creates a new choria:secure:reply:1 from the data contained in a Transport message
-func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure protocol.SecureReply, err error) {
+func NewSecureReplyFromTransport(message protocol.TransportMessage, security SecurityProvider, skipvalidate bool) (secure protocol.SecureReply, err error) {
 	secure = &secureReply{
 		Protocol: protocol.SecureReplyV1,
+		security: security,
 	}
 
 	data, err := message.Message()
@@ -154,8 +155,10 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure prot
 		return
 	}
 
-	if !secure.Valid() {
-		err = errors.New("SecureReply message created from the Transport Message is not valid: %s")
+	if !skipvalidate {
+		if !secure.Valid() {
+			err = errors.New("SecureReply message created from the Transport Message is not valid: %s")
+		}
 	}
 
 	return
