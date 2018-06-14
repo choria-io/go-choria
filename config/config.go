@@ -210,10 +210,14 @@ func normalize(c *Config) error {
 		c.Identity = c.OverrideCertname
 	}
 
-	if c.Identity == "" {
-		if certname, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
-			c.Identity = certname
+	if os.Getuid() != 0 {
+		if u, ok := os.LookupEnv("USER"); ok {
+			c.Identity = fmt.Sprintf("%s.mcollective", u)
 		}
+	}
+
+	if certname, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
+		c.Identity = certname
 	}
 
 	if c.Identity == "" {
