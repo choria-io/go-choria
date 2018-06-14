@@ -32,7 +32,7 @@ func NewRequest(agent string, senderid string, callerid string, ttl int, request
 // NewReply creates a choria:reply:1 based on a previous Request
 func NewReply(request protocol.Request, certname string) (rep protocol.Reply, err error) {
 	if request.Version() != protocol.RequestV1 {
-		err = fmt.Errorf("Cannot create a version 1 Reply from a %s request", request.Version())
+		err = fmt.Errorf("cannot create a version 1 Reply from a %s request", request.Version())
 		return
 	}
 
@@ -50,7 +50,7 @@ func NewReply(request protocol.Request, certname string) (rep protocol.Reply, er
 
 	j, err := request.JSON()
 	if err != nil {
-		err = fmt.Errorf("Could not turn Request %s into a JSON document: %s", request.RequestID(), err)
+		err = fmt.Errorf("could not turn Request %s into a JSON document: %s", request.RequestID(), err)
 		return
 	}
 
@@ -62,7 +62,7 @@ func NewReply(request protocol.Request, certname string) (rep protocol.Reply, er
 // NewReplyFromSecureReply create a choria:reply:1 based on the data contained in a SecureReply
 func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err error) {
 	if sr.Version() != protocol.SecureReplyV1 {
-		err = fmt.Errorf("Cannot create a version 1 SecureReply from a %s SecureReply", sr.Version())
+		err = fmt.Errorf("cannot create a version 1 SecureReply from a %s SecureReply", sr.Version())
 		return
 	}
 
@@ -73,13 +73,13 @@ func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err e
 
 	err = r.IsValidJSON(sr.Message())
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the SecureReply is not a valid Reply message: %s", err)
+		err = fmt.Errorf("the JSON body from the SecureReply is not a valid Reply message: %s", err)
 		return
 	}
 
 	err = json.Unmarshal([]byte(sr.Message()), r)
 	if err != nil {
-		err = fmt.Errorf("Could not parse JSON data from Secure Reply: %s", err)
+		err = fmt.Errorf("could not parse JSON data from Secure Reply: %s", err)
 		return
 	}
 
@@ -91,7 +91,7 @@ func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err e
 // NewRequestFromSecureRequest creates a choria::request:1 based on the data contained in a SecureRequest
 func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Request, err error) {
 	if sr.Version() != protocol.SecureRequestV1 {
-		err = fmt.Errorf("Cannot create a version 1 SecureRequest from a %s SecureRequest", sr.Version())
+		err = fmt.Errorf("cannot create a version 1 SecureRequest from a %s SecureRequest", sr.Version())
 		return
 	}
 
@@ -102,13 +102,13 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Reques
 
 	err = r.IsValidJSON(sr.Message())
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the SecureRequest is not a valid Request message: %s", err)
+		err = fmt.Errorf("the JSON body from the SecureRequest is not a valid Request message: %s", err)
 		return
 	}
 
 	err = json.Unmarshal([]byte(sr.Message()), r)
 	if err != nil {
-		err = fmt.Errorf("Could not parse JSON data from Secure Request: %s", err)
+		err = fmt.Errorf("could not parse JSON data from Secure Request: %s", err)
 		return
 	}
 
@@ -126,16 +126,17 @@ func NewSecureReply(reply protocol.Reply, security SecurityProvider) (secure pro
 
 	err = secure.SetMessage(reply)
 	if err != nil {
-		err = fmt.Errorf("Could not set message on SecureReply structure: %s", err)
+		err = fmt.Errorf("could not set message on SecureReply structure: %s", err)
 	}
 
 	return
 }
 
 // NewSecureReplyFromTransport creates a new choria:secure:reply:1 from the data contained in a Transport message
-func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure protocol.SecureReply, err error) {
+func NewSecureReplyFromTransport(message protocol.TransportMessage, security SecurityProvider, skipvalidate bool) (secure protocol.SecureReply, err error) {
 	secure = &secureReply{
 		Protocol: protocol.SecureReplyV1,
+		security: security,
 	}
 
 	data, err := message.Message()
@@ -145,7 +146,7 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure prot
 
 	err = secure.IsValidJSON(data)
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the TransportMessage is not a valid SecureReply message: %s", err)
+		err = fmt.Errorf("the JSON body from the TransportMessage is not a valid SecureReply message: %s", err)
 		return
 	}
 
@@ -154,8 +155,10 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage) (secure prot
 		return
 	}
 
-	if !secure.Valid() {
-		err = errors.New("SecureReply message created from the Transport Message is not valid: %s")
+	if !skipvalidate {
+		if !secure.Valid() {
+			err = errors.New("SecureReply message created from the Transport Message is not valid: %s")
+		}
 	}
 
 	return
@@ -200,7 +203,7 @@ func NewSecureRequestFromTransport(message protocol.TransportMessage, security S
 
 	err = secure.IsValidJSON(data)
 	if err != nil {
-		err = fmt.Errorf("The JSON body from the TransportMessage is not a valid SecureRequest message: %s", err)
+		err = fmt.Errorf("the JSON body from the TransportMessage is not a valid SecureRequest message: %s", err)
 		return
 	}
 
