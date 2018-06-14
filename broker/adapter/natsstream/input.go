@@ -128,7 +128,7 @@ func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
 		if na.proto == "choria:request" {
 			msg, err = framework.NewRequestFromTransportJSON(rawmsg, true)
 		} else {
-			msg, err = framework.NewReplyFromTransportJSON(rawmsg)
+			msg, err = framework.NewReplyFromTransportJSON(rawmsg, true)
 		}
 
 		if err != nil {
