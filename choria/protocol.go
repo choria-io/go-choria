@@ -44,13 +44,13 @@ func (fw *Framework) NewRequestMessageFromTransportJSON(payload []byte) (msg *Me
 }
 
 // NewReplyFromTransportJSON creates a new Reply from a transport JSON
-func (fw *Framework) NewReplyFromTransportJSON(payload []byte) (msg protocol.Reply, err error) {
+func (fw *Framework) NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error) {
 	transport, err := fw.NewTransportFromJSON(string(payload))
 	if err != nil {
 		return nil, err
 	}
 
-	sreply, err := fw.NewSecureReplyFromTransport(transport)
+	sreply, err := fw.NewSecureReplyFromTransport(transport, skipvalidate)
 	if err != nil {
 		return nil, err
 	}
@@ -194,10 +194,10 @@ func (fw *Framework) NewSecureReply(reply protocol.Reply) (secure protocol.Secur
 }
 
 // NewSecureReplyFromTransport creates a new SecureReply from the JSON payload of TransportMessage, the version SecureReply will be the same as the TransportMessage
-func (fw *Framework) NewSecureReplyFromTransport(message protocol.TransportMessage) (secure protocol.SecureReply, err error) {
+func (fw *Framework) NewSecureReplyFromTransport(message protocol.TransportMessage, skipvalidate bool) (secure protocol.SecureReply, err error) {
 	switch message.Version() {
 	case protocol.TransportV1:
-		secure, err = v1.NewSecureReplyFromTransport(message)
+		secure, err = v1.NewSecureReplyFromTransport(message, fw.security, skipvalidate)
 	default:
 		err = fmt.Errorf("Do not know how to create a SecureReply version %s", message.Version())
 
