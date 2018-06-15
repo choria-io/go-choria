@@ -31,8 +31,9 @@ func setSSL(c *Config, parent string, id string) {
 	c.PrivilegedUsers = []string{"\\.privileged.mcollective$"}
 	c.DisableTLSVerify = false
 	c.Identity = id
-	c.useFakeUID = true
-	c.fakeUID = 500
+
+	useFakeUID = true
+	fakeUID = 500
 }
 
 var _ = Describe("FileSSL", func() {
@@ -68,6 +69,10 @@ var _ = Describe("FileSSL", func() {
 	})
 
 	Describe("WithChoriaConfig", func() {
+		BeforeEach(func() {
+			os.Unsetenv("MCOLLECTIVE_CERTNAME")
+		})
+
 		It("Should support OverrideCertname", func() {
 			c, err := config.NewDefaultConfig()
 			Expect(err).ToNot(HaveOccurred())
@@ -78,15 +83,27 @@ var _ = Describe("FileSSL", func() {
 			Expect(prov.conf.Identity).To(Equal("override.choria"))
 		})
 
+		It("Should support MCOLLECTIVE_CERTNAME", func() {
+			os.Setenv("MCOLLECTIVE_CERTNAME", "bob.mcollective")
+			c, err := config.NewDefaultConfig()
+			Expect(err).ToNot(HaveOccurred())
+			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(prov.conf.Identity).To(Equal("bob.mcollective"))
+		})
+
 		It("Should copy all the relevant settings", func() {
 			c, err := config.NewDefaultConfig()
 			Expect(err).ToNot(HaveOccurred())
 
+			fakeUID = 0
 			c.Choria.FileSecurityCA = "stub/ca.pem"
 			c.Choria.FileSecurityCache = "stub/cache"
 			c.Choria.FileSecurityCertificate = "stub/cert.pem"
 			c.Choria.FileSecurityKey = "stub/key.pem"
 			c.DisableTLSVerify = true
+			c.Identity = "test.identity"
 
 			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
@@ -98,6 +115,47 @@ var _ = Describe("FileSSL", func() {
 			Expect(prov.conf.Certificate).To(Equal("stub/cert.pem"))
 			Expect(prov.conf.Key).To(Equal("stub/key.pem"))
 			Expect(prov.conf.DisableTLSVerify).To(BeTrue())
+			Expect(prov.conf.Identity).To(Equal("test.identity"))
+		})
+
+		It("Should support override certname", func() {
+			c, err := config.NewDefaultConfig()
+			Expect(err).ToNot(HaveOccurred())
+
+			c.Choria.FileSecurityCA = "stub/ca.pem"
+			c.Choria.FileSecurityCache = "stub/cache"
+			c.Choria.FileSecurityCertificate = "stub/cert.pem"
+			c.Choria.FileSecurityKey = "stub/key.pem"
+			c.DisableTLSVerify = true
+			c.Identity = "test.identity"
+			c.OverrideCertname = "bob.identity"
+
+			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(prov.conf.Identity).To(Equal("bob.identity"))
+		})
+
+		It("Should support root and windows", func() {
+			c, err := config.NewDefaultConfig()
+			Expect(err).ToNot(HaveOccurred())
+
+			c.Choria.FileSecurityCA = "stub/ca.pem"
+			c.Choria.FileSecurityCache = "stub/cache"
+			c.Choria.FileSecurityCertificate = "stub/cert.pem"
+			c.Choria.FileSecurityKey = "stub/key.pem"
+			c.DisableTLSVerify = true
+			c.Identity = "test.identity"
+
+			useFakeOS = true
+			defer func() { useFakeOS = false }()
+			fakeOS = "windows"
+			Expect(runtimeOs()).To(Equal("windows"))
+
+			prov, err = New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(prov.conf.Identity).To(Equal("test.identity"))
 		})
 	})
 
@@ -126,22 +184,9 @@ var _ = Describe("FileSSL", func() {
 	})
 
 	Describe("Identity", func() {
-		It("Should support OverrideCertname", func() {
+		It("Should return the identity", func() {
 			cfg.Identity = "bob.choria"
-
 			Expect(prov.Identity()).To(Equal("bob.choria"))
-		})
-
-		It("Should support non root users", func() {
-			cfg.Identity = ""
-			os.Setenv("USER", "bob")
-			Expect(prov.Identity()).To(Equal("bob.mcollective"))
-		})
-
-		It("Should support root users", func() {
-			cfg.fakeUID = 0
-			cfg.Identity = "node.example.net"
-			Expect(prov.Identity()).To(Equal("node.example.net"))
 		})
 	})
 

@@ -1,6 +1,10 @@
 package filesec
 
-import "regexp"
+import (
+	"os"
+	"regexp"
+	"runtime"
+)
 
 // MatchAnyRegex checks str against a list of possible regex, if any match true is returned
 func MatchAnyRegex(str []byte, regex []string) bool {
@@ -11,4 +15,20 @@ func MatchAnyRegex(str []byte, regex []string) bool {
 	}
 
 	return false
+}
+
+func uid() int {
+	if useFakeUID {
+		return fakeUID
+	}
+
+	return os.Geteuid()
+}
+
+func runtimeOs() string {
+	if useFakeOS {
+		return fakeOS
+	}
+
+	return runtime.GOOS
 }

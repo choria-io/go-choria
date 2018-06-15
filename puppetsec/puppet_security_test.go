@@ -153,18 +153,6 @@ var _ = Describe("PuppetSSL", func() {
 
 			Expect(prov.Identity()).To(Equal("bob.choria"))
 		})
-
-		It("Should support non root users", func() {
-			cfg.Identity = ""
-			os.Setenv("USER", "bob")
-			Expect(prov.Identity()).To(Equal("bob.mcollective"))
-		})
-
-		It("Should support root users", func() {
-			cfg.fakeUID = 0
-			cfg.Identity = "node.example.net"
-			Expect(prov.Identity()).To(Equal("node.example.net"))
-		})
 	})
 
 	Describe("cachePath", func() {
