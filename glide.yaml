@@ -1,0 +1,17 @@
+package: github.com/choria-io/go-discovery
+import:
+- package: github.com/choria-io/go-choria
+  version: fa492a4d60e2cb980537a479e5fe0ba044d77884
+  subpackages:
+  - choria
+  - srvcache
+- package: github.com/choria-io/go-protocol
+  version: 1.1.1
+  subpackages:
+  - protocol
+- package: github.com/sirupsen/logrus
+  version: ^1.0.5
+- package: github.com/onsi/ginkgo
+  version: ^1
+- package: github.com/onsi/gomega
+  version: ^1
