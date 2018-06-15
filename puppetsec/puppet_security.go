@@ -21,6 +21,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"runtime"
 	"time"
 
 	"github.com/choria-io/go-choria/config"
@@ -88,16 +89,25 @@ func WithChoriaConfig(c *config.Config) Option {
 			SSLDir:           c.Choria.SSLDir,
 			PuppetCAHost:     c.Choria.PuppetCAHost,
 			PuppetCAPort:     c.Choria.PuppetCAPort,
+			Identity:         c.Identity,
 		}
 
 		if c.HasOption("plugin.choria.puppetca_host") || c.HasOption("plugin.choria.puppetca_port") {
 			cfg.DisableSRV = true
 		}
 
-		cfg.Identity = c.Identity
+		if c.OverrideCertname == "" {
+			if cn, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
+				c.OverrideCertname = cn
+			}
+		}
 
 		if c.OverrideCertname != "" {
 			cfg.Identity = c.OverrideCertname
+		} else if !(runtime.GOOS == "windows" || os.Getuid() == 0) {
+			if u, ok := os.LookupEnv("USER"); ok {
+				cfg.Identity = fmt.Sprintf("%s.mcollective", u)
+			}
 		}
 
 		if cfg.SSLDir == "" {
@@ -161,6 +171,10 @@ func New(opts ...Option) (*PuppetSecurity, error) {
 		return nil, errors.New("logger not given")
 	}
 
+	if p.conf.Identity == "" {
+		return nil, errors.New("identity could not be determine automatically via Choria or was not supplied")
+	}
+
 	return p, p.reinit()
 }
 
@@ -175,6 +189,7 @@ func (s *PuppetSecurity) reinit() error {
 		Cache:            s.certCacheDir(),
 		Certificate:      s.publicCertPath(),
 		Key:              s.privateKeyPath(),
+		Identity:         s.conf.Identity,
 	}
 
 	s.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(s.log))
@@ -386,19 +401,7 @@ func (s *PuppetSecurity) PublicCertTXT() ([]byte, error) {
 
 // Identity determines the choria certname
 func (s *PuppetSecurity) Identity() string {
-	if s.conf.Identity != "" {
-		return s.conf.Identity
-	}
-
-	certname := s.conf.Identity
-
-	if s.uid() != 0 {
-		if u, ok := os.LookupEnv("USER"); ok {
-			certname = fmt.Sprintf("%s.mcollective", u)
-		}
-	}
-
-	return certname
+	return s.conf.Identity
 }
 
 func (s *PuppetSecurity) uid() int {

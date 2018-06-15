@@ -30,6 +30,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// used by tests to stub out uids etc, should probably be a class and use dependency injection, meh
+var useFakeUID = false
+var fakeUID = 0
+var useFakeOS = false
+var fakeOS = "fake"
+
 // FileSecurity impliments SecurityProvider using files on disk
 type FileSecurity struct {
 	conf *Config
@@ -63,9 +69,6 @@ type Config struct {
 
 	// DisableTLSVerify disables TLS verify in HTTP clients etc
 	DisableTLSVerify bool
-
-	useFakeUID bool
-	fakeUID    int
 }
 
 // Option is a function that can configure the File Security Provider
@@ -81,12 +84,19 @@ func WithChoriaConfig(c *config.Config) Option {
 		DisableTLSVerify: c.DisableTLSVerify,
 		Key:              c.Choria.FileSecurityKey,
 		PrivilegedUsers:  c.Choria.PrivilegedUsers,
+		Identity:         c.Identity,
 	}
 
-	cfg.Identity = c.Identity
+	if cn, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
+		c.OverrideCertname = cn
+	}
 
 	if c.OverrideCertname != "" {
 		cfg.Identity = c.OverrideCertname
+	} else if !(runtimeOs() == "windows" || uid() == 0) {
+		if u, ok := os.LookupEnv("USER"); ok {
+			cfg.Identity = fmt.Sprintf("%s.mcollective", u)
+		}
 	}
 
 	return WithConfig(&cfg)
@@ -129,6 +139,10 @@ func New(opts ...Option) (*FileSecurity, error) {
 
 	if f.log == nil {
 		return nil, errors.New("logger not given")
+	}
+
+	if f.conf.Identity == "" {
+		return nil, errors.New("identity could not be determine automatically via Choria or was not supplied")
 	}
 
 	return f, nil
@@ -354,27 +368,7 @@ func (s *FileSecurity) CachedPublicData(identity string) ([]byte, error) {
 
 // Identity determines the choria certname
 func (s *FileSecurity) Identity() string {
-	if s.conf.Identity != "" {
-		return s.conf.Identity
-	}
-
-	certname := s.conf.Identity
-
-	if s.uid() != 0 {
-		if u, ok := os.LookupEnv("USER"); ok {
-			certname = fmt.Sprintf("%s.mcollective", u)
-		}
-	}
-
-	return certname
-}
-
-func (s *FileSecurity) uid() int {
-	if s.conf.useFakeUID {
-		return s.conf.fakeUID
-	}
-
-	return os.Geteuid()
+	return s.conf.Identity
 }
 
 func (s *FileSecurity) privilegedCerts() []string {

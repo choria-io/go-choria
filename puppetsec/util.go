@@ -10,7 +10,7 @@ import (
 )
 
 func userSSlDir() (string, error) {
-	if os.Getuid() == 0 {
+	if os.Geteuid() == 0 {
 		path, err := puppet.Setting("ssldir")
 		if err != nil {
 			return "", err
