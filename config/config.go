@@ -2,6 +2,7 @@ package config
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
@@ -196,8 +197,6 @@ func NewConfig(path string) (*Config, error) {
 }
 
 func normalize(c *Config) error {
-	var err error
-
 	if c.MainCollective == "" {
 		c.MainCollective = c.Collectives[0]
 	}
@@ -206,29 +205,24 @@ func normalize(c *Config) error {
 		c.RegistrationCollective = c.MainCollective
 	}
 
-	if c.OverrideCertname != "" {
-		c.Identity = c.OverrideCertname
-	}
-
-	if os.Getuid() != 0 {
-		if u, ok := os.LookupEnv("USER"); ok {
-			c.Identity = fmt.Sprintf("%s.mcollective", u)
-		}
-	}
-
-	if certname, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
-		c.Identity = certname
-	}
-
 	if c.Identity == "" {
-		fqdn, _ := puppet.FacterFQDN()
-		if fqdn != "" {
+		hn, err := os.Hostname()
+		if err != nil {
+			return fmt.Errorf("could not determine hostname: %s", err)
+		}
+
+		// if os.Hostname gets a full hostname use that as it's quicker, then try facter if
+		// that's not available then use whatever os.Hostname gave even if its a short name
+		if strings.Count(hn, ".") > 1 {
+			c.Identity = hn
+		} else if fqdn, _ := puppet.FacterFQDN(); fqdn != "" {
 			c.Identity = fqdn
 		} else {
-			c.Identity, err = os.Hostname()
-			if err != nil {
-				return err
-			}
+			c.Identity = hn
+		}
+
+		if c.Identity == "" {
+			return errors.New("could not determine identity from os.Hostname or facter, please set identity in the configuration")
 		}
 	}
 
