@@ -1,5 +1,5 @@
 hash: 2a412acb3adac850adf2684018e2b5e8530cf2fff05952a31838b3f969673e50
-updated: 2018-05-29T12:59:26.663772+02:00
+updated: 2018-06-15T14:10:28.400205+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,7 +12,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: febc63588fc74351f9c74f8c4c5e67e383e9b779
+  version: b3717c9a6fbd0447cc76c4ff106c8d934112ec9c
   subpackages:
   - build
   - config
@@ -40,7 +40,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/prometheus/client_golang
-  version: c51dc758d4bb30acacbef9eaa2b774969a135086
+  version: 967789050ba94deca04a5e84cce8ad472ce313c1
   subpackages:
   - prometheus
 - name: github.com/prometheus/client_model
@@ -111,7 +111,7 @@ testImports:
   - matchers/support/goraph/util
   - types
 - name: golang.org/x/net
-  version: dfa909b99c79129e1100513e5cd36307665e5723
+  version: 89e543239a64caf31d3a6865872ea120b41446df
   subpackages:
   - context
   - html
