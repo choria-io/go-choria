@@ -44,15 +44,5 @@ var _ = Describe("Choria/Config", func() {
 			Expect(c.Option("plugin.package.setting", "default")).To(Equal("1"))
 			Expect(c.Option("plugin.package.other_setting", "default")).To(Equal("default"))
 		})
-
-		It("Should support environment override", func() {
-			old := os.Getenv("MCOLLECTIVE_CERTNAME")
-			os.Setenv("MCOLLECTIVE_CERTNAME", "bob.choria")
-			defer os.Setenv("MCOLLECTIVE_CERTNAME", old)
-
-			c, err := NewDefaultConfig()
-			Expect(err).ToNot(HaveOccurred())
-			Expect(c.Identity).To(Equal("bob.choria"))
-		})
 	})
 })
