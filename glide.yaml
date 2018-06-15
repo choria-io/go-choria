@@ -1,7 +1,7 @@
-package: github.com/choria-io/go-discovery
+package: github.com/choria-io/go-client
 import:
 - package: github.com/choria-io/go-choria
-  version: fa492a4d60e2cb980537a479e5fe0ba044d77884
+  version: 25734e2391b6e6734bd07f71dc1b3ba9959c5b87
   subpackages:
   - choria
   - srvcache
