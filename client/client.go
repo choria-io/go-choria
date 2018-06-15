@@ -26,7 +26,7 @@ type Client struct {
 	cancel        func()
 	fw            *choria.Framework
 	wg            *sync.WaitGroup
-	receiverReady chan interface{}
+	receiverReady chan struct{}
 	replies       chan *choria.ConnectorMessage
 	timeout       time.Duration
 	conn          Connector
@@ -65,7 +65,7 @@ func New(fw *choria.Framework, opts ...Option) (*Client, error) {
 		return nil, errors.New("receivers should be more than 1")
 	}
 
-	c.receiverReady = make(chan interface{}, c.receivers)
+	c.receiverReady = make(chan struct{}, c.receivers)
 
 	return c, nil
 }
@@ -77,19 +77,14 @@ func (c *Client) Request(ctx context.Context, msg *choria.Message, handler Handl
 	c.ctx, c.cancel = context.WithCancel(ctx)
 	defer c.cancel()
 
+	c.log.Debugf("Starting %d receivers on %s", c.receivers, msg.ReplyTo())
+
 	name := fmt.Sprintf("%s_%s", c.fw.Certname(), msg.RequestID)
 
-	if c.conn == nil {
-		c.conn, err = c.connect()
-		if err != nil {
-			return fmt.Errorf("could not connect: %s", err)
-		}
+	for i := 0; i < c.receivers; i++ {
+		c.wg.Add(1)
+		go c.receiver(name, i, msg.ReplyTo(), handler)
 	}
-
-	c.log.Debugf("Starting receivers on %s", msg.ReplyTo())
-
-	c.wg.Add(1)
-	go c.receiver(name, msg.ReplyTo(), handler)
 
 	c.wg.Add(1)
 	go c.publish(msg)
@@ -99,40 +94,60 @@ func (c *Client) Request(ctx context.Context, msg *choria.Message, handler Handl
 	return nil
 }
 
-func (c *Client) publish(msg *choria.Message) (err error) {
+func (c *Client) publish(msg *choria.Message) {
 	defer c.wg.Done()
+
+	conn := c.conn
+	var err error
+
+	if conn == nil {
+		conn, err = c.connect(fmt.Sprintf("%s-%s-publisher", c.fw.Certname(), c.fw.NewRequestID()))
+		if err != nil {
+			c.log.Errorf("could not connect: %s", err)
+		}
+	}
 
 	select {
 	case <-c.receiverReady:
 	case <-c.ctx.Done():
-		return nil
+		return
 	}
 
 	// TODO needs context https://github.com/choria-io/go-choria/issues/211
-	err = c.conn.Publish(msg)
+	err = conn.Publish(msg)
 	if err != nil {
 		c.log.Error(err)
-		return err
+		return
 	}
 
-	return nil
+	return
 }
 
-func (c *Client) receiver(name string, target string, cb Handler) {
+func (c *Client) receiver(name string, i int, target string, cb Handler) {
 	defer c.wg.Done()
 
-	// TODO like the early RPC POC this should have a connection per receiver and publisher
-	// to improve performance, but this should get us going and its a small code base to add
-	// that feature to
+	conn := c.conn
+	var err error
 
-	c.conn.QueueSubscribe(c.ctx, "replies", target, name, c.replies)
-
-	c.receiverReady <- nil
-
-	for i := 0; i < c.receivers; i++ {
-		c.wg.Add(1)
-		go c.msgHandler(cb)
+	if conn == nil {
+		conn, err = c.connect(fmt.Sprintf("%s-receiver%d", name, i))
+		if err != nil {
+			c.log.Errorf("could not connect: %s", err)
+			return
+		}
 	}
+
+	c.wg.Add(1)
+	go c.msgHandler(cb)
+
+	grp := ""
+	if c.receivers > 1 {
+		grp = name
+	}
+
+	conn.QueueSubscribe(c.ctx, "replies", target, grp, c.replies)
+
+	c.receiverReady <- struct{}{}
 }
 
 func (c *Client) msgHandler(cb Handler) {
@@ -155,12 +170,10 @@ func (c *Client) msgHandler(cb Handler) {
 	}
 }
 
-func (c *Client) connect() (Connector, error) {
+func (c *Client) connect(name string) (Connector, error) {
 	servers := func() ([]srvcache.Server, error) {
 		return c.fw.MiddlewareServers()
 	}
-
-	name := fmt.Sprintf("%s-%s", c.fw.Certname(), c.fw.NewRequestID())
 
 	connector, err := c.fw.NewConnector(c.ctx, servers, name, c.log)
 	if err != nil {
