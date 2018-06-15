@@ -81,7 +81,6 @@ var _ = Describe("Client", func() {
 
 					Expect(name).To(Equal("replies"))
 					Expect(subject).To(Equal(msg.ReplyTo()))
-					Expect(group).To(Equal(fmt.Sprintf("%s_%s", fw.Certname(), msg.RequestID)))
 
 					req, err := fw.NewRequestFromMessage(protocol.RequestV1, msg)
 					Expect(err).ToNot(HaveOccurred())
