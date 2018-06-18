@@ -12,7 +12,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-client
-  version: 352cf02e43904b7d1c0850cc08af2edd0e52a21c
+  version: 94739982b79ed8656005a50c056b4c4ecfe87563
   subpackages:
   - client
 - name: github.com/choria-io/go-confkey
