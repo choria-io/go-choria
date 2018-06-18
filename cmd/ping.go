@@ -26,6 +26,12 @@ type pingCommand struct {
 	graph      bool
 	workers    int
 	waitfor    int
+	factF      []string
+	agentsF    []string
+	classF     []string
+	identityF  []string
+	combinedF  []string
+	namesOnly  bool
 
 	start time.Time
 	ctr   int
@@ -37,11 +43,17 @@ type pingCommand struct {
 func (p *pingCommand) Setup() (err error) {
 	p.cmd = cli.app.Command("ping", "Low level Choria network testing tool")
 	p.cmd.Flag("silent", "Do not print any hostnames").BoolVar(&p.silent)
+	p.cmd.Flag("names", "Only show the names that respond, no statistics").BoolVar(&p.namesOnly)
 	p.cmd.Flag("expect", "Wait until this many replies were received or timeout").IntVar(&p.waitfor)
 	p.cmd.Flag("target", "Target a specific sub collective").Short('T').StringVar(&p.collective)
 	p.cmd.Flag("timeout", "How long to wait for responses").IntVar(&p.timeout)
 	p.cmd.Flag("graph", "Produce a graph of the result times").BoolVar(&p.graph)
 	p.cmd.Flag("workers", "How many workers to start for receicing messages").IntVar(&p.workers)
+	p.cmd.Flag("wf", "Match hosts with a certain fact").Short('F').StringsVar(&p.factF)
+	p.cmd.Flag("wc", "Match hosts with a certain configuration management class").Short('C').StringsVar(&p.classF)
+	p.cmd.Flag("wa", "Match hosts with a certain Choria agent").Short('A').StringsVar(&p.agentsF)
+	p.cmd.Flag("wi", "Match hosts with a certain Choria identity").Short('I').StringsVar(&p.identityF)
+	p.cmd.Flag("with", "Combined classes and facts filter").Short('W').PlaceHolder("FILTER").StringsVar(&p.combinedF)
 
 	return
 }
@@ -64,6 +76,17 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 		p.workers = 3
 	}
 
+	filter, err := client.NewFilter(
+		client.FactFilter(p.factF...),
+		client.AgentFilter(p.agentsF...),
+		client.ClassFilter(p.classF...),
+		client.IdentityFilter(p.identityF...),
+		client.CombinedFilter(p.combinedF...),
+	)
+	if err != nil {
+		return err
+	}
+
 	cl, err := client.New(c, client.Receivers(p.workers), client.Timeout(time.Duration(p.timeout)*time.Second))
 	if err != nil {
 		return fmt.Errorf("could not setup client: %s", err)
@@ -74,6 +97,8 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("could not create message: %s", err)
 	}
 
+	msg.Filter = filter
+
 	p.start = time.Now()
 
 	err = cl.Request(ctx, msg, p.handler)
@@ -81,7 +106,11 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("could not perform request: %s", err)
 	}
 
-	return p.summarize()
+	if !p.namesOnly {
+		err = p.summarize()
+	}
+
+	return err
 }
 
 func (p *pingCommand) summarize() error {
@@ -138,7 +167,11 @@ func (p *pingCommand) handler(ctx context.Context, m *choria.ConnectorMessage) {
 	p.times = append(p.times, delay)
 
 	if !p.silent {
-		fmt.Printf("%-40s time=%0.3f ms\n", reply.SenderID(), delay)
+		if p.namesOnly {
+			fmt.Println(reply.SenderID())
+		} else {
+			fmt.Printf("%-40s time=%0.3f ms\n", reply.SenderID(), delay)
+		}
 	}
 
 	p.ctr++
