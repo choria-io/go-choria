@@ -44,16 +44,16 @@ func (p *pingCommand) Setup() (err error) {
 	p.cmd = cli.app.Command("ping", "Low level Choria network testing tool")
 	p.cmd.Flag("silent", "Do not print any hostnames").BoolVar(&p.silent)
 	p.cmd.Flag("names", "Only show the names that respond, no statistics").BoolVar(&p.namesOnly)
-	p.cmd.Flag("expect", "Wait until this many replies were received or timeout").IntVar(&p.waitfor)
-	p.cmd.Flag("target", "Target a specific sub collective").Short('T').StringVar(&p.collective)
-	p.cmd.Flag("timeout", "How long to wait for responses").IntVar(&p.timeout)
-	p.cmd.Flag("graph", "Produce a graph of the result times").BoolVar(&p.graph)
-	p.cmd.Flag("workers", "How many workers to start for receicing messages").IntVar(&p.workers)
 	p.cmd.Flag("wf", "Match hosts with a certain fact").Short('F').StringsVar(&p.factF)
 	p.cmd.Flag("wc", "Match hosts with a certain configuration management class").Short('C').StringsVar(&p.classF)
 	p.cmd.Flag("wa", "Match hosts with a certain Choria agent").Short('A').StringsVar(&p.agentsF)
 	p.cmd.Flag("wi", "Match hosts with a certain Choria identity").Short('I').StringsVar(&p.identityF)
 	p.cmd.Flag("with", "Combined classes and facts filter").Short('W').PlaceHolder("FILTER").StringsVar(&p.combinedF)
+	p.cmd.Flag("expect", "Wait until this many replies were received or timeout").IntVar(&p.waitfor)
+	p.cmd.Flag("target", "Target a specific sub collective").Short('T').StringVar(&p.collective)
+	p.cmd.Flag("timeout", "How long to wait for responses").IntVar(&p.timeout)
+	p.cmd.Flag("graph", "Produce a graph of the result times").BoolVar(&p.graph)
+	p.cmd.Flag("workers", "How many workers to start for receicing messages").IntVar(&p.workers)
 
 	return
 }
@@ -84,7 +84,7 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 		client.CombinedFilter(p.combinedF...),
 	)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not parse filters: %s", err)
 	}
 
 	cl, err := client.New(c, client.Receivers(p.workers), client.Timeout(time.Duration(p.timeout)*time.Second))

@@ -8,7 +8,7 @@
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Choria.IO Orchestration System Middleware Broker
+# Short-Description: Choria.IO Orchestration System Network Broker
 # Description:       NATS based middleware, Federation Broker and Protocol Adapter for Choria.IO
 ### END INIT INFO
 
