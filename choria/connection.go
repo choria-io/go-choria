@@ -175,9 +175,6 @@ func (conn *Connection) Nats() *nats.Conn {
 //
 // The given name would later be used should a unsubscribe be needed
 func (conn *Connection) ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *ConnectorMessage, error) {
-	conn.subMu.Lock()
-	defer conn.subMu.Unlock()
-
 	var err error
 
 	s := &channelSubscription{
@@ -186,14 +183,10 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 		quit: make(chan interface{}),
 	}
 
+	conn.subMu.Lock()
+	defer conn.subMu.Unlock()
+
 	conn.chanSubscriptions[name] = s
-
-	conn.logger.Debugf("Susbscribing to %s in group '%s' on server %s", subject, group, conn.ConnectedServer())
-
-	s.subscription, err = conn.nats.ChanQueueSubscribe(subject, group, s.in)
-	if err != nil {
-		return nil, fmt.Errorf("Could not subscribe to subscription %s: %s", name, err)
-	}
 
 	copier := func(subs *channelSubscription) {
 		for {
@@ -208,30 +201,30 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 
 	go copier(s)
 
+	conn.logger.Debugf("Susbscribing to %s in group '%s' on server %s", subject, group, conn.ConnectedServer())
+
+	s.subscription, err = conn.nats.ChanQueueSubscribe(subject, group, s.in)
+	if err != nil {
+		return nil, fmt.Errorf("Could not subscribe to subscription %s: %s", name, err)
+	}
+
 	return s.out, nil
 }
 
 // QueueSubscribe is a lot like ChanQueueSubscribe but you provide it the queue to dump messages in
 func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error {
-	conn.subMu.Lock()
-	defer conn.subMu.Unlock()
-
 	var err error
 
 	s := &channelSubscription{
-		in:   make(chan *nats.Msg, 5000),
+		in:   make(chan *nats.Msg, cap(output)),
 		out:  output,
 		quit: make(chan interface{}),
 	}
 
+	conn.subMu.Lock()
+	defer conn.subMu.Unlock()
+
 	conn.chanSubscriptions[name] = s
-
-	conn.logger.Debugf("Susbscribing to %s in group '%s' on server %s", subject, group, conn.ConnectedServer())
-
-	s.subscription, err = conn.nats.ChanQueueSubscribe(subject, group, s.in)
-	if err != nil {
-		return fmt.Errorf("Could not subscribe to subscription %s: %s", name, err)
-	}
 
 	copier := func(ctx context.Context, s *channelSubscription) {
 		for {
@@ -247,6 +240,13 @@ func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject
 	}
 
 	go copier(ctx, s)
+
+	conn.logger.Debugf("Susbscribing to %s in group '%s' on server %s", subject, group, conn.ConnectedServer())
+
+	s.subscription, err = conn.nats.ChanQueueSubscribe(subject, group, s.in)
+	if err != nil {
+		return fmt.Errorf("Could not subscribe to subscription %s: %s", name, err)
+	}
 
 	return err
 }
@@ -546,6 +546,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		// each sending several MB after reconnect is not what anyone wants
 		nats.ReconnectBufSize(10 * 1024),
 
+		// nats.SetPend
 		nats.DisconnectHandler(func(nc *nats.Conn) {
 			err = nc.LastError()
 

@@ -8,9 +8,12 @@ import (
 	"os/signal"
 	"path/filepath"
 	"runtime"
+	"runtime/pprof"
 	"sync"
 	"syscall"
 	"time"
+
+	"github.com/choria-io/go-protocol/protocol"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
@@ -35,13 +38,16 @@ var cancel func()
 var wg *sync.WaitGroup
 var mu = &sync.Mutex{}
 var err error
+var profile string
 
 func ParseCLI() (err error) {
 	cli.app = kingpin.New("choria", "Choria Orchestration System")
 	cli.app.Version(build.Version)
 	cli.app.Author("R.I.Pienaar <rip@devco.net>")
+
 	cli.app.Flag("debug", "Enable debug logging").Short('d').BoolVar(&debug)
 	cli.app.Flag("config", "Config file to use").StringVar(&configFile)
+	cli.app.Flag("profile", "Enable CPU profiling and write to the supplied file").StringVar(&profile)
 
 	for _, cmd := range cli.commands {
 		err = cmd.Setup()
@@ -77,6 +83,11 @@ func commonConfigure() error {
 		return fmt.Errorf("Could not parse configuration: %s", err)
 	}
 
+	if os.Getenv("INSECURE_YES_REALLY") == "true" {
+		protocol.Secure = "false"
+		cfg.DisableTLS = true
+	}
+
 	return nil
 }
 
@@ -88,6 +99,16 @@ func Run() (err error) {
 	defer cancel()
 
 	go interruptWatcher()
+
+	if profile != "" {
+		f, err := os.Create(profile)
+		if err != nil {
+			return fmt.Errorf("could not setup profiling: %s", err)
+		}
+
+		pprof.StartCPUProfile(f)
+		defer pprof.StopCPUProfile()
+	}
 
 	// we do this here so that the command setup has a chance to fiddle the config for
 	// things like disabling full verification of the security system during enrollment
