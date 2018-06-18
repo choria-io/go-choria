@@ -42,3 +42,6 @@ import:
   version: 0.0.1
 - package: github.com/choria-io/go-security
   version: 0.1.0
+- package: github.com/choria-io/go-client
+  subpackages:
+  - client

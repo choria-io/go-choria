@@ -1,5 +1,5 @@
-hash: 39a99b96c5eac8186a9809a676807a43b358b2112da0fbefafecc929c1d68938
-updated: 2018-06-15T14:19:31.681522+02:00
+hash: 975a80479cf9afad3c96b5b629bbabf6ea6553b58d179a9c9b65575383e1e8f9
+updated: 2018-06-15T15:27:19.188153+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -11,6 +11,10 @@ imports:
   version: 3a771d992973f24aa725d07868b467d1ddfceafb
   subpackages:
   - quantile
+- name: github.com/choria-io/go-client
+  version: 352cf02e43904b7d1c0850cc08af2edd0e52a21c
+  subpackages:
+  - client
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-network-broker
@@ -56,6 +60,8 @@ imports:
   version: 3a3da3a4e26776cc22a79ef46d5d58477532dede
   subpackages:
   - proto
+- name: github.com/joliv/spark
+  version: e0eaf3444d05c395369fcea69986b5b62681328f
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
