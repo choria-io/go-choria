@@ -1,5 +1,5 @@
 [Unit]
-Description=The Choria Orchestrator Middleware Broker
+Description=The Choria Orchestrator Network Broker
 After=network.target
 
 [Service]

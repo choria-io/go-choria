@@ -232,6 +232,30 @@ agents:
 
 When you run `go generate` (done during the building phase for you) this will create the shim you need to compile your agent into the binary.
 
+### Provisioning
+
+Choria supports a auto provisioning flow where should it start with a configuration that enables provisioning - or optionally one that does not specifically disable it - it will connect to a broker that gets set during compile time.
+
+Provisioning is not enabled - or configurable - in the default shipped binaries, as an advanced feature this is reserved for people who build their own custom setups.
+
+The active provisioning will be configured with:
+
+ * Federation is disabled
+ * The `provisioning` collective is the only active one and the main collective
+ * Registration is enabled with a 120 second interval
+ * Registration splay is off
+ * File registration gets published to `choria.provisioning_data`
+
+When provisioning is enabled a special agent `choria_provision` will be activated, the default one has the following actions:
+
+ * `configure` - takes a provided configuration hash and saves it to `server.cfg`
+ * `restart` - restarts the server after a random sleep, max 10s by default but can be provided in the request
+ * `reprovision` - rewrites the configuration with one that enables provisioning and restarts
+
+ One can provide ones own agent to replace this one, using this you can write a tool that monitors the `provisioning` sub collective continuously and drives a node through a provisioning flow placing it in exactly the state you desire.
+
+In future the provisioning flow will also support enrolling the node with a Certificate Authority.
+
 ### Compiling in custom agent providers
 Agent Providers allow entirely new ways of writing agents to be created.  An example is the one that runs old mcollective ruby agents
 within a choria instance.

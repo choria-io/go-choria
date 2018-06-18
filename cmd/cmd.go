@@ -47,7 +47,7 @@ func ParseCLI() (err error) {
 
 	cli.app.Flag("debug", "Enable debug logging").Short('d').BoolVar(&debug)
 	cli.app.Flag("config", "Config file to use").StringVar(&configFile)
-	cli.app.Flag("profile", "Enable CPU profiling and write to the supplied file").StringVar(&profile)
+	cli.app.Flag("profile", "Enable CPU profiling and write to the supplied file").Hidden().StringVar(&profile)
 
 	for _, cmd := range cli.commands {
 		err = cmd.Setup()
