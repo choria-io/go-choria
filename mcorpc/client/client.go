@@ -1,0 +1,332 @@
+package client
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"sync"
+	"time"
+
+	"github.com/choria-io/go-client/discovery/broadcast"
+
+	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/mcorpc"
+	"github.com/choria-io/go-choria/srvcache"
+	cclient "github.com/choria-io/go-client/client"
+	"github.com/choria-io/go-protocol/protocol"
+
+	"github.com/sirupsen/logrus"
+)
+
+// RPC is a MCollective compatible RPC client
+type RPC struct {
+	fw   *choria.Framework
+	opts *RequestOptions
+	log  *logrus.Entry
+
+	agent string
+
+	mu *sync.Mutex
+
+	// used for testing only
+	cl ChoriaClient
+}
+
+// RPCRequest is a basic RPC request
+type RPCRequest struct {
+	Agent  string          `json:"agent"`
+	Action string          `json:"action"`
+	Data   json.RawMessage `json:"data"`
+}
+
+// RPCReply is a basic RPC reply
+type RPCReply struct {
+	Statuscode mcorpc.StatusCode `json:"statuscode"`
+	Statusmsg  string            `json:"statusmsg"`
+	Data       json.RawMessage   `json:"data"`
+}
+
+// RequestResult is the result of a request
+type RequestResult interface {
+	Stats() *Stats
+}
+
+// Handler is a function that should handle each reply synchronously
+type Handler func(protocol.Reply, *RPCReply)
+
+// ChoriaClient implements the connection to the Choria network
+type ChoriaClient interface {
+	Request(ctx context.Context, msg *choria.Message, handler cclient.Handler) (err error)
+}
+
+// Connector is a connection to the choria network
+type Connector interface {
+	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *choria.ConnectorMessage) error
+	Publish(msg *choria.Message) error
+}
+
+// New creates a new RPC request
+func New(fw *choria.Framework, agent string) (rpc *RPC, err error) {
+	rpc = &RPC{
+		fw:    fw,
+		mu:    &sync.Mutex{},
+		log:   fw.Logger("mcorpc"),
+		agent: agent,
+	}
+
+	return rpc, nil
+}
+
+// Do performs a RPC request and optionally processes replies
+func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts ...RequestOption) (RequestResult, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	dctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	msg, cl, err := r.setupMessage(dctx, action, payload, opts...)
+	if err != nil {
+		return nil, err
+	}
+
+	ctr := 0
+
+	// the client is always batched, when batched mode is not request the size of
+	// the batch matches the size of the total targets and during setupMessage()
+	// an appropriate connection will be made
+	err = InGroups(r.opts.Targets, r.opts.BatchSize, func(nodes []string) error {
+		r.opts.stats = NewStats()
+		r.opts.stats.SetDiscoveredNodes(nodes)
+		msg.DiscoveredHosts = nodes
+
+		r.opts.stats.Start()
+		defer r.opts.stats.End()
+
+		if ctr > 0 {
+			err := InterruptableSleep(dctx, r.opts.BatchSleep)
+			if err != nil {
+				return err
+			}
+		}
+
+		r.log.Debugf("Performing batched request %d for %d/%d nodes", ctr, len(nodes), len(r.opts.Targets))
+
+		err = r.request(dctx, msg, cl)
+		if err != nil {
+			return fmt.Errorf("could not create request: %s", err)
+		}
+
+		r.opts.totalStats.Merge(r.opts.stats)
+
+		ctr++
+
+		return nil
+	})
+
+	return &RequestOptions{totalStats: r.opts.totalStats}, err
+}
+
+// Discover performs a broadcast discovery, using this method will update the client to
+// with these discovered nodes and update appropriate stats
+func (r *RPC) Discover(ctx context.Context, f *protocol.Filter) (n []string, err error) {
+	// its a common pattern to setup a client - like discovery data etc - and then reuse it for a few calls
+	// this ensures that this pattern is possible, Reset() will clear opts here and it'll effectively start fresh
+	if r.opts == nil {
+		r.opts = NewRequestOptions(r.fw)
+	}
+
+	b := broadcast.New(r.fw)
+
+	r.opts.totalStats.StartDiscover()
+	defer r.opts.totalStats.EndDiscover()
+
+	n, err = b.Discover(ctx, broadcast.Filter(f), broadcast.Timeout(time.Duration(r.fw.Config.DiscoveryTimeout)*time.Second))
+	if err != nil {
+		return n, err
+	}
+
+	r.opts.Targets = n
+	r.opts.totalStats.SetDiscoveredNodes(n)
+
+	return
+}
+
+func (r *RPC) setupMessage(ctx context.Context, action string, payload interface{}, opts ...RequestOption) (msg *choria.Message, cl ChoriaClient, err error) {
+	// its a common pattern to setup a client - like discovery data etc - and then reuse it for a few calls
+	// this ensures that this pattern is possible, Reset() will clear opts here and it'll effectively start fresh
+	if r.opts == nil {
+		r.opts = NewRequestOptions(r.fw)
+	}
+
+	// regardless of above, we always need new stats
+	r.opts.totalStats = NewStats()
+
+	// batch mode should be set on a per request basis
+	r.opts.BatchSize = 0
+
+	for _, opt := range opts {
+		opt(r.opts)
+	}
+
+	pj, err := json.Marshal(payload)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not encode payload: %s", err)
+	}
+
+	rpcreq := &RPCRequest{
+		Agent:  r.agent,
+		Action: action,
+		Data:   pj,
+	}
+
+	rpcp, err := json.Marshal(rpcreq)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not encode request: %s", err)
+	}
+
+	msg, err = r.fw.NewMessage(string(rpcp), r.agent, r.fw.Config.MainCollective, "request", nil)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not create Message: %s", err)
+	}
+
+	err = r.opts.ConfigureMessage(msg)
+	if err != nil {
+		return nil, nil, fmt.Errorf("could not configure Message: %s", err)
+	}
+
+	cl = r.cl
+
+	if r.cl == nil {
+		if r.opts.BatchSize == len(r.opts.Targets) {
+			cl, err = r.unbatchedClient()
+			if err != nil {
+				return nil, nil, err
+			}
+		} else {
+			cl, err = r.batchedClient(ctx, msg.RequestID)
+			if err != nil {
+				return nil, nil, err
+			}
+		}
+	}
+
+	return msg, cl, err
+}
+
+func (r *RPC) unbatchedClient() (cl ChoriaClient, err error) {
+	cl, err = cclient.New(
+		r.fw,
+		cclient.Receivers(r.opts.Workers),
+		cclient.Timeout(r.opts.Timeout),
+		cclient.OnPublishStart(r.opts.stats.StartPublish),
+		cclient.OnPublishFinish(r.opts.stats.EndPublish),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("could not setup client: %s", err)
+	}
+
+	return cl, nil
+}
+
+func (r *RPC) batchedClient(ctx context.Context, msgid string) (cl ChoriaClient, err error) {
+	conn, err := r.connectBatchedConnection(ctx, fmt.Sprintf("%s_batched", msgid))
+	if err != nil {
+		return nil, fmt.Errorf("could not connect batched network connection: %s", err)
+	}
+
+	cl, err = cclient.New(
+		r.fw,
+		cclient.Receivers(r.opts.Workers),
+		cclient.Timeout(r.opts.Timeout),
+		cclient.OnPublishStart(r.opts.stats.StartPublish),
+		cclient.OnPublishFinish(r.opts.stats.EndPublish),
+		cclient.Connection(conn),
+	)
+	if err != nil {
+		return nil, fmt.Errorf("could not set up batched client: %s", err)
+	}
+
+	return cl, nil
+}
+
+// Reset removes the cached options, any further Do() calls need to specify full options
+func (r *RPC) Reset() {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.opts = nil
+	r.cl = nil
+}
+
+func (r *RPC) request(ctx context.Context, msg *choria.Message, cl ChoriaClient) error {
+	rctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	err := cl.Request(rctx, msg, r.handlerFactory(rctx, cancel))
+	if err != nil {
+		return fmt.Errorf("could not create request: %s", err)
+	}
+
+	return nil
+}
+
+func (r *RPC) handlerFactory(ctx context.Context, cancel func()) cclient.Handler {
+	handler := func(ctx context.Context, rawmsg *choria.ConnectorMessage) {
+		reply, err := r.fw.NewReplyFromTransportJSON(rawmsg.Data, false)
+		if err != nil {
+			r.opts.stats.FailedRequestInc()
+			r.log.Errorf("Could not process a reply: %s", err)
+			return
+		}
+
+		r.opts.stats.RecordReceived(reply.SenderID())
+
+		rpcreply, err := ParseReplyData([]byte(reply.Message()))
+		if err != nil {
+			r.opts.stats.FailedRequestInc()
+			r.log.Errorf("Could not process reply from %s: %s", reply.SenderID(), err)
+			return
+		}
+
+		if rpcreply.Statuscode == mcorpc.OK {
+			r.opts.stats.PassedRequestInc()
+		} else {
+			r.opts.stats.FailedRequestInc()
+		}
+
+		if r.opts.Handler != nil {
+			r.opts.Handler(reply, rpcreply)
+		}
+
+		if r.opts.stats.All() {
+			cancel()
+			return
+		}
+	}
+
+	return handler
+}
+
+func (r *RPC) connectBatchedConnection(ctx context.Context, name string) (Connector, error) {
+	servers := func() ([]srvcache.Server, error) {
+		return r.fw.MiddlewareServers()
+	}
+
+	connector, err := r.fw.NewConnector(ctx, servers, name, r.log)
+	if err != nil {
+		return nil, fmt.Errorf("could not create connector: %s", err)
+	}
+
+	closer := func() {
+		select {
+		case <-ctx.Done():
+			r.log.Debug("Closing connection")
+			connector.Close()
+		}
+	}
+
+	go closer()
+
+	return connector, nil
+}
