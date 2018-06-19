@@ -44,7 +44,14 @@ func Log(l *logrus.Entry) Option {
 	}
 }
 
-func connection(conn Connector) Option {
+// Connection  Supplies a custom connection, when this is supplied
+// this is the only connection that will be used for the duration
+// of this client for all publishes and replies
+//
+// This might have severe performance impact and might even cause
+// message loss, my suggestion would be to use this only when doing
+// batch style messages where you expect small amounts of replies
+func Connection(conn Connector) Option {
 	return func(c *Client) {
 		c.conn = conn
 	}
