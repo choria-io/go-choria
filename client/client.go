@@ -32,6 +32,9 @@ type Client struct {
 	conn          Connector
 	receivers     int
 	log           *logrus.Entry
+
+	startPublishCB func()
+	endPublishCB   func()
 }
 
 // Handler handles individual messages
@@ -113,11 +116,19 @@ func (c *Client) publish(msg *choria.Message) {
 		return
 	}
 
+	if c.startPublishCB != nil {
+		c.startPublishCB()
+	}
+
 	// TODO needs context https://github.com/choria-io/go-choria/issues/211
 	err = conn.Publish(msg)
 	if err != nil {
 		c.log.Error(err)
 		return
+	}
+
+	if c.endPublishCB != nil {
+		c.endPublishCB()
 	}
 
 	return

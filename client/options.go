@@ -9,6 +9,20 @@ import (
 // Option configures the broadcast discovery method
 type Option func(c *Client)
 
+// OnPublishStart function to call synchronously when publishing starts
+func OnPublishStart(f func()) Option {
+	return func(c *Client) {
+		c.startPublishCB = f
+	}
+}
+
+// OnPublishFinish function to call synchronously when publishing ends
+func OnPublishFinish(f func()) Option {
+	return func(c *Client) {
+		c.endPublishCB = f
+	}
+}
+
 // Timeout sets the request timeout
 func Timeout(t time.Duration) Option {
 	return func(c *Client) {

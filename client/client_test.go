@@ -54,6 +54,8 @@ var _ = Describe("Client", func() {
 	Describe("Request", func() {
 		It("Should perform the request and call the handler for each reply", func() {
 			seen := []string{}
+			pubStarted := false
+			pubEnded := false
 
 			handler := func(ctx context.Context, m *choria.ConnectorMessage) {
 				mu.Lock()
@@ -64,6 +66,12 @@ var _ = Describe("Client", func() {
 
 				seen = append(seen, reply.SenderID())
 			}
+
+			pubStartCB := func() { pubStarted = true }
+			pubEndCB := func() { pubEnded = true }
+
+			OnPublishStart(pubStartCB)(client)
+			OnPublishFinish(pubEndCB)(client)
 
 			msg, err := fw.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", "mcollective", "request", nil)
 			Expect(err).ToNot(HaveOccurred())
@@ -110,6 +118,9 @@ var _ = Describe("Client", func() {
 
 			err = client.Request(ctx, msg, handler)
 			Expect(err).ToNot(HaveOccurred())
+
+			Expect(pubStarted).To(BeTrue())
+			Expect(pubEnded).To(BeTrue())
 
 			sort.Strings(seen)
 			Expect(seen).To(Equal([]string{"test.sender.0", "test.sender.1", "test.sender.2", "test.sender.3", "test.sender.4", "test.sender.5", "test.sender.6", "test.sender.7", "test.sender.8", "test.sender.9"}))
