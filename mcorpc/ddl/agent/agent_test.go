@@ -2,6 +2,7 @@ package agent
 
 import (
 	"path"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -19,11 +20,11 @@ var _ = Describe("McoRPC/DDL/Agent", func() {
 	var err error
 
 	BeforeEach(func() {
-		pkg, err = New(path.Join("testdata", "package.json"))
+		pkg, err = New(path.Join("testdata", "mcollective", "agent", "package.json"))
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	var _ = Describe("New", func() {
+	Describe("New", func() {
 		It("Should fail for missing json files", func() {
 			d, err := New(path.Join("testdata", "missing.json"))
 			Expect(err.Error()).To(MatchRegexp("could not load DDL data: open.+missing.json"))
@@ -47,13 +48,33 @@ var _ = Describe("McoRPC/DDL/Agent", func() {
 		})
 	})
 
-	var _ = Describe("ActionList", func() {
+	Describe("EachFile", func() {
+		It("Should call the cb with the right files", func() {
+			files := make(map[string]string)
+
+			EachFile([]string{"nonexisting", "testdata"}, func(n, p string) bool {
+				files[n] = p
+				return false
+			})
+
+			Expect(files["package"]).To(Equal(filepath.Join("testdata", "mcollective", "agent", "package.json")))
+		})
+	})
+
+	Describe("ActionList", func() {
 		It("Should return the correct list", func() {
 			Expect(pkg.ActionNames()).To(Equal([]string{"apt_checkupdates", "apt_update", "checkupdates", "count", "install", "md5", "purge", "status", "uninstall", "update", "yum_checkupdates", "yum_clean"}))
 		})
 	})
 
-	var _ = Describe("Timeout", func() {
+	Describe("HaveAction", func() {
+		It("Should correctly determine if actions exist", func() {
+			Expect(pkg.HaveAction("foo")).To(BeFalse())
+			Expect(pkg.HaveAction("apt_checkupdates")).To(BeTrue())
+		})
+	})
+
+	Describe("Timeout", func() {
 		It("Should handle 0 second timeouts as 10 seconds", func() {
 			pkg.Metadata.Timeout = 0
 
@@ -65,7 +86,7 @@ var _ = Describe("McoRPC/DDL/Agent", func() {
 		})
 	})
 
-	var _ = Describe("ActionInterface", func() {
+	Describe("ActionInterface", func() {
 		It("Should retrieve the correct interface", func() {
 			act, err := pkg.ActionInterface("install")
 			Expect(err).ToNot(HaveOccurred())

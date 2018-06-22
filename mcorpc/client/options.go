@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/mcorpc/ddl/agent"
 	"github.com/choria-io/go-protocol/protocol"
 )
 
@@ -38,7 +39,7 @@ type RequestOptions struct {
 type RequestOption func(*RequestOptions)
 
 // NewRequestOptions creates a initialized request options
-func NewRequestOptions(fw *choria.Framework) *RequestOptions {
+func NewRequestOptions(fw *choria.Framework, ddl *agent.DDL) *RequestOptions {
 	return &RequestOptions{
 		ProtocolVersion: protocol.RequestV1,
 		RequestType:     "direct_request",
@@ -46,11 +47,15 @@ func NewRequestOptions(fw *choria.Framework) *RequestOptions {
 		ProcessReplies:  true,
 		ReceiveReplies:  true,
 		Progress:        false,
-		Timeout:         time.Duration(fw.Config.DiscoveryTimeout+20) * time.Second,
 		Workers:         3,
 		stats:           NewStats(),
 		totalStats:      NewStats(),
 		fw:              fw,
+
+		// add discovery timeout to the agent timeout as that's basically an indication of
+		// network overhead, discovery being the smallest possible RPC request it's an indication
+		// of what peoples network behaviour is like assuming discovery works
+		Timeout: (time.Duration(fw.Config.DiscoveryTimeout) * time.Second) + ddl.Timeout(),
 	}
 }
 

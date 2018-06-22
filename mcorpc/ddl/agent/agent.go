@@ -4,6 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/choria-io/go-choria/server/agents"
@@ -50,6 +53,56 @@ func New(file string) (*DDL, error) {
 	return ddl, nil
 }
 
+// Find looks in the supplied libdirs for a DDL file for a specific agent
+func Find(agent string, libdirs []string) (ddl *DDL, err error) {
+	EachFile(libdirs, func(n string, f string) bool {
+		if n == agent {
+			ddl, err = New(f)
+			return true
+		}
+
+		return false
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("could not load agent %s: %s", agent, err)
+	}
+
+	if ddl == nil {
+		return nil, fmt.Errorf("could not find DDL file for %s", agent)
+	}
+
+	return ddl, nil
+}
+
+// EachFile calls cb with a path to every found agent DDL, stops looking when br is true
+func EachFile(libdirs []string, cb func(name string, path string) (br bool)) {
+	for _, dir := range libdirs {
+		agentsdir := filepath.Join(dir, "mcollective", "agent")
+
+		filepath.Walk(agentsdir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if info.IsDir() {
+				return nil
+			}
+
+			_, name := filepath.Split(path)
+			extension := filepath.Ext(name)
+
+			if extension != ".json" {
+				return nil
+			}
+
+			cb(strings.TrimSuffix(name, extension), path)
+
+			return nil
+		})
+	}
+}
+
 // ActionNames is a list of known actions defined by a DDL
 func (d *DDL) ActionNames() []string {
 	actions := []string{}
@@ -72,6 +125,16 @@ func (d *DDL) ActionInterface(action string) (*Action, error) {
 	}
 
 	return nil, fmt.Errorf("could not found an action called %s#%s", d.Metadata.Name, action)
+}
+
+// HaveAction determines if an action is known
+func (d *DDL) HaveAction(action string) bool {
+	_, err := d.ActionInterface(action)
+	if err != nil {
+		return false
+	}
+
+	return true
 }
 
 // Timeout is the timeout for this agent
