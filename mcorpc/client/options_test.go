@@ -5,6 +5,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/mcorpc/ddl/agent"
 
 	"github.com/choria-io/go-protocol/protocol"
 	. "github.com/onsi/ginkgo"
@@ -20,7 +21,8 @@ var _ = Describe("McoRPC/Client/Options", func() {
 	BeforeEach(func() {
 		cfg, _ := config.NewConfig("testdata/default.cfg")
 		fw, _ = choria.NewWithConfig(cfg)
-		o = NewRequestOptions(fw)
+		ddl, _ := agent.Find("package", []string{"testdata"})
+		o = NewRequestOptions(fw, ddl)
 	})
 
 	Describe("ConfigureMessage", func() {
@@ -79,7 +81,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			Expect(o.ProcessReplies).To(BeTrue())
 			Expect(o.ReceiveReplies).To(BeTrue())
 			Expect(o.Progress).To(BeFalse())
-			Expect(o.Timeout).To(Equal(time.Duration(22000000000)))
+			Expect(o.Timeout).To(Equal(time.Duration(182) * time.Second))
 			Expect(o.stats).ToNot(BeNil())
 			Expect(o.fw).To(Equal(fw))
 		})
