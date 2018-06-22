@@ -1,5 +1,5 @@
-hash: 975a80479cf9afad3c96b5b629bbabf6ea6553b58d179a9c9b65575383e1e8f9
-updated: 2018-06-15T15:27:19.188153+02:00
+hash: dc9b03ea8f0db885eb1f1e98bd7564d025a3c53af712b54f9b5d86cb3fdd4c17
+updated: 2018-06-19T18:31:47.157736+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,9 +12,10 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-client
-  version: 94739982b79ed8656005a50c056b4c4ecfe87563
+  version: 9dacef621911a73228e4b77ba88b616d286d531b
   subpackages:
   - client
+  - discovery/broadcast
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-network-broker
@@ -60,8 +61,6 @@ imports:
   version: 3a3da3a4e26776cc22a79ef46d5d58477532dede
   subpackages:
   - proto
-- name: github.com/joliv/spark
-  version: e0eaf3444d05c395369fcea69986b5b62681328f
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
@@ -154,6 +153,8 @@ imports:
   version: bd5ef7bd5415a7ac448318e64f11a24cd21e594b
 - name: github.com/xeipuuv/gojsonschema
   version: 9ff6d6c47f3f5de55acc6f464d6e3719b02818ae
+- name: go.uber.org/atomic
+  version: 1ea20fb1cbb1cc08cbd0d913a96dead89aa18289
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
