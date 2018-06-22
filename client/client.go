@@ -11,6 +11,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/mcorpc"
+	addl "github.com/choria-io/go-choria/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/srvcache"
 	cclient "github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-protocol/protocol"
@@ -27,6 +28,8 @@ type RPC struct {
 	agent string
 
 	mu *sync.Mutex
+
+	ddl *addl.DDL
 
 	// used for testing only
 	cl ChoriaClient
@@ -72,6 +75,11 @@ func New(fw *choria.Framework, agent string) (rpc *RPC, err error) {
 		mu:    &sync.Mutex{},
 		log:   fw.Logger("mcorpc"),
 		agent: agent,
+	}
+
+	rpc.ddl, err = addl.Find(agent, fw.Config.LibDir)
+	if err != nil {
+		return nil, fmt.Errorf("could not load %s DDL: %s", agent, err)
 	}
 
 	return rpc, nil
@@ -133,7 +141,7 @@ func (r *RPC) Discover(ctx context.Context, f *protocol.Filter) (n []string, err
 	// its a common pattern to setup a client - like discovery data etc - and then reuse it for a few calls
 	// this ensures that this pattern is possible, Reset() will clear opts here and it'll effectively start fresh
 	if r.opts == nil {
-		r.opts = NewRequestOptions(r.fw)
+		r.opts = NewRequestOptions(r.fw, r.ddl)
 	}
 
 	b := broadcast.New(r.fw)
@@ -156,7 +164,7 @@ func (r *RPC) setupMessage(ctx context.Context, action string, payload interface
 	// its a common pattern to setup a client - like discovery data etc - and then reuse it for a few calls
 	// this ensures that this pattern is possible, Reset() will clear opts here and it'll effectively start fresh
 	if r.opts == nil {
-		r.opts = NewRequestOptions(r.fw)
+		r.opts = NewRequestOptions(r.fw, r.ddl)
 	}
 
 	// regardless of above, we always need new stats

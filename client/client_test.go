@@ -53,8 +53,9 @@ var _ = Describe("McoRPC/Client", func() {
 
 		fw, _ = choria.New("testdata/default.cfg")
 		protocol.Secure = "false"
-		rpc, err = New(fw, "test_agent")
+		rpc, err = New(fw, "package")
 		Expect(err).ToNot(HaveOccurred())
+
 		rpc.cl = cl
 
 		ctx, cancel = context.WithCancel(context.Background())
@@ -80,7 +81,7 @@ var _ = Describe("McoRPC/Client", func() {
 
 			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
 				Expect(msg.Collective()).To(Equal("mcollective"))
-				Expect(msg.Payload).To(Equal("{\"agent\":\"test_agent\",\"action\":\"test_action\",\"data\":{\"testing\":true}}"))
+				Expect(msg.Payload).To(Equal("{\"agent\":\"package\",\"action\":\"test_action\",\"data\":{\"testing\":true}}"))
 
 				reqid = msg.RequestID
 
