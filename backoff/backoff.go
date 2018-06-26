@@ -3,6 +3,8 @@ package backoff
 // https://blog.gopheracademy.com/advent-2014/backoff/
 
 import (
+	"context"
+	"errors"
 	"math/rand"
 	"time"
 )
@@ -27,6 +29,20 @@ func (b BackoffPolicy) Duration(n int) time.Duration {
 	}
 
 	return time.Duration(jitter(b.Millis[n])) * time.Millisecond
+}
+
+// InterruptableSleep sleep for the duration of the n'th wait cycle
+// in a way that can be interrupted by the context.  An error is returned
+// if the context cancels the sleep
+func (b BackoffPolicy) InterruptableSleep(ctx context.Context, n int) error {
+	timer := time.NewTimer(b.Duration(n))
+
+	select {
+	case <-timer.C:
+		return nil
+	case <-ctx.Done():
+		return errors.New("sleep interrupted by context")
+	}
 }
 
 // jitter returns a random integer uniformly distributed in the range
