@@ -3,12 +3,14 @@ package natsstream
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/srvcache"
@@ -29,6 +31,7 @@ type stream struct {
 
 	work chan adaptable
 	quit chan bool
+	mu   *sync.Mutex
 }
 
 type msg struct {
@@ -75,6 +78,7 @@ func newStream(name string, work chan adaptable, logger *log.Entry) ([]*stream, 
 			name:      fmt.Sprintf("%s.%d", name, i),
 			work:      work,
 			log:       logger.WithFields(log.Fields{"side": "stream", "instance": i}),
+			mu:        &sync.Mutex{},
 		}
 		st.servers = st.resolver(strings.Split(servers, ","))
 
@@ -96,27 +100,76 @@ func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) erro
 		return fmt.Errorf("Shutdown called")
 	}
 
+	reconn := make(chan struct{})
+
 	nc, err := cm.NewConnector(ctx, sc.servers, sc.clientID, sc.log)
 	if err != nil {
 		return fmt.Errorf("Could not start NATS connection: %s", err)
 	}
 
-	sc.log.Infof("%s connecting to NATS Stream", sc.clientID)
+	start := func() error {
+		sc.log.Infof("%s connecting to NATS Stream", sc.clientID)
 
-	for {
-		if ctx.Err() != nil {
-			return fmt.Errorf("Shutdown called")
+		sc.mu.Lock()
+		defer sc.mu.Unlock()
+
+		ctr := 0
+
+		for {
+			ctr++
+
+			if ctx.Err() != nil {
+				return errors.New("shutdown called")
+			}
+
+			sc.conn, err = stan.Connect(sc.clusterID, sc.clientID, stan.NatsConn(nc.Nats()), stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
+				sc.log.Errorf("NATS Streaming connection got disconnected, reconnecting: %s", reason)
+				stats.ErrorCtr.WithLabelValues(sc.name, "output", cfg.Identity).Inc()
+				reconn <- struct{}{}
+			}))
+			if err != nil {
+				sc.log.Errorf("Could not create initial STAN connection, retrying: %s", err)
+				backoff.FiveSec.InterruptableSleep(ctx, ctr)
+
+				continue
+			}
+
+			break
 		}
 
-		sc.conn, err = stan.Connect(sc.clusterID, sc.clientID, stan.NatsConn(nc.Nats()))
-		if err != nil {
-			sc.log.Errorf("Could not create initial STAN connection, retrying: %s", err)
-			time.Sleep(time.Second)
-			continue
-		}
-
-		break
+		return nil
 	}
+
+	watcher := func() {
+		ctr := 0
+
+		for {
+			select {
+			case <-reconn:
+				ctr++
+
+				sc.log.WithField("attempt", ctr).Infof("Attempting to reconnect NATS Stream after reconnection")
+
+				backoff.FiveSec.InterruptableSleep(ctx, ctr)
+
+				err := start()
+				if err != nil {
+					sc.log.Errorf("Could not restart NATS Streaming connection: %s", err)
+					reconn <- struct{}{}
+				}
+
+			case <-ctx.Done():
+				return
+			}
+		}
+	}
+
+	err = start()
+	if err != nil {
+		return fmt.Errorf("could not start initial NATS Streaming connection: %s", err)
+	}
+
+	go watcher()
 
 	sc.log.Infof("%s connected to NATS Stream", sc.clientID)
 
@@ -160,6 +213,10 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 
 		bytes.Add(float64(len(j)))
 
+		// avoids publishing during reconnects while sc.conn could be nil
+		sc.mu.Lock()
+		defer sc.mu.Unlock()
+
 		err = sc.conn.Publish(sc.topic, j)
 		if err != nil {
 			sc.log.Warnf("Could not publish message to STAN %s, discarding: %s", sc.topic, err)
@@ -174,6 +231,7 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 		select {
 		case r := <-sc.work:
 			transformerf(r)
+
 		case <-ctx.Done():
 			sc.disconnect()
 

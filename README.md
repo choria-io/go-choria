@@ -123,6 +123,8 @@ I imagine a number of other scenarios:
 
 Here we configure the NATS Streaming Adapter.  It listens for `request` messages from the old school MCollective Registration system and republish those messages into NATS Streaming where you can process them at a more leisurely pace and configure retention to your own needs.
 
+Reliable connection handling requires at least NATS Streaming Server 0.10.0
+
 ```ini
 # sets up a named adapter, you can run many of the same type
 plugin.choria.adapters = discovery
