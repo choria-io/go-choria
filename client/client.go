@@ -74,6 +74,14 @@ func New(fw *choria.Framework, opts ...Option) (*Client, error) {
 }
 
 // Request performs a request
+//
+// `handler`` will  be called for every reply that gets received, when `handler`
+// is nil this means no receiving listeners, workers or subscriptions are setup
+// effectively the message is published and forgotten
+//
+// This fire and forget approach is useful when one do not care for the replies
+// or when the reply to target in the message is set to a custom reply target
+// meaning the client will anyway never receive the replies
 func (c *Client) Request(ctx context.Context, msg *choria.Message, handler Handler) (err error) {
 	// will be used later to handle shutting everything down when a maximum wait for messages
 	// was processed
