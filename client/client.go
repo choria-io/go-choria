@@ -80,13 +80,17 @@ func (c *Client) Request(ctx context.Context, msg *choria.Message, handler Handl
 	c.ctx, c.cancel = context.WithCancel(ctx)
 	defer c.cancel()
 
-	c.log.Debugf("Starting %d receivers on %s", c.receivers, msg.ReplyTo())
+	if handler != nil {
+		c.log.Debugf("Starting %d receivers on %s", c.receivers, msg.ReplyTo())
 
-	name := fmt.Sprintf("%s_%s", c.fw.Certname(), msg.RequestID)
+		name := fmt.Sprintf("%s_%s", c.fw.Certname(), msg.RequestID)
 
-	for i := 0; i < c.receivers; i++ {
-		c.wg.Add(1)
-		go c.receiver(name, i, msg.ReplyTo(), handler)
+		for i := 0; i < c.receivers; i++ {
+			c.wg.Add(1)
+			go c.receiver(name, i, msg.ReplyTo(), handler)
+		}
+	} else {
+		c.receiverReady <- struct{}{}
 	}
 
 	c.wg.Add(1)

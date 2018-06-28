@@ -52,6 +52,34 @@ var _ = Describe("Client", func() {
 	})
 
 	Describe("Request", func() {
+		It("Should support fire and forget requests", func() {
+			pubStarted := false
+			pubEnded := false
+
+			pubStartCB := func() { pubStarted = true }
+			pubEndCB := func() { pubEnded = true }
+
+			OnPublishStart(pubStartCB)(client)
+			OnPublishFinish(pubEndCB)(client)
+
+			msg, err := fw.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", "mcollective", "request", nil)
+			Expect(err).ToNot(HaveOccurred())
+
+			msg.SetProtocolVersion(protocol.RequestV1)
+			msg.SetReplyTo("custom")
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			conn.EXPECT().Publish(gomock.Any()).AnyTimes()
+
+			err = client.Request(ctx, msg, nil)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(pubStarted).To(BeTrue())
+			Expect(pubEnded).To(BeTrue())
+		})
+
 		It("Should perform the request and call the handler for each reply", func() {
 			seen := []string{}
 			pubStarted := false
