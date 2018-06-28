@@ -20,7 +20,6 @@ type RequestOptions struct {
 	Collective      string
 	ReplyTo         string
 	ProcessReplies  bool
-	ReceiveReplies  bool
 	Replies         chan *choria.ConnectorMessage
 	Progress        bool
 	Timeout         time.Duration
@@ -45,7 +44,6 @@ func NewRequestOptions(fw *choria.Framework, ddl *agent.DDL) *RequestOptions {
 		RequestType:     "direct_request",
 		Collective:      fw.Config.MainCollective,
 		ProcessReplies:  true,
-		ReceiveReplies:  true,
 		Progress:        false,
 		Workers:         3,
 		stats:           NewStats(),
@@ -95,7 +93,7 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) error {
 	// the reply target is such that we'd probably not receive replies
 	// so disable processing replies
 	if stdtarget != o.ReplyTo {
-		o.ReceiveReplies = false
+		o.ProcessReplies = false
 	}
 
 	err = msg.SetReplyTo(o.ReplyTo)
@@ -173,7 +171,7 @@ func Collective(c string) RequestOption {
 func ReplyTo(r string) RequestOption {
 	return func(o *RequestOptions) {
 		o.ReplyTo = r
-		o.ReceiveReplies = false
+		o.ProcessReplies = false
 	}
 }
 
