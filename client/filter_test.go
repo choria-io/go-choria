@@ -24,6 +24,15 @@ var _ = Describe("Client/Filter", func() {
 			Expect(pf.IdentityFilters()).To(Equal([]string{"ident"}))
 			Expect(pf.FactFilters()).To(Equal([][3]string{[3]string{"country", "==", "mt"}}))
 		})
+
+		It("Should handle empty filter lists", func() {
+			pf, err := NewFilter()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(pf.ClassFilters()).To(BeEmpty())
+			Expect(pf.AgentFilters()).To(BeEmpty())
+			Expect(pf.IdentityFilters()).To(BeEmpty())
+			Expect(pf.FactFilters()).To(BeEmpty())
+		})
 	})
 
 	Describe("FactFilter", func() {
