@@ -28,7 +28,7 @@ var _ = Describe("Client/Filter", func() {
 
 	Describe("FactFilter", func() {
 		It("Should add each filter", func() {
-			err := FactFilter("country=mt", "country=uk")(pf)
+			err := FactFilter("country=mt", "country=uk", "")(pf)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(pf.FactFilters()).To(Equal([][3]string{[3]string{"country", "==", "mt"}, [3]string{"country", "==", "uk"}}))
 		})
@@ -41,35 +41,35 @@ var _ = Describe("Client/Filter", func() {
 
 	Describe("AgentFilter", func() {
 		It("Should add each filter", func() {
-			AgentFilter("foo", "/bar/", "baz")(pf)
+			AgentFilter("foo", "/bar/", "baz", "")(pf)
 			Expect(pf.AgentFilters()).To(Equal([]string{"foo", "/bar/", "baz"}))
 		})
 	})
 
 	Describe("ClassFilter", func() {
 		It("Should add each filter", func() {
-			ClassFilter("foo", "/bar/", "baz")(pf)
+			ClassFilter("foo", "/bar/", "baz", "")(pf)
 			Expect(pf.ClassFilters()).To(Equal([]string{"foo", "/bar/", "baz"}))
 		})
 	})
 
 	Describe("IdentityFilter", func() {
 		It("Should add each filter", func() {
-			IdentityFilter("foo", "/bar/", "baz")(pf)
+			IdentityFilter("foo", "/bar/", "baz", "")(pf)
 			Expect(pf.IdentityFilters()).To(Equal([]string{"foo", "/bar/", "baz"}))
 		})
 	})
 
 	Describe("CompoundFilter", func() {
 		It("Should add each filter", func() {
-			CompoundFilter("foo", "/bar/", "baz")(pf)
+			CompoundFilter("foo", "/bar/", "baz", "")(pf)
 			Expect(pf.CompoundFilters()).To(Equal([]string{"foo", "/bar/", "baz"}))
 		})
 	})
 
 	Describe("CombinedFilter", func() {
 		It("Should add each filter", func() {
-			CombinedFilter("foo", "/bar/", "baz", "country=mt")(pf)
+			CombinedFilter("foo", "/bar/", "baz", "country=mt", "")(pf)
 			Expect(pf.ClassFilters()).To(Equal([]string{"foo", "/bar/", "baz"}))
 			Expect(pf.FactFilters()).To(Equal([][3]string{[3]string{"country", "==", "mt"}}))
 		})

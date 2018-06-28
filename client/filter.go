@@ -15,6 +15,10 @@ type Filter func(f *protocol.Filter) error
 func AgentFilter(f ...string) Filter {
 	return func(pf *protocol.Filter) (err error) {
 		for _, filter := range f {
+			if filter == "" {
+				continue
+			}
+
 			pf.AddAgentFilter(filter)
 		}
 
@@ -26,6 +30,10 @@ func AgentFilter(f ...string) Filter {
 func ClassFilter(f ...string) Filter {
 	return func(pf *protocol.Filter) (err error) {
 		for _, filter := range f {
+			if filter == "" {
+				continue
+			}
+
 			pf.AddClassFilter(filter)
 		}
 
@@ -37,6 +45,10 @@ func ClassFilter(f ...string) Filter {
 func IdentityFilter(f ...string) Filter {
 	return func(pf *protocol.Filter) (err error) {
 		for _, filter := range f {
+			if filter == "" {
+				continue
+			}
+
 			pf.AddIdentityFilter(filter)
 		}
 
@@ -48,6 +60,10 @@ func IdentityFilter(f ...string) Filter {
 func CompoundFilter(f ...string) Filter {
 	return func(pf *protocol.Filter) (err error) {
 		for _, filter := range f {
+			if filter == "" {
+				continue
+			}
+
 			pf.AddCompoundFilter(filter)
 		}
 
@@ -59,6 +75,10 @@ func CompoundFilter(f ...string) Filter {
 func FactFilter(f ...string) Filter {
 	return func(pf *protocol.Filter) (err error) {
 		for _, filter := range f {
+			if filter == "" {
+				continue
+			}
+
 			ff, err := ParseFactFilterString(filter)
 			if err != nil {
 				return err
@@ -81,6 +101,10 @@ func CombinedFilter(f ...string) Filter {
 			parts := strings.Split(filter, " ")
 
 			for _, part := range parts {
+				if part == "" {
+					continue
+				}
+
 				ff, err := ParseFactFilterString(part)
 				if err != nil {
 					pf.AddClassFilter(part)
