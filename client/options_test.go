@@ -40,7 +40,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			Expect(o.Targets).To(Equal([]string{"host1", "host2"}))
 			Expect(msg.Type()).To(Equal("request"))
 			Expect(o.ReplyTo).To(Equal(msg.ReplyTo()))
-			Expect(o.ReceiveReplies).To(BeTrue())
+			Expect(o.ProcessReplies).To(BeTrue())
 			Expect(o.totalStats.discoveredNodes).To(Equal([]string{"host1", "host2"}))
 			Expect(o.totalStats.RequestID).To(Equal(msg.RequestID))
 			Expect(o.RequestID).To(Equal(msg.RequestID))
@@ -69,7 +69,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 
 			Expect(msg.ReplyTo()).To(Equal("test.target"))
 			Expect(o.ReplyTo).To(Equal(msg.ReplyTo()))
-			Expect(o.ReceiveReplies).To(BeFalse())
+			Expect(o.ProcessReplies).To(BeFalse())
 		})
 	})
 
@@ -79,7 +79,6 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			Expect(o.RequestType).To(Equal("direct_request"))
 			Expect(o.Collective).To(Equal("mcollective"))
 			Expect(o.ProcessReplies).To(BeTrue())
-			Expect(o.ReceiveReplies).To(BeTrue())
 			Expect(o.Progress).To(BeFalse())
 			Expect(o.Timeout).To(Equal(time.Duration(182) * time.Second))
 			Expect(o.stats).ToNot(BeNil())

@@ -174,5 +174,46 @@ var _ = Describe("McoRPC/Client", func() {
 
 			rpc.Do(ctx, "test_action", request{Testing: true}, Targets([]string{"host1", "host2", "host3", "host4"}), InBatches(2, -1))
 		})
+
+		It("Should support making requests without processing replies unbatched", func() {
+			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
+				Expect(msg.DiscoveredHosts).To(Equal([]string{"host1", "host2"}))
+				Expect(msg.ReplyTo()).To(Equal("custom.reply.to"))
+				Expect(handler).To(BeNil())
+			})
+
+			_, err := rpc.Do(
+				ctx,
+				"test_action",
+				request{Testing: true},
+				Targets(strings.Fields("host1 host2")),
+				ReplyTo("custom.reply.to"),
+			)
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should support making requests without processing replies batched", func() {
+			batch1 := cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
+				Expect(msg.DiscoveredHosts).To(Equal([]string{"host1"}))
+				Expect(msg.ReplyTo()).To(Equal("custom.reply.to"))
+				Expect(handler).To(BeNil())
+			})
+
+			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).After(batch1).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
+				Expect(msg.DiscoveredHosts).To(Equal([]string{"host2"}))
+				Expect(msg.ReplyTo()).To(Equal("custom.reply.to"))
+				Expect(handler).To(BeNil())
+			})
+
+			_, err := rpc.Do(
+				ctx,
+				"test_action",
+				request{Testing: true},
+				Targets(strings.Fields("host1 host2")),
+				ReplyTo("custom.reply.to"),
+				InBatches(1, -1),
+			)
+			Expect(err).ToNot(HaveOccurred())
+		})
 	})
 })

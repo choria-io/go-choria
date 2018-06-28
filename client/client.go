@@ -206,7 +206,7 @@ func (r *RPC) setupMessage(ctx context.Context, action string, payload interface
 	cl = r.cl
 
 	if r.cl == nil {
-		if r.opts.BatchSize == len(r.opts.Targets) {
+		if r.opts.BatchSize == len(r.opts.Targets) || r.opts.ProcessReplies == false {
 			cl, err = r.unbatchedClient()
 			if err != nil {
 				return nil, nil, err
@@ -280,6 +280,10 @@ func (r *RPC) request(ctx context.Context, msg *choria.Message, cl ChoriaClient)
 }
 
 func (r *RPC) handlerFactory(ctx context.Context, cancel func()) cclient.Handler {
+	if !r.opts.ProcessReplies {
+		return nil
+	}
+
 	handler := func(ctx context.Context, rawmsg *choria.ConnectorMessage) {
 		reply, err := r.fw.NewReplyFromTransportJSON(rawmsg.Data, false)
 		if err != nil {
