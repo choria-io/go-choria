@@ -43,7 +43,7 @@ import:
 - package: github.com/choria-io/go-security
   version: 0.1.0
 - package: github.com/choria-io/go-client
-  version: 0.0.1
+  version: 0.1.0
   subpackages:
   - client
 - package: go.uber.org/atomic
