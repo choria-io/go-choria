@@ -75,7 +75,7 @@ func New(fw *choria.Framework, opts ...Option) (*Client, error) {
 
 // Request performs a request
 //
-// `handler`` will  be called for every reply that gets received, when `handler`
+// handler will  be called for every reply that gets received, when handler
 // is nil this means no receiving listeners, workers or subscriptions are setup
 // effectively the message is published and forgotten
 //
