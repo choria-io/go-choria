@@ -1,5 +1,5 @@
-hash: 6da59bb713c95ac6d820c13d035b630d7decc12231f7bf2a0ff4b070a6dea5ef
-updated: 2018-06-28T15:46:17.507429+03:00
+hash: 0835a1363e84f9937b53050f981d78ee34f5f12044ea3243c77bc8e7360c2fe8
+updated: 2018-06-29T08:28:10.28675+03:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,7 +12,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-client
-  version: bd8c6da1960aba740c875965c5d51b1cb4a5fe30
+  version: 47772ba6aaf22133b163d3212936039f20f56dfc
   subpackages:
   - client
   - discovery/broadcast
@@ -58,7 +58,7 @@ imports:
   - gomock
   - mockgen
 - name: github.com/golang/protobuf
-  version: 3a3da3a4e26776cc22a79ef46d5d58477532dede
+  version: df1d3ca07d2d07bba352d5b73c4313b4e2a6203e
   subpackages:
   - proto
 - name: github.com/matttproud/golang_protobuf_extensions
@@ -83,7 +83,7 @@ imports:
   subpackages:
   - pb
 - name: github.com/nats-io/nuid
-  version: 3e58d42c9cfe5cd9429f1a21ad8f35cd859ba829
+  version: 28b996b57a46dd0c2aa3a3dc7fa8780878331d00
 - name: github.com/onsi/ginkgo
   version: fa5fabab2a1bfbd924faf4c067d07ae414e2aedf
   subpackages:
@@ -124,27 +124,25 @@ imports:
   - prometheus
   - prometheus/promhttp
 - name: github.com/prometheus/client_model
-  version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
+  version: 6f3806018612930941127f2a7c6c453ba2c527d2
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 7600349dcfe1abd18d72d3a1770870d9800a7801
+  version: 61f87aac8082fa8c3c5655c7608d7478d46ac2ad
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: fe93d378a6b03758a2c1b65e86cf630bf78681c0
+  version: e645f4e5aaa8506fc71d6edbc5c4ff02c04c46f2
   subpackages:
-  - internal/util
-  - nfs
   - xfs
 - name: github.com/satori/go.uuid
   version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
   version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
 - name: github.com/tidwall/gjson
-  version: afaeb9562041a8018c74e006551143666aed08bf
+  version: 01f00f129617a6fe98941fb920d6c760241b54d2
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
