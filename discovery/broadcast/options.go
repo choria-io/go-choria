@@ -16,10 +16,22 @@ type dOpts struct {
 	cl         ChoriaClient
 	mu         *sync.Mutex
 	timeout    time.Duration
+	name       string
 }
 
 // DiscoverOption configures the broadcast discovery method
 type DiscoverOption func(o *dOpts)
+
+// Name sets a NATS connection name to use, without this random names will be made.
+//
+// This setting is important if you make a daemon that makes many long client connections
+// as each client connection makes Prometheus stats based on the name and you'll be
+// leaking many stats over time
+func Name(n string) DiscoverOption {
+	return func(o *dOpts) {
+		o.name = n
+	}
+}
 
 // Filter sets the filter to use for the discovery, else a blank one is used
 func Filter(f *protocol.Filter) DiscoverOption {

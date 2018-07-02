@@ -60,7 +60,16 @@ func (b *Broadcast) Discover(ctx context.Context, opts ...DiscoverOption) (n []s
 	}
 
 	if dopts.cl == nil {
-		dopts.cl, err = client.New(b.fw, client.Receivers(3), client.Timeout(dopts.timeout))
+		opts := []client.Option{
+			client.Receivers(3),
+			client.Timeout(dopts.timeout),
+		}
+
+		if dopts.name != "" {
+			opts = append(opts, client.Name(dopts.name))
+		}
+
+		dopts.cl, err = client.New(b.fw, opts...)
 		if err != nil {
 			return n, fmt.Errorf("could not create choria client: %s", err)
 		}
