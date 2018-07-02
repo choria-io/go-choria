@@ -66,6 +66,15 @@ var _ = Describe("McoRPC/Client", func() {
 		mockctl.Finish()
 	})
 
+	Describe("SetOptions", func() {
+		It("Should set the options", func() {
+			rpc.SetOptions()
+			Expect(rpc.opts.BatchSize).To(Equal(0))
+			rpc.SetOptions(InBatches(10, 1))
+			Expect(rpc.opts.BatchSize).To(Equal(10))
+		})
+	})
+
 	Describe("Do", func() {
 		It("Should perform the request", func() {
 			reqid := ""
