@@ -1,5 +1,5 @@
-hash: 0835a1363e84f9937b53050f981d78ee34f5f12044ea3243c77bc8e7360c2fe8
-updated: 2018-06-29T08:28:10.28675+03:00
+hash: ad6924b15b4ec367f5624b6daa36551848a1a17c284917323c8c95cd43edbbed
+updated: 2018-07-02T17:51:22.406122+03:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,7 +12,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-client
-  version: 47772ba6aaf22133b163d3212936039f20f56dfc
+  version: 3abc5542c103b7a2c1990c099097dc756c0de4dc
   subpackages:
   - client
   - discovery/broadcast
@@ -142,7 +142,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
 - name: github.com/tidwall/gjson
-  version: 01f00f129617a6fe98941fb920d6c760241b54d2
+  version: f123b340873a0084cb27267eddd8ff615115fbff
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer

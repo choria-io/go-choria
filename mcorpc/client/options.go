@@ -2,6 +2,7 @@ package client
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
@@ -25,6 +26,7 @@ type RequestOptions struct {
 	Timeout         time.Duration
 	Handler         Handler
 	RequestID       string
+	ConnectionName  string
 
 	totalStats *Stats
 
@@ -46,6 +48,7 @@ func NewRequestOptions(fw *choria.Framework, ddl *agent.DDL) *RequestOptions {
 		ProcessReplies:  true,
 		Progress:        false,
 		Workers:         3,
+		ConnectionName:  fmt.Sprintf("%s-mcorpc-%s", fw.Certname(), fw.NewRequestID()),
 		stats:           NewStats(),
 		totalStats:      NewStats(),
 		fw:              fw,
@@ -112,6 +115,17 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) error {
 // Stats retrieves the stats for the completed request
 func (o *RequestOptions) Stats() *Stats {
 	return o.totalStats
+}
+
+// ConnectionName sets the prefix used for various connection names
+//
+// Setting this when making many clients will minimise prometheus
+// metrics being created - 2 or 3 per client which with random generated
+// names will snowball over time
+func ConnectionName(n string) RequestOption {
+	return func(o *RequestOptions) {
+		o.ConnectionName = n
+	}
 }
 
 // WithProgress enable a progress writer
