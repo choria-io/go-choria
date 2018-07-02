@@ -44,6 +44,17 @@ func Log(l *logrus.Entry) Option {
 	}
 }
 
+// Name sets a NATS connection name to use, without this random names will be made.
+//
+// This setting is important if you make a daemon that makes many long client connections
+// as each client connection makes Prometheus stats based on the name and you'll be
+// leaking many stats over time
+func Name(n string) Option {
+	return func(c *Client) {
+		c.name = n
+	}
+}
+
 // Connection  Supplies a custom connection, when this is supplied
 // this is the only connection that will be used for the duration
 // of this client for all publishes and replies

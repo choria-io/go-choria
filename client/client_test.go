@@ -43,8 +43,9 @@ var _ = Describe("Client", func() {
 
 		fw, _ = choria.NewWithConfig(cfg)
 
-		client, err = New(fw, Connection(conn), Timeout(100*time.Millisecond))
+		client, err = New(fw, Connection(conn), Timeout(100*time.Millisecond), Name("test"))
 		Expect(err).ToNot(HaveOccurred())
+		Expect(client.name).To(Equal("test"))
 	})
 
 	AfterEach(func() {
