@@ -181,4 +181,11 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			Expect(seen).To(BeTrue())
 		})
 	})
+
+	Describe("ConnectionName", func() {
+		It("Should set the name", func() {
+			ConnectionName("ginkgo")(o)
+			Expect(o.ConnectionName).To(Equal("ginkgo"))
+		})
+	})
 })
