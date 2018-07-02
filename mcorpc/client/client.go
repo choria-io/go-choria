@@ -149,7 +149,9 @@ func (r *RPC) Discover(ctx context.Context, f *protocol.Filter) (n []string, err
 	r.opts.totalStats.StartDiscover()
 	defer r.opts.totalStats.EndDiscover()
 
-	n, err = b.Discover(ctx, broadcast.Filter(f), broadcast.Timeout(time.Duration(r.fw.Config.DiscoveryTimeout)*time.Second))
+	timeout := time.Duration(r.fw.Config.DiscoveryTimeout) * time.Second
+
+	n, err = b.Discover(ctx, broadcast.Filter(f), broadcast.Timeout(timeout), broadcast.Name(r.opts.ConnectionName))
 	if err != nil {
 		return n, err
 	}
@@ -229,6 +231,7 @@ func (r *RPC) unbatchedClient() (cl ChoriaClient, err error) {
 		cclient.Timeout(r.opts.Timeout),
 		cclient.OnPublishStart(r.opts.stats.StartPublish),
 		cclient.OnPublishFinish(r.opts.stats.EndPublish),
+		cclient.Name(r.opts.ConnectionName),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not setup client: %s", err)
@@ -250,6 +253,7 @@ func (r *RPC) batchedClient(ctx context.Context, msgid string) (cl ChoriaClient,
 		cclient.OnPublishStart(r.opts.stats.StartPublish),
 		cclient.OnPublishFinish(r.opts.stats.EndPublish),
 		cclient.Connection(conn),
+		cclient.Name(r.opts.ConnectionName),
 	)
 	if err != nil {
 		return nil, fmt.Errorf("could not set up batched client: %s", err)

@@ -42,7 +42,7 @@ func NewChoriaReplyTransformer(workers int, capacity int, broker *FederationBrok
 
 			cm.Message.SetUnfederated()
 
-			logger.Infof("Received a reply message '%s' via %s", cm.RequestID, cm.Message.SenderID())
+			logger.Debugf("Received a reply message '%s' via %s", cm.RequestID, cm.Message.SenderID())
 
 			self.out <- cm
 
