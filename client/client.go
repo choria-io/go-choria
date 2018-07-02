@@ -32,6 +32,7 @@ type Client struct {
 	conn          Connector
 	receivers     int
 	log           *logrus.Entry
+	name          string
 
 	startPublishCB func()
 	endPublishCB   func()
@@ -68,6 +69,10 @@ func New(fw *choria.Framework, opts ...Option) (*Client, error) {
 		return nil, errors.New("receivers should be more than 1")
 	}
 
+	if c.name == "" {
+		c.name = fmt.Sprintf("%s-%s", c.fw.Certname(), c.fw.NewRequestID())
+	}
+
 	c.receiverReady = make(chan struct{}, c.receivers)
 
 	return c, nil
@@ -91,11 +96,9 @@ func (c *Client) Request(ctx context.Context, msg *choria.Message, handler Handl
 	if handler != nil {
 		c.log.Debugf("Starting %d receivers on %s", c.receivers, msg.ReplyTo())
 
-		name := fmt.Sprintf("%s_%s", c.fw.Certname(), msg.RequestID)
-
 		for i := 0; i < c.receivers; i++ {
 			c.wg.Add(1)
-			go c.receiver(name, i, msg.ReplyTo(), handler)
+			go c.receiver(i, msg.ReplyTo(), handler)
 		}
 	} else {
 		c.receiverReady <- struct{}{}
@@ -116,7 +119,7 @@ func (c *Client) publish(msg *choria.Message) {
 	var err error
 
 	if conn == nil {
-		conn, err = c.connect(fmt.Sprintf("%s-%s-publisher", c.fw.Certname(), c.fw.NewRequestID()))
+		conn, err = c.connect(fmt.Sprintf("%s-publisher", c.name))
 		if err != nil {
 			c.log.Errorf("could not connect: %s", err)
 		}
@@ -146,14 +149,14 @@ func (c *Client) publish(msg *choria.Message) {
 	return
 }
 
-func (c *Client) receiver(name string, i int, target string, cb Handler) {
+func (c *Client) receiver(i int, target string, cb Handler) {
 	defer c.wg.Done()
 
 	conn := c.conn
 	var err error
 
 	if conn == nil {
-		conn, err = c.connect(fmt.Sprintf("%s-receiver%d", name, i))
+		conn, err = c.connect(fmt.Sprintf("%s-receiver%d", c.name, i))
 		if err != nil {
 			c.log.Errorf("could not connect: %s", err)
 			return
@@ -165,7 +168,7 @@ func (c *Client) receiver(name string, i int, target string, cb Handler) {
 
 	grp := ""
 	if c.receivers > 1 {
-		grp = name
+		grp = c.name
 	}
 
 	conn.QueueSubscribe(c.ctx, "replies", target, grp, c.replies)
