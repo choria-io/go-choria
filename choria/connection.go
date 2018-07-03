@@ -146,7 +146,7 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() ([]srvcach
 	conn = &Connection{
 		name:              name,
 		servers:           servers,
-		logger:            logger,
+		logger:            logger.WithField("connection", name),
 		choria:            fw,
 		config:            fw.Config,
 		subscriptions:     make(map[string]*nats.Subscription),
@@ -180,7 +180,7 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 	s := &channelSubscription{
 		in:   make(chan *nats.Msg, capacity),
 		out:  make(chan *ConnectorMessage, capacity),
-		quit: make(chan interface{}),
+		quit: make(chan interface{}, 1),
 	}
 
 	conn.subMu.Lock()
@@ -218,7 +218,7 @@ func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject
 	s := &channelSubscription{
 		in:   make(chan *nats.Msg, cap(output)),
 		out:  output,
-		quit: make(chan interface{}),
+		quit: make(chan interface{}, 1),
 	}
 
 	conn.subMu.Lock()
@@ -267,6 +267,8 @@ func (conn *Connection) Unsubscribe(name string) error {
 		if err != nil {
 			return fmt.Errorf("Could not unsubscribe from %s: %s", name, err)
 		}
+
+		sub.quit <- true
 
 		close(sub.quit)
 		close(sub.in)
