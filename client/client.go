@@ -346,7 +346,7 @@ func (r *RPC) connectBatchedConnection(ctx context.Context, name string) (Connec
 	closer := func() {
 		select {
 		case <-ctx.Done():
-			r.log.Debug("Closing connection")
+			r.log.Debugf("Closing batched connection %s", name)
 			connector.Close()
 		}
 	}
