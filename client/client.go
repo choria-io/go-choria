@@ -68,8 +68,21 @@ type Connector interface {
 	Publish(msg *choria.Message) error
 }
 
+// Option configures the RPC client
+type Option func(r *RPC)
+
+// DDL supplies a DDL when creating the client thus avoiding a disk search
+func DDL(d *addl.DDL) Option {
+	return func(r *RPC) {
+		r.ddl = d
+	}
+}
+
 // New creates a new RPC request
-func New(fw *choria.Framework, agent string) (rpc *RPC, err error) {
+//
+// A DDL is required when one is not given using the DDL() option as argument
+// attempts will be made to find it on the file system should this fail an error will be returned
+func New(fw *choria.Framework, agent string, opts ...Option) (rpc *RPC, err error) {
 	rpc = &RPC{
 		fw:    fw,
 		mu:    &sync.Mutex{},
@@ -77,9 +90,19 @@ func New(fw *choria.Framework, agent string) (rpc *RPC, err error) {
 		agent: agent,
 	}
 
-	rpc.ddl, err = addl.Find(agent, fw.Config.LibDir)
-	if err != nil {
-		return nil, fmt.Errorf("could not load %s DDL: %s", agent, err)
+	for _, opt := range opts {
+		opt(rpc)
+	}
+
+	if rpc.ddl == nil {
+		rpc.ddl, err = addl.Find(agent, fw.Config.LibDir)
+		if err != nil {
+			return nil, fmt.Errorf("could not load %s DDL: %s", agent, err)
+		}
+	}
+
+	if rpc.ddl.Metadata.Name != agent {
+		return nil, fmt.Errorf("the DDL does not describe the %s agent", agent)
 	}
 
 	return rpc, nil
@@ -174,6 +197,13 @@ func (r *RPC) Discover(ctx context.Context, f *protocol.Filter, opts ...RequestO
 	r.opts.totalStats.SetDiscoveredNodes(n)
 
 	return
+}
+
+// DiscoveredNodes is the nodes discovered or set as targets for this client
+// duplicating this list is expensive, in general you should avoid using it
+// if you suspect very large networks might be used
+func (r *RPC) DiscoveredNodes() []string {
+	return r.opts.Targets
 }
 
 func (r *RPC) setupMessage(ctx context.Context, action string, payload interface{}, opts ...RequestOption) (msg *choria.Message, cl ChoriaClient, err error) {
