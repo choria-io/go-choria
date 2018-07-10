@@ -148,6 +148,10 @@ var _ = Describe("McoRPC/Client", func() {
 			Expect(stats.unexpectedRespones.Hosts()).To(Equal([]string{}))
 			Expect(stats.OKCount()).To(Equal(2))
 			Expect(stats.All()).To(BeTrue())
+
+			d, err := stats.RequestDuration()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(d).ToNot(BeZero())
 		})
 
 		It("Should support reusing options", func() {
