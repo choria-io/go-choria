@@ -267,5 +267,22 @@ var _ = Describe("McoRPC/Client/Stats", func() {
 				Expect(s.end).To(Equal(t))
 			})
 		})
+
+		Describe("RequestDuration", func() {
+			It("Should detect unfinished requests", func() {
+				s.Start()
+				_, err := s.RequestDuration()
+				Expect(err).To(MatchError("request is not completed"))
+			})
+
+			It("Should handle completed requests", func() {
+				s.Start()
+				s.start = time.Now().Add(-1 * time.Second)
+				s.End()
+				d, err := s.RequestDuration()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(d).To(BeNumerically("~", time.Second, 50*time.Millisecond))
+			})
+		})
 	})
 })

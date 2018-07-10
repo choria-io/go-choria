@@ -111,6 +111,7 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 	}
 
 	ctr := 0
+	r.opts.totalStats.Start()
 
 	// the client is always batched, when batched mode is not request the size of
 	// the batch matches the size of the total targets and during setupMessage()
@@ -137,12 +138,15 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 			return fmt.Errorf("could not create request: %s", err)
 		}
 
+		r.opts.stats.End()
 		r.opts.totalStats.Merge(r.opts.stats)
 
 		ctr++
 
 		return nil
 	})
+
+	r.opts.totalStats.End()
 
 	return &RequestOptions{totalStats: r.opts.totalStats}, err
 }
