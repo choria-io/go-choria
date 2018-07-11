@@ -22,14 +22,20 @@ func UserConfig() string {
 	home, _ := HomeDir()
 
 	if home != "" {
-		homeCfg := filepath.Join(home, ".mcollective")
+		for _, n := range []string{".choria", ".mcollective"} {
+			homeCfg := filepath.Join(home, n)
 
-		if FileExist(homeCfg) {
-			return homeCfg
+			if FileExist(homeCfg) {
+				return homeCfg
+			}
 		}
 	}
 
-	return filepath.Join("/etc/puppetlabs/mcollective/client.cfg")
+	if FileExist("/etc/choria/client.cfg") {
+		return "/etc/choria/client.cfg"
+	}
+
+	return "/etc/puppetlabs/mcollective/client.cfg"
 }
 
 // FileExist checks if a file exist on disk
