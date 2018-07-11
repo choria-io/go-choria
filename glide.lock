@@ -1,5 +1,5 @@
-hash: ad6924b15b4ec367f5624b6daa36551848a1a17c284917323c8c95cd43edbbed
-updated: 2018-07-02T17:51:22.406122+03:00
+hash: 89b47051ece5c7ed44747f51101c0c5c6420fde1328dcdbceba4554b1237020f
+updated: 2018-07-11T15:06:32.340098+03:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -19,7 +19,7 @@ imports:
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-network-broker
-  version: 0e0b495828d2193713cb9758cdceaf493b43d0d8
+  version: fb996d344cb1b1d368517bb2071ace03372da0ba
 - name: github.com/choria-io/go-protocol
   version: c695d135e1fa74eb52f66a1bf35154dd1f8064d3
   subpackages:
@@ -66,7 +66,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/nats-io/gnatsd
-  version: add6d7930ae6d4bff8823b28999ea87bf1bfd23d
+  version: 6608e9ac3be979dcb0614b772cc86a87b71acaa3
   subpackages:
   - conf
   - logger
