@@ -155,6 +155,20 @@ jobs:
     steps:
       *std_build_steps
 
+  build_bionic_64bit_debs:
+    docker:
+      - image: circleci/golang:1.10
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      PACKAGE: bionic_64
+      BUILD: foss
+      BUILDER: choria/packager:stretch-go1.10
+
+    steps:
+      *std_build_steps
+
   gather_artifacts:
     docker:
       - image: circleci/golang:1.10
@@ -283,6 +297,12 @@ workflows:
           requires:
            - hold
 
+      - build_bionic_64bit_debs:
+          filters:
+            *semver_only
+          requires:
+           - hold
+
       - gather_artifacts:
           requires:
              - build_el5_32bit_rpms
@@ -292,6 +312,7 @@ workflows:
              - build_el7_64bit_rpms
              - build_xenial_64bit_debs
              - build_stretch_64bit_debs
+             - build_bionic_64bit_debs
 
           filters:
             *semver_only

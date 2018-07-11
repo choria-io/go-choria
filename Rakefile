@@ -17,7 +17,7 @@ task :build do
   sha = `git rev-parse --short HEAD`.chomp
   build = ENV["BUILD"] || "foss"
   packages = (ENV["PACKAGES"] || "").split(",")
-  packages = ["el5_32", "el5_64", "el6_32", "el6_64", "el7_64", "xenial_64", "xenial_64"] if packages.empty?
+  packages = ["el5_32", "el5_64", "el6_32", "el6_64", "el7_64", "xenial_64", "xenial_64", "bionic_64"] if packages.empty?
   go_version = ENV["GOVERSION"] || "1.10"
 
   source = "/go/src/github.com/choria-io/go-choria"
