@@ -99,7 +99,24 @@ var _ = Describe("Server/Agents", func() {
 		mockctl.Finish()
 	})
 
-	var _ = Describe("RegisterAgent", func() {
+	Describe("DenyAgent", func() {
+		It("Should add the agent to the deny list", func() {
+			Expect(mgr.denylist).To(BeEmpty())
+			Expect(mgr.agentDenied("testing")).To(BeFalse())
+			mgr.DenyAgent("testing")
+			Expect(mgr.denylist).To(Equal([]string{"testing"}))
+			Expect(mgr.agentDenied("testing")).To(BeTrue())
+		})
+	})
+
+	Describe("RegisterAgent", func() {
+		It("Should honor the deny list", func() {
+			mgr.DenyAgent("testing")
+			err := mgr.RegisterAgent(ctx, "testing", agent, conn)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(mgr.KnownAgents()).To(BeEmpty())
+		})
+
 		It("should not subscribe the agent twice", func() {
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
@@ -140,7 +157,7 @@ var _ = Describe("Server/Agents", func() {
 		})
 	})
 
-	var _ = Describe("KnownAgents", func() {
+	Describe("KnownAgents", func() {
 		It("Should report on all the known agnets", func() {
 			err := mgr.RegisterAgent(ctx, "stub1", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
@@ -153,7 +170,7 @@ var _ = Describe("Server/Agents", func() {
 		})
 	})
 
-	var _ = Describe("Dispatch", func() {
+	Describe("Dispatch", func() {
 		var request protocol.Request
 		var msg *choria.Message
 		var err error
