@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -51,12 +52,13 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	return i, nil
 }
 
-func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
+func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	if err := srv.initialConnect(ctx); err != nil {
-		srv.log.Errorf("Initial NATS connection failed: %s", err)
-		return
+	err := srv.initialConnect(ctx)
+	if err != nil {
+		srv.log.Errorf("Initial Choria Broker connection failed: %s", err)
+		return fmt.Errorf("initial Choria Broker connection failed: %s", err)
 	}
 
 	srv.agents = agents.New(srv.requests, srv.fw, srv.connector, srv, srv.log)
@@ -67,36 +69,42 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 	}
 
 	wg.Add(1)
-	if err := srv.registration.Start(ctx, wg); err != nil {
+	err = srv.registration.Start(ctx, wg)
+	if err != nil {
 		srv.log.Errorf("Could not initialize registration: %s", err)
 		srv.connector.Close()
 
-		return
+		return fmt.Errorf("could not initialize registration: %s", err)
 	}
 
-	if err := srv.setupAdditionalAgentProviders(ctx); err != nil {
+	err = srv.setupAdditionalAgentProviders(ctx)
+	if err != nil {
 		srv.log.Errorf("Could not initialize initial additional agent providers: %s", err)
 		srv.connector.Close()
 
-		return
+		return fmt.Errorf("could not initialize initial additional agent providers: %s", err)
 	}
 
-	if err := srv.setupAdditionalAgents(ctx); err != nil {
+	err = srv.setupAdditionalAgents(ctx)
+	if err != nil {
 		srv.log.Errorf("Could not initialize initial additional agents: %s", err)
 		srv.connector.Close()
 
-		return
+		return fmt.Errorf("could not initialize initial additional agents: %s", err)
 	}
 
-	if err := srv.subscribeNode(ctx); err != nil {
-		srv.log.Errorf("Could not initialize node: %s", err)
+	err = srv.subscribeNode(ctx)
+	if err != nil {
+		srv.log.Errorf("Could not subscribe node: %s", err)
 		srv.connector.Close()
 
-		return
+		return fmt.Errorf("Could not subscribe node: %s", err)
 	}
 
 	wg.Add(1)
 	go srv.processRequests(ctx, wg)
+
+	return nil
 }
 
 // RegisterRegistrationProvider adds a new provider for registration data to the registration subsystem
