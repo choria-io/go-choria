@@ -17,16 +17,17 @@ import (
 
 // Instance is an independant copy of Choria
 type Instance struct {
-	fw           *choria.Framework
-	connector    choria.InstanceConnector
-	cfg          *config.Config
-	log          *log.Entry
-	servers      []*srvcache.Server
-	registration *registration.Manager
-	agents       *agents.Manager
-	discovery    *discovery.Manager
-	provisioning bool
-	startTime    time.Time
+	fw            *choria.Framework
+	connector     choria.InstanceConnector
+	cfg           *config.Config
+	log           *log.Entry
+	servers       []*srvcache.Server
+	registration  *registration.Manager
+	agents        *agents.Manager
+	discovery     *discovery.Manager
+	provisioning  bool
+	startTime     time.Time
+	agentDenyList []string
 
 	requests chan *choria.ConnectorMessage
 
@@ -36,11 +37,12 @@ type Instance struct {
 // NewInstance creates a new choria server instance
 func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	i = &Instance{
-		fw:        fw,
-		cfg:       fw.Config,
-		requests:  make(chan *choria.ConnectorMessage),
-		mu:        &sync.Mutex{},
-		startTime: time.Now(),
+		fw:            fw,
+		cfg:           fw.Config,
+		requests:      make(chan *choria.ConnectorMessage),
+		mu:            &sync.Mutex{},
+		startTime:     time.Now(),
+		agentDenyList: []string{},
 	}
 
 	i.log = log.WithFields(log.Fields{"identity": fw.Config.Identity, "component": "server"})
@@ -59,6 +61,10 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	srv.agents = agents.New(srv.requests, srv.fw, srv.connector, srv, srv.log)
 	srv.registration = registration.New(srv.fw, srv.connector, srv.log)
+
+	for _, n := range srv.agentDenyList {
+		srv.agents.DenyAgent(n)
+	}
 
 	wg.Add(1)
 	if err := srv.registration.Start(ctx, wg); err != nil {
@@ -105,5 +111,8 @@ func (srv *Instance) RegisterAgent(ctx context.Context, name string, agent agent
 
 // DenyAgent prevents an agent from being loaded, if it was already loaded this has no effect
 func (srv *Instance) DenyAgent(agent string) {
-	srv.agents.DenyAgent(agent)
+	srv.mu.Lock()
+	defer srv.mu.Unlock()
+
+	srv.agentDenyList = append(srv.agentDenyList, agent)
 }
