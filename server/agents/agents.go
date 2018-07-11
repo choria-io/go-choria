@@ -66,8 +66,8 @@ type Manager struct {
 	mu         *sync.Mutex
 	conn       choria.ConnectorInfo
 	serverInfo ServerInfoSource
-
-	requests chan *choria.ConnectorMessage
+	denylist   []string
+	requests   chan *choria.ConnectorMessage
 }
 
 // New creates a new Agent Manager
@@ -84,10 +84,20 @@ func New(requests chan *choria.ConnectorMessage, fw *choria.Framework, conn chor
 	}
 }
 
+// DenyAgent adds an agent to the list of agent names not allowed to start
+func (a *Manager) DenyAgent(agent string) {
+	a.denylist = append(a.denylist, agent)
+}
+
 // RegisterAgent connects a new agent to the server instance, subscribe to all its targets etc
 func (a *Manager) RegisterAgent(ctx context.Context, name string, agent Agent, conn choria.AgentConnector) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
+
+	if a.agentDenied(name) {
+		a.log.Infof("Denying agent %s based on agent deny list", name)
+		return nil
+	}
 
 	a.log.Infof("Registering new agent %s of type %s", name, agent.Metadata().Name)
 
@@ -121,6 +131,16 @@ func (a *Manager) KnownAgents() []string {
 	sort.Strings(known)
 
 	return known
+}
+
+func (a *Manager) agentDenied(agent string) bool {
+	for _, n := range a.denylist {
+		if n == agent {
+			return true
+		}
+	}
+
+	return false
 }
 
 // Subscribes an agent to all its targets on the connector.  Should any subscription fail

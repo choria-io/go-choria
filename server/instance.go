@@ -102,3 +102,8 @@ func (srv *Instance) RegisterRegistrationProvider(ctx context.Context, wg *sync.
 func (srv *Instance) RegisterAgent(ctx context.Context, name string, agent agents.Agent) error {
 	return srv.agents.RegisterAgent(ctx, name, agent, srv.connector)
 }
+
+// DenyAgent prevents an agent from being loaded, if it was already loaded this has no effect
+func (srv *Instance) DenyAgent(agent string) {
+	srv.agents.DenyAgent(agent)
+}
