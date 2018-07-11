@@ -94,9 +94,9 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	wg.Add(1)
-	instance.Run(ctx, wg)
+	err = instance.Run(ctx, wg)
 
-	return nil
+	return err
 }
 
 func init() {
