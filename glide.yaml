@@ -6,7 +6,7 @@ import:
   - choria
   - config
 - package: github.com/nats-io/gnatsd
-  version: ^1.1.0
+  version: ^1.2.0
   subpackages:
   - server
 - package: github.com/prometheus/client_golang
