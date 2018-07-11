@@ -69,6 +69,9 @@ var _ = Describe("TransportMessage", func() {
 	})
 
 	It("Should support creation from JSON data", func() {
+		protocol.ClientStrictValidation = true
+		defer func() { protocol.ClientStrictValidation = false }()
+
 		security.EXPECT().PublicCertTXT().Return([]byte("stub cert"), nil).AnyTimes()
 		security.EXPECT().SignString(gomock.Any()).Return([]byte("stub sig"), nil).AnyTimes()
 

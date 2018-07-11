@@ -26,7 +26,7 @@ func IsSecure() bool {
 //
 // It's not mandatory for a specific version of implementation of the protocol
 // to do anything with this, so it's merely a hint
-var ClientStrictValidation = true
+var ClientStrictValidation = false
 
 // Additional to these the package for a specific version must also provide these constructors
 // with signature matching those in v1/constructors.go these are in use by mcollective/protocol.gos
