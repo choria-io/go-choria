@@ -82,7 +82,12 @@ func (b *Broadcast) Discover(ctx context.Context, opts ...DiscoverOption) (n []s
 
 	b.log.Debugf("Performing broadcast discovery")
 
-	err = dopts.cl.Request(ctx, dopts.msg, b.handler(dopts))
+	// wrapping it ensures the intial connection does not run forever and inherits the parent ^C handling etc
+	// the +2 gives some additional time to the whole request for network connect time etc
+	rctx, cancel := context.WithTimeout(ctx, dopts.timeout+2)
+	defer cancel()
+
+	err = dopts.cl.Request(rctx, dopts.msg, b.handler(dopts))
 	if err != nil {
 		return n, fmt.Errorf("could not perform request: %s", err)
 	}

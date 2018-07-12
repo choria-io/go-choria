@@ -66,7 +66,7 @@ var _ = Describe("Broadcast", func() {
 			f := protocol.NewFilter()
 			f.AddAgentFilter("choria")
 
-			cl.EXPECT().Request(ctx, gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
+			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
 				Expect(msg.Collective()).To(Equal("test"))
 				Expect(msg.Payload).To(Equal("cGluZw=="))
 
