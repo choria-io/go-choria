@@ -16,6 +16,7 @@ type adaptable interface {
 	Message() string
 	SenderID() string
 	Time() time.Time
+	RequestID() string
 }
 
 // NatStream is an adapter that connects a NATS topic with messages
