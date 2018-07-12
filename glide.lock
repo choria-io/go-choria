@@ -1,5 +1,5 @@
-hash: d2522fcd13c65b755ecfc211a473d91e5a02970483adc15874cf3801cc9b084a
-updated: 2018-07-11T15:39:40.37931+03:00
+hash: 7393e88e960d06a22671a7fc362b610b6e959850ed613d8a5548e852fcdf40a9
+updated: 2018-07-12T19:29:26.887615+03:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,7 +12,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-client
-  version: 3abc5542c103b7a2c1990c099097dc756c0de4dc
+  version: 58387294cadadd69e21972cecc10064e83f7ae8e
   subpackages:
   - client
   - discovery/broadcast
