@@ -133,7 +133,7 @@ func (fw *Framework) IsFederated() (result bool) {
 
 // Logger creates a new logrus entry
 func (fw *Framework) Logger(component string) *log.Entry {
-	return log.WithFields(log.Fields{"component": component})
+	return fw.log.WithFields(log.Fields{"component": component})
 }
 
 // FederationCollectives determines the known Federation Member
