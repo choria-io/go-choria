@@ -21,7 +21,7 @@ func Match(filters [][3]string, fw *choria.Framework, log *logrus.Entry) bool {
 	var err error
 
 	for _, filter := range filters {
-		matched, err = HasFact(filter[0], filter[1], filter[2], fw.Config.FactSourceFile)
+		matched, err = HasFact(filter[0], filter[1], filter[2], fw.Config.FactSourceFile, log)
 		if err != nil {
 			log.Warnf("Failed to match fact '%#v': %s", filter, err)
 			return false
@@ -37,25 +37,54 @@ func Match(filters [][3]string, fw *choria.Framework, log *logrus.Entry) bool {
 }
 
 // JSON parses the data, including doing any conversions needed, and returns JSON text
-func JSON(file string) (json.RawMessage, error) {
-	if file == "" {
-		return json.RawMessage("{}"), fmt.Errorf("Cannot do fact discovery there is no file configured")
-	}
+func JSON(file string, log *logrus.Entry) (json.RawMessage, error) {
+	out := make(map[string]interface{})
 
-	if _, err := os.Stat(file); os.IsNotExist(err) {
-		return json.RawMessage("{}"), fmt.Errorf("Cannot do fact discovery the file '%s' does not exist", file)
-	}
-
-	j, err := ioutil.ReadFile(file)
-	if err != nil {
-		return json.RawMessage("{}"), fmt.Errorf("Could not read facts file %s: %s", file, err)
-	}
-
-	if strings.HasSuffix(file, "yaml") {
-		j, err = yaml.YAMLToJSON(j)
-		if err != nil {
-			return json.RawMessage("{}"), fmt.Errorf("Could not parse facts file %s as YAML: %s", file, err)
+	for _, f := range strings.Split(file, string(os.PathListSeparator)) {
+		if f == "" {
+			continue
 		}
+
+		if _, err := os.Stat(f); os.IsNotExist(err) {
+			log.Warnf("Fact file %s does not exist", f)
+			continue
+		}
+
+		j, err := ioutil.ReadFile(f)
+		if err != nil {
+			log.Errorf("Could not read fact file %s: %s", f, err)
+			continue
+		}
+
+		if strings.HasSuffix(f, "yaml") {
+			j, err = yaml.YAMLToJSON(j)
+			if err != nil {
+				log.Errorf("Could not parse facts file %s as YAML: %s", file, err)
+				continue
+			}
+		}
+
+		facts := make(map[string]interface{})
+		err = json.Unmarshal(j, &facts)
+		if err != nil {
+			log.Errorf("Could not parse facts file: %s", err)
+			continue
+		}
+
+		// does a very dumb shallow merge that mimics ruby Hash#merge
+		// to maintain mcollective compatability
+		for k, v := range facts {
+			out[k] = v
+		}
+	}
+
+	if len(out) == 0 {
+		return json.RawMessage("{}"), fmt.Errorf("no facts were found in %s", file)
+	}
+
+	j, err := json.Marshal(&out)
+	if err != nil {
+		return json.RawMessage("{}"), fmt.Errorf("could not JSON marshal merged facts: %s", err)
 	}
 
 	return json.RawMessage(j), nil
@@ -64,8 +93,8 @@ func JSON(file string) (json.RawMessage, error) {
 // GetFact looks up a single fact from the facts file, errors reading
 // the file is reported but an absent fact is handled as empty result
 // and no error
-func GetFact(fact string, file string) ([]byte, gjson.Result, error) {
-	j, err := JSON(file)
+func GetFact(fact string, file string, log *logrus.Entry) ([]byte, gjson.Result, error) {
+	j, err := JSON(file, log)
 	if err != nil {
 		return nil, gjson.Result{}, err
 	}
@@ -79,8 +108,8 @@ func GetFact(fact string, file string) ([]byte, gjson.Result, error) {
 }
 
 // HasFact evaluates the expression against facts in the file
-func HasFact(fact string, operator string, value string, file string) (bool, error) {
-	j, found, err := GetFact(fact, file)
+func HasFact(fact string, operator string, value string, file string, log *logrus.Entry) (bool, error) {
+	j, found, err := GetFact(fact, file, log)
 	if err != nil {
 		return false, err
 	}
