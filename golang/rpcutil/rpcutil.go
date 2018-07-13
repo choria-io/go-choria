@@ -16,6 +16,7 @@ import (
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/discovery/facts"
+	"github.com/sirupsen/logrus"
 )
 
 type PingReply struct {
@@ -184,7 +185,7 @@ func getFactsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Repl
 
 	for _, fact := range strings.Split(i.Facts, ",") {
 		fact = strings.TrimSpace(fact)
-		v, _ := getFactValue(fact, agent.Config)
+		v, _ := getFactValue(fact, agent.Config, agent.Log)
 		o.Values[fact] = v
 	}
 }
@@ -202,7 +203,7 @@ func getFactAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply
 	o := GetFactReply{i.Fact, nil}
 	reply.Data = &o
 
-	v, err := getFactValue(i.Fact, agent.Config)
+	v, err := getFactValue(i.Fact, agent.Config, agent.Log)
 	if err != nil {
 		// I imagine you might want to error here, but old code just return nil
 		return
@@ -227,8 +228,8 @@ func incompatibleAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.
 	reply.Statusmsg = fmt.Sprintf("The %s action has not been implemented in the Go Choria server as it cannot be done in a compatible manner", req.Action)
 }
 
-func getFactValue(fact string, c *config.Config) (interface{}, error) {
-	_, value, err := facts.GetFact(fact, c.FactSourceFile)
+func getFactValue(fact string, c *config.Config, log *logrus.Entry) (interface{}, error) {
+	_, value, err := facts.GetFact(fact, c.FactSourceFile, log)
 	if err != nil {
 		return nil, err
 	}
