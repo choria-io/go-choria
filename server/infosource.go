@@ -44,7 +44,7 @@ func (srv *Instance) Classes() []string {
 
 // Facts are all the known facts to this instance
 func (srv *Instance) Facts() json.RawMessage {
-	j, _ := facts.JSON(srv.cfg.FactSourceFile)
+	j, _ := facts.JSON(srv.cfg.FactSourceFile, srv.log)
 
 	return j
 }

@@ -2,11 +2,13 @@ package facts
 
 import (
 	"os"
+	"strings"
 	"testing"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -26,11 +28,13 @@ var _ = Describe("Server/Discovery/Facts", func() {
 	)
 
 	BeforeSuite(func() {
+		l = logrus.WithFields(logrus.Fields{"test": true})
+		l.Level = logrus.FatalLevel
+
 		t = func(fact, op, val string) (bool, error) {
-			return HasFact(fact, op, val, "testdata/fact.yaml")
+			return HasFact(fact, op, val, "testdata/fact.yaml", l)
 		}
 
-		l = logrus.WithFields(logrus.Fields{"test": true})
 		cfg, err := config.NewDefaultConfig()
 		cfg.DisableTLS = true
 
@@ -40,7 +44,16 @@ var _ = Describe("Server/Discovery/Facts", func() {
 		fw.Config.FactSourceFile = "testdata/fact.yaml"
 	})
 
-	var _ = Describe("Match", func() {
+	Describe("JSON", func() {
+		It("Should merge multiple fact files", func() {
+			j, err := JSON(strings.Join([]string{"testdata/fact.yaml", "testdata/2ndfact.json"}, string(os.PathListSeparator)), l)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(gjson.GetBytes(j, "ifact").Int()).To(Equal(int64(2)))
+		})
+	})
+
+	Describe("Match", func() {
 		It("Be true if all match", func() {
 			filters := [][3]string{}
 			filters = append(filters, [3]string{"string", "==", "hello world"})
@@ -58,12 +71,7 @@ var _ = Describe("Server/Discovery/Facts", func() {
 		})
 	})
 
-	var _ = Describe("HasFact", func() {
-		It("Should fail on missing data", func() {
-			_, err := HasFact("foo", "==", "bar", "testdata/missing.yaml")
-			Expect(err).To(MatchError("Cannot do fact discovery the file 'testdata/missing.yaml' does not exist"))
-		})
-
+	Describe("HasFact", func() {
 		It("Should match strings", func() {
 			Expect(t("string", "==", "hello world")).To(BeTrue())
 			Expect(t("string", "!=", "hello world")).To(BeFalse())
