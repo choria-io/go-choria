@@ -1,5 +1,24 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/07/20|      |Release 0.5.0                                                                                            |
+|2018/07/13|382   |Improve mcollective compatability by supporting shallow merges of multiple fact files                    |
+|2018/07/12|379   |Increase the NATS Stream Adapter work channel size to function on large networks                         |
+|2018/07/12|377   |When adapting Choria messages to NATS Streams include the Choria RequestID                               |
+|2018/07/12|375   |Ensure all loggers are configured with the correct level and format                                      |
+|2018/07/11|      |Disable full JSON schema validation by default due to performence concerns (go-protocol#23)              |
+|2018/07/11|      |Update `gnatsd` to `1.2.0` to improve stability at >30k nodes when clustered (go-network-broker#6)       |
+|2018/07/11|373   |Support Ubuntu 18.04                                                                                     |
+|2018/07/11|361   |When embedding the Choria Server initial startup errors can now be detected and handled                  |
+|2018/07/11|362   |When embedding the Choria Server one can now prevent certain agents from loading                         |
+|2018/07/11|366   |Consult `/etc/choria/client.cfg` and `~/.choria` in addition to mcollective locations                    |
+|2018/07/03|359   |Resolve a go routine leak when using the connector in a long running client                              |
+|2018/06/26|353   |Handle connection errors in NATS Streaming brokers in the Adapters, require NATS Streaming >= `0.10.0`   |
+|2018/06/18|346   |Add a high performance, filtering capable basic network validation CLI `choria ping`                     |
+|2018/06/15|343   |Resolve the merging of identity & certname concepts that erronously happened during the security refacor |
+|2018/06/14|341   |Ensure non root users - like clients - get a username based certname not FQDN one                        |
+|2018/06/07|336   |Fix the setting that allows disabling broker order randomization                                         |
+|2018/06/06|333   |Randomize broker connections by default                                                                  |
+|2018/06/06|331   |Add a short grace period to clock checks to allow for real world realities wrt synced clocks             |
 |2018/05/31|      |Release 0.4.0                                                                                            |
 |2018/05/29|320   |Make the enroll process more robust in the face of interruptions                                         |
 |2018/05/23|308   |Fix running `choria buildinfo`                                                                           |
