@@ -10,8 +10,8 @@ import (
 	"github.com/choria-io/go-client/discovery/broadcast"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/mcorpc"
-	addl "github.com/choria-io/go-choria/mcorpc/ddl/agent"
+	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
+	addl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/srvcache"
 	cclient "github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-protocol/protocol"
