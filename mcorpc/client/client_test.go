@@ -70,9 +70,9 @@ var _ = Describe("McoRPC/Client", func() {
 
 	Describe("SetOptions", func() {
 		It("Should set the options", func() {
-			rpc.SetOptions()
+			rpc.setOptions()
 			Expect(rpc.opts.BatchSize).To(Equal(0))
-			rpc.SetOptions(InBatches(10, 1))
+			rpc.setOptions(InBatches(10, 1))
 			Expect(rpc.opts.BatchSize).To(Equal(10))
 		})
 	})
@@ -186,28 +186,6 @@ var _ = Describe("McoRPC/Client", func() {
 			d, err := stats.RequestDuration()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(d).ToNot(BeZero())
-		})
-
-		It("Should support reusing options", func() {
-			Expect(rpc.opts).To(BeNil())
-			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
-			res1, err := rpc.Do(
-				ctx,
-				"test_action",
-				request{Testing: true},
-				Targets(strings.Fields("test.sender.0 test.sender.1")),
-			)
-			Expect(err).ToNot(HaveOccurred())
-			o := rpc.opts
-
-			res2, err := rpc.Do(
-				ctx,
-				"test_action",
-				request{Testing: true},
-			)
-
-			Expect(o).To(Equal(rpc.opts))
-			Expect(res1.Stats()).ToNot(Equal(res2.Stats()))
 		})
 
 		It("Should support batched mode", func() {
