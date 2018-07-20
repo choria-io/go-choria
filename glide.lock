@@ -1,5 +1,5 @@
-hash: 7393e88e960d06a22671a7fc362b610b6e959850ed613d8a5548e852fcdf40a9
-updated: 2018-07-12T19:29:26.887615+03:00
+hash: decfb3a57b0cdfb053a978e88c08fabd61b5861b1fbc2ed6030e8c7ca74b2c2b
+updated: 2018-07-20T15:28:46.880281+03:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -15,7 +15,6 @@ imports:
   version: 58387294cadadd69e21972cecc10064e83f7ae8e
   subpackages:
   - client
-  - discovery/broadcast
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-network-broker
@@ -41,6 +40,10 @@ imports:
   - maxlength
   - regex
   - shellsafe
+- name: github.com/choria-io/mcorpc-agent-provider
+  version: 33fa69cae7f6be38513efd52e51a24553758bda6
+  subpackages:
+  - mcorpc
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
@@ -85,7 +88,7 @@ imports:
 - name: github.com/nats-io/nuid
   version: 28b996b57a46dd0c2aa3a3dc7fa8780878331d00
 - name: github.com/onsi/ginkgo
-  version: fa5fabab2a1bfbd924faf4c067d07ae414e2aedf
+  version: 3774a09d95489ccaa16032e0770d08ea77ba6184
   subpackages:
   - config
   - internal/codelocation
@@ -101,11 +104,9 @@ imports:
   - internal/writer
   - reporters
   - reporters/stenographer
-  - reporters/stenographer/support/go-colorable
-  - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 62bff4df71bdbc266561a0caee19f0594b17c240
+  version: b6ea1ea48f981d0f615a154a45eabb9dd466556d
   subpackages:
   - format
   - internal/assertion
@@ -181,6 +182,13 @@ imports:
 - name: gopkg.in/yaml.v2
   version: d670f9405373e636a5a2765eea47fac0c9bc91a4
 testImports:
+- name: github.com/hpcloud/tail
+  version: a1dbeea552b7c8df4b542c66073e393de198a800
+  subpackages:
+  - ratelimiter
+  - util
+  - watch
+  - winfile
 - name: golang.org/x/text
   version: e19ae1496984b1c655b8044a65c0300a3c878dd3
   subpackages:
@@ -199,3 +207,7 @@ testImports:
   - language
   - runes
   - transform
+- name: gopkg.in/fsnotify/fsnotify.v1
+  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
+- name: gopkg.in/tomb.v1
+  version: c131134a1947e9afd9cecfe11f4c6dff0732ae58
