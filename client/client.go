@@ -108,12 +108,8 @@ func New(fw *choria.Framework, agent string, opts ...Option) (rpc *RPC, err erro
 	return rpc, nil
 }
 
-// SetOptions sets the options that apply to calls to Do and Discover on this client
-// where those do accept their own options they will get merged with these
-func (r *RPC) SetOptions(opts ...RequestOption) {
-	if r.opts == nil {
-		r.opts = NewRequestOptions(r.fw, r.ddl)
-	}
+func (r *RPC) setOptions(opts ...RequestOption) {
+	r.opts = NewRequestOptions(r.fw, r.ddl)
 
 	for _, opt := range opts {
 		opt(r.opts)
@@ -177,9 +173,7 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 // Discover performs a broadcast discovery, using this method will update the client to
 // with these discovered nodes and update appropriate stats
 func (r *RPC) Discover(ctx context.Context, f *protocol.Filter, opts ...RequestOption) (n []string, err error) {
-	// its a common pattern to setup a client - like discovery data etc - and then reuse it for a few calls
-	// this ensures that this pattern is possible, Reset() will clear opts here and it'll effectively start fresh
-	r.SetOptions(opts...)
+	r.setOptions(opts...)
 
 	b := broadcast.New(r.fw)
 
@@ -207,9 +201,7 @@ func (r *RPC) DiscoveredNodes() []string {
 }
 
 func (r *RPC) setupMessage(ctx context.Context, action string, payload interface{}, opts ...RequestOption) (msg *choria.Message, cl ChoriaClient, err error) {
-	// its a common pattern to setup a client - like discovery data etc - and then reuse it for a few calls
-	// this ensures that this pattern is possible, Reset() will clear opts here and it'll effectively start fresh
-	r.SetOptions()
+	r.setOptions()
 
 	// regardless of above, we always need new stats
 	r.opts.totalStats = NewStats()
