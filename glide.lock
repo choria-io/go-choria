@@ -1,12 +1,12 @@
-hash: 6f9c31370c7dff402b67badc82df74cf675d8694d43e17e01a1ff6eb631f3631
-updated: 2018-06-15T14:30:23.309938+02:00
+hash: 237723f70bec30408ad465bfc1d67f7554e2fc9cd8adadb1c9c08a91e391155a
+updated: 2018-07-24T06:57:00.302681+02:00
 imports:
 - name: github.com/beorn7/perks
-  version: 3a771d992973f24aa725d07868b467d1ddfceafb
+  version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: 25734e2391b6e6734bd07f71dc1b3ba9959c5b87
+  version: 0bdd11848047642529130834321fc703dc6a7b57
   subpackages:
   - backoff
   - build
@@ -17,7 +17,7 @@ imports:
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-protocol
-  version: c695d135e1fa74eb52f66a1bf35154dd1f8064d3
+  version: 284592cb18f97f9854a797f6147142cc5ddc551c
   subpackages:
   - protocol
   - protocol/v1
@@ -43,7 +43,7 @@ imports:
   - gomock
   - mockgen
 - name: github.com/golang/protobuf
-  version: 3a3da3a4e26776cc22a79ef46d5d58477532dede
+  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
   subpackages:
   - proto
 - name: github.com/matttproud/golang_protobuf_extensions
@@ -56,9 +56,9 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/nats-io/nuid
-  version: 3e58d42c9cfe5cd9429f1a21ad8f35cd859ba829
+  version: 28b996b57a46dd0c2aa3a3dc7fa8780878331d00
 - name: github.com/onsi/ginkgo
-  version: fa5fabab2a1bfbd924faf4c067d07ae414e2aedf
+  version: 3774a09d95489ccaa16032e0770d08ea77ba6184
   subpackages:
   - config
   - internal/codelocation
@@ -78,7 +78,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 62bff4df71bdbc266561a0caee19f0594b17c240
+  version: b6ea1ea48f981d0f615a154a45eabb9dd466556d
   subpackages:
   - format
   - internal/assertion
@@ -100,37 +100,35 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 7600349dcfe1abd18d72d3a1770870d9800a7801
+  version: 89604d197083d4781071d3c65855d24ecfb0a563
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: fe93d378a6b03758a2c1b65e86cf630bf78681c0
+  version: b15cd069a83443be3154b719d0cc9fe8117f09fb
   subpackages:
-  - internal/util
-  - nfs
   - xfs
 - name: github.com/satori/go.uuid
   version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
-  version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
+  version: 3e01752db0189b9157070a0e1668a620f9a85da2
 - name: github.com/tidwall/gjson
-  version: afaeb9562041a8018c74e006551143666aed08bf
+  version: 01f00f129617a6fe98941fb920d6c760241b54d2
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
-  version: 4e3ac2762d5f479393488629ee9370b50873b3a6
+  version: 6fe8760cad3569743d51ddbb243b26f8456742dc
 - name: github.com/xeipuuv/gojsonreference
-  version: bd5ef7bd5415a7ac448318e64f11a24cd21e594b
+  version: e02fc20de94c78484cd5ffb007f8af96be030a45
 - name: github.com/xeipuuv/gojsonschema
-  version: 9ff6d6c47f3f5de55acc6f464d6e3719b02818ae
+  version: 511d08a359d14c0dd9c4302af52ee9abb6f93c2a
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
-  version: 89e543239a64caf31d3a6865872ea120b41446df
+  version: 5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec
   subpackages:
   - context
   - html
@@ -141,8 +139,15 @@ imports:
   subpackages:
   - unix
 testImports:
+- name: github.com/hpcloud/tail
+  version: a1dbeea552b7c8df4b542c66073e393de198a800
+  subpackages:
+  - ratelimiter
+  - util
+  - watch
+  - winfile
 - name: golang.org/x/text
-  version: 5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877
+  version: e19ae1496984b1c655b8044a65c0300a3c878dd3
   subpackages:
   - encoding
   - encoding/charmap
@@ -154,12 +159,14 @@ testImports:
   - encoding/simplifiedchinese
   - encoding/traditionalchinese
   - encoding/unicode
-  - internal/language
-  - internal/language/compact
   - internal/tag
   - internal/utf8internal
   - language
   - runes
   - transform
+- name: gopkg.in/fsnotify/fsnotify.v1
+  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
+- name: gopkg.in/tomb.v1
+  version: c131134a1947e9afd9cecfe11f4c6dff0732ae58
 - name: gopkg.in/yaml.v2
-  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+  version: d670f9405373e636a5a2765eea47fac0c9bc91a4

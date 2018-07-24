@@ -1,16 +1,10 @@
 package: github.com/choria-io/go-client
 import:
 - package: github.com/choria-io/go-choria
-  version: 25734e2391b6e6734bd07f71dc1b3ba9959c5b87
+  version: ^0.5.0
   subpackages:
   - choria
   - srvcache
-- package: github.com/choria-io/go-protocol
-  version: 1.1.1
-  subpackages:
-  - protocol
-- package: github.com/sirupsen/logrus
-  version: ^1.0.5
 - package: github.com/onsi/ginkgo
   version: ^1
 - package: github.com/onsi/gomega
