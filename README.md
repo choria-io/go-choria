@@ -1,4 +1,6 @@
 # Choria Broker and Server
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fchoria-io%2Fgo-choria.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2Fchoria-io%2Fgo-choria?ref=badge_shield)
+
 
 This is a daemon written in Go that will replace the traditional combination of Ruby MCollectived + Choria plugins - at least as far as the daemon side goes.
 
@@ -312,3 +314,6 @@ Nightly packages are versioned `0.99.0` with a date portion added:  `choria-0.99
 ## Thanks
 
 <img src="https://packagecloud.io/images/packagecloud-badge.png" width="158">
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fchoria-io%2Fgo-choria.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fchoria-io%2Fgo-choria?ref=badge_large)
