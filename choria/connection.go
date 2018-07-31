@@ -101,30 +101,30 @@ type Connection struct {
 }
 
 var (
-	connInitialConnectCtr = prometheus.NewCounterVec(prometheus.CounterOpts{
+	connInitialConnectCtr = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "choria_connector_initial_connection_attempts",
 		Help: "How many connection attempts were made before a connection was established",
-	}, []string{"name"})
+	})
 
-	connReconnectCtr = prometheus.NewCounterVec(prometheus.CounterOpts{
+	connReconnectCtr = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "choria_connector_reconnections",
 		Help: "Number of times the connector reconnected to the middleware",
-	}, []string{"name"})
+	})
 
-	connClosedCtr = prometheus.NewCounterVec(prometheus.CounterOpts{
+	connClosedCtr = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "choria_connector_connection_closed",
 		Help: "Number of times the connection was closed",
-	}, []string{"name"})
+	})
 
-	connErrorCtr = prometheus.NewCounterVec(prometheus.CounterOpts{
+	connErrorCtr = prometheus.NewCounter(prometheus.CounterOpts{
 		Name: "choria_connector_errors",
 		Help: "Number of times the connection encountered an error",
-	}, []string{"name"})
+	})
 
-	connInitialConnectTime = prometheus.NewSummaryVec(prometheus.SummaryOpts{
+	connInitialConnectTime = prometheus.NewSummary(prometheus.SummaryOpts{
 		Name: "choria_connector_initial_connect_time",
 		Help: "How long it took to establish the initial connection",
-	}, []string{"name"})
+	})
 )
 
 func init() {
@@ -194,6 +194,7 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 			case m := <-subs.in:
 				subs.out <- &ConnectorMessage{Data: m.Data, Reply: m.Reply, Subject: m.Subject}
 			case <-subs.quit:
+
 				return
 			}
 		}
@@ -234,6 +235,7 @@ func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject
 			case <-ctx.Done():
 				return
 			case <-s.quit:
+				close(s.in)
 				return
 			}
 		}
@@ -270,9 +272,6 @@ func (conn *Connection) Unsubscribe(name string) error {
 
 		sub.quit <- true
 
-		close(sub.quit)
-		close(sub.in)
-		close(sub.out)
 		delete(conn.chanSubscriptions, name)
 	}
 
@@ -505,7 +504,7 @@ func (conn *Connection) ConnectedServer() string {
 // This will block until connected - basically forever should it never work.  Due to short comings
 // in the NATS library logging about failures is not optimal
 func (conn *Connection) Connect(ctx context.Context) (err error) {
-	obs := prometheus.NewTimer(connInitialConnectTime.WithLabelValues(conn.name))
+	obs := prometheus.NewTimer(connInitialConnectTime)
 	defer obs.ObserveDuration()
 
 	conn.conMu.Lock()
@@ -559,7 +558,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 		nats.ReconnectHandler(func(nc *nats.Conn) {
 			conn.logger.Warnf("NATS client reconnected after a previous disconnection, connected to %s", nc.ConnectedUrl())
-			connReconnectCtr.WithLabelValues(conn.name).Inc()
+			connReconnectCtr.Inc()
 		}),
 
 		nats.ClosedHandler(func(nc *nats.Conn) {
@@ -567,12 +566,12 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 			if err != nil {
 				conn.logger.Warnf("NATS client connection closed: %s", nc.LastError())
 			}
-			connClosedCtr.WithLabelValues(conn.name).Inc()
+			connClosedCtr.Inc()
 		}),
 
 		nats.ErrorHandler(func(nc *nats.Conn, sub *nats.Subscription, err error) {
 			conn.logger.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrl(), err)
-			connErrorCtr.WithLabelValues(conn.name).Inc()
+			connErrorCtr.Inc()
 		}),
 	}
 
@@ -591,7 +590,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 		conn.nats, err = nats.Connect(strings.Join(urls, ", "), options...)
 		if err != nil {
-			connInitialConnectCtr.WithLabelValues(conn.name).Inc()
+			connInitialConnectCtr.Inc()
 
 			conn.logger.Warnf("Initial connection to the NATS broker cluster failed: %s", err)
 
@@ -618,8 +617,17 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 // Close closes the NATS connection after flushing what needed to be sent
 func (conn *Connection) Close() {
 	for s := range conn.chanSubscriptions {
-		conn.logger.Debugf("Stopping channel subscription %s", s)
-		conn.chanSubscriptions[s].quit <- true
+		err := conn.Unsubscribe(s)
+		if err != nil {
+			conn.logger.Warnf("Could not unsubscribe from channel subscription %s: %s", s, err)
+		}
+	}
+
+	for s := range conn.subscriptions {
+		err := conn.Unsubscribe(s)
+		if err != nil {
+			conn.logger.Warnf("Could not unsubscribe from %s: %s", s, err)
+		}
 	}
 
 	conn.logger.Debug("Flushing pending NATS messages before close")
