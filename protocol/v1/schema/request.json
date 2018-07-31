@@ -81,7 +81,10 @@
                             "type":"array",
                             "description": "List of compound filters to be applied in an AND fashion",
                             "items": {
-                                "type":"string"
+                                "type":"array",
+                                "items": {
+                                    "type": "object"
+                                }
                             }
                         },
                         "identity": {
@@ -144,7 +147,7 @@
                         }
                     }
                 }
-            }   
+            }
         }
     }
 }
