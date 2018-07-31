@@ -37,10 +37,12 @@ var _ = Describe("Filter", func() {
 	})
 
 	It("Should support compound filters", func() {
-		f.AddCompoundFilter("foo or bar")
-		f.AddCompoundFilter("foo or bar")
-		f.AddCompoundFilter("bar or foo")
-		Expect(f.CompoundFilters()).To(Equal([]string{"foo or bar", "bar or foo"}))
+		err := f.AddCompoundFilter(`[{"fstatement":{"r_compare":"30","operator":">","value":"total_time","name":"resource","params":null}}]`)
+		Expect(err).ToNot(HaveOccurred())
+		err = f.AddCompoundFilter(`[{"statement":"environment=development"},{"or":"or"},{"statement":"customer=acme"}]`)
+		Expect(err).ToNot(HaveOccurred())
+
+		Expect(f.CompoundFilters()).To(HaveLen(2))
 	})
 
 	It("Should support fact filters", func() {

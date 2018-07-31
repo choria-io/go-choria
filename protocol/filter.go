@@ -1,9 +1,16 @@
 package protocol
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 )
+
+// CompoundFilter is a mcollective compound filter
+type CompoundFilter []map[string]interface{}
+
+// CompoundFilters is a set of mcollective compound filters
+type CompoundFilters []CompoundFilter
 
 // FactFilter is how a fact match is represented to the Filter
 type FactFilter struct {
@@ -14,11 +21,11 @@ type FactFilter struct {
 
 // Filter is a MCollective filter
 type Filter struct {
-	Fact     []FactFilter `json:"fact"`
-	Class    []string     `json:"cf_class"`
-	Agent    []string     `json:"agent"`
-	Identity []string     `json:"identity"`
-	Compound []string     `json:"compound"`
+	Fact     []FactFilter    `json:"fact"`
+	Class    []string        `json:"cf_class"`
+	Agent    []string        `json:"agent"`
+	Identity []string        `json:"identity"`
+	Compound CompoundFilters `json:"compound"`
 
 	mu sync.Mutex
 }
@@ -30,7 +37,7 @@ func NewFilter() *Filter {
 		Class:    []string{},
 		Agent:    []string{},
 		Identity: []string{},
-		Compound: []string{},
+		Compound: CompoundFilters{},
 	}
 
 	return filter
@@ -50,7 +57,7 @@ func (self *Filter) Empty() bool {
 }
 
 // CompoundFilters retrieve the list of compound filters
-func (self *Filter) CompoundFilters() []string {
+func (self *Filter) CompoundFilters() CompoundFilters {
 	return self.Compound
 }
 
@@ -81,14 +88,22 @@ func (self *Filter) FactFilters() [][3]string {
 	return filter
 }
 
-// AddCompoundFilter appends a filter to the compound filters
-func (self *Filter) AddCompoundFilter(query string) {
+// AddCompoundFilter appends a filter to the compound filters,
+// the filter should be a JSON string representing a valid mcollective
+// compound filter as parsed by MCollective::Matcher.create_compound_callstack
+func (self *Filter) AddCompoundFilter(query string) error {
 	self.mu.Lock()
 	defer self.mu.Unlock()
 
-	if !self.contains(query, self.Compound) {
-		self.Compound = append(self.Compound, query)
+	var f CompoundFilter
+	err := json.Unmarshal([]byte(query), &f)
+	if err != nil {
+		return fmt.Errorf("could not parse query as JSON: %s", err)
 	}
+
+	self.Compound = append(self.Compound, f)
+
+	return nil
 }
 
 // AddIdentityFilter appends a filter to the identity filters
