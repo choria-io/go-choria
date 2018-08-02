@@ -2,10 +2,16 @@ package provision
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/asn1"
 	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"io/ioutil"
-	"math/rand"
+	mrand "math/rand"
 	"os"
 	"path/filepath"
 	"sync"
@@ -15,18 +21,35 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
+	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/sirupsen/logrus"
 )
 
 type ConfigureRequest struct {
 	Configuration map[string]string `json:"config"`
+	Certificate   string            `json:"certificate"`
+	CA            string            `json:"ca"`
+	SSLDir        string            `json:"ssldir"`
 }
 
 type RestartRequest struct {
 	Splay int `json:"splay"`
+}
+
+type CSRRequest struct {
+	CN string `json:"cn"`
+	C  string `json:"C"`
+	L  string `json:"L"`
+	O  string `json:"O"`
+	OU string `json:"OU"`
+	ST string `json:"ST"`
+}
+
+type CSRReply struct {
+	CSR    string `json:"csr"`
+	SSLDir string `json:"ssldir"`
 }
 
 type Reply struct {
@@ -49,11 +72,110 @@ func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 
 	agent := mcorpc.New("choria_provision", metadata, mgr.Choria(), mgr.Logger())
 
+	agent.MustRegisterAction("gencsr", csrAction)
 	agent.MustRegisterAction("configure", configureAction)
 	agent.MustRegisterAction("restart", restartAction)
 	agent.MustRegisterAction("reprovision", reprovisionAction)
 
 	return agent, nil
+}
+
+func csrAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if !agent.Choria.ProvisionMode() {
+		abort("Cannot reconfigure a server that is not in provisioning mode", reply)
+		return
+	}
+
+	if agent.Config.ConfigFile == "" && agent.Config.Choria.SSLDir == "" {
+		abort("Cannot determine where to store SSL data, no configure file given and no SSL directory configured", reply)
+		return
+	}
+
+	ssldir := filepath.Base(agent.Config.ConfigFile)
+	if agent.Config.Choria.SSLDir != "" {
+		ssldir = agent.Config.Choria.SSLDir
+	}
+
+	keyfile := filepath.Join(ssldir, "private.pem")
+	csrfile := filepath.Join(ssldir, "csr.pem")
+
+	agent.Log.Infof("Creating a new CSR in %s", ssldir)
+
+	err := os.MkdirAll(ssldir, 0700)
+	if err != nil {
+		abort(fmt.Sprintf("Could not create SSL Directory %s: %s", ssldir, err), reply)
+		return
+	}
+
+	args := CSRRequest{}
+	if !mcorpc.ParseRequestData(&args, req, reply) {
+		return
+	}
+
+	if args.CN == "" {
+		args.CN = agent.Choria.Certname()
+	}
+
+	subj := pkix.Name{
+		CommonName:         args.CN,
+		Country:            []string{args.C},
+		Locality:           []string{args.L},
+		Organization:       []string{args.O},
+		OrganizationalUnit: []string{args.OU},
+	}
+	rawSubj := subj.ToRDNSequence()
+
+	asn1Subj, err := asn1.Marshal(rawSubj)
+	if err != nil {
+		abort(fmt.Sprintf("Could not create CSR: %s", err), reply)
+		return
+	}
+
+	template := x509.CertificateRequest{
+		RawSubject:         asn1Subj,
+		SignatureAlgorithm: x509.SHA256WithRSA,
+	}
+
+	keyBytes, err := rsa.GenerateKey(rand.Reader, 1024)
+	if err != nil {
+		abort(fmt.Sprintf("Could not create private key: %s", err), reply)
+		return
+	}
+
+	keyPem := pem.EncodeToMemory(
+		&pem.Block{
+			Type:  "RSA PRIVATE KEY",
+			Bytes: x509.MarshalPKCS1PrivateKey(keyBytes),
+		},
+	)
+
+	err = ioutil.WriteFile(keyfile, keyPem, 0700)
+	if err != nil {
+		abort(fmt.Sprintf("Could not store private key: %s", err), reply)
+		return
+	}
+
+	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, keyBytes)
+	if err != nil {
+		abort(fmt.Sprintf("Could not create CSR bytes: %s", err), reply)
+		return
+	}
+
+	pb := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrBytes})
+
+	err = ioutil.WriteFile(csrfile, keyPem, 0700)
+	if err != nil {
+		abort(fmt.Sprintf("Could not store CSR: %s", err), reply)
+		return
+	}
+
+	reply.Data = &CSRReply{
+		CSR:    string(pb),
+		SSLDir: ssldir,
+	}
 }
 
 func reprovisionAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
@@ -90,7 +212,7 @@ func reprovisionAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.R
 		return
 	}
 
-	splay := time.Duration(rand.Intn(10) + 2)
+	splay := time.Duration(mrand.Intn(10) + 2)
 
 	if allowRestart {
 		go restart(splay, agent.Log)
@@ -113,10 +235,8 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		return
 	}
 
-	args := ConfigureRequest{}
-	err := json.Unmarshal(req.Data, &args)
-	if err != nil {
-		abort(fmt.Sprintf("Could not parse request arguments: %s", err), reply)
+	args := &ConfigureRequest{}
+	if !mcorpc.ParseRequestData(args, req, reply) {
 		return
 	}
 
@@ -129,6 +249,23 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 	if err != nil {
 		abort(fmt.Sprintf("Could not write config: %s", err), reply)
 		return
+	}
+
+	if args.Certificate != "" && args.SSLDir != "" && args.CA != "" {
+		target := filepath.Join(args.SSLDir, "certificate.pem")
+		err = ioutil.WriteFile(target, []byte(args.Certificate), 0700)
+		if err != nil {
+			abort(fmt.Sprintf("Could not write Certificate to %s: %s", target, err), reply)
+			return
+		}
+
+		target = filepath.Join(args.SSLDir, "ca.pem")
+		err = ioutil.WriteFile(target, []byte(args.CA), 0700)
+		if err != nil {
+			abort(fmt.Sprintf("Could not write CA to %s: %s", target, err), reply)
+			return
+		}
+
 	}
 
 	reply.Data = Reply{fmt.Sprintf("Wrote %d lines to %s", lines, agent.Config.ConfigFile)}
@@ -165,7 +302,7 @@ func restartAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply
 		args.Splay = 10
 	}
 
-	splay := time.Duration(rand.Intn(args.Splay) + 2)
+	splay := time.Duration(mrand.Intn(args.Splay) + 2)
 
 	agent.Log.Warnf("Restarting server via request %s from %s (%s) with splay %d", req.RequestID, req.CallerID, req.SenderID, splay)
 
