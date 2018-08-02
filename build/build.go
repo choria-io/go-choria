@@ -40,6 +40,9 @@ var ProvisionAgent = "true"
 // ProvisionRegistrationData is a file that will be published by the registration system
 var ProvisionRegistrationData = ""
 
+// ProvisionFacts is a facts file to use for discovery purposes during provisioning mode
+var ProvisionFacts = ""
+
 // AgentProviders are registered systems capable of extending choria with new agents
 var AgentProviders = []string{}
 

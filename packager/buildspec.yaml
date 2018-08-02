@@ -6,6 +6,7 @@ flags_map:
   ProvisionAgent: github.com/choria-io/go-choria/build.ProvisionAgent
   ProvisionSecure: github.com/choria-io/go-choria/build.ProvisionSecure
   ProvisionRegistrationData: github.com/choria-io/go-choria/build.ProvisionRegistrationData
+  ProvisionFacts: github.com/choria-io/go-choria/build.ProvisionFacts
   Secure: github.com/choria-io/go-choria/vendor/github.com/choria-io/go-protocol/protocol.Secure
   Version: github.com/choria-io/go-choria/build.Version
   SHA: github.com/choria-io/go-choria/build.SHA
@@ -18,11 +19,6 @@ foss:
       pre:
         - rm additional_agent_*.go
         - go generate
-      flags:
-        ProvisionModeDefault: "true"
-        ProvisionBrokerURLs: "dev1.devco.net:4222"
-        ProvisionSecure: "false"
-        ProvisionRegistrationData: /tmp/json_registration.json
 
     64bit_linux:
       os: linux
