@@ -4,15 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"path/filepath"
-	"runtime"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
+	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
@@ -41,6 +41,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 		ctx       context.Context
 		targetcfg string
 		targetlog string
+		targetdir string
 	)
 
 	BeforeEach(func() {
@@ -66,27 +67,65 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 		build.ProvisionBrokerURLs = "nats://n1:4222"
 		ctx = context.Background()
 
-		if runtime.GOOS == "windows" {
-			targetcfg = filepath.Join(os.Getenv("TMP"), "choria_test.cfg")
-			targetlog = filepath.Join(os.Getenv("TMP"), "choria_test.log")
-		} else {
-			targetcfg = "/tmp/choria_test.cfg"
-			targetlog = "/tmp/choria_test.log"
-		}
+		targetdir, err = ioutil.TempDir("", "provision_test")
+		Expect(err).ToNot(HaveOccurred())
+
+		targetcfg = filepath.Join(targetdir, "choria_test.cfg")
+		targetlog = filepath.Join(targetdir, "choria_test.log")
 	})
 
 	AfterEach(func() {
-		os.Remove(targetcfg)
+		os.RemoveAll(targetdir)
 		mockctl.Finish()
 	})
 
-	var _ = Describe("New", func() {
+	Describe("New", func() {
 		It("Should create all the actions", func() {
-			Expect(prov.ActionNames()).To(Equal([]string{"configure", "reprovision", "restart"}))
+			Expect(prov.ActionNames()).To(Equal([]string{"configure", "gencsr", "reprovision", "restart"}))
 		})
 	})
 
-	var _ = Describe("restartAction", func() {
+	Describe("csrAction", func() {
+		It("Should only be active in provision mode", func() {
+			csrAction(ctx, &mcorpc.Request{}, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
+			Expect(reply.Statusmsg).To(Equal("Cannot reconfigure a server that is not in provisioning mode"))
+		})
+
+		It("Should only be active when a configfile or ssl dir is set", func() {
+			prov.Config.ConfigFile = ""
+			prov.Config.Choria.SSLDir = ""
+			build.ProvisionModeDefault = "true"
+
+			csrAction(ctx, &mcorpc.Request{}, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
+			Expect(reply.Statusmsg).To(Equal("Cannot determine where to store SSL data, no configure file given and no SSL directory configured"))
+		})
+
+		It("Should create the Key, CSR and return the CSR", func() {
+			prov.Config.Choria.SSLDir = filepath.Join(targetdir, "ssl")
+
+			build.ProvisionModeDefault = "true"
+			req := &mcorpc.Request{
+				Data:      json.RawMessage(`{"cn":"ginkgo.example.net"}`),
+				RequestID: "uniq_req_id",
+				CallerID:  "choria=rip.mcollective",
+				SenderID:  "go.test",
+			}
+			csrAction(ctx, req, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
+			csrr := reply.Data.(*CSRReply)
+			Expect(csrr.SSLDir).To(Equal(prov.Config.Choria.SSLDir))
+			stat, err := os.Stat(filepath.Join(prov.Config.Choria.SSLDir, "private.pem"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(stat.Mode()).To(Equal(os.FileMode(0700)))
+			stat, err = os.Stat(filepath.Join(prov.Config.Choria.SSLDir, "csr.pem"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(stat.Mode()).To(Equal(os.FileMode(0700)))
+		})
+	})
+
+	Describe("restartAction", func() {
 		It("Should only restart nodes in provision mode", func() {
 			restartAction(ctx, &mcorpc.Request{}, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
@@ -126,7 +165,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 		})
 	})
 
-	var _ = Describe("reprovisionAction", func() {
+	Describe("reprovisionAction", func() {
 		It("Should only reprovision nodes not in provisioning mode", func() {
 			build.ProvisionModeDefault = "true"
 
@@ -177,7 +216,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 		})
 	})
 
-	var _ = Describe("configureAction", func() {
+	Describe("configureAction", func() {
 		It("Should only allow configuration when in provision mode", func() {
 			cfg.Choria.Provision = false
 
@@ -212,7 +251,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 			cfg.ConfigFile = targetcfg
 
 			req := &mcorpc.Request{
-				Data:      json.RawMessage(`{"config":{"plugin.choria.server.provision":"0", "plugin.choria.srv_domain":"another.com"}}`),
+				Data:      json.RawMessage(fmt.Sprintf(`{"certificate": "stub_cert", "ca":"stub_ca", "ssldir":"%s", "config":{"plugin.choria.server.provision":"0", "plugin.choria.srv_domain":"another.com"}}`, targetdir)),
 				RequestID: "uniq_req_id",
 				CallerID:  "choria=rip.mcollective",
 				SenderID:  "go.test",
@@ -228,6 +267,14 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 			cfg, err := config.NewConfig(targetcfg)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.Choria.SRVDomain).To(Equal("another.com"))
+
+			cert, err := ioutil.ReadFile(filepath.Join(targetdir, "certificate.pem"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(string(cert)).To(Equal("stub_cert"))
+
+			ca, err := ioutil.ReadFile(filepath.Join(targetdir, "ca.pem"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(string(ca)).To(Equal("stub_ca"))
 		})
 	})
 })
