@@ -118,6 +118,7 @@ func (fw *Framework) ConfigureProvisioning() {
 	fw.Config.Collectives = []string{"provisioning"}
 	fw.Config.MainCollective = "provisioning"
 	fw.Config.Registration = []string{}
+	fw.Config.FactSourceFile = build.ProvisionFacts
 
 	if build.ProvisionRegistrationData != "" {
 		fw.Config.RegistrationCollective = "provisioning"

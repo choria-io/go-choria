@@ -55,6 +55,7 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Printf("      Default Provisioning Agent: %t\n", build.ProvisionAgent == "true")
 	fmt.Printf("                Provisioning TLS: %t\n", build.ProvisionSecurity())
 	fmt.Printf("  Provisioning Registration Data: %s\n", build.ProvisionRegistrationData)
+	fmt.Printf("              Provisioning Facts: %s\n", build.ProvisionFacts)
 	fmt.Println("")
 	fmt.Println("Agent Providers:")
 
