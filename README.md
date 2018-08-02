@@ -250,13 +250,12 @@ The active provisioning will be configured with:
 
 When provisioning is enabled a special agent `choria_provision` will be activated, the default one has the following actions:
 
- * `configure` - takes a provided configuration hash and saves it to `server.cfg`
+ * `gencsr` - generates a private key and csr. Returns the CSR to the caller
+ * `configure` - takes a provided configuration hash and saves it to `server.cfg`, also supports saving signed certs and CA bundles
  * `restart` - restarts the server after a random sleep, max 10s by default but can be provided in the request
  * `reprovision` - rewrites the configuration with one that enables provisioning and restarts
 
  One can provide ones own agent to replace this one, using this you can write a tool that monitors the `provisioning` sub collective continuously and drives a node through a provisioning flow placing it in exactly the state you desire.
-
-In future the provisioning flow will also support enrolling the node with a Certificate Authority.
 
 ### Compiling in custom agent providers
 Agent Providers allow entirely new ways of writing agents to be created.  An example is the one that runs old mcollective ruby agents

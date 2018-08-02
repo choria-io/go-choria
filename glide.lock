@@ -1,5 +1,5 @@
-hash: decfb3a57b0cdfb053a978e88c08fabd61b5861b1fbc2ed6030e8c7ca74b2c2b
-updated: 2018-07-20T15:28:46.880281+03:00
+hash: 8e15a4236b696b3c8cedd490b45ae9c64664cd4478fab72b73af91fe0ce5a2e4
+updated: 2018-07-31T16:12:44.792284+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,7 +12,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-client
-  version: 58387294cadadd69e21972cecc10064e83f7ae8e
+  version: 9f8afdf705fdf1e08ed970d8a61a52936205119c
   subpackages:
   - client
 - name: github.com/choria-io/go-confkey
@@ -20,7 +20,7 @@ imports:
 - name: github.com/choria-io/go-network-broker
   version: fb996d344cb1b1d368517bb2071ace03372da0ba
 - name: github.com/choria-io/go-protocol
-  version: 284592cb18f97f9854a797f6147142cc5ddc551c
+  version: c3117476636777d60c00a86b2d4b2b8fc56addb4
   subpackages:
   - protocol
   - protocol/v1
@@ -44,6 +44,14 @@ imports:
   version: 33fa69cae7f6be38513efd52e51a24553758bda6
   subpackages:
   - mcorpc
+  - mcorpc/audit
+  - mcorpc/ddl/agent
+  - mcorpc/golang
+  - mcorpc/golang/choriautil
+  - mcorpc/golang/discovery
+  - mcorpc/golang/provision
+  - mcorpc/golang/rpcutil
+  - mcorpc/ruby
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
@@ -104,6 +112,8 @@ imports:
   - internal/writer
   - reporters
   - reporters/stenographer
+  - reporters/stenographer/support/go-colorable
+  - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
   version: b6ea1ea48f981d0f615a154a45eabb9dd466556d
@@ -141,7 +151,7 @@ imports:
 - name: github.com/satori/go.uuid
   version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
-  version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
+  version: 3e01752db0189b9157070a0e1668a620f9a85da2
 - name: github.com/tidwall/gjson
   version: 01f00f129617a6fe98941fb920d6c760241b54d2
 - name: github.com/tidwall/match

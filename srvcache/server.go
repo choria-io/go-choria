@@ -27,3 +27,7 @@ func (s *Server) URL() (u *url.URL, err error) {
 
 	return
 }
+
+func (s *Server) String() string {
+	return fmt.Sprintf("%s://%s:%d", s.Scheme, s.Host, s.Port)
+}

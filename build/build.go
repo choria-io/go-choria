@@ -22,6 +22,9 @@ var TLS = "true"
 // maxBrokerClients defines the maximum clients a single choria broker will accept
 var maxBrokerClients = "50000"
 
+// ProvisionSecure when "false" will disable TLS provisioning mode
+var ProvisionSecure = "true"
+
 // ProvisionBrokerURLs defines where the daemon will connect when choria.server.provision is true
 var ProvisionBrokerURLs = ""
 
@@ -33,6 +36,9 @@ var ProvisionModeDefault = "false"
 // this lets you programatically or via the additional agents system supply your own
 // agent to perform the provisioning duties
 var ProvisionAgent = "true"
+
+// ProvisionRegistrationData is a file that will be published by the registration system
+var ProvisionRegistrationData = ""
 
 // AgentProviders are registered systems capable of extending choria with new agents
 var AgentProviders = []string{}
@@ -56,4 +62,9 @@ func MaxBrokerClients() int {
 // in the configuration file at all.
 func ProvisionDefault() bool {
 	return ProvisionModeDefault == "true"
+}
+
+// ProvisionSecurity determines if TLS should be enabled during provisioning
+func ProvisionSecurity() bool {
+	return ProvisionSecure == "true"
 }

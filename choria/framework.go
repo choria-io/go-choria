@@ -117,9 +117,20 @@ func (fw *Framework) ConfigureProvisioning() {
 	fw.Config.Choria.FederationCollectives = []string{}
 	fw.Config.Collectives = []string{"provisioning"}
 	fw.Config.MainCollective = "provisioning"
-	fw.Config.RegisterInterval = 120
-	fw.Config.RegistrationSplay = false
-	fw.Config.Choria.FileContentRegistrationTarget = "choria.provisioning_data"
+	fw.Config.Registration = []string{}
+
+	if build.ProvisionRegistrationData != "" {
+		fw.Config.RegistrationCollective = "provisioning"
+		fw.Config.Registration = []string{"file_content"}
+		fw.Config.RegisterInterval = 120
+		fw.Config.RegistrationSplay = false
+		fw.Config.Choria.FileContentRegistrationTarget = "choria.provisioning_data"
+		fw.Config.Choria.FileContentRegistrationData = build.ProvisionRegistrationData
+	}
+
+	if !build.ProvisionSecurity() {
+		fw.Config.DisableTLS = true
+	}
 }
 
 // IsFederated determiens if the configuration is setting up any Federation collectives

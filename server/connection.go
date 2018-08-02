@@ -45,7 +45,7 @@ func (srv *Instance) brokerUrls() ([]srvcache.Server, error) {
 		if len(servers) > 0 {
 			srv.mu.Lock()
 			if !srv.provisioning {
-				srv.log.Infof("Entering provision mode with servers %v and federation disabled", servers)
+				srv.log.Infof("Entering provision mode with servers %v", servers)
 				srv.provisioning = true
 			}
 			srv.mu.Unlock()
