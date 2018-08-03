@@ -27,6 +27,9 @@ import:
   version: ^1
 - package: go.uber.org/atomic
   version: ^1
+- package: github.com/choria-io/provisioning-agent
+  subpackages:
+  - agent
 testImport:
 - package: github.com/golang/mock
   version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c
