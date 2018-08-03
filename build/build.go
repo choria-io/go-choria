@@ -43,9 +43,8 @@ var ProvisionRegistrationData = ""
 // ProvisionFacts is a facts file to use for discovery purposes during provisioning mode
 var ProvisionFacts = ""
 
-// ProvisionReprovisionToken when not empty this token will be required to re-enable provisioning
-// mode for the default provisioning agent
-var ProvisionReprovisionToken = ""
+// ProvisionToken when not empty this token will be required interact with the provisioner agent
+var ProvisionToken = ""
 
 // AgentProviders are registered systems capable of extending choria with new agents
 var AgentProviders = []string{}
