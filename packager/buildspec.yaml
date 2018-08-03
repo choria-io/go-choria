@@ -1,23 +1,23 @@
 flags_map:
   TLS: github.com/choria-io/go-choria/build.TLS
   maxBrokerClients: github.com/choria-io/go-choria/build.maxBrokerClients
+  Secure: github.com/choria-io/go-choria/vendor/github.com/choria-io/go-protocol/protocol.Secure
+  Version: github.com/choria-io/go-choria/build.Version
+  SHA: github.com/choria-io/go-choria/build.SHA
+  BuildTime: github.com/choria-io/go-choria/build.BuildDate
   ProvisionBrokerURLs: github.com/choria-io/go-choria/build.ProvisionBrokerURLs
   ProvisionModeDefault: github.com/choria-io/go-choria/build.ProvisionModeDefault
   ProvisionAgent: github.com/choria-io/go-choria/build.ProvisionAgent
   ProvisionSecure: github.com/choria-io/go-choria/build.ProvisionSecure
   ProvisionRegistrationData: github.com/choria-io/go-choria/build.ProvisionRegistrationData
   ProvisionFacts: github.com/choria-io/go-choria/build.ProvisionFacts
-  Secure: github.com/choria-io/go-choria/vendor/github.com/choria-io/go-protocol/protocol.Secure
-  Version: github.com/choria-io/go-choria/build.Version
-  SHA: github.com/choria-io/go-choria/build.SHA
-  BuildTime: github.com/choria-io/go-choria/build.BuildDate
 
 foss:
   compile_targets:
     defaults:
       output: choria-{{version}}-{{os}}-{{arch}}
       pre:
-        - rm additional_agent_*.go
+        - rm additional_agent_*.go || true
         - go generate
 
     64bit_linux:
