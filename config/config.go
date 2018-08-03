@@ -77,10 +77,10 @@ type ChoriaPluginConfig struct {
 	RubyLibdir      []string `confkey:"plugin.choria.agent_provider.mcorpc.libdir" type:"path_split"`
 
 	// security plugin
-	SecurityProvider  string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file"`
 	PrivilegedUsers   []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split" default:"\\.privileged.mcollective$"`
 	CertnameWhitelist []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split" default:"\\.mcollective$"`
 	Serializer        string   `confkey:"plugin.choria.security.serializer" validate:"enum=json,yaml"`
+	SecurityProvider  string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file"`
 
 	// file security
 	FileSecurityCertificate string `confkey:"plugin.security.file.certificate"`
