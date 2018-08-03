@@ -28,10 +28,10 @@ import (
 )
 
 type ConfigureRequest struct {
-	Configuration map[string]string `json:"config"`
-	Certificate   string            `json:"certificate"`
-	CA            string            `json:"ca"`
-	SSLDir        string            `json:"ssldir"`
+	Configuration string `json:"config"`
+	Certificate   string `json:"certificate"`
+	CA            string `json:"ca"`
+	SSLDir        string `json:"ssldir"`
 }
 
 type RestartRequest struct {
@@ -94,7 +94,7 @@ func csrAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 		return
 	}
 
-	ssldir := filepath.Base(agent.Config.ConfigFile)
+	ssldir := filepath.Join(filepath.Dir(agent.Config.ConfigFile), "ssl")
 	if agent.Config.Choria.SSLDir != "" {
 		ssldir = agent.Config.Choria.SSLDir
 	}
@@ -120,12 +120,25 @@ func csrAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 	}
 
 	subj := pkix.Name{
-		CommonName:         args.CN,
-		Country:            []string{args.C},
-		Locality:           []string{args.L},
-		Organization:       []string{args.O},
-		OrganizationalUnit: []string{args.OU},
+		CommonName: args.CN,
 	}
+
+	if args.C != "" {
+		subj.Country = []string{args.C}
+	}
+
+	if args.L != "" {
+		subj.Locality = []string{args.L}
+	}
+
+	if args.O != "" {
+		subj.Organization = []string{args.O}
+	}
+
+	if args.OU != "" {
+		subj.OrganizationalUnit = []string{args.OU}
+	}
+
 	rawSubj := subj.ToRDNSequence()
 
 	asn1Subj, err := asn1.Marshal(rawSubj)
@@ -139,7 +152,7 @@ func csrAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 		SignatureAlgorithm: x509.SHA256WithRSA,
 	}
 
-	keyBytes, err := rsa.GenerateKey(rand.Reader, 1024)
+	keyBytes, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		abort(fmt.Sprintf("Could not create private key: %s", err), reply)
 		return
@@ -166,7 +179,7 @@ func csrAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 
 	pb := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrBytes})
 
-	err = ioutil.WriteFile(csrfile, keyPem, 0700)
+	err = ioutil.WriteFile(csrfile, pb, 0700)
 	if err != nil {
 		abort(fmt.Sprintf("Could not store CSR: %s", err), reply)
 		return
@@ -245,7 +258,14 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		return
 	}
 
-	lines, err := writeConfig(args.Configuration, req, agent.Config, agent.Log)
+	settings := make(map[string]string)
+	err := json.Unmarshal([]byte(args.Configuration), &settings)
+	if err != nil {
+		abort(fmt.Sprintf("Could not decode configuration data: %s", err), reply)
+		return
+	}
+
+	lines, err := writeConfig(settings, req, agent.Config, agent.Log)
 	if err != nil {
 		abort(fmt.Sprintf("Could not write config: %s", err), reply)
 		return
