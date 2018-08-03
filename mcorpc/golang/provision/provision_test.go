@@ -115,7 +115,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 			csrAction(ctx, req, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 			csrr := reply.Data.(*CSRReply)
-			Expect(csrr.SSLDir).To(Equal(prov.Config.Choria.SSLDir))
+			Expect(csrr.SSLDir).To(Equal(filepath.Join(targetdir, "ssl")))
 			stat, err := os.Stat(filepath.Join(prov.Config.Choria.SSLDir, "private.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stat.Mode()).To(Equal(os.FileMode(0700)))
@@ -251,7 +251,7 @@ var _ = Describe("McoRPC/Golang/Provision", func() {
 			cfg.ConfigFile = targetcfg
 
 			req := &mcorpc.Request{
-				Data:      json.RawMessage(fmt.Sprintf(`{"certificate": "stub_cert", "ca":"stub_ca", "ssldir":"%s", "config":{"plugin.choria.server.provision":"0", "plugin.choria.srv_domain":"another.com"}}`, targetdir)),
+				Data:      json.RawMessage(fmt.Sprintf(`{"certificate": "stub_cert", "ca":"stub_ca", "ssldir":"%s", "config":"{\"plugin.choria.server.provision\":\"0\", \"plugin.choria.srv_domain\":\"another.com\"}"}`, targetdir)),
 				RequestID: "uniq_req_id",
 				CallerID:  "choria=rip.mcollective",
 				SenderID:  "go.test",
