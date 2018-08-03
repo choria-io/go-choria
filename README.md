@@ -147,7 +147,7 @@ plugin.choria.adapter.discovery.ingest.workers = 10 # default
 
 ## Choria Server
 
-This is a replacement `mcollectived`, that can host MCollective agents written in ruby along with a host of other features, notable absense:
+This is a replacement `mcollectived`, that can host MCollective agents written in ruby along with a host of other features, notable absence:
 
   * Compound filters do not work at all - those with -S
   * Auditing and Authorization for MCollective compatible RPC agents written in Go is not implemented yet
@@ -240,22 +240,18 @@ Choria supports a auto provisioning flow where should it start with a configurat
 
 Provisioning is not enabled - or configurable - in the default shipped binaries, as an advanced feature this is reserved for people who build their own custom setups.
 
-The active provisioning will be configured with:
+The Choria Server in provisioning mode will be configured with:
 
  * Federation is disabled
  * The `provisioning` collective is the only active one and the main collective
  * Registration is enabled with a 120 second interval
  * Registration splay is off
  * File registration gets published to `choria.provisioning_data`
+ * File registration data source set to what is in `build.ProvisionRegistrationData`
+ * The default [provisioning-agent](https://github.com/choria-io/provisioning-agent) unless `build.ProvisionAgent` is `"false"`
+ * Security enabled - requiring SSL certificates like those from Puppet - unless `build.ProvisionSecure` is `"false"`
 
-When provisioning is enabled a special agent `choria_provision` will be activated, the default one has the following actions:
-
- * `gencsr` - generates a private key and csr. Returns the CSR to the caller
- * `configure` - takes a provided configuration hash and saves it to `server.cfg`, also supports saving signed certs and CA bundles
- * `restart` - restarts the server after a random sleep, max 10s by default but can be provided in the request
- * `reprovision` - rewrites the configuration with one that enables provisioning and restarts
-
- One can provide ones own agent to replace this one, using this you can write a tool that monitors the `provisioning` sub collective continuously and drives a node through a provisioning flow placing it in exactly the state you desire.
+Please see the documentation in the [provisioning-agent](https://github.com/choria-io/provisioning-agent) repository for how to enable and use this feature.
 
 ### Compiling in custom agent providers
 Agent Providers allow entirely new ways of writing agents to be created.  An example is the one that runs old mcollective ruby agents

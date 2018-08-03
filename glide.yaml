@@ -49,6 +49,6 @@ import:
 - package: go.uber.org/atomic
   version: ^1.3.2
 - package: github.com/choria-io/mcorpc-agent-provider
-  version: ^0.0.1
+  version: bf12fec848b026ead153a340f71add537233d66a
   subpackages:
   - mcorpc
