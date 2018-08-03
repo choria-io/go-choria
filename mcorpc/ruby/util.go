@@ -28,8 +28,9 @@ func (p *Provider) eachAgent(libdirs []string, cb func(ddl *agentddl.DDL)) {
 				return nil
 			}
 
-			extension := filepath.Ext(info.Name())
-			name := path[0 : len(path)-len(extension)]
+			fname := info.Name()
+			extension := filepath.Ext(fname)
+			name := fname[0 : len(fname)-len(extension)]
 
 			if extension != ".json" {
 				return nil
