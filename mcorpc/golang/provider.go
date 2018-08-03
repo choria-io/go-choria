@@ -6,12 +6,12 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/server"
+	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/golang/choriautil"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/golang/discovery"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/golang/provision"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/golang/rpcutil"
-	"github.com/choria-io/go-choria/server"
-	"github.com/choria-io/go-choria/server/agents"
 	"github.com/sirupsen/logrus"
 )
 
