@@ -10,8 +10,8 @@ import (
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/golang/choriautil"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/golang/discovery"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc/golang/provision"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/golang/rpcutil"
+	provision "github.com/choria-io/provisioning-agent/agent"
 	"github.com/sirupsen/logrus"
 )
 

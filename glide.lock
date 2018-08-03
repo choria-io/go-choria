@@ -1,5 +1,5 @@
-hash: 5379b3ee7bbcb8e1902e832ae18af250b6722d0c175ecaa5e0ce6909ce8ca4aa
-updated: 2018-07-20T14:13:09.943839572+02:00
+hash: c6487f978d4b32ed2874247bbb44ed31d596a948c757380a0ce00665fa55baf6
+updated: 2018-08-03T13:39:44.358138+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -26,14 +26,14 @@ imports:
   - server/registration
   - srvcache
 - name: github.com/choria-io/go-client
-  version: 58387294cadadd69e21972cecc10064e83f7ae8e
+  version: 9f8afdf705fdf1e08ed970d8a61a52936205119c
   subpackages:
   - client
   - discovery/broadcast
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-protocol
-  version: 284592cb18f97f9854a797f6147142cc5ddc551c
+  version: c3117476636777d60c00a86b2d4b2b8fc56addb4
   subpackages:
   - protocol
   - protocol/v1
@@ -53,6 +53,10 @@ imports:
   - maxlength
   - regex
   - shellsafe
+- name: github.com/choria-io/provisioning-agent
+  version: 5ac672c40c427a8d493c0147e6c65f3bf1b692f6
+  subpackages:
+  - agent
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
@@ -99,7 +103,7 @@ imports:
 - name: github.com/satori/go.uuid
   version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
-  version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
+  version: 3e01752db0189b9157070a0e1668a620f9a85da2
 - name: github.com/tidwall/gjson
   version: 01f00f129617a6fe98941fb920d6c760241b54d2
 - name: github.com/tidwall/match
