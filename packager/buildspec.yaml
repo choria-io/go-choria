@@ -11,7 +11,7 @@ flags_map:
   ProvisionSecure: github.com/choria-io/go-choria/build.ProvisionSecure
   ProvisionRegistrationData: github.com/choria-io/go-choria/build.ProvisionRegistrationData
   ProvisionFacts: github.com/choria-io/go-choria/build.ProvisionFacts
-  ProvisionReprovisionToken: github.com/choria-io/go-choria/build.ProvisionReprovisionToken
+  ProvisionToken: github.com/choria-io/go-choria/build.ProvisionToken
 
 foss:
   compile_targets:
