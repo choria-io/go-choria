@@ -606,7 +606,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 			continue
 		}
 
-		conn.logger.Infof("Connected to %s", conn.nats.ConnectedUrl())
+		conn.logger.Debugf("Connected to %s", conn.nats.ConnectedUrl())
 
 		break
 	}
