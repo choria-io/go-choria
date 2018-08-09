@@ -1,5 +1,11 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/08/09|      |Release 0.5.1                                                                                            |
+|2018/08/09|403   |Ensure insecure provisioning mode works on non puppet nodes                                              |
+|2018/08/03|398   |Support an auth token during provisioning                                                                |
+|2018/08/02|394   |Support a fact source during provisioning mode                                                           |
+|2018/08/02|394   |Fix registration handling when in provisioning mode                                                      |
+|2018/07/31|390   |Avoid leaking metrics in long running clients that make many new client instances                        |
 |2018/07/20|      |Release 0.5.0                                                                                            |
 |2018/07/13|382   |Improve mcollective compatability by supporting shallow merges of multiple fact files                    |
 |2018/07/12|379   |Increase the NATS Stream Adapter work channel size to function on large networks                         |
