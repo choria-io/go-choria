@@ -130,6 +130,7 @@ func (fw *Framework) ConfigureProvisioning() {
 	}
 
 	if !build.ProvisionSecurity() {
+		fw.Config.Choria.SecurityProvider = "file"
 		fw.Config.DisableTLS = true
 	}
 }
