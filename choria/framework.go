@@ -100,7 +100,7 @@ func (fw *Framework) setupSecurity() error {
 // the value of that is returned, else it the build time property
 // ProvisionDefault is consulted
 func (fw *Framework) ProvisionMode() bool {
-	if build.ProvisionBrokerURLs == "" {
+	if !fw.Config.InitiatedByServer || build.ProvisionBrokerURLs == "" {
 		return false
 	}
 
@@ -130,6 +130,7 @@ func (fw *Framework) ConfigureProvisioning() {
 	}
 
 	if !build.ProvisionSecurity() {
+		protocol.Secure = "false"
 		fw.Config.Choria.SecurityProvider = "file"
 		fw.Config.DisableTLS = true
 	}

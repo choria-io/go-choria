@@ -157,6 +157,10 @@ type Config struct {
 	// OverrideCertname sets a arbitrary certname and short circuits calling Puppet etc
 	// this is mainly used by tests to adjust the certname on the fly
 	OverrideCertname string
+
+	// InitiatedByServer indicates to the framework that certain server specific
+	// initialization steps - like Provisioning mode - should be performed.
+	InitiatedByServer bool
 }
 
 // NewDefaultConfig creates a empty configuration

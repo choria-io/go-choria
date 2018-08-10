@@ -38,6 +38,7 @@ var _ = Describe("Server/Connection", func() {
 		It("Should support provisioning", func() {
 			build.ProvisionModeDefault = "true"
 			build.ProvisionBrokerURLs = "nats1:4222, nats2:4222"
+			cfg.InitiatedByServer = true
 
 			servers, err := srv.brokerUrls()
 			Expect(err).ToNot(HaveOccurred())
