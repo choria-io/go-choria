@@ -61,6 +61,7 @@ func (e *serverRunCommand) Configure() error {
 	}
 
 	cfg.DisableSecurityProviderVerify = true
+	cfg.InitiatedByServer = true
 
 	return nil
 }

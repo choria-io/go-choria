@@ -28,6 +28,21 @@ var _ = Describe("Choria", func() {
 	})
 
 	var _ = Describe("ProvisionMode", func() {
+		It("Should be on only in the Server", func() {
+			c, err := config.NewDefaultConfig()
+			Expect(err).ToNot(HaveOccurred())
+			c.DisableTLS = true
+
+			fw, err := NewWithConfig(c)
+			Expect(err).ToNot(HaveOccurred())
+
+			build.ProvisionBrokerURLs = "nats://n1:4222"
+			build.ProvisionModeDefault = "true"
+			Expect(fw.ProvisionMode()).To(Equal(false))
+			c.InitiatedByServer = true
+			Expect(fw.ProvisionMode()).To(Equal(true))
+		})
+
 		It("Should use the default when not configured and brokers are compiled in", func() {
 			c, err := config.NewDefaultConfig()
 			Expect(err).ToNot(HaveOccurred())
@@ -40,6 +55,8 @@ var _ = Describe("Choria", func() {
 
 			build.ProvisionBrokerURLs = "nats://n1:4222"
 			build.ProvisionModeDefault = "true"
+			c.InitiatedByServer = true
+
 			Expect(fw.ProvisionMode()).To(Equal(true))
 		})
 
@@ -52,6 +69,7 @@ var _ = Describe("Choria", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			build.ProvisionBrokerURLs = "nats://n1:4222"
+			c.InitiatedByServer = true
 
 			Expect(fw.ProvisionMode()).To(Equal(true))
 
@@ -70,6 +88,8 @@ var _ = Describe("Choria", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			build.ProvisionBrokerURLs = ""
+			c.InitiatedByServer = true
+
 			Expect(fw.ProvisionMode()).To(Equal(false))
 		})
 	})
