@@ -2,18 +2,14 @@ package choria
 
 import (
 	"fmt"
-	"net"
-	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
-	"strconv"
 	"strings"
 
 	"github.com/choria-io/go-choria/puppet"
-	"github.com/choria-io/go-choria/srvcache"
 )
 
 // UserConfig determines what is the active config file for a user
@@ -86,49 +82,6 @@ func SliceGroups(input []string, size int, fn func(group []string)) {
 		chunk := input[i*size : i*size+size]
 		fn(chunk)
 	}
-}
-
-// StringHostsToServers converts an array of servers like host:123 into an array of Server structs
-//
-// if an empty scheme is given the string will be parsed by a url parser and the embedded
-// scheme will be used, if that does not parse into a valid url then an error will be returned
-func StringHostsToServers(hosts []string, scheme string) (servers []srvcache.Server, err error) {
-	for _, s := range hosts {
-		detectedScheme := scheme
-
-		u, err := url.Parse(s)
-		if err == nil && u.Host != "" {
-			s = u.Host
-
-			if scheme == "" {
-				detectedScheme = u.Scheme
-			}
-		}
-
-		host, sport, err := net.SplitHostPort(s)
-		if err != nil {
-			return servers, fmt.Errorf("could not parse host %s: %s", s, err)
-		}
-
-		port, err := strconv.Atoi(sport)
-		if err != nil {
-			return servers, fmt.Errorf("could not host port %s: %s", s, err)
-		}
-
-		server := srvcache.Server{
-			Host:   strings.TrimSpace(host),
-			Port:   port,
-			Scheme: detectedScheme,
-		}
-
-		if scheme == "" && detectedScheme == "" {
-			return servers, fmt.Errorf("no scheme provided and %s has no scheme", s)
-		}
-
-		servers = append(servers, server)
-	}
-
-	return
 }
 
 // HomeDir determines the home location without using the user package or requiring cgo

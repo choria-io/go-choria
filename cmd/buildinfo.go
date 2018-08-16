@@ -7,6 +7,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/provtarget"
 	"github.com/choria-io/go-protocol/protocol"
 	gnatsd "github.com/nats-io/gnatsd/server"
 )
@@ -56,6 +57,7 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Printf("                Provisioning TLS: %t\n", build.ProvisionSecurity())
 	fmt.Printf("  Provisioning Registration Data: %s\n", build.ProvisionRegistrationData)
 	fmt.Printf("              Provisioning Facts: %s\n", build.ProvisionFacts)
+	fmt.Printf("    Provisioning Target Resolver: %s\n", provtarget.Name())
 	if build.ProvisionToken != "" {
 		fmt.Printf("              Provisioning Token: set\n")
 	} else {

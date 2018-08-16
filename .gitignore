@@ -15,3 +15,4 @@ go-choria
 nohup.out
 ping
 vendor
+provisioning_target_provider.go
