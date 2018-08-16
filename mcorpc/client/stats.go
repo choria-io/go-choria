@@ -163,6 +163,11 @@ func (s *Stats) DiscoveredCount() int {
 	return len(s.discoveredNodes)
 }
 
+// DiscoveredNodes are the nodes that was discovered for this request
+func (s *Stats) DiscoveredNodes() *[]string {
+	return &s.discoveredNodes
+}
+
 // FailCount is the number of responses that were failures
 func (s *Stats) FailCount() int {
 	return int(s.failed.Load())
