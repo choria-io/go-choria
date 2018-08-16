@@ -6,27 +6,29 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 )
 
 // RequestOptions are options for a RPC request
 type RequestOptions struct {
-	Targets         []string
-	BatchSize       int
-	BatchSleep      time.Duration
-	ProtocolVersion string
-	RequestType     string
-	Workers         int
-	Collective      string
-	ReplyTo         string
-	ProcessReplies  bool
-	Replies         chan *choria.ConnectorMessage
-	Progress        bool
-	Timeout         time.Duration
-	Handler         Handler
-	RequestID       string
-	ConnectionName  string
+	Targets          []string
+	BatchSize        int
+	BatchSleep       time.Duration
+	ProtocolVersion  string
+	RequestType      string
+	Workers          int
+	Collective       string
+	ReplyTo          string
+	ProcessReplies   bool
+	Replies          chan *choria.ConnectorMessage
+	Progress         bool
+	Timeout          time.Duration
+	DiscoveryTimeout time.Duration
+	Filter           *protocol.Filter
+	Handler          Handler
+	RequestID        string
+	ConnectionName   string
 
 	totalStats *Stats
 
@@ -56,7 +58,8 @@ func NewRequestOptions(fw *choria.Framework, ddl *agent.DDL) *RequestOptions {
 		// add discovery timeout to the agent timeout as that's basically an indication of
 		// network overhead, discovery being the smallest possible RPC request it's an indication
 		// of what peoples network behaviour is like assuming discovery works
-		Timeout: (time.Duration(fw.Config.DiscoveryTimeout) * time.Second) + ddl.Timeout(),
+		Timeout:          (time.Duration(fw.Config.DiscoveryTimeout) * time.Second) + ddl.Timeout(),
+		DiscoveryTimeout: time.Duration(fw.Config.DiscoveryTimeout) * time.Second,
 	}
 }
 
@@ -64,6 +67,7 @@ func NewRequestOptions(fw *choria.Framework, ddl *agent.DDL) *RequestOptions {
 func (o *RequestOptions) ConfigureMessage(msg *choria.Message) error {
 	o.totalStats.RequestID = msg.RequestID
 	o.RequestID = msg.RequestID
+	msg.Filter = o.Filter
 
 	if len(o.Targets) > 0 {
 		msg.DiscoveredHosts = o.Targets
@@ -210,6 +214,20 @@ func Replies(r chan *choria.ConnectorMessage) RequestOption {
 func Timeout(t time.Duration) RequestOption {
 	return func(o *RequestOptions) {
 		o.Timeout = t
+	}
+}
+
+// DiscoveryTimeout configures the request discovery timeout, defaults to configured discovery timeout
+func DiscoveryTimeout(t time.Duration) RequestOption {
+	return func(o *RequestOptions) {
+		o.DiscoveryTimeout = t
+	}
+}
+
+// Filter sets the filter, if its set discovery will be done prior to performing requests
+func Filter(f *protocol.Filter) RequestOption {
+	return func(o *RequestOptions) {
+		o.Filter = f
 	}
 }
 

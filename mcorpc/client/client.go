@@ -5,16 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/choria-io/go-client/discovery/broadcast"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
-	addl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/srvcache"
 	cclient "github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
+	addl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 
 	"github.com/sirupsen/logrus"
 )
@@ -117,20 +116,35 @@ func (r *RPC) setOptions(opts ...RequestOption) {
 }
 
 // Do performs a RPC request and optionally processes replies
+//
+// If a filter is supplied using the Filter() option and Targets() are not then discovery will be done for you
+// using the broadcast method, should no nodes be discovered an error will be returned
 func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts ...RequestOption) (RequestResult, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	// we want to force the passing of options on every request
+	r.setOptions(opts...)
+
 	dctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	msg, cl, err := r.setupMessage(dctx, action, payload, opts...)
-	if err != nil {
-		return nil, err
+	if r.opts.Filter != nil && len(r.opts.Targets) == 0 {
+		err := r.discover(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("discovery failed: %s", err)
+		}
 	}
 
-	ctr := 0
+	msg, cl, err := r.setupMessage(dctx, action, payload, opts...)
+	if err != nil {
+		return nil, fmt.Errorf("could not configure message: %s", err)
+	}
+
 	r.opts.totalStats.Start()
+	defer r.opts.totalStats.End()
+
+	ctr := 0
 
 	// the client is always batched, when batched mode is not request the size of
 	// the batch matches the size of the total targets and during setupMessage()
@@ -141,6 +155,7 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 		msg.DiscoveredHosts = nodes
 
 		r.opts.stats.Start()
+		defer r.opts.totalStats.Merge(r.opts.stats)
 		defer r.opts.stats.End()
 
 		if ctr > 0 {
@@ -157,63 +172,36 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 			return fmt.Errorf("could not create request: %s", err)
 		}
 
-		r.opts.stats.End()
-		r.opts.totalStats.Merge(r.opts.stats)
-
 		ctr++
 
 		return nil
 	})
 
-	r.opts.totalStats.End()
-
 	return &RequestOptions{totalStats: r.opts.totalStats}, err
 }
 
-// Discover performs a broadcast discovery, using this method will update the client to
-// with these discovered nodes and update appropriate stats
-func (r *RPC) Discover(ctx context.Context, f *protocol.Filter, opts ...RequestOption) (n []string, err error) {
-	r.setOptions(opts...)
-
+func (r *RPC) discover(ctx context.Context) error {
 	b := broadcast.New(r.fw)
 
 	r.opts.totalStats.StartDiscover()
 	defer r.opts.totalStats.EndDiscover()
 
-	timeout := time.Duration(r.fw.Config.DiscoveryTimeout) * time.Second
-
-	n, err = b.Discover(ctx, broadcast.Filter(f), broadcast.Timeout(timeout), broadcast.Name(r.opts.ConnectionName))
+	n, err := b.Discover(ctx, broadcast.Filter(r.opts.Filter), broadcast.Timeout(r.opts.DiscoveryTimeout), broadcast.Name(r.opts.ConnectionName), broadcast.Collective(r.opts.Collective))
 	if err != nil {
-		return n, err
+		return err
+	}
+
+	if len(n) == 0 {
+		return fmt.Errorf("no targets were discovered")
 	}
 
 	r.opts.Targets = n
 	r.opts.totalStats.SetDiscoveredNodes(n)
 
-	return
-}
-
-// DiscoveredNodes is the nodes discovered or set as targets for this client
-// duplicating this list is expensive, in general you should avoid using it
-// if you suspect very large networks might be used
-func (r *RPC) DiscoveredNodes() []string {
-	return r.opts.Targets
+	return nil
 }
 
 func (r *RPC) setupMessage(ctx context.Context, action string, payload interface{}, opts ...RequestOption) (msg *choria.Message, cl ChoriaClient, err error) {
-	r.setOptions()
-
-	// regardless of above, we always need new stats
-	r.opts.totalStats = NewStats()
-
-	// batch mode should be set on a per request basis
-	r.opts.BatchSize = 0
-
-	// but we merge in any specific options given
-	for _, opt := range opts {
-		opt(r.opts)
-	}
-
 	pj, err := json.Marshal(payload)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not encode payload: %s", err)

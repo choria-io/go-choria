@@ -9,9 +9,9 @@ import (
 
 	"github.com/choria-io/go-protocol/protocol/v1"
 
+	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
-	"github.com/choria-io/go-choria/server/agents"
 
 	"github.com/choria-io/go-choria/choria"
 	client "github.com/choria-io/go-client/client"
@@ -178,7 +178,8 @@ var _ = Describe("McoRPC/Client", func() {
 			Expect(handled).To(Equal(2))
 			stats := result.Stats()
 			Expect(stats.RequestID).To(Equal(reqid))
-			Expect(stats.discoveredNodes).To(Equal([]string{"test.sender.0", "test.sender.1"}))
+			Expect(stats.discoveredNodes).To(Equal(strings.Fields("test.sender.0 test.sender.1")))
+			Expect(*stats.DiscoveredNodes()).To(Equal(strings.Fields("test.sender.0 test.sender.1")))
 			Expect(stats.unexpectedRespones.Hosts()).To(Equal([]string{}))
 			Expect(stats.OKCount()).To(Equal(2))
 			Expect(stats.All()).To(BeTrue())
