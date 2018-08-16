@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/provtarget/builddefaults"
+	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/srvcache"
 )
@@ -12,7 +13,7 @@ import (
 // TargetResolver is capable of resolving the target brokers for provisioning in a comma sep list
 type TargetResolver interface {
 	Name() string
-	Targets() []string
+	Targets(*logrus.Entry) []string
 }
 
 var mu = &sync.Mutex{}
@@ -29,7 +30,7 @@ func RegisterTargetResolver(r TargetResolver) error {
 }
 
 // Targets is a list of brokers to connect to
-func Targets() ([]srvcache.Server, error) {
+func Targets(log *logrus.Entry) ([]srvcache.Server, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -37,7 +38,7 @@ func Targets() ([]srvcache.Server, error) {
 		return []srvcache.Server{}, fmt.Errorf("no Provisioning Target Resolver registered")
 	}
 
-	s := resolver.Targets()
+	s := resolver.Targets(log)
 
 	if len(s) == 0 {
 		return []srvcache.Server{}, fmt.Errorf("provisioning target plugin %s returned no servers", Name())

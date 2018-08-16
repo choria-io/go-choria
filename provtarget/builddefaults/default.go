@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/sirupsen/logrus"
 )
 
 // Provider creates an instance of the provider
@@ -20,7 +21,7 @@ func (b *Resolver) Name() string {
 }
 
 // Targets are the build time configured provisioners
-func (b *Resolver) Targets() []string {
+func (b *Resolver) Targets(log *logrus.Entry) []string {
 	if build.ProvisionBrokerURLs != "" {
 		return strings.Split(build.ProvisionBrokerURLs, ",")
 	}
