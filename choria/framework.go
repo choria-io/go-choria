@@ -16,6 +16,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/provtarget"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-security"
 	"github.com/choria-io/go-security/filesec"
@@ -182,7 +183,7 @@ func (fw *Framework) FederationCollectives() (collectives []string) {
 func (fw *Framework) FederationMiddlewareServers() (servers []srvcache.Server, err error) {
 	configured := fw.Config.Choria.FederationMiddlewareHosts
 	if len(configured) > 0 {
-		s, err := StringHostsToServers(configured, "nats")
+		s, err := srvcache.StringHostsToServers(configured, "nats")
 		if err != nil {
 			return servers, fmt.Errorf("Could not parse configured Federation Middleware: %s", err)
 		}
@@ -210,21 +211,7 @@ func (fw *Framework) FederationMiddlewareServers() (servers []srvcache.Server, e
 // when it's unset or results in an empty server list this will return
 // an error
 func (fw *Framework) ProvisioningServers() ([]srvcache.Server, error) {
-	if build.ProvisionBrokerURLs != "" {
-		s := strings.Split(build.ProvisionBrokerURLs, ",")
-		servers, err := StringHostsToServers(s, "nats")
-		if err != nil {
-			return servers, fmt.Errorf("Could not determine provisioning servers from %s: %s", build.ProvisionBrokerURLs, err)
-		}
-
-		if len(servers) == 0 {
-			return servers, fmt.Errorf("ProvisionBrokerURLs '%s' is not in the correct format, 0 server:port combinations were found", build.ProvisionBrokerURLs)
-		}
-
-		return servers, nil
-	}
-
-	return []srvcache.Server{}, fmt.Errorf("ProvisionBrokerURLs was not set during compile time")
+	return provtarget.Targets()
 }
 
 // MiddlewareServers determines the correct Middleware Servers
@@ -241,7 +228,7 @@ func (fw *Framework) MiddlewareServers() (servers []srvcache.Server, err error) 
 
 	configured := fw.Config.Choria.MiddlewareHosts
 	if len(configured) > 0 {
-		s, err := StringHostsToServers(configured, "nats")
+		s, err := srvcache.StringHostsToServers(configured, "nats")
 		if err != nil {
 			return servers, fmt.Errorf("Could not parse configured Middleware: %s", err)
 		}

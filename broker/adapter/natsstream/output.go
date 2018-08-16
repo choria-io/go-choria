@@ -90,7 +90,7 @@ func newStream(name string, work chan adaptable, logger *log.Entry) ([]*stream, 
 }
 
 func (sc *stream) resolver(parts []string) func() ([]srvcache.Server, error) {
-	servers, err := choria.StringHostsToServers(parts, "nats")
+	servers, err := srvcache.StringHostsToServers(parts, "nats")
 	return func() ([]srvcache.Server, error) {
 		return servers, err
 	}
