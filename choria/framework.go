@@ -211,7 +211,7 @@ func (fw *Framework) FederationMiddlewareServers() (servers []srvcache.Server, e
 // when it's unset or results in an empty server list this will return
 // an error
 func (fw *Framework) ProvisioningServers() ([]srvcache.Server, error) {
-	return provtarget.Targets()
+	return provtarget.Targets(fw.Logger("provtarget"))
 }
 
 // MiddlewareServers determines the correct Middleware Servers

@@ -1,6 +1,7 @@
 package provtarget
 
 import (
+	"io/ioutil"
 	"os"
 	"testing"
 
@@ -10,6 +11,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 )
 
 func TestServer(t *testing.T) {
@@ -22,6 +24,7 @@ var _ = Describe("Provision", func() {
 	var (
 		mockctl      *gomock.Controller
 		mockresolver *MockTargetResolver
+		log          *logrus.Entry
 	)
 
 	BeforeEach(func() {
@@ -29,6 +32,9 @@ var _ = Describe("Provision", func() {
 		mockresolver = NewMockTargetResolver(mockctl)
 		mockresolver.EXPECT().Name().Return("Mock Resolver").AnyTimes()
 		RegisterTargetResolver(builddefaults.Provider())
+
+		log = logrus.NewEntry(logrus.New())
+		log.Logger.Out = ioutil.Discard
 	})
 
 	AfterEach(func() {
@@ -46,28 +52,28 @@ var _ = Describe("Provision", func() {
 	Describe("Targets", func() {
 		It("Should handle no resolver", func() {
 			resolver = nil
-			t, err := Targets()
+			t, err := Targets(log)
 			Expect(err).To(MatchError("no Provisioning Target Resolver registered"))
 			Expect(t).To(Equal([]srvcache.Server{}))
 		})
 
 		It("Should handle empty response from the resolver", func() {
 			build.ProvisionBrokerURLs = ""
-			t, err := Targets()
+			t, err := Targets(log)
 			Expect(err).To(MatchError("provisioning target plugin Default returned no servers"))
 			Expect(t).To(Equal([]srvcache.Server{}))
 		})
 
 		It("Should handle invalid format hosts", func() {
 			build.ProvisionBrokerURLs = "foo,bar"
-			t, err := Targets()
+			t, err := Targets(log)
 			Expect(err).To(MatchError("could not determine provisioning servers using Default provisionig target plugin: could not parse host foo: address foo: missing port in address"))
 			Expect(t).To(Equal([]srvcache.Server{}))
 		})
 
 		It("Should handle valid format hosts", func() {
 			build.ProvisionBrokerURLs = "foo:4222, nats://bar:4222"
-			t, err := Targets()
+			t, err := Targets(log)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(t).To(Equal([]srvcache.Server{
 				srvcache.Server{Host: "foo", Port: 4222, Scheme: "nats"},
