@@ -11,13 +11,10 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/nats-io/gnatsd/server/pse"
+	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 )
-
-var running = false
-var mu = &sync.Mutex{}
-var cfg *config.Config
 
 type cinfo struct {
 	Build      buildinfo `json:"build"`
@@ -43,6 +40,17 @@ type sysinfo struct {
 	Cores int     `json:"cpu_cores"`
 }
 
+var (
+	running = false
+	mu      = &sync.Mutex{}
+	cfg     *config.Config
+
+	buildInfo = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "choria_build_info",
+		Help: "Build information about the running server",
+	}, []string{"version", "sha"})
+)
+
 // Start starts serving exp stats and metrics on the configured statistics port
 func Start(config *config.Config, handler http.Handler) {
 	mu.Lock()
@@ -55,6 +63,9 @@ func Start(config *config.Config, handler http.Handler) {
 		log.Infof("Statistics gathering disabled, set plugin.choria.stats_port")
 		return
 	}
+
+	prometheus.MustRegister(buildInfo)
+	buildInfo.WithLabelValues(build.Version, build.SHA).Inc()
 
 	if !running {
 		log.Infof("Starting statistic reporting Prometheus statistics on http://%s:%d/choria/", config.Choria.StatsListenAddress, port)
