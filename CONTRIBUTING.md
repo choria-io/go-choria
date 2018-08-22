@@ -10,7 +10,7 @@ We do not have strong guidelines on what you put in an issue, we'll gladly work 
 
 # PRs
 
-Almost every PR will need an issue first.  You do not need issues for trivial updates like typos, most documentation updates etc.  But if you're doing a PR that adjusts behaviour we will need a issue to go with it.
+Almost every PR will need an issue first.  You do not need issues for trivial updates like typos, most documentation updates etc.  But if you're doing a PR that adjusts behavior we will need a issue to go with it.
 
 Once you have an issue note the number and once you are ready to send your PR please squash your commits then make a single commit with something like the following format:
 
@@ -23,7 +23,7 @@ it can be used for such and such.
 To deliver this feature we had to extend, this that and the other
 with new behaviours
 
-Backwards compatability is kept
+Backwards compatibility is kept
 ```
 
 Please see [How to Write a Git Commit Message](https://chris.beams.io/posts/git-commit/) for excellent coverage of the topic of commit messages.  We don't require things to be as detailed or strict as that but it's a great resource to keep in mind.

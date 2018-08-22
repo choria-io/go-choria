@@ -10,9 +10,12 @@ import (
 	"github.com/choria-io/go-choria/srvcache"
 )
 
-// TargetResolver is capable of resolving the target brokers for provisioning in a comma sep list
+// TargetResolver is capable of resolving the target brokers for provisioning into list of strings in the format host:port
 type TargetResolver interface {
+	// Name the display name that will be shown in places like `choria buildinfo`
 	Name() string
+
+	// Targets will be called to determine the provisioning destination
 	Targets(*logrus.Entry) []string
 }
 

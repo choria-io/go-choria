@@ -219,6 +219,8 @@ func normalize(c *Config) error {
 		// that's not available then use whatever os.Hostname gave even if its a short name
 		if strings.Count(hn, ".") > 1 {
 			c.Identity = hn
+		} else if fqdn, _ := DNSFQDN(); fqdn != "" {
+			c.Identity = fqdn
 		} else if fqdn, _ := puppet.FacterFQDN(); fqdn != "" {
 			c.Identity = fqdn
 		} else {
