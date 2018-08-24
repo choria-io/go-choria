@@ -102,7 +102,11 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		return fmt.Errorf("Could not subscribe node: %s", err)
 	}
 
-	err = events.PublishEvent(events.Startup, "server", srv.cfg, srv.connector)
+	if srv.fw.ProvisionMode() {
+		err = events.PublishEvent(events.Startup, "provision_mode_server", srv.cfg, srv.connector)
+	} else {
+		err = events.PublishEvent(events.Startup, "server", srv.cfg, srv.connector)
+	}
 	if err != nil {
 		srv.log.Errorf("Could not publish startup event: %s", err)
 	}
