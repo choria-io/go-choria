@@ -14,8 +14,6 @@ func DNSFQDN() (string, error) {
 		return "", err
 	}
 
-	fmt.Println(hostname)
-
 	addrs, err := net.LookupIP(hostname)
 	if err != nil {
 		return "", err
