@@ -29,6 +29,10 @@ type PublishableConnector interface {
 	Publish(msg *Message) error
 }
 
+type RawPublishableConnector interface {
+	PublishRaw(target string, data []byte) error
+}
+
 // AgentConnector provides the minimal Connector features for subscribing and unsubscribing agents
 type AgentConnector interface {
 	ConnectorInfo
@@ -54,6 +58,7 @@ type ConnectorInfo interface {
 type InstanceConnector interface {
 	AgentConnector
 	PublishableConnector
+	RawPublishableConnector
 
 	NodeDirectedTarget(collective string, identity string) string
 
@@ -66,7 +71,6 @@ type Connector interface {
 
 	ReplyTarget(msg *Message) string
 	ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *ConnectorMessage, error)
-	PublishRaw(target string, data []byte) error
 	Connect(ctx context.Context) (err error)
 	Nats() *nats.Conn
 }

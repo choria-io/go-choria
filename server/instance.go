@@ -8,6 +8,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/events"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/discovery"
 	"github.com/choria-io/go-choria/server/registration"
@@ -99,6 +100,11 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		srv.connector.Close()
 
 		return fmt.Errorf("Could not subscribe node: %s", err)
+	}
+
+	err = events.PublishEvent(events.Startup, "server", srv.cfg, srv.connector)
+	if err != nil {
+		srv.log.Errorf("Could not publish startup event: %s", err)
 	}
 
 	wg.Add(1)
