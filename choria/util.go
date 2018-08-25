@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/choria-io/go-choria/puppet"
+	uuid "github.com/satori/go.uuid"
 )
 
 // UserConfig determines what is the active config file for a user
@@ -158,4 +159,9 @@ func MatchAnyRegex(str []byte, regex []string) bool {
 	}
 
 	return false
+}
+
+// NewRequestID Creates a new RequestID
+func NewRequestID() string {
+	return strings.Replace(uuid.NewV4().String(), "-", "", -1)
 }

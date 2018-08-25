@@ -20,14 +20,14 @@ func TestChoria(t *testing.T) {
 var _ = Describe("Events", func() {
 	var (
 		mockctl *gomock.Controller
-		conn    *MockRawPublishableConnector
+		conn    *MockPublishConnector
 		cfg     *config.Config
 		err     error
 	)
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		conn = NewMockRawPublishableConnector(mockctl)
+		conn = NewMockPublishConnector(mockctl)
 		cfg, err = config.NewDefaultConfig()
 		cfg.Identity = "test.ginkgo"
 		Expect(err).ToNot(HaveOccurred())

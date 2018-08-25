@@ -10,6 +10,19 @@ It will include at least:
   * The `mcollectived` replacement that can run old ruby based agents
   * Everything using a Go implementation of the Choria Protocol so interop with the Ruby clients and servers are maintained.
 
+# Bundled tools
+
+Various helpers and utilities are bundled with the Choria binary to assist in testing and debugging the Choria connection to the brokers and observe its general life cycle.
+
+These will connect to the middleware using your usual client configuration.
+
+|Command|Description|
+|-------|-----------|
+|`choria ping`|Basic network testing utility, like `mco ping` but fast and with extra options|
+|`choria tool event`|Listens for Choria life cycle events emitted by various daemons and related tools|
+|`choria tool sub`|Subscribes to any middleware topic|
+|`choria tool pub`|Publishes to any middleware topic|
+
 # Configuration
 
 This code base represents the current recommended Choria Broker and Federation and will soon also be the recommended Server component.  Follow [choria.io](https://choria.io) for the official means of installing and configuring it.

@@ -21,7 +21,6 @@ import (
 	"github.com/choria-io/go-security"
 	"github.com/choria-io/go-security/filesec"
 	"github.com/choria-io/go-security/puppetsec"
-	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -472,7 +471,7 @@ func (fw *Framework) PuppetAIOCmd(command string, def string) string {
 
 // NewRequestID Creates a new RequestID
 func (fw *Framework) NewRequestID() string {
-	return strings.Replace(uuid.NewV4().String(), "-", "", -1)
+	return NewRequestID()
 }
 
 // CallerID determines the cert based callerid
