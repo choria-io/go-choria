@@ -15,7 +15,6 @@ type subCommand struct {
 	raw   bool
 }
 
-// tool event
 func (s *subCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		s.cmd = tool.Cmd().Command("sub", "Subscribe to middleware topics")

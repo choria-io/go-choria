@@ -13,7 +13,6 @@ type eventCommand struct {
 	typeF      string
 }
 
-// tool event
 func (e *eventCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		e.cmd = tool.Cmd().Command("event", "View Choria lifecycle events")
