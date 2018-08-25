@@ -12,11 +12,33 @@ import (
 type Type int
 
 const (
+	_ = iota
+
 	// Startup is an event components should publish when they start
 	Startup Type = iota
 )
 
-type startupEvent struct {
+// EventTypes allow lookup of a event Type by its string representation
+var EventTypes map[string]Type
+
+func init() {
+	EventTypes = make(map[string]Type)
+	EventTypes["startup"] = Startup
+}
+
+// EventTypeNames produce a list of valid event type names
+func EventTypeNames() []string {
+	names := []string{}
+
+	for k := range EventTypes {
+		names = append(names, k)
+	}
+
+	return names
+}
+
+// StartupEvent is a choria:lifecycle:startup:1 event
+type StartupEvent struct {
 	Protocol  string `json:"protocol"`
 	Identity  string `json:"identity"`
 	Version   string `json:"version"`
@@ -26,13 +48,13 @@ type startupEvent struct {
 
 var mockTime int64
 
-// RawPublishableConnector is a connection to the middleware
-type RawPublishableConnector interface {
+// PublishConnector is a connection to the middleware
+type PublishConnector interface {
 	PublishRaw(target string, data []byte) error
 }
 
 // PublishEvent publishes an event of type event to choria.lifecycle.event
-func PublishEvent(event Type, component string, cfg *config.Config, conn RawPublishableConnector) error {
+func PublishEvent(event Type, component string, cfg *config.Config, conn PublishConnector) error {
 	var body interface{}
 
 	switch event {
@@ -52,8 +74,8 @@ func PublishEvent(event Type, component string, cfg *config.Config, conn RawPubl
 	return nil
 }
 
-func newStartupEvent(identity string, component string) *startupEvent {
-	return &startupEvent{
+func newStartupEvent(identity string, component string) *StartupEvent {
+	return &StartupEvent{
 		Protocol:  "choria:lifecycle:startup:1",
 		Identity:  identity,
 		Version:   build.Version,
