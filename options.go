@@ -7,11 +7,6 @@ import (
 // Option configures events
 type Option func(e interface{}) error
 
-// IdentityEvent is an event that has an identity
-type IdentityEvent interface {
-	SetIdentity(string)
-}
-
 // VersionEvent is an event that has a version
 type VersionEvent interface {
 	SetVersion(string)
@@ -53,9 +48,9 @@ func Version(version string) Option {
 // Identity sets the identity for events
 func Identity(identity string) Option {
 	return func(e interface{}) error {
-		event, ok := e.(IdentityEvent)
+		event, ok := e.(Event)
 		if !ok {
-			return errors.New("cannot set component, event does not implement IdentityEvent")
+			return errors.New("cannot set component, event does not implement Event")
 		}
 
 		event.SetIdentity(identity)

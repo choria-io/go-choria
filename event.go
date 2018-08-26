@@ -6,4 +6,5 @@ type Event interface {
 	String() string
 	Component() string
 	Type() Type
+	SetIdentity(string)
 }
