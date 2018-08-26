@@ -139,6 +139,11 @@ func init() {
 	prometheus.MustRegister(connInitialConnectTime)
 }
 
+// Bytes return the data in the message
+func (m *ConnectorMessage) Bytes() []byte {
+	return m.Data
+}
+
 // NewConnector creates a new NATS connector
 //
 // It will attempt to connect to the given servers and will keep trying till it manages to do so
