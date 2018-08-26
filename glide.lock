@@ -1,5 +1,5 @@
-hash: 05073de880912f142c7a8128fac6146b4a1cd2d6cc436a3f453110f3c17ddb94
-updated: 2018-08-26T18:19:33.776478+02:00
+hash: 29c3395df7f7384d78a593854ee6a1075710696b96587f3f8c8fb7c068e614d4
+updated: 2018-08-26T22:07:48.117717+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -18,7 +18,7 @@ imports:
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-lifecycle
-  version: 7a10c2a1113a5bd45e8c5693136770658b6bb9d5
+  version: 21552f069b1f06260bc78ab29033f8d658d76483
 - name: github.com/choria-io/go-mcoshim
   version: f92bd7733a5af67ff1e51bcb586f72464b7a3d12
 - name: github.com/choria-io/go-network-broker
@@ -56,7 +56,7 @@ imports:
   - mcorpc/golang/rpcutil
   - mcorpc/ruby
 - name: github.com/choria-io/provisioning-agent
-  version: a559cd913c269ab15939d95f222d1f7d3ff6e665
+  version: 455f60923a422606693cb5310b311d61298799c4
   subpackages:
   - agent
 - name: github.com/ghodss/yaml

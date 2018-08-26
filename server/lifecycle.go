@@ -5,19 +5,31 @@ import (
 	lifecycle "github.com/choria-io/go-lifecycle"
 )
 
-func (srv *Instance) publishStartupEvent() {
-	opts := []lifecycle.Option{
-		lifecycle.Identity(srv.cfg.Identity),
-		lifecycle.Version(build.Version),
-	}
-
+func (srv *Instance) eventComponent() string {
 	if srv.fw.ProvisionMode() {
-		opts = append(opts, lifecycle.Component("provision_mode_server"))
-	} else {
-		opts = append(opts, lifecycle.Component("server"))
+		return ("provision_mode_server")
 	}
 
-	event, err := lifecycle.New(lifecycle.Startup, opts...)
+	return ("server")
+}
+
+func (srv *Instance) publichShutdownEvent() {
+	event, err := lifecycle.New(lifecycle.Shutdown, lifecycle.Identity(srv.cfg.Identity), lifecycle.Component(srv.eventComponent()))
+	if err != nil {
+		srv.log.Errorf("Could not create new shutdown event: %s", err)
+		return
+	}
+
+	srv.log.Debugf("Publishing shutdown event %#v", event)
+
+	err = lifecycle.PublishEvent(event, srv.connector)
+	if err != nil {
+		srv.log.Errorf("Could not publish shutdown event: %s", err)
+	}
+}
+
+func (srv *Instance) publishStartupEvent() {
+	event, err := lifecycle.New(lifecycle.Startup, lifecycle.Identity(srv.cfg.Identity), lifecycle.Version(build.Version), lifecycle.Component(srv.eventComponent()))
 	if err != nil {
 		srv.log.Errorf("Could not create new startup event: %s", err)
 		return
