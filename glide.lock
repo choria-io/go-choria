@@ -1,5 +1,5 @@
-hash: db4a3765fa031855da72848fb03e3f9ac2b155fc0ddb0c6f2980c4276cbfe97d
-updated: 2018-08-16T12:11:39.697022+02:00
+hash: 05073de880912f142c7a8128fac6146b4a1cd2d6cc436a3f453110f3c17ddb94
+updated: 2018-08-26T18:19:33.776478+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -17,6 +17,8 @@ imports:
   - client
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
+- name: github.com/choria-io/go-lifecycle
+  version: 7a10c2a1113a5bd45e8c5693136770658b6bb9d5
 - name: github.com/choria-io/go-mcoshim
   version: f92bd7733a5af67ff1e51bcb586f72464b7a3d12
 - name: github.com/choria-io/go-network-broker
@@ -54,7 +56,7 @@ imports:
   - mcorpc/golang/rpcutil
   - mcorpc/ruby
 - name: github.com/choria-io/provisioning-agent
-  version: 8118f60f9f4f3ed3c3119bf2164519378d431dbe
+  version: a559cd913c269ab15939d95f222d1f7d3ff6e665
   subpackages:
   - agent
 - name: github.com/ghodss/yaml
@@ -158,7 +160,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: 3e01752db0189b9157070a0e1668a620f9a85da2
 - name: github.com/tidwall/gjson
-  version: 01f00f129617a6fe98941fb920d6c760241b54d2
+  version: 1e3f6aeaa5bad08d777ea7807b279a07885dd8b2
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
