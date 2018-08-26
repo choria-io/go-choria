@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -22,6 +23,9 @@ const (
 
 	// Startup is an event components should publish when they start
 	Startup Type = iota
+
+	// Shutdown is an event components should publish when they shutdown
+	Shutdown
 )
 
 var eventTypes = make(map[string]Type)
@@ -45,6 +49,8 @@ func EventTypeNames() []string {
 	for k := range eventTypes {
 		names = append(names, k)
 	}
+
+	sort.Strings(names)
 
 	return names
 }
