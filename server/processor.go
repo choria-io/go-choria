@@ -99,6 +99,10 @@ func (srv *Instance) processRequests(ctx context.Context, wg *sync.WaitGroup) {
 			go srv.handleReply(reply)
 		case <-ctx.Done():
 			srv.log.Infof("Request processor existing on interrupt")
+
+			srv.publichShutdownEvent()
+			srv.connector.Close()
+
 			return
 		}
 	}

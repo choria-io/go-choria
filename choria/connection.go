@@ -623,6 +623,12 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 	return
 }
 
+// Flush sends any unpublished data to the network
+func (conn *Connection) Flush() {
+	conn.logger.Debug("Flushing pending NATS messages")
+	conn.nats.Flush()
+}
+
 // Close closes the NATS connection after flushing what needed to be sent
 func (conn *Connection) Close() {
 	for s := range conn.chanSubscriptions {
@@ -639,8 +645,7 @@ func (conn *Connection) Close() {
 		}
 	}
 
-	conn.logger.Debug("Flushing pending NATS messages before close")
-	conn.nats.Flush()
+	conn.Flush()
 
 	conn.logger.Debug("Closing NATS connection")
 	conn.nats.Close()
