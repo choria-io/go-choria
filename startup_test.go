@@ -53,7 +53,7 @@ var _ = Describe("StartupEvent", func() {
 		It("Should set the identity", func() {
 			e := &StartupEvent{}
 			e.SetIdentity("node.example")
-			Expect(e.Identity).To(Equal("node.example"))
+			Expect(e.Ident).To(Equal("node.example"))
 		})
 	})
 

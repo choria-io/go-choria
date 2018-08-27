@@ -8,7 +8,7 @@ import (
 // StartupEvent is a choria:lifecycle:startup:1 event
 type StartupEvent struct {
 	Protocol  string `json:"protocol"`
-	Identity  string `json:"identity"`
+	Ident     string `json:"identity"`
 	Version   string `json:"version"`
 	Timestamp int64  `json:"timestamp"`
 	Comp      string `json:"component"`
@@ -70,7 +70,12 @@ func (e *StartupEvent) SetVersion(v string) {
 
 // SetIdentity sets the identity for the event
 func (e *StartupEvent) SetIdentity(i string) {
-	e.Identity = i
+	e.Ident = i
+}
+
+// Identity retrieves the identity
+func (e *StartupEvent) Identity() string {
+	return e.Ident
 }
 
 // Target is where to publish the event to
@@ -84,7 +89,7 @@ func (e *StartupEvent) Target() (string, error) {
 
 // String is text suitable to display on the console etc
 func (e *StartupEvent) String() string {
-	return fmt.Sprintf("[startup] %s: %s version %s", e.Identity, e.Component(), e.Version)
+	return fmt.Sprintf("[startup] %s: %s version %s", e.Ident, e.Component(), e.Version)
 }
 
 // Type is the type of event
