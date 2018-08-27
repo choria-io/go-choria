@@ -30,8 +30,6 @@ func (srv *Instance) publichShutdownEvent() {
 		return
 	}
 
-	srv.log.Debugf("Publishing shutdown event %#v", event)
-
 	err = lifecycle.PublishEvent(event, srv.connector)
 	if err != nil {
 		srv.log.Errorf("Could not publish shutdown event: %s", err)
@@ -44,8 +42,6 @@ func (srv *Instance) publishStartupEvent() {
 		srv.log.Errorf("Could not create new startup event: %s", err)
 		return
 	}
-
-	srv.log.Debugf("Publishing startup event %#v", event)
 
 	err = lifecycle.PublishEvent(event, srv.connector)
 	if err != nil {

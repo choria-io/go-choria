@@ -1,5 +1,14 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/08/27|      |Release 0.6.0                                                                                            |
+|2018/08/26|      |Update provisioning agent dependency, allows `restart` when not in provisioning mode if a token is set   |
+|2018/08/26|422   |publish a shutdown lifecycle event on clean shutdowns                                                    |
+|2018/08/25|419   |Add `tool event`, `tool sub` and `tool pub` commands to the CLI                                          |
+|2018/08/24|416   |Publish a startup lifecycle event on startup                                                             |
+|2018/08/22|411   |Expose the version to Prometheus as `choria_build_info`                                                  |
+|2018/08/22|412   |Attempt to find the FQDN via DNS lookups before calling Puppet when the hostname is incomplete           |
+|2018/08/16|408   |Add a plugin to assist with resolving the provisioning mode target brokers                               |
+|2018/08/10|402   |Ensure provisioning mode is active only for the server and not client invocations                        |
 |2018/08/09|      |Release 0.5.1                                                                                            |
 |2018/08/09|403   |Ensure insecure provisioning mode works on non puppet nodes                                              |
 |2018/08/03|398   |Support an auth token during provisioning                                                                |
@@ -7,11 +16,11 @@
 |2018/08/02|394   |Fix registration handling when in provisioning mode                                                      |
 |2018/07/31|390   |Avoid leaking metrics in long running clients that make many new client instances                        |
 |2018/07/20|      |Release 0.5.0                                                                                            |
-|2018/07/13|382   |Improve mcollective compatability by supporting shallow merges of multiple fact files                    |
+|2018/07/13|382   |Improve mcollective compatibility by supporting shallow merges of multiple fact files                    |
 |2018/07/12|379   |Increase the NATS Stream Adapter work channel size to function on large networks                         |
 |2018/07/12|377   |When adapting Choria messages to NATS Streams include the Choria RequestID                               |
 |2018/07/12|375   |Ensure all loggers are configured with the correct level and format                                      |
-|2018/07/11|      |Disable full JSON schema validation by default due to performence concerns (go-protocol#23)              |
+|2018/07/11|      |Disable full JSON schema validation by default due to performance concerns (go-protocol#23)              |
 |2018/07/11|      |Update `gnatsd` to `1.2.0` to improve stability at >30k nodes when clustered (go-network-broker#6)       |
 |2018/07/11|373   |Support Ubuntu 18.04                                                                                     |
 |2018/07/11|361   |When embedding the Choria Server initial startup errors can now be detected and handled                  |
@@ -20,7 +29,7 @@
 |2018/07/03|359   |Resolve a go routine leak when using the connector in a long running client                              |
 |2018/06/26|353   |Handle connection errors in NATS Streaming brokers in the Adapters, require NATS Streaming >= `0.10.0`   |
 |2018/06/18|346   |Add a high performance, filtering capable basic network validation CLI `choria ping`                     |
-|2018/06/15|343   |Resolve the merging of identity & certname concepts that erronously happened during the security refacor |
+|2018/06/15|343   |Resolve the merging of identity & certname concepts that erroneously happened during the security refacor|
 |2018/06/14|341   |Ensure non root users - like clients - get a username based certname not FQDN one                        |
 |2018/06/07|336   |Fix the setting that allows disabling broker order randomization                                         |
 |2018/06/06|333   |Randomize broker connections by default                                                                  |
@@ -37,9 +46,9 @@
 |2018/04/25|271   |Log rotation for `choria-*.log` which covers audit, ruby and more                                        |
 |2018/04/25|267   |Ensure that the ruby shim based agents have access to the correct request time                           |
 |2018/04/24|      |Release 0.2.0                                                                                            |
-|2018/04/23|243   |Create a compatability framework for MCollective Agents written in Ruby                                  |
+|2018/04/23|243   |Create a compatibility framework for MCollective Agents written in Ruby                                  |
 |2018/04/23|252   |Avoid logrotate errors when the package was installed but choria never ran                               |
-|2018/04/09|240   |When facter is available use it to determine the FQDN to improve default behaviour on debian like systems|
+|2018/04/09|240   |When facter is available use it to determine the FQDN to improve default behavior on debian like systems|
 |2018/04/09|236   |Allow `nats://host:port` and `host:port` to be used when referencing brokers                             |
 |2018/04/09|235   |Detect empty initial server list when starting federation brokers                                        |
 |2018/03/29|229   |Surface more NATS internal debug logs as notice and error                                                |
@@ -49,7 +58,7 @@
 |2018/03/26|222   |Allow the network broker write deadline to be configured                                                 |
 |2018/03/23|218   |Avoid rotating empty log files and ensure the newest log is the one being written too                    |
 |2018/03/21|      |Release 0.1.0                                                                                            |
-|2018/03/08|208   |Improve compatability with MCollective Choria by not base64 encoding payloads                            |
+|2018/03/08|208   |Improve compatibility with MCollective Choria by not base64 encoding payloads                            |
 |2018/03/08|207   |Ensure the filter is valid when creating `direct_request` messages                                       |
 |2018/03/07|204   |Support writing a thread dump to the OS temp dir on receiving SIGQUIT                                    |
 |2018/03/07|202   |Do not rely purely on `PATH` to find `puppet`, look in some standard paths as well                       |
@@ -81,7 +90,7 @@
 |2018/01/20|146   |Stats about the server and message life cycle are recorded                                               |
 |2018/01/19|133   |A timeout context is supplied to actions when they get executed                                          |
 |2018/01/16|134   |Use new packaging infrastructure and move building to a circleci pipeline                                |
-|2018/01/12|131   |Additional agents can now be added into the binary at comoile time                                       |
+|2018/01/12|131   |Additional agents can now be added into the binary at compile time                                       |
 |2018/01/12|125   |All files in additional dot config dirs are now parsed                                                   |
 |2018/01/12|128   |Add additional fields related to the RPC request to mcorpc.Request                                       |
 |2018/01/10|120   |The concept of a provisioning mode was added along with a agent to assist automated provisioning         |

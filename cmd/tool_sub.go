@@ -57,7 +57,12 @@ func (s *subCommand) Run(wg *sync.WaitGroup) (err error) {
 				continue
 			}
 
-			fmt.Printf("---- %s\n%s\n\n", time.Now().Format("15:04:05"), string(m.Data))
+			if m.Subject == s.topic {
+				fmt.Printf("---- %s\n%s\n\n", time.Now().Format("15:04:05"), string(m.Data))
+			} else {
+				fmt.Printf("---- %s on topic %s\n%s\n\n", time.Now().Format("15:04:05"), m.Subject, string(m.Data))
+			}
+
 		case <-ctx.Done():
 			return nil
 		}
