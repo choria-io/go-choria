@@ -18,17 +18,18 @@ import (
 
 // Instance is an independant copy of Choria
 type Instance struct {
-	fw            *choria.Framework
-	connector     choria.InstanceConnector
-	cfg           *config.Config
-	log           *log.Entry
-	servers       []*srvcache.Server
-	registration  *registration.Manager
-	agents        *agents.Manager
-	discovery     *discovery.Manager
-	provisioning  bool
-	startTime     time.Time
-	agentDenyList []string
+	fw                 *choria.Framework
+	connector          choria.InstanceConnector
+	cfg                *config.Config
+	log                *log.Entry
+	servers            []*srvcache.Server
+	registration       *registration.Manager
+	agents             *agents.Manager
+	discovery          *discovery.Manager
+	provisioning       bool
+	startTime          time.Time
+	agentDenyList      []string
+	lifecycleComponent string
 
 	requests chan *choria.ConnectorMessage
 

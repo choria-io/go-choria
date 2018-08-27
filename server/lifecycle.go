@@ -5,7 +5,17 @@ import (
 	lifecycle "github.com/choria-io/go-lifecycle"
 )
 
+// SetComponent sets the component name this server will report in its
+// lifecycle events. "server" and "provision_mode_server" are the defaults
+func (srv *Instance) SetComponent(c string) {
+	srv.lifecycleComponent = c
+}
+
 func (srv *Instance) eventComponent() string {
+	if srv.lifecycleComponent != "" {
+		return srv.lifecycleComponent
+	}
+
 	if srv.fw.ProvisionMode() {
 		return ("provision_mode_server")
 	}
