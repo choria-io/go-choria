@@ -4,7 +4,8 @@ package lifecycle
 type Event interface {
 	Target() (string, error)
 	String() string
-	Component() string
 	Type() Type
 	SetIdentity(string)
+	Component() string
+	Identity() string
 }

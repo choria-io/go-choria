@@ -8,7 +8,7 @@ import (
 // ShutdownEvent is a choria:lifecycle:shutdown:1 event
 type ShutdownEvent struct {
 	Protocol  string `json:"protocol"`
-	Identity  string `json:"identity"`
+	Ident     string `json:"identity"`
 	Comp      string `json:"component"`
 	Timestamp int64  `json:"timestamp"`
 }
@@ -64,7 +64,12 @@ func (e *ShutdownEvent) SetComponent(c string) {
 
 // SetIdentity sets the identity for the event
 func (e *ShutdownEvent) SetIdentity(i string) {
-	e.Identity = i
+	e.Ident = i
+}
+
+// Identity sets the identity for the event
+func (e *ShutdownEvent) Identity() string {
+	return e.Ident
 }
 
 // Target is where to publish the event to
@@ -78,7 +83,7 @@ func (e *ShutdownEvent) Target() (string, error) {
 
 // String is text suitable to display on the console etc
 func (e *ShutdownEvent) String() string {
-	return fmt.Sprintf("[shutdown] %s: %s", e.Identity, e.Component())
+	return fmt.Sprintf("[shutdown] %s: %s", e.Ident, e.Component())
 }
 
 // Type is the type of event

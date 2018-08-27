@@ -15,7 +15,7 @@ var _ = Describe("Options", func() {
 	Describe("Identity", func() {
 		It("Should set the identity", func() {
 			Identity("ginkgo")(event)
-			Expect(event.Identity).To(Equal("ginkgo"))
+			Expect(event.Ident).To(Equal("ginkgo"))
 		})
 	})
 
