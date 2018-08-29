@@ -7,6 +7,8 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server"
 	log "github.com/sirupsen/logrus"
 )
@@ -55,9 +57,24 @@ func (r *serverRunCommand) Setup() (err error) {
 }
 
 func (e *serverRunCommand) Configure() error {
-	err = commonConfigure()
-	if err != nil {
-		return err
+	if debug {
+		log.SetOutput(os.Stdout)
+		log.SetLevel(log.DebugLevel)
+		log.Debug("Logging at debug level due to CLI override")
+	}
+
+	if choria.FileExist(configFile) {
+		cfg, err = config.NewConfig(configFile)
+		if err != nil {
+			return fmt.Errorf("could not parse configuration: %s", err)
+		}
+	} else if build.ProvisionBrokerURLs != "" {
+		cfg, err = config.NewDefaultConfig()
+		if err != nil {
+			return fmt.Errorf("could not create default configuration for provisioning: %s", err)
+		}
+	} else {
+		return fmt.Errorf("configuration file %s was not found", configFile)
 	}
 
 	cfg.DisableSecurityProviderVerify = true
