@@ -133,7 +133,6 @@ func Run() (err error) {
 	}
 
 	if err != nil {
-		log.Errorf("Shutting down due to: %s", err)
 		cancel()
 	}
 
