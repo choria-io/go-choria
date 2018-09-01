@@ -4,7 +4,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/choria-io/go-choria/config"
 	gomock "github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
@@ -21,16 +20,11 @@ var _ = Describe("Events", func() {
 	var (
 		mockctl *gomock.Controller
 		conn    *MockPublishConnector
-		cfg     *config.Config
-		err     error
 	)
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 		conn = NewMockPublishConnector(mockctl)
-		cfg, err = config.NewDefaultConfig()
-		Expect(err).ToNot(HaveOccurred())
-		cfg.Identity = "test.ginkgo"
 		mockTime = 1535106973
 	})
 
@@ -49,7 +43,7 @@ var _ = Describe("Events", func() {
 
 	Describe("EventTypeNames", func() {
 		It("Should list all known types", func() {
-			Expect(EventTypeNames()).To(Equal([]string{"shutdown", "startup"}))
+			Expect(EventTypeNames()).To(Equal([]string{"provisioned", "shutdown", "startup"}))
 		})
 	})
 
@@ -72,10 +66,11 @@ var _ = Describe("Events", func() {
 
 	Describe("PublishEvent", func() {
 		It("Should publish the event to the right destination", func() {
-			event, err := New(Startup, Component("ginkgo"))
+			event, err := New(Startup, Component("ginkgo"), Version("1.2.3"), Identity("ginkgo.example.net"))
 			Expect(err).ToNot(HaveOccurred())
 			mockTime = 1535106973
-			conn.EXPECT().PublishRaw("choria.lifecycle.event.startup.ginkgo", []byte(`{"protocol":"choria:lifecycle:startup:1","identity":"","version":"","timestamp":1535106973,"component":"ginkgo"}`))
+			Expect(err).ToNot(HaveOccurred())
+			conn.EXPECT().PublishRaw("choria.lifecycle.event.startup.ginkgo", []byte(`{"protocol":"choria:lifecycle:startup:1","identity":"ginkgo.example.net","component":"ginkgo","timestamp":1535106973,"version":"1.2.3"}`))
 			PublishEvent(event, conn)
 		})
 	})
