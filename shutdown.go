@@ -7,10 +7,7 @@ import (
 
 // ShutdownEvent is a choria:lifecycle:shutdown:1 event
 type ShutdownEvent struct {
-	Protocol  string `json:"protocol"`
-	Ident     string `json:"identity"`
-	Comp      string `json:"component"`
-	Timestamp int64  `json:"timestamp"`
+	basicEvent
 }
 
 func init() {
@@ -27,8 +24,12 @@ func init() {
 
 func newShutdownEvent(opts ...Option) *ShutdownEvent {
 	event := &ShutdownEvent{
-		Protocol:  "choria:lifecycle:shutdown:1",
-		Timestamp: timeStamp(),
+		basicEvent: basicEvent{
+			Protocol:  "choria:lifecycle:shutdown:1",
+			Timestamp: timeStamp(),
+			etype:     "shutdown",
+			dtype:     Shutdown,
+		},
 	}
 
 	for _, o := range opts {
@@ -39,7 +40,12 @@ func newShutdownEvent(opts ...Option) *ShutdownEvent {
 }
 
 func newShutdownEventFromJSON(j []byte) (*ShutdownEvent, error) {
-	event := &ShutdownEvent{}
+	event := &ShutdownEvent{
+		basicEvent: basicEvent{
+			etype: "shutdown",
+			dtype: Shutdown,
+		},
+	}
 	err := json.Unmarshal(j, event)
 	if err != nil {
 		return nil, err
@@ -50,43 +56,4 @@ func newShutdownEventFromJSON(j []byte) (*ShutdownEvent, error) {
 	}
 
 	return event, nil
-}
-
-// Component is the component that produced the event
-func (e *ShutdownEvent) Component() string {
-	return e.Comp
-}
-
-// SetComponent sets the component for the event
-func (e *ShutdownEvent) SetComponent(c string) {
-	e.Comp = c
-}
-
-// SetIdentity sets the identity for the event
-func (e *ShutdownEvent) SetIdentity(i string) {
-	e.Ident = i
-}
-
-// Identity sets the identity for the event
-func (e *ShutdownEvent) Identity() string {
-	return e.Ident
-}
-
-// Target is where to publish the event to
-func (e *ShutdownEvent) Target() (string, error) {
-	if e.Comp == "" {
-		return "", fmt.Errorf("event is not complete, component has not been set")
-	}
-
-	return fmt.Sprintf("choria.lifecycle.event.shutdown.%s", e.Comp), nil
-}
-
-// String is text suitable to display on the console etc
-func (e *ShutdownEvent) String() string {
-	return fmt.Sprintf("[shutdown] %s: %s", e.Ident, e.Component())
-}
-
-// Type is the type of event
-func (e *ShutdownEvent) Type() Type {
-	return Shutdown
 }

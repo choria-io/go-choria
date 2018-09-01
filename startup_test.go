@@ -10,6 +10,7 @@ var _ = Describe("StartupEvent", func() {
 		It("Should create the event and set options", func() {
 			event := newStartupEvent(Component("ginkgo"))
 			Expect(event.Component()).To(Equal("ginkgo"))
+			Expect(event.Type()).To(Equal(Startup))
 		})
 	})
 
@@ -23,21 +24,7 @@ var _ = Describe("StartupEvent", func() {
 			event, err := newStartupEventFromJSON([]byte(`{"protocol":"choria:lifecycle:startup:1", "component":"ginkgo"}`))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(event.Component()).To(Equal("ginkgo"))
-		})
-	})
-
-	Describe("Component", func() {
-		It("Should return the right component", func() {
-			e := &StartupEvent{Comp: "test"}
-			Expect(e.Component()).To(Equal("test"))
-		})
-	})
-
-	Describe("SetComponent", func() {
-		It("Should set the component", func() {
-			e := &StartupEvent{}
-			e.SetComponent("component")
-			Expect(e.Comp).To(Equal("component"))
+			Expect(event.Type()).To(Equal(Startup))
 		})
 	})
 
@@ -46,14 +33,6 @@ var _ = Describe("StartupEvent", func() {
 			e := &StartupEvent{}
 			e.SetVersion("1.2.3")
 			Expect(e.Version).To(Equal("1.2.3"))
-		})
-	})
-
-	Describe("SetIdentity", func() {
-		It("Should set the identity", func() {
-			e := &StartupEvent{}
-			e.SetIdentity("node.example")
-			Expect(e.Ident).To(Equal("node.example"))
 		})
 	})
 
@@ -76,13 +55,6 @@ var _ = Describe("StartupEvent", func() {
 		It("Should return the right string", func() {
 			e := newStartupEvent(Component("ginkgo"), Identity("node.example"), Version("1.2.3"))
 			Expect(e.String()).To(Equal("[startup] node.example: ginkgo version 1.2.3"))
-		})
-	})
-
-	Describe("Type", func() {
-		It("Should return the right Type", func() {
-			e := &StartupEvent{}
-			Expect(e.Type()).To(Equal(Startup))
 		})
 	})
 })

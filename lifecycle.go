@@ -21,11 +21,14 @@ type Type int
 const (
 	_ = iota
 
-	// Startup is an event components should publish when they start
+	// Startup is an event components can publish when they start
 	Startup Type = iota
 
-	// Shutdown is an event components should publish when they shutdown
+	// Shutdown is an event components can publish when they shutdown
 	Shutdown
+
+	// Provisioned is an event components can publish post provisioning
+	Provisioned
 )
 
 var eventTypes = make(map[string]Type)
