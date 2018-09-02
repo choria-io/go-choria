@@ -20,7 +20,7 @@ var _ = Describe("Server/Connection", func() {
 		)
 
 		BeforeEach(func() {
-			cfg, err = config.NewDefaultConfig()
+			cfg = config.NewConfigForTests()
 			Expect(err).ToNot(HaveOccurred())
 
 			cfg.DisableTLS = true

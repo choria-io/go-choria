@@ -16,6 +16,7 @@ var _ = Describe("Choria/Message", func() {
 		request *MockRequest
 		fw      *Framework
 		now     time.Time
+		err     error
 	)
 
 	BeforeEach(func() {
@@ -34,8 +35,7 @@ var _ = Describe("Choria/Message", func() {
 		request.EXPECT().IsFederated().Return(false).AnyTimes()
 		request.EXPECT().JSON().Return("{\"mock_request\": true}", nil).AnyTimes()
 
-		cfg, err := config.NewDefaultConfig()
-		Expect(err).ToNot(HaveOccurred())
+		cfg := config.NewConfigForTests()
 		cfg.Identity = "test.identity"
 		protocol.Secure = "false"
 		cfg.Collectives = []string{"test_collective"}
