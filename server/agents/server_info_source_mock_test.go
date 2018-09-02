@@ -201,3 +201,15 @@ func (m *MockServerInfoSource) PublishEvent(e go_lifecycle.Event) error {
 func (mr *MockServerInfoSourceMockRecorder) PublishEvent(e interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEvent", reflect.TypeOf((*MockServerInfoSource)(nil).PublishEvent), e)
 }
+
+// EventComponent mocks base method
+func (m *MockServerInfoSource) EventComponent() string {
+	ret := m.ctrl.Call(m, "EventComponent")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// EventComponent indicates an expected call of EventComponent
+func (mr *MockServerInfoSourceMockRecorder) EventComponent() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventComponent", reflect.TypeOf((*MockServerInfoSource)(nil).EventComponent))
+}

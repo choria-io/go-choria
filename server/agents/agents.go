@@ -31,6 +31,7 @@ type ServerInfoSource interface {
 	StartTime() time.Time
 	Stats() ServerStats
 	PublishEvent(e lifecycle.Event) error
+	EventComponent() string
 }
 
 type ServerStats struct {

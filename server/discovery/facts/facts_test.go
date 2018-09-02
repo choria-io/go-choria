@@ -22,9 +22,10 @@ func Test(t *testing.T) {
 
 var _ = Describe("Server/Discovery/Facts", func() {
 	var (
-		t  func(fact, op, val string) (bool, error)
-		fw *choria.Framework
-		l  *logrus.Entry
+		t   func(fact, op, val string) (bool, error)
+		fw  *choria.Framework
+		l   *logrus.Entry
+		err error
 	)
 
 	BeforeSuite(func() {
@@ -35,7 +36,7 @@ var _ = Describe("Server/Discovery/Facts", func() {
 			return HasFact(fact, op, val, "testdata/fact.yaml", l)
 		}
 
-		cfg, err := config.NewDefaultConfig()
+		cfg := config.NewConfigForTests()
 		cfg.DisableTLS = true
 
 		fw, err = choria.NewWithConfig(cfg)
