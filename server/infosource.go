@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/choria-io/go-lifecycle"
+
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/discovery/classes"
 	"github.com/choria-io/go-choria/server/discovery/facts"
@@ -12,9 +14,17 @@ import (
 	dto "github.com/prometheus/client_model/go"
 )
 
-// EventComponent is the compnent name for the running instance
-func (srv *Instance) EventComponent() string {
-	return srv.eventComponent()
+// NewEvent creates a new event with the server component and identity set and publishes it
+func (srv *Instance) NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error {
+	opts = append(opts, lifecycle.Component(srv.eventComponent()))
+	opts = append(opts, lifecycle.Identity(srv.cfg.Identity))
+
+	e, err := lifecycle.New(t, opts...)
+	if err != nil {
+		return err
+	}
+
+	return srv.PublishEvent(e)
 }
 
 // KnownAgents is a list of agents loaded into the server instance
@@ -59,6 +69,7 @@ func (srv *Instance) StartTime() time.Time {
 	return srv.startTime
 }
 
+// Stats expose server statistics
 func (srv *Instance) Stats() agents.ServerStats {
 	return agents.ServerStats{
 		Total:      srv.getPromCtrValue(totalCtr),

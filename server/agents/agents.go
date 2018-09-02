@@ -30,8 +30,7 @@ type ServerInfoSource interface {
 	Facts() json.RawMessage
 	StartTime() time.Time
 	Stats() ServerStats
-	PublishEvent(e lifecycle.Event) error
-	EventComponent() string
+	NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error
 }
 
 type ServerStats struct {

@@ -190,26 +190,19 @@ func (mr *MockServerInfoSourceMockRecorder) Stats() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stats", reflect.TypeOf((*MockServerInfoSource)(nil).Stats))
 }
 
-// PublishEvent mocks base method
-func (m *MockServerInfoSource) PublishEvent(e go_lifecycle.Event) error {
-	ret := m.ctrl.Call(m, "PublishEvent", e)
+// NewEvent mocks base method
+func (m *MockServerInfoSource) NewEvent(t go_lifecycle.Type, opts ...go_lifecycle.Option) error {
+	varargs := []interface{}{t}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "NewEvent", varargs...)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// PublishEvent indicates an expected call of PublishEvent
-func (mr *MockServerInfoSourceMockRecorder) PublishEvent(e interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEvent", reflect.TypeOf((*MockServerInfoSource)(nil).PublishEvent), e)
-}
-
-// EventComponent mocks base method
-func (m *MockServerInfoSource) EventComponent() string {
-	ret := m.ctrl.Call(m, "EventComponent")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// EventComponent indicates an expected call of EventComponent
-func (mr *MockServerInfoSourceMockRecorder) EventComponent() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventComponent", reflect.TypeOf((*MockServerInfoSource)(nil).EventComponent))
+// NewEvent indicates an expected call of NewEvent
+func (mr *MockServerInfoSourceMockRecorder) NewEvent(t interface{}, opts ...interface{}) *gomock.Call {
+	varargs := append([]interface{}{t}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewEvent", reflect.TypeOf((*MockServerInfoSource)(nil).NewEvent), varargs...)
 }
