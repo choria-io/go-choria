@@ -31,7 +31,7 @@ var _ = Describe("Server/Registration", func() {
 		)
 
 		BeforeSuite(func() {
-			cfg, err = config.NewDefaultConfig()
+			cfg = config.NewConfigForTests()
 			cfg.DisableTLS = true
 
 			choria, err = framework.NewWithConfig(cfg)

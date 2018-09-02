@@ -11,16 +11,21 @@ func (srv *Instance) SetComponent(c string) {
 	srv.lifecycleComponent = c
 }
 
+// PublishEvent publishes a lifecycle event to the network
+func (srv *Instance) PublishEvent(e lifecycle.Event) error {
+	return lifecycle.PublishEvent(e, srv.connector)
+}
+
 func (srv *Instance) eventComponent() string {
 	if srv.lifecycleComponent != "" {
 		return srv.lifecycleComponent
 	}
 
 	if srv.fw.ProvisionMode() {
-		return ("provision_mode_server")
+		return "provision_mode_server"
 	}
 
-	return ("server")
+	return "server"
 }
 
 func (srv *Instance) publichShutdownEvent() {
@@ -30,7 +35,7 @@ func (srv *Instance) publichShutdownEvent() {
 		return
 	}
 
-	err = lifecycle.PublishEvent(event, srv.connector)
+	err = srv.PublishEvent(event)
 	if err != nil {
 		srv.log.Errorf("Could not publish shutdown event: %s", err)
 	}
@@ -43,7 +48,7 @@ func (srv *Instance) publishStartupEvent() {
 		return
 	}
 
-	err = lifecycle.PublishEvent(event, srv.connector)
+	err = srv.PublishEvent(event)
 	if err != nil {
 		srv.log.Errorf("Could not publish startup event: %s", err)
 	}

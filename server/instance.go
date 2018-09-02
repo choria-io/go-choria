@@ -47,6 +47,8 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 		agentDenyList: []string{},
 	}
 
+	i.SetComponent("server")
+
 	i.log = log.WithFields(log.Fields{"identity": fw.Config.Identity, "component": "server"})
 	i.discovery = discovery.New(fw, i.log)
 
