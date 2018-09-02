@@ -19,7 +19,7 @@ func TestChoria(t *testing.T) {
 var _ = Describe("Choria", func() {
 	var _ = Describe("NewChoria", func() {
 		It("Should initialize choria correctly", func() {
-			cfg, _ := config.NewDefaultConfig()
+			cfg := config.NewConfigForTests()
 			c := cfg.Choria
 			Expect(c.DiscoveryHost).To(Equal("puppet"))
 			Expect(c.DiscoveryPort).To(Equal(8085))
@@ -29,8 +29,7 @@ var _ = Describe("Choria", func() {
 
 	var _ = Describe("ProvisionMode", func() {
 		It("Should be on only in the Server", func() {
-			c, err := config.NewDefaultConfig()
-			Expect(err).ToNot(HaveOccurred())
+			c := config.NewConfigForTests()
 			c.DisableTLS = true
 
 			fw, err := NewWithConfig(c)
@@ -44,8 +43,7 @@ var _ = Describe("Choria", func() {
 		})
 
 		It("Should use the default when not configured and brokers are compiled in", func() {
-			c, err := config.NewDefaultConfig()
-			Expect(err).ToNot(HaveOccurred())
+			c := config.NewConfigForTests()
 			c.DisableTLS = true
 
 			fw, err := NewWithConfig(c)

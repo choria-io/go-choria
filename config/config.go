@@ -390,3 +390,15 @@ func newChoria() *ChoriaPluginConfig {
 
 	return c
 }
+
+func NewConfigForTests() *Config {
+	c := newConfig()
+	c.MainCollective = "ginkgo"
+	c.RegistrationCollective = "ginkgo"
+	c.Identity = "ginkgo.example.net"
+	c.OverrideCertname = "rip.mcollective"
+	srvcache.SetIdentity(c.Identity)
+	c.LogLevel = "fatal"
+
+	return c
+}

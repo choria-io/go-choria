@@ -8,6 +8,7 @@ import (
 	context "context"
 	json "encoding/json"
 	choria "github.com/choria-io/go-choria/choria"
+	go_lifecycle "github.com/choria-io/go-lifecycle"
 	protocol "github.com/choria-io/go-protocol/protocol"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
@@ -187,4 +188,16 @@ func (m *MockServerInfoSource) Stats() ServerStats {
 // Stats indicates an expected call of Stats
 func (mr *MockServerInfoSourceMockRecorder) Stats() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stats", reflect.TypeOf((*MockServerInfoSource)(nil).Stats))
+}
+
+// PublishEvent mocks base method
+func (m *MockServerInfoSource) PublishEvent(e go_lifecycle.Event) error {
+	ret := m.ctrl.Call(m, "PublishEvent", e)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PublishEvent indicates an expected call of PublishEvent
+func (mr *MockServerInfoSourceMockRecorder) PublishEvent(e interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishEvent", reflect.TypeOf((*MockServerInfoSource)(nil).PublishEvent), e)
 }

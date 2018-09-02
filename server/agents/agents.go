@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	lifecycle "github.com/choria-io/go-lifecycle"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
 )
@@ -29,6 +30,7 @@ type ServerInfoSource interface {
 	Facts() json.RawMessage
 	StartTime() time.Time
 	Stats() ServerStats
+	PublishEvent(e lifecycle.Event) error
 }
 
 type ServerStats struct {

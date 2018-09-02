@@ -37,12 +37,12 @@ var _ = Describe("Server/Agents", func() {
 	var cancel func()
 	var fw *choria.Framework
 	var handler func(ctx context.Context, msg *choria.Message, request protocol.Request, ci choria.ConnectorInfo, result chan *AgentReply)
+	var err error
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 
-		cfg, err := config.NewDefaultConfig()
-		Expect(err).ToNot(HaveOccurred())
+		cfg := config.NewConfigForTests()
 
 		cfg.DisableTLS = true
 

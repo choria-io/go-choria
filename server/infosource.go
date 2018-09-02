@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"time"
 
+	"github.com/choria-io/go-lifecycle"
+
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/discovery/classes"
 	"github.com/choria-io/go-choria/server/discovery/facts"
@@ -11,6 +13,11 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 )
+
+// PublishEvent publishes a lifecycle event to the network
+func (srv *Instance) PublishEvent(e lifecycle.Event) error {
+	return lifecycle.PublishEvent(e, srv.connector)
+}
 
 // KnownAgents is a list of agents loaded into the server instance
 func (srv *Instance) KnownAgents() []string {

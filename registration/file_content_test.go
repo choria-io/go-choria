@@ -31,8 +31,7 @@ var _ = Describe("RegistrationData", func() {
 	)
 
 	BeforeEach(func() {
-		c, err = config.NewDefaultConfig()
-		Expect(err).ToNot(HaveOccurred())
+		c = config.NewConfigForTests()
 
 		reg = &FileContent{}
 		log.SetLevel(log.ErrorLevel)
