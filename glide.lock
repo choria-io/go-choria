@@ -1,5 +1,5 @@
-hash: 067826a7fafc31d3683f8e7f5d0be59dae064dea3a79bceedd8d4d7ed62c2400
-updated: 2018-08-27T14:00:02.143499+02:00
+hash: b01115fda8f8fbe3ae6ae8c8749b9e642a8b919e66e7dd67f4d685e3e55cacd9
+updated: 2018-09-05T10:05:01.385912395+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -18,7 +18,7 @@ imports:
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-lifecycle
-  version: acdc39b1e82eaf94581803b4b0e6a411cd55c55c
+  version: d46c4b2ca99b1c31cfc83995484dc93d4fd7a3d5
 - name: github.com/choria-io/go-mcoshim
   version: f92bd7733a5af67ff1e51bcb586f72464b7a3d12
 - name: github.com/choria-io/go-network-broker
@@ -48,17 +48,8 @@ imports:
   version: db0e90dac9f99b7020cae441072057fd480ce9cc
   subpackages:
   - mcorpc
-  - mcorpc/audit
-  - mcorpc/ddl/agent
-  - mcorpc/golang
-  - mcorpc/golang/choriautil
-  - mcorpc/golang/discovery
-  - mcorpc/golang/rpcutil
-  - mcorpc/ruby
 - name: github.com/choria-io/provisioning-agent
   version: 455f60923a422606693cb5310b311d61298799c4
-  subpackages:
-  - agent
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
@@ -84,7 +75,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/nats-io/gnatsd
-  version: 6608e9ac3be979dcb0614b772cc86a87b71acaa3
+  version: eed4fbc1458ce110ad1aa1adf904229bc8fda2a7
   subpackages:
   - conf
   - logger
@@ -92,7 +83,7 @@ imports:
   - server/pse
   - util
 - name: github.com/nats-io/go-nats
-  version: 062418ea1c2181f52dc0f954f6204370519a868b
+  version: fb0396ee0bdb8018b0fef30d6d1de798ce99cd05
   subpackages:
   - encoders/builtin
   - util
