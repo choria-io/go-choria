@@ -47,6 +47,22 @@ var _ = Describe("McoRPC/Client/Stats", func() {
 			})
 		})
 
+		Describe("SetAgent / Agent", func() {
+			It("Should set and get the right agent", func() {
+				Expect(s.Agent()).To(Equal(""))
+				s.SetAgent("foo")
+				Expect(s.Agent()).To(Equal("foo"))
+			})
+		})
+
+		Describe("SetAction / Action", func() {
+			It("Should set and get the right action", func() {
+				Expect(s.Action()).To(Equal(""))
+				s.SetAction("foo")
+				Expect(s.Action()).To(Equal("foo"))
+			})
+		})
+
 		Describe("All", func() {
 			It("Should correctly determine if all nodes have completed", func() {
 				s.SetDiscoveredNodes([]string{"host1", "host2"})
