@@ -15,7 +15,7 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-protocol/protocol"
-	"github.com/nats-io/go-nats"
+	nats "github.com/nats-io/go-nats"
 	log "github.com/sirupsen/logrus"
 )
 
