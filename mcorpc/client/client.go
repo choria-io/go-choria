@@ -177,6 +177,9 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 		return nil
 	})
 
+	r.opts.totalStats.SetAction(action)
+	r.opts.totalStats.SetAgent(r.agent)
+
 	return &RequestOptions{totalStats: r.opts.totalStats}, err
 }
 

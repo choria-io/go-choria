@@ -187,6 +187,8 @@ var _ = Describe("McoRPC/Client", func() {
 			d, err := stats.RequestDuration()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(d).ToNot(BeZero())
+			Expect(stats.Action()).To(Equal("test_action"))
+			Expect(stats.Agent()).To(Equal("package"))
 		})
 
 		It("Should support batched mode", func() {
