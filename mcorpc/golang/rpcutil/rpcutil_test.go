@@ -9,8 +9,8 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
+	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -45,9 +45,9 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 		requests = make(chan *choria.ConnectorMessage)
 		reply = &mcorpc.Reply{}
 
-		cfg, err = config.NewConfig("testdata/test.cfg")
-		Expect(err).ToNot(HaveOccurred())
+		cfg = config.NewConfigForTests()
 		cfg.DisableTLS = true
+		cfg.ClassesFile = "/foo/bar"
 
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
@@ -91,6 +91,7 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 		It("Should retrieve the correct info", func() {
 			build.Version = "1.0.0"
 			cfg.Collectives = []string{"mcollective", "other"}
+			cfg.MainCollective = "mcollective"
 
 			rpcutil.SetServerInfo(is)
 

@@ -1,18 +1,20 @@
-hash: c6487f978d4b32ed2874247bbb44ed31d596a948c757380a0ce00665fa55baf6
-updated: 2018-08-03T13:39:44.358138+02:00
+hash: 40e77b85bc2a1d1b183a41e95d0f221dc015de77efd8dd86d380b37881378aae
+updated: 2018-09-05T23:05:13.174385+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: 6889b7b9c6c4ecdd44268dabeaa457109e14e59b
+  version: 0e447e4a9aa3d49b8c0fd442e32feb74932333c6
   subpackages:
   - backoff
   - build
   - choria
   - choria/connectortest
   - config
+  - provtarget
+  - provtarget/builddefaults
   - puppet
   - registration
   - server
@@ -32,6 +34,8 @@ imports:
   - discovery/broadcast
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
+- name: github.com/choria-io/go-lifecycle
+  version: d46c4b2ca99b1c31cfc83995484dc93d4fd7a3d5
 - name: github.com/choria-io/go-protocol
   version: c3117476636777d60c00a86b2d4b2b8fc56addb4
   subpackages:
@@ -76,7 +80,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/nats-io/go-nats
-  version: 062418ea1c2181f52dc0f954f6204370519a868b
+  version: fb0396ee0bdb8018b0fef30d6d1de798ce99cd05
   subpackages:
   - encoders/builtin
   - util

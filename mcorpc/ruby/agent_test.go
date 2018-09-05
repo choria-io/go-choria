@@ -11,7 +11,6 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	ddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
-	"github.com/choria-io/go-choria/server"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,7 +20,7 @@ import (
 var _ = Describe("McoRPC/Ruby", func() {
 	var (
 		mockctl  *gomock.Controller
-		agentMgr *server.MockAgentManager
+		agentMgr *MockAgentManager
 		cfg      *config.Config
 		fw       *choria.Framework
 		err      error
@@ -37,7 +36,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 		logger = l.WithFields(logrus.Fields{})
 
 		mockctl = gomock.NewController(GinkgoT())
-		agentMgr = server.NewMockAgentManager(mockctl)
+		agentMgr = NewMockAgentManager(mockctl)
 
 		cfg, err = config.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
@@ -67,7 +66,6 @@ var _ = Describe("McoRPC/Ruby", func() {
 
 			rep = &mcorpc.Reply{}
 			ctx = context.Background()
-			choria.NewMockConnectorInfo(mockctl)
 
 			ddl, err := ddl.New("testdata/lib1/mcollective/agent/one.json")
 			Expect(err).ToNot(HaveOccurred())
