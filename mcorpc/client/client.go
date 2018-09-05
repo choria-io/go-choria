@@ -129,7 +129,7 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 	dctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	if r.opts.Filter != nil && len(r.opts.Targets) == 0 {
+	if len(r.opts.Targets) == 0 {
 		err := r.discover(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("discovery failed: %s", err)
@@ -188,6 +188,12 @@ func (r *RPC) discover(ctx context.Context) error {
 
 	r.opts.totalStats.StartDiscover()
 	defer r.opts.totalStats.EndDiscover()
+
+	if r.opts.Filter == nil {
+		r.opts.Filter = protocol.NewFilter()
+	}
+
+	r.opts.Filter.AddAgentFilter(r.agent)
 
 	n, err := b.Discover(ctx, broadcast.Filter(r.opts.Filter), broadcast.Timeout(r.opts.DiscoveryTimeout), broadcast.Name(r.opts.ConnectionName), broadcast.Collective(r.opts.Collective))
 	if err != nil {

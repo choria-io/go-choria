@@ -12,23 +12,23 @@ import (
 
 // RequestOptions are options for a RPC request
 type RequestOptions struct {
-	Targets          []string
 	BatchSize        int
 	BatchSleep       time.Duration
-	ProtocolVersion  string
-	RequestType      string
-	Workers          int
 	Collective       string
-	ReplyTo          string
-	ProcessReplies   bool
-	Replies          chan *choria.ConnectorMessage
-	Progress         bool
-	Timeout          time.Duration
+	ConnectionName   string
 	DiscoveryTimeout time.Duration
 	Filter           *protocol.Filter
 	Handler          Handler
+	ProcessReplies   bool
+	Progress         bool
+	ProtocolVersion  string
+	Replies          chan *choria.ConnectorMessage
+	ReplyTo          string
 	RequestID        string
-	ConnectionName   string
+	RequestType      string
+	Targets          []string
+	Timeout          time.Duration
+	Workers          int
 
 	totalStats *Stats
 
@@ -80,7 +80,7 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) error {
 	msg.SetProtocolVersion(o.ProtocolVersion)
 
 	if o.RequestType == "request" && o.BatchSize > 0 {
-		return errors.New("batched mode required direct_request mode")
+		return errors.New("batched mode requires direct_request mode")
 	}
 
 	err := msg.SetType(o.RequestType)

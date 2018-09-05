@@ -1,7 +1,7 @@
 package: github.com/choria-io/mcorpc-agent-provider
 import:
 - package: github.com/choria-io/go-choria
-  version: 6889b7b9c6c4ecdd44268dabeaa457109e14e59b
+  version: 0e447e4a9aa3d49b8c0fd442e32feb74932333c6
   subpackages:
   - build
   - choria

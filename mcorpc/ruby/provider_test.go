@@ -7,7 +7,6 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
-	"github.com/choria-io/go-choria/server"
 
 	"github.com/choria-io/go-choria/choria"
 
@@ -20,8 +19,8 @@ import (
 var _ = Describe("McoRPC/Ruby", func() {
 	var (
 		mockctl   *gomock.Controller
-		agentMgr  *server.MockAgentManager
-		connector *choria.MockInstanceConnector
+		agentMgr  *MockAgentManager
+		connector *MockInstanceConnector
 		cfg       *config.Config
 		fw        *choria.Framework
 		err       error
@@ -37,10 +36,11 @@ var _ = Describe("McoRPC/Ruby", func() {
 		logger = l.WithFields(logrus.Fields{})
 
 		mockctl = gomock.NewController(GinkgoT())
-		agentMgr = server.NewMockAgentManager(mockctl)
-		connector = choria.NewMockInstanceConnector(mockctl)
+		agentMgr = NewMockAgentManager(mockctl)
+		connector = NewMockInstanceConnector(mockctl)
 
-		cfg, err = config.NewDefaultConfig()
+		cfg = config.NewConfigForTests()
+		cfg.DisableSecurityProviderVerify = true
 		Expect(err).ToNot(HaveOccurred())
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
