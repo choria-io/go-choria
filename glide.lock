@@ -1,12 +1,12 @@
-hash: 40e77b85bc2a1d1b183a41e95d0f221dc015de77efd8dd86d380b37881378aae
-updated: 2018-09-05T23:05:13.174385+02:00
+hash: 530d8470aa468e1129a6c439d955d6f161f972c64af6ef3b3c208335b45cb101
+updated: 2018-09-05T23:34:50.86536+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: 0e447e4a9aa3d49b8c0fd442e32feb74932333c6
+  version: 770801a45dc83c84c993e086791024df1cd2d3fe
   subpackages:
   - backoff
   - build
