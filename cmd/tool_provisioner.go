@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/provtarget"
 )
 
@@ -25,7 +26,14 @@ func (p *provisionerCommand) Configure() error {
 		return err
 	}
 
+	cfg, err = config.NewDefaultConfig()
+	if err != nil {
+		return err
+	}
+
 	cfg.DisableSecurityProviderVerify = true
+	cfg.InitiatedByServer = true
+	cfg.Choria.Provision = true
 
 	return nil
 }
