@@ -54,7 +54,7 @@ import:
   subpackages:
   - mcorpc
 - package: github.com/choria-io/provisioning-agent
-  version: ^0.1.0
+  version: ^0.2.2
 - package: github.com/choria-io/go-mcoshim
 - package: github.com/choria-io/go-lifecycle
   version: ^0.2.0
