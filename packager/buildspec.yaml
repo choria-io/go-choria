@@ -19,6 +19,7 @@ foss:
       output: choria-{{version}}-{{os}}-{{arch}}
       pre:
         - rm additional_agent_*.go || true
+        - rm plugin_*.go || true
         - go generate
 
     64bit_linux:
