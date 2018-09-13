@@ -23,6 +23,9 @@ lockfile="/var/lock/subsys/${prog}"
 logfile="/var/log/${prog}"
 conffile="{{cpkg_etcdir}}/broker.conf"
 
+# set the open file limit to allow over 1024 connections
+ulimit -n 51200
+
 # pull in sysconfig settings
 [ -e /etc/sysconfig/${prog} ] && . /etc/sysconfig/${prog}
 
