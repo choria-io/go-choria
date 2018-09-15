@@ -1,7 +1,6 @@
 package main
 
 //go:generate go run server/gen_additional_agents.go
-//go:generate go run server/gen_additional_agent_providers.go
 //go:generate go run provtarget/gen.go
 //go:generate go run plugin/gen.go
 

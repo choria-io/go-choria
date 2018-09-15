@@ -1,6 +1,0 @@
----
-providers:
-  - name: golangmco
-    repo: github.com/choria-io/mcorpc-agent-provider/mcorpc/golang
-  - name: rubymco
-    repo: github.com/choria-io/mcorpc-agent-provider/mcorpc/ruby

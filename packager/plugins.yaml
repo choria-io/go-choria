@@ -1,0 +1,3 @@
+---
+golangmco: github.com/choria-io/mcorpc-agent-provider/mcorpc/golang
+rubymco: github.com/choria-io/mcorpc-agent-provider/mcorpc/ruby
