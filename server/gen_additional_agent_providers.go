@@ -3,15 +3,14 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"os"
+	"text/template"
 	"time"
 
-	"encoding/json"
-
-	"github.com/alecthomas/template"
 	"github.com/ghodss/yaml"
 )
 
