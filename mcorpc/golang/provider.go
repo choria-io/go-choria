@@ -30,7 +30,7 @@ func (p Provider) Initialize(fw *choria.Framework, log *logrus.Entry) {
 
 // Version reports the version for this provider
 func (p *Provider) Version() string {
-	return fmt.Sprintf("Golang MCollective Agent Compatibility version %s", build.Version)
+	return fmt.Sprintf("%s version %s", p.PluginName(), p.PluginVersion())
 }
 
 // RegisterAgents registers known ruby agents using a shimm agent

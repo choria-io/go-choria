@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server"
@@ -66,5 +65,5 @@ func (p *Provider) Agents() []*agent.DDL {
 
 // Version reports the version for this provider
 func (p *Provider) Version() string {
-	return fmt.Sprintf("Ruby MCollective Agent Compatibility version %s", build.Version)
+	return fmt.Sprintf("%s version %s", p.PluginName(), p.PluginVersion())
 }

@@ -1,18 +1,19 @@
-hash: 530d8470aa468e1129a6c439d955d6f161f972c64af6ef3b3c208335b45cb101
-updated: 2018-09-05T23:34:50.86536+02:00
+hash: 05f93df73f479e24766aedc021cc848c24e86a64ac73120df839239e6a67080c
+updated: 2018-09-15T15:43:02.31078+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: 770801a45dc83c84c993e086791024df1cd2d3fe
+  version: b65970a54d987ed6f5493079e5a1b4ad818f7536
   subpackages:
   - backoff
   - build
   - choria
   - choria/connectortest
   - config
+  - plugin
   - provtarget
   - provtarget/builddefaults
   - puppet
@@ -58,7 +59,7 @@ imports:
   - regex
   - shellsafe
 - name: github.com/choria-io/provisioning-agent
-  version: 5ac672c40c427a8d493c0147e6c65f3bf1b692f6
+  version: c681a9124e6fac7500b0a94cf3b603122051e223
   subpackages:
   - agent
 - name: github.com/ghodss/yaml
@@ -166,7 +167,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: b6ea1ea48f981d0f615a154a45eabb9dd466556d
+  version: 7615b9433f86a8bdf29709bf288bc4fd0636a369
   subpackages:
   - format
   - internal/assertion
