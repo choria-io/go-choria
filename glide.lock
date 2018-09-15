@@ -1,5 +1,5 @@
 hash: 5c8246d3b8ab25bbb807614c16aa2f58427d46285944e7c6b783f0f5aba0b9f8
-updated: 2018-09-07T21:28:01.398655+02:00
+updated: 2018-09-15T15:29:19.361119+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -48,8 +48,17 @@ imports:
   version: db0e90dac9f99b7020cae441072057fd480ce9cc
   subpackages:
   - mcorpc
+  - mcorpc/audit
+  - mcorpc/ddl/agent
+  - mcorpc/golang
+  - mcorpc/golang/choriautil
+  - mcorpc/golang/discovery
+  - mcorpc/golang/rpcutil
+  - mcorpc/ruby
 - name: github.com/choria-io/provisioning-agent
   version: c681a9124e6fac7500b0a94cf3b603122051e223
+  subpackages:
+  - agent
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
@@ -114,7 +123,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: b6ea1ea48f981d0f615a154a45eabb9dd466556d
+  version: 7615b9433f86a8bdf29709bf288bc4fd0636a369
   subpackages:
   - format
   - internal/assertion

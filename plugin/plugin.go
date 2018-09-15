@@ -5,9 +5,9 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"text/template"
 	"time"
 
-	"github.com/alecthomas/template"
 	"github.com/ghodss/yaml"
 )
 
