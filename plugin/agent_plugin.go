@@ -10,11 +10,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// AdditionalAgent is an agent that can be hosted by Choria
-type AdditionalAgent interface {
-	New(*agents.Manager) (agents.Agent, error)
-}
-
 var agentHost func(server.AgentInitializer)
 
 func init() {
@@ -22,15 +17,15 @@ func init() {
 }
 
 func registerAgentPlugin(name string, plugin Pluggable) error {
-	instance, ok := plugin.PluginInstance().(AdditionalAgent)
+	instance, ok := plugin.PluginInstance().(func(server.AgentManager) (agents.Agent, error))
 	if !ok {
-		return fmt.Errorf("plugin %s is not a valid AgentInitializer", plugin.PluginName())
+		return fmt.Errorf("%s is not a valid agent plugin", plugin.PluginName())
 	}
 
 	initializer := func(ctx context.Context, mgr *agents.Manager, connector choria.InstanceConnector, log *logrus.Entry) error {
 		log.Infof("Registering additional agent %s version %s", name, plugin.PluginVersion())
 
-		a, err := instance.New(mgr)
+		a, err := instance(mgr)
 		if err != nil {
 			return fmt.Errorf("could not create %s agent: %s", name, err)
 		}
