@@ -12,14 +12,18 @@ func (srv *Instance) initialConnect(ctx context.Context) error {
 		return fmt.Errorf("Existing on shut down")
 	}
 
-	tempsrv, err := srv.brokerUrls()
+	tempsrv, err := srv.brokerUrls(ctx)
 	if err != nil {
 		return fmt.Errorf("Could not find initial NATS servers: %s", err)
 	}
 
 	srv.log.Infof("Initial servers: %#v", tempsrv)
 
-	srv.connector, err = srv.fw.NewConnector(ctx, srv.brokerUrls, srv.fw.Certname(), srv.log)
+	brokers := func() ([]srvcache.Server, error) {
+		return tempsrv, nil
+	}
+
+	srv.connector, err = srv.fw.NewConnector(ctx, brokers, srv.fw.Certname(), srv.log)
 	if err != nil {
 		return fmt.Errorf("Could not create connector: %s", err)
 	}
@@ -27,12 +31,12 @@ func (srv *Instance) initialConnect(ctx context.Context) error {
 	return nil
 }
 
-func (srv *Instance) brokerUrls() ([]srvcache.Server, error) {
+func (srv *Instance) brokerUrls(ctx context.Context) ([]srvcache.Server, error) {
 	servers := []srvcache.Server{}
 	var err error
 
 	if srv.fw.ProvisionMode() {
-		servers, err = srv.fw.ProvisioningServers()
+		servers, err = srv.fw.ProvisioningServers(ctx)
 		if err != nil {
 			srv.log.Errorf("Could not determine provisioning broker urls while provisioning is configured: %s", err)
 		}

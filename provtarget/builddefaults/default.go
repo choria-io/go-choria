@@ -1,6 +1,7 @@
 package builddefaults
 
 import (
+	"context"
 	"strings"
 
 	"github.com/choria-io/go-choria/build"
@@ -21,7 +22,7 @@ func (b *Resolver) Name() string {
 }
 
 // Targets are the build time configured provisioners
-func (b *Resolver) Targets(log *logrus.Entry) []string {
+func (b *Resolver) Targets(ctx context.Context, log *logrus.Entry) []string {
 	if build.ProvisionBrokerURLs != "" {
 		return strings.Split(build.ProvisionBrokerURLs, ",")
 	}

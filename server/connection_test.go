@@ -1,6 +1,8 @@
 package server
 
 import (
+	"context"
+
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
@@ -13,10 +15,12 @@ import (
 var _ = Describe("Server/Connection", func() {
 	var _ = Describe("brokerUrls", func() {
 		var (
-			cfg *config.Config
-			fw  *choria.Framework
-			srv *Instance
-			err error
+			cfg    *config.Config
+			fw     *choria.Framework
+			srv    *Instance
+			err    error
+			ctx    context.Context
+			cancel func()
 		)
 
 		BeforeEach(func() {
@@ -33,6 +37,12 @@ var _ = Describe("Server/Connection", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			logrus.SetLevel(logrus.FatalLevel)
+
+			ctx, cancel = context.WithCancel(context.Background())
+		})
+
+		AfterEach(func() {
+			cancel()
 		})
 
 		It("Should support provisioning", func() {
@@ -40,7 +50,7 @@ var _ = Describe("Server/Connection", func() {
 			build.ProvisionBrokerURLs = "nats1:4222, nats2:4222"
 			cfg.InitiatedByServer = true
 
-			servers, err := srv.brokerUrls()
+			servers, err := srv.brokerUrls(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
 			expected := []srvcache.Server{
@@ -55,7 +65,7 @@ var _ = Describe("Server/Connection", func() {
 			build.ProvisionModeDefault = "true"
 			build.ProvisionBrokerURLs = "invalid stuff"
 
-			servers, err := srv.brokerUrls()
+			servers, err := srv.brokerUrls(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
 			expected := []srvcache.Server{
@@ -70,7 +80,7 @@ var _ = Describe("Server/Connection", func() {
 			build.ProvisionModeDefault = "true"
 			build.ProvisionBrokerURLs = ""
 
-			servers, err := srv.brokerUrls()
+			servers, err := srv.brokerUrls(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
 			expected := []srvcache.Server{
@@ -82,7 +92,7 @@ var _ = Describe("Server/Connection", func() {
 		})
 
 		It("Should default to unprovisioned mode", func() {
-			servers, err := srv.brokerUrls()
+			servers, err := srv.brokerUrls(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
 			expected := []srvcache.Server{
