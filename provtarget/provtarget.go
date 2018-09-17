@@ -1,6 +1,7 @@
 package provtarget
 
 import (
+	"context"
 	"fmt"
 	"sync"
 
@@ -16,7 +17,7 @@ type TargetResolver interface {
 	Name() string
 
 	// Targets will be called to determine the provisioning destination
-	Targets(*logrus.Entry) []string
+	Targets(context.Context, *logrus.Entry) []string
 }
 
 var mu = &sync.Mutex{}
@@ -33,7 +34,7 @@ func RegisterTargetResolver(r TargetResolver) error {
 }
 
 // Targets is a list of brokers to connect to
-func Targets(log *logrus.Entry) ([]srvcache.Server, error) {
+func Targets(ctx context.Context, log *logrus.Entry) ([]srvcache.Server, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -41,7 +42,7 @@ func Targets(log *logrus.Entry) ([]srvcache.Server, error) {
 		return []srvcache.Server{}, fmt.Errorf("no Provisioning Target Resolver registered")
 	}
 
-	s := resolver.Targets(log)
+	s := resolver.Targets(ctx, log)
 
 	if len(s) == 0 {
 		return []srvcache.Server{}, fmt.Errorf("provisioning target plugin %s returned no servers", Name())

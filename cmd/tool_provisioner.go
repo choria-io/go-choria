@@ -47,7 +47,7 @@ func (p *provisionerCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	fmt.Printf("Attempting provisioner resolution using: %s\n", provtarget.Name())
 
-	targets, err := provtarget.Targets(c.Logger("provisioner"))
+	targets, err := provtarget.Targets(ctx, c.Logger("provisioner"))
 	if err != nil {
 		return err
 	}
