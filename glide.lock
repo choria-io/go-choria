@@ -1,5 +1,5 @@
-hash: f8f76277f96e9a0631a418ab2036f4e1da41b8c8ae160261136760c5d49c4493
-updated: 2018-09-17T12:37:36.138545565+02:00
+hash: 590994ca4c75252ec481758dfa453c35b3fd2499bdb11592a5f9c0170dbfd512
+updated: 2018-09-18T12:32:51.958791+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -22,7 +22,7 @@ imports:
 - name: github.com/choria-io/go-mcoshim
   version: f92bd7733a5af67ff1e51bcb586f72464b7a3d12
 - name: github.com/choria-io/go-network-broker
-  version: fb996d344cb1b1d368517bb2071ace03372da0ba
+  version: 5ee327018c41220008c20284067da610d0f6478e
 - name: github.com/choria-io/go-protocol
   version: c3117476636777d60c00a86b2d4b2b8fc56addb4
   subpackages:
@@ -48,8 +48,17 @@ imports:
   version: c6aa986d8a0ca81fca4994b3ce3dea22fd5f63fc
   subpackages:
   - mcorpc
+  - mcorpc/audit
+  - mcorpc/ddl/agent
+  - mcorpc/golang
+  - mcorpc/golang/choriautil
+  - mcorpc/golang/discovery
+  - mcorpc/golang/rpcutil
+  - mcorpc/ruby
 - name: github.com/choria-io/provisioning-agent
   version: c681a9124e6fac7500b0a94cf3b603122051e223
+  subpackages:
+  - agent
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
@@ -151,7 +160,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: 3e01752db0189b9157070a0e1668a620f9a85da2
 - name: github.com/tidwall/gjson
-  version: 01f00f129617a6fe98941fb920d6c760241b54d2
+  version: 1e3f6aeaa5bad08d777ea7807b279a07885dd8b2
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer

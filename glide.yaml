@@ -40,7 +40,7 @@ import:
   - gomock
   - mockgen
 - package: github.com/choria-io/go-network-broker
-  version: 1.0.0
+  version: 1.1.0
 - package: github.com/choria-io/go-security
   version: 0.1.0
 - package: github.com/choria-io/go-client
