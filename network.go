@@ -40,10 +40,10 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 
 	s.opts.Host = c.Config.Choria.NetworkListenAddress
 	s.opts.Port = c.Config.Choria.NetworkClientPort
-	s.opts.Logtime = false
-	s.opts.MaxConn = build.MaxBrokerClients()
 	s.opts.WriteDeadline = c.Config.Choria.NetworkWriteDeadline
+	s.opts.MaxConn = build.MaxBrokerClients()
 	s.opts.NoSigs = true
+	s.opts.Logtime = false
 
 	if debug || c.Config.LogLevel == "debug" {
 		s.opts.Debug = true
