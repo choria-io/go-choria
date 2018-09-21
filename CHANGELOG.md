@@ -1,5 +1,14 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/10/18|      |Release 0.7.0                                                                                            |
+|2018/10/02|462   |Allow custom packages to supply their own sysv init start order                                          |
+|2018/09/18|458   |Update network broker to 1.1.0 which includes `gnatsd` 1.3.0                                             |
+|2018/09/17|456   |Provisioner Target plugins now have a context in their calls so they can do internal retries             |
+|2018/09/15|447   |Create a single plugin interface that supports many types of plugin                                      |
+|2018/09/11|444   |Set ulimits for the broker appropriately for 50 000 connections                                          |
+|2018/09/02|430   |Allow agents to publish lifecycle events                                                                 |
+|2018/08/31|428   |Add a CLI tool to view provisioning broker decisions - `tool provisioner`                                |
+|2018/08/29|426   |Correctly compiled servers will enter provisioning mode when the configuration file is missing entirely  |
 |2018/08/27|      |Release 0.6.0                                                                                            |
 |2018/08/26|      |Update provisioning agent dependency, allows `restart` when not in provisioning mode if a token is set   |
 |2018/08/26|422   |publish a shutdown lifecycle event on clean shutdowns                                                    |
