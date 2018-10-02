@@ -10,7 +10,7 @@
 # Default-Stop:      0 1 6
 # Short-Description: Choria.IO Orchestration Server
 # Description:       Choria.IO Orchestration Server
-# chkconfig:         2345 {{cpkg_server_start_level}} 05
+# chkconfig:         {{cpkg_server_start_runlevels}} {{cpkg_server_start_order}} {{cpkg_server_start_order}}
 ### END INIT INFO
 
 # source function library

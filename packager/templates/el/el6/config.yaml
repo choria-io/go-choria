@@ -7,7 +7,10 @@ required_properties:
   - dist
   - target_arch
   - rpm_group
-  - server_start_level
+  - broker_start_runlevels
+  - broker_start_order
+  - server_start_runlevels
+  - server_start_order
 
 artifacts:
  - /usr/src/redhat/**/*.rpm
