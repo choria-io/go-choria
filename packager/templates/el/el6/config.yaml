@@ -7,6 +7,7 @@ required_properties:
   - dist
   - target_arch
   - rpm_group
+  - server_start_level
 
 artifacts:
  - /usr/src/redhat/**/*.rpm
