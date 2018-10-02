@@ -6,8 +6,6 @@
 # Provides:          {{cpkg_name}}-broker
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
-# Default-Start:     2 3 4 5
-# Default-Stop:      0 1 6
 # chkconfig:         {{cpkg_broker_start_runlevels}} {{cpkg_broker_start_order}} {{cpkg_broker_start_order}}
 # Short-Description: Choria.IO Orchestration System Network Broker
 # Description:       NATS based middleware, Federation Broker and Protocol Adapter for Choria.IO
