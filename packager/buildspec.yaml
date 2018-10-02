@@ -43,7 +43,10 @@ foss:
       manage_conf: 1
       contact: R.I.Pienaar <rip@devco.net>
       rpm_group: System Environment/Base
-      server_start_level: 50
+      server_start_runlevels: "-"
+      server_start_order: 50
+      broker_start_runlevels: "-"
+      broker_start_order: 50
 
     el5_32:
       template: el/el6
