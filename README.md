@@ -22,6 +22,7 @@ These will connect to the middleware using your usual client configuration.
 |`choria tool event`|Listens for Choria life cycle events emitted by various daemons and related tools|
 |`choria tool sub`|Subscribes to any middleware topic|
 |`choria tool pub`|Publishes to any middleware topic|
+|`choria tool provision`|Tool to test provision target discovery|
 
 # Configuration
 
@@ -236,16 +237,16 @@ In general you should only do this if you know what you are doing, have special 
 Agents can be written in Go and if you're building a custom binary you can include your agents
 in your binary.
 
-During your CI or whatever you have to `glide get` the repo with your agent so it's available during compile, then create a file `packager/agents.yaml`:
+During your CI or whatever you have to `glide get` the repo with your agent so it's available during compile, then create a file `packager/user_plugins.yaml`:
 
 ```yaml
 ---
-agents:
-- name: foo
-  repo: github.com/acme/foo_agent/foo
+foo: github.com/acme/foo_agent/foo
 ```
 
 When you run `go generate` (done during the building phase for you) this will create the shim you need to compile your agent into the binary.
+
+Your agent must implement the `plugin.Pluggable` interface.
 
 ### Provisioning
 
@@ -270,16 +271,16 @@ Please see the documentation in the [provisioning-agent](https://github.com/chor
 Agent Providers allow entirely new ways of writing agents to be created.  An example is the one that runs old mcollective ruby agents
 within a choria instance.
 
-During your CI or whatever you have to `glide get` the repo with your agent so it's available during compile, then create a file `packager/agent_providers.yaml`:
+During your CI or whatever you have to `glide get` the repo with your agent so it's available during compile, then create a file `packager/user_plugins.yaml`:
 
 ```yaml
 ---
-providers:
-  - name: rubymco
-    repo: github.com/choria-io/go-choria/mcorpc/ruby
+rubymco: github.com/choria-io/go-choria/mcorpc/ruby
 ```
 
 When you run `go generate` (done during the building phase for you) this will create the shim you need to compile your agent into the binary.
+
+Your agent must implement the `plugin.Pluggable` interface.
 
 ## Packages
 
