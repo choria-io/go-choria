@@ -34,13 +34,13 @@ type ServerInfoSource interface {
 }
 
 type ServerStats struct {
-	Total      float64
-	Valid      float64
-	Invalid    float64
-	Passed     float64
-	Filtered   float64
-	Replies    float64
-	TTLExpired float64
+	Total      float64 `json:"total"`
+	Valid      float64 `json:"valid"`
+	Invalid    float64 `json:"invalid"`
+	Passed     float64 `json:"passed"`
+	Filtered   float64 `json:"filtered"`
+	Replies    float64 `json:"replies"`
+	TTLExpired float64 `json:"ttlexpired"`
 }
 
 type AgentReply struct {

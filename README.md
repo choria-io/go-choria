@@ -36,6 +36,13 @@ Running `choria broker run --config /path/to/broker.cfg` will start the various 
 
 When enabled a vast cache of Prometheus compatible metrics are exposed under `/choria/prometheus`, use `plugin.choria.stats_port` and `plugin.choria.stats_address` to enable
 
+Additionally server status can be written regularly - 30 seconds interval by default:
+
+```yaml
+plugin.choria.status_file_path = /var/tmp/choria_status.json
+plugin.choria.status_update_interval = 30
+```
+
 ## Configurable Security Subsystems
 
 While the ruby Choria code only integrates with Puppet CA this daemon has multiple security systems and will in time not be tied to Puppet but will support SECP and FIPS compliance and more. The ruby code will gain parity in time.

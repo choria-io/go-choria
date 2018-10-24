@@ -28,6 +28,7 @@ type Instance struct {
 	discovery          *discovery.Manager
 	provisioning       bool
 	startTime          time.Time
+	lastMsgProcessed   time.Time
 	agentDenyList      []string
 	lifecycleComponent string
 
@@ -39,12 +40,13 @@ type Instance struct {
 // NewInstance creates a new choria server instance
 func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	i = &Instance{
-		fw:            fw,
-		cfg:           fw.Config,
-		requests:      make(chan *choria.ConnectorMessage),
-		mu:            &sync.Mutex{},
-		startTime:     time.Now(),
-		agentDenyList: []string{},
+		fw:               fw,
+		cfg:              fw.Config,
+		requests:         make(chan *choria.ConnectorMessage),
+		mu:               &sync.Mutex{},
+		startTime:        time.Now(),
+		lastMsgProcessed: time.Unix(0, 0),
+		agentDenyList:    []string{},
 	}
 
 	i.log = log.WithFields(log.Fields{"identity": fw.Config.Identity, "component": "server"})
@@ -61,6 +63,9 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		srv.log.Errorf("Initial Choria Broker connection failed: %s", err)
 		return fmt.Errorf("initial Choria Broker connection failed: %s", err)
 	}
+
+	wg.Add(1)
+	go srv.WriteServerStatus(ctx, wg)
 
 	srv.agents = agents.New(srv.requests, srv.fw, srv.connector, srv, srv.log)
 	srv.registration = registration.New(srv.fw, srv.connector, srv.log)

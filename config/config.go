@@ -90,6 +90,10 @@ type ChoriaPluginConfig struct {
 
 	// adapters
 	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split"`
+
+	// status file
+	StatusFilePath      string `confkey:"plugin.choria.status_file_path"`
+	StatusUpdateSeconds int    `confkey:"plugin.choria.status_update_interval" default:"30"`
 }
 
 // Config represents Choria configuration
