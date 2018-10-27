@@ -49,7 +49,12 @@ func View(ctx context.Context, opt *ViewOptions) error {
 func WriteEvents(ctx context.Context, opt *ViewOptions) error {
 	events := make(chan *choria.ConnectorMessage, 100)
 
-	err := opt.Connector.QueueSubscribe(ctx, opt.Choria.NewRequestID(), "choria.lifecycle.event.>", "", events)
+	rid, err := opt.Choria.NewRequestID()
+	if err != nil {
+		return err
+	}
+
+	err = opt.Connector.QueueSubscribe(ctx, rid, "choria.lifecycle.event.>", "", events)
 	if err != nil {
 		return fmt.Errorf("could not subscribe to event source: %s", err)
 	}
