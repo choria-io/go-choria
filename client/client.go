@@ -70,7 +70,12 @@ func New(fw *choria.Framework, opts ...Option) (*Client, error) {
 	}
 
 	if c.name == "" {
-		c.name = fmt.Sprintf("%s-%s", c.fw.Certname(), c.fw.NewRequestID())
+		rid, err := c.fw.NewRequestID()
+		if err != nil {
+			return nil, fmt.Errorf("could not generate unique name: %s", err)
+		}
+
+		c.name = fmt.Sprintf("%s-%s", c.fw.Certname(), rid)
 	}
 
 	c.receiverReady = make(chan struct{}, c.receivers)
