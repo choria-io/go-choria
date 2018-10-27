@@ -1,17 +1,19 @@
-hash: 237723f70bec30408ad465bfc1d67f7554e2fc9cd8adadb1c9c08a91e391155a
-updated: 2018-07-24T06:57:00.302681+02:00
+hash: c2c144e0c802d59ccbabef5141c4948d8410bd9baab26fe3ac1628b67d4f6f03
+updated: 2018-10-27T22:41:21.449507+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: 0bdd11848047642529130834321fc703dc6a7b57
+  version: 712b4538dbe96c66d118dca98221fb9ef14e054e
   subpackages:
   - backoff
   - build
   - choria
   - config
+  - provtarget
+  - provtarget/builddefaults
   - puppet
   - srvcache
 - name: github.com/choria-io/go-confkey
@@ -37,6 +39,8 @@ imports:
   - maxlength
   - regex
   - shellsafe
+- name: github.com/gofrs/uuid
+  version: 370558f003bfe29580cd0f698d8640daccdcc45c
 - name: github.com/golang/mock
   version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c
   subpackages:
@@ -46,12 +50,14 @@ imports:
   version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
   subpackages:
   - proto
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: b729f2633dfe35f4d1d8a32385f6685610ce1cb5
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
   - pbutil
 - name: github.com/nats-io/go-nats
-  version: 062418ea1c2181f52dc0f954f6204370519a868b
+  version: fb0396ee0bdb8018b0fef30d6d1de798ce99cd05
   subpackages:
   - encoders/builtin
   - util
@@ -78,7 +84,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: b6ea1ea48f981d0f615a154a45eabb9dd466556d
+  version: 7615b9433f86a8bdf29709bf288bc4fd0636a369
   subpackages:
   - format
   - internal/assertion
@@ -109,12 +115,10 @@ imports:
   version: b15cd069a83443be3154b719d0cc9fe8117f09fb
   subpackages:
   - xfs
-- name: github.com/satori/go.uuid
-  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
-  version: 3e01752db0189b9157070a0e1668a620f9a85da2
+  version: ad15b42461921f1fb3529b058c6786c6a45d5162
 - name: github.com/tidwall/gjson
-  version: 01f00f129617a6fe98941fb920d6c760241b54d2
+  version: 1e3f6aeaa5bad08d777ea7807b279a07885dd8b2
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer

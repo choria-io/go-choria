@@ -1,7 +1,7 @@
 package: github.com/choria-io/go-client
 import:
 - package: github.com/choria-io/go-choria
-  version: ^0.5.0
+  version: 712b4538dbe96c66d118dca98221fb9ef14e054e
   subpackages:
   - choria
   - srvcache
