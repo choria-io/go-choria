@@ -37,7 +37,10 @@ var _ = Describe("Reply Transformer", func() {
 		c, err = choria.New("testdata/federation.cfg")
 		Expect(err).ToNot(HaveOccurred())
 
-		request, err = c.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, c.NewRequestID(), "mcollective")
+		rid, err := c.NewRequestID()
+		Expect(err).ToNot(HaveOccurred())
+
+		request, err = c.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, rid, "mcollective")
 		Expect(err).ToNot(HaveOccurred())
 		request.SetMessage(`{"hello":"world"}`)
 

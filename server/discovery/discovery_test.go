@@ -44,7 +44,10 @@ var _ = Describe("Server/Discovery", func() {
 
 	BeforeEach(func() {
 		mgr = New(fw, log)
-		req, err = fw.NewRequest(protocol.RequestV1, "test", "testid", "callerid", 60, fw.NewRequestID(), "mcollective")
+		rid, err := fw.NewRequestID()
+		Expect(err).ToNot(HaveOccurred())
+
+		req, err = fw.NewRequest(protocol.RequestV1, "test", "testid", "callerid", 60, rid, "mcollective")
 		Expect(err).ToNot(HaveOccurred())
 
 		filter = req.NewFilter()

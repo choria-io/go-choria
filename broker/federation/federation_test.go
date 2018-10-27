@@ -141,8 +141,8 @@ func (s *stubConnection) Close() {
 	return
 }
 
-func (s *stubConnection) ReplyTarget(msg *choria.Message) string {
-	return ""
+func (s *stubConnection) ReplyTarget(msg *choria.Message) (string, error) {
+	return "stubreplytarget", nil
 }
 
 func (s *stubConnection) Nats() *nats.Conn {

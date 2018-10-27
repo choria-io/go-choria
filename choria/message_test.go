@@ -129,7 +129,10 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should support reply", func() {
-			req, err := fw.NewRequest(protocol.RequestV1, "test_agent", "sender.example.net", "test=sender", 60, fw.NewRequestID(), "test_collective")
+			rid, err := fw.NewRequestID()
+			Expect(err).ToNot(HaveOccurred())
+
+			req, err := fw.NewRequest(protocol.RequestV1, "test_agent", "sender.example.net", "test=sender", 60, rid, "test_collective")
 			Expect(err).ToNot(HaveOccurred())
 			req.SetMessage("hello world")
 
@@ -194,7 +197,10 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should set up the transport", func() {
-			req, err := fw.NewRequest(protocol.RequestV1, "test_agent", "sender.example.net", "test=sender", 60, fw.NewRequestID(), "test_collective")
+			rid, err := fw.NewRequestID()
+			Expect(err).ToNot(HaveOccurred())
+
+			req, err := fw.NewRequest(protocol.RequestV1, "test_agent", "sender.example.net", "test=sender", 60, rid, "test_collective")
 			Expect(err).ToNot(HaveOccurred())
 			req.SetMessage("hello world")
 

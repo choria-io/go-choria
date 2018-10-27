@@ -20,7 +20,6 @@ var _ = Describe("Choria NATS Ingest", func() {
 		connector *pooledWorker
 		manager   *stubConnectionManager
 		in        *choria.ConnectorMessage
-		err       error
 		logtxt    *bufio.Writer
 		logbuf    *bytes.Buffer
 		logger    *log.Entry
@@ -33,7 +32,10 @@ var _ = Describe("Choria NATS Ingest", func() {
 		ctx, cancel = context.WithCancel(context.Background())
 		logger, logtxt, logbuf = newDiscardLogger()
 
-		request, err = c.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, c.NewRequestID(), "mcollective")
+		rid, err := c.NewRequestID()
+		Expect(err).ToNot(HaveOccurred())
+
+		request, err = c.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, rid, "mcollective")
 		Expect(err).ToNot(HaveOccurred())
 		request.SetMessage(`{"hello":"world"}`)
 

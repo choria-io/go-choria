@@ -69,7 +69,7 @@ type InstanceConnector interface {
 type Connector interface {
 	InstanceConnector
 
-	ReplyTarget(msg *Message) string
+	ReplyTarget(msg *Message) (string, error)
 	ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *ConnectorMessage, error)
 	Connect(ctx context.Context) (err error)
 	Nats() *nats.Conn
@@ -486,8 +486,13 @@ func ReplyTarget(msg *Message, requestid string) string {
 	return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), msg.SenderID, requestid)
 }
 
-func (conn *Connection) ReplyTarget(msg *Message) string {
-	return ReplyTarget(msg, conn.choria.NewRequestID())
+func (conn *Connection) ReplyTarget(msg *Message) (string, error) {
+	id, err := conn.choria.NewRequestID()
+	if err != nil {
+		return "", err
+	}
+
+	return ReplyTarget(msg, id), nil
 }
 
 func (conn *Connection) federationTarget(federation string, side string) string {

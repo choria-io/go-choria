@@ -471,7 +471,7 @@ func (fw *Framework) PuppetAIOCmd(command string, def string) string {
 }
 
 // NewRequestID Creates a new RequestID
-func (fw *Framework) NewRequestID() string {
+func (fw *Framework) NewRequestID() (string, error) {
 	return NewRequestID()
 }
 

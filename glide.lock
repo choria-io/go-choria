@@ -1,5 +1,5 @@
-hash: 590994ca4c75252ec481758dfa453c35b3fd2499bdb11592a5f9c0170dbfd512
-updated: 2018-09-18T12:32:51.958791+02:00
+hash: cc97fd762a899ff194a1deb0ae546912b17aa280b7314454dc21f7f698c12f35
+updated: 2018-10-27T22:16:36.730309+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -64,6 +64,8 @@ imports:
   subpackages:
   - encoders/builtin
   - util
+- name: github.com/gofrs/uuid
+  version: 370558f003bfe29580cd0f698d8640daccdcc45c
 - name: github.com/gogo/protobuf
   version: 99cb9b23110011cc45571c901ecae6f6f5e65cd3
   subpackages:
@@ -79,6 +81,8 @@ imports:
   version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
   subpackages:
   - proto
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: b729f2633dfe35f4d1d8a32385f6685610ce1cb5
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
@@ -155,10 +159,8 @@ imports:
   version: b15cd069a83443be3154b719d0cc9fe8117f09fb
   subpackages:
   - xfs
-- name: github.com/satori/go.uuid
-  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
-  version: 3e01752db0189b9157070a0e1668a620f9a85da2
+  version: ad15b42461921f1fb3529b058c6786c6a45d5162
 - name: github.com/tidwall/gjson
   version: 1e3f6aeaa5bad08d777ea7807b279a07885dd8b2
 - name: github.com/tidwall/match
@@ -186,6 +188,7 @@ imports:
   - html/charset
 - name: golang.org/x/sys
   version: f7928cfef4d09d1b080aa2b6fd3ca9ba1567c733
+  repo: https://go.googlesource.com/sys
   subpackages:
   - unix
   - windows
