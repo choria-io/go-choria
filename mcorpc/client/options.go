@@ -42,7 +42,12 @@ type RequestOptions struct {
 type RequestOption func(*RequestOptions)
 
 // NewRequestOptions creates a initialized request options
-func NewRequestOptions(fw *choria.Framework, ddl *agent.DDL) *RequestOptions {
+func NewRequestOptions(fw *choria.Framework, ddl *agent.DDL) (*RequestOptions, error) {
+	rid, err := fw.NewRequestID()
+	if err != nil {
+		return nil, err
+	}
+
 	return &RequestOptions{
 		ProtocolVersion: protocol.RequestV1,
 		RequestType:     "direct_request",
@@ -50,7 +55,7 @@ func NewRequestOptions(fw *choria.Framework, ddl *agent.DDL) *RequestOptions {
 		ProcessReplies:  true,
 		Progress:        false,
 		Workers:         3,
-		ConnectionName:  fmt.Sprintf("%s-mcorpc-%s", fw.Certname(), fw.NewRequestID()),
+		ConnectionName:  fmt.Sprintf("%s-mcorpc-%s", fw.Certname(), rid),
 		stats:           NewStats(),
 		totalStats:      NewStats(),
 		fw:              fw,
@@ -60,7 +65,7 @@ func NewRequestOptions(fw *choria.Framework, ddl *agent.DDL) *RequestOptions {
 		// of what peoples network behaviour is like assuming discovery works
 		Timeout:          (time.Duration(fw.Config.DiscoveryTimeout) * time.Second) + ddl.Timeout(),
 		DiscoveryTimeout: time.Duration(fw.Config.DiscoveryTimeout) * time.Second,
-	}
+	}, nil
 }
 
 // ConfigureMessage configures a pre-made message object based on the settings contained

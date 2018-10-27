@@ -71,7 +71,7 @@ var _ = Describe("McoRPC", func() {
 
 	var _ = Describe("HandleMessage", func() {
 		BeforeEach(func() {
-			req, err = fw.NewRequest(protocol.RequestV1, "test", "test.example.net", "choria=rip.mcollective", 60, fw.NewRequestID(), "mcollective")
+			req, err = fw.NewRequest(protocol.RequestV1, "test", "test.example.net", "choria=rip.mcollective", 60, "testrequest", "mcollective")
 			Expect(err).ToNot(HaveOccurred())
 			msg, err = choria.NewMessageFromRequest(req, "dev.null", fw)
 			Expect(err).ToNot(HaveOccurred())

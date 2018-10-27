@@ -14,15 +14,17 @@ import (
 
 var _ = Describe("McoRPC/Client/Options", func() {
 	var (
-		o  *RequestOptions
-		fw *choria.Framework
+		o   *RequestOptions
+		fw  *choria.Framework
+		err error
 	)
 
 	BeforeEach(func() {
 		cfg, _ := config.NewConfig("testdata/default.cfg")
 		fw, _ = choria.NewWithConfig(cfg)
 		ddl, _ := agent.Find("package", []string{"testdata"})
-		o = NewRequestOptions(fw, ddl)
+		o, err = NewRequestOptions(fw, ddl)
+		Expect(err).ToNot(HaveOccurred())
 	})
 
 	Describe("ConfigureMessage", func() {

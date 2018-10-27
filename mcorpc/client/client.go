@@ -107,12 +107,17 @@ func New(fw *choria.Framework, agent string, opts ...Option) (rpc *RPC, err erro
 	return rpc, nil
 }
 
-func (r *RPC) setOptions(opts ...RequestOption) {
-	r.opts = NewRequestOptions(r.fw, r.ddl)
+func (r *RPC) setOptions(opts ...RequestOption) (err error) {
+	r.opts, err = NewRequestOptions(r.fw, r.ddl)
+	if err != nil {
+		return err
+	}
 
 	for _, opt := range opts {
 		opt(r.opts)
 	}
+
+	return nil
 }
 
 // Do performs a RPC request and optionally processes replies
@@ -124,7 +129,10 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 	defer r.mu.Unlock()
 
 	// we want to force the passing of options on every request
-	r.setOptions(opts...)
+	err := r.setOptions(opts...)
+	if err != nil {
+		return nil, err
+	}
 
 	dctx, cancel := context.WithCancel(ctx)
 	defer cancel()
