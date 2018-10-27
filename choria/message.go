@@ -65,9 +65,14 @@ func NewMessageFromRequest(req protocol.Request, replyto string, choria *Framewo
 
 // NewMessage constructs a basic Message instance
 func NewMessage(payload string, agent string, collective string, msgType string, request *Message, choria *Framework) (msg *Message, err error) {
+	id, err := choria.NewRequestID()
+	if err != nil {
+		return
+	}
+
 	msg = &Message{
 		Payload:         payload,
-		RequestID:       choria.NewRequestID(),
+		RequestID:       id,
 		TTL:             choria.Config.TTL,
 		DiscoveredHosts: []string{},
 		SenderID:        choria.Config.Identity,

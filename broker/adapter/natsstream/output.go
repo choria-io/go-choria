@@ -14,9 +14,9 @@ import (
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/srvcache"
+	uuid "github.com/gofrs/uuid"
 	stan "github.com/nats-io/go-nats-streaming"
 	"github.com/prometheus/client_golang/prometheus"
-	uuid "github.com/satori/go.uuid"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -62,7 +62,7 @@ func newStream(name string, work chan adaptable, logger *log.Entry) ([]*stream, 
 
 	clusterID := cfg.Option(prefix+"clusterid", "")
 	if clusterID == "" {
-		return nil, fmt.Errorf("No ClusterID configured, please set %s", prefix+"clusterid'")
+		return nil, fmt.Errorf("no ClusterID configured, please set %s", prefix+"clusterid'")
 	}
 
 	workers := []*stream{}
@@ -70,7 +70,12 @@ func newStream(name string, work chan adaptable, logger *log.Entry) ([]*stream, 
 	for i := 0; i < instances; i++ {
 		logger.Infof("Creating NATS Streaming Adapter %s NATS Streaming instance %d / %d publishing to %s on cluster %s", name, i, instances, topic, clusterID)
 
-		iname := fmt.Sprintf("%s_%d-%s", name, i, strings.Replace(uuid.NewV4().String(), "-", "", -1))
+		wid, err := uuid.NewV4()
+		if err != nil {
+			return nil, fmt.Errorf("could not start output worker %d: %s", i, err)
+		}
+
+		iname := fmt.Sprintf("%s_%d-%s", name, i, strings.Replace(wid.String(), "-", "", -1))
 
 		st := &stream{
 			clusterID: clusterID,
