@@ -1,12 +1,12 @@
 hash: c9c200d76af1574b7bad9a4b49e1b1164734b16a3b3557e1d596607872be99bc
-updated: 2018-08-26T18:04:04.639884+02:00
+updated: 2018-10-27T22:50:58.496824+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: 97cd9ba3e34c66e6f151d3db03d881de1c3f3c63
+  version: 712b4538dbe96c66d118dca98221fb9ef14e054e
   subpackages:
   - backoff
   - build
@@ -39,6 +39,8 @@ imports:
   - maxlength
   - regex
   - shellsafe
+- name: github.com/gofrs/uuid
+  version: 370558f003bfe29580cd0f698d8640daccdcc45c
 - name: github.com/golang/mock
   version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c
   subpackages:
@@ -48,12 +50,14 @@ imports:
   version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
   subpackages:
   - proto
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: b729f2633dfe35f4d1d8a32385f6685610ce1cb5
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
   - pbutil
 - name: github.com/nats-io/go-nats
-  version: 062418ea1c2181f52dc0f954f6204370519a868b
+  version: fb0396ee0bdb8018b0fef30d6d1de798ce99cd05
   subpackages:
   - encoders/builtin
   - util
@@ -77,10 +81,8 @@ imports:
   version: b15cd069a83443be3154b719d0cc9fe8117f09fb
   subpackages:
   - xfs
-- name: github.com/satori/go.uuid
-  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
-  version: 3e01752db0189b9157070a0e1668a620f9a85da2
+  version: ad15b42461921f1fb3529b058c6786c6a45d5162
 - name: github.com/tidwall/gjson
   version: 1e3f6aeaa5bad08d777ea7807b279a07885dd8b2
 - name: github.com/tidwall/match
@@ -135,7 +137,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: b6ea1ea48f981d0f615a154a45eabb9dd466556d
+  version: 7615b9433f86a8bdf29709bf288bc4fd0636a369
   subpackages:
   - format
   - internal/assertion
