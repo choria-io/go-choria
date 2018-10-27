@@ -1,5 +1,5 @@
-hash: cc97fd762a899ff194a1deb0ae546912b17aa280b7314454dc21f7f698c12f35
-updated: 2018-10-27T22:16:36.730309+01:00
+hash: f5c085f61e489701f4dcbf5a30e63d96ee0e66a14f3ee3a87d8ca5a7d198de6d
+updated: 2018-10-27T23:50:36.249379+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,13 +12,13 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-client
-  version: 9f8afdf705fdf1e08ed970d8a61a52936205119c
+  version: 60f882dd021c8270ed359c37df45d728f754fa0b
   subpackages:
   - client
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-lifecycle
-  version: d46c4b2ca99b1c31cfc83995484dc93d4fd7a3d5
+  version: 1170dd4e29c13116122415e7140e1a092d6a966b
 - name: github.com/choria-io/go-mcoshim
   version: f92bd7733a5af67ff1e51bcb586f72464b7a3d12
 - name: github.com/choria-io/go-network-broker
@@ -33,6 +33,8 @@ imports:
   subpackages:
   - filesec
   - puppetsec
+- name: github.com/choria-io/go-updater
+  version: dd12ee5118471007909aac6dbe8c4374b6907e5d
 - name: github.com/choria-io/go-validator
   version: 4ce2ef25983faa873cc4bcea0f1ef2a4273d42cc
   subpackages:
@@ -45,7 +47,7 @@ imports:
   - regex
   - shellsafe
 - name: github.com/choria-io/mcorpc-agent-provider
-  version: c6aa986d8a0ca81fca4994b3ce3dea22fd5f63fc
+  version: 279845170e27ad55f55a3ced2c442eb91ad5334d
   subpackages:
   - mcorpc
   - mcorpc/audit
@@ -56,7 +58,7 @@ imports:
   - mcorpc/golang/rpcutil
   - mcorpc/ruby
 - name: github.com/choria-io/provisioning-agent
-  version: c681a9124e6fac7500b0a94cf3b603122051e223
+  version: c5300d23e090eda3904af8edb909f267d17825a0
   subpackages:
   - agent
 - name: github.com/ghodss/yaml
