@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"sync"
+	"time"
 
 	"github.com/choria-io/go-protocol/protocol"
 
@@ -60,6 +61,8 @@ func (srv *Instance) handleRawMessage(ctx context.Context, wg *sync.WaitGroup, r
 	}
 
 	validatedCtr.WithLabelValues(srv.cfg.Identity).Inc()
+
+	srv.lastMsgProcessed = time.Now()
 
 	wg.Add(1)
 	go srv.agents.Dispatch(ctx, wg, replies, msg, req)

@@ -1,7 +1,10 @@
 package server
 
 import (
+	"context"
 	"encoding/json"
+	"io/ioutil"
+	"sync"
 	"time"
 
 	"github.com/choria-io/go-lifecycle"
@@ -13,6 +16,16 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 )
+
+// InstanceStatus describes the current instance status
+type InstanceStatus struct {
+	Identity        string              `json:"identity"`
+	Uptime          int64               `json:"uptime"`
+	ConnectedServer string              `json:"connected_server"`
+	LastMessage     int64               `json:"last_message"`
+	Provisioning    bool                `json:"provisioning_mode"`
+	Stats           *agents.ServerStats `json:"stats"`
+}
 
 // NewEvent creates a new event with the server component and identity set and publishes it
 func (srv *Instance) NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error {
@@ -27,9 +40,19 @@ func (srv *Instance) NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error 
 	return srv.PublishEvent(e)
 }
 
+// ConnectedServer returns the URL of the broker this instance is connected to, "unknown" when not connected
+func (srv *Instance) ConnectedServer() string {
+	return srv.connector.ConnectedServer()
+}
+
 // KnownAgents is a list of agents loaded into the server instance
 func (srv *Instance) KnownAgents() []string {
 	return srv.agents.KnownAgents()
+}
+
+// LastProcessedMessage is the time that the last message was processed in local time
+func (srv *Instance) LastProcessedMessage() time.Time {
+	return srv.lastMsgProcessed
 }
 
 // AgentMetadata looks up the metadata for a specific agent
@@ -69,6 +92,16 @@ func (srv *Instance) StartTime() time.Time {
 	return srv.startTime
 }
 
+// UpTime returns how long the server has been running
+func (srv *Instance) UpTime() int64 {
+	return int64(time.Now().Sub(srv.startTime).Seconds())
+}
+
+// Provisioning determines if this is an instance running in provisioning mode
+func (srv *Instance) Provisioning() bool {
+	return srv.fw.ProvisionMode()
+}
+
 // Stats expose server statistics
 func (srv *Instance) Stats() agents.ServerStats {
 	return agents.ServerStats{
@@ -79,6 +112,66 @@ func (srv *Instance) Stats() agents.ServerStats {
 		Filtered:   srv.getPromCtrValue(filteredCtr),
 		Replies:    srv.getPromCtrValue(repliesCtr),
 		TTLExpired: srv.getPromCtrValue(ttlExpiredCtr),
+	}
+}
+
+// Status calculates the current server status
+func (srv *Instance) Status() *InstanceStatus {
+	stats := srv.Stats()
+
+	return &InstanceStatus{
+		Identity:        srv.cfg.Identity,
+		Uptime:          srv.UpTime(),
+		ConnectedServer: srv.ConnectedServer(),
+		LastMessage:     srv.LastProcessedMessage().Unix(),
+		Provisioning:    srv.Provisioning(),
+		Stats:           &stats,
+	}
+}
+
+// WriteServerStatus periodically writes the server status to a file
+func (srv *Instance) WriteServerStatus(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	target := srv.cfg.Choria.StatusFilePath
+	freq := srv.cfg.Choria.StatusUpdateSeconds
+
+	writer := func() error {
+		if target == "" || freq == 0 {
+			srv.log.Debug("Server status writing has been disabled")
+			return nil
+		}
+
+		srv.log.Debugf("Writing server status to %s", target)
+
+		j, err := json.Marshal(srv.Status())
+		if err != nil {
+			return err
+		}
+
+		err = ioutil.WriteFile(target, j, 0640)
+
+		return err
+	}
+
+	err := writer()
+	if err != nil {
+		srv.log.Errorf("Initial server status write to %s failed: %s", target, err)
+	}
+
+	timer := time.NewTicker(time.Duration(freq) * time.Second)
+
+	for {
+		select {
+		case <-timer.C:
+			err = writer()
+			if err != nil {
+				srv.log.Errorf("Server status write to %s failed: %s", target, err)
+			}
+
+		case <-ctx.Done():
+			return
+		}
 	}
 }
 
