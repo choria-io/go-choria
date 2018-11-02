@@ -22,6 +22,9 @@ lockfile="/var/lock/subsys/${prog}"
 logfile="/var/log/${prog}"
 conffile="{{cpkg_etcdir}}/server.conf"
 
+COMMAND_PREFIX=""
+EXTRA_OPTS=""
+
 # pull in sysconfig settings
 [ -e /etc/sysconfig/${prog} ] && . /etc/sysconfig/${prog}
 
@@ -43,7 +46,7 @@ start() {
 
     daemon \
       --pidfile=${pidfile} \
-      " { nohup ${exec} ${args} > ${logfile} 2>&1 & } ; sleep 0.5 ; [ -f ${pidfile} ]"
+      " { nohup ${COMMAND_PREFIX} ${exec} ${args} > ${logfile} 2>&1 & } ; sleep 0.5 ; [ -f ${pidfile} ]"
 
     RETVAL=$?
     echo
