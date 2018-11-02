@@ -34,11 +34,13 @@ Please visit https://choria.io for more information
 
 %install
 rm -rf %{buildroot}
+%{__install} -d -m0755  %{buildroot}/etc/sysconfig
 %{__install} -d -m0755  %{buildroot}/usr/lib/systemd/system
 %{__install} -d -m0755  %{buildroot}/etc/logrotate.d
 %{__install} -d -m0755  %{buildroot}%{bindir}
 %{__install} -d -m0755  %{buildroot}%{etcdir}
 %{__install} -d -m0755  %{buildroot}/var/log
+%{__install} -m0644 dist/server.sysconfig %{buildroot}/etc/sysconfig/%{pkgname}-server
 %{__install} -m0644 dist/server.service %{buildroot}/usr/lib/systemd/system/%{pkgname}-server.service
 %{__install} -m0644 dist/broker.service %{buildroot}/usr/lib/systemd/system/%{pkgname}-broker.service
 %{__install} -m0644 dist/choria-logrotate %{buildroot}/etc/logrotate.d/%{pkgname}
@@ -79,7 +81,7 @@ fi
 /etc/logrotate.d/%{pkgname}
 /usr/lib/systemd/system/%{pkgname}-server.service
 /usr/lib/systemd/system/%{pkgname}-broker.service
-
+%config(noreplace)/etc/sysconfig/%{pkgname}-server
 
 %changelog
 * Tue Dec 05 2017 R.I.Pienaar <rip@devco.net>
