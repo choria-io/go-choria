@@ -50,7 +50,7 @@ type Pluggable interface {
 	// PluginType is the type of the plugin, to match plugin.Type
 	PluginType() Type
 
-	//PluginVersion is the version of the plugin
+	// PluginVersion is the version of the plugin
 	PluginVersion() string
 }
 

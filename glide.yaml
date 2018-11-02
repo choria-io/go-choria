@@ -57,3 +57,5 @@ import:
 - package: github.com/choria-io/go-lifecycle
 - package: github.com/gofrs/uuid
   version: ^3.1.1
+- package: github.com/choria-io/go-updater
+  version: ^0.0.1
