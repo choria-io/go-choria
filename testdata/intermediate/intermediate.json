@@ -1,0 +1,20 @@
+{
+  "CN": "Intermediate CA",
+  "key": {
+    "algo": "ecdsa",
+    "size": 256
+  },
+  "ca": {
+    "expiry": "262800h",
+    "pathlen": 0
+  },
+  "names": [
+    {
+      "C": "XX",
+      "L": "City",
+      "O": "Choria",
+      "OU": "Unit testing Intermediate CA",
+      "ST": "Locality"
+    }
+  ]
+}

@@ -423,8 +423,16 @@ func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) error {
 		return err
 	}
 
+	intermediates := x509.NewCertPool()
+	if !intermediates.AppendCertsFromPEM(certpem) {
+		s.log.Warnf("Could not add intermediates: %s", err)
+		return err
+	}
+
 	opts := x509.VerifyOptions{
 		Roots: roots,
+		Intermediates: intermediates,
+		KeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
 
 	if name != "" {
