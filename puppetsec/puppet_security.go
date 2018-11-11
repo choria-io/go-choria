@@ -74,6 +74,9 @@ type Config struct {
 
 	useFakeUID bool
 	fakeUID    int
+
+	// AlwaysOverwriteCache supports always overwriting the local filesystem cache
+	AlwaysOverwriteCache bool
 }
 
 // Option is a function that can configure the Puppet Security Provider
@@ -83,13 +86,14 @@ type Option func(*PuppetSecurity) error
 func WithChoriaConfig(c *config.Config) Option {
 	return func(p *PuppetSecurity) error {
 		cfg := Config{
-			AllowList:        c.Choria.CertnameWhitelist,
-			DisableTLSVerify: c.DisableTLSVerify,
-			PrivilegedUsers:  c.Choria.PrivilegedUsers,
-			SSLDir:           c.Choria.SSLDir,
-			PuppetCAHost:     c.Choria.PuppetCAHost,
-			PuppetCAPort:     c.Choria.PuppetCAPort,
-			Identity:         c.Identity,
+			AllowList:            c.Choria.CertnameWhitelist,
+			DisableTLSVerify:     c.DisableTLSVerify,
+			PrivilegedUsers:      c.Choria.PrivilegedUsers,
+			SSLDir:               c.Choria.SSLDir,
+			PuppetCAHost:         c.Choria.PuppetCAHost,
+			PuppetCAPort:         c.Choria.PuppetCAPort,
+			Identity:             c.Identity,
+			AlwaysOverwriteCache: c.Choria.SecurityAlwaysOverwriteCache,
 		}
 
 		if c.HasOption("plugin.choria.puppetca_host") || c.HasOption("plugin.choria.puppetca_port") {

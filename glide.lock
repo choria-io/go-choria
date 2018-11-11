@@ -1,5 +1,5 @@
 hash: 2a412acb3adac850adf2684018e2b5e8530cf2fff05952a31838b3f969673e50
-updated: 2018-06-15T14:10:28.400205+02:00
+updated: 2018-11-15T09:36:00.562889-08:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,7 +12,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: b3717c9a6fbd0447cc76c4ff106c8d934112ec9c
+  version: 2ece4ea72ff60d44818365d0655832d2d7ff35c0
   subpackages:
   - build
   - config
@@ -32,9 +32,11 @@ imports:
   - regex
   - shellsafe
 - name: github.com/golang/protobuf
-  version: 3a3da3a4e26776cc22a79ef46d5d58477532dede
+  version: 52132540909e117f2b98b0694383dc0ab1e1deca
   subpackages:
   - proto
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: 5c8c8bd35d3832f5d134ae1e1e375b69a4d25242
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
@@ -44,29 +46,29 @@ imports:
   subpackages:
   - prometheus
 - name: github.com/prometheus/client_model
-  version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
+  version: 5c3871d89910bfb32f5fcab2aa4b9ec68e65a99f
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 7600349dcfe1abd18d72d3a1770870d9800a7801
+  version: 41aa239b4cce3c56ab88fc366ae8b0a6423fa239
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: fe93d378a6b03758a2c1b65e86cf630bf78681c0
+  version: 185b4288413d2a0dd0806f78c90dde719829e5ae
   subpackages:
   - internal/util
   - nfs
   - xfs
 - name: github.com/sirupsen/logrus
-  version: c155da19408a8799da419ed3eeb0cb5db0ad5dbc
+  version: bcd833dfe83d3cebad139e4a29ed79cb2318bf95
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
   - ssh/terminal
 - name: golang.org/x/sys
-  version: f7928cfef4d09d1b080aa2b6fd3ca9ba1567c733
+  version: 66b7b1311ac80bbafcd2daeef9a5e6e2cd1e2399
   subpackages:
   - unix
 - name: gopkg.in/alecthomas/kingpin.v2
@@ -76,8 +78,15 @@ testImports:
   version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c
   subpackages:
   - gomock
+- name: github.com/hpcloud/tail
+  version: a1dbeea552b7c8df4b542c66073e393de198a800
+  subpackages:
+  - ratelimiter
+  - util
+  - watch
+  - winfile
 - name: github.com/onsi/ginkgo
-  version: fa5fabab2a1bfbd924faf4c067d07ae414e2aedf
+  version: 3774a09d95489ccaa16032e0770d08ea77ba6184
   subpackages:
   - config
   - internal/codelocation
@@ -97,7 +106,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 62bff4df71bdbc266561a0caee19f0594b17c240
+  version: 7615b9433f86a8bdf29709bf288bc4fd0636a369
   subpackages:
   - format
   - internal/assertion
@@ -111,14 +120,14 @@ testImports:
   - matchers/support/goraph/util
   - types
 - name: golang.org/x/net
-  version: 89e543239a64caf31d3a6865872ea120b41446df
+  version: adae6a3d119ae4890b46832a2e88a95adc62b8e7
   subpackages:
   - context
   - html
   - html/atom
   - html/charset
 - name: golang.org/x/text
-  version: 5c1cf69b5978e5a34c5f9ba09a83e56acc4b7877
+  version: 6f44c5a2ea40ee3593d98cdcc905cc1fdaa660e2
   subpackages:
   - encoding
   - encoding/charmap
@@ -137,5 +146,9 @@ testImports:
   - language
   - runes
   - transform
+- name: gopkg.in/fsnotify/fsnotify.v1
+  version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
+- name: gopkg.in/tomb.v1
+  version: c131134a1947e9afd9cecfe11f4c6dff0732ae58
 - name: gopkg.in/yaml.v2
   version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
