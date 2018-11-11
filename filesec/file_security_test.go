@@ -504,6 +504,23 @@ var _ = Describe("FileSSL", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stat.Size()).To(Equal(int64(16)))
 		})
+
+		It("Should fail cache validation if allow lists change", func() {
+			cfg.Cache = os.TempDir()
+			cfg.Cache = os.TempDir()
+			pub := prov.publicCertPath()
+
+			pd, err := ioutil.ReadFile(pub)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = prov.CachePublicData(pd, "rip.mcollective")
+			Expect(err).ToNot(HaveOccurred())
+
+			cfg.AllowList = []string{"^bees$"}
+
+			err = prov.CachePublicData(pd, "rip.mcollective")
+			Expect(err).To(HaveOccurred())
+		})
 	})
 
 	Describe("CachedPublicData", func() {

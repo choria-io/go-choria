@@ -319,6 +319,10 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
+	if !s.shouldCacheClientCert(data, identity) {
+		return fmt.Errorf("certificate '%s' did not pass validation", identity)
+	}
+
 	err := os.MkdirAll(s.certCacheDir(), os.FileMode(int(0755)))
 	if err != nil {
 		return fmt.Errorf("could not create Client Certificate Cache Directory: %s", err)
@@ -333,10 +337,6 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 	if err == nil {
 		s.log.Debugf("Already have a certificate in %s, refusing to overwrite with a new one", certfile)
 		return nil
-	}
-
-	if !s.shouldCacheClientCert(data, identity) {
-		return fmt.Errorf("certificate '%s' did not pass validation", identity)
 	}
 
 	err = ioutil.WriteFile(certfile, []byte(data), os.FileMode(int(0644)))
@@ -401,7 +401,7 @@ func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) error {
 	ca := s.caPath()
 	capem, err := ioutil.ReadFile(ca)
 	if err != nil {
-		s.log.Errorf("Could not read CA '%s': %s", s.caPath, err)
+		s.log.Errorf("Could not read CA '%s': %s", ca, err)
 		return err
 	}
 
@@ -623,7 +623,7 @@ func (s *FileSecurity) certCacheDir() string {
 
 func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) bool {
 	if err := s.VerifyCertificate(data, ""); err != nil {
-		s.log.Warnf("Received certificate '%s' certiicate did not pass verification: %s", name, err)
+		s.log.Warnf("Received certificate '%s' certificate did not pass verification: %s", name, err)
 		return false
 	}
 
