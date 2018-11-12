@@ -364,6 +364,23 @@ var _ = Describe("FileSSL", func() {
 			err := prov.VerifyCertificate(pem, "rip.mcollective")
 			Expect(err).ToNot(HaveOccurred())
 		})
+
+		It("Should work with client provided intermediate chains", func() {
+			c, err := config.NewDefaultConfig()
+			Expect(err).ToNot(HaveOccurred())
+
+			c.Choria.FileSecurityCA = filepath.Join("..", "testdata", "intermediate", "certs", "ca.pem")
+			c.Choria.FileSecurityCache = filepath.Join("..", "testdata", "intermediate", "certs")
+
+			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "rip.mcollective.pem"))
+			Expect(err).ToNot(HaveOccurred())
+
+			err = prov.VerifyCertificate(pem, "rip.mcollective")
+			Expect(err).ToNot(HaveOccurred())
+		})
 	})
 
 	Describe("PublicCertPem", func() {

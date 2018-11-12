@@ -1,0 +1,36 @@
+{
+    "signing": {
+        "default": {
+            "expiry": "262800h"
+        },
+        "profiles": {
+            "ca-to-root": {
+                "usages": [
+                    "signing",
+                    "key encipherment",
+                    "cert sign",
+                    "crl sign"
+                ],
+                "ca_constraint": {"is_ca": true, "max_path_len":0, "max_path_len_zero": true},
+                "expiry": "262800h"
+            },
+            "client": {
+                "usages": [
+                    "client auth",
+                    "key encipherment",
+                    "digital signature"
+                ],
+                "expiry": "262800h"
+            },
+            "server": {
+                "usages": [
+                    "server auth",
+                    "client auth",
+                    "key encipherment",
+                    "digital signature"
+                ],
+                "expiry": "262800h"
+            }
+        }
+    }
+}
