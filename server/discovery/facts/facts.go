@@ -28,7 +28,7 @@ func Match(filters [][3]string, fw *choria.Framework, log *logrus.Entry) bool {
 		}
 
 		if matched == false {
-			log.Debug("Failed to match fact filter '%#v'", filter)
+			log.Debugf("Failed to match fact filter '%#v'", filter)
 			break
 		}
 	}

@@ -54,6 +54,7 @@ Generally each provider will have it's own settings, there are a few system wide
 |Setting|Default|Description|
 |-------|-------|-----------|
 |`plugin.security.provider`|`puppet`|The security provider to use, can be `puppet` or `file`|
+|`plugin.security.always_overwrite_cache`|`false`|Tell the security provider to always overwrite the certificate cache, can be `true`, or `false`|
 |`plugin.choria.security.privileged_users`|`\\.privileged.mcollective$`|Comma sep list of valid certificates for privileged client users.|
 |`plugin.choria.security.certname_whitelist`|`\\.mcollective$`|Comma sep list of valid certificates for normal client users.|
 
