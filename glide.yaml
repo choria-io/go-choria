@@ -5,6 +5,8 @@ import:
   subpackages:
   - choria
   - srvcache
+- package: github.com/choria-io/go-protocol
+  version: 1.2.0
 - package: github.com/onsi/ginkgo
   version: ^1
 - package: github.com/onsi/gomega
