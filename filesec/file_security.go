@@ -69,6 +69,9 @@ type Config struct {
 
 	// DisableTLSVerify disables TLS verify in HTTP clients etc
 	DisableTLSVerify bool
+
+	// AlwaysOverwriteCache supports always overwriting the local filesystem cache
+	AlwaysOverwriteCache bool
 }
 
 // Option is a function that can configure the File Security Provider
@@ -77,14 +80,15 @@ type Option func(*FileSecurity) error
 // WithChoriaConfig optionally configures the File Security Provider from settings found in a typical Choria configuration
 func WithChoriaConfig(c *config.Config) Option {
 	cfg := Config{
-		AllowList:        c.Choria.CertnameWhitelist,
-		CA:               c.Choria.FileSecurityCA,
-		Cache:            c.Choria.FileSecurityCache,
-		Certificate:      c.Choria.FileSecurityCertificate,
-		DisableTLSVerify: c.DisableTLSVerify,
-		Key:              c.Choria.FileSecurityKey,
-		PrivilegedUsers:  c.Choria.PrivilegedUsers,
-		Identity:         c.Identity,
+		AllowList:            c.Choria.CertnameWhitelist,
+		CA:                   c.Choria.FileSecurityCA,
+		Cache:                c.Choria.FileSecurityCache,
+		Certificate:          c.Choria.FileSecurityCertificate,
+		DisableTLSVerify:     c.DisableTLSVerify,
+		Key:                  c.Choria.FileSecurityKey,
+		PrivilegedUsers:      c.Choria.PrivilegedUsers,
+		Identity:             c.Identity,
+		AlwaysOverwriteCache: c.Choria.SecurityAlwaysOverwriteCache,
 	}
 
 	if cn, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
@@ -333,10 +337,12 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 		return err
 	}
 
-	_, err = os.Stat(certfile)
-	if err == nil {
-		s.log.Debugf("Already have a certificate in %s, refusing to overwrite with a new one", certfile)
-		return nil
+	if !s.conf.AlwaysOverwriteCache {
+		_, err = os.Stat(certfile)
+		if err == nil {
+			s.log.Debugf("Already have a certificate in %s, refusing to overwrite with a new one", certfile)
+			return nil
+		}
 	}
 
 	err = ioutil.WriteFile(certfile, []byte(data), os.FileMode(int(0644)))
@@ -430,9 +436,9 @@ func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) error {
 	}
 
 	opts := x509.VerifyOptions{
-		Roots: roots,
+		Roots:         roots,
 		Intermediates: intermediates,
-		KeyUsages: []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
+		KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
 
 	if name != "" {

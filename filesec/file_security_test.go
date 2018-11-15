@@ -1,6 +1,7 @@
 package filesec
 
 import (
+	"bytes"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/pem"
@@ -56,6 +57,7 @@ var _ = Describe("FileSSL", func() {
 		setSSL(cfg, goodStub, "rip.mcollective")
 
 		l = logrus.New()
+
 		l.Out = ioutil.Discard
 
 		prov, err = New(WithConfig(cfg), WithLog(l.WithFields(logrus.Fields{})))
@@ -503,6 +505,48 @@ var _ = Describe("FileSSL", func() {
 			stat, err := os.Stat(cpath)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stat.Size()).To(Equal(int64(16)))
+		})
+
+		It("Should support always overwrite files", func() {
+			c, err := config.NewDefaultConfig()
+			Expect(err).ToNot(HaveOccurred())
+
+			identity := "rip.mcollective"
+
+			// These certs both have the same hostname.  First we cache the first one, then we attempt to cache the second one.
+			// This should result in the caching layer storing the second certificate.
+			firstcert := filepath.Join("..", "testdata", "intermediate", "certs", identity+".pem")
+			secondcert := filepath.Join("..", "testdata", "intermediate", "certs", "second."+identity+".pem")
+
+			c.Choria.FileSecurityCertificate = firstcert
+			c.Choria.FileSecurityCA = filepath.Join("..", "testdata", "intermediate", "certs", "ca.pem")
+			c.Choria.FileSecurityCache = filepath.Join("..", "testdata", "intermediate", "certs")
+			c.Choria.SecurityAlwaysOverwriteCache = true
+
+			c.Choria.FileSecurityCache, err = ioutil.TempDir("", "cache-always")
+			Expect(err).ToNot(HaveOccurred())
+			defer os.RemoveAll(c.Choria.FileSecurityCache)
+
+			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			fpd, err := ioutil.ReadFile(firstcert)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = prov.CachePublicData(fpd, identity)
+			Expect(err).ToNot(HaveOccurred())
+
+			spd, err := ioutil.ReadFile(secondcert)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = prov.CachePublicData(spd, identity)
+			Expect(err).To(BeNil())
+
+			cpd, err := prov.CachedPublicData(identity)
+			Expect(err).ToNot(HaveOccurred())
+
+			res := bytes.Compare(spd, cpd)
+			Expect(res).To(BeZero())
 		})
 
 		It("Should fail cache validation if allow lists change", func() {
