@@ -1,5 +1,28 @@
 package: github.com/choria-io/go-choria
 import:
+- package: github.com/choria-io/go-lifecycle
+  version: 0.2.1
+- package: github.com/choria-io/go-protocol
+  version: ^1.3.0
+- package: github.com/choria-io/go-confkey
+  version: ^1.2
+- package: github.com/choria-io/go-network-broker
+  version: 1.1.0
+- package: github.com/choria-io/go-security
+  version: 0.2.0
+- package: github.com/choria-io/go-client
+  version: 60f882dd021c8270ed359c37df45d728f754fa0b
+  subpackages:
+  - client
+- package: github.com/choria-io/go-updater
+  version: ^0.0.1
+- package: github.com/choria-io/go-mcoshim
+- package: github.com/choria-io/mcorpc-agent-provider
+  version: 279845170e27ad55f55a3ced2c442eb91ad5334d
+  subpackages:
+  - mcorpc
+- package: github.com/choria-io/provisioning-agent
+  version: c5300d23e090eda3904af8edb909f267d17825a0
 - package: github.com/sirupsen/logrus
   version: ^1
 - package: golang.org/x/crypto
@@ -28,34 +51,12 @@ import:
   - util
 - package: github.com/prometheus/client_golang
   version: v0.9.0-pre1
-- package: github.com/choria-io/go-protocol
-  version: ^1.3.0
-- package: github.com/choria-io/go-confkey
-  version: ^1.2
 - package: github.com/golang/mock
   version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c
   subpackages:
   - gomock
   - mockgen
-- package: github.com/choria-io/go-network-broker
-  version: 1.1.0
-- package: github.com/choria-io/go-security
-  version: 0.1.0
-- package: github.com/choria-io/go-client
-  version: 60f882dd021c8270ed359c37df45d728f754fa0b
-  subpackages:
-  - client
 - package: go.uber.org/atomic
   version: ^1.3.2
-- package: github.com/choria-io/mcorpc-agent-provider
-  version: 279845170e27ad55f55a3ced2c442eb91ad5334d
-  subpackages:
-  - mcorpc
-- package: github.com/choria-io/provisioning-agent
-  version: c5300d23e090eda3904af8edb909f267d17825a0
-- package: github.com/choria-io/go-mcoshim
-- package: github.com/choria-io/go-lifecycle
 - package: github.com/gofrs/uuid
   version: ^3.1.1
-- package: github.com/choria-io/go-updater
-  version: ^0.0.1
