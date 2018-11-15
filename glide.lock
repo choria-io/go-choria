@@ -1,5 +1,5 @@
-hash: c5fd2eb350591d94df09f9b0c85a62ad722e1c8197af4e9317d6774ea8379c49
-updated: 2018-11-15T21:42:38.111895+01:00
+hash: 6713dbcc1d5ffd7c4cb0afb3a48f47ee00c6fb095d9de674804e07f8070c9954
+updated: 2018-11-15T22:26:00.44894+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,7 +12,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-client
-  version: 60f882dd021c8270ed359c37df45d728f754fa0b
+  version: 54bcd877b6c6d9c8bc96863910f2f32b67b081d1
   subpackages:
   - client
 - name: github.com/choria-io/go-confkey
