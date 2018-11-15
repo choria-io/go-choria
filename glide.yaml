@@ -11,7 +11,7 @@ import:
 - package: github.com/choria-io/go-security
   version: 0.2.0
 - package: github.com/choria-io/go-client
-  version: 60f882dd021c8270ed359c37df45d728f754fa0b
+  version: 0.4.1
   subpackages:
   - client
 - package: github.com/choria-io/go-updater
