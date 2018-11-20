@@ -203,7 +203,6 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 			case m := <-subs.in:
 				subs.out <- &ConnectorMessage{Data: m.Data, Reply: m.Reply, Subject: m.Subject}
 			case <-subs.quit:
-
 				return
 			}
 		}
@@ -221,7 +220,8 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 	return s.out, nil
 }
 
-// QueueSubscribe is a lot like ChanQueueSubscribe but you provide it the queue to dump messages in
+// QueueSubscribe is a lot like ChanQueueSubscribe but you provide it the queue to dump messages in,
+// it also takes a context and will unsubscribe when the context is cancelled
 func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error {
 	var err error
 
@@ -242,6 +242,7 @@ func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject
 			case m := <-s.in:
 				s.out <- &ConnectorMessage{Data: m.Data, Reply: m.Reply, Subject: m.Subject}
 			case <-ctx.Done():
+				conn.Unsubscribe(name)
 				return
 			case <-s.quit:
 				close(s.in)
