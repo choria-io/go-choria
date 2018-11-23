@@ -1,5 +1,5 @@
-hash: 6713dbcc1d5ffd7c4cb0afb3a48f47ee00c6fb095d9de674804e07f8070c9954
-updated: 2018-11-15T22:26:00.44894+01:00
+hash: c5ec2dc185136bd9ae1052fe375dec6fd3f7a5abb92a3172608200445527b8bf
+updated: 2018-11-23T22:28:46.263587+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -29,7 +29,7 @@ imports:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-security
-  version: 9c90c6ebc9548a8300fff479716bad9c739d6717
+  version: 75654ad2139b915791141ab172d0930bf024fec7
   subpackages:
   - filesec
   - puppetsec
@@ -80,7 +80,7 @@ imports:
   - gomock
   - mockgen
 - name: github.com/golang/protobuf
-  version: 1918e1ff6ffd2be7bed0553df8650672c3bfe80d
+  version: 52132540909e117f2b98b0694383dc0ab1e1deca
   subpackages:
   - proto
 - name: github.com/konsorten/go-windows-terminal-sequences
@@ -109,7 +109,7 @@ imports:
 - name: github.com/nats-io/nuid
   version: 28b996b57a46dd0c2aa3a3dc7fa8780878331d00
 - name: github.com/onsi/ginkgo
-  version: 3774a09d95489ccaa16032e0770d08ea77ba6184
+  version: 2e1be8f7d90e9d3e3e58b0ce470f2f14d075406f
   subpackages:
   - config
   - internal/codelocation
@@ -129,7 +129,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 7615b9433f86a8bdf29709bf288bc4fd0636a369
+  version: 65fb64232476ad9046e57c26cd0bff3d3a8dc6cd
   subpackages:
   - format
   - internal/assertion
@@ -152,7 +152,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 7e9e6cabbd393fc208072eedef99188d0ce788b6
+  version: 41aa239b4cce3c56ab88fc366ae8b0a6423fa239
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
@@ -184,7 +184,7 @@ imports:
   - blowfish
   - ssh/terminal
 - name: golang.org/x/net
-  version: c10e9556a7bc0e7c942242b606f0acf024ad5d6a
+  version: adae6a3d119ae4890b46832a2e88a95adc62b8e7
   subpackages:
   - context
   - html
