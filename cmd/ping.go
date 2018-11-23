@@ -197,9 +197,7 @@ func (p *pingCommand) createMessage(filter *protocol.Filter) (*choria.Message, e
 func (p *pingCommand) Configure() error {
 	protocol.ClientStrictValidation = false
 
-	commonConfigure()
-
-	return nil
+	return commonConfigure()
 }
 
 // sparkline takes all the received time stamps and put them
