@@ -14,15 +14,15 @@ import:
   version: 0.4.1
   subpackages:
   - client
-- package: github.com/choria-io/go-updater
-  version: ^0.0.1
-- package: github.com/choria-io/go-mcoshim
 - package: github.com/choria-io/mcorpc-agent-provider
-  version: 279845170e27ad55f55a3ced2c442eb91ad5334d
+  version: 0.3.1
   subpackages:
   - mcorpc
 - package: github.com/choria-io/provisioning-agent
-  version: c5300d23e090eda3904af8edb909f267d17825a0
+  version: 0.3.0
+- package: github.com/choria-io/go-updater
+  version: ^0.0.1
+- package: github.com/choria-io/go-mcoshim
 - package: github.com/sirupsen/logrus
   version: ^1
 - package: golang.org/x/crypto

@@ -1,5 +1,5 @@
-hash: c5ec2dc185136bd9ae1052fe375dec6fd3f7a5abb92a3172608200445527b8bf
-updated: 2018-11-23T22:28:46.263587+01:00
+hash: 655e8cb04b5ce98b459d5c0d3c589ae7f0648d17328fc81c502c59b70ea7b8b9
+updated: 2018-11-27T21:29:53.610856+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -47,7 +47,7 @@ imports:
   - regex
   - shellsafe
 - name: github.com/choria-io/mcorpc-agent-provider
-  version: 279845170e27ad55f55a3ced2c442eb91ad5334d
+  version: c6aa986d8a0ca81fca4994b3ce3dea22fd5f63fc
   subpackages:
   - mcorpc
   - mcorpc/audit
@@ -58,7 +58,7 @@ imports:
   - mcorpc/golang/rpcutil
   - mcorpc/ruby
 - name: github.com/choria-io/provisioning-agent
-  version: c5300d23e090eda3904af8edb909f267d17825a0
+  version: d7c49da1907a1de7751f7fe0ac5f9ad1156ea5ce
   subpackages:
   - agent
 - name: github.com/ghodss/yaml

@@ -107,7 +107,7 @@ func (reg *Manager) registrationWorker(ctx context.Context, wg *sync.WaitGroup, 
 		case msg := <-reg.datac:
 			reg.publish(msg)
 		case <-ctx.Done():
-			reg.log.Infof("Existing on shut down")
+			reg.log.Infof("Registration system exiting on shut down")
 			return
 		}
 	}
