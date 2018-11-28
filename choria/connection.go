@@ -637,14 +637,17 @@ func (conn *Connection) Flush() {
 
 // Close closes the NATS connection after flushing what needed to be sent
 func (conn *Connection) Close() {
+	subs := []string{}
+
 	for s := range conn.chanSubscriptions {
-		err := conn.Unsubscribe(s)
-		if err != nil {
-			conn.logger.Warnf("Could not unsubscribe from channel subscription %s: %s", s, err)
-		}
+		subs = append(subs, s)
 	}
 
 	for s := range conn.subscriptions {
+		subs = append(subs, s)
+	}
+
+	for _, s := range subs {
 		err := conn.Unsubscribe(s)
 		if err != nil {
 			conn.logger.Warnf("Could not unsubscribe from %s: %s", s, err)
