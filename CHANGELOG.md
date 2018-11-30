@@ -1,5 +1,15 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/11/30|      |Release 0.8.0                                                                                            |
+|2018/11/28|489   |Avoid a panic that affected clients written in Go when closing connections to the broker                 |
+|2018/11/23|      |Improve backward compatibility when handling slashes in regex for allowed certs (go-security#22)         |
+|2018/11/23|485   |Fail gracefully in the `ping` app when the configuration is not present                                  |
+|2018/11/20|483   |Resolve a client subscription leak by unsubscribing on context cancellation                              |
+|2018/11/15|      |When provisioning is compiled in - support self updating using `go-updater` (provisioning-agent#53)      |
+|2018/11/14|476   |Allow the SSL cache to always be written via `plugin.security.always_overwrite_cache`                    |
+|2018/11/02|473   |Support running Choria Server in a namespace on Enterprise Linux via a COMMAND_PREFIX in the init script |
+|2018/10/24|467   |Support writing server status regularly                                                                  |
+|2018/10/27|470   |Switch to `github.com/gofrs/uuid` for UUID generation                                                    |
 |2018/10/18|      |Release 0.7.0                                                                                            |
 |2018/10/02|462   |Allow custom packages to supply their own sysv init start order                                          |
 |2018/09/18|458   |Update network broker to 1.1.0 which includes `gnatsd` 1.3.0                                             |
