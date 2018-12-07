@@ -1,5 +1,5 @@
-hash: 655e8cb04b5ce98b459d5c0d3c589ae7f0648d17328fc81c502c59b70ea7b8b9
-updated: 2018-11-27T21:29:53.610856+01:00
+hash: 1117300229cf4495f9adfe033a28cce2fdaf921a66546feb085dd0f488917ed9
+updated: 2018-12-07T13:18:25.96118+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -143,9 +143,10 @@ imports:
   - matchers/support/goraph/util
   - types
 - name: github.com/prometheus/client_golang
-  version: 967789050ba94deca04a5e84cce8ad472ce313c1
+  version: 505eaef017263e299324067d40ca2c48f6a2cf50
   subpackages:
   - prometheus
+  - prometheus/internal
   - prometheus/promhttp
 - name: github.com/prometheus/client_model
   version: 5c3871d89910bfb32f5fcab2aa4b9ec68e65a99f
