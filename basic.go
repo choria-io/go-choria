@@ -50,3 +50,8 @@ func (e *basicEvent) String() string {
 func (e *basicEvent) Type() Type {
 	return e.dtype
 }
+
+// TypeString the string representation of the event type
+func (e *basicEvent) TypeString() string {
+	return e.etype
+}

@@ -73,6 +73,12 @@ func WriteEvents(ctx context.Context, opt *ViewOptions) error {
 				}
 			}
 
+			if opt.TypeFilter != "" {
+				if event.TypeString() != opt.TypeFilter {
+					continue
+				}
+			}
+
 			if opt.Debug {
 				fmt.Fprintf(opt.Output, "%s\n", string(e.Data))
 				continue
