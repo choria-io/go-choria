@@ -46,6 +46,9 @@ var ProvisionFacts = ""
 // ProvisionToken when not empty this token will be required interact with the provisioner agent
 var ProvisionToken = ""
 
+// ProvisionStatusFile is the file where server status will be written to while in provisioning mode
+var ProvisionStatusFile = ""
+
 // AgentProviders are registered systems capable of extending choria with new agents
 var AgentProviders = []string{}
 

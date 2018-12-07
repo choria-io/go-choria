@@ -121,6 +121,11 @@ func (fw *Framework) ConfigureProvisioning() {
 	fw.Config.Registration = []string{}
 	fw.Config.FactSourceFile = build.ProvisionFacts
 
+	if build.ProvisionStatusFile != "" {
+		fw.Config.Choria.StatusFilePath = build.ProvisionStatusFile
+		fw.Config.Choria.StatusUpdateSeconds = 10
+	}
+
 	if build.ProvisionRegistrationData != "" {
 		fw.Config.RegistrationCollective = "provisioning"
 		fw.Config.Registration = []string{"file_content"}
