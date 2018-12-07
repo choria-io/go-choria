@@ -12,6 +12,7 @@ var _ = Describe("ProvisionedEvent", func() {
 			Expect(event.Component()).To(Equal("ginkgo"))
 			Expect(event.dtype).To(Equal(Provisioned))
 			Expect(event.etype).To(Equal("provisioned"))
+			Expect(event.TypeString()).To(Equal("provisioned"))
 		})
 	})
 

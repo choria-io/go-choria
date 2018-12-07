@@ -25,6 +25,8 @@ var _ = Describe("StartupEvent", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(event.Component()).To(Equal("ginkgo"))
 			Expect(event.Type()).To(Equal(Startup))
+			Expect(event.TypeString()).To(Equal("startup"))
+
 		})
 	})
 

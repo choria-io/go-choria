@@ -57,4 +57,11 @@ var _ = Describe("basicEvent", func() {
 			Expect(e.Type()).To(Equal(Shutdown))
 		})
 	})
+
+	Describe("TypeString", func() {
+		It("Should return the right string", func() {
+			e := &basicEvent{etype: "shutdown", dtype: Shutdown, Comp: "ginkg", Ident: "node.example"}
+			Expect(e.TypeString()).To(Equal("shutdown"))
+		})
+	})
 })

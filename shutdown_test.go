@@ -12,6 +12,7 @@ var _ = Describe("ShutdownEvent", func() {
 			Expect(event.Component()).To(Equal("ginkgo"))
 			Expect(event.dtype).To(Equal(Shutdown))
 			Expect(event.etype).To(Equal("shutdown"))
+			Expect(event.TypeString()).To(Equal("shutdown"))
 		})
 	})
 
