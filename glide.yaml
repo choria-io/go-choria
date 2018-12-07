@@ -1,13 +1,13 @@
 package: github.com/choria-io/go-network-broker
 import:
 - package: github.com/choria-io/go-choria
-  version: ^0.8.0
+  version: 4ed50a3a95fe59cb1b90aab400c2a11cac80a041
   subpackages:
   - build
   - choria
   - config
 - package: github.com/nats-io/gnatsd
-  version: ^1.3.0
+  version: ^1.4.0
   subpackages:
   - server
 - package: github.com/prometheus/client_golang
