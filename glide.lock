@@ -1,12 +1,12 @@
-hash: 3e05571e12f2dfe54f3ca9f06d375b64bc55afb9ccd7427014287c4b926b6764
-updated: 2018-09-18T12:21:51.029654+02:00
+hash: 45f25df0c65ce0b69e09a036e72dd4d602dee6a861aa5efd00d3750af21ceb0e
+updated: 2018-12-07T18:15:32.726192+01:00
 imports:
 - name: github.com/beorn7/perks
-  version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
+  version: 3a771d992973f24aa725d07868b467d1ddfceafb
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: 86b6965cd06e13279436213653875a4927319eb7
+  version: 2430c9b68bb6e4560f81032e134bb63e7327dde4
   subpackages:
   - backoff
   - build
@@ -24,7 +24,7 @@ imports:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-security
-  version: a221c72ee79ab400346d38837d7e8b289857247b
+  version: 75654ad2139b915791141ab172d0930bf024fec7
   subpackages:
   - filesec
   - puppetsec
@@ -39,15 +39,19 @@ imports:
   - maxlength
   - regex
   - shellsafe
+- name: github.com/gofrs/uuid
+  version: 7077aa61129615a0d7f45c49101cd011ab221c27
 - name: github.com/golang/mock
   version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c
   subpackages:
   - gomock
   - mockgen
 - name: github.com/golang/protobuf
-  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
+  version: 52132540909e117f2b98b0694383dc0ab1e1deca
   subpackages:
   - proto
+- name: github.com/konsorten/go-windows-terminal-sequences
+  version: 5c8c8bd35d3832f5d134ae1e1e375b69a4d25242
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
@@ -69,7 +73,7 @@ imports:
   version: 28b996b57a46dd0c2aa3a3dc7fa8780878331d00
   repo: https://github.com/nats-io/nuid
 - name: github.com/onsi/ginkgo
-  version: 3774a09d95489ccaa16032e0770d08ea77ba6184
+  version: 2e1be8f7d90e9d3e3e58b0ce470f2f14d075406f
   subpackages:
   - config
   - internal/codelocation
@@ -89,7 +93,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 7615b9433f86a8bdf29709bf288bc4fd0636a369
+  version: 65fb64232476ad9046e57c26cd0bff3d3a8dc6cd
   subpackages:
   - format
   - internal/assertion
@@ -103,37 +107,38 @@ imports:
   - matchers/support/goraph/util
   - types
 - name: github.com/prometheus/client_golang
-  version: 967789050ba94deca04a5e84cce8ad472ce313c1
+  version: 505eaef017263e299324067d40ca2c48f6a2cf50
   subpackages:
   - prometheus
+  - prometheus/internal
 - name: github.com/prometheus/client_model
-  version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
+  version: 5c3871d89910bfb32f5fcab2aa4b9ec68e65a99f
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 89604d197083d4781071d3c65855d24ecfb0a563
+  version: 61f87aac8082fa8c3c5655c7608d7478d46ac2ad
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: b15cd069a83443be3154b719d0cc9fe8117f09fb
+  version: 185b4288413d2a0dd0806f78c90dde719829e5ae
   subpackages:
+  - internal/util
+  - nfs
   - xfs
-- name: github.com/satori/go.uuid
-  version: f58768cc1a7a7e77a3bd49e98cdd21419399b6a3
 - name: github.com/sirupsen/logrus
-  version: 3e01752db0189b9157070a0e1668a620f9a85da2
+  version: bcd833dfe83d3cebad139e4a29ed79cb2318bf95
 - name: github.com/tidwall/gjson
   version: 1e3f6aeaa5bad08d777ea7807b279a07885dd8b2
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
-  version: 6fe8760cad3569743d51ddbb243b26f8456742dc
+  version: 4e3ac2762d5f479393488629ee9370b50873b3a6
 - name: github.com/xeipuuv/gojsonreference
-  version: e02fc20de94c78484cd5ffb007f8af96be030a45
+  version: bd5ef7bd5415a7ac448318e64f11a24cd21e594b
 - name: github.com/xeipuuv/gojsonschema
-  version: 511d08a359d14c0dd9c4302af52ee9abb6f93c2a
+  version: f3a9dae5b19473510a3062802a98815f609ed747
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
@@ -141,7 +146,7 @@ imports:
   - blowfish
   - ssh/terminal
 - name: golang.org/x/net
-  version: 5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec
+  version: adae6a3d119ae4890b46832a2e88a95adc62b8e7
   subpackages:
   - context
   - html
@@ -167,7 +172,7 @@ testImports:
   - watch
   - winfile
 - name: golang.org/x/text
-  version: e19ae1496984b1c655b8044a65c0300a3c878dd3
+  version: 6f44c5a2ea40ee3593d98cdcc905cc1fdaa660e2
   subpackages:
   - encoding
   - encoding/charmap
@@ -179,6 +184,8 @@ testImports:
   - encoding/simplifiedchinese
   - encoding/traditionalchinese
   - encoding/unicode
+  - internal/language
+  - internal/language/compact
   - internal/tag
   - internal/utf8internal
   - language
@@ -189,4 +196,4 @@ testImports:
 - name: gopkg.in/tomb.v1
   version: c131134a1947e9afd9cecfe11f4c6dff0732ae58
 - name: gopkg.in/yaml.v2
-  version: d670f9405373e636a5a2765eea47fac0c9bc91a4
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
