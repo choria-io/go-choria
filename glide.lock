@@ -1,5 +1,5 @@
-hash: 1117300229cf4495f9adfe033a28cce2fdaf921a66546feb085dd0f488917ed9
-updated: 2018-12-07T13:18:25.96118+01:00
+hash: 94b0877cb94ef056ed3a45fbe2521bd78093057d5c17316f4a1f4fbc43a2bade
+updated: 2018-12-09T16:43:25.462897+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -18,7 +18,7 @@ imports:
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-lifecycle
-  version: 6433dc8ede9dd3e3170dad048ef897e5088ecc66
+  version: d108a93d3000fe630e946b696ba4c888f7dae76f
 - name: github.com/choria-io/go-mcoshim
   version: f92bd7733a5af67ff1e51bcb586f72464b7a3d12
 - name: github.com/choria-io/go-network-broker
