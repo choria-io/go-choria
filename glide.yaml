@@ -31,7 +31,7 @@ import:
 - package: gopkg.in/alecthomas/kingpin.v2
   version: ^2
 - package: github.com/nats-io/go-nats
-  version: ^1
+  version: 1.6.0
 - package: github.com/nats-io/go-nats-streaming
   version: ^0.4.0
 - package: github.com/tidwall/gjson
