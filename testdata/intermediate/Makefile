@@ -18,6 +18,13 @@ second:
 	cat second-rip.mcollective.pem intermediate.pem > second-chain-rip.mcollective.pem
 	openssl x509 -in second-rip.mcollective.pem -noout -text
 
+ca_chain:
+	# Make sure that CA side intermediate chains work
+	cat ca.pem intermediate.pem > certs/ca_chain_ca.pem
+	cat rip.mcollective.pem > certs/ca_chain_rip.mcollective.pem
+	openssl verify -CAfile certs/ca_chain_ca.pem certs/ca_chain_rip.mcollective.pem
+
+
 deploy:
 	cp ca.pem certs/ca.pem
 	cp chain-rip.mcollective.pem certs/rip.mcollective.pem
