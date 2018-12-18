@@ -41,6 +41,15 @@ var _ = Describe("Choria/Config", func() {
 			Expect(c.DefaultDiscoveryOptions).To(Equal([]string{"one", "two"}))
 			Expect(c.Choria.RandomizeMiddlewareHosts).To(BeTrue())
 
+			Expect(c.Choria.PrivilegedUsers).To(Equal([]string{
+				"\\.privileged.mcollective$",
+				"\\.privileged.choria$",
+			}))
+			Expect(c.Choria.CertnameWhitelist).To(Equal([]string{
+				"\\.mcollective$",
+				"\\.choria$",
+			}))
+
 			Expect(c.Option("plugin.package.setting", "default")).To(Equal("1"))
 			Expect(c.Option("plugin.package.other_setting", "default")).To(Equal("default"))
 		})
