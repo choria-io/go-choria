@@ -19,7 +19,8 @@ func UserConfig() string {
 	home, _ := HomeDir()
 
 	if home != "" {
-		for _, n := range []string{".choria", ".mcollective"} {
+		// TODO: .choria must go
+		for _, n := range []string{".choriarc", ".choria", ".mcollective"} {
 			homeCfg := filepath.Join(home, n)
 
 			if FileExist(homeCfg) {
@@ -28,6 +29,11 @@ func UserConfig() string {
 		}
 	}
 
+	if FileExist("/etc/choria/client.conf") {
+		return "/etc/choria/client.conf"
+	}
+
+	// TODO: these must go
 	if FileExist("/etc/choria/client.cfg") {
 		return "/etc/choria/client.cfg"
 	}
