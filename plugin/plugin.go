@@ -37,6 +37,10 @@ const (
 
 	// ProvisionTargetResolverPlugin is a plugin that helps provisioning mode Choria find its broker
 	ProvisionTargetResolverPlugin
+
+	// ConfigMutatorPlugin is a plugin that can dynamically adjust
+	// configuration based on local site conditions
+	ConfigMutatorPlugin
 )
 
 // Pluggable is a Choria Plugin
@@ -67,6 +71,9 @@ func Register(name string, plugin Pluggable) error {
 
 	case ProvisionTargetResolverPlugin:
 		err = registerProvisionTargetResolverPlugin(name, plugin)
+
+	case ConfigMutatorPlugin:
+		err = registerConfigMutator(name, plugin)
 
 	default:
 		err = fmt.Errorf("unknown plugin type %d from %s", plugin.PluginType(), name)

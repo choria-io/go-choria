@@ -38,23 +38,35 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	fmt.Println("Choria build settings:")
-	fmt.Println("")
+	fmt.Println()
 	fmt.Println("Build Data:")
 	fmt.Printf("     Version: %s\n", build.Version)
 	fmt.Printf("     Git SHA: %s\n", build.SHA)
 	fmt.Printf("  Build Date: %s\n", build.BuildDate)
 	fmt.Printf("     License: %s\n", build.License)
 	fmt.Printf("  Go Version: %s\n", runtime.Version())
-	fmt.Println("")
+	fmt.Println()
 	fmt.Println("Network Broker Settings:")
 	fmt.Printf("       Maximum Network Clients: %d\n", build.MaxBrokerClients())
 	fmt.Printf("  Embedded NATS Server Version: %s\n", gnatsd.VERSION)
-	fmt.Println("")
+
+	mutators := config.MutatorNames()
+	fmt.Println()
+	fmt.Println("Configuration Mutators:")
+	if len(mutators) > 0 {
+		for _, m := range mutators {
+			fmt.Printf("\t%s\n", m)
+		}
+	} else {
+		fmt.Printf("\tnone\n")
+	}
+
+	fmt.Println()
 	fmt.Println("Server Settings:")
 	fmt.Printf("            Provisioning Brokers: %s\n", build.ProvisionBrokerURLs)
 	fmt.Printf("            Provisioning Default: %t\n", build.ProvisionDefault())
-	fmt.Printf("      Default Provisioning Agent: %t\n", build.ProvisionAgent == "true")
 	fmt.Printf("                Provisioning TLS: %t\n", build.ProvisionSecurity())
+	fmt.Printf("      Default Provisioning Agent: %t\n", build.ProvisionAgent == "true")
 	fmt.Printf("  Provisioning Registration Data: %s\n", build.ProvisionRegistrationData)
 	fmt.Printf("              Provisioning Facts: %s\n", build.ProvisionFacts)
 	fmt.Printf("    Provisioning Target Resolver: %s\n", provtarget.Name())
@@ -63,20 +75,20 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	} else {
 		fmt.Printf("              Provisioning Token: not set\n")
 	}
-	fmt.Println("")
+	fmt.Println()
 	fmt.Println("Agent Providers:")
 
 	for _, p := range build.AgentProviders {
 		fmt.Printf("\t%s\n", p)
 	}
 
-	fmt.Println("")
+	fmt.Println()
 	fmt.Println("Security Defaults:")
 	fmt.Printf("            TLS: %s\n", build.TLS)
 	fmt.Printf("  x509 Security: %t\n", protocol.IsSecure())
 
 	if build.TLS != "true" || !protocol.IsSecure() {
-		fmt.Println("")
+		fmt.Println()
 		fmt.Println("NOTE: The security of this build is non standard, you might be running without adequate protocol level security.  Please ensure this is the build you intend to be using.")
 	}
 
