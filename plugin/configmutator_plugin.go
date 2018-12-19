@@ -12,7 +12,7 @@ func registerConfigMutator(name string, plugin Pluggable) error {
 		return fmt.Errorf("%s is not a valid configuration mutator plugin", plugin.PluginName())
 	}
 
-	config.RegisterMutator(name, mutator)
+	config.RegisterMutator(plugin.PluginName(), mutator)
 
 	return nil
 }
