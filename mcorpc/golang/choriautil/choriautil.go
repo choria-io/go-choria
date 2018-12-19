@@ -8,9 +8,10 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
+	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	nats "github.com/nats-io/go-nats"
 )
 
@@ -29,6 +30,8 @@ type info struct {
 	MiddlewareServers []string `json:"middleware_servers"`
 	Path              string   `json:"path"`
 	ChoriaVersion     string   `json:"choria_version"`
+	ProtocolSecure    bool     `json:"secure_protocol"`
+	ConnectorTLS      bool     `json:"connector_tls"`
 }
 
 type copts struct {
@@ -103,6 +106,8 @@ func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 		Path:              os.Getenv("PATH"),
 		ChoriaVersion:     fmt.Sprintf("choria %s", build.Version),
 		UsingSrv:          c.Choria.UseSRVRecords,
+		ProtocolSecure:    protocol.IsSecure(),
+		ConnectorTLS:      build.HasTLS(),
 		ClientStats: &cstats{
 			InMsgs:     stats.InMsgs,
 			InBytes:    stats.InBytes,
