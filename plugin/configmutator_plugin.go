@@ -1,0 +1,18 @@
+package plugin
+
+import (
+	"fmt"
+
+	"github.com/choria-io/go-choria/config"
+)
+
+func registerConfigMutator(name string, plugin Pluggable) error {
+	mutator, ok := plugin.PluginInstance().(config.Mutator)
+	if !ok {
+		return fmt.Errorf("%s is not a valid configuration mutator plugin", plugin.PluginName())
+	}
+
+	config.RegisterMutator(name, mutator)
+
+	return nil
+}
