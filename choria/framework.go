@@ -47,9 +47,9 @@ func New(path string) (*Framework, error) {
 }
 
 // NewWithConfig creates a new instance of the framework with the supplied config instance
-func NewWithConfig(config *config.Config) (*Framework, error) {
+func NewWithConfig(cfg *config.Config) (*Framework, error) {
 	c := Framework{
-		Config: config,
+		Config: cfg,
 		mu:     &sync.Mutex{},
 	}
 
@@ -66,6 +66,8 @@ func NewWithConfig(config *config.Config) (*Framework, error) {
 	if err != nil {
 		return &c, fmt.Errorf("could not set up security framework: %s", err)
 	}
+
+	config.Mutate(cfg, c.Logger("config"))
 
 	return &c, nil
 }
