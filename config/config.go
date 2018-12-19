@@ -251,8 +251,6 @@ func normalize(c *Config) error {
 		log.SetLevel(log.DebugLevel)
 	}
 
-	mutate(c)
-
 	return nil
 }
 

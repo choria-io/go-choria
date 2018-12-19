@@ -5,6 +5,7 @@ package config
 
 import (
 	gomock "github.com/golang/mock/gomock"
+	logrus "github.com/sirupsen/logrus"
 	reflect "reflect"
 )
 
@@ -32,11 +33,11 @@ func (m *MockMutator) EXPECT() *MockMutatorMockRecorder {
 }
 
 // Mutate mocks base method
-func (m *MockMutator) Mutate(arg0 *Config) {
-	m.ctrl.Call(m, "Mutate", arg0)
+func (m *MockMutator) Mutate(arg0 *Config, arg1 *logrus.Entry) {
+	m.ctrl.Call(m, "Mutate", arg0, arg1)
 }
 
 // Mutate indicates an expected call of Mutate
-func (mr *MockMutatorMockRecorder) Mutate(arg0 interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Mutate", reflect.TypeOf((*MockMutator)(nil).Mutate), arg0)
+func (mr *MockMutatorMockRecorder) Mutate(arg0, arg1 interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Mutate", reflect.TypeOf((*MockMutator)(nil).Mutate), arg0, arg1)
 }
