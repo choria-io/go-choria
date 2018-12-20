@@ -1,5 +1,7 @@
 task :default => [:test]
 
+ENV['MCOLLECTIVE_CERTNAME'] = 'rip.mcollective'
+
 desc "Run just tests no measurements"
 task :test do
   sh "ginkgo -r -skipMeasurements ."
