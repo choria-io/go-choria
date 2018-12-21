@@ -110,6 +110,9 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	srv.publishStartupEvent()
 
 	wg.Add(1)
+	go srv.publishAliveEvents(ctx, wg)
+
+	wg.Add(1)
 	go srv.processRequests(ctx, wg)
 
 	return nil

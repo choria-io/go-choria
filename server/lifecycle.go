@@ -1,6 +1,11 @@
 package server
 
 import (
+	"context"
+	"math/rand"
+	"sync"
+	"time"
+
 	"github.com/choria-io/go-choria/build"
 	lifecycle "github.com/choria-io/go-lifecycle"
 )
@@ -51,5 +56,46 @@ func (srv *Instance) publishStartupEvent() {
 	err = srv.PublishEvent(event)
 	if err != nil {
 		srv.log.Errorf("Could not publish startup event: %s", err)
+	}
+}
+
+func (srv *Instance) publishAliveEvents(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	delay := time.Duration(rand.Intn(30)) * time.Minute
+	event, err := lifecycle.New(lifecycle.Alive, lifecycle.Identity(srv.cfg.Identity), lifecycle.Version(build.Version), lifecycle.Component(srv.eventComponent()))
+	if err != nil {
+		srv.log.Errorf("Could not create new alive event: %s", err)
+		return
+	}
+
+	srv.log.Debugf("Sleeping %v until first alive event", delay)
+
+	select {
+	case <-time.NewTimer(delay).C:
+	case <-ctx.Done():
+		return
+	}
+
+	f := func() {
+		srv.log.Debug("Publishing alive event")
+		err = srv.PublishEvent(event)
+		if err != nil {
+			srv.log.Errorf("Could not publish startup event: %s", err)
+		}
+	}
+
+	ticker := time.NewTicker(60 * time.Minute)
+
+	f()
+
+	for {
+		select {
+		case <-ticker.C:
+			f()
+
+		case <-ctx.Done():
+			return
+		}
 	}
 }
