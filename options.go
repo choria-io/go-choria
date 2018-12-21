@@ -12,7 +12,7 @@ type VersionEvent interface {
 	SetVersion(string)
 }
 
-// ComponentEvent is an event that a component
+// ComponentEvent is an event that has a component
 type ComponentEvent interface {
 	SetComponent(string)
 }
@@ -36,7 +36,7 @@ func Version(version string) Option {
 	return func(e interface{}) error {
 		event, ok := e.(VersionEvent)
 		if !ok {
-			return errors.New("cannot set component, event does not implement VersionEvent")
+			return errors.New("cannot set version, event does not implement VersionEvent")
 		}
 
 		event.SetVersion(version)
@@ -50,7 +50,7 @@ func Identity(identity string) Option {
 	return func(e interface{}) error {
 		event, ok := e.(Event)
 		if !ok {
-			return errors.New("cannot set component, event does not implement Event")
+			return errors.New("cannot set identity, event does not implement Event")
 		}
 
 		event.SetIdentity(identity)
