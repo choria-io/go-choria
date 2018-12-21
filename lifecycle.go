@@ -29,6 +29,9 @@ const (
 
 	// Provisioned is an event components can publish post provisioning
 	Provisioned
+
+	// Alive is an event components can publish to indicate they are still alive
+	Alive
 )
 
 var eventTypes = make(map[string]Type)
