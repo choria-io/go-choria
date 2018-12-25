@@ -1,5 +1,5 @@
-hash: 0a00f38ecc5937e0019d3e33495cb394af3786e64020871dfa208d92ebb1bf3b
-updated: 2018-12-21T22:28:08.555599+01:00
+hash: 3e021a9d327efef3da9b1f88db64d06080b1e3b137be40c32e17a46e884885d9
+updated: 2018-12-25T11:07:20.43191563+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -18,7 +18,7 @@ imports:
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-lifecycle
-  version: abdf6ca34c106b5ce9ee357ca093f7b40f7dfd95
+  version: 8fe7a2a753a89518be23bc9eee8f343d7b256599
 - name: github.com/choria-io/go-mcoshim
   version: f92bd7733a5af67ff1e51bcb586f72464b7a3d12
 - name: github.com/choria-io/go-network-broker
@@ -153,7 +153,7 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 41aa239b4cce3c56ab88fc366ae8b0a6423fa239
+  version: 61f87aac8082fa8c3c5655c7608d7478d46ac2ad
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
