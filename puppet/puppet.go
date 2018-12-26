@@ -8,10 +8,22 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"sync"
 )
+
+var mu = &sync.Mutex{}
+var cache = make(map[string]string)
 
 // FacterStringFact looks up a facter fact, returns "" when unknown
 func FacterStringFact(fact string) (string, error) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	value, ok := cache[fact]
+	if ok {
+		return value, nil
+	}
+
 	cmd := FacterCmd()
 
 	if cmd == "" {
@@ -23,7 +35,10 @@ func FacterStringFact(fact string) (string, error) {
 		return "", err
 	}
 
-	return strings.Replace(string(out), "\n", "", -1), nil
+	value = strings.Replace(string(out), "\n", "", -1)
+	cache[fact] = value
+
+	return value, nil
 }
 
 // FacterFQDN determines the machines fqdn by querying facter.  Returns "" when unknown
