@@ -64,7 +64,7 @@ func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 		Author:      "R.I.Pienaar <rip@devco.net>",
 		Version:     build.Version,
 		License:     build.License,
-		Timeout:     2,
+		Timeout:     10,
 		URL:         "http://choria.io",
 	}
 
