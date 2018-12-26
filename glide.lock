@@ -1,5 +1,5 @@
-hash: 8c5c1d95d974de70b70bfdc246237507b75985d2dfd804801aa1a8a10de63cbf
-updated: 2018-12-26T14:45:36.510103405+01:00
+hash: 9bda6c67e263c6efc734d0b3055ab76d1d09a84be6f438e14f05603ec4b03924
+updated: 2018-12-26T18:11:10.841088742+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -47,7 +47,7 @@ imports:
   - regex
   - shellsafe
 - name: github.com/choria-io/mcorpc-agent-provider
-  version: eb4e622cf085acd3920244076b3a531ba5cc577a
+  version: 15d0ce5d67808f6e707dbf1c2c3cead4c6ede67a
   subpackages:
   - mcorpc
 - name: github.com/choria-io/provisioning-agent
