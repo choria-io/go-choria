@@ -3,13 +3,15 @@ import:
 - package: github.com/choria-io/go-lifecycle
   version: 1.0.0
 - package: github.com/choria-io/go-protocol
-  version: ^1.3.0
+  version: 1.3.0
 - package: github.com/choria-io/go-confkey
-  version: ^1.2
+  version: 1.2.0
 - package: github.com/choria-io/go-network-broker
   version: 1.1.0
 - package: github.com/choria-io/go-security
   version: 0.2.1
+- package: github.com/choria-io/go-updater
+  version: 0.0.2
 - package: github.com/choria-io/go-client
   version: 0.4.1
   subpackages:
@@ -19,9 +21,7 @@ import:
   subpackages:
   - mcorpc
 - package: github.com/choria-io/provisioning-agent
-  version: 0.3.0
-- package: github.com/choria-io/go-updater
-  version: ^0.0.1
+  version: 9332008dc50fad10c3d02b33346eba379c62152b
 - package: github.com/choria-io/go-mcoshim
 - package: github.com/sirupsen/logrus
   version: ^1
