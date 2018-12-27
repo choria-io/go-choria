@@ -21,3 +21,9 @@ func (fw *Framework) TLSConfig() (tlsc *tls.Config, err error) {
 func (fw *Framework) Enroll(ctx context.Context, wait time.Duration, cb func(int)) error {
 	return fw.security.Enroll(ctx, wait, cb)
 }
+
+// ValidateSecurity calls the security provider validation method and indicates
+// if all dependencies are met for secure operation
+func (fw *Framework) ValidateSecurity() (errors []string, ok bool) {
+	return fw.security.Validate()
+}
