@@ -62,7 +62,7 @@ func (srv *Instance) publishStartupEvent() {
 func (srv *Instance) publishAliveEvents(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	delay := time.Duration(rand.Intn(30)) * time.Minute
+	delay := time.Duration(rand.Intn(60)) * time.Minute
 	event, err := lifecycle.New(lifecycle.Alive, lifecycle.Identity(srv.cfg.Identity), lifecycle.Version(build.Version), lifecycle.Component(srv.eventComponent()))
 	if err != nil {
 		srv.log.Errorf("Could not create new alive event: %s", err)
