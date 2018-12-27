@@ -1,5 +1,14 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2018/12/27|      |Release 0.9.0                                                                                            |
+|2018/12/26|      |Fix reboot splay time when doing self updates via `provisioning-agent#67`                                |
+|2018/12/26|      |Increase `choria_util` agent timeout to facilitate slow facter runs via `mcorpc-agent-provider#36`       |
+|2018/12/26|515   |Cache facter lookups                                                                                     |
+|2018/12/21|510   |Publish new `alive` life cycle events every hour                                                         |
+|2018/12/19|      |support `~/.choriarc` and `/etc/choria/client.conf` for client configs                                   |
+|2018/12/19|      |Report protocol security and connector TLS in `choria_util#info` via `mcorpc-agent-provider#33`          |
+|2018/12/19|501   |Allow default configuration values to be mutated at startup using a plugin                               |
+|2018/12/07|495   |Allow server status to be written during provision mode                                                  |
 |2018/11/30|      |Release 0.8.0                                                                                            |
 |2018/11/28|489   |Avoid a panic that affected clients written in Go when closing connections to the broker                 |
 |2018/11/23|      |Improve backward compatibility when handling slashes in regex for allowed certs (go-security#22)         |
