@@ -1,5 +1,5 @@
-hash: 9bda6c67e263c6efc734d0b3055ab76d1d09a84be6f438e14f05603ec4b03924
-updated: 2018-12-26T18:11:10.841088742+01:00
+hash: 6ed377cb93e7c190ad629bf68b5e88c386fee764fcb81a9da5c38b9661153969
+updated: 2018-12-27T12:16:01.387567+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -47,11 +47,11 @@ imports:
   - regex
   - shellsafe
 - name: github.com/choria-io/mcorpc-agent-provider
-  version: 15d0ce5d67808f6e707dbf1c2c3cead4c6ede67a
+  version: 2fb55be47a487f0e8f4c86ed995c5645b8cc4952
   subpackages:
   - mcorpc
 - name: github.com/choria-io/provisioning-agent
-  version: 9332008dc50fad10c3d02b33346eba379c62152b
+  version: 1468269c0ca150459cef10d5d9af588550dd029e
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
@@ -60,7 +60,7 @@ imports:
 - name: github.com/gofrs/uuid
   version: 7077aa61129615a0d7f45c49101cd011ab221c27
 - name: github.com/gogo/protobuf
-  version: e87afe3c25daf6fa321fed3705938e53672b0a3b
+  version: 99cb9b23110011cc45571c901ecae6f6f5e65cd3
   subpackages:
   - gogoproto
   - proto
@@ -75,7 +75,7 @@ imports:
   subpackages:
   - proto
 - name: github.com/konsorten/go-windows-terminal-sequences
-  version: 5c8c8bd35d3832f5d134ae1e1e375b69a4d25242
+  version: b729f2633dfe35f4d1d8a32385f6685610ce1cb5
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
@@ -174,7 +174,7 @@ imports:
   - blowfish
   - ssh/terminal
 - name: golang.org/x/net
-  version: adae6a3d119ae4890b46832a2e88a95adc62b8e7
+  version: 5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec
   subpackages:
   - context
   - html
@@ -194,7 +194,7 @@ imports:
 - name: gopkg.in/alecthomas/kingpin.v2
   version: 947dcec5ba9c011838740e680966fd7087a71d0d
 - name: gopkg.in/yaml.v2
-  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
+  version: d670f9405373e636a5a2765eea47fac0c9bc91a4
 testImports:
 - name: github.com/hpcloud/tail
   version: a1dbeea552b7c8df4b542c66073e393de198a800
@@ -204,7 +204,7 @@ testImports:
   - watch
   - winfile
 - name: golang.org/x/text
-  version: 6f44c5a2ea40ee3593d98cdcc905cc1fdaa660e2
+  version: e19ae1496984b1c655b8044a65c0300a3c878dd3
   subpackages:
   - encoding
   - encoding/charmap
@@ -216,8 +216,6 @@ testImports:
   - encoding/simplifiedchinese
   - encoding/traditionalchinese
   - encoding/unicode
-  - internal/language
-  - internal/language/compact
   - internal/tag
   - internal/utf8internal
   - language

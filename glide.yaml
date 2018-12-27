@@ -17,11 +17,11 @@ import:
   subpackages:
   - client
 - package: github.com/choria-io/mcorpc-agent-provider
-  version: 15d0ce5d67808f6e707dbf1c2c3cead4c6ede67a
+  version: 0.3.3
   subpackages:
   - mcorpc
 - package: github.com/choria-io/provisioning-agent
-  version: 9332008dc50fad10c3d02b33346eba379c62152b
+  version: 0.3.2
 - package: github.com/choria-io/go-mcoshim
 - package: github.com/sirupsen/logrus
   version: ^1
