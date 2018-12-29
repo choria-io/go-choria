@@ -1,9 +1,15 @@
 package: github.com/choria-io/go-lifecycle
 import:
 - package: github.com/choria-io/go-choria
+  version: 0.9.0
   subpackages:
   - choria
 - package: github.com/tidwall/gjson
+- package: github.com/pkg/errors
+  version: ^0.8.0
+- package: github.com/nats-io/go-nats
+  version: 1.6.0
+
 testImport:
 - package: github.com/golang/mock
   version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c
