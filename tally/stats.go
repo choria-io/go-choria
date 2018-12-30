@@ -29,10 +29,16 @@ func (r *Recorder) createStats() {
 		Help: "The time taken to perform maintenance",
 	}, []string{"component"})
 
+	r.processTime = prometheus.NewSummaryVec(prometheus.SummaryOpts{
+		Name: fmt.Sprintf("%s_processing_time", r.options.StatPrefix),
+		Help: "The time taken to process events",
+	}, []string{"component"})
+
 	if registerStats {
 		prometheus.MustRegister(r.okEvents)
 		prometheus.MustRegister(r.badEvents)
 		prometheus.MustRegister(r.eventsTally)
 		prometheus.MustRegister(r.maintTime)
+		prometheus.MustRegister(r.processTime)
 	}
 }

@@ -1,3 +1,13 @@
+/*
+Package lifecycle provides events that services in the Choria eco system
+emit during startup, shutdown, provisioning and general running.
+
+These events can be used by other tools to react to events or monitor the
+running of a Chroia network.
+
+A library to view the events received from the network and one to create
+a running tally of the count and versions of nodes on your network.
+*/
 package lifecycle
 
 import (

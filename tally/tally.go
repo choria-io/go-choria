@@ -30,6 +30,7 @@ type Recorder struct {
 	badEvents   *prometheus.CounterVec
 	eventsTally *prometheus.GaugeVec
 	maintTime   *prometheus.SummaryVec
+	processTime *prometheus.SummaryVec
 }
 
 type observation struct {
@@ -60,8 +61,6 @@ func New(opts ...Option) (recorder *Recorder, err error) {
 
 func (r *Recorder) processAlive(e lifecycle.Event) error {
 	alive := e.(*lifecycle.AliveEvent)
-
-	r.okEvents.WithLabelValues(alive.Component()).Inc()
 
 	r.Lock()
 	defer r.Unlock()
@@ -127,17 +126,31 @@ func (r *Recorder) processShutdown(e lifecycle.Event) error {
 	return nil
 }
 
-func (r *Recorder) process(e lifecycle.Event) error {
+func (r *Recorder) process(e lifecycle.Event) (err error) {
+	r.options.Log.Debugf("Processing %s type message from %s %s", e.TypeString(), e.Component(), e.Identity())
+
+	timer := r.processTime.WithLabelValues(r.options.Component)
+	obs := prometheus.NewTimer(timer)
+	defer obs.ObserveDuration()
+
 	switch e.Type() {
 	case lifecycle.Alive:
-		return r.processAlive(e)
+		err = r.processAlive(e)
+
 	case lifecycle.Startup:
-		return r.processStartup(e)
+		err = r.processStartup(e)
+
 	case lifecycle.Shutdown:
-		return r.processShutdown(e)
-	default:
-		return nil
+		err = r.processShutdown(e)
 	}
+
+	if err == nil {
+		r.okEvents.WithLabelValues(r.options.Component).Inc()
+	} else {
+		r.badEvents.WithLabelValues(r.options.Component).Inc()
+	}
+
+	return err
 }
 
 func (r *Recorder) maintenance() {
@@ -163,7 +176,7 @@ func (r *Recorder) maintenance() {
 	}
 
 	if len(older) > 0 {
-		r.options.Log.Printf("Removed %d hosts that have not been seen in over an hour", len(older))
+		r.options.Log.Infof("Removed %d hosts that have not been seen in over an hour", len(older))
 	}
 }
 
@@ -183,11 +196,15 @@ func (r *Recorder) Run(ctx context.Context) error {
 		case e := <-events:
 			event, err := lifecycle.NewFromJSON(e.Data)
 			if err != nil {
-				r.options.Log.Printf("could not process event: %s", err)
+				r.options.Log.Errorf("could not process event: %s", err)
 				continue
 			}
 
-			r.process(event)
+			err = r.process(event)
+			if err != nil {
+				r.options.Log.Errorf("could not process event from %s: %s", event.Identity(), err)
+				continue
+			}
 
 		case <-maintSched.C:
 			r.maintenance()
