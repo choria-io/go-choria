@@ -27,6 +27,10 @@ func (o *options) Validate() error {
 		return fmt.Errorf("needs a component")
 	}
 
+	if o.Component == "*" || o.Component == ">" {
+		return fmt.Errorf("invalid component %s", o.Component)
+	}
+
 	if o.Connector == nil {
 		return fmt.Errorf("needs a connector")
 	}

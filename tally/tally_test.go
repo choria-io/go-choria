@@ -66,54 +66,120 @@ var _ = Describe("Tally", func() {
 	})
 
 	Describe("process", func() {
-		It("Should handle new hosts", func() {
-			event, err := lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
-			Expect(err).ToNot(HaveOccurred())
+		Describe("Shutdown Events", func() {
+			It("Should handle existing nodes", func() {
+				event, err := lifecycle.New(lifecycle.Startup, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
+				Expect(err).ToNot(HaveOccurred())
 
-			Expect(recorder.observed).To(HaveLen(0))
-			recorder.process(event)
-			Expect(recorder.observed).To(HaveLen(1))
+				recorder.processStartup(event)
+				Expect(recorder.observed).To(HaveLen(1))
 
-			h := hostHash("ginkgo.example.net")
-			Expect(recorder.observed[h].version).To(Equal("1.2.3"))
-			Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+
+				event, err = lifecycle.New(lifecycle.Shutdown, lifecycle.Component("ginkgo"), lifecycle.Identity("ginkgo.example.net"))
+				Expect(err).ToNot(HaveOccurred())
+				recorder.processShutdown(event)
+
+				Expect(recorder.observed).To(HaveLen(0))
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(0.0))
+			})
+
+			It("Should handle new nodes", func() {
+				event, err := lifecycle.New(lifecycle.Shutdown, lifecycle.Component("ginkgo"), lifecycle.Identity("ginkgo.example.net"))
+				Expect(err).ToNot(HaveOccurred())
+				recorder.processShutdown(event)
+
+				Expect(recorder.observed).To(HaveLen(0))
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(0.0))
+			})
 		})
 
-		It("Should handle old hosts", func() {
-			event, err := lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
-			Expect(err).ToNot(HaveOccurred())
+		Describe("Startup Events", func() {
+			It("Should handle new nodes", func() {
+				event, err := lifecycle.New(lifecycle.Startup, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
+				Expect(err).ToNot(HaveOccurred())
 
-			recorder.process(event)
-			Expect(recorder.observed).To(HaveLen(1))
+				Expect(recorder.observed).To(HaveLen(0))
+				recorder.processStartup(event)
+				Expect(recorder.observed).To(HaveLen(1))
 
-			h := hostHash("ginkgo.example.net")
-			Expect(recorder.observed[h].version).To(Equal("1.2.3"))
-			Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+				h := hostHash("ginkgo.example.net")
+				Expect(recorder.observed[h].version).To(Equal("1.2.3"))
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+			})
 
-			recorder.process(event)
+			It("Should handle existing nodes", func() {
+				event, err := lifecycle.New(lifecycle.Startup, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
+				Expect(err).ToNot(HaveOccurred())
 
-			Expect(recorder.observed).To(HaveLen(1))
-			Expect(recorder.observed[h].version).To(Equal("1.2.3"))
-			Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+				Expect(recorder.observed).To(HaveLen(0))
+				recorder.processStartup(event)
+				Expect(recorder.observed).To(HaveLen(1))
+
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+
+				event, err = lifecycle.New(lifecycle.Startup, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.4"), lifecycle.Identity("ginkgo.example.net"))
+				Expect(err).ToNot(HaveOccurred())
+
+				recorder.processStartup(event)
+
+				h := hostHash("ginkgo.example.net")
+				Expect(recorder.observed[h].version).To(Equal("1.2.4"))
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(0.0))
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.4")).To(Equal(1.0))
+			})
 		})
 
-		It("Should handle updated hosts", func() {
-			event, err := lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
-			Expect(err).ToNot(HaveOccurred())
+		Describe("Alive Events", func() {
+			It("Should handle new hosts", func() {
+				event, err := lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
+				Expect(err).ToNot(HaveOccurred())
 
-			h := hostHash("ginkgo.example.net")
+				Expect(recorder.observed).To(HaveLen(0))
+				recorder.processAlive(event)
+				Expect(recorder.observed).To(HaveLen(1))
 
-			recorder.process(event)
-			Expect(recorder.observed[h].version).To(Equal("1.2.3"))
-			Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+				h := hostHash("ginkgo.example.net")
+				Expect(recorder.observed[h].version).To(Equal("1.2.3"))
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+			})
 
-			event, err = lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.4"), lifecycle.Identity("ginkgo.example.net"))
-			Expect(err).ToNot(HaveOccurred())
+			It("Should handle old hosts", func() {
+				event, err := lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
+				Expect(err).ToNot(HaveOccurred())
 
-			recorder.process(event)
-			Expect(recorder.observed[h].version).To(Equal("1.2.4"))
-			Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.2")).To(Equal(0.0))
-			Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.4")).To(Equal(1.0))
+				recorder.processAlive(event)
+				Expect(recorder.observed).To(HaveLen(1))
+
+				h := hostHash("ginkgo.example.net")
+				Expect(recorder.observed[h].version).To(Equal("1.2.3"))
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+
+				recorder.processAlive(event)
+
+				Expect(recorder.observed).To(HaveLen(1))
+				Expect(recorder.observed[h].version).To(Equal("1.2.3"))
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+			})
+
+			It("Should handle updated hosts", func() {
+				event, err := lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
+				Expect(err).ToNot(HaveOccurred())
+
+				h := hostHash("ginkgo.example.net")
+
+				recorder.processAlive(event)
+				Expect(recorder.observed[h].version).To(Equal("1.2.3"))
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+
+				event, err = lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.4"), lifecycle.Identity("ginkgo.example.net"))
+				Expect(err).ToNot(HaveOccurred())
+
+				recorder.processAlive(event)
+				Expect(recorder.observed[h].version).To(Equal("1.2.4"))
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.2")).To(Equal(0.0))
+				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.4")).To(Equal(1.0))
+			})
 		})
 	})
 })
