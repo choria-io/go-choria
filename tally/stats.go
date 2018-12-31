@@ -15,9 +15,14 @@ func (r *Recorder) createStats() {
 	}, []string{"component"})
 
 	r.badEvents = prometheus.NewCounterVec(prometheus.CounterOpts{
-		Name: fmt.Sprintf("%s_bad_events", r.options.StatPrefix),
-		Help: "The number of unparsable or wrong type of events received",
+		Name: fmt.Sprintf("%s_process_errors", r.options.StatPrefix),
+		Help: "The number of events received that failed to process",
 	}, []string{"component"})
+
+	r.eventTypes = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: fmt.Sprintf("%s_event_types", r.options.StatPrefix),
+		Help: "The number events received by type",
+	}, []string{"component", "type"})
 
 	r.eventsTally = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: fmt.Sprintf("%s_versions", r.options.StatPrefix),
@@ -37,6 +42,7 @@ func (r *Recorder) createStats() {
 	if registerStats {
 		prometheus.MustRegister(r.okEvents)
 		prometheus.MustRegister(r.badEvents)
+		prometheus.MustRegister(r.eventTypes)
 		prometheus.MustRegister(r.eventsTally)
 		prometheus.MustRegister(r.maintTime)
 		prometheus.MustRegister(r.processTime)

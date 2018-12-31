@@ -30,7 +30,7 @@ var _ = Describe("Tally", func() {
 		logger.Logger.SetOutput(ioutil.Discard)
 		registerStats = false
 		recorder = &Recorder{
-			observed: make(map[uint64]*observation),
+			observed: make(map[string]*observation),
 			options: &options{
 				Component:  "ginkgo",
 				StatPrefix: "tally",
@@ -51,15 +51,18 @@ var _ = Describe("Tally", func() {
 			Expect(recorder.observed).To(HaveLen(1))
 		})
 
-		It("Should not delete old nodes", func() {
+		It("Should delete old nodes", func() {
 			event, err := lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
 			Expect(err).ToNot(HaveOccurred())
 
 			recorder.process(event)
 			Expect(recorder.observed).To(HaveLen(1))
 
-			h := hostHash("ginkgo.example.net")
-			recorder.observed[h].ts = recorder.observed[h].ts.Add(-1 * (time.Hour + 2*time.Minute))
+			recorder.observed["ginkgo.example.net"].ts = recorder.observed["ginkgo.example.net"].ts.Add(-1 * (60 * time.Minute))
+			recorder.maintenance()
+			Expect(recorder.observed).To(HaveLen(1))
+
+			recorder.observed["ginkgo.example.net"].ts = recorder.observed["ginkgo.example.net"].ts.Add(-1 * (90 * time.Minute))
 			recorder.maintenance()
 			Expect(recorder.observed).To(HaveLen(0))
 		})
@@ -103,8 +106,7 @@ var _ = Describe("Tally", func() {
 				recorder.processStartup(event)
 				Expect(recorder.observed).To(HaveLen(1))
 
-				h := hostHash("ginkgo.example.net")
-				Expect(recorder.observed[h].version).To(Equal("1.2.3"))
+				Expect(recorder.observed["ginkgo.example.net"].version).To(Equal("1.2.3"))
 				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
 			})
 
@@ -123,8 +125,7 @@ var _ = Describe("Tally", func() {
 
 				recorder.processStartup(event)
 
-				h := hostHash("ginkgo.example.net")
-				Expect(recorder.observed[h].version).To(Equal("1.2.4"))
+				Expect(recorder.observed["ginkgo.example.net"].version).To(Equal("1.2.4"))
 				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(0.0))
 				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.4")).To(Equal(1.0))
 			})
@@ -139,8 +140,7 @@ var _ = Describe("Tally", func() {
 				recorder.processAlive(event)
 				Expect(recorder.observed).To(HaveLen(1))
 
-				h := hostHash("ginkgo.example.net")
-				Expect(recorder.observed[h].version).To(Equal("1.2.3"))
+				Expect(recorder.observed["ginkgo.example.net"].version).To(Equal("1.2.3"))
 				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
 			})
 
@@ -151,14 +151,13 @@ var _ = Describe("Tally", func() {
 				recorder.processAlive(event)
 				Expect(recorder.observed).To(HaveLen(1))
 
-				h := hostHash("ginkgo.example.net")
-				Expect(recorder.observed[h].version).To(Equal("1.2.3"))
+				Expect(recorder.observed["ginkgo.example.net"].version).To(Equal("1.2.3"))
 				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
 
 				recorder.processAlive(event)
 
 				Expect(recorder.observed).To(HaveLen(1))
-				Expect(recorder.observed[h].version).To(Equal("1.2.3"))
+				Expect(recorder.observed["ginkgo.example.net"].version).To(Equal("1.2.3"))
 				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
 			})
 
@@ -166,17 +165,15 @@ var _ = Describe("Tally", func() {
 				event, err := lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
 				Expect(err).ToNot(HaveOccurred())
 
-				h := hostHash("ginkgo.example.net")
-
 				recorder.processAlive(event)
-				Expect(recorder.observed[h].version).To(Equal("1.2.3"))
+				Expect(recorder.observed["ginkgo.example.net"].version).To(Equal("1.2.3"))
 				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
 
 				event, err = lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.4"), lifecycle.Identity("ginkgo.example.net"))
 				Expect(err).ToNot(HaveOccurred())
 
 				recorder.processAlive(event)
-				Expect(recorder.observed[h].version).To(Equal("1.2.4"))
+				Expect(recorder.observed["ginkgo.example.net"].version).To(Equal("1.2.4"))
 				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.2")).To(Equal(0.0))
 				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.4")).To(Equal(1.0))
 			})

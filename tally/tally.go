@@ -24,13 +24,14 @@ type Recorder struct {
 	sync.Mutex
 
 	options  *options
-	observed map[uint64]*observation
+	observed map[string]*observation
 
 	okEvents    *prometheus.CounterVec
 	badEvents   *prometheus.CounterVec
 	eventsTally *prometheus.GaugeVec
 	maintTime   *prometheus.SummaryVec
 	processTime *prometheus.SummaryVec
+	eventTypes  *prometheus.CounterVec
 }
 
 type observation struct {
@@ -42,7 +43,7 @@ type observation struct {
 func New(opts ...Option) (recorder *Recorder, err error) {
 	recorder = &Recorder{
 		options:  &options{},
-		observed: make(map[uint64]*observation),
+		observed: make(map[string]*observation),
 	}
 
 	for _, opt := range opts {
@@ -65,9 +66,9 @@ func (r *Recorder) processAlive(e lifecycle.Event) error {
 	r.Lock()
 	defer r.Unlock()
 
-	hname := hostHash(alive.Identity())
+	hname := alive.Identity()
 
-	obs, ok := r.observed[hname]
+	obs, ok := r.observed[alive.Identity()]
 	if !ok {
 		r.observed[hname] = &observation{
 			ts:      time.Now(),
@@ -94,7 +95,7 @@ func (r *Recorder) processStartup(e lifecycle.Event) error {
 	r.Lock()
 	defer r.Unlock()
 
-	hname := hostHash(startup.Identity())
+	hname := startup.Identity()
 	obs, ok := r.observed[hname]
 	if ok {
 		r.eventsTally.WithLabelValues(startup.Component(), obs.version).Dec()
@@ -116,7 +117,7 @@ func (r *Recorder) processShutdown(e lifecycle.Event) error {
 	r.Lock()
 	defer r.Unlock()
 
-	hname := hostHash(shutdown.Identity())
+	hname := shutdown.Identity()
 	obs, ok := r.observed[hname]
 	if ok {
 		r.eventsTally.WithLabelValues(shutdown.Component(), obs.version).Dec()
@@ -127,11 +128,13 @@ func (r *Recorder) processShutdown(e lifecycle.Event) error {
 }
 
 func (r *Recorder) process(e lifecycle.Event) (err error) {
-	r.options.Log.Debugf("Processing %s type message from %s %s", e.TypeString(), e.Component(), e.Identity())
+	r.options.Log.Debugf("Processing %s event from %s %s", e.TypeString(), e.Component(), e.Identity())
 
 	timer := r.processTime.WithLabelValues(r.options.Component)
 	obs := prometheus.NewTimer(timer)
 	defer obs.ObserveDuration()
+
+	r.eventTypes.WithLabelValues(e.Component(), e.TypeString()).Inc()
 
 	switch e.Type() {
 	case lifecycle.Alive:
@@ -161,8 +164,8 @@ func (r *Recorder) maintenance() {
 	obs := prometheus.NewTimer(timer)
 	defer obs.ObserveDuration()
 
-	oldest := time.Now().Add(-1*time.Hour + time.Minute)
-	older := []uint64{}
+	oldest := time.Now().Add(-80 * time.Minute)
+	older := []string{}
 
 	for host, obs := range r.observed {
 		if obs.ts.Before(oldest) {
@@ -172,6 +175,8 @@ func (r *Recorder) maintenance() {
 	}
 
 	for _, host := range older {
+		r.options.Log.Debugf("Removing node %s, last seen %v", host, r.observed[host].ts)
+
 		delete(r.observed, host)
 	}
 
@@ -189,7 +194,10 @@ func (r *Recorder) Run(ctx context.Context) error {
 		return errors.Wrap(err, "could not create random subscription id")
 	}
 
-	r.options.Connector.QueueSubscribe(ctx, fmt.Sprintf("tally_%s_%s", r.options.Component, subid.String()), fmt.Sprintf("choria.lifecycle.event.*.%s", r.options.Component), "", events)
+	err = r.options.Connector.QueueSubscribe(ctx, fmt.Sprintf("tally_%s_%s", r.options.Component, subid.String()), fmt.Sprintf("choria.lifecycle.event.*.%s", r.options.Component), "", events)
+	if err != nil {
+		return errors.Wrap(err, "could not subscribe")
+	}
 
 	for {
 		select {

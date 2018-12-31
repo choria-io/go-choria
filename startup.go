@@ -6,6 +6,9 @@ import (
 )
 
 // StartupEvent is a choria:lifecycle:startup:1 event
+//
+// In addition to the usually required fields it requires a Version()
+// specified when producing this type of event
 type StartupEvent struct {
 	basicEvent
 	Version string `json:"version"`
