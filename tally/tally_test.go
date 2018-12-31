@@ -154,11 +154,14 @@ var _ = Describe("Tally", func() {
 				Expect(recorder.observed["ginkgo.example.net"].version).To(Equal("1.2.3"))
 				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
 
+				recorder.observed["ginkgo.example.net"].ts = time.Now().Add(-120 * time.Minute)
+
 				recorder.processAlive(event)
 
 				Expect(recorder.observed).To(HaveLen(1))
 				Expect(recorder.observed["ginkgo.example.net"].version).To(Equal("1.2.3"))
 				Expect(getPromValue(recorder.eventsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+				Expect(recorder.observed["ginkgo.example.net"].ts).To((BeTemporally("~", time.Now(), time.Second)))
 			})
 
 			It("Should handle updated hosts", func() {

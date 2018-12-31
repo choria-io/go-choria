@@ -68,7 +68,7 @@ func (r *Recorder) processAlive(e lifecycle.Event) error {
 
 	hname := alive.Identity()
 
-	obs, ok := r.observed[alive.Identity()]
+	obs, ok := r.observed[hname]
 	if !ok {
 		r.observed[hname] = &observation{
 			ts:      time.Now(),
@@ -79,6 +79,8 @@ func (r *Recorder) processAlive(e lifecycle.Event) error {
 
 		return nil
 	}
+
+	r.observed[hname].ts = time.Now()
 
 	if obs.version != alive.Version {
 		r.eventsTally.WithLabelValues(alive.Component(), obs.version).Dec()
@@ -187,7 +189,7 @@ func (r *Recorder) maintenance() {
 
 // Run starts listening for events and record statistics about it in prometheus
 func (r *Recorder) Run(ctx context.Context) error {
-	events := make(chan *choria.ConnectorMessage, 100)
+	events := make(chan *choria.ConnectorMessage, 1000)
 	maintSched := time.NewTicker(time.Minute)
 	subid, err := uuid.NewV4()
 	if err != nil {
