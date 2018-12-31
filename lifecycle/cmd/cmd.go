@@ -23,6 +23,7 @@ var (
 
 	port            int
 	debug           bool
+	tls             bool
 	componentFilter string
 	typeFilter      string
 	pidfile         string
@@ -40,6 +41,7 @@ func Run() {
 	app.Version(Version)
 	app.Flag("config", "Configuration file to use").ExistingFileVar(&cfgfile)
 	app.Flag("debug", "Enable debug logging").BoolVar(&debug)
+	app.Flag("tls", "Use TLS when connecting to the middleware").Default("true").BoolVar(&tls)
 
 	viewcmd = app.Command("view", "View real time lifecycle events")
 	viewcmd.Flag("component", "Limit events to a named component").StringVar(&componentFilter)
@@ -72,6 +74,10 @@ func Run() {
 	if debug {
 		cfg.LogLevel = "debug"
 		cfg.LogFile = ""
+	}
+
+	if !tls {
+		cfg.DisableTLS = true
 	}
 
 	fw, err = choria.NewWithConfig(cfg)
