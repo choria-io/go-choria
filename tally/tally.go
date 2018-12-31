@@ -13,8 +13,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 )
 
-var stubSource chan *choria.ConnectorMessage
-
 // Connector is a connection to the middleware
 type Connector interface {
 	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *choria.ConnectorMessage) error
@@ -32,6 +30,7 @@ type Recorder struct {
 	badEvents   *prometheus.CounterVec
 	eventsTally *prometheus.GaugeVec
 	maintTime   *prometheus.SummaryVec
+	processTime *prometheus.SummaryVec
 }
 
 type observation struct {
@@ -60,16 +59,8 @@ func New(opts ...Option) (recorder *Recorder, err error) {
 	return recorder, nil
 }
 
-func (r *Recorder) process(e lifecycle.Event) error {
-	if e.Type() != lifecycle.Alive {
-		r.badEvents.WithLabelValues(r.options.Component).Inc()
-
-		return fmt.Errorf("can only process Alive events, received %s", e.TypeString())
-	}
-
+func (r *Recorder) processAlive(e lifecycle.Event) error {
 	alive := e.(*lifecycle.AliveEvent)
-
-	r.okEvents.WithLabelValues(r.options.Component).Inc()
 
 	r.Lock()
 	defer r.Unlock()
@@ -89,12 +80,77 @@ func (r *Recorder) process(e lifecycle.Event) error {
 	}
 
 	if obs.version != alive.Version {
-		r.eventsTally.WithLabelValues(r.options.Component, obs.version).Dec()
+		r.eventsTally.WithLabelValues(alive.Component(), obs.version).Dec()
 		obs.version = alive.Version
-		r.eventsTally.WithLabelValues(r.options.Component, obs.version).Inc()
+		r.eventsTally.WithLabelValues(alive.Component(), obs.version).Inc()
 	}
 
 	return nil
+}
+
+func (r *Recorder) processStartup(e lifecycle.Event) error {
+	startup := e.(*lifecycle.StartupEvent)
+
+	r.Lock()
+	defer r.Unlock()
+
+	hname := hostHash(startup.Identity())
+	obs, ok := r.observed[hname]
+	if ok {
+		r.eventsTally.WithLabelValues(startup.Component(), obs.version).Dec()
+	}
+
+	r.observed[hname] = &observation{
+		ts:      time.Now(),
+		version: startup.Version,
+	}
+
+	r.eventsTally.WithLabelValues(startup.Component(), startup.Version).Inc()
+
+	return nil
+}
+
+func (r *Recorder) processShutdown(e lifecycle.Event) error {
+	shutdown := e.(*lifecycle.ShutdownEvent)
+
+	r.Lock()
+	defer r.Unlock()
+
+	hname := hostHash(shutdown.Identity())
+	obs, ok := r.observed[hname]
+	if ok {
+		r.eventsTally.WithLabelValues(shutdown.Component(), obs.version).Dec()
+		delete(r.observed, hname)
+	}
+
+	return nil
+}
+
+func (r *Recorder) process(e lifecycle.Event) (err error) {
+	r.options.Log.Debugf("Processing %s type message from %s %s", e.TypeString(), e.Component(), e.Identity())
+
+	timer := r.processTime.WithLabelValues(r.options.Component)
+	obs := prometheus.NewTimer(timer)
+	defer obs.ObserveDuration()
+
+	switch e.Type() {
+	case lifecycle.Alive:
+		err = r.processAlive(e)
+
+	case lifecycle.Startup:
+		err = r.processStartup(e)
+
+	case lifecycle.Shutdown:
+		err = r.processShutdown(e)
+	}
+
+	if err == nil {
+		r.okEvents.WithLabelValues(r.options.Component).Inc()
+	} else {
+		r.badEvents.WithLabelValues(r.options.Component).Inc()
+	}
+
+	return err
 }
 
 func (r *Recorder) maintenance() {
@@ -118,36 +174,37 @@ func (r *Recorder) maintenance() {
 	for _, host := range older {
 		delete(r.observed, host)
 	}
+
+	if len(older) > 0 {
+		r.options.Log.Infof("Removed %d hosts that have not been seen in over an hour", len(older))
+	}
 }
 
 // Run starts listening for events and record statistics about it in prometheus
 func (r *Recorder) Run(ctx context.Context) error {
-	var events chan *choria.ConnectorMessage
-
-	if stubSource == nil {
-		events = stubSource
-	} else {
-		events = make(chan *choria.ConnectorMessage, 100)
-	}
-
+	events := make(chan *choria.ConnectorMessage, 100)
 	maintSched := time.NewTicker(time.Minute)
 	subid, err := uuid.NewV4()
 	if err != nil {
 		return errors.Wrap(err, "could not create random subscription id")
 	}
 
-	r.options.Connector.QueueSubscribe(ctx, fmt.Sprintf("tally_%s_%s", r.options.Component, subid.String()), fmt.Sprintf("choria.lifecycle.event.alive.%s", r.options.Component), "", events)
+	r.options.Connector.QueueSubscribe(ctx, fmt.Sprintf("tally_%s_%s", r.options.Component, subid.String()), fmt.Sprintf("choria.lifecycle.event.*.%s", r.options.Component), "", events)
 
 	for {
 		select {
 		case e := <-events:
 			event, err := lifecycle.NewFromJSON(e.Data)
 			if err != nil {
-				r.options.Log.Printf("could not process event: %s", err)
+				r.options.Log.Errorf("could not process event: %s", err)
 				continue
 			}
 
-			r.process(event)
+			err = r.process(event)
+			if err != nil {
+				r.options.Log.Errorf("could not process event from %s: %s", event.Identity(), err)
+				continue
+			}
 
 		case <-maintSched.C:
 			r.maintenance()

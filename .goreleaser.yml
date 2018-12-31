@@ -1,0 +1,29 @@
+builds:
+  - binary: lifecycle
+    main: lifecycle/main.go
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+    ldflags: "-X github.com/choria-io/go-lifecycle/cmd.Version={{.Version}}"
+
+archive:
+  format: tar.gz
+  wrap_in_directory: true
+  name_template: "lifecycle-v{{.Version}}-{{.Os}}-{{.Arch}}"
+  replacements:
+    amd64: 64bit
+    darwin: macos
+  files:
+    - LICENSE
+    - README.md
+
+release:
+  github:
+    owner: choria-io
+    name: go-lifecycle
+
+  draft: true
+  name_template: "{{.Version}}"

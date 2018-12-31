@@ -9,7 +9,8 @@ import:
   version: ^0.8.0
 - package: github.com/nats-io/go-nats
   version: 1.6.0
-
+- package: gopkg.in/alecthomas/kingpin.v2
+  version: ^2.2.6
 testImport:
 - package: github.com/golang/mock
   version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c

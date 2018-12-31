@@ -2,8 +2,6 @@ package tally
 
 import (
 	"fmt"
-	"log"
-	"os"
 
 	"github.com/sirupsen/logrus"
 )
@@ -12,7 +10,7 @@ import (
 type options struct {
 	Component  string
 	Debug      bool
-	Log        logrus.StdLogger
+	Log        *logrus.Entry
 	Connector  Connector
 	StatPrefix string
 }
@@ -27,6 +25,10 @@ func (o *options) Validate() error {
 		return fmt.Errorf("needs a component")
 	}
 
+	if o.Component == "*" || o.Component == ">" {
+		return fmt.Errorf("invalid component %s", o.Component)
+	}
+
 	if o.Connector == nil {
 		return fmt.Errorf("needs a connector")
 	}
@@ -36,7 +38,7 @@ func (o *options) Validate() error {
 	}
 
 	if o.Log == nil {
-		o.Log = log.New(os.Stdout, "tally", 0)
+		o.Log = logrus.NewEntry(logrus.New())
 	}
 
 	return nil
@@ -57,7 +59,7 @@ func Debug() Option {
 }
 
 // Logger is the logger to use
-func Logger(l logrus.StdLogger) Option {
+func Logger(l *logrus.Entry) Option {
 	return func(o *options) {
 		o.Log = l
 	}

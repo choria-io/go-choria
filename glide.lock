@@ -1,6 +1,12 @@
-hash: 452c799dabb1a953bf2e1cf0c8b00c4fcbf5304db8d13427caba1b48c719b9e5
-updated: 2018-12-29T15:45:20.62126832+01:00
+hash: 083567924062fa5311e7098983c479700929cb0aa0e696333aa9185dd586afd9
+updated: 2018-12-30T10:03:43.829370862+01:00
 imports:
+- name: github.com/alecthomas/template
+  version: a0175ee3bccc567396460bf5acd36800cb10c49c
+  subpackages:
+  - parse
+- name: github.com/alecthomas/units
+  version: 2efee857e7cfd4f3d0138cc3cbb1b4966962b93a
 - name: github.com/beorn7/perks
   version: 3a771d992973f24aa725d07868b467d1ddfceafb
   subpackages:
@@ -113,6 +119,8 @@ imports:
   version: f7928cfef4d09d1b080aa2b6fd3ca9ba1567c733
   subpackages:
   - unix
+- name: gopkg.in/alecthomas/kingpin.v2
+  version: 947dcec5ba9c011838740e680966fd7087a71d0d
 testImports:
 - name: github.com/hpcloud/tail
   version: a1dbeea552b7c8df4b542c66073e393de198a800
