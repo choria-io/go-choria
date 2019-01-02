@@ -308,7 +308,7 @@ func (s *FileSecurity) CallerName() string {
 
 // CallerIdentity extracts the identity from a choria like caller name in the form of choria=identity
 func (s *FileSecurity) CallerIdentity(caller string) (string, error) {
-	re := regexp.MustCompile("^choria=([\\w\\.\\-]+)")
+	re := regexp.MustCompile("^[a-z]+=([\\w\\.\\-]+)")
 	match := re.FindStringSubmatch(caller)
 
 	if match == nil {
