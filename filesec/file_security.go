@@ -273,12 +273,12 @@ func (s *FileSecurity) VerifyStringSignature(str string, sig []byte, identity st
 func (s *FileSecurity) PrivilegedVerifyByteSignature(dat []byte, sig []byte, identity string) bool {
 	var candidates []string
 
-	if identity != "" {
-		candidates = append(candidates, identity)
-	}
-
 	for _, candidate := range s.privilegedCerts() {
 		candidates = append(candidates, candidate)
+	}
+
+	if identity != "" {
+		candidates = append(candidates, identity)
 	}
 
 	for _, candidate := range candidates {

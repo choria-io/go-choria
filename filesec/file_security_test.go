@@ -110,8 +110,8 @@ var _ = Describe("FileSSL", func() {
 			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(prov.conf.AllowList).To(Equal([]string{"\\.mcollective$"}))
-			Expect(prov.conf.PrivilegedUsers).To(Equal([]string{"\\.privileged.mcollective$"}))
+			Expect(prov.conf.AllowList).To(Equal([]string{"\\.mcollective$", "\\.choria$"}))
+			Expect(prov.conf.PrivilegedUsers).To(Equal([]string{"\\.privileged.mcollective$", "\\.privileged.choria$"}))
 			Expect(prov.conf.CA).To(Equal("stub/ca.pem"))
 			Expect(prov.conf.Cache).To(Equal("stub/cache"))
 			Expect(prov.conf.Certificate).To(Equal("stub/cert.pem"))
