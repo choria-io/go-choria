@@ -202,11 +202,15 @@ var _ = Describe("FileSSL", func() {
 	Describe("CallerIdentity", func() {
 		It("Should return the right caller ident", func() {
 			Expect(prov.CallerIdentity("choria=test.choria")).To(Equal("test.choria"))
+			Expect(prov.CallerIdentity("foo=test1.choria")).To(Equal("test1.choria"))
 		})
 
 		It("Should handle invalid caller ident", func() {
 			_, err := prov.CallerIdentity("test.choria")
 			Expect(err).To(MatchError("could not find a valid caller identity name in test.choria"))
+
+			_, err = prov.CallerIdentity("fooBar=test.choria")
+			Expect(err).To(MatchError("could not find a valid caller identity name in fooBar=test.choria"))
 		})
 	})
 
