@@ -112,8 +112,8 @@ var _ = Describe("PuppetSSL", func() {
 			prov, err = New(WithChoriaConfig(c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(prov.conf.AllowList).To(Equal([]string{"\\.mcollective$"}))
-			Expect(prov.conf.PrivilegedUsers).To(Equal([]string{"\\.privileged.mcollective$"}))
+			Expect(prov.conf.AllowList).To(Equal([]string{"\\.mcollective$", "\\.choria$"}))
+			Expect(prov.conf.PrivilegedUsers).To(Equal([]string{"\\.privileged.mcollective$", "\\.privileged.choria$"}))
 			Expect(prov.conf.DisableTLSVerify).To(BeTrue())
 			Expect(prov.conf.SSLDir).To(Equal("/stub"))
 			Expect(prov.conf.PuppetCAHost).To(Equal("stubhost"))
