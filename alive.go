@@ -27,14 +27,7 @@ func init() {
 }
 
 func newAliveEvent(opts ...Option) *AliveEvent {
-	event := &AliveEvent{
-		basicEvent: basicEvent{
-			Protocol:  "io.choria.lifecycle.v1.alive",
-			Timestamp: timeStamp(),
-			etype:     "alive",
-			dtype:     Alive,
-		},
-	}
+	event := &AliveEvent{basicEvent: newBasicEvent("alive")}
 
 	for _, o := range opts {
 		o(event)
@@ -44,12 +37,8 @@ func newAliveEvent(opts ...Option) *AliveEvent {
 }
 
 func newAliveEventFromJSON(j []byte) (*AliveEvent, error) {
-	event := &AliveEvent{
-		basicEvent: basicEvent{
-			etype: "alive",
-			dtype: Alive,
-		},
-	}
+	event := &AliveEvent{basicEvent: newBasicEvent("alive")}
+
 	err := json.Unmarshal(j, event)
 	if err != nil {
 		return nil, err

@@ -27,14 +27,7 @@ func init() {
 }
 
 func newStartupEvent(opts ...Option) *StartupEvent {
-	event := &StartupEvent{
-		basicEvent: basicEvent{
-			Protocol:  "io.choria.lifecycle.v1.startup",
-			Timestamp: timeStamp(),
-			etype:     "startup",
-			dtype:     Startup,
-		},
-	}
+	event := &StartupEvent{basicEvent: newBasicEvent("startup")}
 
 	for _, o := range opts {
 		o(event)
@@ -44,12 +37,8 @@ func newStartupEvent(opts ...Option) *StartupEvent {
 }
 
 func newStartupEventFromJSON(j []byte) (*StartupEvent, error) {
-	event := &StartupEvent{
-		basicEvent: basicEvent{
-			etype: "startup",
-			dtype: Startup,
-		},
-	}
+	event := &StartupEvent{basicEvent: newBasicEvent("startup")}
+
 	err := json.Unmarshal(j, event)
 	if err != nil {
 		return nil, err

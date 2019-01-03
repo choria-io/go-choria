@@ -23,14 +23,7 @@ func init() {
 }
 
 func newProvisionedEvent(opts ...Option) *ProvisionedEvent {
-	event := &ProvisionedEvent{
-		basicEvent: basicEvent{
-			Protocol:  "io.choria.lifecycle.v1.provisioned",
-			Timestamp: timeStamp(),
-			etype:     "provisioned",
-			dtype:     Provisioned,
-		},
-	}
+	event := &ProvisionedEvent{basicEvent: newBasicEvent("provisioned")}
 
 	for _, o := range opts {
 		o(event)
@@ -40,12 +33,7 @@ func newProvisionedEvent(opts ...Option) *ProvisionedEvent {
 }
 
 func newProvisionedEventFromJSON(j []byte) (*ProvisionedEvent, error) {
-	event := &ProvisionedEvent{
-		basicEvent: basicEvent{
-			etype: "provisioned",
-			dtype: Provisioned,
-		},
-	}
+	event := &ProvisionedEvent{basicEvent: newBasicEvent("provisioned")}
 
 	err := json.Unmarshal(j, event)
 	if err != nil {

@@ -23,14 +23,7 @@ func init() {
 }
 
 func newShutdownEvent(opts ...Option) *ShutdownEvent {
-	event := &ShutdownEvent{
-		basicEvent: basicEvent{
-			Protocol:  "io.choria.lifecycle.v1.shutdown",
-			Timestamp: timeStamp(),
-			etype:     "shutdown",
-			dtype:     Shutdown,
-		},
-	}
+	event := &ShutdownEvent{basicEvent: newBasicEvent("shutdown")}
 
 	for _, o := range opts {
 		o(event)
@@ -40,12 +33,7 @@ func newShutdownEvent(opts ...Option) *ShutdownEvent {
 }
 
 func newShutdownEventFromJSON(j []byte) (*ShutdownEvent, error) {
-	event := &ShutdownEvent{
-		basicEvent: basicEvent{
-			etype: "shutdown",
-			dtype: Shutdown,
-		},
-	}
+	event := &ShutdownEvent{basicEvent: newBasicEvent("shutdown")}
 	err := json.Unmarshal(j, event)
 	if err != nil {
 		return nil, err
