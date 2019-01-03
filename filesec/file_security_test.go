@@ -423,22 +423,27 @@ var _ = Describe("FileSSL", func() {
 		It("Should only accept valid certs signed by our ca", func() {
 			pd, err := ioutil.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
-			Expect(prov.shouldCacheClientCert(pd, "foo")).To(BeFalse())
+
+			should, name := prov.shouldCacheClientCert(pd, "foo")
+			Expect(should).To(BeFalse())
+			Expect(name).To(Equal("foo"))
 
 			pub := prov.publicCertPath()
 			pd, err = ioutil.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(prov.shouldCacheClientCert(pd, "rip.mcollective")).To(BeTrue())
+
+			should, name = prov.shouldCacheClientCert(pd, "rip.mcollective")
+			Expect(should).To(BeTrue())
+			Expect(name).To(Equal("rip.mcollective"))
 		})
 
 		It("Should cache privileged certs", func() {
-			cfg.Identity = "1.privileged.mcollective"
-
-			pub := prov.publicCertPath()
-
-			pd, err := ioutil.ReadFile(pub)
+			pd, err := ioutil.ReadFile(filepath.Join("..", "testdata", "good", "certs", "1.privileged.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
-			Expect(prov.shouldCacheClientCert(pd, "1.privileged.mcollective")).To(BeTrue())
+
+			should, name := prov.shouldCacheClientCert(pd, "bob")
+			Expect(should).To(BeTrue())
+			Expect(name).To(Equal("1.privileged.mcollective"))
 		})
 
 		It("Should not cache certs with wrong names", func() {
@@ -446,7 +451,10 @@ var _ = Describe("FileSSL", func() {
 
 			pd, err := ioutil.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(prov.shouldCacheClientCert(pd, "bob")).To(BeFalse())
+
+			should, name := prov.shouldCacheClientCert(pd, "bob")
+			Expect(should).To(BeFalse())
+			Expect(name).To(Equal("bob"))
 		})
 
 		It("Should only cache certs thats on the allowed list", func() {
@@ -455,7 +463,10 @@ var _ = Describe("FileSSL", func() {
 
 			pd, err := ioutil.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(prov.shouldCacheClientCert(pd, "rip.mcollective")).To(BeFalse())
+
+			should, name := prov.shouldCacheClientCert(pd, "rip.mcollective")
+			Expect(should).To(BeFalse())
+			Expect(name).To(Equal("rip.mcollective"))
 		})
 
 		It("Should cache valid certs", func() {
@@ -463,7 +474,10 @@ var _ = Describe("FileSSL", func() {
 
 			pd, err := ioutil.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(prov.shouldCacheClientCert(pd, "rip.mcollective")).To(BeTrue())
+
+			should, name := prov.shouldCacheClientCert(pd, "rip.mcollective")
+			Expect(should).To(BeTrue())
+			Expect(name).To(Equal("rip.mcollective"))
 		})
 	})
 

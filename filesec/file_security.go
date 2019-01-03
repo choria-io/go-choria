@@ -323,7 +323,8 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if !s.shouldCacheClientCert(data, identity) {
+	should, identity := s.shouldCacheClientCert(data, identity)
+	if !should {
 		return fmt.Errorf("certificate '%s' did not pass validation", identity)
 	}
 
@@ -627,26 +628,71 @@ func (s *FileSecurity) certCacheDir() string {
 	return filepath.FromSlash(s.conf.Cache)
 }
 
-func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) bool {
+// shouldCacheClientCert figure out if we should cache this cert and if we do by what name, we do
+// not want certificate for caller bob which is in fact signed by a privilged cert to end up cached
+// as bob, we so we determine the right name to use and pass that along back to the caller who then
+// use that to determine the cache path
+func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) (should bool, savename string) {
+	// Checks if it was signed by the CA but without any name validation
 	if err := s.VerifyCertificate(data, ""); err != nil {
 		s.log.Warnf("Received certificate '%s' certificate did not pass verification: %s", name, err)
-		return false
+		return false, name
 	}
 
-	if MatchAnyRegex([]byte(name), s.conf.PrivilegedUsers) {
-		s.log.Warnf("Caching privileged certificate %s", name)
-		return true
+	// Check if the certificate that would be validated is a privileged one, so we dont name validate that
+	// we already know its signed by the right CA so we accept the privileged ones.
+	//
+	// At this point name is from the caller id but we need what is in the presented certificate
+	// in order to validate since the priv'd cert can overide name to something else, so we extract
+	// the common name and all the dnsnames and check each one, if any of them are a privileged user
+	// we can go ahead with that one
+	privNames, err := s.certDNSNames(data)
+	if err != nil {
+		s.log.Warnf("Could not extract DNS Names from certificate")
+		return false, name
 	}
 
+	for _, privName := range privNames {
+		if MatchAnyRegex([]byte(privName), s.conf.PrivilegedUsers) {
+			s.log.Warnf("Caching privileged certificate %s", privName)
+			return true, privName
+		}
+	}
+
+	// At this point we know ifs not privileged so we verify again but this time also check the name matches what
+	// is in the cert since at this point it must match the caller id name
 	if err := s.VerifyCertificate(data, name); err != nil {
 		s.log.Warnf("Received certificate '%s' did not pass verification: %s", name, err)
-		return false
+		return false, name
 	}
 
-	if !MatchAnyRegex([]byte(name), s.conf.AllowList) {
-		s.log.Warnf("Received certificate '%s' does not match the allowed list '%s'", name, s.conf.AllowList)
-		return false
+	// Finally if its on the allow list
+	if MatchAnyRegex([]byte(name), s.conf.AllowList) {
+		return true, name
 	}
 
-	return true
+	s.log.Warnf("Received certificate '%s' does not match the allowed list '%s'", name, s.conf.AllowList)
+	return false, name
+}
+
+func (s *FileSecurity) certDNSNames(certpem []byte) (names []string, err error) {
+	block, _ := pem.Decode(certpem)
+	if block == nil {
+		s.log.Warnf("Could not decode certificate PEM data: %s", err)
+		return names, err
+	}
+
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		s.log.Warnf("Could not parse certificate: %s", err)
+		return names, err
+	}
+
+	names = append(names, cert.Subject.CommonName)
+
+	for _, name := range cert.DNSNames {
+		names = append(names, name)
+	}
+
+	return names, nil
 }
