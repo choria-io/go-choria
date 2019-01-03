@@ -9,4 +9,5 @@ type Event interface {
 	SetIdentity(string)
 	Component() string
 	Identity() string
+	ID() string
 }

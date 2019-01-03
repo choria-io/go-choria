@@ -66,11 +66,12 @@ var _ = Describe("Events", func() {
 
 	Describe("PublishEvent", func() {
 		It("Should publish the event to the right destination", func() {
+			mockTime = 1535106973
+			mockID = "01e72410-d734-4611-9485-8c6a2dd2579b"
+
 			event, err := New(Startup, Component("ginkgo"), Version("1.2.3"), Identity("ginkgo.example.net"))
 			Expect(err).ToNot(HaveOccurred())
-			mockTime = 1535106973
-			Expect(err).ToNot(HaveOccurred())
-			conn.EXPECT().PublishRaw("choria.lifecycle.event.startup.ginkgo", []byte(`{"protocol":"io.choria.lifecycle.v1.startup","identity":"ginkgo.example.net","component":"ginkgo","timestamp":1535106973,"version":"1.2.3"}`))
+			conn.EXPECT().PublishRaw("choria.lifecycle.event.startup.ginkgo", []byte(`{"protocol":"io.choria.lifecycle.v1.startup","id":"01e72410-d734-4611-9485-8c6a2dd2579b","identity":"ginkgo.example.net","component":"ginkgo","timestamp":1535106973,"version":"1.2.3"}`))
 			PublishEvent(event, conn)
 		})
 	})

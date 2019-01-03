@@ -4,12 +4,18 @@ import "fmt"
 
 type basicEvent struct {
 	Protocol  string `json:"protocol"`
+	EventID   string `json:"id"`
 	Ident     string `json:"identity"`
 	Comp      string `json:"component"`
 	Timestamp int64  `json:"timestamp"`
 
 	etype string
 	dtype Type
+}
+
+// ID is the v4 uuid of this message
+func (e *basicEvent) ID() string {
+	return e.EventID
 }
 
 // Component is the component that produced the event
@@ -54,4 +60,17 @@ func (e *basicEvent) Type() Type {
 // TypeString the string representation of the event type
 func (e *basicEvent) TypeString() string {
 	return e.etype
+}
+
+func newBasicEvent(t string) basicEvent {
+	dtype := eventTypes[t]
+	protocol := fmt.Sprintf("io.choria.lifecycle.v1.%s", t)
+
+	return basicEvent{
+		Protocol:  protocol,
+		EventID:   eventID(),
+		Timestamp: timeStamp(),
+		etype:     t,
+		dtype:     dtype,
+	}
 }
