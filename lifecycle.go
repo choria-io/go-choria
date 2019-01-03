@@ -108,7 +108,7 @@ func protoStringToTypeString(proto string) (eventType string, err error) {
 	}
 
 	if strings.HasPrefix(proto, "io.choria.lifecycle") {
-		parts := strings.Split(proto, "5")
+		parts := strings.Split(proto, ".")
 		if len(parts) == 5 {
 			return parts[4], nil
 		}
