@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// StartupEvent is a choria:lifecycle:alive:1 event
+// AliveEvent is a io.choria.lifecycle.v1.alive event
 //
 // In addition to the usually required fields it requires a Version()
 // specified when producing this type of event
@@ -29,7 +29,7 @@ func init() {
 func newAliveEvent(opts ...Option) *AliveEvent {
 	event := &AliveEvent{
 		basicEvent: basicEvent{
-			Protocol:  "choria:lifecycle:alive:1",
+			Protocol:  "io.choria.lifecycle.v1.alive",
 			Timestamp: timeStamp(),
 			etype:     "alive",
 			dtype:     Alive,
@@ -55,7 +55,11 @@ func newAliveEventFromJSON(j []byte) (*AliveEvent, error) {
 		return nil, err
 	}
 
-	if event.Protocol != "choria:lifecycle:alive:1" {
+	if event.Protocol == "choria:lifecycle:alive:1" {
+		event.Protocol = "io.choria.lifecycle.v1.alive"
+	}
+
+	if event.Protocol != "io.choria.lifecycle.v1.alive" {
 		return nil, fmt.Errorf("invalid protocol '%s'", event.Protocol)
 	}
 

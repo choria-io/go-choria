@@ -23,7 +23,7 @@ var _ = Describe("ProvisionedEvent", func() {
 		})
 
 		It("Should parse valid events", func() {
-			event, err := newProvisionedEventFromJSON([]byte(`{"protocol":"choria:lifecycle:provisioned:1", "component":"ginkgo"}`))
+			event, err := newProvisionedEventFromJSON([]byte(`{"protocol":"io.choria.lifecycle.v1.provisioned", "component":"ginkgo"}`))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(event.Component()).To(Equal("ginkgo"))
 			Expect(event.dtype).To(Equal(Provisioned))

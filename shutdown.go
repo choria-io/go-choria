@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// ShutdownEvent is a choria:lifecycle:shutdown:1 event
+// ShutdownEvent is a io.choria.lifecycle.v1.shutdown event
 type ShutdownEvent struct {
 	basicEvent
 }
@@ -25,7 +25,7 @@ func init() {
 func newShutdownEvent(opts ...Option) *ShutdownEvent {
 	event := &ShutdownEvent{
 		basicEvent: basicEvent{
-			Protocol:  "choria:lifecycle:shutdown:1",
+			Protocol:  "io.choria.lifecycle.v1.shutdown",
 			Timestamp: timeStamp(),
 			etype:     "shutdown",
 			dtype:     Shutdown,
@@ -51,7 +51,11 @@ func newShutdownEventFromJSON(j []byte) (*ShutdownEvent, error) {
 		return nil, err
 	}
 
-	if event.Protocol != "choria:lifecycle:shutdown:1" {
+	if event.Protocol == "choria:lifecycle:shutdown:1" {
+		event.Protocol = "io.choria.lifecycle.v1.shutdown"
+	}
+
+	if event.Protocol != "io.choria.lifecycle.v1.shutdown" {
 		return nil, fmt.Errorf("invalid protocol '%s'", event.Protocol)
 	}
 
