@@ -21,7 +21,7 @@ var _ = Describe("StartupEvent", func() {
 		})
 
 		It("Should parse valid events", func() {
-			event, err := newStartupEventFromJSON([]byte(`{"protocol":"choria:lifecycle:startup:1", "component":"ginkgo"}`))
+			event, err := newStartupEventFromJSON([]byte(`{"protocol":"io.choria.lifecycle.v1.startup", "component":"ginkgo"}`))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(event.Component()).To(Equal("ginkgo"))
 			Expect(event.Type()).To(Equal(Startup))

@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// ProvisionedEvent is a choria::lifecycle::provisioned:1 event
+// ProvisionedEvent is a io.choria.lifecycle.v1.provisioned event
 type ProvisionedEvent struct {
 	basicEvent
 }
@@ -25,7 +25,7 @@ func init() {
 func newProvisionedEvent(opts ...Option) *ProvisionedEvent {
 	event := &ProvisionedEvent{
 		basicEvent: basicEvent{
-			Protocol:  "choria:lifecycle:provisioned:1",
+			Protocol:  "io.choria.lifecycle.v1.provisioned",
 			Timestamp: timeStamp(),
 			etype:     "provisioned",
 			dtype:     Provisioned,
@@ -52,7 +52,11 @@ func newProvisionedEventFromJSON(j []byte) (*ProvisionedEvent, error) {
 		return nil, err
 	}
 
-	if event.Protocol != "choria:lifecycle:provisioned:1" {
+	if event.Protocol == "choria:lifecycle:provisioned:1" {
+		event.Protocol = "io.choria.lifecycle.v1.provisioned"
+	}
+
+	if event.Protocol != "io.choria.lifecycle.v1.provisioned" {
 		return nil, fmt.Errorf("invalid protocol '%s'", event.Protocol)
 	}
 

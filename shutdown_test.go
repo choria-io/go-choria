@@ -23,7 +23,7 @@ var _ = Describe("ShutdownEvent", func() {
 		})
 
 		It("Should parse valid events", func() {
-			event, err := newShutdownEventFromJSON([]byte(`{"protocol":"choria:lifecycle:shutdown:1", "component":"ginkgo"}`))
+			event, err := newShutdownEventFromJSON([]byte(`{"protocol":"io.choria.lifecycle.v1.shutdown", "component":"ginkgo"}`))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(event.Component()).To(Equal("ginkgo"))
 			Expect(event.dtype).To(Equal(Shutdown))

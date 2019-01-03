@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-// StartupEvent is a choria:lifecycle:startup:1 event
+// StartupEvent is a io.choria.lifecycle.v1.startup event
 //
 // In addition to the usually required fields it requires a Version()
 // specified when producing this type of event
@@ -29,7 +29,7 @@ func init() {
 func newStartupEvent(opts ...Option) *StartupEvent {
 	event := &StartupEvent{
 		basicEvent: basicEvent{
-			Protocol:  "choria:lifecycle:startup:1",
+			Protocol:  "io.choria.lifecycle.v1.startup",
 			Timestamp: timeStamp(),
 			etype:     "startup",
 			dtype:     Startup,
@@ -55,7 +55,11 @@ func newStartupEventFromJSON(j []byte) (*StartupEvent, error) {
 		return nil, err
 	}
 
-	if event.Protocol != "choria:lifecycle:startup:1" {
+	if event.Protocol == "choria:lifecycle:startup:1" {
+		event.Protocol = "io.choria.lifecycle.v1.startup"
+	}
+
+	if event.Protocol != "io.choria.lifecycle.v1.startup" {
 		return nil, fmt.Errorf("invalid protocol '%s'", event.Protocol)
 	}
 

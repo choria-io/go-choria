@@ -59,8 +59,8 @@ var _ = Describe("Events", func() {
 		})
 
 		It("Should handle unknown event types", func() {
-			_, err := NewFromJSON([]byte(`{"protocol":"choria:lifecycle:unknown:1"}`))
-			Expect(err).To(MatchError("unknown protocol 'choria:lifecycle:unknown:1' received"))
+			_, err := NewFromJSON([]byte(`{"protocol":"io.choria.lifecycle.v1.unknown"}`))
+			Expect(err).To(MatchError("unknown protocol 'io.choria.lifecycle.v1.unknown' received"))
 		})
 	})
 
@@ -70,7 +70,7 @@ var _ = Describe("Events", func() {
 			Expect(err).ToNot(HaveOccurred())
 			mockTime = 1535106973
 			Expect(err).ToNot(HaveOccurred())
-			conn.EXPECT().PublishRaw("choria.lifecycle.event.startup.ginkgo", []byte(`{"protocol":"choria:lifecycle:startup:1","identity":"ginkgo.example.net","component":"ginkgo","timestamp":1535106973,"version":"1.2.3"}`))
+			conn.EXPECT().PublishRaw("choria.lifecycle.event.startup.ginkgo", []byte(`{"protocol":"io.choria.lifecycle.v1.startup","identity":"ginkgo.example.net","component":"ginkgo","timestamp":1535106973,"version":"1.2.3"}`))
 			PublishEvent(event, conn)
 		})
 	})

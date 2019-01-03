@@ -78,22 +78,45 @@ func NewFromJSON(j []byte) (Event, error) {
 		return nil, fmt.Errorf("no protocol field present")
 	}
 
-	proto := strings.Split(protocol.String(), ":")
-	if len(proto) != 4 {
-		return nil, fmt.Errorf("invalid protocol '%s' received", protocol.String())
+	proto, err := protoStringToTypeString(protocol.String())
+	if err != nil {
+		return nil, err
 	}
 
-	etype, ok := eventTypes[proto[2]]
+	etype, ok := eventTypes[proto]
 	if !ok {
 		return nil, fmt.Errorf("unknown protocol '%s' received", protocol.String())
 	}
 
 	factory, ok := eventJSONParsers[etype]
 	if !ok {
-		return nil, fmt.Errorf("cannot create %s event type from JSON", proto[2])
+		return nil, fmt.Errorf("cannot create %s event type from JSON", proto)
 	}
 
 	return factory(j)
+}
+
+// turns io.choria.lifecycle.v1.provisioned or choria:lifecycle:provisioned:1 into provisioned
+func protoStringToTypeString(proto string) (eventType string, err error) {
+	if strings.HasPrefix(proto, "choria:lifecycle") {
+		parts := strings.Split(proto, ":")
+		if len(parts) == 4 {
+			return parts[2], nil
+		}
+
+		return "", fmt.Errorf("unknown protocol '%s' received", proto)
+	}
+
+	if strings.HasPrefix(proto, "io.choria.lifecycle") {
+		parts := strings.Split(proto, "5")
+		if len(parts) == 5 {
+			return parts[4], nil
+		}
+
+		return "", fmt.Errorf("unknown protocol '%s' received", proto)
+	}
+
+	return "", fmt.Errorf("invalid protocol '%s' received", proto)
 }
 
 // PublishEvent publishes an event
