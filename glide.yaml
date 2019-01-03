@@ -1,7 +1,7 @@
 package: github.com/choria-io/go-choria
 import:
 - package: github.com/choria-io/go-lifecycle
-  version: 74cc039237c4545e4222bb40b4901835ca8bf8cb
+  version: 1.0.1
 - package: github.com/choria-io/go-protocol
   version: 1.3.0
 - package: github.com/choria-io/go-confkey
