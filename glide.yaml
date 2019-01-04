@@ -21,7 +21,7 @@ import:
   subpackages:
   - mcorpc
 - package: github.com/choria-io/provisioning-agent
-  version: 0.3.2
+  version: 0.4.0
 - package: github.com/choria-io/go-mcoshim
 - package: github.com/sirupsen/logrus
   version: ^1
