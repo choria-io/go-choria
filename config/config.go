@@ -135,8 +135,8 @@ type Config struct {
 	TTL                       int      `confkey:"ttl" default:"60"`
 	DefaultDiscoveryOptions   []string `confkey:"default_discovery_options"`
 	DefaultDiscoveryMethod    string   `confkey:"default_discovery_method" default:"mc"`
-	SoftShutdown              bool     `confkey:"soft_shutdown" default:"false"`
-	SoftShutdownTimeout       int      `confkey:"soft_shutdown_timeout"`
+	SoftShutdown              bool     `confkey:"soft_shutdown" default:"true"`
+	SoftShutdownTimeout       int      `confkey:"soft_shutdown_timeout" default:"2"`
 	ActivateAgents            bool     `confkey:"activate_agents" default:"true"`
 	FactSourceFile            string   `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml"`
 
