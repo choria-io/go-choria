@@ -29,7 +29,7 @@ type adaptable interface {
 // Configure the adapters:
 //   # required
 //   plugin.choria.adapters = discovery
-//   plugin.choria.adapters.discovery.type = nats_stream
+//   plugin.choria.adapter.discovery.type = nats_stream
 //
 // Configure the stream:
 //
