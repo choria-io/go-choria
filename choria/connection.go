@@ -639,6 +639,11 @@ func (conn *Connection) Flush() {
 func (conn *Connection) Close() {
 	subs := []string{}
 
+	conn.subMu.Lock()
+	defer conn.subMu.Unlock()
+	conn.conMu.Lock()
+	defer conn.conMu.Unlock()
+
 	for s := range conn.chanSubscriptions {
 		subs = append(subs, s)
 	}
