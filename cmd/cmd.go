@@ -141,6 +141,19 @@ func Run() (err error) {
 	return
 }
 
+func forcequit() {
+	grace := 2 * time.Second
+	if cfg.SoftShutdownTimeout > 0 {
+		grace = time.Duration(cfg.SoftShutdownTimeout) * time.Second
+	}
+
+	<-time.NewTimer(grace).C
+
+	log.Errorf("Forced shutdown triggered after %v", grace)
+
+	os.Exit(1)
+}
+
 func interruptWatcher() {
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, syscall.SIGINT, syscall.SIGTERM, syscall.SIGQUIT)
@@ -150,8 +163,11 @@ func interruptWatcher() {
 		case sig := <-sigs:
 			switch sig {
 			case syscall.SIGINT, syscall.SIGTERM:
+				go forcequit()
+
 				log.Infof("Shutting down on %s", sig)
 				cancel()
+
 			case syscall.SIGQUIT:
 				dumpGoRoutines()
 			}
