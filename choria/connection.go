@@ -193,9 +193,8 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 	}
 
 	conn.subMu.Lock()
-	defer conn.subMu.Unlock()
-
 	conn.chanSubscriptions[name] = s
+	conn.subMu.Unlock()
 
 	copier := func(subs *channelSubscription) {
 		for {
@@ -210,7 +209,7 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 
 	go copier(s)
 
-	conn.logger.Debugf("Susbscribing to %s in group '%s' on server %s", subject, group, conn.ConnectedServer())
+	conn.logger.Debugf("Subscribing to %s in group '%s' on server %s", subject, group, conn.ConnectedServer())
 
 	s.subscription, err = conn.nats.ChanQueueSubscribe(subject, group, s.in)
 	if err != nil {
@@ -232,9 +231,8 @@ func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject
 	}
 
 	conn.subMu.Lock()
-	defer conn.subMu.Unlock()
-
 	conn.chanSubscriptions[name] = s
+	conn.subMu.Unlock()
 
 	copier := func(ctx context.Context, s *channelSubscription) {
 		for {
@@ -253,7 +251,7 @@ func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject
 
 	go copier(ctx, s)
 
-	conn.logger.Debugf("Susbscribing to %s in group '%s' on server %s", subject, group, conn.ConnectedServer())
+	conn.logger.Debugf("Subscribing to %s in group '%s' on server %s", subject, group, conn.ConnectedServer())
 
 	s.subscription, err = conn.nats.ChanQueueSubscribe(subject, group, s.in)
 	if err != nil {
@@ -640,9 +638,6 @@ func (conn *Connection) Close() {
 	subs := []string{}
 
 	conn.subMu.Lock()
-	defer conn.subMu.Unlock()
-	conn.conMu.Lock()
-	defer conn.conMu.Unlock()
 
 	for s := range conn.chanSubscriptions {
 		subs = append(subs, s)
@@ -652,6 +647,8 @@ func (conn *Connection) Close() {
 		subs = append(subs, s)
 	}
 
+	conn.subMu.Unlock()
+
 	for _, s := range subs {
 		err := conn.Unsubscribe(s)
 		if err != nil {
@@ -659,7 +656,11 @@ func (conn *Connection) Close() {
 		}
 	}
 
+
 	conn.Flush()
+
+	conn.conMu.Lock()
+	defer conn.conMu.Unlock()
 
 	conn.logger.Debug("Closing NATS connection")
 	conn.nats.Close()
