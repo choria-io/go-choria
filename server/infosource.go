@@ -151,7 +151,7 @@ func (srv *Instance) WriteServerStatus(ctx context.Context, wg *sync.WaitGroup) 
 			return err
 		}
 
-		err = ioutil.WriteFile(target, j, 0640)
+		err = ioutil.WriteFile(target, j, 0644)
 
 		return err
 	}
