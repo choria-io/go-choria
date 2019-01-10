@@ -22,6 +22,9 @@ lockfile="/var/lock/subsys/${prog}"
 logfile="/var/log/${prog}"
 conffile="{{cpkg_etcdir}}/broker.conf"
 
+# If you're going to change the value of $user for non-root operations, make sure you change the value of
+# $pidfile and $logfile as well, otherwise you won't be able to start the daemon correctly.
+
 # set the open file limit to allow over 1024 connections
 ulimit -n 51200
 
@@ -37,11 +40,12 @@ start() {
 
     umask 077
 
-    touch $logfile $pidfile
+    runuser "${user}" touch $logfile $pidfile
 
     echo -n $"Starting ${prog}: "
 
     daemon \
+      --user=${user} \
       --pidfile=${pidfile} \
       " { nohup ${exec} ${args} > ${logfile} 2>&1 & }"
 

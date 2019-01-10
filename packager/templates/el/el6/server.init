@@ -40,11 +40,12 @@ start() {
 
     umask 077
 
-    touch $logfile $pidfile
+    runuser "${user}" touch $logfile $pidfile
 
     echo -n $"Starting ${prog}: "
 
     daemon \
+      --user=${user} \
       --pidfile=${pidfile} \
       " { nohup ${COMMAND_PREFIX} ${exec} ${args} > ${logfile} 2>&1 & } ; sleep 0.5 ; [ -f ${pidfile} ]"
 
