@@ -7,7 +7,7 @@ import:
 - package: github.com/choria-io/go-confkey
   version: 1.2.0
 - package: github.com/choria-io/go-network-broker
-  version: 1.1.0
+  version: c77703bfc405bdcf0a3089a8350e65805b97ba5d
 - package: github.com/choria-io/go-security
   version: f15fe29b0b34036c5b96ceb5552fda389ee16bc3
 - package: github.com/choria-io/go-updater
