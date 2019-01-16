@@ -1,5 +1,5 @@
-hash: 431ec4182716e40d1c676f8af83e9b20de346a19a0376763b8e9f9e0940ebb9a
-updated: 2019-01-04T11:55:31.104125+01:00
+hash: b9da726e494c0d273c6ceb21b32bccd8acee9398299f1a67a5ffb83a287ed800
+updated: 2019-01-16T09:31:41.099664+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -22,7 +22,7 @@ imports:
 - name: github.com/choria-io/go-mcoshim
   version: f92bd7733a5af67ff1e51bcb586f72464b7a3d12
 - name: github.com/choria-io/go-network-broker
-  version: 5ee327018c41220008c20284067da610d0f6478e
+  version: c77703bfc405bdcf0a3089a8350e65805b97ba5d
 - name: github.com/choria-io/go-protocol
   version: c3117476636777d60c00a86b2d4b2b8fc56addb4
   subpackages:
@@ -67,7 +67,7 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/gofrs/uuid
-  version: 7077aa61129615a0d7f45c49101cd011ab221c27
+  version: 6b08a5c5172ba18946672b49749cde22873dd7c2
 - name: github.com/gogo/protobuf
   version: 99cb9b23110011cc45571c901ecae6f6f5e65cd3
   subpackages:
@@ -90,13 +90,12 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/nats-io/gnatsd
-  version: eed4fbc1458ce110ad1aa1adf904229bc8fda2a7
+  version: ce2df36122805cfcf7fd996698f9389d1926c32b
   subpackages:
   - conf
   - logger
   - server
   - server/pse
-  - util
 - name: github.com/nats-io/go-nats
   version: fb0396ee0bdb8018b0fef30d6d1de798ce99cd05
   subpackages:
@@ -165,7 +164,7 @@ imports:
   - nfs
   - xfs
 - name: github.com/sirupsen/logrus
-  version: bcd833dfe83d3cebad139e4a29ed79cb2318bf95
+  version: e1e72e9de974bd926e5c56f83753fba2df402ce5
 - name: github.com/tidwall/gjson
   version: 081192fa2e471ddff3ec98a3cc04fecfd031ed57
 - name: github.com/tidwall/match
