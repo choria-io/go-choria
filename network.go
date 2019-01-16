@@ -64,6 +64,7 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 	if len(c.Config.Choria.NetworkAllowedClientHosts) > 0 {
 		s.opts.CustomClientAuthentication = &IPAuth{
 			allowList: c.Config.Choria.NetworkAllowedClientHosts,
+			log:       s.choria.Logger("ipauth"),
 		}
 	}
 
