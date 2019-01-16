@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"io/ioutil"
+	"os"
 	"sync"
 	"time"
 
@@ -152,8 +153,11 @@ func (srv *Instance) WriteServerStatus(ctx context.Context, wg *sync.WaitGroup) 
 		}
 
 		err = ioutil.WriteFile(target, j, 0644)
+		if err != nil {
+			return err
+		}
 
-		return err
+		return os.Chmod(target, 0644)
 	}
 
 	err := writer()
