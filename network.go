@@ -61,6 +61,12 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 		s.opts.HTTPPort = c.Config.Choria.StatsPort
 	}
 
+	if len(c.Config.Choria.NetworkAllowedClientHosts) > 0 {
+		s.opts.CustomClientAuthentication = &IPAuth{
+			allowList: c.Config.Choria.NetworkAllowedClientHosts,
+		}
+	}
+
 	err = s.setupCluster()
 	if err != nil {
 		return s, fmt.Errorf("Could not setup Clustering: %s", err)

@@ -32,6 +32,7 @@ The broker is configured using the Choria daemon configuration, below a referenc
 |`plugin.choria.network.peer_password`|Password to use when connecting to cluster peers|unset|
 |`plugin.choria.network.peers`|Comma separated List of cluster peers to connect to|unset|
 |`plugin.choria.network.write_deadline`|The time to allow for writes to network clients to complete before considering them slow|5s|
+|`plugin.choria.network.client_hosts`|List of hosts - ip addresses or cidrs - that are allowed to use clients|all|
 
 Choria core settings that affect the broker:
 

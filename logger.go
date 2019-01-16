@@ -24,6 +24,11 @@ func (l Logger) Errorf(format string, v ...interface{}) {
 	l.log.Errorf(format, v...)
 }
 
+// Warnf logs at warn lovel
+func (l Logger) Warnf(format string, v ...interface{}) {
+	l.log.Warnf(format, v...)
+}
+
 // Debugf logs at debug level
 func (l Logger) Debugf(format string, v ...interface{}) {
 	// this intercepts a few gnatsd debug messages that sould be higher and dispatch them somewhere more
