@@ -1,5 +1,5 @@
-hash: 8116d635a564129384d9ee2633bfd8f8d0572fd3a885c159a1b269b2d8a3514f
-updated: 2019-01-16T15:21:55.660466+01:00
+hash: 057b08aaf82108a5028f60ea5aa0c137158579c2794f9c899cf2d890be25cee1
+updated: 2019-01-17T13:37:30.180925+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -22,14 +22,14 @@ imports:
 - name: github.com/choria-io/go-mcoshim
   version: f92bd7733a5af67ff1e51bcb586f72464b7a3d12
 - name: github.com/choria-io/go-network-broker
-  version: c9857004dfa511fd98ac9390e9fcc40936c506fc
+  version: 52f5e064f2af6e1b78855cac669924fc0e54edcd
 - name: github.com/choria-io/go-protocol
   version: c3117476636777d60c00a86b2d4b2b8fc56addb4
   subpackages:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-security
-  version: f15fe29b0b34036c5b96ceb5552fda389ee16bc3
+  version: b259ec5ee20647587b1f8a9b1316b333de4ce3ad
   subpackages:
   - filesec
   - puppetsec
