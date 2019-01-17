@@ -35,13 +35,20 @@ func (a *IPAuth) setServerPermissions(user *server.User) {
 	user.Permissions.Subscribe = &server.SubjectPermission{
 		Deny: []string{
 			"*.reply.>",
+			"choria.federation.>",
+			"choria.lifecycle.>",
 		},
 	}
 
 	user.Permissions.Publish = &server.SubjectPermission{
+		Allow: []string{
+			"*.broadcast.agent.registration",
+		},
+
 		Deny: []string{
 			"*.broadcast.agent.>",
 			"*.node.>",
+			"choria.federation.*.federation",
 		},
 	}
 }

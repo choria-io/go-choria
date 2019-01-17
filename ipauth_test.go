@@ -104,15 +104,21 @@ var _ = Describe("Network Broker/IPAuth", func() {
 		It("Should set correct permissions", func() {
 			auth.setServerPermissions(user)
 
-			Expect(user.Permissions.Publish.Allow).To(HaveLen(0))
+			Expect(user.Permissions.Publish.Allow).To(Equal([]string{
+				"*.broadcast.agent.registration",
+			}))
+
 			Expect(user.Permissions.Publish.Deny).To(Equal([]string{
 				"*.broadcast.agent.>",
 				"*.node.>",
+				"choria.federation.*.federation",
 			}))
 
 			Expect(user.Permissions.Subscribe.Allow).To(HaveLen(0))
 			Expect(user.Permissions.Subscribe.Deny).To(Equal([]string{
 				"*.reply.>",
+				"choria.federation.>",
+				"choria.lifecycle.>",
 			}))
 		})
 	})
