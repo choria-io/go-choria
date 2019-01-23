@@ -1,5 +1,14 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2019/01/23|      |Release 0.10.0                                                                                           |
+|2019/01/17|      |Various fixes to privileged security certificate handling via `go-security` release `0.3.0`              |
+|2019/01/17|      |Allow limiting clients to sets of IPs via `go-network-broker#12`                                         |
+|2019/01/09|534   |Ensure the server status file is world readable                                                          |
+|2019/01/07|532   |Force exit even when worker routines are not done after `soft_shutdown_timeout`, default 2 seconds       |
+|2019/01/05|530   |Further fixes to avoid concurrent hash access panics for golang client code                              |
+|2019/01/03|524   |Include the server version when creating life cycle events                                               |
+|2018/12/27|521   |Improve `alive` event spread by sleeping for up to a hour for initial publish                            |
+|2018/12/27|519   |Expose `security.Validate` to users of the go framework                                                  |
 |2018/12/27|      |Release 0.9.0                                                                                            |
 |2018/12/26|      |Fix reboot splay time when doing self updates via `provisioning-agent#67`                                |
 |2018/12/26|      |Increase `choria_util` agent timeout to facilitate slow facter runs via `mcorpc-agent-provider#36`       |
