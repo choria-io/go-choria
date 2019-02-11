@@ -1,5 +1,5 @@
-hash: 057b08aaf82108a5028f60ea5aa0c137158579c2794f9c899cf2d890be25cee1
-updated: 2019-01-17T13:37:30.180925+01:00
+hash: b7d8e42ee8881c8ffabb8cc976e1a7fff4b4273b7cdd0ad8ca22f76810a24b62
+updated: 2019-02-11T14:19:10.735232478+01:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -50,17 +50,8 @@ imports:
   version: 2fb55be47a487f0e8f4c86ed995c5645b8cc4952
   subpackages:
   - mcorpc
-  - mcorpc/audit
-  - mcorpc/ddl/agent
-  - mcorpc/golang
-  - mcorpc/golang/choriautil
-  - mcorpc/golang/discovery
-  - mcorpc/golang/rpcutil
-  - mcorpc/ruby
 - name: github.com/choria-io/provisioning-agent
   version: a0ed5f38d6d4633a008f8ceb38443041dcebbffa
-  subpackages:
-  - agent
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
@@ -90,7 +81,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/nats-io/gnatsd
-  version: ce2df36122805cfcf7fd996698f9389d1926c32b
+  version: 3e64f0bfd1fe4c2cf6599f064ff72fa7af439663
   subpackages:
   - conf
   - logger
@@ -166,7 +157,7 @@ imports:
 - name: github.com/sirupsen/logrus
   version: e1e72e9de974bd926e5c56f83753fba2df402ce5
 - name: github.com/tidwall/gjson
-  version: 081192fa2e471ddff3ec98a3cc04fecfd031ed57
+  version: 5a96cfda705e1762dc0671e26b0b78925ad97e29
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
