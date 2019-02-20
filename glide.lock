@@ -1,5 +1,5 @@
-hash: af3f9259672297c11743d4b12301edd436fa5b89dc0570c1b9a49c0e32dfb09a
-updated: 2019-02-11T14:11:09.495560063+01:00
+hash: 3c47eadd47a4c8a8e487b612cf0ecbca0ae0e1608d9e473d7356adcd268bf8be
+updated: 2019-02-20T17:14:39.594613+01:00
 imports:
 - name: github.com/beorn7/perks
   version: 3a771d992973f24aa725d07868b467d1ddfceafb
@@ -57,7 +57,7 @@ imports:
   subpackages:
   - pbutil
 - name: github.com/nats-io/gnatsd
-  version: 3e64f0bfd1fe4c2cf6599f064ff72fa7af439663
+  version: f2bd68be4093f0c2ba3bd70dac8aac8011c6f393
   subpackages:
   - conf
   - logger
