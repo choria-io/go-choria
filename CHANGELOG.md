@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2019/02/25|      |Release 1.2.1                                                                                            |
+|2019/02/20|19    |Resolve broker cluster stability issues on large networks                                                |
 |2019/01/17|      |Release 1.2.0                                                                                            |
 |2019/01/16|12    |Update `gnatsd` to version 1.4.0                                                                         |
 |2018/12/07|12    |Support restricting clients to specific IPs or subnets using `plugin.choria.network.client_hosts`        |
