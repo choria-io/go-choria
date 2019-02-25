@@ -20,7 +20,7 @@ foss:
       pre:
         - rm additional_agent_*.go || true
         - rm plugin_*.go || true
-        - go generate
+        - GOOS=linux GOARCH=amd64 go generate
 
     64bit_linux:
       os: linux
@@ -32,6 +32,11 @@ foss:
 
     darwin:
       os: darwin
+      arch: amd64
+
+    64bit_windows:
+      output: choria-{{version}}-{{os}}-{{arch}}.exe
+      os: windows
       arch: amd64
 
   packages:
