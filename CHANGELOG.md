@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2019/03/04|      |Release 0.10.1                                                                                           |
+|2019/02/25|      |Resolve broker instability on large networks via `go-network-broker#19`                                  |
 |2019/01/23|      |Release 0.10.0                                                                                           |
 |2019/01/17|      |Various fixes to privileged security certificate handling via `go-security` release `0.3.0`              |
 |2019/01/17|      |Allow limiting clients to sets of IPs via `go-network-broker#12`                                         |
