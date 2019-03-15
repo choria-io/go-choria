@@ -110,14 +110,16 @@ func Run() (err error) {
 		defer pprof.StopCPUProfile()
 	}
 
-	// we do this here so that the command setup has a chance to fiddle the config for
-	// things like disabling full verification of the security system during enrollment
-	c, err = choria.NewWithConfig(cfg)
-	if err != nil {
-		return fmt.Errorf("Could not initialize Choria: %s", err)
-	}
+	if cfg != nil {
+		// we do this here so that the command setup has a chance to fiddle the config for
+		// things like disabling full verification of the security system during enrollment
+		c, err = choria.NewWithConfig(cfg)
+		if err != nil {
+			return fmt.Errorf("Could not initialize Choria: %s", err)
+		}
 
-	c.SetupLogging(debug)
+		c.SetupLogging(debug)
+	}
 
 	for _, cmd := range cli.commands {
 		if cmd.FullCommand() == cli.command {
