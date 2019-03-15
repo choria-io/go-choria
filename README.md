@@ -43,6 +43,15 @@ plugin.choria.status_file_path = /var/tmp/choria_status.json
 plugin.choria.status_update_interval = 30
 ```
 
+This status file can be checked using `choria tool check` to ensure messages are received regularly, the server is connected to a broker and that the file is written regularly.  The purpose of this tool is to enable scripts, monitoring systems and more to have a standard way to parse this file.  Exit code will be non 0 when the server is not healthy.
+
+```
+$ choria tool check --status-file choria-status.json --message-since 10m --max-age 1h
+choria-status.json no recent messages: last message at 2019-03-15 15:53:30 +0100 CET
+$ echo $?
+1
+```
+
 ## Configurable Security Subsystems
 
 While the ruby Choria code only integrates with Puppet CA this daemon has multiple security systems and will in time not be tied to Puppet but will support SECP and FIPS compliance and more. The ruby code will gain parity in time.
