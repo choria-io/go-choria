@@ -23,6 +23,7 @@ These will connect to the middleware using your usual client configuration.
 |`choria tool sub`|Subscribes to any middleware topic|
 |`choria tool pub`|Publishes to any middleware topic|
 |`choria tool provision`|Tool to test provision target discovery|
+|`choria tool status`|Parse the status file and check overall health|
 
 # Configuration
 
@@ -46,7 +47,7 @@ plugin.choria.status_update_interval = 30
 This status file can be checked using `choria tool check` to ensure messages are received regularly, the server is connected to a broker and that the file is written regularly.  The purpose of this tool is to enable scripts, monitoring systems and more to have a standard way to parse this file.  Exit code will be non 0 when the server is not healthy.
 
 ```
-$ choria tool check --status-file choria-status.json --message-since 10m --max-age 1h
+$ choria tool status --status choria-status.json --message-since 10m --max-age 1h
 choria-status.json no recent messages: last message at 2019-03-15 15:53:30 +0100 CET
 $ echo $?
 1
