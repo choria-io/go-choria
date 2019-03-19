@@ -83,7 +83,7 @@ func Setting(setting string) (string, error) {
 
 	out, err := exec.Command(AIOCmd("puppet", "puppet"), args...).Output()
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("could not run 'puppet %s': %s: %s", strings.Join(args, " "), err, out)
 	}
 
 	return strings.Replace(string(out), "\n", "", -1), nil
