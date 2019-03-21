@@ -79,7 +79,7 @@ func AIOCmd(command string, def string) string {
 
 // Setting retrieves a config setting by shelling out to puppet apply --configprint
 func Setting(setting string) (string, error) {
-	args := []string{"apply", "--configprint", setting}
+	args := []string{"apply", "--environment", "production", "--configprint", setting}
 
 	out, err := exec.Command(AIOCmd("puppet", "puppet"), args...).Output()
 	if err != nil {
