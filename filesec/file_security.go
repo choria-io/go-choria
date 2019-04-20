@@ -442,7 +442,9 @@ func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) error {
 		KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
 
-	if name != "" {
+	// If there is an email address in the name passed, we should not search by DNSName
+	// in the CN or SAN
+	if name != "" && !strings.HasPrefix(name, "email:") {
 		opts.DNSName = name
 	}
 
@@ -450,6 +452,17 @@ func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) error {
 	if err != nil {
 		s.log.Warnf("Certificate does not pass verification as '%s': %s", name, err)
 		return err
+	}
+
+	if len(cert.EmailAddresses) > 0 && strings.HasPrefix(name, "email:") {
+		s.log.Debug("Email addresses found in certificate, attempting verification")
+		for _, email := range cert.EmailAddresses {
+			if strings.TrimPrefix(name, "email:") == email {
+				return nil
+			}
+		}
+
+		return fmt.Errorf("email address not found in SAN: %s, %v", name, cert.EmailAddresses)
 	}
 
 	return nil

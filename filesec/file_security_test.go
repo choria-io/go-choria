@@ -404,6 +404,40 @@ var _ = Describe("FileSSL", func() {
 			err = prov.VerifyCertificate(pem, "rip.mcollective")
 			Expect(err).ToNot(HaveOccurred())
 		})
+
+		It("Should work with email addresses", func() {
+			c, err := config.NewDefaultConfig()
+			Expect(err).ToNot(HaveOccurred())
+
+			c.Choria.FileSecurityCA = filepath.Join("..", "testdata", "intermediate", "certs", "ca_chain_ca.pem")
+			c.Choria.FileSecurityCache = filepath.Join("..", "testdata", "intermediate", "certs")
+
+			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "email-chain-rip.mcollective.pem"))
+			Expect(err).ToNot(HaveOccurred())
+
+			err = prov.VerifyCertificate(pem, "email:test@choria-io.com")
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should not work with wrong addresses", func() {
+			c, err := config.NewDefaultConfig()
+			Expect(err).ToNot(HaveOccurred())
+
+			c.Choria.FileSecurityCA = filepath.Join("..", "testdata", "intermediate", "certs", "ca_chain_ca.pem")
+			c.Choria.FileSecurityCache = filepath.Join("..", "testdata", "intermediate", "certs")
+
+			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "email-chain-rip.mcollective.pem"))
+			Expect(err).ToNot(HaveOccurred())
+
+			err = prov.VerifyCertificate(pem, "email:bad@choria-io.com")
+			Expect(err).To(HaveOccurred())
+		})
 	})
 
 	Describe("PublicCertPem", func() {

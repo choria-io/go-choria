@@ -24,6 +24,13 @@ ca_chain:
 	cat rip.mcollective.pem > certs/ca_chain_rip.mcollective.pem
 	openssl verify -CAfile certs/ca_chain_ca.pem certs/ca_chain_rip.mcollective.pem
 
+email:
+	cfssl genkey email.json | cfssljson -bare email.rip.mcollective
+	cfssl gencsr -key email.rip.mcollective-key.pem email.json  | cfssljson -bare email.rip.mcollective
+	cfssl sign -ca intermediate.pem -ca-key intermediate-key.pem email.rip.mcollective.csr subject.json | cfssljson -bare email.rip.mcollective && openssl x509 -in email.rip.mcollective.pem -noout -text
+	cat email.rip.mcollective.pem intermediate.pem > email-chain-rip.mcollective.pem
+	openssl verify -CAfile ca.pem -untrusted email-chain-rip.mcollective.pem email-chain-rip.mcollective.pem
+	cp email-chain-rip.mcollective.pem certs/email-chain-rip.mcollective.pem
 
 deploy:
 	cp ca.pem certs/ca.pem
