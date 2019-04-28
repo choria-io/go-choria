@@ -1,5 +1,5 @@
-hash: 8cdf8fe1423c532e496e39529cb007db8c3f4f1d69ddea66935ba7652c946cbf
-updated: 2019-02-25T16:15:10.870265+01:00
+hash: 6a77ff702d3c6d2544cccfa31a7d1639b3f20c61a36f99c154e3443057f9ab6a
+updated: 2019-04-28T21:03:11.929702143+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -50,13 +50,24 @@ imports:
   version: 2fb55be47a487f0e8f4c86ed995c5645b8cc4952
   subpackages:
   - mcorpc
+  - mcorpc/audit
+  - mcorpc/ddl/agent
+  - mcorpc/golang
+  - mcorpc/golang/choriautil
+  - mcorpc/golang/discovery
+  - mcorpc/golang/rpcutil
+  - mcorpc/ruby
 - name: github.com/choria-io/provisioning-agent
   version: a0ed5f38d6d4633a008f8ceb38443041dcebbffa
+  subpackages:
+  - agent
 - name: github.com/ghodss/yaml
   version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
   subpackages:
   - encoders/builtin
   - util
+- name: github.com/go-yaml/yaml
+  version: 51d6538a90f86fe93ac480b35f37b2be17fef232
 - name: github.com/gofrs/uuid
   version: 6b08a5c5172ba18946672b49749cde22873dd7c2
 - name: github.com/gogo/protobuf
@@ -76,6 +87,8 @@ imports:
   - proto
 - name: github.com/konsorten/go-windows-terminal-sequences
   version: 5c8c8bd35d3832f5d134ae1e1e375b69a4d25242
+- name: github.com/looplab/fsm
+  version: 84b5307469f859464403f80919467950a79de1b1
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
@@ -93,13 +106,13 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/nats-io/go-nats-streaming
-  version: e15a53f85e4932540600a16b56f6c4f65f58176f
+  version: 4366d43a0648b4997ed32080f937e8702ab86c48
   subpackages:
   - pb
 - name: github.com/nats-io/nuid
   version: 28b996b57a46dd0c2aa3a3dc7fa8780878331d00
 - name: github.com/onsi/ginkgo
-  version: 2e1be8f7d90e9d3e3e58b0ce470f2f14d075406f
+  version: eea6ad008b96acdaa524f5b409513bf062b500ad
   subpackages:
   - config
   - internal/codelocation
@@ -119,7 +132,7 @@ imports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 65fb64232476ad9046e57c26cd0bff3d3a8dc6cd
+  version: 90e289841c1ed79b7a598a7cd9959750cb5e89e2
   subpackages:
   - format
   - internal/assertion
@@ -132,6 +145,8 @@ imports:
   - matchers/support/goraph/node
   - matchers/support/goraph/util
   - types
+- name: github.com/pkg/errors
+  version: ba968bfe8b2f7e042a574c888954fccecfa385b4
 - name: github.com/prometheus/client_golang
   version: 505eaef017263e299324067d40ca2c48f6a2cf50
   subpackages:
@@ -183,7 +198,6 @@ imports:
   - html/charset
 - name: golang.org/x/sys
   version: f7928cfef4d09d1b080aa2b6fd3ca9ba1567c733
-  repo: https://go.googlesource.com/sys
   subpackages:
   - unix
   - windows

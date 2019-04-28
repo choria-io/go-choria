@@ -24,7 +24,7 @@ import:
   version: 0.4.0
 - package: github.com/choria-io/go-mcoshim
 - package: github.com/sirupsen/logrus
-  version: ^1
+  version: 1.3.0
 - package: golang.org/x/crypto
   subpackages:
   - ssh/terminal
@@ -60,3 +60,13 @@ import:
   version: ^1.3.2
 - package: github.com/gofrs/uuid
   version: ^3.1.1
+- package: github.com/looplab/fsm
+  version: ^0.1.0
+- package: github.com/go-yaml/yaml
+  version: ^2.2.2
+- package: github.com/pkg/errors
+  version: 0.8.1
+- package: golang.org/x/sys
+  version: f7928cfef4d09d1b080aa2b6fd3ca9ba1567c733
+  subpackages:
+  - unix

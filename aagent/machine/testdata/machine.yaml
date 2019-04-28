@@ -1,0 +1,30 @@
+name: TestMachine
+version: 0.0.1
+initial_state: unknown
+
+transitions:
+  - name: fire_1
+    from: [unknown]
+    destination: one
+
+  - name: fire_2
+    from: [one]
+    destination: two
+
+watchers:
+  - name: 1_true
+    type: exec
+    state_match: [unknown]
+    fail_transition: one
+    success_transition: fire_1
+    properties:
+      command: /bin/true
+
+  - name: 2_true
+    type: exec
+    state_match: [one]
+    fail_transition: one
+    success_transition: fire_2
+    properties:
+      command: /bin/true
+

@@ -6,14 +6,14 @@ import (
 	lifecycle "github.com/choria-io/go-lifecycle"
 )
 
-type eventCommand struct {
+type tEventCommand struct {
 	command
 
 	componentF string
 	typeF      string
 }
 
-func (e *eventCommand) Setup() (err error) {
+func (e *tEventCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		e.cmd = tool.Cmd().Command("event", "View Choria lifecycle events")
 		e.cmd.Flag("component", "Limit events to a named component").StringVar(&e.componentF)
@@ -23,11 +23,11 @@ func (e *eventCommand) Setup() (err error) {
 	return nil
 }
 
-func (e *eventCommand) Configure() error {
+func (e *tEventCommand) Configure() error {
 	return commonConfigure()
 }
 
-func (e *eventCommand) Run(wg *sync.WaitGroup) (err error) {
+func (e *tEventCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	opt := &lifecycle.ViewOptions{
@@ -43,5 +43,5 @@ func (e *eventCommand) Run(wg *sync.WaitGroup) (err error) {
 }
 
 func init() {
-	cli.commands = append(cli.commands, &eventCommand{})
+	cli.commands = append(cli.commands, &tEventCommand{})
 }

@@ -145,8 +145,11 @@ func Run() (err error) {
 
 func forcequit() {
 	grace := 2 * time.Second
-	if cfg.SoftShutdownTimeout > 0 {
-		grace = time.Duration(cfg.SoftShutdownTimeout) * time.Second
+
+	if cfg != nil {
+		if cfg.SoftShutdownTimeout > 0 {
+			grace = time.Duration(cfg.SoftShutdownTimeout) * time.Second
+		}
 	}
 
 	<-time.NewTimer(grace).C

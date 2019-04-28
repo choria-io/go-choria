@@ -8,11 +8,11 @@ import (
 	"github.com/choria-io/go-choria/provtarget"
 )
 
-type provisionerCommand struct {
+type tProvisionerCommand struct {
 	command
 }
 
-func (p *provisionerCommand) Setup() (err error) {
+func (p *tProvisionerCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		p.cmd = tool.Cmd().Command("provisioner", "View the provisioner targets based on related plugins")
 	}
@@ -20,7 +20,7 @@ func (p *provisionerCommand) Setup() (err error) {
 	return nil
 }
 
-func (p *provisionerCommand) Configure() error {
+func (p *tProvisionerCommand) Configure() error {
 	err := commonConfigure()
 	if err != nil {
 		return err
@@ -38,7 +38,7 @@ func (p *provisionerCommand) Configure() error {
 	return nil
 }
 
-func (p *provisionerCommand) Run(wg *sync.WaitGroup) (err error) {
+func (p *tProvisionerCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	if !c.ProvisionMode() {
@@ -64,5 +64,5 @@ func (p *provisionerCommand) Run(wg *sync.WaitGroup) (err error) {
 }
 
 func init() {
-	cli.commands = append(cli.commands, &provisionerCommand{})
+	cli.commands = append(cli.commands, &tProvisionerCommand{})
 }
