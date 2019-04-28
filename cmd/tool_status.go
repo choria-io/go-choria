@@ -11,7 +11,7 @@ import (
 	"github.com/choria-io/go-choria/server"
 )
 
-type statusCommand struct {
+type tStatusCommand struct {
 	command
 	statusFile     string
 	checkConnected bool
@@ -19,7 +19,7 @@ type statusCommand struct {
 	maxAge         time.Duration
 }
 
-func (s *statusCommand) Setup() (err error) {
+func (s *tStatusCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		s.cmd = tool.Cmd().Command("status", "Checks the health of a running Choria instance based on its status file")
 		s.cmd.Flag("status-file", "The status file to check").Required().ExistingFileVar(&s.statusFile)
@@ -31,11 +31,11 @@ func (s *statusCommand) Setup() (err error) {
 	return nil
 }
 
-func (s *statusCommand) Configure() error {
+func (s *tStatusCommand) Configure() error {
 	return nil
 }
 
-func (s *statusCommand) checkConnection(status *server.InstanceStatus) (err error) {
+func (s *tStatusCommand) checkConnection(status *server.InstanceStatus) (err error) {
 	if !s.checkConnected {
 		return nil
 	}
@@ -47,7 +47,7 @@ func (s *statusCommand) checkConnection(status *server.InstanceStatus) (err erro
 	return nil
 }
 
-func (s *statusCommand) checkLastMessage(status *server.InstanceStatus) (err error) {
+func (s *tStatusCommand) checkLastMessage(status *server.InstanceStatus) (err error) {
 	if s.lastMessage == 0 {
 		return nil
 	}
@@ -61,7 +61,7 @@ func (s *statusCommand) checkLastMessage(status *server.InstanceStatus) (err err
 	return nil
 }
 
-func (s *statusCommand) checkFileAge() (err error) {
+func (s *tStatusCommand) checkFileAge() (err error) {
 	if s.maxAge == 0 {
 		return nil
 	}
@@ -78,7 +78,7 @@ func (s *statusCommand) checkFileAge() (err error) {
 	return nil
 }
 
-func (s *statusCommand) Run(wg *sync.WaitGroup) (err error) {
+func (s *tStatusCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	rawstatus, err := ioutil.ReadFile(s.statusFile)
@@ -112,7 +112,7 @@ func (s *statusCommand) Run(wg *sync.WaitGroup) (err error) {
 	return nil
 }
 
-func (s *statusCommand) exit(err error) {
+func (s *tStatusCommand) exit(err error) {
 	if err != nil {
 		fmt.Printf("%s %s\n", s.statusFile, err)
 		os.Exit(1)
@@ -123,5 +123,5 @@ func (s *statusCommand) exit(err error) {
 }
 
 func init() {
-	cli.commands = append(cli.commands, &statusCommand{})
+	cli.commands = append(cli.commands, &tStatusCommand{})
 }

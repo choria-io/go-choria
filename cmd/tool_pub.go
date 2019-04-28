@@ -9,13 +9,13 @@ import (
 	"github.com/choria-io/go-choria/srvcache"
 )
 
-type pubCommand struct {
+type tPubCommand struct {
 	command
 	topic string
 	input string
 }
 
-func (p *pubCommand) Setup() (err error) {
+func (p *tPubCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		p.cmd = tool.Cmd().Command("pub", "Publish to middleware topics")
 		p.cmd.Arg("topic", "The topic to subscribe to").Required().StringVar(&p.topic)
@@ -25,11 +25,11 @@ func (p *pubCommand) Setup() (err error) {
 	return nil
 }
 
-func (p *pubCommand) Configure() error {
+func (p *tPubCommand) Configure() error {
 	return commonConfigure()
 }
 
-func (p *pubCommand) Run(wg *sync.WaitGroup) (err error) {
+func (p *tPubCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	servers := func() ([]srvcache.Server, error) { return c.MiddlewareServers() }
@@ -71,5 +71,5 @@ func (p *pubCommand) Run(wg *sync.WaitGroup) (err error) {
 }
 
 func init() {
-	cli.commands = append(cli.commands, &pubCommand{})
+	cli.commands = append(cli.commands, &tPubCommand{})
 }

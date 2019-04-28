@@ -9,13 +9,13 @@ import (
 	"github.com/choria-io/go-choria/srvcache"
 )
 
-type subCommand struct {
+type tSubCommand struct {
 	command
 	topic string
 	raw   bool
 }
 
-func (s *subCommand) Setup() (err error) {
+func (s *tSubCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		s.cmd = tool.Cmd().Command("sub", "Subscribe to middleware topics")
 		s.cmd.Arg("topic", "The topic to subscribe to").Required().StringVar(&s.topic)
@@ -25,11 +25,11 @@ func (s *subCommand) Setup() (err error) {
 	return nil
 }
 
-func (s *subCommand) Configure() error {
+func (s *tSubCommand) Configure() error {
 	return commonConfigure()
 }
 
-func (s *subCommand) Run(wg *sync.WaitGroup) (err error) {
+func (s *tSubCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	servers := func() ([]srvcache.Server, error) { return c.MiddlewareServers() }
@@ -75,5 +75,5 @@ func (s *subCommand) Run(wg *sync.WaitGroup) (err error) {
 }
 
 func init() {
-	cli.commands = append(cli.commands, &subCommand{})
+	cli.commands = append(cli.commands, &tSubCommand{})
 }
