@@ -69,7 +69,22 @@ func (m *Manager) SetMachine(t interface{}) (err error) {
 	return nil
 }
 
-func (m *Manager) configureWatchers() error {
+// AddWatcher adds a watcher to a managed machine
+func (m *Manager) AddWatcher(w Watcher) error {
+	m.Lock()
+	defer m.Unlock()
+
+	_, ok := m.watchers[w.Name()]
+	if ok {
+		return fmt.Errorf("watcher %s already exist", w.Name())
+	}
+
+	m.watchers[w.Name()] = w
+
+	return nil
+}
+
+func (m *Manager) configureWatchers() (err error) {
 	for _, w := range m.machine.Watchers() {
 		w.ParseAnnounceInterval()
 
@@ -80,7 +95,10 @@ func (m *Manager) configureWatchers() error {
 				return errors.Wrapf(err, "could not create file watcher '%s'", w.Name)
 			}
 
-			m.watchers[w.Name] = watcher
+			err = m.AddWatcher(watcher)
+			if err != nil {
+				return err
+			}
 
 		case "exec":
 			watcher, err := execwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
@@ -88,7 +106,10 @@ func (m *Manager) configureWatchers() error {
 				return errors.Wrapf(err, "could not create exec watcher '%s'", w.Name)
 			}
 
-			m.watchers[w.Name] = watcher
+			err = m.AddWatcher(watcher)
+			if err != nil {
+				return err
+			}
 
 		default:
 			return fmt.Errorf("unknown watcher '%s'", w.Type)

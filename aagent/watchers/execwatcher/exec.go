@@ -149,6 +149,7 @@ func (w *Watcher) handleCheck(s State, err error) error {
 	case Error:
 		w.machine.NotifyWatcherState(w.name, w.CurrentState())
 		return w.machine.Transition(w.failEvent)
+
 	case Success:
 		w.machine.NotifyWatcherState(w.name, w.CurrentState())
 		return w.machine.Transition(w.successEvent)

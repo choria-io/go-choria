@@ -1,5 +1,5 @@
-hash: 6a77ff702d3c6d2544cccfa31a7d1639b3f20c61a36f99c154e3443057f9ab6a
-updated: 2019-04-28T21:03:11.929702143+02:00
+hash: 03139bcaf171257dea2c7997eaf46076048805209de9a1454ae4ee45512885a7
+updated: 2019-04-29T14:10:42.053509+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -66,8 +66,6 @@ imports:
   subpackages:
   - encoders/builtin
   - util
-- name: github.com/go-yaml/yaml
-  version: 51d6538a90f86fe93ac480b35f37b2be17fef232
 - name: github.com/gofrs/uuid
   version: 6b08a5c5172ba18946672b49749cde22873dd7c2
 - name: github.com/gogo/protobuf
