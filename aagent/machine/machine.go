@@ -9,9 +9,10 @@ import (
 	"sync"
 
 	"github.com/pkg/errors"
+	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/choria-io/go-choria/aagent/watchers"
-	"github.com/go-yaml/yaml"
+	"github.com/ghodss/yaml"
 
 	"github.com/looplab/fsm"
 )
@@ -62,8 +63,13 @@ type WatcherManager interface {
 	SetMachine(interface{}) error
 }
 
+func yamlPath(dir string) string {
+	return dir + "/" + "machine.yaml"
+}
+
 func FromDir(dir string, manager WatcherManager) (m *Machine, err error) {
-	mpath := dir + "/" + "machine.yaml"
+	mpath := yamlPath(dir)
+
 	_, err = os.Stat(mpath)
 	if err != nil {
 		return nil, errors.Wrapf(err, "cannot read %s", mpath)
@@ -110,7 +116,40 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 	return m, nil
 }
 
-// Returns the directory where the machine definition is, "" when unknown
+// ValidateDir validates a machine.yaml against the v1 schema
+func ValidateDir(dir string) (validationErrors []string, err error) {
+	mpath := yamlPath(dir)
+	yml, err := ioutil.ReadFile(mpath)
+	if err != nil {
+		return nil, err
+	}
+
+	jbytes, err := yaml.YAMLToJSON(yml)
+	if err != nil {
+		return nil, errors.Wrap(err, "could not transform YAML to JSON")
+	}
+
+	schemaLoader := gojsonschema.NewReferenceLoader("https://choria.io/schemas/choria/machine/v1/manifest.json")
+	documentLoader := gojsonschema.NewBytesLoader(jbytes)
+
+	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not perform schema validation")
+	}
+
+	if result.Valid() {
+		return []string{}, nil
+	}
+
+	validationErrors = []string{}
+	for _, desc := range result.Errors() {
+		validationErrors = append(validationErrors, desc.String())
+	}
+
+	return validationErrors, nil
+}
+
+// Directory returns the directory where the machine definition is, "" when unknown
 func (m *Machine) Directory() string {
 	return m.directory
 }

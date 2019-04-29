@@ -12,7 +12,7 @@ transitions:
     destination: two
 
 watchers:
-  - name: 1_true
+  - name: true_1
     type: exec
     state_match: [unknown]
     fail_transition: one
@@ -20,7 +20,7 @@ watchers:
     properties:
       command: /bin/true
 
-  - name: 2_true
+  - name: true_2
     type: exec
     state_match: [one]
     fail_transition: one

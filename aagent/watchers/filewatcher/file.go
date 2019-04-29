@@ -126,6 +126,9 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 		case <-tick.C:
 			w.performWatch(ctx)
 
+		case <-w.statechg:
+			w.performWatch(ctx)
+
 		case <-ctx.Done():
 			tick.Stop()
 			return
