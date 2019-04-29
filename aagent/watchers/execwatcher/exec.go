@@ -50,6 +50,7 @@ type Watcher struct {
 	previous         State
 	previousRunTime  time.Duration
 	lastAnnounce     time.Time
+	timeout          time.Duration
 
 	sync.Mutex
 }
@@ -98,6 +99,22 @@ func (w *Watcher) setProperties(p map[string]interface{}) error {
 	w.command, ok = command.(string)
 	if !ok {
 		return fmt.Errorf("command should be a string")
+	}
+
+	w.timeout = 10 * time.Second
+	t, ok := p["timeout"]
+	if ok {
+		ts, ok := t.(string)
+		if !ok {
+			return fmt.Errorf("timeout should be a duration string - example 10s, 1h or 1m")
+		}
+
+		timeout, err := time.ParseDuration(ts)
+		if err != nil {
+			return errors.Wrap(err, "invalid timeout")
+		}
+
+		w.timeout = timeout
 	}
 
 	return nil
@@ -197,7 +214,10 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 
 	w.machine.Infof(w.name, "Running %s", w.command)
 
-	cmd := exec.CommandContext(ctx, w.command)
+	timeoutCtx, cancel := context.WithTimeout(ctx, w.timeout)
+	defer cancel()
+
+	cmd := exec.CommandContext(timeoutCtx, w.command)
 	cmd.Env = append(cmd.Env, fmt.Sprintf("NACHINE_WATCHER_NAME=%s", w.name))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("NACHINE_NAME=%s", w.machine.Name()))
 	cmd.Dir = w.machine.Directory()
