@@ -34,10 +34,12 @@ type Machine struct {
 	// WatcherDefs contains all the watchers that can interact with the system
 	WatcherDefs []*watchers.WatcherDef `json:"watchers" yaml:"watchers"`
 
+	identity  string
+	directory string
+
 	manager   WatcherManager
 	fsm       *fsm.FSM
 	notifiers []NotificationService
-	directory string
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -63,6 +65,8 @@ type WatcherManager interface {
 	SetMachine(interface{}) error
 }
 
+var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
 func yamlPath(dir string) string {
 	return dir + "/" + "machine.yaml"
 }
@@ -76,6 +80,10 @@ func FromDir(dir string, manager WatcherManager) (m *Machine, err error) {
 	}
 
 	m, err = FromYAML(mpath, manager)
+	if err != nil {
+		return nil, errors.Wrapf(err, "could not load machine.yaml")
+	}
+
 	m.directory = dir
 
 	return m, err
@@ -149,6 +157,14 @@ func ValidateDir(dir string) (validationErrors []string, err error) {
 	return validationErrors, nil
 }
 
+// SetIdentity sets the identity of the node hosting this machine
+func (m *Machine) SetIdentity(id string) {
+	m.Lock()
+	defer m.Unlock()
+
+	m.identity = id
+}
+
 // Directory returns the directory where the machine definition is, "" when unknown
 func (m *Machine) Directory() string {
 	return m.directory
@@ -157,11 +173,6 @@ func (m *Machine) Directory() string {
 // Watchers retrieves the watcher definitions
 func (m *Machine) Watchers() []*watchers.WatcherDef {
 	return m.WatcherDefs
-}
-
-// Name is the name of the machine
-func (m *Machine) Name() string {
-	return m.MachineName
 }
 
 // Graph produce a dot graph of the fsm
@@ -190,10 +201,16 @@ func (m *Machine) buildFSM() error {
 				m.manager.NotifyStateChance()
 
 				err := notifier.NotifyPostTransition(&TransitionNotification{
-					Event:   e.Event,
-					From:    e.Src,
-					To:      e.Dst,
-					Machine: m.MachineName,
+					Protocol:   "io.choria.machine.v1.transition",
+					Identity:   m.Identity(),
+					ID:         m.UniqueID(),
+					Version:    m.Version(),
+					Timestamp:  m.TimeStampSeconds(),
+					Machine:    m.MachineName,
+					Transition: e.Event,
+					FromState:  e.Src,
+					ToState:    e.Dst,
+					Info:       m,
 				})
 				if err != nil {
 					m.Errorf("machine", "Could not publish event notification for %s: %s", e.Event, err)
@@ -253,6 +270,8 @@ func (m *Machine) Setup() error {
 func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) error {
 	m.ctx, m.cancel = context.WithCancel(ctx)
 
+	m.Infof(m.MachineName, "Starting Choria Machine %s version %s from %s", m.MachineName, m.MachineVersion, m.directory)
+
 	return m.manager.Run(ctx, wg)
 }
 
@@ -262,11 +281,6 @@ func (m *Machine) Stop() {
 		m.Infof("runner", "Stopping")
 		m.cancel()
 	}
-}
-
-// State returns the current state of the machine
-func (m *Machine) State() string {
-	return m.fsm.Current()
 }
 
 // Transition performs the machine transition as defined by event t

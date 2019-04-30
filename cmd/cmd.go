@@ -154,6 +154,8 @@ func forcequit() {
 
 	<-time.NewTimer(grace).C
 
+	dumpGoRoutines()
+
 	log.Errorf("Forced shutdown triggered after %v", grace)
 
 	os.Exit(1)

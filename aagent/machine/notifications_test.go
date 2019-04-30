@@ -1,6 +1,7 @@
 package machine
 
 import (
+	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
 	gomock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -46,23 +47,23 @@ var _ = Describe("Aagent/Machine/Notifications", func() {
 		})
 
 		It("Should support notifying state", func() {
-			state := map[string]interface{}{}
+			state := &execwatcher.StateNotification{}
 
-			service1.EXPECT().NotifyWatcherState("ginkgo", "w1", state)
-			service2.EXPECT().NotifyWatcherState("ginkgo", "w1", state)
+			service1.EXPECT().NotifyWatcherState("w1", state)
+			service2.EXPECT().NotifyWatcherState("w1", state)
 
 			machine.NotifyWatcherState("w1", state)
 		})
 
 		It("Should support common loggers", func() {
-			service1.EXPECT().Debugf("ginkgo", "w1", "format", "debugarg")
-			service2.EXPECT().Debugf("ginkgo", "w1", "format", "debugarg")
-			service1.EXPECT().Infof("ginkgo", "w1", "format", "infoarg")
-			service2.EXPECT().Infof("ginkgo", "w1", "format", "infoarg")
-			service1.EXPECT().Warnf("ginkgo", "w1", "format", "warnarg")
-			service2.EXPECT().Warnf("ginkgo", "w1", "format", "warnarg")
-			service1.EXPECT().Errorf("ginkgo", "w1", "format", "errorarg")
-			service2.EXPECT().Errorf("ginkgo", "w1", "format", "errorarg")
+			service1.EXPECT().Debugf(machine, "w1", "format", "debugarg")
+			service2.EXPECT().Debugf(machine, "w1", "format", "debugarg")
+			service1.EXPECT().Infof(machine, "w1", "format", "infoarg")
+			service2.EXPECT().Infof(machine, "w1", "format", "infoarg")
+			service1.EXPECT().Warnf(machine, "w1", "format", "warnarg")
+			service2.EXPECT().Warnf(machine, "w1", "format", "warnarg")
+			service1.EXPECT().Errorf(machine, "w1", "format", "errorarg")
+			service2.EXPECT().Errorf(machine, "w1", "format", "errorarg")
 
 			machine.Debugf("w1", "format", "debugarg")
 			machine.Infof("w1", "format", "infoarg")

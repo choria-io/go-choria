@@ -29,9 +29,13 @@ var stateNames = map[State]string{
 type Machine interface {
 	State() string
 	Transition(t string, args ...interface{}) error
-	NotifyWatcherState(string, map[string]interface{})
+	NotifyWatcherState(string, interface{})
 	Name() string
 	Directory() string
+	Identity() string
+	UniqueID() string
+	Version() string
+	TimeStampSeconds() int64
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Errorf(name string, format string, args ...interface{})
@@ -183,18 +187,22 @@ func (w *Watcher) Name() string {
 	return w.name
 }
 
-func (w *Watcher) CurrentState() map[string]interface{} {
+func (w *Watcher) CurrentState() interface{} {
 	w.Lock()
 	defer w.Unlock()
 
-	s := map[string]interface{}{
-		"protocol":          "io.choria.machine.watcher.exec.v1.state",
-		"type":              "exec",
-		"machine":           w.machine.Name(),
-		"name":              w.name,
-		"command":           w.command,
-		"previous_outcome":  stateNames[w.previous],
-		"previous_run_time": w.previousRunTime.Seconds(),
+	s := &StateNotification{
+		Protocol:        "io.choria.machine.watcher.exec.v1.state",
+		Type:            "exec",
+		Name:            w.name,
+		Identity:        w.machine.Identity(),
+		ID:              w.machine.UniqueID(),
+		Version:         w.machine.Version(),
+		Timestamp:       w.machine.TimeStampSeconds(),
+		Machine:         w.machine.Name(),
+		Command:         w.command,
+		PreviousOutcome: stateNames[w.previous],
+		PreviousRunTime: w.previousRunTime.Nanoseconds(),
 	}
 
 	return s

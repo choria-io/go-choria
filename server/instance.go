@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server/agents"
@@ -31,6 +32,7 @@ type Instance struct {
 	lastMsgProcessed   time.Time
 	agentDenyList      []string
 	lifecycleComponent string
+	machines           *aagent.AAgent
 
 	requests chan *choria.ConnectorMessage
 
@@ -53,6 +55,11 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	i.discovery = discovery.New(fw, i.log)
 
 	return i, nil
+}
+
+// Logger creates a new logger instance
+func (srv *Instance) Logger(component string) *log.Entry {
+	return srv.fw.Logger(component)
 }
 
 func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
@@ -111,6 +118,11 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 
 	wg.Add(1)
 	go srv.publishAliveEvents(ctx, wg)
+
+	err = srv.StartMachine(ctx, wg)
+	if err != nil {
+		srv.log.Errorf("Could not start Choria Autonomous Agent host: %s", err)
+	}
 
 	wg.Add(1)
 	go srv.processRequests(ctx, wg)
