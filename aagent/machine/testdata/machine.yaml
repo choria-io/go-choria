@@ -18,13 +18,13 @@ watchers:
     fail_transition: one
     success_transition: fire_1
     properties:
-      command: /bin/true
+      command: /usr/bin/true
 
   - name: true_2
     type: exec
-    state_match: [one]
+    state_match: [one, two]
     fail_transition: one
     success_transition: fire_2
+    interval: "1m"
     properties:
-      command: /bin/true
-
+      command: /usr/bin/true

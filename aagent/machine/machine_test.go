@@ -148,7 +148,7 @@ var _ = Describe("Aagent/Machine", func() {
 			machine.Transition("fire_1")
 			Expect(machine.State()).To(Equal("one"))
 			machine.RegisterNotifier(service)
-			service.EXPECT().Warnf("TestMachine", "machine", "Could not fire '%s' event while in %s", "fire_10", "one")
+			service.EXPECT().Warnf(machine, "machine", "Could not fire '%s' event while in %s", "fire_10", "one")
 			machine.Transition("fire_10")
 			Expect(machine.State()).To(Equal("one"))
 		})

@@ -8,6 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/choria"
+
 	"github.com/choria-io/go-lifecycle"
 
 	"github.com/choria-io/go-choria/build"
@@ -41,6 +43,21 @@ func (srv *Instance) NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error 
 	}
 
 	return srv.PublishEvent(e)
+}
+
+// Choria returns the choria framework
+func (srv *Instance) Choria() *choria.Framework {
+	return srv.fw
+}
+
+// Identity is the configured identity of the running server
+func (srv *Instance) Identity() string {
+	return srv.cfg.Identity
+}
+
+// PublishRaw allows publishing to the connected middleware
+func (srv *Instance) PublishRaw(target string, data []byte) error {
+	return srv.connector.PublishRaw(target, data)
 }
 
 // ConnectedServer returns the URL of the broker this instance is connected to, "unknown" when not connected

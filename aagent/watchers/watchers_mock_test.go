@@ -80,9 +80,9 @@ func (mr *MockWatcherMockRecorder) NotifyStateChance() *gomock.Call {
 }
 
 // CurrentState mocks base method
-func (m *MockWatcher) CurrentState() map[string]interface{} {
+func (m *MockWatcher) CurrentState() interface{} {
 	ret := m.ctrl.Call(m, "CurrentState")
-	ret0, _ := ret[0].(map[string]interface{})
+	ret0, _ := ret[0].(interface{})
 	return ret0
 }
 
@@ -180,7 +180,7 @@ func (mr *MockMachineMockRecorder) Transition(t interface{}, args ...interface{}
 }
 
 // NotifyWatcherState mocks base method
-func (m *MockMachine) NotifyWatcherState(arg0 string, arg1 map[string]interface{}) {
+func (m *MockMachine) NotifyWatcherState(arg0 string, arg1 interface{}) {
 	m.ctrl.Call(m, "NotifyWatcherState", arg0, arg1)
 }
 
@@ -199,6 +199,54 @@ func (m *MockMachine) Watchers() []*WatcherDef {
 // Watchers indicates an expected call of Watchers
 func (mr *MockMachineMockRecorder) Watchers() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Watchers", reflect.TypeOf((*MockMachine)(nil).Watchers))
+}
+
+// Identity mocks base method
+func (m *MockMachine) Identity() string {
+	ret := m.ctrl.Call(m, "Identity")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Identity indicates an expected call of Identity
+func (mr *MockMachineMockRecorder) Identity() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Identity", reflect.TypeOf((*MockMachine)(nil).Identity))
+}
+
+// UniqueID mocks base method
+func (m *MockMachine) UniqueID() string {
+	ret := m.ctrl.Call(m, "UniqueID")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// UniqueID indicates an expected call of UniqueID
+func (mr *MockMachineMockRecorder) UniqueID() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UniqueID", reflect.TypeOf((*MockMachine)(nil).UniqueID))
+}
+
+// Version mocks base method
+func (m *MockMachine) Version() string {
+	ret := m.ctrl.Call(m, "Version")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Version indicates an expected call of Version
+func (mr *MockMachineMockRecorder) Version() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Version", reflect.TypeOf((*MockMachine)(nil).Version))
+}
+
+// TimeStampSeconds mocks base method
+func (m *MockMachine) TimeStampSeconds() int64 {
+	ret := m.ctrl.Call(m, "TimeStampSeconds")
+	ret0, _ := ret[0].(int64)
+	return ret0
+}
+
+// TimeStampSeconds indicates an expected call of TimeStampSeconds
+func (mr *MockMachineMockRecorder) TimeStampSeconds() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeStampSeconds", reflect.TypeOf((*MockMachine)(nil).TimeStampSeconds))
 }
 
 // Debugf mocks base method

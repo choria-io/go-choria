@@ -26,7 +26,7 @@ type Watcher interface {
 	Type() string
 	Run(context.Context, *sync.WaitGroup)
 	NotifyStateChance()
-	CurrentState() map[string]interface{}
+	CurrentState() interface{}
 	AnnounceInterval() time.Duration
 }
 
@@ -36,8 +36,12 @@ type Machine interface {
 	State() string
 	Directory() string
 	Transition(t string, args ...interface{}) error
-	NotifyWatcherState(string, map[string]interface{})
+	NotifyWatcherState(string, interface{})
 	Watchers() []*WatcherDef
+	Identity() string
+	UniqueID() string
+	Version() string
+	TimeStampSeconds() int64
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Errorf(name string, format string, args ...interface{})
@@ -88,6 +92,8 @@ func (m *Manager) configureWatchers() (err error) {
 	for _, w := range m.machine.Watchers() {
 		w.ParseAnnounceInterval()
 
+		m.machine.Infof("manager", "Starting %s watcher %s", w.Type, w.Name)
+
 		switch w.Type {
 		case "file":
 			watcher, err := filewatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
@@ -122,9 +128,6 @@ func (m *Manager) configureWatchers() (err error) {
 // Run starts all the defined watchers and periodically announce
 // their state based on AnnounceInterval
 func (m *Manager) Run(ctx context.Context, wg *sync.WaitGroup) error {
-	m.Lock()
-	defer m.Unlock()
-
 	if m.machine == nil {
 		return fmt.Errorf("manager requires a machine to manage")
 	}

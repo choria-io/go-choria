@@ -31,10 +31,14 @@ var stateNames = map[State]string{
 
 type Machine interface {
 	State() string
-	Transition(t string, args ...interface{}) error
-	NotifyWatcherState(string, map[string]interface{})
 	Name() string
+	Identity() string
+	UniqueID() string
+	Version() string
+	TimeStampSeconds() int64
 	Directory() string
+	Transition(t string, args ...interface{}) error
+	NotifyWatcherState(string, interface{})
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Errorf(name string, format string, args ...interface{})
@@ -144,18 +148,21 @@ func (w *Watcher) performWatch(ctx context.Context) {
 	}
 }
 
-func (w *Watcher) CurrentState() map[string]interface{} {
+func (w *Watcher) CurrentState() interface{} {
 	w.Lock()
 	defer w.Unlock()
 
-	s := map[string]interface{}{
-		"protocol":         "io.choria.machine.watcher.file.v1.state",
-		"type":             "file",
-		"machine":          w.machine.Name(),
-		"name":             w.name,
-		"path":             w.path,
-		"mtime":            w.mtime.UTC().Unix(),
-		"previous_outcome": stateNames[w.previous],
+	s := &StateNotification{
+		Protocol:        "io.choria.machine.watcher.file.v1.state",
+		Type:            "exec",
+		Name:            w.name,
+		Identity:        w.machine.Identity(),
+		ID:              w.machine.UniqueID(),
+		Version:         w.machine.Version(),
+		Timestamp:       w.machine.TimeStampSeconds(),
+		Machine:         w.machine.Name(),
+		Path:            w.path,
+		PreviousOutcome: stateNames[w.previous],
 	}
 
 	return s

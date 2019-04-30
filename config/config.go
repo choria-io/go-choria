@@ -96,6 +96,9 @@ type ChoriaPluginConfig struct {
 	// status file
 	StatusFilePath      string `confkey:"plugin.choria.status_file_path"`
 	StatusUpdateSeconds int    `confkey:"plugin.choria.status_update_interval" default:"30"`
+
+	// machine
+	MachineSourceDir string `confkey:"plugin.choria.machine.store"`
 }
 
 // Config represents Choria configuration
