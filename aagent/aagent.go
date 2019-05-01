@@ -3,6 +3,7 @@ package aagent
 import (
 	"context"
 	"io/ioutil"
+	"math/rand"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -23,6 +24,7 @@ type AAgent struct {
 	notifier *notifier.Notifier
 
 	source string
+	splay  time.Duration
 
 	sync.Mutex
 }
@@ -41,7 +43,7 @@ type ChoriaProvider interface {
 }
 
 // New creates a new instance of the choria autonomous agent host
-func New(dir string, fw ChoriaProvider) (aa *AAgent, err error) {
+func New(dir string, splay time.Duration, fw ChoriaProvider) (aa *AAgent, err error) {
 	notifier, err := notifier.New(fw)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create notifier")
@@ -54,6 +56,7 @@ func New(dir string, fw ChoriaProvider) (aa *AAgent, err error) {
 		machines: []*managedMachine{},
 		manager:  watchers.New(),
 		notifier: notifier,
+		splay:    splay,
 	}, nil
 }
 
@@ -100,7 +103,36 @@ func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path strin
 	a.machines = append(a.machines, managed)
 	a.Unlock()
 
-	machine.Start(ctx, wg)
+	a.splayStart(ctx, wg, machine)
 
 	return nil
+}
+
+func (a *AAgent) splayStart(ctx context.Context, wg *sync.WaitGroup, m *machine.Machine) {
+	s1 := rand.NewSource(time.Now().UnixNano())
+	r1 := rand.New(s1)
+
+	startf := func() {
+		err := m.Start(ctx, wg)
+		if err != nil {
+			a.logger.Errorf("Could not start %s: %s", m.Name(), err)
+		}
+	}
+
+	if a.splay < time.Second {
+		startf()
+		return
+	}
+
+	sleepSeconds := time.Duration(r1.Intn(int(a.splay.Seconds()))) * time.Second
+	a.logger.Infof("Sleeping %v before starting Autonomous Agent %s", sleepSeconds, m.Name())
+
+	t := time.NewTimer(sleepSeconds)
+
+	select {
+	case <-t.C:
+		startf()
+	case <-ctx.Done():
+		return
+	}
 }

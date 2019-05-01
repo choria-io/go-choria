@@ -42,19 +42,20 @@ type Machine interface {
 }
 
 type Watcher struct {
-	name             string
-	states           []string
-	failEvent        string
-	successEvent     string
-	command          string
-	machine          Machine
-	interval         time.Duration
-	announceInterval time.Duration
-	statechg         chan struct{}
-	previous         State
-	previousRunTime  time.Duration
-	lastAnnounce     time.Time
-	timeout          time.Duration
+	name                    string
+	states                  []string
+	failEvent               string
+	successEvent            string
+	command                 string
+	machine                 Machine
+	interval                time.Duration
+	announceInterval        time.Duration
+	statechg                chan struct{}
+	previous                State
+	previousRunTime         time.Duration
+	lastAnnounce            time.Time
+	timeout                 time.Duration
+	suppressSuccessAnnounce bool
 
 	sync.Mutex
 }
@@ -121,6 +122,14 @@ func (w *Watcher) setProperties(p map[string]interface{}) error {
 		w.timeout = timeout
 	}
 
+	suppress, ok := p["suppress_success_announce"]
+	if ok {
+		w.suppressSuccessAnnounce, ok = suppress.(bool)
+		if !ok {
+			return fmt.Errorf("suppress_announce should be boolean")
+		}
+	}
+
 	return nil
 }
 
@@ -172,7 +181,10 @@ func (w *Watcher) handleCheck(s State, err error) error {
 		return w.machine.Transition(w.failEvent)
 
 	case Success:
-		w.machine.NotifyWatcherState(w.name, w.CurrentState())
+		if !w.suppressSuccessAnnounce {
+			w.machine.NotifyWatcherState(w.name, w.CurrentState())
+		}
+
 		return w.machine.Transition(w.successEvent)
 	}
 
