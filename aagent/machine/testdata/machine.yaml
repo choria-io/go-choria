@@ -28,3 +28,4 @@ watchers:
     interval: "1m"
     properties:
       command: /usr/bin/true
+

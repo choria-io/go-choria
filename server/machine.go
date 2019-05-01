@@ -14,7 +14,7 @@ func (srv *Instance) StartMachine(ctx context.Context, wg *sync.WaitGroup) (err 
 		return fmt.Errorf("Choria Autonomous Agent source directory not configured, skipping initialization")
 	}
 
-	srv.machines, err = aagent.New(srv.cfg.Choria.MachineSourceDir, srv)
+	srv.machines, err = aagent.New(srv.cfg.Choria.MachineSourceDir, srv.cfg.Choria.StartSplayTime, srv)
 	if err != nil {
 		return err
 	}
