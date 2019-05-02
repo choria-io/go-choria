@@ -58,8 +58,8 @@ type cstats struct {
 }
 
 type machineStates struct {
-	Machines []string `json:"machine_ids"`
-	States   map[string]aagent.MachineState
+	Machines []string                       `json:"machine_ids"`
+	States   map[string]aagent.MachineState `json:"states"`
 }
 
 type machineTransitionRequest struct {
