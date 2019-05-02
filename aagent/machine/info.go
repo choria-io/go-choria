@@ -52,6 +52,11 @@ func (m *Machine) State() string {
 	return m.fsm.Current()
 }
 
+// AvailableTransitions reports the transitions thats possible in the current state
+func (m *Machine) AvailableTransitions() []string {
+	return m.fsm.AvailableTransitions()
+}
+
 // TimeStamp returns a UTC time
 func (m *Machine) TimeStamp() time.Time {
 	return time.Now().UTC()

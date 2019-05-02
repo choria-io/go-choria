@@ -336,3 +336,8 @@ func (m *Machine) Transition(t string, args ...interface{}) error {
 
 	return nil
 }
+
+// Can determines if a transition could be performed
+func (m *Machine) Can(t string) bool {
+	return m.fsm.Can(t)
+}
