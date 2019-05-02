@@ -104,7 +104,7 @@ func machineTransitionAction(ctx context.Context, req *mcorpc.Request, reply *mc
 	err := agent.ServerInfoSource.MachineTransition(i.Name, i.Version, i.Path, i.ID, i.Transition)
 	if err != nil {
 		reply.Statuscode = mcorpc.Aborted
-		reply.Statusmsg = fmt.Sprintf("Could not transition %s: %s", i.ID, err)
+		reply.Statusmsg = fmt.Sprintf("Could not perform %s transition: %s", i.Transition, err)
 	}
 
 	reply.Data = machineTransitionReply{Success: err == nil}
