@@ -53,7 +53,7 @@ func (n *Notifier) Errorf(m machine.InfoSource, name string, format string, args
 
 // NotifyPostTransition implements machine.NotificationService
 func (n *Notifier) NotifyPostTransition(transition *machine.TransitionNotification) (err error) {
-	n.logger.Infof("%s transitioned via event %s: %s => %s", transition.Machine, transition.Transition, transition.FromState, transition.ToState)
+	n.logger.Infof("%s transitioned via event %s: from %s into %s", transition.Machine, transition.Transition, transition.FromState, transition.ToState)
 
 	j, err := json.Marshal(transition)
 	if err != nil {
