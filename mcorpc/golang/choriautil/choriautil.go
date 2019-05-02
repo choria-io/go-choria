@@ -63,7 +63,10 @@ type machineStates struct {
 }
 
 type machineTransitionRequest struct {
-	ID         string `json:"machine_id"`
+	Name       string `json:"name"`
+	Version    string `json:"version"`
+	ID         string `json:"instance"`
+	Path       string `json:"path"`
 	Transition string `json:"transition"`
 }
 
@@ -98,7 +101,7 @@ func machineTransitionAction(ctx context.Context, req *mcorpc.Request, reply *mc
 		return
 	}
 
-	err := agent.ServerInfoSource.MachineTransition(i.ID, i.Transition)
+	err := agent.ServerInfoSource.MachineTransition(i.Name, i.Version, i.Path, i.ID, i.Transition)
 	if err != nil {
 		reply.Statuscode = mcorpc.Aborted
 		reply.Statusmsg = fmt.Sprintf("Could not transition %s: %s", i.ID, err)
