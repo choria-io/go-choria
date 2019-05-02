@@ -1,5 +1,5 @@
-hash: 03139bcaf171257dea2c7997eaf46076048805209de9a1454ae4ee45512885a7
-updated: 2019-04-29T14:10:42.053509+02:00
+hash: 0a929905c0de56db7567213932f318b1ce0a6decc4baca8b13ee96f0e261688c
+updated: 2019-05-02T17:55:17.624122+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -47,7 +47,7 @@ imports:
   - regex
   - shellsafe
 - name: github.com/choria-io/mcorpc-agent-provider
-  version: 2fb55be47a487f0e8f4c86ed995c5645b8cc4952
+  version: e34fe662e0565907831988c604ee86669511de48
   subpackages:
   - mcorpc
   - mcorpc/audit
@@ -180,7 +180,7 @@ imports:
 - name: github.com/xeipuuv/gojsonschema
   version: f3a9dae5b19473510a3062802a98815f609ed747
 - name: go.uber.org/atomic
-  version: 1ea20fb1cbb1cc08cbd0d913a96dead89aa18289
+  version: df976f2515e274675050de7b3f42545de80594fd
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
