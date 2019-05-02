@@ -179,22 +179,29 @@ func (w *Watcher) setPreviousState(s State) {
 func (w *Watcher) handleCheck(s State, err error) error {
 	w.machine.Debugf(w.name, "handling check for %s %v %v", w.path, s, err)
 
+	w.setPreviousState(s)
+
 	switch s {
 	case Error:
-		w.setPreviousState(s)
 		w.machine.NotifyWatcherState(w.name, w.CurrentState())
 		return w.machine.Transition(w.failEvent)
 
 	case Changed:
-		w.setPreviousState(s)
 		w.machine.NotifyWatcherState(w.name, w.CurrentState())
 		return w.machine.Transition(w.successEvent)
 
 	case Unchanged:
-		w.setPreviousState(s)
+		// not notifying, regular announces happen
 
 	case Skipped, Unknown:
-		// notify on an interval
+		// clear the time so that next time after once being skipped or unknown
+		// it will treat the file as not seen before and detect changes, but if
+		// its set to do initial check it specifically will not do that because
+		// the behavior of the first run in that case would be to only wait for
+		// future changes, this retains that behavior on becoming valid again
+		if !w.initial {
+			w.mtime = time.Time{}
+		}
 	}
 
 	return nil
