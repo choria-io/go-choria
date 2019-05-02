@@ -1,12 +1,12 @@
-hash: e740d719f5a0c9da09c7327a378ad20f4d2510aa3435d3cbdc6c60f5666fe2b0
-updated: 2019-05-02T17:07:23.691989+02:00
+hash: a67d5b8c230e3ba6d9e8d836a6cea6c2599360ecd1723f8210981c43486888f1
+updated: 2019-05-02T22:08:17.39632357+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 3a771d992973f24aa725d07868b467d1ddfceafb
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: 3523f23be4459c4ad940ef5123af29281ddd4c4a
+  version: dfbac250c8a5962d99122b994f180d89d3c6965a
   subpackages:
   - aagent
   - aagent/machine
