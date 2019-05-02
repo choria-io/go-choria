@@ -66,6 +66,21 @@ func (a *AAgent) ManageMachines(ctx context.Context, wg *sync.WaitGroup) error {
 	return nil
 }
 
+// Transition transitions a running machine using a supplied transition event. Success is not guaranteed as the machine might be in a state that does not allow the transition
+func (a *AAgent) Transition(id string, transition string) error {
+	m := a.findMachine("", "", "", id)
+	if m == nil {
+		return fmt.Errorf("could not find machine with id %s", id)
+	}
+
+	err := m.machine.Transition(transition)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path string) (err error) {
 	aa, err := machine.FromDir(path, watchers.New())
 	if err != nil {
@@ -111,7 +126,7 @@ func (a *AAgent) loadFromSource(ctx context.Context, wg *sync.WaitGroup) error {
 			continue
 		}
 
-		current := a.findMachine("", "", path)
+		current := a.findMachine("", "", path, "")
 
 		if current != nil {
 			hash, err := current.machine.Hash()
@@ -193,11 +208,11 @@ func (a *AAgent) deleteByPath(path string) error {
 	return fmt.Errorf("could not find a machine from %s", path)
 }
 
-func (a *AAgent) findMachine(name string, version string, path string) *managedMachine {
+func (a *AAgent) findMachine(name string, version string, path string, id string) *managedMachine {
 	a.Lock()
 	defer a.Unlock()
 
-	if name == "" && version == "" && path == "" {
+	if name == "" && version == "" && path == "" && id == "" {
 		return nil
 	}
 
@@ -205,6 +220,7 @@ func (a *AAgent) findMachine(name string, version string, path string) *managedM
 		nameMatch := name == ""
 		versionMatch := version == ""
 		pathMatch := path == ""
+		idMatch := id == ""
 
 		if name != "" {
 			nameMatch = m.machine.Name() == name
@@ -218,9 +234,14 @@ func (a *AAgent) findMachine(name string, version string, path string) *managedM
 			versionMatch = m.machine.Version() == version
 		}
 
-		if nameMatch && versionMatch && pathMatch {
+		if id != "" {
+			idMatch = m.machine.InstanceID() == id
+		}
+
+		if nameMatch && versionMatch && pathMatch && idMatch {
 			return m
 		}
+
 	}
 
 	return nil
