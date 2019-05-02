@@ -33,7 +33,7 @@ type Machine interface {
 	State() string
 	Name() string
 	Identity() string
-	UniqueID() string
+	InstanceID() string
 	Version() string
 	TimeStampSeconds() int64
 	Directory() string
@@ -158,7 +158,7 @@ func (w *Watcher) CurrentState() interface{} {
 		Type:            "exec",
 		Name:            w.name,
 		Identity:        w.machine.Identity(),
-		ID:              w.machine.UniqueID(),
+		ID:              w.machine.InstanceID(),
 		Version:         w.machine.Version(),
 		Timestamp:       w.machine.TimeStampSeconds(),
 		Machine:         w.machine.Name(),

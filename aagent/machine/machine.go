@@ -208,7 +208,7 @@ func (m *Machine) buildFSM() error {
 				err := notifier.NotifyPostTransition(&TransitionNotification{
 					Protocol:   "io.choria.machine.v1.transition",
 					Identity:   m.Identity(),
-					ID:         m.UniqueID(),
+					ID:         m.InstanceID(),
 					Version:    m.Version(),
 					Timestamp:  m.TimeStampSeconds(),
 					Machine:    m.MachineName,
