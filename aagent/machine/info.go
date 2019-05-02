@@ -13,6 +13,21 @@ import (
 	"github.com/pkg/errors"
 )
 
+// InstanceID is a unique id for the instance of a machine
+func (m *Machine) InstanceID() string {
+	return m.instanceID
+}
+
+// Directory returns the directory where the machine definition is, "" when unknown
+func (m *Machine) Directory() string {
+	return m.directory
+}
+
+// StartTime is the time the machine started in UTC
+func (m *Machine) StartTime() time.Time {
+	return m.startTime
+}
+
 // Identity implements InfoSource
 func (m *Machine) Identity() string {
 	if m.identity == "" {

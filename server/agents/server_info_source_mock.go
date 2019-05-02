@@ -7,6 +7,7 @@ package agents
 import (
 	context "context"
 	json "encoding/json"
+	aagent "github.com/choria-io/go-choria/aagent"
 	choria "github.com/choria-io/go-choria/choria"
 	go_lifecycle "github.com/choria-io/go-lifecycle"
 	protocol "github.com/choria-io/go-protocol/protocol"
@@ -205,4 +206,17 @@ func (m *MockServerInfoSource) NewEvent(t go_lifecycle.Type, opts ...go_lifecycl
 func (mr *MockServerInfoSourceMockRecorder) NewEvent(t interface{}, opts ...interface{}) *gomock.Call {
 	varargs := append([]interface{}{t}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewEvent", reflect.TypeOf((*MockServerInfoSource)(nil).NewEvent), varargs...)
+}
+
+// MachinesStatus mocks base method
+func (m *MockServerInfoSource) MachinesStatus() ([]aagent.MachineState, error) {
+	ret := m.ctrl.Call(m, "MachinesStatus")
+	ret0, _ := ret[0].([]aagent.MachineState)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MachinesStatus indicates an expected call of MachinesStatus
+func (mr *MockServerInfoSourceMockRecorder) MachinesStatus() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MachinesStatus", reflect.TypeOf((*MockServerInfoSource)(nil).MachinesStatus))
 }

@@ -25,6 +25,8 @@ type InfoSource interface {
 	Name() string
 	// State returns the current state of the machine
 	State() string
+	// InstanceID return the unique ID of the machine instance
+	InstanceID() string
 }
 
 // WatcherStateNotification is a notification about the state of a watcher

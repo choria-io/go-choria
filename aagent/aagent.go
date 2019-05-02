@@ -111,7 +111,7 @@ func (a *AAgent) loadFromSource(ctx context.Context, wg *sync.WaitGroup) error {
 			continue
 		}
 
-		current := a.machineByPath(path)
+		current := a.findMachine("", "", path)
 
 		if current != nil {
 			hash, err := current.machine.Hash()
@@ -192,19 +192,36 @@ func (a *AAgent) deleteByPath(path string) error {
 
 	return fmt.Errorf("could not find a machine from %s", path)
 }
-func (a *AAgent) machineByPath(path string) *managedMachine {
+
+func (a *AAgent) findMachine(name string, version string, path string) *managedMachine {
 	a.Lock()
 	defer a.Unlock()
 
+	if name == "" && version == "" && path == "" {
+		return nil
+	}
+
 	for _, m := range a.machines {
-		if m.path == path {
+		nameMatch := name == ""
+		versionMatch := version == ""
+		pathMatch := path == ""
+
+		if name != "" {
+			nameMatch = m.machine.Name() == name
+		}
+
+		if path != "" {
+			pathMatch = m.path == path
+		}
+
+		if version != "" {
+			versionMatch = m.machine.Version() == version
+		}
+
+		if nameMatch && versionMatch && pathMatch {
 			return m
 		}
 	}
 
 	return nil
-}
-
-func (a *AAgent) hasMachine(path string) bool {
-	return a.machineByPath(path) != nil
 }

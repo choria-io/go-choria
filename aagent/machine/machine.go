@@ -36,12 +36,14 @@ type Machine struct {
 	// WatcherDefs contains all the watchers that can interact with the system
 	WatcherDefs []*watchers.WatcherDef `json:"watchers" yaml:"watchers"`
 
-	// SplayStart causes a random sleep with maximum this many seconds before the machine starts
-	SplayStart int `json:"splay_start", yaml:"splay_start"`
+	// SplayStart causes a random sleep of maximum this many seconds before the machine starts
+	SplayStart int `json:"splay_start" yaml:"splay_start"`
 
-	identity  string
-	directory string
-	manifest  string
+	instanceID string
+	identity   string
+	directory  string
+	manifest   string
+	startTime  time.Time
 
 	manager   WatcherManager
 	fsm       *fsm.FSM
@@ -117,6 +119,7 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 	m.manager = manager
 	m.directory = filepath.Dir(afile)
 	m.manifest = afile
+	m.instanceID = m.UniqueID()
 
 	err = m.manager.SetMachine(m)
 	if err != nil {
@@ -170,11 +173,6 @@ func (m *Machine) SetIdentity(id string) {
 	defer m.Unlock()
 
 	m.identity = id
-}
-
-// Directory returns the directory where the machine definition is, "" when unknown
-func (m *Machine) Directory() string {
-	return m.directory
 }
 
 // Watchers retrieves the watcher definitions
@@ -298,6 +296,7 @@ func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) (started chan s
 		}
 
 		m.Infof(m.MachineName, "Starting Choria Machine %s version %s from %s", m.MachineName, m.MachineVersion, m.directory)
+		m.startTime = time.Now().UTC()
 
 		err := m.manager.Run(m.ctx, wg)
 		if err != nil {

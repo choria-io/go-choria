@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/choria"
 	lifecycle "github.com/choria-io/go-lifecycle"
 	"github.com/choria-io/go-protocol/protocol"
@@ -31,6 +32,7 @@ type ServerInfoSource interface {
 	StartTime() time.Time
 	Stats() ServerStats
 	NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error
+	MachinesStatus() ([]aagent.MachineState, error)
 }
 
 type ServerStats struct {
