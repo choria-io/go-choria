@@ -82,12 +82,12 @@ func (srv *Instance) MachinesStatus() ([]aagent.MachineState, error) {
 }
 
 // MachineTransition sends a transition event to a specific running machine instance
-func (srv *Instance) MachineTransition(id string, transition string) error {
+func (srv *Instance) MachineTransition(name string, version string, path string, id string, transition string) error {
 	if srv.machines == nil {
 		return fmt.Errorf("Autonomous Agent host not initialized")
 	}
 
-	return srv.machines.Transition(id, transition)
+	return srv.machines.Transition(name, version, path, id, transition)
 }
 
 // LastProcessedMessage is the time that the last message was processed in local time

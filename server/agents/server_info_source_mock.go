@@ -222,13 +222,13 @@ func (mr *MockServerInfoSourceMockRecorder) MachinesStatus() *gomock.Call {
 }
 
 // MachineTransition mocks base method
-func (m *MockServerInfoSource) MachineTransition(id, transition string) error {
-	ret := m.ctrl.Call(m, "MachineTransition", id, transition)
+func (m *MockServerInfoSource) MachineTransition(name, version, path, id, transition string) error {
+	ret := m.ctrl.Call(m, "MachineTransition", name, version, path, id, transition)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
 // MachineTransition indicates an expected call of MachineTransition
-func (mr *MockServerInfoSourceMockRecorder) MachineTransition(id, transition interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MachineTransition", reflect.TypeOf((*MockServerInfoSource)(nil).MachineTransition), id, transition)
+func (mr *MockServerInfoSourceMockRecorder) MachineTransition(name, version, path, id, transition interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MachineTransition", reflect.TypeOf((*MockServerInfoSource)(nil).MachineTransition), name, version, path, id, transition)
 }

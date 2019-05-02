@@ -67,10 +67,14 @@ func (a *AAgent) ManageMachines(ctx context.Context, wg *sync.WaitGroup) error {
 }
 
 // Transition transitions a running machine using a supplied transition event. Success is not guaranteed as the machine might be in a state that does not allow the transition
-func (a *AAgent) Transition(id string, transition string) error {
-	m := a.findMachine("", "", "", id)
+func (a *AAgent) Transition(name string, version string, path string, id string, transition string) error {
+	m := a.findMachine(name, version, path, id)
 	if m == nil {
 		return fmt.Errorf("could not find machine with id %s", id)
+	}
+
+	if !m.machine.Can(transition) {
+		return fmt.Errorf("transition %s is not valid while in %v state", transition, m.machine.State())
 	}
 
 	err := m.machine.Transition(transition)
