@@ -2,8 +2,8 @@ package aagent
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
-	"math/rand"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -12,6 +12,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/machine"
 	notifier "github.com/choria-io/go-choria/aagent/notifiers/choria"
 	"github.com/choria-io/go-choria/aagent/watchers"
+	"github.com/choria-io/go-choria/choria"
 	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 )
@@ -20,19 +21,18 @@ type AAgent struct {
 	fw       ChoriaProvider
 	logger   *logrus.Entry
 	machines []*managedMachine
-	manager  *watchers.Manager
 	notifier *notifier.Notifier
 
 	source string
-	splay  time.Duration
 
 	sync.Mutex
 }
 
 type managedMachine struct {
-	path    string
-	loaded  time.Time
-	machine *machine.Machine
+	path       string
+	loaded     time.Time
+	machine    *machine.Machine
+	loadedHash string
 }
 
 // ChoriaProvider provides access to the choria framework
@@ -43,7 +43,7 @@ type ChoriaProvider interface {
 }
 
 // New creates a new instance of the choria autonomous agent host
-func New(dir string, splay time.Duration, fw ChoriaProvider) (aa *AAgent, err error) {
+func New(dir string, fw ChoriaProvider) (aa *AAgent, err error) {
 	notifier, err := notifier.New(fw)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create notifier")
@@ -54,16 +54,54 @@ func New(dir string, splay time.Duration, fw ChoriaProvider) (aa *AAgent, err er
 		logger:   fw.Logger("aagent"),
 		source:   dir,
 		machines: []*managedMachine{},
-		manager:  watchers.New(),
 		notifier: notifier,
-		splay:    splay,
 	}, nil
 }
 
-func (a *AAgent) InitialLoadMachines(ctx context.Context, wg *sync.WaitGroup) error {
+// ManageMachines start observing the
+func (a *AAgent) ManageMachines(ctx context.Context, wg *sync.WaitGroup) error {
+	wg.Add(1)
+	go a.watchSource(ctx, wg)
+
+	return nil
+}
+
+func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path string) (err error) {
+	aa, err := machine.FromDir(path, watchers.New())
+	if err != nil {
+		return err
+	}
+
+	sum, err := aa.Hash()
+	if err != nil {
+		return err
+	}
+
+	a.logger.Infof("Loaded Autonomous Agent %s version %s from %s (%s)", aa.Name(), aa.Version(), path, sum)
+
+	aa.SetIdentity(a.fw.Identity())
+	aa.RegisterNotifier(a.notifier)
+
+	managed := &managedMachine{
+		loaded:     time.Now(),
+		path:       path,
+		machine:    aa,
+		loadedHash: sum,
+	}
+
+	a.Lock()
+	a.machines = append(a.machines, managed)
+	a.Unlock()
+
+	aa.Start(ctx, wg)
+
+	return nil
+}
+
+func (a *AAgent) loadFromSource(ctx context.Context, wg *sync.WaitGroup) error {
 	files, err := ioutil.ReadDir(a.source)
 	if err != nil {
-		return errors.Wrapf(err, "could not read %s", a.source)
+		return errors.Wrapf(err, "could not read machine source")
 	}
 
 	for _, file := range files {
@@ -71,6 +109,28 @@ func (a *AAgent) InitialLoadMachines(ctx context.Context, wg *sync.WaitGroup) er
 
 		if !file.IsDir() || strings.HasPrefix(path, ".") {
 			continue
+		}
+
+		current := a.machineByPath(path)
+
+		if current != nil {
+			hash, err := current.machine.Hash()
+			if err != nil {
+				a.logger.Errorf("could not determine hash for %s manifest in %s")
+			}
+
+			if hash == current.loadedHash {
+				continue
+			}
+
+			a.logger.Warnf("Loaded machine %s does not match current manifest (%s), stopping", current.machine.Name(), hash)
+			current.machine.Stop()
+			err = a.deleteByPath(path)
+			if err != nil {
+				a.logger.Errorf("could not delete machine for %s", path)
+			}
+			a.logger.Debugf("Sleeping 1 second to allow old machine to exit")
+			choria.InterruptableSleep(ctx, time.Second)
 		}
 
 		a.logger.Infof("Attempting to load Choria Machine from %s", path)
@@ -84,55 +144,67 @@ func (a *AAgent) InitialLoadMachines(ctx context.Context, wg *sync.WaitGroup) er
 	return nil
 }
 
-func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path string) (err error) {
-	machine, err := machine.FromDir(path, a.manager)
-	if err != nil {
-		return err
+func (a *AAgent) watchSource(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	tick := time.NewTicker(10 * time.Second)
+
+	loadf := func() {
+		err := a.loadFromSource(ctx, wg)
+		if err != nil {
+			a.logger.Errorf("Could not load Autonomous Agents: %s", err)
+		}
 	}
 
-	machine.SetIdentity(a.fw.Identity())
-	machine.RegisterNotifier(a.notifier)
+	loadf()
 
-	managed := &managedMachine{
-		loaded:  time.Now(),
-		path:    path,
-		machine: machine,
+	for {
+		select {
+		case <-tick.C:
+			loadf()
+
+		case <-ctx.Done():
+			return
+		}
 	}
+}
 
+func (a *AAgent) deleteByPath(path string) error {
 	a.Lock()
-	a.machines = append(a.machines, managed)
-	a.Unlock()
+	defer a.Unlock()
 
-	a.splayStart(ctx, wg, machine)
+	match := -1
+
+	for i, m := range a.machines {
+		if m.path == path {
+			match = i
+		}
+	}
+
+	if match >= 0 {
+		// delete without memleaks, apparently, https://github.com/golang/go/wiki/SliceTricks
+		a.machines[match] = a.machines[len(a.machines)-1]
+		a.machines[len(a.machines)-1] = nil
+		a.machines = a.machines[:len(a.machines)-1]
+
+		return nil
+	}
+
+	return fmt.Errorf("could not find a machine from %s", path)
+}
+func (a *AAgent) machineByPath(path string) *managedMachine {
+	a.Lock()
+	defer a.Unlock()
+
+	for _, m := range a.machines {
+		if m.path == path {
+			return m
+		}
+	}
 
 	return nil
 }
 
-func (a *AAgent) splayStart(ctx context.Context, wg *sync.WaitGroup, m *machine.Machine) {
-	s1 := rand.NewSource(time.Now().UnixNano())
-	r1 := rand.New(s1)
-
-	startf := func() {
-		err := m.Start(ctx, wg)
-		if err != nil {
-			a.logger.Errorf("Could not start %s: %s", m.Name(), err)
-		}
-	}
-
-	if a.splay < time.Second {
-		startf()
-		return
-	}
-
-	sleepSeconds := time.Duration(r1.Intn(int(a.splay.Seconds()))) * time.Second
-	a.logger.Infof("Sleeping %v before starting Autonomous Agent %s", sleepSeconds, m.Name())
-
-	t := time.NewTimer(sleepSeconds)
-
-	select {
-	case <-t.C:
-		startf()
-	case <-ctx.Done():
-		return
-	}
+func (a *AAgent) hasMachine(path string) bool {
+	return a.machineByPath(path) != nil
 }

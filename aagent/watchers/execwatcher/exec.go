@@ -155,6 +155,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 		case <-ctx.Done():
 			tick.Stop()
+			w.machine.Infof(w.name, "Stopping on context interrupt")
 			return
 		}
 	}

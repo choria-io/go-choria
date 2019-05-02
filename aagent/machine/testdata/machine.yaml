@@ -1,6 +1,7 @@
 name: TestMachine
 version: 0.0.1
 initial_state: unknown
+splay_start: 10
 
 transitions:
   - name: fire_1
@@ -28,4 +29,3 @@ watchers:
     interval: "1m"
     properties:
       command: /usr/bin/true
-
