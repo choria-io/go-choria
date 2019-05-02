@@ -17,7 +17,7 @@ import:
   subpackages:
   - client
 - package: github.com/choria-io/mcorpc-agent-provider
-  version: 0.3.3
+  version: e34fe662e0565907831988c604ee86669511de48
   subpackages:
   - mcorpc
 - package: github.com/choria-io/provisioning-agent
