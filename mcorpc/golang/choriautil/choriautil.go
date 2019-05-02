@@ -6,6 +6,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server"
@@ -56,6 +57,20 @@ type cstats struct {
 	Reconnects uint64 `json:"reconnects"`
 }
 
+type machineStates struct {
+	Machines []string `json:"machine_ids"`
+	States   map[string]aagent.MachineState
+}
+
+type machineTransitionRequest struct {
+	ID         string `json:"machine_id"`
+	Transition string `json:"transition"`
+}
+
+type machineTransitionReply struct {
+	Success bool `json:"success"`
+}
+
 // New creates a new choria_util agent
 func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 	metadata := &agents.Metadata{
@@ -71,8 +86,45 @@ func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 	agent := mcorpc.New("choria_util", metadata, mgr.Choria(), mgr.Logger())
 
 	agent.MustRegisterAction("info", infoAction)
+	agent.MustRegisterAction("machine_states", machineStatesAction)
+	agent.MustRegisterAction("machine_transition", machineTransitionAction)
 
 	return agent, nil
+}
+
+func machineTransitionAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+	i := machineTransitionRequest{}
+	if !mcorpc.ParseRequestData(&i, req, reply) {
+		return
+	}
+
+	err := agent.ServerInfoSource.MachineTransition(i.ID, i.Transition)
+	if err != nil {
+		reply.Statuscode = mcorpc.Aborted
+		reply.Statusmsg = fmt.Sprintf("Could not transition %s: %s", i.ID, err)
+	}
+
+	reply.Data = machineTransitionReply{Success: err == nil}
+}
+
+func machineStatesAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+	states, err := agent.ServerInfoSource.MachinesStatus()
+	if err != nil {
+		reply.Statuscode = mcorpc.Aborted
+		reply.Statusmsg = fmt.Sprintf("Failed to retrieve states: %s", err)
+	}
+
+	r := machineStates{
+		Machines: []string{},
+		States:   make(map[string]aagent.MachineState),
+	}
+
+	for _, m := range states {
+		r.Machines = append(r.Machines, m.ID)
+		r.States[m.ID] = m
+	}
+
+	reply.Data = r
 }
 
 func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {

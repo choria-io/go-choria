@@ -1,13 +1,19 @@
-hash: db9a7dd01fbf93203b9efab62109e7a7f77091614a80fdf9a124fd6f2c4d05a0
-updated: 2018-10-27T23:04:10.319051+01:00
+hash: e740d719f5a0c9da09c7327a378ad20f4d2510aa3435d3cbdc6c60f5666fe2b0
+updated: 2019-05-02T17:07:23.691989+02:00
 imports:
 - name: github.com/beorn7/perks
-  version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
+  version: 3a771d992973f24aa725d07868b467d1ddfceafb
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: 712b4538dbe96c66d118dca98221fb9ef14e054e
+  version: 3523f23be4459c4ad940ef5123af29281ddd4c4a
   subpackages:
+  - aagent
+  - aagent/machine
+  - aagent/notifiers/choria
+  - aagent/watchers
+  - aagent/watchers/execwatcher
+  - aagent/watchers/filewatcher
   - backoff
   - build
   - choria
@@ -29,24 +35,26 @@ imports:
   - server/registration
   - srvcache
 - name: github.com/choria-io/go-client
-  version: 60f882dd021c8270ed359c37df45d728f754fa0b
+  version: 54bcd877b6c6d9c8bc96863910f2f32b67b081d1
   subpackages:
   - client
   - discovery/broadcast
 - name: github.com/choria-io/go-confkey
   version: 634d2c41860498507b0c7eeb2f8a33b1aa6a809d
 - name: github.com/choria-io/go-lifecycle
-  version: 1170dd4e29c13116122415e7140e1a092d6a966b
+  version: 1abefec262bec96f9581d76f3270c86121356d02
 - name: github.com/choria-io/go-protocol
   version: c3117476636777d60c00a86b2d4b2b8fc56addb4
   subpackages:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-security
-  version: a221c72ee79ab400346d38837d7e8b289857247b
+  version: b259ec5ee20647587b1f8a9b1316b333de4ce3ad
   subpackages:
   - filesec
   - puppetsec
+- name: github.com/choria-io/go-updater
+  version: 2e95f9965f469b7b1dcba5b3ea16033413e4273e
 - name: github.com/choria-io/go-validator
   version: 4ce2ef25983faa873cc4bcea0f1ef2a4273d42cc
   subpackages:
@@ -59,7 +67,7 @@ imports:
   - regex
   - shellsafe
 - name: github.com/choria-io/provisioning-agent
-  version: c681a9124e6fac7500b0a94cf3b603122051e223
+  version: a0ed5f38d6d4633a008f8ceb38443041dcebbffa
   subpackages:
   - agent
 - name: github.com/ghodss/yaml
@@ -68,18 +76,20 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/gofrs/uuid
-  version: 370558f003bfe29580cd0f698d8640daccdcc45c
+  version: 6b08a5c5172ba18946672b49749cde22873dd7c2
 - name: github.com/golang/mock
   version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c
   subpackages:
   - gomock
   - mockgen
 - name: github.com/golang/protobuf
-  version: 1643683e1b54a9e88ad26d98f81400c8c9d9f4f9
+  version: 52132540909e117f2b98b0694383dc0ab1e1deca
   subpackages:
   - proto
 - name: github.com/konsorten/go-windows-terminal-sequences
-  version: b729f2633dfe35f4d1d8a32385f6685610ce1cb5
+  version: 5c8c8bd35d3832f5d134ae1e1e375b69a4d25242
+- name: github.com/looplab/fsm
+  version: 84b5307469f859464403f80919467950a79de1b1
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
@@ -91,44 +101,49 @@ imports:
   - util
 - name: github.com/nats-io/nuid
   version: 28b996b57a46dd0c2aa3a3dc7fa8780878331d00
+- name: github.com/pkg/errors
+  version: ba968bfe8b2f7e042a574c888954fccecfa385b4
 - name: github.com/prometheus/client_golang
-  version: 967789050ba94deca04a5e84cce8ad472ce313c1
+  version: 505eaef017263e299324067d40ca2c48f6a2cf50
   subpackages:
   - prometheus
+  - prometheus/internal
 - name: github.com/prometheus/client_model
-  version: 99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c
+  version: 5c3871d89910bfb32f5fcab2aa4b9ec68e65a99f
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 89604d197083d4781071d3c65855d24ecfb0a563
+  version: 61f87aac8082fa8c3c5655c7608d7478d46ac2ad
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: b15cd069a83443be3154b719d0cc9fe8117f09fb
+  version: 185b4288413d2a0dd0806f78c90dde719829e5ae
   subpackages:
+  - internal/util
+  - nfs
   - xfs
 - name: github.com/sirupsen/logrus
-  version: ad15b42461921f1fb3529b058c6786c6a45d5162
+  version: e1e72e9de974bd926e5c56f83753fba2df402ce5
 - name: github.com/tidwall/gjson
-  version: 1e3f6aeaa5bad08d777ea7807b279a07885dd8b2
+  version: 5a96cfda705e1762dc0671e26b0b78925ad97e29
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
 - name: github.com/xeipuuv/gojsonpointer
-  version: 6fe8760cad3569743d51ddbb243b26f8456742dc
+  version: 4e3ac2762d5f479393488629ee9370b50873b3a6
 - name: github.com/xeipuuv/gojsonreference
-  version: e02fc20de94c78484cd5ffb007f8af96be030a45
+  version: bd5ef7bd5415a7ac448318e64f11a24cd21e594b
 - name: github.com/xeipuuv/gojsonschema
-  version: 511d08a359d14c0dd9c4302af52ee9abb6f93c2a
+  version: f3a9dae5b19473510a3062802a98815f609ed747
 - name: go.uber.org/atomic
-  version: 1ea20fb1cbb1cc08cbd0d913a96dead89aa18289
+  version: df976f2515e274675050de7b3f42545de80594fd
 - name: golang.org/x/crypto
   version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
-  version: 5ccada7d0a7ba9aeb5d3aca8d3501b4c2a509fec
+  version: adae6a3d119ae4890b46832a2e88a95adc62b8e7
   subpackages:
   - context
   - html
@@ -139,7 +154,7 @@ imports:
   subpackages:
   - unix
 - name: gopkg.in/yaml.v2
-  version: d670f9405373e636a5a2765eea47fac0c9bc91a4
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
 testImports:
 - name: github.com/hpcloud/tail
   version: a1dbeea552b7c8df4b542c66073e393de198a800
@@ -149,7 +164,7 @@ testImports:
   - watch
   - winfile
 - name: github.com/onsi/ginkgo
-  version: 3774a09d95489ccaa16032e0770d08ea77ba6184
+  version: eea6ad008b96acdaa524f5b409513bf062b500ad
   subpackages:
   - config
   - internal/codelocation
@@ -169,7 +184,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 7615b9433f86a8bdf29709bf288bc4fd0636a369
+  version: 90e289841c1ed79b7a598a7cd9959750cb5e89e2
   subpackages:
   - format
   - internal/assertion
@@ -183,7 +198,7 @@ testImports:
   - matchers/support/goraph/util
   - types
 - name: golang.org/x/text
-  version: e19ae1496984b1c655b8044a65c0300a3c878dd3
+  version: 6f44c5a2ea40ee3593d98cdcc905cc1fdaa660e2
   subpackages:
   - encoding
   - encoding/charmap
@@ -195,6 +210,8 @@ testImports:
   - encoding/simplifiedchinese
   - encoding/traditionalchinese
   - encoding/unicode
+  - internal/language
+  - internal/language/compact
   - internal/tag
   - internal/utf8internal
   - language
