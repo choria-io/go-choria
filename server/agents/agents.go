@@ -33,6 +33,7 @@ type ServerInfoSource interface {
 	Stats() ServerStats
 	NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error
 	MachinesStatus() ([]aagent.MachineState, error)
+	MachineTransition(id string, transition string) error
 }
 
 type ServerStats struct {

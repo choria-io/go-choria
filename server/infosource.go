@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"sync"
@@ -78,6 +79,15 @@ func (srv *Instance) MachinesStatus() ([]aagent.MachineState, error) {
 	}
 
 	return srv.machines.AllMachineStates()
+}
+
+// MachineTransition sends a transition event to a specific running machine instance
+func (srv *Instance) MachineTransition(id string, transition string) error {
+	if srv.machines == nil {
+		return fmt.Errorf("Autonomous Agent host not initialized")
+	}
+
+	return srv.machines.Transition(id, transition)
 }
 
 // LastProcessedMessage is the time that the last message was processed in local time

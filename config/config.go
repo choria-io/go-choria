@@ -98,8 +98,7 @@ type ChoriaPluginConfig struct {
 	StatusUpdateSeconds int    `confkey:"plugin.choria.status_update_interval" default:"30"`
 
 	// machine
-	MachineSourceDir string        `confkey:"plugin.choria.machine.store"`
-	StartSplayTime   time.Duration `confkey:"plugin.choria.machine.start_splay" type:"duration" default:"1m"`
+	MachineSourceDir string `confkey:"plugin.choria.machine.store"`
 }
 
 // Config represents Choria configuration

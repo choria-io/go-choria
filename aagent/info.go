@@ -1,14 +1,13 @@
 package aagent
 
-import "time"
-
+// MachineState is the state of a running machine
 type MachineState struct {
-	Name         string
-	Version      string
-	State        string
-	Path         string
-	ID           string
-	StartTimeUTC time.Time
+	Name         string `json:"name" yaml:"name"`
+	Version      string `json:"version" yaml:"version"`
+	State        string `json:"state" yaml:"state"`
+	Path         string `json:"path" yaml:"path"`
+	ID           string `json:"id" yaml:"id"`
+	StartTimeUTC int64  `json:"start_time" yaml:"start_time"`
 }
 
 // AllMachineStates retrieves a list of machines and their states
@@ -25,7 +24,7 @@ func (a *AAgent) AllMachineStates() (states []MachineState, err error) {
 			Path:         m.machine.Directory(),
 			ID:           m.machine.InstanceID(),
 			State:        m.machine.State(),
-			StartTimeUTC: m.machine.StartTime(),
+			StartTimeUTC: m.machine.StartTime().Unix(),
 		}
 
 		states = append(states, state)
