@@ -39,7 +39,7 @@ type Machine interface {
 	NotifyWatcherState(string, interface{})
 	Watchers() []*WatcherDef
 	Identity() string
-	UniqueID() string
+	InstanceID() string
 	Version() string
 	TimeStampSeconds() int64
 	Debugf(name string, format string, args ...interface{})

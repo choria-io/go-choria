@@ -213,16 +213,16 @@ func (mr *MockMachineMockRecorder) Identity() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Identity", reflect.TypeOf((*MockMachine)(nil).Identity))
 }
 
-// UniqueID mocks base method
-func (m *MockMachine) UniqueID() string {
-	ret := m.ctrl.Call(m, "UniqueID")
+// InstanceID mocks base method
+func (m *MockMachine) InstanceID() string {
+	ret := m.ctrl.Call(m, "InstanceID")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// UniqueID indicates an expected call of UniqueID
-func (mr *MockMachineMockRecorder) UniqueID() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UniqueID", reflect.TypeOf((*MockMachine)(nil).UniqueID))
+// InstanceID indicates an expected call of InstanceID
+func (mr *MockMachineMockRecorder) InstanceID() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InstanceID", reflect.TypeOf((*MockMachine)(nil).InstanceID))
 }
 
 // Version mocks base method
