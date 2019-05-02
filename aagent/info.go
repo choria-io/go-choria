@@ -20,12 +20,13 @@ func (a *AAgent) AllMachineStates() (states []MachineState, err error) {
 
 	for _, m := range a.machines {
 		state := MachineState{
-			Name:         m.machine.Name(),
-			Version:      m.machine.Version(),
-			Path:         m.machine.Directory(),
-			ID:           m.machine.InstanceID(),
-			State:        m.machine.State(),
-			StartTimeUTC: m.machine.StartTime().Unix(),
+			Name:                 m.machine.Name(),
+			Version:              m.machine.Version(),
+			Path:                 m.machine.Directory(),
+			ID:                   m.machine.InstanceID(),
+			State:                m.machine.State(),
+			StartTimeUTC:         m.machine.StartTime().Unix(),
+			AvailableTransitions: m.machine.AvailableTransitions(),
 		}
 
 		states = append(states, state)
