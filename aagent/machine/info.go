@@ -1,12 +1,32 @@
 package machine
 
 import (
+	"crypto/md5"
+	"fmt"
+	"io"
 	"math/rand"
+	"os"
 	"strings"
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/pkg/errors"
 )
+
+// InstanceID is a unique id for the instance of a machine
+func (m *Machine) InstanceID() string {
+	return m.instanceID
+}
+
+// Directory returns the directory where the machine definition is, "" when unknown
+func (m *Machine) Directory() string {
+	return m.directory
+}
+
+// StartTime is the time the machine started in UTC
+func (m *Machine) StartTime() time.Time {
+	return m.startTime
+}
 
 // Identity implements InfoSource
 func (m *Machine) Identity() string {
@@ -58,6 +78,11 @@ func (m *Machine) UniqueID() (id string) {
 	return strings.Join(parts, "-")
 }
 
+// Hash computes a md5 hash of the manifest
+func (m *Machine) Hash() (string, error) {
+	return filemd5(m.manifest)
+}
+
 func randStringRunes(n int) string {
 	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
 
@@ -66,4 +91,19 @@ func randStringRunes(n int) string {
 		b[i] = letterRunes[rand.Intn(len(letterRunes))]
 	}
 	return string(b)
+}
+
+func filemd5(path string) (string, error) {
+	f, err := os.Open(path)
+	if err != nil {
+		return "", errors.Wrapf(err, "could not open data for md5 hash")
+	}
+	defer f.Close()
+
+	h := md5.New()
+	if _, err := io.Copy(h, f); err != nil {
+		return "", errors.Wrapf(err, "could not copy data to md5")
+	}
+
+	return fmt.Sprintf("%x", h.Sum(nil)), nil
 }

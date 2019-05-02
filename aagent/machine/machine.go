@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"path/filepath"
 	"sync"
+	"time"
 
 	"github.com/pkg/errors"
 	"github.com/xeipuuv/gojsonschema"
@@ -34,8 +36,14 @@ type Machine struct {
 	// WatcherDefs contains all the watchers that can interact with the system
 	WatcherDefs []*watchers.WatcherDef `json:"watchers" yaml:"watchers"`
 
-	identity  string
-	directory string
+	// SplayStart causes a random sleep of maximum this many seconds before the machine starts
+	SplayStart int `json:"splay_start" yaml:"splay_start"`
+
+	instanceID string
+	identity   string
+	directory  string
+	manifest   string
+	startTime  time.Time
 
 	manager   WatcherManager
 	fsm       *fsm.FSM
@@ -110,6 +118,8 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 	m.notifiers = []NotificationService{}
 	m.manager = manager
 	m.directory = filepath.Dir(afile)
+	m.manifest = afile
+	m.instanceID = m.UniqueID()
 
 	err = m.manager.SetMachine(m)
 	if err != nil {
@@ -163,11 +173,6 @@ func (m *Machine) SetIdentity(id string) {
 	defer m.Unlock()
 
 	m.identity = id
-}
-
-// Directory returns the directory where the machine definition is, "" when unknown
-func (m *Machine) Directory() string {
-	return m.directory
 }
 
 // Watchers retrieves the watcher definitions
@@ -267,12 +272,43 @@ func (m *Machine) Setup() error {
 }
 
 // Start runs the machine in the background
-func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) error {
+func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) (started chan struct{}) {
 	m.ctx, m.cancel = context.WithCancel(ctx)
 
-	m.Infof(m.MachineName, "Starting Choria Machine %s version %s from %s", m.MachineName, m.MachineVersion, m.directory)
+	started = make(chan struct{})
 
-	return m.manager.Run(ctx, wg)
+	runf := func() {
+
+		if m.SplayStart > 0 {
+			s1 := rand.NewSource(time.Now().UnixNano())
+			r1 := rand.New(s1)
+			sleepSeconds := time.Duration(r1.Intn(m.SplayStart)) * time.Second
+			m.Infof(m.MachineName, "Sleeping %v before starting Autonomous Agent", sleepSeconds)
+
+			t := time.NewTimer(sleepSeconds)
+
+			select {
+			case <-t.C:
+			case <-m.ctx.Done():
+				m.Infof(m.MachineName, "Exiting on context interrupt")
+				return
+			}
+		}
+
+		m.Infof(m.MachineName, "Starting Choria Machine %s version %s from %s", m.MachineName, m.MachineVersion, m.directory)
+		m.startTime = time.Now().UTC()
+
+		err := m.manager.Run(m.ctx, wg)
+		if err != nil {
+			m.Errorf(m.MachineName, "Could not start manager: %s", err)
+		}
+
+		started <- struct{}{}
+	}
+
+	go runf()
+
+	return started
 }
 
 // Stop stops a running machine by canceling its context

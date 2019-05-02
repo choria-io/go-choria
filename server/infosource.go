@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/choria"
 
 	"github.com/choria-io/go-lifecycle"
@@ -68,6 +69,15 @@ func (srv *Instance) ConnectedServer() string {
 // KnownAgents is a list of agents loaded into the server instance
 func (srv *Instance) KnownAgents() []string {
 	return srv.agents.KnownAgents()
+}
+
+// MachinesStatus returns the status of all loaded autonomous agents
+func (srv *Instance) MachinesStatus() ([]aagent.MachineState, error) {
+	if srv.machines == nil {
+		return []aagent.MachineState{}, nil
+	}
+
+	return srv.machines.AllMachineStates()
 }
 
 // LastProcessedMessage is the time that the last message was processed in local time

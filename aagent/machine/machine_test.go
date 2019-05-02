@@ -117,7 +117,9 @@ var _ = Describe("Aagent/Machine", func() {
 			machine, err = FromYAML("testdata/machine.yaml", manager)
 			manager.EXPECT().Run(gomock.AssignableToTypeOf(ctx), wg)
 
-			machine.Start(ctx, wg)
+			machine.SplayStart = 0
+
+			<-machine.Start(ctx, wg)
 		})
 	})
 

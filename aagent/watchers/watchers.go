@@ -80,6 +80,7 @@ func (m *Manager) AddWatcher(w Watcher) error {
 
 	_, ok := m.watchers[w.Name()]
 	if ok {
+		m.machine.Errorf("manager", "Already have a watcher %s", w.Name())
 		return fmt.Errorf("watcher %s already exist", w.Name())
 	}
 
@@ -116,7 +117,6 @@ func (m *Manager) configureWatchers() (err error) {
 			if err != nil {
 				return err
 			}
-
 		default:
 			return fmt.Errorf("unknown watcher '%s'", w.Type)
 		}
@@ -142,14 +142,17 @@ func (m *Manager) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		go watcher.Run(ctx, wg)
 
 		if watcher.AnnounceInterval() > 0 {
-			go m.announceWatcherState(ctx, watcher)
+			wg.Add(1)
+			go m.announceWatcherState(ctx, wg, watcher)
 		}
 	}
 
 	return nil
 }
 
-func (m *Manager) announceWatcherState(ctx context.Context, w Watcher) {
+func (m *Manager) announceWatcherState(ctx context.Context, wg *sync.WaitGroup, w Watcher) {
+	defer wg.Done()
+
 	announceTick := time.NewTicker(w.AnnounceInterval())
 
 	for {
@@ -157,6 +160,7 @@ func (m *Manager) announceWatcherState(ctx context.Context, w Watcher) {
 		case <-announceTick.C:
 			m.machine.NotifyWatcherState(w.Name(), w.CurrentState())
 		case <-ctx.Done():
+			m.machine.Infof("manager", "Stopping on context interrupt")
 			return
 		}
 	}

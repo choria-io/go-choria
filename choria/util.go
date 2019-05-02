@@ -1,6 +1,8 @@
 package choria
 
 import (
+	context "context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -8,6 +10,7 @@ import (
 	"regexp"
 	"runtime"
 	"strings"
+	"time"
 
 	"github.com/choria-io/go-choria/puppet"
 	uuid "github.com/gofrs/uuid"
@@ -175,4 +178,18 @@ func NewRequestID() (string, error) {
 	}
 
 	return strings.Replace(id.String(), "-", "", -1), nil
+}
+
+// InterruptableSleep sleep for the duration of the n'th wait cycle
+// in a way that can be interrupted by the context.  An error is returned
+// if the context cancels the sleep
+func InterruptableSleep(ctx context.Context, d time.Duration) error {
+	timer := time.NewTimer(d)
+
+	select {
+	case <-timer.C:
+		return nil
+	case <-ctx.Done():
+		return errors.New("sleep interrupted by context")
+	}
 }
