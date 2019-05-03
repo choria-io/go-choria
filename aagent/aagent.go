@@ -70,7 +70,7 @@ func (a *AAgent) ManageMachines(ctx context.Context, wg *sync.WaitGroup) error {
 func (a *AAgent) Transition(name string, version string, path string, id string, transition string) error {
 	m := a.findMachine(name, version, path, id)
 	if m == nil {
-		return fmt.Errorf("could not find machine with id %s", id)
+		return fmt.Errorf("could not find machine matching criteria name='%s', version='%s', path='%s', id='%s'", name, version, path, id)
 	}
 
 	if !m.machine.Can(transition) {
