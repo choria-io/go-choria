@@ -76,9 +76,15 @@ func (n *Notifier) NotifyWatcherState(name string, detail machine.WatcherStateNo
 		return err
 	}
 
+	wtype := detail.WatcherType()
+	if wtype == "" {
+		n.logger.Errorf("Received a watcher state without a valid type associated")
+		return fmt.Errorf("invalid watcher type in watcher state")
+	}
+
 	n.logger.Infof(detail.String())
 
-	err = n.fw.PublishRaw("choria.machine.watcher.state", j)
+	err = n.fw.PublishRaw(fmt.Sprintf("choria.machine.watcher.%s.state", wtype), j)
 	if err != nil {
 		return errors.Wrap(err, "could not publish notification")
 	}

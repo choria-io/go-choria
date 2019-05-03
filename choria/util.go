@@ -4,6 +4,7 @@ import (
 	context "context"
 	"errors"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -192,4 +193,31 @@ func InterruptableSleep(ctx context.Context, d time.Duration) error {
 	case <-ctx.Done():
 		return errors.New("sleep interrupted by context")
 	}
+}
+
+// UniqueID creates a new unique ID, usually a v4 uuid, if that fails a random string based ID is made
+func UniqueID() (id string) {
+	uuid, err := uuid.NewV4()
+	if err == nil {
+		return uuid.String()
+	}
+
+	parts := []string{}
+	parts = append(parts, randStringRunes(8))
+	parts = append(parts, randStringRunes(4))
+	parts = append(parts, randStringRunes(4))
+	parts = append(parts, randStringRunes(12))
+
+	return strings.Join(parts, "-")
+}
+
+func randStringRunes(n int) string {
+	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+
+	b := make([]rune, n)
+	for i := range b {
+		b[i] = letterRunes[rand.Intn(len(letterRunes))]
+	}
+
+	return string(b)
 }

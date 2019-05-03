@@ -482,6 +482,11 @@ func (fw *Framework) NewRequestID() (string, error) {
 	return NewRequestID()
 }
 
+// UniqueID creates a new unique ID, usually a v4 uuid, if that fails a random string based ID is made
+func (fw *Framework) UniqueID() string {
+	return UniqueID()
+}
+
 // CallerID determines the cert based callerid
 func (fw *Framework) CallerID() string {
 	return fmt.Sprintf("choria=%s", fw.Certname())

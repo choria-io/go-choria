@@ -155,7 +155,7 @@ func (w *Watcher) CurrentState() interface{} {
 
 	s := &StateNotification{
 		Protocol:        "io.choria.machine.watcher.file.v1.state",
-		Type:            "exec",
+		Type:            "file",
 		Name:            w.name,
 		Identity:        w.machine.Identity(),
 		ID:              w.machine.InstanceID(),
