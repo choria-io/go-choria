@@ -126,7 +126,7 @@ func machineStatesAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc
 
 	for _, m := range states {
 		r.MachineIDs = append(r.MachineIDs, m.ID)
-		r.MachineNames = append(r.MachineNames, m.Name)
+		r.MachineNames = append(r.MachineNames, fmt.Sprintf("%s %s", m.Name, m.Version))
 
 		r.States[m.ID] = m
 	}
