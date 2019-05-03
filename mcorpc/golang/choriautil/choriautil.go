@@ -58,8 +58,9 @@ type cstats struct {
 }
 
 type machineStates struct {
-	Machines []string                       `json:"machine_ids"`
-	States   map[string]aagent.MachineState `json:"states"`
+	MachineIDs   []string                       `json:"machine_ids"`
+	MachineNames []string                       `json:"machine_names"`
+	States       map[string]aagent.MachineState `json:"states"`
 }
 
 type machineTransitionRequest struct {
@@ -118,12 +119,15 @@ func machineStatesAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc
 	}
 
 	r := machineStates{
-		Machines: []string{},
-		States:   make(map[string]aagent.MachineState),
+		MachineIDs:   []string{},
+		MachineNames: []string{},
+		States:       make(map[string]aagent.MachineState),
 	}
 
 	for _, m := range states {
-		r.Machines = append(r.Machines, m.ID)
+		r.MachineIDs = append(r.MachineIDs, m.ID)
+		r.MachineNames = append(r.MachineNames, m.Name)
+
 		r.States[m.ID] = m
 	}
 
