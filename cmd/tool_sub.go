@@ -44,12 +44,8 @@ func (s *tSubCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	msgs := make(chan *choria.ConnectorMessage, 100)
-	rid, err := c.NewRequestID()
-	if err != nil {
-		return fmt.Errorf("could not generate subscription id: %s", err)
-	}
 
-	err = conn.QueueSubscribe(ctx, rid, s.topic, "", msgs)
+	err = conn.QueueSubscribe(ctx, c.UniqueID(), s.topic, "", msgs)
 	if err != nil {
 		return fmt.Errorf("could not subscribe to %s: %s", s.topic, err)
 	}

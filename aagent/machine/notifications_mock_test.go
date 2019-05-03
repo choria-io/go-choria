@@ -80,6 +80,18 @@ func (mr *MockInfoSourceMockRecorder) State() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "State", reflect.TypeOf((*MockInfoSource)(nil).State))
 }
 
+// InstanceID mocks base method
+func (m *MockInfoSource) InstanceID() string {
+	ret := m.ctrl.Call(m, "InstanceID")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// InstanceID indicates an expected call of InstanceID
+func (mr *MockInfoSourceMockRecorder) InstanceID() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InstanceID", reflect.TypeOf((*MockInfoSource)(nil).InstanceID))
+}
+
 // MockWatcherStateNotification is a mock of WatcherStateNotification interface
 type MockWatcherStateNotification struct {
 	ctrl     *gomock.Controller
@@ -126,6 +138,18 @@ func (m *MockWatcherStateNotification) String() string {
 // String indicates an expected call of String
 func (mr *MockWatcherStateNotificationMockRecorder) String() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "String", reflect.TypeOf((*MockWatcherStateNotification)(nil).String))
+}
+
+// WatcherType mocks base method
+func (m *MockWatcherStateNotification) WatcherType() string {
+	ret := m.ctrl.Call(m, "WatcherType")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// WatcherType indicates an expected call of WatcherType
+func (mr *MockWatcherStateNotificationMockRecorder) WatcherType() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatcherType", reflect.TypeOf((*MockWatcherStateNotification)(nil).WatcherType))
 }
 
 // MockNotificationService is a mock of NotificationService interface

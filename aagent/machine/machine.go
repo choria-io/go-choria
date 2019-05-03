@@ -2,6 +2,7 @@ package machine
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -11,9 +12,12 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+	"github.com/tidwall/gjson"
 	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/choria-io/go-choria/aagent/watchers"
+	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
+	"github.com/choria-io/go-choria/aagent/watchers/filewatcher"
 	"github.com/ghodss/yaml"
 
 	"github.com/looplab/fsm"
@@ -73,7 +77,36 @@ type WatcherManager interface {
 	SetMachine(interface{}) error
 }
 
-var letterRunes = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
+// ParseWatcherState parses the watcher state JSON
+func ParseWatcherState(state []byte) (n WatcherStateNotification, err error) {
+	r := gjson.GetBytes(state, "protocol")
+	if !r.Exists() {
+		return nil, fmt.Errorf("no protocol header in state json")
+	}
+
+	proto := r.String()
+
+	switch proto {
+	case "io.choria.machine.watcher.exec.v1.state":
+		notification := &execwatcher.StateNotification{}
+		err = json.Unmarshal(state, notification)
+		if err != nil {
+			return nil, errors.Wrapf(err, "invalid exec watcher notification received: %s")
+		}
+
+		return notification, nil
+	case "io.choria.machine.watcher.file.v1.state":
+		notification := &filewatcher.StateNotification{}
+		err = json.Unmarshal(state, notification)
+		if err != nil {
+			return nil, errors.Wrapf(err, "invalid file watcher notification received: %s")
+		}
+
+		return notification, nil
+	}
+
+	return nil, fmt.Errorf("unknown watcher state %s", proto)
+}
 
 func yamlPath(dir string) string {
 	return dir + "/" + "machine.yaml"

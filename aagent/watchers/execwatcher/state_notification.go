@@ -30,3 +30,8 @@ func (s *StateNotification) JSON() ([]byte, error) {
 func (s *StateNotification) String() string {
 	return fmt.Sprintf("%s %s#%s command: %s, previous: %s ran: %.3fs", s.Identity, s.Machine, s.Name, s.Command, s.PreviousOutcome, float64(s.PreviousRunTime)/1000000000)
 }
+
+// WatcherType is the type of watcher the notification is for - exec, file etc
+func (s *StateNotification) WatcherType() string {
+	return s.Type
+}

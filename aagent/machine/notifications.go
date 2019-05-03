@@ -1,5 +1,7 @@
 package machine
 
+import "fmt"
+
 // TransitionNotification is a notification when a transition completes
 type TransitionNotification struct {
 	Protocol   string `json:"protocol"`
@@ -13,6 +15,10 @@ type TransitionNotification struct {
 	ToState    string `json:"to_state"`
 
 	Info InfoSource `json:"-"`
+}
+
+func (t *TransitionNotification) String() string {
+	return fmt.Sprintf("%s %s transitioned via event %s: %s => %s", t.Identity, t.Machine, t.Transition, t.FromState, t.ToState)
 }
 
 // InfoSource provides information about a running machine
@@ -33,6 +39,7 @@ type InfoSource interface {
 type WatcherStateNotification interface {
 	JSON() ([]byte, error)
 	String() string
+	WatcherType() string
 }
 
 // NotificationService receives events notifications about the state machine
@@ -96,6 +103,7 @@ func (m *Machine) NotifyWatcherState(watcher string, state interface{}) {
 	notification, ok := state.(WatcherStateNotification)
 	if !ok {
 		m.Errorf(watcher, "Could not notify watcher state: state does not implement WatcherStateNotification: %#v", state)
+		return
 	}
 
 	for _, n := range m.notifiers {
