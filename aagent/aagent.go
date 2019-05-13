@@ -58,7 +58,7 @@ func New(dir string, fw ChoriaProvider) (aa *AAgent, err error) {
 	}, nil
 }
 
-// ManageMachines start observing the
+// ManageMachines start observing the source directories starting and stopping machines based on changes on disk
 func (a *AAgent) ManageMachines(ctx context.Context, wg *sync.WaitGroup) error {
 	wg.Add(1)
 	go a.watchSource(ctx, wg)
