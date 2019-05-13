@@ -311,10 +311,8 @@ func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) (started chan s
 	started = make(chan struct{})
 
 	runf := func() {
-
 		if m.SplayStart > 0 {
-			s1 := rand.NewSource(time.Now().UnixNano())
-			r1 := rand.New(s1)
+			r1 := rand.New(rand.NewSource(time.Now().UnixNano()))
 			sleepSeconds := time.Duration(r1.Intn(m.SplayStart)) * time.Second
 			m.Infof(m.MachineName, "Sleeping %v before starting Autonomous Agent", sleepSeconds)
 

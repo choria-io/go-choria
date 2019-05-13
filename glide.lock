@@ -1,5 +1,5 @@
 hash: e0f48d2ca3d8c22acaabb8b3d600df0086217c4f3d7341ad80b7f215ae81291c
-updated: 2019-05-03T18:09:22.444716+02:00
+updated: 2019-05-13T12:08:50.129748+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -104,7 +104,7 @@ imports:
   - encoders/builtin
   - util
 - name: github.com/nats-io/go-nats-streaming
-  version: 4366d43a0648b4997ed32080f937e8702ab86c48
+  version: 7cd94c239033c0405a43454be55a0810d3a3ca89
   subpackages:
   - pb
 - name: github.com/nats-io/nuid
