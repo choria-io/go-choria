@@ -7,19 +7,19 @@ import (
 	"github.com/choria-io/go-choria/srvcache"
 )
 
-func (srv *Instance) initialConnect(ctx context.Context) error {
+func (srv *Instance) initialConnect(ctx context.Context) (err error) {
 	if ctx.Err() != nil {
 		return fmt.Errorf("Existing on shut down")
 	}
 
-	tempsrv, err := srv.brokerUrls(ctx)
-	if err != nil {
-		return fmt.Errorf("Could not find initial NATS servers: %s", err)
-	}
-
-	srv.log.Infof("Initial servers: %#v", tempsrv)
-
 	brokers := func() ([]srvcache.Server, error) {
+		tempsrv, err := srv.brokerUrls(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("Could not find Choria Network Brokers: %s", err)
+		}
+
+		srv.log.Infof("Choria Network Brokers: %#v", tempsrv)
+
 		return tempsrv, nil
 	}
 
