@@ -273,12 +273,12 @@ func (s *FileSecurity) VerifyStringSignature(str string, sig []byte, identity st
 func (s *FileSecurity) PrivilegedVerifyByteSignature(dat []byte, sig []byte, identity string) bool {
 	var candidates []string
 
-	for _, candidate := range s.privilegedCerts() {
-		candidates = append(candidates, candidate)
+	if identity != "" && s.cachedCertExists(identity) {
+		candidates = append(candidates, identity)
 	}
 
-	if identity != "" {
-		candidates = append(candidates, identity)
+	for _, candidate := range s.privilegedCerts() {
+		candidates = append(candidates, candidate)
 	}
 
 	for _, candidate := range candidates {
@@ -291,7 +291,7 @@ func (s *FileSecurity) PrivilegedVerifyByteSignature(dat []byte, sig []byte, ide
 	return false
 }
 
-// PrivilegedVerifyStringSignature verifies if the signature received is from any of the privilged certs or the given identity
+// PrivilegedVerifyStringSignature verifies if the signature received is from any of the privileged certs or the given identity
 func (s *FileSecurity) PrivilegedVerifyStringSignature(dat string, sig []byte, identity string) bool {
 	return s.PrivilegedVerifyByteSignature([]byte(dat), sig, identity)
 }
@@ -402,7 +402,7 @@ func (s *FileSecurity) privilegedCerts() []string {
 		if !info.IsDir() {
 			cert := []byte(strings.TrimSuffix(filepath.Base(path), ".pem"))
 
-			if MatchAnyRegex(cert, s.conf.PrivilegedUsers) {
+			if s.isPrivilegedCert(cert) {
 				certs = append(certs, string(cert))
 			}
 		}
@@ -413,6 +413,10 @@ func (s *FileSecurity) privilegedCerts() []string {
 	sort.Strings(certs)
 
 	return certs
+}
+
+func (s *FileSecurity) isPrivilegedCert(cert []byte) bool {
+	return MatchAnyRegex(cert, s.conf.PrivilegedUsers)
 }
 
 // VerifyCertificate verifies a certificate is signed with the configured CA and if
@@ -617,6 +621,17 @@ func (s *FileSecurity) publicCertExists() bool {
 
 func (s *FileSecurity) caExists() bool {
 	_, err := os.Stat(s.caPath())
+
+	return !os.IsNotExist(err)
+}
+
+func (s *FileSecurity) cachedCertExists(identity string) bool {
+	f, err := s.cachePath(identity)
+	if err != nil {
+		return false
+	}
+
+	_, err = os.Stat(f)
 
 	return !os.IsNotExist(err)
 }
