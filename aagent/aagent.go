@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -168,10 +169,44 @@ func (a *AAgent) watchSource(ctx context.Context, wg *sync.WaitGroup) {
 
 	tick := time.NewTicker(10 * time.Second)
 
+	// loads what is found on disk
 	loadf := func() {
-		err := a.loadFromSource(ctx, wg)
+		if a.source == "" {
+			return
+		}
+
+		_, err := os.Stat(a.source)
+		if err != nil {
+			a.logger.Debugf("Autonomous Agent source directory %s does not exist, skipping", a.source)
+			return
+		}
+
+		err = a.loadFromSource(ctx, wg)
 		if err != nil {
 			a.logger.Errorf("Could not load Autonomous Agents: %s", err)
+		}
+	}
+
+	// deletes machines not on disk anymore
+	cleanf := func() {
+		targets := []string{}
+
+		a.Lock()
+		for _, m := range a.machines {
+			_, err := os.Stat(m.path)
+			if err != nil {
+				a.logger.Infof("Machine %s does not exist anymore in %s, terminating", m.machine.Name(), m.path)
+				targets = append(targets, m.path)
+				m.machine.Stop()
+			}
+		}
+		a.Unlock()
+
+		for _, p := range targets {
+			err := a.deleteByPath(p)
+			if err != nil {
+				a.logger.Errorf("Could not terminate machine previously in %s: %s", p, err)
+			}
 		}
 	}
 
@@ -180,6 +215,7 @@ func (a *AAgent) watchSource(ctx context.Context, wg *sync.WaitGroup) {
 	for {
 		select {
 		case <-tick.C:
+			cleanf()
 			loadf()
 
 		case <-ctx.Done():
