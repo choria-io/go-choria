@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/shlex"
 	"github.com/pkg/errors"
 )
 
@@ -238,7 +239,13 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	timeoutCtx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(timeoutCtx, w.command)
+	splitcmd, err := shlex.Split(w.command)
+	if err != nil {
+		w.machine.Errorf(w.name, "Exec watcher %s failed: %s", w.command, err)
+		return Error, err
+	}
+
+	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], splitcmd[1:]...)
 	cmd.Env = append(cmd.Env, fmt.Sprintf("NACHINE_WATCHER_NAME=%s", w.name))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("NACHINE_NAME=%s", w.machine.Name()))
 	cmd.Dir = w.machine.Directory()
