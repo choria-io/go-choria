@@ -529,7 +529,7 @@ var _ = Describe("FileSSL", func() {
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(cpath)
 
-			// deliberatly change the file so that we can figure out if its being changed
+			// deliberately change the file so that we can figure out if its being changed
 			// I'd check time stamps but they are per second so not much use
 			err = ioutil.WriteFile(cpath, []byte("too many secrets"), os.FileMode(int(0644)))
 			Expect(err).ToNot(HaveOccurred())
