@@ -9,7 +9,7 @@ import:
 - package: github.com/choria-io/go-network-broker
   version: 1.2.1
 - package: github.com/choria-io/go-security
-  version: 0.3.0
+  version: ec20f35439f5faf9acae87641c53f5d56993f2ea
 - package: github.com/choria-io/go-updater
   version: 0.0.2
 - package: github.com/choria-io/go-client
