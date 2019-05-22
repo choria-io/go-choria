@@ -619,7 +619,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 			continue
 		}
 
-		conn.logger.Debugf("Connected to %s", conn.nats.ConnectedUrl())
+		conn.logger.Infof("Connected to %s", conn.nats.ConnectedUrl())
 
 		break
 	}
@@ -655,7 +655,6 @@ func (conn *Connection) Close() {
 			conn.logger.Warnf("Could not unsubscribe from %s: %s", s, err)
 		}
 	}
-
 
 	conn.Flush()
 

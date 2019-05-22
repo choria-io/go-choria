@@ -3,6 +3,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/choria-io/go-choria/srvcache"
 )
@@ -18,7 +19,12 @@ func (srv *Instance) initialConnect(ctx context.Context) (err error) {
 			return nil, fmt.Errorf("Could not find Choria Network Brokers: %s", err)
 		}
 
-		srv.log.Infof("Choria Network Brokers: %#v", tempsrv)
+		list := []string{}
+		for _, s := range tempsrv {
+			list = append(list, s.String())
+		}
+
+		srv.log.Infof("Choria Network Brokers: %#s", strings.Join(list, ", "))
 
 		return tempsrv, nil
 	}
