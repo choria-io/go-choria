@@ -338,10 +338,23 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 		return err
 	}
 
-	if !s.conf.AlwaysOverwriteCache {
-		_, err = os.Stat(certfile)
-		if err == nil {
+	_, err = os.Stat(certfile)
+	if err == nil {
+		if !s.conf.AlwaysOverwriteCache {
 			s.log.Debugf("Already have a certificate in %s, refusing to overwrite with a new one", certfile)
+			return nil
+		}
+
+		// it exists, lets check if its required to update it, quicker to just update it but that
+		// risks failing when disks are full etc this attempts that risky step only when needed
+		rsum := sha256.Sum256([]byte(data))
+		fsum, err := fsha256(certfile)
+		if err != nil {
+			return fmt.Errorf("could not determine sha256 of current certificate in %s: %s", certfile, err)
+		}
+
+		if fmt.Sprintf("%x", fsum) == fmt.Sprintf("%x", rsum) {
+			s.log.Debugf("Received certificate is the same as cached certificate %s, not updating cache", certfile)
 			return nil
 		}
 	}

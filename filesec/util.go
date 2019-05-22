@@ -1,6 +1,8 @@
 package filesec
 
 import (
+	"crypto/sha256"
+	"io"
 	"os"
 	"regexp"
 	"runtime"
@@ -37,4 +39,20 @@ func runtimeOs() string {
 	}
 
 	return runtime.GOOS
+}
+
+func fsha256(file string) ([]byte, error) {
+	f, err := os.Open(file)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	h := sha256.New()
+	_, err = io.Copy(h, f)
+	if err != nil {
+		return nil, err
+	}
+
+	return h.Sum(nil), nil
 }
