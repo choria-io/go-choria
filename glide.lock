@@ -1,5 +1,5 @@
-hash: e0f48d2ca3d8c22acaabb8b3d600df0086217c4f3d7341ad80b7f215ae81291c
-updated: 2019-05-13T12:08:50.129748+02:00
+hash: 44a4336374a809db217ce0c4ad82bdedd49bde10f87b488439bd536d88561b15
+updated: 2019-05-22T11:36:32.687084+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -83,6 +83,8 @@ imports:
   version: 52132540909e117f2b98b0694383dc0ab1e1deca
   subpackages:
   - proto
+- name: github.com/google/shlex
+  version: c34317bd91bf98fab745d77b03933cf8769299fe
 - name: github.com/konsorten/go-windows-terminal-sequences
   version: 5c8c8bd35d3832f5d134ae1e1e375b69a4d25242
 - name: github.com/looplab/fsm
@@ -170,9 +172,11 @@ imports:
 - name: github.com/sirupsen/logrus
   version: e1e72e9de974bd926e5c56f83753fba2df402ce5
 - name: github.com/tidwall/gjson
-  version: 5a96cfda705e1762dc0671e26b0b78925ad97e29
+  version: eee0b6226f0d1db2675a176fdfaa8419bcad4ca8
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
+- name: github.com/tidwall/pretty
+  version: 1166b9ac2b65e46a43d8618d30d1554f4652d49b
 - name: github.com/xeipuuv/gojsonpointer
   version: 4e3ac2762d5f479393488629ee9370b50873b3a6
 - name: github.com/xeipuuv/gojsonreference
@@ -182,7 +186,7 @@ imports:
 - name: go.uber.org/atomic
   version: df976f2515e274675050de7b3f42545de80594fd
 - name: golang.org/x/crypto
-  version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
+  version: 22d7a77e9e5f409e934ed268692e56707cd169e5
   subpackages:
   - bcrypt
   - blowfish
@@ -195,7 +199,7 @@ imports:
   - html/atom
   - html/charset
 - name: golang.org/x/sys
-  version: f7928cfef4d09d1b080aa2b6fd3ca9ba1567c733
+  version: a5b02f93d862f065920dd6a40dddc66b60d0dec4
   subpackages:
   - unix
   - windows
