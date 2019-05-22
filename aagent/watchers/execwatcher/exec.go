@@ -56,6 +56,7 @@ type Watcher struct {
 	previousRunTime         time.Duration
 	lastAnnounce            time.Time
 	timeout                 time.Duration
+	environment             []string
 	suppressSuccessAnnounce bool
 
 	sync.Mutex
@@ -70,6 +71,7 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		machine:          machine,
 		statechg:         make(chan struct{}, 1),
 		interval:         time.Second,
+		environment:      []string{},
 		announceInterval: ai,
 	}
 
@@ -128,6 +130,14 @@ func (w *Watcher) setProperties(p map[string]interface{}) error {
 		w.suppressSuccessAnnounce, ok = suppress.(bool)
 		if !ok {
 			return fmt.Errorf("suppress_announce should be boolean")
+		}
+	}
+
+	env, ok := p["environment"]
+	if ok {
+		w.environment, ok = env.([]string)
+		if !ok {
+			return fmt.Errorf("environment should be a list of strings")
 		}
 	}
 
@@ -248,6 +258,11 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], splitcmd[1:]...)
 	cmd.Env = append(cmd.Env, fmt.Sprintf("NACHINE_WATCHER_NAME=%s", w.name))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("NACHINE_NAME=%s", w.machine.Name()))
+
+	for _, e := range w.environment {
+		cmd.Env = append(cmd.Env, e)
+	}
+
 	cmd.Dir = w.machine.Directory()
 
 	output, err := cmd.CombinedOutput()
