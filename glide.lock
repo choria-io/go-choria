@@ -1,5 +1,5 @@
-hash: 66eb053be7e4fe16006d65ee00faecf618745519f632616cc3e6f50d3751438b
-updated: 2019-05-22T13:07:30.058723+02:00
+hash: 0f6d0cfdf286ac287277bb22b37d79ce0982e433daf80da731e405b78ba47437
+updated: 2019-05-23T19:31:18.49003+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -29,7 +29,7 @@ imports:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-security
-  version: ec20f35439f5faf9acae87641c53f5d56993f2ea
+  version: 20b0225a2d5503d1a583518cea788902be351cb0
   subpackages:
   - filesec
   - puppetsec
@@ -47,7 +47,7 @@ imports:
   - regex
   - shellsafe
 - name: github.com/choria-io/mcorpc-agent-provider
-  version: fe7fdf323d6bc270fb56fe32418bb1bbe2fec518
+  version: d2470e28440e64a4fce5ab45d50e0389e4efb559
   subpackages:
   - mcorpc
   - mcorpc/audit

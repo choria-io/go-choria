@@ -9,7 +9,7 @@ import:
 - package: github.com/choria-io/go-network-broker
   version: 1.2.1
 - package: github.com/choria-io/go-security
-  version: ec20f35439f5faf9acae87641c53f5d56993f2ea
+  version: 0.4.0
 - package: github.com/choria-io/go-updater
   version: 0.0.2
 - package: github.com/choria-io/go-client
@@ -17,7 +17,7 @@ import:
   subpackages:
   - client
 - package: github.com/choria-io/mcorpc-agent-provider
-  version: fe7fdf323d6bc270fb56fe32418bb1bbe2fec518
+  version: 0.4.0
   subpackages:
   - mcorpc
 - package: github.com/choria-io/provisioning-agent
