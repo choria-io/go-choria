@@ -1,5 +1,5 @@
-hash: 0f6d0cfdf286ac287277bb22b37d79ce0982e433daf80da731e405b78ba47437
-updated: 2019-05-23T19:31:18.49003+02:00
+hash: e168bba9dc4878d441009c9752641def9f3d68a9fd72eb21f1bbf0a799e4bbdc
+updated: 2019-05-23T19:39:26.734205+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -58,7 +58,7 @@ imports:
   - mcorpc/golang/rpcutil
   - mcorpc/ruby
 - name: github.com/choria-io/provisioning-agent
-  version: a0ed5f38d6d4633a008f8ceb38443041dcebbffa
+  version: 38d1a63e87497f4f5703b941f688144d9fa23e1d
   subpackages:
   - agent
 - name: github.com/ghodss/yaml
