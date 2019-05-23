@@ -186,14 +186,15 @@ func (s *PuppetSecurity) reinit() error {
 	var err error
 
 	fc := filesec.Config{
-		AllowList:        s.conf.AllowList,
-		DisableTLSVerify: s.conf.DisableTLSVerify,
-		PrivilegedUsers:  s.conf.PrivilegedUsers,
-		CA:               s.caPath(),
-		Cache:            s.certCacheDir(),
-		Certificate:      s.publicCertPath(),
-		Key:              s.privateKeyPath(),
-		Identity:         s.conf.Identity,
+		AllowList:            s.conf.AllowList,
+		DisableTLSVerify:     s.conf.DisableTLSVerify,
+		PrivilegedUsers:      s.conf.PrivilegedUsers,
+		CA:                   s.caPath(),
+		Cache:                s.certCacheDir(),
+		Certificate:          s.publicCertPath(),
+		Key:                  s.privateKeyPath(),
+		Identity:             s.conf.Identity,
+		AlwaysOverwriteCache: s.conf.AlwaysOverwriteCache,
 	}
 
 	s.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(s.log))
