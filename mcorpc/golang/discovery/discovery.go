@@ -54,8 +54,10 @@ func (da *Agent) HandleMessage(ctx context.Context, msg *choria.Message, request
 	}
 
 	if strings.Contains(msg.Payload, "ping") {
+		da.log.Infof("Handling message %s for discovery#ping from %s", msg.RequestID, request.CallerID())
 		reply.Body = []byte("pong")
 	} else {
+		da.log.Errorf("Received unknown discovery message %s from %s", msg.RequestID, request.CallerID())
 		reply.Error = fmt.Errorf("Unknown request: %s", msg.Payload)
 	}
 
