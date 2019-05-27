@@ -8,11 +8,6 @@ import (
 
 var _ = Describe("Options", func() {
 	Describe("Validate", func() {
-		It("Should detect missing components", func() {
-			opt := options{}
-			Expect(opt.Validate()).To(MatchError("needs a component"))
-		})
-
 		It("Should detect missing connectors", func() {
 			opt := options{
 				Component: "ginkgo",

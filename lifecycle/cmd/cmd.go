@@ -48,7 +48,7 @@ func Run() {
 	viewcmd.Flag("type", "Limits the events to a particular type").EnumVar(&typeFilter, lifecycle.EventTypeNames()...)
 
 	tallycmd = app.Command("tally", "Record lifecycle events and report metrics to Prometheus")
-	tallycmd.Flag("component", "Component to tally").Required().StringVar(&componentFilter)
+	tallycmd.Flag("component", "Component to tally").StringVar(&componentFilter)
 	tallycmd.Flag("port", "Port to listen on").Default("8080").IntVar(&port)
 	tallycmd.Flag("prefix", "Prefix for statistic keys").StringVar(&prefix)
 

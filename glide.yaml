@@ -1,9 +1,7 @@
 package: github.com/choria-io/go-lifecycle
 import:
 - package: github.com/choria-io/go-choria
-  version: 0.9.0
-  subpackages:
-  - choria
+  version: 0.11.0
 - package: github.com/tidwall/gjson
 - package: github.com/pkg/errors
   version: ^0.8.0
