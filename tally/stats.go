@@ -39,6 +39,11 @@ func (r *Recorder) createStats() {
 		Help: "The time taken to process events",
 	}, []string{"component"})
 
+	r.transitionEvent = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: fmt.Sprintf("%s_machine_transition", r.options.StatPrefix),
+		Help: "Machine state transition",
+	}, []string{"machine", "version", "transition", "from", "to"})
+
 	if registerStats {
 		prometheus.MustRegister(r.okEvents)
 		prometheus.MustRegister(r.badEvents)
@@ -46,5 +51,6 @@ func (r *Recorder) createStats() {
 		prometheus.MustRegister(r.eventsTally)
 		prometheus.MustRegister(r.maintTime)
 		prometheus.MustRegister(r.processTime)
+		prometheus.MustRegister(r.transitionEvent)
 	}
 }

@@ -1,5 +1,5 @@
-hash: 083567924062fa5311e7098983c479700929cb0aa0e696333aa9185dd586afd9
-updated: 2018-12-30T10:03:43.829370862+01:00
+hash: 92d101832740d2b93a5077fd998540f46ac653f7d8faff81eba16f6e6f8f40c9
+updated: 2019-05-27T15:10:39.911379+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -12,8 +12,12 @@ imports:
   subpackages:
   - quantile
 - name: github.com/choria-io/go-choria
-  version: a5d51011f80fd5c6e96b0fd5384c5518c7fff40e
+  version: 5e7ffa8c90be7113a9ae269ec0cbdeb4f7d3a24f
   subpackages:
+  - aagent/machine
+  - aagent/watchers
+  - aagent/watchers/execwatcher
+  - aagent/watchers/filewatcher
   - backoff
   - build
   - choria
@@ -30,7 +34,7 @@ imports:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-security
-  version: 75654ad2139b915791141ab172d0930bf024fec7
+  version: 20b0225a2d5503d1a583518cea788902be351cb0
   subpackages:
   - filesec
   - puppetsec
@@ -45,8 +49,13 @@ imports:
   - maxlength
   - regex
   - shellsafe
+- name: github.com/ghodss/yaml
+  version: 0ca9ea5df5451ffdf184b4428c902747c2c11cd7
+  subpackages:
+  - encoders/builtin
+  - util
 - name: github.com/gofrs/uuid
-  version: 7077aa61129615a0d7f45c49101cd011ab221c27
+  version: 6b08a5c5172ba18946672b49749cde22873dd7c2
 - name: github.com/golang/mock
   version: 8b2eeeb0ca5f56c78bec5efde9c4a21d9201126c
   subpackages:
@@ -56,8 +65,12 @@ imports:
   version: 52132540909e117f2b98b0694383dc0ab1e1deca
   subpackages:
   - proto
+- name: github.com/google/shlex
+  version: c34317bd91bf98fab745d77b03933cf8769299fe
 - name: github.com/konsorten/go-windows-terminal-sequences
   version: 5c8c8bd35d3832f5d134ae1e1e375b69a4d25242
+- name: github.com/looplab/fsm
+  version: 84b5307469f859464403f80919467950a79de1b1
 - name: github.com/matttproud/golang_protobuf_extensions
   version: c12348ce28de40eed0136aa2b644d0ee0650e56c
   subpackages:
@@ -70,12 +83,13 @@ imports:
 - name: github.com/nats-io/nuid
   version: 28b996b57a46dd0c2aa3a3dc7fa8780878331d00
 - name: github.com/pkg/errors
-  version: 645ef00459ed84a119197bfb8d8205042c6df63d
+  version: ba968bfe8b2f7e042a574c888954fccecfa385b4
 - name: github.com/prometheus/client_golang
   version: 505eaef017263e299324067d40ca2c48f6a2cf50
   subpackages:
   - prometheus
   - prometheus/internal
+  - prometheus/promhttp
 - name: github.com/prometheus/client_model
   version: 5c3871d89910bfb32f5fcab2aa4b9ec68e65a99f
   subpackages:
@@ -93,11 +107,13 @@ imports:
   - nfs
   - xfs
 - name: github.com/sirupsen/logrus
-  version: bcd833dfe83d3cebad139e4a29ed79cb2318bf95
+  version: e1e72e9de974bd926e5c56f83753fba2df402ce5
 - name: github.com/tidwall/gjson
-  version: 081192fa2e471ddff3ec98a3cc04fecfd031ed57
+  version: eee0b6226f0d1db2675a176fdfaa8419bcad4ca8
 - name: github.com/tidwall/match
   version: 1731857f09b1f38450e2c12409748407822dc6be
+- name: github.com/tidwall/pretty
+  version: 1166b9ac2b65e46a43d8618d30d1554f4652d49b
 - name: github.com/xeipuuv/gojsonpointer
   version: 4e3ac2762d5f479393488629ee9370b50873b3a6
 - name: github.com/xeipuuv/gojsonreference
@@ -105,7 +121,7 @@ imports:
 - name: github.com/xeipuuv/gojsonschema
   version: f3a9dae5b19473510a3062802a98815f609ed747
 - name: golang.org/x/crypto
-  version: 9477e0b78b9ac3d0b03822fd95422e2fe07627cd
+  version: 22d7a77e9e5f409e934ed268692e56707cd169e5
   subpackages:
   - ssh/terminal
 - name: golang.org/x/net
@@ -116,11 +132,14 @@ imports:
   - html/atom
   - html/charset
 - name: golang.org/x/sys
-  version: f7928cfef4d09d1b080aa2b6fd3ca9ba1567c733
+  version: a5b02f93d862f065920dd6a40dddc66b60d0dec4
   subpackages:
   - unix
+  - windows
 - name: gopkg.in/alecthomas/kingpin.v2
   version: 947dcec5ba9c011838740e680966fd7087a71d0d
+- name: gopkg.in/yaml.v2
+  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183
 testImports:
 - name: github.com/hpcloud/tail
   version: a1dbeea552b7c8df4b542c66073e393de198a800
@@ -130,7 +149,7 @@ testImports:
   - watch
   - winfile
 - name: github.com/onsi/ginkgo
-  version: 2e1be8f7d90e9d3e3e58b0ce470f2f14d075406f
+  version: eea6ad008b96acdaa524f5b409513bf062b500ad
   subpackages:
   - config
   - internal/codelocation
@@ -150,7 +169,7 @@ testImports:
   - reporters/stenographer/support/go-isatty
   - types
 - name: github.com/onsi/gomega
-  version: 65fb64232476ad9046e57c26cd0bff3d3a8dc6cd
+  version: 90e289841c1ed79b7a598a7cd9959750cb5e89e2
   subpackages:
   - format
   - internal/assertion
@@ -187,5 +206,3 @@ testImports:
   version: c2828203cd70a50dcccfb2761f8b1f8ceef9a8e9
 - name: gopkg.in/tomb.v1
   version: c131134a1947e9afd9cecfe11f4c6dff0732ae58
-- name: gopkg.in/yaml.v2
-  version: 5420a8b6744d3b0345ab293f6fcba19c978f1183

@@ -2,13 +2,14 @@ package tally
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/choria"
 	lifecycle "github.com/choria-io/go-lifecycle"
-	"github.com/gofrs/uuid"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 )
@@ -26,12 +27,16 @@ type Recorder struct {
 	options  *options
 	observed map[string]*observation
 
+	// lifecycle
 	okEvents    *prometheus.CounterVec
 	badEvents   *prometheus.CounterVec
 	eventsTally *prometheus.GaugeVec
 	maintTime   *prometheus.SummaryVec
 	processTime *prometheus.SummaryVec
 	eventTypes  *prometheus.CounterVec
+
+	// transitions
+	transitionEvent *prometheus.CounterVec
 }
 
 type observation struct {
@@ -187,23 +192,47 @@ func (r *Recorder) maintenance() {
 	}
 }
 
-// Run starts listening for events and record statistics about it in prometheus
-func (r *Recorder) Run(ctx context.Context) error {
-	events := make(chan *choria.ConnectorMessage, 1000)
-	maintSched := time.NewTicker(time.Minute)
-	subid, err := uuid.NewV4()
+func (r *Recorder) processStateTransition(m *choria.ConnectorMessage) (err error) {
+	event := &machine.TransitionNotification{}
+
+	err = json.Unmarshal(m.Bytes(), event)
 	if err != nil {
-		return errors.Wrap(err, "could not create random subscription id")
+		return errors.Wrapf(err, "could not parse transition event")
 	}
 
-	err = r.options.Connector.QueueSubscribe(ctx, fmt.Sprintf("tally_%s_%s", r.options.Component, subid.String()), fmt.Sprintf("choria.lifecycle.event.*.%s", r.options.Component), "", events)
+	if event.Protocol != "io.choria.machine.v1.transition" {
+		return fmt.Errorf("unknown notification protocol %s", event.Protocol)
+	}
+
+	r.transitionEvent.WithLabelValues(event.Machine, event.Version, event.Transition, event.FromState, event.ToState).Inc()
+
+	return nil
+}
+
+// Run starts listening for events and record statistics about it in prometheus
+func (r *Recorder) Run(ctx context.Context) (err error) {
+	lifeEvents := make(chan *choria.ConnectorMessage, 100)
+	machineTransitions := make(chan *choria.ConnectorMessage, 100)
+
+	maintSched := time.NewTicker(time.Minute)
+	subid := choria.UniqueID()
+
+	if r.options.Component != "" {
+		r.options.Log.Warn("Component was not specified, disabling lifecycle tallies")
+		err = r.options.Connector.QueueSubscribe(ctx, fmt.Sprintf("tally_%s_%s", r.options.Component, subid), fmt.Sprintf("choria.lifecycle.event.*.%s", r.options.Component), "", lifeEvents)
+		if err != nil {
+			return errors.Wrap(err, "could not subscribe to lifecycle events")
+		}
+	}
+
+	err = r.options.Connector.QueueSubscribe(ctx, fmt.Sprintf("tally_transitions_%s", subid), "choria.machine.transition", "", machineTransitions)
 	if err != nil {
-		return errors.Wrap(err, "could not subscribe")
+		return errors.Wrap(err, "could not subscribe to machine transition events")
 	}
 
 	for {
 		select {
-		case e := <-events:
+		case e := <-lifeEvents:
 			event, err := lifecycle.NewFromJSON(e.Data)
 			if err != nil {
 				r.options.Log.Errorf("could not process event: %s", err)
@@ -213,7 +242,12 @@ func (r *Recorder) Run(ctx context.Context) error {
 			err = r.process(event)
 			if err != nil {
 				r.options.Log.Errorf("could not process event from %s: %s", event.Identity(), err)
-				continue
+			}
+
+		case t := <-machineTransitions:
+			err = r.processStateTransition(t)
+			if err != nil {
+				r.options.Log.Errorf("could not process transition event: %s", err)
 			}
 
 		case <-maintSched.C:
