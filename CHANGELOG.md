@@ -1,5 +1,15 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2019/05/27|      |Release 0.11.0                                                                                           |
+|2019/05/23|      |Log discovery requests in a similar manner to RPC requests via `mcorpc-agent-provider` `0.4.0`           |
+|2019/05/23|      |Fix puppet provider support for `SecurityAlwaysOverwriteCache` via `go-security` `0.4.0`                 |
+|2019/05/23|      |Improve excessive logging when privilged certificates are used via `go-security` `0.4.0`                 |
+|2019/05/23|      |Only write certificates on change if `SecurityAlwaysOverwriteCache` is set via `go-security` `0.4.0`     |
+|2019/05/22|554   |Retry SRV lookups on reconnect attempts                                                                  |
+|2019/05/27|563   |Support Choria Autonomous Agents                                                                         |
+|2019/03/21|557   |Force puppet environment to `production` to avoid failures about missing environment directories         |
+|2019/03/19|557   |Improve error messages logged when invoking `puppet` to retrieve setting values fail                     |
+|2019/03/15|555   |Add a basic utility to assist with creating deep monitoring `choria tool status`                         |
 |2019/03/04|      |Release 0.10.1                                                                                           |
 |2019/02/25|      |Resolve broker instability on large networks via `go-network-broker#19`                                  |
 |2019/01/23|      |Release 0.10.0                                                                                           |
