@@ -18,6 +18,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/watchers"
 	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/filewatcher"
+	"github.com/choria-io/go-choria/aagent/watchers/schedulewatcher"
 	"github.com/ghodss/yaml"
 
 	"github.com/looplab/fsm"
@@ -103,6 +104,16 @@ func ParseWatcherState(state []byte) (n WatcherStateNotification, err error) {
 		}
 
 		return notification, nil
+
+	case "io.choria.machine.watcher.schedule.v1.state":
+		notification := &schedulewatcher.StateNotification{}
+		err = json.Unmarshal(state, notification)
+		if err != nil {
+			return nil, errors.Wrapf(err, "invalid schedule watcher notification received: %s")
+		}
+
+		return notification, nil
+
 	}
 
 	return nil, fmt.Errorf("unknown watcher state %s", proto)
