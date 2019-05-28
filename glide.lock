@@ -1,5 +1,5 @@
-hash: e168bba9dc4878d441009c9752641def9f3d68a9fd72eb21f1bbf0a799e4bbdc
-updated: 2019-05-23T19:39:26.734205+02:00
+hash: b6c4f35fb3a65c6e0427c35a91d6bd71dcaa5d04a979e933afedf02ee7144bcc
+updated: 2019-05-27T16:19:34.797222+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -169,6 +169,8 @@ imports:
   - internal/util
   - nfs
   - xfs
+- name: github.com/robfig/cron
+  version: b41be1df696709bb6395fe435af20370037c0b4c
 - name: github.com/sirupsen/logrus
   version: e1e72e9de974bd926e5c56f83753fba2df402ce5
 - name: github.com/tidwall/gjson

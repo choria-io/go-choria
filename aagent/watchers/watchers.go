@@ -8,6 +8,7 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/filewatcher"
+	"github.com/choria-io/go-choria/aagent/watchers/schedulewatcher"
 	"github.com/pkg/errors"
 )
 
@@ -117,6 +118,18 @@ func (m *Manager) configureWatchers() (err error) {
 			if err != nil {
 				return err
 			}
+
+		case "schedule":
+			watcher, err := schedulewatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
+			if err != nil {
+				return errors.Wrapf(err, "could not create schedule watcher '%s'", w.Name)
+			}
+
+			err = m.AddWatcher(watcher)
+			if err != nil {
+				return err
+			}
+
 		default:
 			return fmt.Errorf("unknown watcher '%s'", w.Type)
 		}
