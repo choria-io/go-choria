@@ -43,7 +43,8 @@ func (c *mRunCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	m.SetIdentity("cli")
 	m.RegisterNotifier(&console.Notifier{})
-	m.Start(ctx, wg)
+
+	<-m.Start(ctx, wg)
 
 	return nil
 }
