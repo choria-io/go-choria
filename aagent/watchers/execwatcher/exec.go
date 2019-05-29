@@ -70,7 +70,7 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		states:           states,
 		machine:          machine,
 		statechg:         make(chan struct{}, 1),
-		interval:         time.Second,
+		interval:         0,
 		environment:      []string{},
 		announceInterval: ai,
 	}
@@ -154,19 +154,36 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	w.machine.Infof(w.name, "exec watcher for %s starting", w.command)
-	tick := time.NewTicker(w.interval)
+
+	if w.interval != 0 {
+		wg.Add(1)
+		go w.intervalWatcher(ctx, wg)
+	}
 
 	for {
 		select {
 		case <-w.statechg:
 			w.performWatch(ctx)
 
+		case <-ctx.Done():
+			w.machine.Infof(w.name, "Stopping on context interrupt")
+			return
+		}
+	}
+}
+
+func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	tick := time.NewTicker(w.interval)
+
+	for {
+		select {
 		case <-tick.C:
 			w.performWatch(ctx)
 
 		case <-ctx.Done():
 			tick.Stop()
-			w.machine.Infof(w.name, "Stopping on context interrupt")
 			return
 		}
 	}
