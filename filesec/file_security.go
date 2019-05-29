@@ -323,7 +323,7 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	should, identity := s.shouldCacheClientCert(data, identity)
+	should, privileged, identity := s.shouldCacheClientCert(data, identity)
 	if !should {
 		return fmt.Errorf("certificate '%s' did not pass validation", identity)
 	}
@@ -364,7 +364,11 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 		return fmt.Errorf("could not cache client public certificate: %s", err.Error())
 	}
 
-	s.log.Infof("Cached certificate %s for %s", certfile, identity)
+	if privileged {
+		s.log.Warnf("Cached privileged certificate %s for %s", certfile, identity)
+	} else {
+		s.log.Infof("Cached certificate %s for %s", certfile, identity)
+	}
 
 	return nil
 }
@@ -660,14 +664,14 @@ func (s *FileSecurity) certCacheDir() string {
 // not want certificate for caller bob which is in fact signed by a privilged cert to end up cached
 // as bob, we so we determine the right name to use and pass that along back to the caller who then
 // use that to determine the cache path
-func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) (should bool, savename string) {
+func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) (should bool, privileged bool, savename string) {
 	// Checks if it was signed by the CA but without any name validation
 	if err := s.VerifyCertificate(data, ""); err != nil {
 		s.log.Warnf("Received certificate '%s' certificate did not pass verification: %s", name, err)
-		return false, name
+		return false, false, name
 	}
 
-	// Check if the certificate that would be validated is a privileged one, so we dont name validate that
+	// Check if the certificate that would be validated is a privileged one, so we don't name validate that
 	// we already know its signed by the right CA so we accept the privileged ones.
 	//
 	// At this point name is from the caller id but we need what is in the presented certificate
@@ -677,13 +681,12 @@ func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) (should b
 	privNames, err := s.certDNSNames(data)
 	if err != nil {
 		s.log.Warnf("Could not extract DNS Names from certificate")
-		return false, name
+		return false, false, name
 	}
 
 	for _, privName := range privNames {
 		if MatchAnyRegex([]byte(privName), s.conf.PrivilegedUsers) {
-			s.log.Warnf("Caching privileged certificate %s", privName)
-			return true, privName
+			return true, true, privName
 		}
 	}
 
@@ -691,16 +694,16 @@ func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) (should b
 	// is in the cert since at this point it must match the caller id name
 	if err := s.VerifyCertificate(data, name); err != nil {
 		s.log.Warnf("Received certificate '%s' did not pass verification: %s", name, err)
-		return false, name
+		return false, false, name
 	}
 
 	// Finally if its on the allow list
 	if MatchAnyRegex([]byte(name), s.conf.AllowList) {
-		return true, name
+		return true, false, name
 	}
 
 	s.log.Warnf("Received certificate '%s' does not match the allowed list '%s'", name, s.conf.AllowList)
-	return false, name
+	return false, false, name
 }
 
 func (s *FileSecurity) certDNSNames(certpem []byte) (names []string, err error) {

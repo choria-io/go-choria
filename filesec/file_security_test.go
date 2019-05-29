@@ -424,16 +424,18 @@ var _ = Describe("FileSSL", func() {
 			pd, err := ioutil.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
-			should, name := prov.shouldCacheClientCert(pd, "foo")
+			should, priv, name := prov.shouldCacheClientCert(pd, "foo")
 			Expect(should).To(BeFalse())
+			Expect(priv).To(BeFalse())
 			Expect(name).To(Equal("foo"))
 
 			pub := prov.publicCertPath()
 			pd, err = ioutil.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
-			should, name = prov.shouldCacheClientCert(pd, "rip.mcollective")
+			should, priv, name = prov.shouldCacheClientCert(pd, "rip.mcollective")
 			Expect(should).To(BeTrue())
+			Expect(priv).To(BeFalse())
 			Expect(name).To(Equal("rip.mcollective"))
 		})
 
@@ -441,8 +443,9 @@ var _ = Describe("FileSSL", func() {
 			pd, err := ioutil.ReadFile(filepath.Join("..", "testdata", "good", "certs", "1.privileged.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
-			should, name := prov.shouldCacheClientCert(pd, "bob")
+			should, priv, name := prov.shouldCacheClientCert(pd, "bob")
 			Expect(should).To(BeTrue())
+			Expect(priv).To(BeTrue())
 			Expect(name).To(Equal("1.privileged.mcollective"))
 		})
 
@@ -452,8 +455,9 @@ var _ = Describe("FileSSL", func() {
 			pd, err := ioutil.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
-			should, name := prov.shouldCacheClientCert(pd, "bob")
+			should, priv, name := prov.shouldCacheClientCert(pd, "bob")
 			Expect(should).To(BeFalse())
+			Expect(priv).To(BeFalse())
 			Expect(name).To(Equal("bob"))
 		})
 
@@ -464,8 +468,9 @@ var _ = Describe("FileSSL", func() {
 			pd, err := ioutil.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
-			should, name := prov.shouldCacheClientCert(pd, "rip.mcollective")
+			should, priv, name := prov.shouldCacheClientCert(pd, "rip.mcollective")
 			Expect(should).To(BeFalse())
+			Expect(priv).To(BeFalse())
 			Expect(name).To(Equal("rip.mcollective"))
 		})
 
@@ -475,8 +480,9 @@ var _ = Describe("FileSSL", func() {
 			pd, err := ioutil.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
-			should, name := prov.shouldCacheClientCert(pd, "rip.mcollective")
+			should, priv, name := prov.shouldCacheClientCert(pd, "rip.mcollective")
 			Expect(should).To(BeTrue())
+			Expect(priv).To(BeFalse())
 			Expect(name).To(Equal("rip.mcollective"))
 		})
 	})
