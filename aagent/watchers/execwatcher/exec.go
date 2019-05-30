@@ -133,11 +133,20 @@ func (w *Watcher) setProperties(p map[string]interface{}) error {
 		}
 	}
 
-	env, ok := p["environment"]
+	environment, ok := p["environment"]
 	if ok {
-		w.environment, ok = env.([]string)
+		envs, ok := environment.([]interface{})
 		if !ok {
 			return fmt.Errorf("environment should be a list of strings")
+		}
+
+		for _, env := range envs {
+			val, ok := env.(string)
+			if !ok {
+				return fmt.Errorf("environment should be a list of strings")
+			}
+
+			w.environment = append(w.environment, val)
 		}
 	}
 
