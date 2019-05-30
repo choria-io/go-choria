@@ -1,5 +1,5 @@
-hash: b6c4f35fb3a65c6e0427c35a91d6bd71dcaa5d04a979e933afedf02ee7144bcc
-updated: 2019-05-27T16:19:34.797222+02:00
+hash: 1eeafcdb71dbf45a31c345de3fd9a32f73696c45495cedcbe82200cbebe31117
+updated: 2019-05-29T14:46:30.512973+02:00
 imports:
 - name: github.com/alecthomas/template
   version: a0175ee3bccc567396460bf5acd36800cb10c49c
@@ -29,7 +29,7 @@ imports:
   - protocol
   - protocol/v1
 - name: github.com/choria-io/go-security
-  version: 20b0225a2d5503d1a583518cea788902be351cb0
+  version: 3851079b6bbbead10786eb8dd53e394b39631f68
   subpackages:
   - filesec
   - puppetsec
