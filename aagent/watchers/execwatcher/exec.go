@@ -3,6 +3,7 @@ package execwatcher
 import (
 	"context"
 	"fmt"
+	"os"
 	"os/exec"
 	"sync"
 	"time"
@@ -207,7 +208,7 @@ func (w *Watcher) performWatch(ctx context.Context) {
 }
 
 func (w *Watcher) handleCheck(s State, err error) error {
-	w.machine.Debugf(w.name, "handling check for %s %v %v", w.command, s, err)
+	w.machine.Debugf(w.name, "handling check for %s %s %v", w.command, stateNames[s], err)
 
 	w.Lock()
 	w.previous = s
@@ -282,8 +283,9 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	}
 
 	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], splitcmd[1:]...)
-	cmd.Env = append(cmd.Env, fmt.Sprintf("NACHINE_WATCHER_NAME=%s", w.name))
-	cmd.Env = append(cmd.Env, fmt.Sprintf("NACHINE_NAME=%s", w.machine.Name()))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machine.Name()))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s:%s", os.Getenv("PATH"), w.machine.Directory()))
 
 	for _, e := range w.environment {
 		cmd.Env = append(cmd.Env, e)
