@@ -85,29 +85,13 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 	return w, nil
 }
 
-func (w *Watcher) handleState() error {
-	if !w.shouldCheck() {
-		return nil
-	}
-
-	w.machine.NotifyWatcherState(w.name, w.CurrentState())
-
-	switch w.state {
-	case On:
-		return w.machine.Transition(w.successEvent)
-	case Off:
-		return w.machine.Transition(w.failEvent)
-	}
-
-	return nil
-}
-
 func (w *Watcher) watchSchedule(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for {
 		select {
 		case i := <-w.ctrq:
+			w.machine.Debugf(w.name, "Handling state change counter %v while ctr=%v", i, w.ctr)
 			w.Lock()
 
 			w.ctr = w.ctr + i
@@ -118,8 +102,10 @@ func (w *Watcher) watchSchedule(ctx context.Context, wg *sync.WaitGroup) {
 			}
 
 			if w.ctr == 0 {
+				w.machine.Debugf(w.name, "State going off due to ctr change to 0")
 				w.state = Off
 			} else {
+				w.machine.Debugf(w.name, "State going on due to ctr change of %v", i)
 				w.state = On
 			}
 
@@ -158,7 +144,7 @@ func (w *Watcher) watch() (err error) {
 			return w.machine.Transition(w.successEvent)
 
 		case Skipped:
-			// not doing anything when we arent eligable, regular announces happen
+			// not doing anything when we aren't eligable, regular announces happen
 
 		}
 
@@ -176,11 +162,7 @@ func (w *Watcher) watch() (err error) {
 		return notifyf()
 	}
 
-	if w.previousState != w.state {
-		return notifyf()
-	}
-
-	return nil
+	return notifyf()
 }
 
 func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {

@@ -136,7 +136,7 @@ func FromDir(dir string, manager WatcherManager) (m *Machine, err error) {
 		return nil, errors.Wrapf(err, "could not load machine.yaml")
 	}
 
-	m.directory = dir
+	m.directory, err = filepath.Abs(dir)
 
 	return m, err
 }
