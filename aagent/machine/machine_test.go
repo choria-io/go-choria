@@ -115,6 +115,7 @@ var _ = Describe("Aagent/Machine", func() {
 
 			manager.EXPECT().SetMachine(gomock.AssignableToTypeOf(&Machine{}))
 			machine, err = FromYAML("testdata/machine.yaml", manager)
+			Expect(err).ToNot(HaveOccurred())
 			manager.EXPECT().Run(gomock.AssignableToTypeOf(ctx), wg)
 
 			machine.SplayStart = 0
@@ -139,6 +140,7 @@ var _ = Describe("Aagent/Machine", func() {
 		It("Should return the current state", func() {
 			manager.EXPECT().SetMachine(gomock.AssignableToTypeOf(&Machine{}))
 			machine, err = FromYAML("testdata/machine.yaml", manager)
+			Expect(err).ToNot(HaveOccurred())
 			Expect(machine.State()).To(Equal("unknown"))
 		})
 	})
@@ -147,6 +149,7 @@ var _ = Describe("Aagent/Machine", func() {
 		It("Should initiate the event", func() {
 			manager.EXPECT().SetMachine(gomock.AssignableToTypeOf(&Machine{}))
 			machine, err = FromYAML("testdata/machine.yaml", manager)
+			Expect(err).ToNot(HaveOccurred())
 			machine.Transition("fire_1")
 			Expect(machine.State()).To(Equal("one"))
 			machine.RegisterNotifier(service)
