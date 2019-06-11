@@ -65,14 +65,15 @@ type Watcher struct {
 
 func New(machine Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (watcher *Watcher, err error) {
 	w := &Watcher{
-		name:             name,
-		successEvent:     successEvent,
-		failEvent:        failEvent,
-		states:           states,
-		machine:          machine,
-		statechg:         make(chan struct{}, 1),
-		interval:         0,
-		environment:      []string{},
+		name:         name,
+		successEvent: successEvent,
+		failEvent:    failEvent,
+		states:       states,
+		machine:      machine,
+		statechg:     make(chan struct{}, 1),
+		interval:     0,
+		environment:  []string{},
+
 		announceInterval: ai,
 	}
 
@@ -285,7 +286,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], splitcmd[1:]...)
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machine.Name()))
-	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s:%s", os.Getenv("PATH"), w.machine.Directory()))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s%s%s", os.Getenv("PATH"), string(os.PathListSeparator), w.machine.Directory()))
 
 	for _, e := range w.environment {
 		cmd.Env = append(cmd.Env, e)

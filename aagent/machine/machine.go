@@ -50,9 +50,10 @@ type Machine struct {
 	manifest   string
 	startTime  time.Time
 
-	manager   WatcherManager
-	fsm       *fsm.FSM
-	notifiers []NotificationService
+	manager     WatcherManager
+	fsm         *fsm.FSM
+	notifiers   []NotificationService
+	knownStates map[string]bool
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -164,6 +165,7 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 	m.directory = filepath.Dir(afile)
 	m.manifest = afile
 	m.instanceID = m.UniqueID()
+	m.knownStates = make(map[string]bool)
 
 	err = m.manager.SetMachine(m)
 	if err != nil {
@@ -300,6 +302,16 @@ func (m *Machine) Validate() error {
 		if err != nil {
 			return err
 		}
+
+		err = w.ValidateStates(m.KnownStates())
+		if err != nil {
+			return err
+		}
+
+		err = w.ValidateTransitions(m.KnownTransitions())
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -382,4 +394,49 @@ func (m *Machine) Transition(t string, args ...interface{}) error {
 // Can determines if a transition could be performed
 func (m *Machine) Can(t string) bool {
 	return m.fsm.Can(t)
+}
+
+// KnownTransitions is a list of known transition names
+func (m *Machine) KnownTransitions() []string {
+	transitions := make([]string, len(m.Transitions))
+
+	for i, t := range m.Transitions {
+		transitions[i] = t.Name
+	}
+
+	return transitions
+}
+
+// KnownStates is a list of all the known states in the Machine gathered by looking at initial state and all the states mentioned in transitions
+func (m *Machine) KnownStates() []string {
+	m.Lock()
+	defer m.Unlock()
+
+	lister := func() []string {
+		states := []string{}
+
+		for k := range m.knownStates {
+			states = append(states, k)
+		}
+
+		return states
+	}
+
+	if len(m.knownStates) > 0 {
+		return lister()
+	}
+
+	m.knownStates = make(map[string]bool)
+
+	m.knownStates[m.InitialState] = true
+
+	for _, t := range m.Transitions {
+		m.knownStates[t.Destination] = true
+
+		for _, e := range t.From {
+			m.knownStates[e] = true
+		}
+	}
+
+	return lister()
 }
