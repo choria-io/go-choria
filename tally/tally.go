@@ -164,6 +164,10 @@ func (r *Recorder) process(e lifecycle.Event) (err error) {
 }
 
 func (r *Recorder) maintenance() {
+	if r.options.Component == "" {
+		return
+	}
+
 	r.Lock()
 	defer r.Unlock()
 
