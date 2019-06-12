@@ -1,5 +1,14 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2019/06/12|      |Release 0.11.1                                                                                           |
+|2019/04/20|      |Support email SANs in client certificates via `go-security` `0.4.2`                                      |
+|2019/06/11|609   |Verify that only known transitions and states are mentioned in the machine specification                 |
+|2019/06/11|607   |Ensure the machine directory is in the `PATH`                                                            |
+|2019/05/30|605   |Fix `environment` handling for exec watchers                                                             |
+|2019/05/29|602   |Ensure machines are runable on the CLI                                                                   |
+|2019/05/29|599   |Support run-once exec watchers by setting `interval=0`                                                   |
+|2019/05/29|597   |Do not manage Autonomous Agents in provisioning mode                                                     |
+|2019/05/28|591   |Add a `scheduler` watcher for Autonomous Agents                                                          |
 |2019/05/27|      |Release 0.11.0                                                                                           |
 |2019/05/23|      |Log discovery requests in a similar manner to RPC requests via `mcorpc-agent-provider` `0.4.0`           |
 |2019/05/23|      |Fix puppet provider support for `SecurityAlwaysOverwriteCache` via `go-security` `0.4.0`                 |
