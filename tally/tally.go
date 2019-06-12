@@ -217,8 +217,9 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 	maintSched := time.NewTicker(time.Minute)
 	subid := choria.UniqueID()
 
-	if r.options.Component != "" {
+	if r.options.Component == "" {
 		r.options.Log.Warn("Component was not specified, disabling lifecycle tallies")
+	} else {
 		err = r.options.Connector.QueueSubscribe(ctx, fmt.Sprintf("tally_%s_%s", r.options.Component, subid), fmt.Sprintf("choria.lifecycle.event.*.%s", r.options.Component), "", lifeEvents)
 		if err != nil {
 			return errors.Wrap(err, "could not subscribe to lifecycle events")
