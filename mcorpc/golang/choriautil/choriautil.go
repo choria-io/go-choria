@@ -13,7 +13,7 @@ import (
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
-	nats "github.com/nats-io/go-nats"
+	nats "github.com/nats-io/nats.go"
 )
 
 type info struct {
@@ -156,7 +156,7 @@ func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 		Security:          "choria",
 		Connector:         "choria",
 		ClientVersion:     nats.Version,
-		ClientFlavour:     fmt.Sprintf("go-nats %s", runtime.Version()),
+		ClientFlavour:     fmt.Sprintf("nats.go %s", runtime.Version()),
 		ConnectedServer:   conn.ConnectedServer(),
 		FacterCommand:     agent.Choria.FacterCmd(),
 		FacterDomain:      domain,
