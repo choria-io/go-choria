@@ -9,16 +9,13 @@ require (
 	github.com/choria-io/go-network-broker v0.0.0-20190621153333-5d81be06fd98
 	github.com/choria-io/go-protocol v1.3.1
 	github.com/choria-io/go-security v0.4.3
-	github.com/choria-io/go-updater v0.0.3 // indirect
-	github.com/choria-io/mcorpc-agent-provider v0.0.0-20190621135845-c783df682aad
-	github.com/choria-io/provisioning-agent v0.0.0-20190417082802-38d1a63e8749 // indirect
+	github.com/choria-io/mcorpc-agent-provider v0.4.1
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang/mock v1.3.1
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
 	github.com/looplab/fsm v0.1.0
 	github.com/nats-io/nats-server/v2 v2.0.0
-	github.com/nats-io/nats-streaming-server v0.15.1 // indirect
 	github.com/nats-io/nats.go v1.8.1
 	github.com/nats-io/stan.go v0.5.0
 	github.com/onsi/ginkgo v1.8.0
