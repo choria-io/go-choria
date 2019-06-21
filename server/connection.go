@@ -24,7 +24,7 @@ func (srv *Instance) initialConnect(ctx context.Context) (err error) {
 			list = append(list, s.String())
 		}
 
-		srv.log.Infof("Choria Network Brokers: %#s", strings.Join(list, ", "))
+		srv.log.Infof("Choria Network Brokers: %#v", strings.Join(list, ", "))
 
 		return tempsrv, nil
 	}

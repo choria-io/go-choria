@@ -8,7 +8,7 @@ import (
 	context "context"
 	srvcache "github.com/choria-io/go-choria/srvcache"
 	gomock "github.com/golang/mock/gomock"
-	go_nats "github.com/nats-io/go-nats"
+	go_nats "github.com/nats-io/nats.go"
 	logrus "github.com/sirupsen/logrus"
 	reflect "reflect"
 )
