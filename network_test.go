@@ -80,16 +80,16 @@ var _ = Describe("Network Broker", func() {
 			Expect(srv.opts.Cluster.TLSTimeout).To(Equal(float64(2)))
 		})
 
-		It("Should support disabling TLS Verify", func() {
-			cfg.DisableTLSVerify = true
+		// It("Should support disabling TLS Verify", func() {
+		// 	cfg.DisableTLSVerify = true
 
-			fw, err = choria.NewWithConfig(cfg)
-			Expect(err).ToNot(HaveOccurred())
+		// 	fw, err = choria.NewWithConfig(cfg)
+		// 	Expect(err).ToNot(HaveOccurred())
 
-			srv, err = NewServer(fw, false)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(srv.opts.TLSVerify).To(BeFalse())
-		})
+		// 	srv, err = NewServer(fw, false)
+		// 	Expect(err).ToNot(HaveOccurred())
+		// 	Expect(srv.opts.TLSVerify).To(BeFalse())
+		// })
 
 		It("Should support disabling TLS", func() {
 			cfg.DisableTLS = true
