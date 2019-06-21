@@ -4,8 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/nats-io/gnatsd/server"
-	gnatsd "github.com/nats-io/gnatsd/server"
+	gnatsd "github.com/nats-io/nats-server/v2/server"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
@@ -75,7 +74,7 @@ func init() {
 	prometheus.MustRegister(subscriptionsGauge)
 }
 
-func (s *Server) getVarz() (*server.Varz, error) {
+func (s *Server) getVarz() (*gnatsd.Varz, error) {
 	return s.gnatsd.Varz(&gnatsd.VarzOptions{})
 }
 

@@ -13,7 +13,7 @@ import (
 	"github.com/choria-io/go-choria/config"
 	log "github.com/sirupsen/logrus"
 
-	gnatsd "github.com/nats-io/gnatsd/server"
+	gnatsd "github.com/nats-io/nats-server/v2/server"
 )
 
 // Server represents the Choria network broker server
@@ -70,21 +70,15 @@ func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
 
 	err = s.setupCluster()
 	if err != nil {
-		return s, fmt.Errorf("Could not setup Clustering: %s", err)
+		return s, fmt.Errorf("could not setup clustering: %s", err)
 	}
 
-	s.gnatsd = gnatsd.New(s.opts)
+	s.gnatsd, err = gnatsd.NewServer(s.opts)
+	if err != nil {
+		return s, fmt.Errorf("could not setup server: %s", err)
+	}
 
-	// We always supply true for debug here because in our logger
-	// we intercept a few debug logs that really should have been
-	// info or warning ones.  This will hopefully be able to go
-	// back to normal once nats-io/gnatsd#622 is fixed
-	//
-	// this does though disable a performance optimisation in the
-	// nats logging classes where they don't call debug at all when
-	// not needed but I imagine logrus does not have a huge bottleneck
-	// in that area so its probably safe
-	s.gnatsd.SetLogger(newLogger(), true, false)
+	s.gnatsd.SetLogger(newLogger(), s.opts.Debug, false)
 
 	return
 }

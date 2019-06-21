@@ -31,20 +31,6 @@ func (l Logger) Warnf(format string, v ...interface{}) {
 
 // Debugf logs at debug level
 func (l Logger) Debugf(format string, v ...interface{}) {
-	// this intercepts a few gnatsd debug messages that sould be higher and dispatch them somewhere more
-	// appropriate rather than debug.  This should hopefully go away once nats-io/gnatsd#622 is fixed
-	// otoh logging in natsd is basically everything is debug and on a big site debug will just overwhelm
-	// machines, so I suspect this pattern might stay for a while as I find more logs :(
-	if format == "Registering remote route %q" || format == "Trying to connect to route on %s" {
-		l.Noticef(format, v)
-		return
-	}
-
-	if format == "Detected duplicate remote route %q" || format == "Error flushing: %v" {
-		l.Errorf(format, v)
-		return
-	}
-
 	l.log.Debugf(format, v...)
 }
 
