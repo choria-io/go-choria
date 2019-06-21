@@ -69,12 +69,13 @@ var _ = Describe("Client/Filter", func() {
 		})
 	})
 
-	Describe("CompoundFilter", func() {
-		It("Should add each filter", func() {
-			CompoundFilter("foo", "/bar/", "baz", "")(pf)
-			Expect(pf.CompoundFilters()).To(Equal([]string{"foo", "/bar/", "baz"}))
-		})
-	})
+	// disabled while compound filters are not supported
+	// Describe("CompoundFilter", func() {
+	// 	It("Should add each filter", func() {
+	// 		CompoundFilter("foo", "/bar/", "baz", "")(pf)
+	// 		Expect(pf.CompoundFilters()).To(Equal([]string{"foo", "/bar/", "baz"}))
+	// 	})
+	// })
 
 	Describe("CombinedFilter", func() {
 		It("Should add each filter", func() {
