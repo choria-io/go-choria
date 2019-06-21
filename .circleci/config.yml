@@ -2,19 +2,19 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.10
+      - image: circleci/golang:1.12
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       MCOLLECTIVE_CERTNAME: rip.mcollective
+      GO111MODULE: "on"
 
     steps:
       - checkout
       - setup_remote_docker
-      - run: go get github.com/Masterminds/glide
+      - run: go mod vendor
       - run: go get github.com/onsi/ginkgo/ginkgo
-      - run: glide install
       - run: ginkgo -r -skipMeasurements
       - run: mkdir -p /tmp/workspace
       - run: cd .. ; tar -czf /tmp/workspace/go-choria.tgz go-choria
@@ -25,14 +25,14 @@ jobs:
 
   build_el6_64bit_rpms:
     docker:
-      - image: circleci/golang:1.9
+      - image: circleci/golang:1.12
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       PACKAGE: el6_64
       BUILD: foss
-      BUILDER: choria/packager:el6-go1.10
+      BUILDER: choria/packager:el6-go1.12
 
     steps: &std_build_steps
       - setup_remote_docker
@@ -73,105 +73,77 @@ jobs:
 
   build_el6_32bit_rpms:
     docker:
-      - image: circleci/golang:1.10
+      - image: circleci/golang:1.12
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       PACKAGE: el6_32
       BUILD: foss
-      BUILDER: choria/packager:el6-go1.10
-
-    steps:
-      *std_build_steps
-
-  build_el5_32bit_rpms:
-    docker:
-      - image: circleci/golang:1.9
-
-    working_directory: /go/src/github.com/choria-io/go-choria
-
-    environment:
-      PACKAGE: el5_32
-      BUILD: foss
-      BUILDER: choria/packager:el5-go1.10
-
-    steps:
-      *std_build_steps
-
-  build_el5_64bit_rpms:
-    docker:
-      - image: circleci/golang:1.10
-
-    working_directory: /go/src/github.com/choria-io/go-choria
-
-    environment:
-      PACKAGE: el5_64
-      BUILD: foss
-      BUILDER: choria/packager:el5-go1.10
+      BUILDER: choria/packager:el6-go1.12
 
     steps:
       *std_build_steps
 
   build_el7_64bit_rpms:
     docker:
-      - image: circleci/golang:1.9
+      - image: circleci/golang:1.12
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       PACKAGE: el7_64
       BUILD: foss
-      BUILDER: choria/packager:el7-go1.10
+      BUILDER: choria/packager:el7-go1.12
 
     steps:
       *std_build_steps
 
   build_xenial_64bit_debs:
     docker:
-      - image: circleci/golang:1.10
+      - image: circleci/golang:1.12
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       PACKAGE: xenial_64
       BUILD: foss
-      BUILDER: choria/packager:xenial-go1.10
+      BUILDER: choria/packager:xenial-go1.12
 
     steps:
       *std_build_steps
 
   build_stretch_64bit_debs:
     docker:
-      - image: circleci/golang:1.10
+      - image: circleci/golang:1.12
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       PACKAGE: stretch_64
       BUILD: foss
-      BUILDER: choria/packager:stretch-go1.10
+      BUILDER: choria/packager:stretch-go1.12
 
     steps:
       *std_build_steps
 
   build_bionic_64bit_debs:
     docker:
-      - image: circleci/golang:1.10
+      - image: circleci/golang:1.12
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       PACKAGE: bionic_64
       BUILD: foss
-      BUILDER: choria/packager:stretch-go1.10
+      BUILDER: choria/packager:stretch-go1.12
 
     steps:
       *std_build_steps
 
   gather_artifacts:
     docker:
-      - image: circleci/golang:1.10
+      - image: circleci/golang:1.12
 
     steps:
       - attach_workspace:
@@ -255,18 +227,6 @@ workflows:
             branches:
               ignore: /.*/
 
-      - build_el5_32bit_rpms:
-          filters:
-            *semver_only
-          requires:
-           - hold
-
-      - build_el5_64bit_rpms:
-          filters:
-            *semver_only
-          requires:
-           - hold
-
       - build_el6_32bit_rpms:
           filters:
             *semver_only
@@ -305,8 +265,6 @@ workflows:
 
       - gather_artifacts:
           requires:
-             - build_el5_32bit_rpms
-             - build_el5_64bit_rpms
              - build_el6_32bit_rpms
              - build_el6_64bit_rpms
              - build_el7_64bit_rpms

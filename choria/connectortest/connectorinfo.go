@@ -1,7 +1,7 @@
 package connectortest
 
 import (
-	nats "github.com/nats-io/go-nats"
+	nats "github.com/nats-io/nats.go"
 )
 
 type ConnectorInfo struct {

@@ -93,7 +93,7 @@ func ParseWatcherState(state []byte) (n WatcherStateNotification, err error) {
 		notification := &execwatcher.StateNotification{}
 		err = json.Unmarshal(state, notification)
 		if err != nil {
-			return nil, errors.Wrapf(err, "invalid exec watcher notification received: %s")
+			return nil, errors.Wrapf(err, "invalid exec watcher notification received")
 		}
 
 		return notification, nil
@@ -101,7 +101,7 @@ func ParseWatcherState(state []byte) (n WatcherStateNotification, err error) {
 		notification := &filewatcher.StateNotification{}
 		err = json.Unmarshal(state, notification)
 		if err != nil {
-			return nil, errors.Wrapf(err, "invalid file watcher notification received: %s")
+			return nil, errors.Wrapf(err, "invalid file watcher notification received")
 		}
 
 		return notification, nil
@@ -110,7 +110,7 @@ func ParseWatcherState(state []byte) (n WatcherStateNotification, err error) {
 		notification := &schedulewatcher.StateNotification{}
 		err = json.Unmarshal(state, notification)
 		if err != nil {
-			return nil, errors.Wrapf(err, "invalid schedule watcher notification received: %s")
+			return nil, errors.Wrapf(err, "invalid schedule watcher notification received")
 		}
 
 		return notification, nil

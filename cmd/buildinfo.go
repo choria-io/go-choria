@@ -9,7 +9,7 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/provtarget"
 	"github.com/choria-io/go-protocol/protocol"
-	gnatsd "github.com/nats-io/gnatsd/server"
+	gnatsd "github.com/nats-io/nats-server/v2/server"
 )
 
 type buildinfoCommand struct {

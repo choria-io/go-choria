@@ -4,7 +4,7 @@ clone_folder: c:\gopath\src\github.com\choria-io\go-choria
 
 environment:
   GOPATH: c:\gopath
-  GOVERSION: '1.10'
+  GOVERSION: '1.12.6'
   MCOLLECTIVE_CERTNAME: rip.mcollective
   RUBY_VERSION: 24
 
@@ -20,13 +20,13 @@ install:
   - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.msi
   - msiexec /i go%GOVERSION%.windows-amd64.msi /q
   - set Path=C:\Ruby%RUBY_VERSION%\bin;c:\go\bin;c:\gopath\bin;%Path%
+  - set GO111MODULE=on
   # Install vendor dependencies
-  - go get github.com/Masterminds/glide
   - go get github.com/onsi/ginkgo/ginkgo
 
 build: false
 deploy: false
 
 test_script:
-  - glide install
+  - go mod vendor
   - ginkgo -r -keepGoing -skipMeasurements

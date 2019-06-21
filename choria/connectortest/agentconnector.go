@@ -6,7 +6,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/choria"
-	nats "github.com/nats-io/go-nats"
+	nats "github.com/nats-io/nats.go"
 )
 
 type AgentConnector struct {
