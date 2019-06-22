@@ -13,6 +13,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - run: go generate
       - run: go mod vendor
       - run: go get github.com/onsi/ginkgo/ginkgo
       - run: ginkgo -r -skipMeasurements
