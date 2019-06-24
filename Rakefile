@@ -19,8 +19,8 @@ task :build do
   sha = `git rev-parse --short HEAD`.chomp
   build = ENV["BUILD"] || "foss"
   packages = (ENV["PACKAGES"] || "").split(",")
-  packages = ["el5_32", "el5_64", "el6_32", "el6_64", "el7_64", "xenial_64", "xenial_64", "bionic_64"] if packages.empty?
-  go_version = ENV["GOVERSION"] || "1.10"
+  packages = ["el6_32", "el6_64", "el7_64", "xenial_64", "xenial_64", "bionic_64"] if packages.empty?
+  go_version = ENV["GOVERSION"] || "1.12"
 
   source = "/go/src/github.com/choria-io/go-choria"
 
@@ -52,7 +52,7 @@ task :build_binaries do
 
   source = "/go/src/github.com/choria-io/go-choria"
 
-  sh 'docker run --rm  -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e BINARY_ONLY=1 choria/packager:el7-go1.10' % [
+  sh 'docker run --rm  -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e BINARY_ONLY=1 choria/packager:el7-go1.12' % [
     source,
     source,
     source,
