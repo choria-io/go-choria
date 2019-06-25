@@ -40,6 +40,11 @@ func (s *Servers) Servers() []Server {
 	return servers
 }
 
+// Count is the amount of servers stored
+func (s *Servers) Count() int {
+	return len(s.servers)
+}
+
 // Strings returns a list of urls for each Server
 func (s *Servers) Strings() (urls []string) {
 	urls = make([]string, len(s.servers))
