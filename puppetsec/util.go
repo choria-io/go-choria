@@ -6,8 +6,10 @@ import (
 	"path/filepath"
 	"runtime"
 
-	"github.com/choria-io/go-choria/puppet"
+	puppetwrapper "github.com/choria-io/go-puppet"
 )
+
+var puppet = puppetwrapper.New()
 
 func userSSlDir() (string, error) {
 	if os.Geteuid() == 0 {

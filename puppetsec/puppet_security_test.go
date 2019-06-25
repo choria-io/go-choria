@@ -10,9 +10,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/choria-io/go-choria/config"
-	srvcache "github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-security"
+	srvcache "github.com/choria-io/go-srvcache"
 	"github.com/sirupsen/logrus"
 
 	gomock "github.com/golang/mock/gomock"
@@ -263,9 +263,9 @@ var _ = Describe("PuppetSSL", func() {
 		It("Should use supplied config when SRV is disabled", func() {
 			cfg.DisableSRV = true
 			s := prov.puppetCA()
-			Expect(s.Host).To(Equal("puppet"))
-			Expect(s.Port).To(Equal(8140))
-			Expect(s.Scheme).To(Equal("https"))
+			Expect(s.Host()).To(Equal("puppet"))
+			Expect(s.Port()).To(Equal(uint16(8140)))
+			Expect(s.Scheme()).To(Equal("https"))
 		})
 
 		It("Should use supplied config when no srv resolver is given", func() {
@@ -275,34 +275,34 @@ var _ = Describe("PuppetSSL", func() {
 			resolver.EXPECT().QuerySrvRecords(gomock.Any()).Times(0)
 
 			s := prov.puppetCA()
-			Expect(s.Host).To(Equal("puppet"))
-			Expect(s.Port).To(Equal(8140))
-			Expect(s.Scheme).To(Equal("https"))
+			Expect(s.Host()).To(Equal("puppet"))
+			Expect(s.Port()).To(Equal(uint16(8140)))
+			Expect(s.Scheme()).To(Equal("https"))
 		})
 
 		It("Should return defaults when SRV fails", func() {
-			resolver.EXPECT().QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"}).Return([]srvcache.Server{}, errors.New("simulated error"))
+			resolver.EXPECT().QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"}).Return(srvcache.NewServers(), errors.New("simulated error"))
 
 			cfg.DisableSRV = false
 			s := prov.puppetCA()
-			Expect(s.Host).To(Equal("puppet"))
-			Expect(s.Port).To(Equal(8140))
-			Expect(s.Scheme).To(Equal("https"))
+			Expect(s.Host()).To(Equal("puppet"))
+			Expect(s.Port()).To(Equal(uint16(8140)))
+			Expect(s.Scheme()).To(Equal("https"))
 		})
 
 		It("Should use SRV records", func() {
-			ans := []srvcache.Server{
-				srvcache.Server{"p1", 8080, "http"},
-				srvcache.Server{"p2", 8080, "http"},
-			}
+			ans := srvcache.NewServers(
+				srvcache.NewServer("p1", 8080, "http"),
+				srvcache.NewServer("p2", 8081, "https"),
+			)
 
-			resolver.EXPECT().QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"}).Return(ans, errors.New("simulated error"))
+			resolver.EXPECT().QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"}).Return(ans, nil)
 			cfg.DisableSRV = false
 
 			s := prov.puppetCA()
-			Expect(s.Host).To(Equal("p1"))
-			Expect(s.Port).To(Equal(8080))
-			Expect(s.Scheme).To(Equal("http"))
+			Expect(s.Host()).To(Equal("p1"))
+			Expect(s.Port()).To(Equal(uint16(8080)))
+			Expect(s.Scheme()).To(Equal("http"))
 
 		})
 	})
