@@ -1,14 +1,16 @@
 package network
 
 import (
+	tls "crypto/tls"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/choria"
+	srvcache "github.com/choria-io/go-srvcache"
+	gomock "github.com/golang/mock/gomock"
+	logrus "github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -20,13 +22,19 @@ func Test(t *testing.T) {
 
 var _ = Describe("Network Broker", func() {
 	var (
-		cfg *config.Config
-		fw  *choria.Framework
-		srv *Server
-		err error
+		mockctl *gomock.Controller
+		cfg     *config.Config
+		fw      *MockChoriaFramework
+		bi      *MockBuildInfoProvider
+		srv     *Server
+		err     error
 	)
 
 	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+		bi = NewMockBuildInfoProvider(mockctl)
+		fw = NewMockChoriaFramework(mockctl)
+
 		os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 
 		cfg, err = config.NewDefaultConfig()
@@ -34,8 +42,16 @@ var _ = Describe("Network Broker", func() {
 
 		cfg.Choria.SSLDir = "testdata/ssl"
 
-		fw, err = choria.NewWithConfig(cfg)
-		Expect(err).ToNot(HaveOccurred())
+		logger := logrus.NewEntry(logrus.New())
+		logger.Logger.SetLevel(logrus.ErrorLevel)
+
+		fw.EXPECT().Configuration().Return(cfg)
+		fw.EXPECT().Logger(gomock.Any()).Return(logger)
+		bi.EXPECT().MaxBrokerClients().Return(50000).AnyTimes()
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
 	})
 
 	var _ = Describe("NewServer", func() {
@@ -51,16 +67,21 @@ var _ = Describe("Network Broker", func() {
 			cfg.Choria.NetworkPeerPassword = "secret"
 			cfg.Choria.NetworkPeers = []string{"nats://localhost:9000", "nats://localhost:9001", "nats://localhost:8082"}
 
-			fw, err = choria.NewWithConfig(cfg)
-			Expect(err).ToNot(HaveOccurred())
+			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(
+				srvcache.NewServer("localhost", 9000, "nats"),
+				srvcache.NewServer("localhost", 9001, "nats"),
+				srvcache.NewServer("localhost", 8082, "nats"),
+			), nil)
 
-			srv, err = NewServer(fw, false)
+			fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil)
+
+			srv, err = NewServer(fw, bi, false)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(srv.opts.Host).To(Equal("0.0.0.0"))
 			Expect(srv.opts.Port).To(Equal(8080))
 			Expect(srv.opts.Logtime).To(BeFalse())
-			Expect(srv.opts.MaxConn).To(Equal(build.MaxBrokerClients()))
+			Expect(srv.opts.MaxConn).To(Equal(50000))
 			Expect(srv.opts.WriteDeadline).To(Equal(time.Duration(10 * time.Second)))
 			Expect(srv.opts.NoSigs).To(BeTrue())
 			Expect(srv.opts.Debug).To(BeFalse())
@@ -93,11 +114,9 @@ var _ = Describe("Network Broker", func() {
 
 		It("Should support disabling TLS", func() {
 			cfg.DisableTLS = true
+			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
 
-			fw, err = choria.NewWithConfig(cfg)
-			Expect(err).ToNot(HaveOccurred())
-
-			srv, err = NewServer(fw, false)
+			srv, err = NewServer(fw, bi, false)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(srv.opts.TLS).To(BeFalse())
 		})
