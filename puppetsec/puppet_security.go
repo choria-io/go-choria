@@ -21,21 +21,19 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
-	"runtime"
 	"time"
 
-	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-security/filesec"
+	"github.com/choria-io/go-srvcache"
 	"github.com/sirupsen/logrus"
 )
 
 // Resolver provides DNS lookup facilities
 type Resolver interface {
-	QuerySrvRecords(records []string) ([]srvcache.Server, error)
+	QuerySrvRecords(records []string) (srvcache.Servers, error)
 }
 
-// PuppetSecurity impliments SecurityProvider reusing AIO Puppet settings
+// PuppetSecurity implements SecurityProvider reusing AIO Puppet settings
 // it supports enrollment the same way `puppet agent --waitforcert 10` does
 type PuppetSecurity struct {
 	res  Resolver
@@ -77,83 +75,6 @@ type Config struct {
 
 	// AlwaysOverwriteCache supports always overwriting the local filesystem cache
 	AlwaysOverwriteCache bool
-}
-
-// Option is a function that can configure the Puppet Security Provider
-type Option func(*PuppetSecurity) error
-
-// WithChoriaConfig optionally configures the Puppet Security Provider from settings found in a typical Choria configuration
-func WithChoriaConfig(c *config.Config) Option {
-	return func(p *PuppetSecurity) error {
-		cfg := Config{
-			AllowList:            c.Choria.CertnameWhitelist,
-			DisableTLSVerify:     c.DisableTLSVerify,
-			PrivilegedUsers:      c.Choria.PrivilegedUsers,
-			SSLDir:               c.Choria.SSLDir,
-			PuppetCAHost:         c.Choria.PuppetCAHost,
-			PuppetCAPort:         c.Choria.PuppetCAPort,
-			Identity:             c.Identity,
-			AlwaysOverwriteCache: c.Choria.SecurityAlwaysOverwriteCache,
-		}
-
-		if c.HasOption("plugin.choria.puppetca_host") || c.HasOption("plugin.choria.puppetca_port") {
-			cfg.DisableSRV = true
-		}
-
-		if c.OverrideCertname == "" {
-			if cn, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
-				c.OverrideCertname = cn
-			}
-		}
-
-		if c.OverrideCertname != "" {
-			cfg.Identity = c.OverrideCertname
-		} else if !(runtime.GOOS == "windows" || os.Getuid() == 0) {
-			if u, ok := os.LookupEnv("USER"); ok {
-				cfg.Identity = fmt.Sprintf("%s.mcollective", u)
-			}
-		}
-
-		if cfg.SSLDir == "" {
-			d, err := userSSlDir()
-			if err != nil {
-				return err
-			}
-
-			cfg.SSLDir = d
-		}
-
-		p.conf = &cfg
-
-		return nil
-	}
-}
-
-// WithConfig optionally configures the Puppet Security Provider using its native configuration format
-func WithConfig(c *Config) Option {
-	return func(p *PuppetSecurity) error {
-		p.conf = c
-
-		return nil
-	}
-}
-
-// WithLog configures a logger for the Puppet Security Provider
-func WithLog(l *logrus.Entry) Option {
-	return func(p *PuppetSecurity) error {
-		p.log = l.WithFields(logrus.Fields{"ssl": "puppet"})
-
-		return nil
-	}
-}
-
-// WithResolver configures a SRV resolver for the Puppet Security Provider
-func WithResolver(r Resolver) Option {
-	return func(p *PuppetSecurity) error {
-		p.res = r
-
-		return nil
-	}
 }
 
 // New creates a new instance of the Puppet Security Provider
@@ -524,30 +445,29 @@ func (s *PuppetSecurity) writeCSR(key *rsa.PrivateKey, cn string, ou string) err
 }
 
 func (s *PuppetSecurity) puppetCA() srvcache.Server {
-	server := srvcache.Server{
-		Host:   s.conf.PuppetCAHost,
-		Port:   s.conf.PuppetCAPort,
-		Scheme: "https",
-	}
+	found := srvcache.NewServer(s.conf.PuppetCAHost, s.conf.PuppetCAPort, "https")
 
 	if s.conf.DisableSRV || s.res == nil {
-		return server
+		return found
 	}
 
 	servers, err := s.res.QuerySrvRecords([]string{"_x-puppet-ca._tcp", "_x-puppet._tcp"})
 	if err != nil {
 		s.log.Warnf("Could not resolve Puppet CA SRV records: %s", err)
+		return found
 	}
 
-	if len(servers) == 0 {
-		return server
+	if servers.Count() == 0 {
+		return found
 	}
 
-	if servers[0].Scheme == "" {
-		servers[0].Scheme = "https"
+	found = servers.Servers()[0]
+
+	if found.Scheme() == "" {
+		found.SetScheme("https")
 	}
 
-	return servers[0]
+	return found
 }
 
 func (s *PuppetSecurity) fetchCert() error {
@@ -556,7 +476,7 @@ func (s *PuppetSecurity) fetchCert() error {
 	}
 
 	server := s.puppetCA()
-	url := fmt.Sprintf("%s://%s:%d/puppet-ca/v1/certificate/%s?environment=production", server.Scheme, server.Host, server.Port, s.Identity())
+	url := fmt.Sprintf("%s://%s:%d/puppet-ca/v1/certificate/%s?environment=production", server.Scheme(), server.Host(), server.Port(), s.Identity())
 
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
@@ -566,7 +486,7 @@ func (s *PuppetSecurity) fetchCert() error {
 	req.Header.Set("Content-Type", "text/plain")
 	req.Header.Set("User-Agent", "Choria Orchestrator - http://choria.io")
 
-	client, err := s.HTTPClient(server.Scheme == "https")
+	client, err := s.HTTPClient(server.Scheme() == "https")
 	if err != nil {
 		return fmt.Errorf("could not set up HTTP connection: %s", err)
 	}
@@ -600,7 +520,7 @@ func (s *PuppetSecurity) fetchCA() error {
 	}
 
 	server := s.puppetCA()
-	url := fmt.Sprintf("%s://%s:%d/puppet-ca/v1/certificate/ca?environment=production", server.Scheme, server.Host, server.Port)
+	url := fmt.Sprintf("%s://%s:%d/puppet-ca/v1/certificate/ca?environment=production", server.Scheme(), server.Host(), server.Port())
 
 	// specifically disabling verification as at this point we do not have
 	// the CA needed to do verification, there's no choice in the matter
@@ -642,7 +562,7 @@ func (s *PuppetSecurity) submitCSR() error {
 
 	server := s.puppetCA()
 
-	url := fmt.Sprintf("%s://%s:%d/puppet-ca/v1/certificate_request/%s?environment=production", server.Scheme, server.Host, server.Port, s.Identity())
+	url := fmt.Sprintf("%s://%s:%d/puppet-ca/v1/certificate_request/%s?environment=production", server.Scheme(), server.Host(), server.Port(), s.Identity())
 
 	req, err := http.NewRequest("PUT", url, bytes.NewBuffer(csr))
 	if err != nil {
@@ -652,9 +572,9 @@ func (s *PuppetSecurity) submitCSR() error {
 	req.Header.Set("Content-Type", "text/plain")
 	req.Header.Set("User-Agent", "Choria Orchestrator - http://choria.io")
 
-	req.Host = server.Host
+	req.Host = server.Host()
 
-	client, err := s.HTTPClient(server.Scheme == "https")
+	client, err := s.HTTPClient(server.Scheme() == "https")
 	if err != nil {
 		return fmt.Errorf("could not set up HTTP connection: %s", err)
 	}
@@ -675,10 +595,10 @@ func (s *PuppetSecurity) submitCSR() error {
 	}
 
 	if len(body) > 0 {
-		return fmt.Errorf("could not send CSR to %s://%s:%d: %s: %s", server.Scheme, server.Host, server.Port, resp.Status, string(body))
+		return fmt.Errorf("could not send CSR to %s://%s:%d: %s: %s", server.Scheme(), server.Host(), server.Port(), resp.Status, string(body))
 	}
 
-	return fmt.Errorf("could not send CSR to %s://%s:%d: %s", server.Scheme, server.Host, server.Port, resp.Status)
+	return fmt.Errorf("could not send CSR to %s://%s:%d: %s", server.Scheme(), server.Host(), server.Port(), resp.Status)
 }
 
 // HTTPClient creates a standard HTTP client with optional security, it will
