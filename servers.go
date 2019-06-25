@@ -24,10 +24,10 @@ func (s *servers) Count() int {
 	return len(s.servers)
 }
 
-// Map invokes f on each contained Server
-func (s *servers) Map(f func(Server)) {
-	for _, s := range s.servers {
-		f(s)
+// Each invokes f on each contained Server
+func (s *servers) Each(f func(Server)) {
+	for _, srv := range s.servers {
+		f(srv)
 	}
 }
 
