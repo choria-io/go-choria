@@ -5,7 +5,7 @@ import (
 	"net/url"
 )
 
-// BasicServer is a representation of a network server host and port
+// BasicServer is a representation of a network server host and port, implements Server
 type BasicServer struct {
 	host   string
 	port   uint16
