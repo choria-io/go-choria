@@ -24,6 +24,13 @@ func (s *servers) Count() int {
 	return len(s.servers)
 }
 
+// Map invokes f on each contained Server
+func (s *servers) Map(f func(Server)) {
+	for _, s := range s.servers {
+		f(s)
+	}
+}
+
 // Strings returns a list of urls for each Server
 func (s *servers) Strings() (urls []string) {
 	urls = make([]string, len(s.servers))
