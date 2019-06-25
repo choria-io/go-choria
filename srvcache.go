@@ -18,6 +18,7 @@ type Servers interface {
 	URLs() (urls []*url.URL, err error)
 	HostPorts() (hps []string)
 	Servers() []Server
+	Map(func(Server))
 }
 
 // Server is a Server that can be stored in the collection
