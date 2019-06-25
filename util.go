@@ -13,7 +13,7 @@ import (
 // if an empty scheme is given the string will be parsed by a url parser and the embedded
 // scheme will be used, if that does not parse into a valid url then an error will be returned
 func StringHostsToServers(hosts []string, scheme string) (servers *Servers, err error) {
-	instances := make([]*Server, len(hosts))
+	instances := make([]Server, len(hosts))
 
 	for _, s := range hosts {
 		detectedScheme := scheme
@@ -38,7 +38,7 @@ func StringHostsToServers(hosts []string, scheme string) (servers *Servers, err 
 			return servers, fmt.Errorf("could not host port %s: %s", s, err)
 		}
 
-		server := &Server{
+		server := &BasicServer{
 			host:   strings.TrimSpace(host),
 			port:   uint16(port),
 			scheme: detectedScheme,

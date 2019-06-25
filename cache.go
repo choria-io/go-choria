@@ -60,9 +60,9 @@ func (c *Cache) LookupSrvServers(service string, proto string, name string, sche
 		return nil, err
 	}
 
-	servers := make([]*Server, len(addrs))
+	servers := make([]Server, len(addrs))
 	for i, addr := range addrs {
-		servers[i] = &Server{host: addr.Target, port: addr.Port, scheme: scheme}
+		servers[i] = &BasicServer{host: addr.Target, port: addr.Port, scheme: scheme}
 	}
 
 	return NewServers(servers...), nil
