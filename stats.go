@@ -20,7 +20,7 @@ var srvmiss = prometheus.NewCounterVec(prometheus.CounterOpts{
 }, []string{"identity"})
 
 func init() {
-	prometheus.MustRegister(srvctr)
-	prometheus.MustRegister(srvhit)
-	prometheus.MustRegister(srvmiss)
+	prometheus.Register(srvctr)
+	prometheus.Register(srvhit)
+	prometheus.Register(srvmiss)
 }
