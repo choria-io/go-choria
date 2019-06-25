@@ -5,38 +5,38 @@ import (
 	"net/url"
 )
 
-// Server is a representation of a network server host and port
-type Server struct {
+// BasicServer is a representation of a network server host and port
+type BasicServer struct {
 	host   string
 	port   uint16
 	scheme string
 }
 
 // Host retrieves the host for the server
-func (s *Server) Host() string { return s.host }
+func (s *BasicServer) Host() string { return s.host }
 
 // SetHost sets the host for the server
-func (s *Server) SetHost(host string) { s.host = host }
+func (s *BasicServer) SetHost(host string) { s.host = host }
 
 // Port retrieves the port for the server
-func (s *Server) Port() uint16 { return s.port }
+func (s *BasicServer) Port() uint16 { return s.port }
 
 // SetPort sets the port for the server
-func (s *Server) SetPort(port int) { s.port = uint16(port) }
+func (s *BasicServer) SetPort(port int) { s.port = uint16(port) }
 
 // Scheme retrieves the url scheme
-func (s *Server) Scheme() string { return s.scheme }
+func (s *BasicServer) Scheme() string { return s.scheme }
 
 // SetScheme sets the url scheme
-func (s *Server) SetScheme(scheme string) { s.scheme = scheme }
+func (s *BasicServer) SetScheme(scheme string) { s.scheme = scheme }
 
 // HostPort is a string in hostname:port format
-func (s *Server) HostPort() string {
-	return fmt.Sprintf("%s:%s", s.host, s.port)
+func (s *BasicServer) HostPort() string {
+	return fmt.Sprintf("%s:%d", s.host, s.port)
 }
 
 // URL creates a correct url from the server if scheme is known
-func (s *Server) URL() (u *url.URL, err error) {
+func (s *BasicServer) URL() (u *url.URL, err error) {
 	if s.Scheme() == "" {
 		return u, fmt.Errorf("server %s:%d has no scheme, cannot make a URL", s.host, s.port)
 	}
@@ -52,6 +52,6 @@ func (s *Server) URL() (u *url.URL, err error) {
 }
 
 // String is a string representation of the server in url format
-func (s *Server) String() string {
-	return fmt.Sprintf("%s://%s:%d", s.Scheme, s.Host, s.Port)
+func (s *BasicServer) String() string {
+	return fmt.Sprintf("%s://%s:%d", s.scheme, s.host, s.port)
 }

@@ -6,11 +6,24 @@ import (
 
 // Servers is a collection of Server
 type Servers struct {
-	servers []*Server
+	servers []Server
+}
+
+// Server is a Server that can be stored in the collection
+type Server interface {
+	Host() string
+	SetHost(string)
+	Port() uint16
+	SetPort(int)
+	Scheme() string
+	SetScheme(string)
+	String() string
+	URL() (u *url.URL, err error)
+	HostPort() string
 }
 
 // NewServers creates a new server collection
-func NewServers(servers ...*Server) *Servers {
+func NewServers(servers ...Server) *Servers {
 	return &Servers{
 		servers: servers,
 	}
@@ -21,7 +34,7 @@ func NewServers(servers ...*Server) *Servers {
 func (s *Servers) Servers() []Server {
 	servers := make([]Server, len(s.servers))
 	for i, srv := range s.servers {
-		servers[i] = *srv
+		servers[i] = srv
 	}
 
 	return servers
