@@ -8,20 +8,33 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
-	log "github.com/sirupsen/logrus"
+	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-srvcache"
 
 	gnatsd "github.com/nats-io/nats-server/v2/server"
+	logrus "github.com/sirupsen/logrus"
 )
+
+// BuildInfoProvider provider build time flag information, example go-choria/build
+type BuildInfoProvider interface {
+	MaxBrokerClients() int
+}
+
+// ChoriaFramework provider access to choria
+type ChoriaFramework interface {
+	Logger(string) *logrus.Entry
+	NetworkBrokerPeers() (srvcache.Servers, error)
+	TLSConfig() (*tls.Config, error)
+	Configuration() *config.Config
+}
 
 // Server represents the Choria network broker server
 type Server struct {
 	gnatsd *gnatsd.Server
 	opts   *gnatsd.Options
-	choria *choria.Framework
+	choria ChoriaFramework
 	config *config.Config
+	log    *logrus.Entry
 
 	started bool
 
@@ -29,41 +42,42 @@ type Server struct {
 }
 
 // NewServer creates a new instance of the Server struct with a fully configured NATS embedded
-func NewServer(c *choria.Framework, debug bool) (s *Server, err error) {
+func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, err error) {
 	s = &Server{
 		choria:  c,
-		config:  c.Config,
+		config:  c.Configuration(),
 		opts:    &gnatsd.Options{},
+		log:     c.Logger("network"),
 		started: false,
 		mu:      &sync.Mutex{},
 	}
 
-	s.opts.Host = c.Config.Choria.NetworkListenAddress
-	s.opts.Port = c.Config.Choria.NetworkClientPort
-	s.opts.WriteDeadline = c.Config.Choria.NetworkWriteDeadline
-	s.opts.MaxConn = build.MaxBrokerClients()
+	s.opts.Host = s.config.Choria.NetworkListenAddress
+	s.opts.Port = s.config.Choria.NetworkClientPort
+	s.opts.WriteDeadline = s.config.Choria.NetworkWriteDeadline
+	s.opts.MaxConn = bi.MaxBrokerClients()
 	s.opts.NoSigs = true
 	s.opts.Logtime = false
 
-	if debug || c.Config.LogLevel == "debug" {
+	if debug || s.config.LogLevel == "debug" {
 		s.opts.Debug = true
 	}
 
-	if !c.Config.DisableTLS {
+	if !s.config.DisableTLS {
 		err = s.setupTLS()
 		if err != nil {
 			return s, fmt.Errorf("Could not setup TLS: %s", err)
 		}
 	}
 
-	if c.Config.Choria.StatsPort > 0 {
-		s.opts.HTTPHost = c.Config.Choria.StatsListenAddress
-		s.opts.HTTPPort = c.Config.Choria.StatsPort
+	if s.config.Choria.StatsPort > 0 {
+		s.opts.HTTPHost = s.config.Choria.StatsListenAddress
+		s.opts.HTTPPort = s.config.Choria.StatsPort
 	}
 
-	if len(c.Config.Choria.NetworkAllowedClientHosts) > 0 {
+	if len(s.config.Choria.NetworkAllowedClientHosts) > 0 {
 		s.opts.CustomClientAuthentication = &IPAuth{
-			allowList: c.Config.Choria.NetworkAllowedClientHosts,
+			allowList: s.config.Choria.NetworkAllowedClientHosts,
 			log:       s.choria.Logger("ipauth"),
 		}
 	}
@@ -91,7 +105,7 @@ func (s *Server) HTTPHandler() http.Handler {
 // Start the embedded NATS instance, this is a blocking call until it exits
 func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, s.choria.Config.ConfigFile)
+	s.log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, s.config.ConfigFile)
 
 	go s.gnatsd.Start()
 
@@ -106,28 +120,28 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 		s.gnatsd.Shutdown()
 	}
 
-	log.Warn("Choria Network Broker shutting down")
+	s.log.Warn("Choria Network Broker shutting down")
 }
 
 func (s *Server) setupCluster() (err error) {
 	s.opts.Cluster.Host = s.config.Choria.NetworkListenAddress
 	s.opts.Cluster.NoAdvertise = true
-	s.opts.Cluster.Port = s.choria.Config.Choria.NetworkPeerPort
-	s.opts.Cluster.Username = s.choria.Config.Choria.NetworkPeerUser
-	s.opts.Cluster.Password = s.choria.Config.Choria.NetworkPeerPassword
+	s.opts.Cluster.Port = s.config.Choria.NetworkPeerPort
+	s.opts.Cluster.Username = s.config.Choria.NetworkPeerUser
+	s.opts.Cluster.Password = s.config.Choria.NetworkPeerPassword
 
 	peers, err := s.choria.NetworkBrokerPeers()
 	if err != nil {
 		return fmt.Errorf("Could not determine network broker peers: %s", err)
 	}
 
-	for _, p := range peers {
+	for _, p := range peers.Servers() {
 		u, err := p.URL()
 		if err != nil {
 			return fmt.Errorf("Could not parse Peer configuration: %s", err)
 		}
 
-		log.Infof("Adding %s as network peer", u.String())
+		s.log.Infof("Adding %s as network peer", u.String())
 		s.opts.Routes = append(s.opts.Routes, u)
 	}
 
