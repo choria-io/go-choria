@@ -16,17 +16,18 @@ import (
 	"sync"
 	"time"
 
+	"github.com/apex/log"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-protocol/protocol"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
-// Broadcast impliments mcollective like broadcast discovery
+// Broadcast implements mcollective like broadcast discovery
 type Broadcast struct {
-	fw      *choria.Framework
+	fw      client.ChoriaFramework
 	timeout time.Duration
-	log     *log.Entry
+	log     *logrus.Entry
 }
 
 // ChoriaClient implements the connection to the Choria network
@@ -35,10 +36,10 @@ type ChoriaClient interface {
 }
 
 // New creates a new broadcast discovery client
-func New(fw *choria.Framework) *Broadcast {
+func New(fw client.ChoriaFramework) *Broadcast {
 	b := &Broadcast{
 		fw:      fw,
-		timeout: time.Second * time.Duration(fw.Config.DiscoveryTimeout),
+		timeout: time.Second * time.Duration(fw.Configuration().DiscoveryTimeout),
 		log:     fw.Logger("broadcast_discovery"),
 	}
 
@@ -48,7 +49,7 @@ func New(fw *choria.Framework) *Broadcast {
 // Discover performs a broadcast discovery using the supplied filter
 func (b *Broadcast) Discover(ctx context.Context, opts ...DiscoverOption) (n []string, err error) {
 	dopts := &dOpts{
-		collective: b.fw.Config.MainCollective,
+		collective: b.fw.Configuration().MainCollective,
 		discovered: []string{},
 		filter:     protocol.NewFilter(),
 		mu:         &sync.Mutex{},

@@ -17,6 +17,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-protocol/protocol"
 	"github.com/choria-io/go-srvcache"
 	"github.com/sirupsen/logrus"
 )
@@ -28,6 +29,8 @@ type ChoriaFramework interface {
 	Certname() string
 	MiddlewareServers() (srvcache.Servers, error)
 	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn choria.Connector, err error)
+	NewMessage(payload string, agent string, collective string, msgType string, request *choria.Message) (msg *choria.Message, err error)
+	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
 }
 
 // Client is a basic low level high performance Choria client
