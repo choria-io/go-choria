@@ -10,7 +10,6 @@ import (
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/golang/choriautil"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/golang/discovery"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/golang/rpcutil"
-	provision "github.com/choria-io/provisioning-agent/agent"
 	"github.com/sirupsen/logrus"
 )
 
@@ -64,20 +63,6 @@ func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, 
 	err = mgr.RegisterAgent(ctx, "choria_util", agent, connector)
 	if err != nil {
 		return err
-	}
-
-	bi := msg.Choria().BuildInfo()
-
-	if bi.ProvisionBrokerURLs() != "" && bi.ProvisionAgent() {
-		agent, err := provision.New(mgr)
-		if err != nil {
-			return err
-		}
-
-		err = mgr.RegisterAgent(ctx, "choria_provision", agent, connector)
-		if err != nil {
-			return err
-		}
 	}
 
 	return nil
