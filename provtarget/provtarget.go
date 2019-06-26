@@ -8,7 +8,7 @@ import (
 	"github.com/choria-io/go-choria/provtarget/builddefaults"
 	"github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-srvcache"
 )
 
 // TargetResolver is capable of resolving the target brokers for provisioning into list of strings in the format host:port
@@ -34,27 +34,27 @@ func RegisterTargetResolver(r TargetResolver) error {
 }
 
 // Targets is a list of brokers to connect to
-func Targets(ctx context.Context, log *logrus.Entry) ([]srvcache.Server, error) {
+func Targets(ctx context.Context, log *logrus.Entry) (srvcache.Servers, error) {
 	mu.Lock()
 	defer mu.Unlock()
 
 	if resolver == nil {
-		return []srvcache.Server{}, fmt.Errorf("no Provisioning Target Resolver registered")
+		return srvcache.NewServers(), fmt.Errorf("no Provisioning Target Resolver registered")
 	}
 
 	s := resolver.Targets(ctx, log)
 
 	if len(s) == 0 {
-		return []srvcache.Server{}, fmt.Errorf("provisioning target plugin %s returned no servers", Name())
+		return srvcache.NewServers(), fmt.Errorf("provisioning target plugin %s returned no servers", Name())
 	}
 
 	servers, err := srvcache.StringHostsToServers(s, "nats")
 	if err != nil {
-		return []srvcache.Server{}, fmt.Errorf("could not determine provisioning servers using %s provisionig target plugin: %s", Name(), err)
+		return srvcache.NewServers(), fmt.Errorf("could not determine provisioning servers using %s provisioning target plugin: %s", Name(), err)
 	}
 
-	if len(servers) == 0 {
-		return []srvcache.Server{}, fmt.Errorf("provisioning broker urls from the %s plugin were not in the valid format, 0 server:port combinations were foundin %v", Name(), s)
+	if servers.Count() == 0 {
+		return srvcache.NewServers(), fmt.Errorf("provisioning broker urls from the %s plugin were not in the valid format, 0 server:port combinations were foundin %v", Name(), s)
 	}
 
 	return servers, nil

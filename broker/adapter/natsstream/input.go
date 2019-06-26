@@ -7,7 +7,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/broker/adapter/stats"
-	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-srvcache"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/choria-io/go-choria/choria"
@@ -15,7 +15,7 @@ import (
 )
 
 type nats struct {
-	servers func() ([]srvcache.Server, error)
+	servers func() (srvcache.Servers, error)
 	topic   string
 	proto   string
 	name    string
@@ -46,10 +46,6 @@ func newIngest(name string, work chan adaptable, logger *log.Entry) ([]*nats, er
 		return nil, fmt.Errorf("Could not resolve initial server list: %s", err)
 	}
 
-	servers := func() ([]srvcache.Server, error) {
-		return framework.MiddlewareServers()
-	}
-
 	proto := cfg.Option(prefix+"protocol", "reply")
 
 	workers := []*nats{}
@@ -69,7 +65,7 @@ func newIngest(name string, work chan adaptable, logger *log.Entry) ([]*nats, er
 			group:   "nats_ingest_" + name,
 			topic:   topic,
 			work:    work,
-			servers: servers,
+			servers: framework.MiddlewareServers,
 			proto:   proto,
 			log:     logger.WithFields(log.Fields{"side": "ingest", "instance": i}),
 		}

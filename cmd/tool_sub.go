@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/srvcache"
 )
 
 type tSubCommand struct {
@@ -32,9 +31,8 @@ func (s *tSubCommand) Configure() error {
 func (s *tSubCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	servers := func() ([]srvcache.Server, error) { return c.MiddlewareServers() }
 	log := c.Logger("sub")
-	conn, err := c.NewConnector(ctx, servers, c.Certname(), log)
+	conn, err := c.NewConnector(ctx, c.MiddlewareServers, c.Certname(), log)
 	if err != nil {
 		return fmt.Errorf("cannot connect: %s", err)
 	}

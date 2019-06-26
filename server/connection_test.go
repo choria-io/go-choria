@@ -5,8 +5,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -53,12 +52,9 @@ var _ = Describe("Server/Connection", func() {
 			servers, err := srv.brokerUrls(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
-			expected := []srvcache.Server{
-				srvcache.Server{Host: "nats1", Port: 4222, Scheme: "nats"},
-				srvcache.Server{Host: "nats2", Port: 4222, Scheme: "nats"},
-			}
-
-			Expect(servers).To(Equal(expected))
+			found := servers.Servers()
+			Expect(found[0].Host()).To(Equal("nats1"))
+			Expect(found[1].Host()).To(Equal("nats2"))
 		})
 
 		It("Should fail gracefully for incorrect format provisioning servers", func() {
@@ -68,12 +64,9 @@ var _ = Describe("Server/Connection", func() {
 			servers, err := srv.brokerUrls(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
-			expected := []srvcache.Server{
-				srvcache.Server{Host: "d1", Port: 4222, Scheme: "nats"},
-				srvcache.Server{Host: "d2", Port: 4222, Scheme: "nats"},
-			}
-
-			Expect(servers).To(Equal(expected))
+			found := servers.Servers()
+			Expect(found[0].Host()).To(Equal("d1"))
+			Expect(found[1].Host()).To(Equal("d2"))
 		})
 
 		It("Should fail gracefully when no servers are compiled in but provisioning is on", func() {
@@ -83,24 +76,18 @@ var _ = Describe("Server/Connection", func() {
 			servers, err := srv.brokerUrls(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
-			expected := []srvcache.Server{
-				srvcache.Server{Host: "d1", Port: 4222, Scheme: "nats"},
-				srvcache.Server{Host: "d2", Port: 4222, Scheme: "nats"},
-			}
-
-			Expect(servers).To(Equal(expected))
+			found := servers.Servers()
+			Expect(found[0].Host()).To(Equal("d1"))
+			Expect(found[1].Host()).To(Equal("d2"))
 		})
 
 		It("Should default to unprovisioned mode", func() {
 			servers, err := srv.brokerUrls(ctx)
 			Expect(err).ToNot(HaveOccurred())
 
-			expected := []srvcache.Server{
-				srvcache.Server{Host: "d1", Port: 4222, Scheme: "nats"},
-				srvcache.Server{Host: "d2", Port: 4222, Scheme: "nats"},
-			}
-
-			Expect(servers).To(Equal(expected))
+			found := servers.Servers()
+			Expect(found[0].Host()).To(Equal("d1"))
+			Expect(found[1].Host()).To(Equal("d2"))
 		})
 	})
 })

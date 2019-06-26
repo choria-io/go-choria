@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/registration"
 	"github.com/choria-io/go-choria/server/data"
+	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
 )
@@ -42,7 +42,7 @@ func New(c *choria.Framework, conn choria.PublishableConnector, logger *logrus.E
 	r := &Manager{
 		log:       logger.WithFields(logrus.Fields{"subsystem": "registration"}),
 		choria:    c,
-		cfg:       c.Config,
+		cfg:       c.Configuration(),
 		connector: conn,
 		datac:     make(chan *data.RegistrationItem, 1),
 	}

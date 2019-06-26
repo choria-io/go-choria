@@ -5,8 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"sync"
-
-	"github.com/choria-io/go-choria/srvcache"
 )
 
 type tPubCommand struct {
@@ -32,9 +30,8 @@ func (p *tPubCommand) Configure() error {
 func (p *tPubCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	servers := func() ([]srvcache.Server, error) { return c.MiddlewareServers() }
 	log := c.Logger("pub")
-	conn, err := c.NewConnector(ctx, servers, c.Certname(), log)
+	conn, err := c.NewConnector(ctx, c.MiddlewareServers, c.Certname(), log)
 	if err != nil {
 		return fmt.Errorf("cannot connect: %s", err)
 	}

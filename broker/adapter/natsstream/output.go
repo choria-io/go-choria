@@ -13,7 +13,7 @@ import (
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-srvcache"
 	uuid "github.com/gofrs/uuid"
 	stan "github.com/nats-io/stan.go"
 	"github.com/prometheus/client_golang/prometheus"
@@ -21,7 +21,7 @@ import (
 )
 
 type stream struct {
-	servers   func() ([]srvcache.Server, error)
+	servers   func() (srvcache.Servers, error)
 	clusterID string
 	clientID  string
 	topic     string
@@ -94,9 +94,9 @@ func newStream(name string, work chan adaptable, logger *log.Entry) ([]*stream, 
 	return workers, nil
 }
 
-func (sc *stream) resolver(parts []string) func() ([]srvcache.Server, error) {
+func (sc *stream) resolver(parts []string) func() (srvcache.Servers, error) {
 	servers, err := srvcache.StringHostsToServers(parts, "nats")
-	return func() ([]srvcache.Server, error) {
+	return func() (srvcache.Servers, error) {
 		return servers, err
 	}
 }

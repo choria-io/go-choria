@@ -6,14 +6,12 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
 	"strings"
 	"time"
 
-	"github.com/choria-io/go-choria/puppet"
 	uuid "github.com/gofrs/uuid"
 )
 
@@ -120,46 +118,6 @@ func HomeDir() (string, error) {
 
 }
 
-// FacterStringFact looks up a facter fact, returns "" when unknown
-func FacterStringFact(fact string) (string, error) {
-	return puppet.FacterStringFact(fact)
-}
-
-// FacterFQDN determines the machines fqdn by querying facter.  Returns "" when unknown
-func FacterFQDN() (string, error) {
-	return FacterStringFact("networking.fqdn")
-}
-
-// FacterDomain determines the machines domain by querying facter. Returns "" when unknown
-func FacterDomain() (string, error) {
-	return FacterStringFact("networking.domain")
-}
-
-// FacterCmd finds the path to facter using first AIO path then a `which` like command
-func FacterCmd() string {
-	return puppet.AIOCmd("facter", "")
-}
-
-// PuppetAIOCmd looks up a command in the AIO paths, if it's not there
-// it will try PATH and finally return a default if not in PATH
-//
-// TODO: windows support
-func PuppetAIOCmd(command string, def string) string {
-	return puppet.AIOCmd(command, def)
-}
-
-// PuppetSetting retrieves a config setting by shelling out to puppet apply --configprint
-func PuppetSetting(setting string) (string, error) {
-	args := []string{"apply", "--configprint", setting}
-
-	out, err := exec.Command(PuppetAIOCmd("puppet", "puppet"), args...).Output()
-	if err != nil {
-		return "", err
-	}
-
-	return strings.Replace(string(out), "\n", "", -1), nil
-}
-
 // MatchAnyRegex checks str against a list of possible regex, if any match true is returned
 func MatchAnyRegex(str []byte, regex []string) bool {
 	for _, reg := range regex {
@@ -173,12 +131,7 @@ func MatchAnyRegex(str []byte, regex []string) bool {
 
 // NewRequestID Creates a new RequestID
 func NewRequestID() (string, error) {
-	id, err := uuid.NewV4()
-	if err != nil {
-		return "", err
-	}
-
-	return strings.Replace(id.String(), "-", "", -1), nil
+	return strings.Replace(UniqueID(), "-", "", -1), nil
 }
 
 // InterruptableSleep sleep for the duration of the n'th wait cycle

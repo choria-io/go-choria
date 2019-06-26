@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-srvcache"
 )
 
 func (srv *Instance) initialConnect(ctx context.Context) (err error) {
@@ -13,16 +13,13 @@ func (srv *Instance) initialConnect(ctx context.Context) (err error) {
 		return fmt.Errorf("Existing on shut down")
 	}
 
-	brokers := func() ([]srvcache.Server, error) {
+	brokers := func() (srvcache.Servers, error) {
 		tempsrv, err := srv.brokerUrls(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("Could not find Choria Network Brokers: %s", err)
 		}
 
-		list := []string{}
-		for _, s := range tempsrv {
-			list = append(list, s.String())
-		}
+		list := tempsrv.Strings()
 
 		srv.log.Infof("Choria Network Brokers: %#v", strings.Join(list, ", "))
 
@@ -37,10 +34,7 @@ func (srv *Instance) initialConnect(ctx context.Context) (err error) {
 	return nil
 }
 
-func (srv *Instance) brokerUrls(ctx context.Context) ([]srvcache.Server, error) {
-	servers := []srvcache.Server{}
-	var err error
-
+func (srv *Instance) brokerUrls(ctx context.Context) (servers srvcache.Servers, err error) {
 	if srv.fw.ProvisionMode() {
 		servers, err = srv.fw.ProvisioningServers(ctx)
 		if err != nil {
@@ -52,7 +46,7 @@ func (srv *Instance) brokerUrls(ctx context.Context) ([]srvcache.Server, error) 
 		// and after provisioning the reload will restore
 		// the configured federation setup and all will
 		// continue as normal with federation and all
-		if len(servers) > 0 {
+		if servers.Count() > 0 {
 			srv.mu.Lock()
 			if !srv.provisioning {
 				srv.log.Infof("Entering provision mode with servers %v", servers)

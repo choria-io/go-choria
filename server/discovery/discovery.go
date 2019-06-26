@@ -1,11 +1,11 @@
 package discovery
 
 import (
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server/discovery/agents"
 	"github.com/choria-io/go-choria/server/discovery/classes"
 	"github.com/choria-io/go-choria/server/discovery/facts"
 	"github.com/choria-io/go-choria/server/discovery/identity"
+	"github.com/choria-io/go-config"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-protocol/protocol"
@@ -23,7 +23,7 @@ type Manager struct {
 func New(framework *choria.Framework, logger *logrus.Entry) *Manager {
 	return &Manager{
 		fw:  framework,
-		cfg: framework.Config,
+		cfg: framework.Configuration(),
 		log: logger.WithFields(logrus.Fields{"subsystem": "discovery"}),
 	}
 }

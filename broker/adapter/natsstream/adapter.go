@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-config"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -57,7 +57,7 @@ var cfg *config.Config
 
 func Create(name string, choria *choria.Framework) (*NatStream, error) {
 	framework = choria
-	cfg = choria.Config
+	cfg = choria.Configuration()
 
 	adapter := &NatStream{
 		log:  log.WithFields(log.Fields{"component": "nats_stream_adapter", "name": name}),

@@ -144,7 +144,7 @@ func (r *brokerRunCommand) runFederation(ctx context.Context, wg *sync.WaitGroup
 }
 
 func (r *brokerRunCommand) runBroker(ctx context.Context, wg *sync.WaitGroup) (err error) {
-	r.server, err = network.NewServer(c, debug)
+	r.server, err = network.NewServer(c, &build.Info{}, debug)
 	if err != nil {
 		return fmt.Errorf("Could not set up Choria Network Broker: %s", err)
 	}

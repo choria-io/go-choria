@@ -8,11 +8,11 @@ import (
 
 	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/discovery"
 	"github.com/choria-io/go-choria/server/registration"
-	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-srvcache"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -23,7 +23,7 @@ type Instance struct {
 	connector          choria.InstanceConnector
 	cfg                *config.Config
 	log                *log.Entry
-	servers            []*srvcache.Server
+	servers            srvcache.Servers
 	registration       *registration.Manager
 	agents             *agents.Manager
 	discovery          *discovery.Manager
@@ -43,7 +43,7 @@ type Instance struct {
 func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	i = &Instance{
 		fw:               fw,
-		cfg:              fw.Config,
+		cfg:              fw.Configuration(),
 		requests:         make(chan *choria.ConnectorMessage),
 		mu:               &sync.Mutex{},
 		startTime:        time.Now(),
@@ -51,7 +51,7 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 		agentDenyList:    []string{},
 	}
 
-	i.log = log.WithFields(log.Fields{"identity": fw.Config.Identity, "component": "server"})
+	i.log = log.WithFields(log.Fields{"identity": i.cfg.Identity, "component": "server"})
 	i.discovery = discovery.New(fw, i.log)
 
 	return i, nil
