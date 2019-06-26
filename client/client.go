@@ -16,15 +16,26 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-srvcache"
 	"github.com/sirupsen/logrus"
 )
+
+type ChoriaFramework interface {
+	Configuration() *config.Config
+	Logger(string) *logrus.Entry
+	NewRequestID() (string, error)
+	Certname() string
+	MiddlewareServers() (srvcache.Servers, error)
+	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn choria.Connector, err error)
+}
 
 // Client is a basic low level high performance Choria client
 type Client struct {
 	ctx           context.Context
 	cancel        func()
-	fw            *choria.Framework
+	fw            ChoriaFramework
+	cfg           *config.Config
 	wg            *sync.WaitGroup
 	receiverReady chan struct{}
 	replies       chan *choria.ConnectorMessage
@@ -48,9 +59,10 @@ type Connector interface {
 }
 
 // New creates a Choria client
-func New(fw *choria.Framework, opts ...Option) (*Client, error) {
+func New(fw ChoriaFramework, opts ...Option) (*Client, error) {
 	c := &Client{
 		fw:        fw,
+		cfg:       fw.Configuration(),
 		wg:        &sync.WaitGroup{},
 		receivers: 1,
 		log:       fw.Logger("client"),
@@ -62,7 +74,7 @@ func New(fw *choria.Framework, opts ...Option) (*Client, error) {
 	}
 
 	if c.timeout == 0 {
-		c.timeout = time.Duration(fw.Config.DiscoveryTimeout) * time.Second
+		c.timeout = time.Duration(c.cfg.DiscoveryTimeout) * time.Second
 	}
 
 	if c.receivers <= 0 {
@@ -202,7 +214,7 @@ func (c *Client) msgHandler(cb Handler) {
 }
 
 func (c *Client) connect(name string) (Connector, error) {
-	servers := func() ([]srvcache.Server, error) {
+	servers := func() (srvcache.Servers, error) {
 		return c.fw.MiddlewareServers()
 	}
 
