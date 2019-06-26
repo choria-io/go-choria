@@ -17,7 +17,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-config"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -82,6 +82,8 @@ func commonConfigure() error {
 	if err != nil {
 		return fmt.Errorf("Could not parse configuration: %s", err)
 	}
+
+	cfg.ApplyBuildSettings(&build.Info{})
 
 	if os.Getenv("INSECURE_YES_REALLY") == "true" {
 		protocol.Secure = "false"

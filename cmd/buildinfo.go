@@ -6,8 +6,8 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/provtarget"
+	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-protocol/protocol"
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 )
@@ -30,6 +30,8 @@ func (b *buildinfoCommand) Configure() (err error) {
 
 	cfg.DisableSecurityProviderVerify = true
 	cfg.Choria.SecurityProvider = "file"
+
+	cfg.ApplyBuildSettings(&build.Info{})
 
 	return
 }

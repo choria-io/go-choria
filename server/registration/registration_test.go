@@ -6,8 +6,8 @@ import (
 
 	framework "github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/choria/connectortest"
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server/data"
+	"github.com/choria-io/go-config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"

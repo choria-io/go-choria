@@ -7,8 +7,8 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-srvcache"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -48,7 +48,7 @@ type pooledWorker struct {
 
 	choria     *choria.Framework
 	connection choria.ConnectionManager
-	servers    func() ([]srvcache.Server, error)
+	servers    func() (srvcache.Servers, error)
 
 	worker func(ctx context.Context, self *pooledWorker, instance int, logger *log.Entry)
 }
@@ -83,13 +83,9 @@ func (self *pooledWorker) Run(ctx context.Context) error {
 	if self.mode != Unconnected {
 		switch self.mode {
 		case Federation:
-			self.servers = func() ([]srvcache.Server, error) {
-				return self.choria.FederationMiddlewareServers()
-			}
+			self.servers = self.choria.FederationMiddlewareServers
 		case Collective:
-			self.servers = func() ([]srvcache.Server, error) {
-				return self.choria.MiddlewareServers()
-			}
+			self.servers = self.choria.MiddlewareServers
 		default:
 			err := errors.New("do not know which middleware to connect to, Mode should be one of Federation or Collective")
 			self.log.Error(err)
@@ -109,7 +105,7 @@ func (self *pooledWorker) Run(ctx context.Context) error {
 			return err
 		}
 
-		if len(srv) == 0 {
+		if srv.Count() == 0 {
 			err = fmt.Errorf("no middleware servers were configured for %s, cannot continue", self.name)
 			self.log.Error(err)
 			return err

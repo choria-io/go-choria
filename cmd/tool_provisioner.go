@@ -2,10 +2,12 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
-	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/provtarget"
+	"github.com/choria-io/go-config"
 )
 
 type tProvisionerCommand struct {
@@ -31,6 +33,8 @@ func (p *tProvisionerCommand) Configure() error {
 		return err
 	}
 
+	cfg.ApplyBuildSettings(&build.Info{})
+
 	cfg.DisableSecurityProviderVerify = true
 	cfg.InitiatedByServer = true
 	cfg.Choria.Provision = true
@@ -52,11 +56,8 @@ func (p *tProvisionerCommand) Run(wg *sync.WaitGroup) (err error) {
 		return err
 	}
 
-	fmt.Printf("Provisioning using %d broker(s):\n\n", len(targets))
-
-	for _, t := range targets {
-		fmt.Printf("\t%s", t.String())
-	}
+	fmt.Printf("Provisioning using %d broker(s):\n\n", targets.Count())
+	fmt.Printf(strings.Join(targets.Strings(), "\t"))
 
 	fmt.Println()
 

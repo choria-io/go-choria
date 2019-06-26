@@ -13,7 +13,7 @@ var SHA = "unknown"
 // BuildDate is when it was build
 var BuildDate = "unknown"
 
-// License is the official Open Source Initiave license abbreciation
+// License is the official Open Source Initiative license abbreviation
 var License = "Apache-2.0"
 
 // TLS controls the NATS protocol level TLS

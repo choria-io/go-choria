@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

@@ -9,7 +9,6 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/srvcache"
 )
 
 type mWatchCommand struct {
@@ -42,8 +41,7 @@ func (w *mWatchCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	w.log = logrus.NewEntry(c.Logger("x").Logger)
 
-	servers := func() ([]srvcache.Server, error) { return c.MiddlewareServers() }
-	conn, err := c.NewConnector(ctx, servers, c.Certname(), w.log)
+	conn, err := c.NewConnector(ctx, c.MiddlewareServers, c.Certname(), w.log)
 	if err != nil {
 		return fmt.Errorf("cannot connect: %s", err)
 	}

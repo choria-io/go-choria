@@ -6,11 +6,12 @@ package choria
 
 import (
 	context "context"
-	srvcache "github.com/choria-io/go-choria/srvcache"
+	reflect "reflect"
+
+	srvcache "github.com/choria-io/go-srvcache"
 	gomock "github.com/golang/mock/gomock"
 	go_nats "github.com/nats-io/nats.go"
 	logrus "github.com/sirupsen/logrus"
-	reflect "reflect"
 )
 
 // MockConnectionManager is a mock of ConnectionManager interface

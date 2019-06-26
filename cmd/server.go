@@ -8,8 +8,8 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server"
+	"github.com/choria-io/go-config"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -76,6 +76,8 @@ func (e *serverRunCommand) Configure() error {
 	} else {
 		return fmt.Errorf("configuration file %s was not found", configFile)
 	}
+
+	cfg.ApplyBuildSettings(&build.Info{})
 
 	cfg.DisableSecurityProviderVerify = true
 	cfg.InitiatedByServer = true

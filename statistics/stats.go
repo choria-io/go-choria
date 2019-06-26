@@ -8,7 +8,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/nats-io/nats-server/v2/server/pse"
 	"github.com/prometheus/client_golang/prometheus"
