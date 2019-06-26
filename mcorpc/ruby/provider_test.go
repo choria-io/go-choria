@@ -5,7 +5,7 @@ import (
 	"io/ioutil"
 
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-config"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 
 	"github.com/choria-io/go-choria/choria"

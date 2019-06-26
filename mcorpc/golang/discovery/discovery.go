@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-protocol/protocol"
@@ -20,14 +19,16 @@ type Agent struct {
 }
 
 func New(mgr server.AgentManager) (*Agent, error) {
+	bi := mgr.Choria().BuildInfo()
+
 	a := &Agent{
 		log: mgr.Logger().WithFields(logrus.Fields{"agent": "discovery"}),
 		meta: &agents.Metadata{
 			Name:        "discovery",
 			Description: "Discovery Agent",
 			Author:      "R.I.Pienaar <rip@devco.net>",
-			Version:     build.Version,
-			License:     build.License,
+			Version:     bi.Version(),
+			License:     bi.License(),
 			Timeout:     2,
 			URL:         "http://choria.io",
 		},

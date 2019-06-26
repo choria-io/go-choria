@@ -7,10 +7,10 @@ import (
 	"sort"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc/audit"
 	"github.com/choria-io/go-choria/server/agents"
+	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/mcorpc-agent-provider/mcorpc/audit"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,7 +21,7 @@ type Action func(context.Context, *Request, *Reply, *Agent, choria.ConnectorInfo
 type Agent struct {
 	Log              *logrus.Entry
 	Config           *config.Config
-	Choria           *choria.Framework
+	Choria           ChoriaFramework
 	ServerInfoSource agents.ServerInfoSource
 
 	meta    *agents.Metadata
@@ -29,13 +29,13 @@ type Agent struct {
 }
 
 // New creates a new MCollective SimpleRPC compatible agent
-func New(name string, metadata *agents.Metadata, fw *choria.Framework, log *logrus.Entry) *Agent {
+func New(name string, metadata *agents.Metadata, fw ChoriaFramework, log *logrus.Entry) *Agent {
 	a := &Agent{
 		meta:    metadata,
 		Log:     log.WithFields(logrus.Fields{"agent": name}),
 		actions: make(map[string]Action),
 		Choria:  fw,
-		Config:  fw.Config,
+		Config:  fw.Configuration(),
 	}
 
 	return a

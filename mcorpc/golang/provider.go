@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
@@ -67,7 +66,9 @@ func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, 
 		return err
 	}
 
-	if build.ProvisionBrokerURLs != "" && build.ProvisionAgent == "true" {
+	bi := msg.Choria().BuildInfo()
+
+	if bi.ProvisionBrokerURLs() != "" && bi.ProvisionAgent() {
 		agent, err := provision.New(mgr)
 		if err != nil {
 			return err

@@ -35,23 +35,25 @@ type RequestOptions struct {
 	// per batch
 	stats *Stats
 
-	fw *choria.Framework
+	fw ChoriaFramework
 }
 
 // RequestOption is a function capable of setting an option
 type RequestOption func(*RequestOptions)
 
 // NewRequestOptions creates a initialized request options
-func NewRequestOptions(fw *choria.Framework, ddl *agent.DDL) (*RequestOptions, error) {
+func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, error) {
 	rid, err := fw.NewRequestID()
 	if err != nil {
 		return nil, err
 	}
 
+	cfg := fw.Configuration()
+
 	return &RequestOptions{
 		ProtocolVersion: protocol.RequestV1,
 		RequestType:     "direct_request",
-		Collective:      fw.Config.MainCollective,
+		Collective:      cfg.MainCollective,
 		ProcessReplies:  true,
 		Progress:        false,
 		Workers:         3,
@@ -63,8 +65,8 @@ func NewRequestOptions(fw *choria.Framework, ddl *agent.DDL) (*RequestOptions, e
 		// add discovery timeout to the agent timeout as that's basically an indication of
 		// network overhead, discovery being the smallest possible RPC request it's an indication
 		// of what peoples network behaviour is like assuming discovery works
-		Timeout:          (time.Duration(fw.Config.DiscoveryTimeout) * time.Second) + ddl.Timeout(),
-		DiscoveryTimeout: time.Duration(fw.Config.DiscoveryTimeout) * time.Second,
+		Timeout:          (time.Duration(cfg.DiscoveryTimeout) * time.Second) + ddl.Timeout(),
+		DiscoveryTimeout: time.Duration(cfg.DiscoveryTimeout) * time.Second,
 	}, nil
 }
 

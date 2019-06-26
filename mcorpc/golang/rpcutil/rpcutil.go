@@ -9,13 +9,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/discovery/facts"
+	"github.com/choria-io/go-config"
+	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/sirupsen/logrus"
 )
 
@@ -88,12 +87,14 @@ type DaemonStatsReply struct {
 
 // New creates a new rpcutil agent
 func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
+	bi := mgr.Choria().BuildInfo()
+
 	metadata := &agents.Metadata{
 		Name:        "rpcutil",
 		Description: "Choria MCollective RPC Compatability Utilities",
 		Author:      "R.I.Pienaar <rip@devco.net>",
-		Version:     build.Version,
-		License:     build.License,
+		Version:     bi.Version(),
+		License:     bi.License(),
 		Timeout:     2,
 		URL:         "http://choria.io",
 	}
@@ -122,13 +123,15 @@ func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 func daemonStatsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
 	stats := agent.ServerInfoSource.Stats()
 
+	bi := agent.Choria.BuildInfo()
+
 	output := &DaemonStatsReply{
 		Procs:       []string{fmt.Sprintf("Go %s with %d go procs on %d cores", runtime.Version(), runtime.NumGoroutine(), runtime.NumCPU())},
 		Agents:      agent.ServerInfoSource.KnownAgents(),
 		PID:         os.Getpid(),
 		Times:       CPUTimes{},
 		ConfigFile:  agent.ServerInfoSource.ConfigFile(),
-		Version:     build.Version,
+		Version:     bi.Version(),
 		StartTime:   agent.ServerInfoSource.StartTime().Unix(),
 		Total:       stats.Total,
 		Validated:   stats.Valid,
@@ -149,7 +152,7 @@ func inventoryAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		DataPlugins:    []string{},
 		Facts:          agent.ServerInfoSource.Facts(),
 		MainCollective: agent.Config.MainCollective,
-		Version:        build.Version,
+		Version:        agent.Choria.BuildInfo().Version(),
 	}
 
 	reply.Data = output
