@@ -47,6 +47,16 @@ var _ = Describe("Servers", func() {
 				"testh2:8080",
 			}))
 		})
+
+		It("Should correctly handle empty collections", func() {
+			s = &servers{[]Server{}}
+			called := false
+			s.Each(func(srv Server) {
+				called = true
+			})
+
+			Expect(called).To(BeFalse())
+		})
 	})
 
 	Describe("Strings", func() {

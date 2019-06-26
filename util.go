@@ -15,7 +15,7 @@ import (
 func StringHostsToServers(hosts []string, scheme string) (servers Servers, err error) {
 	instances := make([]Server, len(hosts))
 
-	for _, s := range hosts {
+	for i, s := range hosts {
 		detectedScheme := scheme
 		s = strings.TrimSpace(s)
 
@@ -48,7 +48,7 @@ func StringHostsToServers(hosts []string, scheme string) (servers Servers, err e
 			return servers, fmt.Errorf("no scheme provided and %s has no scheme", s)
 		}
 
-		instances = append(instances, server)
+		instances[i] = server
 	}
 
 	return NewServers(instances...), nil
