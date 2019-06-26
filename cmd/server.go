@@ -10,6 +10,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-protocol/protocol"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -81,6 +82,11 @@ func (e *serverRunCommand) Configure() error {
 
 	cfg.DisableSecurityProviderVerify = true
 	cfg.InitiatedByServer = true
+
+	if os.Getenv("INSECURE_YES_REALLY") == "true" {
+		protocol.Secure = "false"
+		cfg.DisableTLS = true
+	}
 
 	return nil
 }
