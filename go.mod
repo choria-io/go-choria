@@ -3,6 +3,7 @@ module github.com/choria-io/go-choria
 go 1.12
 
 require (
+	github.com/choria-io/go-client v0.4.3-0.20190626102458-2ce4fef30af5
 	github.com/choria-io/go-config v0.0.1
 	github.com/choria-io/go-lifecycle v1.0.2
 	github.com/choria-io/go-network-broker v0.0.0-20190625124056-911117ed82d4
@@ -16,7 +17,6 @@ require (
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
 	github.com/looplab/fsm v0.1.0
 	github.com/nats-io/nats-server/v2 v2.0.0
-	github.com/nats-io/nats-streaming-server v0.15.1 // indirect
 	github.com/nats-io/nats.go v1.8.1
 	github.com/nats-io/stan.go v0.5.0
 	github.com/onsi/ginkgo v1.8.0
