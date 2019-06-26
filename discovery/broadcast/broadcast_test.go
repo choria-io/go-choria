@@ -12,7 +12,7 @@ import (
 	"github.com/choria-io/go-protocol/protocol"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-config"
 	gomock "github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
