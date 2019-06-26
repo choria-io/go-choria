@@ -9,7 +9,7 @@ import (
 	"syscall"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-config"
 	lifecycle "github.com/choria-io/go-lifecycle"
 	kingpin "gopkg.in/alecthomas/kingpin.v2"
 )
