@@ -32,6 +32,7 @@ type ChoriaFramework interface {
 	ProvisionMode() bool
 	UniqueID() string
 	NewRequestID() (string, error)
+	Certname() string
 }
 
 // StatusCode is a reply status as defined by MCollective SimpleRPC - integers 0 to 5
