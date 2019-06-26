@@ -36,6 +36,7 @@ type ChoriaPluginConfig struct {
 	// nats connector
 	NatsUser                 string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`
 	NatsPass                 string   `confkey:"plugin.nats.pass" environment:"MCOLLECTIVE_NATS_PASSWORD"`
+	NatsCredentials          string   `confkey:"plugin.nats.credentials" environment:"MCOLLECTIVE_NATS_CREDENTIALS"`
 	MiddlewareHosts          []string `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`
 	RandomizeMiddlewareHosts bool     `confkey:"plugin.choria.randomize_middleware_hosts" default:"true"`
 
