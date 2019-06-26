@@ -18,6 +18,8 @@ github.com/choria-io/go-config v0.0.0-20190625114926-34befa33b967 h1:LxTFxXHsdke
 github.com/choria-io/go-config v0.0.0-20190625114926-34befa33b967/go.mod h1:YEb0InKPzG3wRSbfN3xZ/MjQ1FEzbmeq9FAo6yUnylM=
 github.com/choria-io/go-config v0.0.1 h1:5vvMB5MXdoZiK7GA35XKmnEqrznkb2CaaxEdXpN1ju0=
 github.com/choria-io/go-config v0.0.1/go.mod h1:YEb0InKPzG3wRSbfN3xZ/MjQ1FEzbmeq9FAo6yUnylM=
+github.com/choria-io/go-config v0.0.2-0.20190626111446-bb1475fe483b h1:82fgxR4dxsnLqDkzVyJpbHf2BSmbliK5fzFSYPAmO7Y=
+github.com/choria-io/go-config v0.0.2-0.20190626111446-bb1475fe483b/go.mod h1:YEb0InKPzG3wRSbfN3xZ/MjQ1FEzbmeq9FAo6yUnylM=
 github.com/choria-io/go-confkey v1.2.0 h1:kT35wUPPxpKDAg2/Me100yIV+po6aTrnZFyBXk0Ohn8=
 github.com/choria-io/go-confkey v1.2.0/go.mod h1:ojIUK4p2mX/ZSKuSG5hgU/p7Db+EIX8il4yjQweZtiU=
 github.com/choria-io/go-lifecycle v1.0.2 h1:rzzRYqeR60U2d16jlfLWQXUXAw3Peu/ALmFta7kwNW4=

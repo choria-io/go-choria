@@ -300,7 +300,7 @@ func (conn *Connection) Publish(msg *Message) error {
 		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err)
 	}
 
-	transport.RecordNetworkHop(conn.ConnectedServer(), conn.choria.Config.Identity, conn.ConnectedServer())
+	transport.RecordNetworkHop(conn.ConnectedServer(), conn.config.Identity, conn.ConnectedServer())
 
 	if msg.CustomTarget != "" {
 		return conn.publishConnectedBroadcast(msg, transport)
@@ -525,7 +525,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 	var tlsc *tls.Config
 
-	if !conn.choria.Config.DisableTLS {
+	if !conn.config.DisableTLS {
 		tlsc, err = conn.choria.TLSConfig()
 		if err != nil {
 			err = fmt.Errorf("Could not create TLS Config: %s", err)
@@ -577,12 +577,20 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}),
 	}
 
-	if !conn.choria.Config.DisableTLS {
+	if !conn.config.DisableTLS {
 		options = append(options, nats.Secure(tlsc))
 	}
 
-	if !conn.choria.Config.Choria.RandomizeMiddlewareHosts {
+	if !conn.config.Choria.RandomizeMiddlewareHosts {
 		options = append(options, nats.DontRandomize())
+	}
+
+	if conn.config.Choria.NatsUser != "" && conn.config.Choria.NatsPass != "" {
+		options = append(options, nats.UserInfo(conn.config.Choria.NatsUser, conn.config.Choria.NatsPass))
+	}
+
+	if conn.config.Choria.NatsCredentials != "" {
+		options = append(options, nats.UserCredentials(conn.config.Choria.NatsCredentials))
 	}
 
 	try := 0
