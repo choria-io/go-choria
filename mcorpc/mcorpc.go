@@ -29,6 +29,9 @@ type ChoriaFramework interface {
 	MiddlewareServers() (srvcache.Servers, error)
 	BuildInfo() *build.Info
 	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
+	ProvisionMode() bool
+	UniqueID() string
+	NewRequestID() (string, error)
 }
 
 // StatusCode is a reply status as defined by MCollective SimpleRPC - integers 0 to 5
