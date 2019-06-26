@@ -7,22 +7,36 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-client/discovery/broadcast"
+	config "github.com/choria-io/go-config"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/srvcache"
 	cclient "github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-srvcache"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	addl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 
 	"github.com/sirupsen/logrus"
 )
 
+type ChoriaFramework interface {
+	Logger(string) *logrus.Entry
+	Configuration() *config.Config
+	NewMessage(payload string, agent string, collective string, msgType string, request *choria.Message) (msg *choria.Message, err error)
+	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
+	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
+	MiddlewareServers() (servers srvcache.Servers, err error)
+	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn choria.Connector, err error)
+	NewRequestID() (string, error)
+	Certname() string
+}
+
 // RPC is a MCollective compatible RPC client
 type RPC struct {
-	fw   *choria.Framework
+	fw   ChoriaFramework
 	opts *RequestOptions
 	log  *logrus.Entry
+	cfg  *config.Config
 
 	agent string
 
@@ -81,9 +95,10 @@ func DDL(d *addl.DDL) Option {
 //
 // A DDL is required when one is not given using the DDL() option as argument
 // attempts will be made to find it on the file system should this fail an error will be returned
-func New(fw *choria.Framework, agent string, opts ...Option) (rpc *RPC, err error) {
+func New(fw ChoriaFramework, agent string, opts ...Option) (rpc *RPC, err error) {
 	rpc = &RPC{
 		fw:    fw,
+		cfg:   fw.Configuration(),
 		mu:    &sync.Mutex{},
 		log:   fw.Logger("mcorpc"),
 		agent: agent,
@@ -94,7 +109,7 @@ func New(fw *choria.Framework, agent string, opts ...Option) (rpc *RPC, err erro
 	}
 
 	if rpc.ddl == nil {
-		rpc.ddl, err = addl.Find(agent, fw.Config.LibDir)
+		rpc.ddl, err = addl.Find(agent, rpc.cfg.LibDir)
 		if err != nil {
 			return nil, fmt.Errorf("could not load %s DDL: %s", agent, err)
 		}
@@ -235,7 +250,7 @@ func (r *RPC) setupMessage(ctx context.Context, action string, payload interface
 		return nil, nil, fmt.Errorf("could not encode request: %s", err)
 	}
 
-	msg, err = r.fw.NewMessage(string(rpcp), r.agent, r.fw.Config.MainCollective, "request", nil)
+	msg, err = r.fw.NewMessage(string(rpcp), r.agent, r.cfg.MainCollective, "request", nil)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not create Message: %s", err)
 	}
@@ -365,11 +380,7 @@ func (r *RPC) handlerFactory(ctx context.Context, cancel func()) cclient.Handler
 }
 
 func (r *RPC) connectBatchedConnection(ctx context.Context, name string) (Connector, error) {
-	servers := func() ([]srvcache.Server, error) {
-		return r.fw.MiddlewareServers()
-	}
-
-	connector, err := r.fw.NewConnector(ctx, servers, name, r.log)
+	connector, err := r.fw.NewConnector(ctx, r.fw.MiddlewareServers, name, r.log)
 	if err != nil {
 		return nil, fmt.Errorf("could not create connector: %s", err)
 	}

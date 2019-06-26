@@ -14,9 +14,22 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-protocol/protocol"
+	srvcache "github.com/choria-io/go-srvcache"
 	"github.com/choria-io/go-validator"
 )
+
+// ChoriaFramework provides access to the choria framework
+type ChoriaFramework interface {
+	Configuration() *config.Config
+	FacterDomain() (string, error)
+	FacterCmd() string
+	MiddlewareServers() (srvcache.Servers, error)
+	BuildInfo() *build.Info
+	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
+}
 
 // StatusCode is a reply status as defined by MCollective SimpleRPC - integers 0 to 5
 //

@@ -7,7 +7,6 @@ import (
 	"runtime"
 
 	"github.com/choria-io/go-choria/aagent"
-	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
@@ -77,12 +76,14 @@ type machineTransitionReply struct {
 
 // New creates a new choria_util agent
 func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
+	bi := mgr.Choria().BuildInfo()
+
 	metadata := &agents.Metadata{
 		Name:        "choria_util",
 		Description: "Choria Utilities",
 		Author:      "R.I.Pienaar <rip@devco.net>",
-		Version:     build.Version,
-		License:     build.License,
+		Version:     bi.Version(),
+		License:     bi.License(),
 		Timeout:     10,
 		URL:         "http://choria.io",
 	}
@@ -142,15 +143,12 @@ func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 		domain = ""
 	}
 
-	var mservers []string
-
 	servers, err := agent.Choria.MiddlewareServers()
-	for _, server := range servers {
-		mservers = append(mservers, fmt.Sprintf("%s:%d", server.Host, server.Port))
-	}
+	mservers := servers.HostPorts()
 
 	options := conn.ConnectionOptions()
 	stats := conn.ConnectionStats()
+	bi := agent.Choria.BuildInfo()
 
 	reply.Data = &info{
 		Security:          "choria",
@@ -163,10 +161,10 @@ func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 		SrvDomain:         c.Choria.SRVDomain,
 		MiddlewareServers: mservers,
 		Path:              os.Getenv("PATH"),
-		ChoriaVersion:     fmt.Sprintf("choria %s", build.Version),
+		ChoriaVersion:     fmt.Sprintf("choria %s", bi.Version()),
 		UsingSrv:          c.Choria.UseSRVRecords,
 		ProtocolSecure:    protocol.IsSecure(),
-		ConnectorTLS:      build.HasTLS(),
+		ConnectorTLS:      bi.HasTLS(),
 		ClientStats: &cstats{
 			InMsgs:     stats.InMsgs,
 			InBytes:    stats.InBytes,

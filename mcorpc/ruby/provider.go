@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server"
+	"github.com/choria-io/go-config"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	"github.com/sirupsen/logrus"
 )

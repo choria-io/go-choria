@@ -8,7 +8,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-config"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	ddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	"github.com/golang/mock/gomock"
@@ -38,8 +38,9 @@ var _ = Describe("McoRPC/Ruby", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		agentMgr = NewMockAgentManager(mockctl)
 
-		cfg, err = config.NewDefaultConfig()
-		Expect(err).ToNot(HaveOccurred())
+		cfg = config.NewConfigForTests()
+		cfg.DisableSecurityProviderVerify = true
+
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
