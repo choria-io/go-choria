@@ -17,6 +17,9 @@ import (
 // Action is a function that implements a RPC Action
 type Action func(context.Context, *Request, *Reply, *Agent, choria.ConnectorInfo)
 
+// ActivationChecker is a function that can determine if an agent should be activated
+type ActivationChecker func() bool
+
 // Agent is an instance of the MCollective compatible RPC agents
 type Agent struct {
 	Log              *logrus.Entry
@@ -24,26 +27,43 @@ type Agent struct {
 	Choria           ChoriaFramework
 	ServerInfoSource agents.ServerInfoSource
 
-	meta    *agents.Metadata
-	actions map[string]Action
+	activationCheck ActivationChecker
+	meta            *agents.Metadata
+	actions         map[string]Action
 }
 
 // New creates a new MCollective SimpleRPC compatible agent
 func New(name string, metadata *agents.Metadata, fw ChoriaFramework, log *logrus.Entry) *Agent {
 	a := &Agent{
-		meta:    metadata,
-		Log:     log.WithFields(logrus.Fields{"agent": name}),
-		actions: make(map[string]Action),
-		Choria:  fw,
-		Config:  fw.Configuration(),
+		meta:            metadata,
+		Log:             log.WithFields(logrus.Fields{"agent": name}),
+		actions:         make(map[string]Action),
+		Choria:          fw,
+		Config:          fw.Configuration(),
+		activationCheck: func() bool { return true },
 	}
 
 	return a
 }
 
+// ShouldActivate checks if the agent should be active using the method set in SetActivationChecker
+func (a *Agent) ShouldActivate() bool {
+	return a.activationCheck()
+}
+
+// SetActivationChecker sets the function that can determine if the agent should be active
+func (a *Agent) SetActivationChecker(ac ActivationChecker) {
+	a.activationCheck = ac
+}
+
 // SetServerInfo stores the server info source that owns this agent
 func (a *Agent) SetServerInfo(si agents.ServerInfoSource) {
 	a.ServerInfoSource = si
+}
+
+// ServerInfo returns the stored server info source
+func (a *Agent) ServerInfo() agents.ServerInfoSource {
+	return a.ServerInfoSource
 }
 
 // RegisterAction registers an action into the agent

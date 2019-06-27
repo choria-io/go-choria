@@ -59,7 +59,7 @@ var _ = Describe("McoRPC", func() {
 		Expect(UnknownError).To(Equal(StatusCode(5)))
 	})
 
-	var _ = Describe("RegisterAction", func() {
+	Describe("RegisterAction", func() {
 		It("Should fail if the action already exist", func() {
 			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
 			err := agent.RegisterAction("test", action)
@@ -69,7 +69,7 @@ var _ = Describe("McoRPC", func() {
 		})
 	})
 
-	var _ = Describe("HandleMessage", func() {
+	Describe("HandleMessage", func() {
 		BeforeEach(func() {
 			req, err = fw.NewRequest(protocol.RequestV1, "test", "test.example.net", "choria=rip.mcollective", 60, "testrequest", "mcollective")
 			Expect(err).ToNot(HaveOccurred())
@@ -113,7 +113,7 @@ var _ = Describe("McoRPC", func() {
 		})
 	})
 
-	var _ = Describe("publish", func() {
+	Describe("publish", func() {
 		It("Should handle bad data", func() {
 			reply := &Reply{
 				Data: outbox,
@@ -127,7 +127,7 @@ var _ = Describe("McoRPC", func() {
 		PIt("Should publish good messages")
 	})
 
-	var _ = Describe("ParseRequestData", func() {
+	Describe("ParseRequestData", func() {
 		It("Should handle valid data correctly", func() {
 			req := &Request{
 				Data: json.RawMessage(`{"hello":"world"}`),
@@ -186,7 +186,7 @@ var _ = Describe("McoRPC", func() {
 		})
 	})
 
-	var _ = Describe("newReply", func() {
+	Describe("newReply", func() {
 		It("Should set the correct starting code and message", func() {
 			r := agent.newReply()
 			Expect(r.Statuscode).To(Equal(OK))
