@@ -18,7 +18,6 @@ require (
 	github.com/golang/mock v1.3.1
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
 	github.com/looplab/fsm v0.1.0
-	github.com/nats-io/go-nats v1.7.2 // indirect
 	github.com/nats-io/nats-server/v2 v2.0.0
 	github.com/nats-io/nats.go v1.8.1
 	github.com/nats-io/stan.go v0.5.0
