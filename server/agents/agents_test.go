@@ -110,7 +110,15 @@ var _ = Describe("Server/Agents", func() {
 	})
 
 	Describe("RegisterAgent", func() {
+		It("Should honor the ShouldActivate wish of the agent", func() {
+			agent.EXPECT().ShouldActivate().Return(false).Times(1)
+			err := mgr.RegisterAgent(ctx, "testing", agent, conn)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(mgr.KnownAgents()).To(BeEmpty())
+		})
+
 		It("Should honor the deny list", func() {
+			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
 			mgr.DenyAgent("testing")
 			err := mgr.RegisterAgent(ctx, "testing", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
@@ -118,6 +126,7 @@ var _ = Describe("Server/Agents", func() {
 		})
 
 		It("should not subscribe the agent twice", func() {
+			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -127,6 +136,7 @@ var _ = Describe("Server/Agents", func() {
 		})
 
 		It("should subscribe the agent to all collectives", func() {
+			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -136,6 +146,7 @@ var _ = Describe("Server/Agents", func() {
 		})
 
 		It("should handle subscribe failures", func() {
+			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
 			conn.NextErr = append(conn.NextErr, nil)
 			conn.NextErr = append(conn.NextErr, errors.New("2nd sub failed"))
 
@@ -148,6 +159,7 @@ var _ = Describe("Server/Agents", func() {
 		})
 
 		It("Should retrieve the right agent", func() {
+			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -159,6 +171,7 @@ var _ = Describe("Server/Agents", func() {
 
 	Describe("KnownAgents", func() {
 		It("Should report on all the known agnets", func() {
+			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
 			err := mgr.RegisterAgent(ctx, "stub1", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
 			err = mgr.RegisterAgent(ctx, "stub2", agent, conn)
@@ -184,6 +197,7 @@ var _ = Describe("Server/Agents", func() {
 
 			msg, err = choria.NewMessageFromRequest(request, "choria.reply.to", mgr.fw)
 			Expect(err).ToNot(HaveOccurred())
+			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
 		})
 
 		It("Should handle unknown agents", func() {

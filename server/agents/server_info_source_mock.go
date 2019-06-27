@@ -83,6 +83,30 @@ func (mr *MockAgentMockRecorder) SetServerInfo(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetServerInfo", reflect.TypeOf((*MockAgent)(nil).SetServerInfo), arg0)
 }
 
+// ServerInfo mocks base method
+func (m *MockAgent) ServerInfo() ServerInfoSource {
+	ret := m.ctrl.Call(m, "ServerInfo")
+	ret0, _ := ret[0].(ServerInfoSource)
+	return ret0
+}
+
+// ServerInfo indicates an expected call of ServerInfo
+func (mr *MockAgentMockRecorder) ServerInfo() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ServerInfo", reflect.TypeOf((*MockAgent)(nil).ServerInfo))
+}
+
+// ShouldActivate mocks base method
+func (m *MockAgent) ShouldActivate() bool {
+	ret := m.ctrl.Call(m, "ShouldActivate")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ShouldActivate indicates an expected call of ShouldActivate
+func (mr *MockAgentMockRecorder) ShouldActivate() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShouldActivate", reflect.TypeOf((*MockAgent)(nil).ShouldActivate))
+}
+
 // MockServerInfoSource is a mock of ServerInfoSource interface
 type MockServerInfoSource struct {
 	ctrl     *gomock.Controller

@@ -15,11 +15,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+// Agent is a generic choria agent
 type Agent interface {
 	Metadata() *Metadata
 	Name() string
 	HandleMessage(context.Context, *choria.Message, protocol.Request, choria.ConnectorInfo, chan *AgentReply)
 	SetServerInfo(ServerInfoSource)
+	ServerInfo() ServerInfoSource
+	ShouldActivate() bool
 }
 
 // ServerInfoSource provides data about a running server instance
@@ -98,6 +101,11 @@ func (a *Manager) DenyAgent(agent string) {
 func (a *Manager) RegisterAgent(ctx context.Context, name string, agent Agent, conn choria.AgentConnector) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
+
+	if !agent.ShouldActivate() {
+		a.log.Infof("Agent %s not activating due to ShouldActivate checks", name)
+		return nil
+	}
 
 	if a.agentDenied(name) {
 		a.log.Infof("Denying agent %s based on agent deny list", name)
