@@ -120,7 +120,7 @@ var _ = Describe("Network Broker", func() {
 
 			srv, err = NewServer(fw, bi, false)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(srv.as).ToNot(Equal(nil))
+			Expect(srv.as).ToNot(BeNil())
 		})
 
 		It("Should fail when starting JWT accounts fails", func() {
@@ -131,6 +131,20 @@ var _ = Describe("Network Broker", func() {
 
 			srv, err = NewServer(fw, bi, false)
 			Expect(err).To(HaveOccurred())
+		})
+
+		It("Should support setting system accounts", func() {
+			cfg.Choria.NetworkAccountOperator = "choria_operator"
+			cfg.Choria.NetworkSystemAccount = "ADMB22B4NQU27GI3KP6XUEFM5RSMOJY4O75NCP2P5JPQC2NGQNG6NJX2"
+			cfg.ConfigFile = "testdata/broker.cfg"
+			cfg.DisableTLS = true
+			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
+
+			srv, err = NewServer(fw, bi, false)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(srv.as).ToNot(BeNil())
+			a := srv.gnatsd.SystemAccount()
+			Expect(a).ToNot(BeNil())
 		})
 
 		It("Should support disabling TLS", func() {
