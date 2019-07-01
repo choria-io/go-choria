@@ -112,6 +112,27 @@ var _ = Describe("Network Broker", func() {
 		// 	Expect(srv.opts.TLSVerify).To(BeFalse())
 		// })
 
+		It("Should support JWT accounts", func() {
+			cfg.Choria.NetworkAccountOperator = "choria_operator"
+			cfg.ConfigFile = "testdata/broker.cfg"
+			cfg.DisableTLS = true
+			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
+
+			srv, err = NewServer(fw, bi, false)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(srv.as).ToNot(Equal(nil))
+		})
+
+		It("Should fail when starting JWT accounts fails", func() {
+			cfg.Choria.NetworkAccountOperator = "choria_operator"
+			cfg.ConfigFile = "testdata/nonexisting/broker.cfg"
+			cfg.DisableTLS = true
+			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
+
+			srv, err = NewServer(fw, bi, false)
+			Expect(err).To(HaveOccurred())
+		})
+
 		It("Should support disabling TLS", func() {
 			cfg.DisableTLS = true
 			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)

@@ -104,8 +104,9 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 
 	s.gnatsd.SetLogger(newLogger(), s.opts.Debug, false)
 
-	if s.operator != "" {
-		s.as, err = newDirAccountStore(s.gnatsd, filepath.Join(filepath.Dir(s.config.ConfigFile), fmt.Sprintf("accounts/nats/%s", s.operator)))
+	if s.config.Choria.NetworkAccountOperator != "" {
+		s.log.Infof("Starting Account servers under operator %s", s.config.Choria.NetworkAccountOperator)
+		s.as, err = newDirAccountStore(s.gnatsd, filepath.Join(filepath.Dir(s.config.ConfigFile), fmt.Sprintf("accounts/nats/%s", s.config.Choria.NetworkAccountOperator)))
 		if err != nil {
 			return s, fmt.Errorf("could not start account store: %s", err)
 		}
