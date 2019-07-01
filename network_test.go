@@ -54,7 +54,7 @@ var _ = Describe("Network Broker", func() {
 		mockctl.Finish()
 	})
 
-	var _ = Describe("NewServer", func() {
+	Describe("NewServer", func() {
 		It("Should initialize the server correctly", func() {
 			cfg.Choria.NetworkListenAddress = "0.0.0.0"
 			cfg.Choria.NetworkClientPort = 8080
