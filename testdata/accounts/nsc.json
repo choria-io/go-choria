@@ -1,1 +1,1 @@
-{"store_root":"/Users/rip/go/src/github.com/choria-io/go-network-broker/testdata/accounts","operator":"choria_operator","account":"","cluster":"","github_updates":"nats-io/nsc","last_update":1561986925}
+{"store_root":"testdata/accounts/nats","operator":"choria_operator","account":"","cluster":"","github_updates":"nats-io/nsc","last_update":1561986925}

@@ -4,6 +4,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"sync"
@@ -12,6 +13,7 @@ import (
 	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-srvcache"
 
+	"github.com/nats-io/jwt"
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 	logrus "github.com/sirupsen/logrus"
 )
@@ -97,6 +99,32 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		return s, fmt.Errorf("could not setup clustering: %s", err)
 	}
 
+	if s.config.Choria.NetworkAccountOperator != "" {
+		s.log.Infof("Starting Broker Account services under operator %s", s.config.Choria.NetworkAccountOperator)
+
+		operatorRoot := filepath.Join(filepath.Dir(s.config.ConfigFile), "accounts", "nats", s.config.Choria.NetworkAccountOperator)
+		operatorPath := filepath.Join(operatorRoot, fmt.Sprintf("%s.jwt", s.config.Choria.NetworkAccountOperator))
+
+		contents, err := ioutil.ReadFile(operatorPath)
+		if err != nil {
+			return s, fmt.Errorf("could not load operator JWT from %s: %s", operatorPath, err)
+		}
+
+		opc, err := jwt.DecodeOperatorClaims(string(contents))
+		if err != nil {
+			return s, fmt.Errorf("could not load operator JWT: %s", err)
+		}
+
+		s.opts.TrustedOperators = []*jwt.OperatorClaims{opc}
+
+		s.as, err = newDirAccountStore(s.gnatsd, operatorRoot)
+		if err != nil {
+			return s, fmt.Errorf("could not start account store: %s", err)
+		}
+
+		s.opts.AccountResolver = s.as
+	}
+
 	s.gnatsd, err = gnatsd.NewServer(s.opts)
 	if err != nil {
 		return s, fmt.Errorf("could not setup server: %s", err)
@@ -105,14 +133,14 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	s.gnatsd.SetLogger(newLogger(), s.opts.Debug, false)
 
 	if s.config.Choria.NetworkAccountOperator != "" {
-		s.log.Infof("Starting Account servers under operator %s", s.config.Choria.NetworkAccountOperator)
-		s.as, err = newDirAccountStore(s.gnatsd, filepath.Join(filepath.Dir(s.config.ConfigFile), fmt.Sprintf("accounts/nats/%s", s.config.Choria.NetworkAccountOperator)))
-		if err != nil {
-			return s, fmt.Errorf("could not start account store: %s", err)
+		if s.config.Choria.NetworkSystemAccount != "" {
+			s.log.Infof("Setting the Broker Systems Account to %s and enabling broker events", s.config.Choria.NetworkAccountOperator)
+			err = s.gnatsd.SetSystemAccount(s.config.Choria.NetworkSystemAccount)
+			if err != nil {
+				return s, fmt.Errorf("could not set systems account: %s", err)
+			}
 		}
 	}
-
-	s.gnatsd.SetAccountResolver(s.as)
 
 	return
 }
