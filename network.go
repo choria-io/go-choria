@@ -38,12 +38,13 @@ type accountStore interface {
 
 // Server represents the Choria network broker server
 type Server struct {
-	gnatsd *gnatsd.Server
-	opts   *gnatsd.Options
-	choria ChoriaFramework
-	config *config.Config
-	log    *logrus.Entry
-	as     accountStore
+	gnatsd   *gnatsd.Server
+	opts     *gnatsd.Options
+	choria   ChoriaFramework
+	config   *config.Config
+	log      *logrus.Entry
+	as       accountStore
+	operator string
 
 	started bool
 
@@ -103,9 +104,11 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 
 	s.gnatsd.SetLogger(newLogger(), s.opts.Debug, false)
 
-	s.as, err = newDirAccountStore(s.gnatsd, filepath.Join(filepath.Dir(s.config.ConfigFile), "accounts"))
-	if err != nil {
-		return s, fmt.Errorf("could not start account store: %s", err)
+	if s.operator != "" {
+		s.as, err = newDirAccountStore(s.gnatsd, filepath.Join(filepath.Dir(s.config.ConfigFile), fmt.Sprintf("accounts/nats/%s", s.operator)))
+		if err != nil {
+			return s, fmt.Errorf("could not start account store: %s", err)
+		}
 	}
 
 	s.gnatsd.SetAccountResolver(s.as)
