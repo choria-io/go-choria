@@ -49,9 +49,12 @@ type ChoriaPluginConfig struct {
 	NetworkPeers              []string      `confkey:"plugin.choria.network.peers" type:"comma_split"`
 	NetworkWriteDeadline      time.Duration `confkey:"plugin.choria.network.write_deadline" type:"duration" default:"5s"`
 	NetworkAllowedClientHosts []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`
-	BrokerNetwork             bool          `confkey:"plugin.choria.broker_network" default:"false"`
-	BrokerDiscovery           bool          `confkey:"plugin.choria.broker_discovery" default:"false"`
-	BrokerFederation          bool          `confkey:"plugin.choria.broker_federation" default:"false"`
+	NetworkAccountOperator    string        `confkey:"plugin.choria.network.account_operator"`
+
+	// broker features
+	BrokerNetwork    bool `confkey:"plugin.choria.broker_network" default:"false"`
+	BrokerDiscovery  bool `confkey:"plugin.choria.broker_discovery" default:"false"`
+	BrokerFederation bool `confkey:"plugin.choria.broker_federation" default:"false"`
 
 	// registration
 	FileContentRegistrationData   string `confkey:"plugin.choria.registration.file_content.data" default:""`
