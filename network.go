@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"path/filepath"
 	"sync"
 	"time"
 
@@ -28,6 +29,13 @@ type ChoriaFramework interface {
 	Configuration() *config.Config
 }
 
+type accountStore interface {
+	Start(context.Context, *sync.WaitGroup)
+	Stop()
+
+	gnatsd.AccountResolver
+}
+
 // Server represents the Choria network broker server
 type Server struct {
 	gnatsd *gnatsd.Server
@@ -35,6 +43,7 @@ type Server struct {
 	choria ChoriaFramework
 	config *config.Config
 	log    *logrus.Entry
+	as     accountStore
 
 	started bool
 
@@ -66,7 +75,7 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	if !s.config.DisableTLS {
 		err = s.setupTLS()
 		if err != nil {
-			return s, fmt.Errorf("Could not setup TLS: %s", err)
+			return s, fmt.Errorf("could not setup TLS: %s", err)
 		}
 	}
 
@@ -94,6 +103,13 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 
 	s.gnatsd.SetLogger(newLogger(), s.opts.Debug, false)
 
+	s.as, err = newDirAccountStore(s.gnatsd, filepath.Join(filepath.Dir(s.config.ConfigFile), "accounts"))
+	if err != nil {
+		return s, fmt.Errorf("could not start account store: %s", err)
+	}
+
+	s.gnatsd.SetAccountResolver(s.as)
+
 	return
 }
 
@@ -107,6 +123,9 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	s.log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, s.config.ConfigFile)
 
+	wg.Add(1)
+	s.as.Start(ctx, wg)
+
 	go s.gnatsd.Start()
 
 	s.mu.Lock()
@@ -117,10 +136,12 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	select {
 	case <-ctx.Done():
+		s.log.Warn("Choria Network Broker shutting down")
 		s.gnatsd.Shutdown()
+		s.as.Stop()
 	}
 
-	s.log.Warn("Choria Network Broker shutting down")
+	s.log.Warn("Choria Network Broker shut down")
 }
 
 func (s *Server) setupCluster() (err error) {
@@ -132,7 +153,7 @@ func (s *Server) setupCluster() (err error) {
 
 	peers, err := s.choria.NetworkBrokerPeers()
 	if err != nil {
-		return fmt.Errorf("Could not determine network broker peers: %s", err)
+		return fmt.Errorf("could not determine network broker peers: %s", err)
 	}
 
 	for _, p := range peers.Servers() {
@@ -148,7 +169,7 @@ func (s *Server) setupCluster() (err error) {
 	// Remove any host/ip that points to itself in Route
 	newroutes, err := gnatsd.RemoveSelfReference(s.opts.Cluster.Port, s.opts.Routes)
 	if err != nil {
-		return fmt.Errorf("Could not remove own Self from cluster configuration: %s", err)
+		return fmt.Errorf("could not remove own Self from cluster configuration: %s", err)
 	}
 
 	s.opts.Routes = newroutes
