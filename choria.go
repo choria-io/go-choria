@@ -49,7 +49,8 @@ type ChoriaPluginConfig struct {
 	NetworkPeers              []string      `confkey:"plugin.choria.network.peers" type:"comma_split"`
 	NetworkWriteDeadline      time.Duration `confkey:"plugin.choria.network.write_deadline" type:"duration" default:"5s"`
 	NetworkAllowedClientHosts []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`
-	NetworkAccountOperator    string        `confkey:"plugin.choria.network.account_operator"`
+	NetworkAccountOperator    string        `confkey:"plugin.choria.network.operator_account"`
+	NetworkSystemAccount      string        `confkey:"plugin.choria.network.system_account"`
 
 	// broker features
 	BrokerNetwork    bool `confkey:"plugin.choria.broker_network" default:"false"`
