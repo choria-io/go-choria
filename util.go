@@ -14,6 +14,7 @@ import (
 // scheme will be used, if that does not parse into a valid url then an error will be returned
 func StringHostsToServers(hosts []string, scheme string) (servers Servers, err error) {
 	instances := make([]Server, len(hosts))
+	servers = NewServers()
 
 	for i, s := range hosts {
 		detectedScheme := scheme

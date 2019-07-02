@@ -15,5 +15,19 @@ var _ = Describe("Util", func() {
 			Expect(instances[0].String()).To(Equal("nats://c1:4222"))
 			Expect(instances[1].String()).To(Equal("nats://c2:4222"))
 		})
+
+		It("Should return valid Servers even on error", func() {
+			servers, err := StringHostsToServers([]string{"x"}, "nats")
+			Expect(err).To(HaveOccurred())
+			Expect(servers.Count()).To(Equal(0))
+
+			servers, err = StringHostsToServers([]string{"x:x"}, "nats")
+			Expect(err).To(HaveOccurred())
+			Expect(servers.Count()).To(Equal(0))
+
+			servers, err = StringHostsToServers([]string{"x:10"}, "")
+			Expect(err).To(HaveOccurred())
+			Expect(servers.Count()).To(Equal(0))
+		})
 	})
 })
