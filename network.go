@@ -127,8 +127,10 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	s.log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, s.config.ConfigFile)
 
-	wg.Add(1)
-	s.as.Start(ctx, wg)
+	if s.as != nil {
+		wg.Add(1)
+		s.as.Start(ctx, wg)
+	}
 
 	go s.gnatsd.Start()
 
@@ -142,7 +144,10 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	case <-ctx.Done():
 		s.log.Warn("Choria Network Broker shutting down")
 		s.gnatsd.Shutdown()
-		s.as.Stop()
+
+		if s.as != nil {
+			s.as.Stop()
+		}
 	}
 
 	s.log.Warn("Choria Network Broker shut down")
