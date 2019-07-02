@@ -4,7 +4,6 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"path/filepath"
 	"sync"
@@ -13,7 +12,6 @@ import (
 	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-srvcache"
 
-	"github.com/nats-io/jwt"
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 	logrus "github.com/sirupsen/logrus"
 )
@@ -174,17 +172,11 @@ func (s *Server) setupAccounts() (err error) {
 	operatorRoot := filepath.Join(filepath.Dir(s.config.ConfigFile), "accounts", "nats", s.config.Choria.NetworkAccountOperator)
 	operatorPath := filepath.Join(operatorRoot, fmt.Sprintf("%s.jwt", s.config.Choria.NetworkAccountOperator))
 
-	contents, err := ioutil.ReadFile(operatorPath)
+	opc, err := gnatsd.ReadOperatorJWT(operatorPath)
 	if err != nil {
 		return fmt.Errorf("could not load operator JWT from %s: %s", operatorPath, err)
 	}
-
-	opc, err := jwt.DecodeOperatorClaims(string(contents))
-	if err != nil {
-		return fmt.Errorf("could not load operator JWT: %s", err)
-	}
-
-	s.opts.TrustedOperators = []*jwt.OperatorClaims{opc}
+	s.opts.TrustedOperators = append(s.opts.TrustedOperators, opc)
 
 	s.as, err = newDirAccountStore(s.gnatsd, operatorRoot)
 	if err != nil {
