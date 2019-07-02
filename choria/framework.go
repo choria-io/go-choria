@@ -201,6 +201,8 @@ func (fw *Framework) FederationCollectives() (collectives []string) {
 //	  * Doing SRV lookups of  _mcollective-federation_server._tcp and _x-puppet-mcollective_federation._tcp
 func (fw *Framework) FederationMiddlewareServers() (servers srvcache.Servers, err error) {
 	configured := fw.Config.Choria.FederationMiddlewareHosts
+	servers = srvcache.NewServers()
+
 	if len(configured) > 0 {
 		servers, err = srvcache.StringHostsToServers(configured, "nats")
 		if err != nil {
@@ -243,7 +245,9 @@ func (fw *Framework) MiddlewareServers() (servers srvcache.Servers, err error) {
 		return fw.FederationMiddlewareServers()
 	}
 
+	servers = srvcache.NewServers()
 	configured := fw.Config.Choria.MiddlewareHosts
+
 	if len(configured) > 0 {
 		servers, err = srvcache.StringHostsToServers(configured, "nats")
 		if err != nil {
@@ -272,7 +276,7 @@ func (fw *Framework) MiddlewareServers() (servers srvcache.Servers, err error) {
 }
 
 // SetupLogging configures logging based on choria config directives
-// currently only file and console behaviours are supported
+// currently only file and console behaviors are supported
 func (fw *Framework) SetupLogging(debug bool) (err error) {
 	fw.log = log.New()
 
@@ -342,18 +346,19 @@ func (fw *Framework) TrySrvLookup(names []string, defaultSrv srvcache.Server) (s
 //
 // If the config disables SRV then a error is returned.
 func (fw *Framework) QuerySrvRecords(records []string) (srvcache.Servers, error) {
+	servers := srvcache.NewServers()
+
 	if !fw.Config.Choria.UseSRVRecords {
-		return srvcache.NewServers(), errors.New("SRV lookups are disabled in the configuration file")
+		return servers, errors.New("SRV lookups are disabled in the configuration file")
 	}
 
-	var servers srvcache.Servers
 	domain := fw.Config.Choria.SRVDomain
 	var err error
 
 	if fw.Config.Choria.SRVDomain == "" {
 		domain, err = fw.FacterDomain()
 		if err != nil {
-			return srvcache.NewServers(), err
+			return servers, err
 		}
 
 		// cache the result to speed things up
@@ -371,6 +376,7 @@ func (fw *Framework) QuerySrvRecords(records []string) (srvcache.Servers, error)
 		}
 
 		log.Debugf("Found %d SRV records for %s", servers.Count(), record)
+		break
 	}
 
 	return servers, nil
