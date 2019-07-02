@@ -57,7 +57,7 @@ func (c *Cache) LookupSRV(service string, proto string, name string) (cname stri
 func (c *Cache) LookupSrvServers(service string, proto string, name string, scheme string) (s Servers, err error) {
 	_, addrs, err := c.LookupSRV(service, proto, name)
 	if err != nil {
-		return nil, err
+		return NewServers(), err
 	}
 
 	servers := make([]Server, len(addrs))
