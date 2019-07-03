@@ -5,7 +5,6 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
-	"net/url"
 	"path/filepath"
 	"sync"
 	"time"
@@ -74,11 +73,9 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		s.opts.Debug = true
 	}
 
-	if !s.config.DisableTLS {
-		err = s.setupTLS()
-		if err != nil {
-			return s, fmt.Errorf("could not setup TLS: %s", err)
-		}
+	err = s.setupTLS()
+	if err != nil {
+		return s, fmt.Errorf("could not setup TLS: %s", err)
 	}
 
 	if s.config.Choria.StatsPort > 0 {
@@ -93,19 +90,19 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		}
 	}
 
-	err = s.setupCluster()
-	if err != nil {
-		return s, fmt.Errorf("could not setup clustering: %s", err)
-	}
-
 	err = s.setupAccounts()
 	if err != nil {
 		return s, fmt.Errorf("could not set up accounts: %s", err)
 	}
 
+	err = s.setupCluster()
+	if err != nil {
+		return s, fmt.Errorf("could not setup clustering: %s", err)
+	}
+
 	err = s.setupLeafNodes()
 	if err != nil {
-		return s, fmt.Errorf("could not setup leaf nodes: %s", err)
+		return s, fmt.Errorf("could not setup leafnodes: %s", err)
 	}
 
 	s.gnatsd, err = gnatsd.NewServer(s.opts)
@@ -210,7 +207,7 @@ func (s *Server) setupLeafNodes() (err error) {
 	s.opts.LeafNode.Port = s.config.Choria.NetworkLeafPort
 	s.opts.LeafNode.NoAdvertise = true
 
-	if !s.config.DisableTLS {
+	if s.IsTLS() {
 		s.opts.LeafNode.TLSConfig = s.opts.TLSConfig
 		s.opts.LeafNode.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
 		s.opts.LeafNode.TLSConfig.RootCAs = s.opts.TLSConfig.ClientCAs
@@ -226,21 +223,32 @@ func (s *Server) setupLeafNodes() (err error) {
 			Credentials:  s.config.Option(root+".credentials", ""),
 		}
 
-		urls := s.config.Option(root+".url", "")
-		if urls == "" {
+		urlStr := s.config.Option(root+".url", "")
+		if urlStr == "" {
 			s.log.Errorf("Leafnode %s has no remote url, ignoring", r)
 			continue
 		}
 
-		u, err := url.Parse(urls)
+		urlSrvs, err := srvcache.StringHostsToServers([]string{urlStr}, "leafnode")
 		if err != nil {
-			s.log.Errorf("Could not parse URL for leaf node remote %s url '%s': %s", r, urls, err)
+			s.log.Errorf("Could not parse URL for leafnode remote %s url '%s': %s", r, urlStr, err)
 			continue
 		}
-		u.Scheme = "leafnode"
-		remote.URL = u
 
-		if !s.config.DisableTLS {
+		if urlSrvs.Count() != 1 {
+			s.log.Errorf("Could not parse URL for leafnode remote %s url '%s': need exactly 1 url", r, urlStr)
+			continue
+		}
+
+		urlU, err := urlSrvs.URLs()
+		if err != nil {
+			s.log.Errorf("Could not parse URL for leafnode remote %s url '%s': %s", r, urlStr, err)
+			continue
+		}
+
+		remote.URL = urlU[0]
+
+		if s.IsTLS() {
 			remote.TLS = true
 			remote.TLSConfig = s.opts.LeafNode.TLSConfig
 			remote.TLSTimeout = s.opts.LeafNode.TLSTimeout
@@ -282,10 +290,21 @@ func (s *Server) setupCluster() (err error) {
 
 	s.opts.Routes = newroutes
 
+	if s.IsTLS() {
+		s.opts.Cluster.TLSConfig = s.opts.TLSConfig
+		s.opts.Cluster.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
+		s.opts.Cluster.TLSConfig.RootCAs = s.opts.TLSConfig.ClientCAs
+		s.opts.Cluster.TLSTimeout = s.opts.TLSTimeout
+	}
+
 	return
 }
 
 func (s *Server) setupTLS() (err error) {
+	if !s.IsTLS() {
+		return nil
+	}
+
 	s.opts.TLS = true
 	s.opts.TLSVerify = !s.config.DisableTLSVerify
 	s.opts.TLSTimeout = 2
@@ -297,11 +316,6 @@ func (s *Server) setupTLS() (err error) {
 
 	s.opts.TLSConfig = tlsc
 
-	s.opts.Cluster.TLSConfig = s.opts.TLSConfig
-	s.opts.Cluster.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
-	s.opts.Cluster.TLSConfig.RootCAs = tlsc.ClientCAs
-	s.opts.Cluster.TLSTimeout = s.opts.TLSTimeout
-
 	return
 }
 
@@ -311,4 +325,14 @@ func (s *Server) Started() bool {
 	defer s.mu.Unlock()
 
 	return s.started
+}
+
+// IsTLS determines if tls should be enabled
+func (s *Server) IsTLS() bool {
+	return !s.config.DisableTLS
+}
+
+// IsVerifiedTLS determines if tls should be enabled
+func (s *Server) IsVerifiedTLS() bool {
+	return !s.config.DisableTLSVerify
 }
