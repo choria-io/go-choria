@@ -98,14 +98,14 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		return s, fmt.Errorf("could not setup clustering: %s", err)
 	}
 
-	err = s.setupLeafNodes()
-	if err != nil {
-		return s, fmt.Errorf("could not setup leaf nodes: %s", err)
-	}
-
 	err = s.setupAccounts()
 	if err != nil {
 		return s, fmt.Errorf("could not set up accounts: %s", err)
+	}
+
+	err = s.setupLeafNodes()
+	if err != nil {
+		return s, fmt.Errorf("could not setup leaf nodes: %s", err)
 	}
 
 	s.gnatsd, err = gnatsd.NewServer(s.opts)
@@ -219,23 +219,26 @@ func (s *Server) setupLeafNodes() (err error) {
 
 	for _, r := range s.config.Choria.NetworkLeafRemotes {
 		root := fmt.Sprintf("plugin.choria.network.leafnode_remote.%s", r)
+		s.log.Infof("Adding leafnode remote %s via %s", r, root)
 
 		remote := &gnatsd.RemoteLeafOpts{
-			LocalAccount: s.config.Option(root+"%s.account", ""),
-			Credentials:  s.config.Option(root+"%s.credentials", ""),
+			LocalAccount: s.config.Option(root+".account", ""),
+			Credentials:  s.config.Option(root+".credentials", ""),
 		}
 
 		urls := s.config.Option(root+".url", "")
 		if urls == "" {
-			u, err := url.Parse(urls)
-			if err != nil {
-				s.log.Errorf("Could not parse URL for leaf node remote %s url '%s': %s", r, urls, err)
-				continue
-			}
-			u.Scheme = "leafnode"
-
-			remote.URL = u
+			s.log.Errorf("Leafnode %s has no remote url, ignoring", r)
+			continue
 		}
+
+		u, err := url.Parse(urls)
+		if err != nil {
+			s.log.Errorf("Could not parse URL for leaf node remote %s url '%s': %s", r, urls, err)
+			continue
+		}
+		u.Scheme = "leafnode"
+		remote.URL = u
 
 		if !s.config.DisableTLS {
 			remote.TLS = true
