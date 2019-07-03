@@ -2,7 +2,6 @@ package network
 
 import (
 	tls "crypto/tls"
-	"os"
 	"testing"
 	"time"
 
@@ -28,6 +27,7 @@ var _ = Describe("Network Broker", func() {
 		bi      *MockBuildInfoProvider
 		srv     *Server
 		err     error
+		logger  *logrus.Entry
 	)
 
 	BeforeEach(func() {
@@ -35,18 +35,16 @@ var _ = Describe("Network Broker", func() {
 		bi = NewMockBuildInfoProvider(mockctl)
 		fw = NewMockChoriaFramework(mockctl)
 
-		os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
-
 		cfg, err = config.NewDefaultConfig()
 		Expect(err).ToNot(HaveOccurred())
 
 		cfg.Choria.SSLDir = "testdata/ssl"
 
-		logger := logrus.NewEntry(logrus.New())
+		logger = logrus.NewEntry(logrus.New())
 		logger.Logger.SetLevel(logrus.ErrorLevel)
 
-		fw.EXPECT().Configuration().Return(cfg)
-		fw.EXPECT().Logger(gomock.Any()).Return(logger)
+		fw.EXPECT().Configuration().Return(cfg).AnyTimes()
+		fw.EXPECT().Logger(gomock.Any()).Return(logger).AnyTimes()
 		bi.EXPECT().MaxBrokerClients().Return(50000).AnyTimes()
 	})
 
@@ -99,6 +97,8 @@ var _ = Describe("Network Broker", func() {
 			Expect(srv.opts.TLSVerify).To(BeTrue())
 			Expect(srv.opts.TLSTimeout).To(Equal(float64(2)))
 			Expect(srv.opts.Cluster.TLSTimeout).To(Equal(float64(2)))
+			Expect(srv.opts.LeafNode.Host).To(Equal(""))
+			Expect(srv.opts.LeafNode.Port).To(Equal(0))
 		})
 
 		// It("Should support disabling TLS Verify", func() {
@@ -112,41 +112,6 @@ var _ = Describe("Network Broker", func() {
 		// 	Expect(srv.opts.TLSVerify).To(BeFalse())
 		// })
 
-		It("Should support JWT accounts", func() {
-			cfg.Choria.NetworkAccountOperator = "choria_operator"
-			cfg.ConfigFile = "testdata/broker.cfg"
-			cfg.DisableTLS = true
-			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
-
-			srv, err = NewServer(fw, bi, false)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(srv.as).ToNot(BeNil())
-		})
-
-		It("Should fail when starting JWT accounts fails", func() {
-			cfg.Choria.NetworkAccountOperator = "choria_operator"
-			cfg.ConfigFile = "testdata/nonexisting/broker.cfg"
-			cfg.DisableTLS = true
-			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
-
-			srv, err = NewServer(fw, bi, false)
-			Expect(err).To(HaveOccurred())
-		})
-
-		It("Should support setting system accounts", func() {
-			cfg.Choria.NetworkAccountOperator = "choria_operator"
-			cfg.Choria.NetworkSystemAccount = "ADMB22B4NQU27GI3KP6XUEFM5RSMOJY4O75NCP2P5JPQC2NGQNG6NJX2"
-			cfg.ConfigFile = "testdata/broker.cfg"
-			cfg.DisableTLS = true
-			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
-
-			srv, err = NewServer(fw, bi, false)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(srv.as).ToNot(BeNil())
-			a := srv.gnatsd.SystemAccount()
-			Expect(a).ToNot(BeNil())
-		})
-
 		It("Should support disabling TLS", func() {
 			cfg.DisableTLS = true
 			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
@@ -154,6 +119,79 @@ var _ = Describe("Network Broker", func() {
 			srv, err = NewServer(fw, bi, false)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(srv.opts.TLS).To(BeFalse())
+		})
+
+		Describe("Leafnodes", func() {
+			BeforeEach(func() {
+				fw = NewMockChoriaFramework(mockctl)
+
+				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil)
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
+				fw.EXPECT().Logger(gomock.Any()).Return(logger)
+				bi.EXPECT().MaxBrokerClients().Return(50000).AnyTimes()
+			})
+
+			It("Should support basic listening only leafnodes mode", func() {
+				config, err := config.NewConfig("testdata/leafnodes/listening.cfg")
+				Expect(err).ToNot(HaveOccurred())
+
+				fw.EXPECT().Configuration().Return(config).AnyTimes()
+
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(srv.opts.LeafNode.Port).To(Equal(6222))
+				Expect(srv.opts.LeafNode.Remotes).To(HaveLen(0))
+			})
+
+			It("Should support connecting to leafnodes", func() {
+				config, err := config.NewConfig("testdata/leafnodes/remotes.cfg")
+				Expect(err).ToNot(HaveOccurred())
+				Expect(config.Choria.NetworkLeafRemotes).To(Equal([]string{"ln1", "ln2"}))
+				fw.EXPECT().Configuration().Return(config).AnyTimes()
+
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(srv.opts.LeafNode.Port).To(Equal(6222))
+				Expect(srv.opts.LeafNode.Remotes).To(HaveLen(2))
+				Expect(srv.opts.LeafNode.Remotes[0].URL.String()).To(Equal("leafnode://ln1.example.net:6222"))
+				Expect(srv.opts.LeafNode.Remotes[1].URL.String()).To(Equal("leafnode://ln2.example.net:6222"))
+			})
+		})
+
+		Describe("Accounts", func() {
+			It("Should support JWT accounts", func() {
+				cfg.Choria.NetworkAccountOperator = "choria_operator"
+				cfg.ConfigFile = "testdata/broker.cfg"
+				cfg.DisableTLS = true
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
+
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(srv.as).ToNot(BeNil())
+			})
+
+			It("Should fail when starting JWT accounts fails", func() {
+				cfg.Choria.NetworkAccountOperator = "choria_operator"
+				cfg.ConfigFile = "testdata/nonexisting/broker.cfg"
+				cfg.DisableTLS = true
+
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).To(HaveOccurred())
+			})
+
+			It("Should support setting system accounts", func() {
+				cfg.Choria.NetworkAccountOperator = "choria_operator"
+				cfg.Choria.NetworkSystemAccount = "ADMB22B4NQU27GI3KP6XUEFM5RSMOJY4O75NCP2P5JPQC2NGQNG6NJX2"
+				cfg.ConfigFile = "testdata/broker.cfg"
+				cfg.DisableTLS = true
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
+
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(srv.as).ToNot(BeNil())
+				a := srv.gnatsd.SystemAccount()
+				Expect(a).ToNot(BeNil())
+			})
 		})
 	})
 })
