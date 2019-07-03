@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"net/url"
 	"path/filepath"
 	"sync"
 	"time"
@@ -95,6 +96,11 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	err = s.setupCluster()
 	if err != nil {
 		return s, fmt.Errorf("could not setup clustering: %s", err)
+	}
+
+	err = s.setupLeafNodes()
+	if err != nil {
+		return s, fmt.Errorf("could not setup leaf nodes: %s", err)
 	}
 
 	err = s.setupAccounts()
@@ -189,6 +195,56 @@ func (s *Server) setupAccounts() (err error) {
 	}
 
 	s.opts.AccountResolver = s.as
+
+	return nil
+}
+
+func (s *Server) setupLeafNodes() (err error) {
+	if s.config.Choria.NetworkLeafPort == 0 {
+		return nil
+	}
+
+	s.log.Infof("Starting Broker Leaf Node support listening on %s:%d", s.config.Choria.NetworkListenAddress, s.config.Choria.NetworkLeafPort)
+
+	s.opts.LeafNode.Host = s.config.Choria.NetworkListenAddress
+	s.opts.LeafNode.Port = s.config.Choria.NetworkLeafPort
+	s.opts.LeafNode.NoAdvertise = true
+
+	if !s.config.DisableTLS {
+		s.opts.LeafNode.TLSConfig = s.opts.TLSConfig
+		s.opts.LeafNode.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
+		s.opts.LeafNode.TLSConfig.RootCAs = s.opts.TLSConfig.ClientCAs
+		s.opts.LeafNode.TLSTimeout = s.opts.TLSTimeout
+	}
+
+	for _, r := range s.config.Choria.NetworkLeafRemotes {
+		root := fmt.Sprintf("plugin.choria.network.leafnode_remote.%s", r)
+
+		remote := &gnatsd.RemoteLeafOpts{
+			LocalAccount: s.config.Option(root+"%s.account", ""),
+			Credentials:  s.config.Option(root+"%s.credentials", ""),
+		}
+
+		urls := s.config.Option(root+".url", "")
+		if urls == "" {
+			u, err := url.Parse(urls)
+			if err != nil {
+				s.log.Errorf("Could not parse URL for leaf node remote %s url '%s': %s", r, urls, err)
+				continue
+			}
+			u.Scheme = "leafnode"
+
+			remote.URL = u
+		}
+
+		if !s.config.DisableTLS {
+			remote.TLS = true
+			remote.TLSConfig = s.opts.LeafNode.TLSConfig
+			remote.TLSTimeout = s.opts.LeafNode.TLSTimeout
+		}
+
+		s.opts.LeafNode.Remotes = append(s.opts.LeafNode.Remotes, remote)
+	}
 
 	return nil
 }
