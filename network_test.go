@@ -2,6 +2,7 @@ package network
 
 import (
 	tls "crypto/tls"
+	"io/ioutil"
 	"testing"
 	"time"
 
@@ -41,7 +42,7 @@ var _ = Describe("Network Broker", func() {
 		cfg.Choria.SSLDir = "testdata/ssl"
 
 		logger = logrus.NewEntry(logrus.New())
-		logger.Logger.SetLevel(logrus.ErrorLevel)
+		logger.Logger.Out = ioutil.Discard
 
 		fw.EXPECT().Configuration().Return(cfg).AnyTimes()
 		fw.EXPECT().Logger(gomock.Any()).Return(logger).AnyTimes()
@@ -121,6 +122,55 @@ var _ = Describe("Network Broker", func() {
 			Expect(srv.opts.TLS).To(BeFalse())
 		})
 
+		Describe("Gateways", func() {
+			BeforeEach(func() {
+				fw = NewMockChoriaFramework(mockctl)
+
+				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil)
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
+				fw.EXPECT().Logger(gomock.Any()).Return(logger)
+			})
+
+			It("Should require a name and remotes", func() {
+				config, err := config.NewConfig("testdata/gateways/noremotes.cfg")
+				Expect(err).ToNot(HaveOccurred())
+
+				fw.EXPECT().Configuration().Return(config).AnyTimes()
+
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).ToNot(HaveOccurred())
+
+				err = srv.setupGateways()
+				Expect(err).To(MatchError("Network Gateways require at least one remote"))
+			})
+
+			It("Should support remote gateways", func() {
+				config, err := config.NewConfig("testdata/gateways/remotes.cfg")
+				Expect(err).ToNot(HaveOccurred())
+
+				fw.EXPECT().Configuration().Return(config).AnyTimes()
+
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(srv.config.Choria.NetworkGatewayRemotes).To(Equal([]string{"C1", "C2"}))
+
+				Expect(srv.opts.Gateway.Name).To(Equal("CHORIA"))
+				Expect(srv.opts.Gateway.RejectUnknown).To(BeTrue())
+
+				remotes := srv.opts.Gateway.Gateways
+				Expect(remotes).To(HaveLen(2))
+				Expect(remotes[0].Name).To(Equal("C1"))
+				Expect(remotes[0].URLs).To(HaveLen(2))
+				Expect(remotes[0].URLs[0].String()).To(Equal("nats://c1-1.example.net:7222"))
+				Expect(remotes[0].URLs[1].String()).To(Equal("nats://c1-2.example.net:7222"))
+				Expect(remotes[1].Name).To(Equal("C2"))
+				Expect(remotes[1].URLs).To(HaveLen(2))
+				Expect(remotes[1].URLs[0].String()).To(Equal("nats://c2-1.example.net:7222"))
+				Expect(remotes[1].URLs[1].String()).To(Equal("nats://c2-2.example.net:7222"))
+			})
+		})
+
 		Describe("Leafnodes", func() {
 			BeforeEach(func() {
 				fw = NewMockChoriaFramework(mockctl)
@@ -128,7 +178,6 @@ var _ = Describe("Network Broker", func() {
 				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil)
 				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
 				fw.EXPECT().Logger(gomock.Any()).Return(logger)
-				bi.EXPECT().MaxBrokerClients().Return(50000).AnyTimes()
 			})
 
 			It("Should support basic listening only leafnodes mode", func() {
