@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"net/http"
 	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 
@@ -105,6 +106,11 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		return s, fmt.Errorf("could not setup leafnodes: %s", err)
 	}
 
+	err = s.setupGateways()
+	if err != nil {
+		return s, fmt.Errorf("could not setup gateways: %s", err)
+	}
+
 	s.gnatsd, err = gnatsd.NewServer(s.opts)
 	if err != nil {
 		return s, fmt.Errorf("could not setup server: %s", err)
@@ -196,12 +202,76 @@ func (s *Server) setupAccounts() (err error) {
 	return nil
 }
 
+func (s *Server) setupGateways() (err error) {
+	if s.config.Choria.NetworkGatewayPort == 0 {
+		return nil
+	}
+
+	if s.config.Choria.NetworkGatewayName == "" {
+		return fmt.Errorf("Network Gateways require a name")
+	}
+
+	s.log.Infof("Starting Broker Gateway support listening on %s:%d", s.config.Choria.NetworkListenAddress, s.config.Choria.NetworkGatewayPort)
+
+	s.opts.Gateway.Host = s.config.Choria.NetworkListenAddress
+	s.opts.Gateway.Port = s.config.Choria.NetworkLeafPort
+	s.opts.Gateway.Name = s.config.Choria.NetworkGatewayName
+	s.opts.Gateway.RejectUnknown = true
+
+	if s.IsTLS() {
+		s.opts.Gateway.TLSConfig = s.opts.TLSConfig
+		s.opts.Gateway.TLSTimeout = s.opts.TLSTimeout
+	}
+
+	for _, r := range s.config.Choria.NetworkGatewayRemotes {
+		root := fmt.Sprintf("plugin.choria.network.gateway_remote.%s", r)
+		s.log.Infof("Adding gateway remote %s via %s", r, root)
+
+		remote := &gnatsd.RemoteGatewayOpts{Name: r}
+
+		urlStr := s.config.Option(root+".urls", "")
+		if urlStr == "" {
+			s.log.Errorf("Gateway %s has no remote url, ignoring", r)
+			continue
+		}
+
+		urlSrvs, err := srvcache.StringHostsToServers([]string{urlStr}, "nats")
+		if err != nil {
+			s.log.Errorf("Could not parse URL for gateway remote %s urls '%s': %s", r, urlStr, err)
+			continue
+		}
+
+		if urlSrvs.Count() == 0 {
+			s.log.Errorf("Could not parse URL for gateway remote %s url '%s': needs at least 1 url", r, urlStr)
+			continue
+		}
+
+		urlU, err := urlSrvs.URLs()
+		if err != nil {
+			s.log.Errorf("Could not parse URL for gateway remote %s url '%s': %s", r, urlStr, err)
+			continue
+		}
+
+		remote.URLs = urlU
+
+		if s.IsTLS() {
+			remote.TLSConfig = s.opts.Gateway.TLSConfig
+			remote.TLSTimeout = s.opts.Gateway.TLSTimeout
+		}
+
+		s.opts.Gateway.Gateways = append(s.opts.Gateway.Gateways, remote)
+		s.log.Infof("Added remote Gateway %s with servers %s", r, strings.Join(urlSrvs.Strings(), ", "))
+	}
+
+	return nil
+}
+
 func (s *Server) setupLeafNodes() (err error) {
 	if s.config.Choria.NetworkLeafPort == 0 {
 		return nil
 	}
 
-	s.log.Infof("Starting Broker Leaf Node support listening on %s:%d", s.config.Choria.NetworkListenAddress, s.config.Choria.NetworkLeafPort)
+	s.log.Infof("Starting Broker Leafnode support listening on %s:%d", s.config.Choria.NetworkListenAddress, s.config.Choria.NetworkLeafPort)
 
 	s.opts.LeafNode.Host = s.config.Choria.NetworkListenAddress
 	s.opts.LeafNode.Port = s.config.Choria.NetworkLeafPort
@@ -209,8 +279,6 @@ func (s *Server) setupLeafNodes() (err error) {
 
 	if s.IsTLS() {
 		s.opts.LeafNode.TLSConfig = s.opts.TLSConfig
-		s.opts.LeafNode.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
-		s.opts.LeafNode.TLSConfig.RootCAs = s.opts.TLSConfig.ClientCAs
 		s.opts.LeafNode.TLSTimeout = s.opts.TLSTimeout
 	}
 
@@ -255,6 +323,7 @@ func (s *Server) setupLeafNodes() (err error) {
 		}
 
 		s.opts.LeafNode.Remotes = append(s.opts.LeafNode.Remotes, remote)
+		s.log.Infof("Added remote Leafnode %s with remote %s", r, remote.URL.String())
 	}
 
 	return nil
