@@ -37,8 +37,8 @@ github.com/choria-io/go-config v0.0.1 h1:5vvMB5MXdoZiK7GA35XKmnEqrznkb2CaaxEdXpN
 github.com/choria-io/go-config v0.0.1/go.mod h1:YEb0InKPzG3wRSbfN3xZ/MjQ1FEzbmeq9FAo6yUnylM=
 github.com/choria-io/go-config v0.0.2-0.20190626111446-bb1475fe483b h1:82fgxR4dxsnLqDkzVyJpbHf2BSmbliK5fzFSYPAmO7Y=
 github.com/choria-io/go-config v0.0.2-0.20190626111446-bb1475fe483b/go.mod h1:YEb0InKPzG3wRSbfN3xZ/MjQ1FEzbmeq9FAo6yUnylM=
-github.com/choria-io/go-config v0.0.2-0.20190701140718-e5779929ca3e h1:rBsN+Mv7akbk7I+nAn2vKWJS+i5BINAc92jAr+1hoh4=
-github.com/choria-io/go-config v0.0.2-0.20190701140718-e5779929ca3e/go.mod h1:YEb0InKPzG3wRSbfN3xZ/MjQ1FEzbmeq9FAo6yUnylM=
+github.com/choria-io/go-config v0.0.2-0.20190704102631-3b622ee964d3 h1:qEZ8J1H3A9Cfv4m1pMs3T+Dxa5GdUkMpkpSJgy9rI4o=
+github.com/choria-io/go-config v0.0.2-0.20190704102631-3b622ee964d3/go.mod h1:YEb0InKPzG3wRSbfN3xZ/MjQ1FEzbmeq9FAo6yUnylM=
 github.com/choria-io/go-confkey v1.2.0 h1:kT35wUPPxpKDAg2/Me100yIV+po6aTrnZFyBXk0Ohn8=
 github.com/choria-io/go-confkey v1.2.0/go.mod h1:ojIUK4p2mX/ZSKuSG5hgU/p7Db+EIX8il4yjQweZtiU=
 github.com/choria-io/go-lifecycle v1.0.2 h1:rzzRYqeR60U2d16jlfLWQXUXAw3Peu/ALmFta7kwNW4=
@@ -47,8 +47,8 @@ github.com/choria-io/go-lifecycle v1.0.3-0.20190626160828-06aa540a56f9 h1:eYsG7k
 github.com/choria-io/go-lifecycle v1.0.3-0.20190626160828-06aa540a56f9/go.mod h1:QsETJ2TA8UnNTvSr7fh35jVgwHAtgMjdZ4q1Cq6rKqI=
 github.com/choria-io/go-network-broker v0.0.0-20190625124056-911117ed82d4 h1:1CBC6vbhsOVHTFs0Zw4xtpkkCB/Qny9ki5P3TA1LXwo=
 github.com/choria-io/go-network-broker v0.0.0-20190625124056-911117ed82d4/go.mod h1:uJ25DZx3le1APIkFz477woSJLoiR0DbBbC167jhIBUw=
-github.com/choria-io/go-network-broker v0.0.0-20190702115834-62e6b6a6ca79 h1:r4tHPx6bMi9NURvVlP1Pns1K+5QuF8ovNWasBWLtiC4=
-github.com/choria-io/go-network-broker v0.0.0-20190702115834-62e6b6a6ca79/go.mod h1:P4bJjmGVufKIfAwtKvJvV3BKdJhs+rziVKQM3I/Ltkk=
+github.com/choria-io/go-network-broker v0.0.0-20190704121041-f4d4aa63cd24 h1:22SkjoTn8UKjp/4niTLn69TPef+5lVyQNbcjDq1hIo0=
+github.com/choria-io/go-network-broker v0.0.0-20190704121041-f4d4aa63cd24/go.mod h1:x0L/jLkEZoZQUFVWjoLZMP8WooMD8sEkY5KtYpgpQUM=
 github.com/choria-io/go-protocol v1.3.1 h1:Inhgxh1lYkvNnWXoNqanGbq/H5l3JGrLlaxZpAFpuPA=
 github.com/choria-io/go-protocol v1.3.1/go.mod h1:HvTmH+Gib2y9je2jdgUM9Sfhh+Oj3ten9mLP0Z/AvHU=
 github.com/choria-io/go-puppet v0.0.1 h1:vvvMwgLeZDjHXGHhMVAVC9YwMKegcywSqrmyFcnD/jk=
