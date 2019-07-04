@@ -16,25 +16,17 @@ Features:
 
 * Works by default without any broker specific configuration in your Choria broker
 * Secure by default - only accepts TLS connections with certificates signed by the known CA
+* Support NATS Accounts technology for large scale multi tenancy
 * Supports Clustering using a simple comma separated list of peers - TLS by default
+* Support Gateways enabling communication between NATS clusters - an alternative to Choria Federation
+* Support Leafnodes enabling joining older or unauthenticated clients to a secure multi tenant network
 * Exports statistics using the popular Prometheus format via the normal Choria statistics port
 
 ## Configuration
 
 The broker is configured using the Choria daemon configuration, below a reference of the settings it supports.
 
-|Setting|Description|Default|
-|-------|-----------|-------|
-|`plugin.choria.network.listen_address`|The network address to listen on|`::`|
-|`plugin.choria.network.client_port`|The port to listen on for network clients|`4222`|
-|`plugin.choria.network.peer_port`|The port to listen on for broker cluster peers|`5222`|
-|`plugin.choria.network.peer_user`|Username to connect to cluster peers with|unset|
-|`plugin.choria.network.peer_password`|Password to use when connecting to cluster peers|unset|
-|`plugin.choria.network.peers`|Comma separated List of cluster peers to connect to|unset|
-|`plugin.choria.network.write_deadline`|The time to allow for writes to network clients to complete before considering them slow|5s|
-|`plugin.choria.network.client_hosts`|List of hosts - ip addresses or cidrs - that are allowed to use clients|all|
-
-Choria core settings that affect the broker:
+### Choria core settings that affect the broker:
 
 |Setting|Description|
 |-------|-----------|
@@ -44,6 +36,65 @@ Choria core settings that affect the broker:
 |`plugin.choria.stats_address`|The network address to listen on for metrics requests|
 
 It also uses the `build.maxBrokerClients` build time configuration in Choria to configure it's maximum connection limit, this defaults to 50 000.
+
+### Basic Broker Settings
+
+|Setting|Description|Default|
+|-------|-----------|-------|
+|`plugin.choria.network.listen_address`|The network address to listen on|`::`|
+|`plugin.choria.network.client_port`|The port to listen on for network clients|`4222`|
+|`plugin.choria.network.write_deadline`|The time to allow for writes to network clients to complete before considering them slow|5s|
+|`plugin.choria.network.client_hosts`|List of hosts - ip addresses or cidrs - that are allowed to use clients|all|
+
+
+### Cluster Settings
+
+Network Clusters are suitable for creating a cluster of up to 5 nodes on a local LAN. These form a full Mesh and provides scalability and HA.
+
+They are based on NATS technology and you can read more about them [at NATS.io](https://nats-io.github.io/docs/nats_server/clustering.html)
+
+|Setting|Description|Default|
+|-------|-----------|-------|
+|`plugin.choria.network.peer_port`|The port to listen on for broker cluster peers|`5222`|
+|`plugin.choria.network.peer_user`|Username to connect to cluster peers with|unset|
+|`plugin.choria.network.peer_password`|Password to use when connecting to cluster peers|unset|
+|`plugin.choria.network.peers`|Comma separated List of cluster peers to connect to|unset|
+
+### Gateway Settings
+
+Gateways allow you to combine multiple Clusters into a single large cluster.  This allow you to span your collective across multiple data centers without the need for the much harder to configure federation brokers.
+
+They are based on NATS technology and you can read more about them [at NATS.io](https://nats-io.github.io/docs/gateways/)
+
+|Setting|Description|Default|
+|-------|-----------|-------|
+|`plugin.choria.network.gateway_port`|The port to listen to for Gateway connections, disabled when 0|`0`|
+|`plugin.choria.network.gateway_name`|Unique name for the cluster listening on the port|`CHORIA`|
+|`plugin.choria.network.gateway_remotes`|A comma sep list of remote names to activate|`""`|
+|`plugin.choria.network.gateway_remote.C1.urls`|A comma sep list of `host:port` combinations to connect to for the remote `C1` cluster||
+
+### Leafnode Settings
+
+Leafnodes exist to take unauthenticated or unsecured connections and forge them into a specific Account (see below). They allow older Choria agents and clients to take part of a multi tenant or account secured network.
+
+They are based on NATS technology and you can read more about them [at NATS.io](https://nats-io.github.io/docs/leafnodes/)
+
+|Setting|Description|Default|
+|-------|-----------|-------|
+|`plugin.choria.network.leafnode_port`|The port to listen to for Gateway connections, disabled when 0|`0`|
+|`plugin.choria.network.leafnode_remotes`|A comma sep list of remote names to activate|`""`|
+|`plugin.choria.network.leafnode_remote.C1.url`|A `host:port` combination to connect to for the remote `C1` leafnode||
+|`plugin.choria.network.leafnode_remote.C1.account`|The local account name to use when connecting to the remote||
+|`plugin.choria.network.leafnode_remote.C1.credential`|The local credential file to use when connecting to the remote||
+
+### Accounts
+
+Accounts are based on NATS technology, you can read more about them [at NATS.io](https://nats-io.github.io/docs/nats_server/accounts.html)
+
+|Setting|Description|Default|
+|-------|-----------|-------|
+|`plugin.choria.network.operator_account`|The operator account that is managing this cluster||
+|`plugin.choria.network.system_account`|The system account to use, when set enables server events||
 
 ## Statistics
 
