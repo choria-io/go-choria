@@ -4,9 +4,9 @@ go 1.12
 
 require (
 	github.com/choria-io/go-client v0.4.3-0.20190626150123-ddebe7dca345
-	github.com/choria-io/go-config v0.0.2-0.20190701140718-e5779929ca3e
+	github.com/choria-io/go-config v0.0.2-0.20190704102631-3b622ee964d3
 	github.com/choria-io/go-lifecycle v1.0.3-0.20190626160828-06aa540a56f9
-	github.com/choria-io/go-network-broker v0.0.0-20190702115834-62e6b6a6ca79
+	github.com/choria-io/go-network-broker v0.0.0-20190704121041-f4d4aa63cd24
 	github.com/choria-io/go-protocol v1.3.1
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.4.4-0.20190625121144-69559b68756a
