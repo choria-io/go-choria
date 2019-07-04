@@ -98,17 +98,17 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 
 	err = s.setupCluster()
 	if err != nil {
-		return s, fmt.Errorf("could not setup clustering: %s", err)
+		s.log.Errorf("Could not setup clustering: %s", err)
 	}
 
 	err = s.setupLeafNodes()
 	if err != nil {
-		return s, fmt.Errorf("could not setup leafnodes: %s", err)
+		s.log.Errorf("Could not setup leafnodes: %s", err)
 	}
 
 	err = s.setupGateways()
 	if err != nil {
-		return s, fmt.Errorf("could not setup gateways: %s", err)
+		s.log.Errorf("Could not setup gateways: %s", err)
 	}
 
 	s.gnatsd, err = gnatsd.NewServer(s.opts)
@@ -211,10 +211,10 @@ func (s *Server) setupGateways() (err error) {
 		return fmt.Errorf("Network Gateways require a name")
 	}
 
-	s.log.Infof("Starting Broker Gateway support listening on %s:%d", s.config.Choria.NetworkListenAddress, s.config.Choria.NetworkGatewayPort)
+	s.log.Infof("Starting Broker Gateway %s listening on %s:%d", s.config.Choria.NetworkGatewayName, s.config.Choria.NetworkListenAddress, s.config.Choria.NetworkGatewayPort)
 
 	s.opts.Gateway.Host = s.config.Choria.NetworkListenAddress
-	s.opts.Gateway.Port = s.config.Choria.NetworkLeafPort
+	s.opts.Gateway.Port = s.config.Choria.NetworkGatewayPort
 	s.opts.Gateway.Name = s.config.Choria.NetworkGatewayName
 	s.opts.Gateway.RejectUnknown = true
 
@@ -225,7 +225,7 @@ func (s *Server) setupGateways() (err error) {
 
 	for _, r := range s.config.Choria.NetworkGatewayRemotes {
 		root := fmt.Sprintf("plugin.choria.network.gateway_remote.%s", r)
-		s.log.Infof("Adding gateway remote %s via %s", r, root)
+		s.log.Infof("Adding gateway %s via %s", r, root)
 
 		remote := &gnatsd.RemoteGatewayOpts{Name: r}
 
