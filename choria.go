@@ -49,6 +49,9 @@ type ChoriaPluginConfig struct {
 	NetworkPeers              []string      `confkey:"plugin.choria.network.peers" type:"comma_split"`
 	NetworkLeafPort           int           `confkey:"plugin.choria.network.leafnode_port" default:"0"`
 	NetworkLeafRemotes        []string      `confkey:"plugin.choria.network.leafnode_remotes" type:"comma_split"`
+	NetworkGatewayPort        int           `confkey:"plugin.choria.network.gateway_port" default:"0"`
+	NetworkGatewayName        string        `confkey:"plugin.choria.network.gateway_name" default:"CHORIA"`
+	NetworkGatewayRemotes     []string      `confkey:"plugin.choria.network.gateway_remotes" type:"comma_split"`
 	NetworkWriteDeadline      time.Duration `confkey:"plugin.choria.network.write_deadline" type:"duration" default:"5s"`
 	NetworkAllowedClientHosts []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`
 	NetworkAccountOperator    string        `confkey:"plugin.choria.network.operator_account"`
