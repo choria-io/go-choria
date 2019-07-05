@@ -233,13 +233,14 @@ var _ = Describe("Network Broker", func() {
 				cfg.Choria.NetworkSystemAccount = "ADMB22B4NQU27GI3KP6XUEFM5RSMOJY4O75NCP2P5JPQC2NGQNG6NJX2"
 				cfg.ConfigFile = "testdata/broker.cfg"
 				cfg.DisableTLS = true
+
 				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
 
 				srv, err = NewServer(fw, bi, false)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(srv.as).ToNot(BeNil())
-				a := srv.gnatsd.SystemAccount()
-				Expect(a).ToNot(BeNil())
+
+				Expect(srv.opts.SystemAccount).To(Equal("ADMB22B4NQU27GI3KP6XUEFM5RSMOJY4O75NCP2P5JPQC2NGQNG6NJX2"))
 			})
 		})
 	})

@@ -34,12 +34,11 @@ func (s *Server) setupGateways() (err error) {
 	}
 
 	for _, r := range s.config.Choria.NetworkGatewayRemotes {
-		root := fmt.Sprintf("plugin.choria.network.gateway_remote.%s", r)
-		s.log.Infof("Adding gateway %s via %s", r, root)
+		s.log.Infof("Adding gateway %s", r)
 
 		remote := &gnatsd.RemoteGatewayOpts{Name: r}
 
-		urlStr := s.config.Option(root+".urls", "")
+		urlStr := s.extractKeydConfigString("gateway_remote", r, "urls", "")
 		if urlStr == "" {
 			s.log.Errorf("Gateway %s has no remote url, ignoring", r)
 			continue
