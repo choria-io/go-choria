@@ -116,11 +116,6 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 
 	s.gnatsd.SetLogger(newLogger(), s.opts.Debug, false)
 
-	err = s.setSystemAccount()
-	if err != nil {
-		return s, fmt.Errorf("could not set system account: %s", err)
-	}
-
 	return
 }
 
@@ -136,7 +131,7 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	if s.as != nil {
 		wg.Add(1)
-		s.as.Start(ctx, wg)
+		go s.as.Start(ctx, wg)
 	}
 
 	go s.gnatsd.Start()
@@ -177,22 +172,4 @@ func (s *Server) setupTLS() (err error) {
 	s.opts.TLSConfig = tlsc
 
 	return
-}
-
-// Started determines if the server have been started
-func (s *Server) Started() bool {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	return s.started
-}
-
-// IsTLS determines if tls should be enabled
-func (s *Server) IsTLS() bool {
-	return !s.config.DisableTLS
-}
-
-// IsVerifiedTLS determines if tls should be enabled
-func (s *Server) IsVerifiedTLS() bool {
-	return !s.config.DisableTLSVerify
 }

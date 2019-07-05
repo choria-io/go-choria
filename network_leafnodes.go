@@ -27,12 +27,10 @@ func (s *Server) setupLeafNodes() (err error) {
 		root := fmt.Sprintf("plugin.choria.network.leafnode_remote.%s", r)
 		s.log.Infof("Adding leafnode remote %s via %s", r, root)
 
-		remote := &gnatsd.RemoteLeafOpts{
-			LocalAccount: s.config.Option(root+".account", ""),
-			Credentials:  s.config.Option(root+".credentials", ""),
-		}
+		account := s.extractKeydConfigString("leafnode_remote", r, "account", "")
+		credentials := s.extractKeydConfigString("leafnode_remote", r, "credentials", "")
+		urlStr := s.extractKeydConfigString("leafnode_remote", r, "url", "")
 
-		urlStr := s.config.Option(root+".url", "")
 		if urlStr == "" {
 			s.log.Errorf("Leafnode %s has no remote url, ignoring", r)
 			continue
@@ -55,7 +53,7 @@ func (s *Server) setupLeafNodes() (err error) {
 			continue
 		}
 
-		remote.URL = urlU[0]
+		remote := &gnatsd.RemoteLeafOpts{LocalAccount: account, Credentials: credentials, URL: urlU[0]}
 
 		if s.IsTLS() {
 			remote.TLS = true

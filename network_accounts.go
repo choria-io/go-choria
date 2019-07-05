@@ -30,18 +30,9 @@ func (s *Server) setupAccounts() (err error) {
 
 	s.opts.AccountResolver = s.as
 
-	return nil
-}
-
-func (s *Server) setSystemAccount() (err error) {
-	if s.config.Choria.NetworkAccountOperator == "" || s.config.Choria.NetworkSystemAccount == "" {
-		return nil
-	}
-
-	s.log.Infof("Setting the Broker Systems Account to %s and enabling broker events", s.config.Choria.NetworkAccountOperator)
-	err = s.gnatsd.SetSystemAccount(s.config.Choria.NetworkSystemAccount)
-	if err != nil {
-		return err
+	if s.config.Choria.NetworkSystemAccount != "" {
+		s.log.Infof("Setting the Broker Systems Account to %s and enabling broker events", s.config.Choria.NetworkSystemAccount)
+		s.opts.SystemAccount = s.config.Choria.NetworkSystemAccount
 	}
 
 	return nil
