@@ -64,6 +64,8 @@ They are based on NATS technology and you can read more about them [at NATS.io](
 
 Gateways allow you to combine multiple Clusters into a single large cluster.  This allow you to span your collective across multiple data centers without the need for the much harder to configure federation brokers.
 
+By default if the broker is compiled with TLS the Gateway will use the same TLS settings for the connection - you can customize it on a per remote basis.
+
 They are based on NATS technology and you can read more about them [at NATS.io](https://nats-io.github.io/docs/gateways/)
 
 |Setting|Description|Default|
@@ -72,10 +74,17 @@ They are based on NATS technology and you can read more about them [at NATS.io](
 |`plugin.choria.network.gateway_name`|Unique name for the cluster listening on the port|`CHORIA`|
 |`plugin.choria.network.gateway_remotes`|A comma sep list of remote names to activate|`""`|
 |`plugin.choria.network.gateway_remote.C1.urls`|A comma sep list of `host:port` combinations to connect to for the remote `C1` cluster||
+|`plugin.choria.network.gateway_remote.C1.tls.cert`|Path to a custom certificate for this remote only||
+|`plugin.choria.network.gateway_remote.C1.tls.key`|Path to a custom private key for this remote only||
+|`plugin.choria.network.gateway_remote.C1.tls.ca`|Path to a custom ca for this remote only||
+|`plugin.choria.network.gateway_remote.C1.tls.disable`|Disables the TLS configuration that would have inherited from the Choria Security system|`false`|
+|`plugin.choria.network.gateway_remote.C1.tls.verify`|Disables full TLS verify for this remote only|`true`|
 
 ### Leafnode Settings
 
 Leafnodes exist to take unauthenticated or unsecured connections and forge them into a specific Account (see below). They allow older Choria agents and clients to take part of a multi tenant or account secured network.
+
+By default if the broker is compiled with TLS the leafnode will use the same TLS settings for the connection - you can customize it on a per remote basis.
 
 They are based on NATS technology and you can read more about them [at NATS.io](https://nats-io.github.io/docs/leafnodes/)
 
@@ -86,6 +95,11 @@ They are based on NATS technology and you can read more about them [at NATS.io](
 |`plugin.choria.network.leafnode_remote.C1.url`|A `host:port` combination to connect to for the remote `C1` leafnode||
 |`plugin.choria.network.leafnode_remote.C1.account`|The local account name to use when connecting to the remote||
 |`plugin.choria.network.leafnode_remote.C1.credential`|The local credential file to use when connecting to the remote||
+|`plugin.choria.network.leafnode_remote.C1.tls.cert`|Path to a custom certificate for this remote only||
+|`plugin.choria.network.leafnode_remote.C1.tls.key`|Path to a custom private key for this remote only||
+|`plugin.choria.network.leafnode_remote.C1.tls.ca`|Path to a custom ca for this remote only||
+|`plugin.choria.network.leafnode_remote.C1.tls.disable`|Disables the TLS configuration that would have inherited from the Choria Security system|`false`|
+|`plugin.choria.network.leafnode_remote.C1.tls.verify`|Disables full TLS verify for this remote only|`true`|
 
 ### Accounts
 

@@ -18,7 +18,7 @@ func (s *Server) extractTLSCFromKeyedConfig(prefix string, key string) (tlsc *tl
 	cert := s.extractKeyedConfigString(prefix, key, "tls.cert", "")
 	private := s.extractKeyedConfigString(prefix, key, "tls.key", "")
 	ca := s.extractKeyedConfigString(prefix, key, "tls.ca", "")
-	verifyS := s.extractKeyedConfigString(prefix, key, "tls.verify", "")
+	verifyS := s.extractKeyedConfigString(prefix, key, "tls.verify", "yes")
 	disableS := s.extractKeyedConfigString(prefix, key, "tls.disable", "no")
 
 	verify := !(verifyS == "false" || verifyS == "no" || verifyS == "off" || verifyS == "0")
