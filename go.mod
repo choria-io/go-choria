@@ -6,7 +6,7 @@ require (
 	github.com/choria-io/go-client v0.4.3-0.20190626150123-ddebe7dca345
 	github.com/choria-io/go-config v0.0.2-0.20190704102631-3b622ee964d3
 	github.com/choria-io/go-lifecycle v1.0.3-0.20190626160828-06aa540a56f9
-	github.com/choria-io/go-network-broker v0.0.0-20190705141039-1f73024d7150
+	github.com/choria-io/go-network-broker v0.0.0-20190709112514-e9ad3a7b2450
 	github.com/choria-io/go-protocol v1.3.1
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.4.4-0.20190625121144-69559b68756a
