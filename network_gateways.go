@@ -38,7 +38,7 @@ func (s *Server) setupGateways() (err error) {
 
 		remote := &gnatsd.RemoteGatewayOpts{Name: r}
 
-		urlStr := s.extractKeydConfigString("gateway_remote", r, "urls", "")
+		urlStr := s.extractKeyedConfigString("gateway_remote", r, "urls", "")
 		if urlStr == "" {
 			s.log.Errorf("Gateway %s has no remote url, ignoring", r)
 			continue
@@ -68,12 +68,28 @@ func (s *Server) setupGateways() (err error) {
 
 		remote.URLs = urlU
 
+		remote.TLSTimeout = s.opts.Gateway.TLSTimeout
+
 		if s.IsTLS() {
 			remote.TLSConfig = s.opts.Gateway.TLSConfig
-			remote.TLSTimeout = s.opts.Gateway.TLSTimeout
+		}
+
+		tlsc, disable, err := s.extractTLSCFromKeyedConfig("gateway_remote", r)
+		if err != nil {
+			s.log.Errorf("Could not configure custom TLS for remote Gateway %s: %s", r, err)
+			continue
+		}
+
+		if disable {
+			s.log.Warnf("Disabling TLS for remote Gateway %s", r)
+			remote.TLSConfig = nil
+		} else if tlsc != nil {
+			s.log.Infof("Using custom TLS config for remote Gateway %s", r)
+			remote.TLSConfig = tlsc
 		}
 
 		s.opts.Gateway.Gateways = append(s.opts.Gateway.Gateways, remote)
+
 		s.log.Infof("Added remote Gateway %s with servers %s", r, strings.Join(urlSrvs.Strings(), ", "))
 	}
 
