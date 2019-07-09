@@ -42,6 +42,7 @@ var _ = Describe("Network Broker", func() {
 		cfg.Choria.SSLDir = "testdata/ssl"
 
 		logger = logrus.NewEntry(logrus.New())
+		logger.Logger.SetLevel(logrus.DebugLevel)
 		logger.Logger.Out = ioutil.Discard
 
 		fw.EXPECT().Configuration().Return(cfg).AnyTimes()
@@ -146,6 +147,7 @@ var _ = Describe("Network Broker", func() {
 
 			It("Should support remote gateways", func() {
 				config, err := config.NewConfig("testdata/gateways/remotes.cfg")
+				config.DisableTLSVerify = false
 				Expect(err).ToNot(HaveOccurred())
 
 				fw.EXPECT().Configuration().Return(config).AnyTimes()
@@ -161,13 +163,46 @@ var _ = Describe("Network Broker", func() {
 				remotes := srv.opts.Gateway.Gateways
 				Expect(remotes).To(HaveLen(2))
 				Expect(remotes[0].Name).To(Equal("C1"))
+				Expect(remotes[0].TLSConfig).ToNot(BeNil())
 				Expect(remotes[0].URLs).To(HaveLen(2))
 				Expect(remotes[0].URLs[0].String()).To(Equal("nats://c1-1.example.net:7222"))
 				Expect(remotes[0].URLs[1].String()).To(Equal("nats://c1-2.example.net:7222"))
 				Expect(remotes[1].Name).To(Equal("C2"))
+				Expect(remotes[1].TLSConfig).To(BeNil())
 				Expect(remotes[1].URLs).To(HaveLen(2))
 				Expect(remotes[1].URLs[0].String()).To(Equal("nats://c2-1.example.net:7222"))
 				Expect(remotes[1].URLs[1].String()).To(Equal("nats://c2-2.example.net:7222"))
+			})
+
+			It("Should handle missing custom TLS", func() {
+				config, err := config.NewConfig("testdata/gateways/missingtls.cfg")
+				config.DisableTLSVerify = false
+				Expect(err).ToNot(HaveOccurred())
+
+				fw.EXPECT().Configuration().Return(config).AnyTimes()
+
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(srv.opts.Gateway.Gateways).To(HaveLen(1))
+				Expect(srv.opts.Gateway.Gateways[0].Name).To(Equal("C2"))
+			})
+
+			It("Should support custom TLS", func() {
+				config, err := config.NewConfig("testdata/gateways/customtls.cfg")
+				config.DisableTLSVerify = false
+				Expect(err).ToNot(HaveOccurred())
+
+				fw.EXPECT().Configuration().Return(config).AnyTimes()
+
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(srv.opts.Gateway.Gateways).To(HaveLen(2))
+				Expect(srv.opts.Gateway.Gateways[1].TLSConfig).ToNot(BeNil())
+
+				_, ok := srv.opts.Gateway.Gateways[1].TLSConfig.NameToCertificate["1.mcollective"]
+				Expect(ok).To(BeTrue())
 			})
 		})
 
@@ -200,10 +235,44 @@ var _ = Describe("Network Broker", func() {
 
 				srv, err = NewServer(fw, bi, false)
 				Expect(err).ToNot(HaveOccurred())
+				Expect(srv.IsTLS()).To(BeTrue())
 				Expect(srv.opts.LeafNode.Port).To(Equal(6222))
 				Expect(srv.opts.LeafNode.Remotes).To(HaveLen(2))
 				Expect(srv.opts.LeafNode.Remotes[0].URL.String()).To(Equal("leafnode://ln1.example.net:6222"))
+				Expect(srv.opts.LeafNode.Remotes[0].TLSConfig).ToNot(BeNil())
+				Expect(srv.opts.LeafNode.Remotes[0].TLS).ToNot(BeFalse())
 				Expect(srv.opts.LeafNode.Remotes[1].URL.String()).To(Equal("leafnode://ln2.example.net:6222"))
+				Expect(srv.opts.LeafNode.Remotes[1].TLSConfig).To(BeNil())
+			})
+
+			It("Should handle missing custom TLS", func() {
+				config, err := config.NewConfig("testdata/leafnodes/missingtls.cfg")
+				Expect(err).ToNot(HaveOccurred())
+				Expect(config.Choria.NetworkLeafRemotes).To(Equal([]string{"ln1", "ln2"}))
+				fw.EXPECT().Configuration().Return(config).AnyTimes()
+
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(srv.opts.LeafNode.Port).To(Equal(6222))
+				Expect(srv.opts.LeafNode.Remotes).To(HaveLen(1))
+				Expect(srv.opts.LeafNode.Remotes[0].URL.String()).To(Equal("leafnode://ln2.example.net:6222"))
+			})
+
+			It("Should handle custom TLS", func() {
+				config, err := config.NewConfig("testdata/leafnodes/customtls.cfg")
+				Expect(err).ToNot(HaveOccurred())
+				fw.EXPECT().Configuration().Return(config).AnyTimes()
+
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(srv.opts.LeafNode.Port).To(Equal(6222))
+				Expect(srv.opts.LeafNode.Remotes).To(HaveLen(1))
+				Expect(srv.opts.LeafNode.Remotes[0].URL.String()).To(Equal("leafnode://ln1.example.net:6222"))
+				Expect(srv.opts.LeafNode.Remotes[0].TLS).To(BeTrue())
+				Expect(srv.opts.LeafNode.Remotes[0].TLSConfig).ToNot(BeNil())
+
+				_, ok := srv.opts.LeafNode.Remotes[0].TLSConfig.NameToCertificate["1.mcollective"]
+				Expect(ok).To(BeTrue())
 			})
 		})
 

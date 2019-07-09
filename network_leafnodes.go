@@ -1,8 +1,6 @@
 package network
 
 import (
-	"fmt"
-
 	"github.com/choria-io/go-srvcache"
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 )
@@ -24,12 +22,9 @@ func (s *Server) setupLeafNodes() (err error) {
 	}
 
 	for _, r := range s.config.Choria.NetworkLeafRemotes {
-		root := fmt.Sprintf("plugin.choria.network.leafnode_remote.%s", r)
-		s.log.Infof("Adding leafnode remote %s via %s", r, root)
-
-		account := s.extractKeydConfigString("leafnode_remote", r, "account", "")
-		credentials := s.extractKeydConfigString("leafnode_remote", r, "credentials", "")
-		urlStr := s.extractKeydConfigString("leafnode_remote", r, "url", "")
+		account := s.extractKeyedConfigString("leafnode_remote", r, "account", "")
+		credentials := s.extractKeyedConfigString("leafnode_remote", r, "credentials", "")
+		urlStr := s.extractKeyedConfigString("leafnode_remote", r, "url", "")
 
 		if urlStr == "" {
 			s.log.Errorf("Leafnode %s has no remote url, ignoring", r)
@@ -55,10 +50,26 @@ func (s *Server) setupLeafNodes() (err error) {
 
 		remote := &gnatsd.RemoteLeafOpts{LocalAccount: account, Credentials: credentials, URL: urlU[0]}
 
+		remote.TLSTimeout = s.opts.LeafNode.TLSTimeout
+
 		if s.IsTLS() {
 			remote.TLS = true
 			remote.TLSConfig = s.opts.LeafNode.TLSConfig
-			remote.TLSTimeout = s.opts.LeafNode.TLSTimeout
+		}
+
+		tlsc, disable, err := s.extractTLSCFromKeyedConfig("leafnode_remote", r)
+		if err != nil {
+			s.log.Errorf("Could not configure custom TLS for leafnode remote %s: %s", r, err)
+			continue
+		}
+		if disable {
+			s.log.Warnf("Disabling TLS for leafnode remote %s", r)
+			remote.TLSConfig = nil
+			remote.TLS = false
+		} else if tlsc != nil {
+			s.log.Infof("Using custom TLS config for leafnode remote %s", r)
+			remote.TLSConfig = tlsc
+			remote.TLS = true
 		}
 
 		s.opts.LeafNode.Remotes = append(s.opts.LeafNode.Remotes, remote)
