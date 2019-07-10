@@ -47,8 +47,8 @@ github.com/choria-io/go-lifecycle v1.0.3-0.20190626160828-06aa540a56f9 h1:eYsG7k
 github.com/choria-io/go-lifecycle v1.0.3-0.20190626160828-06aa540a56f9/go.mod h1:QsETJ2TA8UnNTvSr7fh35jVgwHAtgMjdZ4q1Cq6rKqI=
 github.com/choria-io/go-network-broker v0.0.0-20190625124056-911117ed82d4 h1:1CBC6vbhsOVHTFs0Zw4xtpkkCB/Qny9ki5P3TA1LXwo=
 github.com/choria-io/go-network-broker v0.0.0-20190625124056-911117ed82d4/go.mod h1:uJ25DZx3le1APIkFz477woSJLoiR0DbBbC167jhIBUw=
-github.com/choria-io/go-network-broker v0.0.0-20190709112514-e9ad3a7b2450 h1:lkSc+9hDa6zTqKCDKAdIHsiA9O3jtEDYWH0SF2A364I=
-github.com/choria-io/go-network-broker v0.0.0-20190709112514-e9ad3a7b2450/go.mod h1:x0L/jLkEZoZQUFVWjoLZMP8WooMD8sEkY5KtYpgpQUM=
+github.com/choria-io/go-network-broker v0.0.0-20190710065030-c2399527d2bc h1:asTl/NRMS0YlJYyfTEVMpA+boyn/hv3iB+InspGkl80=
+github.com/choria-io/go-network-broker v0.0.0-20190710065030-c2399527d2bc/go.mod h1:D/pzfUxDIM/GRprpM7emO6RPFUuxkMrNsBr3ybEr8L8=
 github.com/choria-io/go-protocol v1.3.1 h1:Inhgxh1lYkvNnWXoNqanGbq/H5l3JGrLlaxZpAFpuPA=
 github.com/choria-io/go-protocol v1.3.1/go.mod h1:HvTmH+Gib2y9je2jdgUM9Sfhh+Oj3ten9mLP0Z/AvHU=
 github.com/choria-io/go-puppet v0.0.1 h1:vvvMwgLeZDjHXGHhMVAVC9YwMKegcywSqrmyFcnD/jk=
@@ -194,12 +194,10 @@ github.com/nats-io/nats-streaming-server v0.15.1 h1:NLQg18mp68e17v+RJpXyPdA7ZH4o
 github.com/nats-io/nats-streaming-server v0.15.1/go.mod h1:bJ1+2CS8MqvkGfr/NwnCF+Lw6aLnL3F5kenM8bZmdCw=
 github.com/nats-io/nats.go v1.8.1 h1:6lF/f1/NN6kzUDBz6pyvQDEXO39jqXcWRLu/tKjtOUQ=
 github.com/nats-io/nats.go v1.8.1/go.mod h1:BrFz9vVn0fU3AcH9Vn4Kd7W0NpJ651tD5omQ3M8LwxM=
-github.com/nats-io/nats.go v1.8.2-0.20190607221125-9f4d16fe7c2d h1:deH8qj2gxbSzVDf0aLb6T2YdqLDl82mcRw/WcORFd40=
-github.com/nats-io/nats.go v1.8.2-0.20190607221125-9f4d16fe7c2d/go.mod h1:BrFz9vVn0fU3AcH9Vn4Kd7W0NpJ651tD5omQ3M8LwxM=
 github.com/nats-io/nkeys v0.0.2 h1:+qM7QpgXnvDDixitZtQUBDY9w/s9mu1ghS+JIbsrx6M=
 github.com/nats-io/nkeys v0.0.2/go.mod h1:dab7URMsZm6Z/jp9Z5UGa87Uutgc2mVpXLC4B7TDb/4=
-github.com/nats-io/nsc v0.0.0-20190625233613-b0bf021c4862 h1:8og/XWbtvbuWNFUffKSG6bPVvCvAp1dsyYH8eYrYEMY=
-github.com/nats-io/nsc v0.0.0-20190625233613-b0bf021c4862/go.mod h1:JzIpGXUSsicXVdo6+OAuZQdYyTcUDPt6P/DWycOyMlo=
+github.com/nats-io/nsc v0.0.0-20190709214737-97aa65e50c37 h1:T5JmTNIBv0lw9QC2rfMSpiXAfAcqHh/qVLP1MRAeQ6U=
+github.com/nats-io/nsc v0.0.0-20190709214737-97aa65e50c37/go.mod h1:sUpRQ5tzf1WMvhGFGDJ1SVcUQwSeKOqxJHo2UpZoyNo=
 github.com/nats-io/nuid v0.0.0-20180316223952-28b996b57a46/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OSON2c=
 github.com/nats-io/nuid v1.0.1 h1:5iA8DT8V7q8WK2EScv2padNa/rTESc1KdnPw4TC2paw=
 github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OSON2c=
