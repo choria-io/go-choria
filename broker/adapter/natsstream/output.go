@@ -21,13 +21,14 @@ import (
 )
 
 type stream struct {
-	servers   func() (srvcache.Servers, error)
-	clusterID string
-	clientID  string
-	topic     string
-	conn      stan.Conn
-	log       *log.Entry
-	name      string
+	servers     func() (srvcache.Servers, error)
+	clusterID   string
+	clientID    string
+	topic       string
+	conn        stan.Conn
+	log         *log.Entry
+	name        string
+	adapterName string
 
 	work chan adaptable
 	quit chan bool
@@ -78,13 +79,14 @@ func newStream(name string, work chan adaptable, logger *log.Entry) ([]*stream, 
 		iname := fmt.Sprintf("%s_%d-%s", name, i, strings.Replace(wid.String(), "-", "", -1))
 
 		st := &stream{
-			clusterID: clusterID,
-			clientID:  iname,
-			topic:     topic,
-			name:      fmt.Sprintf("%s.%d", name, i),
-			work:      work,
-			log:       logger.WithFields(log.Fields{"side": "stream", "instance": i}),
-			mu:        &sync.Mutex{},
+			clusterID:   clusterID,
+			clientID:    iname,
+			topic:       topic,
+			name:        fmt.Sprintf("%s.%d", name, i),
+			adapterName: name,
+			work:        work,
+			log:         logger.WithFields(log.Fields{"side": "stream", "instance": i}),
+			mu:          &sync.Mutex{},
 		}
 		st.servers = st.resolver(strings.Split(servers, ","))
 
@@ -196,7 +198,7 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 	ectr := stats.ErrorCtr.WithLabelValues(sc.name, "output", cfg.Identity)
 	ctr := stats.ReceivedMsgsCtr.WithLabelValues(sc.name, "output", cfg.Identity)
 	timer := stats.ProcessTime.WithLabelValues(sc.name, "output", cfg.Identity)
-	workqlen := stats.WorkQueueLengthGauge.WithLabelValues(sc.name, cfg.Identity)
+	workqlen := stats.WorkQueueLengthGauge.WithLabelValues(sc.adapterName, cfg.Identity)
 
 	transformerf := func(r adaptable) {
 		obs := prometheus.NewTimer(timer)
