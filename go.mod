@@ -6,7 +6,7 @@ require (
 	github.com/choria-io/go-client v0.4.3-0.20190626150123-ddebe7dca345
 	github.com/choria-io/go-config v0.0.2-0.20190704102631-3b622ee964d3
 	github.com/choria-io/go-lifecycle v1.0.3-0.20190626160828-06aa540a56f9
-	github.com/choria-io/go-network-broker v0.0.0-20190710065030-c2399527d2bc
+	github.com/choria-io/go-network-broker v0.0.0-20190715091958-04f070adb4bf
 	github.com/choria-io/go-protocol v1.3.1
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.4.4-0.20190625121144-69559b68756a
@@ -18,7 +18,7 @@ require (
 	github.com/golang/mock v1.3.1
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
 	github.com/looplab/fsm v0.1.0
-	github.com/nats-io/nats-server/v2 v2.0.1-0.20190701212751-a171864ae7df
+	github.com/nats-io/nats-server/v2 v2.0.1-0.20190715043431-7a3fb4ebe0f5
 	github.com/nats-io/nats.go v1.8.1
 	github.com/nats-io/stan.go v0.5.0
 	github.com/onsi/ginkgo v1.8.0
