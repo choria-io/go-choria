@@ -30,9 +30,14 @@ var (
 		Help: "Time taken to process messages",
 	}, []string{"name", "role", "identity"})
 
-	WorkQueueGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
-		Name: "choria_adapter_queue_size",
-		Help: "How many processes are in the work queue to process",
+	WorkQueueLengthGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_adapter_queue_length",
+		Help: "How many messages are in the work queue to process",
+	}, []string{"name", "identity"})
+
+	WorkQueueCapacityGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_adapter_queue_capacity",
+		Help: "How many messages can be the work queue to process",
 	}, []string{"name", "identity"})
 )
 
@@ -42,5 +47,6 @@ func init() {
 	prometheus.MustRegister(ErrorCtr)
 	prometheus.MustRegister(BytesCtr)
 	prometheus.MustRegister(ProcessTime)
-	prometheus.MustRegister(WorkQueueGauge)
+	prometheus.MustRegister(WorkQueueLengthGauge)
+	prometheus.MustRegister(WorkQueueCapacityGauge)
 }

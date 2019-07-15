@@ -196,7 +196,7 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 	ectr := stats.ErrorCtr.WithLabelValues(sc.name, "output", cfg.Identity)
 	ctr := stats.ReceivedMsgsCtr.WithLabelValues(sc.name, "output", cfg.Identity)
 	timer := stats.ProcessTime.WithLabelValues(sc.name, "output", cfg.Identity)
-	workqlen := stats.WorkQueueGauge.WithLabelValues(sc.name, cfg.Identity)
+	workqlen := stats.WorkQueueLengthGauge.WithLabelValues(sc.name, cfg.Identity)
 
 	transformerf := func(r adaptable) {
 		obs := prometheus.NewTimer(timer)
