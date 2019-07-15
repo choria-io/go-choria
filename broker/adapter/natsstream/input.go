@@ -15,11 +15,12 @@ import (
 )
 
 type nats struct {
-	servers func() (srvcache.Servers, error)
-	topic   string
-	proto   string
-	name    string
-	group   string
+	servers     func() (srvcache.Servers, error)
+	topic       string
+	proto       string
+	name        string
+	adapterName string
+	group       string
 
 	input chan *choria.ConnectorMessage
 	work  chan adaptable
@@ -61,13 +62,14 @@ func newIngest(name string, work chan adaptable, logger *log.Entry) ([]*nats, er
 		logger.Infof("Creating NATS Streaming Adapter %s %s Ingest instance %d / %d", name, topic, i, instances)
 
 		n := &nats{
-			name:    iname,
-			group:   "nats_ingest_" + name,
-			topic:   topic,
-			work:    work,
-			servers: framework.MiddlewareServers,
-			proto:   proto,
-			log:     logger.WithFields(log.Fields{"side": "ingest", "instance": i}),
+			name:        iname,
+			adapterName: name,
+			group:       "nats_ingest_" + name,
+			topic:       topic,
+			work:        work,
+			servers:     framework.MiddlewareServers,
+			proto:       proto,
+			log:         logger.WithFields(log.Fields{"side": "ingest", "instance": i}),
 		}
 
 		workers = append(workers, n)
@@ -110,7 +112,7 @@ func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
 	ectr := stats.ErrorCtr.WithLabelValues(na.name, "input", cfg.Identity)
 	ctr := stats.ReceivedMsgsCtr.WithLabelValues(na.name, "input", cfg.Identity)
 	timer := stats.ProcessTime.WithLabelValues(na.name, "input", cfg.Identity)
-	workqlen := stats.WorkQueueLengthGauge.WithLabelValues(na.name, cfg.Identity)
+	workqlen := stats.WorkQueueLengthGauge.WithLabelValues(na.adapterName, cfg.Identity)
 
 	receiverf := func(cm *choria.ConnectorMessage) {
 		obs := prometheus.NewTimer(timer)
