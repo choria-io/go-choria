@@ -196,10 +196,12 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 	ectr := stats.ErrorCtr.WithLabelValues(sc.name, "output", cfg.Identity)
 	ctr := stats.ReceivedMsgsCtr.WithLabelValues(sc.name, "output", cfg.Identity)
 	timer := stats.ProcessTime.WithLabelValues(sc.name, "output", cfg.Identity)
+	workqlen := stats.WorkQueueGauge.WithLabelValues(sc.name, cfg.Identity)
 
 	transformerf := func(r adaptable) {
 		obs := prometheus.NewTimer(timer)
 		defer obs.ObserveDuration()
+		defer func() { workqlen.Set(float64(len(sc.work))) }()
 
 		m := msg{
 			Protocol:  "choria:adapters:natsstream:output:1",

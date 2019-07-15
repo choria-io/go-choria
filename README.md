@@ -164,6 +164,13 @@ plugin.choria.adapters = discovery
 # configure this discovery adapter
 plugin.choria.adapter.discovery.type = nats_stream
 
+# configure the work queue size, this can be big when the stream is far from the
+# adapter and you have a high frequency result set like discovery with 50 000 nodes.
+# This is basically the buffer where messages are stored in, on a big network with 
+# many nodes you should cater for your biggest bursts in traffic.
+# The default is 1000
+plugin.choria.adapter.queue_len = 50000
+
 # in this case the adapter does NATS->NATS Streaming so you need to configure both sides
 # here is NATS Streaming
 plugin.choria.adapter.discovery.stream.servers = stan1:4222,stan2:4222
