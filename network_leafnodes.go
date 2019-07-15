@@ -1,6 +1,8 @@
 package network
 
 import (
+	"strings"
+
 	"github.com/choria-io/go-srvcache"
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 )
@@ -26,19 +28,24 @@ func (s *Server) setupLeafNodes() (err error) {
 		credentials := s.extractKeyedConfigString("leafnode_remote", r, "credentials", "")
 		urlStr := s.extractKeyedConfigString("leafnode_remote", r, "url", "")
 
+		urlsStr := []string{}
+		for _, u := range strings.Split(urlStr, ",") {
+			urlsStr = append(urlsStr, strings.TrimSpace(u))
+		}
+
 		if urlStr == "" {
 			s.log.Errorf("Leafnode %s has no remote url, ignoring", r)
 			continue
 		}
 
-		urlSrvs, err := srvcache.StringHostsToServers([]string{urlStr}, "leafnode")
+		urlSrvs, err := srvcache.StringHostsToServers(urlsStr, "leafnode")
 		if err != nil {
 			s.log.Errorf("Could not parse URL for leafnode remote %s url '%s': %s", r, urlStr, err)
 			continue
 		}
 
-		if urlSrvs.Count() != 1 {
-			s.log.Errorf("Could not parse URL for leafnode remote %s url '%s': need exactly 1 url", r, urlStr)
+		if urlSrvs.Count() == 0 {
+			s.log.Errorf("Could not parse URL for leafnode remote %s url '%s': needs at least 1 url", r, urlStr)
 			continue
 		}
 
@@ -48,7 +55,7 @@ func (s *Server) setupLeafNodes() (err error) {
 			continue
 		}
 
-		remote := &gnatsd.RemoteLeafOpts{LocalAccount: account, Credentials: credentials, URL: urlU[0]}
+		remote := &gnatsd.RemoteLeafOpts{LocalAccount: account, Credentials: credentials, URLs: urlU}
 
 		remote.TLSTimeout = s.opts.LeafNode.TLSTimeout
 
@@ -73,7 +80,7 @@ func (s *Server) setupLeafNodes() (err error) {
 		}
 
 		s.opts.LeafNode.Remotes = append(s.opts.LeafNode.Remotes, remote)
-		s.log.Infof("Added remote Leafnode %s with remote %s", r, remote.URL.String())
+		s.log.Infof("Added remote Leafnode %s with remote %v", r, remote.URLs)
 	}
 
 	return nil
