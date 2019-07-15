@@ -3,6 +3,7 @@ package natsstream
 import (
 	"context"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
@@ -30,6 +31,7 @@ type adaptable interface {
 //   # required
 //   plugin.choria.adapters = discovery
 //   plugin.choria.adapter.discovery.type = nats_stream
+//   plugin.choria.adapter.discovery.queue_len = 1000 # default
 //
 // Configure the stream:
 //
@@ -55,16 +57,20 @@ type NatStream struct {
 var framework *choria.Framework
 var cfg *config.Config
 
-func Create(name string, choria *choria.Framework) (*NatStream, error) {
+func Create(name string, choria *choria.Framework) (adapter *NatStream, err error) {
 	framework = choria
 	cfg = choria.Configuration()
 
-	adapter := &NatStream{
-		log:  log.WithFields(log.Fields{"component": "nats_stream_adapter", "name": name}),
-		work: make(chan adaptable, 50000),
+	s := fmt.Sprintf("plugin.choria.adapter.%s.queue_len", name)
+	worklen, err := strconv.Atoi(cfg.Option(s, "1000"))
+	if err != nil {
+		return nil, fmt.Errorf("%s should be a integer number", s)
 	}
 
-	var err error
+	adapter = &NatStream{
+		log:  log.WithFields(log.Fields{"component": "nats_stream_adapter", "name": name}),
+		work: make(chan adaptable, worklen),
+	}
 
 	adapter.streams, err = newStream(name, adapter.work, adapter.log)
 	if err != nil {
