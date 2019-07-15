@@ -4,15 +4,14 @@ go 1.12
 
 require (
 	github.com/choria-io/go-client v0.4.3-0.20190626150123-ddebe7dca345
-	github.com/choria-io/go-config v0.0.2-0.20190704102631-3b622ee964d3
+	github.com/choria-io/go-config v0.0.2-0.20190715104938-061e36dc49a8
 	github.com/choria-io/go-lifecycle v1.0.3-0.20190626160828-06aa540a56f9
-	github.com/choria-io/go-network-broker v0.0.0-20190715091958-04f070adb4bf
+	github.com/choria-io/go-network-broker v0.0.0-20190715112544-396a4ab59975
 	github.com/choria-io/go-protocol v1.3.1
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.4.4-0.20190625121144-69559b68756a
 	github.com/choria-io/go-srvcache v0.0.6-0.20190702115423-9be7f387d0ab
 	github.com/choria-io/mcorpc-agent-provider v0.4.2-0.20190627113344-1a8f3fb335f0
-	github.com/choria-io/provisioning-agent v0.4.6-0.20190627112845-755f63eca0e6
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang/mock v1.3.1

@@ -38,7 +38,7 @@ var cancel func()
 var wg *sync.WaitGroup
 var mu = &sync.Mutex{}
 var err error
-var profile string
+var cpuProfile string
 
 func ParseCLI() (err error) {
 	cli.app = kingpin.New("choria", "Choria Orchestration System")
@@ -47,7 +47,7 @@ func ParseCLI() (err error) {
 
 	cli.app.Flag("debug", "Enable debug logging").Short('d').BoolVar(&debug)
 	cli.app.Flag("config", "Config file to use").StringVar(&configFile)
-	cli.app.Flag("profile", "Enable CPU profiling and write to the supplied file").Hidden().StringVar(&profile)
+	cli.app.Flag("profile", "Enable CPU profiling and write to the supplied file").Hidden().StringVar(&cpuProfile)
 
 	for _, cmd := range cli.commands {
 		err = cmd.Setup()
@@ -102,13 +102,18 @@ func Run() (err error) {
 
 	go interruptWatcher()
 
-	if profile != "" {
-		f, err := os.Create(profile)
+	if cpuProfile != "" {
+		cpf, err := os.Create(cpuProfile)
+		if err != nil {
+			return fmt.Errorf("could not setup profiling: %s", err)
+		}
+		defer cpf.Close()
+
+		err = pprof.StartCPUProfile(cpf)
 		if err != nil {
 			return fmt.Errorf("could not setup profiling: %s", err)
 		}
 
-		pprof.StartCPUProfile(f)
 		defer pprof.StopCPUProfile()
 	}
 
@@ -190,18 +195,37 @@ func dumpGoRoutines() {
 	mu.Lock()
 	defer mu.Unlock()
 
-	outname := filepath.Join(os.TempDir(), fmt.Sprintf("choria-threaddump-%d-%d.txt", os.Getpid(), time.Now().UnixNano()))
+	now := time.Now().UnixNano()
+	pid := os.Getpid()
+
+	tdoutname := filepath.Join(os.TempDir(), fmt.Sprintf("choria-threaddump-%d-%d.txt", pid, now))
+	memoutname := filepath.Join(os.TempDir(), fmt.Sprintf("choria-memoryprofile-%d-%d.mprof", pid, now))
 
 	buf := make([]byte, 1<<20)
 	stacklen := runtime.Stack(buf, true)
 
-	err := ioutil.WriteFile(outname, buf[:stacklen], 0644)
+	err := ioutil.WriteFile(tdoutname, buf[:stacklen], 0644)
 	if err != nil {
 		log.Errorf("Could not produce thread dump: %s", err)
 		return
 	}
 
-	log.Warnf("Produced thread dump to %s", outname)
+	log.Warnf("Produced thread dump to %s", tdoutname)
+
+	mf, err := os.Create(memoutname)
+	if err != nil {
+		log.Errorf("Could not produce memory profile: %s", err)
+		return
+	}
+	defer mf.Close()
+
+	err = pprof.WriteHeapProfile(mf)
+	if err != nil {
+		log.Errorf("Could not produce memory profile: %s", err)
+		return
+	}
+
+	log.Warnf("Produced memory profile to %s", memoutname)
 }
 
 // digs in the application.commands structure looking for a entry with
