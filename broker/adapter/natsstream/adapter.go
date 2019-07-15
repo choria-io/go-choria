@@ -7,6 +7,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/broker/adapter/stats"
+
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-config"
 	log "github.com/sirupsen/logrus"
@@ -66,6 +68,8 @@ func Create(name string, choria *choria.Framework) (adapter *NatStream, err erro
 	if err != nil {
 		return nil, fmt.Errorf("%s should be a integer number", s)
 	}
+
+	stats.WorkQueueCapacityGauge.WithLabelValues(name, cfg.Identity).Set(float64(worklen))
 
 	adapter = &NatStream{
 		log:  log.WithFields(log.Fields{"component": "nats_stream_adapter", "name": name}),
