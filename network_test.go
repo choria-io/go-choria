@@ -2,7 +2,6 @@ package network
 
 import (
 	tls "crypto/tls"
-	"io/ioutil"
 	"testing"
 	"time"
 
@@ -43,7 +42,7 @@ var _ = Describe("Network Broker", func() {
 
 		logger = logrus.NewEntry(logrus.New())
 		logger.Logger.SetLevel(logrus.DebugLevel)
-		logger.Logger.Out = ioutil.Discard
+		// logger.Logger.Out = ioutil.Discard
 
 		fw.EXPECT().Configuration().Return(cfg).AnyTimes()
 		fw.EXPECT().Logger(gomock.Any()).Return(logger).AnyTimes()
@@ -238,10 +237,10 @@ var _ = Describe("Network Broker", func() {
 				Expect(srv.IsTLS()).To(BeTrue())
 				Expect(srv.opts.LeafNode.Port).To(Equal(6222))
 				Expect(srv.opts.LeafNode.Remotes).To(HaveLen(2))
-				Expect(srv.opts.LeafNode.Remotes[0].URL.String()).To(Equal("leafnode://ln1.example.net:6222"))
+				Expect(srv.opts.LeafNode.Remotes[0].URLs[0].String()).To(Equal("leafnode://ln1-1.example.net:6222"))
 				Expect(srv.opts.LeafNode.Remotes[0].TLSConfig).ToNot(BeNil())
 				Expect(srv.opts.LeafNode.Remotes[0].TLS).ToNot(BeFalse())
-				Expect(srv.opts.LeafNode.Remotes[1].URL.String()).To(Equal("leafnode://ln2.example.net:6222"))
+				Expect(srv.opts.LeafNode.Remotes[1].URLs[0].String()).To(Equal("leafnode://ln2.example.net:6222"))
 				Expect(srv.opts.LeafNode.Remotes[1].TLSConfig).To(BeNil())
 			})
 
@@ -255,7 +254,7 @@ var _ = Describe("Network Broker", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(srv.opts.LeafNode.Port).To(Equal(6222))
 				Expect(srv.opts.LeafNode.Remotes).To(HaveLen(1))
-				Expect(srv.opts.LeafNode.Remotes[0].URL.String()).To(Equal("leafnode://ln2.example.net:6222"))
+				Expect(srv.opts.LeafNode.Remotes[0].URLs[0].String()).To(Equal("leafnode://ln2.example.net:6222"))
 			})
 
 			It("Should handle custom TLS", func() {
@@ -267,7 +266,7 @@ var _ = Describe("Network Broker", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(srv.opts.LeafNode.Port).To(Equal(6222))
 				Expect(srv.opts.LeafNode.Remotes).To(HaveLen(1))
-				Expect(srv.opts.LeafNode.Remotes[0].URL.String()).To(Equal("leafnode://ln1.example.net:6222"))
+				Expect(srv.opts.LeafNode.Remotes[0].URLs[0].String()).To(Equal("leafnode://ln1.example.net:6222"))
 				Expect(srv.opts.LeafNode.Remotes[0].TLS).To(BeTrue())
 				Expect(srv.opts.LeafNode.Remotes[0].TLSConfig).ToNot(BeNil())
 
