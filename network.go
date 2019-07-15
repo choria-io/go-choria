@@ -5,6 +5,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/http"
+	"strings"
 	"sync"
 	"time"
 
@@ -26,6 +27,7 @@ type ChoriaFramework interface {
 	NetworkBrokerPeers() (srvcache.Servers, error)
 	TLSConfig() (*tls.Config, error)
 	Configuration() *config.Config
+	ValidateSecurity() (errors []string, ok bool)
 }
 
 type accountStore interface {
@@ -156,8 +158,17 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (s *Server) setupTLS() (err error) {
-	if !s.IsTLS() {
+	if !s.config.Choria.NetworkClientTLSForce && !s.IsTLS() {
 		return nil
+	}
+
+	// this can be forcing TLS while the framework isn't and so would not have
+	// validated the security setup, so we do it again now if force is set
+	if s.config.Choria.NetworkClientTLSForce {
+		errs, _ := s.choria.ValidateSecurity()
+		if len(errs) != 0 {
+			return fmt.Errorf("invalid security setup: %s", strings.Join(errs, ", "))
+		}
 	}
 
 	s.opts.TLS = true

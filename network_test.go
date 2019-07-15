@@ -2,6 +2,7 @@ package network
 
 import (
 	tls "crypto/tls"
+	"io/ioutil"
 	"testing"
 	"time"
 
@@ -42,7 +43,7 @@ var _ = Describe("Network Broker", func() {
 
 		logger = logrus.NewEntry(logrus.New())
 		logger.Logger.SetLevel(logrus.DebugLevel)
-		// logger.Logger.Out = ioutil.Discard
+		logger.Logger.Out = ioutil.Discard
 
 		fw.EXPECT().Configuration().Return(cfg).AnyTimes()
 		fw.EXPECT().Logger(gomock.Any()).Return(logger).AnyTimes()
@@ -120,6 +121,19 @@ var _ = Describe("Network Broker", func() {
 			srv, err = NewServer(fw, bi, false)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(srv.opts.TLS).To(BeFalse())
+		})
+
+		It("Should support forcing client TLS on while framework TLS is off", func() {
+			cfg.DisableTLS = true
+			cfg.Choria.NetworkClientTLSForce = true
+
+			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
+			fw.EXPECT().ValidateSecurity().Return([]string{}, true)
+			fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil)
+
+			srv, err = NewServer(fw, bi, false)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(srv.opts.TLS).To(BeTrue())
 		})
 
 		Describe("Gateways", func() {
