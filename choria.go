@@ -43,6 +43,7 @@ type ChoriaPluginConfig struct {
 	// network broker
 	NetworkListenAddress      string        `confkey:"plugin.choria.network.listen_address" default:"::"`
 	NetworkClientPort         int           `confkey:"plugin.choria.network.client_port" default:"4222"`
+	NetworkClientTLSForce     bool          `confkey:"plugin.choria.network.client_tls_force_required"`
 	NetworkPeerPort           int           `confkey:"plugin.choria.network.peer_port" default:"5222"`
 	NetworkPeerUser           string        `confkey:"plugin.choria.network.peer_user"`
 	NetworkPeerPassword       string        `confkey:"plugin.choria.network.peer_password"`
