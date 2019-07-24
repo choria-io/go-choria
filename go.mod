@@ -29,4 +29,5 @@ require (
 	github.com/tidwall/gjson v1.2.1
 	github.com/xeipuuv/gojsonschema v1.1.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
+	rsc.io/goversion v1.2.0
 )
