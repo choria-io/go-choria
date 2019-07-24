@@ -122,11 +122,15 @@ func printModuleInfo(modinfo string) {
 	var rows [][]string
 	for _, line := range strings.Split(strings.TrimSpace(modinfo), "\n") {
 		row := strings.Split(line, "\t")
+		if row[0] != "dep" {
+			continue
+		}
+
 		if len(row) > 3 {
 			row = row[:3]
 		}
 
-		rows = append(rows, row)
+		rows = append(rows, row[1:])
 	}
 
 	var max []int
