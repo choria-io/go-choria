@@ -1,15 +1,20 @@
 package cmd
 
 import (
+	"bufio"
 	"fmt"
+	"os"
 	"runtime"
+	"strings"
 	"sync"
+	"unicode/utf8"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/provtarget"
 	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-protocol/protocol"
 	gnatsd "github.com/nats-io/nats-server/v2/server"
+	"rsc.io/goversion/version"
 )
 
 type buildinfoCommand struct {
@@ -94,7 +99,65 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 		fmt.Println("NOTE: The security of this build is non standard, you might be running without adequate protocol level security.  Please ensure this is the build you intend to be using.")
 	}
 
+	fver, err := version.ReadExe(os.Args[0])
+	if err != nil {
+		fmt.Printf("Could not read dependency information: %s", err)
+		return nil
+	}
+
+	fmt.Println()
+	fmt.Println("Compile time module dependencies:")
+	fmt.Println()
+
+	if fver.ModuleInfo != "" {
+		printModuleInfo(fver.ModuleInfo)
+	} else {
+		fmt.Println("No module dependencies found")
+	}
+
 	return
+}
+
+func printModuleInfo(modinfo string) {
+	var rows [][]string
+	for _, line := range strings.Split(strings.TrimSpace(modinfo), "\n") {
+		row := strings.Split(line, "\t")
+		if len(row) > 3 {
+			row = row[:3]
+		}
+
+		rows = append(rows, row)
+	}
+
+	var max []int
+	for _, row := range rows {
+		for i, c := range row {
+			n := utf8.RuneCountInString(c)
+			if i >= len(max) {
+				max = append(max, n)
+			} else if max[i] < n {
+				max[i] = n
+			}
+		}
+	}
+
+	b := bufio.NewWriter(os.Stdout)
+	for _, row := range rows {
+		b.WriteString("\t")
+		for len(row) > 0 && row[len(row)-1] == "" {
+			row = row[:len(row)-1]
+		}
+		for i, c := range row {
+			b.WriteString(c)
+			if i+1 < len(row) {
+				for j := utf8.RuneCountInString(c); j < max[i]+2; j++ {
+					b.WriteRune(' ')
+				}
+			}
+		}
+		b.WriteRune('\n')
+	}
+	b.Flush()
 }
 
 func init() {
