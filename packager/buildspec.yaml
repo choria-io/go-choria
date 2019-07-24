@@ -1,7 +1,7 @@
 flags_map:
   TLS: github.com/choria-io/go-choria/build.TLS
   maxBrokerClients: github.com/choria-io/go-choria/build.maxBrokerClients
-  Secure: github.com/choria-io/go-choria/vendor/github.com/choria-io/go-protocol/protocol.Secure
+  Secure: github.com/choria-io/go-protocol/protocol.Secure
   Version: github.com/choria-io/go-choria/build.Version
   SHA: github.com/choria-io/go-choria/build.SHA
   BuildTime: github.com/choria-io/go-choria/build.BuildDate
