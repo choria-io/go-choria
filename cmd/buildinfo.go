@@ -99,10 +99,22 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 		fmt.Println("NOTE: The security of this build is non standard, you might be running without adequate protocol level security.  Please ensure this is the build you intend to be using.")
 	}
 
-	fver, err := version.ReadExe(os.Args[0])
+	printGoMods()
+
+	return
+}
+
+func printGoMods() {
+	binary, err := os.Executable()
 	if err != nil {
-		fmt.Printf("Could not read dependency information: %s", err)
-		return nil
+		fmt.Printf("Could not read dependency information: %s\n", err)
+		return
+	}
+
+	fver, err := version.ReadExe(binary)
+	if err != nil {
+		fmt.Printf("Could not read dependency information: %s\n", err)
+		return
 	}
 
 	fmt.Println()
@@ -115,7 +127,6 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 		fmt.Println("No module dependencies found")
 	}
 
-	return
 }
 
 func printModuleInfo(modinfo string) {
