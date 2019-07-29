@@ -9,6 +9,7 @@ jobs:
     environment:
       MCOLLECTIVE_CERTNAME: rip.mcollective
       GO111MODULE: "on"
+      GOPROXY: https://proxy.golang.org
 
     steps:
       - checkout
@@ -83,8 +84,7 @@ jobs:
       BUILD: foss
       BUILDER: choria/packager:el6-go1.12
 
-    steps:
-      *std_build_steps
+    steps: *std_build_steps
 
   build_el7_64bit_rpms:
     docker:
@@ -97,8 +97,7 @@ jobs:
       BUILD: foss
       BUILDER: choria/packager:el7-go1.12
 
-    steps:
-      *std_build_steps
+    steps: *std_build_steps
 
   build_xenial_64bit_debs:
     docker:
@@ -111,8 +110,7 @@ jobs:
       BUILD: foss
       BUILDER: choria/packager:xenial-go1.12
 
-    steps:
-      *std_build_steps
+    steps: *std_build_steps
 
   build_stretch_64bit_debs:
     docker:
@@ -125,8 +123,7 @@ jobs:
       BUILD: foss
       BUILDER: choria/packager:stretch-go1.12
 
-    steps:
-      *std_build_steps
+    steps: *std_build_steps
 
   build_bionic_64bit_debs:
     docker:
@@ -139,8 +136,7 @@ jobs:
       BUILD: foss
       BUILDER: choria/packager:stretch-go1.12
 
-    steps:
-      *std_build_steps
+    steps: *std_build_steps
 
   gather_artifacts:
     docker:
@@ -199,7 +195,7 @@ workflows:
       - build_el6_64bit_rpms:
           context: org-global
           requires:
-           - test
+            - test
 
       - gather_artifacts:
           requires:
@@ -209,7 +205,6 @@ workflows:
       - nightly_packagecloud:
           requires:
             - gather_artifacts
-
 
   test_and_ship:
     jobs:
@@ -221,7 +216,7 @@ workflows:
       - hold:
           type: approval
           requires:
-           - test
+            - test
           filters: &semver_only
             tags:
               only: /^\d+\.\d+\.\d+$/
@@ -229,49 +224,42 @@ workflows:
               ignore: /.*/
 
       - build_el6_32bit_rpms:
-          filters:
-            *semver_only
+          filters: *semver_only
           requires:
-           - hold
+            - hold
 
       - build_el6_64bit_rpms:
-          filters:
-            *semver_only
+          filters: *semver_only
           requires:
-           - hold
+            - hold
 
       - build_el7_64bit_rpms:
-          filters:
-            *semver_only
+          filters: *semver_only
           requires:
-           - hold
+            - hold
 
       - build_xenial_64bit_debs:
-          filters:
-            *semver_only
+          filters: *semver_only
           requires:
-           - hold
+            - hold
 
       - build_stretch_64bit_debs:
-          filters:
-            *semver_only
+          filters: *semver_only
           requires:
-           - hold
+            - hold
 
       - build_bionic_64bit_debs:
-          filters:
-            *semver_only
+          filters: *semver_only
           requires:
-           - hold
+            - hold
 
       - gather_artifacts:
           requires:
-             - build_el6_32bit_rpms
-             - build_el6_64bit_rpms
-             - build_el7_64bit_rpms
-             - build_xenial_64bit_debs
-             - build_stretch_64bit_debs
-             - build_bionic_64bit_debs
+            - build_el6_32bit_rpms
+            - build_el6_64bit_rpms
+            - build_el7_64bit_rpms
+            - build_xenial_64bit_debs
+            - build_stretch_64bit_debs
+            - build_bionic_64bit_debs
 
-          filters:
-            *semver_only
+          filters: *semver_only
