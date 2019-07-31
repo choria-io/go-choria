@@ -6,24 +6,19 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-client/discovery/broadcast"
 	"github.com/choria-io/go-protocol/protocol"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
+	rpcClient "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
 	ddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	"os"
-	"regexp"
 	"strings"
 	"sync"
 	"time"
 )
 
-var libDirs = []string{
-	"/opt/puppetlabs/mcollective/plugins",
-}
-var allFilters = protocol.NewFilter()
-
 type jsonDisplay struct {
-	client.RPCReply
+	rpcClient.RPCReply
 
 	Agent  string `json:"agent"`
 	Action string `json:"action"`
@@ -108,7 +103,6 @@ func (r *rpcCommand) Setup() (err error) {
 	r.cmd.Flag("connection-timeout", "Set the timeout for establishing a connection to the middleware").IntVar(&r.connectionTimeout)
 
 	r.cmd.Flag("with", "Combined classes and facts filter").Short('W').StringsVar(&r.with)
-	// TODO: implement me correctly
 	r.cmd.Flag("select", "Compound filter combining facts and classes").Short('S').StringsVar(&r.sel)
 	r.cmd.Flag("with-fact", "Match hosts with a certain fact").Short('F').StringsVar(&r.withFact)
 	r.cmd.Flag("with-class", "Match hosts with a certain config management class").Short('C').StringsVar(&r.withClass)
@@ -154,64 +148,18 @@ func (r *rpcCommand) Configure() error {
 		cfg.ConnectionTimeout = r.connectionTimeout
 	}
 
-	for _, filter := range r.with {
-		// cribbed from https://github.com/choria-io/mcorpc-ruby-support/blob/1b705e6f48f5c06f92b3ebe28076e3b1634ebe79/lib/mcollective/optionparser.rb#L77
-		for _, subquery := range strings.Split(filter, " ") {
-			subfilter, err := parseFactFilter(subquery)
-			if err != nil {
-				allFilters.AddClassFilter(subquery)
-			} else {
-				err = allFilters.AddFactFilter(subfilter.Fact, subfilter.Operator, subfilter.Value)
-			}
-		}
-	}
-	for _, filter := range r.sel {
-		err := allFilters.AddCompoundFilter(filter)
-		if err != nil {
-			return err
-		}
-	}
-	for _, filter := range r.withClass {
-		allFilters.AddClassFilter(filter)
-	}
-	for _, filter := range r.withAgent {
-		allFilters.AddAgentFilter(filter)
-	}
-	for _, filter := range r.withIdentity {
-		allFilters.AddIdentityFilter(filter)
-	}
-	for _, query := range r.withFact {
-		filter, err := parseFactFilter(query)
-		if err != nil {
-			return err
-		}
-		err = allFilters.AddFactFilter(filter.Fact, filter.Operator, filter.Value)
-		if err != nil {
-			return err
-		}
-	}
-
 	return nil
 }
 
-func parseFactFilter(query string) (*protocol.FactFilter, error) {
-	filter := &protocol.FactFilter{}
-	re := regexp.MustCompile(`(\S*)(>=|<=|<|>|!=|==|=~)(\S*)`)
-	if !re.MatchString(query) {
-		return nil, fmt.Errorf("failed to match string %s to fact filter", query)
-	}
-	// guaranteed to be len 4 if matched
-	matches := re.FindStringSubmatch(query)
-	if matches[1] == "" {
-		return nil, fmt.Errorf("missing fact in filter string %s", query)
-	}
-	if matches[3] == "" {
-		return nil, fmt.Errorf("missing value in filter string %s", query)
-	}
-	filter.Fact = matches[1]
-	filter.Operator = matches[2]
-	filter.Value = matches[3]
-	return filter, nil
+func (r *rpcCommand) rpcFilter() (*protocol.Filter, error) {
+	return client.NewFilter(
+		client.FactFilter(r.withFact...),
+		client.AgentFilter(r.withAgent...),
+		client.ClassFilter(r.withClass...),
+		client.IdentityFilter(r.withIdentity...),
+		client.CombinedFilter(r.sel...),
+		client.CompoundFilter(r.with...),
+	)
 }
 
 func (r *rpcCommand) Run(wg *sync.WaitGroup) (err error) {
@@ -223,12 +171,12 @@ func (r *rpcCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	// looks for json file
-	addl, err := ddl.Find(r.agent, libDirs)
+	addl, err := ddl.Find(r.agent, cfg.LibDir)
 	if err != nil {
 		return err
 	}
 
-	rpc, err := client.New(fw, r.agent, client.DDL(addl))
+	rpc, err := rpcClient.New(fw, r.agent, rpcClient.DDL(addl))
 	if err != nil {
 		return err
 	}
@@ -246,7 +194,12 @@ func (r *rpcCommand) Run(wg *sync.WaitGroup) (err error) {
 		fmt.Print("\nPerforming discovery...")
 	}
 	b := broadcast.New(fw)
-	nodes, err := b.Discover(ctx, broadcast.Filter(allFilters))
+
+	filters, err := r.rpcFilter()
+	if err != nil {
+		return err
+	}
+	nodes, err := b.Discover(ctx, broadcast.Filter(filters))
 	if err != nil {
 		return err
 	}
@@ -261,7 +214,7 @@ func (r *rpcCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	replies := make(chan jsonDisplay, len(nodes))
 
-	handler := client.ReplyHandler(func(reply protocol.Reply, rpcr *client.RPCReply) {
+	handler := rpcClient.ReplyHandler(func(reply protocol.Reply, rpcr *rpcClient.RPCReply) {
 		display := &jsonDisplay{}
 		err := json.Unmarshal([]byte(reply.Message()), display)
 		if err != nil {
@@ -274,20 +227,17 @@ func (r *rpcCommand) Run(wg *sync.WaitGroup) (err error) {
 		replies <- *display
 	})
 
-	doArgs := []client.RequestOption{client.Workers(1), client.Targets(nodes), handler}
+	doArgs := []rpcClient.RequestOption{rpcClient.Workers(1), rpcClient.Targets(nodes), handler}
 
 	if r.batchSleep != 0 || r.batch != 0 {
 		if r.batchSleep != 0 && r.batch != 0 {
-			doArgs = append(doArgs, client.InBatches(r.batch, r.batchSleep))
+			doArgs = append(doArgs, rpcClient.InBatches(r.batch, r.batchSleep))
 		} else {
 			return fmt.Errorf("you must set both --batch=<batchSize> *and* --batchSleep=<sleepTime>")
 		}
 	}
 	if r.replyTo != "" {
-		doArgs = append(doArgs, client.ReplyTo(r.replyTo))
-	}
-	if r.target != "" {
-		doArgs = append(doArgs, client.Collective(r.target))
+		doArgs = append(doArgs, rpcClient.ReplyTo(r.replyTo))
 	}
 
 	resp, err := rpc.Do(ctx, r.action, r.args, doArgs...)
