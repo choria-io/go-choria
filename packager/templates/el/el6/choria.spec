@@ -35,13 +35,13 @@ Please visit https://choria.io for more information
 %install
 rm -rf %{buildroot}
 %{__install} -d -m0755  %{buildroot}/etc/sysconfig
-%{__install} -d -m0755  %{buildroot}/etc/init.d
 %{__install} -d -m0755  %{buildroot}/etc/logrotate.d
+%{__install} -d -m0755  %{buildroot}/etc/rc.d/init.d
 %{__install} -d -m0755  %{buildroot}%{bindir}
 %{__install} -d -m0755  %{buildroot}%{etcdir}
 %{__install} -d -m0755  %{buildroot}/var/log
-%{__install} -m0755 dist/server.init %{buildroot}/etc/init.d/%{pkgname}-server
-%{__install} -m0755 dist/broker.init %{buildroot}/etc/init.d/%{pkgname}-broker
+%{__install} -m0755 dist/server.init %{buildroot}/etc/rc.d/init.d/%{pkgname}-server
+%{__install} -m0755 dist/broker.init %{buildroot}/etc/rc.d/init.d/%{pkgname}-broker
 %{__install} -m0644 dist/server.sysconfig %{buildroot}/etc/sysconfig/%{pkgname}-server
 %{__install} -m0644 dist/broker.sysconfig %{buildroot}/etc/sysconfig/%{pkgname}-broker
 %{__install} -m0755 dist/choria-logrotate %{buildroot}/etc/logrotate.d/%{pkgname}
@@ -79,9 +79,9 @@ fi
 %endif
 %{bindir}/%{pkgname}
 /etc/logrotate.d/%{pkgname}
-/etc/init.d/%{pkgname}-server
+/etc/rc.d/init.d/%{pkgname}-server
 %config(noreplace)/etc/sysconfig/%{pkgname}-server
-/etc/init.d/%{pkgname}-broker
+/etc/rc.d/init.d/%{pkgname}-broker
 %config(noreplace)/etc/sysconfig/%{pkgname}-broker
 
 %changelog
