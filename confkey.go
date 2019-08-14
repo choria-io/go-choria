@@ -32,8 +32,10 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 	"reflect"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -265,10 +267,21 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 		*ptr = value.(string)
 
 		if tag, ok := tag(target, item, "type"); ok {
-			if tag == "title_string" {
+			switch tag {
+			case "title_string":
 				a := []rune(value.(string))
 				a[0] = unicode.ToUpper(a[0])
 				*ptr = string(a)
+			case "path_string":
+				a := strings.TrimSpace(value.(string))
+				if a[0] == '~' {
+					home, err := homeDir()
+					if err != nil {
+						return err
+					}
+					a = strings.Replace(a, "~", home, 1)
+				}
+				*ptr = a
 			}
 		}
 
@@ -281,6 +294,27 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 	_, err = validator.ValidateStructField(target, item)
 
 	return err
+}
+
+func homeDir() (string, error) {
+	if runtime.GOOS == "windows" {
+		drive := os.Getenv("HOMEDRIVE")
+		home := os.Getenv("HOMEDIR")
+
+		if home == "" || drive == "" {
+			return "", fmt.Errorf("Cannot determine home dir, ensure HOMEDRIVE and HOMEDIR is set")
+		}
+
+		return filepath.Join(os.Getenv("HOMEDRIVE"), os.Getenv("HOMEDIR")), nil
+	}
+
+	home := os.Getenv("HOME")
+
+	if home == "" {
+		return "", fmt.Errorf("Cannot determine home dir, ensure HOME is set")
+	}
+
+	return home, nil
 }
 
 // determines the struct key name that is tagged with a certain confkey

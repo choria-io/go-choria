@@ -1,6 +1,7 @@
 package confkey
 
 import (
+	"os"
 	"runtime"
 	"time"
 
@@ -24,6 +25,7 @@ type TestData struct {
 	Int         int           `confkey:"int"`
 	Int64       int64         `confkey:"int64"`
 	TitleString string        `confkey:"title_string" type:"title_string"`
+	PathString  string        `confkey:"path_string" type:"path_string"`
 	Bool        bool          `confkey:"bool"`
 	T           time.Duration `confkey:"interval" type:"duration" default:"1h"`
 }
@@ -163,6 +165,27 @@ var _ = Describe("Confkey", func() {
 			err := SetStructFieldWithKey(&d, "title_string", "foobar")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(d.TitleString).To(Equal("Foobar"))
+		})
+
+		It("Should support path_string", func() {
+			err := os.Setenv("HOME", "/home/joeuser")
+			Expect(err).ToNot(HaveOccurred())
+			err = os.Setenv("HOMEDRIVE", "C:\\")
+			Expect(err).ToNot(HaveOccurred())
+			err = os.Setenv("HOMEDIR", "myhome")
+			Expect(err).ToNot(HaveOccurred())
+
+			if runtime.GOOS == "windows" {
+				err = SetStructFieldWithKey(&d, "path_string", "~\\ssl_dir")
+			} else {
+				err = SetStructFieldWithKey(&d, "path_string", "~/ssl_dir")
+			}
+			Expect(err).ToNot(HaveOccurred())
+			if runtime.GOOS == "windows" {
+				Expect(d.PathString).To(Equal("C:\\myhome\\ssl_dir"))
+			} else {
+				Expect(d.PathString).To(Equal("/home/joeuser/ssl_dir"))
+			}
 		})
 
 		It("Should support bools", func() {
