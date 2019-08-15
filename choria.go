@@ -77,7 +77,7 @@ type ChoriaPluginConfig struct {
 	PrivilegedUsers              []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split" default:"\\.privileged.mcollective$,\\.privileged.choria$"`
 	CertnameWhitelist            []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split" default:"\\.mcollective$,\\.choria$"`
 	Serializer                   string   `confkey:"plugin.choria.security.serializer" validate:"enum=json,yaml"`
-	SecurityProvider             string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file"`
+	SecurityProvider             string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11"`
 	SecurityAlwaysOverwriteCache bool     `confkey:"plugin.security.always_overwrite_cache" default:"false"`
 
 	// file security
@@ -85,6 +85,10 @@ type ChoriaPluginConfig struct {
 	FileSecurityKey         string `confkey:"plugin.security.file.key"`
 	FileSecurityCA          string `confkey:"plugin.security.file.ca"`
 	FileSecurityCache       string `confkey:"plugin.security.file.cache"`
+
+	// pkcs11 security
+	PKCS11DriverFile string `confkey:"plugin.security.pkcs11.driver_file" type:"path_string"`
+	PKCS11Slot       int    `confkey:"plugin.security.pkcs11.slot"`
 
 	// adapters
 	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split"`
