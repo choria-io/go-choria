@@ -57,6 +57,7 @@ type ChoriaPluginConfig struct {
 	NetworkAllowedClientHosts []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`
 	NetworkAccountOperator    string        `confkey:"plugin.choria.network.operator_account"`
 	NetworkSystemAccount      string        `confkey:"plugin.choria.network.system_account"`
+	NetworkTLSTimeout         int           `confkey:"plugin.choria.network.tls_timeout" default:"2"`
 
 	// broker features
 	BrokerNetwork    bool `confkey:"plugin.choria.broker_network" default:"false"`
