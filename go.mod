@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/choria-io/go-client v0.4.3-0.20190626150123-ddebe7dca345
-	github.com/choria-io/go-config v0.0.2
+	github.com/choria-io/go-config v0.0.3-0.20190815083627-2bf30c14502f
 	github.com/choria-io/go-lifecycle v1.0.3-0.20190725073045-6c0855628338
 	github.com/choria-io/go-network-broker v0.0.0-20190730075109-c4aae3922b42
 	github.com/choria-io/go-protocol v1.3.2-0.20190724135631-03c23ad95953
