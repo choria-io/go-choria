@@ -22,7 +22,7 @@ type Config struct {
 	RegistrationSplay         bool     `confkey:"registration_splay" default:"false"`
 	Collectives               []string `confkey:"collectives" type:"comma_split" default:"mcollective"`
 	MainCollective            string   `confkey:"main_collective"`
-	LogFile                   string   `confkey:"logfile"`
+	LogFile                   string   `confkey:"logfile" type:"path_string"`
 	KeepLogs                  int      `confkey:"keeplogs" default:"5"`
 	MaxLogSize                int      `confkey:"max_log_size" default:"2097152"`
 	LogLevel                  string   `confkey:"loglevel" default:"info" validate:"enum=debug,info,warn,error,fatal"`
@@ -36,7 +36,7 @@ type Config struct {
 	SecurityProvider          string   `confkey:"securityprovider" default:"psk" type:"title_string"`
 	FactSource                string   `confkey:"factsource" default:"yaml" default:"yaml"`
 	Connector                 string   `confkey:"connector" default:"nats" type:"title_string"`
-	ClassesFile               string   `confkey:"classesfile" default:"/opt/puppetlabs/puppet/cache/state/classes.txt"`
+	ClassesFile               string   `confkey:"classesfile" default:"/opt/puppetlabs/puppet/cache/state/classes.txt" type:"path_string"`
 	DiscoveryTimeout          int      `confkey:"discovery_timeout" default:"2"`
 	PublishTimeout            int      `confkey:"publish_timeout" default:"2"`
 	ConnectionTimeout         int      `confkey:"connection_timeout"`
@@ -55,7 +55,7 @@ type Config struct {
 	SoftShutdown              bool     `confkey:"soft_shutdown" default:"true"`
 	SoftShutdownTimeout       int      `confkey:"soft_shutdown_timeout" default:"2"`
 	ActivateAgents            bool     `confkey:"activate_agents" default:"true"`
-	FactSourceFile            string   `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml"`
+	FactSourceFile            string   `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml" type:"path_string"`
 
 	ConfigFile string
 

@@ -15,7 +15,7 @@ type ChoriaPluginConfig struct {
 	PuppetCAPort     int    `confkey:"plugin.choria.puppetca_port" default:"8140"`
 	PuppetDBHost     string `confkey:"plugin.choria.puppetdb_host" default:"puppet"`
 	PuppetDBPort     int    `confkey:"plugin.choria.puppetdb_port" default:"8081"`
-	SSLDir           string `confkey:"plugin.choria.ssldir"`
+	SSLDir           string `confkey:"plugin.choria.ssldir" type:"path_string"`
 	UseSRVRecords    bool   `confkey:"plugin.choria.use_srv" default:"true"`
 	SRVDomain        string `confkey:"plugin.choria.srv_domain"`
 	Provision        bool   `confkey:"plugin.choria.server.provision" default:"false"`
@@ -81,16 +81,16 @@ type ChoriaPluginConfig struct {
 	SecurityAlwaysOverwriteCache bool     `confkey:"plugin.security.always_overwrite_cache" default:"false"`
 
 	// file security
-	FileSecurityCertificate string `confkey:"plugin.security.file.certificate"`
-	FileSecurityKey         string `confkey:"plugin.security.file.key"`
-	FileSecurityCA          string `confkey:"plugin.security.file.ca"`
-	FileSecurityCache       string `confkey:"plugin.security.file.cache"`
+	FileSecurityCertificate string `confkey:"plugin.security.file.certificate" type:"path_string"`
+	FileSecurityKey         string `confkey:"plugin.security.file.key" type:"path_string"`
+	FileSecurityCA          string `confkey:"plugin.security.file.ca" type:"path_string"`
+	FileSecurityCache       string `confkey:"plugin.security.file.cache" type:"path_string"`
 
 	// adapters
 	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split"`
 
 	// status file
-	StatusFilePath      string `confkey:"plugin.choria.status_file_path"`
+	StatusFilePath      string `confkey:"plugin.choria.status_file_path" type:"path_string"`
 	StatusUpdateSeconds int    `confkey:"plugin.choria.status_update_interval" default:"30"`
 
 	// machine
