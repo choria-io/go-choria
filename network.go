@@ -173,7 +173,7 @@ func (s *Server) setupTLS() (err error) {
 
 	s.opts.TLS = true
 	s.opts.TLSVerify = !s.config.DisableTLSVerify
-	s.opts.TLSTimeout = 2
+	s.opts.TLSTimeout = float64(s.config.Choria.NetworkTLSTimeout)
 
 	tlsc, err := s.choria.TLSConfig()
 	if err != nil {
