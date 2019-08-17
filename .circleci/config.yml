@@ -9,7 +9,7 @@ jobs:
     environment:
       MCOLLECTIVE_CERTNAME: rip.mcollective
       GO111MODULE: "on"
-      GOPROXY: https://proxy.golang.org
+      GOPROXY: https://goproxy.io
 
     steps:
       - checkout

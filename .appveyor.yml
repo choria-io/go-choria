@@ -7,6 +7,7 @@ environment:
   GOVERSION: "1.12.6"
   MCOLLECTIVE_CERTNAME: rip.mcollective
   RUBY_VERSION: 24
+  GOPROXY: https://goproxy.io
 
 init:
   - git config --global core.autocrlf input
