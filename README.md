@@ -45,7 +45,8 @@ It also uses the `build.maxBrokerClients` build time configuration in Choria to 
 |`plugin.choria.network.client_port`|The port to listen on for network clients|`4222`|
 |`plugin.choria.network.write_deadline`|The time to allow for writes to network clients to complete before considering them slow|5s|
 |`plugin.choria.network.client_hosts`|List of hosts - ip addresses or cidrs - that are allowed to use clients|all|
-
+|`plugin.choria.network.client_tls_force_required`|Force TLS on for client connections regardless of build settings|`false`|
+|`plugin.choria.network.tls_timeout`|Sets the timeout for establishing TLS connections|`2`|
 
 ### Cluster Settings
 
