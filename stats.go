@@ -30,6 +30,11 @@ var (
 		Help: "Current active connections to other brokers",
 	}, []string{"identity"})
 
+	leafsGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_leafnode_remotes",
+		Help: "Current active connections to other leafnodes",
+	}, []string{"identity"})
+
 	inMsgsGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: "choria_network_in_msgs",
 		Help: "Messages received by the network broker",
@@ -66,6 +71,7 @@ func init() {
 	prometheus.MustRegister(totalConnectionsGauge)
 	prometheus.MustRegister(routesGauge)
 	prometheus.MustRegister(remotesGauge)
+	prometheus.MustRegister(leafsGauge)
 	prometheus.MustRegister(inMsgsGauge)
 	prometheus.MustRegister(outMsgsGauge)
 	prometheus.MustRegister(inBytesGauge)
@@ -116,4 +122,5 @@ func (s *Server) updatePrometheus() {
 	outBytesGauge.WithLabelValues(i).Set(float64(varz.OutBytes))
 	slowConsumerGauge.WithLabelValues(i).Set(float64(varz.SlowConsumers))
 	subscriptionsGauge.WithLabelValues(i).Set(float64(varz.Subscriptions))
+	leafsGauge.WithLabelValues(i).Set(float64(varz.Leafs))
 }

@@ -120,6 +120,7 @@ When Statistics are enabled in Choria by setting `plugin.choria.stats_port` to n
 |`choria_network_total_connections`|Total connections received since start|
 |`choria_network_routes`|Current active routes to other brokers|
 |`choria_network_remotes`|Current active connections to other brokers|
+|`choria_network_leafnode_remotes`|Current active connections to leaf nodes|
 |`choria_network_in_msgs`|Messages received by the network broker|
 |`choria_network_out_msgs`|Messages sent by the network broker|
 |`choria_network_in_bytes`|Total size of messages received by the network broker|
