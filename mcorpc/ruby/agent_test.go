@@ -52,7 +52,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 		mockctl.Finish()
 	})
 
-	var _ = Describe("rubyAction", func() {
+	Describe("rubyAction", func() {
 		var req *mcorpc.Request
 		var rep *mcorpc.Reply
 		var ctx context.Context
@@ -127,7 +127,40 @@ var _ = Describe("McoRPC/Ruby", func() {
 		})
 	})
 
-	var _ = Describe("NewRubyAgent", func() {
+	Describe("activationCheck", func() {
+		var (
+			d   *ddl.DDL
+			err error
+		)
+
+		BeforeEach(func() {
+			d, err = ddl.New("testdata/lib1/mcollective/agent/one.json")
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should respect true value activate_agent setting", func() {
+			cfg, err := config.NewConfig("testdata/one_agent_enabled.cfg")
+			Expect(err).ToNot(HaveOccurred())
+			fw.Config = cfg
+			Expect(activationCheck(d, agentMgr)()).To(Equal(true))
+		})
+
+		It("Should respect false value activate_agent setting", func() {
+			cfg, err := config.NewConfig("testdata/one_agent_disabled.cfg")
+			Expect(err).ToNot(HaveOccurred())
+			fw.Config = cfg
+			Expect(activationCheck(d, agentMgr)()).To(Equal(false))
+		})
+
+		It("Should default to the correct value", func() {
+			cfg, err := config.NewConfig("testdata/shim.cfg")
+			Expect(err).ToNot(HaveOccurred())
+			fw.Config = cfg
+			Expect(activationCheck(d, agentMgr)()).To(Equal(activationDefault))
+		})
+	})
+
+	Describe("NewRubyAgent", func() {
 		It("Should create a shim with all the actions mapped", func() {
 			d, err := ddl.New("testdata/lib1/mcollective/agent/one.json")
 			Expect(err).ToNot(HaveOccurred())

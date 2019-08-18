@@ -3,17 +3,25 @@ package ruby
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"os/exec"
+	"regexp"
 	"strings"
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/server"
+	"github.com/choria-io/go-config"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
-	"github.com/choria-io/go-choria/server"
+)
+
+const (
+	// if ruby agents should be enabled by default
+	activationDefault = true
 )
 
 // ShimRequest is the request being published to the shim runner
@@ -40,6 +48,7 @@ type ShimRequestBody struct {
 // NewRubyAgent creates a shim agent that calls to a old mcollective agent implemented in ruby
 func NewRubyAgent(ddl *agent.DDL, mgr server.AgentManager) (*mcorpc.Agent, error) {
 	agent := mcorpc.New(ddl.Metadata.Name, ddl.Metadata, mgr.Choria(), mgr.Logger())
+	agent.SetActivationChecker(activationCheck(ddl, mgr))
 
 	agent.Log.Debugf("Registering proxy actions for Ruby agent %s: %s", ddl.Metadata.Name, strings.Join(ddl.ActionNames(), ", "))
 
@@ -53,6 +62,28 @@ func NewRubyAgent(ddl *agent.DDL, mgr server.AgentManager) (*mcorpc.Agent, error
 	}
 
 	return agent, nil
+}
+
+// checks if the plugin.agent.activate_agent is trueish
+func configActivationCheck(agent string, cfg *config.Config, dflt bool) bool {
+	opts := "plugin." + agent + ".activate_agent"
+	should := dflt
+
+	if cfg.HasOption(opts) {
+		val := cfg.Option(opts, "unknown")
+		if val != "unknown" {
+			should, _ = strToBool(val)
+		}
+	}
+
+	return should
+}
+
+func activationCheck(ddl *agent.DDL, mgr server.AgentManager) mcorpc.ActivationChecker {
+	cfg := mgr.Choria().Configuration()
+	should := configActivationCheck(ddl.Metadata.Name, cfg, activationDefault)
+
+	return func() bool { return should }
 }
 
 func rubyAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
@@ -150,4 +181,18 @@ func abortAction(reason string, agent *mcorpc.Agent, reply *mcorpc.Reply) {
 	agent.Log.Error(reason)
 	reply.Statuscode = mcorpc.Aborted
 	reply.Statusmsg = reason
+}
+
+func strToBool(s string) (bool, error) {
+	clean := strings.TrimSpace(s)
+
+	if regexp.MustCompile(`(?i)^(1|yes|true|y|t)$`).MatchString(clean) {
+		return true, nil
+	}
+
+	if regexp.MustCompile(`(?i)^(0|no|false|n|f)$`).MatchString(clean) {
+		return false, nil
+	}
+
+	return false, errors.New("cannot convert string value '" + clean + "' into a boolean.")
 }
