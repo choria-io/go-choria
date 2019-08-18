@@ -11,6 +11,7 @@ require (
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.4.4-0.20190625121144-69559b68756a
 	github.com/choria-io/go-srvcache v0.0.6
+	github.com/choria-io/mcorpc-agent-provider v0.5.1-0.20190818141952-55606a9eb256 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang/mock v1.3.1
