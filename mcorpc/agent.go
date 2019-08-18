@@ -110,7 +110,6 @@ func (a *Agent) HandleMessage(ctx context.Context, msg *choria.Message, request 
 
 	// TODO:
 	//  authorize
-	//  timeouts
 
 	if a.Config.RPCAudit {
 		audit.Request(request, rpcrequest.Agent, rpcrequest.Action, rpcrequest.Data, a.Config)
