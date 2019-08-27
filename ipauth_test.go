@@ -105,7 +105,7 @@ var _ = Describe("Network Broker/IPAuth", func() {
 			auth.setServerPermissions(user)
 
 			Expect(user.Permissions.Publish.Allow).To(Equal([]string{
-				"*.broadcast.agent.registration",
+				">",
 			}))
 
 			Expect(user.Permissions.Publish.Deny).To(Equal([]string{
