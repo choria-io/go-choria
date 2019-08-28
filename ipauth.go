@@ -42,7 +42,7 @@ func (a *IPAuth) setServerPermissions(user *server.User) {
 
 	user.Permissions.Publish = &server.SubjectPermission{
 		Allow: []string{
-			"*.broadcast.agent.registration",
+			">",
 		},
 
 		Deny: []string{
