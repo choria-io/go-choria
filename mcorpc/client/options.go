@@ -67,7 +67,7 @@ func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, err
 		stats:           NewStats(),
 		totalStats:      NewStats(),
 		fw:              fw,
-		LimitMethod:     fw.Config.RPCLimitMethod,
+		LimitMethod:     fw.Configuration().RPCLimitMethod,
 		LimitSeed:       time.Now().UnixNano(),
 
 		// add discovery timeout to the agent timeout as that's basically an indication of
