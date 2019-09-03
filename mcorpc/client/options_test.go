@@ -1,6 +1,7 @@
 package client
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
@@ -73,6 +74,23 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			Expect(o.ReplyTo).To(Equal(msg.ReplyTo()))
 			Expect(o.ProcessReplies).To(BeFalse())
 		})
+
+		It("Should support limiting targets", func() {
+			targets := make([]string, 100)
+			for i := 0; i < 100; i++ {
+				targets[i] = fmt.Sprintf("target%d", i)
+			}
+
+			msg, err := fw.NewMessage("", "test", "mcollective", "request", nil)
+			Expect(err).ToNot(HaveOccurred())
+
+			Targets(targets)(o)
+			LimitMethod("first")(o)
+			LimitSize("2")(o)
+			o.ConfigureMessage(msg)
+			Expect(o.Targets).To(Equal([]string{"target0", "target1"}))
+			Expect(o.totalStats.discoveredNodes).To(Equal([]string{"target0", "target1"}))
+		})
 	})
 
 	Describe("NewRequestOptions", func() {
@@ -85,6 +103,8 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			Expect(o.Timeout).To(Equal(time.Duration(182) * time.Second))
 			Expect(o.stats).ToNot(BeNil())
 			Expect(o.fw).To(Equal(fw))
+			Expect(o.LimitSeed).To(BeNumerically(">", 0))
+			Expect(o.LimitMethod).To(Equal("first"))
 		})
 	})
 
@@ -188,6 +208,136 @@ var _ = Describe("McoRPC/Client/Options", func() {
 		It("Should set the name", func() {
 			ConnectionName("ginkgo")(o)
 			Expect(o.ConnectionName).To(Equal("ginkgo"))
+		})
+	})
+
+	Describe("LimitMethod", func() {
+		It("Should set the method", func() {
+			LimitMethod("random")(o)
+			Expect(o.LimitMethod).To(Equal("random"))
+		})
+	})
+
+	Describe("LimitSize", func() {
+		It("Should set the size", func() {
+			LimitSize("10%")(o)
+			Expect(o.LimitSize).To(Equal("10%"))
+		})
+	})
+
+	Describe("LimitSeed", func() {
+		It("Should set the seed", func() {
+			LimitSeed(100)(o)
+			Expect(o.LimitSeed).To(Equal((int64(100))))
+		})
+	})
+
+	Describe("limitTargets", func() {
+		var targets []string
+
+		BeforeEach(func() {
+			targets = make([]string, 100)
+			for i := 0; i < 100; i++ {
+				targets[i] = fmt.Sprintf("target%d", i)
+			}
+		})
+
+		It("Should accept only valid methods", func() {
+			o.LimitMethod = "broken"
+			l, err := o.limitTargets(targets)
+			Expect(err).To(MatchError("limit method 'broken' is not valid, only 'random' or 'first' supported"))
+			Expect(l).To(HaveLen(100))
+		})
+
+		It("Should return the supplied targets unshuffled when limit size is not set", func() {
+			o.LimitSize = ""
+			o.LimitMethod = "random"
+			l, err := o.limitTargets(targets)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(l).To(HaveLen(100))
+			Expect(targets[0]).To(Equal("target0"))
+			Expect(targets[20]).To(Equal("target20"))
+			Expect(targets[30]).To(Equal("target30"))
+			Expect(targets[40]).To(Equal("target40"))
+			Expect(targets[50]).To(Equal("target50"))
+			Expect(targets[99]).To(Equal("target99"))
+		})
+
+		It("Should limit to specific size and optionally shuffle the targets", func() {
+			o.LimitSize = "5"
+			o.LimitMethod = "first"
+			l, err := o.limitTargets(targets)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(l).To(HaveLen(5))
+			Expect(l).To(Equal([]string{"target0", "target1", "target2", "target3", "target4"}))
+
+			o.LimitMethod = "random"
+			o.LimitSeed = 1
+			l, err = o.limitTargets(targets)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(l).To(HaveLen(5))
+			Expect(l).To(Equal([]string{"target2", "target0", "target1", "target4", "target3"}))
+		})
+
+		It("Should limit to specific percentage and optionally shuffle the targets", func() {
+			o.LimitSize = "5%"
+			o.LimitMethod = "first"
+			l, err := o.limitTargets(targets)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(l).To(HaveLen(5))
+			Expect(l).To(Equal([]string{"target0", "target1", "target2", "target3", "target4"}))
+
+			o.LimitMethod = "random"
+			o.LimitSeed = 1
+			l, err = o.limitTargets(targets)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(l).To(HaveLen(5))
+			Expect(l).To(Equal([]string{"target2", "target0", "target1", "target4", "target3"}))
+		})
+	})
+
+	Describe("shuffleLimitedTargets", func() {
+		var targets []string
+
+		BeforeEach(func() {
+			targets = make([]string, 100)
+			for i := 0; i < 100; i++ {
+				targets[i] = fmt.Sprintf("target%d", i)
+			}
+		})
+
+		It("Should support not shuffling non random method targets", func() {
+			o.LimitMethod = "first"
+			o.shuffleLimitedTargets(targets)
+			Expect(targets).To(HaveLen(100))
+			Expect(targets[0]).To(Equal("target0"))
+			Expect(targets[20]).To(Equal("target20"))
+			Expect(targets[30]).To(Equal("target30"))
+			Expect(targets[40]).To(Equal("target40"))
+			Expect(targets[50]).To(Equal("target50"))
+			Expect(targets[99]).To(Equal("target99"))
+		})
+
+		It("Should shuffle random method targets", func() {
+			o.LimitMethod = "random"
+			o.shuffleLimitedTargets(targets)
+			Expect(targets).To(HaveLen(100))
+			// small chance of failure here if random shuffling leaves these 2 in place
+			Expect(targets[0]).ToNot(Equal("target0"))
+			Expect(targets[99]).ToNot(Equal("target99"))
+			Expect(targets).To(HaveLen(100))
+		})
+
+		It("Should support seeds", func() {
+			o.LimitMethod = "random"
+			o.LimitSeed = 1
+			o.shuffleLimitedTargets(targets)
+			Expect(targets).To(HaveLen(100))
+			Expect(targets[0]).To(Equal("target19"))
+			Expect(targets[1]).To(Equal("target26"))
+			Expect(targets[2]).To(Equal("target0"))
+			Expect(targets[3]).To(Equal("target73"))
+			Expect(targets).To(HaveLen(100))
 		})
 	})
 })

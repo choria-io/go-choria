@@ -3,6 +3,9 @@ package client
 import (
 	"errors"
 	"fmt"
+	"math/rand"
+	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
@@ -29,6 +32,9 @@ type RequestOptions struct {
 	Targets          []string
 	Timeout          time.Duration
 	Workers          int
+	LimitSeed        int64
+	LimitMethod      string
+	LimitSize        string
 
 	totalStats *Stats
 
@@ -61,6 +67,8 @@ func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, err
 		stats:           NewStats(),
 		totalStats:      NewStats(),
 		fw:              fw,
+		LimitMethod:     fw.Config.RPCLimitMethod,
+		LimitSeed:       time.Now().UnixNano(),
 
 		// add discovery timeout to the agent timeout as that's basically an indication of
 		// network overhead, discovery being the smallest possible RPC request it's an indication
@@ -71,15 +79,26 @@ func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, err
 }
 
 // ConfigureMessage configures a pre-made message object based on the settings contained
-func (o *RequestOptions) ConfigureMessage(msg *choria.Message) error {
+func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
 	o.totalStats.RequestID = msg.RequestID
 	o.RequestID = msg.RequestID
 	msg.Filter = o.Filter
 
 	if len(o.Targets) > 0 {
-		msg.DiscoveredHosts = o.Targets
+		limited, err := o.limitTargets(o.Targets)
+		if err != nil {
+			return fmt.Errorf("could not limit targets: %s", err)
+		}
+
+		o.Targets = limited
+		msg.DiscoveredHosts = limited
 	} else {
-		o.Targets = msg.DiscoveredHosts
+		limited, err := o.limitTargets(msg.DiscoveredHosts)
+		if err != nil {
+			return fmt.Errorf("could not limit targets: %s", err)
+		}
+
+		o.Targets = limited
 	}
 
 	o.totalStats.SetDiscoveredNodes(o.Targets)
@@ -90,7 +109,7 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) error {
 		return errors.New("batched mode requires direct_request mode")
 	}
 
-	err := msg.SetType(o.RequestType)
+	err = msg.SetType(o.RequestType)
 	if err != nil {
 		return err
 	}
@@ -243,4 +262,77 @@ func ReplyHandler(f Handler) RequestOption {
 	return func(o *RequestOptions) {
 		o.Handler = f
 	}
+}
+
+// LimitMethod configures the method to use when limiting targets - "random" or "first"
+func LimitMethod(m string) RequestOption {
+	return func(o *RequestOptions) {
+		o.LimitMethod = m
+	}
+}
+
+// LimitSize sets limits on the targets, either a number of a percentage like "10%"
+func LimitSize(s string) RequestOption {
+	return func(o *RequestOptions) {
+		o.LimitSize = s
+	}
+}
+
+// LimitSeed sets the random seed used to select targets when limiting and limit method is "random"
+func LimitSeed(s int64) RequestOption {
+	return func(o *RequestOptions) {
+		o.LimitSeed = s
+	}
+}
+
+func (o *RequestOptions) shuffleLimitedTargets(targets []string) []string {
+	if o.LimitMethod != "random" {
+		return targets
+	}
+
+	var shuffler *rand.Rand
+
+	if o.LimitSeed > -1 {
+		shuffler = rand.New(rand.NewSource(o.LimitSeed))
+	} else {
+		shuffler = rand.New(rand.NewSource(time.Now().UnixNano()))
+	}
+
+	shuffler.Shuffle(len(targets), func(i, j int) { targets[i], targets[j] = targets[j], targets[i] })
+
+	return targets
+}
+
+func (o *RequestOptions) limitTargets(targets []string) (limited []string, err error) {
+	if !(o.LimitMethod == "random" || o.LimitMethod == "first") {
+		return targets, fmt.Errorf("limit method '%s' is not valid, only 'random' or 'first' supported", o.LimitMethod)
+	}
+
+	if o.LimitSize == "" {
+		limited = make([]string, len(targets))
+		copy(limited, targets)
+
+		return limited, nil
+	}
+
+	pctRe := regexp.MustCompile("^(\\d+)%$")
+	digitRe := regexp.MustCompile("^(\\d+)$")
+
+	count := 0
+
+	if pctRe.MatchString(o.LimitSize) {
+		// already know its a number and it has a matching substring
+		pct, _ := strconv.Atoi(pctRe.FindStringSubmatch(o.LimitSize)[1])
+		count = int(float64(len(targets)) * (float64(pct) / 100))
+	} else if digitRe.MatchString(o.LimitSize) {
+		// already know its a number
+		count, _ = strconv.Atoi(o.LimitSize)
+	} else {
+		return limited, fmt.Errorf("could not parse limit as either number or percent")
+	}
+
+	limited = make([]string, count)
+	copy(limited, targets)
+
+	return o.shuffleLimitedTargets(limited), err
 }
