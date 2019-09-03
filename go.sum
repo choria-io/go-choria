@@ -22,6 +22,7 @@ github.com/beorn7/perks v1.0.0/go.mod h1:KWe93zE9D1o94FZ5RNwFwVgaQK1VOXiVxmqh+Ce
 github.com/blang/semver v3.5.1+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnwebNt5EWlYSAyrTnjyyk=
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
 github.com/briandowns/spinner v0.0.0-20181029155426-195c31b675a7/go.mod h1:hw/JEQBIE+c/BLI4aKM8UU8v+ZqrD3h7HC27kKt8JQU=
+github.com/choria-io/go-backplane v1.1.2-0.20190626154337-357d11a25003 h1:OghiXsiJzy6jSaH0ZboKVI8yXwq6K0EPI9gRTCvvF2g=
 github.com/choria-io/go-backplane v1.1.2-0.20190626154337-357d11a25003/go.mod h1:4TNRYMHMXn5njTEM1pl9JSHFXxchPNd8RNISzLXvvBE=
 github.com/choria-io/go-choria v0.0.0-20181227121718-a5d51011f80f/go.mod h1:4HwkcjGj/rZm5IDsVnqvKNy5mzzOMms7DMQqbZdR8/4=
 github.com/choria-io/go-choria v0.0.0-20190527085048-5e7ffa8c90be/go.mod h1:4HwkcjGj/rZm5IDsVnqvKNy5mzzOMms7DMQqbZdR8/4=
@@ -44,6 +45,8 @@ github.com/choria-io/go-config v0.0.2 h1:1Yw6Sig19biX97UgYoCAffCnsdxTFhfTJfQStCT
 github.com/choria-io/go-config v0.0.2/go.mod h1:YEb0InKPzG3wRSbfN3xZ/MjQ1FEzbmeq9FAo6yUnylM=
 github.com/choria-io/go-config v0.0.3-0.20190815134328-89ae8271ae95 h1:fBgHJgQqWyLLqW3yZQ/dHc52Gihi76JaG1MC9vWzK3A=
 github.com/choria-io/go-config v0.0.3-0.20190815134328-89ae8271ae95/go.mod h1:y2mXxXQ865arJG3WxqQZD2or9cS3wAFD5r/krm9dYN4=
+github.com/choria-io/go-config v0.0.3-0.20190903113231-2e0cfd573199 h1:X5zb+6OOPXtutZdIKio3JJTVM57eTd7i5xGhNs3jVsY=
+github.com/choria-io/go-config v0.0.3-0.20190903113231-2e0cfd573199/go.mod h1:y2mXxXQ865arJG3WxqQZD2or9cS3wAFD5r/krm9dYN4=
 github.com/choria-io/go-confkey v1.2.0 h1:kT35wUPPxpKDAg2/Me100yIV+po6aTrnZFyBXk0Ohn8=
 github.com/choria-io/go-confkey v1.2.0/go.mod h1:ojIUK4p2mX/ZSKuSG5hgU/p7Db+EIX8il4yjQweZtiU=
 github.com/choria-io/go-confkey v1.3.0 h1:KlqctKfo843I2Uas2vLFOzScyjSMyKFUsSf/FdMRuQI=
@@ -83,10 +86,9 @@ github.com/choria-io/go-updater v0.0.3/go.mod h1:IK696pPQUWx7S/MZYckzPrG2hpDyV/P
 github.com/choria-io/go-validator v1.1.1 h1:i4NlCDwQURYAjjMwlZ5R/HsDJU8XpYmAm8yuBu4Mu28=
 github.com/choria-io/go-validator v1.1.1/go.mod h1:NLPcHQsPaKa6dc6JvGHtCdoszkOqNJzDLMRETy05dgM=
 github.com/choria-io/mcorpc-agent-provider v0.4.2-0.20190626154119-313c9be7002d/go.mod h1:RntHIy2creayfgr9GRBZIQTZDQOGm2Q8peaCgCon3Kg=
-github.com/choria-io/mcorpc-agent-provider v0.5.0 h1:OUeqBFcuSVl4Yc3c90FLJgZCqcl1WOx6hrff2zLIwpA=
 github.com/choria-io/mcorpc-agent-provider v0.5.0/go.mod h1:RntHIy2creayfgr9GRBZIQTZDQOGm2Q8peaCgCon3Kg=
-github.com/choria-io/mcorpc-agent-provider v0.5.1-0.20190818141952-55606a9eb256 h1:oE/VJ6DtjdALVAi9YyUbYjnBxxAQzSMwswxtFktgQBs=
-github.com/choria-io/mcorpc-agent-provider v0.5.1-0.20190818141952-55606a9eb256/go.mod h1:RntHIy2creayfgr9GRBZIQTZDQOGm2Q8peaCgCon3Kg=
+github.com/choria-io/mcorpc-agent-provider v0.5.1-0.20190903133137-2dcbf33eaae7 h1:6C6gp6hJsenIYWklTk9vieNakHhK1onBbvlpgLH4oco=
+github.com/choria-io/mcorpc-agent-provider v0.5.1-0.20190903133137-2dcbf33eaae7/go.mod h1:RntHIy2creayfgr9GRBZIQTZDQOGm2Q8peaCgCon3Kg=
 github.com/choria-io/provisioning-agent v0.5.0 h1:V3M44FgSI4lAoajuFKVPBjOL1u3GVwymy9KbMlrIN/0=
 github.com/choria-io/provisioning-agent v0.5.0/go.mod h1:VKeX79KV2uOfXH9wTsPjlVUaZaYcpfdeKfHR70hZlPA=
 github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible/go.mod h1:nmEj6Dob7S7YxXgwXpfOuvO54S+tGdZdw9fuRZt25Ag=
@@ -322,6 +324,7 @@ go.etcd.io/bbolt v1.3.2 h1:Z/90sZLPOeCy2PwprqkFa25PdkusRzaj9P8zm/KNyvk=
 go.etcd.io/bbolt v1.3.2/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
 go.etcd.io/bbolt v1.3.3 h1:MUGmc65QhB3pIlaQ5bB4LwqSj6GIonVJXpZiaKNyaKk=
 go.etcd.io/bbolt v1.3.3/go.mod h1:IbVyRI1SCnLcuJnV2u8VeU0CEYM7e686BmAb1XKL+uU=
+go.uber.org/atomic v1.4.0 h1:cxzIVoETapQEqDhQu3QfnvXAV4AlzcvUCxkVUFw3+EU=
 go.uber.org/atomic v1.4.0/go.mod h1:gD2HeocX3+yG+ygLZcrzQJaqmWj9AIm7n08wl/qW/PE=
 golang.org/x/crypto v0.0.0-20180904163835-0709b304e793/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
 golang.org/x/crypto v0.0.0-20181203042331-505ab145d0a9/go.mod h1:6SG95UA2DQfeDnfUPMdvaQW0Q7yPrPDi9nlGo2tz2b4=
