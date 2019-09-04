@@ -27,6 +27,7 @@ type Action struct {
 	Output      map[string]*ActionOutputItem `json:"output"`
 	Display     string                       `json:"display"`
 	Description string                       `json:"description"`
+	Aggregation []ActionAggregateItem        `json:"aggregate"`
 }
 
 // ActionOutputItem describes an individual output item
@@ -34,6 +35,12 @@ type ActionOutputItem struct {
 	Description string      `json:"description"`
 	DisplayAs   string      `json:"display_as"`
 	Default     interface{} `json:"default"`
+}
+
+// ActionAggregateItem describes a aggregate function to summarize data
+type ActionAggregateItem struct {
+	Function  string          `json:"function"`
+	Arguments json.RawMessage `json:"args"`
 }
 
 // New creates a new DDL from a JSON file

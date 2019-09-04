@@ -57,6 +57,7 @@ func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, err
 	cfg := fw.Configuration()
 
 	return &RequestOptions{
+		fw:              fw,
 		ProtocolVersion: protocol.RequestV1,
 		RequestType:     "direct_request",
 		Collective:      cfg.MainCollective,
@@ -66,8 +67,7 @@ func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, err
 		ConnectionName:  fmt.Sprintf("%s-mcorpc-%s", fw.Certname(), rid),
 		stats:           NewStats(),
 		totalStats:      NewStats(),
-		fw:              fw,
-		LimitMethod:     fw.Configuration().RPCLimitMethod,
+		LimitMethod:     cfg.RPCLimitMethod,
 		LimitSeed:       time.Now().UnixNano(),
 
 		// add discovery timeout to the agent timeout as that's basically an indication of
