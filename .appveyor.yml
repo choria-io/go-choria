@@ -4,10 +4,9 @@ clone_folder: c:\gopath\src\github.com\choria-io\go-choria
 
 environment:
   GOPATH: c:\gopath
-  GOVERSION: "1.12.6"
+  GOVERSION: "1.13"
   MCOLLECTIVE_CERTNAME: rip.mcollective
   RUBY_VERSION: 24
-  GOPROXY: https://goproxy.io
 
 init:
   - git config --global core.autocrlf input
