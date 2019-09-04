@@ -2,7 +2,7 @@ version: 2
 jobs:
   test:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
@@ -27,14 +27,14 @@ jobs:
 
   build_el6_64bit_rpms:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       PACKAGE: el6_64
       BUILD: foss
-      BUILDER: choria/packager:el6-go1.12
+      BUILDER: choria/packager:el6-go1.13
 
     steps: &std_build_steps
       - setup_remote_docker
@@ -75,72 +75,72 @@ jobs:
 
   build_el6_32bit_rpms:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       PACKAGE: el6_32
       BUILD: foss
-      BUILDER: choria/packager:el6-go1.12
+      BUILDER: choria/packager:el6-go1.13
 
     steps: *std_build_steps
 
   build_el7_64bit_rpms:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       PACKAGE: el7_64
       BUILD: foss
-      BUILDER: choria/packager:el7-go1.12
+      BUILDER: choria/packager:el7-go1.13
 
     steps: *std_build_steps
 
   build_xenial_64bit_debs:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       PACKAGE: xenial_64
       BUILD: foss
-      BUILDER: choria/packager:xenial-go1.12
+      BUILDER: choria/packager:xenial-go1.13
 
     steps: *std_build_steps
 
   build_stretch_64bit_debs:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       PACKAGE: stretch_64
       BUILD: foss
-      BUILDER: choria/packager:stretch-go1.12
+      BUILDER: choria/packager:stretch-go1.13
 
     steps: *std_build_steps
 
   build_bionic_64bit_debs:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
       PACKAGE: bionic_64
       BUILD: foss
-      BUILDER: choria/packager:stretch-go1.12
+      BUILDER: choria/packager:stretch-go1.13
 
     steps: *std_build_steps
 
   gather_artifacts:
     docker:
-      - image: circleci/golang:1.12
+      - image: circleci/golang:1.13
 
     steps:
       - attach_workspace:
