@@ -2,6 +2,8 @@ module github.com/choria-io/go-choria
 
 go 1.12
 
+replace golang.org/x/sys v0.0.0-20190726091711-fde4db37ae7a => golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a
+
 require (
 	github.com/choria-io/go-client v0.4.3-0.20190626150123-ddebe7dca345
 	github.com/choria-io/go-config v0.0.3-0.20190903113231-2e0cfd573199
@@ -12,7 +14,7 @@ require (
 	github.com/choria-io/go-security v0.4.4-0.20190625121144-69559b68756a
 	github.com/choria-io/go-srvcache v0.0.6
 	github.com/choria-io/mcorpc-agent-provider v0.5.1-0.20190903133137-2dcbf33eaae7
-	github.com/choria-io/provisioning-agent v0.5.0 // indirect
+	github.com/choria-io/provisioning-agent v0.5.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang/mock v1.3.1
