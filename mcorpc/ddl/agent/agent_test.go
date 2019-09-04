@@ -45,6 +45,7 @@ var _ = Describe("McoRPC/DDL/Agent", func() {
 			Expect(pkg.Metadata.Timeout).To(Equal(180))
 			Expect(pkg.Metadata.URL).To(Equal("https://github.com/choria-plugins/package-agent"))
 			Expect(pkg.Metadata.Version).To(Equal("5.0.0"))
+			Expect(pkg.Actions[3].Aggregation[0].Function).To(Equal("summary"))
 		})
 	})
 
