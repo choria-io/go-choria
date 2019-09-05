@@ -70,3 +70,16 @@ func (a *Action) AggregateSummaryStrings() (map[string]map[string]string, error)
 
 	return a.agg.resultStrings(), nil
 }
+
+// AggregateSummaryFormattedStrings produce a formatted string for each output
+// item that has a aggregate summary defined
+func (a *Action) AggregateSummaryFormattedStrings() (map[string][]string, error) {
+	a.Lock()
+	defer a.Unlock()
+
+	if a.agg == nil {
+		a.agg = newActionAggregators(a)
+	}
+
+	return a.agg.resultStringsFormatted(), nil
+}

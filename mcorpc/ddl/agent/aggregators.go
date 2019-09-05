@@ -64,6 +64,25 @@ func (a *actionAggregators) aggregateItem(item string, val interface{}) {
 	}
 }
 
+func (a *actionAggregators) resultStringsFormatted() map[string][]string {
+	a.Lock()
+	defer a.Unlock()
+
+	res := make(map[string][]string)
+
+	for k, agg := range a.aggregators {
+		str, err := agg.FormattedStrings("")
+		if err != nil {
+			res[k] = []string{err.Error()}
+			continue
+		}
+
+		res[k] = str
+	}
+
+	return res
+}
+
 func (a *actionAggregators) resultStrings() map[string]map[string]string {
 	a.Lock()
 	defer a.Unlock()

@@ -142,6 +142,18 @@ var _ = Describe("McoRPC/DDL/Agent", func() {
 					"5.0.2-31.el7": "1",
 				},
 			}))
+
+			formatted, err := act.AggregateSummaryFormattedStrings()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(formatted).To(Equal(map[string][]string{
+				"ensure": []string{
+					"5.0.2-31.el7: 1",
+					"5.0.2-33.el7: 5",
+				},
+				"arch": []string{
+					"x86_64: 6",
+				},
+			}))
 		})
 	})
 })
