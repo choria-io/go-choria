@@ -1,11 +1,14 @@
 package agent
 
 import (
+	"encoding/json"
+	"io/ioutil"
 	"path"
 	"path/filepath"
 	"testing"
 	"time"
 
+	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -102,6 +105,43 @@ var _ = Describe("McoRPC/DDL/Agent", func() {
 			act, err := pkg.ActionInterface("unknown")
 			Expect(err).To(HaveOccurred())
 			Expect(act).To(BeNil())
+		})
+	})
+
+	Describe("AggregateResultJSON", func() {
+		type reply struct {
+			Statuscode mcorpc.StatusCode `json:"statuscode"`
+			Statusmsg  string            `json:"statusmsg"`
+			Data       json.RawMessage   `json:"data"`
+		}
+
+		It("Should aggregate the JSON data", func() {
+			var replies []reply
+			dat, err := ioutil.ReadFile("testdata/package_replies.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			err = json.Unmarshal(dat, &replies)
+			Expect(err).ToNot(HaveOccurred())
+
+			act, err := pkg.ActionInterface("status")
+			Expect(err).ToNot(HaveOccurred())
+
+			for _, reply := range replies {
+				err = act.AggregateResultJSON(reply.Data)
+				Expect(err).ToNot(HaveOccurred())
+			}
+
+			summary, err := act.AggregateSummaryStrings()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(summary).To(Equal(map[string]map[string]string{
+				"arch": map[string]string{
+					"x86_64": "6",
+				},
+				"ensure": map[string]string{
+					"5.0.2-33.el7": "5",
+					"5.0.2-31.el7": "1",
+				},
+			}))
 		})
 	})
 })
