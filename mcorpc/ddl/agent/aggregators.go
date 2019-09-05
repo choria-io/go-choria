@@ -83,6 +83,24 @@ func (a *actionAggregators) resultStringsFormatted() map[string][]string {
 	return res
 }
 
+func (a *actionAggregators) resultJSON() []byte {
+	a.Lock()
+	defer a.Unlock()
+
+	res := make(map[string]json.RawMessage)
+
+	for k, agg := range a.aggregators {
+		j, err := agg.JSONResults()
+		if err != nil {
+			continue
+		}
+
+		res[k] = j
+	}
+
+	j, _ := json.Marshal(res)
+	return j
+}
 func (a *actionAggregators) resultStrings() map[string]map[string]string {
 	a.Lock()
 	defer a.Unlock()

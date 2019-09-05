@@ -58,6 +58,19 @@ func (a *Action) AggregateResult(result map[string]interface{}) error {
 	return nil
 }
 
+// AggregateSummaryJSON produce a JSON representation of aggregate results for every output
+// item that has a aggregate summary defined
+func (a *Action) AggregateSummaryJSON() ([]byte, error) {
+	a.Lock()
+	defer a.Unlock()
+
+	if a.agg == nil {
+		a.agg = newActionAggregators(a)
+	}
+
+	return a.agg.action.agg.resultJSON(), nil
+}
+
 // AggregateSummaryStrings produce a map of results for every output item that
 // has a aggregate summary defined
 func (a *Action) AggregateSummaryStrings() (map[string]map[string]string, error) {

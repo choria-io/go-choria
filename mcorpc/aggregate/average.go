@@ -1,6 +1,7 @@
 package aggregate
 
 import (
+	"encoding/json"
 	"fmt"
 	"strconv"
 	"strings"
@@ -49,6 +50,18 @@ func (a *AverageAggregator) ProcessValue(v interface{}) error {
 	}
 
 	return fmt.Errorf("unsupported data type for average aggregator")
+}
+
+// JSONResults return the results in JSON format preserving types
+func (a *AverageAggregator) JSONResults() ([]byte, error) {
+	a.Lock()
+	defer a.Unlock()
+
+	avg := a.sum / float64(a.count)
+
+	return json.Marshal(map[string]float64{
+		"average": avg,
+	})
 }
 
 // StringResults returns a map of results in string format
