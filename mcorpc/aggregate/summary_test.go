@@ -34,22 +34,24 @@ var _ = Describe("SummaryAggregator", func() {
 		It("Should calculate a correct width format", func() {
 			Expect(agg.ProcessValue("med")).ToNot(HaveOccurred())
 			Expect(agg.ProcessValue("looooong")).ToNot(HaveOccurred())
+			Expect(agg.ProcessValue("looooong")).ToNot(HaveOccurred())
+			Expect(agg.ProcessValue("looooong")).ToNot(HaveOccurred())
 			Expect(agg.ProcessValue(1)).ToNot(HaveOccurred())
 			Expect(agg.ProcessValue(1)).ToNot(HaveOccurred())
 
 			results, err := agg.FormattedStrings("")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(results).To(Equal([]string{
+				"looooong: 3",
 				"       1: 2",
-				"looooong: 1",
 				"     med: 1",
 			}))
 
 			results, err = agg.FormattedStrings("%s: %s")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(results).To(Equal([]string{
+				"looooong: 3",
 				"1: 2",
-				"looooong: 1",
 				"med: 1",
 			}))
 		})
