@@ -18,6 +18,9 @@ func AggregatorByType(t string, args []interface{}) (Aggregator, error) {
 	case "summary", "boolean_summary":
 		return NewSummaryAggregator(args)
 
+	case "average":
+		return NewAverageAggregator(args)
+
 	default:
 		return nil, fmt.Errorf("unknown aggregator '%s'", t)
 	}
