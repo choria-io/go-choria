@@ -72,7 +72,7 @@ func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, err
 
 		// add discovery timeout to the agent timeout as that's basically an indication of
 		// network overhead, discovery being the smallest possible RPC request it's an indication
-		// of what peoples network behaviour is like assuming discovery works
+		// of what peoples network behavior is like assuming discovery works
 		Timeout:          (time.Duration(cfg.DiscoveryTimeout) * time.Second) + ddl.Timeout(),
 		DiscoveryTimeout: time.Duration(cfg.DiscoveryTimeout) * time.Second,
 	}, nil
