@@ -43,8 +43,8 @@ func (s *SummaryAggregator) ProcessValue(v interface{}) error {
 	return nil
 }
 
-// StringResults returns a map of results in string format
-func (s *SummaryAggregator) StringResults() (map[string]string, error) {
+// ResultStrings returns a map of results in string format
+func (s *SummaryAggregator) ResultStrings() (map[string]string, error) {
 	s.Lock()
 	defer s.Unlock()
 
@@ -61,16 +61,21 @@ func (s *SummaryAggregator) StringResults() (map[string]string, error) {
 	return result, nil
 }
 
-// JSONResults return the results in JSON format preserving types
-func (s *SummaryAggregator) JSONResults() ([]byte, error) {
+// ResultJSON return the results in JSON format preserving types
+func (s *SummaryAggregator) ResultJSON() ([]byte, error) {
 	s.Lock()
 	defer s.Unlock()
 
-	return json.Marshal(s.items)
+	result := map[string]int{}
+	for k, v := range s.items {
+		result[fmt.Sprintf("%v", k)] = v
+	}
+
+	return json.Marshal(result)
 }
 
-// FormattedStrings return the results in a formatted way, if no format is given a calculated value is used
-func (s *SummaryAggregator) FormattedStrings(format string) ([]string, error) {
+// ResultFormattedStrings return the results in a formatted way, if no format is given a calculated value is used
+func (s *SummaryAggregator) ResultFormattedStrings(format string) ([]string, error) {
 	s.Lock()
 	defer s.Unlock()
 

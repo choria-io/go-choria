@@ -52,8 +52,8 @@ func (a *AverageAggregator) ProcessValue(v interface{}) error {
 	return fmt.Errorf("unsupported data type for average aggregator")
 }
 
-// JSONResults return the results in JSON format preserving types
-func (a *AverageAggregator) JSONResults() ([]byte, error) {
+// ResultJSON return the results in JSON format preserving types
+func (a *AverageAggregator) ResultJSON() ([]byte, error) {
 	a.Lock()
 	defer a.Unlock()
 
@@ -64,8 +64,8 @@ func (a *AverageAggregator) JSONResults() ([]byte, error) {
 	})
 }
 
-// StringResults returns a map of results in string format
-func (a *AverageAggregator) StringResults() (map[string]string, error) {
+// ResultStrings returns a map of results in string format
+func (a *AverageAggregator) ResultStrings() (map[string]string, error) {
 	a.Lock()
 	defer a.Unlock()
 
@@ -74,8 +74,8 @@ func (a *AverageAggregator) StringResults() (map[string]string, error) {
 	return map[string]string{"Average": fmt.Sprintf("%f", avg)}, nil
 }
 
-// FormattedStrings return the results in a formatted way, if no format is given a calculated value is used
-func (a *AverageAggregator) FormattedStrings(format string) ([]string, error) {
+// ResultFormattedStrings return the results in a formatted way, if no format is given a calculated value is used
+func (a *AverageAggregator) ResultFormattedStrings(format string) ([]string, error) {
 	a.Lock()
 	defer a.Unlock()
 
