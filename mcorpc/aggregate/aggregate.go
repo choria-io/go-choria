@@ -9,6 +9,7 @@ type Aggregator interface {
 	ProcessValue(interface{}) error
 	StringResults() (map[string]string, error)
 	FormattedStrings(format string) ([]string, error)
+	JSONResults() ([]byte, error)
 	Type() string
 }
 

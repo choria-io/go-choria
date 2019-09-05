@@ -1,6 +1,7 @@
 package aggregate
 
 import (
+	"encoding/json"
 	"fmt"
 	"sort"
 	"sync"
@@ -58,6 +59,14 @@ func (s *SummaryAggregator) StringResults() (map[string]string, error) {
 	}
 
 	return result, nil
+}
+
+// JSONResults return the results in JSON format preserving types
+func (s *SummaryAggregator) JSONResults() ([]byte, error) {
+	s.Lock()
+	defer s.Unlock()
+
+	return json.Marshal(s.items)
 }
 
 // FormattedStrings return the results in a formatted way, if no format is given a calculated value is used
