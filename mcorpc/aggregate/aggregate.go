@@ -7,9 +7,9 @@ import (
 // Aggregator can summarize rpc reply data
 type Aggregator interface {
 	ProcessValue(interface{}) error
-	StringResults() (map[string]string, error)
-	FormattedStrings(format string) ([]string, error)
-	JSONResults() ([]byte, error)
+	ResultStrings() (map[string]string, error)
+	ResultFormattedStrings(format string) ([]string, error)
+	ResultJSON() ([]byte, error)
 	Type() string
 }
 

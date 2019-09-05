@@ -71,7 +71,7 @@ func (a *actionAggregators) resultStringsFormatted() map[string][]string {
 	res := make(map[string][]string)
 
 	for k, agg := range a.aggregators {
-		str, err := agg.FormattedStrings("")
+		str, err := agg.ResultFormattedStrings("")
 		if err != nil {
 			res[k] = []string{err.Error()}
 			continue
@@ -90,7 +90,7 @@ func (a *actionAggregators) resultJSON() []byte {
 	res := make(map[string]json.RawMessage)
 
 	for k, agg := range a.aggregators {
-		j, err := agg.JSONResults()
+		j, err := agg.ResultJSON()
 		if err != nil {
 			continue
 		}
@@ -108,7 +108,7 @@ func (a *actionAggregators) resultStrings() map[string]map[string]string {
 	res := make(map[string]map[string]string)
 
 	for k, agg := range a.aggregators {
-		str, err := agg.StringResults()
+		str, err := agg.ResultStrings()
 		if err != nil {
 			res[k] = map[string]string{
 				"error": err.Error(),
