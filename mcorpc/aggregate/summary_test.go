@@ -47,7 +47,7 @@ var _ = Describe("SummaryAggregator", func() {
 				"     med: 1",
 			}))
 
-			results, err = agg.FormattedStrings("%s: %s")
+			results, err = agg.FormattedStrings("%s: %d")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(results).To(Equal([]string{
 				"looooong: 3",

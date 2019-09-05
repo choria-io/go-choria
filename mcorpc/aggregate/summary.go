@@ -13,11 +13,6 @@ type SummaryAggregator struct {
 	sync.Mutex
 }
 
-type kv struct {
-	Key interface{}
-	Val string
-}
-
 // NewSummaryAggregator creates a new SummaryAggregator with the specific options supplied
 func NewSummaryAggregator(args []interface{}) (*SummaryAggregator, error) {
 	agg := &SummaryAggregator{
@@ -47,14 +42,6 @@ func (s *SummaryAggregator) ProcessValue(v interface{}) error {
 	return nil
 }
 
-func mapStringToKV(d map[string]string) []kv {
-	var sortable []kv
-	for k, v := range d {
-		sortable = append(sortable, kv{k, v})
-	}
-	return sortable
-}
-
 // StringResults returns a map of results in string format
 func (s *SummaryAggregator) StringResults() (map[string]string, error) {
 	s.Lock()
@@ -75,24 +62,35 @@ func (s *SummaryAggregator) StringResults() (map[string]string, error) {
 
 // FormattedStrings return the results in a formatted way, if no format is given a calculated value is used
 func (s *SummaryAggregator) FormattedStrings(format string) ([]string, error) {
+	s.Lock()
+	defer s.Unlock()
+
 	output := []string{}
 
-	sresults, err := s.StringResults()
-	if err != nil {
-		return output, err
+	if len(s.items) == 0 {
+		return output, nil
 	}
 
-	sortable := mapStringToKV(sresults)
-	max := 0
+	type kv struct {
+		Key string
+		Val int
+	}
 
-	for k := range sresults {
-		if len(k) > max {
-			max = len(k)
+	var sortable []kv
+	for k, v := range s.items {
+		sortable = append(sortable, kv{fmt.Sprintf("%v", k), v})
+	}
+
+	max := 0
+	for _, k := range sortable {
+		l := len(k.Key)
+		if l > max {
+			max = l
 		}
 	}
 
 	if format == "" {
-		format = fmt.Sprintf("%%%ds: %%s", max)
+		format = fmt.Sprintf("%%%ds: %%d", max)
 	}
 
 	sort.Slice(sortable, func(i int, j int) bool {
