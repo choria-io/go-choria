@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strconv"
-	"strings"
 	"sync"
 )
 
@@ -94,28 +93,17 @@ func (a *AverageAggregator) processString(v interface{}) bool {
 		return false
 	}
 
-	if strings.Contains(s, ".") {
-		f, err := strconv.ParseFloat(s, 64)
-		if err != nil {
-			return false
-		}
-
-		a.sum = a.sum + f
-		a.count++
-
-		return true
-	}
-
-	i, err := strconv.Atoi(s)
+	f, err := strconv.ParseFloat(s, 64)
 	if err != nil {
 		return false
 	}
 
-	a.sum = a.sum + float64(i)
+	a.sum = a.sum + f
 	a.count++
 
 	return true
 }
+
 func (a *AverageAggregator) processFloat(v interface{}) bool {
 	f, ok := v.(float64)
 	if !ok {
