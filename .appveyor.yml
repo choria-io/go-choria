@@ -7,6 +7,7 @@ environment:
   GOVERSION: "1.13"
   MCOLLECTIVE_CERTNAME: rip.mcollective
   RUBY_VERSION: 24
+  CGO_ENABLED: 0
 
 init:
   - git config --global core.autocrlf input
@@ -20,7 +21,6 @@ install:
   - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.msi
   - msiexec /i go%GOVERSION%.windows-amd64.msi /q
   - set Path=C:\Ruby%RUBY_VERSION%\bin;c:\go\bin;c:\gopath\bin;%Path%
-  - set GO111MODULE=on
   # Install vendor dependencies
   - go get github.com/onsi/ginkgo/ginkgo
 
@@ -28,5 +28,4 @@ build: false
 deploy: false
 
 test_script:
-  - go mod vendor
   - ginkgo -r -keepGoing -skipMeasurements
