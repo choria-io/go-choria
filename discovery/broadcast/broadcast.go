@@ -16,7 +16,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/apex/log"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-protocol/protocol"
@@ -114,7 +113,7 @@ func (b *Broadcast) handler(dopts *dOpts) client.Handler {
 	return func(ctx context.Context, m *choria.ConnectorMessage) {
 		reply, err := b.fw.NewTransportFromJSON(string(m.Data))
 		if err != nil {
-			log.Errorf("Could not process a reply: %s", err)
+			b.log.Errorf("Could not process a reply: %s", err)
 			return
 		}
 
