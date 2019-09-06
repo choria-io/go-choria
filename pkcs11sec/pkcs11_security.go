@@ -288,22 +288,29 @@ func (p *Pkcs11Security) Enroll(ctx context.Context, wait time.Duration, cb func
 
 // Validate determines if the node represents a valid SSL configuration
 func (p *Pkcs11Security) Validate() ([]string, bool) {
-	var errors []string
+	var errorsList []string
 	stat, err := os.Stat(p.conf.CertCacheDir)
 	if os.IsNotExist(err) {
-		errors = append(errors, err.Error())
+		errorsList = append(errorsList, err.Error())
 	} else if !stat.IsDir() {
-		errors = append(errors, fmt.Sprintf("%s is not a directory", p.conf.CertCacheDir))
+		errorsList = append(errorsList, fmt.Sprintf("%s is not a directory", p.conf.CertCacheDir))
 	}
 
 	stat, err = os.Stat(p.conf.CAFile)
 	if os.IsNotExist(err) {
-		errors = append(errors, err.Error())
+		errorsList = append(errorsList, err.Error())
 	} else if !stat.Mode().IsRegular() {
-		errors = append(errors, fmt.Sprintf("%s is not a regular file", p.conf.CAFile))
+		errorsList = append(errorsList, fmt.Sprintf("%s is not a regular file", p.conf.CAFile))
 	}
 
-	return errors, len(errors) == 0
+	if p.pin == nil {
+		p.log.Debug("Attempting to login to token in Validate()")
+		if err := p.loginToToken(); err != nil {
+			errorsList = append(errorsList, errors.Wrap(err, "failed to login to token in Validate()").Error())
+		}
+	}
+
+	return errorsList, len(errorsList) == 0
 }
 
 // ChecksumBytes calculates a sha256 checksum for data
@@ -323,13 +330,6 @@ func (p *Pkcs11Security) SignBytes(str []byte) ([]byte, error) {
 	mechanism := pkcs11.NewMechanism(pkcs11.CKM_RSA_PKCS, nil)
 	input := append(hashPrefixes[crypto.SHA256], hashed...)
 
-	if p.pin == nil {
-		p.log.Debug("Attempting to login to token in SignBytes()")
-		if err := p.loginToToken(); err != nil {
-			return nil, errors.Wrap(err, "failed to login to token in SignBytes()")
-		}
-	}
-
 	output, err := p.pKey.PrivateKey.Sign(*mechanism, input)
 	if err != nil {
 		return nil, err
@@ -342,15 +342,6 @@ func (p *Pkcs11Security) SignBytes(str []byte) ([]byte, error) {
 func (p *Pkcs11Security) VerifyByteSignature(dat []byte, sig []byte, identity string) bool {
 	var cert *x509.Certificate
 	pubkeyPath := "pkcs11 certificate"
-
-	if p.pin == nil {
-		p.log.Debug("Attempting to login to token in VerifyByteSignature()")
-		err := p.loginToToken()
-		if err != nil {
-			p.log.Errorf("%s: failed to login to token in VerifyByteSignature()", err.Error())
-			return false
-		}
-	}
 
 	if identity != "" {
 		pubkeyPath, err := p.cachePath(identity)
@@ -424,13 +415,6 @@ func (p *Pkcs11Security) SignString(str string) ([]byte, error) {
 
 // CallerName creates a choria like caller name in the form of choria=identity
 func (p *Pkcs11Security) CallerName() string {
-	if p.pin == nil {
-		p.log.Debug("Attempting to login to token in CallerName()")
-		err := p.loginToToken()
-		if err != nil {
-			return "invalid"
-		}
-	}
 	return fmt.Sprintf("choria=%s", p.cert.Leaf.Subject.CommonName)
 }
 
@@ -458,14 +442,6 @@ func (p *Pkcs11Security) VerifyCertificate(certpem []byte, name string) error {
 // PublicCertPem retrieves the public certificate for this instance
 func (p *Pkcs11Security) PublicCertPem() (*pem.Block, error) {
 
-	if p.pin == nil {
-		p.log.Debug("Attempting to login to token in PublicCertPem()")
-		err := p.loginToToken()
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to login to token in PublicCertPem()")
-		}
-	}
-
 	pb := &pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: p.cert.Leaf.Raw,
@@ -491,13 +467,6 @@ func (p *Pkcs11Security) PublicCertTXT() ([]byte, error) {
 
 // Identity determines the choria certname
 func (p *Pkcs11Security) Identity() string {
-	if p.pin == nil {
-		p.log.Debug("Attempting to login to token in Identity()")
-		err := p.loginToToken()
-		if err != nil {
-			return "invalid"
-		}
-	}
 	return p.cert.Leaf.Subject.CommonName
 }
 
@@ -507,14 +476,6 @@ func (p *Pkcs11Security) TLSConfig() (*tls.Config, error) {
 	caCert, err := ioutil.ReadFile(p.conf.CAFile)
 	if err != nil {
 		return nil, err
-	}
-
-	if p.pin == nil {
-		p.log.Debug("Attempting to login to token in TLSConfig()")
-		err = p.loginToToken()
-		if err != nil {
-			return nil, errors.Wrap(err, "failed to login to token in TLSConfig()")
-		}
 	}
 
 	caCertPool := x509.NewCertPool()
