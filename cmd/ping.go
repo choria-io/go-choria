@@ -53,7 +53,7 @@ func (p *pingCommand) Setup() (err error) {
 	p.cmd.Flag("target", "Target a specific sub collective").Short('T').StringVar(&p.collective)
 	p.cmd.Flag("timeout", "How long to wait for responses").IntVar(&p.timeout)
 	p.cmd.Flag("graph", "Produce a graph of the result times").BoolVar(&p.graph)
-	p.cmd.Flag("workers", "How many workers to start for receicing messages").IntVar(&p.workers)
+	p.cmd.Flag("workers", "How many workers to start for receiving messages").Default("3").IntVar(&p.workers)
 
 	return
 }
@@ -70,10 +70,6 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	if p.collective == "" {
 		p.collective = cfg.MainCollective
-	}
-
-	if p.workers == 0 {
-		p.workers = 3
 	}
 
 	filter, err := client.NewFilter(
