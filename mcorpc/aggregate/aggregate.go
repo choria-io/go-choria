@@ -22,6 +22,9 @@ func AggregatorByType(t string, args []interface{}) (Aggregator, error) {
 	case "average":
 		return NewAverageAggregator(args)
 
+	case "chart":
+		return NewChartAggregator(args)
+
 	default:
 		return nil, fmt.Errorf("unknown aggregator '%s'", t)
 	}
