@@ -414,7 +414,12 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 			}
 
 			for _, v := range summaries[k] {
-				fmt.Printf("   %s\n", v)
+				if strings.ContainsRune(v, '\n') {
+					fmt.Println(v)
+				} else {
+					fmt.Printf("   %s\n", v)
+				}
+
 			}
 			fmt.Println()
 		}
