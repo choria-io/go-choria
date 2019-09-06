@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2019/09/07|      |Release 1.3.1                                                                                            |
+|2019/08/28|67    |Specifically allow servers to publish to `>` rather than rely on nats default behavior                   |
 |2019/08/17|      |Release 1.3.0                                                                                            |
 |2019/08/17|63    |Expose the connected leaf nodes count in Prometheus stats                                                |
 |2019/08/15|61    |Update NATS Server to 2.0.4                                                                              |
