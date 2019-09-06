@@ -35,6 +35,8 @@ type RequestOptions struct {
 	LimitSeed        int64
 	LimitMethod      string
 	LimitSize        string
+	DiscoveryStartCB DiscoveryStartFunc
+	DiscoveryEndCB   DiscoveryEndFunc
 
 	totalStats *Stats
 
@@ -43,6 +45,14 @@ type RequestOptions struct {
 
 	fw ChoriaFramework
 }
+
+// DiscoveryStartFunc gets called before discovery starts
+type DiscoveryStartFunc func()
+
+// DiscoveryEndFunc gets called after discovery ends and include the discovered node count
+// and what count of nodes will be targetted after limits were applied should this return
+// error the RPC call will terminate
+type DiscoveryEndFunc func(discovered int, limited int) error
 
 // RequestOption is a function capable of setting an option
 type RequestOption func(*RequestOptions)
@@ -145,6 +155,20 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
 // Stats retrieves the stats for the completed request
 func (o *RequestOptions) Stats() *Stats {
 	return o.totalStats
+}
+
+// DiscoveryStartCB sets the function to be called before discovery starts
+func DiscoveryStartCB(h DiscoveryStartFunc) RequestOption {
+	return func(o *RequestOptions) {
+		o.DiscoveryStartCB = h
+	}
+}
+
+// DiscoveryEndCB sets the function to be called after discovery and node limiting
+func DiscoveryEndCB(h DiscoveryEndFunc) RequestOption {
+	return func(o *RequestOptions) {
+		o.DiscoveryEndCB = h
+	}
 }
 
 // ConnectionName sets the prefix used for various connection names
@@ -329,6 +353,10 @@ func (o *RequestOptions) limitTargets(targets []string) (limited []string, err e
 		count, _ = strconv.Atoi(o.LimitSize)
 	} else {
 		return limited, fmt.Errorf("could not parse limit as either number or percent")
+	}
+
+	if count <= 0 {
+		return limited, fmt.Errorf("no targets left after applying target limits of '%s'", o.LimitSize)
 	}
 
 	limited = make([]string, count)

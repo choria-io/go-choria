@@ -7,7 +7,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/choria-io/go-protocol/protocol/v1"
+	v1 "github.com/choria-io/go-protocol/protocol/v1"
 
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
@@ -166,14 +166,28 @@ var _ = Describe("McoRPC/Client", func() {
 				}
 			})
 
+			decbcalled := false
+			dediscovered := 0
+			delimited := 0
+
 			result, err := rpc.Do(
 				ctx,
 				"test_action",
 				request{Testing: true},
 				ReplyHandler(handler),
 				Targets(strings.Fields("test.sender.0 test.sender.1")),
+				DiscoveryEndCB(func(d, l int) error {
+					dediscovered = d
+					delimited = l
+					decbcalled = true
+					return nil
+				}),
 			)
 			Expect(err).ToNot(HaveOccurred())
+
+			Expect(decbcalled).To(BeTrue())
+			Expect(dediscovered).To(Equal(2))
+			Expect(delimited).To(Equal(2))
 
 			Expect(handled).To(Equal(2))
 			stats := result.Stats()
@@ -189,6 +203,43 @@ var _ = Describe("McoRPC/Client", func() {
 			Expect(d).ToNot(BeZero())
 			Expect(stats.Action()).To(Equal("test_action"))
 			Expect(stats.Agent()).To(Equal("package"))
+		})
+
+		It("Should support discovery callbacks and limits", func() {
+			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
+				Expect(msg.DiscoveredHosts).To(Equal([]string{"host1"}))
+			})
+
+			discoveredCnt := 0
+			limitedCnt := 0
+
+			_, err := rpc.Do(ctx, "test_action", request{Testing: true},
+				Targets([]string{"host1", "host2", "host3", "host4"}),
+				LimitSize("1"),
+				LimitMethod("first"),
+				DiscoveryEndCB(func(d, l int) error {
+					discoveredCnt = d
+					limitedCnt = l
+					return nil
+				}),
+			)
+
+			Expect(err).ToNot(HaveOccurred())
+			Expect(discoveredCnt).To(Equal(4))
+			Expect(limitedCnt).To(Equal(1))
+		})
+
+		It("Should interruptable by the discovery callback", func() {
+			_, err := rpc.Do(ctx, "test_action", request{Testing: true},
+				Targets([]string{"host1", "host2", "host3", "host4"}),
+				LimitSize("1"),
+				LimitMethod("first"),
+				DiscoveryEndCB(func(d, l int) error {
+					return fmt.Errorf("simulated")
+				}),
+			)
+
+			Expect(err).To(MatchError("simulated"))
 		})
 
 		It("Should support batched mode", func() {

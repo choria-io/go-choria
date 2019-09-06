@@ -225,6 +225,28 @@ var _ = Describe("McoRPC/Client/Options", func() {
 		})
 	})
 
+	Describe("DiscoveryStartCB", func() {
+		It("Should set the cb", func() {
+			called := false
+			cb := func() { called = true }
+			DiscoveryStartCB(cb)(o)
+			o.DiscoveryStartCB()
+			Expect(called).To(BeTrue())
+		})
+	})
+
+	Describe("DiscoveryStartCB", func() {
+		It("Should set the cb", func() {
+			called := false
+			cb := func(_, _ int) error { called = true; return nil }
+
+			DiscoveryEndCB(cb)(o)
+			o.DiscoveryEndCB(0, 0)
+
+			Expect(called).To(BeTrue())
+		})
+	})
+
 	Describe("LimitSeed", func() {
 		It("Should set the seed", func() {
 			LimitSeed(100)(o)
@@ -240,6 +262,12 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			for i := 0; i < 100; i++ {
 				targets[i] = fmt.Sprintf("target%d", i)
 			}
+		})
+
+		It("Should not limit to 0", func() {
+			o.LimitSize = "0"
+			_, err := o.limitTargets(targets)
+			Expect(err).To(MatchError("no targets left after applying target limits of '0'"))
 		})
 
 		It("Should accept only valid methods", func() {

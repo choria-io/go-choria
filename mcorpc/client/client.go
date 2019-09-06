@@ -159,9 +159,17 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 		}
 	}
 
+	discoveredCnt := len(r.opts.Targets)
 	msg, cl, err := r.setupMessage(dctx, action, payload, opts...)
 	if err != nil {
 		return nil, fmt.Errorf("could not configure message: %s", err)
+	}
+
+	if r.opts.DiscoveryEndCB != nil {
+		err = r.opts.DiscoveryEndCB(discoveredCnt, len(r.opts.Targets))
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	r.opts.totalStats.Start()
@@ -207,6 +215,10 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 }
 
 func (r *RPC) discover(ctx context.Context) error {
+	if r.opts.DiscoveryStartCB != nil {
+		r.opts.DiscoveryStartCB()
+	}
+
 	b := broadcast.New(r.fw)
 
 	r.opts.totalStats.StartDiscover()
@@ -228,7 +240,6 @@ func (r *RPC) discover(ctx context.Context) error {
 	}
 
 	r.opts.Targets = n
-	r.opts.totalStats.SetDiscoveredNodes(n)
 
 	return nil
 }
