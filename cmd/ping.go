@@ -5,15 +5,14 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
-	"math"
 	"sort"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-protocol/protocol"
+	"github.com/guptarohit/asciigraph"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -137,8 +136,9 @@ func (p *pingCommand) summarize() error {
 		fmt.Printf("%d replies max: %.2f min: %.2f avg: %.2f\n", len(p.times), max, min, avg)
 
 		if p.graph {
-			fmt.Println("")
-			fmt.Println(p.sparkline())
+			fmt.Println()
+			fmt.Println(p.chart())
+			fmt.Println()
 		}
 
 		return nil
@@ -196,43 +196,28 @@ func (p *pingCommand) Configure() error {
 	return commonConfigure()
 }
 
-// sparkline takes all the received time stamps and put them
+// chart takes all the received time stamps and put them
 // in buckets of 50ms time brackets, it then use the amount
 // of messages received in each bucket as the height
-func (p *pingCommand) sparkline() string {
-	ticks := []string{"▁", "▂", "▃", "▄", "▅", "▆", "▇"}
-
+func (p *pingCommand) chart() string {
 	sort.Float64s(p.times)
 
 	latest := p.times[len(p.times)-1]
 	bcount := int(latest/50) + 1
-	buckets := make([]int, bcount)
+	buckets := make([]float64, bcount)
 
 	for _, t := range p.times {
-		b := int(t / 50.0)
-		buckets[b]++
+		b := t / 50.0
+		buckets[int(b)]++
 	}
 
-	max := 0
-	for _, cnt := range buckets {
-		if max < cnt {
-			max = cnt
-		}
-	}
-
-	chars := make([]string, len(buckets))
-	distance := float64(max) / float64(len(ticks)-1)
-
-	for i, cnt := range buckets {
-		tick := int(math.Round(float64(cnt) / distance))
-		if tick < 0 {
-			tick = 0
-		}
-
-		chars[i] = ticks[tick]
-	}
-
-	return strings.Join(chars, "")
+	return asciigraph.Plot(
+		buckets,
+		asciigraph.Height(15),
+		asciigraph.Width(60),
+		asciigraph.Offset(5),
+		asciigraph.Caption("Responses per 50ms"),
+	)
 }
 
 func init() {
