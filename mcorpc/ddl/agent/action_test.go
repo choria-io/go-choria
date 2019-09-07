@@ -70,7 +70,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 	Describe("ValidateInputString", func() {
 		It("Should correctly validate the input string as its correct type", func() {
 			err := act.ValidateInputString("int", "hello world")
-			Expect(err).To(MatchError("'hello world' is not a valid integer: strconv.Atoi: parsing \"hello world\": invalid syntax"))
+			Expect(err).To(MatchError("'hello world' is not a valid integer"))
 			err = act.ValidateInputString("int", "10")
 			Expect(err).ToNot(HaveOccurred())
 		})

@@ -323,7 +323,7 @@ func valToDDLType(typedef string, val string) (res interface{}, err error) {
 	case "integer":
 		i, err := strconv.Atoi(val)
 		if err != nil {
-			return nil, fmt.Errorf("'%s' is not a valid integer: %s", val, err)
+			return nil, fmt.Errorf("'%s' is not a valid integer", val)
 		}
 
 		return int64(i), nil
@@ -331,7 +331,7 @@ func valToDDLType(typedef string, val string) (res interface{}, err error) {
 	case "float", "number":
 		f, err := strconv.ParseFloat(val, 64)
 		if err != nil {
-			return nil, fmt.Errorf("'%s' is not a valid float: %s", val, err)
+			return nil, fmt.Errorf("'%s' is not a valid float", val)
 		}
 
 		return f, nil
@@ -342,7 +342,7 @@ func valToDDLType(typedef string, val string) (res interface{}, err error) {
 	case "boolean":
 		b, err := strconv.ParseBool(val)
 		if err != nil {
-			return nil, fmt.Errorf("'%s' is not a valid boolean: %s", val, err)
+			return nil, fmt.Errorf("'%s' is not a valid boolean", val)
 		}
 
 		return b, nil
