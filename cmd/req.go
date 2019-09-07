@@ -141,6 +141,11 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		return err
 	}
 
+	input, _, err := r.actionInterface.ValidateAndConvertToDDLTypes(r.args)
+	if err != nil {
+		return fmt.Errorf("invalid input: %s", err)
+	}
+
 	filter, err := client.NewFilter(
 		client.FactFilter(r.factF...),
 		client.AgentFilter(r.agentsF...),
@@ -235,7 +240,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("could not create client: %s", err)
 	}
 
-	rpcres, err := agent.Do(ctx, r.action, r.args, opts...)
+	rpcres, err := agent.Do(ctx, r.action, input, opts...)
 	if err != nil {
 		return fmt.Errorf("could not perform request: %s", err)
 	}
