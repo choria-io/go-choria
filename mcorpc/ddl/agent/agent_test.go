@@ -99,6 +99,7 @@ var _ = Describe("McoRPC/DDL/Agent", func() {
 			Expect(act.Description).To(Equal("Install a package"))
 			Expect(act.Display).To(Equal("failed"))
 			Expect(act.Output).To(HaveLen(8))
+			Expect(act.Input).To(HaveLen(2))
 		})
 
 		It("Should handle unknown interfaces", func() {
