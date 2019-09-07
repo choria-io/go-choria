@@ -129,3 +129,13 @@ func (d *DDL) Timeout() time.Duration {
 
 	return time.Duration(time.Second * time.Duration(d.Metadata.Timeout))
 }
+
+// ValidateAndConvertToDDLTypes converts args to the correct data types as declared in the DDL and validates everything
+func (d *DDL) ValidateAndConvertToDDLTypes(action string, args map[string]string) (result map[string]interface{}, warnings []string, err error) {
+	acti, err := d.ActionInterface(action)
+	if err != nil {
+		return result, warnings, err
+	}
+
+	return acti.ValidateAndConvertToDDLTypes(args)
+}
