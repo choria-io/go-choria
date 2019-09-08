@@ -3,6 +3,7 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
+	"reflect"
 	"regexp"
 	"sort"
 	"strconv"
@@ -35,6 +36,7 @@ type ActionOutputItem struct {
 	Description string      `json:"description"`
 	DisplayAs   string      `json:"display_as"`
 	Default     interface{} `json:"default"`
+	Type        string      `json:"type,omitempty"`
 }
 
 // ActionInputItem describes an individual input item
@@ -130,6 +132,27 @@ func (a *Action) InputNames() (names []string) {
 	return names
 }
 
+// OutputNames retrieves all valid output names
+func (a *Action) OutputNames() (names []string) {
+	for k := range a.Output {
+		names = append(names, k)
+	}
+
+	sort.Strings(names)
+
+	return names
+}
+
+// SetOutputDefaults adds items to results that have defaults declared in the DDL but not found in the result
+func (a *Action) SetOutputDefaults(results map[string]interface{}) {
+	for _, k := range a.OutputNames() {
+		_, ok := results[k]
+		if !ok && a.Output[k].Default != nil {
+			results[k] = a.Output[k].Default
+		}
+	}
+}
+
 // RequiresInput reports if an input is required
 func (a *Action) RequiresInput(input string) bool {
 	i, ok := a.Input[input]
@@ -141,8 +164,9 @@ func (a *Action) RequiresInput(input string) bool {
 }
 
 // ValidateAndConvertToDDLTypes takes a map of strings like you might receive from the CLI, convert each
-// item to the correct type according to the DDL type hints, validates its valid according to the DDL hints
-// and returns a map of interface{} ready for conversion to JSON that would then have the correct types
+// item to the correct type according to the DDL type hints associated with inputs, validates its valid
+// according to the DDL hints and returns a map of interface{} ready for conversion to JSON that would
+// then have the correct types
 func (a *Action) ValidateAndConvertToDDLTypes(args map[string]string) (result map[string]interface{}, warnings []string, err error) {
 	result = make(map[string]interface{})
 	warnings = []string{}
@@ -174,13 +198,16 @@ func (a *Action) ValidateAndConvertToDDLTypes(args map[string]string) (result ma
 
 	for _, iname := range a.InputNames() {
 		input := a.Input[iname]
-		if input.Optional {
-			continue
-		}
 
 		_, ok := result[iname]
 		if !ok {
-			return result, warnings, fmt.Errorf("input '%s' is required", iname)
+			if !input.Optional && input.Default == nil {
+				return result, warnings, fmt.Errorf("input '%s' is required", iname)
+			}
+
+			if input.Default != nil {
+				result[iname] = input.Default
+			}
 		}
 	}
 
@@ -216,7 +243,7 @@ func (a *Action) ValidateInputValue(input string, val interface{}) (warnings []s
 		return warnings, fmt.Errorf("unknown input '%s'", input)
 	}
 
-	switch i.Type {
+	switch strings.ToLower(i.Type) {
 	case "integer":
 		if !isAnyInt(val) {
 			return warnings, fmt.Errorf("is not an integer")
@@ -281,6 +308,16 @@ func (a *Action) ValidateInputValue(input string, val interface{}) (warnings []s
 
 		return warnings, fmt.Errorf("should be one of %s", strings.Join(i.Enum, ", "))
 
+	case "hash":
+		if !isHash(val) {
+			return warnings, fmt.Errorf("is not a hash map")
+		}
+
+	case "array":
+		if !isArray(val) {
+			return warnings, fmt.Errorf("is not an array")
+		}
+
 	default:
 		return warnings, fmt.Errorf("unsupported input type '%s'", i.Type)
 	}
@@ -319,7 +356,7 @@ func validateStringValidation(validation string, value string) (warnings []strin
 }
 
 func valToDDLType(typedef string, val string) (res interface{}, err error) {
-	switch typedef {
+	switch strings.ToLower(typedef) {
 	case "integer":
 		i, err := strconv.Atoi(val)
 		if err != nil {
@@ -346,19 +383,45 @@ func valToDDLType(typedef string, val string) (res interface{}, err error) {
 		}
 
 		return b, nil
+
+	case "hash":
+		res := map[string]interface{}{}
+		err := json.Unmarshal([]byte(val), &res)
+		if err != nil {
+			return nil, fmt.Errorf("'%s' is not a valid JSON string with a hash inside", val)
+		}
+
+		return res, nil
+
+	case "array":
+		res := []interface{}{}
+		err := json.Unmarshal([]byte(val), &res)
+		if err != nil {
+			return nil, fmt.Errorf("'%s' is not a valid JSON string with an array inside", val)
+		}
+
+		return res, nil
+
 	}
 
 	return nil, fmt.Errorf("unsupported type '%s'", typedef)
 }
 
+func isHash(i interface{}) bool {
+	return reflect.ValueOf(i).Kind() == reflect.Map
+}
+
+func isArray(i interface{}) bool {
+	kind := reflect.ValueOf(i).Kind()
+	return kind == reflect.Array || kind == reflect.Slice
+}
+
 func isBool(i interface{}) bool {
-	_, ok := i.(bool)
-	return ok
+	return reflect.ValueOf(i).Kind() == reflect.Bool
 }
 
 func isString(i interface{}) bool {
-	_, ok := i.(string)
-	return ok
+	return reflect.ValueOf(i).Kind() == reflect.String
 }
 
 func isNumber(i interface{}) bool {
@@ -370,35 +433,33 @@ func isAnyFloat(i interface{}) bool {
 }
 
 func isFloat32(i interface{}) bool {
-	_, ok := i.(float32)
-	return ok
+	return reflect.ValueOf(i).Kind() == reflect.Float32
 }
 
 func isFloat64(i interface{}) bool {
-	_, ok := i.(float64)
-	return ok
+	return reflect.ValueOf(i).Kind() == reflect.Float64
 }
 
 func isAnyInt(i interface{}) bool {
-	return isInt(i) || isInt16(i) || isInt32(i) || isInt64(i)
+	return isInt(i) || isInt8(i) || isInt16(i) || isInt32(i) || isInt64(i)
 }
 
 func isInt(i interface{}) bool {
-	_, ok := i.(int)
-	return ok
+	return reflect.ValueOf(i).Kind() == reflect.Int
+}
+
+func isInt8(i interface{}) bool {
+	return reflect.ValueOf(i).Kind() == reflect.Int8
 }
 
 func isInt16(i interface{}) bool {
-	_, ok := i.(int16)
-	return ok
+	return reflect.ValueOf(i).Kind() == reflect.Int16
 }
 
 func isInt32(i interface{}) bool {
-	_, ok := i.(int32)
-	return ok
+	return reflect.ValueOf(i).Kind() == reflect.Int32
 }
 
 func isInt64(i interface{}) bool {
-	_, ok := i.(int64)
-	return ok
+	return reflect.ValueOf(i).Kind() == reflect.Int64
 }

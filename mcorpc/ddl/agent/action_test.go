@@ -15,12 +15,18 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 	BeforeEach(func() {
 		act = Action{
 			Input: map[string]*ActionInputItem{
-				"int":     &ActionInputItem{Type: "integer", Optional: true},
+				"int":     &ActionInputItem{Type: "integer", Optional: true, Default: 1},
 				"float":   &ActionInputItem{Type: "float", Optional: true},
 				"number":  &ActionInputItem{Type: "number", Optional: true},
 				"string":  &ActionInputItem{Type: "string", MaxLength: 20, Optional: false},
 				"boolean": &ActionInputItem{Type: "boolean", Optional: true},
 				"list":    &ActionInputItem{Type: "list", Enum: []string{"one", "two"}, Optional: true},
+				"hash":    &ActionInputItem{Type: "Hash", Optional: true},
+				"array":   &ActionInputItem{Type: "Array", Optional: true},
+			},
+			Output: map[string]*ActionOutputItem{
+				"int":    &ActionOutputItem{Type: "integer", Default: 1},
+				"string": &ActionOutputItem{Type: "string"},
 			},
 		}
 
@@ -36,6 +42,8 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 				"number": "10.1",
 				"string": "hello world",
 				"list":   "one",
+				"hash":   `{"hello":"world"}`,
+				"array":  `["hello", "world"]`,
 			}
 
 			converted, warnings, err := act.ValidateAndConvertToDDLTypes(orig)
@@ -46,6 +54,8 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 			Expect(converted["number"].(float64)).To(Equal(10.1))
 			Expect(converted["string"].(string)).To(Equal("hello world"))
 			Expect(converted["list"].(string)).To(Equal("one"))
+			Expect(converted["hash"]).To(Equal(map[string]interface{}{"hello": "world"}))
+			Expect(converted["array"]).To(Equal([]interface{}{"hello", "world"}))
 		})
 
 		It("Should validate inputs", func() {
@@ -64,6 +74,21 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 			_, warnings, err := act.ValidateAndConvertToDDLTypes(orig)
 			Expect(warnings).To(HaveLen(0))
 			Expect(err).To(MatchError("input 'string' is required"))
+		})
+
+		It("Should set defaults", func() {
+			orig := map[string]string{
+				"float":  "100.2",
+				"number": "10.1",
+				"string": "hello world",
+				"list":   "one",
+			}
+
+			res, warnings, err := act.ValidateAndConvertToDDLTypes(orig)
+			Expect(warnings).To(HaveLen(0))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(res).To(HaveKey("int"))
+			Expect(res["int"].(int)).To(Equal(1))
 		})
 	})
 
@@ -178,7 +203,41 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 			warnings, err = act.ValidateInputValue("string", "hello world")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(warnings).To(Equal([]string{"Unsupported validator 'bob'"}))
+		})
 
+		It("Should validate hash content", func() {
+			warnings, err := act.ValidateInputValue("hash", "hello world")
+			Expect(warnings).To(HaveLen(0))
+			Expect(err).To(MatchError("is not a hash map"))
+
+			warnings, err = act.ValidateInputValue("hash", map[string]string{"hello": "world"})
+			Expect(warnings).To(HaveLen(0))
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should validate array content", func() {
+			warnings, err := act.ValidateInputValue("array", "hello world")
+			Expect(warnings).To(HaveLen(0))
+			Expect(err).To(MatchError("is not an array"))
+
+			warnings, err = act.ValidateInputValue("array", []string{"hello", "world"})
+			Expect(warnings).To(HaveLen(0))
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
+	Describe("SetOutputDefaults", func() {
+		It("Should set defaults correctly", func() {
+			res := map[string]interface{}{}
+			act.SetOutputDefaults(res)
+			Expect(res["int"].(int)).To(Equal(1))
+			Expect(res).ToNot(HaveKey("string"))
+		})
+	})
+
+	Describe("OutputNames", func() {
+		It("Should retrieve the output names", func() {
+			Expect(act.OutputNames()).To(Equal([]string{"int", "string"}))
 		})
 	})
 
