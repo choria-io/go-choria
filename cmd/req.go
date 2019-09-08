@@ -374,6 +374,7 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 
 		parsed, ok := gjson.ParseBytes(reply.RPCReply.Data).Value().(map[string]interface{})
 		if ok {
+			r.actionInterface.SetOutputDefaults(parsed)
 			r.actionInterface.AggregateResult(parsed)
 		}
 
@@ -479,6 +480,7 @@ func (r *reqCommand) displayResultsAsJSON(res *rpcResults) error {
 	for _, reply := range res.Replies {
 		parsed, ok := gjson.ParseBytes(reply.RPCReply.Data).Value().(map[string]interface{})
 		if ok {
+			r.actionInterface.SetOutputDefaults(parsed)
 			r.actionInterface.AggregateResult(parsed)
 		}
 	}

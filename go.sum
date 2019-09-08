@@ -99,8 +99,8 @@ github.com/choria-io/go-validator v1.1.1 h1:i4NlCDwQURYAjjMwlZ5R/HsDJU8XpYmAm8yu
 github.com/choria-io/go-validator v1.1.1/go.mod h1:NLPcHQsPaKa6dc6JvGHtCdoszkOqNJzDLMRETy05dgM=
 github.com/choria-io/mcorpc-agent-provider v0.4.2-0.20190626154119-313c9be7002d/go.mod h1:RntHIy2creayfgr9GRBZIQTZDQOGm2Q8peaCgCon3Kg=
 github.com/choria-io/mcorpc-agent-provider v0.5.0/go.mod h1:RntHIy2creayfgr9GRBZIQTZDQOGm2Q8peaCgCon3Kg=
-github.com/choria-io/mcorpc-agent-provider v0.7.0 h1:8NAb+SJVXeamU9djFIbnxSURN2j+FekBdltE7RGchG8=
-github.com/choria-io/mcorpc-agent-provider v0.7.0/go.mod h1:CWQs5mA1yJlBMYving1fX4NRdJl8NXZl4eQYoShA198=
+github.com/choria-io/mcorpc-agent-provider v0.7.1 h1:CrblbyDHR4X4KKa3fsJYhi9kZ3lhJ0OVhXIgL3l5Sv0=
+github.com/choria-io/mcorpc-agent-provider v0.7.1/go.mod h1:CWQs5mA1yJlBMYving1fX4NRdJl8NXZl4eQYoShA198=
 github.com/choria-io/provisioning-agent v0.5.0 h1:V3M44FgSI4lAoajuFKVPBjOL1u3GVwymy9KbMlrIN/0=
 github.com/choria-io/provisioning-agent v0.5.0/go.mod h1:VKeX79KV2uOfXH9wTsPjlVUaZaYcpfdeKfHR70hZlPA=
 github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible/go.mod h1:nmEj6Dob7S7YxXgwXpfOuvO54S+tGdZdw9fuRZt25Ag=
