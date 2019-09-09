@@ -19,6 +19,7 @@ These will connect to the middleware using your usual client configuration.
 |Command|Description|
 |-------|-----------|
 |`choria ping`|Basic network testing utility, like `mco ping` but fast and with extra options|
+|`choria req`|Generic RPC request tool to interact with remove RPC Agents|
 |`choria tool event`|Listens for Choria life cycle events emitted by various daemons and related tools|
 |`choria tool sub`|Subscribes to any middleware topic|
 |`choria tool pub`|Publishes to any middleware topic|
@@ -166,7 +167,7 @@ plugin.choria.adapter.discovery.type = nats_stream
 
 # configure the work queue size, this can be big when the stream is far from the
 # adapter and you have a high frequency result set like discovery with 50 000 nodes.
-# This is basically the buffer where messages are stored in, on a big network with 
+# This is basically the buffer where messages are stored in, on a big network with
 # many nodes you should cater for your biggest bursts in traffic.
 # The default is 1000
 plugin.choria.adapter.queue_len = 50000
