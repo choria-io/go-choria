@@ -47,7 +47,7 @@ jobs:
       - run: docker cp /go store:/
 
       - run: |
-          VERSION="${CIRCLE_TAG}"
+          VERSION="${CIRCLE_TAG:1}"
 
           if [ -z "${CIRCLE_TAG}" ]
           then
