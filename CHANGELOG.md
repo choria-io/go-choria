@@ -1,5 +1,17 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2019/09/09|      |Release 0.12.0                                                                                           |
+|2019/09/09|      |Broker based on NATS 2.0 via `go-network-broker` version `1.3.1`                                         |
+|2019/09/07|670   |Improve the output from `choria ping --graph`                                                            |
+|2019/09/06|664   |Add a pkcs11 security provider                                                                           |
+|2019/09/04|663   |Add a `choria req` tool to eventually replace `mco rpc`                                                  |
+|2019/08/09|652   |Write init scripts to the correct location on RHEL                                                       |
+|2019/07/24|642   |Show dependencies compiled into the binary in `choria buildinfo`                                         |
+|2019/07/15|632   |Decrease memory use in adapters by lowering the work queue length                                        |
+|2019/06/27|621   |Choria Provisioner is now a proper plugin                                                                |
+|2019/06/27|623   |Support `agents.ShouldActivate()` checks when loading agents                                             |
+|2019/06/26|617   |Support NATS 2.0 credentials and user/password                                                           |
+|2019/06/26|617   |Fix `choria ping`                                                                                        |
 |2019/06/12|      |Release 0.11.1                                                                                           |
 |2019/04/20|      |Support email SANs in client certificates via `go-security` `0.4.2`                                      |
 |2019/06/11|609   |Verify that only known transitions and states are mentioned in the machine specification                 |
