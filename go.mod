@@ -27,7 +27,7 @@ require (
 	github.com/guptarohit/asciigraph v0.4.1
 	github.com/looplab/fsm v0.1.0
 	github.com/nats-io/nats-server/v2 v2.0.4
-	github.com/nats-io/nats-streaming-server v0.16.0 // indirect
+	github.com/nats-io/nats-streaming-server v0.16.1-0.20190905144423-ed7405a40a25 // indirect
 	github.com/nats-io/nats.go v1.8.1
 	github.com/nats-io/stan.go v0.5.0
 	github.com/onsi/ginkgo v1.10.1
