@@ -36,7 +36,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 		})
 
 		var _ = Describe("loadAgents", func() {
-			It("Should load all agents in all libdirs", func() {
+			It("Should load only ruby agents in all libdirs", func() {
 				p := Provider{
 					log: logger,
 				}
