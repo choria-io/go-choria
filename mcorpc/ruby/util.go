@@ -3,6 +3,7 @@ package ruby
 import (
 	"os"
 	"path/filepath"
+	"strings"
 
 	agentddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 )
@@ -30,7 +31,7 @@ func (p *Provider) eachAgent(libdirs []string, cb func(ddl *agentddl.DDL)) {
 
 			fname := info.Name()
 			extension := filepath.Ext(fname)
-			name := fname[0 : len(fname)-len(extension)]
+			name := strings.TrimSuffix(fname, extension)
 
 			if extension != ".json" {
 				return nil
@@ -40,7 +41,15 @@ func (p *Provider) eachAgent(libdirs []string, cb func(ddl *agentddl.DDL)) {
 				return nil
 			}
 
-			p.log.Debugf("Attepting to load %s as an agent DDL", path)
+			bpath := strings.TrimSuffix(path, extension)
+			rbfile := bpath + ".rb"
+
+			rbstat, err := os.Stat(rbfile)
+			if os.IsNotExist(err) || rbstat.IsDir() {
+				return nil
+			}
+
+			p.log.Debugf("Attempting to load %s as an agent DDL", path)
 
 			ddl, err := agentddl.New(path)
 			if err != nil {

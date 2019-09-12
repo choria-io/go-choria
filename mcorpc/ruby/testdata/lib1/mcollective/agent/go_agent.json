@@ -1,0 +1,37 @@
+{
+  "$schema": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
+  "metadata" : {
+    "name": "echo",
+    "description": "Choria Echo Agent",
+    "author": "R.I.Pienaar <rip@devco.net>",
+    "license": "Apache-2",
+    "version": "1.0.0",
+    "url": "https://choria.io",
+    "timeout": 2
+  },
+  "actions": [
+    {
+      "action": "ping",
+      "display": "always",
+      "description": "ping remote Choria server",
+      "input": {
+        "message": {
+          "prompt": "Message",
+          "description": "Message to send",
+          "type": "string",
+          "validation": ".",
+          "optional": true,
+          "default": "ping",
+          "maxlength": 128
+        }
+      },
+      "output": {
+        "message": {
+          "description": "Return ping from remote Choria server",
+          "display_as": "Message",
+          "default": null
+        }
+      }
+    }
+  ]
+}
