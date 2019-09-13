@@ -165,6 +165,10 @@ func (d *DDL) ToRuby() (string, error) {
 			return `["` + strings.Join(v, `", "`) + `"]`
 		},
 		"goval2rubyval": func(typedef string, v interface{}) string {
+			if v == nil {
+				return `nil`
+			}
+
 			switch typedef {
 			case "string", "list":
 				return fmt.Sprintf(`"%s"`, v.(string))
@@ -219,8 +223,10 @@ action "{{ $action.Name }}", :description => "{{ $action.Description }}" do
   output :{{ $oname }},
          :description => "{{ $output.Description }}",
          :display_as  => "{{ $output.DisplayAs }}",
-         :type        => "{{ $output.Type }}",
+		 :type        => "{{ $output.Type }}",
+{{- if $output.Default }}
          :default     => {{ $output.Default | goval2rubyval $output.Type }}
+{{ -end -}}
 {{ end }}
 
 {{- if $action.Aggregation }}
