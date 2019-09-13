@@ -20,6 +20,22 @@ type actionAggregators struct {
 	sync.Mutex
 }
 
+// OutputName is the name of the output being aggregated
+func (a *ActionAggregateItem) OutputName() string {
+	out := []interface{}{}
+	err := json.Unmarshal(a.Arguments, &out)
+	if err != nil || len(out) < 1 {
+		return "unknown"
+	}
+
+	output, ok := out[0].(string)
+	if !ok {
+		return "unknown"
+	}
+
+	return output
+}
+
 func newActionAggregators(a *Action) *actionAggregators {
 	agg := &actionAggregators{
 		action:      a,

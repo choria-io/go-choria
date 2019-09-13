@@ -1,12 +1,14 @@
 package agent
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
+	"text/template"
 	"time"
 
 	"github.com/choria-io/go-choria/server/agents"
@@ -33,6 +35,8 @@ func New(file string) (*DDL, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not parse JSON data in %s: %s", file, err)
 	}
+
+	ddl.normalize()
 
 	return ddl, nil
 }
@@ -84,6 +88,14 @@ func EachFile(libdirs []string, cb func(name string, path string) (br bool)) {
 
 			return nil
 		})
+	}
+}
+
+func (d *DDL) normalize() {
+	for _, action := range d.Actions {
+		if action.Display == "" {
+			action.Display = "failed"
+		}
 	}
 }
 
@@ -139,3 +151,85 @@ func (d *DDL) ValidateAndConvertToDDLTypes(action string, args map[string]string
 
 	return acti.ValidateAndConvertToDDLTypes(args)
 }
+
+// ToRuby generates a ruby DDL from a go DDL
+func (d *DDL) ToRuby() (string, error) {
+	var out bytes.Buffer
+
+	funcs := template.FuncMap{
+		"enum2list": func(v []string) string {
+			if len(v) == 0 {
+				return "[]"
+			}
+
+			return `["` + strings.Join(v, `", "`) + `"]`
+		},
+		"goval2rubyval": func(typedef string, v interface{}) string {
+			switch typedef {
+			case "string", "list":
+				return fmt.Sprintf(`"%s"`, v.(string))
+			case "float", "number":
+				return fmt.Sprintf("%f", v.(float64))
+			case "integer":
+				return fmt.Sprintf("%d", v.(int64))
+			case "boolean":
+				return fmt.Sprintf("%v", v.(bool))
+			}
+
+			return `nil`
+		},
+	}
+
+	tpl := template.Must(template.New(d.Metadata.Name).Funcs(funcs).Parse(rubyDDLTemplate))
+	err := tpl.Execute(&out, d)
+	return out.String(), err
+}
+
+var rubyDDLTemplate = `metadata :name        => "{{ .Metadata.Name }}",
+         :description => "{{ .Metadata.Description }}",
+         :author      => "{{ .Metadata.Author }}",
+         :license     => "{{ .Metadata.License }}",
+         :version     => "{{ .Metadata.Version }}",
+         :url         => "{{ .Metadata.URL }}"
+         :timeout     => {{ .Metadata.Timeout }}
+
+{{ range $aname, $action := .Actions }}
+action "{{ $action.Name }}", :description => "{{ $action.Description }}" do
+  display :{{ $action.Display }}
+{{ range $iname, $input := $action.Input }}
+  input :{{ $iname }},
+        :prompt      => "{{ $input.Prompt }}",
+        :description => "{{ $input.Description }}",
+        :type        => :{{ $input.Type }},
+        :optional    => {{ $input.Optional }},
+{{- if $input.Default }}
+        :default     => {{ $input.Default | goval2rubyval $input.Type }}
+{{- end -}}
+{{- if eq $input.Type "string" }}
+        :validation  => :{{ $input.Validation }},
+        :maxlength   => {{ $input.MaxLength }},
+{{- end -}}
+{{- if eq $input.Type "list" }}
+        :list        => {{ $input.Enum | enum2list }}
+{{- end -}}
+
+{{ end }}
+
+{{ range $oname, $output := $action.Output }}
+  output :{{ $oname }},
+         :description => "{{ $output.Description }}",
+         :display_as  => "{{ $output.DisplayAs }}",
+         :type        => "{{ $output.Type }}",
+         :default     => {{ $output.Default | goval2rubyval $output.Type }}
+{{ end }}
+
+{{- if $action.Aggregation }}
+  summarize do
+{{- range $aname, $aggregate := $action.Aggregation }}
+    {{ $aggregate.Function }}(:{{ $aggregate.OutputName }})
+{{- end }}
+  end
+{{- end }}
+end
+{{ end }}
+`
