@@ -171,12 +171,25 @@ func (d *DDL) ToRuby() (string, error) {
 
 			switch typedef {
 			case "string", "list":
+				if v == nil {
+					return `""`
+				}
+
 				return fmt.Sprintf(`"%s"`, v.(string))
 			case "float", "number":
+				if v == nil {
+					return "0.0"
+				}
 				return fmt.Sprintf("%f", v.(float64))
 			case "integer":
+				if v == nil {
+					return "0"
+				}
 				return fmt.Sprintf("%d", v.(int64))
 			case "boolean":
+				if v == nil {
+					return "false"
+				}
 				return fmt.Sprintf("%v", v.(bool))
 			}
 
@@ -223,10 +236,10 @@ action "{{ $action.Name }}", :description => "{{ $action.Description }}" do
   output :{{ $oname }},
          :description => "{{ $output.Description }}",
          :display_as  => "{{ $output.DisplayAs }}",
-		 :type        => "{{ $output.Type }}",
+         :type        => "{{ $output.Type }}",
 {{- if $output.Default }}
          :default     => {{ $output.Default | goval2rubyval $output.Type }}
-{{ -end -}}
+{{- end -}}
 {{ end }}
 
 {{- if $action.Aggregation }}
