@@ -1,4 +1,4 @@
-package agents
+package external
 
 import (
 	"github.com/choria-io/go-choria/plugin"
@@ -21,7 +21,7 @@ func (p *Provider) PluginVersion() string {
 
 // PluginName implements plugin.Pluggable
 func (p *Provider) PluginName() string {
-	return "Golang MCollective Agent Compatibility"
+	return "External MCollective Agent Compatibility"
 }
 
 // PluginType implements plugin.Pluggable

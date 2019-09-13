@@ -23,7 +23,7 @@ type Provider struct {
 // Initialize configures the agent provider
 func (p Provider) Initialize(fw *choria.Framework, log *logrus.Entry) {
 	p.fw = fw
-	p.log = log.WithFields(logrus.Fields{"provider": "mcorpc"})
+	p.log = fw.Logger("agents").WithFields(logrus.Fields{"provider": "golang"})
 }
 
 // Version reports the version for this provider

@@ -25,7 +25,7 @@ type Provider struct {
 // New creates a new provider that will find ruby agents in the configured libdirs
 func New(fw *choria.Framework) *Provider {
 	p := &Provider{}
-	p.Initialize(fw, logrus.WithFields(logrus.Fields{"provider": "ruby"}))
+	p.Initialize(fw, fw.Logger("agents").WithFields(logrus.Fields{"provider": "ruby"}))
 
 	return p
 }
@@ -33,7 +33,7 @@ func New(fw *choria.Framework) *Provider {
 // Initialize configures the agent provider
 func (p *Provider) Initialize(fw *choria.Framework, log *logrus.Entry) {
 	p.fw = fw
-	p.cfg = fw.Config
+	p.cfg = fw.Configuration()
 	p.log = log.WithFields(logrus.Fields{"provider": "ruby"})
 
 	p.loadAgents(fw.Config.Choria.RubyLibdir)
@@ -44,13 +44,13 @@ func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, 
 	for _, ddl := range p.Agents() {
 		agent, err := NewRubyAgent(ddl, mgr)
 		if err != nil {
-			p.log.Errorf("Could not register Ruby agent %s: %s", ddl.Metadata.Name, err)
+			p.log.Errorf("Could not register Ruby agent %s: %s", agent.Name(), err)
 			continue
 		}
 
 		err = mgr.RegisterAgent(ctx, agent.Name(), agent, connector)
 		if err != nil {
-			p.log.Errorf("Could not register Ruby agent %s: %s", ddl.Metadata.Name, err)
+			p.log.Errorf("Could not register Ruby agent %s: %s", agent.Name(), err)
 			continue
 		}
 	}

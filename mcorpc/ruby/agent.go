@@ -53,12 +53,12 @@ func NewRubyAgent(ddl *agent.DDL, mgr server.AgentManager) (*mcorpc.Agent, error
 	agent.Log.Debugf("Registering proxy actions for Ruby agent %s: %s", ddl.Metadata.Name, strings.Join(ddl.ActionNames(), ", "))
 
 	for _, action := range ddl.ActionNames() {
-		int, err := ddl.ActionInterface(action)
+		actint, err := ddl.ActionInterface(action)
 		if err != nil {
 			return nil, err
 		}
 
-		agent.MustRegisterAction(int.Name, rubyAction)
+		agent.MustRegisterAction(actint.Name, rubyAction)
 	}
 
 	return agent, nil
@@ -141,7 +141,8 @@ func rubyAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 		return
 	}
 
-	if err := execution.Start(); err != nil {
+	err = execution.Start()
+	if err != nil {
 		abortAction(fmt.Sprintf("Cannot start the Shim for Ruby action %s: %s", action, err), agent, reply)
 		return
 	}
