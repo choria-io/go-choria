@@ -179,7 +179,7 @@ func (a *Action) ValidateAndConvertToDDLTypes(args map[string]string) (result ma
 			return result, warnings, fmt.Errorf("input '%s' has not been declared", kname)
 		}
 
-		converted, err := valToDDLType(input.Type, v)
+		converted, err := ValToDDLType(input.Type, v)
 		if err != nil {
 			return result, warnings, fmt.Errorf("invalid value for '%s': %s", kname, err)
 		}
@@ -221,7 +221,7 @@ func (a *Action) ValidateInputString(input string, val string) error {
 		return fmt.Errorf("unknown input '%s'", input)
 	}
 
-	converted, err := valToDDLType(i.Type, val)
+	converted, err := ValToDDLType(i.Type, val)
 	if err != nil {
 		return err
 	}
@@ -355,7 +355,8 @@ func validateStringValidation(validation string, value string) (warnings []strin
 	return warnings, err
 }
 
-func valToDDLType(typedef string, val string) (res interface{}, err error) {
+// ValToDDLType converts val into the type described in typedef where typedef is a typical choria DDL supported type
+func ValToDDLType(typedef string, val string) (res interface{}, err error) {
 	switch strings.ToLower(typedef) {
 	case "integer":
 		i, err := strconv.Atoi(val)
