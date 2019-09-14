@@ -132,12 +132,37 @@ var _ = Describe("McoRPC/External", func() {
 					Name:    "ginkgo",
 					Timeout: 1,
 				},
+				Actions: []*addl.Action{
+					&addl.Action{
+						Name: "ping",
+						Input: map[string]*addl.ActionInputItem{
+							"hello": &addl.ActionInputItem{
+								Type:       "string",
+								Optional:   false,
+								Validation: "shellsafe",
+								MaxLength:  0,
+							},
+						},
+						Output: map[string]*addl.ActionOutputItem{
+							"hello": &addl.ActionOutputItem{
+								Type:    "string",
+								Default: "default",
+							},
+							"optional": &addl.ActionOutputItem{
+								Type:    "string",
+								Default: "optional default",
+							},
+						},
+					},
+				},
 			}
+			prov.agents = append(prov.agents, ddl)
+
 			agent, err = prov.newExternalAgent(ddl, agentMgr)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Should handle missing executables", func() {
+		It("Should handle a missing executable", func() {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
@@ -149,11 +174,43 @@ var _ = Describe("McoRPC/External", func() {
 			}
 
 			prov.externalAction(ctx, req, rep, agent, nil)
-			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
 			Expect(rep.Statusmsg).To(MatchRegexp("Cannot call.+ginkgo_missing#ping.+ginkgo_missing was not found"))
+			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
 		})
 
-		It("Should execute the correct request binary with the correct input", func() {
+		It("Should handle execution failures", func() {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			rep := &mcorpc.Reply{}
+			req := &mcorpc.Request{
+				Agent:  "ginkgo_abort",
+				Action: "ping",
+				Data:   json.RawMessage(`{"hello":"world"}`),
+			}
+
+			prov.externalAction(ctx, req, rep, agent, nil)
+			Expect(rep.Statusmsg).To(MatchRegexp("Could not call.+ginkgo_abort#ping.+exit status 1"))
+			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
+		})
+
+		It("Should validate the input before executing the agent", func() {
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			rep := &mcorpc.Reply{}
+			req := &mcorpc.Request{
+				Agent:  "ginkgo_abort",
+				Action: "ping",
+				Data:   json.RawMessage(`{"hello":1}`),
+			}
+
+			prov.externalAction(ctx, req, rep, agent, nil)
+			Expect(rep.Statusmsg).To(MatchRegexp("Validation failed: validation failed for input 'hello': is not a string"))
+			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
+		})
+
+		It("Should execute the correct request binary with the correct input and set defaults on the reply", func() {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
@@ -165,24 +222,10 @@ var _ = Describe("McoRPC/External", func() {
 			}
 
 			prov.externalAction(ctx, req, rep, agent, nil)
-			Expect(rep.Statuscode).To(Equal(mcorpc.OK))
 			Expect(rep.Statusmsg).To(Equal("OK"))
+			Expect(rep.Statuscode).To(Equal(mcorpc.OK))
 			Expect(rep.Data.(map[string]interface{})["hello"].(string)).To(Equal("world"))
-		})
-
-		It("Should handle execution failures", func() {
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
-			rep := &mcorpc.Reply{}
-			req := &mcorpc.Request{
-				Agent:  "ginkgo_abort",
-				Action: "ping",
-			}
-
-			prov.externalAction(ctx, req, rep, agent, nil)
-			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
-			Expect(rep.Statusmsg).To(MatchRegexp("Could not call.+ginkgo_abort#ping.+exit status 1"))
+			Expect(rep.Data.(map[string]interface{})["optional"].(string)).To(Equal("optional default"))
 		})
 	})
 })

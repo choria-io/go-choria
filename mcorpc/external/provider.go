@@ -77,6 +77,16 @@ func (p *Provider) loadAgents() {
 	})
 }
 
+func (p *Provider) agentDDL(a string) (*agentddl.DDL, bool) {
+	for _, agent := range p.agents {
+		if agent.Metadata.Name == a {
+			return agent, true
+		}
+	}
+
+	return nil, false
+}
+
 func (p *Provider) eachAgent(cb func(ddl *agentddl.DDL)) {
 	p.log.Debugf("Attempting to load external agents from %s", p.dir)
 

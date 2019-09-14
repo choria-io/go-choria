@@ -120,7 +120,7 @@ func (d *DDL) ActionInterface(action string) (*Action, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("could not found an action called %s#%s", d.Metadata.Name, action)
+	return nil, fmt.Errorf("unknown action %s#%s", d.Metadata.Name, action)
 }
 
 // HaveAction determines if an action is known

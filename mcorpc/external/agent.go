@@ -109,11 +109,22 @@ func (p *Provider) externalActivationCheck(ddl *agent.DDL) (mcorpc.ActivationChe
 func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
 	action := fmt.Sprintf("%s#%s", req.Agent, req.Action)
 	agentPath := filepath.Join(p.dir, req.Agent)
+	ddl, ok := p.agentDDL(agent.Name())
+	if !ok {
+		p.abortAction(fmt.Sprintf("Cannot find DDL for agent %s", agent.Name()), agent, reply)
+		return
+	}
 
 	agent.Log.Debugf("Attempting to call external agent %s (%s) with a timeout %d", action, agentPath, agent.Metadata().Timeout)
 
 	if _, err := os.Stat(agentPath); os.IsNotExist(err) {
 		p.abortAction(fmt.Sprintf("Cannot call external agent %s: agent executable %s was not found", action, agentPath), agent, reply)
+		return
+	}
+
+	err := p.validateRequest(ddl, req, agent.Log)
+	if err != nil {
+		p.abortAction(fmt.Sprintf("Validation failed: %s", err), agent, reply)
 		return
 	}
 
@@ -132,7 +143,54 @@ func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, repl
 		return
 	}
 
+	err = p.setReplyDefaults(ddl, req.Action, reply)
+	if err != nil {
+		p.abortAction(fmt.Sprintf("Could not set reply defaults: %s", err), agent, reply)
+		return
+	}
+
 	return
+}
+
+func (p *Provider) validateRequest(ddl *agentddl.DDL, req *mcorpc.Request, log *logrus.Entry) error {
+	actint, err := ddl.ActionInterface(req.Action)
+	if err != nil {
+		return fmt.Errorf("could not load action: %s", err)
+	}
+
+	warnings, err := actint.ValidateRequestJSON(req.Data)
+	if err != nil {
+		return err
+	}
+
+	if len(warnings) > 0 {
+		for _, w := range warnings {
+			log.Warnf(fmt.Sprintf("Validation on input %s to %s#%s returned a warning: %s", req.Action, req.Agent, req.Action, w))
+		}
+	}
+
+	return nil
+}
+
+func (p *Provider) setReplyDefaults(ddl *agentddl.DDL, action string, reply *mcorpc.Reply) error {
+	actint, err := ddl.ActionInterface(action)
+	if err != nil {
+		return fmt.Errorf("could not load action: %s", err)
+	}
+
+	if reply.Data == nil {
+		reply.Data = make(map[string]interface{})
+	}
+
+	result, ok := reply.Data.(map[string]interface{})
+	if !ok {
+		return fmt.Errorf("Reply data should is in the wrong format")
+	}
+
+	actint.SetOutputDefaults(result)
+	reply.Data = result
+
+	return nil
 }
 
 func (p *Provider) executeRequest(ctx context.Context, command string, protocol string, req []byte, reply interface{}, log *logrus.Entry) error {
