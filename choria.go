@@ -75,7 +75,7 @@ type ChoriaPluginConfig struct {
 	RubyLibdir      []string `confkey:"plugin.choria.agent_provider.mcorpc.libdir" type:"path_split"`
 
 	// external agents
-	ExternalLibdir []string `confkey:"plugin.choria.agent_provider.mcorpc.externaldir" type:"path_split"`
+	ExternalLibdir string `confkey:"plugin.choria.agent_provider.mcorpc.externaldir"`
 
 	// security plugin
 	PrivilegedUsers              []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split" default:"\\.privileged.mcollective$,\\.privileged.choria$"`
