@@ -1,14 +1,17 @@
 package external
 
 import (
+	"bufio"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
@@ -16,6 +19,7 @@ import (
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	agentddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
+	"github.com/sirupsen/logrus"
 )
 
 const (
@@ -93,7 +97,7 @@ func (p *Provider) externalActivationCheck(ddl *agent.DDL) (mcorpc.ActivationChe
 		return nil, fmt.Errorf("could not json encode activation message: %s", err)
 	}
 
-	err = p.executeRequest(ctx, agentPath, activationProtocol, j, rep)
+	err = p.executeRequest(ctx, agentPath, activationProtocol, j, rep, p.log)
 	if err != nil {
 		p.log.Warnf("External agent %s not activating due to error during activation check: %s", agentPath, err)
 		return func() bool { return false }, nil
@@ -122,7 +126,7 @@ func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, repl
 		return
 	}
 
-	err = p.executeRequest(tctx, agentPath, requestProtocol, externreq, reply)
+	err = p.executeRequest(tctx, agentPath, requestProtocol, externreq, reply, agent.Log)
 	if err != nil {
 		p.abortAction(fmt.Sprintf("Could not call external agent %s: :%s", action, err), agent, reply)
 		return
@@ -131,7 +135,7 @@ func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, repl
 	return
 }
 
-func (p *Provider) executeRequest(ctx context.Context, command string, protocol string, req []byte, reply interface{}) error {
+func (p *Provider) executeRequest(ctx context.Context, command string, protocol string, req []byte, reply interface{}, log *logrus.Entry) error {
 	reqfile, err := ioutil.TempFile("", "request")
 	if err != nil {
 		return fmt.Errorf("could not create request temp file: %s", err)
@@ -158,9 +162,41 @@ func (p *Provider) executeRequest(ctx context.Context, command string, protocol 
 		"CHORIA_EXTERNAL_PROTOCOL=" + protocol,
 	}
 
-	err = execution.Run()
+	stdout, err := execution.StdoutPipe()
+	if err != nil {
+		return fmt.Errorf("could not open STDOUT: %s", err)
+	}
+
+	stderr, err := execution.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("could not open STDERR: %s", err)
+	}
+
+	wg := &sync.WaitGroup{}
+	outputReader := func(wg *sync.WaitGroup, in io.ReadCloser, logger func(args ...interface{})) {
+		defer wg.Done()
+
+		scanner := bufio.NewScanner(in)
+		for scanner.Scan() {
+			logger(scanner.Text())
+		}
+	}
+
+	wg.Add(1)
+	go outputReader(wg, stderr, log.Error)
+	wg.Add(1)
+	go outputReader(wg, stdout, log.Info)
+
+	err = execution.Start()
 	if err != nil {
 		return fmt.Errorf("executing %s failed: %s", filepath.Base(command), err)
+	}
+
+	execution.Wait()
+	wg.Wait()
+
+	if execution.ProcessState.ExitCode() != 0 {
+		return fmt.Errorf("executing %s failed: exit status %d", filepath.Base(command), execution.ProcessState.ExitCode())
 	}
 
 	repjson, err := ioutil.ReadFile(repfile.Name())
