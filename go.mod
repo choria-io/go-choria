@@ -9,7 +9,7 @@ require (
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4 // indirect
 	github.com/choria-io/go-client v0.5.0
-	github.com/choria-io/go-config v0.0.3
+	github.com/choria-io/go-config v0.0.4-0.20190914115046-53ac9c8e4c1d
 	github.com/choria-io/go-lifecycle v1.0.3
 	github.com/choria-io/go-network-broker v1.3.1
 	github.com/choria-io/go-protocol v1.3.2

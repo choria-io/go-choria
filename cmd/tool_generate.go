@@ -471,6 +471,7 @@ this metadata is used to keep an internal inventory of all the available service
       License: The license to use, typically one in https://spdx.org/licenses/
           URL: A URL one can visit for further information about the agent
       Timeout: Maximum time in seconds any action will be allowed to run
+     Provider: If the agent is of a specific provider rather than go or ruby, which one
 `)
 
 	qs := []*survey.Question{
@@ -481,6 +482,7 @@ this metadata is used to keep an internal inventory of all the available service
 		g.askBasicItem("license", "License", "", nil, survey.Required),
 		g.askBasicItem("url", "URL", "", survey.ToLower, survey.Required),
 		g.askBasicItem("timeout", "Timeout", "", nil, survey.Required),
+		g.askBasicItem("provider", "Provider", "", nil, nil)
 	}
 
 	err = survey.Ask(qs, agent.Metadata)
