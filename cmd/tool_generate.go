@@ -482,7 +482,7 @@ this metadata is used to keep an internal inventory of all the available service
 		g.askBasicItem("license", "License", "", nil, survey.Required),
 		g.askBasicItem("url", "URL", "", survey.ToLower, survey.Required),
 		g.askBasicItem("timeout", "Timeout", "", nil, survey.Required),
-		g.askBasicItem("provider", "Provider", "", nil, nil)
+		g.askBasicItem("provider", "Provider", "", nil, nil),
 	}
 
 	err = survey.Ask(qs, agent.Metadata)
