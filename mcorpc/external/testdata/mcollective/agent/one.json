@@ -1,0 +1,587 @@
+{
+    "$schema": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
+    "metadata": {
+        "name": "one",
+        "description": "Manage Operating System Packages",
+        "author": "R.I.Pienaar <rip@devco.net>",
+        "license": "Apache-2.0",
+        "version": "5.0.0",
+        "url": "https://github.com/choria-plugins/package-agent",
+        "timeout": 180,
+        "provider": "external"
+    },
+    "actions": [
+        {
+            "action": "apt_checkupdates",
+            "input": {},
+            "output": {
+                "output": {
+                    "description": "Output from APT",
+                    "display_as": "Output",
+                    "default": null
+                },
+                "outdated_packages": {
+                    "description": "Outdated packages",
+                    "display_as": "Outdated Packages",
+                    "default": null
+                },
+                "exitcode": {
+                    "description": "The exitcode from the apt command",
+                    "display_as": "Exit Code",
+                    "default": null
+                }
+            },
+            "display": "always",
+            "description": "Check for APT updates"
+        },
+        {
+            "action": "apt_update",
+            "input": {},
+            "output": {
+                "output": {
+                    "description": "Output from apt-get",
+                    "display_as": "Output",
+                    "default": null
+                },
+                "exitcode": {
+                    "description": "The exitcode from the apt-get command",
+                    "display_as": "Exit Code",
+                    "default": null
+                }
+            },
+            "display": "failed",
+            "description": "Update the apt cache"
+        },
+        {
+            "action": "checkupdates",
+            "input": {},
+            "output": {
+                "package_manager": {
+                    "description": "The detected package manager",
+                    "display_as": "Package Manager",
+                    "default": null
+                },
+                "output": {
+                    "description": "Output from Package Manager",
+                    "display_as": "Output",
+                    "default": null
+                },
+                "outdated_packages": {
+                    "description": "Outdated packages",
+                    "display_as": "Outdated Packages",
+                    "default": null
+                },
+                "exitcode": {
+                    "description": "The exitcode from the package manager command",
+                    "display_as": "Exit Code",
+                    "default": null
+                }
+            },
+            "display": "always",
+            "description": "Check for updates"
+        },
+        {
+            "action": "count",
+            "input": {},
+            "output": {
+                "output": {
+                    "description": "Count of packages installed",
+                    "display_as": "Count",
+                    "default": null
+                },
+                "exitcode": {
+                    "description": "The exitcode from the rpm/dpkg command",
+                    "display_as": "Exit Code",
+                    "default": null
+                }
+            },
+            "display": "failed",
+            "description": "Get number of packages installed",
+            "aggregate": [
+                {
+                    "function": "summary",
+                    "args": [
+                        "output"
+                    ]
+                },
+                {
+                    "function": "summary",
+                    "args": [
+                        "output"
+                    ]
+                }
+            ]
+        },
+        {
+            "action": "install",
+            "input": {
+                "package": {
+                    "prompt": "Package Name",
+                    "description": "Package to install",
+                    "type": "string",
+                    "default": null,
+                    "optional": false,
+                    "validation": "shellsafe",
+                    "maxlength": 90
+                },
+                "version": {
+                    "prompt": "Package version",
+                    "description": "Version of package to install",
+                    "type": "string",
+                    "default": null,
+                    "optional": true,
+                    "validation": "shellsafe",
+                    "maxlength": 90
+                }
+            },
+            "output": {
+                "output": {
+                    "description": "Output from the package manager",
+                    "display_as": "Output",
+                    "default": null
+                },
+                "epoch": {
+                    "description": "Package epoch number",
+                    "display_as": "Epoch",
+                    "default": null
+                },
+                "arch": {
+                    "description": "Package architecture",
+                    "display_as": "Arch",
+                    "default": null
+                },
+                "ensure": {
+                    "description": "Full package version",
+                    "display_as": "Ensure",
+                    "default": null
+                },
+                "version": {
+                    "description": "Version number",
+                    "display_as": "Version",
+                    "default": null
+                },
+                "provider": {
+                    "description": "Provider used to retrieve information",
+                    "display_as": "Provider",
+                    "default": null
+                },
+                "name": {
+                    "description": "Package name",
+                    "display_as": "Name",
+                    "default": null
+                },
+                "release": {
+                    "description": "Package release number",
+                    "display_as": "Release",
+                    "default": null
+                }
+            },
+            "display": "failed",
+            "description": "Install a package",
+            "aggregate": [
+                {
+                    "function": "summary",
+                    "args": [
+                        "ensure"
+                    ]
+                },
+                {
+                    "function": "summary",
+                    "args": [
+                        "ensure"
+                    ]
+                }
+            ]
+        },
+        {
+            "action": "md5",
+            "input": {},
+            "output": {
+                "output": {
+                    "description": "md5 of list of packages installed",
+                    "display_as": "MD5",
+                    "default": null
+                },
+                "exitcode": {
+                    "description": "The exitcode from the rpm/dpkg command",
+                    "display_as": "Exit Code",
+                    "default": null
+                }
+            },
+            "display": "failed",
+            "description": "Get md5 digest of list of packages installed",
+            "aggregate": [
+                {
+                    "function": "summary",
+                    "args": [
+                        "output"
+                    ]
+                },
+                {
+                    "function": "summary",
+                    "args": [
+                        "output"
+                    ]
+                }
+            ]
+        },
+        {
+            "action": "purge",
+            "input": {
+                "package": {
+                    "prompt": "Package Name",
+                    "description": "Package to purge",
+                    "type": "string",
+                    "default": null,
+                    "optional": false,
+                    "validation": "shellsafe",
+                    "maxlength": 90
+                }
+            },
+            "output": {
+                "output": {
+                    "description": "Output from the package manager",
+                    "display_as": "Output",
+                    "default": null
+                },
+                "epoch": {
+                    "description": "Package epoch number",
+                    "display_as": "Epoch",
+                    "default": null
+                },
+                "arch": {
+                    "description": "Package architecture",
+                    "display_as": "Arch",
+                    "default": null
+                },
+                "ensure": {
+                    "description": "Full package version",
+                    "display_as": "Ensure",
+                    "default": null
+                },
+                "version": {
+                    "description": "Version number",
+                    "display_as": "Version",
+                    "default": null
+                },
+                "provider": {
+                    "description": "Provider used to retrieve information",
+                    "display_as": "Provider",
+                    "default": null
+                },
+                "name": {
+                    "description": "Package name",
+                    "display_as": "Name",
+                    "default": null
+                },
+                "release": {
+                    "description": "Package release number",
+                    "display_as": "Release",
+                    "default": null
+                }
+            },
+            "display": "failed",
+            "description": "Purge a package",
+            "aggregate": [
+                {
+                    "function": "summary",
+                    "args": [
+                        "ensure"
+                    ]
+                },
+                {
+                    "function": "summary",
+                    "args": [
+                        "ensure"
+                    ]
+                }
+            ]
+        },
+        {
+            "action": "status",
+            "input": {
+                "package": {
+                    "prompt": "Package Name",
+                    "description": "Package to retrieve the status of",
+                    "type": "string",
+                    "default": null,
+                    "optional": false,
+                    "validation": "shellsafe",
+                    "maxlength": 90
+                }
+            },
+            "output": {
+                "output": {
+                    "description": "Output from the package manager",
+                    "display_as": "Output",
+                    "default": null
+                },
+                "epoch": {
+                    "description": "Package epoch number",
+                    "display_as": "Epoch",
+                    "default": null
+                },
+                "arch": {
+                    "description": "Package architecture",
+                    "display_as": "Arch",
+                    "default": null
+                },
+                "ensure": {
+                    "description": "Full package version",
+                    "display_as": "Ensure",
+                    "default": null
+                },
+                "version": {
+                    "description": "Version number",
+                    "display_as": "Version",
+                    "default": null
+                },
+                "provider": {
+                    "description": "Provider used to retrieve information",
+                    "display_as": "Provider",
+                    "default": null
+                },
+                "name": {
+                    "description": "Package name",
+                    "display_as": "Name",
+                    "default": null
+                },
+                "release": {
+                    "description": "Package release number",
+                    "display_as": "Release",
+                    "default": null
+                }
+            },
+            "display": "always",
+            "description": "Get the status of a package",
+            "aggregate": [
+                {
+                    "function": "summary",
+                    "args": [
+                        "ensure"
+                    ]
+                },
+                {
+                    "function": "summary",
+                    "args": [
+                        "arch"
+                    ]
+                },
+                {
+                    "function": "summary",
+                    "args": [
+                        "ensure"
+                    ]
+                },
+                {
+                    "function": "summary",
+                    "args": [
+                        "arch"
+                    ]
+                }
+            ]
+        },
+        {
+            "action": "uninstall",
+            "input": {
+                "package": {
+                    "prompt": "Package Name",
+                    "description": "Package to uninstall",
+                    "type": "string",
+                    "default": null,
+                    "optional": false,
+                    "validation": "shellsafe",
+                    "maxlength": 90
+                }
+            },
+            "output": {
+                "output": {
+                    "description": "Output from the package manager",
+                    "display_as": "Output",
+                    "default": null
+                },
+                "epoch": {
+                    "description": "Package epoch number",
+                    "display_as": "Epoch",
+                    "default": null
+                },
+                "arch": {
+                    "description": "Package architecture",
+                    "display_as": "Arch",
+                    "default": null
+                },
+                "ensure": {
+                    "description": "Full package version",
+                    "display_as": "Ensure",
+                    "default": null
+                },
+                "version": {
+                    "description": "Version number",
+                    "display_as": "Version",
+                    "default": null
+                },
+                "provider": {
+                    "description": "Provider used to retrieve information",
+                    "display_as": "Provider",
+                    "default": null
+                },
+                "name": {
+                    "description": "Package name",
+                    "display_as": "Name",
+                    "default": null
+                },
+                "release": {
+                    "description": "Package release number",
+                    "display_as": "Release",
+                    "default": null
+                }
+            },
+            "display": "failed",
+            "description": "Uninstall a package",
+            "aggregate": [
+                {
+                    "function": "summary",
+                    "args": [
+                        "ensure"
+                    ]
+                },
+                {
+                    "function": "summary",
+                    "args": [
+                        "ensure"
+                    ]
+                }
+            ]
+        },
+        {
+            "action": "update",
+            "input": {
+                "package": {
+                    "prompt": "Package Name",
+                    "description": "Package to update",
+                    "type": "string",
+                    "default": null,
+                    "optional": false,
+                    "validation": "shellsafe",
+                    "maxlength": 90
+                }
+            },
+            "output": {
+                "output": {
+                    "description": "Output from the package manager",
+                    "display_as": "Output",
+                    "default": null
+                },
+                "epoch": {
+                    "description": "Package epoch number",
+                    "display_as": "Epoch",
+                    "default": null
+                },
+                "arch": {
+                    "description": "Package architecture",
+                    "display_as": "Arch",
+                    "default": null
+                },
+                "ensure": {
+                    "description": "Full package version",
+                    "display_as": "Ensure",
+                    "default": null
+                },
+                "version": {
+                    "description": "Version number",
+                    "display_as": "Version",
+                    "default": null
+                },
+                "provider": {
+                    "description": "Provider used to retrieve information",
+                    "display_as": "Provider",
+                    "default": null
+                },
+                "name": {
+                    "description": "Package name",
+                    "display_as": "Name",
+                    "default": null
+                },
+                "release": {
+                    "description": "Package release number",
+                    "display_as": "Release",
+                    "default": null
+                }
+            },
+            "display": "failed",
+            "description": "Update a package",
+            "aggregate": [
+                {
+                    "function": "summary",
+                    "args": [
+                        "ensure"
+                    ]
+                },
+                {
+                    "function": "summary",
+                    "args": [
+                        "ensure"
+                    ]
+                }
+            ]
+        },
+        {
+            "action": "yum_checkupdates",
+            "input": {},
+            "output": {
+                "output": {
+                    "description": "Output from YUM",
+                    "display_as": "Output",
+                    "default": null
+                },
+                "outdated_packages": {
+                    "description": "Outdated packages",
+                    "display_as": "Outdated Packages",
+                    "default": null
+                },
+                "exitcode": {
+                    "description": "The exitcode from the yum command",
+                    "display_as": "Exit Code",
+                    "default": null
+                }
+            },
+            "display": "always",
+            "description": "Check for YUM updates"
+        },
+        {
+            "action": "yum_clean",
+            "input": {
+                "mode": {
+                    "prompt": "Yum clean mode",
+                    "description": "One of the various supported clean modes",
+                    "type": "list",
+                    "default": null,
+                    "optional": true,
+                    "list": [
+                        "all",
+                        "headers",
+                        "packages",
+                        "metadata",
+                        "dbcache",
+                        "plugins",
+                        "expire-cache"
+                    ]
+                }
+            },
+            "output": {
+                "output": {
+                    "description": "Output from YUM",
+                    "display_as": "Output",
+                    "default": null
+                },
+                "exitcode": {
+                    "description": "The exitcode from the yum command",
+                    "display_as": "Exit Code",
+                    "default": null
+                }
+            },
+            "display": "failed",
+            "description": "Clean the YUM cache"
+        }
+    ]
+}

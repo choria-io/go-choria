@@ -147,7 +147,11 @@ func (a *Action) OutputNames() (names []string) {
 func (a *Action) SetOutputDefaults(results map[string]interface{}) {
 	for _, k := range a.OutputNames() {
 		_, ok := results[k]
-		if !ok && a.Output[k].Default != nil {
+		if ok {
+			continue
+		}
+
+		if a.Output[k].Default != nil {
 			results[k] = a.Output[k].Default
 		}
 	}
@@ -212,6 +216,58 @@ func (a *Action) ValidateAndConvertToDDLTypes(args map[string]string) (result ma
 	}
 
 	return result, warnings, nil
+}
+
+// ValidateRequestJSON receives request data in JSON format and validates it against the DDL
+func (a *Action) ValidateRequestJSON(req json.RawMessage) (warnings []string, err error) {
+	reqdata := make(map[string]interface{})
+	err = json.Unmarshal(req, &reqdata)
+	if err != nil {
+		return []string{}, err
+	}
+
+	return a.ValidateRequestData(reqdata)
+}
+
+// ValidateRequestData validates request data against the DDL
+func (a *Action) ValidateRequestData(data map[string]interface{}) (warnings []string, err error) {
+
+	validNames := a.InputNames()
+
+	for _, input := range validNames {
+		val, ok := data[input]
+
+		if a.RequiresInput(input) && !ok {
+			return []string{}, fmt.Errorf("input '%s' is required", input)
+		}
+
+		warnings, err = a.ValidateInputValue(input, val)
+		if err != nil {
+			return warnings, fmt.Errorf("validation failed for input '%s': %s", input, err)
+		}
+	}
+
+	if len(validNames) == 0 && len(data) > 0 {
+		return warnings, fmt.Errorf("request contains inputs while none are declared in the DDL")
+	}
+
+	for iname := range data {
+		matched := false
+		for _, vname := range validNames {
+			if vname == iname {
+				matched = true
+				continue
+			}
+		}
+
+		if matched {
+			continue
+		}
+
+		return warnings, fmt.Errorf("request contains a input '%s' that is not declared in the DDL (%v)", iname, validNames)
+	}
+
+	return []string{}, err
 }
 
 // ValidateInputString attempts to convert a string to the correct type and validate it based on the DDL spec

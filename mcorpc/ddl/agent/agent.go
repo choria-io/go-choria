@@ -17,14 +17,17 @@ import (
 // DDL represents the schema of a mcorpc agent and is at a basic level
 // compatible with the mcollective agent ddl format
 type DDL struct {
-	Schema   string           `json:"$schema"`
-	Metadata *agents.Metadata `json:"metadata"`
-	Actions  []*Action        `json:"actions"`
+	Schema         string           `json:"$schema"`
+	Metadata       *agents.Metadata `json:"metadata"`
+	Actions        []*Action        `json:"actions"`
+	SourceLocation string           `json:"-"`
 }
 
 // New creates a new DDL from a JSON file
 func New(file string) (*DDL, error) {
-	ddl := &DDL{}
+	ddl := &DDL{
+		SourceLocation: file,
+	}
 
 	dat, err := ioutil.ReadFile(file)
 	if err != nil {
@@ -120,7 +123,7 @@ func (d *DDL) ActionInterface(action string) (*Action, error) {
 		}
 	}
 
-	return nil, fmt.Errorf("could not found an action called %s#%s", d.Metadata.Name, action)
+	return nil, fmt.Errorf("unknown action %s#%s", d.Metadata.Name, action)
 }
 
 // HaveAction determines if an action is known

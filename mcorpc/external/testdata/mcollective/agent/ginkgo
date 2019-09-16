@@ -1,0 +1,25 @@
+#!/opt/puppetlabs/puppet/bin/ruby
+
+require "json"
+
+rep = {
+  "statuscode" => 1,
+  "statusmsg" => "Unknown error",
+  "data" => {"hello" => "world"}
+}
+  
+begin
+  abort("incorrect protocol") unless ENV["CHORIA_EXTERNAL_PROTOCOL"] == "choria:mcorpc:external_request:1"
+  
+  req = JSON.parse(File.read(ENV["CHORIA_EXTERNAL_REQUEST"]))
+
+  abort("invalid request data") unless req["body"]["data"]["hello"] == "world"
+
+  rep["statuscode"] = 0
+  rep["statusmsg"] = "OK"
+rescue Exception
+  rep["statuscode"] = 1
+  rep["statusmsg"] = "%s at %s" % [$!, $!.backtrace[0]]
+ensure
+  open(ENV["CHORIA_EXTERNAL_REPLY"], "w") {|f| f.print(JSON.dump(rep))}
+end

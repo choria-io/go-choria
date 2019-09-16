@@ -38,6 +38,7 @@ func (p *Provider) eachAgent(libdirs []string, cb func(ddl *agentddl.DDL)) {
 			}
 
 			if !shouldLoadAgent(name) {
+				p.log.Warnf("Ruby agents are not allowed to supply an agent called '%s', skipping", name)
 				return nil
 			}
 
@@ -57,7 +58,9 @@ func (p *Provider) eachAgent(libdirs []string, cb func(ddl *agentddl.DDL)) {
 				return nil
 			}
 
-			cb(ddl)
+			if ddl.Metadata.Provider == "" || ddl.Metadata.Provider == "ruby" {
+				cb(ddl)
+			}
 
 			return nil
 		})
