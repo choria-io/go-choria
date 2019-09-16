@@ -210,7 +210,10 @@ var rubyDDLTemplate = `metadata :name        => "{{ .Metadata.Name }}",
          :author      => "{{ .Metadata.Author }}",
          :license     => "{{ .Metadata.License }}",
          :version     => "{{ .Metadata.Version }}",
-         :url         => "{{ .Metadata.URL }}"
+         :url         => "{{ .Metadata.URL }}",
+{{- if .Metadata.Provider }}
+         :provider    => {{ .Metadata.Provider }},
+{{- end }}
          :timeout     => {{ .Metadata.Timeout }}
 
 {{ range $aname, $action := .Actions }}
@@ -221,17 +224,17 @@ action "{{ $action.Name }}", :description => "{{ $action.Description }}" do
         :prompt      => "{{ $input.Prompt }}",
         :description => "{{ $input.Description }}",
         :type        => :{{ $input.Type }},
-        :optional    => {{ $input.Optional }},
 {{- if $input.Default }}
         :default     => {{ $input.Default | goval2rubyval $input.Type }}
 {{- end -}}
 {{- if eq $input.Type "string" }}
         :validation  => :{{ $input.Validation }},
         :maxlength   => {{ $input.MaxLength }},
-{{- end -}}
+{{- end }}
 {{- if eq $input.Type "list" }}
-        :list        => {{ $input.Enum | enum2list }}
-{{- end -}}
+        :list        => {{ $input.Enum | enum2list }},
+{{- end }}
+        :optional    => {{ $input.Optional }}
 
 {{ end }}
 
@@ -239,10 +242,10 @@ action "{{ $action.Name }}", :description => "{{ $action.Description }}" do
   output :{{ $oname }},
          :description => "{{ $output.Description }}",
          :display_as  => "{{ $output.DisplayAs }}",
-         :type        => "{{ $output.Type }}",
 {{- if $output.Default }}
-         :default     => {{ $output.Default | goval2rubyval $output.Type }}
-{{- end -}}
+         :default     => {{ $output.Default | goval2rubyval $output.Type }},
+{{- end }}
+         :type        => "{{ $output.Type }}"
 {{ end }}
 
 {{- if $action.Aggregation }}
