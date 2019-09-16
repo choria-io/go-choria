@@ -212,7 +212,7 @@ var rubyDDLTemplate = `metadata :name        => "{{ .Metadata.Name }}",
          :version     => "{{ .Metadata.Version }}",
          :url         => "{{ .Metadata.URL }}",
 {{- if .Metadata.Provider }}
-         :provider    => {{ .Metadata.Provider }},
+         :provider    => "{{ .Metadata.Provider }}",
 {{- end }}
          :timeout     => {{ .Metadata.Timeout }}
 
