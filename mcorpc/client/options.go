@@ -23,7 +23,6 @@ type RequestOptions struct {
 	Filter           *protocol.Filter
 	Handler          Handler
 	ProcessReplies   bool
-	Progress         bool
 	ProtocolVersion  string
 	Replies          chan *choria.ConnectorMessage
 	ReplyTo          string
@@ -72,7 +71,6 @@ func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, err
 		RequestType:     "direct_request",
 		Collective:      cfg.MainCollective,
 		ProcessReplies:  true,
-		Progress:        false,
 		Workers:         3,
 		ConnectionName:  fmt.Sprintf("%s-mcorpc-%s", fw.Certname(), rid),
 		stats:           NewStats(),
@@ -179,13 +177,6 @@ func DiscoveryEndCB(h DiscoveryEndFunc) RequestOption {
 func ConnectionName(n string) RequestOption {
 	return func(o *RequestOptions) {
 		o.ConnectionName = n
-	}
-}
-
-// WithProgress enable a progress writer
-func WithProgress() RequestOption {
-	return func(o *RequestOptions) {
-		o.Progress = true
 	}
 }
 

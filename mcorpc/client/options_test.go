@@ -99,7 +99,6 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			Expect(o.RequestType).To(Equal("direct_request"))
 			Expect(o.Collective).To(Equal("mcollective"))
 			Expect(o.ProcessReplies).To(BeTrue())
-			Expect(o.Progress).To(BeFalse())
 			Expect(o.Timeout).To(Equal(time.Duration(182) * time.Second))
 			Expect(o.stats).ToNot(BeNil())
 			Expect(o.fw).To(Equal(fw))
@@ -111,13 +110,6 @@ var _ = Describe("McoRPC/Client/Options", func() {
 	Describe("Stats", func() {
 		It("Should return the stats", func() {
 			Expect(o.Stats()).To(Equal(o.stats))
-		})
-	})
-
-	Describe("WithProgress", func() {
-		It("Should enable progress reporting", func() {
-			WithProgress()(o)
-			Expect(o.Progress).To(BeTrue())
 		})
 	})
 

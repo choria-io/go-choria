@@ -1,7 +1,6 @@
 package client
 
 import (
-	"context"
 	"fmt"
 	"sync"
 	"time"
@@ -100,29 +99,9 @@ func (s *Stats) Action() string {
 	return s.action
 }
 
-func (s *Stats) showProgress(ctx context.Context) {
-	ticker := time.NewTicker(1 * time.Second)
-
-	for {
-		select {
-		case <-ticker.C:
-			discovered := s.DiscoveredCount()
-
-			fmt.Printf("ok: %-5d failed: %-5d received: %d / %d\n", s.passed.Load(), s.failed.Load(), s.ResponsesCount(), discovered)
-		case <-ctx.Done():
-			return
-		}
-	}
-}
-
 // All determines if all expected nodes replied already
 func (s *Stats) All() bool {
 	return s.outstandingNodes.Count() == 0
-}
-
-// StartProgress starts a basic progress display that will be interrupted by the context
-func (s *Stats) StartProgress(ctx context.Context) {
-	s.once.Do(func() { go s.showProgress(ctx) })
 }
 
 // NoResponseFrom calculates discovered which hosts did not respond
