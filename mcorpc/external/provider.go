@@ -84,7 +84,7 @@ func (p *Provider) agentDDL(a string) (*agentddl.DDL, bool) {
 }
 
 func (p *Provider) eachAgent(cb func(ddl *agentddl.DDL)) {
-	for _, dir := range p.cfg.LibDir {
+	for _, dir := range p.cfg.Choria.RubyLibdir {
 		agentsdir := filepath.Join(dir, "mcollective", "agent")
 
 		p.log.Debugf("Attempting to load External agents from %s", agentsdir)

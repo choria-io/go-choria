@@ -51,7 +51,7 @@ var _ = Describe("McoRPC/External", func() {
 		wd, err = os.Getwd()
 		Expect(err).ToNot(HaveOccurred())
 
-		cfg.LibDir = []string{filepath.Join(wd, "testdata")}
+		cfg.Choria.RubyLibdir = []string{filepath.Join(wd, "testdata")}
 
 		fw, err := choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())

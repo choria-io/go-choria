@@ -38,7 +38,7 @@ var _ = Describe("McoRPC/External", func() {
 		lib, err := filepath.Abs("testdata")
 		Expect(err).ToNot(HaveOccurred())
 
-		cfg.LibDir = []string{lib}
+		cfg.Choria.RubyLibdir = []string{lib}
 		fw.EXPECT().Configuration().Return(cfg).AnyTimes()
 
 		prov = &Provider{
