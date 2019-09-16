@@ -34,16 +34,17 @@ var _ = Describe("McoRPC/External", func() {
 		cfg = config.NewConfigForTests()
 		cfg.DisableSecurityProviderVerify = true
 
-		fw.EXPECT().Configuration().Return(cfg).AnyTimes()
-
-		path, err := filepath.Abs("testdata/external")
+		lib, err := filepath.Abs("testdata")
 		Expect(err).ToNot(HaveOccurred())
+
+		cfg.LibDir = []string{lib}
+		fw.EXPECT().Configuration().Return(cfg).AnyTimes()
 
 		prov = &Provider{
 			cfg:    cfg,
 			log:    logger,
-			dir:    path,
 			agents: []*addl.DDL{},
+			paths:  make(map[string]string),
 		}
 
 		prov.loadAgents()

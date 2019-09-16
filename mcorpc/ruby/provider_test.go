@@ -20,7 +20,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 	var (
 		mockctl   *gomock.Controller
 		agentMgr  *MockAgentManager
-		connector *choria.MockInstanceConnector
+		connector *MockInstanceConnector
 		cfg       *config.Config
 		fw        *choria.Framework
 		err       error
@@ -37,7 +37,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 
 		mockctl = gomock.NewController(GinkgoT())
 		agentMgr = NewMockAgentManager(mockctl)
-		connector = choria.NewMockInstanceConnector(mockctl)
+		connector = NewMockInstanceConnector(mockctl)
 
 		cfg = config.NewConfigForTests()
 		cfg.DisableSecurityProviderVerify = true

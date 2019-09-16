@@ -1,5 +1,5 @@
 {
-    "$schema": "https://choria.io/schemas/mcorpc/agent:1.json",
+    "$schema": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
     "metadata": {
         "name": "one",
         "description": "Manage Operating System Packages",
@@ -7,7 +7,8 @@
         "license": "Apache-2.0",
         "version": "5.0.0",
         "url": "https://github.com/choria-plugins/package-agent",
-        "timeout": 180
+        "timeout": 180,
+        "provider": "external"
     },
     "actions": [
         {

@@ -58,7 +58,9 @@ func (p *Provider) eachAgent(libdirs []string, cb func(ddl *agentddl.DDL)) {
 				return nil
 			}
 
-			cb(ddl)
+			if ddl.Metadata.Provider == "" || ddl.Metadata.Provider == "ruby" {
+				cb(ddl)
+			}
 
 			return nil
 		})

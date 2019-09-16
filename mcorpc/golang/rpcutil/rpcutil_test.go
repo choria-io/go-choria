@@ -36,7 +36,7 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 		rpcutil  *mcorpc.Agent
 		reply    *mcorpc.Reply
 		ctx      context.Context
-		is       *agents.MockServerInfoSource
+		is       *MockServerInfoSource
 	)
 
 	BeforeEach(func() {
@@ -52,7 +52,7 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
-		am = agents.New(requests, fw, nil, agents.NewMockServerInfoSource(mockctl), logrus.WithFields(logrus.Fields{"test": "1"}))
+		am = agents.New(requests, fw, nil, NewMockServerInfoSource(mockctl), logrus.WithFields(logrus.Fields{"test": "1"}))
 		rpcutil, err = New(am)
 		Expect(err).ToNot(HaveOccurred())
 		logrus.SetLevel(logrus.FatalLevel)
@@ -70,7 +70,7 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 			Version:     "1.0.0",
 		}
 
-		is = agents.NewMockServerInfoSource(mockctl)
+		is = NewMockServerInfoSource(mockctl)
 		is.EXPECT().KnownAgents().Return([]string{"stub_agent"}).AnyTimes()
 		is.EXPECT().Classes().Return([]string{"one", "two"}).AnyTimes()
 		is.EXPECT().Facts().Return(json.RawMessage(`{"stub":true}`)).AnyTimes()

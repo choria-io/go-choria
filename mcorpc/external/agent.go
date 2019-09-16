@@ -85,7 +85,11 @@ func (p *Provider) externalActivationCheck(ddl *agent.DDL) (mcorpc.ActivationChe
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
-	agentPath := filepath.Join(p.dir, ddl.Metadata.Name)
+	if ddl.SourceLocation == "" {
+		return nil, fmt.Errorf("Do not know where DDL for %s is located on disk, cannot activate", ddl.Metadata.Name)
+	}
+
+	agentPath := filepath.Join(filepath.Dir(ddl.SourceLocation), ddl.Metadata.Name)
 	rep := &ActivationReply{}
 	req := &ActivationCheck{
 		Protocol: activationProtocol,
@@ -97,6 +101,7 @@ func (p *Provider) externalActivationCheck(ddl *agent.DDL) (mcorpc.ActivationChe
 		return nil, fmt.Errorf("could not json encode activation message: %s", err)
 	}
 
+	p.log.Debugf("Performing activation check on external agent %s using %s", ddl.Metadata.Name, agentPath)
 	err = p.executeRequest(ctx, agentPath, activationProtocol, j, rep, p.log)
 	if err != nil {
 		p.log.Warnf("External agent %s not activating due to error during activation check: %s", agentPath, err)
@@ -108,7 +113,15 @@ func (p *Provider) externalActivationCheck(ddl *agent.DDL) (mcorpc.ActivationChe
 
 func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
 	action := fmt.Sprintf("%s#%s", req.Agent, req.Action)
-	agentPath := filepath.Join(p.dir, req.Agent)
+
+	ddlpath, ok := p.paths[agent.Name()]
+	if !ok {
+		p.abortAction(fmt.Sprintf("Cannot determine DDL path for agent %s", agent.Name()), agent, reply)
+		return
+	}
+
+	agentPath := filepath.Join(filepath.Dir(ddlpath), agent.Metadata().Name)
+
 	ddl, ok := p.agentDDL(agent.Name())
 	if !ok {
 		p.abortAction(fmt.Sprintf("Cannot find DDL for agent %s", agent.Name()), agent, reply)

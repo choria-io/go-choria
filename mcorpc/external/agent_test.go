@@ -34,6 +34,7 @@ var _ = Describe("McoRPC/External", func() {
 		logger   *logrus.Entry
 		prov     *Provider
 		err      error
+		wd       string
 	)
 
 	BeforeEach(func() {
@@ -47,20 +48,22 @@ var _ = Describe("McoRPC/External", func() {
 		cfg = config.NewConfigForTests()
 		cfg.DisableSecurityProviderVerify = true
 
+		wd, err = os.Getwd()
+		Expect(err).ToNot(HaveOccurred())
+
+		cfg.LibDir = []string{filepath.Join(wd, "testdata")}
+
 		fw, err := choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
 		agentMgr.EXPECT().Choria().Return(fw).AnyTimes()
 		agentMgr.EXPECT().Logger().Return(logger).AnyTimes()
 
-		path, err := filepath.Abs("testdata/external")
-		Expect(err).ToNot(HaveOccurred())
-
 		prov = &Provider{
 			cfg:    cfg,
 			log:    logger,
-			dir:    path,
 			agents: []*addl.DDL{},
+			paths:  make(map[string]string),
 		}
 	})
 
@@ -75,6 +78,7 @@ var _ = Describe("McoRPC/External", func() {
 
 		BeforeEach(func() {
 			ddl = &addl.DDL{
+				SourceLocation: filepath.Join(wd, "testdata/mcollective/agent/ginkgo.json"),
 				Metadata: &agents.Metadata{
 					Name:    "ginkgo",
 					Timeout: 1,
@@ -99,21 +103,30 @@ var _ = Describe("McoRPC/External", func() {
 
 	Describe("externalActivationCheck", func() {
 		It("should handle non 0 exit code checks", func() {
-			d := &addl.DDL{Metadata: &agents.Metadata{Name: "activation_checker_fails"}}
+			d := &addl.DDL{
+				SourceLocation: filepath.Join(wd, "testdata/mcollective/agent/activation_checker_enabled.json"),
+				Metadata:       &agents.Metadata{Name: "activation_checker_fails"},
+			}
 			c, err := prov.externalActivationCheck(d)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(c()).To(BeFalse())
 		})
 
 		It("should handle specifically disabled agents", func() {
-			d := &addl.DDL{Metadata: &agents.Metadata{Name: "activation_checker_disabled"}}
+			d := &addl.DDL{
+				SourceLocation: filepath.Join(wd, "testdata/mcollective/agent/activation_checker_enabled.json"),
+				Metadata:       &agents.Metadata{Name: "activation_checker_disabled"},
+			}
 			c, err := prov.externalActivationCheck(d)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(c()).To(BeFalse())
 		})
 
 		It("should handle specifically enabled agents", func() {
-			d := &addl.DDL{Metadata: &agents.Metadata{Name: "activation_checker_enabled"}}
+			d := &addl.DDL{
+				SourceLocation: filepath.Join(wd, "testdata/mcollective/agent/activation_checker_enabled.json"),
+				Metadata:       &agents.Metadata{Name: "activation_checker_enabled"},
+			}
 			c, err := prov.externalActivationCheck(d)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(c()).To(BeTrue())
@@ -128,6 +141,7 @@ var _ = Describe("McoRPC/External", func() {
 
 		BeforeEach(func() {
 			ddl = &addl.DDL{
+				SourceLocation: filepath.Join(wd, "testdata/mcollective/agent/activation_checker_enabled.json"),
 				Metadata: &agents.Metadata{
 					Name:    "ginkgo",
 					Timeout: 1,
@@ -157,6 +171,7 @@ var _ = Describe("McoRPC/External", func() {
 				},
 			}
 			prov.agents = append(prov.agents, ddl)
+			prov.paths["ginkgo"] = ddl.SourceLocation
 
 			agent, err = prov.newExternalAgent(ddl, agentMgr)
 			Expect(err).ToNot(HaveOccurred())
@@ -166,6 +181,8 @@ var _ = Describe("McoRPC/External", func() {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
+			prov.paths["ginkgo_missing"] = ddl.SourceLocation
+			ddl.Metadata.Name = "ginkgo_missing"
 			rep := &mcorpc.Reply{}
 			req := &mcorpc.Request{
 				Agent:  "ginkgo_missing",
@@ -182,6 +199,8 @@ var _ = Describe("McoRPC/External", func() {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
+			prov.paths["ginkgo_abort"] = ddl.SourceLocation
+			ddl.Metadata.Name = "ginkgo_abort"
 			rep := &mcorpc.Reply{}
 			req := &mcorpc.Request{
 				Agent:  "ginkgo_abort",
@@ -198,6 +217,8 @@ var _ = Describe("McoRPC/External", func() {
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
+			prov.paths["ginkgo_abort"] = ddl.SourceLocation
+			ddl.Metadata.Name = "ginkgo_abort"
 			rep := &mcorpc.Reply{}
 			req := &mcorpc.Request{
 				Agent:  "ginkgo_abort",

@@ -28,15 +28,15 @@ type ChoriaFramework interface {
 type Provider struct {
 	cfg    *config.Config
 	log    *logrus.Entry
-	dir    string
 	agents []*agent.DDL
+	paths  map[string]string
 }
 
 // Initialize configures the agent provider
 func (p *Provider) Initialize(fw ChoriaFramework, log *logrus.Entry) {
 	p.cfg = fw.Configuration()
 	p.log = log.WithFields(logrus.Fields{"provider": "external"})
-	p.dir = p.cfg.Choria.ExternalLibdir
+	p.paths = map[string]string{}
 
 	p.loadAgents()
 }
@@ -74,6 +74,7 @@ func (p *Provider) loadAgents() {
 	p.eachAgent(func(a *agentddl.DDL) {
 		p.log.Debugf("Found external DDL for agent %s", a.Metadata.Name)
 		p.agents = append(p.agents, a)
+		p.paths[a.Metadata.Name] = a.SourceLocation
 	})
 }
 
@@ -88,45 +89,52 @@ func (p *Provider) agentDDL(a string) (*agentddl.DDL, bool) {
 }
 
 func (p *Provider) eachAgent(cb func(ddl *agentddl.DDL)) {
-	p.log.Debugf("Attempting to load external agents from %s", p.dir)
+	for _, dir := range p.cfg.LibDir {
+		agentsdir := filepath.Join(dir, "mcollective", "agent")
 
-	err := filepath.Walk(p.dir, func(path string, info os.FileInfo, err error) error {
+		p.log.Debugf("Attempting to load External agents from %s", agentsdir)
+
+		err := filepath.Walk(agentsdir, func(path string, info os.FileInfo, err error) error {
+			if err != nil {
+				return err
+			}
+
+			if info.IsDir() {
+				return nil
+			}
+
+			fname := info.Name()
+			ext := filepath.Ext(fname)
+			name := strings.TrimSuffix(fname, ext)
+
+			if ext != ".json" {
+				return nil
+			}
+
+			if !shouldLoadAgent(name) {
+				p.log.Warnf("External agents are not allowed to supply an agent called '%s', skipping", name)
+				return nil
+			}
+
+			p.log.Debugf("Attempting to load %s as an agent DDL", path)
+
+			ddl, err := agentddl.New(path)
+			if err != nil {
+				p.log.Errorf("Could not load external agent DDL %s: %s", path, err)
+				return nil
+			}
+
+			if ddl.Metadata.Provider == "external" {
+				cb(ddl)
+			}
+
+			return nil
+		})
+
 		if err != nil {
-			return err
+			p.log.Errorf("Could not find agents in %s: %s", agentsdir, err)
 		}
 
-		if info.IsDir() {
-			return nil
-		}
-
-		fname := info.Name()
-		ext := filepath.Ext(fname)
-		name := strings.TrimSuffix(fname, ext)
-
-		if ext != ".json" {
-			return nil
-		}
-
-		if !shouldLoadAgent(name) {
-			p.log.Warnf("External agents are not allowed to supply an agent called '%s', skipping", name)
-			return nil
-		}
-
-		p.log.Debugf("Attempting to load %s as an agent DDL", path)
-
-		ddl, err := agentddl.New(path)
-		if err != nil {
-			p.log.Errorf("Could not load external agent DDL %s: %s", path, err)
-			return nil
-		}
-
-		cb(ddl)
-
-		return nil
-	})
-
-	if err != nil {
-		p.log.Errorf("Could not find agents in %s: %s", p.dir, err)
 	}
 }
 
