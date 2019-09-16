@@ -3,11 +3,13 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-config"
 	ddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
@@ -48,6 +50,12 @@ func (g *tGenerateCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	switch g.targetType {
 	case "ddl":
+		if g.jsonOut != "" && choria.FileExist(g.jsonOut) {
+			if g.askBool(fmt.Sprintf("JSON ddl %s already exist, convert it to Ruby", g.jsonOut)) {
+				return g.convertToRuby()
+			}
+		}
+
 		err = g.generateDDL()
 		if err != nil {
 			return fmt.Errorf("ddl generation failed: %s", err)
@@ -58,6 +66,20 @@ func (g *tGenerateCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	return nil
+}
+
+func (g *tGenerateCommand) convertToRuby() error {
+	jddl, err := ddl.New(g.jsonOut)
+	if err != nil {
+		return err
+	}
+
+	rddl, err := jddl.ToRuby()
+	if err != nil {
+		return err
+	}
+
+	return ioutil.WriteFile(g.rubyOut, []byte(rddl), 0644)
 }
 
 func (g *tGenerateCommand) generateDDL() error {

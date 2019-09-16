@@ -6,29 +6,26 @@ replace golang.org/x/sys v0.0.0-20190726091711-fde4db37ae7a => golang.org/x/sys 
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.2
-	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
-	github.com/alecthomas/units v0.0.0-20190717042225-c3de453c63f4 // indirect
 	github.com/choria-io/go-client v0.5.0
-	github.com/choria-io/go-config v0.0.4-0.20190914115046-53ac9c8e4c1d
+	github.com/choria-io/go-config v0.0.4-0.20190916071907-88af84ddd014
 	github.com/choria-io/go-lifecycle v1.0.3
 	github.com/choria-io/go-network-broker v1.3.1
 	github.com/choria-io/go-protocol v1.3.2
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.5.0
 	github.com/choria-io/go-srvcache v0.0.6
-	github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190913163651-c8eaf5d54364
+	github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190916084803-61776aed65b5
 	github.com/choria-io/provisioning-agent v0.5.0
 	github.com/fatih/color v1.7.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang/mock v1.3.1
 	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
-	github.com/gosuri/uilive v0.0.3 // indirect
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.4.1
 	github.com/looplab/fsm v0.1.0
 	github.com/nats-io/nats-server/v2 v2.0.4
-	github.com/nats-io/nats-streaming-server v0.16.1-0.20190905144423-ed7405a40a25 // indirect
+	github.com/nats-io/nats-streaming-server v0.16.2 // indirect
 	github.com/nats-io/nats.go v1.8.1
 	github.com/nats-io/stan.go v0.5.0
 	github.com/onsi/ginkgo v1.10.1
