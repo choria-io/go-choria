@@ -39,6 +39,7 @@ type ServerInfoSource interface {
 	MachineTransition(name string, version string, path string, id string, transition string) error
 }
 
+// ServerStats are internal statistics about the running server
 type ServerStats struct {
 	Total      float64 `json:"total"`
 	Valid      float64 `json:"valid"`
@@ -49,6 +50,7 @@ type ServerStats struct {
 	TTLExpired float64 `json:"ttlexpired"`
 }
 
+// AgentReply is a generic reply from an agent
 type AgentReply struct {
 	Body    []byte
 	Request protocol.Request
@@ -56,6 +58,7 @@ type AgentReply struct {
 	Error   error
 }
 
+// Metadata describes an agent at a high level and is required for any agent
 type Metadata struct {
 	License     string `json:"license"`
 	Author      string `json:"author"`
@@ -64,8 +67,10 @@ type Metadata struct {
 	Version     string `json:"version"`
 	URL         string `json:"url"`
 	Description string `json:"description"`
+	Provider    string `json:"provider,omitempty"`
 }
 
+// Manager manages agents, handles registration, dispatches requests etc
 type Manager struct {
 	agents     map[string]Agent
 	subs       map[string][]string
@@ -191,6 +196,7 @@ func (a *Manager) subscribeAgent(ctx context.Context, name string, agent Agent, 
 	return nil
 }
 
+// Get retrieves an agent by name
 func (a *Manager) Get(name string) (Agent, bool) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
@@ -200,6 +206,7 @@ func (a *Manager) Get(name string) (Agent, bool) {
 	return agent, found
 }
 
+// Dispatch sends a request to a agent and wait for a reply
 func (a *Manager) Dispatch(ctx context.Context, wg *sync.WaitGroup, replies chan *AgentReply, msg *choria.Message, request protocol.Request) {
 	defer wg.Done()
 
@@ -237,10 +244,12 @@ func (a *Manager) Dispatch(ctx context.Context, wg *sync.WaitGroup, replies chan
 	}
 }
 
+// Logger is the logger the manager prefers new agents derive from
 func (a *Manager) Logger() *logrus.Entry {
 	return a.log
 }
 
+// Choria provides an instance of the choria framework
 func (a *Manager) Choria() *choria.Framework {
 	return a.fw
 }
