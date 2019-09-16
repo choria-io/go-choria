@@ -1,4 +1,5 @@
 ---
 golangmco: github.com/choria-io/mcorpc-agent-provider/mcorpc/golang
 rubymco: github.com/choria-io/mcorpc-agent-provider/mcorpc/ruby
+externalmco: github.com/choria-io/mcorpc-agent-provider/mcorpc/external
 choria_provision: github.com/choria-io/provisioning-agent/agent
