@@ -109,6 +109,14 @@ var _ = Describe("McoRPC/DDL/Agent", func() {
 		})
 	})
 
+	Describe("ToRuby", func() {
+		It("Should generate ruby ddls", func() {
+			out, err := pkg.ToRuby()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(out).ToNot(HaveLen(0))
+		})
+	})
+
 	Describe("AggregateResultJSON", func() {
 		type reply struct {
 			Statuscode mcorpc.StatusCode `json:"statuscode"`
