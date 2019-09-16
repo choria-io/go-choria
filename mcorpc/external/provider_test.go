@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-config"
 	addl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	"github.com/golang/mock/gomock"
@@ -60,6 +61,14 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(agents).To(HaveLen(2))
 			Expect(agents[0].Metadata.Name).To(Equal("echo"))
 			Expect(agents[1].Metadata.Name).To(Equal("one"))
+		})
+	})
+
+	Describe("Plugin", func() {
+		It("Should be a valid AgentProvider", func() {
+			var p server.AgentProvider
+			p = prov
+			Expect(p).ToNot(BeNil())
 		})
 	})
 })

@@ -18,11 +18,6 @@ import (
 // agents we do not ever wish to load from external agents
 var denylist = []string{"rpcutil", "choria_util", "discovery"}
 
-// ChoriaFramework provides go-choria/choria functions
-type ChoriaFramework interface {
-	Configuration() *config.Config
-}
-
 // Provider is a Choria Agent Provider that supports calling agents external to the
 // choria process written in any language
 type Provider struct {
@@ -33,7 +28,7 @@ type Provider struct {
 }
 
 // Initialize configures the agent provider
-func (p *Provider) Initialize(fw ChoriaFramework, log *logrus.Entry) {
+func (p *Provider) Initialize(fw *choria.Framework, log *logrus.Entry) {
 	p.cfg = fw.Configuration()
 	p.log = log.WithFields(logrus.Fields{"provider": "external"})
 	p.paths = map[string]string{}
