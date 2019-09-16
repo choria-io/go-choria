@@ -56,6 +56,7 @@ type Config struct {
 	SoftShutdownTimeout       int      `confkey:"soft_shutdown_timeout" default:"2"`
 	ActivateAgents            bool     `confkey:"activate_agents" default:"true"`
 	FactSourceFile            string   `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml" type:"path_string"`
+	RequireClientFilter       bool     `confkey:"require_client_filter" default:"false"`
 
 	ConfigFile string
 
