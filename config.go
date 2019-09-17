@@ -43,7 +43,7 @@ type Config struct {
 	RPCAudit                  bool     `confkey:"rpcaudit" default:"false"`
 	RPCAuditProvider          string   `confkey:"rpcauditprovider" type:"title_string"`
 	RPCAuthorization          bool     `confkey:"rpcauthorization" default:"false"`
-	RPCAuthorizationProvider  string   `confkey:"rpcauthprovider" type:"title_string"`
+	RPCAuthorizationProvider  string   `confkey:"rpcauthprovider" type:"title_string" default:"action_policy"`
 	RPCLimitMethod            string   `confkey:"rpclimitmethod" default:"first" validate:"enum=first,random"`
 	LoggerType                string   `confkey:"logger_type" default:"file"`
 	FactCacheTime             int      `confkey:"fact_cache_time" default:"300"`
