@@ -58,8 +58,8 @@ github.com/choria-io/go-config v0.0.3 h1:7JKUHKMSfPE/qB0MdnWj26kfiT16MReFmTtYMnX
 github.com/choria-io/go-config v0.0.3/go.mod h1:y2mXxXQ865arJG3WxqQZD2or9cS3wAFD5r/krm9dYN4=
 github.com/choria-io/go-config v0.0.4-0.20190914115046-53ac9c8e4c1d h1:OrZ0DPxxK0U5uEipvq1yJQajD//QqzDrEJkPyWOb+oo=
 github.com/choria-io/go-config v0.0.4-0.20190914115046-53ac9c8e4c1d/go.mod h1:y2mXxXQ865arJG3WxqQZD2or9cS3wAFD5r/krm9dYN4=
-github.com/choria-io/go-config v0.0.4-0.20190916071907-88af84ddd014 h1:QNRVvbDRznKFBdArXY2PghXaSUEalP321mhx1K/rFZ8=
-github.com/choria-io/go-config v0.0.4-0.20190916071907-88af84ddd014/go.mod h1:y2mXxXQ865arJG3WxqQZD2or9cS3wAFD5r/krm9dYN4=
+github.com/choria-io/go-config v0.0.4-0.20190917140504-89b909578aaf h1:NRsWNTMdR+eC23Ie/Rd0p+6lljJ3+TiVfTlEeABOxsQ=
+github.com/choria-io/go-config v0.0.4-0.20190917140504-89b909578aaf/go.mod h1:y2mXxXQ865arJG3WxqQZD2or9cS3wAFD5r/krm9dYN4=
 github.com/choria-io/go-confkey v1.2.0 h1:kT35wUPPxpKDAg2/Me100yIV+po6aTrnZFyBXk0Ohn8=
 github.com/choria-io/go-confkey v1.2.0/go.mod h1:ojIUK4p2mX/ZSKuSG5hgU/p7Db+EIX8il4yjQweZtiU=
 github.com/choria-io/go-confkey v1.3.0 h1:KlqctKfo843I2Uas2vLFOzScyjSMyKFUsSf/FdMRuQI=
@@ -106,8 +106,8 @@ github.com/choria-io/mcorpc-agent-provider v0.4.2-0.20190626154119-313c9be7002d/
 github.com/choria-io/mcorpc-agent-provider v0.5.0/go.mod h1:RntHIy2creayfgr9GRBZIQTZDQOGm2Q8peaCgCon3Kg=
 github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190913163651-c8eaf5d54364 h1:lrBzH8On6TCHJ3DBhfcviud8PoLy8hXPEbLC6OiZEpQ=
 github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190913163651-c8eaf5d54364/go.mod h1:CWQs5mA1yJlBMYving1fX4NRdJl8NXZl4eQYoShA198=
-github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190916091019-96dde1557cfb h1:YgYoBNHJT+SaDcFPkfzbvFyrDZGBz5622gDuOGK3iTM=
-github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190916091019-96dde1557cfb/go.mod h1:K+22wSw+kuwVQ8lyg4RzKorQ9aTdn/93aq+lu9VgfSI=
+github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190917141331-5d57b132d25b h1:IJHnx5G6h/4jbpARRv9WWvzsfTu3r9JwXzXiY9YC31U=
+github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190917141331-5d57b132d25b/go.mod h1:/yJuludLLRdRDAK8Yssarjbs57FmVUcpqfw7EEKUsi4=
 github.com/choria-io/provisioning-agent v0.5.0 h1:V3M44FgSI4lAoajuFKVPBjOL1u3GVwymy9KbMlrIN/0=
 github.com/choria-io/provisioning-agent v0.5.0/go.mod h1:VKeX79KV2uOfXH9wTsPjlVUaZaYcpfdeKfHR70hZlPA=
 github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible/go.mod h1:nmEj6Dob7S7YxXgwXpfOuvO54S+tGdZdw9fuRZt25Ag=

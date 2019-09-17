@@ -7,14 +7,14 @@ replace golang.org/x/sys v0.0.0-20190726091711-fde4db37ae7a => golang.org/x/sys 
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.2
 	github.com/choria-io/go-client v0.5.0
-	github.com/choria-io/go-config v0.0.4-0.20190916071907-88af84ddd014
+	github.com/choria-io/go-config v0.0.4-0.20190917140504-89b909578aaf
 	github.com/choria-io/go-lifecycle v1.0.3
 	github.com/choria-io/go-network-broker v1.3.1
 	github.com/choria-io/go-protocol v1.3.2
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.5.0
 	github.com/choria-io/go-srvcache v0.0.6
-	github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190916091019-96dde1557cfb
+	github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190917141331-5d57b132d25b
 	github.com/choria-io/provisioning-agent v0.5.0
 	github.com/fatih/color v1.7.0
 	github.com/ghodss/yaml v1.0.0
