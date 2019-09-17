@@ -1,0 +1,2 @@
+policy default deny
+allow	choria=ginkgo.mcollective	test	foo=bar	one and two or three

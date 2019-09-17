@@ -1,0 +1,3 @@
+policy default deny
+allow	uid=500 uid=600 uid=700	*	*		*
+

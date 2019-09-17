@@ -1,0 +1,5 @@
+policy default deny
+allow		choria=ginkgo.mcollective			*												*								*
+allow		choria=two.mcollective			*												foo=bar								one
+allow		choria=three.mcollective			enable disable status		foo=bar		*
+allow		choria=four.mcollective			restart									(puppet().enabled=false and environment=production) or environment=development
