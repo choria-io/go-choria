@@ -27,6 +27,7 @@ var _ = Describe("ActionPolicy", func() {
 		cfg := config.NewConfigForTests()
 		cfg.ClassesFile = "testdata/classes.txt"
 		cfg.FactSourceFile = "testdata/facts.json"
+		cfg.DisableSecurityProviderVerify = true
 
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())

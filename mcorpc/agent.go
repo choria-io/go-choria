@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server/agents"
@@ -211,12 +212,12 @@ func (a *Agent) authorize(req *Request) bool {
 		return true
 	}
 
-	switch a.Config.RPCAuthorizationProvider {
+	switch strings.ToLower(a.Config.RPCAuthorizationProvider) {
 	case "action_policy":
 		return actionPolicyAuthorize(req, a, a.Log)
 
 	default:
-		a.Log.Errorf("Unsupported authorization provider: %s", a.Config.RPCAuditProvider)
+		a.Log.Errorf("Unsupported authorization provider: %s", strings.ToLower(a.Config.RPCAuthorizationProvider))
 
 	}
 
