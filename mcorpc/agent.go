@@ -108,8 +108,13 @@ func (a *Agent) HandleMessage(ctx context.Context, msg *choria.Message, request 
 		return
 	}
 
-	// TODO:
-	//  authorize
+	if a.Config.RPCAuthorization {
+		if !a.authorize(rpcrequest) {
+			reply.Statuscode = Aborted
+			reply.Statusmsg = "You are not authorized to call this agent or action"
+			return
+		}
+	}
 
 	if a.Config.RPCAudit {
 		audit.Request(request, rpcrequest.Agent, rpcrequest.Action, rpcrequest.Data, a.Config)
@@ -199,4 +204,21 @@ func (a *Agent) parseIncomingMessage(msg string, request protocol.Request) (*Req
 	}
 
 	return r, nil
+}
+
+func (a *Agent) authorize(req *Request) bool {
+	if !a.Config.RPCAuthorization {
+		return true
+	}
+
+	switch a.Config.RPCAuthorizationProvider {
+	case "action_policy":
+		return actionPolicyAuthorize(req, a, a.Log)
+
+	default:
+		a.Log.Errorf("Unsupported authorization provider: %s", a.Config.RPCAuditProvider)
+
+	}
+
+	return false
 }

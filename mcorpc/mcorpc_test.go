@@ -40,9 +40,9 @@ var _ = Describe("McoRPC", func() {
 		protocol.Secure = "false"
 		build.TLS = "false"
 
-		config := config.NewConfigForTests()
-		config.LogLevel = "fatal"
-		fw, err = choria.NewWithConfig(config)
+		cfg := config.NewConfigForTests()
+		cfg.LogLevel = "fatal"
+		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
 		metadata := &agents.Metadata{Name: "test"}
@@ -110,6 +110,42 @@ var _ = Describe("McoRPC", func() {
 			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("OK"))
 			Expect(gjson.GetBytes(reply.Body, "statuscode").Int()).To(Equal(int64(0)))
 			Expect(gjson.GetBytes(reply.Body, "data.test").String()).To(Equal("hello world"))
+		})
+
+		It("Should detect unsupported authorization systems", func() {
+			fw.Config.RPCAuthorization = true
+			fw.Config.RPCAuditProvider = "unsupported"
+			msg.Payload = `{"agent":"test", "action":"test"}`
+			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {
+				d := map[string]string{"test": "hello world"}
+				reply.Data = &d
+			}
+
+			agent.RegisterAction("test", action)
+			agent.HandleMessage(ctx, msg, req, ci, outbox)
+			reply := <-outbox
+
+			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("You are not authorized to call this agent or action"))
+			Expect(gjson.GetBytes(reply.Body, "statuscode").Int()).To(Equal(int64(1)))
+		})
+
+		It("Should support authorization", func() {
+			fw.Config.ConfigFile = "testdata/config.cfg"
+			fw.Config.RPCAuthorization = true
+			fw.Config.RPCAuditProvider = "action_policy"
+			msg.Payload = `{"agent":"test", "action":"test"}`
+
+			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {
+				d := map[string]string{"test": "hello world"}
+				reply.Data = &d
+			}
+
+			agent.RegisterAction("test", action)
+			agent.HandleMessage(ctx, msg, req, ci, outbox)
+			reply := <-outbox
+
+			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("You are not authorized to call this agent or action"))
+			Expect(gjson.GetBytes(reply.Body, "statuscode").Int()).To(Equal(int64(1)))
 		})
 	})
 
