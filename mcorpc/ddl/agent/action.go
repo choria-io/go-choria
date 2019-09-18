@@ -35,7 +35,7 @@ type Action struct {
 type ActionOutputItem struct {
 	Description string      `json:"description"`
 	DisplayAs   string      `json:"display_as"`
-	Default     interface{} `json:"default"`
+	Default     interface{} `json:"default,omitempty"`
 	Type        string      `json:"type,omitempty"`
 }
 
@@ -44,11 +44,11 @@ type ActionInputItem struct {
 	Prompt      string      `json:"prompt"`
 	Description string      `json:"description"`
 	Type        string      `json:"type"`
-	Default     interface{} `json:"default"`
+	Default     interface{} `json:"default,omitempty"`
 	Optional    bool        `json:"optional"`
-	Validation  string      `json:"validation"`
-	MaxLength   int         `json:"maxlength"`
-	Enum        []string    `json:"list"`
+	Validation  string      `json:"validation,omitempty"`
+	MaxLength   int         `json:"maxlength,omitempty"`
+	Enum        []string    `json:"list,omitempty"`
 }
 
 // AggregateResultJSON receives a JSON reply and aggregate all the data found in it
