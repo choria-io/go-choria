@@ -4,7 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/url"
 	"os"
+	"regexp"
 	"strings"
 	"sync"
 
@@ -219,6 +221,61 @@ func (g *tGenerateCommand) showJSON(m string, d interface{}) error {
 	return nil
 }
 
+func (g *tGenerateCommand) urlValidator(v interface{}) error {
+	err := survey.Required(v)
+	if err != nil {
+		return err
+	}
+
+	vs, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("should be a string")
+	}
+
+	u, err := url.ParseRequestURI(vs)
+	if !(err == nil && u.Scheme != "" && u.Host != "") {
+		return fmt.Errorf("is not a valid url")
+	}
+
+	return nil
+}
+
+func (g *tGenerateCommand) semVerValidator(v interface{}) error {
+	err := survey.Required(v)
+	if err != nil {
+		return err
+	}
+
+	vs, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("should be a string")
+	}
+
+	if !regexp.MustCompile(`^\d+\.\d+\.\d+$`).MatchString(vs) {
+		return fmt.Errorf("must be basic semver x.y.z format")
+	}
+
+	return nil
+}
+
+func (g *tGenerateCommand) shortnameValidator(v interface{}) error {
+	err := survey.Required(v)
+	if err != nil {
+		return err
+	}
+
+	vs, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("should be a string")
+	}
+
+	if !regexp.MustCompile(`^[a-z0-9_]*$`).MatchString(vs) {
+		return fmt.Errorf("must match ^[a-z0-9_]*$")
+	}
+
+	return nil
+}
+
 func (g *tGenerateCommand) askActions(agent *ddl.DDL) error {
 	addAction := func() error {
 		action := &ddl.Action{
@@ -239,7 +296,7 @@ func (g *tGenerateCommand) askActions(agent *ddl.DDL) error {
 					return fmt.Errorf("already have an action %s", act)
 				}
 
-				return nil
+				return g.shortnameValidator(v)
 			}),
 
 			g.askBasicItem("description", "Description", "", nil, survey.Required),
@@ -299,7 +356,7 @@ For string data there are additional properties:
 					return fmt.Errorf("input %s already exist", i)
 				}
 
-				return nil
+				return g.shortnameValidator(v)
 			}))
 			qs := []*survey.Question{
 				g.askBasicItem("prompt", "Prompt", "", nil, survey.Required),
@@ -397,7 +454,7 @@ any number of outputs.
 					return fmt.Errorf("output %s already exist", i)
 				}
 
-				return nil
+				return g.shortnameValidator(v)
 			}))
 			qs := []*survey.Question{
 				g.askBasicItem("description", "Description", "", nil, survey.Required),
@@ -493,18 +550,19 @@ this metadata is used to keep an internal inventory of all the available service
       License: The license to use, typically one in https://spdx.org/licenses/
           URL: A URL one can visit for further information about the agent
       Timeout: Maximum time in seconds any action will be allowed to run
-     Provider: If the agent is of a specific provider rather than go or ruby, which one
+     Provider: The provider to use - ruby for traditional mcollective ones,
+               external for ones complying to the External Agent structure
 `)
 
 	qs := []*survey.Question{
-		g.askBasicItem("name", "Agent Name", "", survey.ToLower, survey.Required),
+		g.askBasicItem("name", "Agent Name", "", survey.ToLower, g.shortnameValidator),
 		g.askBasicItem("description", "Description", "", nil, survey.Required),
 		g.askBasicItem("author", "Author", "", nil, survey.Required),
-		g.askBasicItem("version", "Version", "", survey.ToLower, survey.Required),
+		g.askBasicItem("version", "Version", "", survey.ToLower, g.semVerValidator),
 		g.askBasicItem("license", "License", "", nil, survey.Required),
-		g.askBasicItem("url", "URL", "", survey.ToLower, survey.Required),
+		g.askBasicItem("url", "URL", "", survey.ToLower, g.urlValidator),
 		g.askBasicItem("timeout", "Timeout", "", nil, survey.Required),
-		g.askBasicItem("provider", "Provider", "", nil, nil),
+		g.askEnum("provider", "Backend Provider", "", []string{"ruby", "external", "golang"}, nil),
 	}
 
 	err = survey.Ask(qs, agent.Metadata)
