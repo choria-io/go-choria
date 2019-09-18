@@ -1,7 +1,7 @@
 package mcorpc
 
 import (
-	"io/ioutil"
+	"bytes"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-config"
@@ -12,17 +12,19 @@ import (
 
 var _ = Describe("ActionPolicy", func() {
 	var (
-		authz  *actionPolicy
-		pol    *actionPolicyPolicy
-		logger *logrus.Entry
-		fw     *choria.Framework
-		err    error
+		authz     *actionPolicy
+		pol       *actionPolicyPolicy
+		logger    *logrus.Entry
+		fw        *choria.Framework
+		logbuffer *bytes.Buffer
+		err       error
 	)
 
 	BeforeEach(func() {
 		pol = &actionPolicyPolicy{}
+		logbuffer = &bytes.Buffer{}
 		logger = logrus.NewEntry(logrus.New())
-		logger.Logger.Out = ioutil.Discard
+		logger.Logger.Out = logbuffer
 
 		cfg := config.NewConfigForTests()
 		cfg.ClassesFile = "testdata/classes.txt"
@@ -341,8 +343,9 @@ var _ = Describe("ActionPolicy", func() {
 		Describe("example12", func() {
 			It("Should fail due to compound statement", func() {
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example12")
-				Expect(err).To(MatchError("compound statements are not supported"))
-				Expect(reason).To(Equal(""))
+				Expect(logbuffer.Bytes()).To(ContainSubstring("Compound policy statements are not supported"))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(reason).To(Equal("Denying based on default policy in example12"))
 				Expect(matched).To(BeFalse())
 			})
 		})
@@ -350,8 +353,9 @@ var _ = Describe("ActionPolicy", func() {
 		Describe("example13", func() {
 			It("Should fail due to compound statement", func() {
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example13")
-				Expect(err).To(MatchError("compound statements are not supported"))
-				Expect(reason).To(Equal(""))
+				Expect(logbuffer.Bytes()).To(ContainSubstring("Compound policy statements are not supported"))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(reason).To(Equal("Denying based on default policy in example13"))
 				Expect(matched).To(BeFalse())
 			})
 		})
@@ -359,8 +363,9 @@ var _ = Describe("ActionPolicy", func() {
 		Describe("example14", func() {
 			It("Should fail due to compound statement", func() {
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example14")
-				Expect(err).To(MatchError("compound statements are not supported"))
-				Expect(reason).To(Equal(""))
+				Expect(logbuffer.Bytes()).To(ContainSubstring("Compound policy statements are not supported"))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(reason).To(Equal("Denying based on default policy in example14"))
 				Expect(matched).To(BeFalse())
 			})
 		})
@@ -425,8 +430,9 @@ var _ = Describe("ActionPolicy", func() {
 				authz.req.Action = "restart"
 
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example15")
-				Expect(err).To(MatchError("compound statements are not supported"))
-				Expect(reason).To(Equal(""))
+				Expect(logbuffer.Bytes()).To(ContainSubstring("Compound policy statements are not supported"))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(reason).To(Equal("Denying based on default policy in example15"))
 				Expect(matched).To(BeFalse())
 			})
 		})
@@ -631,13 +637,13 @@ var _ = Describe("Policy", func() {
 		})
 	})
 
-	Describe("isCompound", func() {
+	Describe("sCompound", func() {
 		It("should detect combound filters correctly", func() {
-			Expect(pol.isCompound("one two")).To(BeFalse())
-			Expect(pol.isCompound("country=mt os=linux")).To(BeFalse())
-			Expect(pol.isCompound("this and that")).To(BeTrue())
-			Expect(pol.isCompound("this or that")).To(BeTrue())
-			Expect(pol.isCompound("this or not that")).To(BeTrue())
+			Expect(pol.IsCompound("one two")).To(BeFalse())
+			Expect(pol.IsCompound("country=mt os=linux")).To(BeFalse())
+			Expect(pol.IsCompound("this and that")).To(BeTrue())
+			Expect(pol.IsCompound("this or that")).To(BeTrue())
+			Expect(pol.IsCompound("this or not that")).To(BeTrue())
 		})
 	})
 })
