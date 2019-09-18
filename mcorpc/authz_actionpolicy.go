@@ -22,6 +22,7 @@ type policyMatcher interface {
 	MatchesClasses(classesFile string, log *logrus.Entry) (bool, error)
 	MatchesAction(act string) bool
 	MatchesCallerID(id string) bool
+	IsCompound(line string) bool
 }
 
 func actionPolicyAuthorize(req *Request, agent *Agent, log *logrus.Entry) bool {
@@ -120,6 +121,11 @@ func (a *actionPolicy) evaluatePolicy(f string) (allowed bool, denyreason string
 
 		} else if policyRe.MatchString(line) {
 			matched := policyRe.FindStringSubmatch(line)
+			if a.matcher.IsCompound(matched[4]) || a.matcher.IsCompound(matched[6]) {
+				a.log.Warnf("Compound policy statements are not supported, skipping line: %s", line)
+				continue
+			}
+
 			a.matcher.Set(matched[2], matched[3], matched[4], matched[6], a.groups)
 			pmatch, err := a.checkRequestAgainstPolicy()
 			if err != nil {
@@ -294,7 +300,7 @@ func (p *actionPolicyPolicy) MatchesFacts(fw *choria.Framework, log *logrus.Entr
 		return true, nil
 	}
 
-	if p.isCompound(p.facts) {
+	if p.IsCompound(p.facts) {
 		return false, fmt.Errorf("compound statements are not supported")
 	}
 
@@ -329,7 +335,7 @@ func (p *actionPolicyPolicy) MatchesClasses(classesFile string, log *logrus.Entr
 		return false, fmt.Errorf("do not know how to resolve classes")
 	}
 
-	if p.isCompound(p.classes) {
+	if p.IsCompound(p.classes) {
 		return false, fmt.Errorf("compound statements are not supported")
 	}
 
@@ -383,7 +389,8 @@ func (p *actionPolicyPolicy) MatchesCallerID(id string) bool {
 	return false
 }
 
-func (p *actionPolicyPolicy) isCompound(line string) bool {
+// IsCompound checks if the string is a compound statement
+func (p *actionPolicyPolicy) IsCompound(line string) bool {
 	matcher := regexp.MustCompile(`^!|^not$|^or$|^and$|\(.+\)`)
 
 	for _, l := range strings.Split(line, " ") {
