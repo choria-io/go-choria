@@ -88,9 +88,9 @@ func (g *tGenerateCommand) ValidateJSON(agent *ddl.DDL) error {
 	}
 
 	if !result.Valid() {
-		fmt.Printf("The generate DDL does not pass validation:\n\n")
+		fmt.Printf("The generate DDL does not pass validation against https://choria.io/schemas/mcorpc/ddl/v1/agent.json:\n\n")
 		for _, err := range result.Errors() {
-			fmt.Printf("- %s\n", err)
+			fmt.Printf(" - %s\n", err)
 		}
 
 		return fmt.Errorf("JSON DDL validation failed")
