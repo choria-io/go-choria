@@ -1,20 +1,18 @@
 module github.com/choria-io/go-choria
 
-go 1.12
-
-replace golang.org/x/sys v0.0.0-20190726091711-fde4db37ae7a => golang.org/x/sys v0.0.0-20190813064441-fde4db37ae7a
+go 1.13
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.2
 	github.com/choria-io/go-client v0.5.0
-	github.com/choria-io/go-config v0.0.4-0.20190917140504-89b909578aaf
+	github.com/choria-io/go-config v0.0.4
 	github.com/choria-io/go-lifecycle v1.0.3
 	github.com/choria-io/go-network-broker v1.3.1
 	github.com/choria-io/go-protocol v1.3.2
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.5.0
 	github.com/choria-io/go-srvcache v0.0.6
-	github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190918121755-4fa6ae00b0c0
+	github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190918162223-e1a6ba7a4283
 	github.com/choria-io/provisioning-agent v0.5.0
 	github.com/fatih/color v1.7.0
 	github.com/ghodss/yaml v1.0.0
