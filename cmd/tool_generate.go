@@ -105,6 +105,15 @@ func (g *tGenerateCommand) convertToRuby() error {
 		return err
 	}
 
+	if !g.skipVerify {
+		fmt.Println("Validating JSON DDL against the schema...")
+		err = g.ValidateJSON(jddl)
+		if err != nil {
+			fmt.Printf("\nWARN: DDL does not pass JSON Schema Validation: %s\n", err)
+		}
+		fmt.Println()
+	}
+
 	rddl, err := jddl.ToRuby()
 	if err != nil {
 		return err
