@@ -25,6 +25,7 @@ These will connect to the middleware using your usual client configuration.
 |`choria tool pub`|Publishes to any middleware topic|
 |`choria tool provision`|Tool to test provision target discovery|
 |`choria tool status`|Parse the status file and check overall health|
+|`choria tool generate`|Generates various related files like DDLs|
 
 # Configuration
 
@@ -190,7 +191,6 @@ plugin.choria.adapter.discovery.ingest.workers = 10 # default
 This is a replacement `mcollectived`, that can host MCollective agents written in ruby along with a host of other features, notable absence:
 
   * Compound filters do not work at all - those with -S
-  * Auditing and Authorization for MCollective compatible RPC agents written in Go is not implemented yet
 
 You run it with `choria server run --config server.cfg`
 
