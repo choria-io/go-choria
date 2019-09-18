@@ -428,9 +428,9 @@ any number of outputs.
 			if err != nil {
 				return err
 			}
-
-			g.showJSON("Resulting Action", action)
 		}
+
+		g.showJSON("Resulting Action", action)
 
 		return nil
 	}
