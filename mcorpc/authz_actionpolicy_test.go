@@ -5,6 +5,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-protocol/protocol"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -31,6 +32,7 @@ var _ = Describe("ActionPolicy", func() {
 		cfg.FactSourceFile = "testdata/facts.json"
 		cfg.DisableSecurityProviderVerify = true
 
+		Expect(protocol.IsSecure()).To(BeFalse())
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
@@ -496,6 +498,7 @@ var _ = Describe("Policy", func() {
 		// logger.Logger.Out = ioutil.Discard
 
 		cfg := config.NewConfigForTests()
+		cfg.DisableSecurityProviderVerify = true
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 	})
