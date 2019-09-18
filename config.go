@@ -126,6 +126,7 @@ func NewConfig(path string) (*Config, error) {
 	return c, nil
 }
 
+// NewConfigForTests creates a configuration for use in testing tools
 func NewConfigForTests() *Config {
 	c := newConfig()
 	c.MainCollective = "ginkgo"
@@ -186,23 +187,23 @@ type BuildInfoProvider interface {
 }
 
 // ApplyBuildSettings applies build time overrides to the configuration
-func (conf *Config) ApplyBuildSettings(b BuildInfoProvider) {
-	conf.DisableTLS = !b.HasTLS()
+func (c *Config) ApplyBuildSettings(b BuildInfoProvider) {
+	c.DisableTLS = !b.HasTLS()
 }
 
 // HasOption determines if a specific option was set from a config key.
 // The option given would be something like `plugin.choria.use_srv`
 // and true would indicate that it was set by config vs using defaults
-func (conf *Config) HasOption(option string) bool {
-	_, ok := conf.rawOpts[option]
+func (c *Config) HasOption(option string) bool {
+	_, ok := c.rawOpts[option]
 
 	return ok
 }
 
 // Option retrieves the raw string representation of a given option
 // from that was loaded from the configuration
-func (conf *Config) Option(option string, deflt string) string {
-	v, ok := conf.rawOpts[option]
+func (c *Config) Option(option string, deflt string) string {
+	v, ok := c.rawOpts[option]
 
 	if !ok {
 		return deflt
@@ -217,8 +218,8 @@ func (conf *Config) Option(option string, deflt string) string {
 //
 // If the supplied target structure is nil then the only side effect will be that the
 // supplied conf will be updated with the raw options so that HasOption() and Option()
-func (conf *Config) dotdDir() string {
-	return filepath.Join(filepath.Dir(conf.ConfigFile), "plugin.d")
+func (c *Config) dotdDir() string {
+	return filepath.Join(filepath.Dir(c.ConfigFile), "plugin.d")
 }
 
 func newConfig() *Config {
