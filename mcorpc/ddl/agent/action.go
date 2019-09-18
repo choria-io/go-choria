@@ -24,7 +24,7 @@ type Action struct {
 	Output      map[string]*ActionOutputItem `json:"output"`
 	Display     string                       `json:"display"`
 	Description string                       `json:"description"`
-	Aggregation []ActionAggregateItem        `json:"aggregate"`
+	Aggregation []ActionAggregateItem        `json:"aggregate,omitempty"`
 
 	agg *actionAggregators
 
