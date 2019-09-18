@@ -15,6 +15,7 @@ import (
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-config"
 	ddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
+	"github.com/xeipuuv/gojsonschema"
 )
 
 type tGenerateCommand struct {
@@ -22,6 +23,7 @@ type tGenerateCommand struct {
 	targetType string
 	jsonOut    string
 	rubyOut    string
+	skipVerify bool
 }
 
 func (g *tGenerateCommand) Setup() (err error) {
@@ -30,6 +32,7 @@ func (g *tGenerateCommand) Setup() (err error) {
 		g.cmd.Arg("type", "The type of data to generate").Required().EnumVar(&g.targetType, "ddl")
 		g.cmd.Arg("json_output", "Where to place the JSON output").Required().StringVar(&g.jsonOut)
 		g.cmd.Arg("ruby_output", "Where to place the Ruby output").StringVar(&g.rubyOut)
+		g.cmd.Flag("skip-verify", "Do not verify the JSON file against the DDL Schema").Default("false").BoolVar(&g.skipVerify)
 	}
 
 	return nil
@@ -65,6 +68,32 @@ func (g *tGenerateCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	default:
 		return fmt.Errorf("generating %s data is not supported", g.targetType)
+	}
+
+	return nil
+}
+
+func (g *tGenerateCommand) ValidateJSON(agent *ddl.DDL) error {
+	j, err := json.Marshal(agent)
+	if err != nil {
+		return err
+	}
+
+	sloader := gojsonschema.NewReferenceLoader("https://choria.io/schemas/mcorpc/ddl/v1/agent.json")
+	dloader := gojsonschema.NewBytesLoader(j)
+
+	result, err := gojsonschema.Validate(sloader, dloader)
+	if err != nil {
+		return fmt.Errorf("schema validation failed: %s", err)
+	}
+
+	if !result.Valid() {
+		fmt.Printf("The generate DDL does not pass validation:\n\n")
+		for _, err := range result.Errors() {
+			fmt.Printf("- %s\n", err)
+		}
+
+		return fmt.Errorf("JSON DDL validation failed")
 	}
 
 	return nil
@@ -129,6 +158,15 @@ to consume the schema you'll have a convenient way to modify the file after.
 	err = g.saveDDL(agent)
 	if err != nil {
 		return err
+	}
+
+	if !g.skipVerify {
+		fmt.Println("Validating JSON DDL against the schema...")
+		err = g.ValidateJSON(agent)
+		if err != nil {
+			fmt.Printf("WARN: DDL does not pass JSON Schema Validation: %s\n", err)
+		}
+		fmt.Println()
 	}
 
 	return nil
