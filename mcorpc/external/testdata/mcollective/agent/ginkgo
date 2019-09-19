@@ -13,7 +13,7 @@ begin
 
   req = JSON.parse(File.read(ENV["CHORIA_EXTERNAL_REQUEST"]))
 
-  abort("invalid request data") unless req["body"]["data"]["hello"] == "world"
+  abort("invalid request data") unless req["data"]["hello"] == "world"
 
   rep["statuscode"] = 0
   rep["statusmsg"] = "OK"

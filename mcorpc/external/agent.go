@@ -47,24 +47,17 @@ type ActivationReply struct {
 
 // Request is the request being published to the shim runner
 type Request struct {
-	Schema     string       `json:"$schema"`
-	Protocol   string       `json:"protocol"`
-	Agent      string       `json:"agent"`
-	Action     string       `json:"action"`
-	RequestID  string       `json:"requestid"`
-	SenderID   string       `json:"senderid"`
-	CallerID   string       `json:"callerid"`
-	Collective string       `json:"collective"`
-	TTL        int          `json:"ttl"`
-	Time       int64        `json:"msgtime"`
-	Body       *RequestBody `json:"body"`
-}
-
-// RequestBody is the body passed to the agent
-type RequestBody struct {
-	Agent  string          `json:"agent"`
-	Action string          `json:"action"`
-	Data   json.RawMessage `json:"data"`
+	Schema     string          `json:"$schema"`
+	Protocol   string          `json:"protocol"`
+	Agent      string          `json:"agent"`
+	Action     string          `json:"action"`
+	RequestID  string          `json:"requestid"`
+	SenderID   string          `json:"senderid"`
+	CallerID   string          `json:"callerid"`
+	Collective string          `json:"collective"`
+	TTL        int             `json:"ttl"`
+	Time       int64           `json:"msgtime"`
+	Data       json.RawMessage `json:"data"`
 }
 
 func (p *Provider) newExternalAgent(ddl *agentddl.DDL, mgr server.AgentManager) (*mcorpc.Agent, error) {
@@ -303,11 +296,7 @@ func (p *Provider) newExternalRequest(req *mcorpc.Request) ([]byte, error) {
 		SenderID:   req.SenderID,
 		Time:       req.Time.Unix(),
 		TTL:        req.TTL,
-		Body: &RequestBody{
-			Action: req.Action,
-			Agent:  req.Agent,
-			Data:   req.Data,
-		},
+		Data:       req.Data,
 	}
 
 	return json.Marshal(sr)
