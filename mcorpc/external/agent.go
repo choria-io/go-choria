@@ -23,12 +23,19 @@ import (
 )
 
 const (
-	requestProtocol    = "choria:mcorpc:external_request:1"
-	activationProtocol = "choria:mcorpc:external_activation_check:1"
+	rpcRequestProtocol      = "io.choria.mcorpc.external.v1.rpc_request"
+	rpcRequestSchema        = "https://choria.io/schemas/mcorpc/external/v1/rpc_request.json"
+	rpcReplyProtocol        = "io.choria.mcorpc.external.v1.rpc_reply"
+	rpcReplySchema          = "https://choria.io/schemas/mcorpc/external/v1/rpc_reply.json"
+	activationProtocol      = "io.choria.mcorpc.external.v1.activation_request"
+	activationSchema        = "https://choria.io/schemas/mcorpc/external/v1/activation_request.json"
+	activationReplyProtocol = "io.choria.mcorpc.external.v1.activation_reply"
+	activationReplySchema   = "https://choria.io/schemas/mcorpc/external/v1/activation_reply.json"
 )
 
 // ActivationCheck is the request to determine if an agent should activate
 type ActivationCheck struct {
+	Schema   string `json:"$schema"`
 	Protocol string `json:"protocol"`
 	Agent    string `json:"agent"`
 }
@@ -40,6 +47,7 @@ type ActivationReply struct {
 
 // Request is the request being published to the shim runner
 type Request struct {
+	Schema     string       `json:"$schema"`
 	Protocol   string       `json:"protocol"`
 	Agent      string       `json:"agent"`
 	Action     string       `json:"action"`
@@ -52,12 +60,11 @@ type Request struct {
 	Body       *RequestBody `json:"body"`
 }
 
-// RequestBody is the body passed to the
+// RequestBody is the body passed to the agent
 type RequestBody struct {
 	Agent  string          `json:"agent"`
 	Action string          `json:"action"`
 	Data   json.RawMessage `json:"data"`
-	Caller string          `json:"caller"`
 }
 
 func (p *Provider) newExternalAgent(ddl *agentddl.DDL, mgr server.AgentManager) (*mcorpc.Agent, error) {
@@ -92,6 +99,7 @@ func (p *Provider) externalActivationCheck(ddl *agent.DDL) (mcorpc.ActivationChe
 	agentPath := filepath.Join(filepath.Dir(ddl.SourceLocation), ddl.Metadata.Name)
 	rep := &ActivationReply{}
 	req := &ActivationCheck{
+		Schema:   activationSchema,
 		Protocol: activationProtocol,
 		Agent:    ddl.Metadata.Name,
 	}
@@ -150,7 +158,7 @@ func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, repl
 		return
 	}
 
-	err = p.executeRequest(tctx, agentPath, requestProtocol, externreq, reply, agent.Log)
+	err = p.executeRequest(tctx, agentPath, rpcRequestProtocol, externreq, reply, agent.Log)
 	if err != nil {
 		p.abortAction(fmt.Sprintf("Could not call external agent %s: :%s", action, err), agent, reply)
 		return
@@ -225,7 +233,7 @@ func (p *Provider) executeRequest(ctx context.Context, command string, protocol 
 		return fmt.Errorf("could not create reply temp file: %s", err)
 	}
 
-	execution := exec.CommandContext(ctx, command, reqfile.Name(), repfile.Name(), requestProtocol)
+	execution := exec.CommandContext(ctx, command, reqfile.Name(), repfile.Name(), rpcRequestProtocol)
 	execution.Dir = os.TempDir()
 	execution.Env = []string{
 		"CHORIA_EXTERNAL_REQUEST=" + reqfile.Name(),
@@ -285,21 +293,21 @@ func (p *Provider) executeRequest(ctx context.Context, command string, protocol 
 
 func (p *Provider) newExternalRequest(req *mcorpc.Request) ([]byte, error) {
 	sr := Request{
-		Protocol: "choria:mcorpc:external_request:1",
-		Action:   req.Action,
-		Agent:    req.Agent,
-		Body: &RequestBody{
-			Action: req.Action,
-			Agent:  req.Agent,
-			Caller: req.CallerID,
-			Data:   req.Data,
-		},
+		Schema:     rpcRequestSchema,
+		Protocol:   rpcRequestProtocol,
+		Action:     req.Action,
+		Agent:      req.Agent,
 		CallerID:   req.CallerID,
 		Collective: req.Collective,
 		RequestID:  req.RequestID,
 		SenderID:   req.SenderID,
 		Time:       req.Time.Unix(),
 		TTL:        req.TTL,
+		Body: &RequestBody{
+			Action: req.Action,
+			Agent:  req.Agent,
+			Data:   req.Data,
+		},
 	}
 
 	return json.Marshal(sr)

@@ -7,10 +7,10 @@ rep = {
   "statusmsg" => "Unknown error",
   "data" => {"hello" => "world"}
 }
-  
+
 begin
-  abort("incorrect protocol") unless ENV["CHORIA_EXTERNAL_PROTOCOL"] == "choria:mcorpc:external_request:1"
-  
+  abort("incorrect protocol") unless ENV["CHORIA_EXTERNAL_PROTOCOL"] == "io.choria.mcorpc.external.v1.rpc_request"
+
   req = JSON.parse(File.read(ENV["CHORIA_EXTERNAL_REQUEST"]))
 
   abort("invalid request data") unless req["body"]["data"]["hello"] == "world"

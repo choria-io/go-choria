@@ -2,6 +2,7 @@ package mcorpc
 
 import (
 	"bytes"
+	"io/ioutil"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-config"
@@ -495,7 +496,7 @@ var _ = Describe("Policy", func() {
 	BeforeEach(func() {
 		pol = &actionPolicyPolicy{}
 		logger = logrus.NewEntry(logrus.New())
-		// logger.Logger.Out = ioutil.Discard
+		logger.Logger.Out = ioutil.Discard
 
 		cfg := config.NewConfigForTests()
 		cfg.DisableSecurityProviderVerify = true
