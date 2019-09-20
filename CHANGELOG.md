@@ -1,5 +1,9 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2019/09/20|      |Release 0.12.1                                                                                           |
+|2019/09/19|      |Support Authorization and External Agents via latest MCORPC provider                                     |
+|2019/09/16|681   |Allow agents to associate with specific agent providers using the `provider` field in metadata           |
+|2019/09/12|678   |Support generating Ruby and JSON DDL files using `choria tool generate ddl`                              |
 |2019/09/09|      |Release 0.12.0                                                                                           |
 |2019/09/09|      |Broker based on NATS 2.0 via `go-network-broker` version `1.3.1`                                         |
 |2019/09/07|670   |Improve the output from `choria ping --graph`                                                            |
