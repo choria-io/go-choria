@@ -13,6 +13,9 @@ begin
 
   req = JSON.parse(File.read(ENV["CHORIA_EXTERNAL_REQUEST"]))
 
+  cpath = ENV["CHORIA_EXTERNAL_CONFIG"]
+  expectedpath = File.expand_path(File.join(File.dirname(__FILE__), "../../../plugin.d", "ginkgo"))
+  abort("invalid configuration path %s != %s" % [cpath, expectedpath]) unless cpath == expectedpath
   abort("invalid request data") unless req["data"]["hello"] == "world"
 
   rep["statuscode"] = 0
