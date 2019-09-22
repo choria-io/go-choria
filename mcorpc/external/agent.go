@@ -103,7 +103,7 @@ func (p *Provider) externalActivationCheck(ddl *agent.DDL) (mcorpc.ActivationChe
 	}
 
 	p.log.Debugf("Performing activation check on external agent %s using %s", ddl.Metadata.Name, agentPath)
-	err = p.executeRequest(ctx, agentPath, activationProtocol, j, rep, p.log)
+	err = p.executeRequest(ctx, agentPath, activationProtocol, j, rep, ddl.Metadata.Name, p.log)
 	if err != nil {
 		p.log.Warnf("External agent %s not activating due to error during activation check: %s", agentPath, err)
 		return func() bool { return false }, nil
@@ -151,7 +151,7 @@ func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, repl
 		return
 	}
 
-	err = p.executeRequest(tctx, agentPath, rpcRequestProtocol, externreq, reply, agent.Log)
+	err = p.executeRequest(tctx, agentPath, rpcRequestProtocol, externreq, reply, agent.Name(), agent.Log)
 	if err != nil {
 		p.abortAction(fmt.Sprintf("Could not call external agent %s: :%s", action, err), agent, reply)
 		return
@@ -207,7 +207,7 @@ func (p *Provider) setReplyDefaults(ddl *agentddl.DDL, action string, reply *mco
 	return nil
 }
 
-func (p *Provider) executeRequest(ctx context.Context, command string, protocol string, req []byte, reply interface{}, log *logrus.Entry) error {
+func (p *Provider) executeRequest(ctx context.Context, command string, protocol string, req []byte, reply interface{}, agentName string, log *logrus.Entry) error {
 	reqfile, err := ioutil.TempFile("", "request")
 	if err != nil {
 		return fmt.Errorf("could not create request temp file: %s", err)
@@ -226,12 +226,18 @@ func (p *Provider) executeRequest(ctx context.Context, command string, protocol 
 		return fmt.Errorf("could not create reply temp file: %s", err)
 	}
 
+	agentConfig, err := filepath.Abs(filepath.Join(filepath.Dir(p.cfg.ConfigFile), "plugin.d", agentName))
+	if err != nil {
+		return fmt.Errorf("could not determine agent config file: %s", err)
+	}
+
 	execution := exec.CommandContext(ctx, command, reqfile.Name(), repfile.Name(), rpcRequestProtocol)
 	execution.Dir = os.TempDir()
 	execution.Env = []string{
 		"CHORIA_EXTERNAL_REQUEST=" + reqfile.Name(),
 		"CHORIA_EXTERNAL_REPLY=" + repfile.Name(),
 		"CHORIA_EXTERNAL_PROTOCOL=" + protocol,
+		"CHORIA_EXTERNAL_CONFIG=" + agentConfig,
 	}
 
 	stdout, err := execution.StdoutPipe()
