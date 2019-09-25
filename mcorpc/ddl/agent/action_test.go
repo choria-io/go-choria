@@ -84,11 +84,16 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 				"list":   "one",
 			}
 
+			act.Input["boolean"].Default = false
+			act.Input["boolean"].Optional = true
+
 			res, warnings, err := act.ValidateAndConvertToDDLTypes(orig)
 			Expect(warnings).To(HaveLen(0))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(HaveKey("int"))
 			Expect(res["int"].(int)).To(Equal(1))
+			Expect(res).To(HaveKey("boolean"))
+			Expect(res["boolean"].(bool)).To(BeFalse())
 		})
 	})
 

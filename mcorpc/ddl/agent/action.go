@@ -268,7 +268,7 @@ func (a *Action) ValidateRequestData(data map[string]interface{}) (warnings []st
 			continue
 		}
 
-		return warnings, fmt.Errorf("request contains na input '%s' that is not declared in the DDL (%v)", iname, validNames)
+		return warnings, fmt.Errorf("request contains an input '%s' that is not declared in the DDL (%v)", iname, validNames)
 	}
 
 	return []string{}, err
