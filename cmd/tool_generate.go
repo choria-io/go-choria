@@ -20,10 +20,11 @@ import (
 
 type tGenerateCommand struct {
 	command
-	targetType string
-	jsonOut    string
-	rubyOut    string
-	skipVerify bool
+	targetType   string
+	jsonOut      string
+	rubyOut      string
+	skipVerify   bool
+	forceConvert bool
 }
 
 func (g *tGenerateCommand) Setup() (err error) {
@@ -33,6 +34,7 @@ func (g *tGenerateCommand) Setup() (err error) {
 		g.cmd.Arg("json_output", "Where to place the JSON output").Required().StringVar(&g.jsonOut)
 		g.cmd.Arg("ruby_output", "Where to place the Ruby output").StringVar(&g.rubyOut)
 		g.cmd.Flag("skip-verify", "Do not verify the JSON file against the DDL Schema").Default("false").BoolVar(&g.skipVerify)
+		g.cmd.Flag("convert", "Convert JSON to DDL without prompting").Default("false").BoolVar(&g.forceConvert)
 	}
 
 	return nil
@@ -56,7 +58,7 @@ func (g *tGenerateCommand) Run(wg *sync.WaitGroup) (err error) {
 	switch g.targetType {
 	case "ddl":
 		if g.jsonOut != "" && choria.FileExist(g.jsonOut) {
-			if g.askBool(fmt.Sprintf("JSON ddl %s already exist, convert it to Ruby", g.jsonOut)) {
+			if g.forceConvert || g.askBool(fmt.Sprintf("JSON ddl %s already exist, convert it to Ruby", g.jsonOut)) {
 				return g.convertToRuby()
 			}
 		}
