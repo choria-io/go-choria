@@ -486,6 +486,8 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 	nodeListPrinter(res.Stats.NoResponses, "No Responses from")
 	nodeListPrinter(res.Stats.UnexpectedResponses, "Unexpected Responses from")
 
+	r.w.Flush()
+
 	return nil
 }
 
@@ -509,6 +511,8 @@ func (r *reqCommand) displayResultsAsJSON(res *rpcResults) error {
 	}
 
 	fmt.Fprintln(r.w, string(j))
+
+	r.w.Flush()
 
 	return nil
 }
