@@ -54,6 +54,10 @@ type reqCommand struct {
 	classF           []string
 	identityF        []string
 	combinedF        []string
+	outputFile       string
+
+	outputWriter     *bufio.Writer
+	outputFileHandle *os.File
 }
 
 type rpcStats struct {
@@ -110,6 +114,7 @@ func (r *reqCommand) Setup() (err error) {
 	r.cmd.Flag("verbose", "Enable verbose output").Short('v').BoolVar(&r.verbose)
 	r.cmd.Flag("display", "Display only a subset of results (ok, failed, all, none)").EnumVar(&r.displayOverride, "ok", "failed", "all", "none")
 	r.cmd.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&r.discoveryTimeout)
+	r.cmd.Flag("output-file", "Filename to write output to").PlaceHolder("FILENAME").Short('o').StringVar(&r.outputFile)
 
 	return
 }
@@ -118,6 +123,16 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	r.startTime = time.Now()
+
+	if r.outputFile != "" {
+		r.outputFileHandle, err = os.Create(r.outputFile)
+		if err != nil {
+			return fmt.Errorf("failed to create output-file: %s", err)
+		}
+	} else {
+		r.outputFileHandle = os.Stdout
+	}
+	r.outputWriter = bufio.NewWriter(r.outputFileHandle)
 
 	if r.jsonOnly {
 		r.silent = true
@@ -315,14 +330,18 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 
 			j, err := json.MarshalIndent(data, "   ", "   ")
 			if err != nil {
-				fmt.Printf("   %s\n", string(data))
+				fmt.Fprintf(r.outputWriter, "   %s\n", string(data))
 			}
 
-			fmt.Printf("   %s\n", string(j))
+			fmt.Fprintf(r.outputWriter, "   %s\n", string(j))
+
+			r.outputWriter.Flush()
 		}
 
 		errorPrinter := func(m string) {
-			fmt.Printf("    %s\n", color.YellowString(m))
+			fmt.Fprintf(r.outputWriter, "    %s\n", color.YellowString(m))
+
+			r.outputWriter.Flush()
 		}
 
 		ddlAssistedPrinter := func(data map[string]interface{}, raw []byte) {
@@ -368,8 +387,10 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 					}))
 				}
 
-				fmt.Printf(formatStr, keyStr, strings.TrimLeft(valStr, " "))
+				fmt.Fprintf(r.outputWriter, formatStr, keyStr, strings.TrimLeft(valStr, " "))
 			}
+
+			r.outputWriter.Flush()
 		}
 
 		parsed, ok := gjson.ParseBytes(reply.RPCReply.Data).Value().(map[string]interface{})
@@ -379,7 +400,7 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 		}
 
 		if show {
-			fmt.Printf("%-40s %s\n", reply.Sender, status[reply.Statuscode])
+			fmt.Fprintf(r.outputWriter, "%-40s %s\n", reply.Sender, status[reply.Statuscode])
 
 			if r.verbose {
 				basicPrinter(reply.RPCReply.Data)
@@ -390,7 +411,7 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 					ddlAssistedPrinter(parsed, reply.RPCReply.Data)
 				}
 
-				fmt.Println()
+				fmt.Fprintln(r.outputWriter)
 			}
 		}
 	}
@@ -413,21 +434,21 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 				descr = output.DisplayAs
 			}
 
-			fmt.Println(color.HiWhiteString("Summary of %s:\n", descr))
+			fmt.Fprintln(r.outputWriter, color.HiWhiteString("Summary of %s:\n", descr))
 			if len(summaries[k]) == 0 {
-				fmt.Printf("   %s\n\n", color.YellowString("No summary received"))
+				fmt.Fprintf(r.outputWriter, "   %s\n\n", color.YellowString("No summary received"))
 				continue
 			}
 
 			for _, v := range summaries[k] {
 				if strings.ContainsRune(v, '\n') {
-					fmt.Println(v)
+					fmt.Fprintln(r.outputWriter, v)
 				} else {
-					fmt.Printf("   %s\n", v)
+					fmt.Fprintf(r.outputWriter, "   %s\n", v)
 				}
 
 			}
-			fmt.Println()
+			fmt.Fprintln(r.outputWriter)
 		}
 	}
 
@@ -436,29 +457,29 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 		summaryPrinter(summaries)
 	}
 
-	fmt.Println()
+	fmt.Fprintln(r.outputWriter)
 
 	if r.verbose {
-		fmt.Println(color.YellowString("---- request stats ----"))
-		fmt.Printf("               Nodes: %d / %d\n", res.Stats.ResponseCount, res.Stats.DiscoveredCount)
-		fmt.Printf("         Pass / Fail: %d / %d\n", res.Stats.OKCount, res.Stats.FailCount)
-		fmt.Printf("        No Responses: %d\n", len(res.Stats.NoResponses))
-		fmt.Printf("Unexpected Responses: %d\n", len(res.Stats.UnexpectedResponses))
-		fmt.Printf("          Start Time: %s\n", time.Unix(res.Stats.StartTime, 0).Format("2006-01-02T15:04:05-0700"))
-		fmt.Printf("      Discovery Time: %v\n", time.Duration(res.Stats.DiscoverTime*1000000000))
-		fmt.Printf("        Publish Time: %v\n", time.Duration(res.Stats.PublishTime*1000000000))
-		fmt.Printf("          Agent Time: %v\n", time.Duration((res.Stats.RequestTime-res.Stats.PublishTime)*1000000000))
-		fmt.Printf("          Total Time: %v\n", time.Duration((res.Stats.RequestTime+res.Stats.DiscoverTime)*1000000000))
+		fmt.Fprintln(r.outputWriter, color.YellowString("---- request stats ----"))
+		fmt.Fprintf(r.outputWriter, "               Nodes: %d / %d\n", res.Stats.ResponseCount, res.Stats.DiscoveredCount)
+		fmt.Fprintf(r.outputWriter, "         Pass / Fail: %d / %d\n", res.Stats.OKCount, res.Stats.FailCount)
+		fmt.Fprintf(r.outputWriter, "        No Responses: %d\n", len(res.Stats.NoResponses))
+		fmt.Fprintf(r.outputWriter, "Unexpected Responses: %d\n", len(res.Stats.UnexpectedResponses))
+		fmt.Fprintf(r.outputWriter, "          Start Time: %s\n", time.Unix(res.Stats.StartTime, 0).Format("2006-01-02T15:04:05-0700"))
+		fmt.Fprintf(r.outputWriter, "      Discovery Time: %v\n", time.Duration(res.Stats.DiscoverTime*1000000000))
+		fmt.Fprintf(r.outputWriter, "        Publish Time: %v\n", time.Duration(res.Stats.PublishTime*1000000000))
+		fmt.Fprintf(r.outputWriter, "          Agent Time: %v\n", time.Duration((res.Stats.RequestTime-res.Stats.PublishTime)*1000000000))
+		fmt.Fprintf(r.outputWriter, "          Total Time: %v\n", time.Duration((res.Stats.RequestTime+res.Stats.DiscoverTime)*1000000000))
 	} else {
-		fmt.Printf("Finished processing %d / %d hosts in %s\n", res.Stats.ResponseCount, res.Stats.DiscoveredCount, time.Duration((res.Stats.RequestTime+res.Stats.PublishTime)*1000000000))
+		fmt.Fprintf(r.outputWriter, "Finished processing %d / %d hosts in %s\n", res.Stats.ResponseCount, res.Stats.DiscoveredCount, time.Duration((res.Stats.RequestTime+res.Stats.PublishTime)*1000000000))
 	}
 
 	nodeListPrinter := func(nodes []string, message string) {
 		if len(nodes) > 0 {
-			fmt.Printf("\n%s: %d\n\n", message, len(nodes))
+			fmt.Fprintf(r.outputWriter, "\n%s: %d\n\n", message, len(nodes))
 
 			w := new(tabwriter.Writer)
-			w.Init(os.Stdout, 0, 0, 4, ' ', 0)
+			w.Init(r.outputFileHandle, 0, 0, 4, ' ', 0)
 
 			choria.SliceGroups(nodes, 3, func(g []string) {
 				fmt.Fprintln(w, "    "+strings.Join(g, "\t")+"\t")
@@ -470,6 +491,8 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 
 	nodeListPrinter(res.Stats.NoResponses, "No Responses from")
 	nodeListPrinter(res.Stats.UnexpectedResponses, "Unexpected Responses from")
+
+	r.outputWriter.Flush()
 
 	return nil
 }
@@ -493,7 +516,9 @@ func (r *reqCommand) displayResultsAsJSON(res *rpcResults) error {
 		return fmt.Errorf("could not prepare display: %s", err)
 	}
 
-	fmt.Println(string(j))
+	fmt.Fprintln(r.outputWriter, string(j))
+
+	r.outputWriter.Flush()
 
 	return nil
 }
