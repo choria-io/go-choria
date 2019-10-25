@@ -57,14 +57,12 @@ func NewWithConfig(cfg *config.Config) (*Framework, error) {
 		mu:     &sync.Mutex{},
 	}
 
-	if c.ProvisionMode() {
-		c.ConfigureProvisioning()
-	}
-
 	err := c.SetupLogging(false)
 	if err != nil {
 		return &c, fmt.Errorf("could not set up logging: %s", err)
 	}
+
+	config.Mutate(cfg, c.Logger("config"))
 
 	c.srvcache = srvcache.New(cfg.Identity, 5*time.Second, net.LookupSRV, c.Logger("srvcache"))
 	c.puppet = puppet.New()
@@ -74,7 +72,7 @@ func NewWithConfig(cfg *config.Config) (*Framework, error) {
 		return &c, fmt.Errorf("could not set up security framework: %s", err)
 	}
 
-	config.Mutate(cfg, c.Logger("config"))
+	c.ConfigureProvisioning()
 
 	return &c, nil
 }
@@ -117,7 +115,7 @@ func (fw *Framework) setupSecurity() error {
 // the value of that is returned, else it the build time property
 // ProvisionDefault is consulted
 func (fw *Framework) ProvisionMode() bool {
-	if !fw.Config.InitiatedByServer || build.ProvisionBrokerURLs == "" {
+	if !fw.Config.InitiatedByServer || (build.ProvisionBrokerURLs == "" && build.ProvisionJWTFile == "") {
 		return false
 	}
 
@@ -131,6 +129,12 @@ func (fw *Framework) ProvisionMode() bool {
 // ConfigureProvisioning adjusts the active configuration to match the
 // provisioning profile
 func (fw *Framework) ConfigureProvisioning() {
+	provtarget.Configure(fw.Config, fw.Logger("provtarget"))
+
+	if !fw.ProvisionMode() {
+		return
+	}
+
 	fw.Config.Choria.FederationCollectives = []string{}
 	fw.Config.Collectives = []string{"provisioning"}
 	fw.Config.MainCollective = "provisioning"

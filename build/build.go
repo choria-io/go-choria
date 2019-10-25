@@ -28,6 +28,9 @@ var ProvisionSecure = "true"
 // ProvisionBrokerURLs defines where the daemon will connect when choria.server.provision is true
 var ProvisionBrokerURLs = ""
 
+// ProvisionBrokerSRVDomain defines a domain to query for provisioning brokers
+var ProvisionBrokerSRVDomain = ""
+
 // ProvisionModeDefault defines the value of plugin.choria.server.provision when it's not set
 // in the configuration file at all.
 var ProvisionModeDefault = "false"
@@ -45,6 +48,9 @@ var ProvisionFacts = ""
 
 // ProvisionToken when not empty this token will be required interact with the provisioner agent
 var ProvisionToken = ""
+
+// ProvisionJWTFile is a file holding a JWT identifying the node to the provisioner
+var ProvisionJWTFile = ""
 
 // ProvisionStatusFile is the file where server status will be written to while in provisioning mode
 var ProvisionStatusFile = ""

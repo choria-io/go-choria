@@ -6,6 +6,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/provtarget/builddefaults"
+	"github.com/choria-io/go-config"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-srvcache"
@@ -18,6 +19,10 @@ type TargetResolver interface {
 
 	// Targets will be called to determine the provisioning destination
 	Targets(context.Context, *logrus.Entry) []string
+
+	// Configure will be called during server configuration and can be used to configure the target or adjust build settings or configuration
+	// this will always be called even when not in provisioning mode, one can use this to programatically set a provisioner token for example
+	Configure(*config.Config, *logrus.Entry)
 }
 
 var mu = &sync.Mutex{}
@@ -31,6 +36,18 @@ func RegisterTargetResolver(r TargetResolver) error {
 	resolver = r
 
 	return nil
+}
+
+// Configure allows the resolver to adjust configuration
+func Configure(cfg *config.Config, log *logrus.Entry) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if resolver == nil {
+		return
+	}
+
+	resolver.Configure(cfg, log)
 }
 
 // Targets is a list of brokers to connect to
@@ -54,7 +71,7 @@ func Targets(ctx context.Context, log *logrus.Entry) (srvcache.Servers, error) {
 	}
 
 	if servers.Count() == 0 {
-		return srvcache.NewServers(), fmt.Errorf("provisioning broker urls from the %s plugin were not in the valid format, 0 server:port combinations were foundin %v", Name(), s)
+		return srvcache.NewServers(), fmt.Errorf("provisioning broker urls from the %s plugin were not in the valid format, 0 server:port combinations were found in %v", Name(), s)
 	}
 
 	return servers, nil
