@@ -70,7 +70,13 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	fmt.Println()
 	fmt.Println("Server Settings:")
-	fmt.Printf("            Provisioning Brokers: %s\n", build.ProvisionBrokerURLs)
+	if build.ProvisionBrokerURLs != "" {
+		fmt.Printf("            Provisioning Brokers: %s\n", build.ProvisionBrokerURLs)
+	}
+	if build.ProvisionBrokerSRVDomain != "" {
+		fmt.Printf("         Provisioning SRV Domain: %s\n", build.ProvisionBrokerSRVDomain)
+	}
+	fmt.Printf("           Provisioning JWT file: %s\n", build.ProvisionJWTFile)
 	fmt.Printf("            Provisioning Default: %t\n", build.ProvisionDefault())
 	fmt.Printf("                Provisioning TLS: %t\n", build.ProvisionSecurity())
 	fmt.Printf("      Default Provisioning Agent: %t\n", build.ProvisionAgent == "true")

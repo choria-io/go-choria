@@ -11,9 +11,11 @@ func (i *Info) MaxBrokerClients() int             { return MaxBrokerClients() }
 func (i *Info) ProvisionSecurity() bool           { return ProvisionSecurity() }
 func (i *Info) ProvisionDefault() bool            { return ProvisionDefault() }
 func (i *Info) ProvisionBrokerURLs() string       { return ProvisionBrokerURLs }
+func (i *Info) ProvisionBrokerSRVDomain() string  { return ProvisionBrokerSRVDomain }
 func (i *Info) ProvisionAgent() bool              { return ProvisionAgent == "true" }
 func (i *Info) ProvisionRegistrationData() string { return ProvisionRegistrationData }
 func (i *Info) ProvisionFacts() string            { return ProvisionFacts }
 func (i *Info) ProvisionToken() string            { return ProvisionToken }
+func (i *Info) ProvisionJWTFile() string          { return ProvisionJWTFile }
 func (i *Info) ProvisionStatusFile() string       { return ProvisionStatusFile }
 func (i *Info) AgentProviders() []string          { return AgentProviders }

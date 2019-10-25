@@ -12,11 +12,14 @@ flags_map:
   ProvisionRegistrationData: github.com/choria-io/go-choria/build.ProvisionRegistrationData
   ProvisionFacts: github.com/choria-io/go-choria/build.ProvisionFacts
   ProvisionToken: github.com/choria-io/go-choria/build.ProvisionToken
+  ProvisionJWTFile: github.com/choria-io/go-choria/build.ProvisionJWTFile
 
 foss:
   compile_targets:
     defaults:
       output: choria-{{version}}-{{os}}-{{arch}}
+      flags:
+        ProvisionJWTFile: /etc/choria/provisioning.jwt
       pre:
         - rm additional_agent_*.go || true
         - rm plugin_*.go || true
