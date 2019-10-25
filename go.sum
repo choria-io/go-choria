@@ -32,6 +32,8 @@ github.com/blang/semver v3.5.1+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnweb
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
 github.com/briandowns/spinner v0.0.0-20181029155426-195c31b675a7/go.mod h1:hw/JEQBIE+c/BLI4aKM8UU8v+ZqrD3h7HC27kKt8JQU=
 github.com/choria-io/go-backplane v1.1.2-0.20190626154337-357d11a25003/go.mod h1:4TNRYMHMXn5njTEM1pl9JSHFXxchPNd8RNISzLXvvBE=
+github.com/choria-io/go-backplane v1.1.2-0.20191025145618-d4e9f3f43f49 h1:Z4xXI1kOt74R0sGJsDVLS2tcbws44z6u/OtzodRIJGA=
+github.com/choria-io/go-backplane v1.1.2-0.20191025145618-d4e9f3f43f49/go.mod h1:xfxtM+XliYk87p6lXTc/Hlzi23Iw72Qy//XCnzNpa60=
 github.com/choria-io/go-choria v0.0.0-20181227121718-a5d51011f80f/go.mod h1:4HwkcjGj/rZm5IDsVnqvKNy5mzzOMms7DMQqbZdR8/4=
 github.com/choria-io/go-choria v0.0.0-20190527085048-5e7ffa8c90be/go.mod h1:4HwkcjGj/rZm5IDsVnqvKNy5mzzOMms7DMQqbZdR8/4=
 github.com/choria-io/go-choria v0.0.0-20190626101918-f61e968b5d4c/go.mod h1:y+NxmWjQ4esZONR2pM7ladgXmADYBvpr9fE4B6LTTaE=
@@ -40,6 +42,7 @@ github.com/choria-io/go-choria v0.0.0-20190724112143-67a5cc1c3756/go.mod h1:ehqr
 github.com/choria-io/go-choria v0.0.0-20190724142302-c64bcae7e32d/go.mod h1:+zecXOc5GtCcq9vY21fAVUYVA1gJh+6sv8q9Kb3LSgc=
 github.com/choria-io/go-choria v0.12.1-0.20190916070606-982852d30827/go.mod h1:x6z5hoHNs7b2IWFH7q9JqTi+3kknh7285XU+PEG+Kh8=
 github.com/choria-io/go-choria v0.12.1-0.20190919154218-95d70c768260/go.mod h1:dP/EiAxYxCwoJKzbNMxkLlFYG/Wn3avPAkARJgLlCCk=
+github.com/choria-io/go-choria v0.12.2-0.20191025130451-091256f29013/go.mod h1:ImHvqpOT6NQrd7k9GWhu7tAbQXX5Pi3z6t/BrVXEtdY=
 github.com/choria-io/go-client v0.4.3-0.20190626102458-2ce4fef30af5 h1:fybxn14aGlEscXGPpfy1iFGmjrHP+s5Hv4WpKQ+mDkQ=
 github.com/choria-io/go-client v0.4.3-0.20190626102458-2ce4fef30af5/go.mod h1:2Af0IWg9334voG0spr2kwoh5UJqR2krSYIKYoHgJgFk=
 github.com/choria-io/go-client v0.4.3-0.20190626150123-ddebe7dca345 h1:22SRF2rnz5//yzoB5ai2XWfKcWpkUd7wFl+zLYW3Qxs=
@@ -117,6 +120,8 @@ github.com/choria-io/mcorpc-agent-provider v0.8.0 h1:zuHcrdU2a0650TAZzSBIgK0XDDR
 github.com/choria-io/mcorpc-agent-provider v0.8.0/go.mod h1:KNg/uJsz0TOU0jwqQydHyEnSAYflRcBfaP3y1Xsvkig=
 github.com/choria-io/provisioning-agent v0.5.0 h1:V3M44FgSI4lAoajuFKVPBjOL1u3GVwymy9KbMlrIN/0=
 github.com/choria-io/provisioning-agent v0.5.0/go.mod h1:VKeX79KV2uOfXH9wTsPjlVUaZaYcpfdeKfHR70hZlPA=
+github.com/choria-io/provisioning-agent v0.5.1-0.20191025161815-4f7495a187c3 h1:loIWb1liucvBPOkIuqrvU2R5i3OAcpWmiZRMIQNOXfU=
+github.com/choria-io/provisioning-agent v0.5.1-0.20191025161815-4f7495a187c3/go.mod h1:0o3A/xl06Y/FAzX+rGU72Cp3LuwQfNl6f7VfmUZOjfE=
 github.com/circonus-labs/circonus-gometrics v2.3.1+incompatible/go.mod h1:nmEj6Dob7S7YxXgwXpfOuvO54S+tGdZdw9fuRZt25Ag=
 github.com/circonus-labs/circonusllhist v0.1.3/go.mod h1:kMXHVDlOchFAehlya5ePtbp5jckzBHf4XRpQvBOLI+I=
 github.com/cpuguy83/go-md2man v1.0.10/go.mod h1:SmD6nW6nTyfqj6ABTjUi3V3JVMnlJmwcJI5acqYI6dE=
