@@ -23,6 +23,8 @@ type provClaims struct {
 	Token       string `json:"cht"`
 	SRVDomain   string `json:"chsrv"`
 	ProvDefault bool   `json:"chpd"`
+	ProvRegData string `json:"chrd"`
+	ProvFacts   string `json:"chf"`
 
 	jwt.StandardClaims
 }
@@ -159,6 +161,14 @@ func (b *Resolver) setBuildBasedOnJWT() (*provClaims, error) {
 		build.ProvisionSecure = "true"
 	} else {
 		build.ProvisionSecure = "false"
+	}
+
+	if claims.ProvFacts != "" {
+		build.ProvisionFacts = claims.ProvFacts
+	}
+
+	if claims.ProvRegData != "" {
+		build.ProvisionRegistrationData = claims.ProvRegData
 	}
 
 	return claims, nil
