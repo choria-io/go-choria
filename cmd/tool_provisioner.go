@@ -46,7 +46,7 @@ func (p *tProvisionerCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	if !c.ProvisionMode() {
-		return fmt.Errorf("not a server compiled for auto provisioning")
+		return fmt.Errorf("not a server compiled for auto provisioning or no JWT token found to enable it")
 	}
 
 	fmt.Printf("Attempting provisioner resolution using: %s\n", provtarget.Name())

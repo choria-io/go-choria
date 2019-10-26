@@ -39,7 +39,7 @@ func (b *serverCommand) Run(wg *sync.WaitGroup) (err error) {
 	return
 }
 
-func (e *serverCommand) Configure() error {
+func (b *serverCommand) Configure() error {
 	cfg.DisableSecurityProviderVerify = true
 
 	return nil
@@ -57,7 +57,7 @@ func (r *serverRunCommand) Setup() (err error) {
 	return
 }
 
-func (e *serverRunCommand) Configure() error {
+func (r *serverRunCommand) Configure() error {
 	if debug {
 		log.SetOutput(os.Stdout)
 		log.SetLevel(log.DebugLevel)

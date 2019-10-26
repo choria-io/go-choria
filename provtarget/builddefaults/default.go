@@ -17,14 +17,14 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type provClaims struct {
-	Secure      bool   `json:"chs"`
-	URLs        string `json:"chu"`
+type ProvClaims struct {
 	Token       string `json:"cht"`
-	SRVDomain   string `json:"chsrv"`
+	Secure      bool   `json:"chs"`
+	URLs        string `json:"chu,omitempty"`
+	SRVDomain   string `json:"chsrv,omitempty"`
 	ProvDefault bool   `json:"chpd"`
-	ProvRegData string `json:"chrd"`
-	ProvFacts   string `json:"chf"`
+	ProvRegData string `json:"chrd,omitempty"`
+	ProvFacts   string `json:"chf,omitempty"`
 
 	jwt.StandardClaims
 }
@@ -118,10 +118,10 @@ func (b *Resolver) Targets(ctx context.Context, log *logrus.Entry) []string {
 }
 
 // setBuildBasedOnJWT sets build settings based on contents of a JWT file
-func (b *Resolver) setBuildBasedOnJWT() (*provClaims, error) {
+func (b *Resolver) setBuildBasedOnJWT() (*ProvClaims, error) {
 	_, err := os.Stat(build.ProvisionJWTFile)
 	if os.IsNotExist(err) {
-		return &provClaims{}, nil
+		return &ProvClaims{}, nil
 	}
 
 	j, err := ioutil.ReadFile(build.ProvisionJWTFile)
@@ -129,7 +129,7 @@ func (b *Resolver) setBuildBasedOnJWT() (*provClaims, error) {
 		return nil, err
 	}
 
-	claims := &provClaims{}
+	claims := &ProvClaims{}
 	_, _, err = new(jwt.Parser).ParseUnverified(string(j), claims)
 	if err != nil {
 		return nil, fmt.Errorf("jwt parse error: %s", err)
