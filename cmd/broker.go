@@ -61,7 +61,7 @@ func (r *brokerRunCommand) Setup() (err error) {
 	return
 }
 
-func (b *brokerRunCommand) Configure() error {
+func (r *brokerRunCommand) Configure() error {
 	return commonConfigure()
 }
 
