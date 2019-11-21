@@ -6,7 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.0.2
 	github.com/apex/log v1.1.1
 	github.com/choria-io/go-client v0.5.1
-	github.com/choria-io/go-config v0.0.4
+	github.com/choria-io/go-config v0.0.5-0.20191121135912-c1161f618b45
 	github.com/choria-io/go-lifecycle v1.0.4
 	github.com/choria-io/go-network-broker v1.3.1
 	github.com/choria-io/go-protocol v1.3.2

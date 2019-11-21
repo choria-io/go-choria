@@ -2,7 +2,6 @@ package choria
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"net/url"
 	"strings"
@@ -523,16 +522,6 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 	conn.conMu.Lock()
 	defer conn.conMu.Unlock()
 
-	var tlsc *tls.Config
-
-	if !conn.config.DisableTLS {
-		tlsc, err = conn.choria.TLSConfig()
-		if err != nil {
-			err = fmt.Errorf("Could not create TLS Config: %s", err)
-			return err
-		}
-	}
-
 	servers, err := conn.servers()
 	if err != nil {
 		return fmt.Errorf("could not determine servers to connect to: %s", err)
@@ -577,8 +566,16 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}),
 	}
 
-	if !conn.config.DisableTLS {
+	if !(conn.config.DisableTLS || (conn.config.Choria.NatsNGS && conn.config.Choria.NatsCredentials != "")) {
+		tlsc, err := conn.choria.TLSConfig()
+		if err != nil {
+			err = fmt.Errorf("could not create TLS Config: %s", err)
+			return err
+		}
+
 		options = append(options, nats.Secure(tlsc))
+	} else {
+		conn.logger.Debugf("Not specifying TLS options on NATS connection: tls: %v ngs: %v creds: %v", conn.config.DisableTLS, conn.config.Choria.NatsNGS, conn.config.Choria.NatsCredentials)
 	}
 
 	if !conn.config.Choria.RandomizeMiddlewareHosts {
