@@ -10,7 +10,6 @@ import (
 	"testing"
 	time "time"
 
-	"github.com/choria-io/go-choria/choria/connectortest"
 	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-protocol/protocol"
 	gomock "github.com/golang/mock/gomock"
@@ -28,16 +27,18 @@ func Test(t *testing.T) {
 }
 
 var _ = Describe("Server/Agents", func() {
-	var mockctl *gomock.Controller
-	var mgr *Manager
-	var conn *connectortest.AgentConnector
-	var agent *MockAgent
-	var requests chan *choria.ConnectorMessage
-	var ctx context.Context
-	var cancel func()
-	var fw *choria.Framework
-	var handler func(ctx context.Context, msg *choria.Message, request protocol.Request, ci choria.ConnectorInfo, result chan *AgentReply)
-	var err error
+	var (
+		mockctl  *gomock.Controller
+		mgr      *Manager
+		conn     *MockAgentConnector
+		agent    *MockAgent
+		requests chan *choria.ConnectorMessage
+		ctx      context.Context
+		cancel   func()
+		fw       *choria.Framework
+		handler  func(ctx context.Context, msg *choria.Message, request protocol.Request, ci choria.ConnectorInfo, result chan *AgentReply)
+		err      error
+	)
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
@@ -85,8 +86,7 @@ var _ = Describe("Server/Agents", func() {
 
 		logrus.SetLevel(logrus.FatalLevel)
 		mgr = New(requests, fw, conn, is, logrus.WithFields(logrus.Fields{"testing": true}))
-		conn = &connectortest.AgentConnector{}
-		conn.Init()
+		conn = NewMockAgentConnector(mockctl)
 
 		agent = NewMockAgent(mockctl)
 		agent.EXPECT().Metadata().Return(&metadata).AnyTimes()
@@ -126,40 +126,50 @@ var _ = Describe("Server/Agents", func() {
 		})
 
 		It("should not subscribe the agent twice", func() {
+			conn.EXPECT().AgentBroadcastTarget("cone", "stub").Return("cone.stub")
+			conn.EXPECT().AgentBroadcastTarget("ctwo", "stub").Return("ctwo.stub")
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "cone.stub", "cone.stub", "", gomock.Any()).Return(nil).Times(1)
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "ctwo.stub", "ctwo.stub", "", gomock.Any()).Return(nil).Times(1)
+
 			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = mgr.RegisterAgent(ctx, "stub", agent, conn)
-			Expect(err).To(MatchError("Agent stub is already registered"))
+			Expect(err).To(MatchError("agent stub is already registered"))
 
 		})
 
 		It("should subscribe the agent to all collectives", func() {
+			conn.EXPECT().AgentBroadcastTarget("cone", "stub").Return("cone.stub")
+			conn.EXPECT().AgentBroadcastTarget("ctwo", "stub").Return("ctwo.stub")
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "cone.stub", "cone.stub", "", gomock.Any()).Return(nil).Times(1)
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "ctwo.stub", "ctwo.stub", "", gomock.Any()).Return(nil).Times(1)
+
 			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
-
-			Expect(conn.ActiveSubs["cone.stub"]).To(Equal("cone.broadcast.agent.stub"))
-			Expect(conn.ActiveSubs["ctwo.stub"]).To(Equal("ctwo.broadcast.agent.stub"))
-			Expect(conn.ActiveSubs).To(HaveLen(2))
 		})
 
 		It("should handle subscribe failures", func() {
 			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
-			conn.NextErr = append(conn.NextErr, nil)
-			conn.NextErr = append(conn.NextErr, errors.New("2nd sub failed"))
+			conn.EXPECT().AgentBroadcastTarget("cone", "stub").Return("cone.stub")
+			conn.EXPECT().AgentBroadcastTarget("ctwo", "stub").Return("ctwo.stub")
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "cone.stub", "cone.stub", "", gomock.Any()).Return(nil).AnyTimes()
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "ctwo.stub", "ctwo.stub", "", gomock.Any()).Return(errors.New("2nd sub failed")).AnyTimes()
+			conn.EXPECT().Unsubscribe("cone.stub").Return(nil)
 
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
-			Expect(err).To(MatchError("Could not register agent stub: Subscription failed: 2nd sub failed"))
-
-			Expect(conn.Subscribes).To(HaveLen(2))
-			Expect(conn.Unsubscribes).To(HaveLen(1))
-			Expect(conn.ActiveSubs).To(BeEmpty())
+			Expect(err).To(MatchError("could not register agent stub: subscription failed: 2nd sub failed"))
 		})
 
 		It("Should retrieve the right agent", func() {
+			conn.EXPECT().AgentBroadcastTarget("cone", "stub").Return("cone.stub")
+			conn.EXPECT().AgentBroadcastTarget("ctwo", "stub").Return("ctwo.stub")
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "cone.stub", "cone.stub", "", gomock.Any()).Return(nil).AnyTimes()
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "ctwo.stub", "ctwo.stub", "", gomock.Any()).Return(nil).AnyTimes()
 			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
+
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -170,7 +180,14 @@ var _ = Describe("Server/Agents", func() {
 	})
 
 	Describe("KnownAgents", func() {
-		It("Should report on all the known agnets", func() {
+		It("Should report on all the known agents", func() {
+			for _, a := range []string{"stub1", "stub2", "stub3"} {
+				conn.EXPECT().AgentBroadcastTarget("cone", a).Return("cone." + a)
+				conn.EXPECT().AgentBroadcastTarget("ctwo", a).Return("ctwo." + a)
+				conn.EXPECT().QueueSubscribe(gomock.Any(), "cone."+a, "cone."+a, "", gomock.Any()).Return(nil).AnyTimes()
+				conn.EXPECT().QueueSubscribe(gomock.Any(), "ctwo."+a, "ctwo."+a, "", gomock.Any()).Return(nil).AnyTimes()
+			}
+
 			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
 			err := mgr.RegisterAgent(ctx, "stub1", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
@@ -198,6 +215,8 @@ var _ = Describe("Server/Agents", func() {
 			msg, err = choria.NewMessageFromRequest(request, "choria.reply.to", mgr.fw)
 			Expect(err).ToNot(HaveOccurred())
 			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
+			conn.EXPECT().AgentBroadcastTarget("mcollective", "stub").Return("mcollective.stub").AnyTimes()
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "mcollective.stub", "mcollective.stub", "", gomock.Any()).Return(nil).AnyTimes()
 		})
 
 		It("Should handle unknown agents", func() {

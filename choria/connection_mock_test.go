@@ -6,12 +6,11 @@ package choria
 
 import (
 	context "context"
-	reflect "reflect"
-
-	srvcache "github.com/choria-io/go-srvcache"
+	go_srvcache "github.com/choria-io/go-srvcache"
 	gomock "github.com/golang/mock/gomock"
-	go_nats "github.com/nats-io/nats.go"
+	nats_go "github.com/nats-io/nats.go"
 	logrus "github.com/sirupsen/logrus"
+	reflect "reflect"
 )
 
 // MockConnectionManager is a mock of ConnectionManager interface
@@ -38,7 +37,7 @@ func (m *MockConnectionManager) EXPECT() *MockConnectionManagerMockRecorder {
 }
 
 // NewConnector mocks base method
-func (m *MockConnectionManager) NewConnector(ctx context.Context, servers func() ([]srvcache.Server, error), name string, logger *logrus.Entry) (Connector, error) {
+func (m *MockConnectionManager) NewConnector(ctx context.Context, servers func() (go_srvcache.Servers, error), name string, logger *logrus.Entry) (Connector, error) {
 	ret := m.ctrl.Call(m, "NewConnector", ctx, servers, name, logger)
 	ret0, _ := ret[0].(Connector)
 	ret1, _ := ret[1].(error)
@@ -156,9 +155,9 @@ func (mr *MockAgentConnectorMockRecorder) ConnectedServer() *gomock.Call {
 }
 
 // ConnectionOptions mocks base method
-func (m *MockAgentConnector) ConnectionOptions() go_nats.Options {
+func (m *MockAgentConnector) ConnectionOptions() nats_go.Options {
 	ret := m.ctrl.Call(m, "ConnectionOptions")
-	ret0, _ := ret[0].(go_nats.Options)
+	ret0, _ := ret[0].(nats_go.Options)
 	return ret0
 }
 
@@ -168,9 +167,9 @@ func (mr *MockAgentConnectorMockRecorder) ConnectionOptions() *gomock.Call {
 }
 
 // ConnectionStats mocks base method
-func (m *MockAgentConnector) ConnectionStats() go_nats.Statistics {
+func (m *MockAgentConnector) ConnectionStats() nats_go.Statistics {
 	ret := m.ctrl.Call(m, "ConnectionStats")
-	ret0, _ := ret[0].(go_nats.Statistics)
+	ret0, _ := ret[0].(nats_go.Statistics)
 	return ret0
 }
 
@@ -311,9 +310,9 @@ func (mr *MockConnectorInfoMockRecorder) ConnectedServer() *gomock.Call {
 }
 
 // ConnectionOptions mocks base method
-func (m *MockConnectorInfo) ConnectionOptions() go_nats.Options {
+func (m *MockConnectorInfo) ConnectionOptions() nats_go.Options {
 	ret := m.ctrl.Call(m, "ConnectionOptions")
-	ret0, _ := ret[0].(go_nats.Options)
+	ret0, _ := ret[0].(nats_go.Options)
 	return ret0
 }
 
@@ -323,9 +322,9 @@ func (mr *MockConnectorInfoMockRecorder) ConnectionOptions() *gomock.Call {
 }
 
 // ConnectionStats mocks base method
-func (m *MockConnectorInfo) ConnectionStats() go_nats.Statistics {
+func (m *MockConnectorInfo) ConnectionStats() nats_go.Statistics {
 	ret := m.ctrl.Call(m, "ConnectionStats")
-	ret0, _ := ret[0].(go_nats.Statistics)
+	ret0, _ := ret[0].(nats_go.Statistics)
 	return ret0
 }
 
@@ -370,9 +369,9 @@ func (mr *MockInstanceConnectorMockRecorder) ConnectedServer() *gomock.Call {
 }
 
 // ConnectionOptions mocks base method
-func (m *MockInstanceConnector) ConnectionOptions() go_nats.Options {
+func (m *MockInstanceConnector) ConnectionOptions() nats_go.Options {
 	ret := m.ctrl.Call(m, "ConnectionOptions")
-	ret0, _ := ret[0].(go_nats.Options)
+	ret0, _ := ret[0].(nats_go.Options)
 	return ret0
 }
 
@@ -382,9 +381,9 @@ func (mr *MockInstanceConnectorMockRecorder) ConnectionOptions() *gomock.Call {
 }
 
 // ConnectionStats mocks base method
-func (m *MockInstanceConnector) ConnectionStats() go_nats.Statistics {
+func (m *MockInstanceConnector) ConnectionStats() nats_go.Statistics {
 	ret := m.ctrl.Call(m, "ConnectionStats")
-	ret0, _ := ret[0].(go_nats.Statistics)
+	ret0, _ := ret[0].(nats_go.Statistics)
 	return ret0
 }
 
@@ -511,9 +510,9 @@ func (mr *MockConnectorMockRecorder) ConnectedServer() *gomock.Call {
 }
 
 // ConnectionOptions mocks base method
-func (m *MockConnector) ConnectionOptions() go_nats.Options {
+func (m *MockConnector) ConnectionOptions() nats_go.Options {
 	ret := m.ctrl.Call(m, "ConnectionOptions")
-	ret0, _ := ret[0].(go_nats.Options)
+	ret0, _ := ret[0].(nats_go.Options)
 	return ret0
 }
 
@@ -523,9 +522,9 @@ func (mr *MockConnectorMockRecorder) ConnectionOptions() *gomock.Call {
 }
 
 // ConnectionStats mocks base method
-func (m *MockConnector) ConnectionStats() go_nats.Statistics {
+func (m *MockConnector) ConnectionStats() nats_go.Statistics {
 	ret := m.ctrl.Call(m, "ConnectionStats")
-	ret0, _ := ret[0].(go_nats.Statistics)
+	ret0, _ := ret[0].(nats_go.Statistics)
 	return ret0
 }
 
@@ -617,10 +616,11 @@ func (mr *MockConnectorMockRecorder) Close() *gomock.Call {
 }
 
 // ReplyTarget mocks base method
-func (m *MockConnector) ReplyTarget(msg *Message) string {
+func (m *MockConnector) ReplyTarget(msg *Message) (string, error) {
 	ret := m.ctrl.Call(m, "ReplyTarget", msg)
 	ret0, _ := ret[0].(string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // ReplyTarget indicates an expected call of ReplyTarget
@@ -654,9 +654,9 @@ func (mr *MockConnectorMockRecorder) Connect(ctx interface{}) *gomock.Call {
 }
 
 // Nats mocks base method
-func (m *MockConnector) Nats() *go_nats.Conn {
+func (m *MockConnector) Nats() *nats_go.Conn {
 	ret := m.ctrl.Call(m, "Nats")
-	ret0, _ := ret[0].(*go_nats.Conn)
+	ret0, _ := ret[0].(*nats_go.Conn)
 	return ret0
 }
 
