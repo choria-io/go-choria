@@ -123,6 +123,8 @@ func (a *Action) AggregateSummaryFormattedStrings() (map[string][]string, error)
 
 // InputNames retrieves all valid input names
 func (a *Action) InputNames() (names []string) {
+	names = []string{}
+
 	for k := range a.Input {
 		names = append(names, k)
 	}
@@ -231,14 +233,19 @@ func (a *Action) ValidateRequestJSON(req json.RawMessage) (warnings []string, er
 
 // ValidateRequestData validates request data against the DDL
 func (a *Action) ValidateRequestData(data map[string]interface{}) (warnings []string, err error) {
-
 	validNames := a.InputNames()
 
 	for _, input := range validNames {
 		val, ok := data[input]
 
-		if a.RequiresInput(input) && !ok {
+		// didnt get a input but needs it
+		if !ok && a.RequiresInput(input) {
 			return []string{}, fmt.Errorf("input '%s' is required", input)
+		}
+
+		// didnt get a input and dont need it so nothing to do
+		if !ok {
+			continue
 		}
 
 		warnings, err = a.ValidateInputValue(input, val)
@@ -268,7 +275,7 @@ func (a *Action) ValidateRequestData(data map[string]interface{}) (warnings []st
 			continue
 		}
 
-		return warnings, fmt.Errorf("request contains an input '%s' that is not declared in the DDL (%v)", iname, validNames)
+		return warnings, fmt.Errorf("request contains an input '%s' that is not declared in the DDL. Valid inputs are: %s", iname, strings.Join(validNames, ", "))
 	}
 
 	return []string{}, err

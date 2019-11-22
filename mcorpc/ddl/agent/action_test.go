@@ -252,6 +252,53 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(install.InputNames()).To(Equal([]string{"package", "version"}))
 		})
+
+		It("Should support actions with no inputs", func() {
+			cu, err := pkg.ActionInterface("apt_checkupdates")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(cu.InputNames()).To(Equal([]string{}))
+		})
+	})
+
+	Describe("ValidateRequestData", func() {
+		It("Should support empty input lists", func() {
+			cu, err := pkg.ActionInterface("apt_checkupdates")
+			Expect(err).ToNot(HaveOccurred())
+
+			w, err := cu.ValidateRequestData(map[string]interface{}{})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(w).To(HaveLen(0))
+		})
+
+		It("Should handle required inputs", func() {
+			install, err := pkg.ActionInterface("install")
+			Expect(err).ToNot(HaveOccurred())
+
+			w, err := install.ValidateRequestData(map[string]interface{}{})
+			Expect(err).To(MatchError("input 'package' is required"))
+			Expect(w).To(HaveLen(0))
+		})
+
+		It("Should handle actions with no inputs but inputs being recieved", func() {
+			cu, err := pkg.ActionInterface("apt_checkupdates")
+			Expect(err).ToNot(HaveOccurred())
+
+			w, err := cu.ValidateRequestData(map[string]interface{}{"test":"test"})
+			Expect(err).To(MatchError("request contains inputs while none are declared in the DDL"))
+			Expect(w).To(HaveLen(0))
+		})
+
+		It("Should detect extra inputs", func() {
+			install, err := pkg.ActionInterface("install")
+			Expect(err).ToNot(HaveOccurred())
+
+			w, err := install.ValidateRequestData(map[string]interface{}{
+				"package":"zsh",
+				"other":"test",
+			})
+			Expect(err).To(MatchError("request contains an input 'other' that is not declared in the DDL. Valid inputs are: package, version"))
+			Expect(w).To(HaveLen(0))
+		})
 	})
 
 	Describe("RequiresInput", func() {
