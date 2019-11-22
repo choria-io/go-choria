@@ -4,11 +4,10 @@ go 1.13
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.2
-	github.com/apex/log v1.1.1
 	github.com/choria-io/go-client v0.5.1
 	github.com/choria-io/go-config v0.0.5-0.20191121135912-c1161f618b45
 	github.com/choria-io/go-lifecycle v1.0.4
-	github.com/choria-io/go-network-broker v1.3.1
+	github.com/choria-io/go-network-broker v1.3.2-0.20191122041751-8b329f83e533
 	github.com/choria-io/go-protocol v1.3.2
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.5.0
@@ -24,8 +23,8 @@ require (
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.4.1
 	github.com/looplab/fsm v0.1.0
-	github.com/nats-io/nats-server/v2 v2.0.4
-	github.com/nats-io/nats.go v1.8.1
+	github.com/nats-io/nats-server/v2 v2.1.2
+	github.com/nats-io/nats.go v1.9.1
 	github.com/nats-io/stan.go v0.5.0
 	github.com/onsi/ginkgo v1.10.1
 	github.com/onsi/gomega v1.7.0
