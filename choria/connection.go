@@ -566,7 +566,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}),
 	}
 
-	if !(conn.config.DisableTLS || (conn.config.Choria.NatsNGS && conn.config.Choria.NatsCredentials != "")) {
+	if !(conn.config.DisableTLS || conn.choria.ShouldUseNGS()) {
 		tlsc, err := conn.choria.TLSConfig()
 		if err != nil {
 			err = fmt.Errorf("could not create TLS Config: %s", err)
