@@ -6,7 +6,6 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/choria/connectortest"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-protocol/protocol"
@@ -29,7 +28,6 @@ var _ = Describe("McoRPC", func() {
 		msg    *choria.Message
 		req    protocol.Request
 		outbox = make(chan *agents.AgentReply, 1)
-		ci     = &connectortest.ConnectorInfo{}
 		err    error
 		ctx    context.Context
 	)
@@ -77,7 +75,7 @@ var _ = Describe("McoRPC", func() {
 
 		It("Should handle bad incoming data", func() {
 			msg.Payload = ""
-			agent.HandleMessage(ctx, msg, req, ci, outbox)
+			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
 			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("Could not process request: Could not parse incoming message as a MCollective SimpleRPC Request: unexpected end of JSON input"))
@@ -86,7 +84,7 @@ var _ = Describe("McoRPC", func() {
 
 		It("Should handle unknown actions", func() {
 			msg.Payload = `{"agent":"test", "action":"nonexisting"}`
-			agent.HandleMessage(ctx, msg, req, ci, outbox)
+			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
 			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("Unknown action nonexisting for agent test"))
@@ -102,7 +100,7 @@ var _ = Describe("McoRPC", func() {
 
 			agent.RegisterAction("test", action)
 			msg.Payload = `{"agent":"test", "action":"test"}`
-			agent.HandleMessage(ctx, msg, req, ci, outbox)
+			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
 			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("OK"))
@@ -120,7 +118,7 @@ var _ = Describe("McoRPC", func() {
 			}
 
 			agent.RegisterAction("test", action)
-			agent.HandleMessage(ctx, msg, req, ci, outbox)
+			agent.HandleMessage(ctx, msg, req, nil, outbox)
 			reply := <-outbox
 
 			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("You are not authorized to call this agent or action"))
@@ -139,7 +137,7 @@ var _ = Describe("McoRPC", func() {
 			}
 
 			agent.RegisterAction("test", action)
-			agent.HandleMessage(ctx, msg, req, ci, outbox)
+			agent.HandleMessage(ctx, msg, req, nil, outbox)
 			reply := <-outbox
 
 			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("You are not authorized to call this agent or action"))
