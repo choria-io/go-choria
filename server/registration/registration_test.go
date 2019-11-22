@@ -1,13 +1,14 @@
 package registration
 
 import (
+	"errors"
 	"os"
 	"testing"
 
 	framework "github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/choria/connectortest"
 	"github.com/choria-io/go-choria/server/data"
 	"github.com/choria-io/go-config"
+	gomock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -22,12 +23,13 @@ func TestRegistration(t *testing.T) {
 var _ = Describe("Server/Registration", func() {
 	var _ = Describe("publish", func() {
 		var (
-			conn    *connectortest.PublishableConnector
+			conn    *MockPublishableConnector
 			err     error
 			choria  *framework.Framework
 			cfg     *config.Config
 			log     *logrus.Entry
 			manager *Manager
+			mockctl *gomock.Controller
 		)
 
 		BeforeSuite(func() {
@@ -49,45 +51,54 @@ var _ = Describe("Server/Registration", func() {
 		})
 
 		BeforeEach(func() {
-			conn = &connectortest.PublishableConnector{}
+			mockctl = gomock.NewController(GinkgoT())
+			conn = NewMockPublishableConnector(mockctl)
 			manager = New(choria, conn, log)
+		})
+
+		AfterEach(func() {
+			mockctl.Finish()
 		})
 
 		It("Should do nothing when the message is nil", func() {
 			manager.publish(nil)
-			Expect(conn.PublishedMsgs).To(BeEmpty())
 		})
 
 		It("Should do nothing when the  data is nil", func() {
 			manager.publish(&data.RegistrationItem{})
-			Expect(conn.PublishedMsgs).To(BeEmpty())
 		})
 
 		It("Should do nothing for empty data", func() {
 			dat := []byte{}
 			manager.publish(&data.RegistrationItem{Data: &dat})
-			Expect(conn.PublishedMsgs).To(BeEmpty())
 		})
 
 		It("Should publish to registration agent when not set", func() {
 			dat := []byte("hello world")
-			manager.publish(&data.RegistrationItem{Data: &dat})
 
-			published := conn.PublishedMsgs[0]
-			Expect(published.Agent).To(Equal("registration"))
+			msg := &framework.Message{}
+			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).DoAndReturn(func(m *framework.Message) {
+				Expect(m.Agent).To(Equal("registration"))
+			}).Return(nil).AnyTimes()
+
+			manager.publish(&data.RegistrationItem{Data: &dat})
 		})
 
 		It("Should publish to the configured agent when set", func() {
 			dat := []byte("hello world")
-			manager.publish(&data.RegistrationItem{Data: &dat, TargetAgent: "ginkgo"})
+			msg := &framework.Message{}
+			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).DoAndReturn(func(m *framework.Message) {
+				Expect(m.Agent).To(Equal("ginkgo"))
+			}).Return(nil).AnyTimes()
 
-			published := conn.PublishedMsgs[0]
-			Expect(published.Agent).To(Equal("ginkgo"))
+			manager.publish(&data.RegistrationItem{Data: &dat, TargetAgent: "ginkgo"})
 		})
 
 		It("Should handle publish failures gracefully", func() {
 			dat := []byte("hello world")
-			conn.SetNextError("simulated failure")
+			// conn.SetNextError("simulated failure")
+			msg := &framework.Message{}
+			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).Return(errors.New("simulated failure")).AnyTimes()
 
 			manager.publish(&data.RegistrationItem{Data: &dat, TargetAgent: "ginkgo"})
 		})

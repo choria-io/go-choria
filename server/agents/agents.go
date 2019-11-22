@@ -122,12 +122,12 @@ func (a *Manager) RegisterAgent(ctx context.Context, name string, agent Agent, c
 	agent.SetServerInfo(a.serverInfo)
 
 	if _, found := a.agents[name]; found {
-		return fmt.Errorf("Agent %s is already registered", name)
+		return fmt.Errorf("agent %s is already registered", name)
 	}
 
 	err := a.subscribeAgent(ctx, name, agent, conn)
 	if err != nil {
-		return fmt.Errorf("Could not register agent %s: %s", name, err)
+		return fmt.Errorf("could not register agent %s: %s", name, err)
 	}
 
 	a.agents[name] = agent
@@ -170,7 +170,7 @@ func (a *Manager) agentDenied(agent string) bool {
 // the whole instance, so it's probably not needed
 func (a *Manager) subscribeAgent(ctx context.Context, name string, agent Agent, conn choria.AgentConnector) error {
 	if _, found := a.subs[name]; found {
-		return fmt.Errorf("Could not subscribe agent %s, it's already subscribed", name)
+		return fmt.Errorf("could not subscribe agent %s, it's already subscribed", name)
 	}
 
 	a.subs[name] = []string{}
@@ -182,12 +182,12 @@ func (a *Manager) subscribeAgent(ctx context.Context, name string, agent Agent, 
 		a.log.Infof("Subscribing agent %s to %s", name, target)
 		err := conn.QueueSubscribe(ctx, subname, target, "", a.requests)
 		if err != nil {
-			a.log.Errorf("Could not subscribe agent %s to %s, rewinding all subscriptions for this agent", name, target)
+			a.log.Errorf("could not subscribe agent %s to %s, rewinding all subscriptions for this agent", name, target)
 			for _, sub := range a.subs[name] {
 				conn.Unsubscribe(sub)
 			}
 
-			return fmt.Errorf("Subscription failed: %s", err)
+			return fmt.Errorf("subscription failed: %s", err)
 		}
 
 		a.subs[name] = append(a.subs[name], subname)
