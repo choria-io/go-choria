@@ -26,16 +26,16 @@ require (
 	github.com/nats-io/nats-server/v2 v2.1.2
 	github.com/nats-io/nats.go v1.9.1
 	github.com/nats-io/stan.go v0.5.0
-	github.com/onsi/ginkgo v1.10.1
-	github.com/onsi/gomega v1.7.0
+	github.com/onsi/ginkgo v1.10.3
+	github.com/onsi/gomega v1.7.1
 	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v1.1.0
+	github.com/prometheus/client_golang v1.2.1
 	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.4.2
-	github.com/tidwall/gjson v1.3.2
+	github.com/tidwall/gjson v1.3.5
 	github.com/tidwall/pretty v1.0.0
-	github.com/xeipuuv/gojsonschema v1.1.0
+	github.com/xeipuuv/gojsonschema v1.2.0
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	rsc.io/goversion v1.2.0
 )
