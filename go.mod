@@ -12,7 +12,7 @@ require (
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.5.0
 	github.com/choria-io/go-srvcache v0.0.6
-	github.com/choria-io/mcorpc-agent-provider v0.8.0
+	github.com/choria-io/mcorpc-agent-provider v0.8.1-0.20191122065133-47dd2a23c869
 	github.com/choria-io/provisioning-agent v0.5.1-0.20191025161815-4f7495a187c3
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.7.0

@@ -96,10 +96,8 @@ var _ = Describe("Server/Registration", func() {
 
 		It("Should handle publish failures gracefully", func() {
 			dat := []byte("hello world")
-			// conn.SetNextError("simulated failure")
 			msg := &framework.Message{}
 			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).Return(errors.New("simulated failure")).AnyTimes()
-
 			manager.publish(&data.RegistrationItem{Data: &dat, TargetAgent: "ginkgo"})
 		})
 	})
