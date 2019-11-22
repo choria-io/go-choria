@@ -63,6 +63,7 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		mu:      &sync.Mutex{},
 	}
 
+	s.opts.ServerName = s.config.Identity
 	s.opts.Host = s.config.Choria.NetworkListenAddress
 	s.opts.Port = s.config.Choria.NetworkClientPort
 	s.opts.WriteDeadline = s.config.Choria.NetworkWriteDeadline
