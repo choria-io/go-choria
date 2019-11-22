@@ -239,20 +239,31 @@ func (fw *Framework) ProvisioningServers(ctx context.Context) (srvcache.Servers,
 	return provtarget.Targets(ctx, fw.Logger("provtarget"))
 }
 
+// ShouldUseNGS determined is we are configured to use NGS
+func (fw *Framework) ShouldUseNGS() bool {
+	return fw.Config.Choria.NatsNGS && fw.Config.Choria.NatsCredentials != ""
+}
+
 // MiddlewareServers determines the correct Middleware Servers
 //
 // It does this by:
 //
+//    * if ngs is configured and credentials are set and middleware_hosts are empty, use ngs
 //    * looking for choria.federation_middleware_hosts configuration
 //	  * Doing SRV lookups of _mcollective-server._tcp and __x-puppet-mcollective._tcp
 //    * Defaulting to puppet:4222
 func (fw *Framework) MiddlewareServers() (servers srvcache.Servers, err error) {
+	configured := fw.Config.Choria.MiddlewareHosts
+
+	if fw.ShouldUseNGS() && len(configured) == 0 {
+		return srvcache.NewServers(srvcache.NewServer("connect.ngs.global", 4222, "nats")), nil
+	}
+
 	if fw.IsFederated() {
 		return fw.FederationMiddlewareServers()
 	}
 
 	servers = srvcache.NewServers()
-	configured := fw.Config.Choria.MiddlewareHosts
 
 	if len(configured) > 0 {
 		servers, err = srvcache.StringHostsToServers(configured, "nats")
