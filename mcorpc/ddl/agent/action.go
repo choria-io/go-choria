@@ -235,6 +235,9 @@ func (a *Action) ValidateRequestJSON(req json.RawMessage) (warnings []string, er
 func (a *Action) ValidateRequestData(data map[string]interface{}) (warnings []string, err error) {
 	validNames := a.InputNames()
 
+	// We currently ignore the process_results flag that may be set by the MCO RPC CLI
+	delete(data, "process_results")
+
 	for _, input := range validNames {
 		val, ok := data[input]
 
@@ -259,10 +262,6 @@ func (a *Action) ValidateRequestData(data map[string]interface{}) (warnings []st
 	}
 
 	for iname := range data {
-		if iname == "process_results" {
-			continue
-		}
-
 		matched := false
 		for _, vname := range validNames {
 			if vname == iname {
