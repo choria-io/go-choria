@@ -295,8 +295,8 @@ func (r *RPC) unbatchedClient() (cl ChoriaClient, err error) {
 		r.fw,
 		cclient.Receivers(r.opts.Workers),
 		cclient.Timeout(r.opts.Timeout),
-		cclient.OnPublishStart(r.opts.stats.StartPublish),
-		cclient.OnPublishFinish(r.opts.stats.EndPublish),
+		cclient.OnPublishStart(r.opts.totalStats.StartPublish),
+		cclient.OnPublishFinish(r.opts.totalStats.EndPublish),
 		cclient.Name(r.opts.ConnectionName),
 	)
 	if err != nil {
@@ -316,8 +316,8 @@ func (r *RPC) batchedClient(ctx context.Context, msgid string) (cl ChoriaClient,
 		r.fw,
 		cclient.Receivers(r.opts.Workers),
 		cclient.Timeout(r.opts.Timeout),
-		cclient.OnPublishStart(r.opts.stats.StartPublish),
-		cclient.OnPublishFinish(r.opts.stats.EndPublish),
+		cclient.OnPublishStart(r.opts.totalStats.StartPublish),
+		cclient.OnPublishFinish(r.opts.totalStats.EndPublish),
 		cclient.Connection(conn),
 		cclient.Name(r.opts.ConnectionName),
 	)

@@ -37,6 +37,7 @@ type RequestOptions struct {
 	DiscoveryStartCB DiscoveryStartFunc
 	DiscoveryEndCB   DiscoveryEndFunc
 
+	// merged of all batches
 	totalStats *Stats
 
 	// per batch

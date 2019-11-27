@@ -46,7 +46,6 @@ func NewStats() *Stats {
 		outstandingNodes:   NewNodeList(),
 		unexpectedRespones: NewNodeList(),
 		mu:                 &sync.Mutex{},
-		publishTotal:       0,
 	}
 }
 
@@ -74,7 +73,9 @@ func (s *Stats) Merge(other *Stats) error {
 		return err
 	}
 
+	s.mu.Lock()
 	s.publishTotal += d
+	s.mu.Unlock()
 
 	return nil
 }
@@ -185,7 +186,7 @@ func (s *Stats) ResponsesCount() int {
 	return int(s.responses.Load())
 }
 
-// StartPublish records the publish started
+// StartPublish records the publish process started
 func (s *Stats) StartPublish() {
 	s.mu.Lock()
 	defer s.mu.Unlock()
