@@ -53,6 +53,8 @@ github.com/choria-io/go-client v0.5.0 h1:cB14NTd21vs2NgfpL0Wihhg30dQ6udmOsxnBKJW
 github.com/choria-io/go-client v0.5.0/go.mod h1:2tyj9CRzqew0k6icWnWkvwNfu+WXUNdvtm+Gu3RVhYg=
 github.com/choria-io/go-client v0.5.1 h1:nJe/FnE1p2X1mFYAkyYCpl4ltMx1D2yPbWN+gvyucw8=
 github.com/choria-io/go-client v0.5.1/go.mod h1:DstV/tY4FwXCWvPrmtHWCWyZvp3R8nIc/plwzXYRTr8=
+github.com/choria-io/go-client v0.5.2-0.20190919155331-b32ad7c92f15 h1:bvL+gl81dOWup9RDf1KPob3/ojyoCDa8Qx+p/63sW5w=
+github.com/choria-io/go-client v0.5.2-0.20190919155331-b32ad7c92f15/go.mod h1:4vK9a95MgoBdpGaAXJxltn99Kd8X+f3XI3fD89pj10c=
 github.com/choria-io/go-config v0.0.0-20190625114926-34befa33b967 h1:LxTFxXHsdkeYuSQewQ3KfteIU2YKzYGRnitMr60izno=
 github.com/choria-io/go-config v0.0.0-20190625114926-34befa33b967/go.mod h1:YEb0InKPzG3wRSbfN3xZ/MjQ1FEzbmeq9FAo6yUnylM=
 github.com/choria-io/go-config v0.0.1 h1:5vvMB5MXdoZiK7GA35XKmnEqrznkb2CaaxEdXpN1ju0=
@@ -124,8 +126,8 @@ github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190919114933-9ad5a6f41222 
 github.com/choria-io/mcorpc-agent-provider v0.7.2-0.20190919114933-9ad5a6f41222/go.mod h1:31BWJklg9mrXn9aWKzTkcwmRe+zPOM0++DGQkshKO6o=
 github.com/choria-io/mcorpc-agent-provider v0.8.0 h1:zuHcrdU2a0650TAZzSBIgK0XDDRoZYrKIT//fUPQikg=
 github.com/choria-io/mcorpc-agent-provider v0.8.0/go.mod h1:KNg/uJsz0TOU0jwqQydHyEnSAYflRcBfaP3y1Xsvkig=
-github.com/choria-io/mcorpc-agent-provider v0.8.1-0.20191122065133-47dd2a23c869 h1:YBVOMqfdibsQjJfLgZostWGl9wXodmmyV2mebkLWF/c=
-github.com/choria-io/mcorpc-agent-provider v0.8.1-0.20191122065133-47dd2a23c869/go.mod h1:CIufccEnxK8KX4jX+a23OZRFjThatwTm51Q3/t62yUo=
+github.com/choria-io/mcorpc-agent-provider v0.8.1-0.20191127104417-3a413399bec0 h1:eW/vpwWtaHIn6aj7hK82yww+125HPPsFyZ5Uatcsrd0=
+github.com/choria-io/mcorpc-agent-provider v0.8.1-0.20191127104417-3a413399bec0/go.mod h1:UG8cnSAncKkB8TmiIzkBuDpsNMw7E+HLFj1FbDYFRFE=
 github.com/choria-io/provisioning-agent v0.5.0 h1:V3M44FgSI4lAoajuFKVPBjOL1u3GVwymy9KbMlrIN/0=
 github.com/choria-io/provisioning-agent v0.5.0/go.mod h1:VKeX79KV2uOfXH9wTsPjlVUaZaYcpfdeKfHR70hZlPA=
 github.com/choria-io/provisioning-agent v0.5.1-0.20191025161815-4f7495a187c3 h1:loIWb1liucvBPOkIuqrvU2R5i3OAcpWmiZRMIQNOXfU=
