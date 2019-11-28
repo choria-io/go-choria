@@ -5,8 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"text/template"
 	"time"
@@ -160,6 +162,19 @@ func (d *DDL) ToRuby() (string, error) {
 	var out bytes.Buffer
 
 	funcs := template.FuncMap{
+		"validatorStr": func(v string) string {
+			if v == "" {
+				return `"."`
+			}
+
+			switch v {
+			case "shellsafe", "ipv4address", "ipv6address", "ipaddress":
+				return ":" + v
+			default:
+				return `'` + v + `'`
+			}
+		},
+
 		"enum2list": func(v []string) string {
 			if len(v) == 0 {
 				return "[]"
@@ -167,6 +182,7 @@ func (d *DDL) ToRuby() (string, error) {
 
 			return `["` + strings.Join(v, `", "`) + `"]`
 		},
+
 		"goval2rubyval": func(typedef string, v interface{}) string {
 			if v == nil {
 				return `nil`
@@ -183,16 +199,63 @@ func (d *DDL) ToRuby() (string, error) {
 				if v == nil {
 					return "0.0"
 				}
-				return fmt.Sprintf("%f", v.(float64))
+
+				switch val := reflect.ValueOf(v); val.Kind() {
+				case reflect.Int:
+					return fmt.Sprintf("%d", v.(int))
+
+				case reflect.Int16:
+					return fmt.Sprintf("%d", v.(int16))
+
+				case reflect.Int32:
+					return fmt.Sprintf("%d", v.(int32))
+
+				case reflect.Int64:
+					return fmt.Sprintf("%d", v.(int64))
+
+				case reflect.Float32:
+					return fmt.Sprintf("%f", math.Round(float64(v.(float32))))
+
+				case reflect.Float64:
+					return fmt.Sprintf("%f", math.Round(v.(float64)))
+
+				default:
+					panic(fmt.Sprintf("unknown value type %v found in %s field", val.Kind(), typedef))
+				}
+
 			case "integer":
 				if v == nil {
 					return "0"
 				}
-				return fmt.Sprintf("%d", v.(int64))
+
+				switch val := reflect.ValueOf(v); val.Kind() {
+				case reflect.Int:
+					return fmt.Sprintf("%d", v.(int))
+
+				case reflect.Int16:
+					return fmt.Sprintf("%d", v.(int16))
+
+				case reflect.Int32:
+					return fmt.Sprintf("%d", v.(int32))
+
+				case reflect.Int64:
+					return fmt.Sprintf("%d", v.(int64))
+
+				case reflect.Float32:
+					return fmt.Sprintf("%.0f", math.Round(float64(v.(float32))))
+
+				case reflect.Float64:
+					return fmt.Sprintf("%.0f", math.Round(v.(float64)))
+
+				default:
+					panic(fmt.Sprintf("unknown value type %v found in %s field", val.Kind(), typedef))
+				}
+
 			case "boolean":
 				if v == nil {
 					return "false"
 				}
+
 				return fmt.Sprintf("%v", v.(bool))
 			}
 
@@ -228,7 +291,7 @@ action "{{ $action.Name }}", :description => "{{ $action.Description }}" do
         :default     => {{ $input.Default | goval2rubyval $input.Type }}
 {{- end -}}
 {{- if eq $input.Type "string" }}
-        :validation  => :{{ $input.Validation }},
+        :validation  => {{ $input.Validation | validatorStr }},
         :maxlength   => {{ $input.MaxLength }},
 {{- end }}
 {{- if eq $input.Type "list" }}
@@ -241,17 +304,19 @@ action "{{ $action.Name }}", :description => "{{ $action.Description }}" do
 {{ range $oname, $output := $action.Output }}
   output :{{ $oname }},
          :description => "{{ $output.Description }}",
-         :display_as  => "{{ $output.DisplayAs }}",
 {{- if $output.Default }}
          :default     => {{ $output.Default | goval2rubyval $output.Type }},
 {{- end }}
-         :type        => "{{ $output.Type }}"
+{{- if ne $output.Type "" }}
+         :type        => "{{ $output.Type }}",
+{{- end }}
+         :display_as  => "{{ $output.DisplayAs }}"
 {{ end }}
 
 {{- if $action.Aggregation }}
   summarize do
 {{- range $aname, $aggregate := $action.Aggregation }}
-    {{ $aggregate.Function }}(:{{ $aggregate.OutputName }})
+    aggregate {{ $aggregate.Function }}(:{{ $aggregate.OutputName }})
 {{- end }}
   end
 {{- end }}
