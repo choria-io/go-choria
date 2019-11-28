@@ -288,7 +288,7 @@ action "{{ $action.Name }}", :description => "{{ $action.Description }}" do
         :description => "{{ $input.Description }}",
         :type        => :{{ $input.Type }},
 {{- if $input.Default }}
-        :default     => {{ $input.Default | goval2rubyval $input.Type }}
+        :default     => {{ $input.Default | goval2rubyval $input.Type }},
 {{- end -}}
 {{- if eq $input.Type "string" }}
         :validation  => {{ $input.Validation | validatorStr }},
