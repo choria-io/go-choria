@@ -471,7 +471,7 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 		fmt.Fprintf(r.outputWriter, "          Agent Time: %v\n", time.Duration((res.Stats.RequestTime-res.Stats.PublishTime)*1000000000))
 		fmt.Fprintf(r.outputWriter, "          Total Time: %v\n", time.Duration((res.Stats.RequestTime+res.Stats.DiscoverTime)*1000000000))
 	} else {
-		fmt.Fprintf(r.outputWriter, "Finished processing %d / %d hosts in %s\n", res.Stats.ResponseCount, res.Stats.DiscoveredCount, time.Duration((res.Stats.RequestTime+res.Stats.PublishTime)*1000000000))
+		fmt.Fprintf(r.outputWriter, "Finished processing %d / %d hosts in %s\n", res.Stats.ResponseCount, res.Stats.DiscoveredCount, time.Duration((res.Stats.RequestTime)*1000000000))
 	}
 
 	nodeListPrinter := func(nodes []string, message string) {
