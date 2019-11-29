@@ -212,6 +212,14 @@ func (c *Config) Option(option string, deflt string) string {
 	return v
 }
 
+// SetOption sets a raw string option, can be used to programatically
+// set plugin options etc, setting a main config item value here does
+// not update the values in the strings, so this is only really useful
+// for setting plugin options
+func (c *Config) SetOption(option string, value string) {
+	c.rawOpts[option] = value
+}
+
 // parseDotConfFile parses a file like /etc/..../plugin.d/package.cfg as if its full of
 // plugin.package.x = y lines and fill in a structure with the results if that structure
 // declares its options using the same tag structure as Config.

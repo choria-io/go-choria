@@ -52,6 +52,10 @@ var _ = Describe("Choria/Config", func() {
 
 			Expect(c.Option("plugin.package.setting", "default")).To(Equal("1"))
 			Expect(c.Option("plugin.package.other_setting", "default")).To(Equal("default"))
+
+			c.SetOption("plugin.package.other_setting", "override")
+			Expect(c.Option("plugin.package.setting", "default")).To(Equal("1"))
+			Expect(c.Option("plugin.package.other_setting", "default")).To(Equal("override"))
 		})
 	})
 })
