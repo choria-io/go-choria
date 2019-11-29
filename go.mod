@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.2
 	github.com/choria-io/go-client v0.5.2-0.20190919155331-b32ad7c92f15
-	github.com/choria-io/go-config v0.0.5-0.20191121135912-c1161f618b45
+	github.com/choria-io/go-config v0.0.5-0.20191129180213-a889c557788c
 	github.com/choria-io/go-lifecycle v1.0.4
 	github.com/choria-io/go-network-broker v1.3.2-0.20191122041751-8b329f83e533
 	github.com/choria-io/go-protocol v1.3.2

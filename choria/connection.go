@@ -212,7 +212,12 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 
 	s.subscription, err = conn.nats.ChanQueueSubscribe(subject, group, s.in)
 	if err != nil {
-		return nil, fmt.Errorf("Could not subscribe to subscription %s: %s", name, err)
+		return nil, fmt.Errorf("could not subscribe to subscription %s: %s", name, err)
+	}
+
+	err = conn.nats.Flush()
+	if err != nil {
+		return nil, fmt.Errorf("could not subscribe to subscription %s: %s", name, err)
 	}
 
 	return s.out, nil
@@ -254,10 +259,15 @@ func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject
 
 	s.subscription, err = conn.nats.ChanQueueSubscribe(subject, group, s.in)
 	if err != nil {
-		return fmt.Errorf("Could not subscribe to subscription %s: %s", name, err)
+		return fmt.Errorf("could not subscribe to subscription %s: %s", name, err)
 	}
 
-	return err
+	err = conn.nats.Flush()
+	if err != nil {
+		return fmt.Errorf("could not subscribe to subscription %s: %s", name, err)
+	}
+
+	return nil
 }
 
 func (conn *Connection) Unsubscribe(name string) error {
@@ -267,14 +277,14 @@ func (conn *Connection) Unsubscribe(name string) error {
 	if sub, ok := conn.subscriptions[name]; ok {
 		err := sub.Unsubscribe()
 		if err != nil {
-			return fmt.Errorf("Could not unsubscribe from %s: %s", name, err)
+			return fmt.Errorf("could not unsubscribe from %s: %s", name, err)
 		}
 	}
 
 	if sub, ok := conn.chanSubscriptions[name]; ok {
 		err := sub.subscription.Unsubscribe()
 		if err != nil {
-			return fmt.Errorf("Could not unsubscribe from %s: %s", name, err)
+			return fmt.Errorf("could not unsubscribe from %s: %s", name, err)
 		}
 
 		sub.quit <- true
@@ -296,7 +306,7 @@ func (conn *Connection) PublishRaw(target string, data []byte) error {
 func (conn *Connection) Publish(msg *Message) error {
 	transport, err := msg.Transport()
 	if err != nil {
-		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err)
+		return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 	}
 
 	transport.RecordNetworkHop(conn.ConnectedServer(), conn.config.Identity, conn.ConnectedServer())
@@ -351,7 +361,7 @@ func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.
 
 			err = conn.PublishRaw(target, []byte(j))
 			if err != nil {
-				err = fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err)
+				err = fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 				return
 			}
 		}
@@ -363,7 +373,7 @@ func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.
 func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protocol.TransportMessage) error {
 	target, err := conn.TargetForMessage(msg, "")
 	if err != nil {
-		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err)
+		return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 	}
 
 	transport.SetFederationRequestID(msg.RequestID)
@@ -371,7 +381,7 @@ func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protoc
 
 	j, err := transport.JSON()
 	if err != nil {
-		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err)
+		return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 	}
 
 	for _, federation := range conn.choria.FederationCollectives() {
@@ -381,7 +391,7 @@ func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protoc
 
 		err = conn.PublishRaw(target, []byte(j))
 		if err != nil {
-			return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err)
+			return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 		}
 	}
 
@@ -399,12 +409,12 @@ func (conn *Connection) publishConnected(msg *Message, transport protocol.Transp
 func (conn *Connection) publishConnectedBroadcast(msg *Message, transport protocol.TransportMessage) error {
 	j, err := transport.JSON()
 	if err != nil {
-		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err)
+		return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 	}
 
 	target, err := conn.TargetForMessage(msg, "")
 	if err != nil {
-		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err)
+		return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 	}
 
 	log.Debugf("Sending a broadcast message to NATS target '%s' for message %s type %s", target, msg.RequestID, msg.Type())
@@ -424,14 +434,14 @@ func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.
 	for _, host := range msg.DiscoveredHosts {
 		target, err := conn.TargetForMessage(msg, host)
 		if err != nil {
-			return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err)
+			return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 		}
 
 		log.Debugf("Sending a direct message to %s via NATS target '%s' for message %s type %s", host, target, msg.RequestID, msg.Type())
 
 		err = conn.PublishRaw(target, rawmsg)
 		if err != nil {
-			return fmt.Errorf("Could not publish directed message %s to %s: %s", msg.RequestID, host, err)
+			return fmt.Errorf("could not publish directed message %s to %s: %s", msg.RequestID, host, err)
 		}
 	}
 
