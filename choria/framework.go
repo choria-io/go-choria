@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"math/rand"
 	"net"
 	"os"
 	"strings"
@@ -56,6 +57,8 @@ func NewWithConfig(cfg *config.Config) (*Framework, error) {
 		Config: cfg,
 		mu:     &sync.Mutex{},
 	}
+
+	rand.Seed(time.Now().UnixNano())
 
 	err := c.SetupLogging(false)
 	if err != nil {
