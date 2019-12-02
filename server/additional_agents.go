@@ -32,9 +32,11 @@ func RegisterAdditionalAgent(i AgentInitializer) {
 
 func (srv *Instance) setupAdditionalAgents(ctx context.Context) error {
 	aamu.Lock()
-	defer aamu.Unlock()
+	agents := make([]AgentInitializer, len(additionalAgents))
+	copy(agents, additionalAgents)
+	aamu.Unlock()
 
-	for _, initializer := range additionalAgents {
+	for _, initializer := range agents {
 		err := initializer(ctx, srv.agents, srv.connector, srv.log)
 		if err != nil {
 			return err
