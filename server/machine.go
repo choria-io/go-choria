@@ -2,7 +2,6 @@ package server
 
 import (
 	"context"
-	"fmt"
 	"sync"
 
 	"github.com/choria-io/go-choria/aagent"
@@ -15,7 +14,8 @@ func (srv *Instance) StartMachine(ctx context.Context, wg *sync.WaitGroup) (err 
 	}
 
 	if srv.cfg.Choria.MachineSourceDir == "" {
-		return fmt.Errorf("Choria Autonomous Agent source directory not configured, skipping initialization")
+		srv.log.Info("Choria Autonomous Agent source directory not configured, skipping initialization")
+		return nil
 	}
 
 	srv.machines, err = aagent.New(srv.cfg.Choria.MachineSourceDir, srv)

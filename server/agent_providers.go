@@ -39,9 +39,11 @@ func RegisterAdditionalAgentProvider(p AgentProvider) {
 
 func (srv *Instance) setupAdditionalAgentProviders(ctx context.Context) error {
 	aapmu.Lock()
-	defer aapmu.Unlock()
+	providers := make([]AgentProvider, len(additionalAgentProviders))
+	copy(providers, additionalAgentProviders)
+	aapmu.Unlock()
 
-	for _, provider := range additionalAgentProviders {
+	for _, provider := range providers {
 		provider.Initialize(srv.fw, srv.log)
 
 		srv.log.Infof("Activating Agent Provider: %s", provider.Version())
