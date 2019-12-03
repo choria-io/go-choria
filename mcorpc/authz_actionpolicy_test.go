@@ -104,6 +104,14 @@ var _ = Describe("ActionPolicy", func() {
 				Expect(reason).To(Equal("Denying based on default policy in example2"))
 				Expect(matched).To(BeFalse())
 			})
+
+			It("Should match the regex caller", func() {
+				authz.req.CallerID = "up=bob"
+				matched, reason, err := authz.evaluatePolicy("testdata/policies/example2")
+				Expect(err).ToNot(HaveOccurred())
+				Expect(reason).To(Equal(""))
+				Expect(matched).To(BeTrue())
+			})
 		})
 
 		Describe("example3", func() {
@@ -619,7 +627,14 @@ var _ = Describe("Policy", func() {
 			Expect(pol.MatchesCallerID("choria=bob")).To(BeTrue())
 			Expect(pol.MatchesCallerID("choria=jill")).To(BeTrue())
 			Expect(pol.MatchesCallerID("choria=jane")).To(BeFalse())
+		})
 
+		It("Should support regex policies", func() {
+			pol.caller = "choria=bob /^up=/"
+			Expect(pol.MatchesCallerID("choria=bob")).To(BeTrue())
+			Expect(pol.MatchesCallerID("up=foo")).To(BeTrue())
+			Expect(pol.MatchesCallerID("up=other")).To(BeTrue())
+			Expect(pol.MatchesCallerID("up^other")).To(BeFalse())
 		})
 	})
 

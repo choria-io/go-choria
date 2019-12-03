@@ -1,2 +1,3 @@
 policy default deny
 allow		choria=ginkgo.mcollective		*		*		*
+allow		choria=ginkgo.mcollective /^up=.+/		*		*		*

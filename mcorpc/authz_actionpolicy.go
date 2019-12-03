@@ -23,20 +23,23 @@ type policyMatcher interface {
 	MatchesAction(act string) bool
 	MatchesCallerID(id string) bool
 	IsCompound(line string) bool
+	SetFile(f string)
 }
 
 func actionPolicyAuthorize(req *Request, agent *Agent, log *logrus.Entry) bool {
+	logger := log.WithFields(logrus.Fields{
+		"authorizer": "actionpolicy",
+		"agent":      agent.Name(),
+		"request":    req.RequestID,
+	})
+
 	authz := &actionPolicy{
 		cfg:     agent.Config,
 		req:     req,
 		agent:   agent,
-		matcher: &actionPolicyPolicy{},
+		matcher: &actionPolicyPolicy{log: logger},
 		groups:  make(map[string][]string),
-		log: log.WithFields(logrus.Fields{
-			"authorizer": "actionpolicy",
-			"agent":      agent.Name(),
-			"request":    req.RequestID,
-		}),
+		log:     logger,
 	}
 
 	err := authz.parseGroupFile("")
@@ -89,6 +92,7 @@ func (a *actionPolicy) authorize() bool {
 
 func (a *actionPolicy) evaluatePolicy(f string) (allowed bool, denyreason string, err error) {
 	a.log.Debugf("Parsing policy %s", f)
+	a.matcher.SetFile(f)
 
 	pf, err := os.Open(f)
 	if err != nil {
@@ -281,6 +285,8 @@ type actionPolicyPolicy struct {
 	facts   string
 	classes string
 	groups  map[string][]string
+	log     *logrus.Entry
+	file    string
 }
 
 func (p *actionPolicyPolicy) Set(caller string, actions string, facts string, classes string, groups map[string][]string) {
@@ -380,13 +386,33 @@ func (p *actionPolicyPolicy) MatchesCallerID(id string) bool {
 		return true
 	}
 
+	regexIdsMatcher := regexp.MustCompile("^/(.+)/$")
+
 	for _, c := range strings.Split(p.caller, " ") {
 		if c == id {
 			return true
 		}
+
+		if regexIdsMatcher.MatchString(c) {
+			matched := regexIdsMatcher.FindStringSubmatch(c)
+			re, err := regexp.Compile(matched[1])
+			if err != nil {
+				p.log.Errorf("Could not compile regex found in callerid '%s' in policy file %s: %s", c, p.file, err)
+				return false
+			}
+
+			if re.MatchString(id) {
+				return true
+			}
+		}
 	}
 
 	return false
+}
+
+// SetFile sets the file being parsed for errors and logging purposes
+func (p *actionPolicyPolicy) SetFile(f string) {
+	p.file = f
 }
 
 // IsCompound checks if the string is a compound statement
