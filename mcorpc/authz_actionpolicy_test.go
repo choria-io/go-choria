@@ -2,7 +2,6 @@ package mcorpc
 
 import (
 	"bytes"
-	"io/ioutil"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-config"
@@ -22,10 +21,10 @@ var _ = Describe("ActionPolicy", func() {
 	)
 
 	BeforeEach(func() {
-		pol = &actionPolicyPolicy{}
 		logbuffer = &bytes.Buffer{}
 		logger = logrus.NewEntry(logrus.New())
 		logger.Logger.Out = logbuffer
+		pol = &actionPolicyPolicy{log: logger}
 
 		cfg := config.NewConfigForTests()
 		cfg.ClassesFile = "testdata/classes.txt"
@@ -493,16 +492,18 @@ var _ = Describe("ActionPolicy", func() {
 
 var _ = Describe("Policy", func() {
 	var (
-		pol    *actionPolicyPolicy
-		logger *logrus.Entry
-		fw     *choria.Framework
-		err    error
+		pol       *actionPolicyPolicy
+		logger    *logrus.Entry
+		logbuffer *bytes.Buffer
+		fw        *choria.Framework
+		err       error
 	)
 
 	BeforeEach(func() {
-		pol = &actionPolicyPolicy{}
+		logbuffer = &bytes.Buffer{}
 		logger = logrus.NewEntry(logrus.New())
-		logger.Logger.Out = ioutil.Discard
+		logger.Logger.Out = logbuffer
+		pol = &actionPolicyPolicy{log: logger, file: "/nonexisting"}
 
 		cfg := config.NewConfigForTests()
 		cfg.DisableSecurityProviderVerify = true
@@ -630,11 +631,21 @@ var _ = Describe("Policy", func() {
 		})
 
 		It("Should support regex policies", func() {
-			pol.caller = "choria=bob /^up=/"
+			pol.caller = "choria=bob /^up=/ choria=jill"
 			Expect(pol.MatchesCallerID("choria=bob")).To(BeTrue())
 			Expect(pol.MatchesCallerID("up=foo")).To(BeTrue())
 			Expect(pol.MatchesCallerID("up=other")).To(BeTrue())
 			Expect(pol.MatchesCallerID("up^other")).To(BeFalse())
+			Expect(pol.MatchesCallerID("choria=jill")).To(BeTrue())
+
+			pol.caller = "choria=bob //"
+			Expect(pol.MatchesCallerID("up=foo")).To(BeFalse())
+			Expect(string(logbuffer.Bytes())).To(ContainSubstring("Invalid CallerID matcher '//' found in policy file /nonexisting"))
+
+			pol.caller = "choria=bob /*/"
+			Expect(pol.MatchesCallerID("up=foo")).To(BeFalse())
+			Expect(string(logbuffer.Bytes())).To(ContainSubstring("Could not compile regex found in CallerID '/*/' in policy file /nonexisting: error parsing regexp: missing argument to repetition operator: `*`"))
+
 		})
 	})
 

@@ -393,11 +393,17 @@ func (p *actionPolicyPolicy) MatchesCallerID(id string) bool {
 			return true
 		}
 
-		if regexIdsMatcher.MatchString(c) {
+		if strings.HasPrefix(c, "/") {
+			if !regexIdsMatcher.MatchString(c) {
+				p.log.Errorf("Invalid CallerID matcher '%s' found in policy file %s", c, p.file)
+				return false
+			}
+
 			matched := regexIdsMatcher.FindStringSubmatch(c)
+
 			re, err := regexp.Compile(matched[1])
 			if err != nil {
-				p.log.Errorf("Could not compile regex found in callerid '%s' in policy file %s: %s", c, p.file, err)
+				p.log.Errorf("Could not compile regex found in CallerID '%s' in policy file %s: %s", c, p.file, err)
 				return false
 			}
 
