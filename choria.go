@@ -30,8 +30,9 @@ type ChoriaPluginConfig struct {
 	FederationMiddlewareHosts []string `confkey:"plugin.choria.federation_middleware_hosts" type:"comma_split"`
 	FederationCluster         string   `confkey:"plugin.choria.federation.cluster" default:"mcollective"`
 
-	StatsListenAddress string `confkey:"plugin.choria.stats_address" default:"127.0.0.1"`
-	StatsPort          int    `confkey:"plugin.choria.stats_port" default:"0"`
+	StatsListenAddress    string `confkey:"plugin.choria.stats_address" default:"127.0.0.1"`
+	StatsPort             int    `confkey:"plugin.choria.stats_port" default:"0"`
+	LegacyLifeCycleFormat bool   `confkey:"plugin.choria.legacy_lifecycle_format" default:"0"`
 
 	// nats connector
 	NatsUser                 string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`
