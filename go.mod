@@ -14,6 +14,7 @@ require (
 	github.com/choria-io/go-srvcache v0.0.6
 	github.com/choria-io/mcorpc-agent-provider v0.8.1-0.20191203131347-ccb5c865a343
 	github.com/choria-io/provisioning-agent v0.5.1-0.20191025161815-4f7495a187c3
+	github.com/cloudevents/sdk-go v0.10.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.7.0
 	github.com/ghodss/yaml v1.0.0

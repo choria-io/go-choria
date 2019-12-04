@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent/machine"
@@ -89,10 +90,31 @@ func (w *mWatchCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 }
 
+func (w *mWatchCommand) dataFromCloudEventJSON(j []byte) ([]byte, error) {
+	event := cloudevents.NewEvent("1.0")
+	err := event.UnmarshalJSON(j)
+	if err != nil {
+		return nil, err
+	}
+
+	data, err := event.DataBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	return data, nil
+}
+
 func (w *mWatchCommand) showState(m *choria.ConnectorMessage) {
 	w.log.Debugf("watcher: topic: %s body: %s", m.Subject, string(m.Data))
 
-	state, err := machine.ParseWatcherState(m.Bytes())
+	data, err := w.dataFromCloudEventJSON(m.Bytes())
+	if err != nil {
+		w.log.Errorf("could not parse cloud event: %s", err)
+		return
+	}
+
+	state, err := machine.ParseWatcherState(data)
 	if err != nil {
 		w.log.Errorf("%s", err)
 		return
@@ -106,10 +128,16 @@ func (w *mWatchCommand) showState(m *choria.ConnectorMessage) {
 func (w *mWatchCommand) showTransition(m *choria.ConnectorMessage) {
 	w.log.Debugf("transition: topic: %s body: %s", m.Subject, string(m.Data))
 
-	transition := &machine.TransitionNotification{}
-	err = json.Unmarshal(m.Bytes(), transition)
+	data, err := w.dataFromCloudEventJSON(m.Bytes())
 	if err != nil {
-		w.log.Errorf("Could not decode received transition message: %s: %s", string(m.Bytes()), err)
+		w.log.Errorf("could not parse cloud event: %s", err)
+		return
+	}
+
+	transition := &machine.TransitionNotification{}
+	err = json.Unmarshal(data, transition)
+	if err != nil {
+		w.log.Errorf("Could not decode received transition message: %s: %s", string(data), err)
 		return
 	}
 

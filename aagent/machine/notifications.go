@@ -1,6 +1,12 @@
 package machine
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+
+	"github.com/choria-io/go-choria/choria"
+	cloudevents "github.com/cloudevents/sdk-go"
+)
 
 // TransitionNotification is a notification when a transition completes
 type TransitionNotification struct {
@@ -17,8 +23,23 @@ type TransitionNotification struct {
 	Info InfoSource `json:"-"`
 }
 
+// String returns a string representation of the event
 func (t *TransitionNotification) String() string {
 	return fmt.Sprintf("%s %s transitioned via event %s: %s => %s", t.Identity, t.Machine, t.Transition, t.FromState, t.ToState)
+}
+
+// CloudEvent creates a cloud event from the transition
+func (t *TransitionNotification) CloudEvent() cloudevents.Event {
+	event := cloudevents.NewEvent("1.0")
+
+	event.SetType("transition")
+	event.SetSource("io.choria.machine")
+	event.SetSubject(t.Transition)
+	event.SetID(choria.UniqueID())
+	event.SetTime(time.Unix(t.Timestamp, 0))
+	event.SetData(t)
+
+	return event
 }
 
 // InfoSource provides information about a running machine
@@ -38,6 +59,7 @@ type InfoSource interface {
 // WatcherStateNotification is a notification about the state of a watcher
 type WatcherStateNotification interface {
 	JSON() ([]byte, error)
+	CloudEvent() cloudevents.Event
 	String() string
 	WatcherType() string
 }
