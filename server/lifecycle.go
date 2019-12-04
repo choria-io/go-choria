@@ -18,6 +18,12 @@ func (srv *Instance) SetComponent(c string) {
 
 // PublishEvent publishes a lifecycle event to the network
 func (srv *Instance) PublishEvent(e lifecycle.Event) error {
+	if srv.cfg.Choria.LegacyLifeCycleFormat {
+		e.SetFormat(lifecycle.ChoriaFormat)
+	} else {
+		e.SetFormat(lifecycle.CloudEventV1Format)
+	}
+
 	return lifecycle.PublishEvent(e, srv.connector)
 }
 

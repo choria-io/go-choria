@@ -5,8 +5,8 @@ go 1.13
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.2
 	github.com/choria-io/go-client v0.5.2-0.20190919155331-b32ad7c92f15
-	github.com/choria-io/go-config v0.0.5-0.20191129180213-a889c557788c
-	github.com/choria-io/go-lifecycle v1.0.4
+	github.com/choria-io/go-config v0.0.5-0.20191204191032-0f02366f3839
+	github.com/choria-io/go-lifecycle v1.0.5-0.20191204185709-604f653847da
 	github.com/choria-io/go-network-broker v1.3.2-0.20191122041751-8b329f83e533
 	github.com/choria-io/go-protocol v1.3.2
 	github.com/choria-io/go-puppet v0.0.1
@@ -30,7 +30,7 @@ require (
 	github.com/onsi/gomega v1.7.1
 	github.com/pkg/errors v0.8.1
 	github.com/prometheus/client_golang v1.2.1
-	github.com/prometheus/client_model v0.0.0-20190812154241-14fe0d1b01d4
+	github.com/prometheus/client_model v0.0.0-20191202183732-d1d2010b5bee
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/tidwall/gjson v1.3.5
