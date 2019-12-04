@@ -64,7 +64,7 @@ func (m *Machine) TimeStamp() time.Time {
 
 // TimeStampSeconds returns the current time in unix seconds
 func (m *Machine) TimeStampSeconds() int64 {
-	return m.TimeStamp().UnixNano()
+	return m.TimeStamp().Unix()
 }
 
 // UniqueID creates a new unique ID, usually a v4 uuid, if that fails a random string based ID is made

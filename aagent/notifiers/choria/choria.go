@@ -55,7 +55,7 @@ func (n *Notifier) Errorf(m machine.InfoSource, name string, format string, args
 func (n *Notifier) NotifyPostTransition(transition *machine.TransitionNotification) (err error) {
 	n.logger.Infof("%s transitioned via event %s: from %s into %s", transition.Machine, transition.Transition, transition.FromState, transition.ToState)
 
-	j, err := json.Marshal(transition)
+	j, err := json.Marshal(transition.CloudEvent())
 	if err != nil {
 		return errors.Wrap(err, "could not JSON encode transition notification")
 	}
