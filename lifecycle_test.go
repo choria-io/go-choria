@@ -1,10 +1,10 @@
 package lifecycle
 
 import (
+	gomock "github.com/golang/mock/gomock"
+	"io/ioutil"
 	"os"
 	"testing"
-
-	gomock "github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -47,20 +47,54 @@ var _ = Describe("Events", func() {
 		})
 	})
 
+	Describe("EventFormatFromJSON", func() {
+		It("Should detect choria format", func() {
+			Expect(EventFormatFromJSON([]byte("{}"))).To(Equal(UnknownFormat))
+			Expect(EventFormatFromJSON([]byte(`{"protocol":"io.choria.lifecycle.v1.unknown"}`))).To(Equal(ChoriaFormat))
+			Expect(EventFormatFromJSON([]byte(`{"protocol":"other"}`))).To(Equal(UnknownFormat))
+
+		})
+
+		It("Should detect cloudevent format", func() {
+			Expect(EventFormatFromJSON([]byte(`{"specversion":"1.0", "source":"io.choria.lifecycle"}`))).To(Equal(CloudEventV1Format))
+			Expect(EventFormatFromJSON([]byte(`{"specversion":"1.0", "source":"message/other"}`))).To(Equal(UnknownFormat))
+			Expect(EventFormatFromJSON([]byte(`{"specversion":"0.1", "source":"message/io.choria.lifecycle"}`))).To(Equal(UnknownFormat))
+
+		})
+	})
+
 	Describe("NewFromJSON", func() {
-		It("Should handle messages without protocols", func() {
-			_, err := NewFromJSON([]byte("{}"))
-			Expect(err).To(MatchError("no protocol field present"))
+		Context("Choria Format", func() {
+			It("Should handle invalid protocols", func() {
+				_, err := NewFromJSON([]byte(`{"protocol":"fail"}`))
+				Expect(err).To(MatchError("unsupported event format"))
+			})
+
+			It("Should handle unknown event types", func() {
+				_, err := NewFromJSON([]byte(`{"protocol":"io.choria.lifecycle.v1.unknown"}`))
+				Expect(err).To(MatchError("unknown protocol 'io.choria.lifecycle.v1.unknown' received"))
+			})
+
+			It("Should handle correctly formatted events", func() {
+				j, err := ioutil.ReadFile("testdata/choriaFormatShutdown.json")
+				Expect(err).ToNot(HaveOccurred())
+				event, err := NewFromJSON(j)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(event.Type()).To(Equal(Shutdown))
+				Expect(event.Format()).To(Equal(ChoriaFormat))
+			})
 		})
 
-		It("Should handle invalid protocols", func() {
-			_, err := NewFromJSON([]byte(`{"protocol":"fail"}`))
-			Expect(err).To(MatchError("invalid protocol 'fail' received"))
-		})
-
-		It("Should handle unknown event types", func() {
-			_, err := NewFromJSON([]byte(`{"protocol":"io.choria.lifecycle.v1.unknown"}`))
-			Expect(err).To(MatchError("unknown protocol 'io.choria.lifecycle.v1.unknown' received"))
+		Context("CloudEvents Format", func() {
+			It("Should handle correctly formatted events", func() {
+				j, err := ioutil.ReadFile("testdata/cloudEventFormatShutdown.json")
+				Expect(err).ToNot(HaveOccurred())
+				event, err := NewFromJSON(j)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(event.Type()).To(Equal(Shutdown))
+				Expect(event.Component()).To(Equal("server"))
+				Expect(event.Format()).To(Equal(CloudEventV1Format))
+			})
 		})
 	})
 
@@ -72,7 +106,20 @@ var _ = Describe("Events", func() {
 			event, err := New(Startup, Component("ginkgo"), Version("1.2.3"), Identity("ginkgo.example.net"))
 			Expect(err).ToNot(HaveOccurred())
 			conn.EXPECT().PublishRaw("choria.lifecycle.event.startup.ginkgo", []byte(`{"protocol":"io.choria.lifecycle.v1.startup","id":"01e72410-d734-4611-9485-8c6a2dd2579b","identity":"ginkgo.example.net","component":"ginkgo","timestamp":1535106973,"version":"1.2.3"}`))
-			PublishEvent(event, conn)
+			err = PublishEvent(event, conn)
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should support cloud events format", func() {
+			mockTime = 1535106973
+			mockID = "01e72410-d734-4611-9485-8c6a2dd2579b"
+
+			event, err := New(Startup, Component("ginkgo"), Version("1.2.3"), Identity("ginkgo.example.net"))
+			Expect(err).ToNot(HaveOccurred())
+			event.SetFormat(CloudEventV1Format)
+			conn.EXPECT().PublishRaw("choria.lifecycle.event.startup.ginkgo", []byte(`{"data":{"protocol":"io.choria.lifecycle.v1.startup","id":"01e72410-d734-4611-9485-8c6a2dd2579b","identity":"ginkgo.example.net","component":"ginkgo","timestamp":1535106973,"version":"1.2.3"},"id":"01e72410-d734-4611-9485-8c6a2dd2579b","source":"io.choria.lifecycle","specversion":"1.0","subject":"ginkgo","time":"2018-08-24T10:36:13Z","type":"startup"}`))
+			err = PublishEvent(event, conn)
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 })

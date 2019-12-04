@@ -40,11 +40,11 @@ func newProvisionedEventFromJSON(j []byte) (*ProvisionedEvent, error) {
 		return nil, err
 	}
 
-	if event.Protocol == "choria:lifecycle:provisioned:1" {
+	switch event.Protocol {
+	case "io.choria.lifecycle.v1.provisioned":
+	case "choria:lifecycle:provisioned:1":
 		event.Protocol = "io.choria.lifecycle.v1.provisioned"
-	}
-
-	if event.Protocol != "io.choria.lifecycle.v1.provisioned" {
+	default:
 		return nil, fmt.Errorf("invalid protocol '%s'", event.Protocol)
 	}
 

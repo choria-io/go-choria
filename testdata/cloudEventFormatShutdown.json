@@ -1,0 +1,14 @@
+{
+    "specversion": "1.0",
+    "type": "io.choria.lifecycle.v1.shutdown",
+    "source": "io.choria.lifecycle",
+    "id": "A234-1234-1234",
+    "time": "2019-12-04T18:58:58Z",
+    "data": {
+        "protocol": "io.choria.lifecycle.v1.shutdown",
+        "id": "cb6f1dbc-d65b-49b9-907e-e4a51bee75f8",
+        "identity": "dev1.devco.net",
+        "component": "server",
+        "timestamp": 1575482338
+    }
+}

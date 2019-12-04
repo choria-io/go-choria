@@ -1,5 +1,9 @@
 package lifecycle
 
+import (
+	"time"
+)
+
 // Event is event that can be published to the network
 type Event interface {
 	Target() (string, error)
@@ -10,4 +14,7 @@ type Event interface {
 	Component() string
 	Identity() string
 	ID() string
+	Format() Format
+	SetFormat(Format)
+	TimeStamp() time.Time
 }

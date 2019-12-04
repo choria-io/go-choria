@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-srvcache"
+	"github.com/sirupsen/logrus"
 )
 
 // SubscribeConnector is a connection to the middleware
@@ -16,13 +18,21 @@ type SubscribeConnector interface {
 	ConnectedServer() string
 }
 
+type Framework interface {
+	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn choria.Connector, err error)
+	Certname() string
+	Logger(name string) *logrus.Entry
+	NewRequestID() (string, error)
+	MiddlewareServers() (servers srvcache.Servers, err error)
+}
+
 // ViewOptions configure the view command
 type ViewOptions struct {
 	TypeFilter      string
 	ComponentFilter string
 	Debug           bool
 	Output          io.Writer
-	Choria          *choria.Framework
+	Choria          Framework
 	Connector       SubscribeConnector
 }
 

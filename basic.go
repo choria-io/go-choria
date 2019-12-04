@@ -1,16 +1,30 @@
 package lifecycle
 
-import "fmt"
+import (
+	"fmt"
+	"time"
+)
 
 type basicEvent struct {
-	Protocol  string `json:"protocol"`
-	EventID   string `json:"id"`
-	Ident     string `json:"identity"`
-	Comp      string `json:"component"`
-	Timestamp int64  `json:"timestamp"`
+	Protocol    string `json:"protocol"`
+	EventID     string `json:"id"`
+	Ident       string `json:"identity"`
+	Comp        string `json:"component"`
+	Timestamp   int64  `json:"timestamp"`
+	EventFormat Format `json:"-"`
 
 	etype string
 	dtype Type
+}
+
+// Format retrieves the encoding format for the event
+func (e *basicEvent) Format() Format {
+	return e.EventFormat
+}
+
+// SetFormat sets the encoding format for the event
+func (e *basicEvent) SetFormat(f Format) {
+	e.EventFormat = f
 }
 
 // ID is the v4 uuid of this message
@@ -62,15 +76,18 @@ func (e *basicEvent) TypeString() string {
 	return e.etype
 }
 
-func newBasicEvent(t string) basicEvent {
-	dtype := eventTypes[t]
-	protocol := fmt.Sprintf("io.choria.lifecycle.v1.%s", t)
+// Time retrieves the event time
+func (e *basicEvent) TimeStamp() time.Time {
+	return time.Unix(e.Timestamp, 0)
+}
 
+func newBasicEvent(t string) basicEvent {
 	return basicEvent{
-		Protocol:  protocol,
-		EventID:   eventID(),
-		Timestamp: timeStamp(),
-		etype:     t,
-		dtype:     dtype,
+		Protocol:    fmt.Sprintf("io.choria.lifecycle.v1.%s", t),
+		EventID:     eventID(),
+		Timestamp:   timeStamp(),
+		EventFormat: ChoriaFormat,
+		etype:       t,
+		dtype:       eventTypes[t],
 	}
 }

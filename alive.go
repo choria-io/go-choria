@@ -44,11 +44,11 @@ func newAliveEventFromJSON(j []byte) (*AliveEvent, error) {
 		return nil, err
 	}
 
-	if event.Protocol == "choria:lifecycle:alive:1" {
+	switch event.Protocol {
+	case "io.choria.lifecycle.v1.alive":
+	case "choria:lifecycle:alive:1":
 		event.Protocol = "io.choria.lifecycle.v1.alive"
-	}
-
-	if event.Protocol != "io.choria.lifecycle.v1.alive" {
+	default:
 		return nil, fmt.Errorf("invalid protocol '%s'", event.Protocol)
 	}
 

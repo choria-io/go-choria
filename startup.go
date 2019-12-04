@@ -44,11 +44,11 @@ func newStartupEventFromJSON(j []byte) (*StartupEvent, error) {
 		return nil, err
 	}
 
-	if event.Protocol == "choria:lifecycle:startup:1" {
+	switch event.Protocol {
+	case "io.choria.lifecycle.v1.startup":
+	case "choria:lifecycle:startup:1":
 		event.Protocol = "io.choria.lifecycle.v1.startup"
-	}
-
-	if event.Protocol != "io.choria.lifecycle.v1.startup" {
+	default:
 		return nil, fmt.Errorf("invalid protocol '%s'", event.Protocol)
 	}
 
