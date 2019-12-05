@@ -189,9 +189,9 @@ func protoStringToTypeString(proto string) (eventType string, err error) {
 func ToCloudEventV1(e Event) cloudevents.Event {
 	event := cloudevents.NewEvent("1.0")
 
-	event.SetType(e.TypeString())
+	event.SetType(e.Protocol())
 	event.SetSource("io.choria.lifecycle")
-	event.SetSubject(e.Component())
+	event.SetSubject(e.Identity())
 	event.SetID(e.ID())
 	event.SetTime(e.TimeStamp())
 	event.SetData(e)

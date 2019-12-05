@@ -6,15 +6,20 @@ import (
 )
 
 type basicEvent struct {
-	Protocol    string `json:"protocol"`
-	EventID     string `json:"id"`
-	Ident       string `json:"identity"`
-	Comp        string `json:"component"`
-	Timestamp   int64  `json:"timestamp"`
-	EventFormat Format `json:"-"`
+	EventProtocol string `json:"protocol"`
+	EventID       string `json:"id"`
+	Ident         string `json:"identity"`
+	Comp          string `json:"component"`
+	Timestamp     int64  `json:"timestamp"`
+	EventFormat   Format `json:"-"`
 
 	etype string
 	dtype Type
+}
+
+// Protocol retrieves the event protocol
+func (e *basicEvent) Protocol() string {
+	return e.EventProtocol
 }
 
 // Format retrieves the encoding format for the event
@@ -83,11 +88,11 @@ func (e *basicEvent) TimeStamp() time.Time {
 
 func newBasicEvent(t string) basicEvent {
 	return basicEvent{
-		Protocol:    fmt.Sprintf("io.choria.lifecycle.v1.%s", t),
-		EventID:     eventID(),
-		Timestamp:   timeStamp(),
-		EventFormat: ChoriaFormat,
-		etype:       t,
-		dtype:       eventTypes[t],
+		EventProtocol: fmt.Sprintf("io.choria.lifecycle.v1.%s", t),
+		EventID:       eventID(),
+		Timestamp:     timeStamp(),
+		EventFormat:   ChoriaFormat,
+		etype:         t,
+		dtype:         eventTypes[t],
 	}
 }

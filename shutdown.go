@@ -39,12 +39,12 @@ func newShutdownEventFromJSON(j []byte) (*ShutdownEvent, error) {
 		return nil, err
 	}
 
-	switch event.Protocol {
+	switch event.EventProtocol {
 	case "io.choria.lifecycle.v1.shutdown":
 	case "choria:lifecycle:shutdown:1":
-		event.Protocol = "io.choria.lifecycle.v1.shutdown"
+		event.EventProtocol = "io.choria.lifecycle.v1.shutdown"
 	default:
-		return nil, fmt.Errorf("invalid protocol '%s'", event.Protocol)
+		return nil, fmt.Errorf("invalid protocol '%s'", event.EventProtocol)
 	}
 
 	return event, nil
