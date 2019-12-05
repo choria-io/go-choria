@@ -111,7 +111,7 @@ jobs:
 
     steps: *std_build_steps
 
-    build_xenial_64bit_debs:
+  build_xenial_64bit_debs:
     docker:
       - image: circleci/golang:1.13
 
@@ -203,7 +203,7 @@ workflows:
           context: org-global
           requires:
             - test
-      
+
       - build_el7_64bit_rpms:
           context: org-global
           requires:
