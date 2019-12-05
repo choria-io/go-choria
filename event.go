@@ -6,6 +6,7 @@ import (
 
 // Event is event that can be published to the network
 type Event interface {
+	Protocol() string
 	Target() (string, error)
 	String() string
 	Type() Type
