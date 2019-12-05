@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"time"
 	"github.com/choria-io/go-choria/choria"
 	cloudevents "github.com/cloudevents/sdk-go"
+	"time"
 )
 
 // StateNotification describes the current state of the watcher
@@ -29,9 +29,9 @@ type StateNotification struct {
 func (s *StateNotification) CloudEvent() cloudevents.Event {
 	event := cloudevents.NewEvent("1.0")
 
-	event.SetType("current_state")
+	event.SetType(s.Protocol)
 	event.SetSource("io.choria.machine")
-	event.SetSubject(s.Type)
+	event.SetSubject(s.Identity)
 	event.SetID(choria.UniqueID())
 	event.SetTime(time.Unix(s.Timestamp, 0))
 	event.SetData(s)

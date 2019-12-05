@@ -6,7 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.0.2
 	github.com/choria-io/go-client v0.5.2-0.20190919155331-b32ad7c92f15
 	github.com/choria-io/go-config v0.0.5-0.20191204191032-0f02366f3839
-	github.com/choria-io/go-lifecycle v1.0.5-0.20191204185709-604f653847da
+	github.com/choria-io/go-lifecycle v1.0.5-0.20191205093449-d3f961536822
 	github.com/choria-io/go-network-broker v1.3.2-0.20191122041751-8b329f83e533
 	github.com/choria-io/go-protocol v1.3.2
 	github.com/choria-io/go-puppet v0.0.1
