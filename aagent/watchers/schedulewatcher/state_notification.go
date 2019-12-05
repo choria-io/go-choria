@@ -27,9 +27,9 @@ type StateNotification struct {
 func (s *StateNotification) CloudEvent() cloudevents.Event {
 	event := cloudevents.NewEvent("1.0")
 
-	event.SetType("current_state")
+	event.SetType(s.Protocol)
 	event.SetSource("io.choria.machine")
-	event.SetSubject(s.Type)
+	event.SetSubject(s.Identity)
 	event.SetID(choria.UniqueID())
 	event.SetTime(time.Unix(s.Timestamp, 0))
 	event.SetData(s)

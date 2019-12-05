@@ -32,9 +32,9 @@ func (t *TransitionNotification) String() string {
 func (t *TransitionNotification) CloudEvent() cloudevents.Event {
 	event := cloudevents.NewEvent("1.0")
 
-	event.SetType("transition")
+	event.SetType(t.Protocol)
 	event.SetSource("io.choria.machine")
-	event.SetSubject(t.Transition)
+	event.SetSubject(t.Identity)
 	event.SetID(choria.UniqueID())
 	event.SetTime(time.Unix(t.Timestamp, 0))
 	event.SetData(t)
