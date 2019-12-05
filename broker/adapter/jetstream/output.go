@@ -21,7 +21,7 @@ import (
 type stream struct {
 	servers     func() (srvcache.Servers, error)
 	clientID    string
-	messageSet  string
+	topic       string
 	conn        choria.Connector
 	log         *log.Entry
 	name        string
@@ -52,21 +52,21 @@ func newStream(name string, work chan ingest.Adaptable, logger *log.Entry) ([]*s
 		return nil, fmt.Errorf("No Stream servers configured, please set %s", prefix+"servers")
 	}
 
-	messageSet := cfg.Option(prefix+"message_set", "")
-	if messageSet == "" {
-		messageSet = name
+	topic := cfg.Option(prefix+"topic", "")
+	if topic == "" {
+		topic = name
 	}
 
 	workers := []*stream{}
 
 	for i := 0; i < instances; i++ {
-		logger.Infof("Creating NATS JetStream Adapter %s instance %d / %d publishing to message set %s", name, i, instances, messageSet)
+		logger.Infof("Creating NATS JetStream Adapter %s instance %d / %d publishing to message set %s", name, i, instances, topic)
 
 		iname := fmt.Sprintf("%s_%d-%s", name, i, strings.Replace(choria.UniqueID(), "-", "", -1))
 
 		st := &stream{
 			clientID:    iname,
-			messageSet:  messageSet,
+			topic:       topic,
 			name:        fmt.Sprintf("%s.%d", name, i),
 			adapterName: name,
 			work:        work,
@@ -133,13 +133,13 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 			return
 		}
 
-		sc.log.Debugf("Publishing registration data from %s to %s", r.SenderID(), sc.messageSet)
+		sc.log.Debugf("Publishing registration data from %s to %s", r.SenderID(), sc.topic)
 
 		bytes.Add(float64(len(j)))
 
-		err = sc.conn.PublishRaw(sc.messageSet, j)
+		err = sc.conn.PublishRaw(sc.topic, j)
 		if err != nil {
-			sc.log.Warnf("Could not publish message to JetStream %s, discarding: %s", sc.messageSet, err)
+			sc.log.Warnf("Could not publish message to JetStream %s, discarding: %s", sc.topic, err)
 			ectr.Inc()
 			return
 		}
