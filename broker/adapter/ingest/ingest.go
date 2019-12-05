@@ -1,12 +1,15 @@
-package natsstream
+package ingest
 
 import (
 	"context"
 	"fmt"
 	"strconv"
 	"sync"
+	"time"
 
 	"github.com/choria-io/go-choria/broker/adapter/stats"
+	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-protocol/protocol"
 	"github.com/choria-io/go-srvcache"
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -14,8 +17,15 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type nats struct {
-	servers     func() (srvcache.Servers, error)
+// Adaptable matches both protocol.Request and protocol.Reply
+type Adaptable interface {
+	Message() string
+	SenderID() string
+	Time() time.Time
+	RequestID() string
+}
+
+type NatsIngest struct {
 	topic       string
 	proto       string
 	name        string
@@ -23,14 +33,24 @@ type nats struct {
 	group       string
 
 	input chan *choria.ConnectorMessage
-	work  chan adaptable
+	work  chan Adaptable
 
+	fw   Framework
+	cfg  *config.Config
 	log  *log.Entry
 	conn choria.Connector
 }
 
-func newIngest(name string, work chan adaptable, logger *log.Entry) ([]*nats, error) {
+type Framework interface {
+	Configuration() *config.Config
+	MiddlewareServers() (servers srvcache.Servers, err error)
+	NewRequestFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Request, err error)
+	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
+}
+
+func New(name string, work chan Adaptable, fw Framework, logger *log.Entry) ([]*NatsIngest, error) {
 	prefix := fmt.Sprintf("plugin.choria.adapter.%s.ingest.", name)
+	cfg := fw.Configuration()
 
 	instances, err := strconv.Atoi(cfg.Option(prefix+"workers", "10"))
 	if err != nil {
@@ -42,14 +62,9 @@ func newIngest(name string, work chan adaptable, logger *log.Entry) ([]*nats, er
 		return nil, fmt.Errorf("No ingest topic configured, please set %s", prefix+"topic")
 	}
 
-	_, err = framework.MiddlewareServers()
-	if err != nil {
-		return nil, fmt.Errorf("Could not resolve initial server list: %s", err)
-	}
-
 	proto := cfg.Option(prefix+"protocol", "reply")
 
-	workers := []*nats{}
+	workers := []*NatsIngest{}
 
 	if proto == "request" {
 		proto = "choria:request"
@@ -59,16 +74,17 @@ func newIngest(name string, work chan adaptable, logger *log.Entry) ([]*nats, er
 
 	for i := 0; i < instances; i++ {
 		iname := fmt.Sprintf("%s.%d", name, i)
-		logger.Infof("Creating NATS Streaming Adapter %s %s Ingest instance %d / %d", name, topic, i, instances)
+		logger.Infof("Creating NATS JetStream Adapter %s %s Ingest instance %d / %d", name, topic, i, instances)
 
-		n := &nats{
+		n := &NatsIngest{
 			name:        iname,
 			adapterName: name,
 			group:       "nats_ingest_" + name,
 			topic:       topic,
 			work:        work,
-			servers:     framework.MiddlewareServers,
 			proto:       proto,
+			fw:          fw,
+			cfg:         fw.Configuration(),
 			log:         logger.WithFields(log.Fields{"side": "ingest", "instance": i}),
 		}
 
@@ -78,14 +94,14 @@ func newIngest(name string, work chan adaptable, logger *log.Entry) ([]*nats, er
 	return workers, nil
 }
 
-func (na *nats) connect(ctx context.Context, cm choria.ConnectionManager) error {
+func (na *NatsIngest) Connect(ctx context.Context, cm choria.ConnectionManager) error {
 	if ctx.Err() != nil {
 		return fmt.Errorf("Shutdown called")
 	}
 
 	var err error
 
-	na.conn, err = cm.NewConnector(ctx, na.servers, fmt.Sprintf("choria adapter %s", na.name), na.log)
+	na.conn, err = cm.NewConnector(ctx, na.fw.MiddlewareServers, fmt.Sprintf("choria adapter %s", na.name), na.log)
 	if err != nil {
 		return fmt.Errorf("Could not start NATS connection: %s", err)
 	}
@@ -98,21 +114,21 @@ func (na *nats) connect(ctx context.Context, cm choria.ConnectionManager) error 
 	return nil
 }
 
-func (na *nats) disconnect() {
+func (na *NatsIngest) disconnect() {
 	if na.conn != nil {
 		na.log.Info("Disconnecting from NATS")
 		na.conn.Close()
 	}
 }
 
-func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
+func (na *NatsIngest) Receiver(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	bytes := stats.BytesCtr.WithLabelValues(na.name, "input", cfg.Identity)
-	ectr := stats.ErrorCtr.WithLabelValues(na.name, "input", cfg.Identity)
-	ctr := stats.ReceivedMsgsCtr.WithLabelValues(na.name, "input", cfg.Identity)
-	timer := stats.ProcessTime.WithLabelValues(na.name, "input", cfg.Identity)
-	workqlen := stats.WorkQueueLengthGauge.WithLabelValues(na.adapterName, cfg.Identity)
+	bytes := stats.BytesCtr.WithLabelValues(na.name, "input", na.cfg.Identity)
+	ectr := stats.ErrorCtr.WithLabelValues(na.name, "input", na.cfg.Identity)
+	ctr := stats.ReceivedMsgsCtr.WithLabelValues(na.name, "input", na.cfg.Identity)
+	timer := stats.ProcessTime.WithLabelValues(na.name, "input", na.cfg.Identity)
+	workqlen := stats.WorkQueueLengthGauge.WithLabelValues(na.adapterName, na.cfg.Identity)
 
 	receiverf := func(cm *choria.ConnectorMessage) {
 		obs := prometheus.NewTimer(timer)
@@ -120,15 +136,15 @@ func (na *nats) receiver(ctx context.Context, wg *sync.WaitGroup) {
 		defer func() { workqlen.Set(float64(len(na.work))) }()
 
 		rawmsg := cm.Data
-		var msg adaptable
+		var msg Adaptable
 		var err error
 
 		bytes.Add(float64(len(rawmsg)))
 
 		if na.proto == "choria:request" {
-			msg, err = framework.NewRequestFromTransportJSON(rawmsg, true)
+			msg, err = na.fw.NewRequestFromTransportJSON(rawmsg, true)
 		} else {
-			msg, err = framework.NewReplyFromTransportJSON(rawmsg, true)
+			msg, err = na.fw.NewReplyFromTransportJSON(rawmsg, true)
 		}
 
 		if err != nil {

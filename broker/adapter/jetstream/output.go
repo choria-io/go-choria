@@ -1,39 +1,34 @@
-package natsstream
+package jetstream
 
 import (
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
 	"strconv"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/broker/adapter/ingest"
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/broker/adapter/transformer"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-srvcache"
-	stan "github.com/nats-io/stan.go"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
 
 type stream struct {
 	servers     func() (srvcache.Servers, error)
-	clusterID   string
 	clientID    string
-	topic       string
-	conn        stan.Conn
+	messageSet  string
+	conn        choria.Connector
 	log         *log.Entry
 	name        string
 	adapterName string
 
 	work chan ingest.Adaptable
 	quit chan bool
-	mu   *sync.Mutex
 }
 
 type msg struct {
@@ -57,33 +52,27 @@ func newStream(name string, work chan ingest.Adaptable, logger *log.Entry) ([]*s
 		return nil, fmt.Errorf("No Stream servers configured, please set %s", prefix+"servers")
 	}
 
-	topic := cfg.Option(prefix+"topic", "")
-	if topic == "" {
-		topic = name
-	}
-
-	clusterID := cfg.Option(prefix+"clusterid", "")
-	if clusterID == "" {
-		return nil, fmt.Errorf("no ClusterID configured, please set %s", prefix+"clusterid'")
+	messageSet := cfg.Option(prefix+"message_set", "")
+	if messageSet == "" {
+		messageSet = name
 	}
 
 	workers := []*stream{}
 
 	for i := 0; i < instances; i++ {
-		logger.Infof("Creating NATS Streaming Adapter %s NATS Streaming instance %d / %d publishing to %s on cluster %s", name, i, instances, topic, clusterID)
+		logger.Infof("Creating NATS JetStream Adapter %s instance %d / %d publishing to message set %s", name, i, instances, messageSet)
 
 		iname := fmt.Sprintf("%s_%d-%s", name, i, strings.Replace(choria.UniqueID(), "-", "", -1))
 
 		st := &stream{
-			clusterID:   clusterID,
 			clientID:    iname,
-			topic:       topic,
+			messageSet:  messageSet,
 			name:        fmt.Sprintf("%s.%d", name, i),
 			adapterName: name,
 			work:        work,
 			log:         logger.WithFields(log.Fields{"side": "stream", "instance": i}),
-			mu:          &sync.Mutex{},
 		}
+
 		st.servers = st.resolver(strings.Split(servers, ","))
 
 		workers = append(workers, st)
@@ -104,85 +93,21 @@ func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) erro
 		return fmt.Errorf("Shutdown called")
 	}
 
-	reconn := make(chan struct{})
-
-	nc, err := cm.NewConnector(ctx, sc.servers, sc.clientID, sc.log)
+	nc, err := fw.NewConnector(ctx, sc.servers, sc.clientID, sc.log)
 	if err != nil {
-		return fmt.Errorf("Could not start NATS connection: %s", err)
+		return fmt.Errorf("Could not start JetStream connection: %s", err)
 	}
 
-	start := func() error {
-		sc.log.Infof("%s connecting to NATS Stream", sc.clientID)
+	sc.conn = nc
 
-		sc.mu.Lock()
-		defer sc.mu.Unlock()
-
-		ctr := 0
-
-		for {
-			ctr++
-
-			if ctx.Err() != nil {
-				return errors.New("shutdown called")
-			}
-
-			sc.conn, err = stan.Connect(sc.clusterID, sc.clientID, stan.NatsConn(nc.Nats()), stan.SetConnectionLostHandler(func(_ stan.Conn, reason error) {
-				sc.log.Errorf("NATS Streaming connection got disconnected, reconnecting: %s", reason)
-				stats.ErrorCtr.WithLabelValues(sc.name, "output", cfg.Identity).Inc()
-				reconn <- struct{}{}
-			}))
-			if err != nil {
-				sc.log.Errorf("Could not create initial STAN connection, retrying: %s", err)
-				backoff.FiveSec.InterruptableSleep(ctx, ctr)
-
-				continue
-			}
-
-			break
-		}
-
-		return nil
-	}
-
-	watcher := func() {
-		ctr := 0
-
-		for {
-			select {
-			case <-reconn:
-				ctr++
-
-				sc.log.WithField("attempt", ctr).Infof("Attempting to reconnect NATS Stream after reconnection")
-
-				backoff.FiveSec.InterruptableSleep(ctx, ctr)
-
-				err := start()
-				if err != nil {
-					sc.log.Errorf("Could not restart NATS Streaming connection: %s", err)
-					reconn <- struct{}{}
-				}
-
-			case <-ctx.Done():
-				return
-			}
-		}
-	}
-
-	err = start()
-	if err != nil {
-		return fmt.Errorf("could not start initial NATS Streaming connection: %s", err)
-	}
-
-	go watcher()
-
-	sc.log.Infof("%s connected to NATS Stream", sc.clientID)
+	sc.log.Infof("%s connected to JetStream", sc.clientID)
 
 	return nil
 }
 
 func (sc *stream) disconnect() {
 	if sc.conn != nil {
-		sc.log.Info("Disconnecting from NATS Streaming")
+		sc.log.Info("Disconnecting from JetStream")
 		sc.conn.Close()
 	}
 }
@@ -203,22 +128,18 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 
 		j, err := json.Marshal(transformer.TransformToOutput(r))
 		if err != nil {
-			sc.log.Warnf("Cannot JSON encode message for publishing to STAN, discarding: %s", err)
+			sc.log.Warnf("Cannot JSON encode message for publishing to JetStream, discarding: %s", err)
 			ectr.Inc()
 			return
 		}
 
-		sc.log.Debugf("Publishing registration data from %s to %s", r.SenderID(), sc.topic)
+		sc.log.Debugf("Publishing registration data from %s to %s", r.SenderID(), sc.messageSet)
 
 		bytes.Add(float64(len(j)))
 
-		// avoids publishing during reconnects while sc.conn could be nil
-		sc.mu.Lock()
-		defer sc.mu.Unlock()
-
-		err = sc.conn.Publish(sc.topic, j)
+		err = sc.conn.PublishRaw(sc.messageSet, j)
 		if err != nil {
-			sc.log.Warnf("Could not publish message to STAN %s, discarding: %s", sc.topic, err)
+			sc.log.Warnf("Could not publish message to JetStream %s, discarding: %s", sc.messageSet, err)
 			ectr.Inc()
 			return
 		}
