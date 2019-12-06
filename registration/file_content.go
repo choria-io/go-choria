@@ -7,6 +7,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"math/rand"
 	"os"
 	"sync"
 	"time"
@@ -61,6 +62,10 @@ func (fc *FileContent) Init(c *config.Config, logger *logrus.Entry) {
 // StartRegistration starts stats a publishing loop
 func (fc *FileContent) StartRegistration(ctx context.Context, wg *sync.WaitGroup, interval int, output chan *data.RegistrationItem) {
 	defer wg.Done()
+
+	delay := time.Duration(rand.Intn(4) + 1)
+	fc.log.Infof("Sleeping %v before first registration publish", delay)
+	time.Sleep(delay)
 
 	err := fc.publish(output)
 	if err != nil {

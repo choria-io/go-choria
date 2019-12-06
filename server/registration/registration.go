@@ -27,18 +27,24 @@ type RegistrationDataProvider interface {
 	StartRegistration(context.Context, *sync.WaitGroup, int, chan *data.RegistrationItem)
 }
 
+// Connection provides the connection to the middleware
+type Connection interface {
+	Publish(msg *choria.Message) error
+	IsConnected() bool
+}
+
 // Manager of registration plugins
 type Manager struct {
 	log         *logrus.Entry
 	choria      *choria.Framework
 	cfg         *config.Config
-	connector   choria.PublishableConnector
+	connector   Connection
 	registrator Registrator
 	datac       chan *data.RegistrationItem
 }
 
 // New creates a new instance of the registration subsystem manager
-func New(c *choria.Framework, conn choria.PublishableConnector, logger *logrus.Entry) *Manager {
+func New(c *choria.Framework, conn Connection, logger *logrus.Entry) *Manager {
 	r := &Manager{
 		log:       logger.WithFields(logrus.Fields{"subsystem": "registration"}),
 		choria:    c,
@@ -143,9 +149,13 @@ func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 	msg.SetReplyTo("dev.null")
 	msg.CustomTarget = rmsg.Destination
 
-	err = reg.connector.Publish(msg)
-	if err != nil {
-		reg.log.Warnf("Could not publish registration Message: %s", err)
-		return
+	if reg.connector.IsConnected() {
+		err = reg.connector.Publish(msg)
+		if err != nil {
+			reg.log.Warnf("Could not publish registration Message: %s", err)
+			return
+		}
+	} else {
+		reg.log.Warnf("Skipping registration publish while not connected to the network")
 	}
 }

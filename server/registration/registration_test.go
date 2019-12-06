@@ -23,7 +23,7 @@ func TestRegistration(t *testing.T) {
 var _ = Describe("Server/Registration", func() {
 	var _ = Describe("publish", func() {
 		var (
-			conn    *MockPublishableConnector
+			conn    *MockConnection
 			err     error
 			choria  *framework.Framework
 			cfg     *config.Config
@@ -52,7 +52,7 @@ var _ = Describe("Server/Registration", func() {
 
 		BeforeEach(func() {
 			mockctl = gomock.NewController(GinkgoT())
-			conn = NewMockPublishableConnector(mockctl)
+			conn = NewMockConnection(mockctl)
 			manager = New(choria, conn, log)
 		})
 
@@ -77,6 +77,7 @@ var _ = Describe("Server/Registration", func() {
 			dat := []byte("hello world")
 
 			msg := &framework.Message{}
+			conn.EXPECT().IsConnected().Return(true)
 			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).DoAndReturn(func(m *framework.Message) {
 				Expect(m.Agent).To(Equal("registration"))
 			}).Return(nil).AnyTimes()
@@ -87,6 +88,7 @@ var _ = Describe("Server/Registration", func() {
 		It("Should publish to the configured agent when set", func() {
 			dat := []byte("hello world")
 			msg := &framework.Message{}
+			conn.EXPECT().IsConnected().Return(true)
 			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).DoAndReturn(func(m *framework.Message) {
 				Expect(m.Agent).To(Equal("ginkgo"))
 			}).Return(nil).AnyTimes()
@@ -97,7 +99,14 @@ var _ = Describe("Server/Registration", func() {
 		It("Should handle publish failures gracefully", func() {
 			dat := []byte("hello world")
 			msg := &framework.Message{}
+			conn.EXPECT().IsConnected().Return(true)
 			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).Return(errors.New("simulated failure")).AnyTimes()
+			manager.publish(&data.RegistrationItem{Data: &dat, TargetAgent: "ginkgo"})
+		})
+
+		It("Should not publish when not connected", func() {
+			dat := []byte("hello world")
+			conn.EXPECT().IsConnected().Return(false)
 			manager.publish(&data.RegistrationItem{Data: &dat, TargetAgent: "ginkgo"})
 		})
 	})
