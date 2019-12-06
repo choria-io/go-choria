@@ -61,6 +61,7 @@ type InstanceConnector interface {
 
 	NodeDirectedTarget(collective string, identity string) string
 
+	IsConnected() bool
 	Close()
 }
 
@@ -505,6 +506,11 @@ func (conn *Connection) ReplyTarget(msg *Message) (string, error) {
 
 func (conn *Connection) federationTarget(federation string, side string) string {
 	return fmt.Sprintf("choria.federation.%s.%s", federation, side)
+}
+
+// IsConnected determines if we are connected to the network
+func (conn *Connection) IsConnected() bool {
+	return conn.nats.IsConnected()
 }
 
 // ConnectedServer returns the URL of the current server that the library is connected to, "unknown" when not initialized

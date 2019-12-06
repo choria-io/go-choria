@@ -90,6 +90,8 @@ func (s *stubConnection) ConnectionStats() nats.Statistics {
 	return nats.Statistics{}
 }
 
+func (s *stubConnection) IsConnected() bool { return true }
+
 func (s *stubConnection) Unsubscribe(name string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
