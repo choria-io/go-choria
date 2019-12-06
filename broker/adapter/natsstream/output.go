@@ -201,7 +201,7 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 		defer obs.ObserveDuration()
 		defer func() { workqlen.Set(float64(len(sc.work))) }()
 
-		j, err := json.Marshal(transformer.TransformToOutput(r))
+		j, err := json.Marshal(transformer.TransformToOutput(r, "natsstream"))
 		if err != nil {
 			sc.log.Warnf("Cannot JSON encode message for publishing to STAN, discarding: %s", err)
 			ectr.Inc()

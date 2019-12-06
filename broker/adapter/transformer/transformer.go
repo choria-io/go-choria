@@ -14,9 +14,9 @@ type Msg struct {
 	RequestID string    `json:"requestid"`
 }
 
-func TransformToOutput(msg ingest.Adaptable) *Msg {
+func TransformToOutput(msg ingest.Adaptable, adapterName string) *Msg {
 	return &Msg{
-		Protocol:  "choria:adapters:natsstream:output:1",
+		Protocol:  "choria:adapters:" + adapterName + ":output:1",
 		Data:      msg.Message(),
 		Sender:    msg.SenderID(),
 		Time:      msg.Time().UTC(),
