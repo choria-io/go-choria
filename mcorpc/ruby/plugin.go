@@ -16,7 +16,7 @@ func (p *Provider) PluginInstance() interface{} {
 
 // PluginVersion implements plugin.Pluggable
 func (p *Provider) PluginVersion() string {
-	return "0.8.0"
+	return "0.9.0"
 }
 
 // PluginName implements plugin.Pluggable
