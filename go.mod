@@ -3,30 +3,30 @@ module github.com/choria-io/go-choria
 go 1.13
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.0.2
-	github.com/choria-io/go-client v0.5.2-0.20190919155331-b32ad7c92f15
-	github.com/choria-io/go-config v0.0.5-0.20191204191032-0f02366f3839
-	github.com/choria-io/go-lifecycle v1.0.5-0.20191205093449-d3f961536822
-	github.com/choria-io/go-network-broker v1.3.2-0.20191122041751-8b329f83e533
+	github.com/AlecAivazis/survey/v2 v2.0.5
+	github.com/choria-io/go-client v0.5.2
+	github.com/choria-io/go-config v0.0.5
+	github.com/choria-io/go-lifecycle v1.1.0
+	github.com/choria-io/go-network-broker v1.3.2
 	github.com/choria-io/go-protocol v1.3.2
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.5.0
 	github.com/choria-io/go-srvcache v0.0.6
-	github.com/choria-io/mcorpc-agent-provider v0.8.1-0.20191203131347-ccb5c865a343
-	github.com/choria-io/provisioning-agent v0.5.1-0.20191025161815-4f7495a187c3
+	github.com/choria-io/mcorpc-agent-provider v0.9.0
+	github.com/choria-io/provisioning-agent v0.6.0
 	github.com/cloudevents/sdk-go v0.10.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.7.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang/mock v1.3.1
-	github.com/google/shlex v0.0.0-20181106134648-c34317bd91bf
+	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.4.1
 	github.com/looplab/fsm v0.1.0
 	github.com/nats-io/nats-server/v2 v2.1.2
 	github.com/nats-io/nats.go v1.9.1
-	github.com/nats-io/stan.go v0.5.0
+	github.com/nats-io/stan.go v0.5.2
 	github.com/onsi/ginkgo v1.10.3
 	github.com/onsi/gomega v1.7.1
 	github.com/pkg/errors v0.8.1

@@ -1,5 +1,17 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2019/12/05|      |Release 0.13.0                                                                                           |
+|2019/12/05|737   |Add a tech preview JetStream adapter                                                                     |
+|2019/12/04|731   |Switch to CloudEvents v1.0 format for lifecycle events and machine events                                |
+|2019/12/02|709   |Build RHEL 8 packages nightly and on release                                                             |
+|2019/12/02|548   |Improve startup when embedding the server in other programs                                              |
+|2019/11/29|724   |Improve stability on a NATS network with Gateways                                                        |
+|2019/11/28|720   |Improve the calculations of total request time in the `choria req` command                               |
+|2019/11/21|710   |Support Synadia NGS as a NATS server for Choria                                                          |
+|2019/10/26|705   |Add `choria tool jwt` to create provisioning tokens                                                      |
+|2019/10/25|705   |Allow a JWT file to configure provisioning behavior and enable provisioning in the FOSS binary           |
+|2019/10/14|703   |Allow `choria req` output to be saved to a file                                                          |
+|2019/10/01|700   |Force convert a DDL from JSON on the CLI without prompts                                                 |
 |2019/09/20|      |Release 0.12.1                                                                                           |
 |2019/09/19|      |Support Authorization and External Agents via latest MCORPC provider                                     |
 |2019/09/16|681   |Allow agents to associate with specific agent providers using the `provider` field in metadata           |
