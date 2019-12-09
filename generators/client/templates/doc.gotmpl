@@ -1,0 +1,10 @@
+{{ GeneratedWarning }}
+
+// Package {{ .Package }} is an API client to the Choria {{ .DDL.Metadata.Name | Capitalize }} agent Version {{ .DDL.Metadata.Version }}.
+//
+// Actions:
+{{- range $i, $action := .DDL.Actions }}
+//   * {{ $action.Name | SnakeToCamel }} - {{ $action.Description -}}
+{{ end }}
+package {{ .Package }}
+

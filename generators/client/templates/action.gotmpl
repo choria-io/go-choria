@@ -1,0 +1,113 @@
+{{ GeneratedWarning }}
+
+package {{ .Package }}
+
+import (
+	"context"
+	"encoding/json"
+	"github.com/choria-io/go-protocol/protocol"
+	rpcclient "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
+)
+
+// {{ .ActionName | SnakeToCamel }}Requestor performs a RPC request to {{ .AgentName | ToLower }}#{{ .ActionName | ToLower }}
+type {{ .ActionName | SnakeToCamel }}Requestor struct {
+	r    *requestor
+	outc chan *{{ .ActionName | SnakeToCamel }}Output
+}
+
+// {{ .ActionName | SnakeToCamel }}Output is the output from the {{ .ActionName | ToLower }} action
+type {{ .ActionName | SnakeToCamel }}Output struct {
+	details *ResultDetails
+	reply   map[string]interface{}
+}
+
+// {{ .ActionName | SnakeToCamel }}Result is the result from a {{ .ActionName | ToLower }} action
+type {{ .ActionName | SnakeToCamel }}Result struct {
+	stats   *rpcclient.Stats
+	outputs []*{{ .ActionName | SnakeToCamel }}Output
+}
+
+// Stats is the rpc request stats
+func (d *{{ .ActionName | SnakeToCamel }}Result) Stats() Stats {
+	return d.stats
+}
+
+// ResultDetails is the details about the request
+func (d *{{ .ActionName | SnakeToCamel }}Output) ResultDetails() *ResultDetails {
+	return d.details
+}
+
+// HashMap is the raw output data
+func (d *{{ .ActionName | SnakeToCamel }}Output) HashMap() map[string]interface{} {
+	return d.reply
+}
+
+// JSON is the JSON representation of the output data
+func (d *{{ .ActionName | SnakeToCamel }}Output) JSON() ([]byte, error) {
+	return json.Marshal(d.reply)
+}
+
+// Do performs the request
+func (d *{{ .ActionName | SnakeToCamel }}Requestor) Do(ctx context.Context) (*{{ .ActionName | SnakeToCamel }}Result, error) {
+	dres := &{{ .ActionName | SnakeToCamel }}Result{}
+
+	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
+		output := &{{ .ActionName | SnakeToCamel }}Output{
+			reply: make(map[string]interface{}),
+			details: &ResultDetails{
+				sender:  pr.SenderID(),
+				code:    int(r.Statuscode),
+				message: r.Statusmsg,
+				ts:      pr.Time(),
+			},
+		}
+
+		err := json.Unmarshal(r.Data, &output.reply)
+		if err != nil {
+			d.r.client.errorf("Could not decode reply from %s: %s", pr.SenderID(), err)
+		}
+
+		if d.outc != nil {
+			d.outc <- output
+			return
+		}
+
+		dres.outputs = append(dres.outputs, output)
+	}
+
+	res, err := d.r.do(ctx, handler)
+	if err != nil {
+		return nil, err
+	}
+
+	dres.stats = res
+
+	return dres, nil
+}
+
+// EachOutput iterates over all results received
+func (d *{{ .ActionName | SnakeToCamel }}Result) EachOutput(h func(r *{{ .ActionName | SnakeToCamel }}Output)) {
+	for _, resp := range d.outputs {
+		h(resp)
+	}
+}
+
+{{ range $name, $input := .OptionalInputs }}
+// {{ $name | SnakeToCamel }} is an optional input to the {{ $.ActionName | ToLower }} action
+//
+// Description: {{ $input.Description }}
+func (d *{{ $.ActionName | SnakeToCamel }}Requestor) {{ $name | SnakeToCamel }}(v {{ ChoriaTypeToGoType $input.Type }}) *{{ $.ActionName | SnakeToCamel }}Requestor {
+	d.r.args["{{ $name | ToLower }}"] = v
+
+	return d
+}
+{{ end }}
+{{ range $name, $output := .Outputs }}
+// {{ $name | SnakeToCamel }} is the value of the {{ $name }} output
+//
+// Description: {{ $output.Description }}
+func (d *{{ $.ActionName | SnakeToCamel }}Output) {{ $name | SnakeToCamel }}() {{ ChoriaTypeToGoType $output.Type }} {
+	val := d.reply["{{ $name }}"]
+	return {{ ChoriaTypeToValOfType $output.Type }}
+}
+{{ end }}

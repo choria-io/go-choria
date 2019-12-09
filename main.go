@@ -1,5 +1,6 @@
 package main
 
+//go:generate go run generators/client/generate_templates.go
 //go:generate go run plugin/gen.go
 
 import (

@@ -37,6 +37,7 @@ require (
 	github.com/tidwall/gjson v1.3.5
 	github.com/tidwall/pretty v1.0.0
 	github.com/xeipuuv/gojsonschema v1.2.0
+	golang.org/x/tools v0.0.0-20191029041327-9cc4af7d6b2c
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	rsc.io/goversion v1.2.0
 )
