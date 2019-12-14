@@ -59,7 +59,7 @@ var _ = Describe("PuppetSSL", func() {
 		mockctl.Finish()
 	})
 
-	It("Should impliment the provider interface", func() {
+	It("Should implement the provider interface", func() {
 		f := func(p security.Provider) {}
 		f(prov)
 		Expect(prov.Provider()).To(Equal("puppet"))

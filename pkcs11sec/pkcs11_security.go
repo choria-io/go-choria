@@ -345,6 +345,10 @@ func (p *Pkcs11Security) VerifyByteSignature(dat []byte, sig []byte, identity st
 
 	if identity != "" {
 		pubkeyPath, err := p.cachePath(identity)
+		if err != nil {
+			p.log.Warnf("Could not lookup cache path while verifying signature for %s: %v", identity, err)
+			return false
+		}
 
 		p.log.Debugf("Attempting to verify signature for %s using %s", identity, pubkeyPath)
 
@@ -389,9 +393,7 @@ func (p *Pkcs11Security) PrivilegedVerifyByteSignature(dat []byte, sig []byte, i
 		candidates = append(candidates, identity)
 	}
 
-	for _, candidate := range p.privilegedCerts() {
-		candidates = append(candidates, candidate)
-	}
+	candidates = append(candidates, p.privilegedCerts()...)
 
 	for _, candidate := range candidates {
 		if p.VerifyByteSignature(dat, sig, candidate) {
@@ -593,8 +595,10 @@ func (p *Pkcs11Security) isPrivilegedCert(cert []byte) bool {
 }
 
 func MatchAnyRegex(str []byte, regex []string) bool {
+	matcher := regexp.MustCompile("^/.+/$")
+
 	for _, reg := range regex {
-		if matched, _ := regexp.MatchString("^/.+/$", reg); matched {
+		if matcher.MatchString(reg) {
 			reg = strings.TrimLeft(reg, "/")
 			reg = strings.TrimRight(reg, "/")
 		}

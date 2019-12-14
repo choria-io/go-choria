@@ -11,8 +11,10 @@ import (
 
 // MatchAnyRegex checks str against a list of possible regex, if any match true is returned
 func MatchAnyRegex(str []byte, regex []string) bool {
+	matcher := regexp.MustCompile("^/.+/$")
+
 	for _, reg := range regex {
-		if matched, _ := regexp.MatchString("^/.+/$", reg); matched {
+		if matcher.MatchString(reg) {
 			reg = strings.TrimLeft(reg, "/")
 			reg = strings.TrimRight(reg, "/")
 		}
