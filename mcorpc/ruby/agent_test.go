@@ -79,7 +79,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 			fw.Config.Choria.RubyAgentShim = ""
 			rubyAction(ctx, req, rep, agent, ci)
 			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
-			Expect(rep.Statusmsg).To(Equal("Cannot call Ruby action one#status: Ruby compatability shim was not configured"))
+			Expect(rep.Statusmsg).To(Equal("Cannot call Ruby action one#status: Ruby compatibility shim was not configured"))
 		})
 
 		It("Should fail when the shim cannot be found", func() {
@@ -87,7 +87,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 			fw.Config.Choria.RubyAgentConfig = "testdata/shim.cfg"
 			rubyAction(ctx, req, rep, agent, ci)
 			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
-			Expect(rep.Statusmsg).To(Equal("Cannot call Ruby action one#status: Ruby compatability shim was not found in /nonexisting"))
+			Expect(rep.Statusmsg).To(Equal("Cannot call Ruby action one#status: Ruby compatibility shim was not found in /nonexisting"))
 		})
 
 		It("Should fail without a shim config file", func() {
@@ -96,7 +96,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 
 			rubyAction(ctx, req, rep, agent, ci)
 			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
-			Expect(rep.Statusmsg).To(Equal("Cannot call Ruby action one#status: Ruby compatability shim configuration file not configured"))
+			Expect(rep.Statusmsg).To(Equal("Cannot call Ruby action one#status: Ruby compatibility shim configuration file not configured"))
 		})
 
 		It("Should fail when a shim config file does not exist", func() {
@@ -105,7 +105,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 
 			rubyAction(ctx, req, rep, agent, ci)
 			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
-			Expect(rep.Statusmsg).To(Equal("Cannot call Ruby action one#status: Ruby compatability shim configuration file was not found in /nonexisting"))
+			Expect(rep.Statusmsg).To(Equal("Cannot call Ruby action one#status: Ruby compatibility shim configuration file was not found in /nonexisting"))
 		})
 
 		It("Should unmarshal the result", func() {

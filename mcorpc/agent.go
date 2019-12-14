@@ -70,7 +70,7 @@ func (a *Agent) ServerInfo() agents.ServerInfoSource {
 // RegisterAction registers an action into the agent
 func (a *Agent) RegisterAction(name string, f Action) error {
 	if _, ok := a.actions[name]; ok {
-		return fmt.Errorf("Cannot register action %s, it already exist", name)
+		return fmt.Errorf("cannot register action %s, it already exist", name)
 	}
 
 	a.actions[name] = f
@@ -81,7 +81,7 @@ func (a *Agent) RegisterAction(name string, f Action) error {
 // MustRegisterAction registers an action and panics if it fails
 func (a *Agent) MustRegisterAction(name string, f Action) {
 	if _, ok := a.actions[name]; ok {
-		panic(fmt.Errorf("Cannot register action %s, it already exist", name))
+		panic(fmt.Errorf("cannot register action %s, it already exist", name))
 	}
 
 	a.actions[name] = f
@@ -189,7 +189,7 @@ func (a *Agent) parseIncomingMessage(msg string, request protocol.Request) (*Req
 
 	err := json.Unmarshal([]byte(msg), r)
 	if err != nil {
-		return nil, fmt.Errorf("Could not parse incoming message as a MCollective SimpleRPC Request: %s", err)
+		return nil, fmt.Errorf("could not parse incoming message as a MCollective SimpleRPC Request: %s", err)
 	}
 
 	r.CallerID = request.CallerID()

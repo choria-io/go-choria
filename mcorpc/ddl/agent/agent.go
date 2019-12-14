@@ -131,11 +131,7 @@ func (d *DDL) ActionInterface(action string) (*Action, error) {
 // HaveAction determines if an action is known
 func (d *DDL) HaveAction(action string) bool {
 	_, err := d.ActionInterface(action)
-	if err != nil {
-		return false
-	}
-
-	return true
+	return err == nil
 }
 
 // Timeout is the timeout for this agent

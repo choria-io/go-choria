@@ -91,7 +91,7 @@ func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 
 	metadata := &agents.Metadata{
 		Name:        "rpcutil",
-		Description: "Choria MCollective RPC Compatability Utilities",
+		Description: "Choria MCollective RPC Compatibility Utilities",
 		Author:      "R.I.Pienaar <rip@devco.net>",
 		Version:     bi.Version(),
 		License:     bi.License(),

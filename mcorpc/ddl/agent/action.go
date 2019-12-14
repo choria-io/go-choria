@@ -191,10 +191,7 @@ func (a *Action) ValidateAndConvertToDDLTypes(args map[string]string) (result ma
 		}
 
 		w, err := a.ValidateInputValue(kname, converted)
-		for _, i := range w {
-			warnings = append(warnings, i)
-		}
-
+		warnings = append(warnings, w...)
 		if err != nil {
 			return result, warnings, fmt.Errorf("invalid value for '%s': %s", kname, err)
 		}
@@ -342,9 +339,7 @@ func (a *Action) ValidateInputValue(input string, val interface{}) (warnings []s
 		if i.Validation != "" {
 			w, err := validateStringValidation(i.Validation, sval)
 
-			for _, i := range w {
-				warnings = append(warnings, i)
-			}
+			warnings = append(warnings, w...)
 
 			if err != nil {
 				return warnings, err

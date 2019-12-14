@@ -66,8 +66,7 @@ var _ = Describe("McoRPC/External", func() {
 
 	Describe("Plugin", func() {
 		It("Should be a valid AgentProvider", func() {
-			var p server.AgentProvider
-			p = prov
+			p:= server.AgentProvider(prov)
 			Expect(p).ToNot(BeNil())
 		})
 	})

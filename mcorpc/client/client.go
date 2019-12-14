@@ -274,7 +274,7 @@ func (r *RPC) setupMessage(ctx context.Context, action string, payload interface
 	cl = r.cl
 
 	if r.cl == nil {
-		if r.opts.BatchSize == len(r.opts.Targets) || r.opts.ProcessReplies == false {
+		if r.opts.BatchSize == len(r.opts.Targets) || !r.opts.ProcessReplies {
 			cl, err = r.unbatchedClient()
 			if err != nil {
 				return nil, nil, err
@@ -397,11 +397,10 @@ func (r *RPC) connectBatchedConnection(ctx context.Context, name string) (Connec
 	}
 
 	closer := func() {
-		select {
-		case <-ctx.Done():
-			r.log.Debugf("Closing batched connection %s", name)
-			connector.Close()
-		}
+		<-ctx.Done()
+
+		r.log.Debugf("Closing batched connection %s", name)
+		connector.Close()
 	}
 
 	go closer()
