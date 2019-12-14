@@ -227,9 +227,7 @@ func (s *PuppetSecurity) Validate() ([]string, bool) {
 	errors := []string{}
 
 	ferrs, _ := s.fsec.Validate()
-	for _, err := range ferrs {
-		errors = append(errors, err)
-	}
+	errors = append(errors, ferrs...)
 
 	return errors, len(errors) == 0
 }
@@ -328,14 +326,6 @@ func (s *PuppetSecurity) PublicCertTXT() ([]byte, error) {
 // Identity determines the choria certname
 func (s *PuppetSecurity) Identity() string {
 	return s.conf.Identity
-}
-
-func (s *PuppetSecurity) uid() int {
-	if s.conf.useFakeUID {
-		return s.conf.fakeUID
-	}
-
-	return os.Geteuid()
 }
 
 // TLSConfig creates a TLS configuration for use by NATS, HTTPS etc

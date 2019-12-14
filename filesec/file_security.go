@@ -1,5 +1,5 @@
 // Package filesec provides a manually configurable security Provider
-// it allows you set every paramter like key paths etc manually without
+// it allows you set every parameter like key paths etc manually without
 // making any assumptions about your system
 //
 // It does not support any enrollment
@@ -35,7 +35,7 @@ var fakeUID = 0
 var useFakeOS = false
 var fakeOS = "fake"
 
-// FileSecurity impliments SecurityProvider using files on disk
+// FileSecurity implements SecurityProvider using files on disk
 type FileSecurity struct {
 	conf *Config
 	log  *logrus.Entry
@@ -184,6 +184,10 @@ func (s *FileSecurity) VerifyByteSignature(dat []byte, sig []byte, identity stri
 
 	if identity != "" {
 		pubkeyPath, err = s.cachePath(identity)
+		if err != nil {
+			s.log.Warnf("Could not retrieve cache path while verifying signature for %s: %s", identity, err)
+			return false
+		}
 	}
 
 	s.log.Debugf("Attempting to verify signature for %s using %s", identity, pubkeyPath)
@@ -226,9 +230,7 @@ func (s *FileSecurity) PrivilegedVerifyByteSignature(dat []byte, sig []byte, ide
 		candidates = append(candidates, identity)
 	}
 
-	for _, candidate := range s.privilegedCerts() {
-		candidates = append(candidates, candidate)
-	}
+	candidates = append(candidates, s.privilegedCerts()...)
 
 	for _, candidate := range candidates {
 		if s.VerifyByteSignature(dat, sig, candidate) {
@@ -257,7 +259,7 @@ func (s *FileSecurity) CallerName() string {
 
 // CallerIdentity extracts the identity from a choria like caller name in the form of choria=identity
 func (s *FileSecurity) CallerIdentity(caller string) (string, error) {
-	re := regexp.MustCompile("^[a-z]+=([\\w\\.\\-]+)")
+	re := regexp.MustCompile(`^[a-z]+=([\w\.\-]+)`)
 	match := re.FindStringSubmatch(caller)
 
 	if match == nil {
@@ -532,7 +534,7 @@ func (s *FileSecurity) SSLContext() (*http.Transport, error) {
 
 // Enroll is not supported
 func (s *FileSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(int)) error {
-	return errors.New("The file security provider does not support enrollement")
+	return errors.New("the file security provider does not support enrollment")
 }
 
 func (s *FileSecurity) cachePath(identity string) (string, error) {
@@ -607,12 +609,12 @@ func (s *FileSecurity) privateKeyPEM() (pb *pem.Block, err error) {
 
 	keydat, err := ioutil.ReadFile(key)
 	if err != nil {
-		return pb, fmt.Errorf("Could not read Private Key %s: %s", key, err)
+		return pb, fmt.Errorf("could not read Private Key %s: %s", key, err)
 	}
 
 	pb, _ = pem.Decode(keydat)
 	if pb == nil {
-		return pb, fmt.Errorf("Failed to parse PEM data from key %s", key)
+		return pb, fmt.Errorf("failed to parse PEM data from key %s", key)
 	}
 
 	return
@@ -682,10 +684,7 @@ func (s *FileSecurity) certDNSNames(certpem []byte) (names []string, err error) 
 	}
 
 	names = append(names, cert.Subject.CommonName)
-
-	for _, name := range cert.DNSNames {
-		names = append(names, name)
-	}
+	names = append(names, cert.DNSNames...)
 
 	return names, nil
 }

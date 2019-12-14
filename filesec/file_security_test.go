@@ -64,7 +64,7 @@ var _ = Describe("FileSSL", func() {
 		Expect(err).ToNot(HaveOccurred())
 	})
 
-	It("Should impliment the provider interface", func() {
+	It("Should implement the provider interface", func() {
 		f := func(p security.Provider) {}
 		f(prov)
 		Expect(prov.Provider()).To(Equal("file"))
@@ -615,7 +615,7 @@ var _ = Describe("FileSSL", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.CachePublicData(spd, identity)
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
 
 			cpd, err := prov.CachedPublicData(identity)
 			Expect(err).ToNot(HaveOccurred())
