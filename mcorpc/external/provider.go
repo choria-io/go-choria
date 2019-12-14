@@ -11,7 +11,6 @@ import (
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-config"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
-	agentddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	"github.com/sirupsen/logrus"
 )
 
@@ -66,14 +65,14 @@ func (p *Provider) Version() string {
 }
 
 func (p *Provider) loadAgents() {
-	p.eachAgent(func(a *agentddl.DDL) {
+	p.eachAgent(func(a *agent.DDL) {
 		p.log.Debugf("Found external DDL for agent %s", a.Metadata.Name)
 		p.agents = append(p.agents, a)
 		p.paths[a.Metadata.Name] = a.SourceLocation
 	})
 }
 
-func (p *Provider) agentDDL(a string) (*agentddl.DDL, bool) {
+func (p *Provider) agentDDL(a string) (*agent.DDL, bool) {
 	for _, agent := range p.agents {
 		if agent.Metadata.Name == a {
 			return agent, true
@@ -83,7 +82,7 @@ func (p *Provider) agentDDL(a string) (*agentddl.DDL, bool) {
 	return nil, false
 }
 
-func (p *Provider) eachAgent(cb func(ddl *agentddl.DDL)) {
+func (p *Provider) eachAgent(cb func(ddl *agent.DDL)) {
 	for _, dir := range p.cfg.Choria.RubyLibdir {
 		agentsdir := filepath.Join(dir, "mcollective", "agent")
 
@@ -113,7 +112,7 @@ func (p *Provider) eachAgent(cb func(ddl *agentddl.DDL)) {
 
 			p.log.Debugf("Attempting to load %s as an agent DDL", path)
 
-			ddl, err := agentddl.New(path)
+			ddl, err := agent.New(path)
 			if err != nil {
 				p.log.Errorf("Could not load external agent DDL %s: %s", path, err)
 				return nil

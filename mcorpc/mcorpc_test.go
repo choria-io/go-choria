@@ -61,7 +61,7 @@ var _ = Describe("McoRPC", func() {
 			err := agent.RegisterAction("test", action)
 			Expect(err).ToNot(HaveOccurred())
 			err = agent.RegisterAction("test", action)
-			Expect(err).To(MatchError("Cannot register action test, it already exist"))
+			Expect(err).To(MatchError("cannot register action test, it already exist"))
 		})
 	})
 
@@ -78,7 +78,7 @@ var _ = Describe("McoRPC", func() {
 			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
-			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("Could not process request: Could not parse incoming message as a MCollective SimpleRPC Request: unexpected end of JSON input"))
+			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("Could not process request: could not parse incoming message as a MCollective SimpleRPC Request: unexpected end of JSON input"))
 			Expect(gjson.GetBytes(reply.Body, "statuscode").Int()).To(Equal(int64(4)))
 		})
 

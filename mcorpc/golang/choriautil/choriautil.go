@@ -117,6 +117,7 @@ func machineStatesAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc
 	if err != nil {
 		reply.Statuscode = mcorpc.Aborted
 		reply.Statusmsg = fmt.Sprintf("Failed to retrieve states: %s", err)
+		return
 	}
 
 	r := machineStates{
@@ -144,8 +145,12 @@ func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 	}
 
 	servers, err := agent.Choria.MiddlewareServers()
-	mservers := servers.HostPorts()
+	if err != nil {
+		reply.Statuscode = mcorpc.Aborted
+		reply.Statusmsg = fmt.Sprintf("Could not determine middleware servers: %s", err)
+	}
 
+	mservers := servers.HostPorts()
 	options := conn.ConnectionOptions()
 	stats := conn.ConnectionStats()
 	bi := agent.Choria.BuildInfo()

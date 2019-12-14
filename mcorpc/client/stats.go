@@ -36,7 +36,6 @@ type Stats struct {
 	action string
 
 	mu   *sync.Mutex
-	once sync.Once
 }
 
 // NewStats initializes a new stats instance
@@ -120,11 +119,7 @@ func (s *Stats) WaitingFor(nodes []string) bool {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if s.outstandingNodes.HaveAny(nodes...) {
-		return true
-	}
-
-	return false
+	return s.outstandingNodes.HaveAny(nodes...)
 }
 
 // SetDiscoveredNodes records the node names we expect to communicate with

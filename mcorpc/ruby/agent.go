@@ -94,22 +94,22 @@ func rubyAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 	agent.Log.Debugf("Attempting to call Ruby agent %s with a timeout %d", action, agent.Metadata().Timeout)
 
 	if shim == "" {
-		abortAction(fmt.Sprintf("Cannot call Ruby action %s: Ruby compatability shim was not configured", action), agent, reply)
+		abortAction(fmt.Sprintf("Cannot call Ruby action %s: Ruby compatibility shim was not configured", action), agent, reply)
 		return
 	}
 
 	if shimcfg == "" {
-		abortAction(fmt.Sprintf("Cannot call Ruby action %s: Ruby compatability shim configuration file not configured", action), agent, reply)
+		abortAction(fmt.Sprintf("Cannot call Ruby action %s: Ruby compatibility shim configuration file not configured", action), agent, reply)
 		return
 	}
 
 	if _, err := os.Stat(shim); os.IsNotExist(err) {
-		abortAction(fmt.Sprintf("Cannot call Ruby action %s: Ruby compatability shim was not found in %s", action, shim), agent, reply)
+		abortAction(fmt.Sprintf("Cannot call Ruby action %s: Ruby compatibility shim was not found in %s", action, shim), agent, reply)
 		return
 	}
 
 	if _, err := os.Stat(shimcfg); os.IsNotExist(err) {
-		abortAction(fmt.Sprintf("Cannot call Ruby action %s: Ruby compatability shim configuration file was not found in %s", action, shimcfg), agent, reply)
+		abortAction(fmt.Sprintf("Cannot call Ruby action %s: Ruby compatibility shim configuration file was not found in %s", action, shimcfg), agent, reply)
 		return
 	}
 

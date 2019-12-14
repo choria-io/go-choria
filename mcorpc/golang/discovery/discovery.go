@@ -60,7 +60,7 @@ func (da *Agent) HandleMessage(ctx context.Context, msg *choria.Message, request
 		reply.Body = []byte("pong")
 	} else {
 		da.log.Errorf("Received unknown discovery message %s from %s", msg.RequestID, request.CallerID())
-		reply.Error = fmt.Errorf("Unknown request: %s", msg.Payload)
+		reply.Error = fmt.Errorf("unknown request: %s", msg.Payload)
 	}
 
 	result <- reply

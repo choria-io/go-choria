@@ -640,11 +640,11 @@ var _ = Describe("Policy", func() {
 
 			pol.caller = "choria=bob //"
 			Expect(pol.MatchesCallerID("up=foo")).To(BeFalse())
-			Expect(string(logbuffer.Bytes())).To(ContainSubstring("Invalid CallerID matcher '//' found in policy file /nonexisting"))
+			Expect(logbuffer.String()).To(ContainSubstring("Invalid CallerID matcher '//' found in policy file /nonexisting"))
 
 			pol.caller = "choria=bob /*/"
 			Expect(pol.MatchesCallerID("up=foo")).To(BeFalse())
-			Expect(string(logbuffer.Bytes())).To(ContainSubstring("Could not compile regex found in CallerID '/*/' in policy file /nonexisting: error parsing regexp: missing argument to repetition operator: `*`"))
+			Expect(logbuffer.String()).To(ContainSubstring("Could not compile regex found in CallerID '/*/' in policy file /nonexisting: error parsing regexp: missing argument to repetition operator: `*`"))
 
 		})
 	})

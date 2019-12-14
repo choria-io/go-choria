@@ -17,7 +17,6 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	agentddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	"github.com/sirupsen/logrus"
 )
@@ -81,12 +80,12 @@ func (p *Provider) newExternalAgent(ddl *agentddl.DDL, mgr server.AgentManager) 
 	return agent, nil
 }
 
-func (p *Provider) externalActivationCheck(ddl *agent.DDL) (mcorpc.ActivationChecker, error) {
+func (p *Provider) externalActivationCheck(ddl *agentddl.DDL) (mcorpc.ActivationChecker, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
 
 	if ddl.SourceLocation == "" {
-		return nil, fmt.Errorf("Do not know where DDL for %s is located on disk, cannot activate", ddl.Metadata.Name)
+		return nil, fmt.Errorf("do not know where DDL for %s is located on disk, cannot activate", ddl.Metadata.Name)
 	}
 
 	agentPath := filepath.Join(filepath.Dir(ddl.SourceLocation), ddl.Metadata.Name)
@@ -162,8 +161,6 @@ func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, repl
 		p.abortAction(fmt.Sprintf("Could not set reply defaults: %s", err), agent, reply)
 		return
 	}
-
-	return
 }
 
 func (p *Provider) validateRequest(ddl *agentddl.DDL, req *mcorpc.Request, log *logrus.Entry) error {
@@ -198,7 +195,7 @@ func (p *Provider) setReplyDefaults(ddl *agentddl.DDL, action string, reply *mco
 
 	result, ok := reply.Data.(map[string]interface{})
 	if !ok {
-		return fmt.Errorf("Reply data should is in the wrong format")
+		return fmt.Errorf("reply data is in the wrong format")
 	}
 
 	actint.SetOutputDefaults(result)

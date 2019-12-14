@@ -138,7 +138,7 @@ var _ = Describe("McoRPC/Client/Stats", func() {
 		})
 
 		Describe("RecordReceived", func() {
-			It("Should handle oustanding nodes", func() {
+			It("Should handle outstanding nodes", func() {
 				s.SetDiscoveredNodes([]string{"host1", "host2"})
 				Expect(s.responses.Load()).To(Equal(int32(0)))
 				s.RecordReceived("host2")

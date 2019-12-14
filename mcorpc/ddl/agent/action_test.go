@@ -192,10 +192,10 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(warnings).To(HaveLen(0))
 
-			warnings, err = act.ValidateInputValue("list", "three")
+			_, err = act.ValidateInputValue("list", "three")
 			Expect(err).To(MatchError("should be one of one, two"))
 
-			warnings, err = act.ValidateInputValue("list", false)
+			_, err = act.ValidateInputValue("list", false)
 			Expect(err).To(MatchError("should be a string"))
 		})
 
@@ -291,7 +291,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(w).To(HaveLen(0))
 			})
-			It("Should handle actions with no inputs but inputs being recieved", func() {
+			It("Should handle actions with no inputs but inputs being received", func() {
 				cu, err := pkg.ActionInterface("apt_checkupdates")
 				Expect(err).ToNot(HaveOccurred())
 
@@ -357,7 +357,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Should suport ipv4address", func() {
+		It("Should support ipv4address", func() {
 			w, err := validateStringValidation("ipv4address", "2a00:1450:4002:807::200e")
 			Expect(w).To(HaveLen(0))
 			Expect(err).To(MatchError("2a00:1450:4002:807::200e is not an IPv4 address"))

@@ -50,7 +50,7 @@ type RequestOptions struct {
 type DiscoveryStartFunc func()
 
 // DiscoveryEndFunc gets called after discovery ends and include the discovered node count
-// and what count of nodes will be targetted after limits were applied should this return
+// and what count of nodes will be targeted after limits were applied should this return
 // error the RPC call will terminate
 type DiscoveryEndFunc func(discovered int, limited int) error
 
@@ -172,7 +172,7 @@ func DiscoveryEndCB(h DiscoveryEndFunc) RequestOption {
 
 // ConnectionName sets the prefix used for various connection names
 //
-// Setting this when making many clients will minimise prometheus
+// Setting this when making many clients will minimize prometheus
 // metrics being created - 2 or 3 per client which with random generated
 // names will snowball over time
 func ConnectionName(n string) RequestOption {
@@ -331,8 +331,8 @@ func (o *RequestOptions) limitTargets(targets []string) (limited []string, err e
 		return limited, nil
 	}
 
-	pctRe := regexp.MustCompile("^(\\d+)%$")
-	digitRe := regexp.MustCompile("^(\\d+)$")
+	pctRe := regexp.MustCompile(`^(\d+)%$`)
+	digitRe := regexp.MustCompile(`^(\d+)$`)
 
 	count := 0
 
