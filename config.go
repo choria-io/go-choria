@@ -34,7 +34,7 @@ type Config struct {
 	Color                     bool     `confkey:"color" default:"true"`
 	Daemonize                 bool     `confkey:"daemonize" default:"false"`
 	SecurityProvider          string   `confkey:"securityprovider" default:"psk" type:"title_string"`
-	FactSource                string   `confkey:"factsource" default:"yaml" default:"yaml"`
+	FactSource                string   `confkey:"factsource" default:"yaml"`
 	Connector                 string   `confkey:"connector" default:"nats" type:"title_string"`
 	ClassesFile               string   `confkey:"classesfile" default:"/opt/puppetlabs/puppet/cache/state/classes.txt" type:"path_string"`
 	DiscoveryTimeout          int      `confkey:"discovery_timeout" default:"2"`
