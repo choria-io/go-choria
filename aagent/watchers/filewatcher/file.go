@@ -57,7 +57,6 @@ type Watcher struct {
 	announceInterval time.Duration
 	statechg         chan struct{}
 	previous         State
-	lastAnnounce     time.Time
 
 	sync.Mutex
 }

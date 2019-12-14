@@ -19,7 +19,7 @@ type adapter interface {
 func startAdapter(ctx context.Context, a adapter, c *choria.Framework, wg *sync.WaitGroup) error {
 	err := a.Init(ctx, c)
 	if err != nil {
-		return fmt.Errorf("Could not initialize adapter %s: %s", a, err)
+		return fmt.Errorf("could not initialize adapter %s: %s", a, err)
 	}
 
 	wg.Add(1)
@@ -32,36 +32,36 @@ func RunAdapters(ctx context.Context, c *choria.Framework, wg *sync.WaitGroup) e
 	for _, a := range c.Config.Choria.Adapters {
 		atype := c.Config.Option(fmt.Sprintf("plugin.choria.adapter.%s.type", a), "")
 		if atype == "" {
-			return fmt.Errorf("Could not determine type for adapter %s, set plugin.choria.adapter.%s.type", a, a)
+			return fmt.Errorf("could not determine type for adapter %s, set plugin.choria.adapter.%s.type", a, a)
 		}
 
 		switch atype {
 		case "jetstream":
 			n, err := jetstream.Create(a, c)
 			if err != nil {
-				return fmt.Errorf("Could not start jetstream adapter: %s", err)
+				return fmt.Errorf("could not start jetstream adapter: %s", err)
 			}
 
 			log.Infof("Starting %s Protocol Adapter %s", atype, a)
 			err = startAdapter(ctx, n, c, wg)
 			if err != nil {
-				return fmt.Errorf("Could not start jetstream adapter: %s", err)
+				return fmt.Errorf("could not start jetstream adapter: %s", err)
 			}
 
 		case "nats_stream":
 			n, err := natsstream.Create(a, c)
 			if err != nil {
-				return fmt.Errorf("Could not start nats_stream adapter: %s", err)
+				return fmt.Errorf("could not start nats_stream adapter: %s", err)
 			}
 
 			log.Infof("Starting %s Protocol Adapter %s", atype, a)
 			err = startAdapter(ctx, n, c, wg)
 			if err != nil {
-				return fmt.Errorf("Could not start nats_stream adapter: %s", err)
+				return fmt.Errorf("could not start nats_stream adapter: %s", err)
 			}
 
 		default:
-			return fmt.Errorf("Unknown Protocol Adapter type %s", atype)
+			return fmt.Errorf("unknown Protocol Adapter type %s", atype)
 		}
 	}
 

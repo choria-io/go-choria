@@ -115,7 +115,7 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	if r.pidFile != "" {
 		err := ioutil.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)
 		if err != nil {
-			return fmt.Errorf("Could not write PID: %s", err)
+			return fmt.Errorf("could not write PID: %s", err)
 		}
 	}
 

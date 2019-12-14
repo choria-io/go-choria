@@ -41,7 +41,7 @@ type FileContentMessage struct {
 // NewFileContent creates a new fully managed registration plugin instance
 func NewFileContent(c *config.Config, logger *logrus.Entry) (*FileContent, error) {
 	if c.Choria.FileContentRegistrationData == "" {
-		return nil, fmt.Errorf("File Content Registration is enabled but no source data is configured, please set plugin.choria.registration.file_content.data")
+		return nil, fmt.Errorf("file fontent registration is enabled but no source data is configured, please set plugin.choria.registration.file_content.data")
 	}
 
 	reg := &FileContent{}
@@ -72,9 +72,11 @@ func (fc *FileContent) StartRegistration(ctx context.Context, wg *sync.WaitGroup
 		fc.log.Errorf("Could not create registration data: %s", err)
 	}
 
+	ticker := time.NewTicker(time.Duration(interval) * time.Second)
+
 	for {
 		select {
-		case <-time.Tick(time.Duration(interval) * time.Second):
+		case <-ticker.C:
 			err = fc.publish(output)
 			if err != nil {
 				fc.log.Errorf("Could not create registration data: %s", err)

@@ -383,8 +383,8 @@ For string data there are additional properties:
 			} else if input.Type == "list" {
 				valid := ""
 				prompt := &survey.Input{
-					Message: "Valid Values (comma seperated)",
-					Help:    "List of valid values for this input seperated by commas",
+					Message: "Valid Values (comma separated)",
+					Help:    "List of valid values for this input separated by commas",
 				}
 				err = survey.AskOne(prompt, &valid, survey.WithValidator(survey.Required))
 				if err != nil {
@@ -547,8 +547,7 @@ this metadata is used to keep an internal inventory of all the available service
           URL: A URL one can visit for further information about the agent
       Timeout: Maximum time in seconds any action will be allowed to run
      Provider: The provider to use - ruby for traditional mcollective ones,
-               external for ones complying to the External Agent structure
-`)
+               external for ones complying to the External Agent structure\n`)
 
 	qs := []*survey.Question{
 		c.askBasicItem("name", "Agent Name", "", survey.ToLower, c.shortnameValidator),

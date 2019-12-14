@@ -76,12 +76,12 @@ func Create(name string, choria Framework) (adapter *JetStream, err error) {
 
 	adapter.ingests, err = ingest.New(name, adapter.work, choria, adapter.log)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create adapter %s: %s", name, err)
+		return nil, fmt.Errorf("could not create adapter %s: %s", name, err)
 	}
 
 	adapter.streams, err = newStream(name, adapter.work, adapter.log)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create adapter %s: %s", name, err)
+		return nil, fmt.Errorf("could not create adapter %s: %s", name, err)
 	}
 
 	return adapter, nil
@@ -90,23 +90,23 @@ func Create(name string, choria Framework) (adapter *JetStream, err error) {
 func (sa *JetStream) Init(ctx context.Context, cm choria.ConnectionManager) (err error) {
 	for _, worker := range sa.streams {
 		if ctx.Err() != nil {
-			return fmt.Errorf("Shutdown called")
+			return fmt.Errorf("shutdown called")
 		}
 
 		err = worker.connect(ctx, cm)
 		if err != nil {
-			return fmt.Errorf("Failure during initial JetStream connections: %s", err)
+			return fmt.Errorf("failure during initial JetStream connections: %s", err)
 		}
 	}
 
 	for _, worker := range sa.ingests {
 		if ctx.Err() != nil {
-			return fmt.Errorf("Shutdown called")
+			return fmt.Errorf("shutdown called")
 		}
 
 		err = worker.Connect(ctx, cm)
 		if err != nil {
-			return fmt.Errorf("Failure during JetStream initial connections: %s", err)
+			return fmt.Errorf("failure during JetStream initial connections: %s", err)
 		}
 	}
 
@@ -125,6 +125,4 @@ func (sa *JetStream) Process(ctx context.Context, wg *sync.WaitGroup) {
 		wg.Add(1)
 		go worker.Receiver(ctx, wg)
 	}
-
-	return
 }

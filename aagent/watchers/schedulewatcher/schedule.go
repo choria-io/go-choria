@@ -47,7 +47,6 @@ type Watcher struct {
 	machine          Machine
 	duration         time.Duration
 	announceInterval time.Duration
-	lastAnnounce     time.Time
 	schedules        []string
 	items            []*scheduleItem
 	statechg         chan struct{}
@@ -144,7 +143,7 @@ func (w *Watcher) watch() (err error) {
 			return w.machine.Transition(w.successEvent)
 
 		case Skipped:
-			// not doing anything when we aren't eligable, regular announces happen
+			// not doing anything when we aren't eligible, regular announces happen
 
 		}
 

@@ -76,7 +76,7 @@ func (g *Generator) funcMap() template.FuncMap {
 
 	return template.FuncMap{
 		"GeneratedWarning": func() string {
-			return fmt.Sprintf("// generated code; DO NOT EDIT")
+			return "// generated code; DO NOT EDIT"
 		},
 		"Base64Encode": func(v string) string { return base64.StdEncoding.EncodeToString([]byte(v)) },
 		"Capitalize":   strings.Title,

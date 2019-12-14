@@ -39,7 +39,7 @@ func eqMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 		return false, nil
 
 	default:
-		return false, fmt.Errorf("Do not know how to evaluate data of type %s", fact.Type)
+		return false, fmt.Errorf("do not know how to evaluate data of type %s", fact.Type)
 	}
 }
 
@@ -68,7 +68,7 @@ func reMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 		return false, nil
 
 	default:
-		return false, fmt.Errorf("Do not know how to evaluate data of type %s", fact.Type)
+		return false, fmt.Errorf("do not know how to evaluate data of type %s", fact.Type)
 	}
 }
 
@@ -95,7 +95,7 @@ func leMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 		return int(fact.Int()) <= v, nil
 
 	default:
-		return false, fmt.Errorf("Do not know how to evaluate data of type %s", fact.Type)
+		return false, fmt.Errorf("do not know how to evaluate data of type %s", fact.Type)
 	}
 }
 
@@ -122,7 +122,7 @@ func geMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 		return int(fact.Int()) >= v, nil
 
 	default:
-		return false, fmt.Errorf("Do not know how to evaluate data of type %s", fact.Type)
+		return false, fmt.Errorf("do not know how to evaluate data of type %s", fact.Type)
 	}
 }
 
@@ -149,7 +149,7 @@ func ltMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 		return int(fact.Int()) < v, nil
 
 	default:
-		return false, fmt.Errorf("Do not know how to evaluate data of type %s", fact.Type)
+		return false, fmt.Errorf("do not know how to evaluate data of type %s", fact.Type)
 	}
 }
 
@@ -176,7 +176,7 @@ func gtMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 		return int(fact.Int()) > v, nil
 
 	default:
-		return false, fmt.Errorf("Do not know how to evaluate data of type %s", fact.Type)
+		return false, fmt.Errorf("do not know how to evaluate data of type %s", fact.Type)
 	}
 }
 
@@ -210,7 +210,7 @@ func neMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 		return false, nil
 
 	default:
-		return false, fmt.Errorf("Do not know how to evaluate data of type %s", fact.Type)
+		return false, fmt.Errorf("do not know how to evaluate data of type %s", fact.Type)
 	}
 }
 
@@ -229,7 +229,7 @@ func regexMatch(value string, pattern string) (bool, error) {
 func truthy(value string) bool {
 	b, err := strconv.ParseBool(value)
 
-	if err == nil && b == true {
+	if err == nil && b {
 		return true
 	}
 

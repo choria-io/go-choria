@@ -14,8 +14,11 @@ jobs:
       - checkout
       - setup_remote_docker
       - run: go generate
-      - run: go mod vendor
-      - run: go get github.com/onsi/ginkgo/ginkgo
+      - run: go get -u github.com/onsi/ginkgo/ginkgo
+      - run: go get -u honnef.co/go/tools/cmd/staticcheck
+      - run: go get -u github.com/client9/misspell/cmd/misspell
+      - run: go list ./...|xargs staticcheck
+      - run: find . -type f -name "*.go" | grep -v "/vendor/" | xargs misspell -error -locale US
       - run: ginkgo -r -skipMeasurements
       - run: mkdir -p /tmp/workspace
       - run: cd .. ; tar -czf /tmp/workspace/go-choria.tgz go-choria

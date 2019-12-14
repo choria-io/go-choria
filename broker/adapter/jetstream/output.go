@@ -7,7 +7,6 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/choria-io/go-choria/broker/adapter/ingest"
 	"github.com/choria-io/go-choria/broker/adapter/stats"
@@ -28,15 +27,6 @@ type stream struct {
 	adapterName string
 
 	work chan ingest.Adaptable
-	quit chan bool
-}
-
-type msg struct {
-	Protocol  string    `json:"protocol"`
-	Data      string    `json:"data"`
-	Sender    string    `json:"sender"`
-	Time      time.Time `json:"time"`
-	RequestID string    `json:"requestid"`
 }
 
 func newStream(name string, work chan ingest.Adaptable, logger *log.Entry) ([]*stream, error) {
@@ -49,7 +39,7 @@ func newStream(name string, work chan ingest.Adaptable, logger *log.Entry) ([]*s
 
 	servers := cfg.Option(prefix+"servers", "")
 	if servers == "" {
-		return nil, fmt.Errorf("No Stream servers configured, please set %s", prefix+"servers")
+		return nil, fmt.Errorf("no Stream servers configured, please set %s", prefix+"servers")
 	}
 
 	topic := cfg.Option(prefix+"topic", "")
@@ -90,12 +80,12 @@ func (sc *stream) resolver(parts []string) func() (srvcache.Servers, error) {
 
 func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) error {
 	if ctx.Err() != nil {
-		return fmt.Errorf("Shutdown called")
+		return fmt.Errorf("shutdown called")
 	}
 
 	nc, err := fw.NewConnector(ctx, sc.servers, sc.clientID, sc.log)
 	if err != nil {
-		return fmt.Errorf("Could not start JetStream connection: %s", err)
+		return fmt.Errorf("could not start JetStream connection: %s", err)
 	}
 
 	sc.conn = nc

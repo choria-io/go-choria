@@ -35,12 +35,11 @@ type Connection interface {
 
 // Manager of registration plugins
 type Manager struct {
-	log         *logrus.Entry
-	choria      *choria.Framework
-	cfg         *config.Config
-	connector   Connection
-	registrator Registrator
-	datac       chan *data.RegistrationItem
+	log       *logrus.Entry
+	choria    *choria.Framework
+	cfg       *config.Config
+	connector Connection
+	datac     chan *data.RegistrationItem
 }
 
 // New creates a new instance of the registration subsystem manager
@@ -75,10 +74,10 @@ func (reg *Manager) Start(ctx context.Context, wg *sync.WaitGroup) error {
 		case "file_content":
 			registrator, err = registration.NewFileContent(reg.cfg, reg.log)
 			if err != nil {
-				return fmt.Errorf("Cannot start File Content Registrator: %s", err)
+				return fmt.Errorf("cannot start File Content Registrator: %s", err)
 			}
 		default:
-			return fmt.Errorf("Unknown registration plugin: %s", reg.cfg.Registration)
+			return fmt.Errorf("unknown registration plugin: %s", reg.cfg.Registration)
 		}
 
 		reg.log.Infof("Starting registration worker for %s", rtype)

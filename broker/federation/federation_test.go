@@ -53,7 +53,6 @@ type stubConnection struct {
 	Outq        chan [2]string
 	Subs        map[string][3]string
 	SubChannels map[string]chan *choria.ConnectorMessage
-	name        string
 	mu          *sync.Mutex
 }
 
@@ -96,13 +95,8 @@ func (s *stubConnection) Unsubscribe(name string) error {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	if _, ok := s.Subs[name]; ok {
-		delete(s.Subs, name)
-	}
-
-	if _, ok := s.SubChannels[name]; ok {
-		delete(s.SubChannels, name)
-	}
+	delete(s.Subs, name)
+	delete(s.SubChannels, name)
 
 	return nil
 }
@@ -139,9 +133,7 @@ func (s *stubConnection) Connect(ctx context.Context) error {
 	return nil
 }
 
-func (s *stubConnection) Close() {
-	return
-}
+func (s *stubConnection) Close() {}
 
 func (s *stubConnection) ReplyTarget(msg *choria.Message) (string, error) {
 	return "stubreplytarget", nil

@@ -13,8 +13,6 @@ import (
 
 	"github.com/choria-io/go-protocol/protocol"
 
-	"github.com/sirupsen/logrus"
-
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/provtarget"
 	"github.com/choria-io/go-config"
@@ -31,12 +29,11 @@ type Framework struct {
 	Config *config.Config
 
 	security security.Provider
-	log      *logrus.Logger
+	log      *log.Logger
 
 	srvcache *srvcache.Cache
 	puppet   *puppet.PuppetWrapper
 	mu       *sync.Mutex
-	stats    bool
 }
 
 // New sets up a Choria with all its config loaded and so forth
@@ -167,11 +164,7 @@ func (fw *Framework) ConfigureProvisioning() {
 
 // IsFederated determiens if the configuration is setting up any Federation collectives
 func (fw *Framework) IsFederated() (result bool) {
-	if len(fw.FederationCollectives()) == 0 {
-		return false
-	}
-
-	return true
+	return len(fw.FederationCollectives()) != 0
 }
 
 // Logger creates a new logrus entry
@@ -307,7 +300,7 @@ func (fw *Framework) SetupLogging(debug bool) (err error) {
 
 		file, err := os.OpenFile(fw.Config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
-			return fmt.Errorf("Could not set up logging: %s", err)
+			return fmt.Errorf("could not set up logging: %s", err)
 		}
 
 		fw.log.Out = file
@@ -432,7 +425,7 @@ func (fw *Framework) DiscoveryServer() (srvcache.Server, error) {
 	dflt := srvcache.NewServer(fw.Config.Choria.DiscoveryHost, fw.Config.Choria.DiscoveryPort, "")
 
 	if !fw.ProxiedDiscovery() {
-		return dflt, errors.New("Proxy discovery is not enabled")
+		return dflt, errors.New("proxy discovery is not enabled")
 	}
 
 	return fw.TrySrvLookup([]string{"_mcollective-discovery._tcp"}, dflt)

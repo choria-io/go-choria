@@ -30,7 +30,7 @@ func (b *buildinfoCommand) Setup() (err error) {
 func (b *buildinfoCommand) Configure() (err error) {
 	cfg, err = config.NewDefaultConfig()
 	if err != nil {
-		return fmt.Errorf("Could not create default configuration: %s", err)
+		return fmt.Errorf("could not create default configuration: %s", err)
 	}
 
 	cfg.DisableSecurityProviderVerify = true

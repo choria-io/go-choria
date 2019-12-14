@@ -55,7 +55,6 @@ type Watcher struct {
 	statechg                chan struct{}
 	previous                State
 	previousRunTime         time.Duration
-	lastAnnounce            time.Time
 	timeout                 time.Duration
 	environment             []string
 	suppressSuccessAnnounce bool
@@ -268,7 +267,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	start := time.Now()
 	defer func() {
 		w.Lock()
-		w.previousRunTime = time.Now().Sub(start)
+		w.previousRunTime = time.Since(start)
 		w.Unlock()
 	}()
 
@@ -287,11 +286,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machine.Name()))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s%s%s", os.Getenv("PATH"), string(os.PathListSeparator), w.machine.Directory()))
-
-	for _, e := range w.environment {
-		cmd.Env = append(cmd.Env, e)
-	}
-
+	cmd.Env = append(cmd.Env, w.environment...)
 	cmd.Dir = w.machine.Directory()
 
 	output, err := cmd.CombinedOutput()
