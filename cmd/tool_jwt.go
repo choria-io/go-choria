@@ -49,7 +49,7 @@ func (j *tJWTCommand) Setup() (err error) {
 func (j *tJWTCommand) Configure() error {
 	cfg, err = config.NewDefaultConfig()
 	if err != nil {
-		return fmt.Errorf("Could not create default configuration: %s", err)
+		return fmt.Errorf("could not create default configuration: %s", err)
 	}
 
 	cfg.DisableSecurityProviderVerify = true

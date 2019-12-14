@@ -12,7 +12,7 @@ var (
 
 	validatedCtr = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "choria_server_validated",
-		Help: "Number of messages that were received and validated succesfully",
+		Help: "Number of messages that were received and validated successfully",
 	}, []string{"identity"})
 
 	unvalidatedCtr = prometheus.NewCounterVec(prometheus.CounterOpts{

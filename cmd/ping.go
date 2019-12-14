@@ -144,7 +144,7 @@ func (p *pingCommand) summarize() error {
 		return nil
 	}
 
-	return errors.New("No responses received")
+	return errors.New("no responses received")
 }
 
 func (p *pingCommand) handler(ctx context.Context, m *choria.ConnectorMessage) {

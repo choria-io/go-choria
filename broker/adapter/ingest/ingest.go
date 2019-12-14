@@ -59,7 +59,7 @@ func New(name string, work chan Adaptable, fw Framework, logger *log.Entry) ([]*
 
 	topic := cfg.Option(prefix+"topic", "")
 	if topic == "" {
-		return nil, fmt.Errorf("No ingest topic configured, please set %s", prefix+"topic")
+		return nil, fmt.Errorf("no ingest topic configured, please set %s", prefix+"topic")
 	}
 
 	proto := cfg.Option(prefix+"protocol", "reply")
@@ -96,19 +96,19 @@ func New(name string, work chan Adaptable, fw Framework, logger *log.Entry) ([]*
 
 func (na *NatsIngest) Connect(ctx context.Context, cm choria.ConnectionManager) error {
 	if ctx.Err() != nil {
-		return fmt.Errorf("Shutdown called")
+		return fmt.Errorf("shutdown called")
 	}
 
 	var err error
 
 	na.conn, err = cm.NewConnector(ctx, na.fw.MiddlewareServers, fmt.Sprintf("choria adapter %s", na.name), na.log)
 	if err != nil {
-		return fmt.Errorf("Could not start NATS connection: %s", err)
+		return fmt.Errorf("could not start NATS connection: %s", err)
 	}
 
 	na.input, err = na.conn.ChanQueueSubscribe(na.name, na.topic, na.group, 1000)
 	if err != nil {
-		return fmt.Errorf("Could not subscribe to %s: %s", na.topic, err)
+		return fmt.Errorf("could not subscribe to %s: %s", na.topic, err)
 	}
 
 	return nil

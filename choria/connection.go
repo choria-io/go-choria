@@ -101,7 +101,6 @@ type Connection struct {
 	outbox            chan *nats.Msg
 	subMu             sync.Mutex
 	conMu             sync.Mutex
-	recMu             sync.Mutex
 }
 
 var (
@@ -225,7 +224,7 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 }
 
 // QueueSubscribe is a lot like ChanQueueSubscribe but you provide it the queue to dump messages in,
-// it also takes a context and will unsubscribe when the context is cancelled
+// it also takes a context and will unsubscribe when the context is canceled
 func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error {
 	var err error
 
@@ -351,7 +350,7 @@ func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.
 
 		j, err = transport.JSON()
 		if err != nil {
-			err = fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err)
+			err = fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 			return
 		}
 
@@ -427,7 +426,7 @@ func (conn *Connection) publishConnectedBroadcast(msg *Message, transport protoc
 func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.TransportMessage) error {
 	j, err := transport.JSON()
 	if err != nil {
-		return fmt.Errorf("Cannot publish Message %s: %s", msg.RequestID, err)
+		return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 	}
 
 	rawmsg := []byte(j)
@@ -456,7 +455,7 @@ func TargetForMessage(msg *Message, identity string) (string, error) {
 
 	if msg.Type() == "reply" {
 		if msg.ReplyTo() == "" {
-			return "", fmt.Errorf("Do not know how to reply, no reply-to header has been set on message %s", msg.RequestID)
+			return "", fmt.Errorf("do not know how to reply, no reply-to header has been set on message %s", msg.RequestID)
 		}
 
 		return msg.ReplyTo(), nil
@@ -468,7 +467,7 @@ func TargetForMessage(msg *Message, identity string) (string, error) {
 		return NodeDirectedTarget(msg.Collective(), identity), nil
 	}
 
-	return "", fmt.Errorf("Do not know how to determine the target for Message %s with type %s", msg.RequestID, msg.Type())
+	return "", fmt.Errorf("do not know how to determine the target for Message %s with type %s", msg.RequestID, msg.Type())
 }
 
 func (conn *Connection) TargetForMessage(msg *Message, identity string) (string, error) {
@@ -618,7 +617,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 			conn.logger.Warnf("Initial connection to the NATS broker cluster failed: %s", err)
 
 			if ctx.Err() != nil {
-				err = fmt.Errorf("Initial connection cancelled due to shut down")
+				err = fmt.Errorf("initial connection canceled due to shut down")
 				return
 			}
 

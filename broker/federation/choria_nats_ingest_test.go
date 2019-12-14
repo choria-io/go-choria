@@ -76,7 +76,7 @@ var _ = Describe("Choria NATS Ingest", func() {
 		in.Data = []byte("{}")
 		manager.connection.PublishToQueueSub("ingest", in)
 		waitForLogLines(logtxt, logbuf)
-		Expect(logbuf.String()).To(MatchRegexp("Could not parse received message into a TransportMessage: Do not know how to create a TransportMessage from an expected JSON format message with content: {}"))
+		Expect(logbuf.String()).To(MatchRegexp("Could not parse received message into a TransportMessage: do not know how to create a TransportMessage from an expected JSON format message with content: {}"))
 	})
 
 	It("Should fail for unfederated messages", func() {

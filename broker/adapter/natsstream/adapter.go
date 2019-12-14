@@ -48,11 +48,9 @@ type NatStream struct {
 	log *log.Entry
 }
 
-var framework *choria.Framework
 var cfg *config.Config
 
 func Create(name string, choria *choria.Framework) (adapter *NatStream, err error) {
-	framework = choria
 	cfg = choria.Configuration()
 
 	s := fmt.Sprintf("plugin.choria.adapter.%s.queue_len", name)
@@ -70,12 +68,12 @@ func Create(name string, choria *choria.Framework) (adapter *NatStream, err erro
 
 	adapter.streams, err = newStream(name, adapter.work, adapter.log)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create adapter %s: %s", name, err)
+		return nil, fmt.Errorf("could not create adapter %s: %s", name, err)
 	}
 
 	adapter.ingests, err = ingest.New(name, adapter.work, choria, adapter.log)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create adapter %s: %s", name, err)
+		return nil, fmt.Errorf("could not create adapter %s: %s", name, err)
 	}
 
 	return adapter, err
@@ -84,23 +82,23 @@ func Create(name string, choria *choria.Framework) (adapter *NatStream, err erro
 func (sa *NatStream) Init(ctx context.Context, cm choria.ConnectionManager) (err error) {
 	for _, worker := range sa.streams {
 		if ctx.Err() != nil {
-			return fmt.Errorf("Shutdown called")
+			return fmt.Errorf("shutdown called")
 		}
 
 		err = worker.connect(ctx, cm)
 		if err != nil {
-			return fmt.Errorf("Failure during initial NATS Streaming connections: %s", err)
+			return fmt.Errorf("failure during initial NATS Streaming connections: %s", err)
 		}
 	}
 
 	for _, worker := range sa.ingests {
 		if ctx.Err() != nil {
-			return fmt.Errorf("Shutdown called")
+			return fmt.Errorf("shutdown called")
 		}
 
 		err = worker.Connect(ctx, cm)
 		if err != nil {
-			return fmt.Errorf("Failure during NATS initial connections: %s", err)
+			return fmt.Errorf("failure during NATS initial connections: %s", err)
 		}
 	}
 
@@ -119,6 +117,4 @@ func (sa *NatStream) Process(ctx context.Context, wg *sync.WaitGroup) {
 		wg.Add(1)
 		go worker.Receiver(ctx, wg)
 	}
-
-	return
 }

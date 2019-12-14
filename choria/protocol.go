@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/choria-io/go-protocol/protocol"
-	"github.com/choria-io/go-protocol/protocol/v1"
+	v1 "github.com/choria-io/go-protocol/protocol/v1"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 )
@@ -93,7 +93,7 @@ func (fw *Framework) NewRequest(version string, agent string, senderid string, c
 	case protocol.RequestV1:
 		request, err = v1.NewRequest(agent, senderid, callerid, ttl, requestid, collective)
 	default:
-		err = fmt.Errorf("Do not know how to create a Request version %s", version)
+		err = fmt.Errorf("do not know how to create a Request version %s", version)
 	}
 
 	return
@@ -102,13 +102,13 @@ func (fw *Framework) NewRequest(version string, agent string, senderid string, c
 // NewRequestFromMessage creates a new Request with the Message settings preloaded complying with a specific protocol version like protocol.RequestV1
 func (fw *Framework) NewRequestFromMessage(version string, msg *Message) (req protocol.Request, err error) {
 	if !(msg.Type() == "request" || msg.Type() == "direct_request") {
-		err = fmt.Errorf("Cannot use `%s` message to construct a Request", msg.Type())
+		err = fmt.Errorf("cannot use `%s` message to construct a Request", msg.Type())
 		return
 	}
 
 	req, err = fw.NewRequest(version, msg.Agent, msg.SenderID, msg.CallerID, msg.TTL, msg.RequestID, msg.Collective())
 	if err != nil {
-		return req, fmt.Errorf("Could not create a Request from a Message: %s", err)
+		return req, fmt.Errorf("could not create a Request from a Message: %s", err)
 	}
 
 	req.SetMessage(msg.Payload)
@@ -128,7 +128,7 @@ func (fw *Framework) NewReply(request protocol.Request) (reply protocol.Reply, e
 	case protocol.RequestV1:
 		reply, err = v1.NewReply(request, fw.Config.Identity)
 	default:
-		err = fmt.Errorf("Do not know how to create a Reply version %s", request.Version())
+		err = fmt.Errorf("do not know how to create a Reply version %s", request.Version())
 	}
 
 	return
@@ -137,12 +137,12 @@ func (fw *Framework) NewReply(request protocol.Request) (reply protocol.Reply, e
 // NewReplyFromMessage creates a new Reply with the Message settings preloaded complying with a specific protocol version like protocol.ReplyV1
 func (fw *Framework) NewReplyFromMessage(version string, msg *Message) (rep protocol.Reply, err error) {
 	if msg.Type() != "reply" {
-		err = fmt.Errorf("Cannot use `%s` message to construct a Reply", msg.Type())
+		err = fmt.Errorf("cannot use '%s' message to construct a Reply", msg.Type())
 		return
 	}
 
 	if msg.Request == nil {
-		err = fmt.Errorf("Cannot create a Reply from Messages without Requests")
+		err = fmt.Errorf("cannot create a Reply from Messages without Requests")
 		return
 	}
 
@@ -163,7 +163,7 @@ func (fw *Framework) NewReplyFromSecureReply(sr protocol.SecureReply) (reply pro
 	case protocol.SecureReplyV1:
 		reply, err = v1.NewReplyFromSecureReply(sr)
 	default:
-		err = fmt.Errorf("Do not know how to create a Reply version %s", sr.Version())
+		err = fmt.Errorf("do not know how to create a Reply version %s", sr.Version())
 	}
 
 	return
@@ -175,7 +175,7 @@ func (fw *Framework) NewRequestFromSecureRequest(sr protocol.SecureRequest) (req
 	case protocol.SecureRequestV1:
 		request, err = v1.NewRequestFromSecureRequest(sr)
 	default:
-		err = fmt.Errorf("Do not know how to create a Reply version %s", sr.Version())
+		err = fmt.Errorf("do not know how to create a Reply version %s", sr.Version())
 	}
 
 	return
@@ -187,7 +187,7 @@ func (fw *Framework) NewSecureReply(reply protocol.Reply) (secure protocol.Secur
 	case protocol.ReplyV1:
 		secure, err = v1.NewSecureReply(reply, fw.security)
 	default:
-		err = fmt.Errorf("Do not know how to create a SecureReply based on a Reply version %s", reply.Version())
+		err = fmt.Errorf("do not know how to create a SecureReply based on a Reply version %s", reply.Version())
 	}
 
 	return
@@ -199,7 +199,7 @@ func (fw *Framework) NewSecureReplyFromTransport(message protocol.TransportMessa
 	case protocol.TransportV1:
 		secure, err = v1.NewSecureReplyFromTransport(message, fw.security, skipvalidate)
 	default:
-		err = fmt.Errorf("Do not know how to create a SecureReply version %s", message.Version())
+		err = fmt.Errorf("do not know how to create a SecureReply version %s", message.Version())
 
 	}
 
@@ -212,7 +212,7 @@ func (fw *Framework) NewSecureRequest(request protocol.Request) (secure protocol
 	case protocol.RequestV1:
 		secure, err = v1.NewSecureRequest(request, fw.security)
 	default:
-		err = fmt.Errorf("Do not know how to create a SecureReply from a Request with version %s", request.Version())
+		err = fmt.Errorf("do not know how to create a SecureReply from a Request with version %s", request.Version())
 	}
 
 	return
@@ -224,7 +224,7 @@ func (fw *Framework) NewSecureRequestFromTransport(message protocol.TransportMes
 	case protocol.TransportV1:
 		secure, err = v1.NewSecureRequestFromTransport(message, fw.security, skipvalidate)
 	default:
-		err = fmt.Errorf("Do not know how to create a SecureReply from a TransportMessage version %s", message.Version())
+		err = fmt.Errorf("do not know how to create a SecureReply from a TransportMessage version %s", message.Version())
 	}
 
 	return
@@ -247,7 +247,7 @@ func (fw *Framework) NewTransportForSecureRequest(request protocol.SecureRequest
 		}
 
 	default:
-		err = fmt.Errorf("Do not know how to create a Transport message for SecureRequest version %s", request.Version())
+		err = fmt.Errorf("co not know how to create a Transport message for SecureRequest version %s", request.Version())
 	}
 
 	return
@@ -260,7 +260,7 @@ func (fw *Framework) NewTransportForSecureReply(reply protocol.SecureReply) (mes
 		message, err = v1.NewTransportMessage(fw.Config.Identity)
 		message.SetReplyData(reply)
 	default:
-		err = fmt.Errorf("Do not know how to create a Transport message for SecureRequest version %s", reply.Version())
+		err = fmt.Errorf("do not know how to create a Transport message for SecureRequest version %s", reply.Version())
 	}
 
 	return
@@ -272,19 +272,19 @@ func (fw *Framework) NewTransportForSecureReply(reply protocol.SecureReply) (mes
 func (fw *Framework) NewReplyTransportForMessage(msg *Message, request protocol.Request) (protocol.TransportMessage, error) {
 	reply, err := fw.NewReply(request)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Reply: %s", err)
+		return nil, fmt.Errorf("could not create Reply: %s", err)
 	}
 
 	reply.SetMessage(msg.Payload)
 
 	sreply, err := fw.NewSecureReply(reply)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Secure Reply: %s", err)
+		return nil, fmt.Errorf("could not create Secure Reply: %s", err)
 	}
 
 	transport, err := fw.NewTransportForSecureReply(sreply)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Transport: %s", err)
+		return nil, fmt.Errorf("could not create Transport: %s", err)
 	}
 
 	protocol.CopyFederationData(request, transport)
@@ -296,17 +296,17 @@ func (fw *Framework) NewReplyTransportForMessage(msg *Message, request protocol.
 func (fw *Framework) NewRequestTransportForMessage(msg *Message, version string) (protocol.TransportMessage, error) {
 	req, err := fw.NewRequestFromMessage(version, msg)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Request: %s", err)
+		return nil, fmt.Errorf("could not create Request: %s", err)
 	}
 
 	sr, err := fw.NewSecureRequest(req)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Secure Request: %s", err)
+		return nil, fmt.Errorf("could not create Secure Request: %s", err)
 	}
 
 	transport, err := fw.NewTransportForSecureRequest(sr)
 	if err != nil {
-		return nil, fmt.Errorf("Could not create Transport: %s", err)
+		return nil, fmt.Errorf("could not create Transport: %s", err)
 	}
 
 	return transport, nil
@@ -318,7 +318,7 @@ func (fw *Framework) NewTransportMessage(version string) (message protocol.Trans
 	case protocol.TransportV1:
 		message, err = v1.NewTransportMessage(fw.Config.Identity)
 	default:
-		err = fmt.Errorf("Do not know how to create a Transport version '%s'", version)
+		err = fmt.Errorf("so not know how to create a Transport version '%s'", version)
 	}
 
 	return
@@ -332,7 +332,7 @@ func (fw *Framework) NewTransportFromJSON(data string) (message protocol.Transpo
 	case protocol.TransportV1:
 		message, err = v1.NewTransportFromJSON(data)
 	default:
-		err = fmt.Errorf("Do not know how to create a TransportMessage from an expected JSON format message with content: %s", data)
+		err = fmt.Errorf("do not know how to create a TransportMessage from an expected JSON format message with content: %s", data)
 	}
 
 	return

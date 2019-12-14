@@ -26,7 +26,6 @@ type connector interface {
 
 type FederationBroker struct {
 	choria  *choria.Framework
-	statsMu sync.Mutex
 
 	Name string
 
@@ -80,11 +79,9 @@ func (fb *FederationBroker) Start(ctx context.Context, wg *sync.WaitGroup) {
 	go fb.fedOut.Run(ctx)
 	go fb.fedIn.Run(ctx)
 
-	select {
-	case <-ctx.Done():
-		log.Warn("Choria Federation Broker shutting down")
-		return
-	}
+	<-ctx.Done()
+
+	log.Warn("Choria Federation Broker shutting down")
 }
 
 func nameForConnectionMode(mode int) string {

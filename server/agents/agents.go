@@ -166,7 +166,7 @@ func (a *Manager) agentDenied(agent string) bool {
 // Errors during the unsub is just ignored because it's quite possible that they would fail
 // too but this avoids problems of messages arriving we did not expect.
 //
-// In practise though this is something done during bootstrap and failure here should exit
+// In practice though this is something done during bootstrap and failure here should exit
 // the whole instance, so it's probably not needed
 func (a *Manager) subscribeAgent(ctx context.Context, name string, agent Agent, conn choria.AgentConnector) error {
 	if _, found := a.subs[name]; found {

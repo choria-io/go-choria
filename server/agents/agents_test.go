@@ -252,7 +252,7 @@ var _ = Describe("Server/Agents", func() {
 			Expect(reply.Body).To(Equal([]byte("pong hello world")))
 		})
 
-		It("Should finish when the context is cancelled", func() {
+		It("Should finish when the context is canceled", func() {
 			wg.Add(1)
 
 			agent.Metadata().Timeout = 10

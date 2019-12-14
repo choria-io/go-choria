@@ -57,7 +57,7 @@ func (p *tProvisionerCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	fmt.Printf("Provisioning using %d broker(s):\n\n", targets.Count())
-	fmt.Printf(strings.Join(targets.Strings(), "\t"))
+	fmt.Print(strings.Join(targets.Strings(), "\t"))
 
 	fmt.Println()
 

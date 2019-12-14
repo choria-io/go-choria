@@ -27,7 +27,7 @@ func Match(filters [][3]string, fw *choria.Framework, log *logrus.Entry) bool {
 			return false
 		}
 
-		if matched == false {
+		if !matched {
 			log.Debugf("Failed to match fact filter '%#v'", filter)
 			break
 		}
@@ -72,7 +72,7 @@ func JSON(file string, log *logrus.Entry) (json.RawMessage, error) {
 		}
 
 		// does a very dumb shallow merge that mimics ruby Hash#merge
-		// to maintain mcollective compatability
+		// to maintain mcollective compatibility
 		for k, v := range facts {
 			out[k] = v
 		}
@@ -134,6 +134,6 @@ func HasFact(fact string, operator string, value string, file string, log *logru
 	case "!=":
 		return neMatch(found, value, &j)
 	default:
-		return false, fmt.Errorf("Unknown fact matching operator %s while looking for fact %s", operator, fact)
+		return false, fmt.Errorf("unknown fact matching operator %s while looking for fact %s", operator, fact)
 	}
 }

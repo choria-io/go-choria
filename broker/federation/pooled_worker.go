@@ -50,7 +50,7 @@ type pooledWorker struct {
 	connection choria.ConnectionManager
 	servers    func() (srvcache.Servers, error)
 
-	worker func(ctx context.Context, self *pooledWorker, instance int, logger *log.Entry)
+	worker func(ctx context.Context, w *pooledWorker, instance int, logger *log.Entry)
 }
 
 func PooledWorkerFactory(name string, workers int, mode int, capacity int, broker *FederationBroker, logger *log.Entry, worker func(context.Context, *pooledWorker, int, *log.Entry)) (*pooledWorker, error) {
@@ -68,129 +68,129 @@ func PooledWorkerFactory(name string, workers int, mode int, capacity int, broke
 	return w, err
 }
 
-func (self *pooledWorker) Run(ctx context.Context) error {
-	self.mu.Lock()
-	defer self.mu.Unlock()
+func (w *pooledWorker) Run(ctx context.Context) error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
-	if !self.Ready() {
-		err := fmt.Errorf("could not run %s as Init() has not been called or failed", self.Name())
-		self.log.Warn(err)
+	if !w.Ready() {
+		err := fmt.Errorf("could not run %s as Init() has not been called or failed", w.Name())
+		w.log.Warn(err)
 		return err
 	}
 
 	var err error
 
-	if self.mode != Unconnected {
-		switch self.mode {
+	if w.mode != Unconnected {
+		switch w.mode {
 		case Federation:
-			self.servers = self.choria.FederationMiddlewareServers
+			w.servers = w.choria.FederationMiddlewareServers
 		case Collective:
-			self.servers = self.choria.MiddlewareServers
+			w.servers = w.choria.MiddlewareServers
 		default:
 			err := errors.New("do not know which middleware to connect to, Mode should be one of Federation or Collective")
-			self.log.Error(err)
+			w.log.Error(err)
 			return err
 		}
 
 		if err != nil {
 			err = fmt.Errorf("could not determine middleware servers: %s", err)
-			self.log.Warn(err)
+			w.log.Warn(err)
 			return err
 		}
 
-		srv, err := self.servers()
+		srv, err := w.servers()
 		if err != nil {
 			err = fmt.Errorf("resolving initial middleware server list failed: %s", err)
-			self.log.Error(err)
+			w.log.Error(err)
 			return err
 		}
 
 		if srv.Count() == 0 {
-			err = fmt.Errorf("no middleware servers were configured for %s, cannot continue", self.name)
-			self.log.Error(err)
+			err = fmt.Errorf("no middleware servers were configured for %s, cannot continue", w.name)
+			w.log.Error(err)
 			return err
 		}
 	}
 
-	for i := 0; i < self.workers; i++ {
-		self.wg.Add(1)
+	for i := 0; i < w.workers; i++ {
+		w.wg.Add(1)
 
-		go self.worker(ctx, self, i, self.log.WithFields(log.Fields{"worker_instance": i}))
+		go w.worker(ctx, w, i, w.log.WithFields(log.Fields{"worker_instance": i}))
 	}
 
-	self.wg.Wait()
+	w.wg.Wait()
 
 	return nil
 }
 
-func (self *pooledWorker) Init(workers int, broker *FederationBroker) (err error) {
-	self.mu.Lock()
-	defer self.mu.Unlock()
+func (w *pooledWorker) Init(workers int, broker *FederationBroker) (err error) {
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
-	self.workers = workers
-	self.choria = broker.choria
-	self.broker = broker
+	w.workers = workers
+	w.choria = broker.choria
+	w.broker = broker
 
-	if self.mode != Unconnected {
-		self.connection = broker.choria
+	if w.mode != Unconnected {
+		w.connection = broker.choria
 	}
 
-	if self.log == nil {
-		self.log = broker.logger.WithFields(log.Fields{"worker": self.name})
+	if w.log == nil {
+		w.log = broker.logger.WithFields(log.Fields{"worker": w.name})
 	}
 
-	if self.capacity == 0 {
-		self.capacity = 100
+	if w.capacity == 0 {
+		w.capacity = 100
 	}
 
-	if self.workers == 0 {
-		self.workers = 2
+	if w.workers == 0 {
+		w.workers = 2
 	}
 
-	self.in = make(chan chainmessage, self.capacity)
-	self.out = make(chan chainmessage, self.capacity)
+	w.in = make(chan chainmessage, w.capacity)
+	w.out = make(chan chainmessage, w.capacity)
 
-	self.initialized = true
+	w.initialized = true
 
 	return nil
 }
 
-func (self *pooledWorker) Ready() bool {
-	return self.initialized
+func (w *pooledWorker) Ready() bool {
+	return w.initialized
 }
 
-func (self *pooledWorker) Name() string {
-	return self.name
+func (w *pooledWorker) Name() string {
+	return w.name
 }
 
-func (self *pooledWorker) From(input chainable) error {
+func (w *pooledWorker) From(input chainable) error {
 	if input.Output() == nil {
 		return fmt.Errorf("Input %s does not have a output chain", input.Name())
 	}
 
-	self.log.Debugf("Connecting input of %s to output of %s with capacity %d", self.Name(), input.Name(), cap(input.Output()))
+	w.log.Debugf("Connecting input of %s to output of %s with capacity %d", w.Name(), input.Name(), cap(input.Output()))
 
-	self.in = input.Output()
+	w.in = input.Output()
 
 	return nil
 }
 
-func (self *pooledWorker) To(output chainable) error {
+func (w *pooledWorker) To(output chainable) error {
 	if output.Input() == nil {
 		return fmt.Errorf("Output %s does not have a input chain", output.Name())
 	}
 
-	self.log.Debugf("Connecting output of %s to input of %s with capacity %d", self.Name(), output.Name(), cap(output.Input()))
+	w.log.Debugf("Connecting output of %s to input of %s with capacity %d", w.Name(), output.Name(), cap(output.Input()))
 
-	self.out = output.Input()
+	w.out = output.Input()
 
 	return nil
 }
 
-func (self *pooledWorker) Input() chan chainmessage {
-	return self.in
+func (w *pooledWorker) Input() chan chainmessage {
+	return w.in
 }
 
-func (self *pooledWorker) Output() chan chainmessage {
-	return self.out
+func (w *pooledWorker) Output() chan chainmessage {
+	return w.out
 }

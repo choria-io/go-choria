@@ -136,7 +136,7 @@ func (a *AAgent) loadFromSource(ctx context.Context, wg *sync.WaitGroup) error {
 		if current != nil {
 			hash, err := current.machine.Hash()
 			if err != nil {
-				a.logger.Errorf("could not determine hash for %s manifest in %s")
+				a.logger.Errorf("could not determine hash for %s manifest in %v", current.machine.Name(), err)
 			}
 
 			if hash == current.loadedHash {

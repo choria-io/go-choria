@@ -105,7 +105,7 @@ func Load(file string) (*List, error) {
 
 // Now is the current time
 func (p *Plugin) Now() string {
-	return fmt.Sprintf("%s", time.Now())
+	return time.Now().String()
 }
 
 // Loader is the loader go code
@@ -118,5 +118,5 @@ func (p *Plugin) Loader() (string, error) {
 	err := templ.Execute(writer, p)
 	writer.Flush()
 
-	return string(b.Bytes()), err
+	return b.String(), err
 }

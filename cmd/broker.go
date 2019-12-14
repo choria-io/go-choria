@@ -73,7 +73,7 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	adapters := cfg.Choria.Adapters
 
 	if !net && !federation && len(adapters) == 0 {
-		return fmt.Errorf("All broker features are disabled")
+		return fmt.Errorf("all broker features are disabled")
 	}
 
 	log.Infof("Choria Broker version %s starting with config %s", build.Version, c.Config.ConfigFile)
@@ -81,7 +81,7 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	if r.pidFile != "" {
 		err := ioutil.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)
 		if err != nil {
-			return fmt.Errorf("Could not write PID: %s", err)
+			return fmt.Errorf("could not write PID: %s", err)
 		}
 	}
 
@@ -105,14 +105,14 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	if net {
 		log.Info("Starting Network Broker")
 		if err = r.runBroker(ctx, wg); err != nil {
-			return fmt.Errorf("Starting the network broker failed: %s", err)
+			return fmt.Errorf("starting the network broker failed: %s", err)
 		}
 	}
 
 	if federation {
 		log.Infof("Starting Federation Broker on cluster %s", c.Config.Choria.FederationCluster)
 		if err = r.runFederation(ctx, wg); err != nil {
-			return fmt.Errorf("Starting the federation broker failed: %s", err)
+			return fmt.Errorf("starting the federation broker failed: %s", err)
 		}
 	}
 
@@ -134,7 +134,7 @@ func (r *brokerRunCommand) runAdapters(ctx context.Context, wg *sync.WaitGroup) 
 func (r *brokerRunCommand) runFederation(ctx context.Context, wg *sync.WaitGroup) (err error) {
 	r.federation, err = federation.NewFederationBroker(c.Config.Choria.FederationCluster, c)
 	if err != nil {
-		return fmt.Errorf("Could not set up Choria Federation Broker: %s", err)
+		return fmt.Errorf("could not set up Choria Federation Broker: %s", err)
 	}
 
 	wg.Add(1)
@@ -146,7 +146,7 @@ func (r *brokerRunCommand) runFederation(ctx context.Context, wg *sync.WaitGroup
 func (r *brokerRunCommand) runBroker(ctx context.Context, wg *sync.WaitGroup) (err error) {
 	r.server, err = network.NewServer(c, &build.Info{}, debug)
 	if err != nil {
-		return fmt.Errorf("Could not set up Choria Network Broker: %s", err)
+		return fmt.Errorf("could not set up Choria Network Broker: %s", err)
 	}
 
 	wg.Add(1)

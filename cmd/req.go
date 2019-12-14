@@ -178,7 +178,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	if err != nil {
 		return fmt.Errorf("could not discover nodes")
 	}
-	r.discoveryTime = time.Now().Sub(dstart)
+	r.discoveryTime = time.Since(dstart)
 
 	expected := len(nodes)
 	if expected == 0 {

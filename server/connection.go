@@ -10,13 +10,13 @@ import (
 
 func (srv *Instance) initialConnect(ctx context.Context) (err error) {
 	if ctx.Err() != nil {
-		return fmt.Errorf("Existing on shut down")
+		return fmt.Errorf("exiting on shut down")
 	}
 
 	brokers := func() (srvcache.Servers, error) {
 		tempsrv, err := srv.brokerUrls(ctx)
 		if err != nil {
-			return nil, fmt.Errorf("Could not find Choria Network Brokers: %s", err)
+			return nil, fmt.Errorf("could not find Choria Network Brokers: %s", err)
 		}
 
 		list := tempsrv.Strings()
@@ -28,7 +28,7 @@ func (srv *Instance) initialConnect(ctx context.Context) (err error) {
 
 	srv.connector, err = srv.fw.NewConnector(ctx, brokers, srv.fw.Certname(), srv.log)
 	if err != nil {
-		return fmt.Errorf("Could not create connector: %s", err)
+		return fmt.Errorf("could not create connector: %s", err)
 	}
 
 	return nil
@@ -73,7 +73,7 @@ func (srv *Instance) subscribeNode(ctx context.Context) error {
 
 		err = srv.connector.QueueSubscribe(ctx, fmt.Sprintf("node.%s", collective), target, "", srv.requests)
 		if err != nil {
-			return fmt.Errorf("Could not subscribe to node directed targets: %s", err)
+			return fmt.Errorf("could not subscribe to node directed targets: %s", err)
 		}
 	}
 

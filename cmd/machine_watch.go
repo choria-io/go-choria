@@ -146,20 +146,6 @@ func (w *mWatchCommand) showTransition(m *choria.ConnectorMessage) {
 	w.Unlock()
 }
 
-func (w *mWatchCommand) shouldShowType(t string) bool {
-	if len(w.filterWatcherType) == 0 {
-		return true
-	}
-
-	for _, st := range w.filterWatcherType {
-		if st == t {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (w *mWatchCommand) shouldViewStates() bool {
 	return w.onlyWatchers || (!w.onlyTransitions && !w.onlyWatchers)
 }

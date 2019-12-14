@@ -65,6 +65,7 @@ var _ = Describe("Server/Connection", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			found := servers.Servers()
+			Expect(found).To(HaveLen(2))
 			Expect(found[0].Host()).To(Equal("d1"))
 			Expect(found[1].Host()).To(Equal("d2"))
 		})
@@ -77,6 +78,7 @@ var _ = Describe("Server/Connection", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			found := servers.Servers()
+			Expect(found).To(HaveLen(2))
 			Expect(found[0].Host()).To(Equal("d1"))
 			Expect(found[1].Host()).To(Equal("d2"))
 		})
@@ -86,6 +88,7 @@ var _ = Describe("Server/Connection", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			found := servers.Servers()
+			Expect(found).To(HaveLen(2))
 			Expect(found[0].Host()).To(Equal("d1"))
 			Expect(found[1].Host()).To(Equal("d2"))
 		})

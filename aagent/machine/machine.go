@@ -336,10 +336,10 @@ func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) (started chan s
 	runf := func() {
 		if m.SplayStart > 0 {
 			r1 := rand.New(rand.NewSource(time.Now().Unix()))
-			sleepSeconds := time.Duration(r1.Intn(m.SplayStart)) * time.Second
-			m.Infof(m.MachineName, "Sleeping %v before starting Autonomous Agent", sleepSeconds)
+			sleep := time.Duration(r1.Intn(m.SplayStart)) * time.Second
+			m.Infof(m.MachineName, "Sleeping %v before starting Autonomous Agent", sleep)
 
-			t := time.NewTimer(sleepSeconds)
+			t := time.NewTimer(sleep)
 
 			select {
 			case <-t.C:

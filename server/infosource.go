@@ -84,7 +84,7 @@ func (srv *Instance) MachinesStatus() ([]aagent.MachineState, error) {
 // MachineTransition sends a transition event to a specific running machine instance
 func (srv *Instance) MachineTransition(name string, version string, path string, id string, transition string) error {
 	if srv.machines == nil {
-		return fmt.Errorf("Autonomous Agent host not initialized")
+		return fmt.Errorf("autonomous agent host not initialized")
 	}
 
 	return srv.machines.Transition(name, version, path, id, transition)
@@ -134,7 +134,7 @@ func (srv *Instance) StartTime() time.Time {
 
 // UpTime returns how long the server has been running
 func (srv *Instance) UpTime() int64 {
-	return int64(time.Now().Sub(srv.startTime).Seconds())
+	return int64(time.Since(srv.startTime).Seconds())
 }
 
 // Provisioning determines if this is an instance running in provisioning mode

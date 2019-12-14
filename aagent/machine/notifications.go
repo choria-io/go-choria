@@ -87,9 +87,7 @@ type NotificationService interface {
 
 // RegisterNotifier adds a new NotificationService to the list of ones to receive notifications
 func (m *Machine) RegisterNotifier(services ...NotificationService) {
-	for _, service := range services {
-		m.notifiers = append(m.notifiers, service)
-	}
+	m.notifiers = append(m.notifiers, services...)
 }
 
 // Debugf implements NotificationService

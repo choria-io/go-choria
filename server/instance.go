@@ -12,18 +12,16 @@ import (
 	"github.com/choria-io/go-choria/server/discovery"
 	"github.com/choria-io/go-choria/server/registration"
 	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-srvcache"
 
 	log "github.com/sirupsen/logrus"
 )
 
-// Instance is an independant copy of Choria
+// Instance is an independent copy of Choria
 type Instance struct {
 	fw                 *choria.Framework
 	connector          choria.InstanceConnector
 	cfg                *config.Config
 	log                *log.Entry
-	servers            srvcache.Servers
 	registration       *registration.Manager
 	agents             *agents.Manager
 	discovery          *discovery.Manager
@@ -111,7 +109,7 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		srv.log.Errorf("Could not subscribe node: %s", err)
 		srv.connector.Close()
 
-		return fmt.Errorf("Could not subscribe node: %s", err)
+		return fmt.Errorf("could not subscribe node: %s", err)
 	}
 
 	srv.publishStartupEvent()

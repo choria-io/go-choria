@@ -80,7 +80,7 @@ func commonConfigure() error {
 
 	cfg, err = config.NewConfig(configFile)
 	if err != nil {
-		return fmt.Errorf("Could not parse configuration: %s", err)
+		return fmt.Errorf("could not parse configuration: %s", err)
 	}
 
 	cfg.ApplyBuildSettings(&build.Info{})
@@ -122,7 +122,7 @@ func Run() (err error) {
 		// things like disabling full verification of the security system during enrollment
 		c, err = choria.NewWithConfig(cfg)
 		if err != nil {
-			return fmt.Errorf("Could not initialize Choria: %s", err)
+			return fmt.Errorf("could not initialize Choria: %s", err)
 		}
 
 		c.SetupLogging(debug)
@@ -138,7 +138,7 @@ func Run() (err error) {
 	}
 
 	if !ran {
-		err = fmt.Errorf("Could not run the CLI: Invalid command %s", cli.command)
+		err = fmt.Errorf("could not run the CLI: Invalid command %s", cli.command)
 	}
 
 	if err != nil {
