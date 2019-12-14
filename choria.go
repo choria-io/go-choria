@@ -82,6 +82,9 @@ type ChoriaPluginConfig struct {
 	Serializer                   string   `confkey:"plugin.choria.security.serializer" validate:"enum=json,yaml"`
 	SecurityProvider             string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11"`
 	SecurityAlwaysOverwriteCache bool     `confkey:"plugin.security.always_overwrite_cache" default:"false"`
+	RemoteSignerTokenFile        string   `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string"`
+	RemoteSignerTokenEnvironment string   `confkey:"plugin.choria.security.request_signer.token_environment"`
+	RemoteSignerURL              string   `confkey:"plugin.choria.security.request_signer.url"`
 
 	// file security
 	FileSecurityCertificate string `confkey:"plugin.security.file.certificate" type:"path_string"`
