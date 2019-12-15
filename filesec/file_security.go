@@ -227,7 +227,7 @@ func (s *FileSecurity) RemoteSignRequest(str []byte) (signed []byte, err error) 
 	}
 
 	if signerResp.Error != "" {
-		return nil, fmt.Errorf("error from remote signer: %s", err)
+		return nil, fmt.Errorf("error from remote signer: %s", signerResp.Error)
 	}
 
 	return signerResp.Signed, nil
