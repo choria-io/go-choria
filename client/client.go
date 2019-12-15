@@ -162,7 +162,7 @@ func (c *Client) publish(msg *choria.Message) error {
 	// TODO needs context https://github.com/choria-io/go-choria/issues/211
 	err = conn.Publish(msg)
 	if err != nil {
-		return fmt.Errorf("could not publish request: %s", err)
+		return err
 	}
 
 	return nil
