@@ -70,6 +70,15 @@ type Config struct {
 	// DisableSRV prevents SRV lookups
 	DisableSRV bool
 
+	// Is a URL where a remote signer is running
+	RemoteSignerURL string
+
+	// RemoteSignerTokenFile is a file with a token for access to the remote signer
+	RemoteSignerTokenFile string
+
+	// RemoteSignerTokenEnvironment is an environment variable that will hold the signer token
+	RemoteSignerTokenEnvironment string
+
 	useFakeUID bool
 	fakeUID    int
 
@@ -107,15 +116,18 @@ func (s *PuppetSecurity) reinit() error {
 	var err error
 
 	fc := filesec.Config{
-		AllowList:            s.conf.AllowList,
-		DisableTLSVerify:     s.conf.DisableTLSVerify,
-		PrivilegedUsers:      s.conf.PrivilegedUsers,
-		CA:                   s.caPath(),
-		Cache:                s.certCacheDir(),
-		Certificate:          s.publicCertPath(),
-		Key:                  s.privateKeyPath(),
-		Identity:             s.conf.Identity,
-		AlwaysOverwriteCache: s.conf.AlwaysOverwriteCache,
+		AllowList:                    s.conf.AllowList,
+		DisableTLSVerify:             s.conf.DisableTLSVerify,
+		PrivilegedUsers:              s.conf.PrivilegedUsers,
+		CA:                           s.caPath(),
+		Cache:                        s.certCacheDir(),
+		Certificate:                  s.publicCertPath(),
+		Key:                          s.privateKeyPath(),
+		Identity:                     s.conf.Identity,
+		AlwaysOverwriteCache:         s.conf.AlwaysOverwriteCache,
+		RemoteSignerURL:              s.conf.RemoteSignerURL,
+		RemoteSignerTokenFile:        s.conf.RemoteSignerTokenFile,
+		RemoteSignerTokenEnvironment: s.conf.RemoteSignerTokenEnvironment,
 	}
 
 	s.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(s.log))
