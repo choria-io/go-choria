@@ -7,4 +7,5 @@ type SecurityProvider interface {
 	PublicCertTXT() ([]byte, error)
 	ChecksumString(data string) []byte
 	CachePublicData(data []byte, identity string) error
+	RemoteSignRequest(str []byte) (signed []byte, err error)
 }
