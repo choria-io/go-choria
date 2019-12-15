@@ -204,7 +204,7 @@ func NewRemoteSignedSecureRequest(request protocol.Request, security SecurityPro
 
 	secj, err := security.RemoteSignRequest([]byte(reqj))
 	if err != nil {
-		return nil, fmt.Errorf("could not remote sign: %s", err)
+		return nil, err
 	}
 
 	secure = &secureRequest{
@@ -214,7 +214,7 @@ func NewRemoteSignedSecureRequest(request protocol.Request, security SecurityPro
 
 	err = json.Unmarshal(secj, &secure)
 	if err != nil {
-		return nil, fmt.Errorf("could not process remote signed request: %s", err)
+		return nil, fmt.Errorf("could not parse signed request: %s", err)
 	}
 
 	return secure, nil
