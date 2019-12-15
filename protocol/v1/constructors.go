@@ -190,6 +190,36 @@ func NewSecureRequest(request protocol.Request, security SecurityProvider) (secu
 	return
 }
 
+// NewRemoteSignedSecureRequest is a NewSecureRequest that delegates the signing to a remote signer like aaasvc
+func NewRemoteSignedSecureRequest(request protocol.Request, security SecurityProvider) (secure protocol.SecureRequest, err error) {
+	if !protocol.IsSecure() {
+		// no need for remote stuff, we don't do any signing or certs
+		return NewSecureRequest(request, security)
+	}
+
+	reqj, err := request.JSON()
+	if err != nil {
+		return nil, err
+	}
+
+	secj, err := security.RemoteSignRequest([]byte(reqj))
+	if err != nil {
+		return nil, fmt.Errorf("could not remote sign: %s", err)
+	}
+
+	secure = &secureRequest{
+		Protocol: protocol.SecureRequestV1,
+		security: security,
+	}
+
+	err = json.Unmarshal(secj, &secure)
+	if err != nil {
+		return nil, fmt.Errorf("could not process remote signed request: %s", err)
+	}
+
+	return secure, nil
+}
+
 // NewSecureRequestFromTransport creates a new choria:secure:request:1 from the data contained in a Transport message
 func NewSecureRequestFromTransport(message protocol.TransportMessage, security SecurityProvider, skipvalidate bool) (secure protocol.SecureRequest, err error) {
 	secure = &secureRequest{
