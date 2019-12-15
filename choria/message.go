@@ -40,7 +40,7 @@ type Message struct {
 func NewMessageFromRequest(req protocol.Request, replyto string, choria *Framework) (msg *Message, err error) {
 	reqm, err := NewMessage(req.Message(), req.Agent(), req.Collective(), "request", nil, choria)
 	if err != nil {
-		return msg, fmt.Errorf("could not create request message: %s", err)
+		return msg, err
 	}
 
 	if replyto != "" {
@@ -137,7 +137,7 @@ func (msg *Message) requestTransport() (protocol.TransportMessage, error) {
 
 	transport, err := msg.choria.NewRequestTransportForMessage(msg, msg.protoVersion)
 	if err != nil {
-		return nil, fmt.Errorf("could not create a Transport: %s", err)
+		return nil, err
 	}
 
 	transport.SetReplyTo(msg.ReplyTo())

@@ -200,6 +200,7 @@ func (fw *Framework) NewSecureRequest(request protocol.Request) (secure protocol
 		if fw.Config.Choria.RemoteSignerURL == "" {
 			return v1.NewSecureRequest(request, fw.security)
 		} else {
+			fw.log.Info("Signing request using remote signer")
 			return v1.NewRemoteSignedSecureRequest(request, fw.security)
 		}
 	default:
@@ -291,7 +292,7 @@ func (fw *Framework) NewRequestTransportForMessage(msg *Message, version string)
 
 	sr, err := fw.NewSecureRequest(req)
 	if err != nil {
-		return nil, fmt.Errorf("could not create Secure Request: %s", err)
+		return nil, err
 	}
 
 	transport, err := fw.NewTransportForSecureRequest(sr)
