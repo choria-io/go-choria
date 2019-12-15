@@ -155,7 +155,7 @@ func (s *FileSecurity) signerToken() (token string, err error) {
 			return "", fmt.Errorf("could not read token file: %v", err)
 		}
 
-		return string(tb), err
+		return strings.TrimSpace(string(tb)), err
 	}
 
 	token = os.Getenv(s.conf.RemoteSignerTokenEnvironment)
@@ -163,7 +163,7 @@ func (s *FileSecurity) signerToken() (token string, err error) {
 		return "", fmt.Errorf("did not find a token in environment variable %s", s.conf.RemoteSignerTokenEnvironment)
 	}
 
-	return token, nil
+	return strings.TrimSpace(token), nil
 }
 
 // RemoteSignRequest signs a choria request using a remote signer and returns a secure request
