@@ -96,6 +96,8 @@ github.com/choria-io/go-config v0.0.4 h1:Rg4ued/3xOdslqq24KU/R5PjpltrIVD93WlRi0G
 github.com/choria-io/go-config v0.0.4/go.mod h1:y2mXxXQ865arJG3WxqQZD2or9cS3wAFD5r/krm9dYN4=
 github.com/choria-io/go-config v0.0.5 h1:/jKkMtbLf6nl9hPr0A/axaTrCpPUcRwEv65/+OdzqAk=
 github.com/choria-io/go-config v0.0.5/go.mod h1:y2mXxXQ865arJG3WxqQZD2or9cS3wAFD5r/krm9dYN4=
+github.com/choria-io/go-config v0.0.6-0.20191214141246-32872409688e h1:pHV3k6Sy0q9UDJQmukSwEdy6zivVUoHwB9rHMiBM+yA=
+github.com/choria-io/go-config v0.0.6-0.20191214141246-32872409688e/go.mod h1:y2mXxXQ865arJG3WxqQZD2or9cS3wAFD5r/krm9dYN4=
 github.com/choria-io/go-confkey v1.2.0 h1:kT35wUPPxpKDAg2/Me100yIV+po6aTrnZFyBXk0Ohn8=
 github.com/choria-io/go-confkey v1.2.0/go.mod h1:ojIUK4p2mX/ZSKuSG5hgU/p7Db+EIX8il4yjQweZtiU=
 github.com/choria-io/go-confkey v1.3.0 h1:KlqctKfo843I2Uas2vLFOzScyjSMyKFUsSf/FdMRuQI=
@@ -123,6 +125,8 @@ github.com/choria-io/go-protocol v1.3.2-0.20190724135631-03c23ad95953 h1:wcOO3KE
 github.com/choria-io/go-protocol v1.3.2-0.20190724135631-03c23ad95953/go.mod h1:HvTmH+Gib2y9je2jdgUM9Sfhh+Oj3ten9mLP0Z/AvHU=
 github.com/choria-io/go-protocol v1.3.2 h1:nju3D6FcP4CKdZdTtk9LD4gPNjf6QVsf0xoCKA524Dw=
 github.com/choria-io/go-protocol v1.3.2/go.mod h1:HvTmH+Gib2y9je2jdgUM9Sfhh+Oj3ten9mLP0Z/AvHU=
+github.com/choria-io/go-protocol v1.3.3-0.20191215122213-63506e5b9062 h1:hwwcb8qw6gF26XgRoAqs6vhO+Jwi4+PRmj9APZqWCLE=
+github.com/choria-io/go-protocol v1.3.3-0.20191215122213-63506e5b9062/go.mod h1:Aht3YYXr/Nd1TuF/yJr0RPaIE9Rf/5CQxZG03U3qirI=
 github.com/choria-io/go-puppet v0.0.1 h1:vvvMwgLeZDjHXGHhMVAVC9YwMKegcywSqrmyFcnD/jk=
 github.com/choria-io/go-puppet v0.0.1/go.mod h1:wjpGRZkoInlkJkmIASEgndXHeofu0uzkLJjo9A2PTxI=
 github.com/choria-io/go-security v0.4.3 h1:NtaczfebNKlDCu2w2JxJXyeICB6hK0C1Ety+tfdrIGo=
@@ -131,6 +135,8 @@ github.com/choria-io/go-security v0.4.4-0.20190625121144-69559b68756a h1:xp4VoKg
 github.com/choria-io/go-security v0.4.4-0.20190625121144-69559b68756a/go.mod h1:240Ng1Hba8E3fevkhGIgb9n6UeO9LHGdbdN2slpNP38=
 github.com/choria-io/go-security v0.5.0 h1:b149GbAHyn+VdNPwHxAUC1MVWBNFQdhPoMTlq37UVx0=
 github.com/choria-io/go-security v0.5.0/go.mod h1:j1cMUDhxAgJchCa6iAHAXw6H7jkxY1Az5wg7M2DQ3J8=
+github.com/choria-io/go-security v0.5.1-0.20191215120449-f1ba289b2ea6 h1:ECkxzSMv8BzfeI7LfosABdCA92lbCwHuYo0Qh9b9HKs=
+github.com/choria-io/go-security v0.5.1-0.20191215120449-f1ba289b2ea6/go.mod h1:AEi6J44iUma6QMgm4NHzXlbkv7sy3VoescLxzQGcXRg=
 github.com/choria-io/go-srvcache v0.0.1 h1:pI+IRl8RoqKh7NF7D4C1TGMK8Ta95VAHJ9W4KOtbuF4=
 github.com/choria-io/go-srvcache v0.0.1/go.mod h1:yikJnY5uDvA5/NV0V5Ipv2SbFBneU0bKB6JcMSqktdg=
 github.com/choria-io/go-srvcache v0.0.2 h1:Ss1fcONZ7v+BQZGn0nDvaKj1IZJkdq30LjFfXOBvPPk=
@@ -302,6 +308,8 @@ github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b h1:j7+1HpAFS1zy5+Q4qx1f
 github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b/go.mod h1:01TrycV0kFyexm33Z7vhZRXopbI8J3TDReVlkTgMUxE=
 github.com/miekg/pkcs11 v1.0.2 h1:CIBkOawOtzJNE0B+EpRiUBzuVW7JEQAwdwhSS6YhIeg=
 github.com/miekg/pkcs11 v1.0.2/go.mod h1:XsNlhZGX73bx86s2hdc/FuaLm2CPZJemRLMA+WTFxgs=
+github.com/miekg/pkcs11 v1.0.3 h1:iMwmD7I5225wv84WxIG/bmxz9AXjWvTWIbM/TYHvWtw=
+github.com/miekg/pkcs11 v1.0.3/go.mod h1:XsNlhZGX73bx86s2hdc/FuaLm2CPZJemRLMA+WTFxgs=
 github.com/mitchellh/go-homedir v1.0.0 h1:vKb8ShqSby24Yrqr/yDYkuFz8d0WUjys40rvnGC8aR0=
 github.com/mitchellh/go-homedir v1.0.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG+4E0Y=
@@ -480,6 +488,8 @@ github.com/ulikunitz/xz v0.5.5/go.mod h1:2bypXElzHzzJZwzH67Y6wb67pO62Rzfn7BSiF4A
 github.com/xeipuuv/gojsonpointer v0.0.0-20170225233418-6fe8760cad35/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f h1:J9EGpcZtP0E/raorCMxlFGSTBrsSlaDGf3jU/qvAE2c=
 github.com/xeipuuv/gojsonpointer v0.0.0-20180127040702-4e3ac2762d5f/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
+github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb h1:zGWFAtiMcyryUHoUjUJX0/lt1H2+i2Ka2n+D3DImSNo=
+github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb/go.mod h1:N2zxlSyiKSe5eX1tZViRH5QA0qijqEDrYZiPEAiq3wU=
 github.com/xeipuuv/gojsonreference v0.0.0-20150808065054-e02fc20de94c/go.mod h1:GwrjFmJcFw6At/Gs6z4yjiIwzuJ1/+UwLxMQDVQXShQ=
 github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 h1:EzJWgHovont7NscjpAxXsDA8S8BMYve8Y5+7cuRE7R0=
 github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415/go.mod h1:GwrjFmJcFw6At/Gs6z4yjiIwzuJ1/+UwLxMQDVQXShQ=
