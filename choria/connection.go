@@ -306,7 +306,7 @@ func (conn *Connection) PublishRaw(target string, data []byte) error {
 func (conn *Connection) Publish(msg *Message) error {
 	transport, err := msg.Transport()
 	if err != nil {
-		return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
+		return err
 	}
 
 	transport.RecordNetworkHop(conn.ConnectedServer(), conn.config.Identity, conn.ConnectedServer())
@@ -350,7 +350,6 @@ func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.
 
 		j, err = transport.JSON()
 		if err != nil {
-			err = fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 			return
 		}
 
@@ -361,7 +360,6 @@ func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.
 
 			err = conn.PublishRaw(target, []byte(j))
 			if err != nil {
-				err = fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 				return
 			}
 		}
@@ -373,7 +371,7 @@ func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.
 func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protocol.TransportMessage) error {
 	target, err := conn.TargetForMessage(msg, "")
 	if err != nil {
-		return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
+		return err
 	}
 
 	transport.SetFederationRequestID(msg.RequestID)
@@ -381,7 +379,7 @@ func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protoc
 
 	j, err := transport.JSON()
 	if err != nil {
-		return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
+		return err
 	}
 
 	for _, federation := range conn.choria.FederationCollectives() {
@@ -391,7 +389,7 @@ func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protoc
 
 		err = conn.PublishRaw(target, []byte(j))
 		if err != nil {
-			return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
+			return err
 		}
 	}
 
@@ -409,12 +407,12 @@ func (conn *Connection) publishConnected(msg *Message, transport protocol.Transp
 func (conn *Connection) publishConnectedBroadcast(msg *Message, transport protocol.TransportMessage) error {
 	j, err := transport.JSON()
 	if err != nil {
-		return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
+		return err
 	}
 
 	target, err := conn.TargetForMessage(msg, "")
 	if err != nil {
-		return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
+		return err
 	}
 
 	log.Debugf("Sending a broadcast message to NATS target '%s' for message %s type %s", target, msg.RequestID, msg.Type())
@@ -426,7 +424,7 @@ func (conn *Connection) publishConnectedBroadcast(msg *Message, transport protoc
 func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.TransportMessage) error {
 	j, err := transport.JSON()
 	if err != nil {
-		return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
+		return err
 	}
 
 	rawmsg := []byte(j)
