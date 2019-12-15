@@ -135,8 +135,8 @@ github.com/choria-io/go-security v0.4.4-0.20190625121144-69559b68756a h1:xp4VoKg
 github.com/choria-io/go-security v0.4.4-0.20190625121144-69559b68756a/go.mod h1:240Ng1Hba8E3fevkhGIgb9n6UeO9LHGdbdN2slpNP38=
 github.com/choria-io/go-security v0.5.0 h1:b149GbAHyn+VdNPwHxAUC1MVWBNFQdhPoMTlq37UVx0=
 github.com/choria-io/go-security v0.5.0/go.mod h1:j1cMUDhxAgJchCa6iAHAXw6H7jkxY1Az5wg7M2DQ3J8=
-github.com/choria-io/go-security v0.5.1-0.20191215120449-f1ba289b2ea6 h1:ECkxzSMv8BzfeI7LfosABdCA92lbCwHuYo0Qh9b9HKs=
-github.com/choria-io/go-security v0.5.1-0.20191215120449-f1ba289b2ea6/go.mod h1:AEi6J44iUma6QMgm4NHzXlbkv7sy3VoescLxzQGcXRg=
+github.com/choria-io/go-security v0.5.1-0.20191215135123-3403a000d2c9 h1:6IHxIjMpTMVVGk/YIj1qXnf5/baMj6VclhVoHrmI7T0=
+github.com/choria-io/go-security v0.5.1-0.20191215135123-3403a000d2c9/go.mod h1:AEi6J44iUma6QMgm4NHzXlbkv7sy3VoescLxzQGcXRg=
 github.com/choria-io/go-srvcache v0.0.1 h1:pI+IRl8RoqKh7NF7D4C1TGMK8Ta95VAHJ9W4KOtbuF4=
 github.com/choria-io/go-srvcache v0.0.1/go.mod h1:yikJnY5uDvA5/NV0V5Ipv2SbFBneU0bKB6JcMSqktdg=
 github.com/choria-io/go-srvcache v0.0.2 h1:Ss1fcONZ7v+BQZGn0nDvaKj1IZJkdq30LjFfXOBvPPk=
