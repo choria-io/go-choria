@@ -200,7 +200,7 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 
 		err = r.request(dctx, msg, cl)
 		if err != nil {
-			return fmt.Errorf("could not create request: %s", err)
+			return err
 		}
 
 		ctr++
@@ -343,7 +343,7 @@ func (r *RPC) request(ctx context.Context, msg *choria.Message, cl ChoriaClient)
 
 	err := cl.Request(rctx, msg, r.handlerFactory(rctx, cancel))
 	if err != nil {
-		return fmt.Errorf("could not create request: %s", err)
+		return err
 	}
 
 	return nil
