@@ -70,6 +70,16 @@ var _ = Describe("FileSSL", func() {
 		Expect(prov.Provider()).To(Equal("file"))
 	})
 
+	Describe("isRemoteSigner", func() {
+		It("Should detect remote signer config correctly", func() {
+			cfg.RemoteSignerURL=""
+			Expect(prov.isRemoteSigner()).To(Equal(false))
+
+			cfg.RemoteSignerURL="https://example.net"
+			Expect(prov.isRemoteSigner()).To(Equal(true))
+		})
+	})
+
 	Describe("WithChoriaConfig", func() {
 		BeforeEach(func() {
 			os.Unsetenv("MCOLLECTIVE_CERTNAME")

@@ -283,7 +283,12 @@ func (p *Pkcs11Security) Provider() string {
 }
 
 func (p *Pkcs11Security) Enroll(ctx context.Context, wait time.Duration, cb func(int)) error {
-	return errors.New("The pkcs11 security provider does not support enrollment")
+	return errors.New("pkcs11 security provider does not support enrollment")
+}
+
+// RemoteSignRequest signs a choria request against using a remote signer and returns a secure request
+func (s *Pkcs11Security) RemoteSignRequest(str []byte) (signed []byte, err error) {
+	return nil, fmt.Errorf("pkcs11 security provider does not support remote signing requests")
 }
 
 // Validate determines if the node represents a valid SSL configuration

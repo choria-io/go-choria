@@ -14,15 +14,18 @@ type Option func(*FileSecurity) error
 // WithChoriaConfig optionally configures the File Security Provider from settings found in a typical Choria configuration
 func WithChoriaConfig(c *config.Config) Option {
 	cfg := Config{
-		AllowList:            c.Choria.CertnameWhitelist,
-		CA:                   c.Choria.FileSecurityCA,
-		Cache:                c.Choria.FileSecurityCache,
-		Certificate:          c.Choria.FileSecurityCertificate,
-		DisableTLSVerify:     c.DisableTLSVerify,
-		Key:                  c.Choria.FileSecurityKey,
-		PrivilegedUsers:      c.Choria.PrivilegedUsers,
-		Identity:             c.Identity,
-		AlwaysOverwriteCache: c.Choria.SecurityAlwaysOverwriteCache,
+		AllowList:                    c.Choria.CertnameWhitelist,
+		CA:                           c.Choria.FileSecurityCA,
+		Cache:                        c.Choria.FileSecurityCache,
+		Certificate:                  c.Choria.FileSecurityCertificate,
+		DisableTLSVerify:             c.DisableTLSVerify,
+		Key:                          c.Choria.FileSecurityKey,
+		PrivilegedUsers:              c.Choria.PrivilegedUsers,
+		Identity:                     c.Identity,
+		AlwaysOverwriteCache:         c.Choria.SecurityAlwaysOverwriteCache,
+		RemoteSignerURL:              c.Choria.RemoteSignerURL,
+		RemoteSignerTokenFile:        c.Choria.RemoteSignerTokenFile,
+		RemoteSignerTokenEnvironment: c.Choria.RemoteSignerTokenEnvironment,
 	}
 
 	if cn, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
