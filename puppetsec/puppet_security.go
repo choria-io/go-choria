@@ -232,6 +232,11 @@ func (s *PuppetSecurity) Validate() ([]string, bool) {
 	return errors, len(errors) == 0
 }
 
+// RemoteSignRequest signs a choria request using a remote signer and returns a secure request
+func (s *PuppetSecurity) RemoteSignRequest(str []byte) (signed []byte, err error) {
+	return s.fsec.RemoteSignRequest(str)
+}
+
 // ChecksumBytes calculates a sha256 checksum for data
 func (s *PuppetSecurity) ChecksumBytes(data []byte) []byte {
 	return s.fsec.ChecksumBytes(data)
