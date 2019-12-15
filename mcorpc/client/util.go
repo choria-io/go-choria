@@ -36,7 +36,7 @@ func InGroups(set []string, size int, f func([]string) error) error {
 
 		err := f(set[start:end])
 		if err != nil {
-			return fmt.Errorf("failed to access subset group %d:%d %s", start, end, err)
+			return err
 		}
 	}
 
