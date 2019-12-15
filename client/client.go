@@ -124,49 +124,48 @@ func (c *Client) Request(ctx context.Context, msg *choria.Message, handler Handl
 		c.receiverReady <- struct{}{}
 	}
 
-	c.wg.Add(1)
-	go c.publish(msg)
+	err = c.publish(msg)
+	if err != nil {
+		return err
+	}
 
 	c.wg.Wait()
 
-	return nil
+	return err
 }
 
-func (c *Client) publish(msg *choria.Message) {
-	defer c.wg.Done()
-
+func (c *Client) publish(msg *choria.Message) error {
 	conn := c.conn
 	var err error
 
 	if conn == nil {
 		conn, err = c.connect(fmt.Sprintf("%s-publisher", c.name))
 		if err != nil {
-			c.log.Errorf("could not connect: %s", err)
+			return fmt.Errorf("could not connect: %s", err)
 		}
 	}
 
 	select {
 	case <-c.receiverReady:
 	case <-c.ctx.Done():
-		return
+		return nil
 	}
 
 	if c.startPublishCB != nil {
 		c.startPublishCB()
 	}
 
+	if c.endPublishCB != nil {
+		defer c.endPublishCB()
+	}
+
 	// TODO needs context https://github.com/choria-io/go-choria/issues/211
 	err = conn.Publish(msg)
 	if err != nil {
-		c.log.Error(err)
-		return
+		return fmt.Errorf("could not publish request: %s", err)
 	}
 
-	if c.endPublishCB != nil {
-		c.endPublishCB()
-	}
-
-	return
+	return nil
 }
 
 func (c *Client) receiver(i int, target string, cb Handler) {
