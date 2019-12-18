@@ -36,7 +36,7 @@ var templates = map[string]string{
 `
 
 func main() {
-	fmt.Printf("Importing client code generation templates")
+	fmt.Println("Importing client code generation templates")
 
 	tpath :=path.Join("generators", "client", "templates")
 	files, err := ioutil.ReadDir(tpath)

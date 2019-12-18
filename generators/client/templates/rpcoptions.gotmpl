@@ -18,6 +18,28 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionReset() *{{ .DDL.M
 	return p
 }
 
+// OptionIdentityFilter adds an identity filter
+func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionIdentityFilter(f ...string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+	for _, i := range f {
+		p.filters = append(p.filters, FilterFunc(coreclient.IdentityFilter(i)))
+	}
+
+	p.ns.Reset()
+
+	return p
+}
+
+// OptionClassFilter adds a class filter
+func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionClassFilter(f ...string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+	for _, i := range f {
+		p.filters = append(p.filters, FilterFunc(coreclient.ClassFilter(i)))
+	}
+
+	p.ns.Reset()
+
+	return p
+}
+
 // OptionFactFilter adds a fact filter
 func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionFactFilter(f ...string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
 	for _, i := range f {
