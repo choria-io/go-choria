@@ -62,13 +62,13 @@ func (g *Generator) funcMap() template.FuncMap {
 		}
 	}
 
-	choriaOptionalInputsToFuncArgs := func(act *addl.Action) string {
+	choriaRequiredInputsToFuncArgs := func(act *addl.Action) string {
 		inputs := g.optionalInputSelect(act, false)
 		parts := []string{}
 
 		for name, input := range inputs {
 			goType := choriaTypeToGo(input.Type)
-			parts = append(parts, fmt.Sprintf("%sInput %s", strings.ToLower(name), goType))
+			parts = append(parts, fmt.Sprintf("%sI %s", strings.ToLower(name), goType))
 		}
 
 		return strings.Join(parts, ", ")
@@ -91,12 +91,12 @@ func (g *Generator) funcMap() template.FuncMap {
 			return strings.Join(out, "")
 		},
 		"ChoriaRequiredInputs": func(act *addl.Action) map[string]*addl.ActionInputItem {
-			return g.optionalInputSelect(act, true)
-		},
-		"ChoriaOptionalInputs": func(act *addl.Action) map[string]*addl.ActionInputItem {
 			return g.optionalInputSelect(act, false)
 		},
-		"ChoriaOptionalInputsToFuncArgs": choriaOptionalInputsToFuncArgs,
+		"ChoriaOptionalInputs": func(act *addl.Action) map[string]*addl.ActionInputItem {
+			return g.optionalInputSelect(act, true)
+		},
+		"ChoriaRequiredInputsToFuncArgs": choriaRequiredInputsToFuncArgs,
 		"ChoriaTypeToGoType":             choriaTypeToGo,
 		"ChoriaTypeToValOfType": func(v string) string {
 			switch v {
