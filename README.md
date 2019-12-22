@@ -4,11 +4,13 @@ This is a daemon written in Go that will replace the traditional combination of 
 
 It will include at least:
 
-  * A vendored `gnatsd` instance fully managed by `server.cfg` with clustering support
+  * A vendored `nats server` instance fully managed by `server.cfg` with clustering support
   * A Federation Broker for the Choria protocol
   * An Protocol Adapter framework to rewrite message into other systems.  For eg. Discovery messages to NATS Streaming.
   * The `mcollectived` replacement that can run old ruby based agents
   * Everything using a Go implementation of the Choria Protocol so interop with the Ruby clients and servers are maintained.
+
+[![CodeFactor](https://www.codefactor.io/repository/github/choria-io/go-choria/badge)](https://www.codefactor.io/repository/github/choria-io/go-choria)
 
 # Bundled tools
 
