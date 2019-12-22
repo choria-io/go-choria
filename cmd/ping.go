@@ -11,6 +11,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-client/client"
+	"github.com/choria-io/go-protocol/filter"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/guptarohit/asciigraph"
 	log "github.com/sirupsen/logrus"
@@ -71,12 +72,12 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 		p.collective = cfg.MainCollective
 	}
 
-	filter, err := client.NewFilter(
-		client.FactFilter(p.factF...),
-		client.AgentFilter(p.agentsF...),
-		client.ClassFilter(p.classF...),
-		client.IdentityFilter(p.identityF...),
-		client.CombinedFilter(p.combinedF...),
+	filter, err := filter.NewFilter(
+		filter.FactFilter(p.factF...),
+		filter.AgentFilter(p.agentsF...),
+		filter.ClassFilter(p.classF...),
+		filter.IdentityFilter(p.identityF...),
+		filter.CombinedFilter(p.combinedF...),
 	)
 	if err != nil {
 		return fmt.Errorf("could not parse filters: %s", err)
