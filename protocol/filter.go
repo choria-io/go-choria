@@ -44,12 +44,12 @@ func NewFilter() *Filter {
 }
 
 // Empty determines if a filter is empty - that is all its contained filter arrays are empty
-func (self *Filter) Empty() bool {
-	if self.Fact == nil && self.Class == nil && self.Agent == nil && self.Identity == nil && self.Compound == nil {
+func (f *Filter) Empty() bool {
+	if f.Fact == nil && f.Class == nil && f.Agent == nil && f.Identity == nil && f.Compound == nil {
 		return true
 	}
 
-	if len(self.Fact) == 0 && len(self.Class) == 0 && len(self.Agent) == 0 && len(self.Identity) == 0 && len(self.Compound) == 0 {
+	if len(f.Fact) == 0 && len(f.Class) == 0 && len(f.Agent) == 0 && len(f.Identity) == 0 && len(f.Compound) == 0 {
 		return true
 	}
 
@@ -57,31 +57,31 @@ func (self *Filter) Empty() bool {
 }
 
 // CompoundFilters retrieve the list of compound filters
-func (self *Filter) CompoundFilters() CompoundFilters {
-	return self.Compound
+func (f *Filter) CompoundFilters() CompoundFilters {
+	return f.Compound
 }
 
 // IdentityFilters retrieve the list of identity filters
-func (self *Filter) IdentityFilters() []string {
-	return self.Identity
+func (f *Filter) IdentityFilters() []string {
+	return f.Identity
 }
 
 // AgentFilters retrieve the list of agent filters
-func (self *Filter) AgentFilters() []string {
-	return self.Agent
+func (f *Filter) AgentFilters() []string {
+	return f.Agent
 }
 
 // ClassFilters retrieve the list of class filters
-func (self *Filter) ClassFilters() []string {
-	return self.Class
+func (f *Filter) ClassFilters() []string {
+	return f.Class
 }
 
 // FactFilters retrieve the list of fact filters
-func (self *Filter) FactFilters() [][3]string {
+func (f *Filter) FactFilters() [][3]string {
 	var filter [][3]string
 	filter = [][3]string{}
 
-	for _, f := range self.Fact {
+	for _, f := range f.Fact {
 		filter = append(filter, [3]string{f.Fact, f.Operator, f.Value})
 	}
 
@@ -91,57 +91,57 @@ func (self *Filter) FactFilters() [][3]string {
 // AddCompoundFilter appends a filter to the compound filters,
 // the filter should be a JSON string representing a valid mcollective
 // compound filter as parsed by MCollective::Matcher.create_compound_callstack
-func (self *Filter) AddCompoundFilter(query string) error {
-	self.mu.Lock()
-	defer self.mu.Unlock()
+func (f *Filter) AddCompoundFilter(query string) error {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 
-	var f CompoundFilter
-	err := json.Unmarshal([]byte(query), &f)
+	var cf CompoundFilter
+	err := json.Unmarshal([]byte(query), &cf)
 	if err != nil {
 		return fmt.Errorf("could not parse query as JSON: %s", err)
 	}
 
-	self.Compound = append(self.Compound, f)
+	f.Compound = append(f.Compound, cf)
 
 	return nil
 }
 
 // AddIdentityFilter appends a filter to the identity filters
-func (self *Filter) AddIdentityFilter(id string) {
-	self.mu.Lock()
-	defer self.mu.Unlock()
+func (f *Filter) AddIdentityFilter(id string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 
-	if !self.contains(id, self.Identity) {
-		self.Identity = append(self.Identity, id)
+	if !f.contains(id, f.Identity) {
+		f.Identity = append(f.Identity, id)
 	}
 }
 
 // AddAgentFilter appends a filter to the agent filters
-func (self *Filter) AddAgentFilter(agent string) {
-	self.mu.Lock()
-	defer self.mu.Unlock()
+func (f *Filter) AddAgentFilter(agent string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 
-	if !self.contains(agent, self.Agent) {
-		self.Agent = append(self.Agent, agent)
+	if !f.contains(agent, f.Agent) {
+		f.Agent = append(f.Agent, agent)
 	}
 }
 
 // AddClassFilter appends a filter to the class filters
-func (self *Filter) AddClassFilter(class string) {
-	self.mu.Lock()
-	defer self.mu.Unlock()
+func (f *Filter) AddClassFilter(class string) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 
-	if !self.contains(class, self.Class) {
-		self.Class = append(self.Class, class)
+	if !f.contains(class, f.Class) {
+		f.Class = append(f.Class, class)
 	}
 }
 
 // AddFactFilter appends a filter to the fact filters
-func (self *Filter) AddFactFilter(fact string, operator string, value string) (err error) {
-	self.mu.Lock()
-	defer self.mu.Unlock()
+func (f *Filter) AddFactFilter(fact string, operator string, value string) (err error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
 
-	if !self.contains(operator, []string{">=", "<=", "<", ">", "!=", "==", "=~"}) {
+	if !f.contains(operator, []string{">=", "<=", "<", ">", "!=", "==", "=~"}) {
 		err = fmt.Errorf("%s is not a valid fact operator", operator)
 		return
 	}
@@ -152,12 +152,12 @@ func (self *Filter) AddFactFilter(fact string, operator string, value string) (e
 		Value:    value,
 	}
 
-	self.Fact = append(self.Fact, filter)
+	f.Fact = append(f.Fact, filter)
 
 	return
 }
 
-func (self *Filter) contains(needle string, haystack []string) bool {
+func (f *Filter) contains(needle string, haystack []string) bool {
 	for _, i := range haystack {
 		if i == needle {
 			return true
