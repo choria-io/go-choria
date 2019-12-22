@@ -465,6 +465,18 @@ func (mr *MockInstanceConnectorMockRecorder) NodeDirectedTarget(collective, iden
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NodeDirectedTarget", reflect.TypeOf((*MockInstanceConnector)(nil).NodeDirectedTarget), collective, identity)
 }
 
+// IsConnected mocks base method
+func (m *MockInstanceConnector) IsConnected() bool {
+	ret := m.ctrl.Call(m, "IsConnected")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsConnected indicates an expected call of IsConnected
+func (mr *MockInstanceConnectorMockRecorder) IsConnected() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsConnected", reflect.TypeOf((*MockInstanceConnector)(nil).IsConnected))
+}
+
 // Close mocks base method
 func (m *MockInstanceConnector) Close() {
 	m.ctrl.Call(m, "Close")
@@ -604,6 +616,18 @@ func (m *MockConnector) NodeDirectedTarget(collective, identity string) string {
 // NodeDirectedTarget indicates an expected call of NodeDirectedTarget
 func (mr *MockConnectorMockRecorder) NodeDirectedTarget(collective, identity interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NodeDirectedTarget", reflect.TypeOf((*MockConnector)(nil).NodeDirectedTarget), collective, identity)
+}
+
+// IsConnected mocks base method
+func (m *MockConnector) IsConnected() bool {
+	ret := m.ctrl.Call(m, "IsConnected")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// IsConnected indicates an expected call of IsConnected
+func (mr *MockConnectorMockRecorder) IsConnected() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsConnected", reflect.TypeOf((*MockConnector)(nil).IsConnected))
 }
 
 // Close mocks base method

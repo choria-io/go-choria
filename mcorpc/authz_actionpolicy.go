@@ -11,7 +11,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server/discovery/classes"
 	"github.com/choria-io/go-choria/server/discovery/facts"
-	"github.com/choria-io/go-client/client"
+	"github.com/choria-io/go-protocol/filter"
 	"github.com/choria-io/go-config"
 	"github.com/sirupsen/logrus"
 )
@@ -313,7 +313,7 @@ func (p *actionPolicyPolicy) MatchesFacts(fw *choria.Framework, log *logrus.Entr
 	matches := [][3]string{}
 
 	for _, f := range strings.Split(p.facts, " ") {
-		filter, err := client.ParseFactFilterString(f)
+		filter, err := filter.ParseFactFilterString(f)
 		if err != nil {
 			return false, fmt.Errorf("invlid fact matcher: %s", err)
 		}
