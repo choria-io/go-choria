@@ -12,8 +12,8 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-client/client"
 	"github.com/choria-io/go-client/discovery/broadcast"
+	"github.com/choria-io/go-protocol/filter"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	rpc "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
@@ -161,13 +161,13 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("invalid input: %s", err)
 	}
 
-	filter, err := client.NewFilter(
-		client.FactFilter(r.factF...),
-		client.AgentFilter(r.agentsF...),
-		client.ClassFilter(r.classF...),
-		client.IdentityFilter(r.identityF...),
-		client.CombinedFilter(r.combinedF...),
-		client.AgentFilter(r.agent),
+	filter, err := filter.NewFilter(
+		filter.FactFilter(r.factF...),
+		filter.AgentFilter(r.agentsF...),
+		filter.ClassFilter(r.classF...),
+		filter.IdentityFilter(r.identityF...),
+		filter.CombinedFilter(r.combinedF...),
+		filter.AgentFilter(r.agent),
 	)
 	if err != nil {
 		return fmt.Errorf("could not parse filters: %s", err)
