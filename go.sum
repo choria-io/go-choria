@@ -137,6 +137,8 @@ github.com/choria-io/go-protocol v1.3.3-0.20191222211307-b08a8ffce4a2 h1:TUXdGu4
 github.com/choria-io/go-protocol v1.3.3-0.20191222211307-b08a8ffce4a2/go.mod h1:Aht3YYXr/Nd1TuF/yJr0RPaIE9Rf/5CQxZG03U3qirI=
 github.com/choria-io/go-protocol v1.3.3-0.20191223150207-71c1238c6c45 h1:pa98AwUAGvYoobTW+4Iin/4Ta59LEjwAw15n/NXhHcU=
 github.com/choria-io/go-protocol v1.3.3-0.20191223150207-71c1238c6c45/go.mod h1:Ijaj7IjV0bTRK7wPyUM/gT4tn263PFe6UwE1ucaprPQ=
+github.com/choria-io/go-protocol v1.3.3-0.20191223220501-d5925cef5278 h1:qGewq+k8k0oB8KrlbTmexeFfvHVuh2yIbvXkcY5p6J8=
+github.com/choria-io/go-protocol v1.3.3-0.20191223220501-d5925cef5278/go.mod h1:kIhz3H5Y9wP5pMkSYH+21zjrKJRG5dnhNoubHRkffmQ=
 github.com/choria-io/go-puppet v0.0.1 h1:vvvMwgLeZDjHXGHhMVAVC9YwMKegcywSqrmyFcnD/jk=
 github.com/choria-io/go-puppet v0.0.1/go.mod h1:wjpGRZkoInlkJkmIASEgndXHeofu0uzkLJjo9A2PTxI=
 github.com/choria-io/go-security v0.4.3 h1:NtaczfebNKlDCu2w2JxJXyeICB6hK0C1Ety+tfdrIGo=
@@ -172,8 +174,6 @@ github.com/choria-io/mcorpc-agent-provider v0.9.0 h1:GfOCUvhWIDEcABpKvN5Q/+DydTq
 github.com/choria-io/mcorpc-agent-provider v0.9.0/go.mod h1:3Fx95dzzduw3C+s7B1ilLlK16HsRLpfVaFjYcQvqzFw=
 github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191215150139-3ec11c1a59ec h1:spaM2Ps0h37ekRV/9teTcYL+8zMYyjrfXcnR97NV09U=
 github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191215150139-3ec11c1a59ec/go.mod h1:3Fx95dzzduw3C+s7B1ilLlK16HsRLpfVaFjYcQvqzFw=
-github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191222214813-6c0f415ddfc1 h1:qKnJO46KRnkynY7DtijA7jY/7CGfTgljRpkOwPqhJ+0=
-github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191222214813-6c0f415ddfc1/go.mod h1:dCXu//wNTWs3gNlgS36ypSuUxPlZBMFCOk0DNWpkMQY=
 github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191223154219-d7a29d81468c h1:cGhfIZZUQgXHq7I8Hl1UXTy1sPU2YnKq22+9xZeAae8=
 github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191223154219-d7a29d81468c/go.mod h1:NPmukXZCoedPy9XRLZEeFROWRV4821HquvRMym+NBVU=
 github.com/choria-io/provisioning-agent v0.5.0 h1:V3M44FgSI4lAoajuFKVPBjOL1u3GVwymy9KbMlrIN/0=
@@ -617,6 +617,8 @@ golang.org/x/sys v0.0.0-20190913121621-c3b328c6e5a7 h1:wYqz/tQaWUgGKyx+B/rssSE6w
 golang.org/x/sys v0.0.0-20190913121621-c3b328c6e5a7/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/sys v0.0.0-20191010194322-b09406accb47 h1:/XfQ9z7ib8eEJX2hdgFTZJ/ntt0swNk5oYBziWeTCvY=
 golang.org/x/sys v0.0.0-20191010194322-b09406accb47/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
+golang.org/x/sys v0.0.0-20191220220014-0732a990476f h1:72l8qCJ1nGxMGH26QVBVIxKd/D34cfGt0OvrPtpemyY=
+golang.org/x/sys v0.0.0-20191220220014-0732a990476f/go.mod h1:h1NjWce9XRLGQEsW7wpKNCjG9DtNlClVuFLEZdDNbEs=
 golang.org/x/text v0.3.0 h1:g61tztE5qeGQ89tm6NTjjM9VPIm088od1l6aSorWRWg=
 golang.org/x/text v0.3.0/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
 golang.org/x/text v0.3.1-0.20180807135948-17ff2d5776d2/go.mod h1:NqM8EUOU14njkJ3fqMW+pc6Ldnwhi/IjpwHt7yyuwOQ=
