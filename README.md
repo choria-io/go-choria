@@ -28,6 +28,7 @@ These will connect to the middleware using your usual client configuration.
 |`choria tool provision`|Tool to test provision target discovery|
 |`choria tool status`|Parse the status file and check overall health|
 |`choria tool generate`|Generates various related files like DDLs|
+|`choria tool jwt`|Generates JWT tokens used to configure automatic provisioning|
 
 # Configuration
 

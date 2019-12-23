@@ -16,8 +16,8 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/go-choria/server/discovery/classes"
-	"github.com/choria-io/go-choria/server/discovery/facts"
+	"github.com/choria-io/go-protocol/filter/classes"
+	"github.com/choria-io/go-protocol/filter/facts"
 
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
