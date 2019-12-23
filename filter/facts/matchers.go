@@ -9,7 +9,7 @@ import (
 	"github.com/tidwall/gjson"
 )
 
-func eqMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
+func eqMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
 		return fact.String() == value, nil
@@ -43,7 +43,7 @@ func eqMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 	}
 }
 
-func reMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
+func reMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
 		return regexMatch(fact.String(), value)
@@ -72,7 +72,7 @@ func reMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 	}
 }
 
-func leMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
+func leMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
 		return fact.String() <= value, nil
@@ -99,7 +99,7 @@ func leMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 	}
 }
 
-func geMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
+func geMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
 		return fact.String() >= value, nil
@@ -126,7 +126,7 @@ func geMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 	}
 }
 
-func ltMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
+func ltMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
 		return fact.String() < value, nil
@@ -153,7 +153,7 @@ func ltMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 	}
 }
 
-func gtMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
+func gtMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
 		return fact.String() > value, nil
@@ -180,7 +180,7 @@ func gtMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
 	}
 }
 
-func neMatch(fact gjson.Result, value string, j *[]byte) (bool, error) {
+func neMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
 		return fact.String() != value, nil

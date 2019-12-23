@@ -118,6 +118,11 @@ func (f *Filter) MatchFactsFile(file string, log Logger) bool {
 	return facts.MatchFile(f.FactFilters(), file, log)
 }
 
+// MatchFacts determines if the filter would match a given set of facts found in given JSON data
+func (f *Filter) MatchFacts(factsj json.RawMessage, log Logger) bool {
+	return facts.MatchFacts(f.FactFilters(), factsj, log)
+}
+
 // MatchAgents determines if the filter would match a list of agents
 func (f *Filter) MatchAgents(knownAgents []string) bool {
 	return agents.Match(f.AgentFilters(), knownAgents)
