@@ -4,6 +4,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
+
+	"github.com/choria-io/go-protocol/filter/agents"
+	"github.com/choria-io/go-protocol/filter/classes"
+	"github.com/choria-io/go-protocol/filter/facts"
+	"github.com/choria-io/go-protocol/filter/identity"
 )
 
 // CompoundFilter is a mcollective compound filter
@@ -41,6 +46,91 @@ func NewFilter() *Filter {
 	}
 
 	return filter
+}
+
+// Logger provides logging facilities
+type Logger interface {
+	Warnf(format string, args ...interface{})
+	Debugf(format string, args ...interface{})
+	Errorf(format string, args ...interface{})
+}
+
+// MatchRequest determines if a request matches the filter
+func (f *Filter) MatchRequest(request Request, agents []string, identity string, classesFile string, factsFile string, log Logger) bool {
+	filter, _ := request.Filter()
+	passed := 0
+
+	if filter.Empty() {
+		log.Debugf("Matching request %s with empty filter", request.RequestID())
+		return true
+	}
+
+	if len(filter.ClassFilters()) > 0 {
+		if filter.MatchClassesFile(classesFile, log) {
+			log.Debugf("Matching request %s with class filters '%#v'", request.RequestID(), filter.ClassFilters())
+			passed++
+		} else {
+			log.Debugf("Not matching request %s with class filters '%#v'", request.RequestID(), filter.ClassFilters())
+			return false
+		}
+	}
+
+	if len(filter.AgentFilters()) > 0 {
+		if filter.MatchAgents(agents) {
+			log.Debugf("Matching request %s with agent filters '%#v'", request.RequestID(), filter.AgentFilters())
+			passed++
+		} else {
+			log.Debugf("Not matching request %s with agent filters '%#v'", request.RequestID(), filter.AgentFilters())
+			return false
+		}
+	}
+
+	if len(filter.IdentityFilters()) > 0 {
+		if filter.MatchIdentity(identity) {
+			log.Debugf("Matching request %s with identity filters '%#v'", request.RequestID(), filter.IdentityFilters())
+			passed++
+		} else {
+			log.Debugf("Not matching request %s with identity filters '%#v'", request.RequestID(), filter.IdentityFilters())
+			return false
+		}
+	}
+
+	if len(filter.FactFilters()) > 0 {
+		if filter.MatchFactsFile(factsFile, log) {
+			log.Debugf("Matching request %s based on fact filters '%#v'", request.RequestID(), filter.FactFilters())
+			passed++
+		} else {
+			log.Debugf("Not matching request %s based on fact filters '%#v'", request.RequestID(), filter.FactFilters())
+			return false
+		}
+	}
+
+	if len(filter.CompoundFilters()) > 0 {
+		log.Warnf("Compound filters are not supported, not matching request %s with filter '%#v'", request.RequestID(), filter.CompoundFilters())
+		return false
+	}
+
+	return passed > 0
+}
+
+// MatchFactsFile determines if the filter would match a given set of facts found in a file
+func (f *Filter) MatchFactsFile(file string, log Logger) bool {
+	return facts.MatchFile(f.FactFilters(), file, log)
+}
+
+// MatchAgents determines if the filter would match a list of agents
+func (f *Filter) MatchAgents(knownAgents []string) bool {
+	return agents.Match(f.AgentFilters(), knownAgents)
+}
+
+// MatchIdentity determines if the filter would match a given identity
+func (f *Filter) MatchIdentity(ident string) bool {
+	return identity.Match(f.IdentityFilters(), ident)
+}
+
+// MatchClassesFile determines if the filter would match a list of classes
+func (f *Filter) MatchClassesFile(file string, log Logger) bool {
+	return classes.MatchFile(f.ClassFilters(), file, log)
 }
 
 // Empty determines if a filter is empty - that is all its contained filter arrays are empty

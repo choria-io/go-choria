@@ -1,10 +1,13 @@
 package protocol
 
 import (
+	"io/ioutil"
 	"testing"
 
+	gomock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 )
 
 func TestProtocol(t *testing.T) {
@@ -13,47 +16,91 @@ func TestProtocol(t *testing.T) {
 }
 
 var _ = Describe("Filter", func() {
-	var f Filter
+	var (
+		filter  *Filter
+		log     *logrus.Entry
+		mockctl *gomock.Controller
+		request *MockRequest
+		agents  []string
+	)
+
+	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+
+		log = logrus.NewEntry(logrus.New())
+		log.Logger.Out = ioutil.Discard
+
+		agents = []string{"apache", "rpcutil"}
+		filter = NewFilter()
+
+		request = NewMockRequest(mockctl)
+		request.EXPECT().Filter().Return(filter, false).AnyTimes()
+		request.EXPECT().RequestID().Return("mock.request.id").AnyTimes()
+	})
+
+	Describe("MatchRequest", func() {
+		It("Should match on empty filters", func() {
+			Expect(filter.MatchRequest(request, []string{}, "test.example.net", "testdata/classes.txt", "testdata/facts.yaml", log)).To(BeTrue())
+		})
+
+		It("Should match if all filters matched", func() {
+			filter.AddAgentFilter("apache")
+			filter.AddClassFilter("role::testing")
+			filter.AddClassFilter("/test/")
+			filter.AddFactFilter("nested.string", "=~", "/hello/")
+			filter.AddIdentityFilter("/test/")
+
+			Expect(filter.MatchRequest(request, agents, "test.example.net", "testdata/classes.txt", "testdata/facts.yaml", log)).To(BeTrue())
+		})
+
+		It("Should fail if some filters matched", func() {
+			filter.AddAgentFilter("apache")
+			filter.AddClassFilter("role::test")
+			filter.AddFactFilter("nested.string", "=~", "/meh/")
+
+			Expect(filter.MatchRequest(request, agents, "test.example.net", "testdata/classes.txt", "testdata/facts.yaml", log)).To(BeFalse())
+		})
+	})
 
 	It("Should support class filters", func() {
-		f.AddClassFilter("testing1")
-		f.AddClassFilter("testing2")
-		f.AddClassFilter("testing2")
-		Expect(f.ClassFilters()).To(Equal([]string{"testing1", "testing2"}))
+		filter.AddClassFilter("testing1")
+		filter.AddClassFilter("testing2")
+		filter.AddClassFilter("testing2")
+		Expect(filter.ClassFilters()).To(Equal([]string{"testing1", "testing2"}))
 	})
 
 	It("Should support agent filters", func() {
-		f.AddAgentFilter("agent1")
-		f.AddAgentFilter("agent1")
-		f.AddAgentFilter("agent2")
-		Expect(f.AgentFilters()).To(Equal([]string{"agent1", "agent2"}))
+		filter.AddAgentFilter("agent1")
+		filter.AddAgentFilter("agent1")
+		filter.AddAgentFilter("agent2")
+		Expect(filter.AgentFilters()).To(Equal([]string{"agent1", "agent2"}))
 	})
 
 	It("Should support identity filters", func() {
-		f.AddIdentityFilter("id1")
-		f.AddIdentityFilter("id1")
-		f.AddIdentityFilter("id2")
-		Expect(f.IdentityFilters()).To(Equal([]string{"id1", "id2"}))
+		filter.AddIdentityFilter("id1")
+		filter.AddIdentityFilter("id1")
+		filter.AddIdentityFilter("id2")
+		Expect(filter.IdentityFilters()).To(Equal([]string{"id1", "id2"}))
 	})
 
 	It("Should support compound filters", func() {
-		err := f.AddCompoundFilter(`[{"fstatement":{"r_compare":"30","operator":">","value":"total_time","name":"resource","params":null}}]`)
+		err := filter.AddCompoundFilter(`[{"fstatement":{"r_compare":"30","operator":">","value":"total_time","name":"resource","params":null}}]`)
 		Expect(err).ToNot(HaveOccurred())
-		err = f.AddCompoundFilter(`[{"statement":"environment=development"},{"or":"or"},{"statement":"customer=acme"}]`)
+		err = filter.AddCompoundFilter(`[{"statement":"environment=development"},{"or":"or"},{"statement":"customer=acme"}]`)
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(f.CompoundFilters()).To(HaveLen(2))
+		Expect(filter.CompoundFilters()).To(HaveLen(2))
 	})
 
 	It("Should support fact filters", func() {
-		e := f.AddFactFilter("test1", ">=", "1")
+		e := filter.AddFactFilter("test1", ">=", "1")
 		Expect(e).ToNot(HaveOccurred())
-		e = f.AddFactFilter("test2", ">=", "2")
+		e = filter.AddFactFilter("test2", ">=", "2")
 		Expect(e).ToNot(HaveOccurred())
 
-		e = f.AddFactFilter("test3", "foo", "3")
+		e = filter.AddFactFilter("test3", "foo", "3")
 		Expect(e).To(HaveOccurred())
 
-		Expect(f.FactFilters()).To(Equal([][3]string{[3]string{"test1", ">=", "1"}, [3]string{"test2", ">=", "2"}}))
+		Expect(filter.FactFilters()).To(Equal([][3]string{[3]string{"test1", ">=", "1"}, [3]string{"test2", ">=", "2"}}))
 	})
 })
