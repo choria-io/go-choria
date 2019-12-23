@@ -8,11 +8,11 @@ require (
 	github.com/choria-io/go-config v0.0.6-0.20191214141246-32872409688e
 	github.com/choria-io/go-lifecycle v1.1.0
 	github.com/choria-io/go-network-broker v1.3.2
-	github.com/choria-io/go-protocol v1.3.3-0.20191222211307-b08a8ffce4a2
+	github.com/choria-io/go-protocol v1.3.3-0.20191223150207-71c1238c6c45
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.5.1-0.20191215143423-f1982926f340
 	github.com/choria-io/go-srvcache v0.0.6
-	github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191222214813-6c0f415ddfc1
+	github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191223154219-d7a29d81468c
 	github.com/choria-io/provisioning-agent v0.6.0
 	github.com/cloudevents/sdk-go v0.10.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible

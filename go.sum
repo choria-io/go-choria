@@ -69,6 +69,7 @@ github.com/choria-io/go-choria v0.12.1-0.20190916070606-982852d30827/go.mod h1:x
 github.com/choria-io/go-choria v0.12.1-0.20190919154218-95d70c768260/go.mod h1:dP/EiAxYxCwoJKzbNMxkLlFYG/Wn3avPAkARJgLlCCk=
 github.com/choria-io/go-choria v0.12.1/go.mod h1:9RBs35nnX3ALByvgkvHkSQS6vtHVjAS//1HcQUdcStY=
 github.com/choria-io/go-choria v0.12.2-0.20191025130451-091256f29013/go.mod h1:ImHvqpOT6NQrd7k9GWhu7tAbQXX5Pi3z6t/BrVXEtdY=
+github.com/choria-io/go-choria v0.13.0/go.mod h1:DPzNux8hy4oa3WKJGcg/bLUi0CUnvUYA66BDR61iQBo=
 github.com/choria-io/go-choria v0.13.1-0.20191222210956-2291fc70abd6/go.mod h1:GALcrozOSIF5m4Ksx/ROhbDK6bPjw+7lnMKkFifKizk=
 github.com/choria-io/go-client v0.4.3-0.20190626102458-2ce4fef30af5 h1:fybxn14aGlEscXGPpfy1iFGmjrHP+s5Hv4WpKQ+mDkQ=
 github.com/choria-io/go-client v0.4.3-0.20190626102458-2ce4fef30af5/go.mod h1:2Af0IWg9334voG0spr2kwoh5UJqR2krSYIKYoHgJgFk=
@@ -134,6 +135,8 @@ github.com/choria-io/go-protocol v1.3.3-0.20191215145740-a865d99ce002 h1:9THsfWE
 github.com/choria-io/go-protocol v1.3.3-0.20191215145740-a865d99ce002/go.mod h1:Aht3YYXr/Nd1TuF/yJr0RPaIE9Rf/5CQxZG03U3qirI=
 github.com/choria-io/go-protocol v1.3.3-0.20191222211307-b08a8ffce4a2 h1:TUXdGu4r+/mmVgoCfPynfD2lk8CM0LNebpR73jOm3gI=
 github.com/choria-io/go-protocol v1.3.3-0.20191222211307-b08a8ffce4a2/go.mod h1:Aht3YYXr/Nd1TuF/yJr0RPaIE9Rf/5CQxZG03U3qirI=
+github.com/choria-io/go-protocol v1.3.3-0.20191223150207-71c1238c6c45 h1:pa98AwUAGvYoobTW+4Iin/4Ta59LEjwAw15n/NXhHcU=
+github.com/choria-io/go-protocol v1.3.3-0.20191223150207-71c1238c6c45/go.mod h1:Ijaj7IjV0bTRK7wPyUM/gT4tn263PFe6UwE1ucaprPQ=
 github.com/choria-io/go-puppet v0.0.1 h1:vvvMwgLeZDjHXGHhMVAVC9YwMKegcywSqrmyFcnD/jk=
 github.com/choria-io/go-puppet v0.0.1/go.mod h1:wjpGRZkoInlkJkmIASEgndXHeofu0uzkLJjo9A2PTxI=
 github.com/choria-io/go-security v0.4.3 h1:NtaczfebNKlDCu2w2JxJXyeICB6hK0C1Ety+tfdrIGo=
@@ -171,6 +174,8 @@ github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191215150139-3ec11c1a59ec 
 github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191215150139-3ec11c1a59ec/go.mod h1:3Fx95dzzduw3C+s7B1ilLlK16HsRLpfVaFjYcQvqzFw=
 github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191222214813-6c0f415ddfc1 h1:qKnJO46KRnkynY7DtijA7jY/7CGfTgljRpkOwPqhJ+0=
 github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191222214813-6c0f415ddfc1/go.mod h1:dCXu//wNTWs3gNlgS36ypSuUxPlZBMFCOk0DNWpkMQY=
+github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191223154219-d7a29d81468c h1:cGhfIZZUQgXHq7I8Hl1UXTy1sPU2YnKq22+9xZeAae8=
+github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191223154219-d7a29d81468c/go.mod h1:NPmukXZCoedPy9XRLZEeFROWRV4821HquvRMym+NBVU=
 github.com/choria-io/provisioning-agent v0.5.0 h1:V3M44FgSI4lAoajuFKVPBjOL1u3GVwymy9KbMlrIN/0=
 github.com/choria-io/provisioning-agent v0.5.0/go.mod h1:VKeX79KV2uOfXH9wTsPjlVUaZaYcpfdeKfHR70hZlPA=
 github.com/choria-io/provisioning-agent v0.6.0 h1:8faucimsHAzbWz0F7Agv78NaUsIVhlV20+0QFUsZkDk=
