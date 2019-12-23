@@ -9,10 +9,10 @@ import (
 	"strings"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/server/discovery/classes"
-	"github.com/choria-io/go-choria/server/discovery/facts"
-	"github.com/choria-io/go-protocol/filter"
 	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-protocol/filter"
+	"github.com/choria-io/go-protocol/filter/classes"
+	"github.com/choria-io/go-protocol/filter/facts"
 	"github.com/sirupsen/logrus"
 )
 
@@ -321,7 +321,7 @@ func (p *actionPolicyPolicy) MatchesFacts(fw *choria.Framework, log *logrus.Entr
 		matches = append(matches, [3]string{filter.Fact, filter.Operator, filter.Value})
 	}
 
-	if facts.Match(matches, fw, log) {
+	if facts.MatchFile(matches, fw.Configuration().FactSourceFile, log) {
 		return true, nil
 	}
 
@@ -352,7 +352,7 @@ func (p *actionPolicyPolicy) MatchesClasses(classesFile string, log *logrus.Entr
 		}
 	}
 
-	return classes.Match(strings.Split(p.classes, " "), classesFile, log), nil
+	return classes.MatchFile(strings.Split(p.classes, " "), classesFile, log), nil
 }
 
 func (p *actionPolicyPolicy) MatchesAction(act string) bool {
