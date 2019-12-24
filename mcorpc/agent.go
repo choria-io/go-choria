@@ -216,6 +216,14 @@ func (a *Agent) authorize(req *Request) bool {
 	case "action_policy":
 		return actionPolicyAuthorize(req, a, a.Log)
 
+	case "rego_policy":
+		auth, err := regoPolicyAuthorize(req, a, a.Log)
+		if err != nil {
+			a.Log.Errorf("Something has occurred: %v", err)
+			return false
+		}
+		return auth
+
 	default:
 		a.Log.Errorf("Unsupported authorization provider: %s", strings.ToLower(a.Config.RPCAuthorizationProvider))
 

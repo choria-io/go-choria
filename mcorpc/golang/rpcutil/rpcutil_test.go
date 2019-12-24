@@ -54,6 +54,7 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		am = agents.New(requests, fw, nil, cn.ServerInstance(), logrus.WithFields(logrus.Fields{"test": "1"}))
+
 		rpcutil, err = New(am)
 		Expect(err).ToNot(HaveOccurred())
 		logrus.SetLevel(logrus.FatalLevel)

@@ -12,9 +12,9 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/go-protocol/filter/facts"
 	"github.com/choria-io/go-config"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
+	"github.com/choria-io/go-protocol/filter/facts"
+	mcorpc "github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	"github.com/sirupsen/logrus"
 )
 
