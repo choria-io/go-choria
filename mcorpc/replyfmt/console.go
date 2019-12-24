@@ -65,12 +65,12 @@ func ConsoleNoColor() Option {
 }
 
 func (c *ConsoleFormatter) Format(w *bufio.Writer, action *agent.Action, sender string, reply *client.RPCReply) error {
+	c.out = w
+	c.actionInterface = action
+
 	if !c.shouldDisplayReply(reply) {
 		return nil
 	}
-
-	c.out = w
-	c.actionInterface = action
 
 	defer w.Flush()
 
