@@ -89,7 +89,7 @@ type Request struct {
 
 // ParseRequestData parses the request parameters received from the client into a target structure
 //
-// Vaidation is supported, the example below does a `shellsafe` check on the data prior to returning
+// Validation is supported, the example below does a `shellsafe` check on the data prior to returning
 // it, should the check fail appropriate errors will be set on the reply data
 //
 // Example used in a action:
