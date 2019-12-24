@@ -12,14 +12,7 @@ type Logger interface {
 	Warnf(format string, args ...interface{})
 }
 
-// MatchFile classes on a AND basis
-func MatchFile(needles []string, source string, log Logger) bool {
-	classes, err := ReadClasses(source)
-	if err != nil {
-		log.Warnf("Could not parse classes file %s: %s", source, err)
-		return false
-	}
-
+func Match(needles []string, classes []string, log Logger) bool {
 	matched := 0
 	failed := 0
 
@@ -45,6 +38,17 @@ func MatchFile(needles []string, source string, log Logger) bool {
 	}
 
 	return failed == 0 && matched > 0
+}
+
+// MatchFile classes on a AND basis
+func MatchFile(needles []string, source string, log Logger) bool {
+	classes, err := ReadClasses(source)
+	if err != nil {
+		log.Warnf("Could not parse classes file %s: %s", source, err)
+		return false
+	}
+
+	return Match(needles, classes, log)
 }
 
 func hasClassMatching(needle string, stack []string) bool {

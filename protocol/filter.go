@@ -138,6 +138,11 @@ func (f *Filter) MatchClassesFile(file string, log Logger) bool {
 	return classes.MatchFile(f.ClassFilters(), file, log)
 }
 
+// MatchClasses determines if the filter would match against the list of classes
+func (f *Filter) MatchClasses(knownClasses []string, log Logger) bool {
+	return classes.Match(f.ClassFilters(), knownClasses, log)
+}
+
 // Empty determines if a filter is empty - that is all its contained filter arrays are empty
 func (f *Filter) Empty() bool {
 	if f.Fact == nil && f.Class == nil && f.Agent == nil && f.Identity == nil && f.Compound == nil {
