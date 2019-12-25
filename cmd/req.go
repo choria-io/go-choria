@@ -32,6 +32,7 @@ type reqCommand struct {
 	args            map[string]string
 	ddl             *agentddl.DDL
 	actionInterface *agentddl.Action
+	progressBar     *uiprogress.Bar
 
 	discoveryTimeout int
 	displayOverride  string
@@ -129,32 +130,39 @@ func (r *reqCommand) parseFilterOptions() (*protocol.Filter, error) {
 	)
 }
 
+func (r *reqCommand) configureProgressBar(count int, expected int) {
+	if r.noProgress {
+		return
+	}
+
+	r.progressBar = uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
+	fmt.Println()
+
+	r.progressBar.PrependFunc(func(b *uiprogress.Bar) string {
+		if b.Current() < expected {
+			return color.RedString(fmt.Sprintf("%d / %d", b.Current(), count))
+		}
+
+		return color.GreenString(fmt.Sprintf("%d / %d", b.Current(), count))
+	})
+
+	uiprogress.Start()
+}
+
+func (r *reqCommand) responseHandler(results *rpcResults) func(pr protocol.Reply, reply *rpc.RPCReply) {
+	return func(pr protocol.Reply, reply *rpc.RPCReply) {
+		if r.progressBar != nil {
+			r.progressBar.Incr()
+		}
+
+		results.Replies = append(results.Replies, &rpcReply{pr.SenderID(), reply})
+	}
+}
+
 func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	r.startTime = time.Now()
-
-	if r.outputFile != "" {
-		r.outputFileHandle, err = os.Create(r.outputFile)
-		if err != nil {
-			return fmt.Errorf("failed to create output-file: %s", err)
-		}
-	} else {
-		r.outputFileHandle = os.Stdout
-	}
-	r.outputWriter = bufio.NewWriter(r.outputFileHandle)
-
-	if r.jsonOnly {
-		r.silent = true
-	}
-
-	if r.collective == "" {
-		r.collective = cfg.MainCollective
-	}
-
-	if r.discoveryTimeout == 0 {
-		r.discoveryTimeout = cfg.DiscoveryTimeout
-	}
 
 	r.ddl, err = agentddl.Find(r.agent, cfg.LibDir)
 	if err != nil {
@@ -176,6 +184,29 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("could not parse filters: %s", err)
 	}
 
+	if r.outputFile != "" {
+		r.outputFileHandle, err = os.Create(r.outputFile)
+		if err != nil {
+			return fmt.Errorf("failed to create output-file: %s", err)
+		}
+	} else {
+		r.outputFileHandle = os.Stdout
+	}
+	r.outputWriter = bufio.NewWriter(r.outputFileHandle)
+
+	if r.jsonOnly {
+		r.silent = true
+		r.noProgress = true
+	}
+
+	if r.collective == "" {
+		r.collective = cfg.MainCollective
+	}
+
+	if r.discoveryTimeout == 0 {
+		r.discoveryTimeout = cfg.DiscoveryTimeout
+	}
+
 	dstart := time.Now()
 	nodes, err := r.discover(filter)
 	if err != nil {
@@ -188,51 +219,21 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("did not discover any nodes")
 	}
 
-	if r.silent {
-		r.noProgress = true
-	}
-
-	var bar *uiprogress.Bar
-
-	progressSetup := func(count int) {
-		if !r.noProgress {
-			bar = uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
-			fmt.Println()
-
-			bar.PrependFunc(func(b *uiprogress.Bar) string {
-				if b.Current() < expected {
-					return color.RedString(fmt.Sprintf("%d / %d", b.Current(), count))
-				}
-
-				return color.GreenString(fmt.Sprintf("%d / %d", b.Current(), count))
-			})
-
-			uiprogress.Start()
-		}
-	}
-
-	results := rpcResults{
+	results := &rpcResults{
 		Agent:   r.agent,
 		Action:  r.action,
 		Replies: []*rpcReply{},
 	}
 
-	handler := func(pr protocol.Reply, reply *rpc.RPCReply) {
-		if !r.noProgress {
-			bar.Incr()
-		}
-
-		results.Replies = append(results.Replies, &rpcReply{pr.SenderID(), reply})
-	}
-
 	opts := []rpc.RequestOption{
 		rpc.Collective(r.collective),
 		rpc.Targets(nodes),
-		rpc.ReplyHandler(handler),
+		rpc.ReplyHandler(r.responseHandler(results)),
 		rpc.Workers(r.workers),
 		rpc.LimitMethod(cfg.RPCLimitMethod),
 		rpc.DiscoveryEndCB(func(d, l int) error {
-			progressSetup(l)
+			r.configureProgressBar(l, expected)
+
 			return nil
 		}),
 	}
@@ -273,7 +274,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		fmt.Println()
 	}
 
-	err = r.displayResults(&results)
+	err = r.displayResults(results)
 	if err != nil {
 		return fmt.Errorf("could not display results: %s", err)
 	}
