@@ -5,24 +5,23 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"sort"
 	"strings"
 	"sync"
 	"text/tabwriter"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-client/discovery/broadcast"
 	"github.com/choria-io/go-protocol/filter"
 	"github.com/choria-io/go-protocol/protocol"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	rpc "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
 	agentddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
-	"github.com/tidwall/gjson"
-	"github.com/tidwall/pretty"
-
+	"github.com/choria-io/mcorpc-agent-provider/mcorpc/replyfmt"
 	"github.com/fatih/color"
 	"github.com/gosuri/uiprogress"
+	log "github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
+
+	"github.com/choria-io/go-choria/choria"
 )
 
 type reqCommand struct {
@@ -119,6 +118,17 @@ func (r *reqCommand) Setup() (err error) {
 	return
 }
 
+func (r *reqCommand) parseFilterOptions() (*protocol.Filter, error) {
+	return filter.NewFilter(
+		filter.FactFilter(r.factF...),
+		filter.AgentFilter(r.agentsF...),
+		filter.ClassFilter(r.classF...),
+		filter.IdentityFilter(r.identityF...),
+		filter.CombinedFilter(r.combinedF...),
+		filter.AgentFilter(r.agent),
+	)
+}
+
 func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
@@ -161,14 +171,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("invalid input: %s", err)
 	}
 
-	filter, err := filter.NewFilter(
-		filter.FactFilter(r.factF...),
-		filter.AgentFilter(r.agentsF...),
-		filter.ClassFilter(r.classF...),
-		filter.IdentityFilter(r.identityF...),
-		filter.CombinedFilter(r.combinedF...),
-		filter.AgentFilter(r.agent),
-	)
+	filter, err := r.parseFilterOptions()
 	if err != nil {
 		return fmt.Errorf("could not parse filters: %s", err)
 	}
@@ -176,7 +179,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	dstart := time.Now()
 	nodes, err := r.discover(filter)
 	if err != nil {
-		return fmt.Errorf("could not discover nodes")
+		return fmt.Errorf("could not discover nodes: %s", err)
 	}
 	r.discoveryTime = time.Since(dstart)
 
@@ -287,132 +290,35 @@ func (r *reqCommand) displayResults(res *rpcResults) error {
 }
 
 func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
-	status := map[mcorpc.StatusCode]string{
-		mcorpc.OK:            "",
-		mcorpc.Aborted:       color.RedString("Request Aborted"),
-		mcorpc.InvalidData:   color.YellowString("Invalid Request Data"),
-		mcorpc.MissingData:   color.YellowString("Missing Request Data"),
-		mcorpc.UnknownAction: color.YellowString("Unknown Action"),
-		mcorpc.UnknownError:  color.RedString("Unknown Request Status"),
+	fmtopts := []replyfmt.Option{}
+	if r.verbose {
+		fmtopts = append(fmtopts, replyfmt.Verbose())
+	}
+
+	if r.silent {
+		fmtopts = append(fmtopts, replyfmt.Silent())
+	}
+
+	switch r.displayOverride {
+	case "ok":
+		fmtopts = append(fmtopts, replyfmt.Display(replyfmt.DisplayOK))
+	case "failed":
+		fmtopts = append(fmtopts, replyfmt.Display(replyfmt.DisplayFailed))
+	case "none":
+		fmtopts = append(fmtopts, replyfmt.Display(replyfmt.DisplayNone))
+	case "all":
+		fmtopts = append(fmtopts, replyfmt.Display(replyfmt.DisplayAll))
 	}
 
 	for _, reply := range res.Replies {
-		show := false
-
-		if r.displayOverride == "" {
-			if reply.Statuscode > mcorpc.OK && r.actionInterface.Display == "failed" {
-				show = true
-			} else if reply.Statuscode > mcorpc.OK && r.actionInterface.Display == "" {
-				show = true
-			} else if r.actionInterface.Display == "ok" && reply.Statuscode == mcorpc.OK {
-				show = true
-			} else if r.actionInterface.Display == "always" {
-				show = true
-			}
-		} else if r.displayOverride == "ok" {
-			if reply.Statuscode == mcorpc.OK {
-				show = true
-			}
-		} else if r.displayOverride == "failed" {
-			if reply.Statuscode > mcorpc.OK {
-				show = true
-			}
-		} else if r.displayOverride == "all" {
-			show = true
-		} else if r.displayOverride == "none" {
-			show = false
+		err := replyfmt.FormatReply(r.outputWriter, replyfmt.ConsoleFormat, r.actionInterface, reply.Sender, reply.RPCReply, fmtopts...)
+		if err != nil {
+			fmt.Fprintf(r.outputWriter, "Could not render reply from %s: %v", reply.Sender, err)
 		}
 
-		basicPrinter := func(data json.RawMessage) {
-			if !show {
-				return
-			}
-
-			j, err := json.MarshalIndent(data, "   ", "   ")
-			if err != nil {
-				fmt.Fprintf(r.outputWriter, "   %s\n", string(data))
-			}
-
-			fmt.Fprintf(r.outputWriter, "   %s\n", string(j))
-
-			r.outputWriter.Flush()
-		}
-
-		errorPrinter := func(m string) {
-			fmt.Fprintf(r.outputWriter, "    %s\n", color.YellowString(m))
-
-			r.outputWriter.Flush()
-		}
-
-		ddlAssistedPrinter := func(data map[string]interface{}, raw []byte) {
-			max := 0
-			keys := []string{}
-
-			for key := range data {
-				output, ok := r.actionInterface.Output[key]
-				if ok {
-					if len(output.DisplayAs) > max {
-						max = len(output.DisplayAs)
-					}
-				} else {
-					if len(key) > max {
-						max = len(key)
-					}
-				}
-
-				keys = append(keys, key)
-			}
-
-			formatStr := fmt.Sprintf("%%%ds: %%s\n", max+3)
-			prefixFormatStr := fmt.Sprintf("%%%ds", max+5)
-
-			sort.Strings(keys)
-
-			for _, key := range keys {
-				val := gjson.GetBytes(raw, key)
-				keyStr := key
-				valStr := val.String()
-
-				output, ok := r.actionInterface.Output[key]
-				if ok {
-					keyStr = output.DisplayAs
-				}
-
-				if val.IsArray() || val.IsObject() {
-					valStr = string(pretty.PrettyOptions([]byte(valStr), &pretty.Options{
-						SortKeys: true,
-						Prefix:   fmt.Sprintf(prefixFormatStr, " "),
-						Indent:   "   ",
-						Width:    80,
-					}))
-				}
-
-				fmt.Fprintf(r.outputWriter, formatStr, keyStr, strings.TrimLeft(valStr, " "))
-			}
-
-			r.outputWriter.Flush()
-		}
-
-		parsed, ok := gjson.ParseBytes(reply.RPCReply.Data).Value().(map[string]interface{})
-		if ok {
-			r.actionInterface.SetOutputDefaults(parsed)
-			r.actionInterface.AggregateResult(parsed)
-		}
-
-		if show {
-			fmt.Fprintf(r.outputWriter, "%-40s %s\n", reply.Sender, status[reply.Statuscode])
-
-			if r.verbose {
-				basicPrinter(reply.RPCReply.Data)
-			} else {
-				if reply.RPCReply.Statuscode > mcorpc.OK {
-					errorPrinter(reply.RPCReply.Statusmsg)
-				} else {
-					ddlAssistedPrinter(parsed, reply.RPCReply.Data)
-				}
-
-				fmt.Fprintln(r.outputWriter)
-			}
+		err = r.actionInterface.AggregateResultJSON(reply.Data)
+		if err != nil {
+			log.Warnf("could not aggregate data in reply: %v", err)
 		}
 	}
 
@@ -420,42 +326,7 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 		return nil
 	}
 
-	summaryPrinter := func(summaries map[string][]string) {
-		keys := []string{}
-		for k := range summaries {
-			keys = append(keys, k)
-		}
-		sort.Strings(keys)
-
-		for _, k := range keys {
-			descr := k
-			output, ok := r.actionInterface.Output[k]
-			if ok {
-				descr = output.DisplayAs
-			}
-
-			fmt.Fprintln(r.outputWriter, color.HiWhiteString("Summary of %s:\n", descr))
-			if len(summaries[k]) == 0 {
-				fmt.Fprintf(r.outputWriter, "   %s\n\n", color.YellowString("No summary received"))
-				continue
-			}
-
-			for _, v := range summaries[k] {
-				if strings.ContainsRune(v, '\n') {
-					fmt.Fprintln(r.outputWriter, v)
-				} else {
-					fmt.Fprintf(r.outputWriter, "   %s\n", v)
-				}
-
-			}
-			fmt.Fprintln(r.outputWriter)
-		}
-	}
-
-	summaries, err := r.actionInterface.AggregateSummaryFormattedStrings()
-	if err == nil {
-		summaryPrinter(summaries)
-	}
+	replyfmt.FormatAggregates(r.outputWriter, replyfmt.ConsoleFormat, r.actionInterface, fmtopts...)
 
 	fmt.Fprintln(r.outputWriter)
 
