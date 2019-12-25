@@ -130,7 +130,6 @@ func (c *ConsoleFormatter) ddlAssistedPrinter(reply *client.RPCReply) {
 	parsed, ok := gjson.ParseBytes(reply.Data).Value().(map[string]interface{})
 	if ok {
 		c.actionInterface.SetOutputDefaults(parsed)
-		c.actionInterface.AggregateResult(parsed)
 	}
 
 	for key := range parsed {
