@@ -64,7 +64,52 @@ func ConsoleNoColor() Option {
 	}
 }
 
-func (c *ConsoleFormatter) Format(w *bufio.Writer, action *agent.Action, sender string, reply *client.RPCReply) error {
+func (c *ConsoleFormatter) FormatAggregates(w *bufio.Writer, action *agent.Action) error {
+	summaries, err := action.AggregateSummaryFormattedStrings()
+	if err != nil {
+		return err
+	}
+
+	var keys []string
+	for k := range summaries {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		descr := k
+		output, ok := action.Output[k]
+		if ok {
+			descr = output.DisplayAs
+		}
+
+		if c.disableColor {
+			fmt.Fprintf(w, "Summary of %s:\n\n", descr)
+
+		} else {
+			fmt.Fprintln(w, color.HiWhiteString("Summary of %s:\n", descr))
+		}
+
+		if len(summaries[k]) == 0 {
+			fmt.Fprintf(w, "   %s\n\n", color.YellowString("No summary received"))
+			continue
+		}
+
+		for _, v := range summaries[k] {
+			if strings.ContainsRune(v, '\n') {
+				fmt.Fprintln(w, v)
+			} else {
+				fmt.Fprintf(w, "   %s\n", v)
+			}
+
+		}
+		fmt.Fprintln(w)
+	}
+
+	return nil
+}
+
+func (c *ConsoleFormatter) FormatReply(w *bufio.Writer, action *agent.Action, sender string, reply *client.RPCReply) error {
 	c.out = w
 	c.actionInterface = action
 

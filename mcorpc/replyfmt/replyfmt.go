@@ -6,12 +6,14 @@ import (
 	"fmt"
 
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
-	agentddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
+	"github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 )
 
 // Formatter formats and writes a reply into the bufio writer
 type Formatter interface {
-	Format(w *bufio.Writer, action *agentddl.Action, sender string, reply *client.RPCReply) error
+	FormatReply(w *bufio.Writer, action *agent.Action, sender string, reply *client.RPCReply) error
+	FormatAggregates(w *bufio.Writer, action *agent.Action) error
+
 	SetVerbose()
 	SetSilent()
 	SetDisplay(mode DisplayMode)
@@ -68,15 +70,29 @@ func Display(d DisplayMode) Option {
 	}
 }
 
-func Format(w *bufio.Writer, f OutputFormat, action *agentddl.Action, sender string, reply *client.RPCReply, opts ...Option) error {
-	var formatter Formatter
-
+func formatter(f OutputFormat, opts ...Option) (Formatter, error) {
 	switch f {
 	case ConsoleFormat:
-		formatter = NewConsoleFormatter(opts...)
+		return NewConsoleFormatter(opts...), nil
 	default:
-		return fmt.Errorf("unknown formatter specified")
+		return nil, fmt.Errorf("unknown formatter specified")
+	}
+}
+
+func FormatAggregates(w *bufio.Writer, f OutputFormat, action *agent.Action, opts ...Option) error {
+	rf, err := formatter(f, opts...)
+	if err != nil {
+		return err
 	}
 
-	return formatter.Format(w, action, sender, reply)
+	return rf.FormatAggregates(w, action)
+}
+
+func FormatReply(w *bufio.Writer, f OutputFormat, action *agent.Action, sender string, reply *client.RPCReply, opts ...Option) error {
+	rf, err := formatter(f, opts...)
+	if err != nil {
+		return err
+	}
+
+	return rf.FormatReply(w, action, sender, reply)
 }
