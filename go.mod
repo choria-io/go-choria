@@ -12,7 +12,7 @@ require (
 	github.com/choria-io/go-puppet v0.0.1
 	github.com/choria-io/go-security v0.5.1-0.20191215143423-f1982926f340
 	github.com/choria-io/go-srvcache v0.0.6
-	github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191223154219-d7a29d81468c
+	github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20191225120246-12e782656b71
 	github.com/choria-io/provisioning-agent v0.6.0
 	github.com/cloudevents/sdk-go v0.10.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -35,7 +35,6 @@ require (
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/tidwall/gjson v1.3.5
-	github.com/tidwall/pretty v1.0.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	golang.org/x/tools v0.0.0-20191029041327-9cc4af7d6b2c
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
