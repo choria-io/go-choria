@@ -1,7 +1,7 @@
 package choria
 
 import (
-	context "context"
+	"context"
 	"errors"
 	"fmt"
 	"math/rand"
@@ -12,7 +12,7 @@ import (
 	"strings"
 	"time"
 
-	uuid "github.com/gofrs/uuid"
+	"github.com/gofrs/uuid"
 )
 
 // UserConfig determines what is the active config file for a user
@@ -134,10 +134,10 @@ func NewRequestID() (string, error) {
 	return strings.Replace(UniqueID(), "-", "", -1), nil
 }
 
-// InterruptableSleep sleep for the duration of the n'th wait cycle
+// InterruptibleSleep sleep for the duration of the n'th wait cycle
 // in a way that can be interrupted by the context.  An error is returned
 // if the context cancels the sleep
-func InterruptableSleep(ctx context.Context, d time.Duration) error {
+func InterruptibleSleep(ctx context.Context, d time.Duration) error {
 	timer := time.NewTimer(d)
 
 	select {
@@ -146,6 +146,11 @@ func InterruptableSleep(ctx context.Context, d time.Duration) error {
 	case <-ctx.Done():
 		return errors.New("sleep interrupted by context")
 	}
+}
+
+// InterruptableSleep is DEPRECATED see InterruptibleSleep
+func InterruptableSleep(ctx context.Context, d time.Duration) error {
+	return InterruptibleSleep(ctx, d)
 }
 
 // UniqueID creates a new unique ID, usually a v4 uuid, if that fails a random string based ID is made

@@ -9,12 +9,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/choria-io/go-choria/backoff"
-	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-srvcache"
-	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/dgrijalva/jwt-go"
 	"github.com/sirupsen/logrus"
+
+	"github.com/choria-io/go-choria/backoff"
+	"github.com/choria-io/go-choria/build"
 )
 
 type ProvClaims struct {
@@ -111,7 +112,7 @@ func (b *Resolver) Targets(ctx context.Context, log *logrus.Entry) []string {
 
 		log.Warnf("Resolving provisioning brokers via SRV lookups in domain %s failed on try %d, will keep trying", domain, try)
 
-		backoff.TwentySec.InterruptableSleep(ctx, try)
+		backoff.TwentySec.InterruptibleSleep(ctx, try)
 	}
 
 	return servers.Strings()
