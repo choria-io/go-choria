@@ -9,15 +9,16 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-srvcache"
+	"github.com/nats-io/stan.go"
+	"github.com/prometheus/client_golang/prometheus"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/broker/adapter/ingest"
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/broker/adapter/transformer"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-srvcache"
-	stan "github.com/nats-io/stan.go"
-	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
 )
 
 type stream struct {
@@ -123,7 +124,7 @@ func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) erro
 			}))
 			if err != nil {
 				sc.log.Errorf("Could not create initial STAN connection, retrying: %s", err)
-				backoff.FiveSec.InterruptableSleep(ctx, ctr)
+				backoff.FiveSec.InterruptibleSleep(ctx, ctr)
 
 				continue
 			}
@@ -144,7 +145,7 @@ func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) erro
 
 				sc.log.WithField("attempt", ctr).Infof("Attempting to reconnect NATS Stream after reconnection")
 
-				backoff.FiveSec.InterruptableSleep(ctx, ctr)
+				backoff.FiveSec.InterruptibleSleep(ctx, ctr)
 
 				err := start()
 				if err != nil {

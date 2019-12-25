@@ -10,12 +10,13 @@ import (
 	"sync"
 	"time"
 
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
+
 	"github.com/choria-io/go-choria/aagent/machine"
 	notifier "github.com/choria-io/go-choria/aagent/notifiers/choria"
 	"github.com/choria-io/go-choria/aagent/watchers"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 )
 
 type AAgent struct {
@@ -45,7 +46,7 @@ type ChoriaProvider interface {
 
 // New creates a new instance of the choria autonomous agent host
 func New(dir string, fw ChoriaProvider) (aa *AAgent, err error) {
-	notifier, err := notifier.New(fw)
+	n, err := notifier.New(fw)
 	if err != nil {
 		return nil, errors.Wrapf(err, "could not create notifier")
 	}
@@ -55,7 +56,7 @@ func New(dir string, fw ChoriaProvider) (aa *AAgent, err error) {
 		logger:   fw.Logger("aagent"),
 		source:   dir,
 		machines: []*managedMachine{},
-		notifier: notifier,
+		notifier: n,
 	}, nil
 }
 
@@ -150,7 +151,7 @@ func (a *AAgent) loadFromSource(ctx context.Context, wg *sync.WaitGroup) error {
 				a.logger.Errorf("could not delete machine for %s", path)
 			}
 			a.logger.Debugf("Sleeping 1 second to allow old machine to exit")
-			choria.InterruptableSleep(ctx, time.Second)
+			choria.InterruptibleSleep(ctx, time.Second)
 		}
 
 		a.logger.Infof("Attempting to load Choria Machine from %s", path)

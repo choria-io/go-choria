@@ -41,10 +41,10 @@ func (b BackoffPolicy) Duration(n int) time.Duration {
 	return time.Duration(jitter(b.Millis[n])) * time.Millisecond
 }
 
-// InterruptableSleep sleep for the duration of the n'th wait cycle
+// InterruptibleSleep sleep for the duration of the n'th wait cycle
 // in a way that can be interrupted by the context.  An error is returned
 // if the context cancels the sleep
-func (b BackoffPolicy) InterruptableSleep(ctx context.Context, n int) error {
+func (b *BackoffPolicy) InterruptibleSleep(ctx context.Context, n int) error {
 	timer := time.NewTimer(b.Duration(n))
 
 	select {
@@ -53,6 +53,11 @@ func (b BackoffPolicy) InterruptableSleep(ctx context.Context, n int) error {
 	case <-ctx.Done():
 		return errors.New("sleep interrupted by context")
 	}
+}
+
+// InterruptableSleep is DEPRECATED see InterruptibleSleep
+func (b BackoffPolicy) InterruptableSleep(ctx context.Context, n int) error {
+	return b.InterruptibleSleep(ctx, n)
 }
 
 // jitter returns a random integer uniformly distributed in the range
