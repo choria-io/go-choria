@@ -33,6 +33,8 @@ type reqCommand struct {
 	ddl             *agentddl.DDL
 	actionInterface *agentddl.Action
 	progressBar     *uiprogress.Bar
+	input           map[string]interface{}
+	filter          *protocol.Filter
 
 	discoveryTimeout int
 	displayOverride  string
@@ -159,11 +161,7 @@ func (r *reqCommand) responseHandler(results *rpcResults) func(pr protocol.Reply
 	}
 }
 
-func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
-	defer wg.Done()
-
-	r.startTime = time.Now()
-
+func (r *reqCommand) prepareConfguration() (err error) {
 	r.ddl, err = agentddl.Find(r.agent, cfg.LibDir)
 	if err != nil {
 		return fmt.Errorf("could not find DDL for agent %s: %s", r.agent, err)
@@ -174,12 +172,12 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		return err
 	}
 
-	input, _, err := r.actionInterface.ValidateAndConvertToDDLTypes(r.args)
+	r.input, _, err = r.actionInterface.ValidateAndConvertToDDLTypes(r.args)
 	if err != nil {
 		return fmt.Errorf("invalid input: %s", err)
 	}
 
-	filter, err := r.parseFilterOptions()
+	r.filter, err = r.parseFilterOptions()
 	if err != nil {
 		return fmt.Errorf("could not parse filters: %s", err)
 	}
@@ -207,8 +205,21 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		r.discoveryTimeout = cfg.DiscoveryTimeout
 	}
 
+	return nil
+}
+
+func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
+	defer wg.Done()
+
+	r.startTime = time.Now()
+
+	err = r.prepareConfguration()
+	if err != nil {
+		return err
+	}
+
 	dstart := time.Now()
-	nodes, err := r.discover(filter)
+	nodes, err := r.discover(r.filter)
 	if err != nil {
 		return fmt.Errorf("could not discover nodes: %s", err)
 	}
@@ -259,7 +270,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("could not create client: %s", err)
 	}
 
-	rpcres, err := agent.Do(ctx, r.action, input, opts...)
+	rpcres, err := agent.Do(ctx, r.action, r.input, opts...)
 	if err != nil {
 		return fmt.Errorf("could not perform request: %s", err)
 	}
