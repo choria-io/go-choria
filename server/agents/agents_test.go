@@ -44,12 +44,12 @@ var _ = Describe("Server/Agents", func() {
 		mockctl = gomock.NewController(GinkgoT())
 
 		cfg := config.NewConfigForTests()
-
 		cfg.DisableTLS = true
 
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 		fw.Config.Collectives = []string{"cone", "ctwo"}
+		fw.SetLogWriter(GinkgoWriter)
 
 		requests = make(chan *choria.ConnectorMessage)
 		ctx, cancel = context.WithCancel(context.Background())
@@ -84,7 +84,6 @@ var _ = Describe("Server/Agents", func() {
 		is.EXPECT().Facts().Return(json.RawMessage(`{"stub":true}`)).AnyTimes()
 		is.EXPECT().AgentMetadata("stub_agent").Return(metadata, true).AnyTimes()
 
-		logrus.SetLevel(logrus.FatalLevel)
 		mgr = New(requests, fw, conn, is, logrus.WithFields(logrus.Fields{"testing": true}))
 		conn = NewMockAgentConnector(mockctl)
 

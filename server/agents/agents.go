@@ -8,11 +8,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent"
-	"github.com/choria-io/go-choria/choria"
-	lifecycle "github.com/choria-io/go-lifecycle"
+	"github.com/choria-io/go-lifecycle"
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
+
+	"github.com/choria-io/go-choria/aagent"
+	"github.com/choria-io/go-choria/choria"
 )
 
 // Agent is a generic choria agent
@@ -27,16 +28,21 @@ type Agent interface {
 
 // ServerInfoSource provides data about a running server instance
 type ServerInfoSource interface {
-	KnownAgents() []string
 	AgentMetadata(string) (Metadata, bool)
-	ConfigFile() string
 	Classes() []string
+	ConfigFile() string
+	ConnectedServer() string
 	Facts() json.RawMessage
+	Identity() string
+	KnownAgents() []string
+	LastProcessedMessage() time.Time
+	MachineTransition(name string, version string, path string, id string, transition string) error
+	MachinesStatus() ([]aagent.MachineState, error)
+	NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error
+	Provisioning() bool
 	StartTime() time.Time
 	Stats() ServerStats
-	NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error
-	MachinesStatus() ([]aagent.MachineState, error)
-	MachineTransition(name string, version string, path string, id string, transition string) error
+	UpTime() int64
 }
 
 // ServerStats are internal statistics about the running server

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"math/rand"
 	"net"
 	"os"
@@ -286,6 +287,12 @@ func (fw *Framework) MiddlewareServers() (servers srvcache.Servers, err error) {
 	})
 
 	return servers, nil
+}
+
+func (fw *Framework) SetLogWriter(out io.Writer) {
+	if fw.log != nil {
+		fw.log.Out = out
+	}
 }
 
 // SetupLogging configures logging based on choria config directives
