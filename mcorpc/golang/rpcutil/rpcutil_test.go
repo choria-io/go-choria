@@ -10,8 +10,8 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-testutil"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -27,7 +27,6 @@ func Test(t *testing.T) {
 
 var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 	var (
-		mockctl  *gomock.Controller
 		requests chan *choria.ConnectorMessage
 		cfg      *config.Config
 		fw       *choria.Framework
@@ -36,49 +35,34 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 		rpcutil  *mcorpc.Agent
 		reply    *mcorpc.Reply
 		ctx      context.Context
-		is       *MockServerInfoSource
+		cn       *testutil.ChoriaNetwork
 	)
 
 	BeforeEach(func() {
-		mockctl = gomock.NewController(GinkgoT())
-
 		requests = make(chan *choria.ConnectorMessage)
 		reply = &mcorpc.Reply{}
 
 		cfg = config.NewConfigForTests()
 		cfg.DisableTLS = true
-		cfg.ClassesFile = "/foo/bar"
+		cfg.ClassesFile = "testdata/classes.txt"
+		cfg.FactSourceFile = "testdata/facts.yaml"
 
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
-		am = agents.New(requests, fw, nil, NewMockServerInfoSource(mockctl), logrus.WithFields(logrus.Fields{"test": "1"}))
+		cn, err = testutil.StartChoriaNetwork(cfg)
+		Expect(err).ToNot(HaveOccurred())
+
+		am = agents.New(requests, fw, nil, cn.ServerInstance(), logrus.WithFields(logrus.Fields{"test": "1"}))
 		rpcutil, err = New(am)
 		Expect(err).ToNot(HaveOccurred())
 		logrus.SetLevel(logrus.FatalLevel)
 
 		ctx = context.Background()
-		cfg.FactSourceFile = "testdata/facts.yaml"
-
-		metadata := agents.Metadata{
-			Author:      "stub@example.net",
-			Description: "Stub Agent",
-			License:     "Apache-2.0",
-			Name:        "stub_agent",
-			Timeout:     10,
-			URL:         "https://choria.io/",
-			Version:     "1.0.0",
-		}
-
-		is = NewMockServerInfoSource(mockctl)
-		is.EXPECT().KnownAgents().Return([]string{"stub_agent"}).AnyTimes()
-		is.EXPECT().Classes().Return([]string{"one", "two"}).AnyTimes()
-		is.EXPECT().Facts().Return(json.RawMessage(`{"stub":true}`)).AnyTimes()
-		is.EXPECT().AgentMetadata("stub_agent").Return(metadata, true).AnyTimes()
 	})
 
 	AfterEach(func() {
-		mockctl.Finish()
+		cn.Stop()
 	})
 
 	var _ = Describe("New", func() {
@@ -93,33 +77,37 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 			cfg.Collectives = []string{"mcollective", "other"}
 			cfg.MainCollective = "mcollective"
 
-			rpcutil.SetServerInfo(is)
+			err = cn.ServerInstance().RegisterAgent(ctx, "rpcutil", rpcutil)
+			Expect(err).ToNot(HaveOccurred())
+
+			rpcutil.SetServerInfo(cn.ServerInstance())
 
 			inventoryAction(ctx, &mcorpc.Request{}, reply, rpcutil, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 
 			r := reply.Data.(*InventoryReply)
-			Expect(r.Agents).To(Equal([]string{"stub_agent"}))
+			Expect(r.Agents).To(Equal([]string{"rpcutil"}))
 			Expect(r.Classes).To(Equal([]string{"one", "two"}))
 			Expect(r.Collectives).To(Equal([]string{"mcollective", "other"}))
 			Expect(r.MainCollective).To(Equal("mcollective"))
 			Expect(r.DataPlugins).To(Equal([]string{}))
-			Expect(r.Facts).To(Equal(json.RawMessage(`{"stub":true}`)))
+			Expect(r.Facts).To(Equal(json.RawMessage(`{"bool":false,"float":1.1,"int":1,"string":"hello world","struct":{"foo":"bar"}}`)))
 			Expect(r.Version).To(Equal("1.0.0"))
 		})
 	})
 
 	var _ = Describe("agentInventoryAction", func() {
 		It("Should get the right inventory", func() {
-			rpcutil.SetServerInfo(is)
+			err = cn.ServerInstance().RegisterAgent(ctx, "rpcutil", rpcutil)
+			rpcutil.SetServerInfo(cn.ServerInstance())
 
 			agentInventoryAction(ctx, &mcorpc.Request{}, reply, rpcutil, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 
 			r := reply.Data.(*AgentInventoryReply).Agents[0]
-			Expect(r.Agent).To(Equal("stub_agent"))
-			Expect(r.Name).To(Equal("stub_agent"))
-			Expect(r.Timeout).To(Equal(10))
+			Expect(r.Agent).To(Equal("rpcutil"))
+			Expect(r.Name).To(Equal("rpcutil"))
+			Expect(r.Timeout).To(Equal(2))
 		})
 	})
 
