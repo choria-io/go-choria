@@ -130,18 +130,6 @@ func (m *MockServerInfoSource) EXPECT() *MockServerInfoSourceMockRecorder {
 	return m.recorder
 }
 
-// KnownAgents mocks base method
-func (m *MockServerInfoSource) KnownAgents() []string {
-	ret := m.ctrl.Call(m, "KnownAgents")
-	ret0, _ := ret[0].([]string)
-	return ret0
-}
-
-// KnownAgents indicates an expected call of KnownAgents
-func (mr *MockServerInfoSourceMockRecorder) KnownAgents() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KnownAgents", reflect.TypeOf((*MockServerInfoSource)(nil).KnownAgents))
-}
-
 // AgentMetadata mocks base method
 func (m *MockServerInfoSource) AgentMetadata(arg0 string) (Metadata, bool) {
 	ret := m.ctrl.Call(m, "AgentMetadata", arg0)
@@ -153,18 +141,6 @@ func (m *MockServerInfoSource) AgentMetadata(arg0 string) (Metadata, bool) {
 // AgentMetadata indicates an expected call of AgentMetadata
 func (mr *MockServerInfoSourceMockRecorder) AgentMetadata(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentMetadata", reflect.TypeOf((*MockServerInfoSource)(nil).AgentMetadata), arg0)
-}
-
-// ConfigFile mocks base method
-func (m *MockServerInfoSource) ConfigFile() string {
-	ret := m.ctrl.Call(m, "ConfigFile")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// ConfigFile indicates an expected call of ConfigFile
-func (mr *MockServerInfoSourceMockRecorder) ConfigFile() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigFile", reflect.TypeOf((*MockServerInfoSource)(nil).ConfigFile))
 }
 
 // Classes mocks base method
@@ -179,6 +155,30 @@ func (mr *MockServerInfoSourceMockRecorder) Classes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Classes", reflect.TypeOf((*MockServerInfoSource)(nil).Classes))
 }
 
+// ConfigFile mocks base method
+func (m *MockServerInfoSource) ConfigFile() string {
+	ret := m.ctrl.Call(m, "ConfigFile")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// ConfigFile indicates an expected call of ConfigFile
+func (mr *MockServerInfoSourceMockRecorder) ConfigFile() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigFile", reflect.TypeOf((*MockServerInfoSource)(nil).ConfigFile))
+}
+
+// ConnectedServer mocks base method
+func (m *MockServerInfoSource) ConnectedServer() string {
+	ret := m.ctrl.Call(m, "ConnectedServer")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// ConnectedServer indicates an expected call of ConnectedServer
+func (mr *MockServerInfoSourceMockRecorder) ConnectedServer() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConnectedServer", reflect.TypeOf((*MockServerInfoSource)(nil).ConnectedServer))
+}
+
 // Facts mocks base method
 func (m *MockServerInfoSource) Facts() json.RawMessage {
 	ret := m.ctrl.Call(m, "Facts")
@@ -189,6 +189,96 @@ func (m *MockServerInfoSource) Facts() json.RawMessage {
 // Facts indicates an expected call of Facts
 func (mr *MockServerInfoSourceMockRecorder) Facts() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Facts", reflect.TypeOf((*MockServerInfoSource)(nil).Facts))
+}
+
+// Identity mocks base method
+func (m *MockServerInfoSource) Identity() string {
+	ret := m.ctrl.Call(m, "Identity")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Identity indicates an expected call of Identity
+func (mr *MockServerInfoSourceMockRecorder) Identity() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Identity", reflect.TypeOf((*MockServerInfoSource)(nil).Identity))
+}
+
+// KnownAgents mocks base method
+func (m *MockServerInfoSource) KnownAgents() []string {
+	ret := m.ctrl.Call(m, "KnownAgents")
+	ret0, _ := ret[0].([]string)
+	return ret0
+}
+
+// KnownAgents indicates an expected call of KnownAgents
+func (mr *MockServerInfoSourceMockRecorder) KnownAgents() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KnownAgents", reflect.TypeOf((*MockServerInfoSource)(nil).KnownAgents))
+}
+
+// LastProcessedMessage mocks base method
+func (m *MockServerInfoSource) LastProcessedMessage() time.Time {
+	ret := m.ctrl.Call(m, "LastProcessedMessage")
+	ret0, _ := ret[0].(time.Time)
+	return ret0
+}
+
+// LastProcessedMessage indicates an expected call of LastProcessedMessage
+func (mr *MockServerInfoSourceMockRecorder) LastProcessedMessage() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LastProcessedMessage", reflect.TypeOf((*MockServerInfoSource)(nil).LastProcessedMessage))
+}
+
+// MachineTransition mocks base method
+func (m *MockServerInfoSource) MachineTransition(name, version, path, id, transition string) error {
+	ret := m.ctrl.Call(m, "MachineTransition", name, version, path, id, transition)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// MachineTransition indicates an expected call of MachineTransition
+func (mr *MockServerInfoSourceMockRecorder) MachineTransition(name, version, path, id, transition interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MachineTransition", reflect.TypeOf((*MockServerInfoSource)(nil).MachineTransition), name, version, path, id, transition)
+}
+
+// MachinesStatus mocks base method
+func (m *MockServerInfoSource) MachinesStatus() ([]aagent.MachineState, error) {
+	ret := m.ctrl.Call(m, "MachinesStatus")
+	ret0, _ := ret[0].([]aagent.MachineState)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// MachinesStatus indicates an expected call of MachinesStatus
+func (mr *MockServerInfoSourceMockRecorder) MachinesStatus() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MachinesStatus", reflect.TypeOf((*MockServerInfoSource)(nil).MachinesStatus))
+}
+
+// NewEvent mocks base method
+func (m *MockServerInfoSource) NewEvent(t go_lifecycle.Type, opts ...go_lifecycle.Option) error {
+	varargs := []interface{}{t}
+	for _, a := range opts {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "NewEvent", varargs...)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// NewEvent indicates an expected call of NewEvent
+func (mr *MockServerInfoSourceMockRecorder) NewEvent(t interface{}, opts ...interface{}) *gomock.Call {
+	varargs := append([]interface{}{t}, opts...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewEvent", reflect.TypeOf((*MockServerInfoSource)(nil).NewEvent), varargs...)
+}
+
+// Provisioning mocks base method
+func (m *MockServerInfoSource) Provisioning() bool {
+	ret := m.ctrl.Call(m, "Provisioning")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// Provisioning indicates an expected call of Provisioning
+func (mr *MockServerInfoSourceMockRecorder) Provisioning() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Provisioning", reflect.TypeOf((*MockServerInfoSource)(nil).Provisioning))
 }
 
 // StartTime mocks base method
@@ -215,44 +305,14 @@ func (mr *MockServerInfoSourceMockRecorder) Stats() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Stats", reflect.TypeOf((*MockServerInfoSource)(nil).Stats))
 }
 
-// NewEvent mocks base method
-func (m *MockServerInfoSource) NewEvent(t go_lifecycle.Type, opts ...go_lifecycle.Option) error {
-	varargs := []interface{}{t}
-	for _, a := range opts {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "NewEvent", varargs...)
-	ret0, _ := ret[0].(error)
+// UpTime mocks base method
+func (m *MockServerInfoSource) UpTime() int64 {
+	ret := m.ctrl.Call(m, "UpTime")
+	ret0, _ := ret[0].(int64)
 	return ret0
 }
 
-// NewEvent indicates an expected call of NewEvent
-func (mr *MockServerInfoSourceMockRecorder) NewEvent(t interface{}, opts ...interface{}) *gomock.Call {
-	varargs := append([]interface{}{t}, opts...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewEvent", reflect.TypeOf((*MockServerInfoSource)(nil).NewEvent), varargs...)
-}
-
-// MachinesStatus mocks base method
-func (m *MockServerInfoSource) MachinesStatus() ([]aagent.MachineState, error) {
-	ret := m.ctrl.Call(m, "MachinesStatus")
-	ret0, _ := ret[0].([]aagent.MachineState)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// MachinesStatus indicates an expected call of MachinesStatus
-func (mr *MockServerInfoSourceMockRecorder) MachinesStatus() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MachinesStatus", reflect.TypeOf((*MockServerInfoSource)(nil).MachinesStatus))
-}
-
-// MachineTransition mocks base method
-func (m *MockServerInfoSource) MachineTransition(name, version, path, id, transition string) error {
-	ret := m.ctrl.Call(m, "MachineTransition", name, version, path, id, transition)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// MachineTransition indicates an expected call of MachineTransition
-func (mr *MockServerInfoSourceMockRecorder) MachineTransition(name, version, path, id, transition interface{}) *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MachineTransition", reflect.TypeOf((*MockServerInfoSource)(nil).MachineTransition), name, version, path, id, transition)
+// UpTime indicates an expected call of UpTime
+func (mr *MockServerInfoSourceMockRecorder) UpTime() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpTime", reflect.TypeOf((*MockServerInfoSource)(nil).UpTime))
 }
