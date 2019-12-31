@@ -4,9 +4,11 @@ package main
 
 import (
 	"encoding/base64"
-	"io/ioutil"
-	"os"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
 	"path"
 	"strings"
 	"text/template"
@@ -35,10 +37,20 @@ var templates = map[string]string{
 }
 `
 
+func goFmt(file string) error {
+	c := exec.Command("go", "fmt", file)
+	out, err := c.CombinedOutput()
+	if err != nil {
+		log.Printf("go fmt failed: %s", string(out))
+	}
+
+	return err
+}
+
 func main() {
 	fmt.Println("Importing client code generation templates")
 
-	tpath :=path.Join("generators", "client", "templates")
+	tpath := path.Join("generators", "client", "templates")
 	files, err := ioutil.ReadDir(tpath)
 	panicIfErr(err)
 
@@ -59,7 +71,11 @@ func main() {
 
 	out, err := os.Create(path.Join("generators", "client", "templates.go"))
 	panicIfErr(err)
-	defer out.Close()
 
-	t.Execute(out, templates)
+	err = t.Execute(out, templates)
+	panicIfErr(err)
+
+	out.Close()
+	err = goFmt(out.Name())
+	panicIfErr(err)
 }
