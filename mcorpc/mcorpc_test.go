@@ -125,7 +125,7 @@ var _ = Describe("McoRPC", func() {
 			Expect(gjson.GetBytes(reply.Body, "statuscode").Int()).To(Equal(int64(1)))
 		})
 
-		It("Should support authorization", func() {
+		It("Should support action_policy authorization", func() {
 			fw.Config.ConfigFile = "testdata/config.cfg"
 			fw.Config.RPCAuthorization = true
 			fw.Config.RPCAuditProvider = "action_policy"
@@ -142,6 +142,26 @@ var _ = Describe("McoRPC", func() {
 
 			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("You are not authorized to call this agent or action"))
 			Expect(gjson.GetBytes(reply.Body, "statuscode").Int()).To(Equal(int64(1)))
+		})
+
+		It("Should support rego_policy authorization", func() {
+			fw.Config.ConfigFile = "testdata/config.cfg"
+			fw.Config.RPCAuthorization = true
+			fw.Config.RPCAuditProvider = "rego_policy"
+			msg.Payload = `{"agent":"test", "action":"test"}`
+
+			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {
+				d := map[string]string{"test": "hello world"}
+				reply.Data = &d
+			}
+
+			agent.RegisterAction("test", action)
+			agent.HandleMessage(ctx, msg, req, nil, outbox)
+			reply := <-outbox
+
+			Expect(gjson.GetBytes(reply.Body, "statusmsg").String()).To(Equal("You are not authorized to call this agent or action"))
+			Expect(gjson.GetBytes(reply.Body, "statuscode").Int()).To(Equal(int64(1)))
+
 		})
 	})
 
