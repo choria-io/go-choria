@@ -4,14 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"path/filepath"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-security/opa"
 	"github.com/open-policy-agent/opa/ast"
-	"github.com/open-policy-agent/opa/rego"
-	"github.com/open-policy-agent/opa/topdown"
 	"github.com/sirupsen/logrus"
 )
 
@@ -45,39 +43,26 @@ func (r *regoPolicy) authorize() (bool, error) {
 		return false, err
 	}
 
-	pol, err := ioutil.ReadFile(policyFile)
+	if policyFile == "" {
+		return false, fmt.Errorf("policy file could not be found")
+	}
+
+	eopts := []opa.Option{
+		opa.Logger(r.log),
+		opa.File(policyFile),
+	}
+
+	if r.log.Logger.GetLevel() == logrus.DebugLevel || r.enableTracing() {
+		r.log.Debugf("regoInputs: %v", r.regoInputs())
+		eopts = append(eopts, opa.Trace())
+	}
+
+	evaluator, err := opa.New("io.choria.mcorpc.authpolicy", "data.io.choria.mcorpc.authpolicy.allow", eopts...)
 	if err != nil {
 		return false, err
 	}
 
-	module := string(pol)
-
-	buf := topdown.NewBufferTracer()
-
-	if r.log.Logger.GetLevel() == logrus.DebugLevel {
-		r.log.Debugf("regoInputs: %v", r.regoInputs())
-	}
-
-	options := []func(*rego.Rego){
-		rego.Query("data.choria.mcorpc.authpolicy.allow"),
-		rego.Module(policyFile, module),
-		rego.Input(r.regoInputs()),
-	}
-
-	if (r.log.Logger.GetLevel() == logrus.DebugLevel) || r.enableTracing() {
-		options = append(options, rego.Tracer(buf))
-	}
-
-	query := rego.New(
-		options...,
-	)
-
-	rs, err := query.Eval(context.Background())
-
-	if (r.log.Logger.GetLevel() == logrus.DebugLevel) || r.enableTracing() {
-		topdown.PrettyTrace(r.log.Writer(), *buf)
-	}
-
+	allowed, err := evaluator.Evaluate(context.Background(), r.regoInputs())
 	switch err := err.(type) {
 	case nil:
 		break
@@ -92,7 +77,7 @@ func (r *regoPolicy) authorize() (bool, error) {
 		return false, err
 	}
 
-	return rs[0].Expressions[0].Value.(bool), nil
+	return allowed, nil
 }
 
 func (r *regoPolicy) lookupPolicyFile() (string, error) {
