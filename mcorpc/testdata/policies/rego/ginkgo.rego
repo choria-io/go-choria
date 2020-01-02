@@ -1,4 +1,4 @@
-package choria.mcorpc.authpolicy
+package io.choria.mcorpc.authpolicy
 
 default allow = false
 
