@@ -1,14 +1,10 @@
 # Choria Broker and Server
 
-This is a daemon written in Go that will replace the traditional combination of Ruby MCollectived + Choria plugins - at least as far as the daemon side goes.
+Choria is a framework for building Control Planes, Orchestration Systems and Programmable Infrastructure.
 
-It will include at least:
+This is a daemon written in Go that hosts services, autonomous agents and generally provide a secure hosting environment for callable logic that you can interact with from code.
 
-  * A vendored `nats server` instance fully managed by `server.cfg` with clustering support
-  * A Federation Broker for the Choria protocol
-  * An Protocol Adapter framework to rewrite message into other systems.  For eg. Discovery messages to NATS Streaming.
-  * The `mcollectived` replacement that can run old ruby based agents
-  * Everything using a Go implementation of the Choria Protocol so interop with the Ruby clients and servers are maintained.
+More information about the project can be found on [Choria.IO](https://choria.io).
 
 [![CodeFactor](https://www.codefactor.io/repository/github/choria-io/go-choria/badge)](https://www.codefactor.io/repository/github/choria-io/go-choria) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3558/badge)](https://bestpractices.coreinfrastructure.org/projects/3558)
 
