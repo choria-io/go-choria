@@ -10,7 +10,7 @@ It will include at least:
   * The `mcollectived` replacement that can run old ruby based agents
   * Everything using a Go implementation of the Choria Protocol so interop with the Ruby clients and servers are maintained.
 
-[![CodeFactor](https://www.codefactor.io/repository/github/choria-io/go-choria/badge)](https://www.codefactor.io/repository/github/choria-io/go-choria)
+[![CodeFactor](https://www.codefactor.io/repository/github/choria-io/go-choria/badge)](https://www.codefactor.io/repository/github/choria-io/go-choria) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3558/badge)](https://bestpractices.coreinfrastructure.org/projects/3558)
 
 # Bundled tools
 
