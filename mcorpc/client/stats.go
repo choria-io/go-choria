@@ -35,7 +35,7 @@ type Stats struct {
 	agent  string
 	action string
 
-	mu   *sync.Mutex
+	mu *sync.Mutex
 }
 
 // NewStats initializes a new stats instance
