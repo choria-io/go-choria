@@ -354,4 +354,211 @@ var _ = Describe("RegoPolicy", func() {
 			})
 		})
 	})
+
+	Describe("Multiple allow statement tests", func() {
+		var (
+			requests = make(chan *choria.ConnectorMessage)
+			authz    *regoPolicy
+			logger   *logrus.Entry
+			fw       *choria.Framework
+			cn       *testutil.ChoriaNetwork
+			err      error
+			ctx      context.Context
+			am       *agents.Manager
+			cfg      *config.Config
+		)
+
+		BeforeEach(func() {
+
+			logger = logrus.NewEntry(logrus.New())
+			logger.Logger.SetLevel(logrus.DebugLevel)
+			logger.Logger.Out = GinkgoWriter
+
+			cfg = config.NewConfigForTests()
+			cfg.ClassesFile = "testdata/policies/rego/classes_fail.txt"
+			cfg.FactSourceFile = "testdata/policies/rego/facts_fail.json"
+			cfg.ConfigFile = "testdata/server.conf"
+
+			cfg.DisableSecurityProviderVerify = true
+
+			fw, err = choria.NewWithConfig(cfg)
+			Expect(err).ToNot(HaveOccurred())
+
+			cn, err = testutil.StartChoriaNetwork(cfg)
+			Expect(err).ToNot(HaveOccurred())
+
+			ctx = context.Background()
+
+		})
+
+		AfterEach(func() {
+			cn.Stop()
+			ctx.Done()
+		})
+
+		Describe("With the agent set to gingko", func() {
+			BeforeEach(func() {
+				am = agents.New(requests,
+					fw,
+					nil,
+					cn.ServerInstance(),
+					fw.Logger("test"),
+				)
+
+				metadata := &agents.Metadata{
+					Name:    "ginkgo",
+					Author:  "stub@example.com",
+					License: "Apache-2.0",
+					Timeout: 10,
+					URL:     "https://choria.io",
+					Version: "1.0.0",
+				}
+
+				ginkgoAgent := New(metadata.Name, metadata, am.Choria(), fw.Logger("test"))
+				action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
+				ginkgoAgent.MustRegisterAction("boop", action)
+				Expect(err).ToNot(HaveOccurred())
+
+				err = cn.ServerInstance().RegisterAgent(ctx, ginkgoAgent.Name(), ginkgoAgent)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(ginkgoAgent.ServerInfoSource.Facts()).ToNot(BeNil())
+
+				authz = &regoPolicy{
+					cfg: cfg,
+					log: logger,
+					req: &Request{
+						Agent:    ginkgoAgent.meta.Name,
+						Action:   "boop",
+						CallerID: "choria=rip.mcollective",
+						SenderID: "choria=rip.mcollective",
+						Data:     json.RawMessage(`{"bar": "foo"}`), // reversed from above
+						TTL:      60,
+						Time:     time.Now(),
+						Filter:   protocol.NewFilter(),
+					},
+					agent: ginkgoAgent,
+				}
+			})
+
+			Context("with multiple allow statements", func() {
+				It("Should allow", func() {
+					authz.agent.meta.Name = "multiple"
+					auth, err := authz.authorize()
+
+					Expect(err).ToNot(HaveOccurred())
+					Expect(auth).To(BeTrue())
+				})
+			})
+		})
+
+		Describe("With the agent set to other", func() {
+			BeforeEach(func() {
+				am = agents.New(requests,
+					fw,
+					nil,
+					cn.ServerInstance(),
+					fw.Logger("test"),
+				)
+
+				metadata := &agents.Metadata{
+					Name:    "other",
+					Author:  "stub@example.com",
+					License: "Apache-2.0",
+					Timeout: 10,
+					URL:     "https://choria.io",
+					Version: "1.0.0",
+				}
+
+				ginkgoAgent := New(metadata.Name, metadata, am.Choria(), fw.Logger("test"))
+				action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
+				ginkgoAgent.MustRegisterAction("boop", action)
+				Expect(err).ToNot(HaveOccurred())
+
+				err = cn.ServerInstance().RegisterAgent(ctx, ginkgoAgent.Name(), ginkgoAgent)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(ginkgoAgent.ServerInfoSource.Facts()).ToNot(BeNil())
+
+				authz = &regoPolicy{
+					cfg: cfg,
+					log: logger,
+					req: &Request{
+						Agent:    ginkgoAgent.meta.Name,
+						Action:   "poob",
+						CallerID: "choria=rip.mcollective",
+						SenderID: "choria=rip.mcollective",
+						Data:     json.RawMessage(`{"bar": "foo"}`), // reversed from above
+						TTL:      60,
+						Time:     time.Now(),
+						Filter:   protocol.NewFilter(),
+					},
+					agent: ginkgoAgent,
+				}
+			})
+
+			Context("with multiple allow statements", func() {
+				It("Should allow", func() {
+					authz.agent.meta.Name = "multiple"
+					auth, err := authz.authorize()
+
+					Expect(err).ToNot(HaveOccurred())
+					Expect(auth).To(BeTrue())
+				})
+			})
+		})
+
+		Describe("With the agent set to somethingelse", func() {
+			BeforeEach(func() {
+				am = agents.New(requests,
+					fw,
+					nil,
+					cn.ServerInstance(),
+					fw.Logger("test"),
+				)
+
+				metadata := &agents.Metadata{
+					Name:    "somethingelse",
+					Author:  "stub@example.com",
+					License: "Apache-2.0",
+					Timeout: 10,
+					URL:     "https://choria.io",
+					Version: "1.0.0",
+				}
+
+				ginkgoAgent := New(metadata.Name, metadata, am.Choria(), fw.Logger("test"))
+				action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
+				ginkgoAgent.MustRegisterAction("boop", action)
+				Expect(err).ToNot(HaveOccurred())
+
+				err = cn.ServerInstance().RegisterAgent(ctx, ginkgoAgent.Name(), ginkgoAgent)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(ginkgoAgent.ServerInfoSource.Facts()).ToNot(BeNil())
+
+				authz = &regoPolicy{
+					cfg: cfg,
+					log: logger,
+					req: &Request{
+						Agent:    ginkgoAgent.meta.Name,
+						Action:   "poob",
+						CallerID: "choria=rip.mcollective",
+						SenderID: "choria=rip.mcollective",
+						Data:     json.RawMessage(`{"bar": "foo"}`), // reversed from above
+						TTL:      60,
+						Time:     time.Now(),
+						Filter:   protocol.NewFilter(),
+					},
+					agent: ginkgoAgent,
+				}
+			})
+
+			Context("with multiple allow statements", func() {
+				It("Should deny", func() {
+					authz.agent.meta.Name = "multiple"
+					auth, err := authz.authorize()
+
+					Expect(err).ToNot(HaveOccurred())
+					Expect(auth).To(BeFalse())
+				})
+			})
+		})
+	})
 })
