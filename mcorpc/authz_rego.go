@@ -115,17 +115,17 @@ func (r *regoPolicy) regoInputs() map[string]interface{} {
 	}
 
 	return map[string]interface{}{
-		"agent":         r.req.Agent,
-		"action":        r.req.Action,
-		"callerID":      r.req.CallerID,
-		"collective":    r.req.Collective,
-		"data":          data,
-		"ttl":           r.req.TTL,
-		"time":          r.req.Time,
-		"facts":         facts,
-		"classes":       r.agent.ServerInfoSource.Classes(),
-		"agents":        r.agent.ServerInfoSource.KnownAgents(),
-		"provisionMode": r.agent.Choria.ProvisionMode(),
+		"agent":          r.req.Agent,
+		"action":         r.req.Action,
+		"callerid":       r.req.CallerID,
+		"collective":     r.req.Collective,
+		"data":           data,
+		"ttl":            r.req.TTL,
+		"time":           r.req.Time,
+		"facts":          facts,
+		"classes":        r.agent.ServerInfoSource.Classes(),
+		"agents":         r.agent.ServerInfoSource.KnownAgents(),
+		"provision_mode": r.agent.Choria.ProvisionMode(),
 	}
 }
 
