@@ -1,5 +1,10 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2020/01/12|      |Release 0.13.1                                                                                           |
+|2019/12/25|758   |Extract RPC reply rendering to the mcorpc package-agent-provider                                         |
+|2019/12/23|754   |Extract parts of the filter parsing logic to the `protocol` package                                      |
+|2019/12/15|746   |Support remote request signers such as `aaasvc`                                                          |
+|2019/12/09|743   |Support generating Go clients using `choria tool generate client`                                        |
 |2019/12/05|      |Release 0.13.0                                                                                           |
 |2019/12/05|737   |Add a tech preview JetStream adapter                                                                     |
 |2019/12/04|731   |Switch to CloudEvents v1.0 format for lifecycle events and machine events                                |

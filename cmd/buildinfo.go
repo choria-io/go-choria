@@ -20,10 +20,12 @@ import (
 
 type buildinfoCommand struct {
 	command
+	dependencies bool
 }
 
 func (b *buildinfoCommand) Setup() (err error) {
 	b.cmd = cli.app.Command("buildinfo", "View build settings")
+	b.cmd.Flag("dependencies", "Show dependencies used to build the binary").Short('D').BoolVar(&b.dependencies)
 
 	return
 }
@@ -113,7 +115,9 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 		fmt.Println("NOTE: The security of this build is non standard, you might be running without adequate protocol level security.  Please ensure this is the build you intend to be using.")
 	}
 
-	b.printGoMods()
+	if b.dependencies {
+		b.printGoMods()
+	}
 
 	return
 }
