@@ -4,19 +4,19 @@ go 1.13
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.5
-	github.com/choria-io/go-client v0.5.3-0.20191222213419-4504e6c59393
-	github.com/choria-io/go-config v0.0.6-0.20191214141246-32872409688e
+	github.com/choria-io/go-client v0.5.3
+	github.com/choria-io/go-config v0.0.6
 	github.com/choria-io/go-lifecycle v1.1.0
 	github.com/choria-io/go-network-broker v1.3.2
-	github.com/choria-io/go-protocol v1.3.3-0.20191224090416-3b4d7c391d1a
+	github.com/choria-io/go-protocol v1.4.0
 	github.com/choria-io/go-puppet v0.0.1
-	github.com/choria-io/go-security v0.5.1-0.20200101220703-13f769ce5a70
+	github.com/choria-io/go-security v0.6.0
 	github.com/choria-io/go-srvcache v0.0.6
-	github.com/choria-io/mcorpc-agent-provider v0.9.1-0.20200102224638-d069f6313b41
+	github.com/choria-io/mcorpc-agent-provider v0.10.0
 	github.com/choria-io/provisioning-agent v0.6.0
-	github.com/cloudevents/sdk-go v0.10.1
+	github.com/cloudevents/sdk-go v0.10.2
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
-	github.com/fatih/color v1.7.0
+	github.com/fatih/color v1.9.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang/mock v1.3.1
@@ -26,12 +26,12 @@ require (
 	github.com/looplab/fsm v0.1.0
 	github.com/nats-io/nats-server/v2 v2.1.2
 	github.com/nats-io/nats.go v1.9.1
-	github.com/nats-io/stan.go v0.5.2
+	github.com/nats-io/stan.go v0.6.0
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
-	github.com/pkg/errors v0.8.1
-	github.com/prometheus/client_golang v1.2.1
-	github.com/prometheus/client_model v0.0.0-20191202183732-d1d2010b5bee
+	github.com/pkg/errors v0.9.0
+	github.com/prometheus/client_golang v1.3.0
+	github.com/prometheus/client_model v0.1.0
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/tidwall/gjson v1.3.5
