@@ -25,7 +25,9 @@ task :build do
   source = "/go/src/github.com/choria-io/go-choria"
 
   packages.each do |pkg|
-    if pkg =~ /^(.+?)_(.+)$/
+    if pkg =~ /^windows/
+      builder = "choria/packager:stretch-go%s" % [go_version]
+    elsif pkg =~ /^(.+?)_(.+)$/
       builder = "choria/packager:%s-go%s" % [$1, go_version]
     else
       builder = "choria/packager:el7-go%s" % go_version

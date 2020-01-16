@@ -1,0 +1,8 @@
+required_properties:
+  - name
+  - display_name
+  - bindir
+  - etcdir
+
+artifacts:
+  - "*.msi"
