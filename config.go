@@ -47,7 +47,6 @@ type Config struct {
 	RPCLimitMethod            string   `confkey:"rpclimitmethod" default:"first" validate:"enum=first,random"`
 	LoggerType                string   `confkey:"logger_type" default:"file"`
 	FactCacheTime             int      `confkey:"fact_cache_time" default:"300"`
-	SSLCipher                 string   `confkey:"ssl_cipher" default:"aes-256-cbc"`
 	Threaded                  bool     `confkey:"threaded" default:"false"`
 	TTL                       int      `confkey:"ttl" default:"60"`
 	DefaultDiscoveryOptions   []string `confkey:"default_discovery_options"`
