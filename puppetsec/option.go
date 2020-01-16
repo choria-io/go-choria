@@ -2,6 +2,7 @@ package puppetsec
 
 import (
 	"fmt"
+	"github.com/choria-io/go-security/tlssetup"
 	"os"
 	"runtime"
 
@@ -27,6 +28,7 @@ func WithChoriaConfig(c *config.Config) Option {
 			RemoteSignerURL:              c.Choria.RemoteSignerURL,
 			RemoteSignerTokenFile:        c.Choria.RemoteSignerTokenFile,
 			RemoteSignerTokenEnvironment: c.Choria.RemoteSignerTokenEnvironment,
+			TLSConfig:                    tlssetup.TLSConfig(c),
 		}
 
 		if c.HasOption("plugin.choria.puppetca_host") || c.HasOption("plugin.choria.puppetca_port") {

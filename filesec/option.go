@@ -2,6 +2,7 @@ package filesec
 
 import (
 	"fmt"
+	"github.com/choria-io/go-security/tlssetup"
 	"os"
 
 	"github.com/choria-io/go-config"
@@ -26,6 +27,7 @@ func WithChoriaConfig(c *config.Config) Option {
 		RemoteSignerURL:              c.Choria.RemoteSignerURL,
 		RemoteSignerTokenFile:        c.Choria.RemoteSignerTokenFile,
 		RemoteSignerTokenEnvironment: c.Choria.RemoteSignerTokenEnvironment,
+		TLSConfig:                    tlssetup.TLSConfig(c),
 	}
 
 	if cn, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
@@ -48,6 +50,10 @@ func WithConfig(c *Config) Option {
 	return func(fs *FileSecurity) error {
 		fs.conf = c
 
+		if fs.conf.TLSConfig == nil {
+			fs.conf.TLSConfig = tlssetup.TLSConfig(nil)
+		}
+
 		return nil
 	}
 }
@@ -56,6 +62,10 @@ func WithConfig(c *Config) Option {
 func WithLog(l *logrus.Entry) Option {
 	return func(fs *FileSecurity) error {
 		fs.log = l.WithFields(logrus.Fields{"ssl": "file"})
+
+		if fs.conf.TLSConfig == nil {
+			fs.conf.TLSConfig = tlssetup.TLSConfig(nil)
+		}
 
 		return nil
 	}

@@ -18,6 +18,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/choria-io/go-security/tlssetup"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -83,6 +84,9 @@ type Config struct {
 
 	// RemoteSignerTokenEnvironment is an environment variable that will hold the signer token
 	RemoteSignerTokenEnvironment string
+
+	// TLSSetup is the shared TLS configuration state between security providers
+	TLSConfig *tlssetup.Config
 }
 
 type signingRequest struct {
@@ -592,7 +596,10 @@ func (s *FileSecurity) TLSConfig() (*tls.Config, error) {
 	ca := s.caPath()
 
 	tlsc := &tls.Config{
-		MinVersion: tls.VersionTLS12,
+		MinVersion:               tls.VersionTLS12,
+		PreferServerCipherSuites: true,
+		CipherSuites:             s.conf.TLSConfig.CipherSuites,
+		CurvePreferences:         s.conf.TLSConfig.CurvePreferences,
 	}
 
 	if s.privateKeyExists() && s.publicCertExists() {
