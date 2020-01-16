@@ -37,16 +37,19 @@ foss:
       os: darwin
       arch: amd64
 
+    # can probably not be built on an actual windows machine
     64bit_windows:
       output: choria-{{version}}-{{os}}-{{arch}}.exe
       os: windows
       arch: amd64
       pre:
+        - rm plugin_*.go || true
         - GOOS=linux GOARCH=amd64 go generate
 
   packages:
     defaults:
       name: choria
+      display_name: Choria
       bindir: /usr/sbin
       etcdir: /etc/choria
       release: 1
@@ -114,3 +117,10 @@ foss:
       template: debian/generic
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
+
+    windows_64:
+      template: windows/64bit
+      binary: 64bit_windows
+      bindir: bin
+      etcdir: etc
+      target_arch: x86_64-windows

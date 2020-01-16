@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="windows-1252"?>
+<Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
+  <Product Name="{{cpkg_display_name}} {{cpkg_version}}" Id="c259108d-58de-4281-bc55-bae660f1e85d" UpgradeCode="8c9eca79-966f-439a-a7a6-0994bd1097ef"
+    Language="1033" Codepage="1252" Version="{{cpkg_version}}" Manufacturer="Choria.IO">
+
+    <Package Id="*" Keywords="Installer" Description="{{cpkg_display_name}} {{cpkg_version}} Installer"
+      Comments="Copyright R.I.Pienaar &lt;rip@devco.net&gt;" Manufacturer="Choria.IO"
+      InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
+
+    <Media Id="1" Cabinet="{{cpkg_name}}.cab" EmbedCab="yes" DiskPrompt="CD-ROM #1" />
+    <Property Id="DiskPrompt" Value="{{cpkg_display_name}} {{cpkg_version}} Installation [1]" />
+
+    <Directory Id="TARGETDIR" Name="SourceDir">
+      <Directory Id="ProgramFiles64Folder" Name="PFiles">
+        <Directory Id="{{cpkg_name}}" Name="{{cpkg_name}}">
+          <Directory Id="{{cpkg_bindir}}" Name="{{cpkg_bindir}}">
+            <Component Id="MainExecutable" Guid="0e839d91-30d6-4f12-bd44-91fcb653378f">
+              <File Id="{{cpkg_name}}EXE" Name="{{cpkg_name}}.exe" DiskId="1" Source="{{cpkg_binary}}" KeyPath="yes"/>
+              <ServiceInstall Id="{{cpkg_name}}ServerService" Name="{{cpkg_name}}-server" ErrorControl="normal" Interactive="no" Start="auto" Type="ownProcess" Arguments='server run --config "C:\ProgramData\{{cpkg_name}}\{{cpkg_etcdir}}"\server.conf"' />
+            </Component>
+          </Directory>
+        </Directory>
+      </Directory>
+      <Directory Id="CommonAppDataFolder">
+        <Directory Id="AppData{{cpkg_display_name}}Folder" Name="{{cpkg_name}}">
+          <Directory Id="AppData{{cpkg_display_name}}EtcFolder" Name="{{cpkg_etc_dir}}">
+              <Component Id="CreateAppData{{cpkg_display_name}}EtcFolder" Guid="2d2b4674-4044-49f8-8729-77540a6f72dd">
+                <CreateFolder />
+              </Component>
+          </Directory>
+          <Directory Id="AppData{{cpkg_display_name}}VarFolder" Name="var">
+            <Directory Id="AppData{{cpkg_display_name}}VarLogFolder" Name="log">
+              <Component Id="CreateAppData{{cpkg_display_name}}VarLogFolder" Guid="9a4c5b41-58d8-4f94-bf87-7ab55e782426">
+                <CreateFolder />
+              </Component>
+            </Directory>
+          </Directory>
+        </Directory>
+      </Directory>
+    </Directory>
+
+    <Feature Id="Complete" Level="1">
+      <ComponentRef Id="MainExecutable" />
+      <ComponentRef Id="CreateAppData{{cpkg_display_name}}EtcFolder" />
+      <ComponentRef Id="CreateAppData{{cpkg_display_name}}VarLogFolder" />
+    </Feature>
+  </Product>
+</Wix>
