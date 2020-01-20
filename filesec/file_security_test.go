@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
+	"github.com/choria-io/go-security/tlssetup"
 	"io/ioutil"
 	"os"
 	"path/filepath"
@@ -699,5 +700,59 @@ var _ = Describe("FileSSL", func() {
 			Expect(prov.privateKeyExists()).To(BeFalse())
 		})
 	})
+
+	Describe("Configurable CipherSuites", func() {
+		var cipher string
+		var curve string
+		var c *config.Config
+
+		BeforeEach(func() {
+			_c, err := config.NewDefaultConfig()
+			Expect(err).ToNot(HaveOccurred())
+
+			c = _c
+		})
+
+		It("Should work with just one cipher", func() {
+			for cm := range tlssetup.CipherMap {
+				cipher = cm
+				break
+			}
+
+			c.Choria.CipherSuites = []string{cipher}
+
+			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(prov.conf.TLSConfig.CipherSuites).ToNot(BeNil())
+			Expect(len(prov.conf.TLSConfig.CipherSuites)).To(Equal(1))
+		})
+
+		It("Should work with one curve", func() {
+			for cp := range tlssetup.CurvePreferenceMap {
+				curve = cp
+				break
+			}
+
+			c.Choria.ECCCurves = []string{curve}
+
+			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(prov.conf.TLSConfig.CurvePreferences).ToNot(BeNil())
+			Expect(len(prov.conf.TLSConfig.CurvePreferences)).To(Equal(1))
+
+		})
+
+		It("Should have a default list cipher and curve list when not overridden", func() {
+			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(prov.conf.TLSConfig.CipherSuites).To(Equal(tlssetup.DefaultCipherSuites()))
+
+			Expect(prov.conf.TLSConfig.CurvePreferences).To(Equal(tlssetup.DefaultCurvePreferences()))
+		})
+	})
+
 
 })

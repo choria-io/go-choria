@@ -17,6 +17,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"github.com/choria-io/go-security/tlssetup"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -84,6 +85,9 @@ type Config struct {
 
 	// AlwaysOverwriteCache supports always overwriting the local filesystem cache
 	AlwaysOverwriteCache bool
+
+	// TLSConfig is the shared TLS configuration
+	TLSConfig *tlssetup.Config
 }
 
 // New creates a new instance of the Puppet Security Provider
@@ -128,7 +132,9 @@ func (s *PuppetSecurity) reinit() error {
 		RemoteSignerURL:              s.conf.RemoteSignerURL,
 		RemoteSignerTokenFile:        s.conf.RemoteSignerTokenFile,
 		RemoteSignerTokenEnvironment: s.conf.RemoteSignerTokenEnvironment,
+		TLSConfig: s.conf.TLSConfig,
 	}
+
 
 	s.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(s.log))
 	if err != nil {
