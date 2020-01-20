@@ -87,10 +87,14 @@ type ChoriaPluginConfig struct {
 	RemoteSignerURL              string   `confkey:"plugin.choria.security.request_signer.url"`
 
 	// file security
-	FileSecurityCertificate string `confkey:"plugin.security.file.certificate" type:"path_string"`
-	FileSecurityKey         string `confkey:"plugin.security.file.key" type:"path_string"`
-	FileSecurityCA          string `confkey:"plugin.security.file.ca" type:"path_string"`
-	FileSecurityCache       string `confkey:"plugin.security.file.cache" type:"path_string"`
+	FileSecurityCertificate string   `confkey:"plugin.security.file.certificate" type:"path_string"`
+	FileSecurityKey         string   `confkey:"plugin.security.file.key" type:"path_string"`
+	FileSecurityCA          string   `confkey:"plugin.security.file.ca" type:"path_string"`
+	FileSecurityCache       string   `confkey:"plugin.security.file.cache" type:"path_string"`
+
+	// TLS Parameters
+	CipherSuites            []string `confkey:"plugin.security.cipher_suites" type:"comma_split"`
+	ECCCurves               []string `confkey:"plugin.security.ecc_curves", type:"comma_split"`
 
 	// pkcs11 security
 	PKCS11DriverFile string `confkey:"plugin.security.pkcs11.driver_file" type:"path_string"`
