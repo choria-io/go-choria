@@ -5,12 +5,12 @@ go 1.13
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.5
 	github.com/choria-io/go-client v0.5.3
-	github.com/choria-io/go-config v0.0.6
+	github.com/choria-io/go-config v0.0.7-0.20200120111917-f015c57b243e
 	github.com/choria-io/go-lifecycle v1.1.0
 	github.com/choria-io/go-network-broker v1.3.2
 	github.com/choria-io/go-protocol v1.4.0
 	github.com/choria-io/go-puppet v0.0.1
-	github.com/choria-io/go-security v0.6.0
+	github.com/choria-io/go-security v0.6.1-0.20200120170342-8a943e7917f3
 	github.com/choria-io/go-srvcache v0.0.6
 	github.com/choria-io/mcorpc-agent-provider v0.10.0
 	github.com/choria-io/provisioning-agent v0.6.0
