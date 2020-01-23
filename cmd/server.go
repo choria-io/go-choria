@@ -64,17 +64,20 @@ func (r *serverRunCommand) Configure() error {
 		log.Debug("Logging at debug level due to CLI override")
 	}
 
-	if choria.FileExist(configFile) {
+	switch {
+	case choria.FileExist(configFile):
 		cfg, err = config.NewConfig(configFile)
 		if err != nil {
 			return fmt.Errorf("could not parse configuration: %s", err)
 		}
-	} else if build.ProvisionBrokerURLs != "" {
+
+	case build.ProvisionBrokerURLs != "":
 		cfg, err = config.NewDefaultConfig()
 		if err != nil {
 			return fmt.Errorf("could not create default configuration for provisioning: %s", err)
 		}
-	} else {
+
+	default:
 		return fmt.Errorf("configuration file %s was not found", configFile)
 	}
 

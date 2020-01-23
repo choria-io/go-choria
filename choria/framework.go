@@ -295,13 +295,7 @@ func (fw *Framework) SetLogWriter(out io.Writer) {
 	}
 }
 
-// SetupLogging configures logging based on choria config directives
-// currently only file and console behaviors are supported
-func (fw *Framework) SetupLogging(debug bool) (err error) {
-	fw.log = log.New()
-
-	fw.log.Out = os.Stdout
-
+func (fw *Framework) commonLogOpener() error {
 	if fw.Config.LogFile != "" {
 		fw.log.Formatter = &log.JSONFormatter{}
 
@@ -311,6 +305,21 @@ func (fw *Framework) SetupLogging(debug bool) (err error) {
 		}
 
 		fw.log.Out = file
+	}
+
+	return nil
+}
+
+// SetupLogging configures logging based on choria config directives
+// currently only file and console behaviors are supported
+func (fw *Framework) SetupLogging(debug bool) (err error) {
+	fw.log = log.New()
+
+	fw.log.Out = os.Stdout
+
+	err = fw.openLogfile()
+	if err != nil {
+		return err
 	}
 
 	switch fw.Config.LogLevel {
