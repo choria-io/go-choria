@@ -5,7 +5,7 @@
 
     <Package Id="*" Keywords="Installer" Description="{{cpkg_display_name}} {{cpkg_version}} Installer"
       Comments="Copyright R.I.Pienaar &lt;rip@devco.net&gt;" Manufacturer="Choria.IO"
-      InstallerVersion="100" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
+      InstallerVersion="200" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
 
     <Media Id="1" Cabinet="{{cpkg_name}}.cab" EmbedCab="yes" DiskPrompt="CD-ROM #1" />
     <Property Id="DiskPrompt" Value="{{cpkg_display_name}} {{cpkg_version}} Installation [1]" />
@@ -14,7 +14,7 @@
       <Directory Id="ProgramFiles64Folder" Name="PFiles">
         <Directory Id="{{cpkg_name}}" Name="{{cpkg_name}}">
           <Directory Id="{{cpkg_bindir}}" Name="{{cpkg_bindir}}">
-            <Component Id="MainExecutable" Guid="0e839d91-30d6-4f12-bd44-91fcb653378f">
+            <Component Id="MainExecutable" Guid="0e839d91-30d6-4f12-bd44-91fcb653378f" Win64="yes">
               <File Id="{{cpkg_name}}EXE" Name="{{cpkg_name}}.exe" DiskId="1" Source="{{cpkg_binary}}" KeyPath="yes"/>
               <ServiceInstall Id="{{cpkg_name}}ServerService" Name="{{cpkg_name}}-server" ErrorControl="normal" Interactive="no" Start="auto" Type="ownProcess" Arguments='server run --config "C:\ProgramData\{{cpkg_name}}\{{cpkg_etcdir}}\server.conf"' />
             </Component>
