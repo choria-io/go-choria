@@ -23,7 +23,7 @@
       </Directory>
       <Directory Id="CommonAppDataFolder">
         <Directory Id="AppData{{cpkg_display_name}}Folder" Name="{{cpkg_name}}">
-          <Directory Id="AppData{{cpkg_display_name}}EtcFolder" Name="{{cpkg_etc_dir}}">
+          <Directory Id="AppData{{cpkg_display_name}}EtcFolder" Name="{{cpkg_etcdir}}">
               <Component Id="CreateAppData{{cpkg_display_name}}EtcFolder" Guid="2d2b4674-4044-49f8-8729-77540a6f72dd">
                 <CreateFolder />
               </Component>
