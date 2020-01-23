@@ -91,9 +91,7 @@ func (r *serverRunCommand) Configure() error {
 	return nil
 }
 
-func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
-	defer wg.Done()
-
+func (r *serverRunCommand) prepareInstance() (i *server.Instance, err error) {
 	if r.disableTLS {
 		c.Config.DisableTLS = true
 		log.Warn("Running with TLS disabled, not compatible with production use.")
@@ -106,8 +104,7 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	instance, err := server.NewInstance(c)
 	if err != nil {
-		log.Errorf("Could not start choria: %s", err)
-		os.Exit(1)
+		return nil, fmt.Errorf("could not create Choria Server instance: %s", err)
 	}
 
 	log.Infof("Choria Server version %s starting with config %s", build.Version, c.Config.ConfigFile)
@@ -115,14 +112,11 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	if r.pidFile != "" {
 		err := ioutil.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)
 		if err != nil {
-			return fmt.Errorf("could not write PID: %s", err)
+			return nil, fmt.Errorf("could not write PID: %s", err)
 		}
 	}
 
-	wg.Add(1)
-	err = instance.Run(ctx, wg)
-
-	return err
+	return instance, nil
 }
 
 func init() {

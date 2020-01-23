@@ -19,3 +19,4 @@ provisioning_target_provider.go
 plugin_*.go
 .idea/
 *.msi
+*.exe
