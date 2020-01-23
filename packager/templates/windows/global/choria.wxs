@@ -7,6 +7,8 @@
       Comments="Copyright R.I.Pienaar &lt;rip@devco.net&gt;" Manufacturer="Choria.IO"
       InstallerVersion="200" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
 
+    <MajorUpgrade DowngradeErrorMessage="The same or a newer version of this product is already installed." />
+
     <Media Id="1" Cabinet="{{cpkg_name}}.cab" EmbedCab="yes" DiskPrompt="CD-ROM #1" />
     <Property Id="DiskPrompt" Value="{{cpkg_display_name}} {{cpkg_version}} Installation [1]" />
 
