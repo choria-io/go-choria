@@ -20,6 +20,7 @@ func (fw *Framework) openLogfile() error {
 		}
 
 		fw.log.AddHook(eventloghook.NewHook(elog))
+		return nil
 	}
 
 	// if its not the server we log to whatever is configured
