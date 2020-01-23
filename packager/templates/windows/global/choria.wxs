@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="windows-1252"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Name="{{cpkg_display_name}} {{cpkg_version}}" Id="c259108d-58de-4281-bc55-bae660f1e85d" UpgradeCode="8c9eca79-966f-439a-a7a6-0994bd1097ef"
+  <Product Name="{{cpkg_display_name}} {{cpkg_version}}" Id="*" UpgradeCode="506EF80F-E865-4AD5-A090-3A93DCFDDDB3"
     Language="1033" Codepage="1252" Version="{{cpkg_version}}" Manufacturer="Choria.IO">
 
     <Package Id="*" Keywords="Installer" Description="{{cpkg_display_name}} {{cpkg_version}} Installer"
@@ -14,7 +14,7 @@
       <Directory Id="ProgramFiles64Folder" Name="PFiles">
         <Directory Id="{{cpkg_name}}" Name="{{cpkg_name}}">
           <Directory Id="{{cpkg_bindir}}" Name="{{cpkg_bindir}}">
-            <Component Id="MainExecutable" Guid="0e839d91-30d6-4f12-bd44-91fcb653378f" Win64="yes">
+            <Component Id="MainExecutable" Guid="*" Win64="yes">
               <File Id="{{cpkg_name}}EXE" Name="{{cpkg_name}}.exe" DiskId="1" Source="{{cpkg_binary}}" KeyPath="yes"/>
               <ServiceInstall Id="{{cpkg_name}}ServerService" Name="{{cpkg_name}}-server" ErrorControl="normal" Interactive="no" Start="auto" Type="ownProcess" Arguments='server run --config "C:\ProgramData\{{cpkg_name}}\{{cpkg_etcdir}}\server.conf"' />
             </Component>
