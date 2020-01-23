@@ -16,7 +16,7 @@
           <Directory Id="{{cpkg_bindir}}" Name="{{cpkg_bindir}}">
             <Component Id="MainExecutable" Guid="0e839d91-30d6-4f12-bd44-91fcb653378f">
               <File Id="{{cpkg_name}}EXE" Name="{{cpkg_name}}.exe" DiskId="1" Source="{{cpkg_binary}}" KeyPath="yes"/>
-              <ServiceInstall Id="{{cpkg_name}}ServerService" Name="{{cpkg_name}}-server" ErrorControl="normal" Interactive="no" Start="auto" Type="ownProcess" Arguments='server run --config "C:\ProgramData\{{cpkg_name}}\{{cpkg_etcdir}}"\server.conf"' />
+              <ServiceInstall Id="{{cpkg_name}}ServerService" Name="{{cpkg_name}}-server" ErrorControl="normal" Interactive="no" Start="auto" Type="ownProcess" Arguments='server run --config "C:\ProgramData\{{cpkg_name}}\{{cpkg_etcdir}}\server.conf"' />
             </Component>
           </Directory>
         </Directory>
