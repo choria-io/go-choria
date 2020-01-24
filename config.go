@@ -133,6 +133,7 @@ func NewConfigForTests() *Config {
 	c.Identity = "ginkgo.example.net"
 	c.OverrideCertname = "rip.mcollective"
 	c.LogLevel = "fatal"
+	c.Choria.SSLDir = "/nonexisting"
 
 	return c
 }
