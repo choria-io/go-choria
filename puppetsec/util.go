@@ -1,7 +1,7 @@
 package puppetsec
 
 import (
-	"errors"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -12,7 +12,7 @@ import (
 var puppet = puppetwrapper.New()
 
 func userSSlDir() (string, error) {
-	if os.Geteuid() == 0 {
+	if os.Geteuid() == 0 || runtime.GOOS == "windows" {
 		path, err := puppet.Setting("ssldir")
 		if err != nil {
 			return "", err
@@ -22,13 +22,8 @@ func userSSlDir() (string, error) {
 	}
 
 	homedir := os.Getenv("HOME")
-
-	if runtime.GOOS == "windows" {
-		if os.Getenv("HOMEDRIVE") == "" || os.Getenv("HOMEPATH") == "" {
-			return "", errors.New("cannot determine home dir while looking for SSL Directory, no HOMEDRIVE or HOMEPATH environment is set.  Please set HOME or configure plugin.choria.ssldir")
-		}
-
-		homedir = filepath.Join(os.Getenv("HOMEDRIVE"), os.Getenv("HOMEPATH"))
+	if homedir == "" {
+		return "", fmt.Errorf("cannot determine home directory, HOME is not set")
 	}
 
 	return filepath.FromSlash(filepath.Join(homedir, ".puppetlabs", "etc", "puppet", "ssl")), nil
