@@ -118,6 +118,8 @@ github.com/choria-io/go-config v0.0.6 h1:LzeAqermFtMXNtnzP8pSrxiuBRAVHeYMsSlTAIZ
 github.com/choria-io/go-config v0.0.6/go.mod h1:y2mXxXQ865arJG3WxqQZD2or9cS3wAFD5r/krm9dYN4=
 github.com/choria-io/go-config v0.0.7-0.20200120111917-f015c57b243e h1:PnFJf9nLSdk0Ky7uTxAQfapZORKmRwFEFw42Qb/xDR8=
 github.com/choria-io/go-config v0.0.7-0.20200120111917-f015c57b243e/go.mod h1:y2mXxXQ865arJG3WxqQZD2or9cS3wAFD5r/krm9dYN4=
+github.com/choria-io/go-config v0.0.7-0.20200124123713-c0c8d1713014 h1:CevjRl/kmGeRr81zTAhfzTx5PaPo7doJLijozUpQoUg=
+github.com/choria-io/go-config v0.0.7-0.20200124123713-c0c8d1713014/go.mod h1:y2mXxXQ865arJG3WxqQZD2or9cS3wAFD5r/krm9dYN4=
 github.com/choria-io/go-confkey v1.2.0 h1:kT35wUPPxpKDAg2/Me100yIV+po6aTrnZFyBXk0Ohn8=
 github.com/choria-io/go-confkey v1.2.0/go.mod h1:ojIUK4p2mX/ZSKuSG5hgU/p7Db+EIX8il4yjQweZtiU=
 github.com/choria-io/go-confkey v1.3.0 h1:KlqctKfo843I2Uas2vLFOzScyjSMyKFUsSf/FdMRuQI=
@@ -149,6 +151,8 @@ github.com/choria-io/go-protocol v1.4.0 h1:j/BnwIgsMA5lFAVq+xaZA+Qk1LJVTaWlGBZbe
 github.com/choria-io/go-protocol v1.4.0/go.mod h1:S5qdGb6zpH9uJ3a88KH8vnAf6uR8g++0bmYxxbO7Y3U=
 github.com/choria-io/go-puppet v0.0.1 h1:vvvMwgLeZDjHXGHhMVAVC9YwMKegcywSqrmyFcnD/jk=
 github.com/choria-io/go-puppet v0.0.1/go.mod h1:wjpGRZkoInlkJkmIASEgndXHeofu0uzkLJjo9A2PTxI=
+github.com/choria-io/go-puppet v0.0.2-0.20200124121228-4e9e721ccf0c h1:1DgOb0Tlb6Ac4doaeLlED/+id04JKZDe6H7PXL/FMNc=
+github.com/choria-io/go-puppet v0.0.2-0.20200124121228-4e9e721ccf0c/go.mod h1:wjpGRZkoInlkJkmIASEgndXHeofu0uzkLJjo9A2PTxI=
 github.com/choria-io/go-security v0.4.3 h1:NtaczfebNKlDCu2w2JxJXyeICB6hK0C1Ety+tfdrIGo=
 github.com/choria-io/go-security v0.4.3/go.mod h1:/ySJXakfkaYr+usclcJIuyu01QO9TJzniIUvr6Riztc=
 github.com/choria-io/go-security v0.4.4-0.20190625121144-69559b68756a h1:xp4VoKgf+7nQSsHW2eoO0+UbUAgwKVbA7jrfaloh7FU=
@@ -159,8 +163,8 @@ github.com/choria-io/go-security v0.5.1-0.20191215143423-f1982926f340 h1:MT2r4J7
 github.com/choria-io/go-security v0.5.1-0.20191215143423-f1982926f340/go.mod h1:AEi6J44iUma6QMgm4NHzXlbkv7sy3VoescLxzQGcXRg=
 github.com/choria-io/go-security v0.6.0 h1:pkXKuetehnJTFxp8XuATlRdfJKBKKTsulGjchuRlk9I=
 github.com/choria-io/go-security v0.6.0/go.mod h1:hlMgAN/pFdq+iJ+pn9f+kXMNYNI79K6b0bNjug+owvY=
-github.com/choria-io/go-security v0.6.1-0.20200120170342-8a943e7917f3 h1:KH6J6anlvPWJ4nHXxMIQl8UFTaXePf7rylGufEqVRr8=
-github.com/choria-io/go-security v0.6.1-0.20200120170342-8a943e7917f3/go.mod h1:4H7Q2l/nLLrZYyfqS1XPt+BwEZMYvRuko0I517oYFh0=
+github.com/choria-io/go-security v0.6.1-0.20200124122041-6a27fe67c307 h1:xxpnJlp1zM++GIu7sm5IZLvb1vW9yBztPFoB7Zt0EdA=
+github.com/choria-io/go-security v0.6.1-0.20200124122041-6a27fe67c307/go.mod h1:4H7Q2l/nLLrZYyfqS1XPt+BwEZMYvRuko0I517oYFh0=
 github.com/choria-io/go-srvcache v0.0.1 h1:pI+IRl8RoqKh7NF7D4C1TGMK8Ta95VAHJ9W4KOtbuF4=
 github.com/choria-io/go-srvcache v0.0.1/go.mod h1:yikJnY5uDvA5/NV0V5Ipv2SbFBneU0bKB6JcMSqktdg=
 github.com/choria-io/go-srvcache v0.0.2 h1:Ss1fcONZ7v+BQZGn0nDvaKj1IZJkdq30LjFfXOBvPPk=

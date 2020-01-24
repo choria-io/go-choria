@@ -20,6 +20,8 @@ var _ = Describe("Choria", func() {
 	var _ = Describe("NewChoria", func() {
 		It("Should initialize choria correctly", func() {
 			cfg := config.NewConfigForTests()
+			cfg.Choria.SSLDir = "/nonexisting"
+
 			c := cfg.Choria
 			Expect(c.DiscoveryHost).To(Equal("puppet"))
 			Expect(c.DiscoveryPort).To(Equal(8085))
@@ -30,6 +32,7 @@ var _ = Describe("Choria", func() {
 	var _ = Describe("ProvisionMode", func() {
 		It("Should be on only in the Server", func() {
 			c := config.NewConfigForTests()
+			c.Choria.SSLDir = "/nonexisting"
 			c.DisableTLS = true
 
 			fw, err := NewWithConfig(c)
@@ -45,6 +48,7 @@ var _ = Describe("Choria", func() {
 		It("Should use the default when not configured and brokers are compiled in", func() {
 			c := config.NewConfigForTests()
 			c.DisableTLS = true
+			c.Choria.SSLDir = "/nonexisting"
 
 			fw, err := NewWithConfig(c)
 			Expect(err).ToNot(HaveOccurred())
@@ -62,6 +66,7 @@ var _ = Describe("Choria", func() {
 			c, err := config.NewConfig("testdata/provision.cfg")
 			Expect(err).ToNot(HaveOccurred())
 			c.DisableTLS = true
+			c.Choria.SSLDir = "/nonexisting"
 
 			fw, err := NewWithConfig(c)
 			Expect(err).ToNot(HaveOccurred())
@@ -81,6 +86,7 @@ var _ = Describe("Choria", func() {
 			c, err := config.NewConfig("testdata/provision.cfg")
 			Expect(err).ToNot(HaveOccurred())
 			c.DisableTLS = true
+			c.Choria.SSLDir = "/nonexisting"
 
 			fw, err := NewWithConfig(c)
 			Expect(err).ToNot(HaveOccurred())

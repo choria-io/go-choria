@@ -16,7 +16,7 @@ import (
 )
 
 // UserConfig determines what is the active config file for a user
-// TODO: windows
+// TODO: windows, though I am happy not to support client on windows
 func UserConfig() string {
 	home, _ := HomeDir()
 

@@ -36,6 +36,7 @@ var _ = Describe("Choria/Message", func() {
 		request.EXPECT().JSON().Return("{\"mock_request\": true}", nil).AnyTimes()
 
 		cfg := config.NewConfigForTests()
+		cfg.Choria.SSLDir = "/nonexisting"
 		cfg.Identity = "test.identity"
 		protocol.Secure = "false"
 		cfg.Collectives = []string{"test_collective"}
