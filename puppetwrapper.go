@@ -59,6 +59,7 @@ func (p *PuppetWrapper) FacterStringFact(fact string) (string, error) {
 	}
 
 	value = strings.Replace(string(out), "\n", "", -1)
+	value = strings.Replace(value, "\r", "", -1)
 
 	p.store(fact, value)
 
@@ -110,5 +111,8 @@ func (p *PuppetWrapper) Setting(setting string) (string, error) {
 		return "", fmt.Errorf("could not run 'puppet %s': %s: %s", strings.Join(args, " "), err, out)
 	}
 
-	return strings.Replace(string(out), "\n", "", -1), nil
+	value := strings.Replace(string(out), "\n", "", -1)
+	value = strings.Replace(value, "\r", "", -1)
+
+	return value, nil
 }
