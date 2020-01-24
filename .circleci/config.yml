@@ -153,6 +153,19 @@ jobs:
 
     steps: *std_build_steps
 
+  build_windows_64bit_msi:
+    docker:
+      - image: circleci/golang:1.13
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      PACKAGE: windows_64
+      BUILD: foss
+      BUILDER: choria/packager:stretch-go1.13
+
+    steps: *std_build_steps
+
   gather_artifacts:
     docker:
       - image: circleci/golang:1.13
@@ -222,6 +235,7 @@ workflows:
             - build_el6_64bit_rpms
             - build_el7_64bit_rpms
             - build_el8_64bit_rpms
+            - build_windows_64bit_msi
 
       - nightly_packagecloud:
           requires:
