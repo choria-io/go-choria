@@ -230,6 +230,11 @@ workflows:
           requires:
             - test
 
+      - build_windows_64bit_msi:
+          context: org-global
+          requires:
+            - test
+
       - gather_artifacts:
           requires:
             - build_el6_64bit_rpms
