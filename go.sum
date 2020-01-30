@@ -139,6 +139,8 @@ github.com/choria-io/go-network-broker v0.0.0-20190724063742-e7cd49cba5d5/go.mod
 github.com/choria-io/go-network-broker v1.3.1/go.mod h1:XjuA7m5om/2SGQ3ZHtEhmY4V3n8emxmNS5mDp2pCBTY=
 github.com/choria-io/go-network-broker v1.3.2 h1:EGvdmnghyE7bhVAOYIDZUZqWeWo3W7OWE/vgwO/XFZ0=
 github.com/choria-io/go-network-broker v1.3.2/go.mod h1:mKES7siRC7TUly4ZNwLrzrivS/+zr/uq0Oq6d4jUoFA=
+github.com/choria-io/go-network-broker v1.3.3-0.20200130162034-385d0f1cdebd h1:YebModYsxwoUS/O7fKo8pk8H7SbqrGdXY2YHLf85ovg=
+github.com/choria-io/go-network-broker v1.3.3-0.20200130162034-385d0f1cdebd/go.mod h1:0T7V6x/C0HjUFFhbSt68DVqeoDtGFv0YcEqQufuPfvI=
 github.com/choria-io/go-protocol v1.3.1 h1:Inhgxh1lYkvNnWXoNqanGbq/H5l3JGrLlaxZpAFpuPA=
 github.com/choria-io/go-protocol v1.3.1/go.mod h1:HvTmH+Gib2y9je2jdgUM9Sfhh+Oj3ten9mLP0Z/AvHU=
 github.com/choria-io/go-protocol v1.3.2-0.20190724135631-03c23ad95953 h1:wcOO3KEggRvDhyAP4IAni9phnlxz7pMlfG1ANGCLLeg=
@@ -405,6 +407,8 @@ github.com/nats-io/nats-server/v2 v2.0.4 h1:XOMeQRbhl1lGNTIctPhih6pTa15NGif54Uas
 github.com/nats-io/nats-server/v2 v2.0.4/go.mod h1:AWdGEVbjKRS9ZIx4DSP5eKW48nfFm7q3uiSkP/1KD7M=
 github.com/nats-io/nats-server/v2 v2.1.2 h1:i2Ly0B+1+rzNZHHWtD4ZwKi+OU5l+uQo1iDHZ2PmiIc=
 github.com/nats-io/nats-server/v2 v2.1.2/go.mod h1:Afk+wRZqkMQs/p45uXdrVLuab3gwv3Z8C4HTBu8GD/k=
+github.com/nats-io/nats-server/v2 v2.1.4 h1:BILRnsJ2Yb/fefiFbBWADpViGF69uh4sxe8poVDQ06g=
+github.com/nats-io/nats-server/v2 v2.1.4/go.mod h1:Jw1Z28soD/QasIA2uWjXyM9El1jly3YwyFOuR8tH1rg=
 github.com/nats-io/nats-streaming-server v0.15.1 h1:NLQg18mp68e17v+RJpXyPdA7ZH4osFEZQzV3tdxT6/M=
 github.com/nats-io/nats-streaming-server v0.15.1/go.mod h1:bJ1+2CS8MqvkGfr/NwnCF+Lw6aLnL3F5kenM8bZmdCw=
 github.com/nats-io/nats-streaming-server v0.16.1-0.20190905144423-ed7405a40a25 h1:MQ4JWoWISowk7+cZHKkUR5TTfSLZ1GZSuNJn+DhdFDE=
