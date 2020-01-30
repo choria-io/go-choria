@@ -8,7 +8,7 @@ require (
 	github.com/choria-io/go-client v0.5.3
 	github.com/choria-io/go-config v0.0.7-0.20200124123713-c0c8d1713014
 	github.com/choria-io/go-lifecycle v1.1.0
-	github.com/choria-io/go-network-broker v1.3.2
+	github.com/choria-io/go-network-broker v1.3.3-0.20200130162034-385d0f1cdebd
 	github.com/choria-io/go-protocol v1.4.0
 	github.com/choria-io/go-puppet v0.0.2-0.20200124121228-4e9e721ccf0c
 	github.com/choria-io/go-security v0.6.1-0.20200124122041-6a27fe67c307
@@ -25,7 +25,7 @@ require (
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.4.1
 	github.com/looplab/fsm v0.1.0
-	github.com/nats-io/nats-server/v2 v2.1.2
+	github.com/nats-io/nats-server/v2 v2.1.4
 	github.com/nats-io/nats.go v1.9.1
 	github.com/nats-io/stan.go v0.6.0
 	github.com/onsi/ginkgo v1.11.0
