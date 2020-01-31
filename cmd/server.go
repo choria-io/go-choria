@@ -6,12 +6,12 @@ import (
 	"os"
 	"sync"
 
-	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-protocol/protocol"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/server"
 )
 
 type serverCommand struct {
@@ -71,7 +71,7 @@ func (r *serverRunCommand) Configure() error {
 			return fmt.Errorf("could not parse configuration: %s", err)
 		}
 
-	case build.ProvisionBrokerURLs != "":
+	case bi.ProvisionBrokerURLs() != "":
 		cfg, err = config.NewDefaultConfig()
 		if err != nil {
 			return fmt.Errorf("could not create default configuration for provisioning: %s", err)
@@ -81,7 +81,7 @@ func (r *serverRunCommand) Configure() error {
 		return fmt.Errorf("configuration file %s was not found", configFile)
 	}
 
-	cfg.ApplyBuildSettings(&build.Info{})
+	cfg.ApplyBuildSettings(bi)
 
 	cfg.DisableSecurityProviderVerify = true
 	cfg.InitiatedByServer = true
@@ -110,7 +110,7 @@ func (r *serverRunCommand) prepareInstance() (i *server.Instance, err error) {
 		return nil, fmt.Errorf("could not create Choria Server instance: %s", err)
 	}
 
-	log.Infof("Choria Server version %s starting with config %s", build.Version, c.Config.ConfigFile)
+	log.Infof("Choria Server version %s starting with config %s", bi.Version(), c.Config.ConfigFile)
 
 	if r.pidFile != "" {
 		err := ioutil.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)

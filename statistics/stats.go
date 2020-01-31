@@ -7,8 +7,8 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/choria"
+
 	"github.com/choria-io/go-protocol/protocol"
 	"github.com/nats-io/nats-server/v2/server/pse"
 	"github.com/prometheus/client_golang/prometheus"
@@ -43,7 +43,7 @@ type sysinfo struct {
 var (
 	running = false
 	mu      = &sync.Mutex{}
-	cfg     *config.Config
+	fw      *choria.Framework
 
 	buildInfo = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "choria_build_info",
@@ -52,29 +52,30 @@ var (
 )
 
 // Start starts serving exp stats and metrics on the configured statistics port
-func Start(config *config.Config, handler http.Handler) {
+func Start(fw *choria.Framework, handler http.Handler) {
 	mu.Lock()
 	defer mu.Unlock()
 
-	cfg = config
-	port := config.Choria.StatsPort
+	cfg := fw.Configuration()
+	port := cfg.Choria.StatsPort
 
 	if port == 0 {
 		log.Infof("Statistics gathering disabled, set plugin.choria.stats_port")
 		return
 	}
 
+	bi := fw.BuildInfo()
 	prometheus.MustRegister(buildInfo)
-	buildInfo.WithLabelValues(build.Version, build.SHA).Inc()
+	buildInfo.WithLabelValues(bi.Version(), bi.SHA()).Inc()
 
 	if !running {
-		log.Infof("Starting statistic reporting Prometheus statistics on http://%s:%d/choria/", config.Choria.StatsListenAddress, port)
+		log.Infof("Starting statistic reporting Prometheus statistics on http://%s:%d/choria/", cfg.Choria.StatsListenAddress, port)
 
 		if handler == nil {
 			http.HandleFunc("/choria/", handleRoot)
 			http.Handle("/choria/prometheus", promhttp.Handler())
 
-			go http.ListenAndServe(fmt.Sprintf("%s:%d", config.Choria.StatsListenAddress, port), nil)
+			go http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.Choria.StatsListenAddress, port), nil)
 		} else {
 			hh := handler.(*http.ServeMux)
 			hh.HandleFunc("/choria/", handleRoot)
@@ -91,18 +92,20 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 	pse.ProcUsage(&pcpu, &rss, &vss)
 
+	bi := fw.BuildInfo()
+
 	sinfo := cinfo{
-		ConfigFile: cfg.ConfigFile,
-		Identity:   cfg.Identity,
+		ConfigFile: fw.Configuration().ConfigFile,
+		Identity:   fw.Configuration().Identity,
 		Build: buildinfo{
-			Version:          build.Version,
-			SHA:              build.SHA,
-			BuildDate:        build.BuildDate,
-			License:          build.License,
-			TLS:              build.HasTLS(),
+			Version:          bi.Version(),
+			SHA:              bi.SHA(),
+			BuildDate:        bi.BuildDate(),
+			License:          bi.License(),
+			TLS:              bi.HasTLS(),
 			Secure:           protocol.IsSecure(),
 			Go:               runtime.Version(),
-			MaxBrokerClients: build.MaxBrokerClients(),
+			MaxBrokerClients: bi.MaxBrokerClients(),
 		},
 		System: sysinfo{
 			RSS:   rss,

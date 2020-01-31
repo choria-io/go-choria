@@ -5,9 +5,9 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/provtarget"
 	"github.com/choria-io/go-config"
+
+	"github.com/choria-io/go-choria/provtarget"
 )
 
 type tProvisionerCommand struct {
@@ -33,7 +33,7 @@ func (p *tProvisionerCommand) Configure() error {
 		return err
 	}
 
-	cfg.ApplyBuildSettings(&build.Info{})
+	cfg.ApplyBuildSettings(bi)
 
 	cfg.DisableSecurityProviderVerify = true
 	cfg.InitiatedByServer = true

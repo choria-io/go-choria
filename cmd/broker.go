@@ -9,12 +9,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-network-broker"
+	log "github.com/sirupsen/logrus"
+
 	"github.com/choria-io/go-choria/broker/adapter"
 	"github.com/choria-io/go-choria/broker/federation"
-	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/statistics"
-	network "github.com/choria-io/go-network-broker"
-	log "github.com/sirupsen/logrus"
 )
 
 type brokerCommand struct {
@@ -76,7 +76,7 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("all broker features are disabled")
 	}
 
-	log.Infof("Choria Broker version %s starting with config %s", build.Version, c.Config.ConfigFile)
+	log.Infof("Choria Broker version %s starting with config %s", bi.Version(), c.Config.ConfigFile)
 
 	if r.pidFile != "" {
 		err := ioutil.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)
@@ -144,7 +144,7 @@ func (r *brokerRunCommand) runFederation(ctx context.Context, wg *sync.WaitGroup
 }
 
 func (r *brokerRunCommand) runBroker(ctx context.Context, wg *sync.WaitGroup) (err error) {
-	r.server, err = network.NewServer(c, &build.Info{}, debug)
+	r.server, err = network.NewServer(c, bi, debug)
 	if err != nil {
 		return fmt.Errorf("could not set up Choria Network Broker: %s", err)
 	}
@@ -172,7 +172,7 @@ func (r *brokerRunCommand) startStats() {
 		handler = nil
 	}
 
-	statistics.Start(c.Config, handler)
+	statistics.Start(c, handler)
 }
 
 func init() {

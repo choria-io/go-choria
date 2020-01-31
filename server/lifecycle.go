@@ -6,8 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/build"
-	lifecycle "github.com/choria-io/go-lifecycle"
+	"github.com/choria-io/go-lifecycle"
 )
 
 // SetComponent sets the component name this server will report in its
@@ -53,7 +52,7 @@ func (srv *Instance) publichShutdownEvent() {
 }
 
 func (srv *Instance) publishStartupEvent() {
-	event, err := lifecycle.New(lifecycle.Startup, lifecycle.Identity(srv.cfg.Identity), lifecycle.Version(build.Version), lifecycle.Component(srv.eventComponent()))
+	event, err := lifecycle.New(lifecycle.Startup, lifecycle.Identity(srv.cfg.Identity), lifecycle.Version(srv.fw.BuildInfo().Version()), lifecycle.Component(srv.eventComponent()))
 	if err != nil {
 		srv.log.Errorf("Could not create new startup event: %s", err)
 		return
@@ -69,7 +68,7 @@ func (srv *Instance) publishAliveEvents(ctx context.Context, wg *sync.WaitGroup)
 	defer wg.Done()
 
 	delay := time.Duration(rand.Intn(60)) * time.Minute
-	event, err := lifecycle.New(lifecycle.Alive, lifecycle.Identity(srv.cfg.Identity), lifecycle.Version(build.Version), lifecycle.Component(srv.eventComponent()))
+	event, err := lifecycle.New(lifecycle.Alive, lifecycle.Identity(srv.cfg.Identity), lifecycle.Version(srv.fw.BuildInfo().Version()), lifecycle.Component(srv.eventComponent()))
 	if err != nil {
 		srv.log.Errorf("Could not create new alive event: %s", err)
 		return
