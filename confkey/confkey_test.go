@@ -109,6 +109,7 @@ var _ = Describe("Confkey", func() {
 			Expect(err).To(MatchError("pointer is required"))
 
 			err = SetStructDefaults(&d)
+			Expect(err).ToNot(HaveOccurred())
 			Expect(d.StringEnum).To(Equal("warn"))
 			Expect(d.PlainString).To(Equal(""))
 			Expect(d.T).To(Equal(time.Hour))

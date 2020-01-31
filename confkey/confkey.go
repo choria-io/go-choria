@@ -302,7 +302,7 @@ func homeDir() (string, error) {
 		home := os.Getenv("HOMEDIR")
 
 		if home == "" || drive == "" {
-			return "", fmt.Errorf("Cannot determine home dir, ensure HOMEDRIVE and HOMEDIR is set")
+			return "", fmt.Errorf("cannot determine home dir, ensure HOMEDRIVE and HOMEDIR is set")
 		}
 
 		return filepath.Join(os.Getenv("HOMEDRIVE"), os.Getenv("HOMEDIR")), nil
@@ -311,7 +311,7 @@ func homeDir() (string, error) {
 	home := os.Getenv("HOME")
 
 	if home == "" {
-		return "", fmt.Errorf("Cannot determine home dir, ensure HOME is set")
+		return "", fmt.Errorf("cannot determine home dir, ensure HOME is set")
 	}
 
 	return home, nil
