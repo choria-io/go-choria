@@ -2,6 +2,8 @@ package server
 
 import (
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/choria"
+
 	"github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
@@ -26,15 +28,17 @@ var _ = Describe("Server/AgentProviders", func() {
 	})
 
 	It("Should add the provider to the list of providers", func() {
+		bi := choria.BuildInfo()
+
 		Expect(additionalAgentProviders).To(HaveLen(0))
-		Expect(build.AgentProviders).To(BeEmpty())
+		Expect(bi.AgentProviders()).To(BeEmpty())
 
 		provider.EXPECT().Version().Return("Mock Provider").AnyTimes()
 
 		RegisterAdditionalAgentProvider(provider)
 
 		Expect(additionalAgentProviders).To(HaveLen(1))
-		Expect(build.AgentProviders).To(HaveLen(1))
-		Expect(build.AgentProviders[0]).To(Equal("Mock Provider"))
+		Expect(bi.AgentProviders()).To(HaveLen(1))
+		Expect(bi.AgentProviders()[0]).To(Equal("Mock Provider"))
 	})
 })
