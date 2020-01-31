@@ -4,9 +4,9 @@ import (
 	"context"
 	"sync"
 
-	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/choria"
 	"github.com/sirupsen/logrus"
+
+	"github.com/choria-io/go-choria/choria"
 )
 
 // AgentProvider is capable of adding agents into a running instance
@@ -34,7 +34,7 @@ func RegisterAdditionalAgentProvider(p AgentProvider) {
 	defer aapmu.Unlock()
 
 	additionalAgentProviders = append(additionalAgentProviders, p)
-	build.AgentProviders = append(build.AgentProviders, p.Version())
+	choria.BuildInfo().RegisterAgentProvider(p.Version())
 }
 
 func (srv *Instance) setupAdditionalAgentProviders(ctx context.Context) error {

@@ -32,12 +32,15 @@ type ProvClaims struct {
 
 // Provider creates an instance of the provider
 func Provider() *Resolver {
-	return &Resolver{}
+	return &Resolver{
+		bi: &build.Info{},
+	}
 }
 
 // Resolver resolve names against the compile time build properties
 type Resolver struct {
 	identity string
+	bi       *build.Info
 }
 
 // Name is te name of the resolver
@@ -47,32 +50,33 @@ func (b *Resolver) Name() string {
 
 // Configure overrides build settings using the contents of the JWT
 func (b *Resolver) Configure(cfg *config.Config, log *logrus.Entry) {
-	if build.ProvisionJWTFile == "" {
+	jwtf := b.bi.ProvisionJWTFile()
+	if jwtf == "" {
 		return
 	}
 
-	_, err := os.Stat(build.ProvisionJWTFile)
+	_, err := os.Stat(jwtf)
 	if os.IsNotExist(err) {
 		return
 	}
 
-	log.Infof("Setting build defaults to those found in %s", build.ProvisionJWTFile)
+	log.Infof("Setting build defaults to those found in %s", jwtf)
 
 	b.identity = cfg.Identity
 
 	_, err = b.setBuildBasedOnJWT()
 	if err != nil {
-		log.Errorf("Configuration of the provisioner settings based on JWT file %s failed: %s", build.ProvisionJWTFile, err)
+		log.Errorf("Configuration of the provisioner settings based on JWT file %s failed: %s", jwtf, err)
 	}
 }
 
 // Targets are the build time configured provisioners
 func (b *Resolver) Targets(ctx context.Context, log *logrus.Entry) []string {
-	if build.ProvisionBrokerURLs != "" {
-		return strings.Split(build.ProvisionBrokerURLs, ",")
+	if b.bi.ProvisionBrokerURLs() != "" {
+		return strings.Split(b.bi.ProvisionBrokerURLs(), ",")
 	}
 
-	domain := build.ProvisionBrokerSRVDomain
+	domain := b.bi.ProvisionBrokerSRVDomain()
 	if domain == "" {
 		log.Warnf("Neither provisioning broker url or provisioning SRV domain is set, cannot continue")
 		return []string{}
@@ -120,12 +124,15 @@ func (b *Resolver) Targets(ctx context.Context, log *logrus.Entry) []string {
 
 // setBuildBasedOnJWT sets build settings based on contents of a JWT file
 func (b *Resolver) setBuildBasedOnJWT() (*ProvClaims, error) {
-	_, err := os.Stat(build.ProvisionJWTFile)
+	bi := b.bi
+	jwtf := bi.ProvisionJWTFile()
+
+	_, err := os.Stat(jwtf)
 	if os.IsNotExist(err) {
 		return &ProvClaims{}, nil
 	}
 
-	j, err := ioutil.ReadFile(build.ProvisionJWTFile)
+	j, err := ioutil.ReadFile(jwtf)
 	if err != nil {
 		return nil, err
 	}
@@ -148,28 +155,28 @@ func (b *Resolver) setBuildBasedOnJWT() (*ProvClaims, error) {
 		return nil, fmt.Errorf("both srv domain and URLs supplied")
 	}
 
-	build.ProvisionBrokerURLs = claims.URLs
-	build.ProvisionToken = claims.Token
-	build.ProvisionBrokerSRVDomain = claims.SRVDomain
+	bi.SetProvisionBrokerURLs(claims.URLs)
+	bi.SetProvisionToken(claims.Token)
+	bi.SetProvisionBrokerSRVDomain(claims.SRVDomain)
 
 	if claims.ProvDefault {
-		build.ProvisionModeDefault = "true"
+		bi.EnableProvisionModeAsDefault()
 	} else {
-		build.ProvisionModeDefault = "false"
+		bi.DisableProvisionModeAsDefault()
 	}
 
 	if claims.Secure {
-		build.ProvisionSecure = "true"
+		bi.EnableProvisionModeSecurity()
 	} else {
-		build.ProvisionSecure = "false"
+		bi.DisableProvisionModeSecurity()
 	}
 
 	if claims.ProvFacts != "" {
-		build.ProvisionFacts = claims.ProvFacts
+		bi.SetProvisionFacts(claims.ProvFacts)
 	}
 
 	if claims.ProvRegData != "" {
-		build.ProvisionRegistrationData = claims.ProvRegData
+		bi.SetProvisionRegistrationData(claims.ProvRegData)
 	}
 
 	return claims, nil
