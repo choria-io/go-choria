@@ -6,7 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.0.5
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/choria-io/go-client v0.5.3
-	github.com/choria-io/go-config v0.0.7-0.20200124123713-c0c8d1713014
+	github.com/choria-io/go-config v0.0.7-0.20200131162712-1200afec62d5
 	github.com/choria-io/go-lifecycle v1.1.1-0.20200130183733-4df99275245c
 	github.com/choria-io/go-network-broker v1.3.3-0.20200130162034-385d0f1cdebd
 	github.com/choria-io/go-protocol v1.4.0
