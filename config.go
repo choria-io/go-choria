@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/choria-io/go-confkey"
+	"github.com/choria-io/go-config/confkey"
 
 	puppet "github.com/choria-io/go-puppet"
 	log "github.com/sirupsen/logrus"

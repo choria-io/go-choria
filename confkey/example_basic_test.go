@@ -5,7 +5,7 @@ import (
 	"os"
 	"strings"
 
-	confkey "github.com/choria-io/go-confkey"
+	confkey "github.com/choria-io/go-config/confkey"
 )
 
 type Config struct {
