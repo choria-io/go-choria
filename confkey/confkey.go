@@ -213,7 +213,7 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 				}
 
 			case "path_split":
-				// these are like libdir, either a one line split or a multiple occurance with splits
+				// these are like libdir, either a one line split or a multiple occurrence with splits
 				vals := strings.Split(value.(string), string(os.PathListSeparator))
 
 				for _, v := range vals {
