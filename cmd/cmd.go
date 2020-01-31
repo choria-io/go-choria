@@ -39,10 +39,13 @@ var wg *sync.WaitGroup
 var mu = &sync.Mutex{}
 var err error
 var cpuProfile string
+var bi *build.Info
 
 func ParseCLI() (err error) {
+	bi = &build.Info{}
+
 	cli.app = kingpin.New("choria", "Choria Orchestration System")
-	cli.app.Version(build.Version)
+	cli.app.Version(bi.Version())
 	cli.app.Author("R.I.Pienaar <rip@devco.net>")
 
 	cli.app.Flag("debug", "Enable debug logging").Short('d').BoolVar(&debug)
@@ -83,7 +86,7 @@ func commonConfigure() error {
 		return fmt.Errorf("could not parse configuration: %s", err)
 	}
 
-	cfg.ApplyBuildSettings(&build.Info{})
+	cfg.ApplyBuildSettings(bi)
 
 	if os.Getenv("INSECURE_YES_REALLY") == "true" {
 		protocol.Secure = "false"

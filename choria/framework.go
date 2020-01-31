@@ -32,6 +32,7 @@ type Framework struct {
 	security security.Provider
 	log      *log.Logger
 
+	bi       *build.Info
 	srvcache *srvcache.Cache
 	puppet   *puppet.PuppetWrapper
 	mu       *sync.Mutex
@@ -44,7 +45,7 @@ func New(path string) (*Framework, error) {
 		return nil, err
 	}
 
-	conf.ApplyBuildSettings(&build.Info{})
+	conf.ApplyBuildSettings(BuildInfo())
 
 	return NewWithConfig(conf)
 }
@@ -54,6 +55,7 @@ func NewWithConfig(cfg *config.Config) (*Framework, error) {
 	c := Framework{
 		Config: cfg,
 		mu:     &sync.Mutex{},
+		bi:     BuildInfo(),
 	}
 
 	rand.Seed(time.Now().UnixNano())
@@ -80,7 +82,7 @@ func NewWithConfig(cfg *config.Config) (*Framework, error) {
 
 // BuildInfo retrieves build information
 func (fw *Framework) BuildInfo() *build.Info {
-	return &build.Info{}
+	return BuildInfo()
 }
 
 func (fw *Framework) setupSecurity() error {
@@ -116,7 +118,7 @@ func (fw *Framework) setupSecurity() error {
 // the value of that is returned, else it the build time property
 // ProvisionDefault is consulted
 func (fw *Framework) ProvisionMode() bool {
-	if !fw.Config.InitiatedByServer || (build.ProvisionBrokerURLs == "" && build.ProvisionJWTFile == "") {
+	if !fw.Config.InitiatedByServer || (fw.bi.ProvisionBrokerURLs() == "" && fw.bi.ProvisionJWTFile() == "") {
 		return false
 	}
 
@@ -124,7 +126,7 @@ func (fw *Framework) ProvisionMode() bool {
 		return fw.Config.Choria.Provision
 	}
 
-	return build.ProvisionDefault()
+	return fw.bi.ProvisionDefault()
 }
 
 // ConfigureProvisioning adjusts the active configuration to match the
@@ -140,23 +142,23 @@ func (fw *Framework) ConfigureProvisioning() {
 	fw.Config.Collectives = []string{"provisioning"}
 	fw.Config.MainCollective = "provisioning"
 	fw.Config.Registration = []string{}
-	fw.Config.FactSourceFile = build.ProvisionFacts
+	fw.Config.FactSourceFile = fw.bi.ProvisionFacts()
 
-	if build.ProvisionStatusFile != "" {
-		fw.Config.Choria.StatusFilePath = build.ProvisionStatusFile
+	if fw.bi.ProvisionStatusFile() != "" {
+		fw.Config.Choria.StatusFilePath = fw.bi.ProvisionStatusFile()
 		fw.Config.Choria.StatusUpdateSeconds = 10
 	}
 
-	if build.ProvisionRegistrationData != "" {
+	if fw.bi.ProvisionRegistrationData() != "" {
 		fw.Config.RegistrationCollective = "provisioning"
 		fw.Config.Registration = []string{"file_content"}
 		fw.Config.RegisterInterval = 120
 		fw.Config.RegistrationSplay = false
 		fw.Config.Choria.FileContentRegistrationTarget = "choria.provisioning_data"
-		fw.Config.Choria.FileContentRegistrationData = build.ProvisionRegistrationData
+		fw.Config.Choria.FileContentRegistrationData = fw.bi.ProvisionRegistrationData()
 	}
 
-	if !build.ProvisionSecurity() {
+	if !fw.bi.ProvisionSecurity() {
 		protocol.Secure = "false"
 		fw.Config.Choria.SecurityProvider = "file"
 		fw.Config.DisableTLS = true

@@ -14,7 +14,6 @@ import (
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 	"rsc.io/goversion/version"
 
-	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/provtarget"
 )
 
@@ -39,7 +38,7 @@ func (b *buildinfoCommand) Configure() (err error) {
 	cfg.DisableSecurityProviderVerify = true
 	cfg.Choria.SecurityProvider = "file"
 
-	cfg.ApplyBuildSettings(&build.Info{})
+	cfg.ApplyBuildSettings(bi)
 
 	return
 }
@@ -47,17 +46,17 @@ func (b *buildinfoCommand) Configure() (err error) {
 func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	fmt.Println("Choria build settings:")
+	fmt.Println("Choria bi settings:")
 	fmt.Println()
 	fmt.Println("Build Data:")
-	fmt.Printf("     Version: %s\n", build.Version)
-	fmt.Printf("     Git SHA: %s\n", build.SHA)
-	fmt.Printf("  Build Date: %s\n", build.BuildDate)
-	fmt.Printf("     License: %s\n", build.License)
+	fmt.Printf("     Version: %s\n", bi.Version())
+	fmt.Printf("     Git SHA: %s\n", bi.SHA())
+	fmt.Printf("  Build Date: %s\n", bi.BuildDate())
+	fmt.Printf("     License: %s\n", bi.License())
 	fmt.Printf("  Go Version: %s\n", runtime.Version())
 	fmt.Println()
 	fmt.Println("Network Broker Settings:")
-	fmt.Printf("       Maximum Network Clients: %d\n", build.MaxBrokerClients())
+	fmt.Printf("       Maximum Network Clients: %d\n", bi.MaxBrokerClients())
 	fmt.Printf("  Embedded NATS Server Version: %s\n", gnatsd.VERSION)
 
 	mutators := config.MutatorNames()
@@ -73,46 +72,46 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	fmt.Println()
 	fmt.Println("Server Settings:")
-	fmt.Printf("            Provisioning Default: %t\n", build.ProvisionDefault())
-	fmt.Printf("                Provisioning TLS: %t\n", build.ProvisionSecurity())
+	fmt.Printf("            Provisioning Default: %t\n", bi.ProvisionDefault())
+	fmt.Printf("                Provisioning TLS: %t\n", bi.ProvisionSecurity())
 	fmt.Printf("    Provisioning Target Resolver: %s\n", provtarget.Name())
-	fmt.Printf("      Default Provisioning Agent: %t\n", build.ProvisionAgent == "true")
-	if build.ProvisionToken != "" {
+	fmt.Printf("      Default Provisioning Agent: %t\n", bi.ProvisionAgent())
+	if bi.ProvisionToken() != "" {
 		fmt.Printf("              Provisioning Token: set\n")
 	} else {
 		fmt.Printf("              Provisioning Token: not set\n")
 	}
-	if build.ProvisionBrokerURLs != "" {
-		fmt.Printf("            Provisioning Brokers: %s\n", build.ProvisionBrokerURLs)
+	if bi.ProvisionBrokerURLs() != "" {
+		fmt.Printf("            Provisioning Brokers: %s\n", bi.ProvisionBrokerURLs())
 	}
-	if build.ProvisionBrokerSRVDomain != "" {
-		fmt.Printf("         Provisioning SRV Domain: %s\n", build.ProvisionBrokerSRVDomain)
+	if bi.ProvisionBrokerSRVDomain() != "" {
+		fmt.Printf("         Provisioning SRV Domain: %s\n", bi.ProvisionBrokerSRVDomain())
 	}
-	if build.ProvisionJWTFile != "" {
-		fmt.Printf("           Provisioning JWT file: %s\n", build.ProvisionJWTFile)
+	if bi.ProvisionJWTFile() != "" {
+		fmt.Printf("           Provisioning JWT file: %s\n", bi.ProvisionJWTFile())
 	}
-	if build.ProvisionRegistrationData != "" {
-		fmt.Printf("  Provisioning Registration Data: %s\n", build.ProvisionRegistrationData)
+	if bi.ProvisionRegistrationData() != "" {
+		fmt.Printf("  Provisioning Registration Data: %s\n", bi.ProvisionRegistrationData())
 	}
-	if build.ProvisionFacts != "" {
-		fmt.Printf("              Provisioning Facts: %s\n", build.ProvisionFacts)
+	if bi.ProvisionFacts() != "" {
+		fmt.Printf("              Provisioning Facts: %s\n", bi.ProvisionFacts())
 	}
 
 	fmt.Println()
 	fmt.Println("Agent Providers:")
 
-	for _, p := range build.AgentProviders {
+	for _, p := range bi.AgentProviders() {
 		fmt.Printf("\t%s\n", p)
 	}
 
 	fmt.Println()
 	fmt.Println("Security Defaults:")
-	fmt.Printf("            TLS: %s\n", build.TLS)
+	fmt.Printf("            TLS: %t\n", bi.HasTLS())
 	fmt.Printf("  x509 Security: %t\n", protocol.IsSecure())
 
-	if build.TLS != "true" || !protocol.IsSecure() {
+	if bi.HasTLS() || !protocol.IsSecure() {
 		fmt.Println()
-		fmt.Println("NOTE: The security of this build is non standard, you might be running without adequate protocol level security.  Please ensure this is the build you intend to be using.")
+		fmt.Println("NOTE: The security of this bi is non standard, you might be running without adequate protocol level security.  Please ensure this is the bi you intend to be using.")
 	}
 
 	if b.dependencies {

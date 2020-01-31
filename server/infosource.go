@@ -14,7 +14,6 @@ import (
 
 	"github.com/choria-io/go-lifecycle"
 
-	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-protocol/filter/classes"
 	"github.com/choria-io/go-protocol/filter/facts"
@@ -37,7 +36,7 @@ type InstanceStatus struct {
 func (srv *Instance) NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error {
 	opts = append(opts, lifecycle.Component(srv.eventComponent()))
 	opts = append(opts, lifecycle.Identity(srv.cfg.Identity))
-	opts = append(opts, lifecycle.Version(build.Version))
+	opts = append(opts, lifecycle.Version(srv.fw.BuildInfo().Version()))
 
 	e, err := lifecycle.New(t, opts...)
 	if err != nil {

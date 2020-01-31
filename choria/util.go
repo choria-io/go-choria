@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+
+	"github.com/choria-io/go-choria/build"
 )
 
 // UserConfig determines what is the active config file for a user
@@ -178,4 +180,9 @@ func randStringRunes(n int) string {
 	}
 
 	return string(b)
+}
+
+// BuildInfo retrieves build information
+func BuildInfo() *build.Info {
+	return &build.Info{}
 }
