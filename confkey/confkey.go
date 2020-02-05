@@ -41,7 +41,7 @@ import (
 	"time"
 	"unicode"
 
-	validator "github.com/choria-io/go-validator"
+	validator "github.com/choria-io/go-choria/validator"
 )
 
 // Validate validates the struct

@@ -3,7 +3,7 @@ package validator_test
 import (
 	"fmt"
 
-	"github.com/choria-io/go-validator/maxlength"
+	"github.com/choria-io/go-choria/validator/maxlength"
 )
 
 func Example_maxlength() {

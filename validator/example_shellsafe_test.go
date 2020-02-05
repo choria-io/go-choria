@@ -3,7 +3,7 @@ package validator_test
 import (
 	"fmt"
 
-	"github.com/choria-io/go-validator/shellsafe"
+	"github.com/choria-io/go-choria/validator/shellsafe"
 )
 
 func Example_shellsafe() {

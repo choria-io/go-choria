@@ -7,7 +7,7 @@ package ruby
 import (
 	context "context"
 	choria "github.com/choria-io/go-choria/choria"
-	go_srvcache "github.com/choria-io/go-srvcache"
+	go_srvcache "github.com/choria-io/go-choria/srvcache"
 	gomock "github.com/golang/mock/gomock"
 	nats_go "github.com/nats-io/nats.go"
 	logrus "github.com/sirupsen/logrus"

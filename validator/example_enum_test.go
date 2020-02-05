@@ -3,7 +3,7 @@ package validator_test
 import (
 	"fmt"
 
-	"github.com/choria-io/go-validator/enum"
+	"github.com/choria-io/go-choria/validator/enum"
 )
 
 func Example_enum() {
