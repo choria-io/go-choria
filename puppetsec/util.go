@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"runtime"
 
-	puppetwrapper "github.com/choria-io/go-puppet"
+	puppetwrapper "github.com/choria-io/go-choria/puppet"
 )
 
 var puppet = puppetwrapper.New()
