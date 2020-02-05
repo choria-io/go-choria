@@ -5,7 +5,7 @@
 package external
 
 import (
-	go_config "github.com/choria-io/go-config"
+	go_config "github.com/choria-io/go-choria/config"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )

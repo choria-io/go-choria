@@ -12,7 +12,7 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/srvcache"
 
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 	log "github.com/sirupsen/logrus"
 )
 

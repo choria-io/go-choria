@@ -12,7 +12,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/security"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -73,10 +73,10 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("isRemoteSigner", func() {
 		It("Should detect remote signer config correctly", func() {
-			cfg.RemoteSignerURL=""
+			cfg.RemoteSignerURL = ""
 			Expect(prov.isRemoteSigner()).To(Equal(false))
 
-			cfg.RemoteSignerURL="https://example.net"
+			cfg.RemoteSignerURL = "https://example.net"
 			Expect(prov.isRemoteSigner()).To(Equal(true))
 		})
 	})
@@ -753,6 +753,5 @@ var _ = Describe("FileSSL", func() {
 			Expect(prov.conf.TLSConfig.CurvePreferences).To(Equal(tlssetup.DefaultCurvePreferences()))
 		})
 	})
-
 
 })

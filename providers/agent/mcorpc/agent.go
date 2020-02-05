@@ -8,10 +8,10 @@ import (
 	"strings"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/audit"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/go-config"
 	"github.com/sirupsen/logrus"
 )
 

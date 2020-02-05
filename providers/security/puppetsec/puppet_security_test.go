@@ -10,7 +10,7 @@ import (
 	"path/filepath"
 	"testing"
 
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/security"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"

@@ -3,7 +3,7 @@ package plugin
 import (
 	"fmt"
 
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 )
 
 func registerConfigMutator(name string, plugin Pluggable) error {

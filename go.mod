@@ -6,7 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.0.5
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/choria-io/go-client v0.5.3
-	github.com/choria-io/go-config v0.0.7-0.20200205140458-1200bce8cbb1
+	github.com/choria-io/go-config v0.0.7-0.20200205140458-1200bce8cbb1 // indirect
 	github.com/choria-io/go-lifecycle v1.1.1-0.20200130183733-4df99275245c
 	github.com/choria-io/go-testutil v0.0.0-20191229210946-b9224ddf14db
 	github.com/cloudevents/sdk-go v1.0.0
@@ -37,6 +37,7 @@ require (
 	github.com/tidwall/pretty v1.0.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.5.1
+	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 	golang.org/x/sys v0.0.0-20200122134326-e047566fdf82
 	golang.org/x/tools v0.0.0-20191029041327-9cc4af7d6b2c
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6

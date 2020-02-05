@@ -12,8 +12,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server/data"
-	"github.com/choria-io/go-config"
 
 	"github.com/sirupsen/logrus"
 )

@@ -6,8 +6,8 @@ import (
 	"os"
 	"sync"
 
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/choria-io/go-config"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/choria"

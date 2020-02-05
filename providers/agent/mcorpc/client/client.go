@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"sync"
 
+	config "github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-client/discovery/broadcast"
-	config "github.com/choria-io/go-config"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/protocol"

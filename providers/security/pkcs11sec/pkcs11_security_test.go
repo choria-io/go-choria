@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/security"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

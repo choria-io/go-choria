@@ -5,7 +5,7 @@ import (
 	"github.com/choria-io/go-choria/providers/security/tlssetup"
 	"os"
 
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 	"github.com/sirupsen/logrus"
 )
 

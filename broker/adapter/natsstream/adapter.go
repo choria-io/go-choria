@@ -10,7 +10,7 @@ import (
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 	log "github.com/sirupsen/logrus"
 )
 

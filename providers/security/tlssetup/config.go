@@ -2,7 +2,7 @@ package tlssetup
 
 import (
 	"crypto/tls"
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 )
 
 type Config struct {
@@ -13,7 +13,7 @@ type Config struct {
 	CurvePreferences []tls.CurveID
 }
 
-func TLSConfig(c *config.Config) (*Config) {
+func TLSConfig(c *config.Config) *Config {
 	cfg := &Config{}
 
 	if c == nil {

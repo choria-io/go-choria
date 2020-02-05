@@ -6,7 +6,7 @@ package provtarget
 
 import (
 	context "context"
-	go_config "github.com/choria-io/go-config"
+	go_config "github.com/choria-io/go-choria/config"
 	gomock "github.com/golang/mock/gomock"
 	logrus "github.com/sirupsen/logrus"
 	reflect "reflect"

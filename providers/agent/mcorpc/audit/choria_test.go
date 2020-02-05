@@ -6,8 +6,8 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol/v1"
-	"github.com/choria-io/go-config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 

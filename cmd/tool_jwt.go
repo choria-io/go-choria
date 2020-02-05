@@ -10,8 +10,8 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/provtarget/builddefaults"
-	"github.com/choria-io/go-config"
 	"github.com/dgrijalva/jwt-go"
 )
 

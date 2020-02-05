@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/srvcache"
-	"github.com/choria-io/go-config"
 
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 	logrus "github.com/sirupsen/logrus"

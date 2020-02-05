@@ -1,8 +1,8 @@
 package choria
 
 import (
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/choria-io/go-config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

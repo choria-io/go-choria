@@ -10,7 +10,7 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	logrus "github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
