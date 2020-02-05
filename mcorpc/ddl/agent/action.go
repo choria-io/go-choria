@@ -10,11 +10,11 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/choria-io/go-validator/ipaddress"
-	"github.com/choria-io/go-validator/ipv4"
-	"github.com/choria-io/go-validator/ipv6"
-	"github.com/choria-io/go-validator/regex"
-	"github.com/choria-io/go-validator/shellsafe"
+	"github.com/choria-io/go-choria/validator/ipaddress"
+	"github.com/choria-io/go-choria/validator/ipv4"
+	"github.com/choria-io/go-choria/validator/ipv6"
+	"github.com/choria-io/go-choria/validator/regex"
+	"github.com/choria-io/go-choria/validator/shellsafe"
 )
 
 // Action describes an individual action in an agent
