@@ -28,11 +28,6 @@ var _ = Describe("ValidateSlice", func() {
 })
 
 var _ = Describe("ValidateString", func() {
-	type st struct {
-		Thing   string `validate:"enum=one,two"`
-		Invalid int    `validate:"enum=one,two"`
-	}
-
 	It("Should validate string fields", func() {
 		ok, err := ValidateString("two", []string{"one", "two"})
 		Expect(err).ToNot(HaveOccurred())
