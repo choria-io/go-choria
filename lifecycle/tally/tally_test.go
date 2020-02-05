@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"time"
 
-	"github.com/choria-io/go-lifecycle"
+	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 

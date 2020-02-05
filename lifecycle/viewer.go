@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-srvcache"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
 )
 

@@ -46,7 +46,7 @@ func (b *buildinfoCommand) Configure() (err error) {
 func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	fmt.Println("Choria bi settings:")
+	fmt.Println("Choria build settings:")
 	fmt.Println()
 	fmt.Println("Build Data:")
 	fmt.Printf("     Version: %s\n", bi.Version())
@@ -111,7 +111,7 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	if bi.HasTLS() || !protocol.IsSecure() {
 		fmt.Println()
-		fmt.Println("NOTE: The security of this bi is non standard, you might be running without adequate protocol level security.  Please ensure this is the bi you intend to be using.")
+		fmt.Println("NOTE: The security of this build is non standard, you might be running without adequate protocol level security.  Please ensure this is the build you intend to be using.")
 	}
 
 	if b.dependencies {

@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-lifecycle"
+	"github.com/choria-io/go-choria/lifecycle"
 )
 
 // SetComponent sets the component name this server will report in its

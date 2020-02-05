@@ -12,7 +12,7 @@ import (
 	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/choria"
 
-	"github.com/choria-io/go-lifecycle"
+	"github.com/choria-io/go-choria/lifecycle"
 
 	"github.com/choria-io/go-choria/filter/classes"
 	"github.com/choria-io/go-choria/filter/facts"

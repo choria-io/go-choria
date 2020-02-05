@@ -9,7 +9,7 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/choria"
-	lifecycle "github.com/choria-io/go-lifecycle"
+	lifecycle "github.com/choria-io/go-choria/lifecycle"
 	"github.com/pkg/errors"
 	"github.com/prometheus/client_golang/prometheus"
 )

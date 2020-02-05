@@ -3,7 +3,7 @@ package cmd
 import (
 	"sync"
 
-	lifecycle "github.com/choria-io/go-lifecycle"
+	lifecycle "github.com/choria-io/go-choria/lifecycle"
 )
 
 type tEventCommand struct {
