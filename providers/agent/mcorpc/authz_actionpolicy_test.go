@@ -535,7 +535,7 @@ var _ = Describe("Policy", func() {
 		It("Should correctly catch invalid fact filters", func() {
 			pol.facts = "foo bar"
 			matched, err := pol.MatchesFacts(fw, logger)
-			Expect(err).To(MatchError("invlid fact matcher: Could not parse fact foo it does not appear to be in a valid format"))
+			Expect(err).To(MatchError("invalid fact matcher: could not parse fact foo it does not appear to be in a valid format"))
 			Expect(matched).To(BeFalse())
 		})
 

@@ -13,7 +13,7 @@ type Broker struct {
 
 // ClientURL provides access the url to access the broker
 func (b *Broker) ClientURL() string {
-	if b.NatsServer ==nil {
+	if b.NatsServer == nil {
 		return ""
 	}
 
@@ -25,13 +25,13 @@ func (b *Broker) ClientURL() string {
 }
 
 func (b *Broker) Start() (err error) {
-	if b.NatsServer!=nil {
+	if b.NatsServer != nil {
 		return fmt.Errorf("broker already exist, cannot start again")
 	}
 
 	b.NatsServer, err = natsd.NewServer(&natsd.Options{Port: -1})
 	if err != nil {
-		return  err
+		return err
 	}
 
 	go b.NatsServer.Start()
@@ -45,5 +45,5 @@ func (b *Broker) Start() (err error) {
 // Stop shuts down the broker
 func (b *Broker) Stop() {
 	b.NatsServer.Shutdown()
-	b.NatsServer =nil
+	b.NatsServer = nil
 }

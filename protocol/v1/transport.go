@@ -35,8 +35,7 @@ type federationTransportHeader struct {
 func (m *transportMessage) Message() (data string, err error) {
 	d, err := base64.StdEncoding.DecodeString(m.Data)
 	if err != nil {
-		err = fmt.Errorf("Could not base64 decode data received on the transport: %s", err)
-		return
+		return "", fmt.Errorf("could not base64 decode data received on the transport: %s", err)
 	}
 
 	data = string(d)
@@ -167,8 +166,7 @@ func (m *transportMessage) SetReplyData(reply protocol.SecureReply) (err error) 
 
 	j, err := reply.JSON()
 	if err != nil {
-		err = fmt.Errorf("Could not JSON encode the Reply structure for transport: %s", err)
-		return
+		return fmt.Errorf("could not JSON encode the Reply structure for transport: %s", err)
 	}
 
 	m.Data = base64.StdEncoding.EncodeToString([]byte(j))
@@ -183,8 +181,7 @@ func (m *transportMessage) SetRequestData(request protocol.SecureRequest) (err e
 
 	j, err := request.JSON()
 	if err != nil {
-		err = fmt.Errorf("Could not JSON encode the Request structure for transport: %s", err)
-		return
+		return fmt.Errorf("could not JSON encode the Request structure for transport: %s", err)
 	}
 
 	m.Data = base64.StdEncoding.EncodeToString([]byte(j))
@@ -197,7 +194,7 @@ func (m *transportMessage) RecordNetworkHop(in string, processor string, out str
 	m.Headers.SeenBy = append(m.Headers.SeenBy, [3]string{in, processor, out})
 }
 
-// NetworkHops returns a list of tuples this messaged travelled through
+// NetworkHops returns a list of tuples this messaged traveled through
 func (m *transportMessage) NetworkHops() [][3]string {
 	return m.Headers.SeenBy
 }
@@ -206,15 +203,13 @@ func (m *transportMessage) NetworkHops() [][3]string {
 func (m *transportMessage) JSON() (body string, err error) {
 	j, err := json.Marshal(m)
 	if err != nil {
-		err = fmt.Errorf("Could not JSON Marshal: %s", err)
-		return
+		return "", fmt.Errorf("could not JSON Marshal: %s", err)
 	}
 
 	body = string(j)
 
 	if err = m.IsValidJSON(body); err != nil {
-		err = fmt.Errorf("JSON produced from the Transport does not pass validation: %s", err)
-		return
+		return "", fmt.Errorf("the JSON produced from the Transport does not pass validation: %s", err)
 	}
 
 	return
@@ -241,14 +236,12 @@ func (m *transportMessage) IsValidJSON(data string) (err error) {
 
 	_, errors, err := schemas.Validate(schemas.TransportV1, data)
 	if err != nil {
-		err = fmt.Errorf("Could not validate Transport JSON data: %s", err)
-		return
+    return fmt.Errorf("could not validate Transport JSON data: %s", err)
 	}
 
 	if len(errors) != 0 {
-		err = fmt.Errorf("Supplied JSON document is not a valid Transport message: %s", strings.Join(errors, ", "))
-		return
+		return fmt.Errorf("supplied JSON document is not a valid Transport message: %s", strings.Join(errors, ", "))
 	}
 
-	return
+	return nil
 }

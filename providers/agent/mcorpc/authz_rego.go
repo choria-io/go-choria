@@ -8,7 +8,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/providers/security/opa"
+	"github.com/choria-io/go-choria/opa"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/sirupsen/logrus"
 )

@@ -30,8 +30,7 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 	j, err := request.JSON()
 	if err != nil {
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not JSON encode reply message to store it in the Secure Request: %s", err)
-		return
+		return fmt.Errorf("could not JSON encode reply message to store it in the Secure Request: %s", err)
 	}
 
 	r.Signature = "insecure"
@@ -41,8 +40,7 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 
 		signature, err = r.security.SignString(j)
 		if err != nil {
-			err = fmt.Errorf("Could not sign message string: %s", err)
-			return
+			return fmt.Errorf("could not sign message string: %s", err)
 		}
 
 		r.Signature = base64.StdEncoding.EncodeToString(signature)
@@ -110,18 +108,16 @@ func (r *secureRequest) JSON() (body string, err error) {
 	j, err := json.Marshal(r)
 	if err != nil {
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not JSON Marshal: %s", err)
-		return
+		return "", fmt.Errorf("could not JSON Marshal: %s", err)
 	}
 
 	body = string(j)
 
 	if err = r.IsValidJSON(body); err != nil {
-		err = fmt.Errorf("JSON produced from the SecureRequest does not pass validation: %s", err)
-		return
+		return "", fmt.Errorf("the JSON produced from the SecureRequest does not pass validation: %s", err)
 	}
 
-	return
+	return body, nil
 }
 
 // Version retreives the protocol version for this message
@@ -134,14 +130,12 @@ func (r *secureRequest) IsValidJSON(data string) (err error) {
 	_, errors, err := schemas.Validate(schemas.SecureRequestV1, data)
 	if err != nil {
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not validate SecureRequest JSON data: %s", err)
-		return
+		return fmt.Errorf("could not validate SecureRequest JSON data: %s", err)
 	}
 
 	if len(errors) != 0 {
-		err = fmt.Errorf("Supplied JSON document is not a valid SecureRequest message: %s", strings.Join(errors, ", "))
-		return
+		return fmt.Errorf("supplied JSON document is not a valid SecureRequest message: %s", strings.Join(errors, ", "))
 	}
 
-	return
+	return nil
 }

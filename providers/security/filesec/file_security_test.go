@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
-	"github.com/choria-io/go-choria/providers/security/tlssetup"
+	"github.com/choria-io/go-choria/tlssetup"
 	"io/ioutil"
 	"os"
 	"path/filepath"

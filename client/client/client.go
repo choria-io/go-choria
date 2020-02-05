@@ -226,12 +226,11 @@ func (c *Client) connect(name string) (Connector, error) {
 	}
 
 	closer := func() {
-		select {
-		case <-c.ctx.Done():
-			c.log.Debug("Closing connection")
-			connector.Close()
-			c.conn = nil
-		}
+		<-c.ctx.Done()
+
+		c.log.Debug("Closing connection")
+		connector.Close()
+		c.conn = nil
 	}
 
 	go closer()

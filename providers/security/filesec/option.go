@@ -2,7 +2,7 @@ package filesec
 
 import (
 	"fmt"
-	"github.com/choria-io/go-choria/providers/security/tlssetup"
+	"github.com/choria-io/go-choria/tlssetup"
 	"os"
 
 	"github.com/choria-io/go-choria/config"

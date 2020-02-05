@@ -147,7 +147,7 @@ func ParseFactFilterString(f string) (pf *protocol.FactFilter, err error) {
 	}
 
 	if pf.Fact == "" || pf.Operator == "" || pf.Value == "" {
-		return nil, fmt.Errorf("Could not parse fact %s it does not appear to be in a valid format", f)
+		return nil, fmt.Errorf("could not parse fact %s it does not appear to be in a valid format", f)
 	}
 
 	return

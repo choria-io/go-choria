@@ -3,7 +3,7 @@
 // It is not thread safe and a single instance of the discoverer shouldn't be shared by go routines etc, you can reuse them but should
 // not be using the same one multiple times.
 //
-// It will create a single connection to your NATS network and close it once the context to Discover is cancelled.
+// It will create a single connection to your NATS network and close it once the context to Discover is canceled.
 //
 // It has been shown to discover 50 000 nodes in around 1.2 seconds, I'd suggest on such a large network setting
 // protocol.ClientStrictValidation to false
@@ -82,7 +82,7 @@ func (b *Broadcast) Discover(ctx context.Context, opts ...DiscoverOption) (n []s
 
 	b.log.Debugf("Performing broadcast discovery")
 
-	// wrapping it ensures the intial connection does not run forever and inherits the parent ^C handling etc
+	// wrapping it ensures the initial connection does not run forever and inherits the parent ^C handling etc
 	// the +2 gives some additional time to the whole request for network connect time etc
 	rctx, cancel := context.WithTimeout(ctx, dopts.timeout+2)
 	defer cancel()

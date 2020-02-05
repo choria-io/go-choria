@@ -18,7 +18,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/choria-io/go-choria/providers/security/tlssetup"
+	"github.com/choria-io/go-choria/tlssetup"
 	"io/ioutil"
 	"net/http"
 	"net/url"

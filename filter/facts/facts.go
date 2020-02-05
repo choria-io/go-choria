@@ -115,7 +115,7 @@ func GetFact(fact string, file string, log Logger) ([]byte, gjson.Result, error)
 	}
 
 	found, err := GetFactJSON(fact, j)
-	return j, found, nil
+	return j, found, err
 }
 
 // GetFactJSON looks up a single fact from the JSON data, absent fact is handled as empty

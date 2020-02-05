@@ -3,7 +3,6 @@ package external
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -17,7 +16,6 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	logrus "github.com/sirupsen/logrus"
 )
 
 func Test(t *testing.T) {
@@ -31,7 +29,6 @@ var _ = Describe("McoRPC/External", func() {
 		mockctl  *gomock.Controller
 		agentMgr *MockAgentManager
 		cfg      *config.Config
-		logger   *logrus.Entry
 		prov     *Provider
 		err      error
 		wd       string
@@ -39,8 +36,6 @@ var _ = Describe("McoRPC/External", func() {
 
 	BeforeEach(func() {
 		build.TLS = "false"
-		logger = logrus.NewEntry(logrus.New())
-		logger.Logger.Out = ioutil.Discard
 
 		mockctl = gomock.NewController(GinkgoT())
 		agentMgr = NewMockAgentManager(mockctl)
@@ -55,13 +50,14 @@ var _ = Describe("McoRPC/External", func() {
 
 		fw, err := choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
+		fw.SetLogWriter(GinkgoWriter)
 
 		agentMgr.EXPECT().Choria().Return(fw).AnyTimes()
-		agentMgr.EXPECT().Logger().Return(logger).AnyTimes()
+		agentMgr.EXPECT().Logger().Return(fw.Logger("mgr")).AnyTimes()
 
 		prov = &Provider{
 			cfg:    cfg,
-			log:    logger,
+			log:    fw.Logger("ginkgo"),
 			agents: []*addl.DDL{},
 			paths:  make(map[string]string),
 		}

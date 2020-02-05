@@ -11,9 +11,9 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/pretty"
 
+	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
-	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 )
 
 type ConsoleFormatter struct {

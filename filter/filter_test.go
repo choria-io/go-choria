@@ -51,7 +51,7 @@ var _ = Describe("Filter", func() {
 
 		It("Should handle errors", func() {
 			err := FactFilter("foo")(pf)
-			Expect(err).To(MatchError("Could not parse fact foo it does not appear to be in a valid format"))
+			Expect(err).To(MatchError("could not parse fact foo it does not appear to be in a valid format"))
 		})
 	})
 
@@ -158,7 +158,7 @@ var _ = Describe("Filter", func() {
 
 		It("Should fail for facts in the wrong format", func() {
 			pf, err := ParseFactFilterString("foo")
-			Expect(err).To(MatchError("Could not parse fact foo it does not appear to be in a valid format"))
+			Expect(err).To(MatchError("could not parse fact foo it does not appear to be in a valid format"))
 			Expect(pf).To(BeNil())
 		})
 	})

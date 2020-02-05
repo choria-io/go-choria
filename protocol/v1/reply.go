@@ -33,7 +33,7 @@ func (m *reply) RecordNetworkHop(in string, processor string, out string) {
 	m.Envelope.seenBy = append(m.Envelope.seenBy, [3]string{in, processor, out})
 }
 
-// NetworkHops returns a list of tuples this messaged travelled through
+// NetworkHops returns a list of tuples this messaged traveled through
 func (m *reply) NetworkHops() [][3]string {
 	return m.Envelope.seenBy
 }
@@ -44,8 +44,6 @@ func (r *reply) SetMessage(message string) {
 	defer r.mu.Unlock()
 
 	r.MessageBody = message
-
-	return
 }
 
 // Message retrieves the JSON encoded message set using SetMessage
@@ -80,16 +78,14 @@ func (r *reply) Time() time.Time {
 func (r *reply) JSON() (body string, err error) {
 	j, err := json.Marshal(r)
 	if err != nil {
-		err = fmt.Errorf("Could not JSON Marshal: %s", err)
 		protocolErrorCtr.Inc()
-		return
+		return "", fmt.Errorf("could not JSON Marshal: %s", err)
 	}
 
 	body = string(j)
 
 	if err = r.IsValidJSON(body); err != nil {
-		err = fmt.Errorf("JSON produced from the Reply does not pass validation: %s", err)
-		return
+		return "", fmt.Errorf("serialized JSON produced from the Reply does not pass validation: %s", err)
 	}
 
 	return
@@ -108,13 +104,11 @@ func (r *reply) IsValidJSON(data string) (err error) {
 
 	_, errors, err := schemas.Validate(schemas.ReplyV1, data)
 	if err != nil {
-		err = fmt.Errorf("Could not validate Reply JSON data: %s", err)
-		return
+		return fmt.Errorf("could not validate Reply JSON data: %s", err)
 	}
 
 	if len(errors) != 0 {
-		err = fmt.Errorf("Supplied JSON document is not a valid Reply message: %s", strings.Join(errors, ", "))
-		return
+		return fmt.Errorf("supplied JSON document is not a valid Reply message: %s", strings.Join(errors, ", "))
 	}
 
 	return

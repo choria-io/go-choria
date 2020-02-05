@@ -30,7 +30,7 @@ func (o *options) Validate() error {
 	}
 
 	if o.StatPrefix == "" {
-		o.StatPrefix = fmt.Sprintf("lifecycle_tally")
+		o.StatPrefix = "lifecycle_tally"
 	}
 
 	if o.Log == nil {

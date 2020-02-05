@@ -2,7 +2,7 @@ package puppetsec
 
 import (
 	"fmt"
-	"github.com/choria-io/go-choria/providers/security/tlssetup"
+	"github.com/choria-io/go-choria/tlssetup"
 	"os"
 	"runtime"
 

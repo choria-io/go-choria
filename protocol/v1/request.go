@@ -37,7 +37,7 @@ func (r *request) RecordNetworkHop(in string, processor string, out string) {
 	r.Envelope.seenBy = append(r.Envelope.seenBy, [3]string{in, processor, out})
 }
 
-// NetworkHops returns a list of tuples this messaged travelled through
+// NetworkHops returns a list of tuples this messaged traveled through
 func (r *request) NetworkHops() [][3]string {
 	return r.Envelope.seenBy
 }
@@ -96,8 +96,6 @@ func (r *request) SetRequestID(id string) {
 	defer r.mu.Unlock()
 
 	r.Envelope.RequestID = id
-
-	return
 }
 
 // SetFederationTargets sets the list of hosts this message should go to.
@@ -157,8 +155,6 @@ func (r *request) SetMessage(message string) {
 	defer r.mu.Unlock()
 
 	r.MessageBody = message
-
-	return
 }
 
 // SetCallerID sets the caller id for this request
@@ -262,15 +258,13 @@ func (r *request) JSON() (body string, err error) {
 	j, err := json.Marshal(r)
 	if err != nil {
 		protocolErrorCtr.Inc()
-		err = fmt.Errorf("Could not JSON Marshal: %s", err)
-		return
+		return "", fmt.Errorf("could not JSON Marshal: %s", err)
 	}
 
 	body = string(j)
 
 	if err = r.IsValidJSON(body); err != nil {
-		err = fmt.Errorf("JSON produced from the Request does not pass validation: %s", err)
-		return
+		return "", fmt.Errorf("serialized JSON produced from the Request does not pass validation: %s", err)
 	}
 
 	return
@@ -293,13 +287,11 @@ func (r *request) Version() string {
 func (r *request) IsValidJSON(data string) (err error) {
 	_, errors, err := schemas.Validate(schemas.RequestV1, data)
 	if err != nil {
-		err = fmt.Errorf("Could not validate Request JSON data: %s", err)
-		return
+		return fmt.Errorf("could not validate Request JSON data: %s", err)
 	}
 
 	if len(errors) != 0 {
-		err = fmt.Errorf("Supplied JSON document is not a valid Request message: %s", strings.Join(errors, ", "))
-		return
+		return fmt.Errorf("supplied JSON document is not a valid Request message: %s", strings.Join(errors, ", "))
 	}
 
 	return

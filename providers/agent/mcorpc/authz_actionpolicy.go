@@ -315,7 +315,7 @@ func (p *actionPolicyPolicy) MatchesFacts(fw *choria.Framework, log *logrus.Entr
 	for _, f := range strings.Split(p.facts, " ") {
 		filter, err := filter.ParseFactFilterString(f)
 		if err != nil {
-			return false, fmt.Errorf("invlid fact matcher: %s", err)
+			return false, fmt.Errorf("invalid fact matcher: %s", err)
 		}
 
 		matches = append(matches, [3]string{filter.Fact, filter.Operator, filter.Value})

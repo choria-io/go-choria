@@ -12,9 +12,8 @@ type servers struct {
 // will not be reflected in the source collection
 func (s *servers) Servers() []Server {
 	servers := make([]Server, len(s.servers))
-	for i, srv := range s.servers {
-		servers[i] = srv
-	}
+
+	copy(servers, s.servers)
 
 	return servers
 }

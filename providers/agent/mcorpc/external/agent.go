@@ -152,7 +152,7 @@ func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, repl
 
 	err = p.executeRequest(tctx, agentPath, rpcRequestProtocol, externreq, reply, agent.Name(), agent.Log)
 	if err != nil {
-		p.abortAction(fmt.Sprintf("Could not call external agent %s: :%s", action, err), agent, reply)
+		p.abortAction(fmt.Sprintf("Could not call external agent %s: %s", action, err), agent, reply)
 		return
 	}
 

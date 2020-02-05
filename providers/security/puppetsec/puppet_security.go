@@ -17,7 +17,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/choria-io/go-choria/providers/security/tlssetup"
+	"github.com/choria-io/go-choria/tlssetup"
 	"io/ioutil"
 	"net/http"
 	"os"
@@ -132,9 +132,8 @@ func (s *PuppetSecurity) reinit() error {
 		RemoteSignerURL:              s.conf.RemoteSignerURL,
 		RemoteSignerTokenFile:        s.conf.RemoteSignerTokenFile,
 		RemoteSignerTokenEnvironment: s.conf.RemoteSignerTokenEnvironment,
-		TLSConfig: s.conf.TLSConfig,
+		TLSConfig:                    s.conf.TLSConfig,
 	}
-
 
 	s.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(s.log))
 	if err != nil {
