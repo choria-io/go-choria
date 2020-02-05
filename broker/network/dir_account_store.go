@@ -42,12 +42,7 @@ func (f *dirAccountStore) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	// TODO monitor files
-	for {
-		select {
-		case <-ctx.Done():
-			return
-		}
-	}
+	<-ctx.Done()
 }
 
 func (f *dirAccountStore) Stop() {

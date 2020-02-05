@@ -5,7 +5,6 @@ import (
 	"crypto/x509"
 	"fmt"
 	"io/ioutil"
-	"os"
 )
 
 func (s *Server) extractKeyedConfigString(prefix string, key string, property string, dflt string) (result string) {
@@ -91,13 +90,4 @@ func (s *Server) genTLSc(pri string, pub string, ca string, verify bool) (tlsc *
 	tlsc.BuildNameToCertificate()
 
 	return tlsc, nil
-}
-
-func fileExists(f string) bool {
-	stat, err := os.Stat(f)
-	if err != nil {
-		return false
-	}
-
-	return !stat.IsDir()
 }

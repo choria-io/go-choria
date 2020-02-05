@@ -22,7 +22,7 @@ func (s *Server) setupCluster() (err error) {
 	for _, p := range peers.Servers() {
 		u, err := p.URL()
 		if err != nil {
-			return fmt.Errorf("Could not parse Peer configuration: %s", err)
+			return fmt.Errorf("could not parse Peer configuration: %s", err)
 		}
 
 		s.log.Infof("Adding %s as network peer", u.String())

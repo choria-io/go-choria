@@ -155,7 +155,7 @@ var _ = Describe("Network Broker", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				err = srv.setupGateways()
-				Expect(err).To(MatchError("Network Gateways require at least one remote"))
+				Expect(err).To(MatchError("network Gateways require at least one remote"))
 			})
 
 			It("Should support remote gateways", func() {

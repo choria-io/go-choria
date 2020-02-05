@@ -14,11 +14,11 @@ func (s *Server) setupGateways() (err error) {
 	}
 
 	if s.config.Choria.NetworkGatewayName == "" {
-		return fmt.Errorf("Network Gateways require a name")
+		return fmt.Errorf("network Gateways require a name")
 	}
 
 	if len(s.config.Choria.NetworkGatewayRemotes) == 0 {
-		return fmt.Errorf("Network Gateways require at least one remote")
+		return fmt.Errorf("network Gateways require at least one remote")
 	}
 
 	s.log.Infof("Starting Broker Gateway %s listening on %s:%d", s.config.Choria.NetworkGatewayName, s.config.Choria.NetworkListenAddress, s.config.Choria.NetworkGatewayPort)

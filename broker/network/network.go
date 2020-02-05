@@ -45,7 +45,6 @@ type Server struct {
 	config   *config.Config
 	log      *logrus.Entry
 	as       accountStore
-	operator string
 
 	started bool
 
@@ -145,14 +144,13 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	s.publishStats(ctx, 10*time.Second)
 
-	select {
-	case <-ctx.Done():
-		s.log.Warn("Choria Network Broker shutting down")
-		s.gnatsd.Shutdown()
+	<-ctx.Done()
 
-		if s.as != nil {
-			s.as.Stop()
-		}
+	s.log.Warn("Choria Network Broker shutting down")
+	s.gnatsd.Shutdown()
+
+	if s.as != nil {
+		s.as.Stop()
 	}
 
 	s.log.Warn("Choria Network Broker shut down")
