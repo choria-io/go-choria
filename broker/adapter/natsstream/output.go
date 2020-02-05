@@ -9,7 +9,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/choria-io/go-srvcache"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/nats-io/stan.go"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"

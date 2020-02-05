@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	srvcache "github.com/choria-io/go-srvcache"
+	"github.com/choria-io/go-choria/srvcache"
 	gomock "github.com/golang/mock/gomock"
 	logrus "github.com/sirupsen/logrus"
 

@@ -17,11 +17,11 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/provtarget"
 	"github.com/choria-io/go-choria/puppet"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-security"
 	"github.com/choria-io/go-security/filesec"
 	"github.com/choria-io/go-security/puppetsec"
-	"github.com/choria-io/go-srvcache"
 	log "github.com/sirupsen/logrus"
 )
 

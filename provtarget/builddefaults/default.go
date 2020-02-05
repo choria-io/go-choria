@@ -9,8 +9,8 @@ import (
 	"strings"
 	"time"
 
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-srvcache"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/sirupsen/logrus"
 

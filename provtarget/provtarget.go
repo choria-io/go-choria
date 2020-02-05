@@ -9,7 +9,7 @@ import (
 	"github.com/choria-io/go-config"
 	"github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-srvcache"
+	"github.com/choria-io/go-choria/srvcache"
 )
 
 // TargetResolver is capable of resolving the target brokers for provisioning into list of strings in the format host:port

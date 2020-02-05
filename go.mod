@@ -10,7 +10,6 @@ require (
 	github.com/choria-io/go-lifecycle v1.1.1-0.20200130183733-4df99275245c
 	github.com/choria-io/go-protocol v1.4.0
 	github.com/choria-io/go-security v0.6.1-0.20200205141115-18c1324ea717
-	github.com/choria-io/go-srvcache v0.0.6
 	github.com/choria-io/go-validator v1.1.1
 	github.com/choria-io/mcorpc-agent-provider v0.10.1-0.20200205115502-0dc195eb244f
 	github.com/choria-io/provisioning-agent v0.6.0

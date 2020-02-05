@@ -6,8 +6,8 @@ package network
 
 import (
 	tls "crypto/tls"
+	go_srvcache "github.com/choria-io/go-choria/srvcache"
 	go_config "github.com/choria-io/go-config"
-	go_srvcache "github.com/choria-io/go-srvcache"
 	gomock "github.com/golang/mock/gomock"
 	logrus "github.com/sirupsen/logrus"
 	reflect "reflect"

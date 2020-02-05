@@ -9,8 +9,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-srvcache"
 
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 	logrus "github.com/sirupsen/logrus"
@@ -39,12 +39,12 @@ type accountStore interface {
 
 // Server represents the Choria network broker server
 type Server struct {
-	gnatsd   *gnatsd.Server
-	opts     *gnatsd.Options
-	choria   ChoriaFramework
-	config   *config.Config
-	log      *logrus.Entry
-	as       accountStore
+	gnatsd *gnatsd.Server
+	opts   *gnatsd.Options
+	choria ChoriaFramework
+	config *config.Config
+	log    *logrus.Entry
+	as     accountStore
 
 	started bool
 
