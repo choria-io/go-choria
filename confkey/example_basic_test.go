@@ -5,14 +5,14 @@ import (
 	"os"
 	"strings"
 
-	confkey "github.com/choria-io/go-confkey"
+	confkey "github.com/choria-io/go-choria/confkey"
 )
 
 type Config struct {
 	Loglevel string   `confkey:"loglevel" default:"warn" validate:"enum=debug,info,warn,error"`
 	Mode     string   `confkey:"mode" default:"server" validate:"enum=server,client"`
 	Servers  []string `confkey:"servers" type:"comma_split" environment:"SERVERS"`
-	Path     []string `confkey:"path" type:"path_split" default:"/bin:/usr/bin"` // can also be colon_split to always split on :
+	Path     []string `confkey:"path" type:"colon_split" default:"/bin:/usr/bin"` // can also be path_split to be OS aware
 }
 
 func Example_basic() {
