@@ -3,7 +3,7 @@ package config
 import (
 	"time"
 
-	confkey "github.com/choria-io/go-config/confkey"
+	"github.com/choria-io/go-choria/confkey"
 	log "github.com/sirupsen/logrus"
 )
 
