@@ -12,7 +12,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-choria/protocol"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/provtarget"

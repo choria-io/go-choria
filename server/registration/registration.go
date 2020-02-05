@@ -8,10 +8,10 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/registration"
 	"github.com/choria-io/go-choria/server/data"
 	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
 )
 

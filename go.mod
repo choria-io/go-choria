@@ -8,7 +8,6 @@ require (
 	github.com/choria-io/go-client v0.5.3
 	github.com/choria-io/go-config v0.0.7-0.20200205140458-1200bce8cbb1
 	github.com/choria-io/go-lifecycle v1.1.1-0.20200130183733-4df99275245c
-	github.com/choria-io/go-protocol v1.4.0
 	github.com/choria-io/go-security v0.6.1-0.20200205141115-18c1324ea717
 	github.com/choria-io/go-validator v1.1.1
 	github.com/choria-io/mcorpc-agent-provider v0.10.1-0.20200205115502-0dc195eb244f

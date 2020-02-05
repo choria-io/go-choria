@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/filter"
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-client/client"
-	"github.com/choria-io/go-protocol/filter"
-	"github.com/choria-io/go-protocol/protocol"
 	"github.com/guptarohit/asciigraph"
 	log "github.com/sirupsen/logrus"
 )

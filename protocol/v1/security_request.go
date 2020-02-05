@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-choria/protocol"
 	log "github.com/sirupsen/logrus"
 )
 

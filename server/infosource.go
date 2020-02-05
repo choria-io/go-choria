@@ -14,9 +14,9 @@ import (
 
 	"github.com/choria-io/go-lifecycle"
 
+	"github.com/choria-io/go-choria/filter/classes"
+	"github.com/choria-io/go-choria/filter/facts"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/go-protocol/filter/classes"
-	"github.com/choria-io/go-protocol/filter/facts"
 
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"

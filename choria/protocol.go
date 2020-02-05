@@ -3,8 +3,8 @@ package choria
 import (
 	"fmt"
 
-	"github.com/choria-io/go-protocol/protocol"
-	v1 "github.com/choria-io/go-protocol/protocol/v1"
+	"github.com/choria-io/go-choria/protocol"
+	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 )

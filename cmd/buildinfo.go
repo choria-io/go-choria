@@ -9,8 +9,8 @@ import (
 	"sync"
 	"unicode/utf8"
 
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-protocol/protocol"
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 	"rsc.io/goversion/version"
 

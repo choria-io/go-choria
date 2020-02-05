@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-choria/protocol"
 )
 
 // Filter is a function that represents a specific filter in string form

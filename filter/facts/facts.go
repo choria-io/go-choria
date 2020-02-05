@@ -43,7 +43,7 @@ func MatchFacts(filters [][3]string, facts json.RawMessage, log Logger) bool {
 // MatchFile match fact filters in a OR manner, only nodes that have all the matching facts will be true here
 func MatchFile(filters [][3]string, file string, log Logger) bool {
 	facts, err := JSON(file, log)
-	if err != nil{
+	if err != nil {
 		log.Warnf("Failed to match fact: '%#v': %s", filters, err)
 		return false
 	}
@@ -126,9 +126,9 @@ func GetFactJSON(fact string, facts json.RawMessage) (gjson.Result, error) {
 	return result, nil
 }
 
-func HasFactJSON(fact string, operator string, value string, facts json.RawMessage, log Logger) (bool, error){
+func HasFactJSON(fact string, operator string, value string, facts json.RawMessage, log Logger) (bool, error) {
 	result, err := GetFactJSON(fact, facts)
-	if err != nil{
+	if err != nil {
 		return false, err
 	}
 

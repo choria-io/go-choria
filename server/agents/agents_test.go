@@ -10,8 +10,8 @@ import (
 	"testing"
 	time "time"
 
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-protocol/protocol"
 	gomock "github.com/golang/mock/gomock"
 
 	"github.com/choria-io/go-choria/choria"

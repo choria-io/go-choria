@@ -11,9 +11,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/choria-io/go-choria/backoff"
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-protocol/protocol"
 	nats "github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 )

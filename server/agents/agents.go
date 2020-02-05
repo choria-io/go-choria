@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-lifecycle"
-	"github.com/choria-io/go-protocol/protocol"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent"

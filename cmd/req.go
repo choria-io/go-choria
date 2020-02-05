@@ -10,9 +10,9 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/choria-io/go-choria/filter"
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-client/discovery/broadcast"
-	"github.com/choria-io/go-protocol/filter"
-	"github.com/choria-io/go-protocol/protocol"
 	rpc "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
 	agentddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	"github.com/choria-io/mcorpc-agent-provider/mcorpc/replyfmt"
