@@ -1,4 +1,4 @@
-package puppetwrapper
+package puppet
 
 import (
 	"errors"
@@ -11,20 +11,20 @@ import (
 	"sync"
 )
 
-// PuppetWrapper provides ways to interact with Puppet and Facter
-type PuppetWrapper struct {
+// Wrapper provides ways to interact with Puppet and Facter
+type Wrapper struct {
 	cache map[string]string
 	sync.Mutex
 }
 
 // New creates a new wrapper
-func New() *PuppetWrapper {
-	return &PuppetWrapper{
+func New() *Wrapper {
+	return &Wrapper{
 		cache: make(map[string]string),
 	}
 }
 
-func (p *PuppetWrapper) read(f string) (string, bool) {
+func (p *Wrapper) read(f string) (string, bool) {
 	p.Lock()
 	defer p.Unlock()
 
@@ -33,7 +33,7 @@ func (p *PuppetWrapper) read(f string) (string, bool) {
 	return f, ok
 }
 
-func (p *PuppetWrapper) store(f string, val string) {
+func (p *Wrapper) store(f string, val string) {
 	p.Lock()
 	defer p.Unlock()
 
@@ -41,7 +41,7 @@ func (p *PuppetWrapper) store(f string, val string) {
 }
 
 // FacterStringFact looks up a facter fact, returns "" when unknown
-func (p *PuppetWrapper) FacterStringFact(fact string) (string, error) {
+func (p *Wrapper) FacterStringFact(fact string) (string, error) {
 	value, ok := p.read(fact)
 	if ok {
 		return value, nil
@@ -67,23 +67,23 @@ func (p *PuppetWrapper) FacterStringFact(fact string) (string, error) {
 }
 
 // FacterFQDN determines the machines fqdn by querying facter.  Returns "" when unknown
-func (p *PuppetWrapper) FacterFQDN() (string, error) {
+func (p *Wrapper) FacterFQDN() (string, error) {
 	return p.FacterStringFact("networking.fqdn")
 }
 
 // FacterDomain determines the machines domain by querying facter. Returns "" when unknown
-func (p *PuppetWrapper) FacterDomain() (string, error) {
+func (p *Wrapper) FacterDomain() (string, error) {
 	return p.FacterStringFact("networking.domain")
 }
 
 // FacterCmd finds the path to facter using first AIO path then a `which` like command
-func (p *PuppetWrapper) FacterCmd() string {
+func (p *Wrapper) FacterCmd() string {
 	return p.AIOCmd("facter", "")
 }
 
 // AIOCmd looks up a command in the AIO paths, if it's not there
 // it will try PATH and finally return a default if not in PATH
-func (p *PuppetWrapper) AIOCmd(command string, def string) string {
+func (p *Wrapper) AIOCmd(command string, def string) string {
 	aioPath := filepath.Join("/opt/puppetlabs/bin", command)
 
 	if runtime.GOOS == "windows" {
@@ -103,7 +103,7 @@ func (p *PuppetWrapper) AIOCmd(command string, def string) string {
 }
 
 // Setting retrieves a config setting by shelling out to puppet apply --configprint
-func (p *PuppetWrapper) Setting(setting string) (string, error) {
+func (p *Wrapper) Setting(setting string) (string, error) {
 	args := []string{"apply", "--environment", "production", "--configprint", setting}
 
 	out, err := exec.Command(p.AIOCmd("puppet", "puppet"), args...).Output()

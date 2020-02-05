@@ -6,7 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.0.5
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/choria-io/go-client v0.5.3
-	github.com/choria-io/go-config v0.0.7-0.20200131162712-1200afec62d5
+	github.com/choria-io/go-config v0.0.7-0.20200205114540-df586b02a2ca
 	github.com/choria-io/go-lifecycle v1.1.1-0.20200130183733-4df99275245c
 	github.com/choria-io/go-network-broker v1.3.3-0.20200130162034-385d0f1cdebd
 	github.com/choria-io/go-protocol v1.4.0
@@ -14,7 +14,7 @@ require (
 	github.com/choria-io/go-security v0.6.1-0.20200124122041-6a27fe67c307
 	github.com/choria-io/go-srvcache v0.0.6
 	github.com/choria-io/go-validator v1.1.1
-	github.com/choria-io/mcorpc-agent-provider v0.10.0
+	github.com/choria-io/mcorpc-agent-provider v0.10.1-0.20200205115502-0dc195eb244f
 	github.com/choria-io/provisioning-agent v0.6.0
 	github.com/cloudevents/sdk-go v1.0.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
