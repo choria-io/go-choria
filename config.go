@@ -8,8 +8,7 @@ import (
 	"strings"
 
 	"github.com/choria-io/go-choria/confkey"
-
-	puppet "github.com/choria-io/go-puppet"
+	"github.com/choria-io/go-choria/puppet"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
 )
@@ -85,7 +84,7 @@ type Config struct {
 	InitiatedByServer bool
 
 	// Puppet provides access to puppet config data, settings and facts
-	Puppet *puppet.PuppetWrapper
+	Puppet *puppet.Wrapper
 }
 
 // NewDefaultConfig creates a empty configuration
