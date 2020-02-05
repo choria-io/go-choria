@@ -9,11 +9,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-network-broker"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/broker/adapter"
 	"github.com/choria-io/go-choria/broker/federation"
+	"github.com/choria-io/go-choria/broker/network"
 	"github.com/choria-io/go-choria/statistics"
 )
 
