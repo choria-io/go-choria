@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-security"
+	"github.com/choria-io/go-choria/providers/security"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"

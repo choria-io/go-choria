@@ -1,7 +1,3 @@
-# go-protocol
-
-[![CodeFactor](https://www.codefactor.io/repository/github/choria-io/go-protocol/badge)](https://www.codefactor.io/repository/github/choria-io/go-protocol)
-
 This is a Golang implementation of the Choria protocol.  It does not implement any networking or transport, just the protocol parts.
 
 This is in use by the go-choria project that builds a new `mcollective`like server, broker and eventually clients.
@@ -44,7 +40,7 @@ The strings like `choria:request:1` means it's a V1 protocol `choria:request` me
 
 The protocol also supports Federation which further complicates matters as in federated networks there are additional wrapping of packets going on - in practice it's just data copied into the above structure rather than more wrapping.
 
-JSON Schemas for the whole version 1protocol [can be found in the repo](https://github.com/choria-io/go-protocol/tree/master/protocol/v1/schema), these schemas are used to validate every step of the way.
+JSON Schemas for the whole version 1 protocol [can be found in the repo](https://github.com/choria-io/schemas/tree/master/choria/protocol/v1), these schemas are used to validate every step of the way.
 
 
 ## Examples

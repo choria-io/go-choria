@@ -17,15 +17,15 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/choria-io/go-security/tlssetup"
+	"github.com/choria-io/go-choria/providers/security/tlssetup"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
 
-	"github.com/choria-io/go-security/filesec"
-	"github.com/choria-io/go-srvcache"
+	"github.com/choria-io/go-choria/providers/security/filesec"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
 )
 

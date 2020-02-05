@@ -8,7 +8,7 @@ require (
 	github.com/choria-io/go-client v0.5.3
 	github.com/choria-io/go-config v0.0.7-0.20200205140458-1200bce8cbb1
 	github.com/choria-io/go-lifecycle v1.1.1-0.20200130183733-4df99275245c
-	github.com/choria-io/go-security v0.6.1-0.20200205141115-18c1324ea717
+	github.com/choria-io/go-security v0.6.1-0.20200205141115-18c1324ea717 // indirect
 	github.com/choria-io/go-validator v1.1.1
 	github.com/choria-io/mcorpc-agent-provider v0.10.1-0.20200205115502-0dc195eb244f
 	github.com/choria-io/provisioning-agent v0.6.0
@@ -22,6 +22,7 @@ require (
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.4.1
 	github.com/looplab/fsm v0.1.0
+	github.com/miekg/pkcs11 v1.0.3
 	github.com/nats-io/jwt v0.3.2
 	github.com/nats-io/nats-server/v2 v2.1.4
 	github.com/nats-io/nats.go v1.9.1
@@ -29,6 +30,7 @@ require (
 	github.com/nats-io/stan.go v0.6.0
 	github.com/onsi/ginkgo v1.11.0
 	github.com/onsi/gomega v1.8.1
+	github.com/open-policy-agent/opa v0.16.0
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.4.0
 	github.com/prometheus/client_model v0.2.0

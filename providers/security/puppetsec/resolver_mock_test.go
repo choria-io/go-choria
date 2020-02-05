@@ -5,7 +5,7 @@
 package puppetsec
 
 import (
-	go_srvcache "github.com/choria-io/go-srvcache"
+	go_srvcache "github.com/choria-io/go-choria/srvcache"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )

@@ -4,7 +4,7 @@ package choria
 
 import (
 	"fmt"
-	"github.com/choria-io/go-security/pkcs11sec"
+	"github.com/choria-io/go-choria/providers/security/pkcs11sec"
 	"strings"
 )
 

@@ -10,7 +10,7 @@ import (
 	"encoding/pem"
 	"fmt"
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/choria-io/go-security/filesec"
+	"github.com/choria-io/go-choria/providers/security/filesec"
 	"github.com/miekg/pkcs11"
 	"github.com/miekg/pkcs11/p11"
 	"github.com/pkg/errors"

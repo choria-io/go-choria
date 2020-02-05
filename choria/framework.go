@@ -19,9 +19,9 @@ import (
 	"github.com/choria-io/go-choria/puppet"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-security"
-	"github.com/choria-io/go-security/filesec"
-	"github.com/choria-io/go-security/puppetsec"
+	"github.com/choria-io/go-choria/providers/security"
+	"github.com/choria-io/go-choria/providers/security/filesec"
+	"github.com/choria-io/go-choria/providers/security/puppetsec"
 	log "github.com/sirupsen/logrus"
 )
 
