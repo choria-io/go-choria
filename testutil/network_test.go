@@ -1,11 +1,10 @@
 package testutil
 
 import (
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
-
 
 var _ = Describe("Network", func() {
 	var n *ChoriaNetwork

@@ -1,8 +1,8 @@
 package testutil
 
 import (
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/server"
-	"github.com/choria-io/go-config"
 )
 
 type ChoriaNetwork struct {

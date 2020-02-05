@@ -5,7 +5,7 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 )
 
 // StartTestChoriaNetwork starts a broker and instance server connected to the broker
