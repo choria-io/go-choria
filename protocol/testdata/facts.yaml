@@ -1,0 +1,12 @@
+---
+string: "hello world"
+inumber: 1
+fnumber: 1.2
+tbool: true
+fbool: false
+nested:
+  string: "nested hello world"
+  inumber: 2
+  fnumber: 2.2
+  tbool: true
+  fbool: false
