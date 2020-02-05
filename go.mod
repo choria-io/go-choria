@@ -13,6 +13,7 @@ require (
 	github.com/choria-io/go-puppet v0.0.2-0.20200124121228-4e9e721ccf0c
 	github.com/choria-io/go-security v0.6.1-0.20200124122041-6a27fe67c307
 	github.com/choria-io/go-srvcache v0.0.6
+	github.com/choria-io/go-validator v1.1.1
 	github.com/choria-io/mcorpc-agent-provider v0.10.0
 	github.com/choria-io/provisioning-agent v0.6.0
 	github.com/cloudevents/sdk-go v1.0.0

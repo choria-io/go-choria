@@ -213,7 +213,7 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 				}
 
 			case "path_split":
-				// these are like libdir, either a one line split or a multiple occurance with splits
+				// these are like libdir, either a one line split or a multiple occurrence with splits
 				vals := strings.Split(value.(string), string(os.PathListSeparator))
 
 				for _, v := range vals {
@@ -302,7 +302,7 @@ func homeDir() (string, error) {
 		home := os.Getenv("HOMEDIR")
 
 		if home == "" || drive == "" {
-			return "", fmt.Errorf("Cannot determine home dir, ensure HOMEDRIVE and HOMEDIR is set")
+			return "", fmt.Errorf("cannot determine home dir, ensure HOMEDRIVE and HOMEDIR is set")
 		}
 
 		return filepath.Join(os.Getenv("HOMEDRIVE"), os.Getenv("HOMEDIR")), nil
@@ -311,7 +311,7 @@ func homeDir() (string, error) {
 	home := os.Getenv("HOME")
 
 	if home == "" {
-		return "", fmt.Errorf("Cannot determine home dir, ensure HOME is set")
+		return "", fmt.Errorf("cannot determine home dir, ensure HOME is set")
 	}
 
 	return home, nil
