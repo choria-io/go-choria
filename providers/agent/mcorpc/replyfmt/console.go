@@ -13,7 +13,7 @@ import (
 
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
-	"github.com/choria-io/go-choria/providers/agent/mcorpc/mcorpc"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 )
 
 type ConsoleFormatter struct {

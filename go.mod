@@ -8,10 +8,11 @@ require (
 	github.com/choria-io/go-client v0.5.3
 	github.com/choria-io/go-config v0.0.7-0.20200205140458-1200bce8cbb1
 	github.com/choria-io/go-lifecycle v1.1.1-0.20200130183733-4df99275245c
-	github.com/choria-io/go-security v0.6.1-0.20200205141115-18c1324ea717 // indirect
+	github.com/choria-io/go-protocol v1.4.0
+	github.com/choria-io/go-security v0.6.1-0.20200205141115-18c1324ea717
+	github.com/choria-io/go-srvcache v0.0.6
+	github.com/choria-io/go-testutil v0.0.0-20191229210946-b9224ddf14db
 	github.com/choria-io/go-validator v1.1.1
-	github.com/choria-io/mcorpc-agent-provider v0.10.1-0.20200205115502-0dc195eb244f
-	github.com/choria-io/provisioning-agent v0.6.0
 	github.com/cloudevents/sdk-go v1.0.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.9.0
@@ -37,7 +38,9 @@ require (
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.4.2
 	github.com/tidwall/gjson v1.4.0
+	github.com/tidwall/pretty v1.0.0
 	github.com/xeipuuv/gojsonschema v1.2.0
+	go.uber.org/atomic v1.5.1
 	golang.org/x/sys v0.0.0-20200122134326-e047566fdf82
 	golang.org/x/tools v0.0.0-20191029041327-9cc4af7d6b2c
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
