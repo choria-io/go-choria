@@ -15,10 +15,10 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/validator"
 	"github.com/choria-io/go-config"
 	"github.com/choria-io/go-protocol/protocol"
 	srvcache "github.com/choria-io/go-srvcache"
-	"github.com/choria-io/go-validator"
 )
 
 // ChoriaFramework provides access to the choria framework
