@@ -15,7 +15,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/protocol"
-	client "github.com/choria-io/go-client/client"
+	client "github.com/choria-io/go-choria/client/client"
 	gomock "github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"

@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-choria/protocol"
 )
 
 type dOpts struct {

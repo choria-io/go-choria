@@ -15,7 +15,7 @@ import (
 	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
-	"github.com/choria-io/go-client/discovery/broadcast"
+	"github.com/choria-io/go-choria/client/discovery/broadcast"
 	"github.com/fatih/color"
 	"github.com/gosuri/uiprogress"
 	log "github.com/sirupsen/logrus"

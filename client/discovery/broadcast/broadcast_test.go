@@ -8,11 +8,11 @@ import (
 	"testing"
 	"time"
 
-	client "github.com/choria-io/go-client/client"
-	"github.com/choria-io/go-protocol/protocol"
+	client "github.com/choria-io/go-choria/client/client"
+	"github.com/choria-io/go-choria/protocol"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 	gomock "github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"

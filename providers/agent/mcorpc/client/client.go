@@ -7,14 +7,14 @@ import (
 	"sync"
 
 	config "github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-client/discovery/broadcast"
+	"github.com/choria-io/go-choria/client/discovery/broadcast"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/srvcache"
-	cclient "github.com/choria-io/go-client/client"
+	cclient "github.com/choria-io/go-choria/client/client"
 
 	"github.com/sirupsen/logrus"
 )

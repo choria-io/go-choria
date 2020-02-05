@@ -11,8 +11,8 @@ import (
 	"time"
 
 	choria "github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/protocol"
 	gomock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

@@ -7,8 +7,8 @@ package client
 import (
 	context "context"
 	choria "github.com/choria-io/go-choria/choria"
-	go_config "github.com/choria-io/go-config"
-	go_srvcache "github.com/choria-io/go-srvcache"
+	go_config "github.com/choria-io/go-choria/config"
+	go_srvcache "github.com/choria-io/go-choria/srvcache"
 	gomock "github.com/golang/mock/gomock"
 	logrus "github.com/sirupsen/logrus"
 	reflect "reflect"

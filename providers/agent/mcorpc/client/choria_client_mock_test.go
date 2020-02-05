@@ -6,7 +6,7 @@ package client
 import (
 	context "context"
 	choria "github.com/choria-io/go-choria/choria"
-	client "github.com/choria-io/go-client/client"
+	client "github.com/choria-io/go-choria/client/client"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )

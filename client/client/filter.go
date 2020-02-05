@@ -1,8 +1,8 @@
 package client
 
 import (
-	"github.com/choria-io/go-protocol/filter"
-	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-choria/filter"
+	"github.com/choria-io/go-choria/protocol"
 )
 
 // AgentFilter processes a series of strings as agent filters
