@@ -12,7 +12,7 @@ import (
 	"regexp"
 	"strings"
 
-	confkey "github.com/choria-io/go-config/confkey"
+	"github.com/choria-io/go-choria/confkey"
 )
 
 // DNSFQDN attempts to find the FQDN using DNS resolution
