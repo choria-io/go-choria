@@ -1,0 +1,16 @@
+{
+    "id": "01e72410-d734-4611-9485-8c6a2dd2579b",
+    "source": "io.choria.lifecycle",
+    "specversion": "1.0",
+    "subject": "ginkgo.example.net",
+    "time": "2018-08-24T10:36:13Z",
+    "type": "io.choria.lifecycle.v1.shutdown",
+    "data": {
+        "protocol": "io.choria.lifecycle.v1.shutdown",
+        "id": "01e72410-d734-4611-9485-8c6a2dd2579b",
+        "identity": "ginkgo.example.net",
+        "component": "ginkgo",
+        "timestamp": 1535106973,
+        "version": "1.2.3"
+    }
+}
