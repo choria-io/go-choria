@@ -16,8 +16,8 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/provtarget"
+	"github.com/choria-io/go-choria/puppet"
 	"github.com/choria-io/go-config"
-	puppet "github.com/choria-io/go-puppet"
 	"github.com/choria-io/go-security"
 	"github.com/choria-io/go-security/filesec"
 	"github.com/choria-io/go-security/puppetsec"
@@ -34,7 +34,7 @@ type Framework struct {
 
 	bi       *build.Info
 	srvcache *srvcache.Cache
-	puppet   *puppet.PuppetWrapper
+	puppet   *puppet.Wrapper
 	mu       *sync.Mutex
 }
 
