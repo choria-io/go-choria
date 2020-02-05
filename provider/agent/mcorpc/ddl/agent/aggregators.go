@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"sync"
 
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc/aggregate"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/aggregate"
 )
 
 // ActionAggregateItem describes a aggregate function to summarize data

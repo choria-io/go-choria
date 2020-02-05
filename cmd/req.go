@@ -12,10 +12,10 @@ import (
 
 	"github.com/choria-io/go-choria/filter"
 	"github.com/choria-io/go-choria/protocol"
+	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
+	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 	"github.com/choria-io/go-client/discovery/broadcast"
-	rpc "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
-	agentddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc/replyfmt"
 	"github.com/fatih/color"
 	"github.com/gosuri/uiprogress"
 	log "github.com/sirupsen/logrus"

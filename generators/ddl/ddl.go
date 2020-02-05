@@ -10,8 +10,8 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	ddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server/agents"
-	ddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	"github.com/xeipuuv/gojsonschema"
 )
 

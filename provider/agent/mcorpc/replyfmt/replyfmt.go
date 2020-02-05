@@ -5,8 +5,8 @@ import (
 	"bufio"
 	"fmt"
 
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/client"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
 
 // Formatter formats and writes a reply into the bufio writer

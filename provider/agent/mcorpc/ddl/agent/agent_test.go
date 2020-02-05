@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )

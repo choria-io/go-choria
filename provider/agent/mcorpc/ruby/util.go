@@ -5,7 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
-	agentddl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
+	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
 
 func (p *Provider) loadAgents(libdirs []string) {

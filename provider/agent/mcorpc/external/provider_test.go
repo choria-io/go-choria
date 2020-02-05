@@ -5,9 +5,9 @@ import (
 	"path/filepath"
 
 	"github.com/choria-io/go-choria/build"
+	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-config"
-	addl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

@@ -8,10 +8,10 @@ import (
 
 	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/go-protocol/protocol"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
 	nats "github.com/nats-io/nats.go"
 )
 

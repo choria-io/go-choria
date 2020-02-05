@@ -7,15 +7,15 @@ import (
 	"os"
 	"strings"
 
-	v1 "github.com/choria-io/go-protocol/protocol/v1"
+	v1 "github.com/choria-io/go-choria/protocol/v1"
 
+	"github.com/choria-io/go-choria/providers/agent/mcorpc"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc"
-	"github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/protocol"
 	client "github.com/choria-io/go-client/client"
-	"github.com/choria-io/go-protocol/protocol"
 	gomock "github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
