@@ -12,16 +12,16 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-choria/protocol"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/providers/security"
+	"github.com/choria-io/go-choria/providers/security/filesec"
+	"github.com/choria-io/go-choria/providers/security/puppetsec"
 	"github.com/choria-io/go-choria/provtarget"
 	"github.com/choria-io/go-choria/puppet"
-	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-security"
-	"github.com/choria-io/go-security/filesec"
-	"github.com/choria-io/go-security/puppetsec"
-	"github.com/choria-io/go-srvcache"
+	"github.com/choria-io/go-choria/srvcache"
 	log "github.com/sirupsen/logrus"
 )
 

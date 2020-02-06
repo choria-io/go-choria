@@ -9,7 +9,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 
-	addl "github.com/choria-io/mcorpc-agent-provider/mcorpc/ddl/agent"
+	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
 
 func (g *Generator) templFSnakeToCamel(v string) string {
@@ -87,7 +87,7 @@ func (g *Generator) templFBase64Encode(v string) string {
 func (g *Generator) templFGeneratedWarning() string {
 	meta := g.agent.DDL.Metadata
 	return fmt.Sprintf(`// generated code; DO NOT EDIT; %v"
-// 
+//
 // Client for Choria RPC Agent '%s'' Version %s generated using Choria version %s`, time.Now(), meta.Name, meta.Version, choria.BuildInfo().Version())
 }
 

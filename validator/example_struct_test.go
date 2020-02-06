@@ -3,7 +3,7 @@ package validator_test
 import (
 	"fmt"
 
-	validator "github.com/choria-io/go-validator"
+	validator "github.com/choria-io/go-choria/validator"
 )
 
 type Request struct {

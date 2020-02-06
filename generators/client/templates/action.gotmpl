@@ -5,8 +5,8 @@ package {{ .Package }}
 import (
 	"context"
 	"encoding/json"
-	"github.com/choria-io/go-protocol/protocol"
-	rpcclient "github.com/choria-io/mcorpc-agent-provider/mcorpc/client"
+	"github.com/choria-io/go-choria/protocol"
+	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 )
 
 // {{ .ActionName | SnakeToCamel }}Requestor performs a RPC request to {{ .AgentName | ToLower }}#{{ .ActionName | ToLower }}

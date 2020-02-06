@@ -3,7 +3,7 @@ package network
 import (
 	"strings"
 
-	"github.com/choria-io/go-srvcache"
+	"github.com/choria-io/go-choria/srvcache"
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 )
 

@@ -8,9 +8,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/broker/adapter/stats"
-	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-protocol/protocol"
-	"github.com/choria-io/go-srvcache"
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/choria-io/go-choria/choria"

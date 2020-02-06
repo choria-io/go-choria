@@ -1,10 +1,10 @@
 package discovery
 
 import (
-	"github.com/choria-io/go-config"
+	"github.com/choria-io/go-choria/config"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/sirupsen/logrus"
 )
 

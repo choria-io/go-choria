@@ -1,0 +1,7 @@
+#!/bin/sh
+
+echo "starting deliberately failing agent"
+
+echo "fail fail fail" > /dev/stderr
+
+exit 1

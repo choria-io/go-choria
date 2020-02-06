@@ -25,7 +25,7 @@ type connector interface {
 }
 
 type FederationBroker struct {
-	choria  *choria.Framework
+	choria *choria.Framework
 
 	Name string
 

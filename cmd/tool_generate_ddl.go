@@ -5,8 +5,8 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/generators/ddl"
-	"github.com/choria-io/go-config"
 )
 
 type tGenerateDDLCommand struct {

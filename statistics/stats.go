@@ -9,7 +9,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 
-	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/nats-io/nats-server/v2/server/pse"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"

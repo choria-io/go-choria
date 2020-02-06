@@ -12,7 +12,7 @@ import (
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/broker/adapter/transformer"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-srvcache"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )

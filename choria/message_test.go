@@ -3,8 +3,8 @@ package choria
 import (
 	"time"
 
-	"github.com/choria-io/go-config"
-	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

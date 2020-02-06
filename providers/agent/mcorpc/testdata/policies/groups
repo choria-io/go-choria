@@ -1,0 +1,5 @@
+# line to ignore
+sysadmin cert=sa1 cert=sa2 rspec_caller
+app_admin cert=aa1 cert=aa2
+single_group rspec_caller
+invalid_group

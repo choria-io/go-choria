@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/generators/client"
-	"github.com/choria-io/go-config"
 )
 
 type tGenerateClientCommand struct {

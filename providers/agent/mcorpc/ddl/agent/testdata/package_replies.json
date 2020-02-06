@@ -1,0 +1,92 @@
+[
+    {
+        "sender": "dev5.example.net",
+        "statuscode": 0,
+        "statusmsg": "OK",
+        "data": {
+            "arch": "x86_64",
+            "ensure": "5.0.2-33.el7",
+            "epoch": "0",
+            "name": "zsh",
+            "output": null,
+            "provider": "yum",
+            "release": "33.el7",
+            "version": "5.0.2"
+        }
+    },
+    {
+        "sender": "dev1.example.net",
+        "statuscode": 0,
+        "statusmsg": "OK",
+        "data": {
+            "arch": "x86_64",
+            "ensure": "5.0.2-31.el7",
+            "epoch": "0",
+            "name": "zsh",
+            "output": null,
+            "provider": "yum",
+            "release": "31.el7",
+            "version": "5.0.2"
+        }
+    },
+    {
+        "sender": "dev2.example.net",
+        "statuscode": 0,
+        "statusmsg": "OK",
+        "data": {
+            "arch": "x86_64",
+            "ensure": "5.0.2-33.el7",
+            "epoch": "0",
+            "name": "zsh",
+            "output": null,
+            "provider": "yum",
+            "release": "33.el7",
+            "version": "5.0.2"
+        }
+    },
+    {
+        "sender": "dev4.example.net",
+        "statuscode": 0,
+        "statusmsg": "OK",
+        "data": {
+            "arch": "x86_64",
+            "ensure": "5.0.2-33.el7",
+            "epoch": "0",
+            "name": "zsh",
+            "output": null,
+            "provider": "yum",
+            "release": "33.el7",
+            "version": "5.0.2"
+        }
+    },
+    {
+        "sender": "dev3.example.net",
+        "statuscode": 0,
+        "statusmsg": "OK",
+        "data": {
+            "arch": "x86_64",
+            "ensure": "5.0.2-33.el7",
+            "epoch": "0",
+            "name": "zsh",
+            "output": null,
+            "provider": "yum",
+            "release": "33.el7",
+            "version": "5.0.2"
+        }
+    },
+    {
+        "sender": "dev7.example.net",
+        "statuscode": 0,
+        "statusmsg": "OK",
+        "data": {
+            "arch": "x86_64",
+            "ensure": "5.0.2-33.el7",
+            "epoch": "0",
+            "name": "zsh",
+            "output": null,
+            "provider": "yum",
+            "release": "33.el7",
+            "version": "5.0.2"
+        }
+    }
+]

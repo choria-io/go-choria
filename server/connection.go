@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/choria-io/go-srvcache"
+	"github.com/choria-io/go-choria/srvcache"
 )
 
 func (srv *Instance) initialConnect(ctx context.Context) (err error) {

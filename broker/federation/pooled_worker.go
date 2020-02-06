@@ -7,8 +7,8 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-protocol/protocol"
-	"github.com/choria-io/go-srvcache"
+	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/srvcache"
 	log "github.com/sirupsen/logrus"
 )
 

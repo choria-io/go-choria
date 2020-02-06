@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/choria-io/go-protocol/protocol"
+	"github.com/choria-io/go-choria/protocol"
 )
 
 // Message represents a Choria message

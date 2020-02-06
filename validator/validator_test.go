@@ -6,7 +6,7 @@ import (
 
 	"testing"
 
-	"github.com/choria-io/go-validator"
+	"github.com/choria-io/go-choria/validator"
 )
 
 func TestFileContent(t *testing.T) {
