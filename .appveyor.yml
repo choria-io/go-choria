@@ -28,4 +28,5 @@ build: false
 deploy: false
 
 test_script:
-  - ginkgo -r -keepGoing -skipMeasurements
+  # TODO: support windows pkcs11sec
+  - ginkgo -r -keepGoing -skipMeasurements -skipPackage pkcs11sec

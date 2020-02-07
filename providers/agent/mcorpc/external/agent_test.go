@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/choria-io/go-choria/build"
@@ -118,15 +119,18 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(c()).To(BeFalse())
 		})
 
-		It("should handle specifically enabled agents", func() {
-			d := &addl.DDL{
-				SourceLocation: filepath.Join(wd, "testdata/mcollective/agent/activation_checker_enabled.json"),
-				Metadata:       &agents.Metadata{Name: "activation_checker_enabled"},
-			}
-			c, err := prov.externalActivationCheck(d)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(c()).To(BeTrue())
-		})
+		// TODO: windows
+		if runtime.GOOS !="windows" {
+			It("should handle specifically enabled agents", func() {
+				d := &addl.DDL{
+					SourceLocation: filepath.Join(wd, "testdata/mcollective/agent/activation_checker_enabled.json"),
+					Metadata:       &agents.Metadata{Name: "activation_checker_enabled"},
+				}
+				c, err := prov.externalActivationCheck(d)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(c()).To(BeTrue())
+			})
+		}
 	})
 
 	Describe("externalAction", func() {
@@ -191,23 +195,26 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
 		})
 
-		It("Should handle execution failures", func() {
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+		// TODO: windows
+		if runtime.GOOS!="windows"{
+			It("Should handle execution failures", func() {
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
 
-			prov.paths["ginkgo_abort"] = ddl.SourceLocation
-			ddl.Metadata.Name = "ginkgo_abort"
-			rep := &mcorpc.Reply{}
-			req := &mcorpc.Request{
-				Agent:  "ginkgo_abort",
-				Action: "ping",
-				Data:   json.RawMessage(`{"hello":"world"}`),
-			}
+				prov.paths["ginkgo_abort"] = ddl.SourceLocation
+				ddl.Metadata.Name = "ginkgo_abort"
+				rep := &mcorpc.Reply{}
+				req := &mcorpc.Request{
+					Agent:  "ginkgo_abort",
+					Action: "ping",
+					Data:   json.RawMessage(`{"hello":"world"}`),
+				}
 
-			prov.externalAction(ctx, req, rep, agent, nil)
-			Expect(rep.Statusmsg).To(MatchRegexp("Could not call.+ginkgo_abort#ping.+exit status 1"))
-			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
-		})
+				prov.externalAction(ctx, req, rep, agent, nil)
+				Expect(rep.Statusmsg).To(MatchRegexp("Could not call.+ginkgo_abort#ping.+exit status 1"))
+				Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
+			})
+		}
 
 		It("Should validate the input before executing the agent", func() {
 			ctx, cancel := context.WithCancel(context.Background())
@@ -227,22 +234,25 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
 		})
 
-		It("Should execute the correct request binary with the correct input and set defaults on the reply", func() {
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
+		// TODO: windows
+		if runtime.GOOS!="windows" {
+			It("Should execute the correct request binary with the correct input and set defaults on the reply", func() {
+				ctx, cancel := context.WithCancel(context.Background())
+				defer cancel()
 
-			rep := &mcorpc.Reply{}
-			req := &mcorpc.Request{
-				Agent:  "ginkgo",
-				Action: "ping",
-				Data:   json.RawMessage(`{"hello":"world"}`),
-			}
+				rep := &mcorpc.Reply{}
+				req := &mcorpc.Request{
+					Agent:  "ginkgo",
+					Action: "ping",
+					Data:   json.RawMessage(`{"hello":"world"}`),
+				}
 
-			prov.externalAction(ctx, req, rep, agent, nil)
-			Expect(rep.Statusmsg).To(Equal("OK"))
-			Expect(rep.Statuscode).To(Equal(mcorpc.OK))
-			Expect(rep.Data.(map[string]interface{})["hello"].(string)).To(Equal("world"))
-			Expect(rep.Data.(map[string]interface{})["optional"].(string)).To(Equal("optional default"))
-		})
+				prov.externalAction(ctx, req, rep, agent, nil)
+				Expect(rep.Statusmsg).To(Equal("OK"))
+				Expect(rep.Statuscode).To(Equal(mcorpc.OK))
+				Expect(rep.Data.(map[string]interface{})["hello"].(string)).To(Equal("world"))
+				Expect(rep.Data.(map[string]interface{})["optional"].(string)).To(Equal("optional default"))
+			})
+		}
 	})
 })

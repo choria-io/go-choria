@@ -37,7 +37,7 @@ var _ = Describe("Broadcast", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		cl = NewMockChoriaClient(mockctl)
 
-		cfg, _ := config.NewDefaultConfig()
+		cfg := config.NewConfigForTests()
 		cfg.Collectives = []string{"mcollective", "test"}
 
 		fw, _ = choria.NewWithConfig(cfg)
