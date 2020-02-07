@@ -8,6 +8,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"runtime"
 	"testing"
 
 	"github.com/choria-io/go-choria/config"
@@ -77,8 +78,7 @@ var _ = Describe("PuppetSSL", func() {
 		})
 
 		It("Should support OverrideCertname", func() {
-			c, err := config.NewDefaultConfig()
-			Expect(err).ToNot(HaveOccurred())
+			c := config.NewConfigForTests()
 
 			c.OverrideCertname = "override.choria"
 			prov, err = New(WithChoriaConfig(c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
@@ -87,18 +87,21 @@ var _ = Describe("PuppetSSL", func() {
 			Expect(prov.conf.Identity).To(Equal("override.choria"))
 		})
 
-		It("Should use the user SSL directory when not configured", func() {
-			c, err := config.NewDefaultConfig()
-			Expect(err).ToNot(HaveOccurred())
+		// TODO: windows
+		if runtime.GOOS!="windows"{
+			It("Should use the user SSL directory when not configured", func() {
+				c, err := config.NewDefaultConfig()
+				Expect(err).ToNot(HaveOccurred())
 
-			prov, err = New(WithChoriaConfig(c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
-			Expect(err).ToNot(HaveOccurred())
+				prov, err = New(WithChoriaConfig(c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
+				Expect(err).ToNot(HaveOccurred())
 
-			d, err := userSSlDir()
-			Expect(err).ToNot(HaveOccurred())
+				d, err := userSSlDir()
+				Expect(err).ToNot(HaveOccurred())
 
-			Expect(prov.conf.SSLDir).To(Equal(d))
-		})
+				Expect(prov.conf.SSLDir).To(Equal(d))
+			})
+		}
 
 		It("Should copy all the relevant settings", func() {
 			c, err := config.NewDefaultConfig()
