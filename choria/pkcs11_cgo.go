@@ -1,4 +1,4 @@
-// +build cgo !windows
+// +build cgo
 
 package choria
 
