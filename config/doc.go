@@ -20,6 +20,7 @@ var docSrtings = map[string]Doc{
 	"plugin.choria.puppetserver_port": Doc{ds: "The port your Puppet Server listens on"},
 	"plugin.choria.puppetca_host":     Doc{ds: "The hostname where your Puppet Certificate Authority can be found"},
 	"plugin.choria.puppetca_port":     Doc{ds: "The port your Puppet Certificate Authority listens on"},
+	"plugin.choria.adapters":          Doc{ds: "The list of Data Adapters to activate", url: "https://choria.io/docs/adapters/"},
 }
 
 type Doc struct {
