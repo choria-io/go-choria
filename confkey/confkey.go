@@ -77,7 +77,7 @@ func SetStructDefaults(target interface{}) error {
 
 // StringFieldWithKey retrieves a string from target that matches key, "" when not found
 func StringFieldWithKey(target interface{}, key string) string {
-	item, err := fieldWithKey(target, key)
+	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return ""
 	}
@@ -95,7 +95,7 @@ func StringFieldWithKey(target interface{}, key string) string {
 
 // StringListWithKey retrieves a []string from target that matches key, empty when not found
 func StringListWithKey(target interface{}, key string) []string {
-	item, err := fieldWithKey(target, key)
+	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return []string{}
 	}
@@ -117,7 +117,7 @@ func StringListWithKey(target interface{}, key string) []string {
 
 // BoolWithKey retrieves a bool from target that matches key, false when not found
 func BoolWithKey(target interface{}, key string) bool {
-	item, err := fieldWithKey(target, key)
+	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return false
 	}
@@ -135,7 +135,7 @@ func BoolWithKey(target interface{}, key string) bool {
 
 // IntWithKey retrieves an int from target that matches key, 0 when not found
 func IntWithKey(target interface{}, key string) int {
-	item, err := fieldWithKey(target, key)
+	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return 0
 	}
@@ -153,7 +153,7 @@ func IntWithKey(target interface{}, key string) int {
 
 // Int64WithKey retrieves an int from target that matches key, 0 when not found
 func Int64WithKey(target interface{}, key string) int64 {
-	item, err := fieldWithKey(target, key)
+	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return 0
 	}
@@ -175,12 +175,12 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 		return errors.New("pointer is required")
 	}
 
-	item, err := fieldWithKey(target, key)
+	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return err
 	}
 
-	if tag, ok := tag(target, item, "environment"); ok {
+	if tag, ok := Tag(target, item, "environment"); ok {
 		if v, ok := os.LookupEnv(tag); ok {
 			value = v
 		}
@@ -192,7 +192,7 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 	case reflect.Slice:
 		ptr := field.Addr().Interface().(*[]string)
 
-		if tag, ok := tag(target, item, "type"); ok {
+		if tag, ok := Tag(target, item, "type"); ok {
 			switch tag {
 			case "comma_split":
 				// specifically clear it since these are one line split like 'collectives'
@@ -233,7 +233,7 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 		*ptr = i
 
 	case reflect.Int64:
-		if tag, ok := tag(target, item, "type"); ok {
+		if tag, ok := Tag(target, item, "type"); ok {
 			if tag == "duration" {
 				ptr := field.Addr().Interface().(*time.Duration)
 
@@ -266,7 +266,7 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 		ptr := field.Addr().Interface().(*string)
 		*ptr = value.(string)
 
-		if tag, ok := tag(target, item, "type"); ok {
+		if tag, ok := Tag(target, item, "type"); ok {
 			switch tag {
 			case "title_string":
 				a := []rune(value.(string))
@@ -317,9 +317,9 @@ func homeDir() (string, error) {
 	return home, nil
 }
 
-// determines the struct key name that is tagged with a certain confkey
-func fieldWithKey(s interface{}, key string) (string, error) {
-	st := reflect.TypeOf(s)
+// FieldWithKey determines the struct key name that is tagged with a certain confkey
+func FieldWithKey(target interface{}, key string) (string, error) {
+	st := reflect.TypeOf(target)
 	if st.Kind() == reflect.Ptr {
 		st = st.Elem()
 	}
@@ -337,8 +337,99 @@ func fieldWithKey(s interface{}, key string) (string, error) {
 	return "", fmt.Errorf("can't find any structure element configured with confkey '%s'", key)
 }
 
-// retrieve a tag for a struct field
-func tag(s interface{}, field string, tag string) (string, bool) {
+// FindFields looks for fields matching regular expression re and return their keys
+func FindFields(target interface{}, re string) ([]string, error) {
+	var found = []string{}
+
+	matcher, err := regexp.Compile(re)
+	if err != nil {
+		return found, err
+	}
+
+	st := reflect.TypeOf(target)
+	if st.Kind() == reflect.Ptr {
+		st = st.Elem()
+	}
+
+	for i := 0; i <= st.NumField()-1; i++ {
+		field := st.Field(i)
+
+		if ck, ok := field.Tag.Lookup("confkey"); ok {
+			if matcher.MatchString(ck) {
+				found = append(found, ck)
+			}
+		}
+	}
+
+	return found, nil
+}
+
+// Validation retrieves the validation configuration, empty when unvalidated
+func Validation(target interface{}, key string) (string, bool) {
+	item, err := FieldWithKey(target, key)
+	if err != nil {
+		return "", false
+	}
+
+	return Tag(target, item, "validate")
+
+}
+
+// DefaultString retrieves the default for a field
+func DefaultString(target interface{}, key string) (string, bool) {
+	item, err := FieldWithKey(target, key)
+	if err != nil {
+		return "", false
+	}
+
+	return Tag(target, item, "default")
+}
+
+// Environment retrieves the environment variable used to set a value
+func Environment(target interface{}, key string) (string, bool) {
+	item, err := FieldWithKey(target, key)
+	if err != nil {
+		return "", false
+	}
+
+	return Tag(target, item, "environment")
+}
+
+// Type returns the type for a field as a string
+func Type(target interface{}, key string) (string, bool) {
+	item, err := FieldWithKey(target, key)
+	if err != nil {
+		return "", false
+	}
+
+	field := reflect.ValueOf(target).Elem().FieldByName(item)
+	if tag, ok := Tag(target, item, "type"); ok {
+		return tag, true
+	}
+
+	switch field.Kind() {
+	case reflect.Slice:
+		return "strings", true
+
+	case reflect.Int:
+		return "integer", true
+
+	case reflect.Int64:
+		return "int64", true
+
+	case reflect.String:
+		return "string", true
+
+	case reflect.Bool:
+		return "boolean", true
+
+	default:
+		return "", false
+	}
+}
+
+// Tag retrieve a tag for a struct field
+func Tag(s interface{}, field string, tag string) (string, bool) {
 	st := reflect.TypeOf(s)
 
 	if st.Kind() == reflect.Ptr {
