@@ -9,7 +9,7 @@ import (
 
 func TestChoria(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Choria SRV Cache")
+	RunSpecs(t, "SRVCache")
 }
 
 var _ = Describe("Servers", func() {

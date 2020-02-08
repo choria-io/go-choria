@@ -17,7 +17,7 @@ import (
 
 func Test(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Choria Network Broker")
+	RunSpecs(t, "Broker/Network")
 }
 
 var _ = Describe("Network Broker", func() {

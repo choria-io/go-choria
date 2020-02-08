@@ -9,5 +9,5 @@ import (
 
 func TestServer(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Aggregate")
+	RunSpecs(t, "Providers/Agent/McoRPC/Aggregate")
 }

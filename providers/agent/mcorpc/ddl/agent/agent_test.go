@@ -15,7 +15,7 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "McoRPC/DDL/Agent")
+	RunSpecs(t, "Providers/Agent/McoRPC/DDL/Agent")
 }
 
 var _ = Describe("McoRPC/DDL/Agent", func() {

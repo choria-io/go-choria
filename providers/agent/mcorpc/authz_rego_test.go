@@ -30,7 +30,6 @@ var _ = Describe("RegoPolicy", func() {
 		)
 
 		BeforeEach(func() {
-
 			logger = logrus.NewEntry(logrus.New())
 			logger.Logger.SetLevel(logrus.DebugLevel)
 			logger.Logger.Out = GinkgoWriter

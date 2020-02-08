@@ -18,7 +18,7 @@ import (
 
 func TestMcoRPC(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "McoRPC")
+	RunSpecs(t, "Providers/Agent/McoRPC")
 }
 
 var _ = Describe("McoRPC", func() {

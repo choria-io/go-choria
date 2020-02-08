@@ -13,7 +13,7 @@ import (
 func TestChoria(t *testing.T) {
 	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Events")
+	RunSpecs(t, "Lifecycle")
 }
 
 var _ = Describe("Events", func() {

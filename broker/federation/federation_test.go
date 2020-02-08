@@ -10,12 +10,13 @@ import (
 	"sync"
 	"testing"
 
-	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/srvcache"
 	"github.com/nats-io/nats.go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/srvcache"
 )
 
 var c *choria.Framework
@@ -23,6 +24,15 @@ var c *choria.Framework
 func init() {
 	c, _ = choria.New("testdata/federation.cfg")
 }
+
+func TestFederation(t *testing.T) {
+	log.SetOutput(ioutil.Discard)
+	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
+
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Broker/Federation")
+}
+
 
 func newDiscardLogger() (*log.Entry, *bufio.Writer, *bytes.Buffer) {
 	var logbuf bytes.Buffer
@@ -169,13 +179,6 @@ func (s *stubConnectionManager) Init() *stubConnectionManager {
 	}
 
 	return s
-}
-func TestFederation(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
-	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
-
-	RegisterFailHandler(Fail)
-	RunSpecs(t, "Federation")
 }
 
 var _ = Describe("Federation Broker", func() {

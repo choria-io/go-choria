@@ -17,7 +17,7 @@ import (
 func Test(t *testing.T) {
 	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "McoRPC/Audit")
+	RunSpecs(t, "Providers/Agent/McoRPC/Audit")
 }
 
 var _ = Describe("McoRPC/Audit", func() {

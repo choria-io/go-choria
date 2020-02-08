@@ -23,7 +23,7 @@ import (
 
 func TestPuppetSecurity(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Security/Puppet")
+	RunSpecs(t, "Providers/Security/Puppet")
 }
 
 var _ = Describe("PuppetSSL", func() {

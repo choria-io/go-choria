@@ -21,7 +21,7 @@ import (
 
 func TestFileSecurity(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Security/File")
+	RunSpecs(t, "Providers/Security/File")
 }
 
 func setSSL(c *Config, parent string, id string) {
