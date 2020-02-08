@@ -10,7 +10,7 @@ import (
 
 func TestDefault(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "DefaultProvTarget")
+	RunSpecs(t, "Provtarget/Default")
 }
 
 var _ = Describe("Default", func() {

@@ -22,7 +22,7 @@ import (
 func Test(t *testing.T) {
 	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "McoRPC/Golang/RPCUtil")
+	RunSpecs(t, "Providers/Agent/McoRPC/Golang/RPCUtil")
 }
 
 var _ = Describe("McoRPC/Golang/RPCUtil", func() {

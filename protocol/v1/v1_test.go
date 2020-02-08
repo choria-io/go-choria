@@ -9,5 +9,5 @@ import (
 
 func TestV1(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Protocol Version 1")
+	RunSpecs(t, "Protocol/V1")
 }

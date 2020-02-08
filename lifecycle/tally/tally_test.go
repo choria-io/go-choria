@@ -17,7 +17,7 @@ import (
 
 func TestChoria(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Tally")
+	RunSpecs(t, "Lifecycle/Tally")
 }
 
 var _ = Describe("Tally", func() {

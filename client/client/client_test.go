@@ -21,7 +21,7 @@ import (
 func TestClient(t *testing.T) {
 	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Client")
+	RunSpecs(t, "Client/Client")
 }
 
 var _ = Describe("Client", func() {

@@ -9,7 +9,7 @@ import (
 
 func TestFileContent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Server/Discovery/Identity")
+	RunSpecs(t, "Filter/Identity")
 }
 
 var _ = Describe("Server/Discovery/Identity", func() {

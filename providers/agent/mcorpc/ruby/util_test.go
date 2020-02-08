@@ -13,7 +13,7 @@ import (
 func Test(t *testing.T) {
 	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "McoRPC/Ruby")
+	RunSpecs(t, "Providers/Agent/McoRPC/Ruby")
 }
 
 var _ = Describe("McoRPC/Ruby", func() {

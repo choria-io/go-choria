@@ -22,7 +22,7 @@ import (
 func TestBroadcast(t *testing.T) {
 	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Broadcast")
+	RunSpecs(t, "Client/Discovery/Broadcast")
 }
 
 var _ = Describe("Broadcast", func() {
