@@ -235,6 +235,7 @@ func (p *Provider) executeRequest(ctx context.Context, command string, protocol 
 		"CHORIA_EXTERNAL_REPLY=" + repfile.Name(),
 		"CHORIA_EXTERNAL_PROTOCOL=" + protocol,
 		"CHORIA_EXTERNAL_CONFIG=" + agentConfig,
+		"PATH=" + os.Getenv("PATH"),
 	}
 
 	stdout, err := execution.StdoutPipe()
