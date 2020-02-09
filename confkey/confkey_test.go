@@ -3,6 +3,7 @@ package confkey
 import (
 	"os"
 	"runtime"
+	"strings"
 	"time"
 
 	. "github.com/onsi/ginkgo"
@@ -27,7 +28,9 @@ type TestData struct {
 	TitleString string        `confkey:"title_string" type:"title_string"`
 	PathString  string        `confkey:"path_string" type:"path_string"`
 	Bool        bool          `confkey:"bool"`
-	T           time.Duration `confkey:"interval" type:"duration" default:"1h"`
+	T           time.Duration `confkey:"interval" type:"duration" default:"1h" environment:"T"`
+	Doc         string        `confkey:"doc" url:"http://example.com" deprecated:"1" description:"hello world"`
+	NonCK       string
 }
 
 var _ = Describe("Confkey", func() {
@@ -37,7 +40,107 @@ var _ = Describe("Confkey", func() {
 		d = TestData{}
 	})
 
-	var _ = Describe("Int64WithKey", func() {
+	Describe("Type", func() {
+		It("Should get the right value", func() {
+			ds, ok := Type(&d, "doc")
+			Expect(ok).To(BeTrue())
+			Expect(ds).To(Equal("string"))
+
+			ds, ok = Type(&d, "colon_split")
+			Expect(ok).To(BeTrue())
+			Expect(ds).To(Equal("colon_split"))
+		})
+	})
+
+	Describe("IsDeprecated", func() {
+		It("Should get the right value", func() {
+			ds, ok := IsDeprecated(d, "doc")
+			Expect(ok).To(BeTrue())
+			Expect(ds).To(BeTrue())
+
+			ds, ok = IsDeprecated(d, "bool")
+			Expect(ok).To(BeFalse())
+			Expect(ds).To(BeFalse())
+		})
+	})
+
+	Describe("URL", func() {
+		It("Should get the right value", func() {
+			ds, ok := URL(d, "doc")
+			Expect(ok).To(BeTrue())
+			Expect(ds).To(Equal("http://example.com"))
+		})
+	})
+
+	Describe("Environment", func() {
+		It("Should get the right value", func() {
+			ds, ok := Environment(d, "interval")
+			Expect(ok).To(BeTrue())
+			Expect(ds).To(Equal("T"))
+		})
+	})
+
+	Describe("DefaultString", func() {
+		It("Should get the right value", func() {
+			ds, ok := DefaultString(d, "loglevel")
+			Expect(ok).To(BeTrue())
+			Expect(ds).To(Equal("warn"))
+		})
+	})
+
+	Describe("Validation", func() {
+		It("Should get the right value", func() {
+			ds, ok := Validation(d, "loglevel")
+			Expect(ok).To(BeTrue())
+			Expect(ds).To(Equal("enum=debug,info,warn"))
+		})
+	})
+
+	Describe("Description", func() {
+		It("Should get the right value", func() {
+			ds, ok := Description(d, "doc")
+			Expect(ok).To(BeTrue())
+			Expect(ds).To(Equal("hello world"))
+		})
+	})
+
+	Describe("KeyTag", func() {
+		It("Should get the right data", func() {
+			t, ok := KeyTag(d, "loglevel", "validate")
+			Expect(ok).To(BeTrue())
+			Expect(t).To(Equal("enum=debug,info,warn"))
+
+			t, ok = KeyTag(d, "bool", "validate")
+			Expect(ok).To(BeFalse())
+			Expect(t).To(Equal(""))
+
+			t, ok = KeyTag(d, "na", "validate")
+			Expect(ok).To(BeFalse())
+			Expect(t).To(Equal(""))
+		})
+	})
+
+	Describe("FindFields", func() {
+		It("Should find al the right keys", func() {
+			found, err := FindFields(d, "split|bool")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(found).To(Equal(strings.Fields("bool colon_split comma_split path_split")))
+		})
+	})
+
+	Describe("FieldWithKey", func() {
+		It("Should find the right key", func() {
+			k, err := FieldWithKey(d, "bool")
+			Expect(k).To(Equal("Bool"))
+			Expect(err).ToNot(HaveOccurred())
+
+			k, err = FieldWithKey(d, "nonexisting")
+			Expect(k).To(Equal(""))
+			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	Describe("Int64WithKey", func() {
 		It("Should get the right int64", func() {
 			Expect(Int64WithKey(&d, "int64")).To(Equal(int64(0)))
 			d.Int64 = 10
@@ -49,7 +152,7 @@ var _ = Describe("Confkey", func() {
 		})
 	})
 
-	var _ = Describe("IntWithKey", func() {
+	Describe("IntWithKey", func() {
 		It("Should get the right int", func() {
 			Expect(IntWithKey(&d, "int")).To(Equal(0))
 			d.Int = 10
@@ -61,7 +164,7 @@ var _ = Describe("Confkey", func() {
 		})
 	})
 
-	var _ = Describe("BoolWithKey", func() {
+	Describe("BoolWithKey", func() {
 		It("Should get the right bool", func() {
 			d.Bool = false
 			Expect(BoolWithKey(&d, "bool")).To(BeFalse())
@@ -74,7 +177,7 @@ var _ = Describe("Confkey", func() {
 		})
 	})
 
-	var _ = Describe("StringListWithKey", func() {
+	Describe("StringListWithKey", func() {
 		It("Should get the right list", func() {
 			d.CommaSplit = []string{"one", "two"}
 			Expect(StringListWithKey(&d, "comma_split")).To(Equal([]string{"one", "two"}))
@@ -85,7 +188,7 @@ var _ = Describe("Confkey", func() {
 		})
 	})
 
-	var _ = Describe("StringFieldWithKey", func() {
+	Describe("StringFieldWithKey", func() {
 		It("Should get the right string", func() {
 			d.StringEnum = "warn"
 			Expect(StringFieldWithKey(&d, "loglevel")).To(Equal("warn"))
@@ -96,14 +199,14 @@ var _ = Describe("Confkey", func() {
 		})
 	})
 
-	var _ = Describe("Validate", func() {
+	Describe("Validate", func() {
 		It("Should validate the struct", func() {
 			err := Validate(TestData{PlainString: "un > safe"})
 			Expect(err).To(MatchError("PlainString shellsafe validation failed: may not contain '>'"))
 		})
 	})
 
-	var _ = Describe("SetStructDefaults", func() {
+	Describe("SetStructDefaults", func() {
 		It("Should set defaults", func() {
 			err := SetStructDefaults(d)
 			Expect(err).To(MatchError("pointer is required"))
@@ -116,7 +219,7 @@ var _ = Describe("Confkey", func() {
 		})
 	})
 
-	var _ = Describe("SetStructFieldWithKey", func() {
+	Describe("SetStructFieldWithKey", func() {
 		It("Should set and validate the field", func() {
 			err := SetStructFieldWithKey(&d, "plain_string", "hello world")
 			Expect(err).ToNot(HaveOccurred())

@@ -36,6 +36,7 @@ import (
 	"reflect"
 	"regexp"
 	"runtime"
+	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -361,6 +362,8 @@ func FindFields(target interface{}, re string) ([]string, error) {
 		}
 	}
 
+	sort.Strings(found)
+
 	return found, nil
 }
 
@@ -411,8 +414,13 @@ func IsDeprecated(target interface{}, key string) (bool, bool) {
 	return bd, true
 }
 
-// Type returns the type for a field as a string
+// Type returns the type for a field as a string, target has to be a pointer
 func Type(target interface{}, key string) (string, bool) {
+	tt := reflect.TypeOf(target)
+	if tt.Kind() != reflect.Ptr {
+		return "", false
+	}
+
 	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return "", false
