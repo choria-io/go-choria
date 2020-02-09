@@ -364,35 +364,51 @@ func FindFields(target interface{}, re string) ([]string, error) {
 	return found, nil
 }
 
-// Validation retrieves the validation configuration, empty when unvalidated
-func Validation(target interface{}, key string) (string, bool) {
+func KeyTag(target interface{}, key string, tag string) (string, bool) {
 	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return "", false
 	}
 
-	return Tag(target, item, "validate")
+	return Tag(target, item, tag)
+}
 
+func Description(target interface{}, key string) (string, bool) {
+	return KeyTag(target, key, "description")
+}
+
+// Validation retrieves the validation configuration, empty when unvalidated
+func Validation(target interface{}, key string) (string, bool) {
+	return KeyTag(target, key, "validate")
 }
 
 // DefaultString retrieves the default for a field
 func DefaultString(target interface{}, key string) (string, bool) {
-	item, err := FieldWithKey(target, key)
-	if err != nil {
-		return "", false
-	}
-
-	return Tag(target, item, "default")
+	return KeyTag(target, key, "default")
 }
 
 // Environment retrieves the environment variable used to set a value
 func Environment(target interface{}, key string) (string, bool) {
-	item, err := FieldWithKey(target, key)
-	if err != nil {
-		return "", false
+	return KeyTag(target, key, "environment")
+}
+
+// Environment retrieves the url for additional docs for a key
+func URL(target interface{}, key string) (string, bool) {
+	return KeyTag(target, key, "url")
+}
+
+func IsDeprecated(target interface{}, key string) (bool, bool) {
+	d, ok := KeyTag(target, key, "deprecated")
+	if !ok {
+		return false, false
 	}
 
-	return Tag(target, item, "environment")
+	bd, err := strToBool(d)
+	if err != nil {
+		return false, false
+	}
+
+	return bd, true
 }
 
 // Type returns the type for a field as a string
