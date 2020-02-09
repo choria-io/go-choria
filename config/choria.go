@@ -9,10 +9,10 @@ import (
 
 // ChoriaPluginConfig settings
 type ChoriaPluginConfig struct {
-	PuppetServerHost string `confkey:"plugin.choria.puppetserver_host" default:"puppet"`
-	PuppetServerPort int    `confkey:"plugin.choria.puppetserver_port" default:"8140"`
-	PuppetCAHost     string `confkey:"plugin.choria.puppetca_host" default:"puppet"`
-	PuppetCAPort     int    `confkey:"plugin.choria.puppetca_port" default:"8140"`
+	PuppetServerHost string `confkey:"plugin.choria.puppetserver_host" default:"puppet" description:"The hostname where your Puppet Server can be found"`
+	PuppetServerPort int    `confkey:"plugin.choria.puppetserver_port" default:"8140" description:"The port your Puppet Server listens on"`
+	PuppetCAHost     string `confkey:"plugin.choria.puppetca_host" default:"puppet" description:"The hostname where your Puppet Certificate Authority can be found"`
+	PuppetCAPort     int    `confkey:"plugin.choria.puppetca_port" default:"8140" description:"The port your Puppet Certificate Authority listens on"`
 	PuppetDBHost     string `confkey:"plugin.choria.puppetdb_host" default:"puppet"`
 	PuppetDBPort     int    `confkey:"plugin.choria.puppetdb_port" default:"8081"`
 	SSLDir           string `confkey:"plugin.choria.ssldir" type:"path_string"`
@@ -101,7 +101,7 @@ type ChoriaPluginConfig struct {
 	PKCS11Slot       int    `confkey:"plugin.security.pkcs11.slot"`
 
 	// adapters
-	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split"`
+	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split" description:"The list of Data Adapters to activate" url:"https://choria.io/docs/adapters/"`
 
 	// status file
 	StatusFilePath      string `confkey:"plugin.choria.status_file_path" type:"path_string"`

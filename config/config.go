@@ -15,17 +15,17 @@ import (
 
 // Config represents Choria configuration
 type Config struct {
-	Registration              []string `confkey:"registration" type:"comma_split" default:""`
-	RegistrationCollective    string   `confkey:"registration_collective"`
-	RegisterInterval          int      `confkey:"registerinterval" default:"300"`
-	RegistrationSplay         bool     `confkey:"registration_splay" default:"false"`
-	Collectives               []string `confkey:"collectives" type:"comma_split" default:"mcollective"`
-	MainCollective            string   `confkey:"main_collective"`
-	LogFile                   string   `confkey:"logfile" type:"path_string"`
-	KeepLogs                  int      `confkey:"keeplogs" default:"5"`
-	MaxLogSize                int      `confkey:"max_log_size" default:"2097152"`
-	LogLevel                  string   `confkey:"loglevel" default:"info" validate:"enum=debug,info,warn,error,fatal"`
-	LogFacility               string   `confkey:"logfacility" default:"user"`
+	Registration              []string `confkey:"registration" type:"comma_split" default:"" description:"The plugin to use for sending Registration data"`
+	RegistrationCollective    string   `confkey:"registration_collective" description:"The Sub Collective to publish registration data to"`
+	RegisterInterval          int      `confkey:"registerinterval" default:"300" description:"How often to publish registration data"`
+	RegistrationSplay         bool     `confkey:"registration_splay" default:"false" description:"When true delays initial registration publish by a random period up to registerinterval"`
+	Collectives               []string `confkey:"collectives" type:"comma_split" default:"mcollective" description:"The list of known Sub Collectives this node will join or communicate with"`
+	MainCollective            string   `confkey:"main_collective" description:"The collective to publish to when no specific Sub Collective is configured"`
+	LogFile                   string   `confkey:"logfile" type:"path_string" description:"The file to write logs to"`
+	KeepLogs                  int      `confkey:"keeplogs" default:"5" description:"How many rotated log files to keep"`
+	MaxLogSize                int      `confkey:"max_log_size" default:"2097152" description:"Maximum size a log file will be before being rotated" deprecated:"1"`
+	LogLevel                  string   `confkey:"loglevel" default:"info" validate:"enum=debug,info,warn,error,fatal" description:"The lowest level log to add to the logfile"`
+	LogFacility               string   `confkey:"logfacility" default:"user" description:"When logging to syslog what facility to log with" deprecated:"t"`
 	LibDir                    []string `confkey:"libdir" type:"path_split"`
 	Identity                  string   `confkey:"identity"`
 	DirectAddressing          bool     `confkey:"direct_addressing" default:"true"`
