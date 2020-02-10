@@ -14,47 +14,110 @@ import (
 )
 
 // Config represents Choria configuration
+//
+// NOTE: When adding or updating doc strings please run `go generate` in the root of the repository
 type Config struct {
-	Registration              []string `confkey:"registration" type:"comma_split" default:"" description:"The plugin to use for sending Registration data"`
-	RegistrationCollective    string   `confkey:"registration_collective" description:"The Sub Collective to publish registration data to"`
-	RegisterInterval          int      `confkey:"registerinterval" default:"300" description:"How often to publish registration data"`
-	RegistrationSplay         bool     `confkey:"registration_splay" default:"false" description:"When true delays initial registration publish by a random period up to registerinterval"`
-	Collectives               []string `confkey:"collectives" type:"comma_split" default:"mcollective" description:"The list of known Sub Collectives this node will join or communicate with"`
-	MainCollective            string   `confkey:"main_collective" description:"The collective to publish to when no specific Sub Collective is configured"`
-	LogFile                   string   `confkey:"logfile" type:"path_string" description:"The file to write logs to"`
-	KeepLogs                  int      `confkey:"keeplogs" default:"5" description:"How many rotated log files to keep"`
-	MaxLogSize                int      `confkey:"max_log_size" default:"2097152" description:"Maximum size a log file will be before being rotated" deprecated:"1"`
-	LogLevel                  string   `confkey:"loglevel" default:"info" validate:"enum=debug,info,warn,error,fatal" description:"The lowest level log to add to the logfile"`
-	LogFacility               string   `confkey:"logfacility" default:"user" description:"When logging to syslog what facility to log with" deprecated:"t"`
-	LibDir                    []string `confkey:"libdir" type:"path_split"`
-	Identity                  string   `confkey:"identity"`
-	DirectAddressing          bool     `confkey:"direct_addressing" default:"true"`
-	DirectAddressingThreshold int      `confkey:"direct_addressing_threshold" default:"10"`
-	Color                     bool     `confkey:"color" default:"true"`
-	Daemonize                 bool     `confkey:"daemonize" default:"false"`
-	SecurityProvider          string   `confkey:"securityprovider" default:"psk" type:"title_string"`
-	FactSource                string   `confkey:"factsource" default:"yaml"`
-	Connector                 string   `confkey:"connector" default:"nats" type:"title_string"`
-	ClassesFile               string   `confkey:"classesfile" default:"/opt/puppetlabs/puppet/cache/state/classes.txt" type:"path_string"`
-	DiscoveryTimeout          int      `confkey:"discovery_timeout" default:"2"`
-	PublishTimeout            int      `confkey:"publish_timeout" default:"2"`
-	ConnectionTimeout         int      `confkey:"connection_timeout"`
-	RPCAudit                  bool     `confkey:"rpcaudit" default:"false"`
-	RPCAuditProvider          string   `confkey:"rpcauditprovider" type:"title_string"`
-	RPCAuthorization          bool     `confkey:"rpcauthorization" default:"false"`
-	RPCAuthorizationProvider  string   `confkey:"rpcauthprovider" type:"title_string" default:"action_policy"`
-	RPCLimitMethod            string   `confkey:"rpclimitmethod" default:"first" validate:"enum=first,random"`
-	LoggerType                string   `confkey:"logger_type" default:"file"`
-	FactCacheTime             int      `confkey:"fact_cache_time" default:"300"`
-	Threaded                  bool     `confkey:"threaded" default:"false"`
-	TTL                       int      `confkey:"ttl" default:"60"`
-	DefaultDiscoveryOptions   []string `confkey:"default_discovery_options"`
-	DefaultDiscoveryMethod    string   `confkey:"default_discovery_method" default:"mc"`
-	SoftShutdown              bool     `confkey:"soft_shutdown" default:"true"`
-	SoftShutdownTimeout       int      `confkey:"soft_shutdown_timeout" default:"2"`
-	ActivateAgents            bool     `confkey:"activate_agents" default:"true"`
-	FactSourceFile            string   `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml" type:"path_string"`
-	RequireClientFilter       bool     `confkey:"require_client_filter" default:"false"`
+	// The plugins used when publishing Registration data, when this is unset or empty sending registration data is disabled
+	Registration []string `confkey:"registration" type:"comma_split"`
+
+	// The Sub Collective to publish registration data to
+	RegistrationCollective string `confkey:"registration_collective"`
+
+	// How often to publish registration data
+	RegisterInterval int `confkey:"registerinterval" default:"300"`
+
+	// When true delays initial registration publish by a random period up to registerinterval following registration publishes will be at registerinterval without further splay
+	RegistrationSplay bool `confkey:"registration_splay" default:"false"`
+
+	// The list of known Sub Collectives this node will join or communicate with, Servers will subscribe the node and each agent to each sub collective and Clients will publish to a chosen sub collective
+	Collectives []string `confkey:"collectives" type:"comma_split" default:"mcollective"`
+
+	// The Sub Collective where a Client will publish to when no specific Sub Collective is configured
+	MainCollective string `confkey:"main_collective"`
+
+	// The file to write logs to, when set to an empty string logging will be to the console
+	LogFile string `confkey:"logfile" type:"path_string"`
+
+	// The lowest level log to add to the logfile
+	LogLevel string `confkey:"loglevel" default:"info" validate:"enum=debug,info,warn,error,fatal"`
+
+	// The directory where Agents, DDLs and other plugins are found
+	LibDir []string `confkey:"libdir" type:"path_split"`
+
+	// The identity this machine is known as, when empty it's derived based on the operating system hostname or by calling facter fqnd
+	Identity string `confkey:"identity"`
+
+	// Enables the direct-to-node communications pattern, unused in the Go clients
+	DirectAddressing bool `confkey:"direct_addressing" default:"true"`
+
+	// Disables or enable CLI color, not well supported in Go based code
+	Color bool `confkey:"color" default:"true"`
+
+	// Used to select the security provider in Ruby clients, only sensible value is "choria"
+	SecurityProvider string `confkey:"securityprovider" default:"choria" type:"title_string" deprecated:"1"`
+
+	// Configures the network connector to use, only sensible value is "nats", unused in Go based code
+	Connector string `confkey:"connector" default:"nats" type:"title_string"`
+
+	// Path to a file listing configuration classes applied to a node, used in matches using Class filters
+	ClassesFile string `confkey:"classesfile" default:"/opt/puppetlabs/puppet/cache/state/classes.txt" type:"path_string"`
+
+	// How long to wait for responses while doing broadcast discovery
+	DiscoveryTimeout int `confkey:"discovery_timeout" default:"2"`
+
+	// Ruby clients use this to determine how long they will allow when publishing requests
+	PublishTimeout int `confkey:"publish_timeout" default:"2"`
+
+	// Ruby clients use this to determine how long they will try to connect, fails after timeout
+	ConnectionTimeout int `confkey:"connection_timeout"`
+
+	// When enabled uses rpcauditprovider to audit RPC requests processed by the server
+	RPCAudit bool `confkey:"rpcaudit" default:"false" url:"https://choria.io/docs/configuration/aaa/"`
+
+	// The audit provider to use, unused at present as there is only a "choria" one
+	RPCAuditProvider string `confkey:"rpcauditprovider" type:"title_string" url:"https://choria.io/docs/configuration/aaa/"`
+
+	// When enables authorization is performed on every RPC request based on rpcauthprovider
+	RPCAuthorization bool `confkey:"rpcauthorization" default:"false" url:"https://choria.io/docs/configuration/aaa/"`
+
+	// The Authorization system to use
+	RPCAuthorizationProvider string `confkey:"rpcauthprovider" type:"title_string" default:"action_policy" url:"https://choria.io/docs/configuration/aaa/"`
+
+	// When limiting nodes to a subset of discovered nodes this is the method to use, random is influenced by
+	RPCLimitMethod string `confkey:"rpclimitmethod" default:"first" validate:"enum=first,random"`
+
+	// The type of logging to use, unused in Go based programs
+	LoggerType string `confkey:"logger_type" default:"file" validate:"enum=console,file,syslog"`
+
+	// Enables multi threaded mode in the Ruby client, generally a bad idea
+	Threaded bool `confkey:"threaded" default:"false"`
+
+	// How long published messages are allowed to linger on the network, lower numbers have a higher reliance on clocks being in sync
+	TTL int `confkey:"ttl" default:"60"`
+
+	// Configurable options to always pass to the discovery subsystem
+	DefaultDiscoveryOptions []string `confkey:"default_discovery_options"`
+
+	// The default discovery plugin to use. The default "mc" uses a network broadcast and "choria" uses PuppetDB
+	DefaultDiscoveryMethod string `confkey:"default_discovery_method" default:"mc"`
+
+	// Where to look for YAML or JSON based facts
+	FactSourceFile string `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml" type:"path_string"`
+
+	// If a client filter should always be required, appears unused at the moment
+	RequireClientFilter bool `confkey:"require_client_filter" default:"false"`
+
+	// Deprecated settings
+	ActivateAgents            bool   `confkey:"activate_agents" default:"true" deprecated:"1"`
+	Daemonize                 bool   `confkey:"daemonize" default:"false" deprecated:"1"`
+	DirectAddressingThreshold int    `confkey:"direct_addressing_threshold" default:"10" deprecated:"1"`
+	FactCacheTime             int    `confkey:"fact_cache_time" default:"300" deprecated:"1"`
+	FactSource                string `confkey:"factsource" default:"yaml" deprecated:"1"`
+	KeepLogs                  int    `confkey:"keeplogs" default:"5" deprecated:"1"`
+	LogFacility               string `confkey:"logfacility" default:"user" deprecated:"1"`
+	MaxLogSize                int    `confkey:"max_log_size" default:"2097152" deprecated:"1"`
+	SoftShutdown              bool   `confkey:"soft_shutdown" default:"true" deprecated:"1"`
+	SoftShutdownTimeout       int    `confkey:"soft_shutdown_timeout" default:"2" deprecated:"1"`
 
 	ConfigFile string
 

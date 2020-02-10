@@ -39,7 +39,7 @@ func Request(request protocol.Request, agent string, action string, data json.Ra
 	logfile := cfg.Option("plugin.rpcaudit.logfile", "")
 
 	if logfile == "" {
-		log.Warnf("MCollective RPC Auditing is enabled but no logfile is configured, skipping")
+		log.Warnf("Choria RPC Auditing is enabled but no logfile is configured, skipping")
 		return false
 	}
 
