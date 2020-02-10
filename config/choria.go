@@ -8,107 +8,96 @@ import (
 )
 
 // ChoriaPluginConfig settings
+//
+// NOTE: When adding or updating doc strings please run `go generate` in the root of the repository
 type ChoriaPluginConfig struct {
-	PuppetServerHost string `confkey:"plugin.choria.puppetserver_host" default:"puppet" description:"The hostname where your Puppet Server can be found"`
-	PuppetServerPort int    `confkey:"plugin.choria.puppetserver_port" default:"8140" description:"The port your Puppet Server listens on"`
-	PuppetCAHost     string `confkey:"plugin.choria.puppetca_host" default:"puppet" description:"The hostname where your Puppet Certificate Authority can be found"`
-	PuppetCAPort     int    `confkey:"plugin.choria.puppetca_port" default:"8140" description:"The port your Puppet Certificate Authority listens on"`
-	PuppetDBHost     string `confkey:"plugin.choria.puppetdb_host" default:"puppet"`
-	PuppetDBPort     int    `confkey:"plugin.choria.puppetdb_port" default:"8081"`
-	SSLDir           string `confkey:"plugin.choria.ssldir" type:"path_string"`
-	UseSRVRecords    bool   `confkey:"plugin.choria.use_srv" default:"true"`
-	SRVDomain        string `confkey:"plugin.choria.srv_domain"`
-	Provision        bool   `confkey:"plugin.choria.server.provision" default:"false"`
+	PuppetServerHost string `confkey:"plugin.choria.puppetserver_host" default:"puppet"`                                                     // The hostname where your Puppet Server can be found
+	PuppetServerPort int    `confkey:"plugin.choria.puppetserver_port" default:"8140"`                                                       // The port your Puppet Server listens on
+	PuppetCAHost     string `confkey:"plugin.choria.puppetca_host" default:"puppet"`                                                         // The hostname where your Puppet Certificate Authority can be found
+	PuppetCAPort     int    `confkey:"plugin.choria.puppetca_port" default:"8140"`                                                           // The port your Puppet Certificate Authority listens on
+	PuppetDBHost     string `confkey:"plugin.choria.puppetdb_host" default:"puppet"`                                                         // The host hosting your PuppetDB, used by the "choria" discovery plugin
+	PuppetDBPort     int    `confkey:"plugin.choria.puppetdb_port" default:"8081"`                                                           // The port your PuppetDB listens on
+	UseSRVRecords    bool   `confkey:"plugin.choria.use_srv" default:"true" url:"https://choria.io/docs/deployment/dns/"`                    // If SRV record lookups should be attempted to find Puppet, PuppetDB, Brokers etc
+	SRVDomain        string `confkey:"plugin.choria.srv_domain" url:"https://choria.io/docs/deployment/dns/"`                                // The domain to use for SRV records, defaults to the domain the server FQDN is in
+	Provision        bool   `confkey:"plugin.choria.server.provision" default:"false" url:"https://github.com/choria-io/provisioning-agent"` // Specifically enable or disable provisioning
 
 	// discovery proxy
-	DiscoveryHost  string `confkey:"plugin.choria.discovery_host" default:"puppet"`
-	DiscoveryPort  int    `confkey:"plugin.choria.discovery_port" default:"8085"`
-	DiscoveryProxy bool   `confkey:"plugin.choria.discovery_proxy" default:"false"`
+	DiscoveryHost  string `confkey:"plugin.choria.discovery_host" default:"puppet" deprecated:"1"`
+	DiscoveryPort  int    `confkey:"plugin.choria.discovery_port" default:"8085" deprecated:"1"`
+	DiscoveryProxy bool   `confkey:"plugin.choria.discovery_proxy" default:"false" deprecated:"1"`
 
-	// federation
-	FederationCollectives     []string `confkey:"plugin.choria.federation.collectives" type:"comma_split" environment:"CHORIA_FED_COLLECTIVE"`
-	FederationMiddlewareHosts []string `confkey:"plugin.choria.federation_middleware_hosts" type:"comma_split"`
-	FederationCluster         string   `confkey:"plugin.choria.federation.cluster" default:"mcollective"`
+	FederationCollectives     []string `confkey:"plugin.choria.federation.collectives" type:"comma_split" environment:"CHORIA_FED_COLLECTIVE" url:"https://choria.io/docs/federation/"` // List of known remote collectives accessible via Federation Brokers
+	FederationMiddlewareHosts []string `confkey:"plugin.choria.federation_middleware_hosts" type:"comma_split" url:"https://choria.io/docs/federation/"`                                // Middleware brokers used by the Federation Broker, if unset uses SRV
+	FederationCluster         string   `confkey:"plugin.choria.federation.cluster" default:"mcollective" url:"https://choria.io/docs/federation/"`                                      // The cluster name a Federation Broker serves
 
-	StatsListenAddress    string `confkey:"plugin.choria.stats_address" default:"127.0.0.1"`
-	StatsPort             int    `confkey:"plugin.choria.stats_port" default:"0"`
-	LegacyLifeCycleFormat bool   `confkey:"plugin.choria.legacy_lifecycle_format" default:"0"`
+	StatsListenAddress    string `confkey:"plugin.choria.stats_address" default:"127.0.0.1"`   // The address to listen on for statistics
+	StatsPort             int    `confkey:"plugin.choria.stats_port" default:"0"`              // The port to listen on for HTTP requests for statistics, setting to 0 disables it
+	LegacyLifeCycleFormat bool   `confkey:"plugin.choria.legacy_lifecycle_format" default:"0"` // When enabled will publish lifecycle events in the legacy format, else Cloud Events format is used
 
-	// nats connector
-	NatsUser                 string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`
-	NatsPass                 string   `confkey:"plugin.nats.pass" environment:"MCOLLECTIVE_NATS_PASSWORD"`
-	NatsCredentials          string   `confkey:"plugin.nats.credentials" environment:"MCOLLECTIVE_NATS_CREDENTIALS"`
-	NatsNGS                  bool     `confkey:"plugin.nats.ngs" environment:"MCOLLECTIVE_NATS_NGS"`
-	MiddlewareHosts          []string `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`
-	RandomizeMiddlewareHosts bool     `confkey:"plugin.choria.randomize_middleware_hosts" default:"true"`
+	NatsUser                 string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`           // The user to connect to the NATS server as. When unset no username is used.
+	NatsPass                 string   `confkey:"plugin.nats.pass" environment:"MCOLLECTIVE_NATS_PASSWORD"`           // The password to use when connecting to the NATS server
+	NatsCredentials          string   `confkey:"plugin.nats.credentials" environment:"MCOLLECTIVE_NATS_CREDENTIALS"` // The NATS 2.0 credentials to use, required for accessing NGS
+	NatsNGS                  bool     `confkey:"plugin.nats.ngs" environment:"MCOLLECTIVE_NATS_NGS"`                 // Uses NATS NGS global managed network as middleware, overrides broker names to "connect.ngs.global"
+	MiddlewareHosts          []string `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`                  // Set specific middleware hosts in the format host:port, if unset uses SRV
+	RandomizeMiddlewareHosts bool     `confkey:"plugin.choria.randomize_middleware_hosts" default:"true"`            // Shuffle middleware hosts before connecting to spread traffic of initial connections
 
-	// network broker
-	NetworkListenAddress      string        `confkey:"plugin.choria.network.listen_address" default:"::"`
-	NetworkClientPort         int           `confkey:"plugin.choria.network.client_port" default:"4222"`
-	NetworkClientTLSForce     bool          `confkey:"plugin.choria.network.client_tls_force_required"`
-	NetworkPeerPort           int           `confkey:"plugin.choria.network.peer_port" default:"5222"`
-	NetworkPeerUser           string        `confkey:"plugin.choria.network.peer_user"`
-	NetworkPeerPassword       string        `confkey:"plugin.choria.network.peer_password"`
-	NetworkPeers              []string      `confkey:"plugin.choria.network.peers" type:"comma_split"`
-	NetworkLeafPort           int           `confkey:"plugin.choria.network.leafnode_port" default:"0"`
-	NetworkLeafRemotes        []string      `confkey:"plugin.choria.network.leafnode_remotes" type:"comma_split"`
-	NetworkGatewayPort        int           `confkey:"plugin.choria.network.gateway_port" default:"0"`
-	NetworkGatewayName        string        `confkey:"plugin.choria.network.gateway_name" default:"CHORIA"`
-	NetworkGatewayRemotes     []string      `confkey:"plugin.choria.network.gateway_remotes" type:"comma_split"`
-	NetworkWriteDeadline      time.Duration `confkey:"plugin.choria.network.write_deadline" type:"duration" default:"5s"`
-	NetworkAllowedClientHosts []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`
-	NetworkAccountOperator    string        `confkey:"plugin.choria.network.operator_account"`
-	NetworkSystemAccount      string        `confkey:"plugin.choria.network.system_account"`
-	NetworkTLSTimeout         int           `confkey:"plugin.choria.network.tls_timeout" default:"2"`
+	NetworkListenAddress      string        `confkey:"plugin.choria.network.listen_address" default:"::" url:"https://choria.io/docs/deployment/broker/"` // Address the Network Broker will listen on
+	NetworkClientPort         int           `confkey:"plugin.choria.network.client_port" default:"4222" url:"https://choria.io/docs/deployment/broker/"`  // Port the Network Broker will accept client connections on
+	NetworkClientTLSForce     bool          `confkey:"plugin.choria.network.client_tls_force_required"`                                                   // Force requiring/not requiring TLS for all clients
+	NetworkPeerPort           int           `confkey:"plugin.choria.network.peer_port" default:"5222" url:"https://choria.io/docs/deployment/broker/"`    // Port used to communicate with other local cluster peers
+	NetworkPeerUser           string        `confkey:"plugin.choria.network.peer_user"`                                                                   // Username to use when connecting to cluster peers
+	NetworkPeerPassword       string        `confkey:"plugin.choria.network.peer_password"`                                                               // Password to use when connecting to cluster peers
+	NetworkPeers              []string      `confkey:"plugin.choria.network.peers" type:"comma_split" url:"https://choria.io/docs/deployment/broker/"`    // List of cluster peers in host:port format
+	NetworkLeafPort           int           `confkey:"plugin.choria.network.leafnode_port" default:"0"`                                                   // Port to listen on for Leafnode connections, disabled with 0
+	NetworkLeafRemotes        []string      `confkey:"plugin.choria.network.leafnode_remotes" type:"comma_split"`                                         // Remote networks to connect to as a Leafnode
+	NetworkGatewayPort        int           `confkey:"plugin.choria.network.gateway_port" default:"0"`                                                    // Port to listen on for Super Cluster connections
+	NetworkGatewayName        string        `confkey:"plugin.choria.network.gateway_name" default:"CHORIA"`                                               // Name for the Super Cluster
+	NetworkGatewayRemotes     []string      `confkey:"plugin.choria.network.gateway_remotes" type:"comma_split"`                                          // List of remote Super Clusters to connect to
+	NetworkWriteDeadline      time.Duration `confkey:"plugin.choria.network.write_deadline" type:"duration" default:"5s"`                                 // How long to allow clients to process traffic before treating them as slow, increase this on large networks or slow networks
+	NetworkAllowedClientHosts []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`                                             // CIDRs to limit client connections from, appropriate ACLs are added based on this
+	NetworkAccountOperator    string        `confkey:"plugin.choria.network.operator_account"`                                                            // NATS 2.0 Operator account
+	NetworkSystemAccount      string        `confkey:"plugin.choria.network.system_account"`                                                              // NATS 2.0 System Account
+	NetworkTLSTimeout         int           `confkey:"plugin.choria.network.tls_timeout" default:"2"`                                                     // Time to allow for TLS connections to establish, increase on slow or very large networks
 
-	// broker features
-	BrokerNetwork    bool `confkey:"plugin.choria.broker_network" default:"false"`
-	BrokerDiscovery  bool `confkey:"plugin.choria.broker_discovery" default:"false"`
-	BrokerFederation bool `confkey:"plugin.choria.broker_federation" default:"false"`
+	BrokerNetwork    bool `confkey:"plugin.choria.broker_network" default:"false" url:"https://choria.io/docs/deployment/broker/"` // Enables the Network Broker
+	BrokerDiscovery  bool `confkey:"plugin.choria.broker_discovery" default:"false" deprecated:"1"`
+	BrokerFederation bool `confkey:"plugin.choria.broker_federation" default:"false" url:"https://choria.io/docs/federation/"` // Enables the Federation Broker
 
-	// registration
-	FileContentRegistrationData   string `confkey:"plugin.choria.registration.file_content.data" default:""`
-	FileContentRegistrationTarget string `confkey:"plugin.choria.registration.file_content.target" default:""`
-	FileContentCompression        bool   `confkey:"plugin.choria.registration.file_content.compression" default:"true"`
+	FileContentRegistrationData   string `confkey:"plugin.choria.registration.file_content.data" default:""`            // YAML or JSON file to use as data source for registration
+	FileContentRegistrationTarget string `confkey:"plugin.choria.registration.file_content.target" default:""`          // NATS Subject to publish registration data to
+	FileContentCompression        bool   `confkey:"plugin.choria.registration.file_content.compression" default:"true"` // Enables gzip compression of registration data
 
-	// ruby compatibility
-	RubyAgentShim   string   `confkey:"plugin.choria.agent_provider.mcorpc.agent_shim"`
-	RubyAgentConfig string   `confkey:"plugin.choria.agent_provider.mcorpc.config"`
-	RubyLibdir      []string `confkey:"plugin.choria.agent_provider.mcorpc.libdir" type:"path_split"`
+	RubyAgentShim   string   `confkey:"plugin.choria.agent_provider.mcorpc.agent_shim"`               // Path to the helper used to call MCollective Ruby agents
+	RubyAgentConfig string   `confkey:"plugin.choria.agent_provider.mcorpc.config"`                   // Path to the MCollective configuration file used when running MCollective Ruby agents
+	RubyLibdir      []string `confkey:"plugin.choria.agent_provider.mcorpc.libdir" type:"path_split"` // Path to the libdir MCollective Ruby agents should have
 
-	// security plugin
-	PrivilegedUsers              []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split" default:"\\.privileged.mcollective$,\\.privileged.choria$"`
-	CertnameWhitelist            []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split" default:"\\.mcollective$,\\.choria$"`
-	Serializer                   string   `confkey:"plugin.choria.security.serializer" validate:"enum=json,yaml"`
-	SecurityProvider             string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11"`
-	SecurityAlwaysOverwriteCache bool     `confkey:"plugin.security.always_overwrite_cache" default:"false"`
-	RemoteSignerTokenFile        string   `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string"`
-	RemoteSignerTokenEnvironment string   `confkey:"plugin.choria.security.request_signer.token_environment"`
-	RemoteSignerURL              string   `confkey:"plugin.choria.security.request_signer.url"`
+	SSLDir                       string   `confkey:"plugin.choria.ssldir" type:"path_string"`                                                                                                                               // The SSL directory, auto detected via Puppet, when specifically set Puppet will not be consulted
+	PrivilegedUsers              []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split" default:"\\.privileged.mcollective$,\\.privileged.choria$" url:"https://choria.io/docs/configuration/aaa/"` // Patterns of certificate names that would be considered privileged and able to set custom callers
+	CertnameWhitelist            []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split" default:"\\.mcollective$,\\.choria$"`                                                                     // Patterns of certificate names that are allowed to be clients
+	Serializer                   string   `confkey:"plugin.choria.security.serializer" validate:"enum=json,yaml" default:"json" deprecated:"1"`
+	SecurityProvider             string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11"`                                  // The Security Provider to use
+	SecurityAlwaysOverwriteCache bool     `confkey:"plugin.security.always_overwrite_cache" default:"false"`                                                        // Always store new Public Keys to the cache overwriting existing ones
+	RemoteSignerTokenFile        string   `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"` // Path to the token used to access a Central Authenticator
+	RemoteSignerTokenEnvironment string   `confkey:"plugin.choria.security.request_signer.token_environment" url:"https://github.com/choria-io/aaasvc"`             // Environment variable to store Central Authenticator tokens
+	RemoteSignerURL              string   `confkey:"plugin.choria.security.request_signer.url" url:"https://github.com/choria-io/aaasvc"`                           // URL to the Signing Service
 
-	// file security
-	FileSecurityCertificate string `confkey:"plugin.security.file.certificate" type:"path_string"`
-	FileSecurityKey         string `confkey:"plugin.security.file.key" type:"path_string"`
-	FileSecurityCA          string `confkey:"plugin.security.file.ca" type:"path_string"`
-	FileSecurityCache       string `confkey:"plugin.security.file.cache" type:"path_string"`
+	FileSecurityCertificate string `confkey:"plugin.security.file.certificate" type:"path_string"` // When using file security provider, the path to the public certificate
+	FileSecurityKey         string `confkey:"plugin.security.file.key" type:"path_string"`         // When using file security provider, the path to the private key
+	FileSecurityCA          string `confkey:"plugin.security.file.ca" type:"path_string"`          // When using file security provider, the path to the Certificate Authority public certificate
+	FileSecurityCache       string `confkey:"plugin.security.file.cache" type:"path_string"`       // When using file security provider, the path to the client cache
 
-	// TLS Parameters
-	CipherSuites []string `confkey:"plugin.security.cipher_suites" type:"comma_split"`
-	ECCCurves    []string `confkey:"plugin.security.ecc_curves" type:"comma_split"`
+	CipherSuites []string `confkey:"plugin.security.cipher_suites" type:"comma_split"` // List of allowed cipher suites
+	ECCCurves    []string `confkey:"plugin.security.ecc_curves" type:"comma_split"`    // List of allowed ECC curves
 
-	// pkcs11 security
-	PKCS11DriverFile string `confkey:"plugin.security.pkcs11.driver_file" type:"path_string"`
-	PKCS11Slot       int    `confkey:"plugin.security.pkcs11.slot"`
+	PKCS11DriverFile string `confkey:"plugin.security.pkcs11.driver_file" type:"path_string" url:"https://choria.io/blog/post/2019/09/09/pkcs11/"` // When using the pkcs11 security provider, the path to the PCS11 driver file
+	PKCS11Slot       int    `confkey:"plugin.security.pkcs11.slot" url:"https://choria.io/blog/post/2019/09/09/pkcs11/"`                           // When using the pkcs11 security provider, the slot to use in the device
 
-	// adapters
-	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split" description:"The list of Data Adapters to activate" url:"https://choria.io/docs/adapters/"`
+	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split" url:"https://choria.io/docs/adapters/"` // The list of Data Adapters to activate
 
-	// status file
-	StatusFilePath      string `confkey:"plugin.choria.status_file_path" type:"path_string"`
-	StatusUpdateSeconds int    `confkey:"plugin.choria.status_update_interval" default:"30"`
+	StatusFilePath      string `confkey:"plugin.choria.status_file_path" type:"path_string"` // Path to a JSON file to write server health information to regularly
+	StatusUpdateSeconds int    `confkey:"plugin.choria.status_update_interval" default:"30"` // How frequently to write to the status_file_path
 
-	// machine
-	MachineSourceDir string `confkey:"plugin.choria.machine.store"`
+	MachineSourceDir string `confkey:"plugin.choria.machine.store" url:"https://choria.io/docs/autoagents/"` // Directory where Autonomous Agents are stored
 }
 
 func newChoria() *ChoriaPluginConfig {

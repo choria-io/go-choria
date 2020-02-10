@@ -46,6 +46,11 @@ func (d *Doc) Description() string {
 	return d.description
 }
 
+// SetDescription overrides the description of the key
+func (d *Doc) SetDescription(desc string) {
+	d.description = desc
+}
+
 // URL returns a url that describes the related feature in more detail
 func (d *Doc) URL() string {
 	return d.url

@@ -2,7 +2,7 @@
 
 Choria is a framework for building Control Planes, Orchestration Systems and Programmable Infrastructure.
 
-This is a daemon written in Go that hosts services, autonomous agents and generally provide a secure hosting environment for callable logic that you can interact with from code.
+This is a daemon and related tools written in Go that hosts services, autonomous agents and generally provide a secure hosting environment for callable logic that you can interact with from code.
 
 More information about the project can be found on [Choria.IO](https://choria.io).
 
@@ -25,14 +25,20 @@ These will connect to the middleware using your usual client configuration.
 |`choria tool status`|Parse the status file and check overall health|
 |`choria tool generate`|Generates various related files like DDLs|
 |`choria tool jwt`|Generates JWT tokens used to configure automatic provisioning|
+|`choria tool config`|To view details about known configuration options|
 
 # Configuration
 
-This code base represents the current recommended Choria Broker and Federation and will soon also be the recommended Server component.  Follow [choria.io](https://choria.io) for the official means of installing and configuring it.
+This code base represents the current recommended Choria Broker and Federation and will soon also be the recommended Server component.
+Follow [choria.io](https://choria.io) for the official means of installing and configuring it.
 
 Sample configs are shown, subject to change
 
-Running `choria broker run --config /path/to/broker.cfg` will start the various broker components, you can safely run the Middleware Broker, Federation Broker and Protocol Adapter all in the same process.
+Running `choria broker run --config /path/to/broker.cfg` will start the various broker components, you can safely run the Middleware Broker,
+Federation Broker and Protocol Adapter all in the same process.
+
+The tool `choria tool config` can be used to list and view known configuration options - be aware though that individual agents might
+use their own configuration - but this tool lists all known configuration keys.
 
 ## Metrics
 
@@ -40,7 +46,7 @@ When enabled a vast cache of Prometheus compatible metrics are exposed under `/c
 
 Additionally server status can be written regularly - 30 seconds interval by default:
 
-```yaml
+```ini
 plugin.choria.status_file_path = /var/tmp/choria_status.json
 plugin.choria.status_update_interval = 30
 ```
@@ -56,7 +62,11 @@ $ echo $?
 
 ## Configurable Security Subsystems
 
-While the ruby Choria code only integrates with Puppet CA this daemon has multiple security systems and will in time not be tied to Puppet but will support SECP and FIPS compliance and more. The ruby code will gain parity in time.
+Choria has 3 major security providers:
+
+ * `puppet` - integrates with the Puppet Certificate Authority
+ * `file` - configurable paths for certificate, key, ca and cache
+ * `pkcs11` - [pkcs11](https://choria.io/blog/post/2019/09/09/pkcs11/) integration for hardware tokens
 
 ### General Settings
 
@@ -64,7 +74,7 @@ Generally each provider will have it's own settings, there are a few system wide
 
 |Setting|Default|Description|
 |-------|-------|-----------|
-|`plugin.security.provider`|`puppet`|The security provider to use, can be `puppet` or `file`|
+|`plugin.security.provider`|`puppet`|The security provider to use, can be `puppet`, `file` or `pkcs11`|
 |`plugin.security.always_overwrite_cache`|`false`|Tell the security provider to always overwrite the certificate cache, can be `true`, or `false`|
 |`plugin.choria.security.privileged_users`|`\\.privileged.mcollective$`|Comma sep list of valid certificates for privileged client users.|
 |`plugin.choria.security.certname_whitelist`|`\\.mcollective$`|Comma sep list of valid certificates for normal client users.|

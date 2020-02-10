@@ -2,7 +2,10 @@ package cmd
 
 import (
 	"fmt"
+	"os"
 	"sort"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/fatih/color"
@@ -13,7 +16,7 @@ import (
 type tConfigCommand struct {
 	command
 
-	key string
+	key  string
 	list bool
 }
 
@@ -21,7 +24,7 @@ func (cc *tConfigCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		cc.cmd = tool.Cmd().Command("config", "Show documentation for a configuration item")
 		cc.cmd.Arg("key", "The configuration keys to look up, supports regular expressions").Required().StringVar(&cc.key)
-		cc.cmd.Flag("list","Only list matching config keys").Short('l').BoolVar(&cc.list)
+		cc.cmd.Flag("list", "Only list matching config keys").Short('l').BoolVar(&cc.list)
 	}
 
 	return nil
@@ -55,7 +58,7 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	sort.Strings(keys)
 
-	if cc.list{
+	if cc.list {
 		for _, k := range keys {
 			fmt.Println(k)
 		}
@@ -65,6 +68,18 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 	bold := color.New(color.Bold).SprintFunc()
 	warn := color.New(color.FgHiRed, color.Bold).SprintFunc()
 
+	cols := 70
+	colsstr := os.Getenv("COLUMNS")
+	if colsstr != "" {
+		cols, err = strconv.Atoi(colsstr)
+		if err != nil {
+			cols = 70
+		}
+		if cols > 100 {
+			cols = 100
+		}
+	}
+
 	for _, key := range keys {
 		doc := cfg.DocForConfigKey(key)
 		if doc == nil {
@@ -72,28 +87,47 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 		}
 
 		fmt.Printf("Configuration item: %s\n\n", bold(doc.ConfigKey()))
-		fmt.Printf("      Description: %s\n", doc.Description())
 		if doc.Deprecate() {
-			fmt.Printf("       Deprecated: %s\n", warn("yes"))
+			fmt.Printf("   Deprecated: %s\n", warn("yes"))
 		}
 		if doc.URL() != "" {
-			fmt.Printf("              URL: %s\n", doc.URL())
+			fmt.Printf("          URL: %s\n", doc.URL())
 		}
-		fmt.Printf("        Data Type: %s\n", doc.Type())
+		fmt.Printf("    Data Type: %s\n", doc.Type())
 		if doc.Validation() != "" {
-			fmt.Printf("       Validation: %s\n", doc.Validation())
+			fmt.Printf("   Validation: %s\n", doc.Validation())
 		}
 		if doc.Default() != "" {
-			fmt.Printf("          Default: %s\n", doc.Default())
+			fmt.Printf("      Default: %s\n", doc.Default())
 		}
 		if doc.Environment() != "" {
-			fmt.Printf("      Environment: %s\n", doc.Environment())
+			fmt.Printf("  Environment: %s\n", doc.Environment())
 		}
-		fmt.Printf("    Structure Key: %s\n", doc.StructKey())
+		fmt.Println()
+		fmt.Println(wordWrap(doc.Description(), cols))
 		fmt.Println()
 	}
 
 	return nil
+}
+
+func wordWrap(text string, lineWidth int) (wrapped string) {
+	words := strings.Fields(text)
+	if len(words) == 0 {
+		return
+	}
+	wrapped = words[0]
+	spaceLeft := lineWidth - len(wrapped)
+	for _, word := range words[1:] {
+		if len(word)+1 > spaceLeft {
+			wrapped += "\n" + word
+			spaceLeft = lineWidth - len(word)
+		} else {
+			wrapped += " " + word
+			spaceLeft -= 1 + len(word)
+		}
+	}
+	return
 }
 
 func init() {

@@ -4,13 +4,28 @@ import (
 	"github.com/choria-io/go-choria/confkey"
 )
 
-func (c *Config) DocForConfigKey(k string) *confkey.Doc {
-	doc := confkey.KeyDoc(c, k, "")
-	if doc != nil {
+func (c *Config) overrideDocDescription(doc *confkey.Doc) *confkey.Doc {
+	if doc == nil {
 		return doc
 	}
 
-	return confkey.KeyDoc(c.Choria, k, "Choria")
+	desc, ok := docStrings[doc.ConfigKey()]
+	if ok {
+		doc.SetDescription(desc)
+	}
+
+	return doc
+}
+
+func (c *Config) DocForConfigKey(k string) *confkey.Doc {
+	doc := confkey.KeyDoc(c, k, "")
+	if doc != nil {
+		return c.overrideDocDescription(doc)
+	}
+
+	doc = confkey.KeyDoc(c.Choria, k, "Choria")
+
+	return c.overrideDocDescription(doc)
 }
 
 // ConfigKeys retrieves all known configuration keys matching re
