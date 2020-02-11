@@ -1,6 +1,8 @@
 package config
 
 import (
+	"sort"
+
 	"github.com/choria-io/go-choria/confkey"
 )
 
@@ -45,6 +47,8 @@ func (c *Config) ConfigKeys(re string) (found []string, err error) {
 	}
 
 	found = append(found, keys...)
+
+	sort.Strings(found)
 
 	return found, nil
 }

@@ -158,5 +158,5 @@ func main() {
 	out.Close()
 	goFmt(outfile)
 
-	log.Println("Generated config/docstrings.go")
+	log.Println("Generated " + outfile)
 }

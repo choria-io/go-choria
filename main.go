@@ -3,6 +3,7 @@ package main
 //go:generate go run generators/client/generate_templates.go
 //go:generate go run plugin/gen.go
 //go:generate go run config/gen.go
+//go:generate go run gen_config_doc.go
 
 import (
 	"os"
