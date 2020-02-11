@@ -108,6 +108,7 @@ type Config struct {
 	RequireClientFilter bool `confkey:"require_client_filter" default:"false"`
 
 	// Deprecated settings
+
 	ActivateAgents            bool   `confkey:"activate_agents" default:"true" deprecated:"1"`
 	Daemonize                 bool   `confkey:"daemonize" default:"false" deprecated:"1"`
 	DirectAddressingThreshold int    `confkey:"direct_addressing_threshold" default:"10" deprecated:"1"`

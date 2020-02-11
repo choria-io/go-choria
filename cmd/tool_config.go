@@ -3,7 +3,6 @@ package cmd
 import (
 	"fmt"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -55,8 +54,6 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 	if len(keys) == 0 {
 		return fmt.Errorf("no configuration keys declared matching %q", cc.key)
 	}
-
-	sort.Strings(keys)
 
 	if cc.list {
 		for _, k := range keys {

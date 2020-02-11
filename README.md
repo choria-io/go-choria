@@ -40,6 +40,8 @@ Federation Broker and Protocol Adapter all in the same process.
 The tool `choria tool config` can be used to list and view known configuration options - be aware though that individual agents might
 use their own configuration - but this tool lists all known configuration keys.
 
+A list of configuration directives can be found in [CONFIGURATION.md](CONFIGURATION.md).
+
 ## Metrics
 
 When enabled a vast cache of Prometheus compatible metrics are exposed under `/choria/prometheus`, use `plugin.choria.stats_port` and `plugin.choria.stats_address` to enable

@@ -59,7 +59,7 @@ func main() {
 	for _, file := range files {
 		fname := strings.TrimSuffix(file.Name(), path.Ext(file.Name()))
 		source := path.Join(tpath, file.Name())
-		fmt.Printf(">> %s\n", source)
+		log.Printf("Generating %s from %s\n", fname, source)
 		templ, err := ioutil.ReadFile(source)
 		panicIfErr(err)
 

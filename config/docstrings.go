@@ -1,4 +1,4 @@
-// auto generated at 2020-02-10 16:36:07.879049 +0100 CET m=+0.001643436
+// auto generated at 2020-02-11 11:21:38.05687 +0100 CET m=+0.001592948
 
 package config
 
@@ -33,7 +33,6 @@ var docStrings = map[string]string{
 	"default_discovery_method":                                "The default discovery plugin to use. The default \"mc\" uses a network broadcast and \"choria\" uses PuppetDB",
 	"plugin.yaml":                                             "Where to look for YAML or JSON based facts",
 	"require_client_filter":                                   "If a client filter should always be required, appears unused at the moment",
-	"activate_agents":                                         "Deprecated settings",
 	"plugin.choria.puppetserver_host":                         "The hostname where your Puppet Server can be found",
 	"plugin.choria.puppetserver_port":                         "The port your Puppet Server listens on",
 	"plugin.choria.puppetca_host":                             "The hostname where your Puppet Certificate Authority can be found",
