@@ -8,24 +8,65 @@ import (
 	"path"
 	"text/template"
 
+	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/confkey"
 )
 
+type configs struct {
+	Keys [][]string
+	Docs []*confkey.Doc
+}
+
 var templ = `# Choria Configuration Settings
 
-This is a list of all known Configuration settings. This list is based on declared settings within the Choria Go code base and so will not cover 100% of settings - plugins can contribute their own settings.
+This is a list of all known Configuration settings. This list is based on declared settings within the Choria Go code base and so will not cover 100% of settings - plugins can contribute their own settings which are note known at compile time.
 
-Some emoji are used: 
+## Data Types
 
- * :spider_web: Deprecated setting
- * :notebook: Additional information
+A few special types are defined, the rest map to standard Go types
 
-|Key|Description|
-|---|-----------|
-{{- range . }}
-|{{ .ConfigKey }} {{ if .Deprecate }}:spider_web:{{ end }}{{ if .URL }}[:notebook:]({{ .URL }}){{ end }}|{{ .Description }}|
+|Type|Description|
+|----|-----------|
+|comma_split|A comma separated list of strings, possibly with spaces between|
+|duration|A duration such as "1h", "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"|
+|path_split|A list of paths split by a OS specific PATH separator|
+|path_string|A path that can include "~" for the users home directory|
+|strings|A space separated list of strings|
+|title_string|A string that will be stored as a Title String|
+
+## Index
+
+| | |
+|-|-|
+{{- range $i, $k := .Keys }}
+|[{{ index $k 0 }}](#{{ index $k 0}})|[{{ index $k 1 }}](#{{ index $k 1}})|
 {{- end }}
+
+{{ range .Docs }}
+## {{ .ConfigKey }}{{ if .Deprecate }} :spider_web:{{ end }}
+
+ * **Type:** {{ .Type }}
+{{- if .URL }}
+ * **Additional Information:** {{ .URL }}
+{{- end }}
+{{- if .Validation }}
+ * **Validation:** {{ .Validation }}
+{{- end }}
+{{- if .Default }}
+ * **Default Value:** {{ .Default }}
+{{- end }}
+{{- if .Environment }}
+ * **Environment Variable:** {{ .Environment }}
+{{- end }}
+{{- if ne .Description "Undocumented" }}
+
+{{ .Description }}{{ end }}
+{{- if .Deprecate }}
+
+**This setting is deprecated or already unused**
+{{- end }}
+{{ end }}
 `
 
 func panicIfErr(err error) {
@@ -45,7 +86,13 @@ func main() {
 		panic("no configuration keys found")
 	}
 
-	docs := []*confkey.Doc{}
+	docs := configs{
+		Docs: []*confkey.Doc{},
+	}
+
+	choria.SliceGroups(keys, 2, func(grp []string) {
+		docs.Keys = append(docs.Keys, grp)
+	})
 
 	for _, key := range keys {
 		doc := cfg.DocForConfigKey(key)
@@ -53,10 +100,10 @@ func main() {
 			continue
 		}
 
-		docs = append(docs, doc)
+		docs.Docs = append(docs.Docs, doc)
 	}
 
-	if len(docs) == 0 {
+	if len(docs.Docs) == 0 {
 		panic("no documentation strings were generated")
 	}
 
