@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"strings"
 	"text/template"
 
 	"github.com/choria-io/go-choria/choria"
@@ -40,11 +41,11 @@ A few special types are defined, the rest map to standard Go types
 | | |
 |-|-|
 {{- range $i, $k := .Keys }}
-|[{{ index $k 0 }}](#{{ index $k 0}})|[{{ index $k 1 }}](#{{ index $k 1}})|
+|[{{ index $k 0 }}](#{{ index $k 0 | gha }})|[{{ index $k 1 }}](#{{ index $k 1 | gha }})|
 {{- end }}
 
 {{ range .Docs }}
-## {{ .ConfigKey }}{{ if .Deprecate }} :spider_web:{{ end }}
+## {{ .ConfigKey }}
 
  * **Type:** {{ .Type }}
 {{- if .URL }}
@@ -107,7 +108,13 @@ func main() {
 		panic("no documentation strings were generated")
 	}
 
-	t, err := template.New("templates").Parse(templ)
+	funcs := template.FuncMap{
+		"gha": func(s string) string {
+			return strings.ReplaceAll(s, ".", "")
+		},
+	}
+
+	t, err := template.New("templates").Funcs(funcs).Parse(templ)
 	if err != nil {
 		panic(err)
 	}
