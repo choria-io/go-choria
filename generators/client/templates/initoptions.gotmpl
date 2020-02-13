@@ -22,7 +22,7 @@ func ConfigFile(f string) InitializationOption {
 	}
 }
 
-// Logger sets the logger to use else one is made via the choria framework
+// Logger sets the logger to use else one is made via the Choria framework
 func Logger(l *logrus.Entry) InitializationOption {
 	return func(o *initOptions) {
 		o.logger = l
