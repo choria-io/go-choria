@@ -13,7 +13,9 @@ import (
 func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionReset() *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
 	p.clientRPCOpts = []rpcclient.RequestOption{}
 	p.ns = p.clientOpts.ns
-	p.filters = []FilterFunc{}
+	p.filters = []FilterFunc{
+	    FilterFunc(coreclient.AgentFilter("{{ .DDL.Metadata.Name }}")),
+	}
 
 	return p
 }
