@@ -85,39 +85,40 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 
 		fmt.Printf("Configuration item: %s\n\n", bold(doc.ConfigKey()))
 		if doc.Deprecate() {
-			fmt.Printf("   Deprecated: %s\n", warn("yes"))
+			fmt.Printf("║   Deprecated: %s\n", warn("yes"))
 		}
 		if doc.URL() != "" {
-			fmt.Printf("          URL: %s\n", doc.URL())
+			fmt.Printf("║         URL: %s\n", doc.URL())
 		}
-		fmt.Printf("    Data Type: %s\n", doc.Type())
+		fmt.Printf("║    Data Type: %s\n", doc.Type())
 		if doc.Validation() != "" {
-			fmt.Printf("   Validation: %s\n", doc.Validation())
+			fmt.Printf("║   Validation: %s\n", doc.Validation())
 		}
 		if doc.Default() != "" {
-			fmt.Printf("      Default: %s\n", doc.Default())
+			fmt.Printf("║      Default: %s\n", doc.Default())
 		}
 		if doc.Environment() != "" {
-			fmt.Printf("  Environment: %s\n", doc.Environment())
+			fmt.Printf("║  Environment: %s\n", doc.Environment())
 		}
-		fmt.Println()
-		fmt.Println(wordWrap(doc.Description(), cols))
+		fmt.Println("║")
+		fmt.Println(wordWrap(doc.Description(), cols, "║ "))
+		fmt.Println("╙─")
 		fmt.Println()
 	}
 
 	return nil
 }
 
-func wordWrap(text string, lineWidth int) (wrapped string) {
+func wordWrap(text string, lineWidth int, prefix string) (wrapped string) {
 	words := strings.Fields(text)
 	if len(words) == 0 {
 		return
 	}
-	wrapped = words[0]
+	wrapped = prefix + words[0]
 	spaceLeft := lineWidth - len(wrapped)
 	for _, word := range words[1:] {
 		if len(word)+1 > spaceLeft {
-			wrapped += "\n" + word
+			wrapped += "\n" + prefix + word
 			spaceLeft = lineWidth - len(word)
 		} else {
 			wrapped += " " + word
