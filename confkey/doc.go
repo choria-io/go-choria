@@ -1,5 +1,7 @@
 package confkey
 
+var Undocumented = "Undocumented"
+
 type Doc struct {
 	description string
 	url         string
@@ -40,7 +42,7 @@ func (d *Doc) Type() string {
 // Description is a description of the item, empty when not set
 func (d *Doc) Description() string {
 	if d.description == "" {
-		return "Undocumented"
+		return Undocumented
 	}
 
 	return d.description
