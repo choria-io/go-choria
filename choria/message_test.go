@@ -3,11 +3,12 @@ package choria
 import (
 	"time"
 
-	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/protocol"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/protocol"
 )
 
 var _ = Describe("Choria/Message", func() {
@@ -62,8 +63,17 @@ var _ = Describe("Choria/Message", func() {
 			Expect(m.Filter).To(Equal(protocol.NewFilter()))
 			Expect(m.SenderID).To(Equal("test.identity"))
 			Expect(m.Base64Payload()).To(Equal("aGVsbG8gd29ybGQ="))
+			Expect(m.shouldCacheTransport).To(BeFalse())
 
 			Expect(m.Request).ToNot(BeNil())
+
+		})
+
+		It("Should cache transports when configured to do so", func() {
+			fw.Config.CacheBatchedTransports = true
+			m, err := NewMessageFromRequest(request, "reply.to", fw)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(m.shouldCacheTransport).To(BeTrue())
 		})
 	})
 
@@ -80,6 +90,7 @@ var _ = Describe("Choria/Message", func() {
 			Expect(m.replyTo).To(Equal("reply.to"))
 			Expect(m.Type()).To(Equal("reply"))
 			Expect(m.Collective()).To(Equal("test_collective"))
+			Expect(m.shouldCacheTransport).To(BeFalse())
 		})
 
 		It("Should handle requests", func() {
@@ -100,8 +111,27 @@ var _ = Describe("Choria/Message", func() {
 			_, err = NewMessage("hello world", "ginkgo", "mcollective", "request", nil, fw)
 			Expect(err).To(MatchError("cannot set collective to 'mcollective', it is not on the list of known collectives"))
 		})
+
+		It("Should cache transports when configured to do so", func() {
+			fw.Config.CacheBatchedTransports = true
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(m.shouldCacheTransport).To(BeTrue())
+		})
 	})
 
+	Describe("Cached transports", func() {
+		It("Should support setting and unsetting caching", func() {
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(m.shouldCacheTransport).To(BeFalse())
+			Expect(m.IsCachedTransport()).To(BeFalse())
+			m.CacheTransport()
+			Expect(m.IsCachedTransport()).To(BeTrue())
+			m.UniqueTransport()
+			Expect(m.IsCachedTransport()).To(BeFalse())
+		})
+	})
 	Describe("Transport", func() {
 		It("Should support requests", func() {
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
@@ -110,8 +140,45 @@ var _ = Describe("Choria/Message", func() {
 			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
 
-			_, err = m.Transport()
+			t1, err := m.Transport()
 			Expect(err).ToNot(HaveOccurred())
+			t1m, err := t1.Message()
+			Expect(err).ToNot(HaveOccurred())
+
+			// force the body to change, and so the payload must change
+			time.Sleep(time.Second)
+
+			t2, err := m.Transport()
+			Expect(err).ToNot(HaveOccurred())
+			t2m, err := t2.Message()
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(t1m).ToNot(Equal(t2m))
+		})
+
+		It("Should support cached transports", func() {
+			fw.Configuration().CacheBatchedTransports = true
+
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			m.SetProtocolVersion(protocol.RequestV1)
+			m.SetReplyTo("reply.to")
+
+			t1, err := m.Transport()
+			Expect(err).ToNot(HaveOccurred())
+			t1m, err := t1.Message()
+			Expect(err).ToNot(HaveOccurred())
+
+			// force the body to change, and so the payload must change, but due to cache the result should be identical
+			time.Sleep(time.Second)
+
+			t2, err := m.Transport()
+			Expect(err).ToNot(HaveOccurred())
+			t2m, err := t2.Message()
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(t1m).To(Equal(t2m))
 		})
 
 		It("Should support direct_requests", func() {

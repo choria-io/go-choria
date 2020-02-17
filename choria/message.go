@@ -4,6 +4,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"sync"
 	"time"
 
 	"github.com/choria-io/go-choria/protocol"
@@ -26,12 +27,16 @@ type Message struct {
 
 	CustomTarget string
 
-	expectedMessageID string
-	replyTo           string
-	collective        string
-	msgType           string // message, request, direct_request, reply
-	req               protocol.Request
-	protoVersion      string
+	expectedMessageID    string
+	replyTo              string
+	collective           string
+	msgType              string // message, request, direct_request, reply
+	req                  protocol.Request
+	protoVersion         string
+	shouldCacheTransport bool
+	cachedTransport      protocol.TransportMessage
+
+	sync.Mutex
 
 	choria *Framework
 }
@@ -59,6 +64,10 @@ func NewMessageFromRequest(req protocol.Request, replyto string, choria *Framewo
 	msg.SenderID = choria.Config.Identity
 	msg.SetBase64Payload(req.Message())
 	msg.req = req
+
+	if choria.Configuration().CacheBatchedTransports {
+		msg.shouldCacheTransport = true
+	}
 
 	return
 }
@@ -103,9 +112,38 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 		}
 	}
 
+	if choria.Configuration().CacheBatchedTransports {
+		msg.shouldCacheTransport = true
+	}
+
 	_, err = msg.Validate()
 
 	return
+}
+
+// IsCachedTransport determines if transport messages will be cached
+func (msg *Message) IsCachedTransport() bool {
+	msg.Lock()
+	defer msg.Unlock()
+
+	return msg.shouldCacheTransport
+}
+
+// UniqueTransport ensures that every call to Transport() produce a unique transport message
+func (msg *Message) UniqueTransport() {
+	msg.Lock()
+	defer msg.Unlock()
+
+	msg.cachedTransport = nil
+	msg.shouldCacheTransport = false
+}
+
+// CacheTransport ensures that multiples calls to Transport() returns the same transport message
+func (msg *Message) CacheTransport() {
+	msg.Lock()
+	defer msg.Unlock()
+
+	msg.shouldCacheTransport = true
 }
 
 // Transport creates a TransportMessage for this Message
@@ -117,13 +155,32 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 // For requests you need to set the protocol version using SetProtocolVersion()
 // before calling Transport
 func (msg *Message) Transport() (protocol.TransportMessage, error) {
-	if msg.msgType == "request" || msg.msgType == "direct_request" {
-		return msg.requestTransport()
-	} else if msg.msgType == "reply" {
-		return msg.replyTransport()
+	msg.Lock()
+	defer msg.Unlock()
+
+	if msg.shouldCacheTransport && msg.cachedTransport != nil {
+		return msg.cachedTransport, nil
 	}
 
-	return nil, fmt.Errorf("do not know how to make a Transport for a %s type Message", msg.msgType)
+	switch {
+	case msg.msgType == "request" || msg.msgType == "direct_request":
+		t, err := msg.requestTransport()
+		if err != nil {
+			return nil, err
+		}
+
+		if msg.shouldCacheTransport {
+			msg.cachedTransport = t
+		}
+
+		return t, nil
+
+	case msg.msgType == "reply":
+		return msg.replyTransport()
+
+	default:
+		return nil, fmt.Errorf("do not know how to make a Transport for a %s type Message", msg.msgType)
+	}
 }
 
 func (msg *Message) requestTransport() (protocol.TransportMessage, error) {

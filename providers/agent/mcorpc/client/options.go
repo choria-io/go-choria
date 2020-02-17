@@ -1,8 +1,8 @@
 package client
 
 import (
-	"errors"
 	"fmt"
+	"math"
 	"math/rand"
 	"regexp"
 	"strconv"
@@ -115,7 +115,7 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
 	msg.SetProtocolVersion(o.ProtocolVersion)
 
 	if o.RequestType == "request" && o.BatchSize > 0 {
-		return errors.New("batched mode requires direct_request mode")
+		return fmt.Errorf("batched mode requires direct_request mode")
 	}
 
 	err = msg.SetType(o.RequestType)
@@ -146,6 +146,21 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
 	err = msg.SetCollective(o.Collective)
 	if err != nil {
 		return err
+	}
+
+	// calculate a TTL for messages when we have batches and when using cached transports,
+	// we need to avoid 2FA interactions for the full duration of the message:
+	//
+	// (TTL + DiscoveryTimeout + Timeout) * batches
+	//
+	// We have to allow TTL per batch since the last batch will get it much
+	if msg.IsCachedTransport() && o.BatchSize != len(o.Targets) {
+		batches := int(math.Ceil(float64(len(o.Targets)) / float64(o.BatchSize)))
+
+		msg.TTL = batches * (msg.TTL + int(o.DiscoveryTimeout.Seconds()) + int(o.Timeout.Seconds()))
+		if msg.TTL > int((5 * time.Hour).Seconds()) {
+			return fmt.Errorf("cached transport TTL is unreasonably long")
+		}
 	}
 
 	return nil

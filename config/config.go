@@ -149,6 +149,14 @@ type Config struct {
 
 	// Puppet provides access to puppet config data, settings and facts
 	Puppet *puppet.Wrapper
+
+	// CacheBatchedTransports should be true when a agent provider does batched
+	// requests where effectively the same request can span many publishes often
+	// long apart. The problem is that in these cases the security framework might
+	// require frequent 2FA and users might be prompted for 2FA mid-batch.  This
+	// setting will hint to choria.Message to return the same transport message
+	// repeatedly
+	CacheBatchedTransports bool
 }
 
 // NewDefaultConfig creates a empty configuration
