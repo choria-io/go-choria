@@ -5,6 +5,7 @@ import (
 	"bytes"
 	"fmt"
 	"io/ioutil"
+	"sort"
 	"text/template"
 	"time"
 
@@ -99,6 +100,10 @@ func Load(file string) (*List, error) {
 	for k, v := range rawdat {
 		list.Plugins = append(list.Plugins, &Plugin{Name: k, Repo: v})
 	}
+
+	sort.Slice(list.Plugins, func(i, j int) bool {
+		return list.Plugins[i].Name < list.Plugins[j].Name
+	})
 
 	return list, err
 }
