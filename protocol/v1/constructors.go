@@ -17,7 +17,7 @@ func NewRequest(agent string, senderid string, callerid string, ttl int, request
 			SenderID:  senderid,
 			TTL:       ttl,
 			RequestID: requestid,
-			Time:      time.Now().UTC().Unix(),
+			Time:      time.Now().Unix(),
 		},
 	}
 
@@ -42,7 +42,7 @@ func NewReply(request protocol.Request, certname string) (rep protocol.Reply, er
 			RequestID: request.RequestID(),
 			SenderID:  certname,
 			Agent:     request.Agent(),
-			Time:      time.Now().UTC().Unix(),
+			Time:      time.Now().Unix(),
 		},
 	}
 

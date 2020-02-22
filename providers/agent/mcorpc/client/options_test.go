@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"time"
 
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
 )
 
 var _ = Describe("McoRPC/Client/Options", func() {
@@ -89,6 +90,49 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			o.ConfigureMessage(msg)
 			Expect(o.Targets).To(Equal([]string{"target0", "target1"}))
 			Expect(o.totalStats.discoveredNodes).To(Equal([]string{"target0", "target1"}))
+		})
+
+		It("Should support cached transports", func() {
+			targets := make([]string, 100)
+			for i := 0; i < 100; i++ {
+				targets[i] = fmt.Sprintf("target%d", i)
+			}
+
+			msg, err := fw.NewMessage("", "test", "mcollective", "request", nil)
+			Expect(err).ToNot(HaveOccurred())
+
+			msg.CacheTransport()
+			Targets(targets)(o)
+			InBatches(10, 30)(o)
+			DiscoveryTimeout(2 * time.Second)(o)
+			Timeout(20 * time.Second)(o)
+			msg.TTL = 10
+
+			err = o.ConfigureMessage(msg)
+			Expect(err).ToNot(HaveOccurred())
+
+			expected := 10 * (10 + 2 + 20)
+			Expect(msg.TTL).To(Equal(expected))
+		})
+
+		It("Should limit cached TTL to 5 hours", func() {
+			targets := make([]string, 100)
+			for i := 0; i < 100; i++ {
+				targets[i] = fmt.Sprintf("target%d", i)
+			}
+
+			msg, err := fw.NewMessage("", "test", "mcollective", "request", nil)
+			Expect(err).ToNot(HaveOccurred())
+
+			msg.CacheTransport()
+			Targets(targets)(o)
+			InBatches(10, 30)(o)
+			DiscoveryTimeout(2 * time.Second)(o)
+			Timeout(20 * time.Second)(o)
+			msg.TTL = int(6 * time.Hour.Seconds())
+
+			err = o.ConfigureMessage(msg)
+			Expect(err).To(MatchError("cached transport TTL is unreasonably long"))
 		})
 	})
 

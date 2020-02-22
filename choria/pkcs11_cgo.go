@@ -4,8 +4,9 @@ package choria
 
 import (
 	"fmt"
-	"github.com/choria-io/go-choria/providers/security/pkcs11sec"
 	"strings"
+
+	"github.com/choria-io/go-choria/providers/security/pkcs11sec"
 )
 
 func (fw *Framework) setupPKCS11() (err error) {
@@ -17,5 +18,8 @@ func (fw *Framework) setupPKCS11() (err error) {
 	if !ok {
 		return fmt.Errorf("security setup is not valid, %d errors encountered: %s", len(errors), strings.Join(errors, ", "))
 	}
+
+	fw.Config.CacheBatchedTransports = true
+
 	return nil
 }
