@@ -87,7 +87,5 @@ func (s *Server) genTLSc(pri string, pub string, ca string, verify bool) (tlsc *
 		tlsc.InsecureSkipVerify = true
 	}
 
-	tlsc.BuildNameToCertificate()
-
 	return tlsc, nil
 }

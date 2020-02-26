@@ -12,7 +12,7 @@ import (
 func StartTestChoriaNetwork(cfg *config.Config, t *testing.T) (n *ChoriaNetwork) {
 	n, err := StartChoriaNetwork(cfg)
 	if err != nil {
-		t.Fatalf("instance network failed to start: %w", err)
+		t.Fatalf("instance network failed to start: %v", err)
 	}
 
 	return n
