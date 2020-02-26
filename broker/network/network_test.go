@@ -213,9 +213,6 @@ var _ = Describe("Network Broker", func() {
 
 				Expect(srv.opts.Gateway.Gateways).To(HaveLen(2))
 				Expect(srv.opts.Gateway.Gateways[1].TLSConfig).ToNot(BeNil())
-
-				_, ok := srv.opts.Gateway.Gateways[1].TLSConfig.NameToCertificate["1.mcollective"]
-				Expect(ok).To(BeTrue())
 			})
 		})
 
@@ -283,9 +280,6 @@ var _ = Describe("Network Broker", func() {
 				Expect(srv.opts.LeafNode.Remotes[0].URLs[0].String()).To(Equal("leafnode://ln1.example.net:6222"))
 				Expect(srv.opts.LeafNode.Remotes[0].TLS).To(BeTrue())
 				Expect(srv.opts.LeafNode.Remotes[0].TLSConfig).ToNot(BeNil())
-
-				_, ok := srv.opts.LeafNode.Remotes[0].TLSConfig.NameToCertificate["1.mcollective"]
-				Expect(ok).To(BeTrue())
 			})
 		})
 

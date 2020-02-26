@@ -18,7 +18,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/choria-io/go-choria/tlssetup"
 	"io/ioutil"
 	"net/http"
 	"net/url"
@@ -29,6 +28,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/choria-io/go-choria/tlssetup"
 
 	"github.com/sirupsen/logrus"
 )
@@ -634,8 +635,6 @@ func (s *FileSecurity) TLSConfig() (*tls.Config, error) {
 	if s.conf.DisableTLSVerify {
 		tlsc.InsecureSkipVerify = true
 	}
-
-	tlsc.BuildNameToCertificate()
 
 	return tlsc, nil
 }

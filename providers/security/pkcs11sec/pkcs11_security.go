@@ -9,12 +9,6 @@ import (
 	"crypto/x509"
 	"encoding/pem"
 	"fmt"
-	"github.com/AlecAivazis/survey/v2"
-	"github.com/choria-io/go-choria/providers/security/filesec"
-	"github.com/miekg/pkcs11"
-	"github.com/miekg/pkcs11/p11"
-	"github.com/pkg/errors"
-	"github.com/sirupsen/logrus"
 	"io"
 	"io/ioutil"
 	"net/http"
@@ -24,6 +18,13 @@ import (
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/AlecAivazis/survey/v2"
+	"github.com/choria-io/go-choria/providers/security/filesec"
+	"github.com/miekg/pkcs11"
+	"github.com/miekg/pkcs11/p11"
+	"github.com/pkg/errors"
+	"github.com/sirupsen/logrus"
 )
 
 // fetched from https://golang.org/src/crypto/rsa/pkcs1v15.go
@@ -501,8 +502,6 @@ func (p *Pkcs11Security) TLSConfig() (*tls.Config, error) {
 	if p.conf.DisableTLSVerify {
 		tlsc.InsecureSkipVerify = true
 	}
-
-	tlsc.BuildNameToCertificate()
 
 	return tlsc, nil
 }
