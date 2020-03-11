@@ -122,28 +122,28 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 }
 
 // IsCachedTransport determines if transport messages will be cached
-func (msg *Message) IsCachedTransport() bool {
-	msg.Lock()
-	defer msg.Unlock()
+func (m *Message) IsCachedTransport() bool {
+	m.Lock()
+	defer m.Unlock()
 
-	return msg.shouldCacheTransport
+	return m.shouldCacheTransport
 }
 
 // UniqueTransport ensures that every call to Transport() produce a unique transport message
-func (msg *Message) UniqueTransport() {
-	msg.Lock()
-	defer msg.Unlock()
+func (m *Message) UniqueTransport() {
+	m.Lock()
+	defer m.Unlock()
 
-	msg.cachedTransport = nil
-	msg.shouldCacheTransport = false
+	m.cachedTransport = nil
+	m.shouldCacheTransport = false
 }
 
 // CacheTransport ensures that multiples calls to Transport() returns the same transport message
-func (msg *Message) CacheTransport() {
-	msg.Lock()
-	defer msg.Unlock()
+func (m *Message) CacheTransport() {
+	m.Lock()
+	defer m.Unlock()
 
-	msg.shouldCacheTransport = true
+	m.shouldCacheTransport = true
 }
 
 // Transport creates a TransportMessage for this Message
@@ -154,184 +154,211 @@ func (msg *Message) CacheTransport() {
 //
 // For requests you need to set the protocol version using SetProtocolVersion()
 // before calling Transport
-func (msg *Message) Transport() (protocol.TransportMessage, error) {
-	msg.Lock()
-	defer msg.Unlock()
+func (m *Message) Transport() (protocol.TransportMessage, error) {
+	m.Lock()
+	defer m.Unlock()
 
-	if msg.shouldCacheTransport && msg.cachedTransport != nil {
-		return msg.cachedTransport, nil
+	if m.shouldCacheTransport && m.cachedTransport != nil {
+		return m.cachedTransport, nil
 	}
 
 	switch {
-	case msg.msgType == "request" || msg.msgType == "direct_request":
-		t, err := msg.requestTransport()
+	case m.msgType == "request" || m.msgType == "direct_request":
+		t, err := m.requestTransport()
 		if err != nil {
 			return nil, err
 		}
 
-		if msg.shouldCacheTransport {
-			msg.cachedTransport = t
+		if m.shouldCacheTransport {
+			m.cachedTransport = t
 		}
 
 		return t, nil
 
-	case msg.msgType == "reply":
-		return msg.replyTransport()
+	case m.msgType == "reply":
+		return m.replyTransport()
 
 	default:
-		return nil, fmt.Errorf("do not know how to make a Transport for a %s type Message", msg.msgType)
+		return nil, fmt.Errorf("do not know how to make a Transport for a %s type Message", m.msgType)
 	}
 }
 
-func (msg *Message) requestTransport() (protocol.TransportMessage, error) {
-	if msg.protoVersion == "" {
+func (m *Message) isEmptyFilter() bool {
+	if m.Filter == nil {
+		return true
+	}
+
+	f := m.Filter
+
+	// first check if its len(1) and its not the agent we are targeting then it's not empty (its probably broken too but hey ho)
+	if len(f.Agent) == 1 && f.Agent[0] != m.Agent {
+		return false
+	}
+
+	if f.Fact == nil && f.Class == nil && f.Agent == nil && f.Identity == nil && f.Compound == nil {
+		return true
+	}
+
+	// now we can safely check if len(f.Agent) <= 1 because we gated around agent[0] being the agent we're targeting
+	if len(f.Fact) == 0 && len(f.Class) == 0 && len(f.Agent) <= 1 && len(f.Identity) == 0 && len(f.Compound) == 0 {
+		return true
+	}
+
+	return false
+}
+
+func (m *Message) requestTransport() (protocol.TransportMessage, error) {
+	if m.protoVersion == "" {
 		return nil, errors.New("cannot create a Request Transport without a version, please set it using SetProtocolVersion()")
 	}
 
-	if msg.replyTo == "" {
+	if m.replyTo == "" {
 		return nil, errors.New("cannot create a Transport, no reply-to was set, please use SetReplyTo()")
 	}
 
-	transport, err := msg.choria.NewRequestTransportForMessage(msg, msg.protoVersion)
+	if m.choria.Configuration().RequireClientFilter && m.isEmptyFilter() {
+		return nil, fmt.Errorf("cannot create a Request Transport, requests without filters have been disabled")
+	}
+
+	transport, err := m.choria.NewRequestTransportForMessage(m, m.protoVersion)
 	if err != nil {
 		return nil, err
 	}
 
-	transport.SetReplyTo(msg.ReplyTo())
+	transport.SetReplyTo(m.ReplyTo())
 
 	return transport, nil
 }
 
-func (msg *Message) replyTransport() (protocol.TransportMessage, error) {
-	if msg.req == nil {
+func (m *Message) replyTransport() (protocol.TransportMessage, error) {
+	if m.req == nil {
 		return nil, fmt.Errorf("cannot create a Transport, no request were stored in the message")
 	}
 
-	return msg.choria.NewReplyTransportForMessage(msg, msg.req)
+	return m.choria.NewReplyTransportForMessage(m, m.req)
 }
 
 // SetProtocolVersion sets the version of the protocol that will be used by Transport()
-func (msg *Message) SetProtocolVersion(version string) {
-	msg.protoVersion = version
+func (m *Message) SetProtocolVersion(version string) {
+	m.protoVersion = version
 }
 
 // Validate tests the Message and makes sure its settings are sane
-func (msg *Message) Validate() (bool, error) {
-	if msg.Agent == "" {
+func (m *Message) Validate() (bool, error) {
+	if m.Agent == "" {
 		return false, fmt.Errorf("agent has not been set")
 	}
 
-	if msg.collective == "" {
+	if m.collective == "" {
 		return false, fmt.Errorf("collective has not been set")
 	}
 
-	if !msg.choria.HasCollective(msg.collective) {
-		return false, fmt.Errorf("'%s' is not on the list of known collectives", msg.collective)
+	if !m.choria.HasCollective(m.collective) {
+		return false, fmt.Errorf("'%s' is not on the list of known collectives", m.collective)
 	}
 
 	return true, nil
 }
 
 // ValidateTTL validates the message age, true if the message should be allowed
-func (msg *Message) ValidateTTL() bool {
+func (m *Message) ValidateTTL() bool {
 	now := time.Now()
-	earliest := now.Add(-1 * time.Duration(msg.TTL) * time.Second)
-	latest := now.Add(time.Duration(msg.TTL) * time.Second)
+	earliest := now.Add(-1 * time.Duration(m.TTL) * time.Second)
+	latest := now.Add(time.Duration(m.TTL) * time.Second)
 
-	return msg.TimeStamp.Before(latest) && msg.TimeStamp.After(earliest)
+	return m.TimeStamp.Before(latest) && m.TimeStamp.After(earliest)
 }
 
 // SetBase64Payload sets the payload for the message, use it if the payload is Base64 encoded
-func (msg *Message) SetBase64Payload(payload string) error {
+func (m *Message) SetBase64Payload(payload string) error {
 	str, err := base64.StdEncoding.DecodeString(payload)
 	if err != nil {
 		return fmt.Errorf("could not decode supplied payload using base64: %s", err)
 	}
 
-	msg.Payload = string(str)
+	m.Payload = string(str)
 
 	return nil
 }
 
 // Base64Payload retrieves the payload Base64 encoded
-func (msg *Message) Base64Payload() string {
-	return base64.StdEncoding.EncodeToString([]byte(msg.Payload))
+func (m *Message) Base64Payload() string {
+	return base64.StdEncoding.EncodeToString([]byte(m.Payload))
 }
 
 // SetExpectedMsgID sets the Request ID that is expected from the reply data
-func (msg *Message) SetExpectedMsgID(id string) error {
-	if msg.Type() != "reply" {
+func (m *Message) SetExpectedMsgID(id string) error {
+	if m.Type() != "reply" {
 		return fmt.Errorf("can only store expected message ID for reply messages")
 	}
 
-	msg.expectedMessageID = id
+	m.expectedMessageID = id
 
 	return nil
 }
 
 // ExpectedMessageID retrieves the expected message ID
-func (msg *Message) ExpectedMessageID() string {
-	return msg.expectedMessageID
+func (m *Message) ExpectedMessageID() string {
+	return m.expectedMessageID
 }
 
 // SetReplyTo sets the NATS target where replies to this message should go
-func (msg *Message) SetReplyTo(replyTo string) error {
-	if !(msg.Type() == "request" || msg.Type() == "direct_request") {
+func (m *Message) SetReplyTo(replyTo string) error {
+	if !(m.Type() == "request" || m.Type() == "direct_request") {
 		return fmt.Errorf("custom reply to targets can only be set for requests")
 	}
 
-	msg.replyTo = replyTo
+	m.replyTo = replyTo
 
 	return nil
 }
 
 // ReplyTo retrieve the NATS reply target
-func (msg *Message) ReplyTo() string {
-	return msg.replyTo
+func (m *Message) ReplyTo() string {
+	return m.replyTo
 }
 
 // SetCollective sets the sub collective this message is targeting
-func (msg *Message) SetCollective(collective string) error {
-	if !msg.choria.HasCollective(collective) {
+func (m *Message) SetCollective(collective string) error {
+	if !m.choria.HasCollective(collective) {
 		return fmt.Errorf("cannot set collective to '%s', it is not on the list of known collectives", collective)
 	}
 
-	msg.collective = collective
+	m.collective = collective
 
 	return nil
 }
 
 // Collective retrieves the sub collective this message is targeting
-func (msg *Message) Collective() string {
-	return msg.collective
+func (m *Message) Collective() string {
+	return m.collective
 }
 
-// SetType sets the mssage type. One message, request, direct_request or reply
-func (msg *Message) SetType(msgType string) (err error) {
+// SetType sets the message type. One message, request, direct_request or reply
+func (m *Message) SetType(msgType string) (err error) {
 	if !(msgType == "message" || msgType == "request" || msgType == "direct_request" || msgType == "reply") {
 		return fmt.Errorf("%s is not a valid message type", msgType)
 	}
 
 	if msgType == "direct_request" {
-		if len(msg.DiscoveredHosts) == 0 {
+		if len(m.DiscoveredHosts) == 0 {
 			return fmt.Errorf("direct_request message type can only be set if DiscoveredHosts have been set")
 		}
 
-		msg.Filter = protocol.NewFilter()
-		msg.Filter.AddAgentFilter(msg.Agent)
+		m.Filter.AddAgentFilter(m.Agent)
 	}
 
-	msg.msgType = msgType
+	m.msgType = msgType
 
 	return
 }
 
 // Type retrieves the message type
-func (msg *Message) Type() string {
-	return msg.msgType
+func (m *Message) Type() string {
+	return m.msgType
 }
 
 // String creates a string representation of the message for logs etc
-func (msg *Message) String() string {
-	return fmt.Sprintf("%s from %s@%s for agent %s", msg.RequestID, msg.CallerID, msg.SenderID, msg.Agent)
+func (m *Message) String() string {
+	return fmt.Sprintf("%s from %s@%s for agent %s", m.RequestID, m.CallerID, m.SenderID, m.Agent)
 }
