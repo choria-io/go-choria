@@ -183,6 +183,30 @@ func (msg *Message) Transport() (protocol.TransportMessage, error) {
 	}
 }
 
+func (msg *Message) isEmptyFilter() bool {
+	if msg.Filter == nil {
+		return true
+	}
+
+	f := msg.Filter
+
+	// first check if its len(1) and its not the agent we are targeting then it's not empty (its probably broken too but hey ho)
+	if len(f.Agent) == 1 && f.Agent[0] != msg.Agent {
+		return false
+	}
+
+	if f.Fact == nil && f.Class == nil && f.Agent == nil && f.Identity == nil && f.Compound == nil {
+		return true
+	}
+
+	// now we can safely check if len(f.Agent) <= 1 because we gated around agent[0] being the agent we're targeting
+	if len(f.Fact) == 0 && len(f.Class) == 0 && len(f.Agent) <= 1 && len(f.Identity) == 0 && len(f.Compound) == 0 {
+		return true
+	}
+
+	return false
+}
+
 func (msg *Message) requestTransport() (protocol.TransportMessage, error) {
 	if msg.protoVersion == "" {
 		return nil, errors.New("cannot create a Request Transport without a version, please set it using SetProtocolVersion()")
@@ -190,6 +214,10 @@ func (msg *Message) requestTransport() (protocol.TransportMessage, error) {
 
 	if msg.replyTo == "" {
 		return nil, errors.New("cannot create a Transport, no reply-to was set, please use SetReplyTo()")
+	}
+
+	if msg.choria.Configuration().RequireClientFilter && msg.isEmptyFilter() {
+		return nil, fmt.Errorf("cannot create a Request Transport, requests without filters have been disabled")
 	}
 
 	transport, err := msg.choria.NewRequestTransportForMessage(msg, msg.protoVersion)
@@ -306,7 +334,7 @@ func (msg *Message) Collective() string {
 	return msg.collective
 }
 
-// SetType sets the mssage type. One message, request, direct_request or reply
+// SetType sets the message type. One message, request, direct_request or reply
 func (msg *Message) SetType(msgType string) (err error) {
 	if !(msgType == "message" || msgType == "request" || msgType == "direct_request" || msgType == "reply") {
 		return fmt.Errorf("%s is not a valid message type", msgType)
@@ -317,7 +345,6 @@ func (msg *Message) SetType(msgType string) (err error) {
 			return fmt.Errorf("direct_request message type can only be set if DiscoveredHosts have been set")
 		}
 
-		msg.Filter = protocol.NewFilter()
 		msg.Filter.AddAgentFilter(msg.Agent)
 	}
 

@@ -233,6 +233,26 @@ var _ = Describe("Choria/Message", func() {
 
 		})
 
+		It("Should prevent empty filters when configured to do so", func() {
+			fw.Config.RequireClientFilter = true
+			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+			m.SetProtocolVersion(protocol.RequestV1)
+			m.SetReplyTo("reply.to")
+
+			_, err = m.requestTransport()
+			Expect(err).To(MatchError("cannot create a Request Transport, requests without filters have been disabled"))
+
+			fw.Config.RequireClientFilter = false
+			_, err = m.requestTransport()
+			Expect(err).ToNot(HaveOccurred())
+
+			fw.Config.RequireClientFilter = true
+			m.Filter.AddClassFilter("foo")
+			_, err = m.requestTransport()
+			Expect(err).ToNot(HaveOccurred())
+		})
+
 		It("Should set up the transport", func() {
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
