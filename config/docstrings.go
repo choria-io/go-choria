@@ -1,4 +1,4 @@
-// auto generated at 2020-02-17 12:36:31.238477 +0100 CET m=+0.001821647
+// auto generated at 2020-03-13 12:47:26.089585 +0100 CET m=+0.000998862
 
 package config
 
@@ -32,7 +32,6 @@ var docStrings = map[string]string{
 	"default_discovery_options":                               "Configurable options to always pass to the discovery subsystem",
 	"default_discovery_method":                                "The default discovery plugin to use. The default \"mc\" uses a network broadcast and \"choria\" uses PuppetDB",
 	"plugin.yaml":                                             "Where to look for YAML or JSON based facts",
-	"require_client_filter":                                   "If a client filter should always be required, appears unused at the moment",
 	"plugin.choria.puppetserver_host":                         "The hostname where your Puppet Server can be found",
 	"plugin.choria.puppetserver_port":                         "The port your Puppet Server listens on",
 	"plugin.choria.puppetca_host":                             "The hostname where your Puppet Certificate Authority can be found",
@@ -100,4 +99,5 @@ var docStrings = map[string]string{
 	"plugin.choria.status_file_path":                          "Path to a JSON file to write server health information to regularly",
 	"plugin.choria.status_update_interval":                    "How frequently to write to the status_file_path",
 	"plugin.choria.machine.store":                             "Directory where Autonomous Agents are stored",
+	"plugin.choria.require_client_filter":                     "If a client filter should always be required, only used in Go clients",
 }
