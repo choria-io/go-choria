@@ -234,7 +234,7 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should prevent empty filters when configured to do so", func() {
-			fw.Config.RequireClientFilter = true
+			fw.Config.Choria.RequireClientFilter = true
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 			m.SetProtocolVersion(protocol.RequestV1)
@@ -243,14 +243,25 @@ var _ = Describe("Choria/Message", func() {
 			_, err = m.requestTransport()
 			Expect(err).To(MatchError("cannot create a Request Transport, requests without filters have been disabled"))
 
-			fw.Config.RequireClientFilter = false
+			fw.Config.Choria.RequireClientFilter = false
 			_, err = m.requestTransport()
 			Expect(err).ToNot(HaveOccurred())
 
-			fw.Config.RequireClientFilter = true
+			fw.Config.Choria.RequireClientFilter = true
 			m.Filter.AddClassFilter("foo")
 			_, err = m.requestTransport()
 			Expect(err).ToNot(HaveOccurred())
+
+			// discovery has m.Agent==discovery but the filter agent will be what the next request will target so special case tests
+			fw.Config.Choria.RequireClientFilter = true
+			m, err = NewMessage("hello world", "discovery", "test_collective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+			m.SetProtocolVersion(protocol.RequestV1)
+			m.SetReplyTo("reply.to")
+			m.Filter.AddAgentFilter("rpcutil")
+			_, err = m.requestTransport()
+			Expect(err).To(MatchError("cannot create a Request Transport, requests without filters have been disabled"))
+
 		})
 
 		It("Should set up the transport", func() {

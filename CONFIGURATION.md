@@ -52,24 +52,24 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.puppetserver_host](#pluginchoriapuppetserver_host)|[plugin.choria.puppetserver_port](#pluginchoriapuppetserver_port)|
 |[plugin.choria.randomize_middleware_hosts](#pluginchoriarandomize_middleware_hosts)|[plugin.choria.registration.file_content.compression](#pluginchoriaregistrationfile_contentcompression)|
 |[plugin.choria.registration.file_content.data](#pluginchoriaregistrationfile_contentdata)|[plugin.choria.registration.file_content.target](#pluginchoriaregistrationfile_contenttarget)|
-|[plugin.choria.security.certname_whitelist](#pluginchoriasecuritycertname_whitelist)|[plugin.choria.security.privileged_users](#pluginchoriasecurityprivileged_users)|
-|[plugin.choria.security.request_signer.token_environment](#pluginchoriasecurityrequest_signertoken_environment)|[plugin.choria.security.request_signer.token_file](#pluginchoriasecurityrequest_signertoken_file)|
-|[plugin.choria.security.request_signer.url](#pluginchoriasecurityrequest_signerurl)|[plugin.choria.security.serializer](#pluginchoriasecurityserializer)|
-|[plugin.choria.server.provision](#pluginchoriaserverprovision)|[plugin.choria.srv_domain](#pluginchoriasrv_domain)|
-|[plugin.choria.ssldir](#pluginchoriassldir)|[plugin.choria.stats_address](#pluginchoriastats_address)|
-|[plugin.choria.stats_port](#pluginchoriastats_port)|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|
-|[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|[plugin.choria.use_srv](#pluginchoriause_srv)|
-|[plugin.nats.credentials](#pluginnatscredentials)|[plugin.nats.ngs](#pluginnatsngs)|
-|[plugin.nats.pass](#pluginnatspass)|[plugin.nats.user](#pluginnatsuser)|
-|[plugin.security.always_overwrite_cache](#pluginsecurityalways_overwrite_cache)|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|
-|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|[plugin.security.file.ca](#pluginsecurityfileca)|
-|[plugin.security.file.cache](#pluginsecurityfilecache)|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|
-|[plugin.security.file.key](#pluginsecurityfilekey)|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|
-|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|[plugin.security.provider](#pluginsecurityprovider)|
-|[plugin.yaml](#pluginyaml)|[publish_timeout](#publish_timeout)|
-|[registerinterval](#registerinterval)|[registration](#registration)|
-|[registration_collective](#registration_collective)|[registration_splay](#registration_splay)|
-|[require_client_filter](#require_client_filter)|[rpcaudit](#rpcaudit)|
+|[plugin.choria.require_client_filter](#pluginchoriarequire_client_filter)|[plugin.choria.security.certname_whitelist](#pluginchoriasecuritycertname_whitelist)|
+|[plugin.choria.security.privileged_users](#pluginchoriasecurityprivileged_users)|[plugin.choria.security.request_signer.token_environment](#pluginchoriasecurityrequest_signertoken_environment)|
+|[plugin.choria.security.request_signer.token_file](#pluginchoriasecurityrequest_signertoken_file)|[plugin.choria.security.request_signer.url](#pluginchoriasecurityrequest_signerurl)|
+|[plugin.choria.security.serializer](#pluginchoriasecurityserializer)|[plugin.choria.server.provision](#pluginchoriaserverprovision)|
+|[plugin.choria.srv_domain](#pluginchoriasrv_domain)|[plugin.choria.ssldir](#pluginchoriassldir)|
+|[plugin.choria.stats_address](#pluginchoriastats_address)|[plugin.choria.stats_port](#pluginchoriastats_port)|
+|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|
+|[plugin.choria.use_srv](#pluginchoriause_srv)|[plugin.nats.credentials](#pluginnatscredentials)|
+|[plugin.nats.ngs](#pluginnatsngs)|[plugin.nats.pass](#pluginnatspass)|
+|[plugin.nats.user](#pluginnatsuser)|[plugin.security.always_overwrite_cache](#pluginsecurityalways_overwrite_cache)|
+|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|
+|[plugin.security.file.ca](#pluginsecurityfileca)|[plugin.security.file.cache](#pluginsecurityfilecache)|
+|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|[plugin.security.file.key](#pluginsecurityfilekey)|
+|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|
+|[plugin.security.provider](#pluginsecurityprovider)|[plugin.yaml](#pluginyaml)|
+|[publish_timeout](#publish_timeout)|[registerinterval](#registerinterval)|
+|[registration](#registration)|[registration_collective](#registration_collective)|
+|[registration_splay](#registration_splay)|[rpcaudit](#rpcaudit)|
 |[rpcauditprovider](#rpcauditprovider)|[rpcauthorization](#rpcauthorization)|
 |[rpcauthprovider](#rpcauthprovider)|[rpclimitmethod](#rpclimitmethod)|
 |[securityprovider](#securityprovider)|[soft_shutdown](#soft_shutdown)|
@@ -530,6 +530,13 @@ YAML or JSON file to use as data source for registration
 
 NATS Subject to publish registration data to
 
+## plugin.choria.require_client_filter
+
+ * **Type:** boolean
+ * **Default Value:** false
+
+If a client filter should always be required, only used in Go clients
+
 ## plugin.choria.security.certname_whitelist
 
  * **Type:** comma_split
@@ -762,13 +769,6 @@ The Sub Collective to publish registration data to
  * **Default Value:** false
 
 When true delays initial registration publish by a random period up to registerinterval following registration publishes will be at registerinterval without further splay
-
-## require_client_filter
-
- * **Type:** boolean
- * **Default Value:** false
-
-If a client filter should always be required, appears unused at the moment
 
 ## rpcaudit
 
