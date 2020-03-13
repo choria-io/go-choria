@@ -104,9 +104,6 @@ type Config struct {
 	// Where to look for YAML or JSON based facts
 	FactSourceFile string `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml" type:"path_string"`
 
-	// If a client filter should always be required, appears unused at the moment
-	RequireClientFilter bool `confkey:"require_client_filter" default:"false"`
-
 	// Deprecated settings
 
 	ActivateAgents            bool   `confkey:"activate_agents" default:"true" deprecated:"1"`

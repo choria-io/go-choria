@@ -98,6 +98,8 @@ type ChoriaPluginConfig struct {
 	StatusUpdateSeconds int    `confkey:"plugin.choria.status_update_interval" default:"30"` // How frequently to write to the status_file_path
 
 	MachineSourceDir string `confkey:"plugin.choria.machine.store" url:"https://choria.io/docs/autoagents/"` // Directory where Autonomous Agents are stored
+
+	RequireClientFilter bool `confkey:"plugin.choria.require_client_filter" default:"false"` // If a client filter should always be required, only used in Go clients
 }
 
 func newChoria() *ChoriaPluginConfig {

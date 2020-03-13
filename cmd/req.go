@@ -239,6 +239,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	opts := []rpc.RequestOption{
 		rpc.Collective(r.collective),
 		rpc.Targets(nodes),
+		rpc.Filter(r.filter),
 		rpc.ReplyHandler(r.responseHandler(results)),
 		rpc.Workers(r.workers),
 		rpc.LimitMethod(cfg.RPCLimitMethod),

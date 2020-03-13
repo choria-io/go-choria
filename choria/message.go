@@ -190,17 +190,16 @@ func (m *Message) isEmptyFilter() bool {
 
 	f := m.Filter
 
-	// first check if its len(1) and its not the agent we are targeting then it's not empty (its probably broken too but hey ho)
-	if len(f.Agent) == 1 && f.Agent[0] != m.Agent {
-		return false
-	}
-
-	if f.Fact == nil && f.Class == nil && f.Agent == nil && f.Identity == nil && f.Compound == nil {
+	if f.Fact == nil && f.Class == nil && f.Identity == nil && f.Compound == nil {
 		return true
 	}
 
-	// now we can safely check if len(f.Agent) <= 1 because we gated around agent[0] being the agent we're targeting
-	if len(f.Fact) == 0 && len(f.Class) == 0 && len(f.Agent) <= 1 && len(f.Identity) == 0 && len(f.Compound) == 0 {
+	// we specifically handle the case where people do agent discovery against discovery agent and more than 1 agent filter
+	if m.Agent == "discovery" && len(f.Agent) > 1 {
+		return false
+	}
+
+	if (len(f.Agent) == 0 || m.Agent == "discovery" && len(f.Agent) == 1) && len(f.Fact) == 0 && len(f.Class) == 0 && len(f.Identity) == 0 && len(f.Compound) == 0 {
 		return true
 	}
 
@@ -216,7 +215,7 @@ func (m *Message) requestTransport() (protocol.TransportMessage, error) {
 		return nil, errors.New("cannot create a Transport, no reply-to was set, please use SetReplyTo()")
 	}
 
-	if m.choria.Configuration().RequireClientFilter && m.isEmptyFilter() {
+	if m.choria.Configuration().Choria.RequireClientFilter && m.isEmptyFilter() {
 		return nil, fmt.Errorf("cannot create a Request Transport, requests without filters have been disabled")
 	}
 
