@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"reflect"
 	"strconv"
 	"strings"
 	"sync"
@@ -15,8 +16,9 @@ import (
 type tConfigCommand struct {
 	command
 
-	key  string
-	list bool
+	hideVals bool
+	key      string
+	list     bool
 }
 
 func (cc *tConfigCommand) Setup() (err error) {
@@ -30,15 +32,17 @@ func (cc *tConfigCommand) Setup() (err error) {
 }
 
 func (cc *tConfigCommand) Configure() (err error) {
-	cfg, err = config.NewDefaultConfig()
+	err = commonConfigure()
 	if err != nil {
-		return err
+		cfg, err = config.NewDefaultConfig()
+		if err != nil {
+			return err
+		}
+		cfg.Choria.SecurityProvider = "file"
+		cc.hideVals = true
 	}
 
 	cfg.DisableSecurityProviderVerify = true
-	cfg.Choria.SecurityProvider = "file"
-
-	cfg.ApplyBuildSettings(bi)
 
 	return err
 }
@@ -83,7 +87,15 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 			continue
 		}
 
+		field := reflect.ValueOf(*cfg).FieldByName(doc.StructKey())
+		if strings.HasPrefix(doc.StructKey(), "Choria.") {
+			field = reflect.ValueOf(*cfg.Choria).FieldByName(strings.TrimPrefix(doc.StructKey(), "Choria."))
+		}
+
 		fmt.Printf("Configuration item: %s\n\n", bold(doc.ConfigKey()))
+		if !cc.hideVals && !field.IsZero() {
+			fmt.Printf("║        Value: %v\n", field)
+		}
 		if doc.Deprecate() {
 			fmt.Printf("║   Deprecated: %s\n", warn("yes"))
 		}
