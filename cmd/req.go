@@ -2,9 +2,11 @@ package cmd
 
 import (
 	"bufio"
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"os"
+	"sort"
 	"strings"
 	"sync"
 	"text/tabwriter"
@@ -360,16 +362,20 @@ func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
 
 	nodeListPrinter := func(nodes []string, message string) {
 		if len(nodes) > 0 {
+			sort.Strings(nodes)
+
 			fmt.Fprintf(r.outputWriter, "\n%s: %d\n\n", message, len(nodes))
 
-			w := new(tabwriter.Writer)
-			w.Init(r.outputFileHandle, 0, 0, 4, ' ', 0)
+			out := bytes.NewBuffer([]byte{})
 
+			w := new(tabwriter.Writer)
+			w.Init(out, 0, 0, 4, ' ', 0)
 			choria.SliceGroups(nodes, 3, func(g []string) {
 				fmt.Fprintln(w, "    "+strings.Join(g, "\t")+"\t")
 			})
-
 			w.Flush()
+
+			fmt.Fprint(r.outputWriter, out.String())
 		}
 	}
 
