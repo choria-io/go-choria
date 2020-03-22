@@ -2,6 +2,8 @@ package network
 
 import (
 	"context"
+	"strconv"
+	"strings"
 	"time"
 
 	gnatsd "github.com/nats-io/nats-server/v2/server"
@@ -64,6 +66,36 @@ var (
 		Name: "choria_network_subscriptions",
 		Help: "Number of active subscriptions to subjects on this broker",
 	}, []string{"identity"})
+
+	leafTTGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_leafnode_rtt_ms",
+		Help: "RTT for the Leafnode connection",
+	}, []string{"identity", "host", "port", "account"})
+
+	leafMsgsInGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_leafnode_in_msgs",
+		Help: "Messages received over the leafnode connection",
+	}, []string{"identity", "host", "port", "account"})
+
+	leafMsgsOutGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_leafnode_out_msgs",
+		Help: "Messages sent over the leafnode connection",
+	}, []string{"identity", "host", "port", "account"})
+
+	leafBytesInGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_leafnode_in_bytes",
+		Help: "Bytes received over the leafnode connection",
+	}, []string{"identity", "host", "port", "account"})
+
+	leafBytesOutGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_leafnode_out_bytes",
+		Help: "Total size of messages sent over the leafnode connection",
+	}, []string{"identity", "host", "port", "account"})
+
+	leafSubscriptionsGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_leafnode_subscriptions",
+		Help: "Number of active subscriptions to subjects on this leafnode",
+	}, []string{"identity", "host", "port", "account"})
 )
 
 func init() {
@@ -78,10 +110,20 @@ func init() {
 	prometheus.MustRegister(outBytesGauge)
 	prometheus.MustRegister(slowConsumerGauge)
 	prometheus.MustRegister(subscriptionsGauge)
+	prometheus.MustRegister(leafTTGauge)
+	prometheus.MustRegister(leafMsgsInGauge)
+	prometheus.MustRegister(leafMsgsOutGauge)
+	prometheus.MustRegister(leafBytesInGauge)
+	prometheus.MustRegister(leafBytesOutGauge)
+	prometheus.MustRegister(leafSubscriptionsGauge)
 }
 
 func (s *Server) getVarz() (*gnatsd.Varz, error) {
 	return s.gnatsd.Varz(&gnatsd.VarzOptions{})
+}
+
+func (s *Server) getLeafz() (*gnatsd.Leafz, error) {
+	return s.gnatsd.Leafz(&gnatsd.LeafzOptions{Subscriptions: false})
 }
 
 func (s *Server) publishStats(ctx context.Context, interval time.Duration) {
@@ -123,4 +165,23 @@ func (s *Server) updatePrometheus() {
 	slowConsumerGauge.WithLabelValues(i).Set(float64(varz.SlowConsumers))
 	subscriptionsGauge.WithLabelValues(i).Set(float64(varz.Subscriptions))
 	leafsGauge.WithLabelValues(i).Set(float64(varz.Leafs))
+
+	leafz, err := s.getLeafz()
+	if err != nil {
+		log.Errorf("Could not publish network broker stats: %s", err)
+		return
+	}
+
+	for _, leaf := range leafz.Leafs {
+		leafMsgsInGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.InMsgs))
+		leafMsgsOutGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.OutMsgs))
+		leafBytesInGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.InBytes))
+		leafBytesOutGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.OutBytes))
+		leafSubscriptionsGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.NumSubs))
+
+		rtt, err := strconv.Atoi(strings.TrimSuffix(leaf.RTT, "ms"))
+		if err == nil {
+			leafTTGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(rtt))
+		}
+	}
 }
