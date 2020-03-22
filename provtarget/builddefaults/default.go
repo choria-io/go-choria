@@ -116,7 +116,7 @@ func (b *Resolver) Targets(ctx context.Context, log *logrus.Entry) []string {
 
 		log.Warnf("Resolving provisioning brokers via SRV lookups in domain %s failed on try %d, will keep trying", domain, try)
 
-		backoff.TwentySec.InterruptibleSleep(ctx, try)
+		backoff.TwentySec.Sleep(ctx, try)
 	}
 
 	return servers.Strings()

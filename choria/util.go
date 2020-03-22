@@ -136,7 +136,7 @@ func NewRequestID() (string, error) {
 	return strings.Replace(UniqueID(), "-", "", -1), nil
 }
 
-// InterruptibleSleep sleep for the duration of the n'th wait cycle
+// Sleep sleep for the duration of the n'th wait cycle
 // in a way that can be interrupted by the context.  An error is returned
 // if the context cancels the sleep
 func InterruptibleSleep(ctx context.Context, d time.Duration) error {
@@ -148,11 +148,6 @@ func InterruptibleSleep(ctx context.Context, d time.Duration) error {
 	case <-ctx.Done():
 		return errors.New("sleep interrupted by context")
 	}
-}
-
-// InterruptableSleep is DEPRECATED see InterruptibleSleep
-func InterruptableSleep(ctx context.Context, d time.Duration) error {
-	return InterruptibleSleep(ctx, d)
 }
 
 // UniqueID creates a new unique ID, usually a v4 uuid, if that fails a random string based ID is made
