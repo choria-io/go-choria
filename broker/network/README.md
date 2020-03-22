@@ -128,3 +128,9 @@ When Statistics are enabled in Choria by setting `plugin.choria.stats_port` to n
 |`choria_network_out_bytes`|Total size of messages sent by the network broker|
 |`choria_network_slow_consumers`|Total number of clients who were considered slow consumers|
 |`choria_network_subscriptions`|Number of active subscriptions to subjects on this broker|
+|`choria_network_leafnode_rtt_ms`|RTT for the Leafnode connection|
+|`choria_network_leafnode_in_msgs`|Messages received over the leafnode connection|
+|`choria_network_leafnode_out_msgs`|Messages sent over the leafnode connection|
+|`choria_network_leafnode_in_bytes`|Bytes received over the leafnode connection|
+|`choria_network_leafnode_out_msgs`|Total size of messages sent over the leafnode connection|
+|`choria_network_leafnode_subscriptions`|Number of active subscriptions to subjects on this leafnode|
