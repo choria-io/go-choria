@@ -18,6 +18,8 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server"
+	"github.com/choria-io/go-choria/server/agents"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -102,7 +104,7 @@ func (p *Provider) externalActivationCheck(ddl *agentddl.DDL) (mcorpc.Activation
 	}
 
 	p.log.Debugf("Performing activation check on external agent %s using %s", ddl.Metadata.Name, agentPath)
-	err = p.executeRequest(ctx, agentPath, activationProtocol, j, rep, ddl.Metadata.Name, p.log)
+	err = p.executeRequest(ctx, agentPath, activationProtocol, j, rep, ddl.Metadata.Name, p.log, nil)
 	if err != nil {
 		p.log.Warnf("External agent %s not activating due to error during activation check: %s", agentPath, err)
 		return func() bool { return false }, nil
@@ -150,7 +152,7 @@ func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, repl
 		return
 	}
 
-	err = p.executeRequest(tctx, agentPath, rpcRequestProtocol, externreq, reply, agent.Name(), agent.Log)
+	err = p.executeRequest(tctx, agentPath, rpcRequestProtocol, externreq, reply, agent.Name(), agent.Log, agent.ServerInfoSource)
 	if err != nil {
 		p.abortAction(fmt.Sprintf("Could not call external agent %s: %s", action, err), agent, reply)
 		return
@@ -204,7 +206,7 @@ func (p *Provider) setReplyDefaults(ddl *agentddl.DDL, action string, reply *mco
 	return nil
 }
 
-func (p *Provider) executeRequest(ctx context.Context, command string, protocol string, req []byte, reply interface{}, agentName string, log *logrus.Entry) error {
+func (p *Provider) executeRequest(ctx context.Context, command string, protocol string, req []byte, reply interface{}, agentName string, log *logrus.Entry, si agents.ServerInfoSource) error {
 	reqfile, err := ioutil.TempFile("", "request")
 	if err != nil {
 		return fmt.Errorf("could not create request temp file: %s", err)
@@ -218,6 +220,12 @@ func (p *Provider) executeRequest(ctx context.Context, command string, protocol 
 	defer os.Remove(repfile.Name())
 	repfile.Close()
 
+	factsfile, err := ioutil.TempFile("", "facts")
+	if err != nil {
+		return fmt.Errorf("could not create facts temp file: %s", err)
+	}
+	defer os.Remove(factsfile.Name())
+
 	_, err = reqfile.Write(req)
 	if err != nil {
 		return fmt.Errorf("could not create reply temp file: %s", err)
@@ -228,6 +236,10 @@ func (p *Provider) executeRequest(ctx context.Context, command string, protocol 
 		return fmt.Errorf("could not determine agent config file: %s", err)
 	}
 
+	if si != nil {
+		factsfile.Write(si.Facts())
+	}
+
 	execution := exec.CommandContext(ctx, command, reqfile.Name(), repfile.Name(), rpcRequestProtocol)
 	execution.Dir = os.TempDir()
 	execution.Env = []string{
@@ -235,6 +247,7 @@ func (p *Provider) executeRequest(ctx context.Context, command string, protocol 
 		"CHORIA_EXTERNAL_REPLY=" + repfile.Name(),
 		"CHORIA_EXTERNAL_PROTOCOL=" + protocol,
 		"CHORIA_EXTERNAL_CONFIG=" + agentConfig,
+		"CHORIA_EXTERNAL_FACTS=" + factsfile.Name(),
 		"PATH=" + os.Getenv("PATH"),
 	}
 
