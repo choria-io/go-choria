@@ -31,6 +31,7 @@ var _ = Describe("McoRPC/External", func() {
 		agentMgr *MockAgentManager
 		cfg      *config.Config
 		prov     *Provider
+		si       *MockServerInfoSource
 		err      error
 		wd       string
 	)
@@ -40,6 +41,7 @@ var _ = Describe("McoRPC/External", func() {
 
 		mockctl = gomock.NewController(GinkgoT())
 		agentMgr = NewMockAgentManager(mockctl)
+		si = NewMockServerInfoSource(mockctl)
 
 		cfg = config.NewConfigForTests()
 		cfg.DisableSecurityProviderVerify = true
@@ -55,6 +57,7 @@ var _ = Describe("McoRPC/External", func() {
 
 		agentMgr.EXPECT().Choria().Return(fw).AnyTimes()
 		agentMgr.EXPECT().Logger().Return(fw.Logger("mgr")).AnyTimes()
+		si.EXPECT().Facts().Return(json.RawMessage(`{"ginkgo":true}`)).AnyTimes()
 
 		prov = &Provider{
 			cfg:    cfg,
@@ -92,10 +95,6 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(agnt.ActionNames()).To(Equal([]string{"act1", "act2"}))
 		})
-
-		It("Should set the correct activation checker", func() {
-
-		})
 	})
 
 	Describe("externalActivationCheck", func() {
@@ -120,7 +119,7 @@ var _ = Describe("McoRPC/External", func() {
 		})
 
 		// TODO: windows
-		if runtime.GOOS !="windows" {
+		if runtime.GOOS != "windows" {
 			It("should handle specifically enabled agents", func() {
 				d := &addl.DDL{
 					SourceLocation: filepath.Join(wd, "testdata/mcollective/agent/activation_checker_enabled.json"),
@@ -174,6 +173,8 @@ var _ = Describe("McoRPC/External", func() {
 			prov.paths["ginkgo"] = ddl.SourceLocation
 
 			agent, err = prov.newExternalAgent(ddl, agentMgr)
+			agent.SetServerInfo(si)
+
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -196,7 +197,7 @@ var _ = Describe("McoRPC/External", func() {
 		})
 
 		// TODO: windows
-		if runtime.GOOS!="windows"{
+		if runtime.GOOS != "windows" {
 			It("Should handle execution failures", func() {
 				ctx, cancel := context.WithCancel(context.Background())
 				defer cancel()
@@ -235,7 +236,7 @@ var _ = Describe("McoRPC/External", func() {
 		})
 
 		// TODO: windows
-		if runtime.GOOS!="windows" {
+		if runtime.GOOS != "windows" {
 			It("Should execute the correct request binary with the correct input and set defaults on the reply", func() {
 				ctx, cancel := context.WithCancel(context.Background())
 				defer cancel()

@@ -12,6 +12,9 @@ begin
   abort("incorrect protocol") unless ENV["CHORIA_EXTERNAL_PROTOCOL"] == "io.choria.mcorpc.external.v1.rpc_request"
 
   req = JSON.parse(File.read(ENV["CHORIA_EXTERNAL_REQUEST"]))
+  facts = JSON.parse(File.read(ENV["CHORIA_EXTERNAL_FACTS"]))
+
+  abort("incorrect facts") unless facts["ginkgo"]
 
   cpath = ENV["CHORIA_EXTERNAL_CONFIG"]
   expectedpath = File.expand_path(File.join(File.dirname(__FILE__), "../../../plugin.d", "ginkgo"))
