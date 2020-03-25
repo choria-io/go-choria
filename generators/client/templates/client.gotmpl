@@ -6,6 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"sync"
 	"time"
 
 	"context"
@@ -68,6 +69,9 @@ type {{ .DDL.Metadata.Name | SnakeToCamel }}Client struct {
 	clientOpts    *initOptions
 	clientRPCOpts []rpcclient.RequestOption
 	filters       []FilterFunc
+	targets       []string
+
+	sync.Mutex
 }
 
 // Metadata is the agent metadata
@@ -102,6 +106,7 @@ func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToC
 		clientOpts: &initOptions{
 			cfgFile: choria.UserConfig(),
 		},
+		targets: []string{},
 	}
 
 	for _, opt := range opts {
@@ -150,6 +155,14 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) AgentMetadata() *Metadat
 	}
 }
 
+// DiscoverNodes performs a discovery using the configured filter and node source
+func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) DiscoverNodes(ctx context.Context) (nodes []string, err error) {
+	p.Lock()
+	defer p.Unlock()
+
+	return p.ns.Discover(ctx, p.fw, p.filters)
+}
+
 {{ range $i, $action := .DDL.Actions }}
 // {{ $action.Name | SnakeToCamel }} performs the {{ $action.Name | ToLower }} action
 //
@@ -168,10 +181,10 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) AgentMetadata() *Metadat
 //    - {{ $name }} ({{ $input.Type | ChoriaTypeToGoType }}) - {{ $input.Description }}
 {{- end }}
 {{- end }}
-func (p *{{ $.DDL.Metadata.Name | SnakeToCamel }}Client) {{ $action.Name | SnakeToCamel }}({{ $action | ChoriaRequiredInputsToFuncArgs }}) *{{ $action.Name | SnakeToCamel }}Requestor {
-	d := &{{ $action.Name | SnakeToCamel }}Requestor{
+func (p *{{ $.DDL.Metadata.Name | SnakeToCamel }}Client) {{ $action.Name | SnakeToCamel }}({{ $action | ChoriaRequiredInputsToFuncArgs }}) *{{ $action.Name | SnakeToCamel }}Requester {
+	d := &{{ $action.Name | SnakeToCamel }}Requester{
 		outc: nil,
-		r: &requestor{
+		r: &requester{
 			args:   map[string]interface{}{
 {{- range $name, $input := ChoriaRequiredInputs $action }}
 				"{{ $name }}": {{ $name }}I,
