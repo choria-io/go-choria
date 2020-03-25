@@ -9,9 +9,9 @@ import (
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 )
 
-// {{ .ActionName | SnakeToCamel }}Requestor performs a RPC request to {{ .AgentName | ToLower }}#{{ .ActionName | ToLower }}
-type {{ .ActionName | SnakeToCamel }}Requestor struct {
-	r    *requestor
+// {{ .ActionName | SnakeToCamel }}Requester performs a RPC request to {{ .AgentName | ToLower }}#{{ .ActionName | ToLower }}
+type {{ .ActionName | SnakeToCamel }}Requester struct {
+	r    *requester
 	outc chan *{{ .ActionName | SnakeToCamel }}Output
 }
 
@@ -48,7 +48,7 @@ func (d *{{ .ActionName | SnakeToCamel }}Output) JSON() ([]byte, error) {
 }
 
 // Do performs the request
-func (d *{{ .ActionName | SnakeToCamel }}Requestor) Do(ctx context.Context) (*{{ .ActionName | SnakeToCamel }}Result, error) {
+func (d *{{ .ActionName | SnakeToCamel }}Requester) Do(ctx context.Context) (*{{ .ActionName | SnakeToCamel }}Result, error) {
 	dres := &{{ .ActionName | SnakeToCamel }}Result{}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
@@ -96,7 +96,7 @@ func (d *{{ .ActionName | SnakeToCamel }}Result) EachOutput(h func(r *{{ .Action
 // {{ $name | SnakeToCamel }} is an optional input to the {{ $.ActionName | ToLower }} action
 //
 // Description: {{ $input.Description }}
-func (d *{{ $.ActionName | SnakeToCamel }}Requestor) {{ $name | SnakeToCamel }}(v {{ ChoriaTypeToGoType $input.Type }}) *{{ $.ActionName | SnakeToCamel }}Requestor {
+func (d *{{ $.ActionName | SnakeToCamel }}Requester) {{ $name | SnakeToCamel }}(v {{ ChoriaTypeToGoType $input.Type }}) *{{ $.ActionName | SnakeToCamel }}Requester {
 	d.r.args["{{ $name | ToLower }}"] = v
 
 	return d

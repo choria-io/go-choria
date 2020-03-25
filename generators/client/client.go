@@ -105,7 +105,7 @@ func (g *Generator) writeActions() error {
 }
 
 func (g *Generator) writeBasics() error {
-	for _, t := range []string{"resultdetails", "requestor", "ddl", "discover", "rpcoptions", "client", "initoptions", "logging", "doc"} {
+	for _, t := range []string{"resultdetails", "requester", "ddl", "discover", "rpcoptions", "client", "initoptions", "logging", "doc"} {
 		outfile := path.Join(g.OutDir, t+".go")
 		logrus.Infof("Writing %s", outfile)
 		out, err := os.Create(outfile)
