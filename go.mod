@@ -20,7 +20,7 @@ require (
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/nats-io/jwt v0.3.2
 	github.com/nats-io/nats-server/v2 v2.1.4
-	github.com/nats-io/nats.go v1.9.1
+	github.com/nats-io/nats.go v1.9.2
 	github.com/nats-io/nsc v0.0.0-20200311215038-410c29a91237
 	github.com/nats-io/stan.go v0.6.0
 	github.com/onsi/ginkgo v1.12.0
@@ -35,7 +35,7 @@ require (
 	github.com/tidwall/pretty v1.0.1
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.5.1
-	golang.org/x/crypto v0.0.0-20200204104054-c9f3fb736b72
+	golang.org/x/crypto v0.0.0-20200323165209-0ec3e9974c59
 	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
 	golang.org/x/sys v0.0.0-20200323222414-85ca7c5b95cd
 	golang.org/x/tools v0.0.0-20200205195138-aa017ee80473
