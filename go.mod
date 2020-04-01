@@ -12,14 +12,13 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/golang/mock v1.4.3
-	github.com/golang/protobuf v1.3.5 // indirect
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.4.1
 	github.com/looplab/fsm v0.1.0
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/nats-io/jwt v0.3.2
-	github.com/nats-io/nats-server/v2 v2.1.4
+	github.com/nats-io/nats-server/v2 v2.1.6
 	github.com/nats-io/nats.go v1.9.2
 	github.com/nats-io/nsc v0.0.0-20200311215038-410c29a91237
 	github.com/nats-io/stan.go v0.6.0
