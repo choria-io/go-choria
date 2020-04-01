@@ -10,7 +10,7 @@ jobs:
       MCOLLECTIVE_CERTNAME: rip.mcollective
       GO111MODULE: "on"
       PATH: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/local/go/bin:/opt/puppetlabs/bin:/root/bin:/go/bin
-
+      GOFLAGS: "-p=1"
     steps:
       - checkout
       - setup_remote_docker
