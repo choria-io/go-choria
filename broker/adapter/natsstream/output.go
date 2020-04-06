@@ -124,7 +124,7 @@ func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) erro
 			}))
 			if err != nil {
 				sc.log.Errorf("Could not create initial STAN connection, retrying: %s", err)
-				backoff.FiveSec.Sleep(ctx, ctr)
+				backoff.Default.TrySleep(ctx, ctr)
 
 				continue
 			}
@@ -145,7 +145,7 @@ func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) erro
 
 				sc.log.WithField("attempt", ctr).Infof("Attempting to reconnect NATS Stream after reconnection")
 
-				backoff.FiveSec.Sleep(ctx, ctr)
+				backoff.Default.TrySleep(ctx, ctr)
 
 				err := start()
 				if err != nil {
