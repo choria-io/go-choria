@@ -6,7 +6,6 @@ import (
 	"net/url"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -552,9 +551,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		nats.ReconnectBufSize(10 * 1024),
 
 		// nats.SetPend
-		nats.DisconnectHandler(func(nc *nats.Conn) {
-			err = nc.LastError()
-
+		nats.DisconnectErrHandler(func(nc *nats.Conn, err error) {
 			if err != nil {
 				conn.logger.Warnf("NATS client connection got disconnected: %s", nc.LastError())
 			}
@@ -603,35 +600,17 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		options = append(options, nats.UserCredentials(conn.config.Choria.NatsCredentials))
 	}
 
-	try := 0
-
-	for {
-		try++
-
+	return backoff.Default.For(ctx, func(try int) error {
 		conn.nats, err = nats.Connect(strings.Join(urls, ", "), options...)
-		if err != nil {
-			connInitialConnectCtr.Inc()
-
-			conn.logger.Warnf("Initial connection to the NATS broker cluster failed: %s", err)
-
-			if ctx.Err() != nil {
-				err = fmt.Errorf("initial connection canceled due to shut down")
-				return
-			}
-
-			s := backoff.FiveSec.Duration(try)
-			conn.logger.Infof("Sleeping %s after failed connection attempt %d", s, try)
-			time.Sleep(s)
-
-			continue
+		if err == nil {
+			return nil
 		}
 
-		conn.logger.Infof("Connected to %s", conn.nats.ConnectedUrl())
+		conn.logger.Warnf("Initial connection to the Broker failed on try %d: %s", try, err)
+		connInitialConnectCtr.Inc()
 
-		break
-	}
-
-	return
+		return err
+	})
 }
 
 // Flush sends any unpublished data to the network

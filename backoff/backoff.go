@@ -4,7 +4,6 @@ package backoff
 
 import (
 	"context"
-	"errors"
 	"math/rand"
 	"time"
 )
@@ -30,6 +29,9 @@ var TwentySec = Policy{
 	},
 }
 
+// Default is the default backoff policy to use
+var Default = FiveSec
+
 // Duration returns the time duration of the n'th wait cycle in a
 // backoff policy. This is b.Millis[n], randomized to avoid thundering
 // herds.
@@ -41,23 +43,29 @@ func (b Policy) Duration(n int) time.Duration {
 	return time.Duration(jitter(b.Millis[n])) * time.Millisecond
 }
 
-// Sleep sleeps for the duration of the n'th wait cycle
+// TrySleep sleeps for the duration of the n'th try cycle
 // in a way that can be interrupted by the context.  An error is returned
 // if the context cancels the sleep
-func (b Policy) Sleep(ctx context.Context, n int) error {
-	timer := time.NewTimer(b.Duration(n))
+func (b Policy) TrySleep(ctx context.Context, n int) error {
+	return b.Sleep(ctx, b.Duration(n))
+}
+
+// Sleep sleeps for the duration t and can be interrupted by ctx. An error
+// is returns if the context cancels the sleep
+func (b Policy) Sleep(ctx context.Context, t time.Duration) error {
+	timer := time.NewTimer(t)
 
 	select {
 	case <-timer.C:
 		return nil
 	case <-ctx.Done():
-		return errors.New("sleep interrupted by context")
+		return ctx.Err()
 	}
 }
 
 // For is a for{} loop that stops on context and has a backoff based sleep between loops
-// if the cb returns an error the loop ends returning error
-func (b Policy) For(ctx context.Context, cb func() error) error {
+// if the context completes the loop ends returning the context error
+func (b Policy) For(ctx context.Context, cb func(try int) error) error {
 	tries := 0
 	for {
 		if ctx.Err() != nil {
@@ -66,12 +74,15 @@ func (b Policy) For(ctx context.Context, cb func() error) error {
 
 		tries++
 
-		err := cb()
+		err := cb(tries)
 		if err == nil {
 			return nil
 		}
 
-		b.Sleep(ctx, tries)
+		err = b.TrySleep(ctx, tries)
+		if err != nil {
+			return err
+		}
 	}
 }
 
