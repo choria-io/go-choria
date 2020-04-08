@@ -50,7 +50,7 @@ foss:
     defaults:
       name: choria
       display_name: Choria
-      bindir: /usr/sbin
+      bindir: /usr/bin
       etcdir: /etc/choria
       release: 1
       manage_conf: 1
