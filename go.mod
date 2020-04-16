@@ -20,11 +20,11 @@ require (
 	github.com/nats-io/jwt v0.3.2
 	github.com/nats-io/nats-server/v2 v2.1.6
 	github.com/nats-io/nats.go v1.9.2
-	github.com/nats-io/nsc v0.0.0-20200311215038-410c29a91237
+	github.com/nats-io/nsc v0.0.0-20200406145840-1824dda6c402
 	github.com/nats-io/stan.go v0.6.0
 	github.com/onsi/ginkgo v1.12.0
 	github.com/onsi/gomega v1.9.0
-	github.com/open-policy-agent/opa v0.18.0
+	github.com/open-policy-agent/opa v0.19.1
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.5.1
 	github.com/prometheus/client_model v0.2.0
