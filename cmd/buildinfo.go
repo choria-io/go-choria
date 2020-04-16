@@ -109,9 +109,9 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Printf("            TLS: %t\n", bi.HasTLS())
 	fmt.Printf("  x509 Security: %t\n", protocol.IsSecure())
 
-	if bi.HasTLS() || !protocol.IsSecure() {
+	if !bi.HasTLS() || !protocol.IsSecure() {
 		fmt.Println()
-		fmt.Println("NOTE: The security of this build is non standard, you might be running without adequate protocol level security.  Please ensure this is the build you intend to be using.")
+		fmt.Println("NOTE: The security of this build is not standard, you might be running without adequate protocol level security.  Please ensure this is the build you intend to be using.")
 	}
 
 	if b.dependencies {
