@@ -1,5 +1,26 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2020/04/19|      |Release 0.14.0                                                                                           |
+|2020/04/16|854   |Correctly report insecure builds                                                                         |
+|2020/04/07|852   |Install `choria` binary in /usr/bin and not /usr/sbin                                                    |
+|2020/03/25|846   |Various improvements to generated RPC clients                                                            |
+|2020/03/24|844   |Export facts to external agents                                                                          |
+|2020/03/22|801   |Expose statistics for NATS Leafnodes                                                                     |
+|2020/03/16|840   |Improve formatting of node lists at the end of requests                                                  |
+|2020/03/11|687   |Support enforcing the use of filters on all RPC requests using `plugin.choria.require_client_filter`     |
+|2020/03/03|834   |Add Debian Buster support                                                                                |
+|2020/02/17|831   |Cache transport messages when doing batched requests to improve pkcs11 integration                       |
+|2020/02/13|827   |Ensure agent filter is added when discovering nodes                                                      |
+|2020/02/08|817   |Add `choria tool config` to view configuration paramters and current values                              |
+|2020/02/08|814   |Set `PATH` when calling external agents                                                                  |
+|2020/02/05|794   |Merge `go-lifecycle` into `go-choria`                                                                    |
+|2020/02/05|794   |Merge `go-protocol`, `go-security`, `mcorpc-agent-provider` and `go-config` into `go-choria`             |
+|2020/02/05|794   |Merge `go-confkey`, `go-validator`, `go-puppet`, `go-network-broker` and `go-srvcache` into `go-choria`  |
+|2020/01/30|      |Update to CloudEvents 1.0.0                                                                              |
+|2020/01/23|774   |Support logging to Windows Event log                                                                     |
+|2020/01/23|772   |Support running as a Windows service                                                                     |
+|2020/01/17|769   |Add basic Windows pacakges                                                                               |
+|2020/01/16|      |Support use selectable SSL Ciphers using `plugin.security.cipher_suites` and `plugin.security.ecc_curves`|
 |2020/01/12|      |Release 0.13.1                                                                                           |
 |2019/12/25|758   |Extract RPC reply rendering to the mcorpc package-agent-provider                                         |
 |2019/12/23|754   |Extract parts of the filter parsing logic to the `protocol` package                                      |
