@@ -5,4 +5,4 @@ required_properties:
   - etcdir
 
 artifacts:
-  - "*.msi"
+  - "*.tgz"
