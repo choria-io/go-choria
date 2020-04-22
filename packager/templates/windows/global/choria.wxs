@@ -1,13 +1,18 @@
 <?xml version="1.0" encoding="windows-1252"?>
 <Wix xmlns="http://schemas.microsoft.com/wix/2006/wi">
-  <Product Name="{{cpkg_display_name}} {{cpkg_version}}" Id="*" UpgradeCode="506EF80F-E865-4AD5-A090-3A93DCFDDDB3"
+  <Product Name="{{cpkg_display_name}}" Id="*" UpgradeCode="506EF80F-E865-4AD5-A090-3A93DCFDDDB3"
     Language="1033" Codepage="1252" Version="{{cpkg_version}}" Manufacturer="Choria.IO">
 
     <Package Id="*" Keywords="Installer" Description="{{cpkg_display_name}} {{cpkg_version}} Installer"
       Comments="Copyright R.I.Pienaar &lt;rip@devco.net&gt;" Manufacturer="Choria.IO"
-      InstallerVersion="200" Languages="1033" Compressed="yes" SummaryCodepage="1252" />
+      InstallerVersion="200" Languages="1033" Compressed="yes" SummaryCodepage="1252" Platform="x64" />
 
-    <MajorUpgrade DowngradeErrorMessage="The same or a newer version of this product is already installed." />
+    <UIRef Id="WixUI_Minimal" />
+    <WixVariable Id="WixUILicenseRtf" Value="license.rtf" />
+    <WixVariable Id="WixUIBannerBmp" Value="WixUIBannerBmp.bmp" />
+    <WixVariable Id="WixUIDialogBmp" Value="WixUIDialogBmp.bmp" />
+
+    <MajorUpgrade Schedule="afterInstallInitialize" DowngradeErrorMessage="The same or a newer version of this product is already installed." />
 
     <Media Id="1" Cabinet="{{cpkg_name}}.cab" EmbedCab="yes" DiskPrompt="CD-ROM #1" />
     <Property Id="DiskPrompt" Value="{{cpkg_display_name}} {{cpkg_version}} Installation [1]" />
@@ -24,15 +29,15 @@
         </Directory>
       </Directory>
       <Directory Id="CommonAppDataFolder">
-        <Directory Id="AppData{{cpkg_display_name}}Folder" Name="{{cpkg_name}}">
-          <Directory Id="AppData{{cpkg_display_name}}EtcFolder" Name="{{cpkg_etcdir}}">
-              <Component Id="CreateAppData{{cpkg_display_name}}EtcFolder" Guid="2d2b4674-4044-49f8-8729-77540a6f72dd">
+        <Directory Id="AppData{{cpkg_name}}Folder" Name="{{cpkg_name}}">
+          <Directory Id="AppData{{cpkg_name}}EtcFolder" Name="{{cpkg_etcdir}}">
+              <Component Id="CreateAppData{{cpkg_name}}EtcFolder" Guid="2d2b4674-4044-49f8-8729-77540a6f72dd">
                 <CreateFolder />
               </Component>
           </Directory>
-          <Directory Id="AppData{{cpkg_display_name}}VarFolder" Name="var">
-            <Directory Id="AppData{{cpkg_display_name}}VarLogFolder" Name="log">
-              <Component Id="CreateAppData{{cpkg_display_name}}VarLogFolder" Guid="9a4c5b41-58d8-4f94-bf87-7ab55e782426">
+          <Directory Id="AppData{{cpkg_name}}VarFolder" Name="var">
+            <Directory Id="AppData{{cpkg_name}}VarLogFolder" Name="log">
+              <Component Id="CreateAppData{{cpkg_name}}VarLogFolder" Guid="9a4c5b41-58d8-4f94-bf87-7ab55e782426">
                 <CreateFolder />
               </Component>
             </Directory>
@@ -43,8 +48,8 @@
 
     <Feature Id="Complete" Level="1">
       <ComponentRef Id="MainExecutable" />
-      <ComponentRef Id="CreateAppData{{cpkg_display_name}}EtcFolder" />
-      <ComponentRef Id="CreateAppData{{cpkg_display_name}}VarLogFolder" />
+      <ComponentRef Id="CreateAppData{{cpkg_name}}EtcFolder" />
+      <ComponentRef Id="CreateAppData{{cpkg_name}}VarLogFolder" />
     </Feature>
   </Product>
 </Wix>

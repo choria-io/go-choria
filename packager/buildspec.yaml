@@ -39,6 +39,8 @@ foss:
 
     # can probably not be built on an actual windows machine
     64bit_windows:
+      flags:
+        ProvisionJWTFile: C:\ProgramData\Choria\etc\provisioning.jwt
       output: choria-{{version}}-{{os}}-{{arch}}.exe
       os: windows
       arch: amd64
@@ -124,6 +126,8 @@ foss:
       binary: 64bit_linux
 
     windows_64:
+      name: Choria
+      display_name: Choria Orchestrator
       template: windows/64bit
       binary: 64bit_windows
       bindir: bin
