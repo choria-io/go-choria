@@ -6,6 +6,7 @@ import (
 	"net/url"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 
@@ -550,7 +551,10 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		// each sending several MB after reconnect is not what anyone wants
 		nats.ReconnectBufSize(10 * 1024),
 
-		// nats.SetPend
+		nats.CustomReconnectDelay(func(n int) time.Duration {
+			return backoff.TwentySec.Duration(n)
+		}),
+
 		nats.DisconnectErrHandler(func(nc *nats.Conn, err error) {
 			if err != nil {
 				conn.logger.Warnf("NATS client connection got disconnected: %s", nc.LastError())
