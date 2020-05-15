@@ -18,7 +18,7 @@ require (
 	github.com/looplab/fsm v0.1.0
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/nats-io/jwt v0.3.2
-	github.com/nats-io/nats-server/v2 v2.1.6
+	github.com/nats-io/nats-server/v2 v2.1.7
 	github.com/nats-io/nats.go v1.10.0
 	github.com/nats-io/nsc v0.0.0-20200512140943-73ba3f2347d1
 	github.com/nats-io/stan.go v0.6.0
@@ -38,7 +38,6 @@ require (
 	golang.org/x/net v0.0.0-20200324143707-d3edc9973b7e // indirect
 	golang.org/x/sys v0.0.0-20200420163511-1957bb5e6d1f
 	golang.org/x/tools v0.0.0-20200205195138-aa017ee80473
-	google.golang.org/protobuf v1.22.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	rsc.io/goversion v1.2.0
 )

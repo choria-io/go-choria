@@ -552,7 +552,10 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		nats.ReconnectBufSize(10 * 1024),
 
 		nats.CustomReconnectDelay(func(n int) time.Duration {
-			return backoff.TwentySec.Duration(n)
+			d := backoff.TwentySec.Duration(n)
+			conn.logger.Infof("Sleeping %v till the next reconnection attempt", d)
+
+			return d
 		}),
 
 		nats.DisconnectErrHandler(func(nc *nats.Conn, err error) {
