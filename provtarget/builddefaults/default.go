@@ -94,7 +94,7 @@ func (b *Resolver) Targets(ctx context.Context, log *logrus.Entry) []string {
 	for {
 		try++
 
-		for _, q := range []string{"_mcollective-provisioner._tcp", "_choria-provisioner._tcp"} {
+		for _, q := range []string{"_choria-provisioner._tcp"} {
 			if ctx.Err() != nil {
 				return []string{}
 			}
@@ -102,7 +102,7 @@ func (b *Resolver) Targets(ctx context.Context, log *logrus.Entry) []string {
 			record := q + "." + domain
 			log.Infof("Attempting SRV lookup on %s", record)
 
-			servers, err = cache.LookupSrvServers("", "", record, "")
+			servers, err = cache.LookupSrvServers("", "", record, "nats")
 			if err != nil {
 				log.Warnf("Failed to resolve %s: %s", record, err)
 				continue
