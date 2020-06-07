@@ -109,6 +109,34 @@ func (i *Info) SetProvisionBrokerURLs(u string) {
 	ProvisionBrokerURLs = u
 }
 
+func (i *Info) SetProvisioningBrokerUsername(u string) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	ProvisioningBrokerUsername = u
+}
+
+func (i *Info) SetProvisioningBrokerPassword(p string) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	ProvisioningBrokerPassword = p
+}
+
+func (i *Info) ProvisioningBrokerUsername() string {
+	mu.Lock()
+	defer mu.Unlock()
+
+	return ProvisioningBrokerUsername
+}
+
+func (i *Info) ProvisioningBrokerPassword() string {
+	mu.Lock()
+	defer mu.Unlock()
+
+	return ProvisioningBrokerPassword
+}
+
 func (i *Info) SetProvisionToken(t string) {
 	mu.Lock()
 	defer mu.Unlock()

@@ -55,6 +55,12 @@ var ProvisionJWTFile = ""
 // ProvisionStatusFile is the file where server status will be written to while in provisioning mode
 var ProvisionStatusFile = ""
 
+// ProvisioningBrokerUsername is the username used to connect to the middleware with
+var ProvisioningBrokerUsername = ""
+
+// ProvisioningBrokerPassword is the password used to connect to the middleware with
+var ProvisioningBrokerPassword = ""
+
 // AgentProviders are registered systems capable of extending choria with new agents
 var AgentProviders = []string{}
 

@@ -96,6 +96,14 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	if bi.ProvisionFacts() != "" {
 		fmt.Printf("              Provisioning Facts: %s\n", bi.ProvisionFacts())
 	}
+	if bi.ProvisioningBrokerUsername() != "" {
+		fmt.Printf("    Provisioning Broker Username: %s\n", bi.ProvisioningBrokerUsername())
+
+	}
+	if bi.ProvisioningBrokerUsername() != "" {
+		fmt.Println("    Provisioning Broker Password: ******\n", bi.ProvisioningBrokerPassword())
+
+	}
 
 	fmt.Println()
 	fmt.Println("Agent Providers:")
