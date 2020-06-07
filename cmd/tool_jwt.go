@@ -44,7 +44,7 @@ func (j *tJWTCommand) Setup() (err error) {
 		j.cmd.Flag("registration", "File to publish as registration data during provisioning").StringVar(&j.regData)
 		j.cmd.Flag("facts", "File to use for facts during registration").StringVar(&j.facts)
 		j.cmd.Flag("username", "Username to connect to the provisioning broker with").StringVar(&j.uname)
-		j.cmd.Flag("password", "Password to connect to the provisioning broker with").StringVar(&j.uname)
+		j.cmd.Flag("password", "Password to connect to the provisioning broker with").StringVar(&j.password)
 	}
 
 	return nil
