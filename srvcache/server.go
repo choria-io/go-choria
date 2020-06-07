@@ -53,5 +53,9 @@ func (s *BasicServer) URL() (u *url.URL, err error) {
 
 // String is a string representation of the server in url format
 func (s *BasicServer) String() string {
+	if s.scheme == "" {
+		return fmt.Sprintf("%s:%d", s.host, s.port)
+	}
+
 	return fmt.Sprintf("%s://%s:%d", s.scheme, s.host, s.port)
 }
