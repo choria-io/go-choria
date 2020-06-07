@@ -94,7 +94,7 @@ func (b *Resolver) Targets(ctx context.Context, log *logrus.Entry) []string {
 	for {
 		try++
 
-		for _, q := range []string{"_mcollective-provisioner._tcp", "_choria-provisioner.tcp"} {
+		for _, q := range []string{"_mcollective-provisioner._tcp", "_choria-provisioner._tcp"} {
 			if ctx.Err() != nil {
 				return []string{}
 			}
