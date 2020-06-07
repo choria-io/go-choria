@@ -165,6 +165,11 @@ func (fw *Framework) ConfigureProvisioning() {
 		fw.Config.Choria.SecurityProvider = "file"
 		fw.Config.DisableTLS = true
 	}
+
+	if fw.bi.ProvisionBrokerSRVDomain() != "" {
+		fw.Config.Choria.UseSRVRecords = true
+		fw.Config.Choria.SRVDomain = fw.bi.ProvisionBrokerSRVDomain()
+	}
 }
 
 // IsFederated determiens if the configuration is setting up any Federation collectives
