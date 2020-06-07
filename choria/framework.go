@@ -143,6 +143,8 @@ func (fw *Framework) ConfigureProvisioning() {
 	fw.Config.MainCollective = "provisioning"
 	fw.Config.Registration = []string{}
 	fw.Config.FactSourceFile = fw.bi.ProvisionFacts()
+	fw.Config.Choria.NatsUser = fw.bi.ProvisioningBrokerUsername()
+	fw.Config.Choria.NatsPass = fw.bi.ProvisioningBrokerPassword()
 
 	if fw.bi.ProvisionStatusFile() != "" {
 		fw.Config.Choria.StatusFilePath = fw.bi.ProvisionStatusFile()

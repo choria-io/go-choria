@@ -19,13 +19,15 @@ import (
 )
 
 type ProvClaims struct {
-	Token       string `json:"cht"`
-	Secure      bool   `json:"chs"`
-	URLs        string `json:"chu,omitempty"`
-	SRVDomain   string `json:"chsrv,omitempty"`
-	ProvDefault bool   `json:"chpd"`
-	ProvRegData string `json:"chrd,omitempty"`
-	ProvFacts   string `json:"chf,omitempty"`
+	Token        string `json:"cht"`
+	Secure       bool   `json:"chs"`
+	URLs         string `json:"chu,omitempty"`
+	SRVDomain    string `json:"chsrv,omitempty"`
+	ProvDefault  bool   `json:"chpd"`
+	ProvRegData  string `json:"chrd,omitempty"`
+	ProvFacts    string `json:"chf,omitempty"`
+	ProvNatsUser string `json:"chusr,omitempty"`
+	ProvNatsPass string `json:"chpwd,omitempty"`
 
 	jwt.StandardClaims
 }
@@ -177,6 +179,14 @@ func (b *Resolver) setBuildBasedOnJWT() (*ProvClaims, error) {
 
 	if claims.ProvRegData != "" {
 		bi.SetProvisionRegistrationData(claims.ProvRegData)
+	}
+
+	if claims.ProvNatsUser != "" {
+		bi.SetProvisioningBrokerUsername(claims.ProvNatsUser)
+	}
+
+	if claims.ProvNatsPass != "" {
+		bi.SetProvisioningBrokerUsername(claims.ProvNatsPass)
 	}
 
 	return claims, nil

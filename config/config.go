@@ -7,10 +7,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/choria-io/go-choria/confkey"
-	"github.com/choria-io/go-choria/puppet"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/ssh/terminal"
+
+	"github.com/choria-io/go-choria/confkey"
+	"github.com/choria-io/go-choria/puppet"
 )
 
 // Config represents Choria configuration

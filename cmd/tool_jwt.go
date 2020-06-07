@@ -23,6 +23,8 @@ type tJWTCommand struct {
 	srvDomain    string
 	regData      string
 	facts        string
+	uname        string
+	password     string
 	provDefault  bool
 	urls         []string
 
@@ -41,6 +43,8 @@ func (j *tJWTCommand) Setup() (err error) {
 		j.cmd.Flag("default", "Enables provisioning by default").BoolVar(&j.provDefault)
 		j.cmd.Flag("registration", "File to publish as registration data during provisioning").StringVar(&j.regData)
 		j.cmd.Flag("facts", "File to use for facts during registration").StringVar(&j.facts)
+		j.cmd.Flag("username", "Username to connect to the provisioning broker with").StringVar(&j.uname)
+		j.cmd.Flag("password", "Password to connect to the provisioning broker with").StringVar(&j.uname)
 	}
 
 	return nil
@@ -124,6 +128,12 @@ func (j *tJWTCommand) validateJWT() error {
 	if claims.ProvFacts != "" {
 		fmt.Printf("            Provisioning Facts: %s\n", claims.ProvFacts)
 	}
+	if claims.ProvNatsUser != "" {
+		fmt.Printf("               Broker Username: %s\n", claims.ProvNatsUser)
+	}
+	if claims.ProvNatsPass != "" {
+		fmt.Println("               Broker Password: *****")
+	}
 
 	stdc, err := json.MarshalIndent(claims.StandardClaims, "                               ", "  ")
 	if err != nil {
@@ -146,9 +156,11 @@ func (j *tJWTCommand) createJWT() error {
 	}
 
 	claims := &builddefaults.ProvClaims{
-		Secure:      true,
-		ProvDefault: false,
-		Token:       j.token,
+		Secure:       true,
+		ProvDefault:  false,
+		Token:        j.token,
+		ProvNatsUser: j.uname,
+		ProvNatsPass: j.password,
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  time.Now().UTC().Unix(),
 			Issuer:    "choria cli",
