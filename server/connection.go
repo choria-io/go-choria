@@ -49,7 +49,7 @@ func (srv *Instance) brokerUrls(ctx context.Context) (servers srvcache.Servers, 
 		if servers.Count() > 0 {
 			srv.mu.Lock()
 			if !srv.provisioning {
-				srv.log.Infof("Entering provision mode with servers %v", servers)
+				srv.log.Infof("Entering provision mode with servers %v", strings.Join(servers.Strings(), ", "))
 				srv.provisioning = true
 			}
 			srv.mu.Unlock()
