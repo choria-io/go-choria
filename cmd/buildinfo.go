@@ -101,7 +101,7 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	}
 	if bi.ProvisioningBrokerUsername() != "" {
-		fmt.Println("    Provisioning Broker Password: ******\n", bi.ProvisioningBrokerPassword())
+		fmt.Println("    Provisioning Broker Password: ******")
 
 	}
 

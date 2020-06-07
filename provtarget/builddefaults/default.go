@@ -186,7 +186,7 @@ func (b *Resolver) setBuildBasedOnJWT() (*ProvClaims, error) {
 	}
 
 	if claims.ProvNatsPass != "" {
-		bi.SetProvisioningBrokerUsername(claims.ProvNatsPass)
+		bi.SetProvisioningBrokerPassword(claims.ProvNatsPass)
 	}
 
 	return claims, nil
