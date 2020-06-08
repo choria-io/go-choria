@@ -109,7 +109,7 @@ func (j *tJWTCommand) validateJWT() error {
 	}
 
 	if claims.Token != "" {
-		claims.Token = "set"
+		claims.Token = "*****"
 	}
 
 	fmt.Printf("JWT Token %s\n\n", j.file)

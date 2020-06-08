@@ -77,7 +77,7 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Printf("    Provisioning Target Resolver: %s\n", provtarget.Name())
 	fmt.Printf("      Default Provisioning Agent: %t\n", bi.ProvisionAgent())
 	if bi.ProvisionToken() != "" {
-		fmt.Printf("              Provisioning Token: set\n")
+		fmt.Printf("              Provisioning Token: *****\n")
 	} else {
 		fmt.Printf("              Provisioning Token: not set\n")
 	}
