@@ -9,8 +9,8 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/choria"
-	lifecycle "github.com/choria-io/go-choria/lifecycle"
-	"github.com/pkg/errors"
+	"github.com/choria-io/go-choria/lifecycle"
+	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/prometheus/client_golang/prometheus"
 )
 
@@ -57,7 +57,7 @@ func New(opts ...Option) (recorder *Recorder, err error) {
 
 	err = recorder.options.Validate()
 	if err != nil {
-		return nil, errors.Wrap(err, "invalid options supplied")
+		return nil, fmt.Errorf("invalid options supplied: %s", err)
 	}
 
 	recorder.createStats()
@@ -197,11 +197,17 @@ func (r *Recorder) maintenance() {
 }
 
 func (r *Recorder) processStateTransition(m *choria.ConnectorMessage) (err error) {
+	ce := cloudevents.NewEvent("1.0")
 	event := &machine.TransitionNotification{}
 
-	err = json.Unmarshal(m.Bytes(), event)
+	err = json.Unmarshal(m.Bytes(), &ce)
 	if err != nil {
-		return errors.Wrapf(err, "could not parse transition event")
+		return fmt.Errorf("could not parse cloudevent: %s", err)
+	}
+
+	err = ce.DataAs(event)
+	if err != nil {
+		return fmt.Errorf("could not parse transition event: %s", err)
 	}
 
 	if event.Protocol != "io.choria.machine.v1.transition" {
@@ -226,13 +232,13 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 	} else {
 		err = r.options.Connector.QueueSubscribe(ctx, fmt.Sprintf("tally_%s_%s", r.options.Component, subid), fmt.Sprintf("choria.lifecycle.event.*.%s", r.options.Component), "", lifeEvents)
 		if err != nil {
-			return errors.Wrap(err, "could not subscribe to lifecycle events")
+			return fmt.Errorf("could not subscribe to lifecycle events: %s", err)
 		}
 	}
 
 	err = r.options.Connector.QueueSubscribe(ctx, fmt.Sprintf("tally_transitions_%s", subid), "choria.machine.transition", "", machineTransitions)
 	if err != nil {
-		return errors.Wrap(err, "could not subscribe to machine transition events")
+		return fmt.Errorf("could not subscribe to machine transition events: %s", err)
 	}
 
 	for {
