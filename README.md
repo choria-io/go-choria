@@ -18,14 +18,14 @@ These will connect to the middleware using your usual client configuration.
 |-------|-----------|
 |`choria ping`|Basic network testing utility, like `mco ping` but fast and with extra options|
 |`choria req`|Generic RPC request tool to interact with remove RPC Agents|
+|`choria tool config`|To view details about known configuration options|
 |`choria tool event`|Listens for Choria life cycle events emitted by various daemons and related tools|
-|`choria tool sub`|Subscribes to any middleware topic|
-|`choria tool pub`|Publishes to any middleware topic|
-|`choria tool provision`|Tool to test provision target discovery|
-|`choria tool status`|Parse the status file and check overall health|
 |`choria tool generate`|Generates various related files like DDLs|
 |`choria tool jwt`|Generates JWT tokens used to configure automatic provisioning|
-|`choria tool config`|To view details about known configuration options|
+|`choria tool provision`|Tool to test provision target discovery|
+|`choria tool pub`|Publishes to any middleware topic|
+|`choria tool status`|Parse the status file and check overall health|
+|`choria tool sub`|Subscribes to any middleware topic|
 
 # Configuration
 
@@ -143,7 +143,7 @@ This sets up a managed NATS instance, it's functionally equivalent to just runni
 SSL is setup to be compatible with Choria - ie. uses the Puppet certificates etc.
 
 ```ini
-# enables the middleware broker
+# enables the middleware broker, for most cases this is all that is needed
 plugin.choria.broker_network = true
 
 # address for all the network ports, defaults to :: which should be fine for most so this is optional
@@ -171,6 +171,11 @@ plugin.choria.stats_port = 8222
 
 # listens for stats to everyone, 127.0.0.1 by default
 plugin.choria.stats_address = 0.0.0.0
+
+# when running behind a load balancer this will cause clients to be told about
+# only the external name and not internal ones. Requires alt names on certificates,
+# which is automatically hnadled in choria enroll workflows
+plugin.choria.network.public_name = "choria-external.example.net"
 ```
 
 ## Federation Broker
