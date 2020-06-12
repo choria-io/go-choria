@@ -1,4 +1,4 @@
-// auto generated at 2020-06-12 15:30:52.908482 +0200 CEST m=+0.002791424
+// auto generated at 2020-06-12 16:09:20.592574 +0200 CEST m=+0.002069262
 
 package config
 
@@ -71,7 +71,7 @@ var docStrings = map[string]string{
 	"plugin.choria.network.operator_account":                  "NATS 2.0 Operator account",
 	"plugin.choria.network.system_account":                    "NATS 2.0 System Account",
 	"plugin.choria.network.tls_timeout":                       "Time to allow for TLS connections to establish, increase on slow or very large networks",
-	"plugin.choria.network.client_advertise_name":             "Name to advertise to clients, useful when fronted by a proxy",
+	"plugin.choria.network.public_name":                       "Name to advertise to clients, useful when fronted by a proxy",
 	"plugin.choria.broker_network":                            "Enables the Network Broker",
 	"plugin.choria.broker_federation":                         "Enables the Federation Broker",
 	"plugin.choria.registration.file_content.data":            "YAML or JSON file to use as data source for registration",

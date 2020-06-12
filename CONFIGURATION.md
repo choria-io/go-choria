@@ -38,14 +38,14 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.discovery_proxy](#pluginchoriadiscovery_proxy)|[plugin.choria.federation.cluster](#pluginchoriafederationcluster)|
 |[plugin.choria.federation.collectives](#pluginchoriafederationcollectives)|[plugin.choria.federation_middleware_hosts](#pluginchoriafederation_middleware_hosts)|
 |[plugin.choria.legacy_lifecycle_format](#pluginchorialegacy_lifecycle_format)|[plugin.choria.machine.store](#pluginchoriamachinestore)|
-|[plugin.choria.middleware_hosts](#pluginchoriamiddleware_hosts)|[plugin.choria.network.client_advertise_name](#pluginchorianetworkclient_advertise_name)|
-|[plugin.choria.network.client_hosts](#pluginchorianetworkclient_hosts)|[plugin.choria.network.client_port](#pluginchorianetworkclient_port)|
-|[plugin.choria.network.client_tls_force_required](#pluginchorianetworkclient_tls_force_required)|[plugin.choria.network.gateway_name](#pluginchorianetworkgateway_name)|
-|[plugin.choria.network.gateway_port](#pluginchorianetworkgateway_port)|[plugin.choria.network.gateway_remotes](#pluginchorianetworkgateway_remotes)|
-|[plugin.choria.network.leafnode_port](#pluginchorianetworkleafnode_port)|[plugin.choria.network.leafnode_remotes](#pluginchorianetworkleafnode_remotes)|
-|[plugin.choria.network.listen_address](#pluginchorianetworklisten_address)|[plugin.choria.network.operator_account](#pluginchorianetworkoperator_account)|
-|[plugin.choria.network.peer_password](#pluginchorianetworkpeer_password)|[plugin.choria.network.peer_port](#pluginchorianetworkpeer_port)|
-|[plugin.choria.network.peer_user](#pluginchorianetworkpeer_user)|[plugin.choria.network.peers](#pluginchorianetworkpeers)|
+|[plugin.choria.middleware_hosts](#pluginchoriamiddleware_hosts)|[plugin.choria.network.client_hosts](#pluginchorianetworkclient_hosts)|
+|[plugin.choria.network.client_port](#pluginchorianetworkclient_port)|[plugin.choria.network.client_tls_force_required](#pluginchorianetworkclient_tls_force_required)|
+|[plugin.choria.network.gateway_name](#pluginchorianetworkgateway_name)|[plugin.choria.network.gateway_port](#pluginchorianetworkgateway_port)|
+|[plugin.choria.network.gateway_remotes](#pluginchorianetworkgateway_remotes)|[plugin.choria.network.leafnode_port](#pluginchorianetworkleafnode_port)|
+|[plugin.choria.network.leafnode_remotes](#pluginchorianetworkleafnode_remotes)|[plugin.choria.network.listen_address](#pluginchorianetworklisten_address)|
+|[plugin.choria.network.operator_account](#pluginchorianetworkoperator_account)|[plugin.choria.network.peer_password](#pluginchorianetworkpeer_password)|
+|[plugin.choria.network.peer_port](#pluginchorianetworkpeer_port)|[plugin.choria.network.peer_user](#pluginchorianetworkpeer_user)|
+|[plugin.choria.network.peers](#pluginchorianetworkpeers)|[plugin.choria.network.public_name](#pluginchorianetworkpublic_name)|
 |[plugin.choria.network.system_account](#pluginchorianetworksystem_account)|[plugin.choria.network.tls_timeout](#pluginchorianetworktls_timeout)|
 |[plugin.choria.network.write_deadline](#pluginchorianetworkwrite_deadline)|[plugin.choria.puppetca_host](#pluginchoriapuppetca_host)|
 |[plugin.choria.puppetca_port](#pluginchoriapuppetca_port)|[plugin.choria.puppetdb_host](#pluginchoriapuppetdb_host)|
@@ -350,12 +350,6 @@ Directory where Autonomous Agents are stored
 
 Set specific middleware hosts in the format host:port, if unset uses SRV
 
-## plugin.choria.network.client_advertise_name
-
- * **Type:** string
-
-Name to advertise to clients, useful when fronted by a proxy
-
 ## plugin.choria.network.client_hosts
 
  * **Type:** comma_split
@@ -449,6 +443,12 @@ Username to use when connecting to cluster peers
  * **Additional Information:** https://choria.io/docs/deployment/broker/
 
 List of cluster peers in host:port format
+
+## plugin.choria.network.public_name
+
+ * **Type:** string
+
+Name to advertise to clients, useful when fronted by a proxy
 
 ## plugin.choria.network.system_account
 
