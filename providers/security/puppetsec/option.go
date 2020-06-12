@@ -2,9 +2,10 @@ package puppetsec
 
 import (
 	"fmt"
-	"github.com/choria-io/go-choria/tlssetup"
 	"os"
 	"runtime"
+
+	"github.com/choria-io/go-choria/tlssetup"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/sirupsen/logrus"
@@ -29,6 +30,10 @@ func WithChoriaConfig(c *config.Config) Option {
 			RemoteSignerTokenFile:        c.Choria.RemoteSignerTokenFile,
 			RemoteSignerTokenEnvironment: c.Choria.RemoteSignerTokenEnvironment,
 			TLSConfig:                    tlssetup.TLSConfig(c),
+		}
+
+		if c.Choria.NetworkClientAdvertiseName != "" {
+			cfg.AltNames = append(cfg.AltNames, c.Choria.NetworkClientAdvertiseName)
 		}
 
 		if c.HasOption("plugin.choria.puppetca_host") || c.HasOption("plugin.choria.puppetca_port") {

@@ -17,12 +17,13 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"github.com/choria-io/go-choria/tlssetup"
 	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
 	"time"
+
+	"github.com/choria-io/go-choria/tlssetup"
 
 	"github.com/choria-io/go-choria/providers/security/filesec"
 	"github.com/choria-io/go-choria/srvcache"
@@ -88,6 +89,9 @@ type Config struct {
 
 	// TLSConfig is the shared TLS configuration
 	TLSConfig *tlssetup.Config
+
+	// AltNames are additional names to add to the CSR
+	AltNames []string
 }
 
 // New creates a new instance of the Puppet Security Provider
@@ -436,6 +440,8 @@ func (s *PuppetSecurity) writeCSR(key *rsa.PrivateKey, cn string, ou string) err
 		RawSubject:         asn1Subj,
 		SignatureAlgorithm: x509.SHA256WithRSA,
 	}
+
+	template.DNSNames = append(template.DNSNames, s.conf.AltNames...)
 
 	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, key)
 	if err != nil {
