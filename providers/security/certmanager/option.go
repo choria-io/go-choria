@@ -24,6 +24,10 @@ func WithChoriaConfig(c *config.Config) Option {
 			identity:             c.Identity,
 		}
 
+		if c.Choria.NetworkClientAdvertiseName != "" {
+			cfg.altnames = append(cfg.altnames, c.Choria.NetworkClientAdvertiseName)
+		}
+
 		if c.OverrideCertname == "" {
 			if cn, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
 				c.OverrideCertname = cn

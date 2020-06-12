@@ -1,4 +1,4 @@
-// auto generated at 2020-03-13 12:47:26.089585 +0100 CET m=+0.000998862
+// auto generated at 2020-06-12 15:30:52.908482 +0200 CEST m=+0.002791424
 
 package config
 
@@ -12,7 +12,7 @@ var docStrings = map[string]string{
 	"logfile":                                                 "The file to write logs to, when set to an empty string logging will be to the console",
 	"loglevel":                                                "The lowest level log to add to the logfile",
 	"libdir":                                                  "The directory where Agents, DDLs and other plugins are found",
-	"identity":                                                "The identity this machine is known as, when empty it's derived based on the operating system hostname or by calling facter fqnd",
+	"identity":                                                "The identity this machine is known as, when empty it's derived based on the operating system hostname or by calling facter fqdn",
 	"direct_addressing":                                       "Enables the direct-to-node communications pattern, unused in the Go clients",
 	"color":                                                   "Disables or enable CLI color, not well supported in Go based code",
 	"securityprovider":                                        "Used to select the security provider in Ruby clients, only sensible value is \"choria\"",
@@ -71,6 +71,7 @@ var docStrings = map[string]string{
 	"plugin.choria.network.operator_account":                  "NATS 2.0 Operator account",
 	"plugin.choria.network.system_account":                    "NATS 2.0 System Account",
 	"plugin.choria.network.tls_timeout":                       "Time to allow for TLS connections to establish, increase on slow or very large networks",
+	"plugin.choria.network.client_advertise_name":             "Name to advertise to clients, useful when fronted by a proxy",
 	"plugin.choria.broker_network":                            "Enables the Network Broker",
 	"plugin.choria.broker_federation":                         "Enables the Federation Broker",
 	"plugin.choria.registration.file_content.data":            "YAML or JSON file to use as data source for registration",
@@ -91,6 +92,9 @@ var docStrings = map[string]string{
 	"plugin.security.file.key":                                "When using file security provider, the path to the private key",
 	"plugin.security.file.ca":                                 "When using file security provider, the path to the Certificate Authority public certificate",
 	"plugin.security.file.cache":                              "When using file security provider, the path to the client cache",
+	"plugin.security.certmanager.namespace":                   "When using Cert Manager security provider, the namespace the issuer is in",
+	"plugin.security.certmanager.issuer":                      "When using Cert Manager security provider, the name of the issuer",
+	"plugin.security.certmanager.replace":                     "when using Cert Manager security provider, replace existing CSRs with new ones",
 	"plugin.security.cipher_suites":                           "List of allowed cipher suites",
 	"plugin.security.ecc_curves":                              "List of allowed ECC curves",
 	"plugin.security.pkcs11.driver_file":                      "When using the pkcs11 security provider, the path to the PCS11 driver file",

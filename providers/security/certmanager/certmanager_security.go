@@ -39,6 +39,7 @@ type CertManagerSecurity struct {
 }
 
 type Config struct {
+	altnames             []string
 	namespace            string
 	issuer               string
 	identity             string
@@ -415,6 +416,8 @@ func (cm *CertManagerSecurity) writeCSR(key *rsa.PrivateKey, cn string, ou strin
 		RawSubject:         asn1Subj,
 		SignatureAlgorithm: x509.SHA256WithRSA,
 	}
+
+	template.DNSNames = append(template.DNSNames, cm.conf.altnames...)
 
 	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, key)
 	if err != nil {

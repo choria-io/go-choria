@@ -70,6 +70,10 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	s.opts.NoSigs = true
 	s.opts.Logtime = false
 
+	if s.config.Choria.NetworkClientAdvertiseName != "" {
+		s.opts.ClientAdvertise = s.config.Choria.NetworkClientAdvertiseName
+	}
+
 	if debug || s.config.LogLevel == "debug" {
 		s.opts.Debug = true
 	}
