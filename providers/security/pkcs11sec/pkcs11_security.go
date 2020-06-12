@@ -295,17 +295,20 @@ func (s *Pkcs11Security) RemoteSignRequest(str []byte) (signed []byte, err error
 // Validate determines if the node represents a valid SSL configuration
 func (p *Pkcs11Security) Validate() ([]string, bool) {
 	var errorsList []string
+
 	stat, err := os.Stat(p.conf.CertCacheDir)
-	if os.IsNotExist(err) {
+	switch {
+	case os.IsNotExist(err):
 		errorsList = append(errorsList, err.Error())
-	} else if !stat.IsDir() {
+	case !stat.IsDir():
 		errorsList = append(errorsList, fmt.Sprintf("%s is not a directory", p.conf.CertCacheDir))
 	}
 
 	stat, err = os.Stat(p.conf.CAFile)
-	if os.IsNotExist(err) {
+	switch {
+	case os.IsNotExist(err):
 		errorsList = append(errorsList, err.Error())
-	} else if !stat.Mode().IsRegular() {
+	case !stat.Mode().IsRegular():
 		errorsList = append(errorsList, fmt.Sprintf("%s is not a regular file", p.conf.CAFile))
 	}
 

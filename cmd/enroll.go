@@ -42,9 +42,7 @@ func (e *enrollCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Printf("Enrolling with the Security System using certname %s\n", c.Certname())
 
 	err = c.Enroll(ctx, 250*time.Second, func(try int) { fmt.Printf("Attempting to download certificate for %s, try %d.\n", c.Certname(), try) })
-	if err != nil {
-		kingpin.Errorf("Could not enroll: %s", err)
-	}
+	kingpin.FatalIfError(err, "Could not enroll")
 
 	return nil
 }

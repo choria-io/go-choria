@@ -75,7 +75,7 @@ type ChoriaPluginConfig struct {
 	PrivilegedUsers              []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split" default:"\\.privileged.mcollective$,\\.privileged.choria$" url:"https://choria.io/docs/configuration/aaa/"` // Patterns of certificate names that would be considered privileged and able to set custom callers
 	CertnameWhitelist            []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split" default:"\\.mcollective$,\\.choria$"`                                                                     // Patterns of certificate names that are allowed to be clients
 	Serializer                   string   `confkey:"plugin.choria.security.serializer" validate:"enum=json,yaml" default:"json" deprecated:"1"`
-	SecurityProvider             string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11"`                                  // The Security Provider to use
+	SecurityProvider             string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11,certmanager"`                      // The Security Provider to use
 	SecurityAlwaysOverwriteCache bool     `confkey:"plugin.security.always_overwrite_cache" default:"false"`                                                        // Always store new Public Keys to the cache overwriting existing ones
 	RemoteSignerTokenFile        string   `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"` // Path to the token used to access a Central Authenticator
 	RemoteSignerTokenEnvironment string   `confkey:"plugin.choria.security.request_signer.token_environment" url:"https://github.com/choria-io/aaasvc"`             // Environment variable to store Central Authenticator tokens
@@ -85,6 +85,10 @@ type ChoriaPluginConfig struct {
 	FileSecurityKey         string `confkey:"plugin.security.file.key" type:"path_string"`         // When using file security provider, the path to the private key
 	FileSecurityCA          string `confkey:"plugin.security.file.ca" type:"path_string"`          // When using file security provider, the path to the Certificate Authority public certificate
 	FileSecurityCache       string `confkey:"plugin.security.file.cache" type:"path_string"`       // When using file security provider, the path to the client cache
+
+	CertManagerSecurityNamespace  string `confkey:"plugin.security.certmanager.namespace" default:"choria"` // When using Cert Manager security provider, the namespace the issuer is in
+	CertManagerSecurityIssuer     string `confkey:"plugin.security.certmanager.issuer"`                     // When using Cert Manager security provider, the name of the issuer
+	CertManagerSecurityReplaceCSR bool   `confkey:"plugin.security.certmanager.replace" default:"true"`     // when using Cert Manager security provider, replace existing CSRs with new ones
 
 	CipherSuites []string `confkey:"plugin.security.cipher_suites" type:"comma_split"` // List of allowed cipher suites
 	ECCCurves    []string `confkey:"plugin.security.ecc_curves" type:"comma_split"`    // List of allowed ECC curves
