@@ -54,6 +54,32 @@ func FileExist(path string) bool {
 	return true
 }
 
+func FileIsDir(path string) bool {
+	stat, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false
+	}
+
+	if !stat.IsDir() {
+		return false
+	}
+
+	return true
+}
+
+func FileIsRegular(path string) bool {
+	stat, err := os.Stat(path)
+	if os.IsNotExist(err) {
+		return false
+	}
+
+	if !stat.Mode().IsRegular() {
+		return false
+	}
+
+	return true
+}
+
 // StrToBool converts a typical mcollective boolianish string to bool
 func StrToBool(s string) (bool, error) {
 	clean := strings.TrimSpace(s)

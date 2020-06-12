@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/protocol"
+	certmanagersec "github.com/choria-io/go-choria/providers/security/certmanager"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
@@ -90,11 +91,25 @@ func (fw *Framework) setupSecurity() error {
 
 	switch fw.Config.Choria.SecurityProvider {
 	case "puppet":
-		fw.security, err = puppetsec.New(puppetsec.WithResolver(fw), puppetsec.WithChoriaConfig(fw.Config), puppetsec.WithLog(fw.Logger("security")))
+		fw.security, err = puppetsec.New(
+			puppetsec.WithResolver(fw),
+			puppetsec.WithChoriaConfig(fw.Config),
+			puppetsec.WithLog(fw.Logger("security")))
+
 	case "file":
-		fw.security, err = filesec.New(filesec.WithChoriaConfig(fw.Config), filesec.WithLog(fw.Logger("security")))
+		fw.security, err = filesec.New(
+			filesec.WithChoriaConfig(fw.Config),
+			filesec.WithLog(fw.Logger("security")))
+
 	case "pkcs11":
 		err = fw.setupPKCS11()
+
+	case "certmanager":
+		fw.security, err = certmanagersec.New(
+			certmanagersec.WithChoriaConfig(fw.Config),
+			certmanagersec.WithLog(fw.Logger("security")),
+			certmanagersec.WithContext(context.Background()))
+
 	default:
 		err = fmt.Errorf("unknown security provider %s", fw.Config.Choria.SecurityProvider)
 	}

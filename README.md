@@ -106,6 +106,36 @@ The file security provider is designed for people who wish to place their SSL re
 |`plugin.security.file.ca`|unset|Path to the CA to use|
 |`plugin.security.file.cache`|unset|Path to the directory to cache client certificates|
 
+### Cert Manager Security Provider
+
+The `certmanager` security provider can be used inside a Kubernetes Cluster that has Cert Manager installed, it will then automatically enroll in that instance.
+
+|Setting|Default|Description|
+|-------|-------|-----------|
+|`plugin.security.certmanager.namespace`|unset|The namespace where a Issuer is running|
+|`plugin.security.certmanager.issuer`|unset|The name of the Issuer|
+|`plugin.security.certmanager.replace`|`true`|When set will delete a clashing CSR and resubmit|
+
+This only supports running inside the Kubernetes cluster and requires appropriate RBAC roles and bindings in the pod.
+
+```yaml
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: choria:certmanager:enrollable
+  namespace: choria-iot
+rules:
+- apiGroups:
+  - cert-manager.io
+  resources:
+  - certificaterequests
+  - certificaterequest
+  verbs:
+  - get
+  - create
+  - delete
+```
+
 ## NATS based Middleware Broker
 
 This sets up a managed NATS instance, it's functionally equivalent to just running NATS standalone but it's easier to get going and with fewer settings to consider.

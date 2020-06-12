@@ -45,7 +45,7 @@ type Config struct {
 	// The directory where Agents, DDLs and other plugins are found
 	LibDir []string `confkey:"libdir" type:"path_split"`
 
-	// The identity this machine is known as, when empty it's derived based on the operating system hostname or by calling facter fqnd
+	// The identity this machine is known as, when empty it's derived based on the operating system hostname or by calling facter fqdn
 	Identity string `confkey:"identity"`
 
 	// Enables the direct-to-node communications pattern, unused in the Go clients
@@ -224,7 +224,12 @@ func (c *Config) normalize() error {
 
 		// if os.Hostname gets a full hostname use that as it's quicker, then try facter if
 		// that's not available then use whatever os.Hostname gave even if its a short name
+		//
+		// kubernetes does not have domain names in the pod hosts so we just take whats there
+		// when running in a pod
 		if strings.Count(hn, ".") > 1 {
+			c.Identity = hn
+		} else if os.Getenv("KUBERNETES_SERVICE_HOST") != "" {
 			c.Identity = hn
 		} else if fqdn, _ := DNSFQDN(); fqdn != "" {
 			c.Identity = fqdn
