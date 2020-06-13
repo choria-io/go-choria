@@ -231,6 +231,10 @@ func (c *Config) normalize() error {
 			c.Identity = hn
 		} else if os.Getenv("KUBERNETES_SERVICE_HOST") != "" {
 			c.Identity = hn
+			fqdn, err := DNSFQDN()
+			if err == nil {
+				c.Identity = fqdn
+			}
 		} else if fqdn, _ := DNSFQDN(); fqdn != "" {
 			c.Identity = fqdn
 		} else if fqdn, _ := c.Puppet.FacterFQDN(); fqdn != "" {
