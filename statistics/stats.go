@@ -48,7 +48,7 @@ var (
 	buildInfo = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "choria_build_info",
 		Help: "Build information about the running server",
-	}, []string{"version", "sha"})
+	}, []string{"version", "sha", "identity"})
 )
 
 // Start starts serving exp stats and metrics on the configured statistics port
@@ -66,7 +66,7 @@ func Start(fw *choria.Framework, handler http.Handler) {
 
 	bi := fw.BuildInfo()
 	prometheus.MustRegister(buildInfo)
-	buildInfo.WithLabelValues(bi.Version(), bi.SHA()).Inc()
+	buildInfo.WithLabelValues(bi.Version(), bi.SHA(), fw.Config.Identity).Inc()
 
 	if !running {
 		log.Infof("Starting statistic reporting Prometheus statistics on http://%s:%d/choria/", cfg.Choria.StatsListenAddress, port)
