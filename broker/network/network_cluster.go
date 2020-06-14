@@ -1,7 +1,6 @@
 package network
 
 import (
-	"crypto/tls"
 	"fmt"
 
 	gnatsd "github.com/nats-io/nats-server/v2/server"
@@ -35,13 +34,6 @@ func (s *Server) setupCluster() (err error) {
 		s.log.Warnf("could not remove own Self from cluster configuration: %s", err)
 	} else {
 		s.opts.Routes = newroutes
-	}
-
-	if s.IsTLS() {
-		s.opts.Cluster.TLSConfig = s.opts.TLSConfig
-		s.opts.Cluster.TLSConfig.ClientAuth = tls.RequireAndVerifyClientCert
-		s.opts.Cluster.TLSConfig.RootCAs = s.opts.TLSConfig.ClientCAs
-		s.opts.Cluster.TLSTimeout = s.opts.TLSTimeout
 	}
 
 	return

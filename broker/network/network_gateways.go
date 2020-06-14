@@ -27,11 +27,7 @@ func (s *Server) setupGateways() (err error) {
 	s.opts.Gateway.Port = s.config.Choria.NetworkGatewayPort
 	s.opts.Gateway.Name = s.config.Choria.NetworkGatewayName
 	s.opts.Gateway.RejectUnknown = true
-
-	if s.IsTLS() {
-		s.opts.Gateway.TLSConfig = s.opts.TLSConfig
-		s.opts.Gateway.TLSTimeout = s.opts.TLSTimeout
-	}
+	s.opts.Gateway.TLSTimeout = s.opts.TLSTimeout
 
 	for _, r := range s.config.Choria.NetworkGatewayRemotes {
 		s.log.Infof("Adding gateway %s", r)

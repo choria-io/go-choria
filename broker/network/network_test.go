@@ -98,7 +98,6 @@ var _ = Describe("Network Broker", func() {
 			Expect(srv.opts.TLS).To(BeTrue())
 			Expect(srv.opts.TLSVerify).To(BeTrue())
 			Expect(srv.opts.TLSTimeout).To(Equal(float64(2)))
-			Expect(srv.opts.Cluster.TLSTimeout).To(Equal(float64(2)))
 			Expect(srv.opts.LeafNode.Host).To(Equal(""))
 			Expect(srv.opts.LeafNode.Port).To(Equal(0))
 		})
@@ -176,7 +175,6 @@ var _ = Describe("Network Broker", func() {
 				remotes := srv.opts.Gateway.Gateways
 				Expect(remotes).To(HaveLen(2))
 				Expect(remotes[0].Name).To(Equal("C1"))
-				Expect(remotes[0].TLSConfig).ToNot(BeNil())
 				Expect(remotes[0].URLs).To(HaveLen(2))
 				Expect(remotes[0].URLs[0].String()).To(Equal("nats://c1-1.example.net:7222"))
 				Expect(remotes[0].URLs[1].String()).To(Equal("nats://c1-2.example.net:7222"))
@@ -249,10 +247,8 @@ var _ = Describe("Network Broker", func() {
 				Expect(srv.opts.LeafNode.Port).To(Equal(6222))
 				Expect(srv.opts.LeafNode.Remotes).To(HaveLen(2))
 				Expect(srv.opts.LeafNode.Remotes[0].URLs[0].String()).To(Equal("leafnode://ln1-1.example.net:6222"))
-				Expect(srv.opts.LeafNode.Remotes[0].TLSConfig).ToNot(BeNil())
 				Expect(srv.opts.LeafNode.Remotes[0].TLS).ToNot(BeFalse())
 				Expect(srv.opts.LeafNode.Remotes[1].URLs[0].String()).To(Equal("leafnode://ln2.example.net:6222"))
-				Expect(srv.opts.LeafNode.Remotes[1].TLSConfig).To(BeNil())
 			})
 
 			It("Should handle missing custom TLS", func() {

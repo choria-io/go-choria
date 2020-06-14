@@ -38,7 +38,7 @@ func WithChoriaConfig(c *config.Config) Option {
 					return fmt.Errorf("could not parse alternate name %q: %s", n, err)
 				}
 
-				cfg.altnames = append(cfg.altnames, uri.Host)
+				cfg.altnames = append(cfg.altnames, strings.Split(uri.Host, ":")[0])
 			}
 		}
 
