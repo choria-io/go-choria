@@ -32,10 +32,10 @@ func (s *Server) setupCluster() (err error) {
 	// Remove any host/ip that points to itself in Route
 	newroutes, err := gnatsd.RemoveSelfReference(s.opts.Cluster.Port, s.opts.Routes)
 	if err != nil {
-		return fmt.Errorf("could not remove own Self from cluster configuration: %s", err)
+		s.log.Warnf("could not remove own Self from cluster configuration: %s", err)
+	} else {
+		s.opts.Routes = newroutes
 	}
-
-	s.opts.Routes = newroutes
 
 	if s.IsTLS() {
 		s.opts.Cluster.TLSConfig = s.opts.TLSConfig

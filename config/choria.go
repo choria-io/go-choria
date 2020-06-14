@@ -58,7 +58,7 @@ type ChoriaPluginConfig struct {
 	NetworkAccountOperator     string        `confkey:"plugin.choria.network.operator_account"`                                                            // NATS 2.0 Operator account
 	NetworkSystemAccount       string        `confkey:"plugin.choria.network.system_account"`                                                              // NATS 2.0 System Account
 	NetworkTLSTimeout          int           `confkey:"plugin.choria.network.tls_timeout" default:"2"`                                                     // Time to allow for TLS connections to establish, increase on slow or very large networks
-	NetworkClientAdvertiseName string        `confkey:"plugin.choria.network.public_name"`                                                                 // Name to advertise to clients, useful when fronted by a proxy
+	NetworkClientAdvertiseName string        `confkey:"plugin.choria.network.public_urls"`                                                                 // Names to advertise to clients, useful when fronted by a proxy
 
 	BrokerNetwork    bool `confkey:"plugin.choria.broker_network" default:"false" url:"https://choria.io/docs/deployment/broker/"` // Enables the Network Broker
 	BrokerDiscovery  bool `confkey:"plugin.choria.broker_discovery" default:"false" deprecated:"1"`
