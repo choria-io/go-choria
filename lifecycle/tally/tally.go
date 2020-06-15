@@ -249,6 +249,7 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 			event, err := lifecycle.NewFromJSON(e.Data)
 			if err != nil {
 				r.options.Log.Errorf("could not process event: %s", err)
+				r.badEvents.WithLabelValues(r.options.Component).Inc()
 				continue
 			}
 
@@ -261,6 +262,7 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 			err = r.processStateTransition(t)
 			if err != nil {
 				r.options.Log.Errorf("could not process transition event: %s", err)
+				r.badEvents.WithLabelValues(r.options.Component).Inc()
 			}
 
 		case <-maintSched.C:
