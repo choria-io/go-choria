@@ -3,9 +3,7 @@ package certmanagersec
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"os"
-	"strings"
 
 	"github.com/sirupsen/logrus"
 
@@ -23,23 +21,8 @@ func WithChoriaConfig(c *config.Config) Option {
 			namespace:            c.Choria.CertManagerSecurityNamespace,
 			issuer:               c.Choria.CertManagerSecurityIssuer,
 			replace:              c.Choria.CertManagerSecurityReplaceCSR,
+			altnames:             c.Choria.CertManagerSecurityAltNames,
 			identity:             c.Identity,
-		}
-
-		if c.Choria.NetworkClientAdvertiseName != "" {
-			for _, n := range strings.Split(c.Choria.NetworkClientAdvertiseName, ",") {
-				n = strings.TrimSpace(n)
-				if !strings.Contains(n, "://") {
-					n = fmt.Sprintf("nats://%s", n)
-				}
-
-				uri, err := url.Parse(n)
-				if err != nil {
-					return fmt.Errorf("could not parse alternate name %q: %s", n, err)
-				}
-
-				cfg.altnames = append(cfg.altnames, strings.Split(uri.Host, ":")[0])
-			}
 		}
 
 		if c.OverrideCertname == "" {
