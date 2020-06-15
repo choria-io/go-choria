@@ -87,10 +87,10 @@ type ChoriaPluginConfig struct {
 	FileSecurityCA          string `confkey:"plugin.security.file.ca" type:"path_string"`          // When using file security provider, the path to the Certificate Authority public certificate
 	FileSecurityCache       string `confkey:"plugin.security.file.cache" type:"path_string"`       // When using file security provider, the path to the client cache
 
-	CertManagerSecurityNamespace  string   `confkey:"plugin.security.certmanager.namespace" default:"choria"` // When using Cert Manager security provider, the namespace the issuer is in
-	CertManagerSecurityIssuer     string   `confkey:"plugin.security.certmanager.issuer"`                     // When using Cert Manager security provider, the name of the issuer
-	CertManagerSecurityReplaceCSR bool     `confkey:"plugin.security.certmanager.replace" default:"true"`     // when using Cert Manager security provider, replace existing CSRs with new ones
-	CertManagerSecurityAltNames   []string `confkey:"plugin.security.certmanager.alt_names"`                  // when using Cert Manager security provider, add these additional names to the CSR
+	CertManagerSecurityNamespace  string   `confkey:"plugin.security.certmanager.namespace" default:"choria"`   // When using Cert Manager security provider, the namespace the issuer is in
+	CertManagerSecurityIssuer     string   `confkey:"plugin.security.certmanager.issuer"`                       // When using Cert Manager security provider, the name of the issuer
+	CertManagerSecurityReplaceCSR bool     `confkey:"plugin.security.certmanager.replace" default:"true"`       // when using Cert Manager security provider, replace existing CSRs with new ones
+	CertManagerSecurityAltNames   []string `confkey:"plugin.security.certmanager.alt_names" type:"comma_split"` // when using Cert Manager security provider, add these additional names to the CSR
 
 	CipherSuites []string `confkey:"plugin.security.cipher_suites" type:"comma_split"` // List of allowed cipher suites
 	ECCCurves    []string `confkey:"plugin.security.ecc_curves" type:"comma_split"`    // List of allowed ECC curves
