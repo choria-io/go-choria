@@ -44,6 +44,11 @@ func (r *Recorder) createStats() {
 		Help: "Machine state transition",
 	}, []string{"machine", "version", "transition", "from", "to"})
 
+	r.nodesExpired = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: fmt.Sprintf("%s_nodes_expired", r.options.StatPrefix),
+		Help: "The number of nodes that were expired after not receiving alive events",
+	}, []string{"component"})
+
 	if registerStats {
 		prometheus.MustRegister(r.okEvents)
 		prometheus.MustRegister(r.badEvents)
@@ -52,5 +57,6 @@ func (r *Recorder) createStats() {
 		prometheus.MustRegister(r.maintTime)
 		prometheus.MustRegister(r.processTime)
 		prometheus.MustRegister(r.transitionEvent)
+		prometheus.MustRegister(r.nodesExpired)
 	}
 }

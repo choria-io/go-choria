@@ -28,12 +28,13 @@ type Recorder struct {
 	observed map[string]*observation
 
 	// lifecycle
-	okEvents    *prometheus.CounterVec
-	badEvents   *prometheus.CounterVec
-	eventsTally *prometheus.GaugeVec
-	maintTime   *prometheus.SummaryVec
-	processTime *prometheus.SummaryVec
-	eventTypes  *prometheus.CounterVec
+	okEvents     *prometheus.CounterVec
+	badEvents    *prometheus.CounterVec
+	eventsTally  *prometheus.GaugeVec
+	maintTime    *prometheus.SummaryVec
+	processTime  *prometheus.SummaryVec
+	eventTypes   *prometheus.CounterVec
+	nodesExpired *prometheus.CounterVec
 
 	// transitions
 	transitionEvent *prometheus.CounterVec
@@ -189,6 +190,7 @@ func (r *Recorder) maintenance() {
 		r.options.Log.Debugf("Removing node %s, last seen %v", host, r.observed[host].ts)
 
 		delete(r.observed, host)
+		r.nodesExpired.WithLabelValues(r.options.Component).Inc()
 	}
 
 	if len(older) > 0 {
