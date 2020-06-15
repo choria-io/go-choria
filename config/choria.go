@@ -58,7 +58,7 @@ type ChoriaPluginConfig struct {
 	NetworkAccountOperator     string        `confkey:"plugin.choria.network.operator_account"`                                                            // NATS 2.0 Operator account
 	NetworkSystemAccount       string        `confkey:"plugin.choria.network.system_account"`                                                              // NATS 2.0 System Account
 	NetworkTLSTimeout          int           `confkey:"plugin.choria.network.tls_timeout" default:"2"`                                                     // Time to allow for TLS connections to establish, increase on slow or very large networks
-	NetworkClientAdvertiseName string        `confkey:"plugin.choria.network.public_urls"`                                                                 // Names to advertise to clients, useful when fronted by a proxy
+	NetworkClientAdvertiseName string        `confkey:"plugin.choria.network.public_url"`                                                                  // Name to advertise to clients, useful when fronted by a proxy
 
 	BrokerNetwork    bool `confkey:"plugin.choria.broker_network" default:"false" url:"https://choria.io/docs/deployment/broker/"` // Enables the Network Broker
 	BrokerDiscovery  bool `confkey:"plugin.choria.broker_discovery" default:"false" deprecated:"1"`
@@ -87,9 +87,10 @@ type ChoriaPluginConfig struct {
 	FileSecurityCA          string `confkey:"plugin.security.file.ca" type:"path_string"`          // When using file security provider, the path to the Certificate Authority public certificate
 	FileSecurityCache       string `confkey:"plugin.security.file.cache" type:"path_string"`       // When using file security provider, the path to the client cache
 
-	CertManagerSecurityNamespace  string `confkey:"plugin.security.certmanager.namespace" default:"choria"` // When using Cert Manager security provider, the namespace the issuer is in
-	CertManagerSecurityIssuer     string `confkey:"plugin.security.certmanager.issuer"`                     // When using Cert Manager security provider, the name of the issuer
-	CertManagerSecurityReplaceCSR bool   `confkey:"plugin.security.certmanager.replace" default:"true"`     // when using Cert Manager security provider, replace existing CSRs with new ones
+	CertManagerSecurityNamespace  string   `confkey:"plugin.security.certmanager.namespace" default:"choria"` // When using Cert Manager security provider, the namespace the issuer is in
+	CertManagerSecurityIssuer     string   `confkey:"plugin.security.certmanager.issuer"`                     // When using Cert Manager security provider, the name of the issuer
+	CertManagerSecurityReplaceCSR bool     `confkey:"plugin.security.certmanager.replace" default:"true"`     // when using Cert Manager security provider, replace existing CSRs with new ones
+	CertManagerSecurityAltNames   []string `confkey:"plugin.security.certmanager.alt_names"`                  // when using Cert Manager security provider, add these additional names to the CSR
 
 	CipherSuites []string `confkey:"plugin.security.cipher_suites" type:"comma_split"` // List of allowed cipher suites
 	ECCCurves    []string `confkey:"plugin.security.ecc_curves" type:"comma_split"`    // List of allowed ECC curves
