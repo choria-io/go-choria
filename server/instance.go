@@ -34,7 +34,8 @@ type Instance struct {
 
 	requests chan *choria.ConnectorMessage
 
-	mu *sync.Mutex
+	shutdown func()
+	mu       *sync.Mutex
 }
 
 // NewInstance creates a new choria server instance
@@ -60,17 +61,38 @@ func (srv *Instance) Logger(component string) *log.Entry {
 	return srv.fw.Logger(component)
 }
 
+// Shutdown signals to the server that it should shutdown
+func (srv *Instance) Shutdown() error {
+	srv.mu.Lock()
+	defer srv.mu.Unlock()
+
+	cancel := srv.shutdown
+
+	if cancel == nil {
+		return fmt.Errorf("server is not running")
+	}
+
+	cancel()
+
+	return nil
+}
+
 func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	err := srv.initialConnect(ctx)
+	var sctx context.Context
+	srv.mu.Lock()
+	sctx, srv.shutdown = context.WithCancel(ctx)
+	srv.mu.Unlock()
+
+	err := srv.initialConnect(sctx)
 	if err != nil {
 		srv.log.Errorf("Initial Choria Broker connection failed: %s", err)
 		return fmt.Errorf("initial Choria Broker connection failed: %s", err)
 	}
 
 	wg.Add(1)
-	go srv.WriteServerStatus(ctx, wg)
+	go srv.WriteServerStatus(sctx, wg)
 
 	srv.agents = agents.New(srv.requests, srv.fw, srv.connector, srv, srv.log)
 	srv.registration = registration.New(srv.fw, srv.connector, srv.log)
@@ -80,7 +102,7 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	}
 
 	wg.Add(1)
-	err = srv.registration.Start(ctx, wg)
+	err = srv.registration.Start(sctx, wg)
 	if err != nil {
 		srv.log.Errorf("Could not initialize registration: %s", err)
 		srv.connector.Close()
@@ -88,7 +110,7 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		return fmt.Errorf("could not initialize registration: %s", err)
 	}
 
-	err = srv.setupAdditionalAgentProviders(ctx)
+	err = srv.setupAdditionalAgentProviders(sctx)
 	if err != nil {
 		srv.log.Errorf("Could not initialize initial additional agent providers: %s", err)
 		srv.connector.Close()
@@ -96,7 +118,7 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		return fmt.Errorf("could not initialize initial additional agent providers: %s", err)
 	}
 
-	err = srv.setupAdditionalAgents(ctx)
+	err = srv.setupAdditionalAgents(sctx)
 	if err != nil {
 		srv.log.Errorf("Could not initialize initial additional agents: %s", err)
 		srv.connector.Close()
@@ -104,7 +126,7 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		return fmt.Errorf("could not initialize initial additional agents: %s", err)
 	}
 
-	err = srv.subscribeNode(ctx)
+	err = srv.subscribeNode(sctx)
 	if err != nil {
 		srv.log.Errorf("Could not subscribe node: %s", err)
 		srv.connector.Close()
@@ -115,15 +137,15 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	srv.publishStartupEvent()
 
 	wg.Add(1)
-	go srv.publishAliveEvents(ctx, wg)
+	go srv.publishAliveEvents(sctx, wg)
 
-	err = srv.StartMachine(ctx, wg)
+	err = srv.StartMachine(sctx, wg)
 	if err != nil {
 		srv.log.Errorf("Could not start Choria Autonomous Agent host: %s", err)
 	}
 
 	wg.Add(1)
-	go srv.processRequests(ctx, wg)
+	go srv.processRequests(sctx, wg)
 
 	return nil
 }
