@@ -20,6 +20,7 @@ const (
 	CRITICAL
 	UNKNOWN
 	SKIPPED
+	NOTCHECKED
 )
 
 var stateNames = map[State]string{
@@ -27,15 +28,22 @@ var stateNames = map[State]string{
 	WARNING:  "WARNING",
 	CRITICAL: "CRITICAL",
 	UNKNOWN:  "UNKNOWN",
-	SKIPPED:  "SKIPPED",
+
+	// these are internal states that doesnt cause prom updates
+	// or matching state transitions, they are there to force transitions
+	// to unknown on the first time and to avoid immediate double checks
+	// when transitioning between states
+	SKIPPED:    "SKIPPED",
+	NOTCHECKED: "NOTCHECKED",
 }
 
 var intStates = map[int]State{
-	int(OK):       OK,
-	int(WARNING):  WARNING,
-	int(CRITICAL): CRITICAL,
-	int(UNKNOWN):  UNKNOWN,
-	int(SKIPPED):  SKIPPED,
+	int(OK):         OK,
+	int(WARNING):    WARNING,
+	int(CRITICAL):   CRITICAL,
+	int(UNKNOWN):    UNKNOWN,
+	int(SKIPPED):    SKIPPED,
+	int(NOTCHECKED): NOTCHECKED,
 }
 
 type Machine interface {
@@ -83,6 +91,7 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		successEvent:     successEvent,
 		machine:          machine,
 		statechg:         make(chan struct{}, 1),
+		previous:         NOTCHECKED,
 		announceInterval: ai,
 	}
 
@@ -225,6 +234,9 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 		go w.intervalWatcher(ctx, wg)
 	}
 
+	// force a check at start, use machine splay to splay checks
+	w.statechg <- struct{}{}
+
 	for {
 		select {
 		case <-w.statechg:
@@ -263,7 +275,7 @@ func (w *Watcher) performWatch(ctx context.Context) {
 }
 
 func (w *Watcher) handleCheck(s State, err error) error {
-	if s == SKIPPED {
+	if s == SKIPPED || s == NOTCHECKED {
 		return nil
 	}
 

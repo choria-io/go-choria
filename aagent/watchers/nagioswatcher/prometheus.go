@@ -11,6 +11,7 @@ import (
 
 var promStates map[string]State
 var promTimes map[string]time.Time
+var promChecks map[string]int
 
 var mu sync.Mutex
 
@@ -18,6 +19,7 @@ func init() {
 	mu.Lock()
 	promTimes = make(map[string]time.Time)
 	promStates = make(map[string]State)
+	promChecks = make(map[string]int)
 	mu.Unlock()
 }
 
@@ -33,6 +35,12 @@ func updatePromState(name string, state State, dir string, log logger) error {
 
 	promStates[name] = state
 	promTimes[name] = time.Now()
+
+	_, ok := promChecks[name]
+	if !ok {
+		promChecks[name] = 0
+	}
+	promChecks[name]++
 
 	return savePromState(dir, log)
 }
@@ -72,13 +80,21 @@ func savePromState(td string, log logger) error {
 	fmt.Fprintf(tfile, "# HELP choria_machine_nagios_watcher_status Choria Nagios Check Status\n")
 	fmt.Fprintf(tfile, "# TYPE choria_machine_nagios_watcher_status gauge\n")
 	for name, s := range promStates {
-		fmt.Fprintf(tfile, "choria_machine_nagios_watcher_status{name=%q} %d\n", name, int(s))
+		if s == UNKNOWN || s == OK || s == CRITICAL || s == WARNING {
+			fmt.Fprintf(tfile, "choria_machine_nagios_watcher_status{name=%q,status=%q} %d\n", name, stateNames[s], int(s))
+		}
 	}
 
 	fmt.Fprintf(tfile, "# HELP choria_machine_nagios_watcher_last_run_seconds Choria Nagios Check Time\n")
 	fmt.Fprintf(tfile, "# TYPE choria_machine_nagios_watcher_last_run_seconds gauge\n")
 	for name, t := range promTimes {
 		fmt.Fprintf(tfile, "choria_machine_nagios_watcher_last_run_seconds{name=%q} %d\n", name, t.Unix())
+	}
+
+	fmt.Fprintf(tfile, "# HELP choria_machine_nagios_watcher_checks_count Choria Nagios Check Count\n")
+	fmt.Fprintf(tfile, "# TYPE choria_machine_nagios_watcher_checks_count counter\n")
+	for name, c := range promChecks {
+		fmt.Fprintf(tfile, "choria_machine_nagios_watcher_checks_count{name=%q} %d\n", name, c)
 	}
 
 	tfile.Close()
