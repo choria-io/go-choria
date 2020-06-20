@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/shlex"
 )
 
 type State int
@@ -67,7 +69,6 @@ type Watcher struct {
 	statechg         chan struct{}
 
 	plugin  string
-	args    []string
 	timeout time.Duration
 
 	sync.Mutex
@@ -183,23 +184,6 @@ func (w *Watcher) setProperties(p map[string]interface{}) error {
 		w.timeout = timeout
 	}
 
-	argsraw, ok := p["args"]
-	if ok {
-		args, ok := argsraw.([]interface{})
-		if !ok {
-			return fmt.Errorf("arguments should be a list of strings")
-		}
-
-		for _, arg := range args {
-			val, ok := arg.(string)
-			if !ok {
-				return fmt.Errorf("arguments should be a list of strings")
-			}
-
-			w.args = append(w.args, val)
-		}
-	}
-
 	return nil
 }
 
@@ -300,7 +284,14 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	timeoutCtx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(timeoutCtx, w.plugin, w.args...)
+	splitcmd, err := shlex.Split(w.plugin)
+	if err != nil {
+		w.machine.Errorf(w.name, "Nagios watcher %s failed: %s", w.plugin, err)
+		w.previousOutput = err.Error()
+		return UNKNOWN, err
+	}
+
+	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], splitcmd[1:]...)
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machine.Name()))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s%s%s", os.Getenv("PATH"), string(os.PathListSeparator), w.machine.Directory()))
