@@ -26,7 +26,7 @@ func (c *mRunCommand) Setup() (err error) {
 }
 
 func (c *mRunCommand) Configure() error {
-	return nil
+	return commonConfigure()
 }
 
 func (c *mRunCommand) Run(wg *sync.WaitGroup) (err error) {

@@ -7,6 +7,10 @@ RUN curl -s https://packagecloud.io/install/repositories/choria/release/script.r
     yum -y install choria && \
     yum -y clean all
 
-ENTRYPOINT ["/bin/choria"]
+RUN groupadd --gid 2048 choria && \
+    useradd -c "Choria Orchestrator - choria.io" -m --uid 2048 --gid 2048 choria && \
+    chown -R choria:choria /etc/choria
 
-COPY go-choria /bin/choria
+USER choria
+
+ENTRYPOINT ["/bin/choria"]

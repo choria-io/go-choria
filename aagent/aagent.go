@@ -42,6 +42,7 @@ type ChoriaProvider interface {
 	PublishRaw(string, []byte) error
 	Logger(string) *logrus.Entry
 	Identity() string
+	PrometheusTextFileDir() string
 }
 
 // New creates a new instance of the choria autonomous agent host
@@ -102,6 +103,7 @@ func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path strin
 
 	aa.SetIdentity(a.fw.Identity())
 	aa.RegisterNotifier(a.notifier)
+	aa.SetTextFileDirectory(a.fw.PrometheusTextFileDir())
 
 	managed := &managedMachine{
 		loaded:     time.Now(),
@@ -198,7 +200,7 @@ func (a *AAgent) watchSource(ctx context.Context, wg *sync.WaitGroup) {
 			if err != nil {
 				a.logger.Infof("Machine %s does not exist anymore in %s, terminating", m.machine.Name(), m.path)
 				targets = append(targets, m.path)
-				m.machine.Stop()
+				m.machine.Delete()
 			}
 		}
 		a.Unlock()

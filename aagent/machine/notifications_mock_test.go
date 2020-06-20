@@ -5,6 +5,7 @@
 package machine
 
 import (
+	sdk_go "github.com/cloudevents/sdk-go"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 )
@@ -126,6 +127,18 @@ func (m *MockWatcherStateNotification) JSON() ([]byte, error) {
 // JSON indicates an expected call of JSON
 func (mr *MockWatcherStateNotificationMockRecorder) JSON() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JSON", reflect.TypeOf((*MockWatcherStateNotification)(nil).JSON))
+}
+
+// CloudEvent mocks base method
+func (m *MockWatcherStateNotification) CloudEvent() sdk_go.Event {
+	ret := m.ctrl.Call(m, "CloudEvent")
+	ret0, _ := ret[0].(sdk_go.Event)
+	return ret0
+}
+
+// CloudEvent indicates an expected call of CloudEvent
+func (mr *MockWatcherStateNotificationMockRecorder) CloudEvent() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CloudEvent", reflect.TypeOf((*MockWatcherStateNotification)(nil).CloudEvent))
 }
 
 // String mocks base method

@@ -103,6 +103,16 @@ func (mr *MockWatcherMockRecorder) AnnounceInterval() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AnnounceInterval", reflect.TypeOf((*MockWatcher)(nil).AnnounceInterval))
 }
 
+// Delete mocks base method
+func (m *MockWatcher) Delete() {
+	m.ctrl.Call(m, "Delete")
+}
+
+// Delete indicates an expected call of Delete
+func (mr *MockWatcherMockRecorder) Delete() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockWatcher)(nil).Delete))
+}
+
 // MockMachine is a mock of Machine interface
 type MockMachine struct {
 	ctrl     *gomock.Controller
@@ -247,6 +257,18 @@ func (m *MockMachine) TimeStampSeconds() int64 {
 // TimeStampSeconds indicates an expected call of TimeStampSeconds
 func (mr *MockMachineMockRecorder) TimeStampSeconds() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TimeStampSeconds", reflect.TypeOf((*MockMachine)(nil).TimeStampSeconds))
+}
+
+// TextFileDirectory mocks base method
+func (m *MockMachine) TextFileDirectory() string {
+	ret := m.ctrl.Call(m, "TextFileDirectory")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// TextFileDirectory indicates an expected call of TextFileDirectory
+func (mr *MockMachineMockRecorder) TextFileDirectory() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TextFileDirectory", reflect.TypeOf((*MockMachine)(nil).TextFileDirectory))
 }
 
 // Debugf mocks base method

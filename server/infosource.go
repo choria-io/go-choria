@@ -109,6 +109,11 @@ func (srv *Instance) ConfigFile() string {
 	return srv.cfg.ConfigFile
 }
 
+// PrometheusTextFileDir is the directory prometheus textfiles should be written to
+func (srv *Instance) PrometheusTextFileDir() string {
+	return srv.cfg.Choria.PrometheusTextFileDir
+}
+
 // Classes is a list of classification classes this node matches
 func (srv *Instance) Classes() []string {
 	classes, err := classes.ReadClasses(srv.cfg.ClassesFile)

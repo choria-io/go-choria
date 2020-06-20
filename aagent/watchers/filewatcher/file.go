@@ -92,6 +92,8 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 	return w, err
 }
 
+func (w *Watcher) Delete() {}
+
 func (w *Watcher) Type() string {
 	return "file"
 }
