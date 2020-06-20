@@ -84,6 +84,8 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 	return w, nil
 }
 
+func (w *Watcher) Delete() {}
+
 func (w *Watcher) watchSchedule(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 

@@ -21,7 +21,7 @@ foss:
     defaults:
       output: choria-{{version}}-{{os}}-{{arch}}
       flags:
-        ProvisionJWTFile: /etc/choria/provisioning.jwt
+        ProvisionJWTFile: /tmp/provisioning.jwt
       pre:
         - rm additional_agent_*.go || true
         - rm plugin_*.go || true

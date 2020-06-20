@@ -144,6 +144,11 @@ func (fw *Framework) ProvisionMode() bool {
 	return fw.bi.ProvisionDefault()
 }
 
+// PrometheusTextFileDir is the configured directory where to write prometheus text file stats
+func (fw *Framework) PrometheusTextFileDir() string {
+	return fw.Config.Choria.PrometheusTextFileDir
+}
+
 // ConfigureProvisioning adjusts the active configuration to match the
 // provisioning profile
 func (fw *Framework) ConfigureProvisioning() {

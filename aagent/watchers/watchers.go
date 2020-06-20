@@ -8,6 +8,7 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/filewatcher"
+	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/schedulewatcher"
 	"github.com/pkg/errors"
 )
@@ -29,6 +30,7 @@ type Watcher interface {
 	NotifyStateChance()
 	CurrentState() interface{}
 	AnnounceInterval() time.Duration
+	Delete()
 }
 
 // Machine is a Choria Machine
@@ -43,6 +45,7 @@ type Machine interface {
 	InstanceID() string
 	Version() string
 	TimeStampSeconds() int64
+	TextFileDirectory() string
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Errorf(name string, format string, args ...interface{})
@@ -59,6 +62,17 @@ type Manager struct {
 func New() *Manager {
 	return &Manager{
 		watchers: make(map[string]Watcher),
+	}
+}
+
+// Delete gets called before a watcher is being deleted after
+// its files were removed from disk
+func (m *Manager) Delete() {
+	m.Lock()
+	defer m.Unlock()
+
+	for _, w := range m.watchers {
+		w.Delete()
 	}
 }
 
@@ -123,6 +137,17 @@ func (m *Manager) configureWatchers() (err error) {
 			watcher, err := schedulewatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
 			if err != nil {
 				return errors.Wrapf(err, "could not create schedule watcher '%s'", w.Name)
+			}
+
+			err = m.AddWatcher(watcher)
+			if err != nil {
+				return err
+			}
+
+		case "nagios":
+			watcher, err := nagioswatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
+			if err != nil {
+				return errors.Wrapf(err, "could not create exec watcher '%s'", w.Name)
 			}
 
 			err = m.AddWatcher(watcher)

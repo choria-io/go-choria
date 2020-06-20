@@ -67,3 +67,13 @@ func (m *MockWatcherManager) SetMachine(arg0 interface{}) error {
 func (mr *MockWatcherManagerMockRecorder) SetMachine(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMachine", reflect.TypeOf((*MockWatcherManager)(nil).SetMachine), arg0)
 }
+
+// Delete mocks base method
+func (m *MockWatcherManager) Delete() {
+	m.ctrl.Call(m, "Delete")
+}
+
+// Delete indicates an expected call of Delete
+func (mr *MockWatcherManagerMockRecorder) Delete() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Delete", reflect.TypeOf((*MockWatcherManager)(nil).Delete))
+}

@@ -18,6 +18,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/watchers"
 	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/filewatcher"
+	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/schedulewatcher"
 	"github.com/ghodss/yaml"
 
@@ -48,6 +49,7 @@ type Machine struct {
 	identity   string
 	directory  string
 	manifest   string
+	txtfileDir string
 	startTime  time.Time
 
 	manager     WatcherManager
@@ -77,6 +79,7 @@ type WatcherManager interface {
 	Run(context.Context, *sync.WaitGroup) error
 	NotifyStateChance()
 	SetMachine(interface{}) error
+	Delete()
 }
 
 // ParseWatcherState parses the watcher state JSON
@@ -111,6 +114,15 @@ func ParseWatcherState(state []byte) (n WatcherStateNotification, err error) {
 		err = json.Unmarshal(state, notification)
 		if err != nil {
 			return nil, errors.Wrapf(err, "invalid schedule watcher notification received")
+		}
+
+		return notification, nil
+
+	case "io.choria.machine.watcher.nagios.v1.state":
+		notification := &nagioswatcher.StateNotification{}
+		err = json.Unmarshal(state, notification)
+		if err != nil {
+			return nil, errors.Wrapf(err, "invalid nagios watcher notification received")
 		}
 
 		return notification, nil
@@ -219,6 +231,20 @@ func (m *Machine) SetIdentity(id string) {
 	defer m.Unlock()
 
 	m.identity = id
+}
+
+func (m *Machine) SetTextFileDirectory(d string) {
+	m.Lock()
+	defer m.Unlock()
+
+	m.txtfileDir = d
+}
+
+func (m *Machine) TextFileDirectory() string {
+	m.Lock()
+	defer m.Unlock()
+
+	return m.txtfileDir
 }
 
 // Watchers retrieves the watcher definitions
@@ -365,6 +391,17 @@ func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) (started chan s
 	return started
 }
 
+// Delete deletes a running machine by canceling its context and giving its manager
+// a change to do clean up before final termination
+func (m *Machine) Delete() {
+	m.manager.Delete()
+
+	if m.cancel != nil {
+		m.Infof("runner", "Stopping")
+		m.cancel()
+	}
+}
+
 // Stop stops a running machine by canceling its context
 func (m *Machine) Stop() {
 	if m.cancel != nil {
@@ -382,7 +419,7 @@ func (m *Machine) Transition(t string, args ...interface{}) error {
 		return nil
 	}
 
-	if m.fsm.Can(t) {
+	if m.Can(t) {
 		m.fsm.Event(t, args...)
 	} else {
 		m.Warnf("machine", "Could not fire '%s' event while in %s", t, m.fsm.Current())

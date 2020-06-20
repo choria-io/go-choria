@@ -1,4 +1,4 @@
-// auto generated at 2020-06-12 16:09:20.592574 +0200 CEST m=+0.002069262
+// auto generated at 2020-06-20 11:39:00.445868 +0200 CEST m=+0.004546534
 
 package config
 
@@ -71,7 +71,7 @@ var docStrings = map[string]string{
 	"plugin.choria.network.operator_account":                  "NATS 2.0 Operator account",
 	"plugin.choria.network.system_account":                    "NATS 2.0 System Account",
 	"plugin.choria.network.tls_timeout":                       "Time to allow for TLS connections to establish, increase on slow or very large networks",
-	"plugin.choria.network.public_name":                       "Name to advertise to clients, useful when fronted by a proxy",
+	"plugin.choria.network.public_url":                        "Name to advertise to clients, useful when fronted by a proxy",
 	"plugin.choria.broker_network":                            "Enables the Network Broker",
 	"plugin.choria.broker_federation":                         "Enables the Federation Broker",
 	"plugin.choria.registration.file_content.data":            "YAML or JSON file to use as data source for registration",
@@ -95,6 +95,7 @@ var docStrings = map[string]string{
 	"plugin.security.certmanager.namespace":                   "When using Cert Manager security provider, the namespace the issuer is in",
 	"plugin.security.certmanager.issuer":                      "When using Cert Manager security provider, the name of the issuer",
 	"plugin.security.certmanager.replace":                     "when using Cert Manager security provider, replace existing CSRs with new ones",
+	"plugin.security.certmanager.alt_names":                   "when using Cert Manager security provider, add these additional names to the CSR",
 	"plugin.security.cipher_suites":                           "List of allowed cipher suites",
 	"plugin.security.ecc_curves":                              "List of allowed ECC curves",
 	"plugin.security.pkcs11.driver_file":                      "When using the pkcs11 security provider, the path to the PCS11 driver file",
@@ -103,5 +104,6 @@ var docStrings = map[string]string{
 	"plugin.choria.status_file_path":                          "Path to a JSON file to write server health information to regularly",
 	"plugin.choria.status_update_interval":                    "How frequently to write to the status_file_path",
 	"plugin.choria.machine.store":                             "Directory where Autonomous Agents are stored",
+	"plugin.choria.prometheus_textfile_directory":             "Directory where Prometheus Node Exporter textfile collector reads data",
 	"plugin.choria.require_client_filter":                     "If a client filter should always be required, only used in Go clients",
 }

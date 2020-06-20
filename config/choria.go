@@ -105,6 +105,8 @@ type ChoriaPluginConfig struct {
 
 	MachineSourceDir string `confkey:"plugin.choria.machine.store" url:"https://choria.io/docs/autoagents/"` // Directory where Autonomous Agents are stored
 
+	PrometheusTextFileDir string `confkey:"plugin.choria.prometheus_textfile_directory" type:"path_string"` // Directory where Prometheus Node Exporter textfile collector reads data
+
 	RequireClientFilter bool `confkey:"plugin.choria.require_client_filter" default:"false"` // If a client filter should always be required, only used in Go clients
 }
 

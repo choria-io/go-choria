@@ -238,6 +238,8 @@ func (w *Watcher) Name() string {
 	return w.name
 }
 
+func (w *Watcher) Delete() {}
+
 func (w *Watcher) CurrentState() interface{} {
 	w.Lock()
 	defer w.Unlock()
