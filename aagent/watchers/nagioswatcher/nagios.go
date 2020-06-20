@@ -8,6 +8,8 @@ import (
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/google/shlex"
 )
 
 type State int
@@ -300,7 +302,13 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	timeoutCtx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 
-	cmd := exec.CommandContext(timeoutCtx, w.plugin, w.args...)
+	splitcmd, err := shlex.Split(w.plugin)
+	if err != nil {
+		w.machine.Errorf(w.name, "Exec watcher %s failed: %s", w.plugin, err)
+		return UNKNOWN, err
+	}
+
+	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], splitcmd[1:]...)
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machine.Name()))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s%s%s", os.Getenv("PATH"), string(os.PathListSeparator), w.machine.Directory()))
