@@ -12,6 +12,7 @@ import (
 var promStates map[string]State
 var promTimes map[string]time.Time
 var promChecks map[string]int
+var startTime int64
 
 var mu sync.Mutex
 
@@ -20,6 +21,7 @@ func init() {
 	promTimes = make(map[string]time.Time)
 	promStates = make(map[string]State)
 	promChecks = make(map[string]int)
+	startTime = time.Now().Unix()
 	mu.Unlock()
 }
 
@@ -51,10 +53,12 @@ func deletePromState(name string, dir string, log logger) error {
 
 	delete(promStates, name)
 	delete(promTimes, name)
+	delete(promChecks, name)
 
 	return savePromState(dir, log)
 }
 
+// locks held by callers
 func savePromState(td string, log logger) error {
 	if td == "" {
 		log.Debugf("nagios", "Not updating prometheus - text file directory is unset")
@@ -76,6 +80,10 @@ func savePromState(td string, log logger) error {
 	if err != nil {
 		return fmt.Errorf("failed to create prometheus metric in %q: %s", td, err)
 	}
+
+	fmt.Fprintf(tfile, "# HELP choria_machine_nagios_start_time Time the Choria Machine subsystem started in unix seconds\n")
+	fmt.Fprintf(tfile, "# TYPE choria_machine_nagios_start_time gauge\n")
+	fmt.Fprintf(tfile, "choria_machine_nagios_start_time %d\n", startTime)
 
 	fmt.Fprintf(tfile, "# HELP choria_machine_nagios_watcher_status Choria Nagios Check Status\n")
 	fmt.Fprintf(tfile, "# TYPE choria_machine_nagios_watcher_status gauge\n")

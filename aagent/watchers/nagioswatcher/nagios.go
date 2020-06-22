@@ -3,6 +3,7 @@ package nagioswatcher
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"strings"
@@ -64,6 +65,8 @@ type Machine interface {
 
 type Watcher struct {
 	name             string
+	machineName      string
+	textFileDir      string
 	states           []string
 	failEvent        string
 	successEvent     string
@@ -74,6 +77,7 @@ type Watcher struct {
 	previousOutput   string
 	previousCheck    time.Time
 	previous         State
+	force            bool
 	statechg         chan struct{}
 
 	plugin  string
@@ -86,6 +90,8 @@ type Watcher struct {
 func New(machine Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (watcher *Watcher, err error) {
 	w := &Watcher{
 		name:             name,
+		machineName:      machine.Name(),
+		textFileDir:      machine.TextFileDirectory(),
 		states:           states,
 		failEvent:        failEvent,
 		successEvent:     successEvent,
@@ -111,6 +117,8 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		}
 	}
 
+	updatePromState(w.machineName, UNKNOWN, machine.TextFileDirectory(), machine)
+
 	return w, err
 }
 
@@ -121,7 +129,7 @@ func (w *Watcher) Delete() {
 
 	// suppress next check and set state to unknown
 	w.previousCheck = time.Now()
-	deletePromState(w.machine.Name(), w.machine.TextFileDirectory(), w.machine)
+	deletePromState(w.machineName, w.textFileDir, w.machine)
 }
 
 func (w *Watcher) Type() string {
@@ -154,7 +162,7 @@ func (w *Watcher) CurrentState() interface{} {
 		ID:         w.machine.InstanceID(),
 		Version:    w.machine.Version(),
 		Timestamp:  w.machine.TimeStampSeconds(),
-		Machine:    w.machine.Name(),
+		Machine:    w.machineName,
 		Plugin:     w.plugin,
 		Status:     stateNames[w.previous],
 		StatusCode: int(w.previous),
@@ -215,16 +223,38 @@ func (w *Watcher) setProperties(p map[string]interface{}) error {
 }
 
 func (w *Watcher) NotifyStateChance() {
-	if len(w.statechg) < cap(w.statechg) {
+	var s State
+	switch w.machine.State() {
+	case "OK":
+		s = OK
+	case "WARNING":
+		s = WARNING
+	case "CRITICAL":
+		s = CRITICAL
+	case "UNKNOWN":
+		s = UNKNOWN
+	case "FORCE_CHECK":
+		w.machine.Infof("Forcing a check of %s", w.machineName)
+		w.force = true
 		w.statechg <- struct{}{}
+		return
+	}
+
+	w.Lock()
+	w.previous = s
+	w.Unlock()
+
+	err := updatePromState(w.machineName, s, w.textFileDir, w.machine)
+	if err != nil {
+		w.machine.Errorf(w.name, "Could not update prometheus: %s", err)
 	}
 }
 
 func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	if w.machine.TextFileDirectory() != "" {
-		w.machine.Infof(w.name, "nagios watcher for %s starting, updating prometheus in %s", w.plugin, w.machine.TextFileDirectory())
+	if w.textFileDir != "" {
+		w.machine.Infof(w.name, "nagios watcher for %s starting, updating prometheus in %s", w.plugin, w.textFileDir)
 	} else {
 		w.machine.Infof(w.name, "nagios watcher for %s starting", w.plugin)
 	}
@@ -233,9 +263,6 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 		wg.Add(1)
 		go w.intervalWatcher(ctx, wg)
 	}
-
-	// force a check at start, use machine splay to splay checks
-	w.statechg <- struct{}{}
 
 	for {
 		select {
@@ -251,6 +278,15 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
+
+	splay := time.Duration(rand.Intn(int(w.interval.Seconds()))) * time.Second
+	w.machine.Infof(w.name, "Splaying first check by %v", splay)
+
+	select {
+	case <-time.NewTimer(splay).C:
+	case <-ctx.Done():
+		return
+	}
 
 	tick := time.NewTicker(w.interval)
 
@@ -268,13 +304,13 @@ func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 
 func (w *Watcher) performWatch(ctx context.Context) {
 	state, err := w.watch(ctx)
-	err = w.handleCheck(state, err)
+	err = w.handleCheck(state, false, err)
 	if err != nil {
 		w.machine.Errorf(w.name, "could not handle watcher event: %s", err)
 	}
 }
 
-func (w *Watcher) handleCheck(s State, err error) error {
+func (w *Watcher) handleCheck(s State, external bool, err error) error {
 	if s == SKIPPED || s == NOTCHECKED {
 		return nil
 	}
@@ -285,12 +321,20 @@ func (w *Watcher) handleCheck(s State, err error) error {
 	w.previous = s
 	w.Unlock()
 
-	w.machine.NotifyWatcherState(w.name, w.CurrentState())
+	// dont notify if we are externally transitioning because probably notifications were already sent
+	if !external {
+		w.machine.NotifyWatcherState(w.name, w.CurrentState())
+	}
+
 	w.machine.Debugf(w.name, "Notifying prometheus")
 
-	err = updatePromState(w.machine.Name(), s, w.machine.TextFileDirectory(), w.machine)
+	err = updatePromState(w.machineName, s, w.textFileDir, w.machine)
 	if err != nil {
 		w.machine.Errorf(w.name, "Could not update prometheus: %s", err)
+	}
+
+	if external {
+		return nil
 	}
 
 	return w.machine.Transition(stateNames[s])
@@ -322,7 +366,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 
 	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], splitcmd[1:]...)
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
-	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machine.Name()))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machineName))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s%s%s", os.Getenv("PATH"), string(os.PathListSeparator), w.machine.Directory()))
 	cmd.Dir = w.machine.Directory()
 
@@ -355,6 +399,11 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 }
 
 func (w *Watcher) shouldWatch() bool {
+	if w.force {
+		w.force = false
+		return true
+	}
+
 	since := time.Since(w.previousCheck)
 	if !w.previousCheck.IsZero() && since < w.interval-time.Second {
 		w.machine.Debugf(w.name, "Skipping check due to previous check being %v sooner than interval %v", since, w.interval)

@@ -170,10 +170,7 @@ func (m *Manager) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		return fmt.Errorf("manager requires a machine to manage")
 	}
 
-	err := m.configureWatchers()
-	if err != nil {
-		return errors.Wrap(err, "could not configure watchers")
-	}
+	m.configureWatchers()
 
 	for _, watcher := range m.watchers {
 		wg.Add(1)

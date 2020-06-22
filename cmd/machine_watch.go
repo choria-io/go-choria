@@ -3,6 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 
 	cloudevents "github.com/cloudevents/sdk-go"
@@ -17,6 +18,7 @@ type mWatchCommand struct {
 	onlyTransitions   bool
 	onlyWatchers      bool
 	filterWatcherType []string
+	filterIdentity    string
 	log               *logrus.Entry
 
 	sync.Mutex
@@ -28,6 +30,7 @@ func (w *mWatchCommand) Setup() (err error) {
 		w.cmd.Flag("transitions", "View only transitions").BoolVar(&w.onlyTransitions)
 		w.cmd.Flag("watchers", "View only watcher states").BoolVar(&w.onlyWatchers)
 		w.cmd.Flag("type", "Limit watcher events to certain types").StringsVar(&w.filterWatcherType)
+		w.cmd.Flag("identity", "Filters identity").StringVar(&w.filterIdentity)
 	}
 
 	return nil
@@ -120,6 +123,10 @@ func (w *mWatchCommand) showState(m *choria.ConnectorMessage) {
 		return
 	}
 
+	if w.filterIdentity != "" && !strings.Contains(state.SenderID(), w.filterIdentity) {
+		return
+	}
+
 	w.Lock()
 	fmt.Println(state.String())
 	w.Unlock()
@@ -138,6 +145,10 @@ func (w *mWatchCommand) showTransition(m *choria.ConnectorMessage) {
 	err = json.Unmarshal(data, transition)
 	if err != nil {
 		w.log.Errorf("Could not decode received transition message: %s: %s", string(data), err)
+		return
+	}
+
+	if w.filterIdentity != "" && !strings.Contains(transition.Identity, w.filterIdentity) {
 		return
 	}
 

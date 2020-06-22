@@ -51,3 +51,8 @@ func (s *StateNotification) String() string {
 func (s *StateNotification) WatcherType() string {
 	return s.Type
 }
+
+// SenderID is the identity of the event producer
+func (s *StateNotification) SenderID() string {
+	return s.Identity
+}
