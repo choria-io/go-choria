@@ -62,6 +62,7 @@ type WatcherStateNotification interface {
 	CloudEvent() cloudevents.Event
 	String() string
 	WatcherType() string
+	SenderID() string
 }
 
 // NotificationService receives events notifications about the state machine

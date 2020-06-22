@@ -4,9 +4,10 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"time"
+
 	"github.com/choria-io/go-choria/choria"
 	cloudevents "github.com/cloudevents/sdk-go"
-	"time"
 )
 
 // StateNotification describes the current state of the watcher
@@ -52,4 +53,9 @@ func (s *StateNotification) String() string {
 // WatcherType is the type of watcher the notification is for - exec, file etc
 func (s *StateNotification) WatcherType() string {
 	return s.Type
+}
+
+// SenderID is the identity of the event producer
+func (s *StateNotification) SenderID() string {
+	return s.Identity
 }

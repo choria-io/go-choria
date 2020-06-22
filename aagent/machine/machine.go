@@ -154,7 +154,7 @@ func FromDir(dir string, manager WatcherManager) (m *Machine, err error) {
 	return m, err
 }
 
-// FromYAML loads a macine from a YAML definition
+// FromYAML loads a machine from a YAML definition
 func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 	afile, err := filepath.Abs(file)
 	if err != nil {
