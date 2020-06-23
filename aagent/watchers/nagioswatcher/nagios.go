@@ -156,12 +156,6 @@ func (w *Watcher) CurrentState() interface{} {
 	w.Lock()
 	defer w.Unlock()
 
-	pd := ""
-	parts := strings.SplitN(w.previousOutput, "|", 2)
-	if len(parts) == 2 {
-		pd = strings.TrimSpace(parts[1])
-	}
-
 	s := &StateNotification{
 		Protocol:   "io.choria.machine.watcher.nagios.v1.state",
 		Type:       "nagios",
@@ -175,7 +169,7 @@ func (w *Watcher) CurrentState() interface{} {
 		Status:     stateNames[w.previous],
 		StatusCode: int(w.previous),
 		Output:     w.previousOutput,
-		PerfData:   w.parsePerfData(pd),
+		PerfData:   w.parsePerfData(w.previousOutput),
 		CheckTime:  w.previousCheck.Unix(),
 		RunTime:    w.previousRunTime.Seconds(),
 	}
@@ -185,7 +179,7 @@ func (w *Watcher) CurrentState() interface{} {
 
 var valParse = regexp.MustCompile(`^([-*\d+\.]+)(us|ms|s|%|B|KB|MB|TB|c)*`)
 
-func (w *Watcher) parsePerfData(pd string) (perf []*PerfData) {
+func (w *Watcher) parsePerfData(pd string) (perf []PerfData) {
 	parts := strings.Split(pd, "|")
 	if len(parts) != 2 {
 		return perf
@@ -216,7 +210,7 @@ func (w *Watcher) parsePerfData(pd string) (perf []*PerfData) {
 			continue
 		}
 
-		pdi := &PerfData{
+		pdi := PerfData{
 			Label: label,
 			Value: value,
 		}
