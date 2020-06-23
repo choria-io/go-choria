@@ -6,6 +6,8 @@ import (
 	"math/rand"
 	"os"
 	"os/exec"
+	"regexp"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -87,6 +89,8 @@ type Watcher struct {
 	sync.Mutex
 }
 
+var digitsOnlyRe = regexp.MustCompile(`[^-\d\.]`)
+
 func New(machine Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (watcher *Watcher, err error) {
 	w := &Watcher{
 		name:             name,
@@ -167,12 +171,46 @@ func (w *Watcher) CurrentState() interface{} {
 		Status:     stateNames[w.previous],
 		StatusCode: int(w.previous),
 		Output:     w.previousOutput,
-		PerfData:   pd,
+		PerfData:   w.parsePerfData(pd),
 		CheckTime:  w.previousCheck.Unix(),
 		RunTime:    w.previousRunTime.Seconds(),
 	}
 
 	return s
+}
+
+func (w *Watcher) parsePerfData(pd string) (perf map[string]float64) {
+	perf = make(map[string]float64)
+
+	parts := strings.Split(pd, "|")
+	if len(parts) != 2 {
+		return perf
+	}
+
+	rawMetrics := strings.Split(strings.TrimSpace(parts[1]), " ")
+	for _, rawMetric := range rawMetrics {
+		metric := strings.TrimSpace(rawMetric)
+		if len(metric) == 0 {
+			continue
+		}
+
+		mparts := strings.Split(metric, ";")
+		mparts = strings.Split(mparts[0], "=")
+		if len(mparts) != 2 {
+			continue
+		}
+
+		label := strings.Replace(mparts[0], " ", "_", -1)
+		rawValue := digitsOnlyRe.ReplaceAllString(mparts[1], "")
+		value, err := strconv.ParseFloat(rawValue, 64)
+		if err != nil {
+			continue
+		}
+
+		perf[label] = value
+	}
+
+	return perf
 }
 
 func (w *Watcher) setProperties(p map[string]interface{}) error {
