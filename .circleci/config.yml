@@ -156,6 +156,19 @@ jobs:
 
     steps: *std_build_steps
 
+  build_buster_armhf_debs:
+    docker:
+      - image: circleci/golang:1.14
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      PACKAGE: buster_armhf
+      BUILD: foss
+      BUILDER: choria/packager:buster-go1.14
+
+    steps: *std_build_steps
+
   build_bionic_64bit_debs:
     docker:
       - image: circleci/golang:1.14
@@ -216,6 +229,13 @@ jobs:
               package_cloud push choria/${REPO}/el/${d} ${i}
             done
           done
+          for d in buster
+          do
+            for i in $(find /tmp/workspace -name choria_\*_armhf.deb)
+            do
+              package_cloud push choria/${REPO}/debian/${d} ${i}
+            done
+          done
 
 workflows:
   version: 2
@@ -230,6 +250,11 @@ workflows:
 
     jobs:
       - test
+
+      - build_buster_armhf_debs:
+          context: org-global
+          requires:
+            - test
 
       - build_el8_64bit_rpms:
           context: org-global
@@ -253,6 +278,7 @@ workflows:
 
       - gather_artifacts:
           requires:
+            - build_buster_armhf_debs
             - build_el6_64bit_rpms
             - build_el7_64bit_rpms
             - build_el8_64bit_rpms
