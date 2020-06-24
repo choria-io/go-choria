@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/nats-io/jwt"
+	"github.com/nats-io/jwt/v2"
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 	nsc "github.com/nats-io/nsc/cmd/store"
 )
