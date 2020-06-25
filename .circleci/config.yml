@@ -222,6 +222,7 @@ jobs:
       - run: gem install package_cloud
 
       - run: |
+          find /tmp/workspace \( -name \*.rpm -o -name \*.deb \) -ls
           for d in 6 7 8
           do
             for i in $(find /tmp/workspace -name \*.el${d}.\*.rpm | grep -v src.rpm)
