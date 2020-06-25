@@ -1,0 +1,7 @@
+version: 2
+
+update:
+  - package-ecosystem: gomod
+    directory: "/"
+    schedule:
+      interval: daily
