@@ -35,6 +35,18 @@ foss:
       os: linux
       arch: 386
 
+    armv5_linux:
+      output: choria-{{version}}-{{os}}-{{arch}}v{{arm}}
+      os: linux
+      arch: arm
+      arm: 5
+
+    armv7_linux:
+      output: choria-{{version}}-{{os}}-{{arch}}v{{arm}}
+      os: linux
+      arch: arm
+      arm: 7
+
     darwin:
       os: darwin
       arch: amd64
@@ -126,6 +138,16 @@ foss:
       template: debian/generic
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
+
+    buster_armel:
+      template: debian/generic
+      target_arch: arm-linux-gnu
+      binary: armv5_linux
+
+    buster_armhf:
+      template: debian/generic
+      target_arch: arm-linux-gnueabihf
+      binary: armv7_linux
 
     windows_64:
       name: Choria
