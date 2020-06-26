@@ -47,7 +47,7 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.network.peer_port](#pluginchorianetworkpeer_port)|[plugin.choria.network.peer_user](#pluginchorianetworkpeer_user)|
 |[plugin.choria.network.peers](#pluginchorianetworkpeers)|[plugin.choria.network.public_url](#pluginchorianetworkpublic_url)|
 |[plugin.choria.network.stream.event_retention](#pluginchorianetworkstreamevent_retention)|[plugin.choria.network.stream.machine_retention](#pluginchorianetworkstreammachine_retention)|
-|[plugin.choria.network.stream_store](#pluginchorianetworkstream_store)|[plugin.choria.network.system_account](#pluginchorianetworksystem_account)|
+|[plugin.choria.network.stream.store](#pluginchorianetworkstreamstore)|[plugin.choria.network.system_account](#pluginchorianetworksystem_account)|
 |[plugin.choria.network.tls_timeout](#pluginchorianetworktls_timeout)|[plugin.choria.network.write_deadline](#pluginchorianetworkwrite_deadline)|
 |[plugin.choria.prometheus_textfile_directory](#pluginchoriaprometheus_textfile_directory)|[plugin.choria.puppetca_host](#pluginchoriapuppetca_host)|
 |[plugin.choria.puppetca_port](#pluginchoriapuppetca_port)|[plugin.choria.puppetdb_host](#pluginchoriapuppetdb_host)|
@@ -458,7 +458,7 @@ Name to advertise to clients, useful when fronted by a proxy
  * **Type:** duration
  * **Default Value:** 24h
 
-When not zero enables retaining lifecycle events in the Stream Store
+When not zero enables retaining Lifecycle events in the Stream Store
 
 ## plugin.choria.network.stream.machine_retention
 
@@ -467,7 +467,7 @@ When not zero enables retaining lifecycle events in the Stream Store
 
 When not zero enables retaining Autonomous Agent events in the Stream Store
 
-## plugin.choria.network.stream_store
+## plugin.choria.network.stream.store
 
  * **Type:** path_string
 

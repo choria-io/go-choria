@@ -1,4 +1,4 @@
-// auto generated at 2020-06-26 12:33:19.002134 +0200 CEST m=+0.001341356
+// auto generated at 2020-06-26 13:10:16.541218 +0200 CEST m=+0.001320476
 
 package config
 
@@ -72,8 +72,8 @@ var docStrings = map[string]string{
 	"plugin.choria.network.system_account":                    "NATS 2.0 System Account",
 	"plugin.choria.network.tls_timeout":                       "Time to allow for TLS connections to establish, increase on slow or very large networks",
 	"plugin.choria.network.public_url":                        "Name to advertise to clients, useful when fronted by a proxy",
-	"plugin.choria.network.stream_store":                      "Enables Streaming data persistence stored in this path",
-	"plugin.choria.network.stream.event_retention":            "When not zero enables retaining lifecycle events in the Stream Store",
+	"plugin.choria.network.stream.store":                      "Enables Streaming data persistence stored in this path",
+	"plugin.choria.network.stream.event_retention":            "When not zero enables retaining Lifecycle events in the Stream Store",
 	"plugin.choria.network.stream.machine_retention":          "When not zero enables retaining Autonomous Agent events in the Stream Store",
 	"plugin.choria.broker_network":                            "Enables the Network Broker",
 	"plugin.choria.broker_federation":                         "Enables the Federation Broker",
