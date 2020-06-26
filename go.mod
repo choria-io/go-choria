@@ -17,6 +17,7 @@ require (
 	github.com/guptarohit/asciigraph v0.4.2
 	github.com/looplab/fsm v0.1.0
 	github.com/miekg/pkcs11 v1.0.3
+	github.com/nats-io/jsm.go v0.0.17
 	github.com/nats-io/jwt v1.0.1
 	github.com/nats-io/jwt/v2 v2.0.0-20200602193336-473d698956ed
 	github.com/nats-io/nats-server/v2 v2.1.8-0.20200622165314-1a590eea78ef

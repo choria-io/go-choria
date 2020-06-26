@@ -1,8 +1,10 @@
 package nagioswatcher
 
 import (
+	"bytes"
 	"context"
 	"fmt"
+	"html/template"
 	"math/rand"
 	"os"
 	"os/exec"
@@ -13,6 +15,7 @@ import (
 	"time"
 
 	"github.com/google/shlex"
+	"github.com/tidwall/gjson"
 )
 
 type State int
@@ -59,6 +62,7 @@ type Machine interface {
 	Version() string
 	TimeStampSeconds() int64
 	TextFileDirectory() string
+	OverrideData() ([]byte, error)
 	Transition(t string, args ...interface{}) error
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
@@ -87,10 +91,9 @@ type Watcher struct {
 	previous         State
 	force            bool
 	statechg         chan struct{}
-
-	plugin  string
-	args    []string
-	timeout time.Duration
+	plugin           string
+	args             []string
+	timeout          time.Duration
 
 	sync.Mutex
 }
@@ -179,6 +182,7 @@ func (w *Watcher) CurrentState() interface{} {
 
 var valParse = regexp.MustCompile(`^([-*\d+\.]+)(us|ms|s|%|B|KB|MB|TB|c)*`)
 
+// https://stackoverflow.com/questions/46886118/what-is-the-nagios-performance-data-format
 func (w *Watcher) parsePerfData(pd string) (perf []PerfData) {
 	parts := strings.Split(pd, "|")
 	if len(parts) != 2 {
@@ -389,6 +393,42 @@ func (w *Watcher) handleCheck(s State, external bool, err error) error {
 	return w.machine.Transition(stateNames[s])
 }
 
+func (w *Watcher) processOverrides(c string) (string, error) {
+	res, err := template.New(w.name).Funcs(w.funcMap()).Parse(c)
+	if err != nil {
+		return c, err
+	}
+
+	wr := new(bytes.Buffer)
+	err = res.Execute(wr, struct{}{})
+	if err != nil {
+		return c, err
+	}
+
+	return wr.String(), nil
+}
+
+func (w *Watcher) funcMap() template.FuncMap {
+	return template.FuncMap{
+		"o": func(path string, dflt interface{}) string {
+			overrides, err := w.machine.OverrideData()
+			if err != nil {
+				return fmt.Sprintf("%v", dflt)
+			}
+
+			if len(overrides) == 0 {
+				return fmt.Sprintf("%v", dflt)
+			}
+
+			r := gjson.GetBytes(overrides, w.machineName+"."+path)
+			if !r.Exists() {
+				return fmt.Sprintf("%v", dflt)
+			}
+
+			return r.String()
+		},
+	}
+}
 func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	if !w.shouldWatch() {
 		return SKIPPED, nil
@@ -407,9 +447,17 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	timeoutCtx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 
-	splitcmd, err := shlex.Split(w.plugin)
+	plugin, err := w.processOverrides(w.plugin)
 	if err != nil {
-		w.machine.Errorf(w.name, "Exec watcher %s failed: %s", w.plugin, err)
+		w.machine.Errorf(w.name, "could not process overrides for plugin command: %s", err)
+		return UNKNOWN, err
+	}
+
+	w.machine.Infof(w.name, "command post processing is: %s", plugin)
+
+	splitcmd, err := shlex.Split(plugin)
+	if err != nil {
+		w.machine.Errorf(w.name, "Exec watcher %s failed: %s", plugin, err)
 		return UNKNOWN, err
 	}
 

@@ -46,6 +46,7 @@ type Machine interface {
 	Version() string
 	TimeStampSeconds() int64
 	TextFileDirectory() string
+	OverrideData() ([]byte, error)
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Errorf(name string, format string, args ...interface{})

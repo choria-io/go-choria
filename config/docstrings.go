@@ -1,4 +1,4 @@
-// auto generated at 2020-06-24 11:10:40.411501 +0200 CEST m=+0.006564101
+// auto generated at 2020-06-26 12:33:19.002134 +0200 CEST m=+0.001341356
 
 package config
 
@@ -72,6 +72,9 @@ var docStrings = map[string]string{
 	"plugin.choria.network.system_account":                    "NATS 2.0 System Account",
 	"plugin.choria.network.tls_timeout":                       "Time to allow for TLS connections to establish, increase on slow or very large networks",
 	"plugin.choria.network.public_url":                        "Name to advertise to clients, useful when fronted by a proxy",
+	"plugin.choria.network.stream_store":                      "Enables Streaming data persistence stored in this path",
+	"plugin.choria.network.stream.event_retention":            "When not zero enables retaining lifecycle events in the Stream Store",
+	"plugin.choria.network.stream.machine_retention":          "When not zero enables retaining Autonomous Agent events in the Stream Store",
 	"plugin.choria.broker_network":                            "Enables the Network Broker",
 	"plugin.choria.broker_federation":                         "Enables the Federation Broker",
 	"plugin.choria.registration.file_content.data":            "YAML or JSON file to use as data source for registration",
@@ -105,5 +108,6 @@ var docStrings = map[string]string{
 	"plugin.choria.status_update_interval":                    "How frequently to write to the status_file_path",
 	"plugin.choria.machine.store":                             "Directory where Autonomous Agents are stored",
 	"plugin.choria.prometheus_textfile_directory":             "Directory where Prometheus Node Exporter textfile collector reads data",
+	"plugin.scout.overrides":                                  "Path to a file holding overrides for Scout checks",
 	"plugin.choria.require_client_filter":                     "If a client filter should always be required, only used in Go clients",
 }

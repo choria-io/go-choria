@@ -45,12 +45,13 @@ type Machine struct {
 	// SplayStart causes a random sleep of maximum this many seconds before the machine starts
 	SplayStart int `json:"splay_start" yaml:"splay_start"`
 
-	instanceID string
-	identity   string
-	directory  string
-	manifest   string
-	txtfileDir string
-	startTime  time.Time
+	instanceID    string
+	identity      string
+	directory     string
+	manifest      string
+	txtfileDir    string
+	overridesFile string
+	startTime     time.Time
 
 	manager     WatcherManager
 	fsm         *fsm.FSM
@@ -245,6 +246,26 @@ func (m *Machine) TextFileDirectory() string {
 	defer m.Unlock()
 
 	return m.txtfileDir
+}
+
+func (m *Machine) SetOverridesFile(f string) {
+	m.Lock()
+	defer m.Unlock()
+
+	m.overridesFile = f
+}
+
+func (m *Machine) OverrideData() ([]byte, error) {
+	m.Lock()
+	source := m.overridesFile
+	m.Unlock()
+
+	if source == "" {
+		return []byte{}, nil
+	}
+
+	// todo: maybe some caching here
+	return ioutil.ReadFile(source)
 }
 
 // Watchers retrieves the watcher definitions
