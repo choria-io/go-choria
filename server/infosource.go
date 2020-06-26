@@ -114,6 +114,10 @@ func (srv *Instance) PrometheusTextFileDir() string {
 	return srv.cfg.Choria.PrometheusTextFileDir
 }
 
+func (srv *Instance) ScoutOverridesPath() string {
+	return srv.cfg.Choria.ScoutOverrides
+}
+
 // Classes is a list of classification classes this node matches
 func (srv *Instance) Classes() []string {
 	classes, err := classes.ReadClasses(srv.cfg.ClassesFile)

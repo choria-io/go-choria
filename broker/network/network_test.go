@@ -3,6 +3,7 @@ package network
 import (
 	tls "crypto/tls"
 	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
@@ -313,6 +314,21 @@ var _ = Describe("Network Broker", func() {
 				Expect(srv.as).ToNot(BeNil())
 
 				Expect(srv.opts.SystemAccount).To(Equal("ADMB22B4NQU27GI3KP6XUEFM5RSMOJY4O75NCP2P5JPQC2NGQNG6NJX2"))
+			})
+
+			It("Should support jetstream", func() {
+				td, err := ioutil.TempDir("", "")
+				Expect(err).ToNot(HaveOccurred())
+				defer os.RemoveAll(td)
+
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
+				cfg.DisableTLS = true
+				cfg.Choria.NetworkStreamStore = td
+				srv, err = NewServer(fw, bi, false)
+
+				Expect(err).ToNot(HaveOccurred())
+				Expect(srv.opts.JetStream).To(BeTrue())
+				Expect(srv.opts.StoreDir).To(Equal(td))
 			})
 		})
 	})

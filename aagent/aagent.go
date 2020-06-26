@@ -43,6 +43,7 @@ type ChoriaProvider interface {
 	Logger(string) *logrus.Entry
 	Identity() string
 	PrometheusTextFileDir() string
+	ScoutOverridesPath() string
 }
 
 // New creates a new instance of the choria autonomous agent host
@@ -104,6 +105,7 @@ func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path strin
 	aa.SetIdentity(a.fw.Identity())
 	aa.RegisterNotifier(a.notifier)
 	aa.SetTextFileDirectory(a.fw.PrometheusTextFileDir())
+	aa.SetOverridesFile(a.fw.ScoutOverridesPath())
 
 	managed := &managedMachine{
 		loaded:     time.Now(),

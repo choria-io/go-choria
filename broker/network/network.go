@@ -100,6 +100,11 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		return s, fmt.Errorf("could not set up accounts: %s", err)
 	}
 
+	err = s.setupStreaming()
+	if err != nil {
+		return s, fmt.Errorf("could not set up streaming: %s", err)
+	}
+
 	err = s.setupCluster()
 	if err != nil {
 		s.log.Errorf("Could not setup clustering: %s", err)
@@ -147,6 +152,11 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	s.mu.Unlock()
 
 	s.publishStats(ctx, 10*time.Second)
+
+	err := s.configureSystemStreams()
+	if err != nil {
+		s.log.Errorf("could not setup system streams: %s", err)
+	}
 
 	<-ctx.Done()
 

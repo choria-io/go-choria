@@ -271,6 +271,19 @@ func (mr *MockMachineMockRecorder) TextFileDirectory() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TextFileDirectory", reflect.TypeOf((*MockMachine)(nil).TextFileDirectory))
 }
 
+// OverrideData mocks base method
+func (m *MockMachine) OverrideData() ([]byte, error) {
+	ret := m.ctrl.Call(m, "OverrideData")
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// OverrideData indicates an expected call of OverrideData
+func (mr *MockMachineMockRecorder) OverrideData() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OverrideData", reflect.TypeOf((*MockMachine)(nil).OverrideData))
+}
+
 // Debugf mocks base method
 func (m *MockMachine) Debugf(name, format string, args ...interface{}) {
 	varargs := []interface{}{name, format}
