@@ -8,15 +8,18 @@ import (
 )
 
 func (s *Server) setupLeafNodes() (err error) {
-	if s.config.Choria.NetworkLeafPort == 0 {
+	if s.config.Choria.NetworkLeafPort == 0 && len(s.config.Choria.NetworkLeafRemotes) == 0 {
 		return nil
 	}
 
 	s.log.Infof("Starting Broker Leafnode support listening on %s:%d", s.config.Choria.NetworkListenAddress, s.config.Choria.NetworkLeafPort)
 
-	s.opts.LeafNode.Host = s.config.Choria.NetworkListenAddress
-	s.opts.LeafNode.Port = s.config.Choria.NetworkLeafPort
-	s.opts.LeafNode.NoAdvertise = true
+	if s.config.Choria.NetworkLeafPort > 0 {
+		s.opts.LeafNode.Host = s.config.Choria.NetworkListenAddress
+		s.opts.LeafNode.Port = s.config.Choria.NetworkLeafPort
+		s.opts.LeafNode.NoAdvertise = true
+	}
+
 	s.opts.LeafNode.TLSTimeout = s.opts.TLSTimeout
 
 	for _, r := range s.config.Choria.NetworkLeafRemotes {
