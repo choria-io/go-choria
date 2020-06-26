@@ -59,7 +59,7 @@ type ChoriaPluginConfig struct {
 	NetworkSystemAccount        string        `confkey:"plugin.choria.network.system_account"`                                                              // NATS 2.0 System Account
 	NetworkTLSTimeout           int           `confkey:"plugin.choria.network.tls_timeout" default:"2"`                                                     // Time to allow for TLS connections to establish, increase on slow or very large networks
 	NetworkClientAdvertiseName  string        `confkey:"plugin.choria.network.public_url"`                                                                  // Name to advertise to clients, useful when fronted by a proxy
-	NetworkStreamStore          string        `confkey:"plugin.choria.network.stream_store" type:"path_string"`                                             // Enables Streaming data persistence stored in this path
+	NetworkStreamStore          string        `confkey:"plugin.choria.network.stream.store" type:"path_string"`                                             // Enables Streaming data persistence stored in this path
 	NetworkEventStoreDuration   time.Duration `confkey:"plugin.choria.network.stream.event_retention" type:"duration" default:"24h"`                        // When not zero enables retaining Lifecycle events in the Stream Store
 	NetworkMachineStoreDuration time.Duration `confkey:"plugin.choria.network.stream.machine_retention" type:"duration" default:"24h"`                      // When not zero enables retaining Autonomous Agent events in the Stream Store
 
