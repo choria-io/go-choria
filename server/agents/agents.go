@@ -43,6 +43,7 @@ type ServerInfoSource interface {
 	StartTime() time.Time
 	Stats() ServerStats
 	UpTime() int64
+	PrepareForShutdown() error
 }
 
 // ServerStats are internal statistics about the running server
