@@ -9,7 +9,7 @@ import (
 	json "encoding/json"
 	aagent "github.com/choria-io/go-choria/aagent"
 	choria "github.com/choria-io/go-choria/choria"
-	go_lifecycle "github.com/choria-io/go-choria/lifecycle"
+	lifecycle "github.com/choria-io/go-choria/lifecycle"
 	protocol "github.com/choria-io/go-choria/protocol"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
@@ -253,7 +253,7 @@ func (mr *MockServerInfoSourceMockRecorder) MachinesStatus() *gomock.Call {
 }
 
 // NewEvent mocks base method
-func (m *MockServerInfoSource) NewEvent(t go_lifecycle.Type, opts ...go_lifecycle.Option) error {
+func (m *MockServerInfoSource) NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error {
 	varargs := []interface{}{t}
 	for _, a := range opts {
 		varargs = append(varargs, a)
@@ -315,4 +315,16 @@ func (m *MockServerInfoSource) UpTime() int64 {
 // UpTime indicates an expected call of UpTime
 func (mr *MockServerInfoSourceMockRecorder) UpTime() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpTime", reflect.TypeOf((*MockServerInfoSource)(nil).UpTime))
+}
+
+// PrepareForShutdown mocks base method
+func (m *MockServerInfoSource) PrepareForShutdown() error {
+	ret := m.ctrl.Call(m, "PrepareForShutdown")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PrepareForShutdown indicates an expected call of PrepareForShutdown
+func (mr *MockServerInfoSourceMockRecorder) PrepareForShutdown() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareForShutdown", reflect.TypeOf((*MockServerInfoSource)(nil).PrepareForShutdown))
 }

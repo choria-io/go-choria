@@ -34,8 +34,10 @@ type Instance struct {
 
 	requests chan *choria.ConnectorMessage
 
-	shutdown func()
-	mu       *sync.Mutex
+	shutdown    func()
+	stopProcess func()
+
+	mu *sync.Mutex
 }
 
 // NewInstance creates a new choria server instance
@@ -66,13 +68,27 @@ func (srv *Instance) Shutdown() error {
 	srv.mu.Lock()
 	defer srv.mu.Unlock()
 
-	cancel := srv.shutdown
-
-	if cancel == nil {
+	if srv.shutdown == nil {
 		return fmt.Errorf("server is not running")
 	}
 
-	cancel()
+	srv.shutdown()
+
+	return nil
+}
+
+// PrepareForShutdown stops processing incoming requests without shutting down the whole server
+// the network connection is closed and no new messages or replies are handled but the server
+// keeps running, this will allow for shutdowns and restarts without duplicate handling of messages
+func (srv *Instance) PrepareForShutdown() error {
+	srv.mu.Lock()
+	defer srv.mu.Unlock()
+
+	if srv.stopProcess == nil {
+		return fmt.Errorf("server is not running")
+	}
+
+	srv.stopProcess()
 
 	return nil
 }
@@ -80,9 +96,13 @@ func (srv *Instance) Shutdown() error {
 func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	var sctx context.Context
+	var sctx, pctx context.Context
 	srv.mu.Lock()
+	// server shutdown context
 	sctx, srv.shutdown = context.WithCancel(ctx)
+
+	// processing stop context
+	pctx, srv.stopProcess = context.WithCancel(sctx)
 	srv.mu.Unlock()
 
 	err := srv.initialConnect(sctx)
@@ -145,7 +165,7 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	}
 
 	wg.Add(1)
-	go srv.processRequests(sctx, wg)
+	go srv.processRequests(pctx, wg)
 
 	return nil
 }
