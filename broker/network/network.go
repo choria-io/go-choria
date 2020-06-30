@@ -147,11 +147,16 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	go s.gnatsd.Start()
 
+	if !s.gnatsd.ReadyForConnections(time.Minute) {
+		s.log.Errorf("broker did not become ready after a minute, terminating")
+		return
+	}
+
 	s.mu.Lock()
 	s.started = true
 	s.mu.Unlock()
 
-	s.publishStats(ctx, 10*time.Second)
+	go s.publishStats(ctx, 10*time.Second)
 
 	err := s.configureSystemStreams()
 	if err != nil {
