@@ -222,19 +222,11 @@ jobs:
       - run: gem install package_cloud
 
       - run: |
-          find /tmp/workspace \( -name \*.rpm -o -name \*.deb \) -ls
           for d in 6 7 8
           do
             for i in $(find /tmp/workspace -name \*.el${d}.\*.rpm | grep -v src.rpm)
             do
               package_cloud push choria/${REPO}/el/${d} ${i}
-            done
-          done
-          for d in buster
-          do
-            for i in $(find /tmp/workspace -name choria_\*_armhf.deb)
-            do
-              package_cloud push choria/${REPO}/debian/${d} ${i}
             done
           done
 
@@ -251,11 +243,6 @@ workflows:
 
     jobs:
       - test
-
-      - build_buster_armhf_debs:
-          context: org-global
-          requires:
-            - test
 
       - build_el8_64bit_rpms:
           context: org-global
@@ -279,7 +266,6 @@ workflows:
 
       - gather_artifacts:
           requires:
-            - build_buster_armhf_debs
             - build_el6_64bit_rpms
             - build_el7_64bit_rpms
             - build_el8_64bit_rpms
@@ -336,6 +322,11 @@ workflows:
           requires:
             - hold
 
+      - build_buster_armhf_debs:
+          filters: *semver_only
+          requires:
+            - hold
+
       - build_buster_64bit_debs:
           filters: *semver_only
           requires:
@@ -354,6 +345,7 @@ workflows:
             - build_el8_64bit_rpms
             - build_xenial_64bit_debs
             - build_stretch_64bit_debs
+            - build_buster_armhf_debs
             - build_buster_64bit_debs
             - build_bionic_64bit_debs
 
