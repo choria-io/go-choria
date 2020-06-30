@@ -92,7 +92,7 @@ type Watcher struct {
 	force            bool
 	statechg         chan struct{}
 	plugin           string
-	args             []string
+	builtin          string
 	timeout          time.Duration
 
 	sync.Mutex
@@ -230,13 +230,27 @@ func (w *Watcher) parsePerfData(pd string) (perf []PerfData) {
 
 func (w *Watcher) setProperties(p map[string]interface{}) error {
 	command, ok := p["plugin"]
-	if !ok {
-		return fmt.Errorf("plugin is required")
+	if ok {
+		w.plugin, ok = command.(string)
+		if !ok {
+			return fmt.Errorf("plugin should be a string")
+		}
 	}
 
-	w.plugin, ok = command.(string)
-	if !ok {
-		return fmt.Errorf("plugin should be a string")
+	builtin, ok := p["builtin"]
+	if ok {
+		w.builtin, ok = builtin.(string)
+		if !ok {
+			return fmt.Errorf("builtin should be a string")
+		}
+	}
+
+	if w.builtin != "" && w.plugin != "" {
+		return fmt.Errorf("cannot set plugin and builtin")
+	}
+
+	if w.builtin == "" && w.plugin == "" {
+		return fmt.Errorf("plugin or builtin is required")
 	}
 
 	w.timeout = 10 * time.Second
@@ -253,23 +267,6 @@ func (w *Watcher) setProperties(p map[string]interface{}) error {
 		}
 
 		w.timeout = timeout
-	}
-
-	argsraw, ok := p["args"]
-	if ok {
-		args, ok := argsraw.([]interface{})
-		if !ok {
-			return fmt.Errorf("arguments should be a list of strings")
-		}
-
-		for _, arg := range args {
-			val, ok := arg.(string)
-			if !ok {
-				return fmt.Errorf("arguments should be a list of strings")
-			}
-
-			w.args = append(w.args, val)
-		}
 	}
 
 	return nil
@@ -429,6 +426,70 @@ func (w *Watcher) funcMap() template.FuncMap {
 		},
 	}
 }
+
+func (w *Watcher) watchUsingPlugin(ctx context.Context) (state State, output string, err error) {
+	w.machine.Infof(w.name, "Running %s", w.plugin)
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, w.timeout)
+	defer cancel()
+
+	plugin, err := w.processOverrides(w.plugin)
+	if err != nil {
+		w.machine.Errorf(w.name, "could not process overrides for plugin command: %s", err)
+		return UNKNOWN, "", err
+	}
+
+	w.machine.Infof(w.name, "command post processing is: %s", plugin)
+
+	splitcmd, err := shlex.Split(plugin)
+	if err != nil {
+		w.machine.Errorf(w.name, "Exec watcher %s failed: %s", plugin, err)
+		return UNKNOWN, "", err
+	}
+
+	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], splitcmd[1:]...)
+	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machineName))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s%s%s", os.Getenv("PATH"), string(os.PathListSeparator), w.machine.Directory()))
+	cmd.Dir = w.machine.Directory()
+
+	var pstate *os.ProcessState
+
+	outb, err := cmd.CombinedOutput()
+	if err != nil {
+		eerr, ok := err.(*exec.ExitError)
+		if ok {
+			pstate = eerr.ProcessState
+		} else {
+			w.machine.Errorf(w.name, "Exec watcher %s failed: %s", w.plugin, err)
+			w.previousOutput = err.Error()
+			return UNKNOWN, "", err
+		}
+	} else {
+		pstate = cmd.ProcessState
+	}
+
+	output = string(outb)
+
+	w.machine.Debugf(w.name, "Output from %s: %s", w.plugin, output)
+
+	s, ok := intStates[pstate.ExitCode()]
+	if ok {
+		return s, output, nil
+	}
+
+	return UNKNOWN, output, nil
+}
+
+func (w *Watcher) watchUsingBuiltin(ctx context.Context) (state State, output string, err error) {
+	switch w.builtin {
+	case "heartbeat":
+		return OK, strconv.Itoa(int(time.Now().Unix())), nil
+	default:
+		return UNKNOWN, "", fmt.Errorf("unsupported builtin %q", w.builtin)
+	}
+}
+
 func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	if !w.shouldWatch() {
 		return SKIPPED, nil
@@ -442,57 +503,21 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 		w.Unlock()
 	}()
 
-	w.machine.Infof(w.name, "Running %s", w.plugin)
+	var output string
 
-	timeoutCtx, cancel := context.WithTimeout(ctx, w.timeout)
-	defer cancel()
-
-	plugin, err := w.processOverrides(w.plugin)
-	if err != nil {
-		w.machine.Errorf(w.name, "could not process overrides for plugin command: %s", err)
-		return UNKNOWN, err
+	switch {
+	case w.plugin != "":
+		state, output, err = w.watchUsingPlugin(ctx)
+	case w.builtin != "":
+		state, output, err = w.watchUsingBuiltin(ctx)
+	default:
+		state = UNKNOWN
+		err = fmt.Errorf("command or builtin required")
 	}
 
-	w.machine.Infof(w.name, "command post processing is: %s", plugin)
+	w.previousOutput = strings.TrimSpace(output)
 
-	splitcmd, err := shlex.Split(plugin)
-	if err != nil {
-		w.machine.Errorf(w.name, "Exec watcher %s failed: %s", plugin, err)
-		return UNKNOWN, err
-	}
-
-	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], splitcmd[1:]...)
-	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
-	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machineName))
-	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s%s%s", os.Getenv("PATH"), string(os.PathListSeparator), w.machine.Directory()))
-	cmd.Dir = w.machine.Directory()
-
-	var pstate *os.ProcessState
-
-	output, err := cmd.CombinedOutput()
-	if err != nil {
-		eerr, ok := err.(*exec.ExitError)
-		if ok {
-			pstate = eerr.ProcessState
-		} else {
-			w.machine.Errorf(w.name, "Exec watcher %s failed: %s", w.plugin, err)
-			w.previousOutput = err.Error()
-			return UNKNOWN, err
-		}
-	} else {
-		pstate = cmd.ProcessState
-	}
-
-	w.previousOutput = strings.TrimSpace(string(output))
-
-	w.machine.Debugf(w.name, "Output from %s: %s", w.plugin, output)
-
-	s, ok := intStates[pstate.ExitCode()]
-	if ok {
-		return s, nil
-	}
-
-	return UNKNOWN, nil
+	return state, err
 }
 
 func (w *Watcher) shouldWatch() bool {

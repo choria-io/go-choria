@@ -9,8 +9,11 @@ RUN curl -s https://packagecloud.io/install/repositories/choria/release/script.r
 
 RUN groupadd --gid 2048 choria && \
     useradd -c "Choria Orchestrator - choria.io" -m --uid 2048 --gid 2048 choria && \
-    chown -R choria:choria /etc/choria
+    chown -R choria:choria /etc/choria && \
+    mkdir /data && \
+    chown choria:choria /data
 
 USER choria
+VOLUME /data
 
 ENTRYPOINT ["/bin/choria"]

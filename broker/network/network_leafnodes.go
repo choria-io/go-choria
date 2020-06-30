@@ -20,7 +20,10 @@ func (s *Server) setupLeafNodes() (err error) {
 		s.opts.LeafNode.NoAdvertise = true
 	}
 
-	s.opts.LeafNode.TLSTimeout = s.opts.TLSTimeout
+	if s.IsTLS() {
+		s.opts.LeafNode.TLSConfig = s.opts.TLSConfig
+		s.opts.LeafNode.TLSTimeout = s.opts.TLSTimeout
+	}
 
 	for _, r := range s.config.Choria.NetworkLeafRemotes {
 		account := s.extractKeyedConfigString("leafnode_remote", r, "account", "")
