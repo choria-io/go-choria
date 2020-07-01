@@ -304,9 +304,9 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	if w.textFileDir != "" {
-		w.machine.Infof(w.name, "nagios watcher for %s starting, updating prometheus in %s", w.plugin, w.textFileDir)
+		w.machine.Infof(w.name, "nagios watcher starting, updating prometheus in %s", w.textFileDir)
 	} else {
-		w.machine.Infof(w.name, "nagios watcher for %s starting", w.plugin)
+		w.machine.Infof(w.name, "nagios watcher starting, prometheus integration disabled")
 	}
 
 	if w.interval != 0 {

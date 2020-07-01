@@ -1,5 +1,19 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2020/07/01|      |Release 0.15.0                                                                                           |
+|2020/06/29|913   |Support preparing for shutdown by closing connections and emiting shutdown events when embedded          |
+|2020/06/26|895   |Support NATS JetStream Streaming Server in Choria Broker                                                 |
+|2020/06/24|907   |Support arm5 and 7 Debian packages                                                                       |
+|2020/06/20|895   |Support Nagios compatible plugins in the new `nagios` autonomous agent watcher                           |
+|2020/06/16|893   |Server instances embedded in other software can now be shutdown using `Shutdown()`                       |
+|2020/06/15|887   |Track nodes expired by maintenance in the tally helper                                                   |
+|2020/06/13|      |Improve FQDN resolution when running in a kubernetes pod                                                 |
+|2020/06/12|879   |Allow the public name of the network broker to be configured                                             |
+|2020/06/12|877   |Support cert-manager.io as security provider                                                             |
+|2020/06/07|865   |Correctly handle provisioning by SRV domain                                                              |
+|2020/06/07|863   |Allow provisioning brokers to have user/password authentication                                          |
+|2020/05/14|860   |Perform backoffs between reconnects to the network broker                                                |
+|2020/04/22|857   |Cosmetic improvements to windows packages                                                                |
 |2020/04/19|      |Release 0.14.0                                                                                           |
 |2020/04/16|854   |Correctly report insecure builds                                                                         |
 |2020/04/07|852   |Install `choria` binary in /usr/bin and not /usr/sbin                                                    |
