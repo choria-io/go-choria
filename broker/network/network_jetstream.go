@@ -2,9 +2,12 @@ package network
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/nats.go"
+
+	"github.com/choria-io/go-choria/scout"
 )
 
 func (s *Server) setupStreaming() error {
@@ -21,46 +24,67 @@ func (s *Server) setupStreaming() error {
 }
 
 func (s *Server) configureSystemStreams() error {
+	if !s.opts.JetStream {
+		return nil
+	}
+
 	var opts []nats.Option
 
 	if s.IsTLS() {
+		s.log.Info("Connecting to Choria Stream using TLS")
 		opts = append(opts, nats.Secure(s.opts.TLSConfig))
 	}
 
 	nc, err := nats.Connect(s.gnatsd.ClientURL(), opts...)
 	if err != nil {
-		s.log.Errorf("could not connect to configure Choria Streams: %s", err)
+		s.log.Errorf("could not connect to %s to configure Choria Streams: %s", s.gnatsd.ClientURL(), err)
 		return nil
 	}
 	defer nc.Close()
 
-	if int(s.config.Choria.NetworkEventStoreDuration) > 0 {
-		known, err := jsm.IsKnownStream("CHORIA_EVENTS", jsm.WithConnection(nc))
-		if err != nil {
-			return fmt.Errorf("could not determine if Stream CHORIA_EVENTS exist: %s", err)
-		}
-
-		if !known {
-			str, err := jsm.NewStream("CHORIA_EVENTS", jsm.FileStorage(), jsm.Subjects("choria.lifecycle.>"), jsm.MaxAge(s.config.Choria.NetworkEventStoreDuration), jsm.StreamConnection(jsm.WithConnection(nc)))
-			if err != nil {
-				return fmt.Errorf("could not create CHORIA_EVENTS Stream: %s", err)
-			}
-			s.log.Infof("Created stream %s with retention %v", str.Name(), str.MaxAge())
-		}
+	conn := []jsm.RequestOption{
+		jsm.WithConnection(nc),
 	}
 
-	if int(s.config.Choria.NetworkMachineStoreDuration) > 0 {
-		known, err := jsm.IsKnownStream("CHORIA_MACHINE", jsm.WithConnection(nc))
-		if err != nil {
-			return fmt.Errorf("could not determine if Stream CHORIA_EVENTS exist: %s", err)
-		}
+	err = s.createOrUpdateStream("CHORIA_EVENTS", []string{"choria.lifecycle.>"}, s.config.Choria.NetworkEventStoreDuration, conn)
+	if err != nil {
+		return err
+	}
 
-		if !known {
-			str, err := jsm.NewStream("CHORIA_MACHINE", jsm.FileStorage(), jsm.Subjects("choria.machine.>"), jsm.MaxAge(s.config.Choria.NetworkEventStoreDuration), jsm.StreamConnection(jsm.WithConnection(nc)))
-			if err != nil {
-				return fmt.Errorf("could not create CHORIA_MACHINE Stream: %s", err)
-			}
-			s.log.Infof("Created stream %s with retention %v", str.Name(), str.MaxAge())
+	err = s.createOrUpdateStream("CHORIA_MACHINE", []string{"choria.machine.>"}, s.config.Choria.NetworkEventStoreDuration, conn)
+	if err != nil {
+		return err
+	}
+
+	err = s.createOrUpdateStream("CHORIA_STREAM_ADVISORIES", []string{"$JS.EVENT.ADVISORY.>"}, s.config.Choria.NetworkEventStoreDuration, conn)
+	if err != nil {
+		return err
+	}
+
+	err = scout.ConfigureStreams(nc, s.log.WithField("component", "scout"))
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (s *Server) createOrUpdateStream(name string, subjects []string, maxAge time.Duration, conn []jsm.RequestOption) error {
+	if int(maxAge) <= 0 {
+		return nil
+	}
+
+	str, err := jsm.NewStream(name, jsm.FileStorage(), jsm.Subjects(subjects...), jsm.MaxAge(s.config.Choria.NetworkEventStoreDuration), jsm.StreamConnection(conn...))
+	if err != nil {
+		return fmt.Errorf("could not load or create %s: %s", name, err)
+	}
+
+	cfg := str.Configuration()
+	if cfg.MaxAge != maxAge {
+		cfg.MaxAge = maxAge
+		err = str.UpdateConfiguration(cfg)
+		if err != nil {
+			return fmt.Errorf("could not update retention period for %s Stream: %s", name, err)
 		}
 	}
 

@@ -41,27 +41,28 @@ type ChoriaPluginConfig struct {
 	MiddlewareHosts          []string `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`                  // Set specific middleware hosts in the format host:port, if unset uses SRV
 	RandomizeMiddlewareHosts bool     `confkey:"plugin.choria.randomize_middleware_hosts" default:"true"`            // Shuffle middleware hosts before connecting to spread traffic of initial connections
 
-	NetworkListenAddress        string        `confkey:"plugin.choria.network.listen_address" default:"::" url:"https://choria.io/docs/deployment/broker/"` // Address the Network Broker will listen on
-	NetworkClientPort           int           `confkey:"plugin.choria.network.client_port" default:"4222" url:"https://choria.io/docs/deployment/broker/"`  // Port the Network Broker will accept client connections on
-	NetworkClientTLSForce       bool          `confkey:"plugin.choria.network.client_tls_force_required"`                                                   // Force requiring/not requiring TLS for all clients
-	NetworkPeerPort             int           `confkey:"plugin.choria.network.peer_port" default:"5222" url:"https://choria.io/docs/deployment/broker/"`    // Port used to communicate with other local cluster peers
-	NetworkPeerUser             string        `confkey:"plugin.choria.network.peer_user"`                                                                   // Username to use when connecting to cluster peers
-	NetworkPeerPassword         string        `confkey:"plugin.choria.network.peer_password"`                                                               // Password to use when connecting to cluster peers
-	NetworkPeers                []string      `confkey:"plugin.choria.network.peers" type:"comma_split" url:"https://choria.io/docs/deployment/broker/"`    // List of cluster peers in host:port format
-	NetworkLeafPort             int           `confkey:"plugin.choria.network.leafnode_port" default:"0"`                                                   // Port to listen on for Leafnode connections, disabled with 0
-	NetworkLeafRemotes          []string      `confkey:"plugin.choria.network.leafnode_remotes" type:"comma_split"`                                         // Remote networks to connect to as a Leafnode
-	NetworkGatewayPort          int           `confkey:"plugin.choria.network.gateway_port" default:"0"`                                                    // Port to listen on for Super Cluster connections
-	NetworkGatewayName          string        `confkey:"plugin.choria.network.gateway_name" default:"CHORIA"`                                               // Name for the Super Cluster
-	NetworkGatewayRemotes       []string      `confkey:"plugin.choria.network.gateway_remotes" type:"comma_split"`                                          // List of remote Super Clusters to connect to
-	NetworkWriteDeadline        time.Duration `confkey:"plugin.choria.network.write_deadline" type:"duration" default:"5s"`                                 // How long to allow clients to process traffic before treating them as slow, increase this on large networks or slow networks
-	NetworkAllowedClientHosts   []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`                                             // CIDRs to limit client connections from, appropriate ACLs are added based on this
-	NetworkAccountOperator      string        `confkey:"plugin.choria.network.operator_account"`                                                            // NATS 2.0 Operator account
-	NetworkSystemAccount        string        `confkey:"plugin.choria.network.system_account"`                                                              // NATS 2.0 System Account
-	NetworkTLSTimeout           int           `confkey:"plugin.choria.network.tls_timeout" default:"2"`                                                     // Time to allow for TLS connections to establish, increase on slow or very large networks
-	NetworkClientAdvertiseName  string        `confkey:"plugin.choria.network.public_url"`                                                                  // Name to advertise to clients, useful when fronted by a proxy
-	NetworkStreamStore          string        `confkey:"plugin.choria.network.stream.store" type:"path_string"`                                             // Enables Streaming data persistence stored in this path
-	NetworkEventStoreDuration   time.Duration `confkey:"plugin.choria.network.stream.event_retention" type:"duration" default:"24h"`                        // When not zero enables retaining Lifecycle events in the Stream Store
-	NetworkMachineStoreDuration time.Duration `confkey:"plugin.choria.network.stream.machine_retention" type:"duration" default:"24h"`                      // When not zero enables retaining Autonomous Agent events in the Stream Store
+	NetworkListenAddress          string        `confkey:"plugin.choria.network.listen_address" default:"::" url:"https://choria.io/docs/deployment/broker/"` // Address the Network Broker will listen on
+	NetworkClientPort             int           `confkey:"plugin.choria.network.client_port" default:"4222" url:"https://choria.io/docs/deployment/broker/"`  // Port the Network Broker will accept client connections on
+	NetworkClientTLSForce         bool          `confkey:"plugin.choria.network.client_tls_force_required"`                                                   // Force requiring/not requiring TLS for all clients
+	NetworkPeerPort               int           `confkey:"plugin.choria.network.peer_port" default:"5222" url:"https://choria.io/docs/deployment/broker/"`    // Port used to communicate with other local cluster peers
+	NetworkPeerUser               string        `confkey:"plugin.choria.network.peer_user"`                                                                   // Username to use when connecting to cluster peers
+	NetworkPeerPassword           string        `confkey:"plugin.choria.network.peer_password"`                                                               // Password to use when connecting to cluster peers
+	NetworkPeers                  []string      `confkey:"plugin.choria.network.peers" type:"comma_split" url:"https://choria.io/docs/deployment/broker/"`    // List of cluster peers in host:port format
+	NetworkLeafPort               int           `confkey:"plugin.choria.network.leafnode_port" default:"0"`                                                   // Port to listen on for Leafnode connections, disabled with 0
+	NetworkLeafRemotes            []string      `confkey:"plugin.choria.network.leafnode_remotes" type:"comma_split"`                                         // Remote networks to connect to as a Leafnode
+	NetworkGatewayPort            int           `confkey:"plugin.choria.network.gateway_port" default:"0"`                                                    // Port to listen on for Super Cluster connections
+	NetworkGatewayName            string        `confkey:"plugin.choria.network.gateway_name" default:"CHORIA"`                                               // Name for the Super Cluster
+	NetworkGatewayRemotes         []string      `confkey:"plugin.choria.network.gateway_remotes" type:"comma_split"`                                          // List of remote Super Clusters to connect to
+	NetworkWriteDeadline          time.Duration `confkey:"plugin.choria.network.write_deadline" type:"duration" default:"5s"`                                 // How long to allow clients to process traffic before treating them as slow, increase this on large networks or slow networks
+	NetworkAllowedClientHosts     []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`                                             // CIDRs to limit client connections from, appropriate ACLs are added based on this
+	NetworkAccountOperator        string        `confkey:"plugin.choria.network.operator_account"`                                                            // NATS 2.0 Operator account
+	NetworkSystemAccount          string        `confkey:"plugin.choria.network.system_account"`                                                              // NATS 2.0 System Account
+	NetworkTLSTimeout             int           `confkey:"plugin.choria.network.tls_timeout" default:"2"`                                                     // Time to allow for TLS connections to establish, increase on slow or very large networks
+	NetworkClientAdvertiseName    string        `confkey:"plugin.choria.network.public_url"`                                                                  // Name to advertise to clients, useful when fronted by a proxy
+	NetworkStreamStore            string        `confkey:"plugin.choria.network.stream.store" type:"path_string"`                                             // Enables Streaming data persistence stored in this path
+	NetworkEventStoreDuration     time.Duration `confkey:"plugin.choria.network.stream.event_retention" type:"duration" default:"24h"`                        // When not zero enables retaining Lifecycle events in the Stream Store
+	NetworkMachineStoreDuration   time.Duration `confkey:"plugin.choria.network.stream.machine_retention" type:"duration" default:"24h"`                      // When not zero enables retaining Autonomous Agent events in the Stream Store
+	NetworkStreamAdvisoryDuration time.Duration `confkey:"plugin.choria.network.stream.advisory_retention" type:"duration" default:"168h"`                    // When not zero enables retaining Stream advisories in the Stream Store
 
 	BrokerNetwork    bool `confkey:"plugin.choria.broker_network" default:"false" url:"https://choria.io/docs/deployment/broker/"` // Enables the Network Broker
 	BrokerDiscovery  bool `confkey:"plugin.choria.broker_discovery" default:"false" deprecated:"1"`
