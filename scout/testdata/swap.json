@@ -1,0 +1,7 @@
+{
+  "name": "swap",
+  "plugin": "/usr/lib64/nagios/plugins/check_swap",
+  "arguments": "-w 30% -c 20%",
+  "plugin_timeout": 10000000000,
+  "check_interval": 60000000000
+}

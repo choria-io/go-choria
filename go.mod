@@ -5,6 +5,7 @@ go 1.14
 require (
 	github.com/AlecAivazis/survey/v2 v2.0.7
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
+	github.com/apex/log v1.4.0
 	github.com/choria-io/provisioning-agent v0.8.0
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
@@ -20,7 +21,7 @@ require (
 	github.com/nats-io/jsm.go v0.0.17
 	github.com/nats-io/jwt v1.0.1
 	github.com/nats-io/jwt/v2 v2.0.0-20200602193336-473d698956ed
-	github.com/nats-io/nats-server/v2 v2.1.8-0.20200622165314-1a590eea78ef
+	github.com/nats-io/nats-server/v2 v2.1.8-0.20200701221136-774da7f02108
 	github.com/nats-io/nats.go v1.10.1-0.20200606002146-fc6fed82929a
 	github.com/nats-io/nsc v0.0.0-20200617223447-2aca79c9d220
 	github.com/nats-io/stan.go v0.7.0
