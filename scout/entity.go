@@ -38,8 +38,8 @@ type Framework interface {
 	Identity() string
 	NATSConn() *nats.Conn
 	Logger(string) *logrus.Entry
-	ScoutOverridesFile() string
-	ScoutTags() []string
+	OverridesFile() string
+	Tags() ([]string, error)
 	MachineSourceDir() string
 }
 
@@ -50,7 +50,7 @@ func NewEntity(ctx context.Context, wg *sync.WaitGroup, fw Framework) (*Entity, 
 		id:            fw.Identity(),
 		nc:            fw.NATSConn(),
 		machineDir:    fw.MachineSourceDir(),
-		overridesFile: fw.ScoutOverridesFile(),
+		overridesFile: fw.OverridesFile(),
 		fw:            fw,
 		ctx:           ctx,
 		wg:            wg,
@@ -60,7 +60,12 @@ func NewEntity(ctx context.Context, wg *sync.WaitGroup, fw Framework) (*Entity, 
 		Logrus:        fw.Logger("entity"),
 	}
 
-	for _, tag := range fw.ScoutTags() {
+	etags, err := fw.Tags()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, tag := range etags {
 		checks, err := tags.NewManager(tag, fw)
 		if err != nil {
 			return nil, err
