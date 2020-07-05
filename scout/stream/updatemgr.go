@@ -57,7 +57,11 @@ func (m *Mgr) Manage(d updatable) error {
 		}
 
 		d.Update(t)
-		msg.Respond(nil)
+
+		err = msg.Respond(nil)
+		if err != nil {
+			m.log.Errorf("failed to acknowledge update: %s", err)
+		}
 	})
 	if err != nil {
 		return err
