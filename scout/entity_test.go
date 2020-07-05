@@ -97,7 +97,7 @@ var _ = Describe("Entity", func() {
 
 		scout, err := New(fw)
 		Expect(err).ToNot(HaveOccurred())
-		err = scout.Start(ctx, wg)
+		err = scout.Start(ctx, wg, false)
 		Expect(err).ToNot(HaveOccurred())
 
 		time.Sleep(time.Second)

@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/nats-io/nats.go"
@@ -49,12 +51,45 @@ func New(fw Choria) (*Scout, error) {
 	return s, nil
 }
 
-func (s *Scout) Start(ctx context.Context, wg *sync.WaitGroup) error {
+func (s *Scout) removeAllMachines(dir string) error {
+	d, err := os.Open(dir)
+	if err != nil {
+		return err
+	}
+	defer d.Close()
+
+	names, err := d.Readdirnames(-1)
+	if err != nil {
+		return err
+	}
+
+	for _, name := range names {
+		err = os.RemoveAll(filepath.Join(dir, name))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (s *Scout) Start(ctx context.Context, wg *sync.WaitGroup, clean bool) error {
 	s.Lock()
 	defer s.Unlock()
 
 	if s.started {
 		return fmt.Errorf("already started")
+	}
+
+	if clean {
+		s.Warnf("Removing %s", s.cfg.Choria.ScoutOverrides)
+		err := os.Remove(s.cfg.Choria.ScoutOverrides)
+		if err != nil {
+			s.Errorf("Could not remove %s: %s", s.cfg.Choria.ScoutOverrides, err)
+		}
+
+		s.Warnf("Removing %s", s.cfg.Choria.MachineSourceDir)
+		s.removeAllMachines(s.cfg.Choria.MachineSourceDir)
 	}
 
 	conn, err := s.choria.NewConnector(ctx, s.choria.MiddlewareServers, s.choria.Certname(), s.Entry)
