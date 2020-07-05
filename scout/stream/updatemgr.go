@@ -57,6 +57,7 @@ func (m *Mgr) Manage(d updatable) error {
 		}
 
 		d.Update(t)
+		msg.Respond(nil)
 	})
 	if err != nil {
 		return err
