@@ -9,13 +9,15 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/nats-io/nats.go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+
+	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 )
 
 func Test(t *testing.T) {
@@ -25,25 +27,22 @@ func Test(t *testing.T) {
 
 var _ = Describe("Entity", func() {
 	var (
-		log     *logrus.Entry
-		mockctl *gomock.Controller
-		fw      *MockFramework
+		fw  *choria.Framework
+		log *logrus.Entry
+		err error
 	)
 
 	BeforeEach(func() {
-		logger := logrus.New()
-		logger.SetOutput(GinkgoWriter)
-		log = logrus.NewEntry(logger)
-		logrus.SetOutput(GinkgoWriter)
-		mockctl = gomock.NewController(GinkgoT())
-		fw = NewMockFramework(mockctl)
+		cfg := config.NewConfigForTests()
+		cfg.DisableSecurityProviderVerify = true
+		cfg.DisableTLS = true
+		cfg.Choria.ScoutTags = "testdata/tags.json"
+		cfg.OverrideCertname = "ginkgo.example.net"
 
-		fw.EXPECT().Identity().Return("ginkgo.example.net").AnyTimes()
-		fw.EXPECT().Logger(gomock.Any()).Return(log).AnyTimes()
-	})
-
-	AfterEach(func() {
-		mockctl.Finish()
+		fw, err = choria.NewWithConfig(cfg)
+		Expect(err).ToNot(HaveOccurred())
+		fw.SetLogWriter(GinkgoWriter)
+		log = fw.Logger("ginkgo")
 	})
 
 	It("Should get all checks", func() {
@@ -79,10 +78,6 @@ var _ = Describe("Entity", func() {
 		Expect(err).ToNot(HaveOccurred())
 		fmt.Printf("%v\n", names)
 
-		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		defer cancel()
-		wg := &sync.WaitGroup{}
-
 		otf, err := ioutil.TempFile("", "")
 		Expect(err).ToNot(HaveOccurred())
 		otf.Close()
@@ -91,17 +86,23 @@ var _ = Describe("Entity", func() {
 		mtf, err := ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
 
-		fw.EXPECT().NATSConn().Return(nc).AnyTimes()
-		fw.EXPECT().ScoutOverridesFile().Return(otf.Name()).AnyTimes()
-		fw.EXPECT().ScoutTags().Return([]string{"common", "ginkgo.example.net"}).AnyTimes()
-		fw.EXPECT().MachineSourceDir().Return(mtf).AnyTimes()
+		fw.Config.Choria.MachineSourceDir = mtf
+		fw.Config.Choria.ScoutOverrides = otf.Name()
 
-		entity, err := NewEntity(ctx, wg, fw)
+		ctx, cancel := context.WithTimeout(context.Background(), 120*time.Second)
+		defer cancel()
+		wg := &sync.WaitGroup{}
+
+		fw.Config.Choria.MiddlewareHosts = []string{srv.ClientURL()}
+
+		scout, err := New(fw)
+		Expect(err).ToNot(HaveOccurred())
+		err = scout.Start(ctx, wg)
 		Expect(err).ToNot(HaveOccurred())
 
 		time.Sleep(time.Second)
 
-		Expect(entity.checkNames()).To(Equal([]string{"check_backups", "check_puppet", "check_specific1", "check_specific2", "swap"}))
+		Expect(scout.entity.checkNames()).To(Equal([]string{"check_backups", "check_puppet", "check_specific1", "check_specific2", "swap"}))
 
 		oj, err := ioutil.ReadFile(otf.Name())
 		Expect(err).ToNot(HaveOccurred())
@@ -116,7 +117,6 @@ var _ = Describe("Entity", func() {
 		Expect(err).ToNot(HaveOccurred())
 		Expect(oj).To(MatchJSON(`{"check_load":{"crit":20, "warn": 10}}`))
 
-		log.Infof("Removing swap tag")
 		_, err = nc.Request("scout.tags.ginkgo.example.net", []byte(`["check_specific1", "check_specific2"]`), time.Second)
 		Expect(err).ToNot(HaveOccurred())
 

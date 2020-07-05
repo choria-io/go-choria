@@ -70,28 +70,29 @@ func (mr *MockFrameworkMockRecorder) Logger(arg0 interface{}) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logger", reflect.TypeOf((*MockFramework)(nil).Logger), arg0)
 }
 
-// ScoutOverridesFile mocks base method
-func (m *MockFramework) ScoutOverridesFile() string {
-	ret := m.ctrl.Call(m, "ScoutOverridesFile")
+// OverridesFile mocks base method
+func (m *MockFramework) OverridesFile() string {
+	ret := m.ctrl.Call(m, "OverridesFile")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
-// ScoutOverridesFile indicates an expected call of ScoutOverridesFile
-func (mr *MockFrameworkMockRecorder) ScoutOverridesFile() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScoutOverridesFile", reflect.TypeOf((*MockFramework)(nil).ScoutOverridesFile))
+// OverridesFile indicates an expected call of OverridesFile
+func (mr *MockFrameworkMockRecorder) OverridesFile() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OverridesFile", reflect.TypeOf((*MockFramework)(nil).OverridesFile))
 }
 
-// ScoutTags mocks base method
-func (m *MockFramework) ScoutTags() []string {
-	ret := m.ctrl.Call(m, "ScoutTags")
+// Tags mocks base method
+func (m *MockFramework) Tags() ([]string, error) {
+	ret := m.ctrl.Call(m, "Tags")
 	ret0, _ := ret[0].([]string)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
-// ScoutTags indicates an expected call of ScoutTags
-func (mr *MockFrameworkMockRecorder) ScoutTags() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ScoutTags", reflect.TypeOf((*MockFramework)(nil).ScoutTags))
+// Tags indicates an expected call of Tags
+func (mr *MockFrameworkMockRecorder) Tags() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Tags", reflect.TypeOf((*MockFramework)(nil).Tags))
 }
 
 // MachineSourceDir mocks base method

@@ -1,4 +1,4 @@
-// auto generated at 2020-06-26 13:10:16.541218 +0200 CEST m=+0.001320476
+// auto generated at 2020-07-05 14:25:46.539149 +0200 CEST m=+0.003473317
 
 package config
 
@@ -75,6 +75,7 @@ var docStrings = map[string]string{
 	"plugin.choria.network.stream.store":                      "Enables Streaming data persistence stored in this path",
 	"plugin.choria.network.stream.event_retention":            "When not zero enables retaining Lifecycle events in the Stream Store",
 	"plugin.choria.network.stream.machine_retention":          "When not zero enables retaining Autonomous Agent events in the Stream Store",
+	"plugin.choria.network.stream.advisory_retention":         "When not zero enables retaining Stream advisories in the Stream Store",
 	"plugin.choria.broker_network":                            "Enables the Network Broker",
 	"plugin.choria.broker_federation":                         "Enables the Federation Broker",
 	"plugin.choria.registration.file_content.data":            "YAML or JSON file to use as data source for registration",
@@ -109,5 +110,6 @@ var docStrings = map[string]string{
 	"plugin.choria.machine.store":                             "Directory where Autonomous Agents are stored",
 	"plugin.choria.prometheus_textfile_directory":             "Directory where Prometheus Node Exporter textfile collector reads data",
 	"plugin.scout.overrides":                                  "Path to a file holding overrides for Scout checks",
+	"plugin.scout.tags":                                       "Path to a file holding tags for a Scout entity",
 	"plugin.choria.require_client_filter":                     "If a client filter should always be required, only used in Go clients",
 }

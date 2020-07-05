@@ -349,7 +349,7 @@ func (r *RPC) request(ctx context.Context, msg *choria.Message, cl ChoriaClient)
 	return nil
 }
 
-func (r *RPC) handlerFactory(ctx context.Context, cancel func()) cclient.Handler {
+func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 	if !r.opts.ProcessReplies {
 		return nil
 	}
