@@ -82,14 +82,18 @@ func (s *Scout) Start(ctx context.Context, wg *sync.WaitGroup, clean bool) error
 	}
 
 	if clean {
-		s.Warnf("Removing %s", s.cfg.Choria.ScoutOverrides)
-		err := os.Remove(s.cfg.Choria.ScoutOverrides)
-		if err != nil {
-			s.Errorf("Could not remove %s: %s", s.cfg.Choria.ScoutOverrides, err)
+		if s.cfg.Choria.ScoutOverrides != "" {
+			s.Warnf("Removing overrides file %s", s.cfg.Choria.ScoutOverrides)
+			err := os.Remove(s.cfg.Choria.ScoutOverrides)
+			if err != nil {
+				s.Errorf("Could not remove %s: %s", s.cfg.Choria.ScoutOverrides, err)
+			}
 		}
 
-		s.Warnf("Removing %s", s.cfg.Choria.MachineSourceDir)
-		s.removeAllMachines(s.cfg.Choria.MachineSourceDir)
+		if s.cfg.Choria.MachineSourceDir != "" {
+			s.Warnf("Removing previously configured checks %s", s.cfg.Choria.MachineSourceDir)
+			s.removeAllMachines(s.cfg.Choria.MachineSourceDir)
+		}
 	}
 
 	conn, err := s.choria.NewConnector(ctx, s.choria.MiddlewareServers, s.choria.Certname(), s.Entry)
