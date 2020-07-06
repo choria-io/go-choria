@@ -17,18 +17,19 @@ import (
 )
 
 type Entity struct {
-	id         string
-	nc         *nats.Conn
-	machineDir string
-
+	id            string
+	nc            *nats.Conn
+	machineDir    string
 	overridesFile string
-	tagCheckMgr   map[string]*tags.Manager
-	overridesMgr  *overrides.Manager
-	checkMgrs     map[string]*check.Manager
-	checkLists    map[string][]string
-	fw            Framework
-	ctx           context.Context
-	wg            *sync.WaitGroup
+
+	tagCheckMgr  map[string]*tags.Manager
+	checkMgrs    map[string]*check.Manager
+	checkLists   map[string][]string
+	overridesMgr *overrides.Manager
+
+	fw  Framework
+	ctx context.Context
+	wg  *sync.WaitGroup
 
 	logger.Logrus
 	sync.Mutex
@@ -106,17 +107,20 @@ func (e *Entity) reconcileChecks() error {
 	var running []string
 	checks := e.checkNamesUnlocked()
 
-	// remove checks that shouldnt exist anymore
-	for k, c := range e.checkMgrs {
+	mgrs := e.checkMgrs
+
+	// remove checks that shouldn't exist anymore
+	for k, c := range mgrs {
 		if !e.stringInSet(k, checks) {
 			c.Stop(true)
+			delete(e.checkMgrs, k)
 			continue
 		}
 
 		running = append(running, k)
 	}
 
-	// start checks that isnt in the running set
+	// start checks that isn't in the running set
 	for _, c := range checks {
 		if !e.stringInSet(c, running) {
 
