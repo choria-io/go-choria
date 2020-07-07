@@ -3,6 +3,7 @@ package agent
 import (
 	"fmt"
 
+	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
@@ -31,32 +32,44 @@ func stringInStrings(s string, ss []string) bool {
 }
 
 func transitionSelectedChecks(list []string, transition string, si agents.ServerInfoSource, reply *mcorpc.Reply) (forced []string, failed []string, skipped []string) {
+	forced = []string{}
+	failed = []string{}
+	skipped = []string{}
+
 	states, err := si.MachinesStatus()
 	if err != nil {
 		abort(fmt.Sprintf("Failed to retrieve states: %s", err), reply)
 		return forced, failed, skipped
 	}
 
-	if len(list) == 0 {
-		for _, m := range states {
+	// user asked for non, implies all
+	all := len(list) == 0
+
+	statemap := make(map[string]aagent.MachineState)
+	for _, m := range states {
+		statemap[m.Name] = m
+		if all {
 			list = append(list, m.Name)
 		}
 	}
 
-	for _, m := range states {
-		if !stringInStrings(m.Name, list) {
+	for _, n := range list {
+		m, ok := statemap[n]
+		if !ok {
+			log.Warnf("Cannot transition %s using %s, unknown check", n, transition)
+			failed = append(failed, n)
 			continue
 		}
 
 		if !stringInStrings(transition, m.AvailableTransitions) {
-			log.Errorf("Could not transition check %s using %s: not a valid transition", m.Name, transition)
+			log.Warnf("Could not transition check %s using %s: not a valid transition", m.Name, transition)
 			skipped = append(skipped, m.Name)
 			continue
 		}
 
 		err = si.MachineTransition(m.Name, "", "", "", transition)
 		if err != nil {
-			log.Errorf("Could not transition check %s to %s: %s", m.Name, transition, err)
+			log.Errorf("Failed to transition check %s to %s: %s", m.Name, transition, err)
 			failed = append(failed, m.Name)
 			continue
 		}
@@ -64,8 +77,8 @@ func transitionSelectedChecks(list []string, transition string, si agents.Server
 		forced = append(forced, m.Name)
 	}
 
-	if len(failed) > 0 {
-		abort("Some checked could not be forced", reply)
+	if len(forced) != len(list) {
+		abort(fmt.Sprintf("Some checks could not be transitioned to %s", transition), reply)
 	}
 
 	return forced, failed, skipped
