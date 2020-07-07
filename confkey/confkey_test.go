@@ -237,6 +237,11 @@ var _ = Describe("Confkey", func() {
 			err := SetStructFieldWithKey(&d, "comma_split", "foo, bar, baz")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(d.CommaSplit).To(Equal([]string{"foo", "bar", "baz"}))
+
+			err = SetStructFieldWithKey(&d, "comma_split", "foo")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(d.CommaSplit).To(Equal([]string{"foo"}))
+
 		})
 
 		It("Should support colon_split", func() {

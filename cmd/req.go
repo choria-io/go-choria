@@ -163,7 +163,7 @@ func (r *reqCommand) responseHandler(results *rpcResults) func(pr protocol.Reply
 	}
 }
 
-func (r *reqCommand) prepareConfguration() (err error) {
+func (r *reqCommand) prepareConfiguration() (err error) {
 	r.ddl, err = agentddl.Find(r.agent, cfg.LibDir)
 	if err != nil {
 		return fmt.Errorf("could not find DDL for agent %s: %s", r.agent, err)
@@ -215,7 +215,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	r.startTime = time.Now()
 
-	err = r.prepareConfguration()
+	err = r.prepareConfiguration()
 	if err != nil {
 		return err
 	}
@@ -442,10 +442,10 @@ func (r *reqCommand) discover(filter *protocol.Filter) ([]string, error) {
 	}
 
 	if !r.silent {
-		fmt.Print("Discovering nodes .... ")
+		fmt.Print("Discovering nodes in collective .... ")
 	}
 
-	nodes, err := broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Timeout(time.Second*time.Duration(r.discoveryTimeout)))
+	nodes, err := broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(r.collective), broadcast.Timeout(time.Second*time.Duration(r.discoveryTimeout)))
 
 	if !r.silent {
 		fmt.Printf("%d\n", len(nodes))
