@@ -134,6 +134,11 @@ foss:
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
 
+    focal_64:
+      template: debian/generic
+      target_arch: x86_64-linux-gnu
+      binary: 64bit_linux
+
     buster_64:
       template: debian/generic
       target_arch: x86_64-linux-gnu

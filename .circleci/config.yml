@@ -182,6 +182,19 @@ jobs:
 
     steps: *std_build_steps
 
+  build_focal_64bit_debs:
+    docker:
+      - image: circleci/golang:1.14
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      PACKAGE: focal_64
+      BUILD: foss
+      BUILDER: choria/packager:focal-go1.14
+
+    steps: *std_build_steps
+
   build_windows_64bit_msi:
     docker:
       - image: circleci/golang:1.14
@@ -337,6 +350,11 @@ workflows:
           requires:
             - hold
 
+      - build_focal_64bit_debs:
+          filters: *semver_only
+          requires:
+            - hold
+
       - gather_artifacts:
           requires:
             - build_el6_32bit_rpms
@@ -348,5 +366,6 @@ workflows:
             - build_buster_armhf_debs
             - build_buster_64bit_debs
             - build_bionic_64bit_debs
+            - build_focal_64bit_debs
 
           filters: *semver_only
