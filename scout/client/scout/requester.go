@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT
 
-package {{ .Package }}
+package scoutclient
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 
 // requester is a generic request handler
 type requester struct {
-	client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client
+	client *ScoutClient
 	action string
 	args   map[string]interface{}
 }

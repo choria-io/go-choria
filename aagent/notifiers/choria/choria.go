@@ -82,7 +82,7 @@ func (n *Notifier) NotifyWatcherState(name string, detail machine.WatcherStateNo
 		return fmt.Errorf("invalid watcher type in watcher state")
 	}
 
-	n.logger.Infof(detail.String())
+	n.logger.Info(detail.String())
 
 	err = n.fw.PublishRaw(fmt.Sprintf("choria.machine.watcher.%s.state", wtype), j)
 	if err != nil {

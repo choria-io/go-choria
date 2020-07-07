@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT
 
-package {{ .Package }}
+package scoutclient
 
 import (
 	"time"

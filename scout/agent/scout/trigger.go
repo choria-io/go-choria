@@ -1,0 +1,30 @@
+package agent
+
+import (
+	"context"
+
+	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc"
+)
+
+type TriggerRequest struct {
+	Checks []string `json:"checks"`
+}
+
+type TriggerReply struct {
+	TransitionedChecks []string `json:"transitioned"`
+	FailedChecks       []string `json:"failed"`
+	SkippedChecks      []string `json:"skipped"`
+}
+
+func triggerAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, _ choria.ConnectorInfo) {
+	resp := &TriggerReply{[]string{}, []string{}, []string{}}
+	reply.Data = resp
+
+	args := &TriggerRequest{}
+	if !mcorpc.ParseRequestData(args, req, reply) {
+		return
+	}
+
+	resp.TransitionedChecks, resp.FailedChecks, resp.SkippedChecks = transitionSelectedChecks(args.Checks, forceTransition, agent.ServerInfoSource, reply)
+}

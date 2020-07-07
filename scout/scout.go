@@ -123,7 +123,14 @@ func (s *Scout) Logger(component string) *logrus.Entry {
 
 func (s *Scout) Tags() ([]string, error) {
 	if s.cfg.Choria.ScoutTags == "" {
-		return nil, fmt.Errorf("tags file is not set")
+		s.Info("Tags file is not configured or present, using ['common']")
+		return []string{"common"}, nil
+	}
+
+	_, err := os.Stat(s.cfg.Choria.ScoutTags)
+	if err != nil {
+		s.Info("Tags file is not configured or present, using ['common']")
+		return []string{"common"}, nil
 	}
 
 	tb, err := ioutil.ReadFile(s.cfg.Choria.ScoutTags)

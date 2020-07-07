@@ -40,7 +40,7 @@ func (n *Notifier) NotifyPostTransition(transition *machine.TransitionNotificati
 
 // NotifyWatcherState implements machine.NotificationService
 func (n *Notifier) NotifyWatcherState(name string, detail machine.WatcherStateNotification) error {
-	logrus.Infof(detail.String())
+	logrus.Info(detail.String())
 
 	return nil
 }
