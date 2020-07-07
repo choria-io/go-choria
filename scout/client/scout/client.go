@@ -183,15 +183,13 @@ func (p *ScoutClient) Checks() *ChecksRequester {
 //
 // Description: Resume active checking of one or more checks
 //
-// Required Inputs:
+// Optional Inputs:
 //    - checks ([]interface{}) - Check to resume, empty means all
-func (p *ScoutClient) Resume(checksI []interface{}) *ResumeRequester {
+func (p *ScoutClient) Resume() *ResumeRequester {
 	d := &ResumeRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
-				"checks": checksI,
-			},
+			args:   map[string]interface{}{},
 			action: "resume",
 			client: p,
 		},
@@ -204,15 +202,13 @@ func (p *ScoutClient) Resume(checksI []interface{}) *ResumeRequester {
 //
 // Description: Pause checking of one or more checks
 //
-// Required Inputs:
+// Optional Inputs:
 //    - checks ([]interface{}) - Check to pause, empty means all
-func (p *ScoutClient) Maintenance(checksI []interface{}) *MaintenanceRequester {
+func (p *ScoutClient) Maintenance() *MaintenanceRequester {
 	d := &MaintenanceRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
-				"checks": checksI,
-			},
+			args:   map[string]interface{}{},
 			action: "maintenance",
 			client: p,
 		},
@@ -225,15 +221,13 @@ func (p *ScoutClient) Maintenance(checksI []interface{}) *MaintenanceRequester {
 //
 // Description: Force an immediate check of one or more checks
 //
-// Required Inputs:
+// Optional Inputs:
 //    - checks ([]interface{}) - Check to trigger, empty means all
-func (p *ScoutClient) Trigger(checksI []interface{}) *TriggerRequester {
+func (p *ScoutClient) Trigger() *TriggerRequester {
 	d := &TriggerRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
-				"checks": checksI,
-			},
+			args:   map[string]interface{}{},
 			action: "trigger",
 			client: p,
 		},

@@ -31,7 +31,7 @@
           "prompt": "Checks",
           "description": "Check to resume, empty means all",
           "type": "array",
-          "optional": false
+          "optional": true
         }
       },
       "output": {
@@ -61,7 +61,7 @@
           "prompt": "Checks",
           "description": "Check to pause, empty means all",
           "type": "array",
-          "optional": false
+          "optional": true
         }
       },
       "output": {
@@ -91,7 +91,7 @@
           "prompt": "Checks",
           "description": "Check to trigger, empty means all",
           "type": "array",
-          "optional": false
+          "optional": true
         }
       },
       "output": {

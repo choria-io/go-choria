@@ -27,7 +27,7 @@ action "resume", :description => "Resume active checking of one or more checks" 
         :prompt      => "Checks",
         :description => "Check to resume, empty means all",
         :type        => :array,
-        :optional    => false
+        :optional    => true
 
 
 
@@ -56,7 +56,7 @@ action "maintenance", :description => "Pause checking of one or more checks" do
         :prompt      => "Checks",
         :description => "Check to pause, empty means all",
         :type        => :array,
-        :optional    => false
+        :optional    => true
 
 
 
@@ -85,7 +85,7 @@ action "trigger", :description => "Force an immediate check of one or more check
         :prompt      => "Checks",
         :description => "Check to trigger, empty means all",
         :type        => :array,
-        :optional    => false
+        :optional    => true
 
 
 

@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2020-07-07 17:35:21.444584 +0200 CEST m=+0.025082826"
+// generated code; DO NOT EDIT; 2020-07-07 17:47:57.795357 +0200 CEST m=+0.031413473"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.14.0
 
@@ -93,6 +93,15 @@ func (d *TriggerResult) EachOutput(h func(r *TriggerOutput)) {
 	for _, resp := range d.outputs {
 		h(resp)
 	}
+}
+
+// Checks is an optional input to the trigger action
+//
+// Description: Check to trigger, empty means all
+func (d *TriggerRequester) Checks(v []interface{}) *TriggerRequester {
+	d.r.args["checks"] = v
+
+	return d
 }
 
 // Failed is the value of the failed output
