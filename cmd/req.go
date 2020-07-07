@@ -442,7 +442,7 @@ func (r *reqCommand) discover(filter *protocol.Filter) ([]string, error) {
 	}
 
 	if !r.silent {
-		fmt.Print("Discovering nodes in collective .... ")
+		fmt.Print("Discovering nodes .... ")
 	}
 
 	nodes, err := broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(r.collective), broadcast.Timeout(time.Second*time.Duration(r.discoveryTimeout)))
