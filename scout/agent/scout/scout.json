@@ -1,0 +1,118 @@
+{
+  "$schema": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
+  "metadata": {
+    "license": "Apache-2.0",
+    "author": "R.I.Pienaar <rip@devco.net>",
+    "timeout": 5,
+    "name": "scout",
+    "version": "0.0.1",
+    "url": "https://choria.io",
+    "description": "Choria Scout Management API",
+    "provider": "golang"
+  },
+  "actions": [
+    {
+      "action": "checks",
+      "display": "ok",
+      "description": "Obtain a list of checks and their current status",
+      "input": {},
+      "output": {
+        "checks": {
+          "description": "Details about each check",
+          "type": "array",
+          "display_as": "Checks"
+        }
+      }
+    },
+    {
+      "action": "resume",
+      "input": {
+        "checks": {
+          "prompt": "Checks",
+          "description": "Check to resume, empty means all",
+          "type": "array",
+          "optional": false
+        }
+      },
+      "output": {
+        "failed": {
+          "description": "List of checks that could not be resumed",
+          "display_as": "Failed",
+          "type": "array"
+        },
+        "transitioned": {
+          "description": "List of checks that were resumed",
+          "display_as": "Triggered",
+          "type": "array"
+        },
+        "skipped": {
+          "description": "List of checks that was skipped",
+          "display_as": "Skipped",
+          "type": "array"
+        }
+      },
+      "display": "failed",
+      "description": "Resume active checking of one or more checks"
+    },
+    {
+      "action": "maintenance",
+      "input": {
+        "checks": {
+          "prompt": "Checks",
+          "description": "Check to pause, empty means all",
+          "type": "array",
+          "optional": false
+        }
+      },
+      "output": {
+        "failed": {
+          "description": "List of checks that could not be paused",
+          "display_as": "Failed",
+          "type": "array"
+        },
+        "transitioned": {
+          "description": "List of checks that were paused",
+          "display_as": "Triggered",
+          "type": "array"
+        },
+        "skipped": {
+          "description": "List of checks that was skipped",
+          "display_as": "Skipped",
+          "type": "array"
+        }
+      },
+      "display": "failed",
+      "description": "Pause checking of one or more checks"
+    },
+    {
+      "action": "trigger",
+      "input": {
+        "checks": {
+          "prompt": "Checks",
+          "description": "Check to trigger, empty means all",
+          "type": "array",
+          "optional": false
+        }
+      },
+      "output": {
+        "failed": {
+          "description": "List of checks that could not be triggered",
+          "display_as": "Failed",
+          "type": "array"
+        },
+        "transitioned": {
+          "description": "List of checks that were triggered",
+          "display_as": "Triggered",
+          "type": "array"
+        },
+        "skipped": {
+          "description": "List of checks that was skipped",
+          "display_as": "Skipped",
+          "type": "array"
+        }
+      },
+      "display": "failed",
+      "description": "Force an immediate check of one or more checks"
+    }
+  ]
+}
