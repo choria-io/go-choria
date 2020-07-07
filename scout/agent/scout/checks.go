@@ -15,10 +15,10 @@ type CheckResponse struct {
 }
 
 type CheckState struct {
-	Name    string
-	State   string
-	Version string
-	Started int64
+	Name    string `json:"name"`
+	State   string `json:"state"`
+	Version string `json:"version"`
+	Started int64  `json:"start_time"`
 }
 
 func checksAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, _ choria.ConnectorInfo) {

@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2020-07-07 17:35:21.44315 +0200 CEST m=+0.023649023"
+// generated code; DO NOT EDIT; 2020-07-07 17:47:57.789024 +0200 CEST m=+0.025080168"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.14.0
 
@@ -93,6 +93,15 @@ func (d *MaintenanceResult) EachOutput(h func(r *MaintenanceOutput)) {
 	for _, resp := range d.outputs {
 		h(resp)
 	}
+}
+
+// Checks is an optional input to the maintenance action
+//
+// Description: Check to pause, empty means all
+func (d *MaintenanceRequester) Checks(v []interface{}) *MaintenanceRequester {
+	d.r.args["checks"] = v
+
+	return d
 }
 
 // Failed is the value of the failed output
