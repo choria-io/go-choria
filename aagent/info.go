@@ -1,5 +1,9 @@
 package aagent
 
+import (
+	"sort"
+)
+
 // MachineState is the state of a running machine
 type MachineState struct {
 	Name                 string   `json:"name" yaml:"name"`
@@ -31,6 +35,8 @@ func (a *AAgent) AllMachineStates() (states []MachineState, err error) {
 
 		states = append(states, state)
 	}
+
+	sort.Slice(states, func(i, j int) bool { return states[i].Name < states[j].Name })
 
 	return states, nil
 }

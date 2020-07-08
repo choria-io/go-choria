@@ -25,10 +25,10 @@ func New(mgr server.AgentManager) (agents.Agent, error) {
 
 	agent.SetActivationChecker(activationCheck(mgr))
 
+	agent.MustRegisterAction("checks", checksAction)
 	agent.MustRegisterAction("trigger", triggerAction)
 	agent.MustRegisterAction("maintenance", maintenanceAction)
 	agent.MustRegisterAction("resume", resumeAction)
-	agent.MustRegisterAction("checks", checksAction)
 
 	// TODO: info action showing machine info - facts and inventory like response
 
