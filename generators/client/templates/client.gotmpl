@@ -47,6 +47,7 @@ type NodeSource interface {
 // ChoriaFramework is the Choria framework
 type ChoriaFramework interface {
 	Logger(string) *logrus.Entry
+	SetLogger(*logrus.Logger)
 	Configuration() *config.Config
 	NewMessage(payload string, agent string, collective string, msgType string, request *choria.Message) (msg *choria.Message, err error)
 	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
@@ -127,6 +128,8 @@ func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToC
 
 	if c.clientOpts.logger == nil {
 		c.clientOpts.logger = c.fw.Logger("{{ .DDL.Metadata.Name }}")
+	} else {
+		c.fw.SetLogger(c.clientOpts.logger.Logger)
 	}
 
 	ddlj, err := base64.StdEncoding.DecodeString(rawDDL)

@@ -5,6 +5,7 @@ package {{ .Package }}
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 )
@@ -45,6 +46,21 @@ func (d *{{ .ActionName | SnakeToCamel }}Output) HashMap() map[string]interface{
 // JSON is the JSON representation of the output data
 func (d *{{ .ActionName | SnakeToCamel }}Output) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
+}
+
+// ParseOutput parses the result value from the {{ .ActionName | SnakeToCamel }} action into target
+func (d *{{ $.ActionName | SnakeToCamel }}Output) Parse{{ .ActionName | SnakeToCamel }}Output(target interface{}) error {
+	j, err := d.JSON()
+	if err != nil {
+		return fmt.Errorf("could not access payload: %s", err)
+	}
+
+	err = json.Unmarshal(j, target)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal JSON payload: %s", err)
+	}
+
+	return nil
 }
 
 // Do performs the request

@@ -339,6 +339,11 @@ func (fw *Framework) commonLogOpener() error {
 	return nil
 }
 
+// SetLogger sets the logger to use
+func (fw *Framework) SetLogger(logger *log.Logger) {
+	fw.log = logger
+}
+
 // SetupLogging configures logging based on choria config directives
 // currently only file and console behaviors are supported
 func (fw *Framework) SetupLogging(debug bool) (err error) {
