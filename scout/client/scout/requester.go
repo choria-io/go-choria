@@ -19,7 +19,7 @@ type requester struct {
 
 // do performs the request
 func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *rpcclient.RPCReply)) (*rpcclient.Stats, error) {
-	targets := make([]string, 0)
+	targets := make([]string, len(r.client.targets))
 	var err error
 
 	r.client.Lock()
@@ -27,10 +27,6 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 	discoverer := r.client.ns
 	filters := r.client.filters
 	fw := r.client.fw
-
-	opts := []rpcclient.RequestOption{rpcclient.Targets(targets)}
-	opts = append(opts, r.client.clientRPCOpts...)
-	r.client.Unlock()
 
 	if len(targets) == 0 {
 		r.client.infof("Starting discovery")
@@ -44,6 +40,10 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 		}
 		r.client.infof("Discovered %d nodes", len(targets))
 	}
+
+	opts := []rpcclient.RequestOption{rpcclient.Targets(targets)}
+	opts = append(opts, r.client.clientRPCOpts...)
+	r.client.Unlock()
 
 	agent, err := rpcclient.New(r.client.fw, r.client.ddl.Metadata.Name, rpcclient.DDL(r.client.ddl))
 	if err != nil {

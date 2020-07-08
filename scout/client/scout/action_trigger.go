@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2020-07-07 17:47:57.795357 +0200 CEST m=+0.031413473"
+// generated code; DO NOT EDIT; 2020-07-08 15:51:07.949774 +0200 CEST m=+0.222346422"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.14.0
 
@@ -7,6 +7,7 @@ package scoutclient
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
@@ -48,6 +49,21 @@ func (d *TriggerOutput) HashMap() map[string]interface{} {
 // JSON is the JSON representation of the output data
 func (d *TriggerOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
+}
+
+// ParseOutput parses the result value from the Trigger action into target
+func (d *TriggerOutput) ParseTriggerOutput(target interface{}) error {
+	j, err := d.JSON()
+	if err != nil {
+		return fmt.Errorf("could not access payload: %s", err)
+	}
+
+	err = json.Unmarshal(j, target)
+	if err != nil {
+		return fmt.Errorf("could not unmarshal JSON payload: %s", err)
+	}
+
+	return nil
 }
 
 // Do performs the request
