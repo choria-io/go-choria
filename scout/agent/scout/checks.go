@@ -32,6 +32,10 @@ func checksAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 	}
 
 	for _, m := range states {
+		if !m.Scout {
+			continue
+		}
+
 		check := &CheckState{
 			Name:    m.Name,
 			State:   m.State,
