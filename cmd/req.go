@@ -2,14 +2,10 @@ package cmd
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/json"
 	"fmt"
 	"os"
-	"sort"
 	"strings"
 	"sync"
-	"text/tabwriter"
 	"time"
 
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
@@ -20,10 +16,6 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 	"github.com/fatih/color"
 	"github.com/gosuri/uiprogress"
-	log "github.com/sirupsen/logrus"
-	"github.com/tidwall/gjson"
-
-	"github.com/choria-io/go-choria/choria"
 )
 
 type reqCommand struct {
@@ -41,7 +33,6 @@ type reqCommand struct {
 	discoveryTimeout int
 	displayOverride  string
 	noProgress       bool
-	discoveryTime    time.Duration
 	startTime        time.Time
 	limit            string
 	limitSeed        int64
@@ -62,33 +53,6 @@ type reqCommand struct {
 
 	outputWriter     *bufio.Writer
 	outputFileHandle *os.File
-}
-
-type rpcStats struct {
-	RequestID           string   `json:"requestid"`
-	NoResponses         []string `json:"no_responses"`
-	UnexpectedResponses []string `json:"unexpected_responses"`
-	DiscoveredCount     int      `json:"discovered"`
-	FailCount           int      `json:"failed"`
-	OKCount             int      `json:"ok"`
-	ResponseCount       int      `json:"responses"`
-	PublishTime         float32  `json:"publish_time"`
-	RequestTime         float32  `json:"request_time"`
-	DiscoverTime        float32  `json:"discover_time"`
-	StartTime           int64    `json:"start_time_utc"`
-}
-
-type rpcReply struct {
-	Sender string `json:"sender"`
-	*rpc.RPCReply
-}
-
-type rpcResults struct {
-	Agent     string          `json:"agent"`
-	Action    string          `json:"action"`
-	Replies   []*rpcReply     `json:"replies"`
-	Stats     *rpcStats       `json:"request_stats"`
-	Summaries json.RawMessage `json:"summaries"`
 }
 
 func (r *reqCommand) Setup() (err error) {
@@ -153,13 +117,13 @@ func (r *reqCommand) configureProgressBar(count int, expected int) {
 	uiprogress.Start()
 }
 
-func (r *reqCommand) responseHandler(results *rpcResults) func(pr protocol.Reply, reply *rpc.RPCReply) {
+func (r *reqCommand) responseHandler(results *replyfmt.RPCResults) func(pr protocol.Reply, reply *rpc.RPCReply) {
 	return func(pr protocol.Reply, reply *rpc.RPCReply) {
 		if r.progressBar != nil {
 			r.progressBar.Incr()
 		}
 
-		results.Replies = append(results.Replies, &rpcReply{pr.SenderID(), reply})
+		results.Replies = append(results.Replies, &replyfmt.RPCReply{Sender: pr.SenderID(), RPCReply: reply})
 	}
 }
 
@@ -219,23 +183,24 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	if err != nil {
 		return err
 	}
+	defer r.outputWriter.Flush()
 
 	dstart := time.Now()
 	nodes, err := r.discover(r.filter)
 	if err != nil {
 		return fmt.Errorf("could not discover nodes: %s", err)
 	}
-	r.discoveryTime = time.Since(dstart)
+	dend := time.Now()
 
 	expected := len(nodes)
 	if expected == 0 {
 		return fmt.Errorf("did not discover any nodes")
 	}
 
-	results := &rpcResults{
+	results := &replyfmt.RPCResults{
 		Agent:   r.agent,
 		Action:  r.action,
-		Replies: []*rpcReply{},
+		Replies: []*replyfmt.RPCReply{},
 	}
 
 	opts := []rpc.RequestOption{
@@ -278,10 +243,8 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("could not perform request: %s", err)
 	}
 
-	results.Stats, err = r.statsFromClient(rpcres.Stats())
-	if err != nil {
-		return fmt.Errorf("could not process stats: %s", err)
-	}
+	results.Stats = rpcres.Stats()
+	results.Stats.OverrideDiscoveryTime(dstart, dend)
 
 	if !r.noProgress {
 		uiprogress.Stop()
@@ -296,121 +259,29 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	return
 }
 
-func (r *reqCommand) displayResults(res *rpcResults) error {
+func (r *reqCommand) displayResults(res *replyfmt.RPCResults) error {
+	defer r.outputWriter.Flush()
+
 	if r.jsonOnly {
-		return r.displayResultsAsJSON(res)
+		err := res.RenderJSON(r.outputWriter, r.actionInterface)
+		if err != nil {
+			return err
+		}
 	}
 
-	return r.displayResultsAsTXT(res)
-}
-
-func (r *reqCommand) displayResultsAsTXT(res *rpcResults) error {
-	fmtopts := []replyfmt.Option{}
-	if r.verbose {
-		fmtopts = append(fmtopts, replyfmt.Verbose())
-	}
-
-	if r.silent {
-		fmtopts = append(fmtopts, replyfmt.Silent())
-	}
-
+	mode := replyfmt.DisplayDDL
 	switch r.displayOverride {
 	case "ok":
-		fmtopts = append(fmtopts, replyfmt.Display(replyfmt.DisplayOK))
+		mode = replyfmt.DisplayOK
 	case "failed":
-		fmtopts = append(fmtopts, replyfmt.Display(replyfmt.DisplayFailed))
-	case "none":
-		fmtopts = append(fmtopts, replyfmt.Display(replyfmt.DisplayNone))
+		mode = replyfmt.DisplayFailed
 	case "all":
-		fmtopts = append(fmtopts, replyfmt.Display(replyfmt.DisplayAll))
+		mode = replyfmt.DisplayAll
+	case "none":
+		mode = replyfmt.DisplayNone
 	}
 
-	for _, reply := range res.Replies {
-		err := replyfmt.FormatReply(r.outputWriter, replyfmt.ConsoleFormat, r.actionInterface, reply.Sender, reply.RPCReply, fmtopts...)
-		if err != nil {
-			fmt.Fprintf(r.outputWriter, "Could not render reply from %s: %v", reply.Sender, err)
-		}
-
-		err = r.actionInterface.AggregateResultJSON(reply.Data)
-		if err != nil {
-			log.Warnf("could not aggregate data in reply: %v", err)
-		}
-	}
-
-	if r.silent {
-		return nil
-	}
-
-	replyfmt.FormatAggregates(r.outputWriter, replyfmt.ConsoleFormat, r.actionInterface, fmtopts...)
-
-	fmt.Fprintln(r.outputWriter)
-
-	if r.verbose {
-		fmt.Fprintln(r.outputWriter, color.YellowString("---- request stats ----"))
-		fmt.Fprintf(r.outputWriter, "               Nodes: %d / %d\n", res.Stats.ResponseCount, res.Stats.DiscoveredCount)
-		fmt.Fprintf(r.outputWriter, "         Pass / Fail: %d / %d\n", res.Stats.OKCount, res.Stats.FailCount)
-		fmt.Fprintf(r.outputWriter, "        No Responses: %d\n", len(res.Stats.NoResponses))
-		fmt.Fprintf(r.outputWriter, "Unexpected Responses: %d\n", len(res.Stats.UnexpectedResponses))
-		fmt.Fprintf(r.outputWriter, "          Start Time: %s\n", time.Unix(res.Stats.StartTime, 0).Format("2006-01-02T15:04:05-0700"))
-		fmt.Fprintf(r.outputWriter, "      Discovery Time: %v\n", time.Duration(res.Stats.DiscoverTime*1000000000))
-		fmt.Fprintf(r.outputWriter, "        Publish Time: %v\n", time.Duration(res.Stats.PublishTime*1000000000))
-		fmt.Fprintf(r.outputWriter, "          Agent Time: %v\n", time.Duration((res.Stats.RequestTime-res.Stats.PublishTime)*1000000000))
-		fmt.Fprintf(r.outputWriter, "          Total Time: %v\n", time.Duration((res.Stats.RequestTime+res.Stats.DiscoverTime)*1000000000))
-	} else {
-		fmt.Fprintf(r.outputWriter, "Finished processing %d / %d hosts in %s\n", res.Stats.ResponseCount, res.Stats.DiscoveredCount, time.Duration((res.Stats.RequestTime)*1000000000))
-	}
-
-	nodeListPrinter := func(nodes []string, message string) {
-		if len(nodes) > 0 {
-			sort.Strings(nodes)
-
-			fmt.Fprintf(r.outputWriter, "\n%s: %d\n\n", message, len(nodes))
-
-			out := bytes.NewBuffer([]byte{})
-
-			w := new(tabwriter.Writer)
-			w.Init(out, 0, 0, 4, ' ', 0)
-			choria.SliceGroups(nodes, 3, func(g []string) {
-				fmt.Fprintln(w, "    "+strings.Join(g, "\t")+"\t")
-			})
-			w.Flush()
-
-			fmt.Fprint(r.outputWriter, out.String())
-		}
-	}
-
-	nodeListPrinter(res.Stats.NoResponses, "No Responses from")
-	nodeListPrinter(res.Stats.UnexpectedResponses, "Unexpected Responses from")
-
-	r.outputWriter.Flush()
-
-	return nil
-}
-
-func (r *reqCommand) displayResultsAsJSON(res *rpcResults) error {
-	var err error
-
-	for _, reply := range res.Replies {
-		parsed, ok := gjson.ParseBytes(reply.RPCReply.Data).Value().(map[string]interface{})
-		if ok {
-			r.actionInterface.SetOutputDefaults(parsed)
-			r.actionInterface.AggregateResult(parsed)
-		}
-	}
-
-	// silently failing as this is optional
-	res.Summaries, _ = r.actionInterface.AggregateSummaryJSON()
-
-	j, err := json.MarshalIndent(res, "", "   ")
-	if err != nil {
-		return fmt.Errorf("could not prepare display: %s", err)
-	}
-
-	fmt.Fprintln(r.outputWriter, string(j))
-
-	r.outputWriter.Flush()
-
-	return nil
+	return res.RenderTXT(r.outputWriter, r.actionInterface, r.verbose, r.silent, mode, c.Logger("req"))
 }
 
 func (r *reqCommand) Configure() error {
@@ -452,32 +323,6 @@ func (r *reqCommand) discover(filter *protocol.Filter) ([]string, error) {
 	}
 
 	return nodes, err
-}
-
-func (r *reqCommand) statsFromClient(cs *rpc.Stats) (*rpcStats, error) {
-	s := &rpcStats{}
-
-	s.RequestID = cs.RequestID
-	s.NoResponses = cs.NoResponseFrom()
-	s.UnexpectedResponses = cs.UnexpectedResponseFrom()
-	s.DiscoveredCount = cs.DiscoveredCount()
-	s.FailCount = cs.FailCount()
-	s.OKCount = cs.OKCount()
-	s.ResponseCount = cs.ResponsesCount()
-	s.StartTime = r.startTime.UTC().Unix()
-	s.DiscoverTime = float32(r.discoveryTime) / 1000000000
-
-	d, err := cs.PublishDuration()
-	if err == nil {
-		s.PublishTime = float32(d) / 1000000000
-	}
-
-	d, err = cs.RequestDuration()
-	if err == nil {
-		s.RequestTime = float32(d) / 1000000000
-	}
-
-	return s, nil
 }
 
 func init() {

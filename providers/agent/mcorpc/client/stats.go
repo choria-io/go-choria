@@ -243,6 +243,14 @@ func (s *Stats) Start() {
 	}
 }
 
+// Started is the time the request was started, zero time when not started
+func (s *Stats) Started() time.Time {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.start
+}
+
 // End records the end time of a request
 func (s *Stats) End() {
 	s.mu.Lock()
@@ -271,6 +279,15 @@ func (s *Stats) EndDiscover() {
 	if s.discoveryEnd.IsZero() {
 		s.discoveryEnd = time.Now()
 	}
+}
+
+// OverrideDiscoveryTime sets specific discovery time
+func (s *Stats) OverrideDiscoveryTime(start time.Time, end time.Time) {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	s.discoveryStart = start
+	s.discoveryEnd = end
 }
 
 // DiscoveryDuration determines how long discovery took, 0 and error when discovery was not done

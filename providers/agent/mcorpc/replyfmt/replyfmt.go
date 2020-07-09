@@ -2,17 +2,16 @@
 package replyfmt
 
 import (
-	"bufio"
 	"fmt"
+	"io"
 
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/client"
-	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
 
 // Formatter formats and writes a reply into the bufio writer
 type Formatter interface {
-	FormatReply(w *bufio.Writer, action *agent.Action, sender string, reply *client.RPCReply) error
-	FormatAggregates(w *bufio.Writer, action *agent.Action) error
+	FormatReply(w io.Writer, action ActionDDL, sender string, reply *client.RPCReply) error
+	FormatAggregates(w io.Writer, action ActionDDL) error
 
 	SetVerbose()
 	SetSilent()
@@ -79,7 +78,7 @@ func formatter(f OutputFormat, opts ...Option) (Formatter, error) {
 	}
 }
 
-func FormatAggregates(w *bufio.Writer, f OutputFormat, action *agent.Action, opts ...Option) error {
+func FormatAggregates(w io.Writer, f OutputFormat, action ActionDDL, opts ...Option) error {
 	rf, err := formatter(f, opts...)
 	if err != nil {
 		return err
@@ -88,7 +87,7 @@ func FormatAggregates(w *bufio.Writer, f OutputFormat, action *agent.Action, opt
 	return rf.FormatAggregates(w, action)
 }
 
-func FormatReply(w *bufio.Writer, f OutputFormat, action *agent.Action, sender string, reply *client.RPCReply, opts ...Option) error {
+func FormatReply(w io.Writer, f OutputFormat, action ActionDDL, sender string, reply *client.RPCReply, opts ...Option) error {
 	rf, err := formatter(f, opts...)
 	if err != nil {
 		return err

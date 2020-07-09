@@ -51,6 +51,23 @@ type ActionInputItem struct {
 	Enum        []string    `json:"list,omitempty"`
 }
 
+// GetInput gets a named input
+func (a *Action) GetInput(i string) (*ActionInputItem, bool) {
+	input, ok := a.Input[i]
+	return input, ok
+}
+
+// GetOutput gets a named output
+func (a *Action) GetOutput(o string) (*ActionOutputItem, bool) {
+	output, ok := a.Output[o]
+	return output, ok
+}
+
+// DisplayMode is the configured display mode
+func (a *Action) DisplayMode() string {
+	return a.Display
+}
+
 // AggregateResultJSON receives a JSON reply and aggregate all the data found in it
 func (a *Action) AggregateResultJSON(jres []byte) error {
 	res := make(map[string]interface{})

@@ -1,9 +1,9 @@
 package replyfmt
 
 import (
-	"bufio"
 	"encoding/json"
 	"fmt"
+	"io"
 	"sort"
 	"strings"
 
@@ -13,7 +13,6 @@ import (
 
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/client"
-	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
 
 type ConsoleFormatter struct {
@@ -22,8 +21,8 @@ type ConsoleFormatter struct {
 	disableColor    bool
 	displayOverride DisplayMode
 
-	actionInterface *agent.Action
-	out             *bufio.Writer
+	actionInterface ActionDDL
+	out             io.Writer
 }
 
 type statusString struct {
@@ -64,7 +63,7 @@ func ConsoleNoColor() Option {
 	}
 }
 
-func (c *ConsoleFormatter) FormatAggregates(w *bufio.Writer, action *agent.Action) error {
+func (c *ConsoleFormatter) FormatAggregates(w io.Writer, action ActionDDL) error {
 	summaries, err := action.AggregateSummaryFormattedStrings()
 	if err != nil {
 		return err
@@ -78,7 +77,7 @@ func (c *ConsoleFormatter) FormatAggregates(w *bufio.Writer, action *agent.Actio
 
 	for _, k := range keys {
 		descr := k
-		output, ok := action.Output[k]
+		output, ok := action.GetOutput(k)
 		if ok {
 			descr = output.DisplayAs
 		}
@@ -109,7 +108,7 @@ func (c *ConsoleFormatter) FormatAggregates(w *bufio.Writer, action *agent.Actio
 	return nil
 }
 
-func (c *ConsoleFormatter) FormatReply(w *bufio.Writer, action *agent.Action, sender string, reply *client.RPCReply) error {
+func (c *ConsoleFormatter) FormatReply(w io.Writer, action ActionDDL, sender string, reply *client.RPCReply) error {
 	c.out = w
 	c.actionInterface = action
 
@@ -117,7 +116,10 @@ func (c *ConsoleFormatter) FormatReply(w *bufio.Writer, action *agent.Action, se
 		return nil
 	}
 
-	defer w.Flush()
+	f, ok := w.(flusher)
+	if ok {
+		f.Flush()
+	}
 
 	c.writeHeader(sender, reply)
 
@@ -178,7 +180,7 @@ func (c *ConsoleFormatter) ddlAssistedPrinter(reply *client.RPCReply) {
 	}
 
 	for key := range parsed {
-		output, ok := c.actionInterface.Output[key]
+		output, ok := c.actionInterface.GetOutput(key)
 		if ok {
 			if len(output.DisplayAs) > max {
 				max = len(output.DisplayAs)
@@ -202,7 +204,7 @@ func (c *ConsoleFormatter) ddlAssistedPrinter(reply *client.RPCReply) {
 		keyStr := key
 		valStr := val.String()
 
-		output, ok := c.actionInterface.Output[key]
+		output, ok := c.actionInterface.GetOutput(key)
 		if ok {
 			keyStr = output.DisplayAs
 		}
@@ -234,13 +236,15 @@ func (c *ConsoleFormatter) basicPrinter(reply *client.RPCReply) {
 func (c *ConsoleFormatter) shouldDisplayReply(reply *client.RPCReply) bool {
 	switch c.displayOverride {
 	case DisplayDDL:
-		if reply.Statuscode > mcorpc.OK && c.actionInterface.Display == "failed" {
+		displayMode := c.actionInterface.DisplayMode()
+
+		if reply.Statuscode > mcorpc.OK && displayMode == "failed" {
 			return true
-		} else if reply.Statuscode > mcorpc.OK && c.actionInterface.Display == "" {
+		} else if reply.Statuscode > mcorpc.OK && displayMode == "" {
 			return true
-		} else if c.actionInterface.Display == "ok" && reply.Statuscode == mcorpc.OK {
+		} else if displayMode == "ok" && reply.Statuscode == mcorpc.OK {
 			return true
-		} else if c.actionInterface.Display == "always" {
+		} else if displayMode == "always" {
 			return true
 		}
 	case DisplayOK:
