@@ -3,3 +3,4 @@ golangmco: github.com/choria-io/go-choria/providers/agent/mcorpc/golang
 rubymco: github.com/choria-io/go-choria/providers/agent/mcorpc/ruby
 externalmco: github.com/choria-io/go-choria/providers/agent/mcorpc/external
 choria_provision: github.com/choria-io/provisioning-agent/agent
+scout: github.com/choria-io/go-choria/scout/agent/scout
