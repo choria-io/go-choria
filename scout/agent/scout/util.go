@@ -42,11 +42,15 @@ func transitionSelectedChecks(list []string, transition string, si agents.Server
 		return forced, failed, skipped
 	}
 
-	// user asked for non, implies all
+	// user asked for none, implies all
 	all := len(list) == 0
 
 	statemap := make(map[string]aagent.MachineState)
 	for _, m := range states {
+		if !m.Scout {
+			continue
+		}
+
 		statemap[m.Name] = m
 		if all {
 			list = append(list, m.Name)

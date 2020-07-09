@@ -26,6 +26,7 @@ type StateNotification struct {
 	CheckTime  int64      `json:"check_time"`
 	PerfData   []PerfData `json:"perfdata"`
 	RunTime    float64    `json:"runtime"`
+	History    []int      `json:"history"`
 }
 
 // CloudEvent creates a CloudEvent from the state notification

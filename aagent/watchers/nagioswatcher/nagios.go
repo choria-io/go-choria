@@ -94,6 +94,7 @@ type Watcher struct {
 	plugin           string
 	builtin          string
 	timeout          time.Duration
+	history          []int
 
 	sync.Mutex
 }
@@ -110,6 +111,7 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		statechg:         make(chan struct{}, 1),
 		previous:         NOTCHECKED,
 		announceInterval: ai,
+		history:          []int{},
 	}
 
 	err = w.setProperties(properties)
@@ -175,6 +177,7 @@ func (w *Watcher) CurrentState() interface{} {
 		PerfData:   w.parsePerfData(w.previousOutput),
 		CheckTime:  w.previousCheck.Unix(),
 		RunTime:    w.previousRunTime.Seconds(),
+		History:    w.history,
 	}
 
 	return s
@@ -369,6 +372,12 @@ func (w *Watcher) handleCheck(s State, external bool, err error) error {
 
 	w.Lock()
 	w.previous = s
+
+	if len(w.history) >= 21 {
+		w.history = w.history[1:]
+	}
+	w.history = append(w.history, int(s))
+
 	w.Unlock()
 
 	// dont notify if we are externally transitioning because probably notifications were already sent
