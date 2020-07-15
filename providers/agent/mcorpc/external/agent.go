@@ -143,7 +143,8 @@ func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, repl
 		return
 	}
 
-	tctx, cancel := context.WithTimeout(ctx, time.Duration(time.Duration(agent.Metadata().Timeout)*time.Second))
+	// 1.5 extra second to give the shim time to start etc
+	tctx, cancel := context.WithTimeout(ctx, time.Duration(agent.Metadata().Timeout)*time.Second+(1500*time.Millisecond))
 	defer cancel()
 
 	externreq, err := p.newExternalRequest(req)
