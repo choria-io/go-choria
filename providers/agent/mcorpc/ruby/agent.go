@@ -113,7 +113,7 @@ func rubyAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 		return
 	}
 
-	tctx, cancel := context.WithTimeout(ctx, time.Duration(time.Duration(agent.Metadata().Timeout)*time.Second))
+	tctx, cancel := context.WithTimeout(ctx, time.Duration(agent.Metadata().Timeout)*time.Second)
 	defer cancel()
 
 	execution := exec.CommandContext(tctx, agent.Config.Choria.RubyAgentShim, "--config", shimcfg)
@@ -130,11 +130,6 @@ func rubyAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 		return
 	}
 
-	go func() {
-		defer stdin.Close()
-		io.WriteString(stdin, string(shimr))
-	}()
-
 	stdout, err := execution.StdoutPipe()
 	if err != nil {
 		abortAction(fmt.Sprintf("Cannot open STDOUT from the Shim for Ruby action %s: %s", action, err), agent, reply)
@@ -147,14 +142,25 @@ func rubyAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 		return
 	}
 
+	defer func() {
+		err := execution.Wait()
+		if err != nil {
+			agent.Log.Warnf("Wait call for action %s failed: %v", action, err)
+		}
+	}()
+
+	_, err = io.WriteString(stdin, string(shimr))
+	if err != nil {
+		abortAction(fmt.Sprintf("Could not send request to the Shim for Ruby action %s: %s", action, err), agent, reply)
+		return
+	}
+
+	stdin.Close()
+
 	if err := json.NewDecoder(stdout).Decode(reply); err != nil {
 		abortAction(fmt.Sprintf("Cannot decode output from Shim for Ruby action %s: %s", action, err), agent, reply)
 		return
 	}
-
-	go func() {
-		execution.Wait()
-	}()
 }
 
 func newShimRequest(req *mcorpc.Request) ([]byte, error) {
