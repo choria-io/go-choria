@@ -29,6 +29,7 @@ func New(mgr server.AgentManager) (agents.Agent, error) {
 	agent.MustRegisterAction("trigger", triggerAction)
 	agent.MustRegisterAction("maintenance", maintenanceAction)
 	agent.MustRegisterAction("resume", resumeAction)
+	agent.MustRegisterAction("goss_validate", gossValidateAction)
 
 	// TODO: info action showing machine info - facts and inventory like response
 
