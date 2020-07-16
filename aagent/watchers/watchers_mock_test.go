@@ -284,6 +284,18 @@ func (mr *MockMachineMockRecorder) OverrideData() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OverrideData", reflect.TypeOf((*MockMachine)(nil).OverrideData))
 }
 
+// GossFilePath mocks base method
+func (m *MockMachine) GossFilePath() string {
+	ret := m.ctrl.Call(m, "GossFilePath")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// GossFilePath indicates an expected call of GossFilePath
+func (mr *MockMachineMockRecorder) GossFilePath() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GossFilePath", reflect.TypeOf((*MockMachine)(nil).GossFilePath))
+}
+
 // Debugf mocks base method
 func (m *MockMachine) Debugf(name, format string, args ...interface{}) {
 	varargs := []interface{}{name, format}
