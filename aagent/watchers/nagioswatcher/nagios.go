@@ -498,17 +498,7 @@ func (w *Watcher) watchUsingBuiltin(_ context.Context) (state State, output stri
 	case w.builtin == "heartbeat":
 		return w.builtinHeartbeat()
 	case strings.HasPrefix(w.builtin, "goss"):
-		parts := strings.Split(w.builtin, " ")
-
-		switch {
-		case len(parts) == 1:
-			return w.watchUsingGoss("")
-		case len(parts) == 2:
-			return w.watchUsingGoss(parts[1])
-		default:
-			return UNKNOWN, "Invalid goss argument", fmt.Errorf("invalid goss argument")
-		}
-
+		return w.watchUsingGoss()
 	default:
 		return UNKNOWN, "", fmt.Errorf("unsupported builtin %q", w.builtin)
 	}
