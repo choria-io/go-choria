@@ -114,8 +114,14 @@ func (srv *Instance) PrometheusTextFileDir() string {
 	return srv.cfg.Choria.PrometheusTextFileDir
 }
 
+// ScoutOverridesPath is the path to a file defining node specific scout overrides
 func (srv *Instance) ScoutOverridesPath() string {
 	return srv.cfg.Choria.ScoutOverrides
+}
+
+// ScoutGossFile is the path to a file defining the gossfile for this node
+func (srv *Instance) ScoutGossFile() string {
+	return srv.cfg.Choria.ScoutGossFile
 }
 
 // Classes is a list of classification classes this node matches

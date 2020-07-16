@@ -63,6 +63,7 @@ type Machine interface {
 	TimeStampSeconds() int64
 	TextFileDirectory() string
 	OverrideData() ([]byte, error)
+	GossFilePath() string
 	Transition(t string, args ...interface{}) error
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
@@ -79,6 +80,7 @@ type Watcher struct {
 	name             string
 	machineName      string
 	textFileDir      string
+	gossFile         string
 	states           []string
 	failEvent        string
 	successEvent     string
@@ -104,6 +106,7 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		name:             name,
 		machineName:      machine.Name(),
 		textFileDir:      machine.TextFileDirectory(),
+		gossFile:         machine.GossFilePath(),
 		states:           states,
 		failEvent:        failEvent,
 		successEvent:     successEvent,
@@ -490,10 +493,22 @@ func (w *Watcher) watchUsingPlugin(ctx context.Context) (state State, output str
 	return UNKNOWN, output, nil
 }
 
-func (w *Watcher) watchUsingBuiltin(ctx context.Context) (state State, output string, err error) {
-	switch w.builtin {
-	case "heartbeat":
-		return OK, strconv.Itoa(int(time.Now().Unix())), nil
+func (w *Watcher) watchUsingBuiltin(_ context.Context) (state State, output string, err error) {
+	switch {
+	case w.builtin == "heartbeat":
+		return w.builtinHeartbeat()
+	case strings.HasPrefix(w.builtin, "goss"):
+		parts := strings.Split(w.builtin, " ")
+
+		switch {
+		case len(parts) == 1:
+			return w.watchUsingGoss("")
+		case len(parts) == 2:
+			return w.watchUsingGoss(parts[1])
+		default:
+			return UNKNOWN, "Invalid goss argument", fmt.Errorf("invalid goss argument")
+		}
+
 	default:
 		return UNKNOWN, "", fmt.Errorf("unsupported builtin %q", w.builtin)
 	}
