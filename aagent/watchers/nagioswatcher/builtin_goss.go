@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"os"
 	"time"
 
 	"github.com/aelsabbahy/goss"
@@ -12,7 +11,7 @@ import (
 	gossutil "github.com/aelsabbahy/goss/util"
 )
 
-func (w *Watcher) watchUsingGoss(vars string) (state State, output string, err error) {
+func (w *Watcher) watchUsingGoss() (state State, output string, err error) {
 	var out bytes.Buffer
 
 	opts := []gossutil.ConfigOption{
@@ -21,11 +20,9 @@ func (w *Watcher) watchUsingGoss(vars string) (state State, output string, err e
 		gossutil.WithSpecFile(w.gossFile),
 	}
 
-	if vars != "" {
-		_, err := os.Stat(vars)
-		if err == nil {
-			opts = append(opts, gossutil.WithVarsFile(vars))
-		}
+	od, err := w.machine.OverrideData()
+	if err == nil && len(od) > 0 {
+		opts = append(opts, gossutil.WithVarsBytes(od))
 	}
 
 	cfg, err := gossutil.NewConfig(opts...)
