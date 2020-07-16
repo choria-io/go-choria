@@ -85,6 +85,81 @@
       "description": "Pause checking of one or more checks"
     },
     {
+      "action": "goss_validate",
+      "description": "Performs a Goss validation using a specific file",
+      "display": "always",
+      "aggregate": [
+        {
+          "function": "summary",
+          "args": [
+            "tests"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "failures"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "success"
+          ]
+        }
+      ],
+      "input": {
+        "file": {
+          "prompt": "Goss File",
+          "description": "Path to the Goss validation specification",
+          "type": "string",
+          "maxlength": 256,
+          "validation": ".+",
+          "optional": false
+        },
+        "vars": {
+          "prompt": "Vars File",
+          "description": "Path to a file to use as template variables",
+          "type": "string",
+          "maxlength": 256,
+          "validation": ".+",
+          "optional": true
+        }
+      },
+      "output": {
+        "tests": {
+          "description": "The number of tests that were run",
+          "display_as": "Tests",
+          "type": "integer"
+        },
+        "failures": {
+          "description": "The number of tests that failed",
+          "display_as": "Failed Tests",
+          "type": "integer"
+        },
+        "runtime": {
+          "description": "The time it took to run the tests, in seconds",
+          "display_as": "Runtime",
+          "type": "integer"
+        },
+        "success": {
+          "description": "Indicates if the test passed",
+          "display_as": "Success",
+          "type": "string"
+        },
+        "summary": {
+          "description": "A human friendly test result",
+          "display_as": "Summary",
+          "type": "string"
+        },
+        "results": {
+          "description": "The full test results",
+          "display_as": "Results",
+          "type": "array"
+        }
+      }
+    },
+    {
       "action": "trigger",
       "input": {
         "checks": {
