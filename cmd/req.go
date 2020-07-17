@@ -264,9 +264,7 @@ func (r *reqCommand) displayResults(res *replyfmt.RPCResults) error {
 
 	if r.jsonOnly {
 		err := res.RenderJSON(r.outputWriter, r.actionInterface)
-		if err != nil {
-			return err
-		}
+		return err
 	}
 
 	mode := replyfmt.DisplayDDL

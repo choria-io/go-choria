@@ -107,7 +107,7 @@ func (r *RPCResults) RenderTXT(w io.Writer, action ActionDDL, verbose bool, sile
 		fmt.Fprintf(w, "          Agent Time: %v\n", stats.RequestTime-stats.PublishTime)
 		fmt.Fprintf(w, "          Total Time: %v\n", stats.RequestTime+stats.DiscoverTime)
 	} else {
-		fmt.Fprintf(w, "Finished processing %d / %d hosts in %s\n", stats.ResponseCount, stats.DiscoveredCount, time.Duration((stats.RequestTime)*1000000000))
+		fmt.Fprintf(w, "Finished processing %d / %d hosts in %s\n", stats.ResponseCount, stats.DiscoveredCount, stats.RequestTime+stats.DiscoverTime)
 	}
 
 	nodeListPrinter := func(nodes []string, message string) {
