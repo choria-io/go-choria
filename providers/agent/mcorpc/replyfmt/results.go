@@ -154,7 +154,6 @@ func (r *RPCResults) RenderJSON(w io.Writer, action ActionDDL) (err error) {
 	r.Summaries, _ = action.AggregateSummaryJSON()
 	r.ParsedStats = statsFromClient(r.Stats)
 
-	fmt.Printf("%#v\n", r.Stats)
 	j, err := json.MarshalIndent(r, "", "   ")
 	if err != nil {
 		return fmt.Errorf("could not prepare display: %s", err)
