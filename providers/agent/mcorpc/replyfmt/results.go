@@ -39,11 +39,12 @@ type RPCReply struct {
 }
 
 type RPCResults struct {
-	Agent     string          `json:"agent"`
-	Action    string          `json:"action"`
-	Replies   []*RPCReply     `json:"replies"`
-	Stats     *rpc.Stats      `json:"request_stats"`
-	Summaries json.RawMessage `json:"summaries"`
+	Agent       string          `json:"agent"`
+	Action      string          `json:"action"`
+	Replies     []*RPCReply     `json:"replies"`
+	Stats       *rpc.Stats      `json:"-"`
+	ParsedStats *RPCStats       `json:"request_stats"`
+	Summaries   json.RawMessage `json:"summaries"`
 }
 
 type ActionDDL interface {
@@ -151,7 +152,9 @@ func (r *RPCResults) RenderJSON(w io.Writer, action ActionDDL) (err error) {
 
 	// silently failing as this is optional
 	r.Summaries, _ = action.AggregateSummaryJSON()
+	r.ParsedStats = statsFromClient(r.Stats)
 
+	fmt.Printf("%#v\n", r.Stats)
 	j, err := json.MarshalIndent(r, "", "   ")
 	if err != nil {
 		return fmt.Errorf("could not prepare display: %s", err)
