@@ -15,7 +15,7 @@ import (
 )
 
 // agents we do not ever wish to load from external agents
-var denylist = []string{"rpcutil", "choria_util", "discovery"}
+var denylist = []string{"rpcutil", "choria_util", "discovery", "scout"}
 
 // Provider is a Choria Agent Provider that supports calling agents external to the
 // choria process written in any language
