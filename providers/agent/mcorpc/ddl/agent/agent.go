@@ -137,10 +137,10 @@ func (d *DDL) HaveAction(action string) bool {
 // Timeout is the timeout for this agent
 func (d *DDL) Timeout() time.Duration {
 	if d.Metadata.Timeout == 0 {
-		return time.Duration(10 * time.Second)
+		return 10 * time.Second
 	}
 
-	return time.Duration(time.Second * time.Duration(d.Metadata.Timeout))
+	return time.Second * time.Duration(d.Metadata.Timeout)
 }
 
 // ValidateAndConvertToDDLTypes converts args to the correct data types as declared in the DDL and validates everything
@@ -158,6 +158,35 @@ func (d *DDL) ToRuby() (string, error) {
 	var out bytes.Buffer
 
 	funcs := template.FuncMap{
+		"fmtAggregateArguments": func(output string, v json.RawMessage) string {
+			var args []interface{}
+			err := json.Unmarshal(v, &args)
+			if err != nil {
+				return fmt.Sprintf(":%s", output)
+			}
+
+			switch len(args) {
+			case 1:
+				return fmt.Sprintf(":%v", args[0])
+			case 2:
+				opts := ""
+				margs, ok := args[1].(map[string]interface{})
+				if ok {
+					for k, v := range margs {
+						vs, ok := v.(string)
+						if ok {
+							opts = fmt.Sprintf(":%s => %q", k, vs)
+						}
+					}
+					return fmt.Sprintf(":%v, %s", args[0], opts)
+				}
+
+				return fmt.Sprintf(":%v", args[0])
+
+			default:
+				return fmt.Sprintf(":%s", output)
+			}
+		},
 		"validatorStr": func(v string) string {
 			if v == "" {
 				return `"."`
@@ -312,7 +341,7 @@ action "{{ $action.Name }}", :description => "{{ $action.Description }}" do
 {{- if $action.Aggregation }}
   summarize do
 {{- range $aname, $aggregate := $action.Aggregation }}
-    aggregate {{ $aggregate.Function }}(:{{ $aggregate.OutputName }})
+    aggregate {{ $aggregate.Function }}({{ fmtAggregateArguments $aggregate.OutputName $aggregate.Arguments }})
 {{- end }}
   end
 {{- end }}

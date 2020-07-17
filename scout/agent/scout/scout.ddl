@@ -132,9 +132,9 @@ action "goss_validate", :description => "Performs a Goss validation using a spec
          :display_as  => "Tests"
 
   summarize do
-    aggregate summary(:tests)
-    aggregate summary(:failures)
-    aggregate summary(:success)
+    aggregate summary(:tests, :format => "%s Test Cases on %d node(s)")
+    aggregate summary(:failures, :format => "%s Failed Cases on %d node(s)")
+    aggregate summary(:success, :format => "%s Passed Cases on %d node(s)")
   end
 end
 
