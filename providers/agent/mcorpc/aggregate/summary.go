@@ -9,7 +9,9 @@ import (
 
 // SummaryAggregator keeps track of seen values and summarize how many times each were seen
 type SummaryAggregator struct {
-	items map[interface{}]int
+	items  map[interface{}]int
+	args   []interface{}
+	format string
 
 	sync.Mutex
 }
@@ -17,7 +19,9 @@ type SummaryAggregator struct {
 // NewSummaryAggregator creates a new SummaryAggregator with the specific options supplied
 func NewSummaryAggregator(args []interface{}) (*SummaryAggregator, error) {
 	agg := &SummaryAggregator{
-		items: make(map[interface{}]int),
+		items:  make(map[interface{}]int),
+		args:   args,
+		format: parseFormatFromArgs(args),
 	}
 
 	return agg, nil
@@ -104,7 +108,11 @@ func (s *SummaryAggregator) ResultFormattedStrings(format string) ([]string, err
 	}
 
 	if format == "" {
-		format = fmt.Sprintf("%%%ds: %%d", max)
+		if s.format != "" {
+			format = s.format
+		} else {
+			format = fmt.Sprintf("%%%ds: %%d", max)
+		}
 	}
 
 	sort.Slice(sortable, func(i int, j int) bool {

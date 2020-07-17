@@ -92,19 +92,22 @@
         {
           "function": "summary",
           "args": [
-            "tests"
+            "tests",
+            {"format":  "%s Tests on %d node(s)"}
           ]
         },
         {
           "function": "summary",
           "args": [
-            "failures"
+            "failures",
+            {"format":  "%s Failed test on %d node(s)"}
           ]
         },
         {
           "function": "summary",
           "args": [
-            "success"
+            "success",
+            {"format":  "%s Passed tests on %d node(s)"}
           ]
         }
       ],

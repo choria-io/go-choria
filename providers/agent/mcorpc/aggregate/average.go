@@ -9,15 +9,20 @@ import (
 
 // AverageAggregator averages seen values
 type AverageAggregator struct {
-	sum   float64
-	count int
+	sum    float64
+	count  int
+	args   []interface{}
+	format string
 
 	sync.Mutex
 }
 
 // NewAverageAggregator creates a new AverageAggregator with the specific options supplied
 func NewAverageAggregator(args []interface{}) (*AverageAggregator, error) {
-	agg := &AverageAggregator{}
+	agg := &AverageAggregator{
+		args:   args,
+		format: parseFormatFromArgs(args),
+	}
 
 	return agg, nil
 }
@@ -81,7 +86,11 @@ func (a *AverageAggregator) ResultFormattedStrings(format string) ([]string, err
 	avg := a.sum / float64(a.count)
 
 	if format == "" {
-		format = "Average: %.3f"
+		if a.format != "" {
+			format = a.format
+		} else {
+			format = "Average: %.3f"
+		}
 	}
 
 	return []string{fmt.Sprintf(format, avg)}, nil
