@@ -220,6 +220,30 @@ func (p *ScoutClient) Maintenance() *MaintenanceRequester {
 	return d
 }
 
+// GossValidate performs the goss_validate action
+//
+// Description: Performs a Goss validation using a specific file
+//
+// Required Inputs:
+//    - file (string) - Path to the Goss validation specification
+//
+// Optional Inputs:
+//    - vars (string) - Path to a file to use as template variables
+func (p *ScoutClient) GossValidate(fileI string) *GossValidateRequester {
+	d := &GossValidateRequester{
+		outc: nil,
+		r: &requester{
+			args: map[string]interface{}{
+				"file": fileI,
+			},
+			action: "goss_validate",
+			client: p,
+		},
+	}
+
+	return d
+}
+
 // Trigger performs the trigger action
 //
 // Description: Force an immediate check of one or more checks
