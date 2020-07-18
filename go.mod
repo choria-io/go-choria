@@ -6,6 +6,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.0.7
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/aelsabbahy/goss v0.3.13
+	github.com/awesome-gocui/gocui v0.6.0
 	github.com/choria-io/provisioning-agent v0.8.0
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
