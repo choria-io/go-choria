@@ -79,7 +79,7 @@ action "maintenance", :description => "Pause checking of one or more checks" do
 end
 
 action "goss_validate", :description => "Performs a Goss validation using a specific file" do
-  display :always
+  display :failed
 
   input :file,
         :prompt      => "Goss File",

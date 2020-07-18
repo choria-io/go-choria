@@ -87,7 +87,7 @@
     {
       "action": "goss_validate",
       "description": "Performs a Goss validation using a specific file",
-      "display": "always",
+      "display": "failed",
       "aggregate": [
         {
           "function": "summary",
