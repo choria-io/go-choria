@@ -1,5 +1,19 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2020/07/18|      |Release 0.16.0                                                                                           |
+|2020/07/18|960   |Add a `choria scout watch` command                                                                       |
+|2020/07/17|957   |Restore the ability for DDLs to declare display formats for aggregate outputs                            |
+|2020/07/16|948   |Support performing `goss` validation in the `nagios` autonomous agent                                    |
+|2020/07/15|842   |Avoid zombies when Ruby agents exceed their allowed run time                                             |
+|2020/07/09|944   |Extract the generic result display logic from `choria req` into a reusable package                       |
+|2020/07/09|942   |Include a snapshot of recent check states in published check events                                      |
+|2020/07/08|939   |Improve using the supplied logger in generated clients                                                   |
+|2020/07/08|938   |Add helpers to parse complex data in generated clients                                                   |
+|2020/07/08|937   |Generated clients perform 2 discoveries per request                                                      |
+|2020/07/07|935   |Release packages for Ubuntu Focal (20.04 LTS)                                                            |
+|2020/07/07|932   |Fix targeting a specific sub collective in the `req` command                                             |
+|2020/07/07|928   |Add a new `scout` agent and Golang client                                                                |
+|2020/07/03|920   |Initial work on a Scout framework towards building a monitoring related distribution                     |
 |2020/07/01|      |Release 0.15.0                                                                                           |
 |2020/06/29|913   |Support preparing for shutdown by closing connections and emiting shutdown events when embedded          |
 |2020/06/26|895   |Support NATS JetStream Streaming Server in Choria Broker                                                 |

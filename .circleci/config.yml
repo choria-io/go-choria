@@ -217,6 +217,7 @@ jobs:
           at: /tmp/workspace
 
       - run: ls /tmp/workspace
+      - run: cd /tmp/workspace && tar -czf artifacts.tgz artifacts
 
       - store_artifacts:
           path: /tmp/workspace
@@ -224,6 +225,28 @@ jobs:
   nightly_packagecloud: &packagecloud_push
     environment:
       REPO: nightly
+
+    docker:
+      - image: circleci/ruby
+
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+
+      - run: gem install package_cloud
+
+      - run: |
+          for d in 6 7 8
+          do
+            for i in $(find /tmp/workspace -name \*.el${d}.\*.rpm | grep -v src.rpm)
+            do
+              package_cloud push choria/${REPO}/el/${d} ${i}
+            done
+          done
+
+  release_packagecloud:
+    environment:
+      REPO: release
 
     docker:
       - image: circleci/ruby
@@ -282,7 +305,6 @@ workflows:
             - build_el6_64bit_rpms
             - build_el7_64bit_rpms
             - build_el8_64bit_rpms
-            - build_windows_64bit_msi
 
       - nightly_packagecloud:
           requires:
@@ -369,3 +391,8 @@ workflows:
             - build_focal_64bit_debs
 
           filters: *semver_only
+
+      - release_packagecloud:
+          filters: *semver_only
+          requires:
+            - gather_artifacts
