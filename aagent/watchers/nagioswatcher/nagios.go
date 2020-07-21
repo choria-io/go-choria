@@ -243,6 +243,14 @@ func (w *Watcher) setProperties(p map[string]interface{}) error {
 		}
 	}
 
+	gossfile, ok := p["gossfile"]
+	if ok {
+		w.gossFile, ok = gossfile.(string)
+		if !ok {
+			return fmt.Errorf("gossfile should be a string")
+		}
+	}
+
 	builtin, ok := p["builtin"]
 	if ok {
 		w.builtin, ok = builtin.(string)
