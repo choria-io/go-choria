@@ -51,7 +51,6 @@ type Machine struct {
 	manifest      string
 	txtfileDir    string
 	overridesFile string
-	gossFile      string
 	startTime     time.Time
 
 	manager     WatcherManager
@@ -247,20 +246,6 @@ func (m *Machine) TextFileDirectory() string {
 	defer m.Unlock()
 
 	return m.txtfileDir
-}
-
-func (m *Machine) SetGossFile(f string) {
-	m.Lock()
-	defer m.Unlock()
-
-	m.gossFile = f
-}
-
-func (m *Machine) GossFilePath() string {
-	m.Lock()
-	defer m.Unlock()
-
-	return m.gossFile
 }
 
 func (m *Machine) SetOverridesFile(f string) {

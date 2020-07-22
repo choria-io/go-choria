@@ -1,4 +1,4 @@
-// auto generated at 2020-07-17 16:19:02.22978 +0200 CEST m=+0.002536332
+// auto generated at 2020-07-21 16:24:26.979526 +0200 CEST m=+0.001931769
 
 package config
 
@@ -111,6 +111,5 @@ var docStrings = map[string]string{
 	"plugin.choria.prometheus_textfile_directory":             "Directory where Prometheus Node Exporter textfile collector reads data",
 	"plugin.scout.overrides":                                  "Path to a file holding overrides for Scout checks",
 	"plugin.scout.tags":                                       "Path to a file holding tags for a Scout entity",
-	"plugin.scout.goss.file":                                  "Path to the file holding the gossfile for the goss builtin",
 	"plugin.choria.require_client_filter":                     "If a client filter should always be required, only used in Go clients",
 }

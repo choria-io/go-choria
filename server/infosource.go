@@ -119,11 +119,6 @@ func (srv *Instance) ScoutOverridesPath() string {
 	return srv.cfg.Choria.ScoutOverrides
 }
 
-// ScoutGossFile is the path to a file defining the gossfile for this node
-func (srv *Instance) ScoutGossFile() string {
-	return srv.cfg.Choria.ScoutGossFile
-}
-
 // Classes is a list of classification classes this node matches
 func (srv *Instance) Classes() []string {
 	classes, err := classes.ReadClasses(srv.cfg.ClassesFile)
