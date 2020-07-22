@@ -63,7 +63,6 @@ type Machine interface {
 	TimeStampSeconds() int64
 	TextFileDirectory() string
 	OverrideData() ([]byte, error)
-	GossFilePath() string
 	Transition(t string, args ...interface{}) error
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
@@ -106,7 +105,6 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		name:             name,
 		machineName:      machine.Name(),
 		textFileDir:      machine.TextFileDirectory(),
-		gossFile:         machine.GossFilePath(),
 		states:           states,
 		failEvent:        failEvent,
 		successEvent:     successEvent,
@@ -131,6 +129,10 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		if w.interval < 500*time.Millisecond {
 			return nil, fmt.Errorf("interval %v is too small", w.interval)
 		}
+	}
+
+	if w.builtin == "goss" && w.gossFile == "" {
+		return nil, fmt.Errorf("gossfile property is required for the goss builtin check")
 	}
 
 	updatePromState(w.machineName, UNKNOWN, machine.TextFileDirectory(), machine)
