@@ -47,7 +47,6 @@ type Machine interface {
 	TimeStampSeconds() int64
 	TextFileDirectory() string
 	OverrideData() ([]byte, error)
-	GossFilePath() string
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Errorf(name string, format string, args ...interface{})
@@ -82,7 +81,7 @@ func (m *Manager) Delete() {
 func (m *Manager) SetMachine(t interface{}) (err error) {
 	machine, ok := t.(Machine)
 	if !ok {
-		return errors.New("supplied machine does not implement watchers.Machine")
+		return fmt.Errorf("supplied machine does not implement watchers.Machine")
 	}
 
 	m.machine = machine
