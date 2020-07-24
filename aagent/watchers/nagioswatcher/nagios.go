@@ -75,6 +75,12 @@ type PerfData struct {
 	Value float64 `json:"value"`
 }
 
+type Execution struct {
+	Executed time.Time  `json:"execute"`
+	Status   int        `json:"status"`
+	PerfData []PerfData `json:"perfdata"`
+}
+
 type Watcher struct {
 	name             string
 	machineName      string
@@ -88,14 +94,16 @@ type Watcher struct {
 	announceInterval time.Duration
 	previousRunTime  time.Duration
 	previousOutput   string
+	previousPerfData []PerfData
 	previousCheck    time.Time
+	previousPlugin   string
 	previous         State
 	force            bool
 	statechg         chan struct{}
 	plugin           string
 	builtin          string
 	timeout          time.Duration
-	history          []int
+	history          []*Execution
 
 	sync.Mutex
 }
@@ -112,7 +120,7 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		statechg:         make(chan struct{}, 1),
 		previous:         NOTCHECKED,
 		announceInterval: ai,
-		history:          []int{},
+		history:          []*Execution{},
 	}
 
 	err = w.setProperties(properties)
@@ -175,11 +183,11 @@ func (w *Watcher) CurrentState() interface{} {
 		Version:    w.machine.Version(),
 		Timestamp:  w.machine.TimeStampSeconds(),
 		Machine:    w.machineName,
-		Plugin:     w.plugin,
+		Plugin:     w.previousPlugin,
 		Status:     stateNames[w.previous],
 		StatusCode: int(w.previous),
 		Output:     w.previousOutput,
-		PerfData:   w.parsePerfData(w.previousOutput),
+		PerfData:   w.previousPerfData,
 		CheckTime:  w.previousCheck.Unix(),
 		RunTime:    w.previousRunTime.Seconds(),
 		History:    w.history,
@@ -369,14 +377,15 @@ func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (w *Watcher) performWatch(ctx context.Context) {
+	start := time.Now().UTC()
 	state, err := w.watch(ctx)
-	err = w.handleCheck(state, false, err)
+	err = w.handleCheck(start, state, false, err)
 	if err != nil {
 		w.machine.Errorf(w.name, "could not handle watcher event: %s", err)
 	}
 }
 
-func (w *Watcher) handleCheck(s State, external bool, err error) error {
+func (w *Watcher) handleCheck(start time.Time, s State, external bool, err error) error {
 	if s == SKIPPED || s == NOTCHECKED {
 		return nil
 	}
@@ -389,7 +398,7 @@ func (w *Watcher) handleCheck(s State, external bool, err error) error {
 	if len(w.history) >= 21 {
 		w.history = w.history[1:]
 	}
-	w.history = append(w.history, int(s))
+	w.history = append(w.history, &Execution{Executed: start, Status: int(s), PerfData: w.previousPerfData})
 
 	w.Unlock()
 
@@ -450,8 +459,6 @@ func (w *Watcher) funcMap() template.FuncMap {
 }
 
 func (w *Watcher) watchUsingPlugin(ctx context.Context) (state State, output string, err error) {
-	w.machine.Infof(w.name, "Running %s", w.plugin)
-
 	timeoutCtx, cancel := context.WithTimeout(ctx, w.timeout)
 	defer cancel()
 
@@ -461,6 +468,8 @@ func (w *Watcher) watchUsingPlugin(ctx context.Context) (state State, output str
 		return UNKNOWN, "", err
 	}
 
+	w.machine.Infof(w.name, "Running %s", w.plugin)
+
 	w.machine.Infof(w.name, "command post processing is: %s", plugin)
 
 	splitcmd, err := shlex.Split(plugin)
@@ -468,6 +477,8 @@ func (w *Watcher) watchUsingPlugin(ctx context.Context) (state State, output str
 		w.machine.Errorf(w.name, "Exec watcher %s failed: %s", plugin, err)
 		return UNKNOWN, "", err
 	}
+
+	w.previousPlugin = plugin
 
 	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], splitcmd[1:]...)
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
@@ -540,6 +551,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	}
 
 	w.previousOutput = strings.TrimSpace(output)
+	w.previousPerfData = w.parsePerfData(output)
 
 	return state, err
 }
