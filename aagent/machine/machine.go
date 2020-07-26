@@ -80,6 +80,7 @@ type WatcherManager interface {
 	Run(context.Context, *sync.WaitGroup) error
 	NotifyStateChance()
 	SetMachine(interface{}) error
+	WatcherState(watcher string) (interface{}, bool)
 	Delete()
 }
 

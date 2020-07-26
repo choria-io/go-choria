@@ -6,8 +6,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"sync"
+	"io"
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
 
 // {{ .ActionName | SnakeToCamel }}Requester performs a RPC request to {{ .AgentName | ToLower }}#{{ .ActionName | ToLower }}
@@ -24,8 +28,41 @@ type {{ .ActionName | SnakeToCamel }}Output struct {
 
 // {{ .ActionName | SnakeToCamel }}Result is the result from a {{ .ActionName | ToLower }} action
 type {{ .ActionName | SnakeToCamel }}Result struct {
+	ddl *agent.DDL
 	stats   *rpcclient.Stats
 	outputs []*{{ .ActionName | SnakeToCamel }}Output
+	rpcreplies []*replyfmt.RPCReply
+	mu sync.Mutex
+}
+
+func (d *{{ .ActionName | SnakeToCamel }}Result) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	if d.stats == nil {
+		return fmt.Errorf("result stats is not set, result was not completed")
+	}
+
+	results := &replyfmt.RPCResults{
+		Agent:   d.stats.Agent(),
+		Action:  d.stats.Action(),
+		Replies: d.rpcreplies,
+		Stats:   d.stats,
+	}
+
+	addl, err := d.ddl.ActionInterface(d.stats.Action())
+	if err != nil {
+		return err
+	}
+
+	switch format {
+	case JSONFormat:
+		return results.RenderJSON(w, addl)
+	case TableFormat:
+		return results.RenderTable(w, addl)
+	default:
+		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), log)
+	}
 }
 
 // Stats is the rpc request stats
@@ -65,7 +102,7 @@ func (d *{{ $.ActionName | SnakeToCamel }}Output) Parse{{ .ActionName | SnakeToC
 
 // Do performs the request
 func (d *{{ .ActionName | SnakeToCamel }}Requester) Do(ctx context.Context) (*{{ .ActionName | SnakeToCamel }}Result, error) {
-	dres := &{{ .ActionName | SnakeToCamel }}Result{}
+	dres := &{{ .ActionName | SnakeToCamel }}Result{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
 		output := &{{ .ActionName | SnakeToCamel }}Output{
@@ -83,12 +120,21 @@ func (d *{{ .ActionName | SnakeToCamel }}Requester) Do(ctx context.Context) (*{{
 			d.r.client.errorf("Could not decode reply from %s: %s", pr.SenderID(), err)
 		}
 
+		// caller wants a channel so we dont return a resulset too (lots of memory etc)
+		// this is unused now, no support for setting a channel
 		if d.outc != nil {
 			d.outc <- output
 			return
 		}
 
+		// else prepare our result set
+		dres.mu.Lock()
 		dres.outputs = append(dres.outputs, output)
+		dres.rpcreplies = append(dres.rpcreplies, &replyfmt.RPCReply{
+			Sender:   pr.SenderID(),
+			RPCReply: r,
+		})
+		dres.mu.Unlock()
 	}
 
 	res, err := d.r.do(ctx, handler)

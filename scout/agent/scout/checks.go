@@ -4,25 +4,27 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 )
 
 type ChecksRequest struct{}
 
-type CheckResponse struct {
+type ChecksResponse struct {
 	Checks []*CheckState `json:"checks"`
 }
 
 type CheckState struct {
-	Name    string `json:"name"`
-	State   string `json:"state"`
-	Version string `json:"version"`
-	Started int64  `json:"start_time"`
+	Name    string                           `json:"name"`
+	State   string                           `json:"state"`
+	Version string                           `json:"version"`
+	Started int64                            `json:"start_time"`
+	Status  *nagioswatcher.StateNotification `json:"status"`
 }
 
-func checksAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, _ choria.ConnectorInfo) {
-	resp := &CheckResponse{Checks: []*CheckState{}}
+func checksAction(_ context.Context, _ *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, _ choria.ConnectorInfo) {
+	resp := &ChecksResponse{Checks: []*CheckState{}}
 	reply.Data = resp
 
 	states, err := agent.ServerInfoSource.MachinesStatus()
@@ -36,13 +38,18 @@ func checksAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 			continue
 		}
 
-		check := &CheckState{
+		state := &CheckState{
 			Name:    m.Name,
 			State:   m.State,
 			Version: m.Version,
 			Started: m.StartTimeUTC,
 		}
 
-		resp.Checks = append(resp.Checks, check)
+		ss, ok := m.ScoutState.(*nagioswatcher.StateNotification)
+		if ok {
+			state.Status = ss
+		}
+
+		resp.Checks = append(resp.Checks, state)
 	}
 }

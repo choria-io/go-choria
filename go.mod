@@ -11,7 +11,6 @@ require (
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/fatih/color v1.9.0
-	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/golang/mock v1.4.3
@@ -27,6 +26,7 @@ require (
 	github.com/nats-io/nats.go v1.10.1-0.20200606002146-fc6fed82929a
 	github.com/nats-io/nsc v0.0.0-20200617223447-2aca79c9d220
 	github.com/nats-io/stan.go v0.7.0
+	github.com/olekukonko/tablewriter v0.0.1
 	github.com/onsi/ginkgo v1.14.0
 	github.com/onsi/gomega v1.10.1
 	github.com/open-policy-agent/opa v0.21.0

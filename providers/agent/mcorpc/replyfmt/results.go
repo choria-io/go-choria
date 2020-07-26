@@ -11,10 +11,12 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/sirupsen/logrus"
+	"github.com/olekukonko/tablewriter"
 	"github.com/tidwall/gjson"
+	"github.com/tidwall/pretty"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
@@ -55,13 +57,23 @@ type ActionDDL interface {
 	GetOutput(string) (*agent.ActionOutputItem, bool)
 	AggregateSummaryFormattedStrings() (map[string][]string, error)
 	DisplayMode() string
+	OutputNames() []string
+}
+
+type Logger interface {
+	Debugf(format string, args ...interface{})
+	Infof(format string, args ...interface{})
+	Warnf(format string, args ...interface{})
+	Errorf(format string, args ...interface{})
+	Fatalf(format string, args ...interface{})
+	Panicf(format string, args ...interface{})
 }
 
 type flusher interface {
 	Flush()
 }
 
-func (r *RPCResults) RenderTXT(w io.Writer, action ActionDDL, verbose bool, silent bool, display DisplayMode, log *logrus.Entry) (err error) {
+func (r *RPCResults) RenderTXT(w io.Writer, action ActionDDL, verbose bool, silent bool, display DisplayMode, log Logger) (err error) {
 	fmtopts := []Option{
 		Display(display),
 	}
@@ -137,6 +149,63 @@ func (r *RPCResults) RenderTXT(w io.Writer, action ActionDDL, verbose bool, sile
 	if ok {
 		f.Flush()
 	}
+
+	return nil
+}
+
+// RenderTable renders a table of outputs
+// TODO: should become a reply format formatter, but those lack a prepare phase to print headers etc
+func (r *RPCResults) RenderTable(w io.Writer, action ActionDDL) (err error) {
+	table := tablewriter.NewWriter(w)
+	table.SetAutoWrapText(true)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+
+	var (
+		headers = []string{"sender"}
+		outputs = action.OutputNames()
+	)
+
+	for _, o := range outputs {
+		output, ok := action.GetOutput(o)
+		if ok {
+			headers = append(headers, output.DisplayAs)
+		} else {
+			headers = append(headers, strings.Title(o))
+		}
+	}
+
+	if len(headers) == 0 {
+		return nil
+	}
+
+	table.SetHeader(headers)
+
+	for _, reply := range r.Replies {
+		if reply.Statuscode != mcorpc.OK {
+			continue
+		}
+
+		parsedResult := gjson.ParseBytes(reply.RPCReply.Data)
+		if parsedResult.Exists() {
+			row := []string{reply.Sender}
+			for _, o := range outputs {
+				val := parsedResult.Get(o)
+				switch {
+				case val.IsArray(), val.IsObject():
+					row = append(row, string(pretty.PrettyOptions([]byte(val.String()), &pretty.Options{
+						SortKeys: true,
+					})))
+				default:
+					row = append(row, val.String())
+				}
+			}
+			table.Append(row)
+		}
+	}
+
+	table.Render()
 
 	return nil
 }

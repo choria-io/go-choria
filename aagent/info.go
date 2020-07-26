@@ -6,14 +6,15 @@ import (
 
 // MachineState is the state of a running machine
 type MachineState struct {
-	Name                 string   `json:"name" yaml:"name"`
-	Version              string   `json:"version" yaml:"version"`
-	State                string   `json:"state" yaml:"state"`
-	Path                 string   `json:"path" yaml:"path"`
-	ID                   string   `json:"id" yaml:"id"`
-	StartTimeUTC         int64    `json:"start_time" yaml:"start_time"`
-	AvailableTransitions []string `json:"available_transitions" yaml:"available_transitions"`
-	Scout                bool     `json:"scout" yaml:"scout"`
+	Name                 string      `json:"name" yaml:"name"`
+	Version              string      `json:"version" yaml:"version"`
+	State                string      `json:"state" yaml:"state"`
+	Path                 string      `json:"path" yaml:"path"`
+	ID                   string      `json:"id" yaml:"id"`
+	StartTimeUTC         int64       `json:"start_time" yaml:"start_time"`
+	AvailableTransitions []string    `json:"available_transitions" yaml:"available_transitions"`
+	Scout                bool        `json:"scout" yaml:"scout"`
+	ScoutState           interface{} `json:"current_state,omitempty" yaml:"current_state,omitempty"`
 }
 
 // AllMachineStates retrieves a list of machines and their states
@@ -24,10 +25,15 @@ func (a *AAgent) AllMachineStates() (states []MachineState, err error) {
 	defer a.Unlock()
 
 	for _, m := range a.machines {
-		scout := false
+		var (
+			cstate interface{}
+			scout  = false
+		)
+
 		for _, w := range m.machine.WatcherDefs {
 			if w.Type == "nagios" {
 				scout = true
+				cstate, _ = m.machine.WatcherState(w.Name)
 			}
 		}
 
@@ -40,6 +46,7 @@ func (a *AAgent) AllMachineStates() (states []MachineState, err error) {
 			StartTimeUTC:         m.machine.StartTime().Unix(),
 			AvailableTransitions: m.machine.AvailableTransitions(),
 			Scout:                scout,
+			ScoutState:           cstate,
 		}
 
 		states = append(states, state)

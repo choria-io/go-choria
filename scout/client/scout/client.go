@@ -61,6 +61,37 @@ type ChoriaFramework interface {
 // FilterFunc can generate a Choria filter
 type FilterFunc func(f *protocol.Filter) error
 
+// RenderFormat is the format used by the RenderResults helper
+type RenderFormat int
+
+const (
+	// JSONFormat renders the results as a JSON document
+	JSONFormat RenderFormat = iota
+
+	// TextFormat renders the results as a Choria typical result set in line with choria req output
+	TextFormat
+)
+
+// DisplayMode overrides the DDL display hints
+type DisplayMode uint8
+
+const (
+	DisplayDDL = DisplayMode(iota)
+	DisplayOK
+	DisplayFailed
+	DisplayAll
+	DisplayNone
+)
+
+type Log interface {
+	Debugf(format string, args ...interface{})
+	Infof(format string, args ...interface{})
+	Warnf(format string, args ...interface{})
+	Errorf(format string, args ...interface{})
+	Fatalf(format string, args ...interface{})
+	Panicf(format string, args ...interface{})
+}
+
 // ScoutClient to the scout agent
 type ScoutClient struct {
 	fw            ChoriaFramework

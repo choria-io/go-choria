@@ -40,6 +40,7 @@ type reqCommand struct {
 	batchSleep       int
 	verbose          bool
 	jsonOnly         bool
+	tableOnly        bool
 	silent           bool
 	nodesFile        string
 	workers          int
@@ -79,6 +80,7 @@ func (r *reqCommand) Setup() (err error) {
 	r.cmd.Flag("nodes", "List of nodes to interact with").ExistingFileVar(&r.nodesFile)
 	r.cmd.Flag("np", "Disable the progress bar").BoolVar(&r.noProgress)
 	r.cmd.Flag("json", "Produce JSON output only").Short('j').BoolVar(&r.jsonOnly)
+	r.cmd.Flag("table", "Produce a Table output of successful responses").BoolVar(&r.tableOnly)
 	r.cmd.Flag("verbose", "Enable verbose output").Short('v').BoolVar(&r.verbose)
 	r.cmd.Flag("display", "Display only a subset of results (ok, failed, all, none)").EnumVar(&r.displayOverride, "ok", "failed", "all", "none")
 	r.cmd.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&r.discoveryTimeout)
@@ -119,6 +121,9 @@ func (r *reqCommand) configureProgressBar(count int, expected int) {
 
 func (r *reqCommand) responseHandler(results *replyfmt.RPCResults) func(pr protocol.Reply, reply *rpc.RPCReply) {
 	return func(pr protocol.Reply, reply *rpc.RPCReply) {
+		mu.Lock()
+		defer mu.Unlock()
+
 		if r.progressBar != nil {
 			r.progressBar.Incr()
 		}
@@ -263,8 +268,11 @@ func (r *reqCommand) displayResults(res *replyfmt.RPCResults) error {
 	defer r.outputWriter.Flush()
 
 	if r.jsonOnly {
-		err := res.RenderJSON(r.outputWriter, r.actionInterface)
-		return err
+		return res.RenderJSON(r.outputWriter, r.actionInterface)
+	}
+
+	if r.tableOnly {
+		return res.RenderTable(r.outputWriter, r.actionInterface)
 	}
 
 	mode := replyfmt.DisplayDDL

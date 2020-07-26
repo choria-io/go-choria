@@ -68,6 +68,19 @@ func (mr *MockWatcherManagerMockRecorder) SetMachine(arg0 interface{}) *gomock.C
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMachine", reflect.TypeOf((*MockWatcherManager)(nil).SetMachine), arg0)
 }
 
+// WatcherState mocks base method
+func (m *MockWatcherManager) WatcherState(watcher string) (interface{}, bool) {
+	ret := m.ctrl.Call(m, "WatcherState", watcher)
+	ret0, _ := ret[0].(interface{})
+	ret1, _ := ret[1].(bool)
+	return ret0, ret1
+}
+
+// WatcherState indicates an expected call of WatcherState
+func (mr *MockWatcherManagerMockRecorder) WatcherState(watcher interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatcherState", reflect.TypeOf((*MockWatcherManager)(nil).WatcherState), watcher)
+}
+
 // Delete mocks base method
 func (m *MockWatcherManager) Delete() {
 	m.ctrl.Call(m, "Delete")

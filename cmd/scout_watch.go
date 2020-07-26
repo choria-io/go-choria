@@ -19,7 +19,6 @@ type sWatchCommand struct {
 	watch    *scoutcmd.WatchCommand
 
 	command
-	sync.Mutex
 }
 
 func (w *sWatchCommand) Setup() (err error) {
