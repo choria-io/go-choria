@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2020-07-17 16:25:13.778601 +0200 CEST m=+0.032530623"
+// generated code; DO NOT EDIT; 2020-07-25 14:49:05.9001 +0200 CEST m=+0.032793871"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.14.0
 
@@ -8,9 +8,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"sync"
 
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 )
 
 // GossValidateRequester performs a RPC request to scout#goss_validate
@@ -27,8 +31,39 @@ type GossValidateOutput struct {
 
 // GossValidateResult is the result from a goss_validate action
 type GossValidateResult struct {
-	stats   *rpcclient.Stats
-	outputs []*GossValidateOutput
+	ddl        *agent.DDL
+	stats      *rpcclient.Stats
+	outputs    []*GossValidateOutput
+	rpcreplies []*replyfmt.RPCReply
+	mu         sync.Mutex
+}
+
+func (d *GossValidateResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	if d.stats == nil {
+		return fmt.Errorf("result stats is not set, result was not completed")
+	}
+
+	results := &replyfmt.RPCResults{
+		Agent:   d.stats.Agent(),
+		Action:  d.stats.Action(),
+		Replies: d.rpcreplies,
+		Stats:   d.stats,
+	}
+
+	addl, err := d.ddl.ActionInterface(d.stats.Action())
+	if err != nil {
+		return err
+	}
+
+	switch format {
+	case JSONFormat:
+		return results.RenderJSON(w, addl)
+	default:
+		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), log)
+	}
 }
 
 // Stats is the rpc request stats
@@ -68,7 +103,7 @@ func (d *GossValidateOutput) ParseGossValidateOutput(target interface{}) error {
 
 // Do performs the request
 func (d *GossValidateRequester) Do(ctx context.Context) (*GossValidateResult, error) {
-	dres := &GossValidateResult{}
+	dres := &GossValidateResult{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
 		output := &GossValidateOutput{
@@ -86,12 +121,21 @@ func (d *GossValidateRequester) Do(ctx context.Context) (*GossValidateResult, er
 			d.r.client.errorf("Could not decode reply from %s: %s", pr.SenderID(), err)
 		}
 
+		// caller wants a channel so we dont return a resulset too (lots of memory etc)
+		// this is unused now, no support for setting a channel
 		if d.outc != nil {
 			d.outc <- output
 			return
 		}
 
+		// else prepare our result set
+		dres.mu.Lock()
 		dres.outputs = append(dres.outputs, output)
+		dres.rpcreplies = append(dres.rpcreplies, &replyfmt.RPCReply{
+			Sender:   pr.SenderID(),
+			RPCReply: r,
+		})
+		dres.mu.Unlock()
 	}
 
 	res, err := d.r.do(ctx, handler)

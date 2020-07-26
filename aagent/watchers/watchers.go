@@ -105,6 +105,18 @@ func (m *Manager) AddWatcher(w Watcher) error {
 	return nil
 }
 
+// WatcherState retrieves the current status for a given watcher, boolean result is false for unknown watchers
+func (m *Manager) WatcherState(watcher string) (interface{}, bool) {
+	m.Lock()
+	defer m.Unlock()
+	w, ok := m.watchers[watcher]
+	if !ok {
+		return nil, false
+	}
+
+	return w.CurrentState(), true
+}
+
 func (m *Manager) configureWatchers() (err error) {
 	for _, w := range m.machine.Watchers() {
 		w.ParseAnnounceInterval()

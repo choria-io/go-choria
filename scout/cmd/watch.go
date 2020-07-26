@@ -57,6 +57,59 @@ func NewWatchCommand(idf string, checkf string, perf bool, history time.Duration
 	return w, nil
 }
 
+func (w *WatchCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error) {
+	defer wg.Done()
+
+	lctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	if w.history > time.Hour {
+		return fmt.Errorf("maximum history that can be fetched is 1 hour")
+	}
+
+	gui, err := w.setupWindows()
+	if err != nil {
+		return err
+	}
+	defer gui.Close()
+
+	transitions := make(chan *choria.ConnectorMessage, 10000)
+	states := make(chan *choria.ConnectorMessage, 10000)
+
+	go func() {
+		var m *choria.ConnectorMessage
+		for {
+			select {
+			case m = <-transitions:
+				w.handleTransition(m, gui)
+			case m = <-states:
+				w.handleState(m, gui)
+			case <-ctx.Done():
+				return
+			}
+		}
+	}()
+
+	if w.history > 0 {
+		err = w.subscribeJetStream(lctx, transitions, states)
+	} else {
+		err = w.subscribeDirect(lctx, transitions, states)
+	}
+	if err != nil {
+		return err
+	}
+
+	err = gui.MainLoop()
+	if err != gocui.ErrQuit {
+		return err
+	}
+
+	cancel()
+	w.nc.Close()
+
+	return nil
+}
+
 func (w *WatchCommand) dataFromCloudEventJSON(j []byte) ([]byte, error) {
 	event := cloudevents.NewEvent("1.0")
 	err := event.UnmarshalJSON(j)
@@ -427,59 +480,6 @@ func (w *WatchCommand) subscribeDirect(ctx context.Context, transitions chan *ch
 	if err != nil {
 		return fmt.Errorf("could not subscribe to states: %s", err)
 	}
-
-	return nil
-}
-
-func (w *WatchCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error) {
-	defer wg.Done()
-
-	lctx, cancel := context.WithCancel(ctx)
-	defer cancel()
-
-	if w.history > time.Hour {
-		return fmt.Errorf("maximum history that can be fetched is 1 hour")
-	}
-
-	gui, err := w.setupWindows()
-	if err != nil {
-		return err
-	}
-	defer gui.Close()
-
-	transitions := make(chan *choria.ConnectorMessage, 10000)
-	states := make(chan *choria.ConnectorMessage, 10000)
-
-	go func() {
-		var m *choria.ConnectorMessage
-		for {
-			select {
-			case m = <-transitions:
-				w.handleTransition(m, gui)
-			case m = <-states:
-				w.handleState(m, gui)
-			case <-ctx.Done():
-				return
-			}
-		}
-	}()
-
-	if w.history > 0 {
-		err = w.subscribeJetStream(lctx, transitions, states)
-	} else {
-		err = w.subscribeDirect(lctx, transitions, states)
-	}
-	if err != nil {
-		return err
-	}
-
-	err = gui.MainLoop()
-	if err != gocui.ErrQuit {
-		return err
-	}
-
-	cancel()
-	w.nc.Close()
 
 	return nil
 }

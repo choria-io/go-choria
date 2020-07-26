@@ -13,6 +13,11 @@ import (
 	"github.com/pkg/errors"
 )
 
+// WatcherState is the status of a given watcher, boolean result is false for unknown watchers
+func (m *Machine) WatcherState(watcher string) (interface{}, bool) {
+	return m.manager.WatcherState(watcher)
+}
+
 // InstanceID is a unique id for the instance of a machine
 func (m *Machine) InstanceID() string {
 	return m.instanceID

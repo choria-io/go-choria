@@ -9,7 +9,7 @@ import (
 	"github.com/guptarohit/asciigraph"
 )
 
-// ChartAggregator tracks seen values and produce a sparkline with values bucketed in groups of 50
+// ChartAggregator tracks seen values and produce a chart with values bucketed in groups of 50
 type ChartAggregator struct {
 	items []float64
 
@@ -54,7 +54,7 @@ func (s *ChartAggregator) ProcessValue(v interface{}) error {
 	return fmt.Errorf("unsupported data type for chart aggregator")
 }
 
-// ResultJSON return the sparkline as a JSON document with the key "chart"
+// ResultJSON return the chart as a JSON document with the key "chart"
 func (s *ChartAggregator) ResultJSON() ([]byte, error) {
 	s.Lock()
 	defer s.Unlock()

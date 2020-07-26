@@ -78,7 +78,7 @@ type PerfData struct {
 type Execution struct {
 	Executed time.Time  `json:"execute"`
 	Status   int        `json:"status"`
-	PerfData []PerfData `json:"perfdata"`
+	PerfData []PerfData `json:"perfdata,omitempty"`
 }
 
 type Watcher struct {

@@ -112,7 +112,7 @@ func (s *ScoutAPI) EntityChecks(ctx context.Context, id string) (checks []*scout
 			return
 		}
 
-		result := &scoutagent.CheckResponse{}
+		result := &scoutagent.ChecksResponse{}
 		err = r.ParseChecksOutput(result)
 		if err != nil {
 			log.Errorf("Could not parse response from %s: %s", r.ResultDetails().Sender(), err)

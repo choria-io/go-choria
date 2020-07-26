@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2020-07-17 16:25:13.780889 +0200 CEST m=+0.034818411"
+// generated code; DO NOT EDIT; 2020-07-25 14:49:05.903289 +0200 CEST m=+0.035982798"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.14.0
 
@@ -8,9 +8,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"sync"
 
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 )
 
 // TriggerRequester performs a RPC request to scout#trigger
@@ -27,8 +31,39 @@ type TriggerOutput struct {
 
 // TriggerResult is the result from a trigger action
 type TriggerResult struct {
-	stats   *rpcclient.Stats
-	outputs []*TriggerOutput
+	ddl        *agent.DDL
+	stats      *rpcclient.Stats
+	outputs    []*TriggerOutput
+	rpcreplies []*replyfmt.RPCReply
+	mu         sync.Mutex
+}
+
+func (d *TriggerResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	if d.stats == nil {
+		return fmt.Errorf("result stats is not set, result was not completed")
+	}
+
+	results := &replyfmt.RPCResults{
+		Agent:   d.stats.Agent(),
+		Action:  d.stats.Action(),
+		Replies: d.rpcreplies,
+		Stats:   d.stats,
+	}
+
+	addl, err := d.ddl.ActionInterface(d.stats.Action())
+	if err != nil {
+		return err
+	}
+
+	switch format {
+	case JSONFormat:
+		return results.RenderJSON(w, addl)
+	default:
+		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), log)
+	}
 }
 
 // Stats is the rpc request stats
@@ -68,7 +103,7 @@ func (d *TriggerOutput) ParseTriggerOutput(target interface{}) error {
 
 // Do performs the request
 func (d *TriggerRequester) Do(ctx context.Context) (*TriggerResult, error) {
-	dres := &TriggerResult{}
+	dres := &TriggerResult{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
 		output := &TriggerOutput{
@@ -86,12 +121,21 @@ func (d *TriggerRequester) Do(ctx context.Context) (*TriggerResult, error) {
 			d.r.client.errorf("Could not decode reply from %s: %s", pr.SenderID(), err)
 		}
 
+		// caller wants a channel so we dont return a resulset too (lots of memory etc)
+		// this is unused now, no support for setting a channel
 		if d.outc != nil {
 			d.outc <- output
 			return
 		}
 
+		// else prepare our result set
+		dres.mu.Lock()
 		dres.outputs = append(dres.outputs, output)
+		dres.rpcreplies = append(dres.rpcreplies, &replyfmt.RPCReply{
+			Sender:   pr.SenderID(),
+			RPCReply: r,
+		})
+		dres.mu.Unlock()
 	}
 
 	res, err := d.r.do(ctx, handler)

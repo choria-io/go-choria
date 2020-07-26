@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2020-07-17 16:25:13.77211 +0200 CEST m=+0.026039187"
+// generated code; DO NOT EDIT; 2020-07-25 14:49:05.892595 +0200 CEST m=+0.025289263"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.14.0
 
@@ -8,9 +8,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"sync"
 
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 )
 
 // ChecksRequester performs a RPC request to scout#checks
@@ -27,8 +31,39 @@ type ChecksOutput struct {
 
 // ChecksResult is the result from a checks action
 type ChecksResult struct {
-	stats   *rpcclient.Stats
-	outputs []*ChecksOutput
+	ddl        *agent.DDL
+	stats      *rpcclient.Stats
+	outputs    []*ChecksOutput
+	rpcreplies []*replyfmt.RPCReply
+	mu         sync.Mutex
+}
+
+func (d *ChecksResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
+	d.mu.Lock()
+	defer d.mu.Unlock()
+
+	if d.stats == nil {
+		return fmt.Errorf("result stats is not set, result was not completed")
+	}
+
+	results := &replyfmt.RPCResults{
+		Agent:   d.stats.Agent(),
+		Action:  d.stats.Action(),
+		Replies: d.rpcreplies,
+		Stats:   d.stats,
+	}
+
+	addl, err := d.ddl.ActionInterface(d.stats.Action())
+	if err != nil {
+		return err
+	}
+
+	switch format {
+	case JSONFormat:
+		return results.RenderJSON(w, addl)
+	default:
+		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), log)
+	}
 }
 
 // Stats is the rpc request stats
@@ -68,7 +103,7 @@ func (d *ChecksOutput) ParseChecksOutput(target interface{}) error {
 
 // Do performs the request
 func (d *ChecksRequester) Do(ctx context.Context) (*ChecksResult, error) {
-	dres := &ChecksResult{}
+	dres := &ChecksResult{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
 		output := &ChecksOutput{
@@ -86,12 +121,21 @@ func (d *ChecksRequester) Do(ctx context.Context) (*ChecksResult, error) {
 			d.r.client.errorf("Could not decode reply from %s: %s", pr.SenderID(), err)
 		}
 
+		// caller wants a channel so we dont return a resulset too (lots of memory etc)
+		// this is unused now, no support for setting a channel
 		if d.outc != nil {
 			d.outc <- output
 			return
 		}
 
+		// else prepare our result set
+		dres.mu.Lock()
 		dres.outputs = append(dres.outputs, output)
+		dres.rpcreplies = append(dres.rpcreplies, &replyfmt.RPCReply{
+			Sender:   pr.SenderID(),
+			RPCReply: r,
+		})
+		dres.mu.Unlock()
 	}
 
 	res, err := d.r.do(ctx, handler)

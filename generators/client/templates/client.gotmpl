@@ -61,6 +61,45 @@ type ChoriaFramework interface {
 // FilterFunc can generate a Choria filter
 type FilterFunc func(f *protocol.Filter) error
 
+// RenderFormat is the format used by the RenderResults helper
+type RenderFormat int
+
+const (
+	// JSONFormat renders the results as a JSON document
+	JSONFormat RenderFormat = iota
+
+	// TextFormat renders the results as a Choria typical result set in line with choria req output
+	TextFormat
+
+	// TableFormat renders all successful responses in a table
+	TableFormat
+)
+
+// DisplayMode overrides the DDL display hints
+type DisplayMode uint8
+
+const (
+	// DisplayDDL shows results based on the configuration in the DDL file
+	DisplayDDL = DisplayMode(iota)
+	// DisplayOK shows only passing results
+	DisplayOK
+	// DisplayFailed shows only failed results
+	DisplayFailed
+	// DisplayAll shows all results
+	DisplayAll
+	// DisplayNone shows no results
+	DisplayNone
+)
+
+type Log interface {
+	Debugf(format string, args ...interface{})
+	Infof(format string, args ...interface{})
+	Warnf(format string, args ...interface{})
+	Errorf(format string, args ...interface{})
+	Fatalf(format string, args ...interface{})
+	Panicf(format string, args ...interface{})
+}
+
 // {{ .DDL.Metadata.Name | SnakeToCamel }}Client to the {{ .DDL.Metadata.Name }} agent
 type {{ .DDL.Metadata.Name | SnakeToCamel }}Client struct {
 	fw           ChoriaFramework
