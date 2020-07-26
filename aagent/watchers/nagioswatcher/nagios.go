@@ -395,7 +395,7 @@ func (w *Watcher) handleCheck(start time.Time, s State, external bool, err error
 	w.Lock()
 	w.previous = s
 
-	if len(w.history) >= 21 {
+	if len(w.history) >= 15 {
 		w.history = w.history[1:]
 	}
 	w.history = append(w.history, &Execution{Executed: start, Status: int(s), PerfData: w.previousPerfData})
