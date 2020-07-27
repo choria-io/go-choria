@@ -15,7 +15,7 @@ import (
 	scoutclient "github.com/choria-io/go-choria/scout/client/scout"
 )
 
-type ChecksCommand struct {
+type StatusCommand struct {
 	identity string
 	json     bool
 	cfile    string
@@ -23,25 +23,25 @@ type ChecksCommand struct {
 	log      *logrus.Entry
 }
 
-func NewChecksCommand(id string, jsonf bool, verbose bool, cfile string, log *logrus.Entry) (*ChecksCommand, error) {
-	return &ChecksCommand{identity: id, json: jsonf, cfile: cfile, log: log, verbose: verbose}, nil
+func NewStatusCommand(id string, jsonf bool, verbose bool, cfile string, log *logrus.Entry) (*StatusCommand, error) {
+	return &StatusCommand{identity: id, json: jsonf, cfile: cfile, log: log, verbose: verbose}, nil
 }
 
-func (w *ChecksCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error) {
+func (s *StatusCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	sc, err := scoutclient.New(scoutclient.ConfigFile(w.cfile), scoutclient.Logger(w.log))
+	sc, err := scoutclient.New(scoutclient.ConfigFile(s.cfile), scoutclient.Logger(s.log))
 	if err != nil {
 		return err
 	}
 
-	res, err := sc.OptionTargets([]string{w.identity}).Checks().Do(ctx)
+	res, err := sc.OptionTargets([]string{s.identity}).Checks().Do(ctx)
 	if err != nil {
 		return err
 	}
 
-	if w.json {
-		return res.RenderResults(os.Stdout, scoutclient.JSONFormat, scoutclient.DisplayDDL, w.verbose, false, w.log)
+	if s.json {
+		return res.RenderResults(os.Stdout, scoutclient.JSONFormat, scoutclient.DisplayDDL, s.verbose, false, s.log)
 	}
 
 	var outputs []*scoutclient.ChecksOutput
@@ -50,7 +50,7 @@ func (w *ChecksCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error)
 	})
 
 	if len(outputs) != 1 {
-		return res.RenderResults(os.Stdout, scoutclient.JSONFormat, scoutclient.DisplayDDL, w.verbose, false, w.log)
+		return res.RenderResults(os.Stdout, scoutclient.JSONFormat, scoutclient.DisplayDDL, s.verbose, false, s.log)
 	}
 
 	if !outputs[0].ResultDetails().OK() {
