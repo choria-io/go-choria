@@ -19,10 +19,10 @@ require (
 	github.com/guptarohit/asciigraph v0.5.0
 	github.com/looplab/fsm v0.1.0
 	github.com/miekg/pkcs11 v1.0.3
-	github.com/nats-io/jsm.go v0.0.17
+	github.com/nats-io/jsm.go v0.0.18-0.20200728184527-b203f0d7a1de
 	github.com/nats-io/jwt v1.0.1
 	github.com/nats-io/jwt/v2 v2.0.0-20200602193336-473d698956ed
-	github.com/nats-io/nats-server/v2 v2.1.8-0.20200701221136-774da7f02108
+	github.com/nats-io/nats-server/v2 v2.1.8-0.20200728153118-e2333641f9b7
 	github.com/nats-io/nats.go v1.10.1-0.20200606002146-fc6fed82929a
 	github.com/nats-io/nsc v0.0.0-20200617223447-2aca79c9d220
 	github.com/nats-io/stan.go v0.7.0
