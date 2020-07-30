@@ -188,9 +188,12 @@ func (w *Watcher) CurrentState() interface{} {
 		StatusCode: int(w.previous),
 		Output:     w.previousOutput,
 		PerfData:   w.previousPerfData,
-		CheckTime:  w.previousCheck.Unix(),
 		RunTime:    w.previousRunTime.Seconds(),
 		History:    w.history,
+	}
+
+	if !w.previousCheck.IsZero() {
+		s.CheckTime = w.previousCheck.Unix()
 	}
 
 	return s
