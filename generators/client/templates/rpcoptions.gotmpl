@@ -66,6 +66,20 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionFactFilter(f ...st
 	return p
 }
 
+// OptionCombinedFilter adds a combined filter
+func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionCombinedFilter(f ...string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+	p.Lock()
+	defer p.Unlock()
+
+	for _, i := range f {
+		p.filters = append(p.filters, FilterFunc(coreclient.CombinedFilter(i)))
+	}
+
+	p.ns.Reset()
+
+	return p
+}
+
 // OptionCollective sets the collective to target
 func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionCollective(c string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
 	p.Lock()
