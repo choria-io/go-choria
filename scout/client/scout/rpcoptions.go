@@ -66,6 +66,20 @@ func (p *ScoutClient) OptionFactFilter(f ...string) *ScoutClient {
 	return p
 }
 
+// OptionCombinedFilter adds a combined filter
+func (p *ScoutClient) OptionCombinedFilter(f ...string) *ScoutClient {
+	p.Lock()
+	defer p.Unlock()
+
+	for _, i := range f {
+		p.filters = append(p.filters, FilterFunc(coreclient.CombinedFilter(i)))
+	}
+
+	p.ns.Reset()
+
+	return p
+}
+
 // OptionCollective sets the collective to target
 func (p *ScoutClient) OptionCollective(c string) *ScoutClient {
 	p.Lock()

@@ -81,7 +81,7 @@ func transitionSelectedChecks(list []string, transition string, si agents.Server
 		forced = append(forced, m.Name)
 	}
 
-	if len(forced) != len(list) {
+	if len(forced) != len(list) && !all {
 		abort(fmt.Sprintf("Some checks could not be transitioned to %s", transition), reply)
 	}
 

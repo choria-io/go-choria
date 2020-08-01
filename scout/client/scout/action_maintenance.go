@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2020-07-25 14:49:05.897636 +0200 CEST m=+0.030329535"
+// generated code; DO NOT EDIT; 2020-08-01 11:15:59.903582 +0200 CEST m=+0.029338897"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.14.0
 
@@ -61,6 +61,11 @@ func (d *MaintenanceResult) RenderResults(w io.Writer, format RenderFormat, disp
 	switch format {
 	case JSONFormat:
 		return results.RenderJSON(w, addl)
+	case TableFormat:
+		return results.RenderTable(w, addl)
+	case TXTFooter:
+		results.RenderTXTFooter(w, verbose)
+		return nil
 	default:
 		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), log)
 	}
