@@ -73,39 +73,7 @@ type flusher interface {
 	Flush()
 }
 
-func (r *RPCResults) RenderTXT(w io.Writer, action ActionDDL, verbose bool, silent bool, display DisplayMode, log Logger) (err error) {
-	fmtopts := []Option{
-		Display(display),
-	}
-
-	if verbose {
-		fmtopts = append(fmtopts, Verbose())
-	}
-
-	if silent {
-		fmtopts = append(fmtopts, Silent())
-	}
-
-	for _, reply := range r.Replies {
-		err := FormatReply(w, ConsoleFormat, action, reply.Sender, reply.RPCReply, fmtopts...)
-		if err != nil {
-			fmt.Fprintf(w, "Could not render reply from %s: %v", reply.Sender, err)
-		}
-
-		err = action.AggregateResultJSON(reply.Data)
-		if err != nil {
-			log.Warnf("could not aggregate data in reply: %v", err)
-		}
-	}
-
-	if silent {
-		return nil
-	}
-
-	FormatAggregates(w, ConsoleFormat, action, fmtopts...)
-
-	fmt.Fprintln(w)
-
+func (r *RPCResults) RenderTXTFooter(w io.Writer, verbose bool) {
 	stats := statsFromClient(r.Stats)
 
 	if verbose {
@@ -144,6 +112,42 @@ func (r *RPCResults) RenderTXT(w io.Writer, action ActionDDL, verbose bool, sile
 
 	nodeListPrinter(stats.NoResponses, "No Responses from")
 	nodeListPrinter(stats.UnexpectedResponses, "Unexpected Responses from")
+}
+
+func (r *RPCResults) RenderTXT(w io.Writer, action ActionDDL, verbose bool, silent bool, display DisplayMode, log Logger) (err error) {
+	fmtopts := []Option{
+		Display(display),
+	}
+
+	if verbose {
+		fmtopts = append(fmtopts, Verbose())
+	}
+
+	if silent {
+		fmtopts = append(fmtopts, Silent())
+	}
+
+	for _, reply := range r.Replies {
+		err := FormatReply(w, ConsoleFormat, action, reply.Sender, reply.RPCReply, fmtopts...)
+		if err != nil {
+			fmt.Fprintf(w, "Could not render reply from %s: %v", reply.Sender, err)
+		}
+
+		err = action.AggregateResultJSON(reply.Data)
+		if err != nil {
+			log.Warnf("could not aggregate data in reply: %v", err)
+		}
+	}
+
+	if silent {
+		return nil
+	}
+
+	FormatAggregates(w, ConsoleFormat, action, fmtopts...)
+
+	fmt.Fprintln(w)
+
+	r.RenderTXTFooter(w, verbose)
 
 	f, ok := w.(flusher)
 	if ok {

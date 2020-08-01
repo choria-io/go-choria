@@ -70,16 +70,27 @@ const (
 
 	// TextFormat renders the results as a Choria typical result set in line with choria req output
 	TextFormat
+
+	// TableFormat renders all successful responses in a table
+	TableFormat
+
+	// TXTFooter renders only the request summary statistics
+	TXTFooter
 )
 
 // DisplayMode overrides the DDL display hints
 type DisplayMode uint8
 
 const (
+	// DisplayDDL shows results based on the configuration in the DDL file
 	DisplayDDL = DisplayMode(iota)
+	// DisplayOK shows only passing results
 	DisplayOK
+	// DisplayFailed shows only failed results
 	DisplayFailed
+	// DisplayAll shows all results
 	DisplayAll
+	// DisplayNone shows no results
 	DisplayNone
 )
 

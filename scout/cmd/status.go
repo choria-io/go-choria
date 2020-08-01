@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 
 	scoutagent "github.com/choria-io/go-choria/scout/agent/scout"
@@ -24,7 +23,13 @@ type StatusCommand struct {
 }
 
 func NewStatusCommand(id string, jsonf bool, verbose bool, cfile string, log *logrus.Entry) (*StatusCommand, error) {
-	return &StatusCommand{identity: id, json: jsonf, cfile: cfile, log: log, verbose: verbose}, nil
+	return &StatusCommand{
+		identity: id,
+		json:     jsonf,
+		cfile:    cfile,
+		log:      log,
+		verbose:  verbose,
+	}, nil
 }
 
 func (s *StatusCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error) {
@@ -63,12 +68,7 @@ func (s *StatusCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error)
 		return err
 	}
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetAutoWrapText(true)
-	table.SetAutoFormatHeaders(true)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetHeader([]string{"Name", "State", "Last Check", "History"})
+	table := newMarkdownTable("Name", "State", "Last Check", "History")
 
 	for _, c := range checks.Checks {
 		last := "Never"
