@@ -10,6 +10,7 @@ type initOptions struct {
 	cfgFile string
 	logger  *logrus.Entry
 	ns NodeSource
+	progress bool
 }
 
 // InitializationOption is an optional setting used to initialize the client
@@ -33,5 +34,12 @@ func Logger(l *logrus.Entry) InitializationOption {
 func Discovery(ns NodeSource) InitializationOption {
 	return func(o *initOptions) {
 		o.ns = ns
+	}
+}
+
+// Progress enables displaying a progress bar
+func Progress() InitializationOption {
+	return func(o *initOptions) {
+		o.progress = true
 	}
 }

@@ -60,6 +60,9 @@ func (d *{{ .ActionName | SnakeToCamel }}Result) RenderResults(w io.Writer, form
 		return results.RenderJSON(w, addl)
 	case TableFormat:
 		return results.RenderTable(w, addl)
+	case TXTFooter:
+		results.RenderTXTFooter(w, verbose)
+		return nil
 	default:
 		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), log)
 	}
