@@ -49,7 +49,7 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 		}
 
 		if progress {
-			fmt.Printf("%d\n\n", len(targets))
+			fmt.Printf("%d\n", len(targets))
 		} else {
 			r.client.infof("Discovered %d nodes", len(targets))
 		}
@@ -60,6 +60,7 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 	r.client.Unlock()
 
 	if progress {
+		fmt.Println()
 		r.configureProgress(len(targets))
 	}
 
