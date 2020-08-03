@@ -35,7 +35,7 @@ func NewStatusCommand(id string, jsonf bool, verbose bool, cfile string, log *lo
 func (s *StatusCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	sc, err := scoutclient.New(scoutclient.ConfigFile(s.cfile), scoutclient.Logger(s.log))
+	sc, err := scoutclient.New(scoutclient.ConfigFile(s.cfile), scoutclient.Logger(s.log), scoutclient.Progress())
 	if err != nil {
 		return err
 	}
@@ -102,5 +102,6 @@ func (s *StatusCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error)
 
 	table.Render()
 
-	return nil
+	fmt.Println()
+	return res.RenderResults(os.Stdout, scoutclient.TXTFooter, scoutclient.DisplayDDL, s.verbose, false, s.log)
 }
