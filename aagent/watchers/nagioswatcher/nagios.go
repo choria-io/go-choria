@@ -102,6 +102,7 @@ type Watcher struct {
 	statechg         chan struct{}
 	plugin           string
 	builtin          string
+	annotations      map[string]string
 	timeout          time.Duration
 	history          []*Execution
 
@@ -121,6 +122,7 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		previous:         NOTCHECKED,
 		announceInterval: ai,
 		history:          []*Execution{},
+		annotations:      make(map[string]string),
 	}
 
 	err = w.setProperties(properties)
@@ -175,21 +177,22 @@ func (w *Watcher) CurrentState() interface{} {
 	defer w.Unlock()
 
 	s := &StateNotification{
-		Protocol:   "io.choria.machine.watcher.nagios.v1.state",
-		Type:       "nagios",
-		Name:       w.name,
-		Identity:   w.machine.Identity(),
-		ID:         w.machine.InstanceID(),
-		Version:    w.machine.Version(),
-		Timestamp:  w.machine.TimeStampSeconds(),
-		Machine:    w.machineName,
-		Plugin:     w.previousPlugin,
-		Status:     stateNames[w.previous],
-		StatusCode: int(w.previous),
-		Output:     w.previousOutput,
-		PerfData:   w.previousPerfData,
-		RunTime:    w.previousRunTime.Seconds(),
-		History:    w.history,
+		Protocol:    "io.choria.machine.watcher.nagios.v1.state",
+		Type:        "nagios",
+		Name:        w.name,
+		Identity:    w.machine.Identity(),
+		ID:          w.machine.InstanceID(),
+		Version:     w.machine.Version(),
+		Timestamp:   w.machine.TimeStampSeconds(),
+		Machine:     w.machineName,
+		Plugin:      w.previousPlugin,
+		Status:      stateNames[w.previous],
+		StatusCode:  int(w.previous),
+		Output:      w.previousOutput,
+		PerfData:    w.previousPerfData,
+		RunTime:     w.previousRunTime.Seconds(),
+		History:     w.history,
+		Annotations: w.annotations,
 	}
 
 	if !w.previousCheck.IsZero() {
@@ -248,6 +251,23 @@ func (w *Watcher) parsePerfData(pd string) (perf []PerfData) {
 }
 
 func (w *Watcher) setProperties(p map[string]interface{}) error {
+	annotations, ok := p["annotations"]
+	if ok {
+		amap, ok := annotations.(map[string]interface{})
+		if !ok {
+			return fmt.Errorf("annotations should be a a map of strings")
+		}
+
+		for k, v := range amap {
+			vs, ok := v.(string)
+			if !ok {
+				return fmt.Errorf("annotations should be a a map of strings")
+			}
+
+			w.annotations[k] = vs
+		}
+	}
+
 	command, ok := p["plugin"]
 	if ok {
 		w.plugin, ok = command.(string)

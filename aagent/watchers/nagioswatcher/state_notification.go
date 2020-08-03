@@ -11,22 +11,23 @@ import (
 )
 
 type StateNotification struct {
-	Protocol   string       `json:"protocol"`
-	Identity   string       `json:"identity"`
-	ID         string       `json:"id"`
-	Version    string       `json:"version"`
-	Timestamp  int64        `json:"timestamp"`
-	Type       string       `json:"type"`
-	Machine    string       `json:"machine"`
-	Name       string       `json:"name"`
-	Plugin     string       `json:"plugin"`
-	Status     string       `json:"status"`
-	StatusCode int          `json:"status_code"`
-	Output     string       `json:"output"`
-	CheckTime  int64        `json:"check_time"`
-	PerfData   []PerfData   `json:"perfdata"`
-	RunTime    float64      `json:"runtime"`
-	History    []*Execution `json:"history"`
+	Protocol    string            `json:"protocol"`
+	Identity    string            `json:"identity"`
+	ID          string            `json:"id"`
+	Version     string            `json:"version"`
+	Timestamp   int64             `json:"timestamp"`
+	Type        string            `json:"type"`
+	Machine     string            `json:"machine"`
+	Name        string            `json:"name"`
+	Plugin      string            `json:"plugin"`
+	Status      string            `json:"status"`
+	StatusCode  int               `json:"status_code"`
+	Output      string            `json:"output"`
+	CheckTime   int64             `json:"check_time"`
+	PerfData    []PerfData        `json:"perfdata"`
+	RunTime     float64           `json:"runtime"`
+	History     []*Execution      `json:"history"`
+	Annotations map[string]string `json:"annotations"`
 }
 
 // CloudEvent creates a CloudEvent from the state notification
@@ -39,6 +40,7 @@ func (s *StateNotification) CloudEvent() cloudevents.Event {
 	event.SetID(choria.UniqueID())
 	event.SetTime(time.Unix(s.Timestamp, 0))
 	event.SetData(s)
+	event.SetExtension("annotations", s.Annotations)
 
 	return event
 }
