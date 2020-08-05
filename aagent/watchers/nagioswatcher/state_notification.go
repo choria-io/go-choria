@@ -40,7 +40,6 @@ func (s *StateNotification) CloudEvent() cloudevents.Event {
 	event.SetID(choria.UniqueID())
 	event.SetTime(time.Unix(s.Timestamp, 0))
 	event.SetData(s)
-	event.SetExtension("annotations", s.Annotations)
 
 	return event
 }

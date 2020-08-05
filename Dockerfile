@@ -4,7 +4,7 @@ WORKDIR /
 
 RUN curl -s https://packagecloud.io/install/repositories/choria/release/script.rpm.sh | bash && \
     yum -y update && \
-    yum -y install choria && \
+    yum -y install choria nc && \
     yum -y clean all
 
 RUN groupadd --gid 2048 choria && \
