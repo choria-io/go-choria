@@ -138,7 +138,7 @@ var _ = Describe("ValidateStruct", func() {
 		s.Duration = "1w"
 		ok, err := validator.ValidateStruct(s)
 
-		Expect(err).To(MatchError("Duration duration validation failed: time: unknown unit w in duration 1w"))
+		Expect(err.Error()).To(MatchRegexp("Duration duration validation failed: time: unknown unit"))
 		Expect(ok).To(BeFalse())
 	})
 })

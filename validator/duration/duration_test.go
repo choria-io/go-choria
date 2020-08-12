@@ -24,7 +24,7 @@ var _ = Describe("ValidateString", func() {
 		Expect(ok).To(BeTrue())
 
 		ok, err = ValidateString("1w")
-		Expect(err).To(MatchError("time: unknown unit w in duration 1w"))
+		Expect(err.Error()).To(MatchRegexp("time: unknown unit"))
 		Expect(ok).To(BeFalse())
 	})
 })
@@ -48,7 +48,7 @@ var _ = Describe("ValidateStructField", func() {
 		st.Interval = "foo"
 		valueField = reflect.ValueOf(st).FieldByName("Interval")
 		ok, err = ValidateStructField(valueField, typeField.Tag.Get("validate"))
-		Expect(err).To(MatchError("time: invalid duration foo"))
+		Expect(err.Error()).To(MatchRegexp("time: invalid duration"))
 		Expect(ok).To(BeFalse())
 	})
 })
