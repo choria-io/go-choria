@@ -497,7 +497,7 @@ Time to allow for TLS connections to establish, increase on slow or very large n
 ## plugin.choria.network.write_deadline
 
  * **Type:** duration
- * **Default Value:** 5s
+ * **Default Value:** 10s
 
 How long to allow clients to process traffic before treating them as slow, increase this on large networks or slow networks
 
