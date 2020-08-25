@@ -2,6 +2,7 @@ package choria
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"net/url"
 	"strings"
@@ -14,6 +15,8 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-choria/tlssetup"
+
 	nats "github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 )
@@ -583,7 +586,22 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}),
 	}
 
-	if !(conn.config.DisableTLS || conn.choria.ShouldUseNGS()) {
+	switch {
+	case conn.config.Choria.ClientAnonTLS && !conn.config.InitiatedByServer:
+		conn.logger.Debug("Setting anonymous TLS for NATS connection")
+
+		cfg := tlssetup.TLSConfig(conn.config)
+		tlsc := &tls.Config{
+			MinVersion:               tls.VersionTLS12,
+			PreferServerCipherSuites: true,
+			CipherSuites:             cfg.CipherSuites,
+			CurvePreferences:         cfg.CurvePreferences,
+			InsecureSkipVerify:       true,
+		}
+
+		options = append(options, nats.Secure(tlsc))
+
+	case !(conn.config.DisableTLS || conn.choria.ShouldUseNGS()):
 		tlsc, err := conn.choria.TLSConfig()
 		if err != nil {
 			err = fmt.Errorf("could not create TLS Config: %s", err)
@@ -591,7 +609,8 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}
 
 		options = append(options, nats.Secure(tlsc))
-	} else {
+
+	default:
 		conn.logger.Debugf("Not specifying TLS options on NATS connection: tls: %v ngs: %v creds: %v", conn.config.DisableTLS, conn.config.Choria.NatsNGS, conn.config.Choria.NatsCredentials)
 	}
 

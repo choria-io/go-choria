@@ -88,9 +88,22 @@ func commonConfigure() error {
 
 	cfg.ApplyBuildSettings(bi)
 
+	if os.Getenv("INSECURE_ANON_TLS") == "true" {
+		cfg.Choria.ClientAnonTLS = true
+		cfg.DisableTLSVerify = true
+		cfg.DisableSecurityProviderVerify = true
+		log.Warn("Using anonymous TLS via environment override")
+	}
+
+	if os.Getenv("INSECURE_DISABLE_TLS") == "true" {
+		cfg.DisableTLS = true
+		log.Warn("Disabling TLS via environment override")
+	}
+
 	if os.Getenv("INSECURE_YES_REALLY") == "true" {
 		protocol.Secure = "false"
 		cfg.DisableTLS = true
+		log.Warn("Disabling protocol security via environment override")
 	}
 
 	return nil

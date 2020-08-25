@@ -44,6 +44,7 @@ type ChoriaPluginConfig struct {
 	NetworkListenAddress          string        `confkey:"plugin.choria.network.listen_address" default:"::" url:"https://choria.io/docs/deployment/broker/"` // Address the Network Broker will listen on
 	NetworkClientPort             int           `confkey:"plugin.choria.network.client_port" default:"4222" url:"https://choria.io/docs/deployment/broker/"`  // Port the Network Broker will accept client connections on
 	NetworkClientTLSForce         bool          `confkey:"plugin.choria.network.client_tls_force_required"`                                                   // Force requiring/not requiring TLS for all clients
+	NetworkClientTLSAnon          bool          `confkey:"plugin.choria.network.client_anon_tls"`                                                             // Use anonymous TLS for client connections (disables verification)
 	NetworkPeerPort               int           `confkey:"plugin.choria.network.peer_port" default:"5222" url:"https://choria.io/docs/deployment/broker/"`    // Port used to communicate with other local cluster peers
 	NetworkPeerUser               string        `confkey:"plugin.choria.network.peer_user"`                                                                   // Username to use when connecting to cluster peers
 	NetworkPeerPassword           string        `confkey:"plugin.choria.network.peer_password"`                                                               // Password to use when connecting to cluster peers
@@ -55,6 +56,7 @@ type ChoriaPluginConfig struct {
 	NetworkGatewayRemotes         []string      `confkey:"plugin.choria.network.gateway_remotes" type:"comma_split"`                                          // List of remote Super Clusters to connect to
 	NetworkWriteDeadline          time.Duration `confkey:"plugin.choria.network.write_deadline" type:"duration" default:"10s"`                                // How long to allow clients to process traffic before treating them as slow, increase this on large networks or slow networks
 	NetworkAllowedClientHosts     []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`                                             // CIDRs to limit client connections from, appropriate ACLs are added based on this
+	NetworkDenyServers            bool          `confkey:"plugin.choria.network.deny_server_connections"`                                                     // Set ACLs denying server connections to this broker
 	NetworkAccountOperator        string        `confkey:"plugin.choria.network.operator_account"`                                                            // NATS 2.0 Operator account
 	NetworkSystemAccount          string        `confkey:"plugin.choria.network.system_account"`                                                              // NATS 2.0 System Account
 	NetworkTLSTimeout             int           `confkey:"plugin.choria.network.tls_timeout" default:"2"`                                                     // Time to allow for TLS connections to establish, increase on slow or very large networks
@@ -85,6 +87,7 @@ type ChoriaPluginConfig struct {
 	RemoteSignerTokenFile        string   `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"` // Path to the token used to access a Central Authenticator
 	RemoteSignerTokenEnvironment string   `confkey:"plugin.choria.security.request_signer.token_environment" url:"https://github.com/choria-io/aaasvc"`             // Environment variable to store Central Authenticator tokens
 	RemoteSignerURL              string   `confkey:"plugin.choria.security.request_signer.url" url:"https://github.com/choria-io/aaasvc"`                           // URL to the Signing Service
+	ClientAnonTLS                bool     `confkey:"plugin.security.client_anon_tls" default:"false"`                                                               // Use anonymous TLS to the Choria brokers from a client, also disables security provider verification - only when a remote signer is set
 
 	FileSecurityCertificate string `confkey:"plugin.security.file.certificate" type:"path_string"` // When using file security provider, the path to the public certificate
 	FileSecurityKey         string `confkey:"plugin.security.file.key" type:"path_string"`         // When using file security provider, the path to the private key

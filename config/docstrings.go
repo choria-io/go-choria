@@ -1,4 +1,4 @@
-// auto generated at 2020-08-12 09:19:33.142079 +0200 CEST m=+0.001568590
+// auto generated at 2020-08-25 18:19:32.909581 +0200 CEST m=+0.001393248
 
 package config
 
@@ -57,6 +57,7 @@ var docStrings = map[string]string{
 	"plugin.choria.network.listen_address":                    "Address the Network Broker will listen on",
 	"plugin.choria.network.client_port":                       "Port the Network Broker will accept client connections on",
 	"plugin.choria.network.client_tls_force_required":         "Force requiring/not requiring TLS for all clients",
+	"plugin.choria.network.client_anon_tls":                   "Use anonymous TLS for client connections (disables verification)",
 	"plugin.choria.network.peer_port":                         "Port used to communicate with other local cluster peers",
 	"plugin.choria.network.peer_user":                         "Username to use when connecting to cluster peers",
 	"plugin.choria.network.peer_password":                     "Password to use when connecting to cluster peers",
@@ -68,6 +69,7 @@ var docStrings = map[string]string{
 	"plugin.choria.network.gateway_remotes":                   "List of remote Super Clusters to connect to",
 	"plugin.choria.network.write_deadline":                    "How long to allow clients to process traffic before treating them as slow, increase this on large networks or slow networks",
 	"plugin.choria.network.client_hosts":                      "CIDRs to limit client connections from, appropriate ACLs are added based on this",
+	"plugin.choria.network.deny_server_connections":           "Set ACLs denying server connections to this broker",
 	"plugin.choria.network.operator_account":                  "NATS 2.0 Operator account",
 	"plugin.choria.network.system_account":                    "NATS 2.0 System Account",
 	"plugin.choria.network.tls_timeout":                       "Time to allow for TLS connections to establish, increase on slow or very large networks",
@@ -92,6 +94,7 @@ var docStrings = map[string]string{
 	"plugin.choria.security.request_signer.token_file":        "Path to the token used to access a Central Authenticator",
 	"plugin.choria.security.request_signer.token_environment": "Environment variable to store Central Authenticator tokens",
 	"plugin.choria.security.request_signer.url":               "URL to the Signing Service",
+	"plugin.security.client_anon_tls":                         "Use anonymous TLS to the Choria brokers from a client, also disables security provider verification - only when a remote signer is set",
 	"plugin.security.file.certificate":                        "When using file security provider, the path to the public certificate",
 	"plugin.security.file.key":                                "When using file security provider, the path to the private key",
 	"plugin.security.file.ca":                                 "When using file security provider, the path to the Certificate Authority public certificate",

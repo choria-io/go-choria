@@ -121,5 +121,12 @@ var _ = Describe("Network Broker/IPAuth", func() {
 				"choria.lifecycle.>",
 			}))
 		})
+
+		It("Should support denying servers", func() {
+			auth.denyServers = true
+			auth.setServerPermissions(user)
+			Expect(user.Permissions.Publish.Deny).To(Equal([]string{">"}))
+			Expect(user.Permissions.Publish.Allow).To(BeNil())
+		})
 	})
 })
