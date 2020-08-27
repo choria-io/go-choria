@@ -38,8 +38,9 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.discovery_proxy](#pluginchoriadiscovery_proxy)|[plugin.choria.federation.cluster](#pluginchoriafederationcluster)|
 |[plugin.choria.federation.collectives](#pluginchoriafederationcollectives)|[plugin.choria.federation_middleware_hosts](#pluginchoriafederation_middleware_hosts)|
 |[plugin.choria.legacy_lifecycle_format](#pluginchorialegacy_lifecycle_format)|[plugin.choria.machine.store](#pluginchoriamachinestore)|
-|[plugin.choria.middleware_hosts](#pluginchoriamiddleware_hosts)|[plugin.choria.network.client_hosts](#pluginchorianetworkclient_hosts)|
-|[plugin.choria.network.client_port](#pluginchorianetworkclient_port)|[plugin.choria.network.client_tls_force_required](#pluginchorianetworkclient_tls_force_required)|
+|[plugin.choria.middleware_hosts](#pluginchoriamiddleware_hosts)|[plugin.choria.network.client_anon_tls](#pluginchorianetworkclient_anon_tls)|
+|[plugin.choria.network.client_hosts](#pluginchorianetworkclient_hosts)|[plugin.choria.network.client_port](#pluginchorianetworkclient_port)|
+|[plugin.choria.network.client_tls_force_required](#pluginchorianetworkclient_tls_force_required)|[plugin.choria.network.deny_server_connections](#pluginchorianetworkdeny_server_connections)|
 |[plugin.choria.network.gateway_name](#pluginchorianetworkgateway_name)|[plugin.choria.network.gateway_port](#pluginchorianetworkgateway_port)|
 |[plugin.choria.network.gateway_remotes](#pluginchorianetworkgateway_remotes)|[plugin.choria.network.leafnode_port](#pluginchorianetworkleafnode_port)|
 |[plugin.choria.network.leafnode_remotes](#pluginchorianetworkleafnode_remotes)|[plugin.choria.network.listen_address](#pluginchorianetworklisten_address)|
@@ -68,19 +69,19 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.scout.tags](#pluginscouttags)|[plugin.security.always_overwrite_cache](#pluginsecurityalways_overwrite_cache)|
 |[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|
 |[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|
-|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|
-|[plugin.security.file.ca](#pluginsecurityfileca)|[plugin.security.file.cache](#pluginsecurityfilecache)|
-|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|[plugin.security.file.key](#pluginsecurityfilekey)|
-|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|
-|[plugin.security.provider](#pluginsecurityprovider)|[plugin.yaml](#pluginyaml)|
-|[publish_timeout](#publish_timeout)|[registerinterval](#registerinterval)|
-|[registration](#registration)|[registration_collective](#registration_collective)|
-|[registration_splay](#registration_splay)|[rpcaudit](#rpcaudit)|
-|[rpcauditprovider](#rpcauditprovider)|[rpcauthorization](#rpcauthorization)|
-|[rpcauthprovider](#rpcauthprovider)|[rpclimitmethod](#rpclimitmethod)|
-|[securityprovider](#securityprovider)|[soft_shutdown](#soft_shutdown)|
-|[soft_shutdown_timeout](#soft_shutdown_timeout)|[threaded](#threaded)|
-|[ttl](#ttl)|[](#)|
+|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|
+|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|[plugin.security.file.ca](#pluginsecurityfileca)|
+|[plugin.security.file.cache](#pluginsecurityfilecache)|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|
+|[plugin.security.file.key](#pluginsecurityfilekey)|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|
+|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|[plugin.security.provider](#pluginsecurityprovider)|
+|[plugin.yaml](#pluginyaml)|[publish_timeout](#publish_timeout)|
+|[registerinterval](#registerinterval)|[registration](#registration)|
+|[registration_collective](#registration_collective)|[registration_splay](#registration_splay)|
+|[rpcaudit](#rpcaudit)|[rpcauditprovider](#rpcauditprovider)|
+|[rpcauthorization](#rpcauthorization)|[rpcauthprovider](#rpcauthprovider)|
+|[rpclimitmethod](#rpclimitmethod)|[securityprovider](#securityprovider)|
+|[soft_shutdown](#soft_shutdown)|[soft_shutdown_timeout](#soft_shutdown_timeout)|
+|[threaded](#threaded)|[ttl](#ttl)|
 
 
 ## activate_agents
@@ -354,6 +355,12 @@ Directory where Autonomous Agents are stored
 
 Set specific middleware hosts in the format host:port, if unset uses SRV
 
+## plugin.choria.network.client_anon_tls
+
+ * **Type:** boolean
+
+Use anonymous TLS for client connections (disables verification)
+
 ## plugin.choria.network.client_hosts
 
  * **Type:** comma_split
@@ -373,6 +380,12 @@ Port the Network Broker will accept client connections on
  * **Type:** boolean
 
 Force requiring/not requiring TLS for all clients
+
+## plugin.choria.network.deny_server_connections
+
+ * **Type:** boolean
+
+Set ACLs denying server connections to this broker
 
 ## plugin.choria.network.gateway_name
 
@@ -760,6 +773,13 @@ when using Cert Manager security provider, replace existing CSRs with new ones
  * **Type:** comma_split
 
 List of allowed cipher suites
+
+## plugin.security.client_anon_tls
+
+ * **Type:** boolean
+ * **Default Value:** false
+
+Use anonymous TLS to the Choria brokers from a client, also disables security provider verification - only when a remote signer is set
 
 ## plugin.security.ecc_curves
 

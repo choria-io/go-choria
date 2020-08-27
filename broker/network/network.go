@@ -9,11 +9,11 @@ import (
 	"sync"
 	"time"
 
+	gnatsd "github.com/nats-io/nats-server/v2/server"
+	"github.com/sirupsen/logrus"
+
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/srvcache"
-
-	gnatsd "github.com/nats-io/nats-server/v2/server"
-	logrus "github.com/sirupsen/logrus"
 )
 
 // BuildInfoProvider provider build time flag information, example go-choria/build
@@ -90,8 +90,9 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 
 	if len(s.config.Choria.NetworkAllowedClientHosts) > 0 {
 		s.opts.CustomClientAuthentication = &IPAuth{
-			allowList: s.config.Choria.NetworkAllowedClientHosts,
-			log:       s.choria.Logger("ipauth"),
+			allowList:   s.config.Choria.NetworkAllowedClientHosts,
+			log:         s.choria.Logger("ipauth"),
+			denyServers: s.config.Choria.NetworkDenyServers,
 		}
 	}
 
@@ -190,12 +191,32 @@ func (s *Server) setupTLS() (err error) {
 	}
 
 	s.opts.TLS = true
+	s.opts.AllowNonTLS = false
 	s.opts.TLSVerify = !s.config.DisableTLSVerify
 	s.opts.TLSTimeout = float64(s.config.Choria.NetworkTLSTimeout)
 
 	tlsc, err := s.choria.TLSConfig()
 	if err != nil {
 		return err
+	}
+
+	if s.config.Choria.NetworkClientTLSAnon {
+		if len(s.config.Choria.NetworkLeafRemotes) == 0 {
+			return fmt.Errorf("can only configure anonymous TLS for client connections when leafnodes are defined using plugin.choria.network.leafnode_remotes")
+		}
+
+		if !s.config.Choria.NetworkDenyServers {
+			return fmt.Errorf("can only configure anonymous TLS for client connections when servers are denied using plugin.choria.network.deny_server_connections")
+		}
+
+		if len(s.config.Choria.NetworkAllowedClientHosts) == 0 {
+			return fmt.Errorf("can only configure anonymous TLS for client connections when an allow list of client hosts is set using plugin.choria.network.client_hosts")
+		}
+
+		s.log.Warnf("Configuring anonymous TLS for client connections")
+		s.opts.TLSVerify = false
+		s.opts.TLS = true
+		tlsc.InsecureSkipVerify = true
 	}
 
 	s.opts.TLSConfig = tlsc

@@ -13,8 +13,9 @@ import (
 // the configured IP or CIDRs are not allowed to publish to the
 // network targets used by clients to request actions on nodes
 type IPAuth struct {
-	allowList []string
-	log       *logrus.Entry
+	allowList   []string
+	denyServers bool
+	log         *logrus.Entry
 }
 
 // Check checks and registers the incoming connection
@@ -32,24 +33,36 @@ func (a *IPAuth) Check(c server.ClientAuthentication) (verified bool) {
 }
 
 func (a *IPAuth) setServerPermissions(user *server.User) {
-	user.Permissions.Subscribe = &server.SubjectPermission{
-		Deny: []string{
-			"*.reply.>",
-			"choria.federation.>",
-			"choria.lifecycle.>",
-		},
-	}
+	switch {
+	case a.denyServers:
+		user.Permissions.Subscribe = &server.SubjectPermission{
+			Deny: []string{">"},
+		}
 
-	user.Permissions.Publish = &server.SubjectPermission{
-		Allow: []string{
-			">",
-		},
+		user.Permissions.Publish = &server.SubjectPermission{
+			Deny: []string{">"},
+		}
 
-		Deny: []string{
-			"*.broadcast.agent.>",
-			"*.node.>",
-			"choria.federation.*.federation",
-		},
+	default:
+		user.Permissions.Subscribe = &server.SubjectPermission{
+			Deny: []string{
+				"*.reply.>",
+				"choria.federation.>",
+				"choria.lifecycle.>",
+			},
+		}
+
+		user.Permissions.Publish = &server.SubjectPermission{
+			Allow: []string{
+				">",
+			},
+
+			Deny: []string{
+				"*.broadcast.agent.>",
+				"*.node.>",
+				"choria.federation.*.federation",
+			},
+		}
 	}
 }
 
