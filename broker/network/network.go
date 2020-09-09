@@ -31,7 +31,7 @@ type ChoriaFramework interface {
 }
 
 type accountStore interface {
-	Start(context.Context, *sync.WaitGroup)
+	StoreStart(context.Context, *sync.WaitGroup)
 	Stop()
 
 	gnatsd.AccountResolver
@@ -62,7 +62,9 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		mu:      &sync.Mutex{},
 	}
 
-	s.opts.ServerName = s.config.Identity
+	if s.config.Identity != "" {
+		s.opts.ServerName = s.config.Identity
+	}
 	s.opts.Host = s.config.Choria.NetworkListenAddress
 	s.opts.Port = s.config.Choria.NetworkClientPort
 	s.opts.WriteDeadline = s.config.Choria.NetworkWriteDeadline
@@ -143,7 +145,7 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	if s.as != nil {
 		wg.Add(1)
-		go s.as.Start(ctx, wg)
+		go s.as.StoreStart(ctx, wg)
 	}
 
 	go s.gnatsd.Start()
@@ -178,6 +180,7 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 func (s *Server) setupTLS() (err error) {
 	if !s.config.Choria.NetworkClientTLSForce && !s.IsTLS() {
+		s.log.WithField("client_tls_force_required", s.config.Choria.NetworkClientTLSForce).WithField("disable_tls", s.config.DisableTLS).Warn("Skipping broker TLS set up")
 		return nil
 	}
 
@@ -192,12 +195,20 @@ func (s *Server) setupTLS() (err error) {
 
 	s.opts.TLS = true
 	s.opts.AllowNonTLS = false
-	s.opts.TLSVerify = !s.config.DisableTLSVerify
+
 	s.opts.TLSTimeout = float64(s.config.Choria.NetworkTLSTimeout)
 
 	tlsc, err := s.choria.TLSConfig()
 	if err != nil {
 		return err
+	}
+
+	s.opts.TLSVerify = true
+	tlsc.ClientAuth = tls.RequireAndVerifyClientCert
+
+	if s.config.DisableTLSVerify {
+		s.opts.TLSVerify = false
+		tlsc.ClientAuth = tls.NoClientCert
 	}
 
 	if s.config.Choria.NetworkClientTLSAnon {
@@ -217,6 +228,7 @@ func (s *Server) setupTLS() (err error) {
 		s.opts.TLSVerify = false
 		s.opts.TLS = true
 		tlsc.InsecureSkipVerify = true
+		tlsc.ClientAuth = tls.NoClientCert
 	}
 
 	s.opts.TLSConfig = tlsc
