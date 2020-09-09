@@ -52,10 +52,11 @@ var (
 )
 
 // Start starts serving exp stats and metrics on the configured statistics port
-func Start(fw *choria.Framework, handler http.Handler) {
+func Start(cfw *choria.Framework, handler http.Handler) {
 	mu.Lock()
 	defer mu.Unlock()
 
+	fw = cfw
 	cfg := fw.Configuration()
 	port := cfg.Choria.StatsPort
 
@@ -74,12 +75,14 @@ func Start(fw *choria.Framework, handler http.Handler) {
 		if handler == nil {
 			http.HandleFunc("/choria/", handleRoot)
 			http.Handle("/choria/prometheus", promhttp.Handler())
+			http.Handle("/choria/metrics", promhttp.Handler())
 
 			go http.ListenAndServe(fmt.Sprintf("%s:%d", cfg.Choria.StatsListenAddress, port), nil)
 		} else {
 			hh := handler.(*http.ServeMux)
 			hh.HandleFunc("/choria/", handleRoot)
 			hh.Handle("/choria/prometheus", promhttp.Handler())
+			hh.Handle("/choria/metrics", promhttp.Handler())
 		}
 
 		running = true

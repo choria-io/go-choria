@@ -21,22 +21,23 @@ require (
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/nats-io/jsm.go v0.0.18
 	github.com/nats-io/jwt v1.0.1
-	github.com/nats-io/jwt/v2 v2.0.0-20200817224207-b9df3db11eda
-	github.com/nats-io/nats-server/v2 v2.1.8-0.20200728153118-e2333641f9b7
+	github.com/nats-io/jwt/v2 v2.0.0-20200908173214-d4f335c8eeb1
+	github.com/nats-io/nats-server/v2 v2.1.8-0.20200908205505-5cd11bf77d06
 	github.com/nats-io/nats.go v1.10.1-0.20200817211004-cd74bc037e7c
 	github.com/nats-io/nsc v0.0.0-20200617223447-2aca79c9d220
 	github.com/nats-io/stan.go v0.7.0
 	github.com/olekukonko/tablewriter v0.0.4
-	github.com/onsi/ginkgo v1.14.0
-	github.com/onsi/gomega v1.10.1
-	github.com/open-policy-agent/opa v0.23.0
+	github.com/onsi/ginkgo v1.14.1
+	github.com/onsi/gomega v1.10.2
+	github.com/open-policy-agent/opa v0.23.2
 	github.com/pkg/errors v0.9.1
 	github.com/prometheus/client_golang v1.7.1
 	github.com/prometheus/client_model v0.2.0
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.6.0
-	github.com/tidwall/gjson v1.6.0
-	github.com/tidwall/pretty v1.0.1
+	github.com/stretchr/testify v1.6.1 // indirect
+	github.com/tidwall/gjson v1.6.1
+	github.com/tidwall/pretty v1.0.2
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.6.0
 	golang.org/x/crypto v0.0.0-20200604202706-70a84ac30bf9

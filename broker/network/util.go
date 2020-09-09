@@ -9,8 +9,9 @@ import (
 
 func (s *Server) extractKeyedConfigString(prefix string, key string, property string, dflt string) (result string) {
 	item := "plugin.choria.network." + prefix + "." + key + "." + property
-	s.log.Debugf("Looking for config item %s", item)
-	return s.config.Option(item, dflt)
+	value := s.config.Option(item, dflt)
+	s.log.Debugf("Looking for config item %s, found %q", item, value)
+	return value
 }
 
 func (s *Server) extractTLSCFromKeyedConfig(prefix string, key string) (tlsc *tls.Config, disabled bool, err error) {

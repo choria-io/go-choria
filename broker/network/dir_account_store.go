@@ -38,15 +38,35 @@ func newDirAccountStore(s accountNotificationReceiver, store string) (as *dirAcc
 	}, nil
 }
 
-func (f *dirAccountStore) Start(ctx context.Context, wg *sync.WaitGroup) {
+func (f *dirAccountStore) StoreStart(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	// TODO monitor files
 	<-ctx.Done()
 }
 
+func (f *dirAccountStore) Start(_ *gnatsd.Server) error {
+	return nil
+}
+
 func (f *dirAccountStore) Stop() {
 	// noop till we have file notify
+}
+
+func (f *dirAccountStore) Close() {
+	f.Stop()
+}
+
+func (f *dirAccountStore) IsReadOnly() bool {
+	return true
+}
+
+func (f *dirAccountStore) IsTrackingUpdate() bool {
+	return false
+}
+
+func (f *dirAccountStore) Reload() error {
+	return nil
 }
 
 // Fetch implements gnatsd.AccountResolver
