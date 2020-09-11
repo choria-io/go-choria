@@ -59,29 +59,30 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.require_client_filter](#pluginchoriarequire_client_filter)|[plugin.choria.security.certname_whitelist](#pluginchoriasecuritycertname_whitelist)|
 |[plugin.choria.security.privileged_users](#pluginchoriasecurityprivileged_users)|[plugin.choria.security.request_signer.token_environment](#pluginchoriasecurityrequest_signertoken_environment)|
 |[plugin.choria.security.request_signer.token_file](#pluginchoriasecurityrequest_signertoken_file)|[plugin.choria.security.request_signer.url](#pluginchoriasecurityrequest_signerurl)|
-|[plugin.choria.security.serializer](#pluginchoriasecurityserializer)|[plugin.choria.server.provision](#pluginchoriaserverprovision)|
-|[plugin.choria.srv_domain](#pluginchoriasrv_domain)|[plugin.choria.ssldir](#pluginchoriassldir)|
-|[plugin.choria.stats_address](#pluginchoriastats_address)|[plugin.choria.stats_port](#pluginchoriastats_port)|
-|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|
-|[plugin.choria.use_srv](#pluginchoriause_srv)|[plugin.nats.credentials](#pluginnatscredentials)|
-|[plugin.nats.ngs](#pluginnatsngs)|[plugin.nats.pass](#pluginnatspass)|
-|[plugin.nats.user](#pluginnatsuser)|[plugin.scout.overrides](#pluginscoutoverrides)|
-|[plugin.scout.tags](#pluginscouttags)|[plugin.security.always_overwrite_cache](#pluginsecurityalways_overwrite_cache)|
-|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|
-|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|
-|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|
-|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|[plugin.security.file.ca](#pluginsecurityfileca)|
-|[plugin.security.file.cache](#pluginsecurityfilecache)|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|
-|[plugin.security.file.key](#pluginsecurityfilekey)|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|
-|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|[plugin.security.provider](#pluginsecurityprovider)|
-|[plugin.yaml](#pluginyaml)|[publish_timeout](#publish_timeout)|
-|[registerinterval](#registerinterval)|[registration](#registration)|
-|[registration_collective](#registration_collective)|[registration_splay](#registration_splay)|
-|[rpcaudit](#rpcaudit)|[rpcauditprovider](#rpcauditprovider)|
-|[rpcauthorization](#rpcauthorization)|[rpcauthprovider](#rpcauthprovider)|
-|[rpclimitmethod](#rpclimitmethod)|[securityprovider](#securityprovider)|
-|[soft_shutdown](#soft_shutdown)|[soft_shutdown_timeout](#soft_shutdown_timeout)|
-|[threaded](#threaded)|[ttl](#ttl)|
+|[plugin.choria.security.request_signing_certificate](#pluginchoriasecurityrequest_signing_certificate)|[plugin.choria.security.serializer](#pluginchoriasecurityserializer)|
+|[plugin.choria.server.provision](#pluginchoriaserverprovision)|[plugin.choria.srv_domain](#pluginchoriasrv_domain)|
+|[plugin.choria.ssldir](#pluginchoriassldir)|[plugin.choria.stats_address](#pluginchoriastats_address)|
+|[plugin.choria.stats_port](#pluginchoriastats_port)|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|
+|[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|[plugin.choria.use_srv](#pluginchoriause_srv)|
+|[plugin.nats.credentials](#pluginnatscredentials)|[plugin.nats.ngs](#pluginnatsngs)|
+|[plugin.nats.pass](#pluginnatspass)|[plugin.nats.user](#pluginnatsuser)|
+|[plugin.scout.overrides](#pluginscoutoverrides)|[plugin.scout.tags](#pluginscouttags)|
+|[plugin.security.always_overwrite_cache](#pluginsecurityalways_overwrite_cache)|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|
+|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|
+|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|
+|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|
+|[plugin.security.file.ca](#pluginsecurityfileca)|[plugin.security.file.cache](#pluginsecurityfilecache)|
+|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|[plugin.security.file.key](#pluginsecurityfilekey)|
+|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|
+|[plugin.security.provider](#pluginsecurityprovider)|[plugin.yaml](#pluginyaml)|
+|[publish_timeout](#publish_timeout)|[registerinterval](#registerinterval)|
+|[registration](#registration)|[registration_collective](#registration_collective)|
+|[registration_splay](#registration_splay)|[rpcaudit](#rpcaudit)|
+|[rpcauditprovider](#rpcauditprovider)|[rpcauthorization](#rpcauthorization)|
+|[rpcauthprovider](#rpcauthprovider)|[rpclimitmethod](#rpclimitmethod)|
+|[securityprovider](#securityprovider)|[soft_shutdown](#soft_shutdown)|
+|[soft_shutdown_timeout](#soft_shutdown_timeout)|[threaded](#threaded)|
+|[ttl](#ttl)|[](#)|
 
 
 ## activate_agents
@@ -630,6 +631,12 @@ Path to the token used to access a Central Authenticator
  * **Additional Information:** https://github.com/choria-io/aaasvc
 
 URL to the Signing Service
+
+## plugin.choria.security.request_signing_certificate
+
+ * **Type:** string
+
+The public certificate of the key used to sign the JWTs in the Signing Service
 
 ## plugin.choria.security.serializer
 

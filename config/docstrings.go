@@ -1,4 +1,4 @@
-// auto generated at 2020-09-09 09:26:36.265573 +0200 CEST m=+0.002437471
+// auto generated at 2020-09-11 16:22:00.242682 +0200 CEST m=+0.002106897
 
 package config
 
@@ -93,6 +93,7 @@ var docStrings = map[string]string{
 	"plugin.security.always_overwrite_cache":                  "Always store new Public Keys to the cache overwriting existing ones",
 	"plugin.choria.security.request_signer.token_file":        "Path to the token used to access a Central Authenticator",
 	"plugin.choria.security.request_signer.token_environment": "Environment variable to store Central Authenticator tokens",
+	"plugin.choria.security.request_signing_certificate":      "The public certificate of the key used to sign the JWTs in the Signing Service",
 	"plugin.choria.security.request_signer.url":               "URL to the Signing Service",
 	"plugin.security.client_anon_tls":                         "Use anonymous TLS to the Choria brokers from a client, also disables security provider verification - only when a remote signer is set",
 	"plugin.security.file.certificate":                        "When using file security provider, the path to the public certificate",

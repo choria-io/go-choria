@@ -2,6 +2,7 @@ package choria
 
 import (
 	"context"
+	"crypto/md5"
 	"crypto/tls"
 	"fmt"
 	"net/url"
@@ -91,7 +92,7 @@ type channelSubscription struct {
 	quit         chan interface{}
 }
 
-// Connection is a actual NATS connectoin handler, it implements Connector
+// Connection is a actual NATS connection handler, it implements Connector
 type Connection struct {
 	servers           func() (srvcache.Servers, error)
 	name              string
@@ -104,6 +105,8 @@ type Connection struct {
 	outbox            chan *nats.Msg
 	subMu             sync.Mutex
 	conMu             sync.Mutex
+	token             string
+	uniqueId          string
 }
 
 var (
@@ -149,12 +152,12 @@ func (m *ConnectorMessage) Bytes() []byte {
 // NewConnector creates a new NATS connector
 //
 // It will attempt to connect to the given servers and will keep trying till it manages to do so
-func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn Connector, err error) {
+func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (Connector, error) {
 	if name == "" {
 		name = fw.Config.Identity
 	}
 
-	conn = &Connection{
+	conn := &Connection{
 		name:              name,
 		servers:           servers,
 		logger:            logger.WithField("connection", name),
@@ -165,7 +168,19 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 		outbox:            make(chan *nats.Msg, 1000),
 	}
 
-	err = conn.Connect(ctx)
+	if fw.Config.Choria.ClientAnonTLS && !fw.Config.InitiatedByServer {
+		caller, id, token, err := fw.UniqueIDFromUnverifiedToken()
+		if err != nil {
+			return nil, fmt.Errorf("could not parse JWT: %s", err)
+		}
+
+		conn.logger.Infof("Setting JWT token and unique reply queues based on JWT for %q", caller)
+
+		conn.token = token
+		conn.uniqueId = id
+	}
+
+	err := conn.Connect(ctx)
 
 	return conn, err
 }
@@ -492,7 +507,7 @@ func (conn *Connection) AgentBroadcastTarget(collective string, agent string) st
 }
 
 func ReplyTarget(msg *Message, requestid string) string {
-	return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), msg.SenderID, requestid)
+	return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(msg.CallerID))), requestid)
 }
 
 func (conn *Connection) ReplyTarget(msg *Message) (string, error) {
@@ -600,6 +615,13 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}
 
 		options = append(options, nats.Secure(tlsc))
+
+		token, err := conn.choria.SignerToken()
+		if err != nil {
+			return fmt.Errorf("no signer token found while connecting to an anonymous TLS server: %s", err)
+		}
+
+		options = append(options, nats.Token(token))
 
 	case !(conn.config.DisableTLS || conn.choria.ShouldUseNGS()):
 		tlsc, err := conn.choria.TLSConfig()
