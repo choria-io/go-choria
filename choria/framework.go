@@ -2,15 +2,19 @@ package choria
 
 import (
 	"context"
+	"crypto/md5"
 	"errors"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"math/rand"
 	"net"
 	"os"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/dgrijalva/jwt-go"
 
 	"github.com/choria-io/go-choria/protocol"
 	certmanagersec "github.com/choria-io/go-choria/providers/security/certmanager"
@@ -538,6 +542,11 @@ func (fw *Framework) UniqueID() string {
 
 // CallerID determines the cert based callerid
 func (fw *Framework) CallerID() string {
+	caller, _, _, err := fw.UniqueIDFromUnverifiedToken()
+	if err == nil {
+		return caller
+	}
+
 	return fmt.Sprintf("choria=%s", fw.Certname())
 }
 
@@ -565,4 +574,61 @@ func (fw *Framework) DisableTLSVerify() bool {
 // Configuration returns the active configuration
 func (fw *Framework) Configuration() *config.Config {
 	return fw.Config
+}
+
+func (fw *Framework) UniqueIDFromUnverifiedToken() (caller string, id string, token string, err error) {
+	t, claims, err := fw.ParseSignerTokenUnverified()
+	if err != nil {
+		return "", "", "", err
+	}
+
+	caller, ok := claims["callerid"].(string)
+	if !ok {
+		return "", "", "", fmt.Errorf("invalid callerid in token claims")
+	}
+
+	return caller, fmt.Sprintf("%x", md5.Sum([]byte(caller))), t.Raw, nil
+}
+
+func (fw *Framework) ParseSignerTokenUnverified() (token *jwt.Token, claims jwt.MapClaims, err error) {
+	ts, err := fw.SignerToken()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	claims = jwt.MapClaims{}
+	token, _, err = new(jwt.Parser).ParseUnverified(ts, &claims)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	err = claims.Valid()
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return token, claims, nil
+}
+
+// Retrieves the AAA token used for signing requests
+func (fw *Framework) SignerToken() (token string, err error) {
+	if fw.Config.Choria.RemoteSignerTokenFile == "" && fw.Config.Choria.RemoteSignerTokenEnvironment == "" {
+		return "", fmt.Errorf("no token file or environment variable is defined")
+	}
+
+	if fw.Config.Choria.RemoteSignerTokenFile != "" {
+		tb, err := ioutil.ReadFile(fw.Config.Choria.RemoteSignerTokenFile)
+		if err != nil {
+			return "", fmt.Errorf("could not read token file: %v", err)
+		}
+
+		return strings.TrimSpace(string(tb)), err
+	}
+
+	token = os.Getenv(fw.Config.Choria.RemoteSignerTokenEnvironment)
+	if token == "" {
+		return "", fmt.Errorf("did not find a token in environment variable %s", fw.Config.Choria.RemoteSignerTokenEnvironment)
+	}
+
+	return strings.TrimSpace(token), nil
 }

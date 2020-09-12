@@ -90,12 +90,12 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		s.opts.HTTPPort = s.config.Choria.StatsPort
 	}
 
-	if len(s.config.Choria.NetworkAllowedClientHosts) > 0 {
-		s.opts.CustomClientAuthentication = &IPAuth{
-			allowList:   s.config.Choria.NetworkAllowedClientHosts,
-			log:         s.choria.Logger("ipauth"),
-			denyServers: s.config.Choria.NetworkDenyServers,
-		}
+	s.opts.CustomClientAuthentication = &IPAuth{
+		allowList:   s.config.Choria.NetworkAllowedClientHosts,
+		log:         s.choria.Logger("ipauth"),
+		denyServers: s.config.Choria.NetworkDenyServers,
+		anonTLS:     s.config.Choria.NetworkClientTLSAnon,
+		jwtSigner:   s.config.Choria.RemoteSignerSigningCert,
 	}
 
 	err = s.setupAccounts()
@@ -217,11 +217,13 @@ func (s *Server) setupTLS() (err error) {
 		}
 
 		if !s.config.Choria.NetworkDenyServers {
-			return fmt.Errorf("can only configure anonymous TLS for client connections when servers are denied using plugin.choria.network.deny_server_connections")
+			s.log.Warnf("Disabling connections from Servers while in Anon TLS mode")
+			s.config.Choria.NetworkDenyServers = true
 		}
 
 		if len(s.config.Choria.NetworkAllowedClientHosts) == 0 {
-			return fmt.Errorf("can only configure anonymous TLS for client connections when an allow list of client hosts is set using plugin.choria.network.client_hosts")
+			s.log.Warnf("Adding 0.0.0.0/0 to client hosts list, override using plugin.choria.network.client_hosts")
+			s.config.Choria.NetworkAllowedClientHosts = []string{"0.0.0.0/0"}
 		}
 
 		s.log.Warnf("Configuring anonymous TLS for client connections")

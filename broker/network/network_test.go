@@ -44,7 +44,7 @@ var _ = Describe("Network Broker", func() {
 
 		logger = logrus.NewEntry(logrus.New())
 		logger.Logger.SetLevel(logrus.DebugLevel)
-		logger.Logger.Out = ioutil.Discard
+		logger.Logger.Out = GinkgoWriter
 
 		fw.EXPECT().Configuration().Return(cfg).AnyTimes()
 		fw.EXPECT().Logger(gomock.Any()).Return(logger).AnyTimes()
@@ -142,7 +142,7 @@ var _ = Describe("Network Broker", func() {
 
 				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil)
 				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
-				fw.EXPECT().Logger(gomock.Any()).Return(logger)
+				fw.EXPECT().Logger(gomock.Any()).Return(logger).AnyTimes()
 			})
 
 			It("Should require a name and remotes", func() {
@@ -221,7 +221,7 @@ var _ = Describe("Network Broker", func() {
 
 				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil)
 				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
-				fw.EXPECT().Logger(gomock.Any()).Return(logger)
+				fw.EXPECT().Logger(gomock.Any()).Return(logger).AnyTimes()
 			})
 
 			It("Should support basic listening only leafnodes mode", func() {

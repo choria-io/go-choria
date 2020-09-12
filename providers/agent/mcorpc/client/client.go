@@ -263,7 +263,7 @@ func (r *RPC) setupMessage(ctx context.Context, action string, payload interface
 
 	msg, err = r.fw.NewMessage(string(rpcp), r.agent, r.cfg.MainCollective, "request", nil)
 	if err != nil {
-		return nil, nil, fmt.Errorf("could not create Message: %s", err)
+		return nil, nil, err
 	}
 
 	err = r.opts.ConfigureMessage(msg)

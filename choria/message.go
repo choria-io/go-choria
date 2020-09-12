@@ -79,15 +79,18 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 		return
 	}
 
+	cfg := choria.Configuration()
+
 	msg = &Message{
-		Payload:         payload,
-		RequestID:       id,
-		TTL:             choria.Config.TTL,
-		DiscoveredHosts: []string{},
-		SenderID:        choria.Config.Identity,
-		CallerID:        choria.CallerID(),
-		Filter:          protocol.NewFilter(),
-		choria:          choria,
+		Payload:              payload,
+		RequestID:            id,
+		TTL:                  cfg.TTL,
+		DiscoveredHosts:      []string{},
+		SenderID:             cfg.Identity,
+		CallerID:             choria.CallerID(),
+		Filter:               protocol.NewFilter(),
+		choria:               choria,
+		shouldCacheTransport: cfg.CacheBatchedTransports,
 	}
 
 	err = msg.SetType(msgType)
@@ -110,10 +113,6 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 		if err != nil {
 			return
 		}
-	}
-
-	if choria.Configuration().CacheBatchedTransports {
-		msg.shouldCacheTransport = true
 	}
 
 	_, err = msg.Validate()
