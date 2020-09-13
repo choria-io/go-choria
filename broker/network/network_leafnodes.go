@@ -73,9 +73,6 @@ func (s *Server) setupLeafNodes() (err error) {
 			s.log.Infof("Using custom TLS config for leafnode remote %s", r)
 			remote.TLSConfig = tlsc
 			remote.TLS = true
-
-		case tlsc == nil && s.config.Choria.NetworkClientTLSAnon:
-			return fmt.Errorf("leafnodes require specific TLS configuration when using Anonymous client connections")
 		}
 
 		s.opts.LeafNode.Remotes = append(s.opts.LeafNode.Remotes, remote)

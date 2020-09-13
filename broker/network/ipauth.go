@@ -132,6 +132,7 @@ func (a *IPAuth) setClientPermissions(user *server.User, caller string) {
 	replys := "*.reply.>"
 	if caller != "" {
 		replys = fmt.Sprintf("*.reply.%x.>", md5.Sum([]byte(caller)))
+		a.log.Debugf("Creating ACLs for a private reply subject on %s", replys)
 	}
 
 	user.Permissions.Subscribe = &server.SubjectPermission{
