@@ -7,16 +7,20 @@ import (
 )
 
 func (s *Server) setupCluster() (err error) {
+	peers, err := s.choria.NetworkBrokerPeers()
+	if err != nil {
+		return fmt.Errorf("could not determine network broker peers: %s", err)
+	}
+
+	if s.config.Choria.NetworkClientTLSAnon && (s.config.Choria.NetworkPeerPort > 0 || peers.Count() > 0) {
+		return fmt.Errorf("clustering is disabled when anonymous TLS is configured")
+	}
+
 	s.opts.Cluster.Host = s.config.Choria.NetworkListenAddress
 	s.opts.Cluster.NoAdvertise = true
 	s.opts.Cluster.Port = s.config.Choria.NetworkPeerPort
 	s.opts.Cluster.Username = s.config.Choria.NetworkPeerUser
 	s.opts.Cluster.Password = s.config.Choria.NetworkPeerPassword
-
-	peers, err := s.choria.NetworkBrokerPeers()
-	if err != nil {
-		return fmt.Errorf("could not determine network broker peers: %s", err)
-	}
 
 	for _, p := range peers.Servers() {
 		u, err := p.URL()
