@@ -1,5 +1,18 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2020/09/28|      |Release 0.17.0                                                                                           |
+|2020/09/04|989   |Add a generic shell completion helper and support ZSH completion                                         |
+|2020/08/25|987   |Support NATS Leafnodes to extend the Choria Broker in a TLS free way specifically usable by AAA clients  |
+|2020/08/03|982   |Scout checks can have annotations that are published in events                                           |
+|2020/08/03|920   |Add `choria scout maintenance` and `choria scout resume` commands                                        |
+|2020/08/01|920   |Add a `choria scout trigger` command that triggers an immediate check and associated events              |
+|2020/08/01|977   |Generated clients can now set a progress bar                                                             |
+|2020/07/30|975   |Prevent int overflow in time fields in some Scout events                                                 |
+|2020/07/26|920   |Add a `--table` option to `choria req` and a new formatter in generated clients                          |
+|2020/07/26|920   |Add a `choria scout status` command that can show all checks on a node                                   |
+|2020/07/24|968   |Improve the history presented in Scout events                                                            |
+|2020/07/22|966   |Remove the concept of a site wide Gossfile                                                               |
+|2020/07/21|964   |Allow multiple Gossfiles and multiple Goss checks                                                        |
 |2020/07/18|      |Release 0.16.0                                                                                           |
 |2020/07/18|960   |Add a `choria scout watch` command                                                                       |
 |2020/07/17|957   |Restore the ability for DDLs to declare display formats for aggregate outputs                            |

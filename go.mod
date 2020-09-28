@@ -11,21 +11,20 @@ require (
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
 	github.com/fatih/color v1.9.0
-	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/golang/mock v1.4.4
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gosuri/uiprogress v0.0.1
-	github.com/guptarohit/asciigraph v0.5.0
+	github.com/guptarohit/asciigraph v0.5.1
 	github.com/looplab/fsm v0.1.0
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/nats-io/jsm.go v0.0.18
 	github.com/nats-io/jwt v1.0.1
-	github.com/nats-io/jwt/v2 v2.0.0-20200908173214-d4f335c8eeb1
-	github.com/nats-io/nats-server/v2 v2.1.8-0.20200908205505-5cd11bf77d06
+	github.com/nats-io/jwt/v2 v2.0.0-20200923205802-21ebf8e6132e
+	github.com/nats-io/nats-server/v2 v2.1.8-0.20200922232701-9b7c472c0935
 	github.com/nats-io/nats.go v1.10.1-0.20200817211004-cd74bc037e7c
-	github.com/nats-io/nsc v0.0.0-20200617223447-2aca79c9d220
+	github.com/nats-io/nsc v0.0.0-20200911204640-347d055d8c68
 	github.com/nats-io/stan.go v0.7.0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/onsi/ginkgo v1.14.1
