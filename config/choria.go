@@ -87,6 +87,7 @@ type ChoriaPluginConfig struct {
 	RemoteSignerTokenFile        string   `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"` // Path to the token used to access a Central Authenticator
 	RemoteSignerTokenEnvironment string   `confkey:"plugin.choria.security.request_signer.token_environment" url:"https://github.com/choria-io/aaasvc"`             // Environment variable to store Central Authenticator tokens
 	RemoteSignerSigningCert      string   `confkey:"plugin.choria.security.request_signing_certificate"`                                                            // The public certificate of the key used to sign the JWTs in the Signing Service
+	ProvisionSigningCert         string   `confkey:"plugin.choria.security.provisioner_signing_certificate"`                                                        // The public certificate of the key used to sign the Provisioner JWTs
 	RemoteSignerURL              string   `confkey:"plugin.choria.security.request_signer.url" url:"https://github.com/choria-io/aaasvc"`                           // URL to the Signing Service
 	ClientAnonTLS                bool     `confkey:"plugin.security.client_anon_tls" default:"false"`                                                               // Use anonymous TLS to the Choria brokers from a client, also disables security provider verification - only when a remote signer is set
 

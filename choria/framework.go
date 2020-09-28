@@ -43,6 +43,19 @@ type Framework struct {
 	mu       *sync.Mutex
 }
 
+// JWTType indicates the type of JWT token, typically stored in the "sub" of the tokens
+// set by tool jwt or the aaa service
+type JWTType string
+
+const (
+	// UnknownJWT is an unknown type of token
+	UnknownJWT JWTType = ""
+	// ServerJWT is a token used for provisioning of servers
+	ServerJWT = "choria_server"
+	// ClientJWT is a token issued by the AAA systems
+	ClientJWT = "choria_client"
+)
+
 // New sets up a Choria with all its config loaded and so forth
 func New(path string) (*Framework, error) {
 	conf, err := config.NewConfig(path)
@@ -591,6 +604,10 @@ func (fw *Framework) UniqueIDFromUnverifiedToken() (caller string, id string, to
 }
 
 func (fw *Framework) ParseSignerTokenUnverified() (token *jwt.Token, claims jwt.MapClaims, err error) {
+	if !fw.IsRemoteSigned() {
+		return nil, nil, nil
+	}
+
 	ts, err := fw.SignerToken()
 	if err != nil {
 		return nil, nil, err
@@ -610,9 +627,14 @@ func (fw *Framework) ParseSignerTokenUnverified() (token *jwt.Token, claims jwt.
 	return token, claims, nil
 }
 
+// IsRemoteSigned indicates if the client is configured for remote signing
+func (fw *Framework) IsRemoteSigned() bool {
+	return !(fw.Config.Choria.RemoteSignerTokenFile == "" && fw.Config.Choria.RemoteSignerTokenEnvironment == "")
+}
+
 // Retrieves the AAA token used for signing requests
 func (fw *Framework) SignerToken() (token string, err error) {
-	if fw.Config.Choria.RemoteSignerTokenFile == "" && fw.Config.Choria.RemoteSignerTokenEnvironment == "" {
+	if !fw.IsRemoteSigned() {
 		return "", fmt.Errorf("no token file or environment variable is defined")
 	}
 

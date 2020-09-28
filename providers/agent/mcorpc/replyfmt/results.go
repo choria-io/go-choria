@@ -83,12 +83,12 @@ func (r *RPCResults) RenderTXTFooter(w io.Writer, verbose bool) {
 		fmt.Fprintf(w, "        No Responses: %d\n", len(stats.NoResponses))
 		fmt.Fprintf(w, "Unexpected Responses: %d\n", len(stats.UnexpectedResponses))
 		fmt.Fprintf(w, "          Start Time: %s\n", stats.StartTime.Format("2006-01-02T15:04:05-0700"))
-		fmt.Fprintf(w, "      Discovery Time: %v\n", stats.DiscoverTime)
-		fmt.Fprintf(w, "        Publish Time: %v\n", stats.PublishTime)
-		fmt.Fprintf(w, "          Agent Time: %v\n", stats.RequestTime-stats.PublishTime)
-		fmt.Fprintf(w, "          Total Time: %v\n", stats.RequestTime+stats.DiscoverTime)
+		fmt.Fprintf(w, "      Discovery Time: %v\n", stats.DiscoverTime.Round(time.Millisecond))
+		fmt.Fprintf(w, "        Publish Time: %v\n", stats.PublishTime.Round(time.Millisecond))
+		fmt.Fprintf(w, "          Agent Time: %v\n", (stats.RequestTime - stats.PublishTime).Round(time.Millisecond))
+		fmt.Fprintf(w, "          Total Time: %v\n", (stats.RequestTime + stats.DiscoverTime).Round(time.Millisecond))
 	} else {
-		fmt.Fprintf(w, "Finished processing %d / %d hosts in %s\n", stats.ResponseCount, stats.DiscoveredCount, stats.RequestTime+stats.DiscoverTime)
+		fmt.Fprintf(w, "Finished processing %d / %d hosts in %s\n", stats.ResponseCount, stats.DiscoveredCount, (stats.RequestTime + stats.DiscoverTime).Round(time.Millisecond))
 	}
 
 	nodeListPrinter := func(nodes []string, message string) {

@@ -596,6 +596,8 @@ func (s *FileSecurity) TLSConfig() (*tls.Config, error) {
 	pri := s.privateKeyPath()
 	ca := s.caPath()
 
+	s.log.WithFields(logrus.Fields{"pub": pub, "pri": pri, "ca": ca}).Debugf("Creating TLS Config")
+
 	tlsc := &tls.Config{
 		MinVersion:               tls.VersionTLS12,
 		PreferServerCipherSuites: true,

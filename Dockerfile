@@ -2,7 +2,7 @@ FROM centos:8
 
 WORKDIR /
 
-RUN curl -s https://packagecloud.io/install/repositories/choria/release/script.rpm.sh | bash && \
+RUN curl -s https://packagecloud.io/install/repositories/choria/nightly/script.rpm.sh | bash && \
     yum -y update && \
     yum -y install choria nc && \
     yum -y clean all

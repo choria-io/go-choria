@@ -110,7 +110,7 @@ var _ = Describe("Network Broker/IPAuth", func() {
 		})
 	})
 
-	Describe("parseAnonTLSJWTUser", func() {
+	Describe("parseUserJWT", func() {
 		var (
 			td         string
 			err        error
@@ -156,18 +156,18 @@ var _ = Describe("Network Broker/IPAuth", func() {
 		})
 
 		It("Should fail without a cert", func() {
-			_, err := auth.parseAnonTLSJWTUser("")
+			_, err := auth.parseUserJWT("")
 			Expect(err).To(MatchError("anonymous TLS JWT Signer not set in plugin.choria.security.request_signing_certificate, denying all clients"))
 		})
 
 		It("Should fail for empty JWTs", func() {
-			auth.jwtSigner = "testdata/public.pem"
-			_, err := auth.parseAnonTLSJWTUser("")
+			auth.userJWTSignerCert = "testdata/public.pem"
+			_, err := auth.parseUserJWT("")
 			Expect(err).To(MatchError("no JWT received"))
 		})
 
 		It("Should verify JWTs", func() {
-			auth.jwtSigner = filepath.Join(td, "public.pem")
+			auth.userJWTSignerCert = filepath.Join(td, "public.pem")
 			claims := map[string]interface{}{
 				"exp":      time.Now().UTC().Add(-time.Hour).Unix(),
 				"nbf":      time.Now().UTC().Add(-1 * time.Minute).Unix(),
@@ -180,13 +180,13 @@ var _ = Describe("Network Broker/IPAuth", func() {
 			token := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(claims))
 			signed, err := token.SignedString(privateKey)
 			Expect(err).ToNot(HaveOccurred())
-			caller, err := auth.parseAnonTLSJWTUser(signed)
+			caller, err := auth.parseUserJWT(signed)
 			Expect(err).To(MatchError("invalid JWT: Token is expired"))
 			Expect(caller).To(Equal(""))
 		})
 
 		It("Should detect missing callers", func() {
-			auth.jwtSigner = filepath.Join(td, "public.pem")
+			auth.userJWTSignerCert = filepath.Join(td, "public.pem")
 			claims := map[string]interface{}{
 				"exp": time.Now().UTC().Add(time.Hour).Unix(),
 				"nbf": time.Now().UTC().Add(-1 * time.Minute).Unix(),
@@ -198,13 +198,13 @@ var _ = Describe("Network Broker/IPAuth", func() {
 			token := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(claims))
 			signed, err := token.SignedString(privateKey)
 			Expect(err).ToNot(HaveOccurred())
-			caller, err := auth.parseAnonTLSJWTUser(signed)
+			caller, err := auth.parseUserJWT(signed)
 			Expect(err).To(MatchError("no callerid in claims"))
 			Expect(caller).To(Equal(""))
 		})
 
 		It("Should extract the caller", func() {
-			auth.jwtSigner = filepath.Join(td, "public.pem")
+			auth.userJWTSignerCert = filepath.Join(td, "public.pem")
 			claims := map[string]interface{}{
 				"exp":      time.Now().UTC().Add(time.Hour).Unix(),
 				"nbf":      time.Now().UTC().Add(-1 * time.Minute).Unix(),
@@ -217,7 +217,7 @@ var _ = Describe("Network Broker/IPAuth", func() {
 			token := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(claims))
 			signed, err := token.SignedString(privateKey)
 			Expect(err).ToNot(HaveOccurred())
-			caller, err := auth.parseAnonTLSJWTUser(signed)
+			caller, err := auth.parseUserJWT(signed)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(caller).To(Equal("up=ginkgo"))
 		})

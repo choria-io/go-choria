@@ -5,6 +5,7 @@ import (
 	"crypto/md5"
 	"crypto/tls"
 	"fmt"
+	"io/ioutil"
 	"net/url"
 	"strings"
 	"sync"
@@ -601,6 +602,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}),
 	}
 
+	// sets up tls
 	switch {
 	case conn.config.Choria.ClientAnonTLS && !conn.config.InitiatedByServer:
 		conn.logger.Debug("Setting anonymous TLS for NATS connection")
@@ -616,13 +618,6 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 		options = append(options, nats.Secure(tlsc))
 
-		token, err := conn.choria.SignerToken()
-		if err != nil {
-			return fmt.Errorf("no signer token found while connecting to an anonymous TLS server: %s", err)
-		}
-
-		options = append(options, nats.Token(token))
-
 	case !(conn.config.DisableTLS || conn.choria.ShouldUseNGS()):
 		tlsc, err := conn.choria.TLSConfig()
 		if err != nil {
@@ -634,6 +629,41 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 	default:
 		conn.logger.Debugf("Not specifying TLS options on NATS connection: tls: %v ngs: %v creds: %v", conn.config.DisableTLS, conn.config.Choria.NatsNGS, conn.config.Choria.NatsCredentials)
+	}
+
+	// sets up jwt tokens
+	switch {
+	case conn.config.InitiatedByServer:
+		provjwt := conn.choria.BuildInfo().ProvisionJWTFile()
+		conn.logger.Debugf("Attempting to send Provisioner JWT '%s' to Choria Broker", provjwt)
+
+		if provjwt != "" {
+			if FileExist(provjwt) {
+				conn.logger.Infof("Sending provision JWT %s to Choria Broker", provjwt)
+				token, err := ioutil.ReadFile(provjwt)
+				if err != nil {
+					return fmt.Errorf("could not read provisioning token")
+				}
+
+				conn.logger.Infof("Sending provisioning JWT %s to the broker")
+				options = append(options, nats.Token(string(token)))
+			}
+		}
+
+	default:
+		token, _, err := conn.choria.ParseSignerTokenUnverified()
+		if err != nil {
+			return err
+		}
+
+		if conn.config.Choria.ClientAnonTLS && token == nil {
+			return fmt.Errorf("no signer token found while connecting to an anonymous TLS server: %s", err)
+		}
+
+		if token != nil {
+			conn.logger.Infof("Sending AAA JWT %s to Choria Broker")
+			options = append(options, nats.Token(token.Raw))
+		}
 	}
 
 	if !conn.config.Choria.RandomizeMiddlewareHosts {

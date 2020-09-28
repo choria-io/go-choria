@@ -44,7 +44,6 @@ type Server struct {
 	choria ChoriaFramework
 	config *config.Config
 	log    *logrus.Entry
-	as     accountStore
 
 	started bool
 
@@ -71,6 +70,7 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	s.opts.MaxConn = bi.MaxBrokerClients()
 	s.opts.NoSigs = true
 	s.opts.Logtime = false
+	s.opts.AllowNewAccounts = true
 
 	if s.config.Choria.NetworkClientAdvertiseName != "" {
 		s.opts.ClientAdvertise = s.config.Choria.NetworkClientAdvertiseName
@@ -91,16 +91,13 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	}
 
 	s.opts.CustomClientAuthentication = &IPAuth{
-		allowList:   s.config.Choria.NetworkAllowedClientHosts,
-		log:         s.choria.Logger("ipauth"),
-		denyServers: s.config.Choria.NetworkDenyServers,
-		anonTLS:     s.config.Choria.NetworkClientTLSAnon,
-		jwtSigner:   s.config.Choria.RemoteSignerSigningCert,
-	}
-
-	err = s.setupAccounts()
-	if err != nil {
-		return s, fmt.Errorf("could not set up accounts: %s", err)
+		allowList:         s.config.Choria.NetworkAllowedClientHosts,
+		log:               s.choria.Logger("ipauth"),
+		denyServers:       s.config.Choria.NetworkDenyServers,
+		anonTLS:           s.config.Choria.NetworkClientTLSAnon,
+		userJWTSignerCert: s.config.Choria.RemoteSignerSigningCert,
+		provJWTSignerCert: s.config.Choria.ProvisionSigningCert,
+		srv:               s,
 	}
 
 	err = s.setupStreaming()
@@ -143,11 +140,6 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	s.log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, s.config.ConfigFile)
 
-	if s.as != nil {
-		wg.Add(1)
-		go s.as.StoreStart(ctx, wg)
-	}
-
 	go s.gnatsd.Start()
 
 	if !s.gnatsd.ReadyForConnections(time.Minute) {
@@ -170,10 +162,6 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	s.log.Warn("Choria Network Broker shutting down")
 	s.gnatsd.Shutdown()
-
-	if s.as != nil {
-		s.as.Stop()
-	}
 
 	s.log.Warn("Choria Network Broker shut down")
 }

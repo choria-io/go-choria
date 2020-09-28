@@ -56,11 +56,6 @@ func (s *Server) configureSystemStreams() error {
 		return err
 	}
 
-	err = s.createOrUpdateStream("CHORIA_STREAM_ADVISORIES", []string{"$JS.EVENT.ADVISORY.>"}, s.config.Choria.NetworkEventStoreDuration, conn)
-	if err != nil {
-		return err
-	}
-
 	err = scout.ConfigureStreams(nc, s.log.WithField("component", "scout"))
 	if err != nil {
 		return err

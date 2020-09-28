@@ -28,6 +28,7 @@ type ProvClaims struct {
 	ProvFacts    string `json:"chf,omitempty"`
 	ProvNatsUser string `json:"chusr,omitempty"`
 	ProvNatsPass string `json:"chpwd,omitempty"`
+	Organization string `json:"chou,omitempty"`
 
 	jwt.StandardClaims
 }

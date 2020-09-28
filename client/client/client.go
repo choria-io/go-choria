@@ -222,7 +222,7 @@ func (c *Client) connect(name string) (Connector, error) {
 
 	connector, err := c.fw.NewConnector(c.ctx, servers, name, c.log)
 	if err != nil {
-		return nil, fmt.Errorf("could not create connector: %s", err)
+		return nil, err
 	}
 
 	closer := func() {
