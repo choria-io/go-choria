@@ -25,7 +25,7 @@ foss:
       pre:
         - rm additional_agent_*.go || true
         - rm plugin_*.go || true
-        - go generate
+        - go generate --run plugin
 
     64bit_linux:
       os: linux
@@ -60,7 +60,7 @@ foss:
       arch: amd64
       pre:
         - rm plugin_*.go || true
-        - GOOS=linux GOARCH=amd64 go generate
+        - GOOS=linux GOARCH=amd64 go generate --run plugin
 
   packages:
     defaults:
