@@ -1,6 +1,7 @@
 package ruby
 
 import (
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/plugin"
 )
 
@@ -16,7 +17,7 @@ func (p *Provider) PluginInstance() interface{} {
 
 // PluginVersion implements plugin.Pluggable
 func (p *Provider) PluginVersion() string {
-	return "0.9.0"
+	return build.Version
 }
 
 // PluginName implements plugin.Pluggable
