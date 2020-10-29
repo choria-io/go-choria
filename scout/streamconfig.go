@@ -9,11 +9,12 @@ import (
 )
 
 func ConfigureStreams(nc *nats.Conn, log *logrus.Entry) error {
-	conn := []jsm.RequestOption{
-		jsm.WithConnection(nc),
+	mgr, err := jsm.New(nc)
+	if err != nil {
+		return err
 	}
 
-	_, err := jsm.LoadOrNewStream("SCOUT_TAGS", jsm.FileStorage(), jsm.MaxMessages(10000), jsm.Subjects("scout.tags.>"), jsm.StreamConnection(conn...))
+	_, err = mgr.LoadOrNewStream("SCOUT_TAGS", jsm.FileStorage(), jsm.MaxMessages(10000), jsm.Subjects("scout.tags.>"))
 	if err != nil {
 		return fmt.Errorf("could not create SCOUT_TAGS stream: %s", err)
 	}
@@ -23,12 +24,12 @@ func ConfigureStreams(nc *nats.Conn, log *logrus.Entry) error {
 		return fmt.Errorf("could not create SCOUT_CHECKS template configuration")
 	}
 
-	_, err = jsm.LoadOrNewStreamTemplate("SCOUT_CHECKS", 1000, cfg.StreamConfig, jsm.StreamConnection(conn...))
+	_, err = mgr.LoadOrNewStreamTemplate("SCOUT_CHECKS", 1000, *cfg)
 	if err != nil {
 		return fmt.Errorf("could not create SCOUT_CHECKS stream template: %s", err)
 	}
 
-	_, err = jsm.LoadOrNewStream("SCOUT_OVERRIDES", jsm.FileStorage(), jsm.Subjects("scout.overrides.>"), jsm.StreamConnection(conn...))
+	_, err = mgr.LoadOrNewStream("SCOUT_OVERRIDES", jsm.FileStorage(), jsm.Subjects("scout.overrides.>"))
 	if err != nil {
 		return fmt.Errorf("could not create SCOUT_OVERRIDES: %s", err)
 	}

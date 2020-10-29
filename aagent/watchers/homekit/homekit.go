@@ -264,13 +264,6 @@ func (w *Watcher) handleStateChange(s State) error {
 	return fmt.Errorf("invalid state change event: %s", stateNames[s])
 }
 
-func (w *Watcher) previousState() State {
-	w.Lock()
-	defer w.Unlock()
-
-	return w.previous
-}
-
 func (w *Watcher) CurrentState() interface{} {
 	w.Lock()
 	defer w.Unlock()

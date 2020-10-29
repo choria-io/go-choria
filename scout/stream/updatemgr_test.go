@@ -62,9 +62,12 @@ var _ = Describe("UpdateManager", func() {
 		nc, err := nats.Connect(srv.ClientURL())
 		Expect(err).ToNot(HaveOccurred())
 
-		fw.EXPECT().NATSConn().Return(nc)
+		jmgr, err := jsm.New(nc)
+		Expect(err).ToNot(HaveOccurred())
 
-		_, err = jsm.NewStream("TEST", jsm.MemoryStorage(), jsm.Subjects("js.test.in"), jsm.StreamConnection(jsm.WithConnection(nc)))
+		fw.EXPECT().NATSConn().Return(nc).AnyTimes()
+
+		_, err = jmgr.NewStream("TEST", jsm.MemoryStorage(), jsm.Subjects("js.test.in"))
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = nc.Request("js.test.in", []byte(`{"hello":"world"}`), time.Second)

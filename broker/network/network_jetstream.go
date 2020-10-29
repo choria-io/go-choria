@@ -42,21 +42,22 @@ func (s *Server) configureSystemStreams() error {
 	}
 	defer nc.Close()
 
-	conn := []jsm.RequestOption{
-		jsm.WithConnection(nc),
-	}
-
-	err = s.createOrUpdateStream("CHORIA_EVENTS", []string{"choria.lifecycle.>"}, s.config.Choria.NetworkEventStoreDuration, conn)
+	mgr, err := jsm.New(nc)
 	if err != nil {
 		return err
 	}
 
-	err = s.createOrUpdateStream("CHORIA_MACHINE", []string{"choria.machine.>"}, s.config.Choria.NetworkEventStoreDuration, conn)
+	err = s.createOrUpdateStream("CHORIA_EVENTS", []string{"choria.lifecycle.>"}, s.config.Choria.NetworkEventStoreDuration, mgr)
 	if err != nil {
 		return err
 	}
 
-	err = s.createOrUpdateStream("CHORIA_STREAM_ADVISORIES", []string{"$JS.EVENT.ADVISORY.>"}, s.config.Choria.NetworkEventStoreDuration, conn)
+	err = s.createOrUpdateStream("CHORIA_MACHINE", []string{"choria.machine.>"}, s.config.Choria.NetworkEventStoreDuration, mgr)
+	if err != nil {
+		return err
+	}
+
+	err = s.createOrUpdateStream("CHORIA_STREAM_ADVISORIES", []string{"$JS.EVENT.ADVISORY.>"}, s.config.Choria.NetworkEventStoreDuration, mgr)
 	if err != nil {
 		return err
 	}
@@ -69,12 +70,12 @@ func (s *Server) configureSystemStreams() error {
 	return nil
 }
 
-func (s *Server) createOrUpdateStream(name string, subjects []string, maxAge time.Duration, conn []jsm.RequestOption) error {
+func (s *Server) createOrUpdateStream(name string, subjects []string, maxAge time.Duration, mgr *jsm.Manager) error {
 	if int(maxAge) <= 0 {
 		return nil
 	}
 
-	str, err := jsm.NewStream(name, jsm.FileStorage(), jsm.Subjects(subjects...), jsm.MaxAge(s.config.Choria.NetworkEventStoreDuration), jsm.StreamConnection(conn...))
+	str, err := mgr.NewStream(name, jsm.FileStorage(), jsm.Subjects(subjects...), jsm.MaxAge(s.config.Choria.NetworkEventStoreDuration))
 	if err != nil {
 		return fmt.Errorf("could not load or create %s: %s", name, err)
 	}
