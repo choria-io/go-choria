@@ -451,7 +451,12 @@ func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan 
 		return fmt.Errorf("could not subscribe to %s", ib)
 	}
 
-	_, err = jsm.NewConsumer("CHORIA_MACHINE", jsm.FilterStreamBySubject("choria.machine.transition"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeNone(), jsm.ConsumerConnection(jsm.WithConnection(w.nc.Nats())))
+	mgr, err := jsm.New(w.nc.Nats())
+	if err != nil {
+		return err
+	}
+
+	_, err = mgr.NewConsumer("CHORIA_MACHINE", jsm.FilterStreamBySubject("choria.machine.transition"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeNone())
 	if err != nil {
 		return fmt.Errorf("could not subscribe to Choria Streaming stream CHORIA_MACHINE: %s", err)
 	}
@@ -462,7 +467,7 @@ func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan 
 		return fmt.Errorf("could not subscribe to %s", ib)
 	}
 
-	_, err = jsm.NewConsumer("CHORIA_MACHINE", jsm.FilterStreamBySubject("choria.machine.watcher.nagios.state"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeNone(), jsm.ConsumerConnection(jsm.WithConnection(w.nc.Nats())))
+	_, err = mgr.NewConsumer("CHORIA_MACHINE", jsm.FilterStreamBySubject("choria.machine.watcher.nagios.state"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeNone())
 	if err != nil {
 		return fmt.Errorf("could not subscribe to Choria Streaming stream CHORIA_MACHINE: %s", err)
 	}

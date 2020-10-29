@@ -25,22 +25,29 @@ type Mgr struct {
 	stream string
 	subj   string
 	log    *logrus.Entry
+	mgr    *jsm.Manager
 
 	sync.Mutex
 }
 
 // New creates a new stream based data manager
 func New(stream string, subs string, fw Framework) (*Mgr, error) {
+	mgr, err := jsm.New(fw.NATSConn())
+	if err != nil {
+		return nil, err
+	}
+
 	return &Mgr{
 		nc:     fw.NATSConn(),
 		stream: stream,
 		subj:   subs,
+		mgr:    mgr,
 		log:    fw.Logger("stream").WithFields(logrus.Fields{"stream": stream, "subjects": subs}),
 	}, nil
 }
 
 func (m *Mgr) Manage(d updatable) error {
-	str, err := jsm.LoadStream(m.stream, jsm.WithConnection(m.nc))
+	str, err := m.mgr.LoadStream(m.stream)
 	if err != nil {
 		return fmt.Errorf("could not load stream %s: %s", m.stream, err)
 	}

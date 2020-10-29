@@ -56,6 +56,9 @@ var _ = Describe("Entity", func() {
 		nc, err := nats.Connect(srv.ClientURL())
 		Expect(err).ToNot(HaveOccurred())
 
+		mgr, err := jsm.New(nc)
+		Expect(err).ToNot(HaveOccurred())
+
 		err = ConfigureStreams(nc, log)
 		Expect(err).ToNot(HaveOccurred())
 
@@ -74,7 +77,7 @@ var _ = Describe("Entity", func() {
 		_, err = nc.Request("scout.check.swap", load, 2*time.Second)
 		Expect(err).ToNot(HaveOccurred())
 
-		names, err := jsm.StreamNames(jsm.WithConnection(nc))
+		names, err := mgr.StreamNames()
 		Expect(err).ToNot(HaveOccurred())
 		fmt.Printf("%v\n", names)
 
