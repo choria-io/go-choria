@@ -46,6 +46,8 @@ func (c *mRunCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	<-m.Start(ctx, wg)
 
+	<-ctx.Done()
+
 	return nil
 }
 
