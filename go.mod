@@ -3,15 +3,15 @@ module github.com/choria-io/go-choria
 go 1.14
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.1.1
+	github.com/AlecAivazis/survey/v2 v2.2.2
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
-	github.com/aelsabbahy/goss v0.3.13
+	github.com/aelsabbahy/goss v0.3.14
 	github.com/awesome-gocui/gocui v0.6.0
 	github.com/brutella/hc v1.2.3
 	github.com/choria-io/provisioning-agent v0.8.0
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
-	github.com/fatih/color v1.9.0
+	github.com/fatih/color v1.10.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v3.3.0+incompatible
 	github.com/golang/mock v1.4.4
@@ -21,11 +21,11 @@ require (
 	github.com/looplab/fsm v0.2.0
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/nats-io/jsm.go v0.0.19
-	github.com/nats-io/jwt v1.1.0
-	github.com/nats-io/jwt/v2 v2.0.0-20201015190852-e11ce317263c
-	github.com/nats-io/nats-server/v2 v2.1.8-0.20201028153921-3e5d484fc8ae
+	github.com/nats-io/jwt v1.2.0
+	github.com/nats-io/jwt/v2 v2.0.0-20201030222427-057ba30017be
+	github.com/nats-io/nats-server/v2 v2.1.8-0.20201106021052-398ef78aac06
 	github.com/nats-io/nats.go v1.10.1-0.20201021145452-94be476ad6e0
-	github.com/nats-io/nsc v0.0.0-20201027231620-e3da25bfe7c4
+	github.com/nats-io/nsc v0.0.0-20201106215424-be3b53072017
 	github.com/nats-io/stan.go v0.7.0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/onsi/ginkgo v1.14.2
@@ -36,8 +36,7 @@ require (
 	github.com/prometheus/client_model v0.2.0
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.7.0
-	github.com/stretchr/testify v1.6.1 // indirect
-	github.com/tidwall/gjson v1.6.1
+	github.com/tidwall/gjson v1.6.3
 	github.com/tidwall/pretty v1.0.2
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.6.0

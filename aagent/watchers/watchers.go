@@ -8,9 +8,10 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/filewatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/homekit"
+	"github.com/choria-io/go-choria/aagent/watchers/homekitwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/schedulewatcher"
+	"github.com/choria-io/go-choria/aagent/watchers/timerwatcher"
 )
 
 type State int
@@ -169,9 +170,20 @@ func (m *Manager) configureWatchers() (err error) {
 			}
 
 		case "homekit":
-			watcher, err := homekit.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
+			watcher, err := homekitwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
 			if err != nil {
 				return fmt.Errorf("could not create homekit watcher '%s': %s", w.Name, err)
+			}
+
+			err = m.AddWatcher(watcher)
+			if err != nil {
+				return err
+			}
+
+		case "timer":
+			watcher, err := timerwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
+			if err != nil {
+				return fmt.Errorf("could not create timer watcher '%s': %s", w.Name, err)
 			}
 
 			err = m.AddWatcher(watcher)
