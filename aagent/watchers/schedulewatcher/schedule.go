@@ -5,8 +5,6 @@ import (
 	"fmt"
 	"sync"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 type State int
@@ -78,7 +76,7 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 
 	err = w.setProperties(properties)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not set properties")
+		return nil, fmt.Errorf("could not set properties: %s", err)
 	}
 
 	return w, nil
@@ -248,7 +246,7 @@ func (w *Watcher) setProperties(p map[string]interface{}) (err error) {
 
 	w.duration, err = time.ParseDuration(durationspec)
 	if err != nil {
-		return errors.Wrapf(err, "invalid duration %s", durationspec)
+		return fmt.Errorf("invalid duration %s: %s", durationspec, err)
 	}
 
 	specs, ok := p["schedules"]
@@ -275,7 +273,7 @@ func (w *Watcher) setProperties(p map[string]interface{}) (err error) {
 
 		item, err := newSchedItem(spec, w)
 		if err != nil {
-			return errors.Wrapf(err, "could not parse '%s'", spec)
+			return fmt.Errorf("could not parse '%s': %s", spec, err)
 		}
 
 		w.items = append(w.items, item)

@@ -1,4 +1,4 @@
-package homekit
+package homekitwatcher
 
 import (
 	"context"
@@ -21,6 +21,9 @@ const (
 	Unknown State = iota
 	On
 	Off
+	// used to indicate that an external event - rpc or other watcher - initiated a transition
+	OnNoTransition
+	OffNoTransition
 )
 
 var stateNames = map[State]string{
@@ -140,10 +143,13 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 		w.ensureStarted()
 
 		w.machine.Infof(w.name, "homekit watcher for %s starting in state %s", w.name, stateNames[w.initial])
-		if w.initial == On {
+		switch w.initial {
+		case On:
 			w.buttonPress <- On
-		} else {
+		case Off:
 			w.buttonPress <- Off
+		default:
+			w.statechg <- struct{}{}
 		}
 	}
 
@@ -162,11 +168,11 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 			switch {
 			case w.shouldBeOn(mstate):
 				w.ensureStarted()
-				w.ac.Switch.On.UpdateValue(true)
+				w.buttonPress <- OnNoTransition
 
 			case w.shouldBeOff(mstate):
 				w.ensureStarted()
-				w.ac.Switch.On.UpdateValue(false)
+				w.buttonPress <- OffNoTransition
 
 			case w.shouldBeDisabled(mstate):
 				w.ensureStopped()
@@ -174,6 +180,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 		case <-ctx.Done():
 			w.machine.Infof(w.name, "Stopping on context interrupt")
+			w.ensureStopped()
 			return
 		}
 	}
@@ -187,7 +194,10 @@ func (w *Watcher) ensureStopped() {
 		return
 	}
 
+	w.machine.Infof(w.name, "Stopping homekit integration")
 	<-w.hkt.Stop()
+	w.machine.Infof(w.name, "Homekit integration stopped")
+
 	w.started = false
 }
 
@@ -249,16 +259,28 @@ func (w *Watcher) handleStateChange(s State) error {
 		return nil
 	}
 
-	w.setPreviousState(s)
-
 	switch s {
 	case On:
+		w.setPreviousState(s)
 		w.machine.NotifyWatcherState(w.name, w.CurrentState())
 		return w.machine.Transition(w.successEvent)
 
+	case OnNoTransition:
+		w.setPreviousState(On)
+		w.ac.Switch.On.SetValue(true)
+		w.machine.NotifyWatcherState(w.name, w.CurrentState())
+		return nil
+
 	case Off:
+		w.setPreviousState(s)
 		w.machine.NotifyWatcherState(w.name, w.CurrentState())
 		return w.machine.Transition(w.failEvent)
+
+	case OffNoTransition:
+		w.setPreviousState(Off)
+		w.ac.Switch.On.SetValue(false)
+		w.machine.NotifyWatcherState(w.name, w.CurrentState())
+		return nil
 	}
 
 	return fmt.Errorf("invalid state change event: %s", stateNames[s])
@@ -310,22 +332,25 @@ func (w *Watcher) startAccessoryUnlocked() error {
 		<-t.Stop()
 	})
 
-	w.ac.Switch.On.OnValueRemoteUpdate(func(on bool) {
+	w.ac.Switch.On.OnValueRemoteUpdate(func(new bool) {
 		w.Lock()
 		defer w.Unlock()
 
+		w.machine.Infof(w.name, "Handling app button press: %v", new)
+
 		if !w.shouldCheck() {
-			w.machine.Infof("ignoring event while in %s state", w.machine.State())
-			w.ac.Switch.On.UpdateValue(w.previous == On)
+			w.machine.Infof(w.name, "Ignoring event while in %s state", w.machine.State())
+			// undo the button press
+			w.ac.Switch.On.SetValue(!new)
 			return
 		}
 
-		if w.previous == On {
-			w.machine.Infof(w.name, "Setting state to Off")
-			w.buttonPress <- Off
-		} else {
+		if new {
 			w.machine.Infof(w.name, "Setting state to On")
 			w.buttonPress <- On
+		} else {
+			w.machine.Infof(w.name, "Setting state to Off")
+			w.buttonPress <- Off
 		}
 	})
 
@@ -391,11 +416,6 @@ func (w *Watcher) setProperties(p map[string]interface{}) error {
 		}
 	}
 
-	init, ok := p["initial"]
-	if !ok {
-		return fmt.Errorf("initial is required")
-	}
-
 	son, ok := p["on_when"]
 	if ok {
 		sons, ok := son.([]interface{})
@@ -444,27 +464,30 @@ func (w *Watcher) setProperties(p map[string]interface{}) error {
 		}
 	}
 
-	w.initial = Off
-	switch reflect.TypeOf(init).Kind() {
-	case reflect.Bool:
+	init, ok := p["initial"]
+	if ok {
 		w.initial = Off
-		if init.(bool) {
-			w.initial = On
-		}
+		switch reflect.TypeOf(init).Kind() {
+		case reflect.Bool:
+			w.initial = Off
+			if init.(bool) {
+				w.initial = On
+			}
 
-	case reflect.String:
-		w.initial = Off
-		s, err := strconv.ParseBool(init.(string))
-		if err != nil {
-			return fmt.Errorf("initial should be 'true' or 'false'")
-		}
+		case reflect.String:
+			w.initial = Off
+			s, err := strconv.ParseBool(init.(string))
+			if err != nil {
+				return fmt.Errorf("initial should be 'true' or 'false'")
+			}
 
-		if s {
-			w.initial = On
-		}
+			if s {
+				w.initial = On
+			}
 
-	default:
-		return fmt.Errorf("initial should be a string")
+		default:
+			return fmt.Errorf("initial should be a string")
+		}
 	}
 
 	return nil

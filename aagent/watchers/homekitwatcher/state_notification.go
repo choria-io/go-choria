@@ -1,4 +1,4 @@
-package homekit
+package homekitwatcher
 
 import (
 	"encoding/json"
@@ -10,7 +10,7 @@ import (
 )
 
 // StateNotification describes the current state of the watcher
-// described by io.choria.machine.watcher.exec.v1.state
+// described by io.choria.machine.watcher.homekit.v1.state
 type StateNotification struct {
 	Protocol        string `json:"protocol"`
 	Identity        string `json:"identity"`
