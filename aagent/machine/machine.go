@@ -18,8 +18,11 @@ import (
 	"github.com/choria-io/go-choria/aagent/watchers"
 	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/filewatcher"
+	"github.com/choria-io/go-choria/aagent/watchers/homekitwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/schedulewatcher"
+	"github.com/choria-io/go-choria/aagent/watchers/timerwatcher"
+
 	"github.com/ghodss/yaml"
 
 	"github.com/looplab/fsm"
@@ -98,7 +101,7 @@ func ParseWatcherState(state []byte) (n WatcherStateNotification, err error) {
 		notification := &execwatcher.StateNotification{}
 		err = json.Unmarshal(state, notification)
 		if err != nil {
-			return nil, errors.Wrapf(err, "invalid exec watcher notification received")
+			return nil, fmt.Errorf("invalid exec watcher notification received: %s", err)
 		}
 
 		return notification, nil
@@ -106,7 +109,7 @@ func ParseWatcherState(state []byte) (n WatcherStateNotification, err error) {
 		notification := &filewatcher.StateNotification{}
 		err = json.Unmarshal(state, notification)
 		if err != nil {
-			return nil, errors.Wrapf(err, "invalid file watcher notification received")
+			return nil, fmt.Errorf("invalid file watcher notification received: %s", err)
 		}
 
 		return notification, nil
@@ -115,7 +118,7 @@ func ParseWatcherState(state []byte) (n WatcherStateNotification, err error) {
 		notification := &schedulewatcher.StateNotification{}
 		err = json.Unmarshal(state, notification)
 		if err != nil {
-			return nil, errors.Wrapf(err, "invalid schedule watcher notification received")
+			return nil, fmt.Errorf("invalid schedule watcher notification received: %s", err)
 		}
 
 		return notification, nil
@@ -124,7 +127,25 @@ func ParseWatcherState(state []byte) (n WatcherStateNotification, err error) {
 		notification := &nagioswatcher.StateNotification{}
 		err = json.Unmarshal(state, notification)
 		if err != nil {
-			return nil, errors.Wrapf(err, "invalid nagios watcher notification received")
+			return nil, fmt.Errorf("invalid nagios watcher notification received: %s", err)
+		}
+
+		return notification, nil
+
+	case "io.choria.machine.watcher.homekit.v1.state":
+		notification := &homekitwatcher.StateNotification{}
+		err = json.Unmarshal(state, notification)
+		if err != nil {
+			return nil, fmt.Errorf("invalid homekit watcher notification received: %s", err)
+		}
+
+		return notification, nil
+
+	case "io.choria.machine.watcher.timer.v1.state":
+		notification := &timerwatcher.StateNotification{}
+		err = json.Unmarshal(state, notification)
+		if err != nil {
+			return nil, fmt.Errorf("invalid timer watcher notification received: %s", err)
 		}
 
 		return notification, nil
