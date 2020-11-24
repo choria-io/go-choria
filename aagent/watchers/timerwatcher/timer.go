@@ -36,8 +36,7 @@ type Machine interface {
 type Watcher struct {
 	name             string
 	states           []string
-	startEvent       string
-	stopEvent        string
+	successEvent     string
 	machine          Machine
 	state            State
 	announceInterval time.Duration
@@ -55,8 +54,7 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 	w := &Watcher{
 		name:             name,
 		states:           states,
-		startEvent:       successEvent,
-		stopEvent:        failEvent,
+		successEvent:     successEvent,
 		machine:          machine,
 		state:            0,
 		terminate:        make(chan struct{}),
@@ -106,10 +104,6 @@ func (w *Watcher) timeStart() {
 		w.cancelTimer = cancel
 		w.Unlock()
 
-		if w.startEvent != "" {
-			w.machine.Transition(w.startEvent)
-		}
-
 		select {
 		case <-timer.C:
 			w.Lock()
@@ -119,8 +113,8 @@ func (w *Watcher) timeStart() {
 			w.Unlock()
 
 			w.machine.NotifyWatcherState(w.name, w.CurrentState())
-			if w.stopEvent != "" {
-				w.machine.Transition(w.stopEvent)
+			if w.successEvent != "" {
+				w.machine.Transition(w.successEvent)
 			}
 
 		case <-ctx.Done():
