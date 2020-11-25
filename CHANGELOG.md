@@ -1,5 +1,8 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2020/11/25|      |Release 0.18.0                                                                                           |
+|2020/10/21|999   |Add a timer watcher that changes state after a time expires                                              |
+|2020/10/21|999   |Support creating Apple Homekit buttons in Autonomous Agents                                              |
 |2020/09/28|      |Release 0.17.0                                                                                           |
 |2020/09/04|989   |Add a generic shell completion helper and support ZSH completion                                         |
 |2020/08/25|987   |Support NATS Leafnodes to extend the Choria Broker in a TLS free way specifically usable by AAA clients  |
