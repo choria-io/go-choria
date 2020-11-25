@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/ssh/terminal"
+	"golang.org/x/term"
 
 	"github.com/choria-io/go-choria/confkey"
 	"github.com/choria-io/go-choria/puppet"
@@ -329,7 +329,7 @@ func newConfig() *Config {
 		log.Errorf("Config creation failed: %s", err)
 	}
 
-	if terminal.IsTerminal(int(os.Stdout.Fd())) {
+	if term.IsTerminal(int(os.Stdout.Fd())) {
 		m.Color = false
 	}
 
