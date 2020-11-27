@@ -77,7 +77,7 @@ var _ = Describe("Entity", func() {
 		_, err = nc.Request("scout.check.swap", load, 2*time.Second)
 		Expect(err).ToNot(HaveOccurred())
 
-		names, err := mgr.StreamNames()
+		names, err := mgr.StreamNames(nil)
 		Expect(err).ToNot(HaveOccurred())
 		fmt.Printf("%v\n", names)
 

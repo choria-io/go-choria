@@ -83,6 +83,7 @@ type ConnectorMessage struct {
 	Subject string
 	Reply   string
 	Data    []byte
+	Msg     interface{}
 }
 
 type channelSubscription struct {
@@ -217,7 +218,7 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 		for {
 			select {
 			case m := <-subs.in:
-				subs.out <- &ConnectorMessage{Data: m.Data, Reply: m.Reply, Subject: m.Subject}
+				subs.out <- &ConnectorMessage{Data: m.Data, Reply: m.Reply, Subject: m.Subject, Msg: m}
 			case <-subs.quit:
 				return
 			}
@@ -260,7 +261,7 @@ func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject
 		for {
 			select {
 			case m := <-s.in:
-				s.out <- &ConnectorMessage{Data: m.Data, Reply: m.Reply, Subject: m.Subject}
+				s.out <- &ConnectorMessage{Data: m.Data, Reply: m.Reply, Subject: m.Subject, Msg: m}
 			case <-ctx.Done():
 				conn.Unsubscribe(name)
 				return

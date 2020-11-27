@@ -73,11 +73,14 @@ func (w *WatchCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error) 
 	}
 	defer gui.Close()
 
-	transitions := make(chan *choria.ConnectorMessage, 10000)
-	states := make(chan *choria.ConnectorMessage, 10000)
+	transitions := make(chan *choria.ConnectorMessage, 100)
+	states := make(chan *choria.ConnectorMessage, 100)
 
 	go func() {
 		var m *choria.ConnectorMessage
+		var nm *nats.Msg
+		var ok bool
+
 		for {
 			select {
 			case m = <-transitions:
@@ -86,6 +89,16 @@ func (w *WatchCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error) 
 				w.handleState(m, gui)
 			case <-ctx.Done():
 				return
+			}
+
+			// no history means no jetstream
+			if m.Reply == "" {
+				continue
+			}
+
+			nm, ok = m.Msg.(*nats.Msg)
+			if ok {
+				nm.Ack()
 			}
 		}
 	}()
@@ -456,7 +469,7 @@ func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan 
 		return err
 	}
 
-	_, err = mgr.NewConsumer("CHORIA_MACHINE", jsm.FilterStreamBySubject("choria.machine.transition"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeNone())
+	_, err = mgr.NewConsumer("CHORIA_MACHINE", jsm.FilterStreamBySubject("choria.machine.transition"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(90), jsm.MaxDeliveryAttempts(2))
 	if err != nil {
 		return fmt.Errorf("could not subscribe to Choria Streaming stream CHORIA_MACHINE: %s", err)
 	}
@@ -467,7 +480,7 @@ func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan 
 		return fmt.Errorf("could not subscribe to %s", ib)
 	}
 
-	_, err = mgr.NewConsumer("CHORIA_MACHINE", jsm.FilterStreamBySubject("choria.machine.watcher.nagios.state"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeNone())
+	_, err = mgr.NewConsumer("CHORIA_MACHINE", jsm.FilterStreamBySubject("choria.machine.watcher.nagios.state"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(90), jsm.MaxDeliveryAttempts(2))
 	if err != nil {
 		return fmt.Errorf("could not subscribe to Choria Streaming stream CHORIA_MACHINE: %s", err)
 	}
