@@ -410,8 +410,8 @@ github.com/nats-io/cliprompts/v2 v2.0.0-20191226174129-372d79b36768 h1:sdr8zfPeN
 github.com/nats-io/cliprompts/v2 v2.0.0-20191226174129-372d79b36768/go.mod h1:oweZn7AeaVJYKlNHfCIhznJVsdySLSng55vfuINE/d0=
 github.com/nats-io/jsm.go v0.0.17 h1:ZapJt5GICrBa0XKhExQT4tHDTGZ43mOX8Pp9hdS4BIA=
 github.com/nats-io/jsm.go v0.0.17/go.mod h1:msS6FbFXoH/bJxEEDx8/+4LCD3r7YNmDI1MrlH67FdE=
-github.com/nats-io/jsm.go v0.0.20-0.20201112082938-ecfafe3d1627 h1:Ubffew9PRsC0aLVdh/zHRyYXHRIBArMxI+IUTLnM3gw=
-github.com/nats-io/jsm.go v0.0.20-0.20201112082938-ecfafe3d1627/go.mod h1:OLHx6g0wbY0kkARj+CRRN07OMGCfjgXoVpnCbFEcRcI=
+github.com/nats-io/jsm.go v0.0.20-0.20201127115233-95ad014f7ee9 h1:XR+jQIvAvXpFUZWG7OKE4YGzEDW+QwPqyHG+yLH2O7o=
+github.com/nats-io/jsm.go v0.0.20-0.20201127115233-95ad014f7ee9/go.mod h1:spK7vioJmgplyNMWDcxSFGG8Awg6FbWlLHAbA/Lx+s4=
 github.com/nats-io/jwt v0.2.6/go.mod h1:mQxQ0uHQ9FhEVPIcTSKwx2lqZEpXWWcCgA7R6NrWvvY=
 github.com/nats-io/jwt v0.2.14/go.mod h1:fRYCDE99xlTsqUzISS1Bi75UBJ6ljOJQOAAu5VglpSg=
 github.com/nats-io/jwt v0.3.0/go.mod h1:fRYCDE99xlTsqUzISS1Bi75UBJ6ljOJQOAAu5VglpSg=
@@ -443,9 +443,10 @@ github.com/nats-io/nats-server/v2 v2.1.8-0.20200622165314-1a590eea78ef/go.mod h1
 github.com/nats-io/nats-server/v2 v2.1.8-0.20200929001935-7f44d075f7ad/go.mod h1:TkHpUIDETmTI7mrHN40D1pzxfzHZuGmtMbtb83TGVQw=
 github.com/nats-io/nats-server/v2 v2.1.8-0.20201020210511-496d18468a7d/go.mod h1:SU/HfCYkvQJMQmxl/fIesRYDTAojGclPg0nSFZ2x8gQ=
 github.com/nats-io/nats-server/v2 v2.1.8-0.20201103213111-0965a20b516d/go.mod h1:XD0zHR/jTXdZvWaQfS5mQgsXj6x12kMjKLyAk/cOGgY=
-github.com/nats-io/nats-server/v2 v2.1.8-0.20201112021111-958c04840ce2/go.mod h1:XD0zHR/jTXdZvWaQfS5mQgsXj6x12kMjKLyAk/cOGgY=
 github.com/nats-io/nats-server/v2 v2.1.8-0.20201115145023-f61fa8529a0f h1:BURI+N+9gQDk0JEkuUm2byL+AoZ0tm+wYEA2UT+xq6A=
 github.com/nats-io/nats-server/v2 v2.1.8-0.20201115145023-f61fa8529a0f/go.mod h1:XD0zHR/jTXdZvWaQfS5mQgsXj6x12kMjKLyAk/cOGgY=
+github.com/nats-io/nats-server/v2 v2.1.8-0.20201126001621-0e8e85c52f8b h1:lcVbx1mu56GIx7tSrJEamg5CI70RxCcG1OS+Rrn0TVo=
+github.com/nats-io/nats-server/v2 v2.1.8-0.20201126001621-0e8e85c52f8b/go.mod h1:XD0zHR/jTXdZvWaQfS5mQgsXj6x12kMjKLyAk/cOGgY=
 github.com/nats-io/nats-streaming-server v0.16.1-0.20190905144423-ed7405a40a25 h1:MQ4JWoWISowk7+cZHKkUR5TTfSLZ1GZSuNJn+DhdFDE=
 github.com/nats-io/nats-streaming-server v0.16.1-0.20190905144423-ed7405a40a25/go.mod h1:P12vTqmBpT6Ufs+cu0W1C4N2wmISqa6G4xdLQeO2e2s=
 github.com/nats-io/nats.go v1.8.1/go.mod h1:BrFz9vVn0fU3AcH9Vn4Kd7W0NpJ651tD5omQ3M8LwxM=
