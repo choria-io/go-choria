@@ -19,6 +19,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/filewatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/homekitwatcher"
+	"github.com/choria-io/go-choria/aagent/watchers/metricwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/schedulewatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/timerwatcher"
@@ -146,6 +147,15 @@ func ParseWatcherState(state []byte) (n WatcherStateNotification, err error) {
 		err = json.Unmarshal(state, notification)
 		if err != nil {
 			return nil, fmt.Errorf("invalid timer watcher notification received: %s", err)
+		}
+
+		return notification, nil
+
+	case "io.choria.machine.watcher.metric.v1.state":
+		notification := &metricwatcher.StateNotification{}
+		err = json.Unmarshal(state, notification)
+		if err != nil {
+			return nil, fmt.Errorf("invalid metric watcher notification received: %s", err)
 		}
 
 		return notification, nil
