@@ -9,6 +9,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/filewatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/homekitwatcher"
+	"github.com/choria-io/go-choria/aagent/watchers/metricwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/schedulewatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/timerwatcher"
@@ -124,75 +125,59 @@ func (m *Manager) configureWatchers() (err error) {
 
 		m.machine.Infof("manager", "Starting %s watcher %s", w.Type, w.Name)
 
+		var watcher Watcher
+		var err error
+
 		switch w.Type {
 		case "file":
-			watcher, err := filewatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
+			watcher, err = filewatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
 			if err != nil {
 				return fmt.Errorf("could not create file watcher '%s': %s", w.Name, err)
 			}
 
-			err = m.AddWatcher(watcher)
-			if err != nil {
-				return err
-			}
-
 		case "exec":
-			watcher, err := execwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
+			watcher, err = execwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
 			if err != nil {
 				return fmt.Errorf("could not create exec watcher '%s': %s", w.Name, err)
 			}
 
-			err = m.AddWatcher(watcher)
-			if err != nil {
-				return err
-			}
-
 		case "schedule":
-			watcher, err := schedulewatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
+			watcher, err = schedulewatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
 			if err != nil {
 				return fmt.Errorf("could not create schedule watcher '%s': %s", w.Name, err)
 			}
 
-			err = m.AddWatcher(watcher)
-			if err != nil {
-				return err
-			}
-
 		case "nagios":
-			watcher, err := nagioswatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
+			watcher, err = nagioswatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
 			if err != nil {
 				return fmt.Errorf("could not create exec watcher '%s': %s", w.Name, err)
 			}
 
-			err = m.AddWatcher(watcher)
-			if err != nil {
-				return err
-			}
-
 		case "homekit":
-			watcher, err := homekitwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
+			watcher, err = homekitwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
 			if err != nil {
 				return fmt.Errorf("could not create homekit watcher '%s': %s", w.Name, err)
 			}
 
-			err = m.AddWatcher(watcher)
-			if err != nil {
-				return err
-			}
-
 		case "timer":
-			watcher, err := timerwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
+			watcher, err = timerwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
 			if err != nil {
 				return fmt.Errorf("could not create timer watcher '%s': %s", w.Name, err)
 			}
 
-			err = m.AddWatcher(watcher)
+		case "metric":
+			watcher, err = metricwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
 			if err != nil {
-				return err
+				return fmt.Errorf("could not create metric watcher '%s': %s", w.Name, err)
 			}
 
 		default:
 			return fmt.Errorf("unknown watcher '%s'", w.Type)
+		}
+
+		err = m.AddWatcher(watcher)
+		if err != nil {
+			return err
 		}
 	}
 

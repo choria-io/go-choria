@@ -1,0 +1,254 @@
+package metricwatcher
+
+import (
+	"context"
+	"encoding/json"
+	"fmt"
+	"os"
+	"os/exec"
+	"sync"
+	"time"
+
+	"github.com/google/shlex"
+)
+
+type Machine interface {
+	State() string
+	Name() string
+	Directory() string
+	Identity() string
+	InstanceID() string
+	Version() string
+	TimeStampSeconds() int64
+	NotifyWatcherState(string, interface{})
+	Transition(t string, args ...interface{}) error
+	Debugf(name string, format string, args ...interface{})
+	Infof(name string, format string, args ...interface{})
+	Errorf(name string, format string, args ...interface{})
+}
+
+type Metric struct {
+	Labels  map[string]string  `json:"labels"`
+	Metrics map[string]float64 `json:"metrics"`
+}
+
+type Watcher struct {
+	name             string
+	states           []string
+	machine          Machine
+	announceInterval time.Duration
+	failEvent        string
+	command          string
+	checkInterval    time.Duration
+	previousRunTime  time.Duration
+	previousResult   *Metric
+	statechg         chan struct{}
+
+	sync.Mutex
+}
+
+func New(machine Machine, name string, states []string, failEvent string, successEvent string, ai time.Duration, properties map[string]interface{}) (watcher *Watcher, err error) {
+	w := &Watcher{
+		name:             name,
+		states:           states,
+		machine:          machine,
+		announceInterval: ai,
+		failEvent:        failEvent,
+		checkInterval:    time.Minute,
+		statechg:         make(chan struct{}),
+	}
+
+	err = w.setProperties(properties)
+	if err != nil {
+		return nil, fmt.Errorf("could not set properties: %s", err)
+	}
+
+	if w.checkInterval < time.Second {
+		w.checkInterval = time.Second
+	}
+
+	return w, nil
+}
+
+func (w *Watcher) Delete() {}
+
+func (w *Watcher) Type() string {
+	return "metric"
+}
+
+func (w *Watcher) AnnounceInterval() time.Duration {
+	return w.announceInterval
+}
+
+func (w *Watcher) Name() string {
+	return w.name
+}
+
+func (w *Watcher) NotifyStateChance() {
+	if len(w.statechg) < cap(w.statechg) {
+		w.statechg <- struct{}{}
+	}
+}
+
+func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	w.machine.Infof(w.name, "metric watcher for %s starting", w.command)
+
+	tick := time.NewTicker(w.checkInterval)
+
+	for {
+		select {
+		case <-tick.C:
+			w.performWatch(ctx)
+
+		case <-w.statechg:
+			w.performWatch(ctx)
+
+		case <-ctx.Done():
+			w.machine.Infof(w.name, "Stopping on context interrupt")
+			tick.Stop()
+			return
+		}
+	}
+}
+
+func (w *Watcher) watch(ctx context.Context) (state []byte, err error) {
+	if !w.shouldWatch() {
+		return nil, nil
+	}
+
+	start := time.Now()
+	defer func() {
+		w.Lock()
+		w.previousRunTime = time.Since(start)
+		w.Unlock()
+	}()
+
+	w.machine.Infof(w.name, "Running %s", w.command)
+
+	timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
+	defer cancel()
+
+	splitcmd, err := shlex.Split(w.command)
+	if err != nil {
+		w.machine.Errorf(w.name, "Metric watcher %s failed: %s", w.command, err)
+		return nil, err
+	}
+
+	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], splitcmd[1:]...)
+	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machine.Name()))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s%s%s", os.Getenv("PATH"), string(os.PathListSeparator), w.machine.Directory()))
+	cmd.Dir = w.machine.Directory()
+
+	output, err := cmd.CombinedOutput()
+	if err != nil {
+		w.machine.Errorf(w.name, "Metric watcher %s failed: %s", w.command, err)
+		return nil, err
+	}
+
+	w.machine.Debugf(w.name, "Output from %s: %s", w.command, output)
+
+	return output, nil
+}
+
+func (w *Watcher) shouldWatch() bool {
+	if len(w.states) == 0 {
+		return true
+	}
+
+	for _, e := range w.states {
+		if e == w.machine.State() {
+			return true
+		}
+	}
+
+	return false
+}
+
+func (w *Watcher) performWatch(ctx context.Context) {
+	metric, err := w.watch(ctx)
+	err = w.handleCheck(metric, err)
+	if err != nil {
+		w.machine.Errorf(w.name, "could not handle watcher event: %s", err)
+	}
+}
+
+func (w *Watcher) handleCheck(output []byte, err error) error {
+	metric := &Metric{}
+
+	if err == nil {
+		err = json.Unmarshal(output, metric)
+	}
+
+	if err != nil {
+		w.machine.NotifyWatcherState(w.name, w.CurrentState())
+		return w.machine.Transition(w.failEvent)
+	}
+
+	w.Lock()
+	w.previousResult = metric
+	w.Unlock()
+
+	w.machine.NotifyWatcherState(w.name, w.CurrentState())
+	return nil
+}
+
+func (w *Watcher) CurrentState() interface{} {
+	w.Lock()
+	defer w.Unlock()
+
+	res := Metric{}
+	if w.previousResult != nil {
+		res = *w.previousResult
+	}
+
+	res.Metrics["choria_runtime_seconds"] = w.previousRunTime.Seconds()
+
+	s := &StateNotification{
+		Protocol:  "io.choria.machine.watcher.metric.v1.state",
+		Type:      "metric",
+		Name:      w.name,
+		Identity:  w.machine.Identity(),
+		ID:        w.machine.InstanceID(),
+		Version:   w.machine.Version(),
+		Timestamp: w.machine.TimeStampSeconds(),
+		Machine:   w.machine.Name(),
+		Metrics:   res,
+	}
+
+	return s
+}
+
+func (w *Watcher) setProperties(p map[string]interface{}) (err error) {
+	var ok bool
+
+	cmd, ok := p["command"]
+	if !ok {
+		return fmt.Errorf("command is required")
+	}
+
+	w.command, ok = cmd.(string)
+	if !ok {
+		return fmt.Errorf("command should be a string")
+	}
+
+	interval, ok := p["interval"]
+	if ok {
+		switch i := interval.(type) {
+		case string:
+			w.checkInterval, err = time.ParseDuration(i)
+			if err != nil {
+				return err
+			}
+
+		case int:
+			w.checkInterval = time.Duration(i) * time.Second
+		default:
+			return fmt.Errorf("interval should be a string")
+		}
+	}
+
+	return nil
+}

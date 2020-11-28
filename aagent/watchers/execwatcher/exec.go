@@ -280,7 +280,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 
 	splitcmd, err := shlex.Split(w.command)
 	if err != nil {
-		w.machine.Errorf(w.name, "Exec watcher %s failed: %s", w.command, err)
+		w.machine.Errorf(w.name, "Metric watcher %s failed: %s", w.command, err)
 		return Error, err
 	}
 
