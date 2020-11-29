@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"sync"
@@ -21,6 +22,7 @@ type Machine interface {
 	Version() string
 	TimeStampSeconds() int64
 	NotifyWatcherState(string, interface{})
+	TextFileDirectory() string
 	Transition(t string, args ...interface{}) error
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
@@ -70,13 +72,21 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 	return w, nil
 }
 
-func (w *Watcher) Delete() {}
+func (w *Watcher) Delete() {
+	err := deletePromState(w.name, w.machine, w.machine.Name(), w.machine.TextFileDirectory())
+	if err != nil {
+		w.machine.Errorf(w.name, "could not delete from prometheus: %s", err)
+	}
+}
 
 func (w *Watcher) Type() string {
 	return "metric"
 }
 
 func (w *Watcher) AnnounceInterval() time.Duration {
+	w.Lock()
+	defer w.Unlock()
+
 	return w.announceInterval
 }
 
@@ -85,6 +95,9 @@ func (w *Watcher) Name() string {
 }
 
 func (w *Watcher) NotifyStateChance() {
+	w.Lock()
+	defer w.Unlock()
+
 	if len(w.statechg) < cap(w.statechg) {
 		w.statechg <- struct{}{}
 	}
@@ -94,6 +107,16 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	w.machine.Infof(w.name, "metric watcher for %s starting", w.command)
+
+	splay := time.Duration(rand.Intn(int(w.checkInterval.Seconds()))) * time.Second
+	w.machine.Infof(w.name, "Splaying first check by %v", splay)
+
+	select {
+	case <-time.NewTimer(splay).C:
+		w.performWatch(ctx)
+	case <-ctx.Done():
+		return
+	}
 
 	tick := time.NewTicker(w.checkInterval)
 
@@ -185,6 +208,11 @@ func (w *Watcher) handleCheck(output []byte, err error) error {
 	if err != nil {
 		w.machine.NotifyWatcherState(w.name, w.CurrentState())
 		return w.machine.Transition(w.failEvent)
+	}
+
+	err = updatePromState(w.machine.TextFileDirectory(), w.machine, w.machine.Name(), w.name, metric)
+	if err != nil {
+		w.machine.Errorf(w.name, "Could not update prometheus: %s", err)
 	}
 
 	w.Lock()
