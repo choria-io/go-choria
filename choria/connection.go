@@ -554,13 +554,6 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 	conn.conMu.Lock()
 	defer conn.conMu.Unlock()
 
-	servers, err := conn.servers()
-	if err != nil {
-		return fmt.Errorf("could not determine servers to connect to: %s", err)
-	}
-
-	urls := servers.Strings()
-
 	options := []nats.Option{
 		nats.MaxReconnects(-1),
 		nats.Name(conn.name),
@@ -650,6 +643,12 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 	}
 
 	return backoff.Default.For(ctx, func(try int) error {
+		servers, err := conn.servers()
+		if err != nil {
+			return fmt.Errorf("could not determine servers to connect to: %s", err)
+		}
+		urls := servers.Strings()
+
 		conn.nats, err = nats.Connect(strings.Join(urls, ", "), options...)
 		if err == nil {
 			return nil
