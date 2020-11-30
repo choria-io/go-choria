@@ -32,6 +32,9 @@ type Machine interface {
 type Metric struct {
 	Labels  map[string]string  `json:"labels"`
 	Metrics map[string]float64 `json:"metrics"`
+	name    string
+	machine string
+	seen    int
 }
 
 type Watcher struct {
@@ -73,7 +76,7 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 }
 
 func (w *Watcher) Delete() {
-	err := deletePromState(w.name, w.machine, w.machine.Name(), w.machine.TextFileDirectory())
+	err := deletePromState(w.machine.TextFileDirectory(), w.machine, w.machine.Name(), w.name)
 	if err != nil {
 		w.machine.Errorf(w.name, "could not delete from prometheus: %s", err)
 	}

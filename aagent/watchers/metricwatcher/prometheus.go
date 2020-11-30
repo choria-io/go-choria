@@ -30,6 +30,8 @@ func updatePromState(td string, log logger, machine string, name string, metric 
 	mu.Lock()
 	defer mu.Unlock()
 
+	metric.name = name
+	metric.machine = machine
 	metrics[fmt.Sprintf("%s_%s", machine, name)] = metric
 
 	return savePromState(td, log)
@@ -66,27 +68,61 @@ func savePromState(td string, log logger) error {
 		return nil
 	}
 
+	type promValue struct {
+		labels string
+		value  float64
+	}
+
+	type promMetric struct {
+		values []*promValue
+	}
+
+	// sort by metric name so help is only ever shown per metric name across all machines.
+	// ie. machine1 with a metric name kasa and machine2 with a metric name kasa will both
+	// be the same prom metric but with different labels
+	pmetrics := map[string]*promMetric{}
+	for _, ms := range metrics {
+		ms.seen++
+
+		// if metrics arent being updated we need to eventually stop logging them, this can happen
+		// when someone renames a watcher in a machine - it should call delete but sometimes its missed
+		if ms.seen > 5 {
+			continue
+		}
+
+		for n, v := range ms.Metrics {
+			mname := fmt.Sprintf("choria_machine_metric_watcher_%s_%s", promName(ms.name), n)
+			_, ok := pmetrics[mname]
+			if !ok {
+				pmetrics[mname] = &promMetric{values: []*promValue{}}
+			}
+
+			var labelArray []string
+			for k, v := range ms.Labels {
+				labelArray = append(labelArray, fmt.Sprintf(`%s="%v"`, promName(k), promName(v)))
+			}
+
+			pmetrics[mname].values = append(pmetrics[mname].values, &promValue{
+				labels: strings.Join(labelArray, ","),
+				value:  v,
+			})
+		}
+	}
+
 	tfile, err := ioutil.TempFile(td, "")
 	if err != nil {
 		return fmt.Errorf("failed to create prometheus metric in %q: %s", td, err)
 	}
 
-	for name, metric := range metrics {
-		if len(metric.Metrics) == 0 {
+	for name, pm := range pmetrics {
+		if len(pm.values) == 0 {
 			continue
 		}
 
-		var labelArray []string
-		for k, v := range metric.Labels {
-			labelArray = append(labelArray, fmt.Sprintf(`%s="%v"`, promName(k), promName(v)))
-		}
-
-		for m, v := range metric.Metrics {
-			mname := fmt.Sprintf("choria_machine_metric_watcher_%s_%s", promName(name), promName(m))
-
-			fmt.Fprintf(tfile, "# HELP %s Choria Metric\n", mname)
-			fmt.Fprintf(tfile, "# TYPE %s gauge\n", mname)
-			fmt.Fprintf(tfile, "%s{%s} %f\n", mname, strings.Join(labelArray, ","), v)
+		fmt.Fprintf(tfile, "# HELP %s Choria Metric\n", name)
+		fmt.Fprintf(tfile, "# TYPE %s gauge\n", name)
+		for _, v := range pm.values {
+			fmt.Fprintf(tfile, "%s{%s} %f\n", name, v.labels, v.value)
 		}
 	}
 
