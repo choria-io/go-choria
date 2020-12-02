@@ -10,6 +10,8 @@ import (
 
 	"github.com/google/shlex"
 	"github.com/pkg/errors"
+
+	"github.com/choria-io/go-choria/aagent/util"
 )
 
 type State int
@@ -99,59 +101,36 @@ func (w *Watcher) Type() string {
 	return "exec"
 }
 
-func (w *Watcher) setProperties(p map[string]interface{}) error {
-	command, ok := p["command"]
-	if !ok {
+func (w *Watcher) validate() error {
+	if w.command == "" {
 		return fmt.Errorf("command is required")
 	}
 
-	w.command, ok = command.(string)
-	if !ok {
-		return fmt.Errorf("command should be a string")
-	}
-
-	w.timeout = 10 * time.Second
-	t, ok := p["timeout"]
-	if ok {
-		ts, ok := t.(string)
-		if !ok {
-			return fmt.Errorf("timeout should be a duration string - example 10s, 1h or 1m")
-		}
-
-		timeout, err := time.ParseDuration(ts)
-		if err != nil {
-			return errors.Wrap(err, "invalid timeout")
-		}
-
-		w.timeout = timeout
-	}
-
-	suppress, ok := p["suppress_success_announce"]
-	if ok {
-		w.suppressSuccessAnnounce, ok = suppress.(bool)
-		if !ok {
-			return fmt.Errorf("suppress_announce should be boolean")
-		}
-	}
-
-	environment, ok := p["environment"]
-	if ok {
-		envs, ok := environment.([]interface{})
-		if !ok {
-			return fmt.Errorf("environment should be a list of strings")
-		}
-
-		for _, env := range envs {
-			val, ok := env.(string)
-			if !ok {
-				return fmt.Errorf("environment should be a list of strings")
-			}
-
-			w.environment = append(w.environment, val)
-		}
+	if w.timeout == 0 {
+		w.timeout = time.Second
 	}
 
 	return nil
+}
+func (w *Watcher) setProperties(props map[string]interface{}) error {
+	var properties struct {
+		Command                 string
+		Timeout                 time.Duration
+		SuppressSuccessAnnounce bool `mapstructure:"suppress_success_announce"`
+		Environment             []string
+	}
+
+	err := util.ParseMapStructure(props, &properties)
+	if err != nil {
+		return err
+	}
+
+	w.command = properties.Command
+	w.timeout = properties.Timeout
+	w.suppressSuccessAnnounce = properties.SuppressSuccessAnnounce
+	w.environment = properties.Environment
+
+	return w.validate()
 }
 
 func (w *Watcher) NotifyStateChance() {

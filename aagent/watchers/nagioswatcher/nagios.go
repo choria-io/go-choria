@@ -16,6 +16,8 @@ import (
 
 	"github.com/google/shlex"
 	"github.com/tidwall/gjson"
+
+	"github.com/choria-io/go-choria/aagent/util"
 )
 
 type State int
@@ -141,10 +143,6 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		}
 	}
 
-	if w.builtin == "goss" && w.gossFile == "" {
-		return nil, fmt.Errorf("gossfile property is required for the goss builtin check")
-	}
-
 	updatePromState(w.machineName, UNKNOWN, machine.TextFileDirectory(), machine)
 
 	return w, err
@@ -250,48 +248,7 @@ func (w *Watcher) parsePerfData(pd string) (perf []PerfData) {
 	return perf
 }
 
-func (w *Watcher) setProperties(p map[string]interface{}) error {
-	annotations, ok := p["annotations"]
-	if ok {
-		amap, ok := annotations.(map[string]interface{})
-		if !ok {
-			return fmt.Errorf("annotations should be a a map of strings")
-		}
-
-		for k, v := range amap {
-			vs, ok := v.(string)
-			if !ok {
-				return fmt.Errorf("annotations should be a a map of strings")
-			}
-
-			w.annotations[k] = vs
-		}
-	}
-
-	command, ok := p["plugin"]
-	if ok {
-		w.plugin, ok = command.(string)
-		if !ok {
-			return fmt.Errorf("plugin should be a string")
-		}
-	}
-
-	gossfile, ok := p["gossfile"]
-	if ok {
-		w.gossFile, ok = gossfile.(string)
-		if !ok {
-			return fmt.Errorf("gossfile should be a string")
-		}
-	}
-
-	builtin, ok := p["builtin"]
-	if ok {
-		w.builtin, ok = builtin.(string)
-		if !ok {
-			return fmt.Errorf("builtin should be a string")
-		}
-	}
-
+func (w *Watcher) validate() error {
 	if w.builtin != "" && w.plugin != "" {
 		return fmt.Errorf("cannot set plugin and builtin")
 	}
@@ -300,23 +257,38 @@ func (w *Watcher) setProperties(p map[string]interface{}) error {
 		return fmt.Errorf("plugin or builtin is required")
 	}
 
-	w.timeout = 10 * time.Second
-	t, ok := p["timeout"]
-	if ok {
-		ts, ok := t.(string)
-		if !ok {
-			return fmt.Errorf("timeout should be a duration string - example 10s, 1h or 1m")
-		}
+	if w.builtin == "goss" && w.gossFile == "" {
+		return fmt.Errorf("gossfile property is required for the goss builtin check")
+	}
 
-		timeout, err := time.ParseDuration(ts)
-		if err != nil {
-			return fmt.Errorf("invalid timeout: %s", err)
-		}
-
-		w.timeout = timeout
+	if w.timeout == 0 {
+		w.timeout = time.Second
 	}
 
 	return nil
+}
+
+func (w *Watcher) setProperties(props map[string]interface{}) error {
+	var properties struct {
+		Annotations map[string]string
+		Plugin      string
+		Gossfile    string
+		Builtin     string
+		Timeout     time.Duration
+	}
+
+	err := util.ParseMapStructure(props, &properties)
+	if err != nil {
+		return err
+	}
+
+	w.annotations = properties.Annotations
+	w.plugin = properties.Plugin
+	w.gossFile = properties.Gossfile
+	w.builtin = properties.Builtin
+	w.timeout = properties.Timeout
+
+	return w.validate()
 }
 
 func (w *Watcher) NotifyStateChance() {

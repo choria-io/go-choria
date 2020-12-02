@@ -20,6 +20,7 @@ require (
 	github.com/guptarohit/asciigraph v0.5.1
 	github.com/looplab/fsm v0.2.0
 	github.com/miekg/pkcs11 v1.0.3
+	github.com/mitchellh/mapstructure v1.4.0
 	github.com/nats-io/jsm.go v0.0.20-0.20201127115233-95ad014f7ee9
 	github.com/nats-io/jwt v1.2.0
 	github.com/nats-io/jwt/v2 v2.0.0-20201030222427-057ba30017be
