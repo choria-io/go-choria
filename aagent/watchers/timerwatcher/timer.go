@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/choria-io/go-choria/aagent/util"
 )
 
 type State int
@@ -171,23 +173,27 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (w *Watcher) setProperties(p map[string]interface{}) (err error) {
-	ti, ok := p["timer"]
-	if !ok {
-		return fmt.Errorf("timer is required")
-	}
-
-	tis, ok := ti.(string)
-	if !ok {
-		return fmt.Errorf("time must be a string like 1h")
-	}
-
-	w.time, err = time.ParseDuration(tis)
-	if err != nil {
-		return fmt.Errorf("invalid time %s: %s", tis, err)
+func (w *Watcher) validate() error {
+	if w.time < time.Second {
+		w.time = time.Second
 	}
 
 	return nil
+}
+
+func (w *Watcher) setProperties(props map[string]interface{}) error {
+	var properties struct {
+		Timer time.Duration
+	}
+
+	err := util.ParseMapStructure(props, &properties)
+	if err != nil {
+		return err
+	}
+
+	w.time = properties.Timer
+
+	return w.validate()
 }
 
 func (w *Watcher) shouldCheck() bool {

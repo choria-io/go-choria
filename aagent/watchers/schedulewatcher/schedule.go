@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"sync"
 	"time"
+
+	"github.com/choria-io/go-choria/aagent/util"
 )
 
 type State int
@@ -90,7 +92,7 @@ func (w *Watcher) watchSchedule(ctx context.Context, wg *sync.WaitGroup) {
 	for {
 		select {
 		case i := <-w.ctrq:
-			w.machine.Debugf(w.name, "Handling state change counter %v while ctr=%v", i, w.ctr)
+			w.machine.Infof(w.name, "Handling state change counter %v while ctr=%v", i, w.ctr)
 			w.Lock()
 
 			w.ctr = w.ctr + i
@@ -101,10 +103,10 @@ func (w *Watcher) watchSchedule(ctx context.Context, wg *sync.WaitGroup) {
 			}
 
 			if w.ctr == 0 {
-				w.machine.Debugf(w.name, "State going off due to ctr change to 0")
+				w.machine.Infof(w.name, "State going off due to ctr change to 0")
 				w.state = Off
 			} else {
-				w.machine.Debugf(w.name, "State going on due to ctr change of %v", i)
+				w.machine.Infof(w.name, "State going on due to ctr change of %v", i)
 				w.state = On
 			}
 
@@ -233,44 +235,33 @@ func (w *Watcher) NotifyStateChance() {
 	}
 }
 
-func (w *Watcher) setProperties(p map[string]interface{}) (err error) {
-	durationi, ok := p["duration"]
-	if !ok {
-		return fmt.Errorf("duration is required")
+func (w *Watcher) validate() error {
+	if w.duration < time.Second {
+		w.duration = time.Minute
 	}
 
-	durationspec, ok := durationi.(string)
-	if !ok {
-		return fmt.Errorf("duration must be a string like 1h")
+	if len(w.schedules) == 0 {
+		return fmt.Errorf("no schedules defined")
 	}
 
-	w.duration, err = time.ParseDuration(durationspec)
+	return nil
+}
+
+func (w *Watcher) setProperties(props map[string]interface{}) error {
+	var properties struct {
+		Duration  time.Duration
+		Schedules []string
+	}
+
+	err := util.ParseMapStructure(props, &properties)
 	if err != nil {
-		return fmt.Errorf("invalid duration %s: %s", durationspec, err)
+		return err
 	}
 
-	specs, ok := p["schedules"]
-	if !ok {
-		return fmt.Errorf("schedules is required")
-	}
+	w.duration = properties.Duration
+	w.schedules = properties.Schedules
 
-	speclist, ok := specs.([]interface{})
-	if !ok {
-		return fmt.Errorf("schedules must be a list of strings")
-	}
-
-	if len(speclist) == 0 {
-		return fmt.Errorf("at least one schedule is required")
-	}
-
-	for _, specitem := range speclist {
-		spec, ok := specitem.(string)
-		if !ok {
-			return fmt.Errorf("schedules must be a list of strings")
-		}
-
-		w.schedules = append(w.schedules, spec)
-
+	for _, spec := range w.schedules {
 		item, err := newSchedItem(spec, w)
 		if err != nil {
 			return fmt.Errorf("could not parse '%s': %s", spec, err)
@@ -279,7 +270,7 @@ func (w *Watcher) setProperties(p map[string]interface{}) (err error) {
 		w.items = append(w.items, item)
 	}
 
-	return nil
+	return w.validate()
 }
 
 func (w *Watcher) CurrentState() interface{} {

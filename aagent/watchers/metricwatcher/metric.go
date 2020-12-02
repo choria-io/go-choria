@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/google/shlex"
+
+	"github.com/choria-io/go-choria/aagent/util"
 )
 
 type Machine interface {
@@ -43,8 +45,8 @@ type Watcher struct {
 	machine          Machine
 	announceInterval time.Duration
 	failEvent        string
-	command          string
-	checkInterval    time.Duration
+	command          string        `mapstructure:"command"`
+	checkInterval    time.Duration `mapstructure:"interval"`
 	previousRunTime  time.Duration
 	previousResult   *Metric
 	statechg         chan struct{}
@@ -68,9 +70,7 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		return nil, fmt.Errorf("could not set properties: %s", err)
 	}
 
-	if w.checkInterval < time.Second {
-		w.checkInterval = time.Second
-	}
+	savePromState(machine.TextFileDirectory(), machine)
 
 	return w, nil
 }
@@ -252,34 +252,31 @@ func (w *Watcher) CurrentState() interface{} {
 	return s
 }
 
-func (w *Watcher) setProperties(p map[string]interface{}) (err error) {
-	var ok bool
-
-	cmd, ok := p["command"]
-	if !ok {
+func (w *Watcher) validate() error {
+	if w.command == "" {
 		return fmt.Errorf("command is required")
 	}
 
-	w.command, ok = cmd.(string)
-	if !ok {
-		return fmt.Errorf("command should be a string")
-	}
-
-	interval, ok := p["interval"]
-	if ok {
-		switch i := interval.(type) {
-		case string:
-			w.checkInterval, err = time.ParseDuration(i)
-			if err != nil {
-				return err
-			}
-
-		case int:
-			w.checkInterval = time.Duration(i) * time.Second
-		default:
-			return fmt.Errorf("interval should be a string")
-		}
+	if w.checkInterval < time.Second {
+		w.checkInterval = time.Second
 	}
 
 	return nil
+}
+
+func (w *Watcher) setProperties(props map[string]interface{}) error {
+	var properties struct {
+		Command  string
+		Interval time.Duration
+	}
+
+	err := util.ParseMapStructure(props, &properties)
+	if err != nil {
+		return err
+	}
+
+	w.command = properties.Command
+	w.checkInterval = properties.Interval
+
+	return w.validate()
 }

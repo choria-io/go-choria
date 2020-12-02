@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+
+	"github.com/choria-io/go-choria/aagent/util"
 )
 
 type State int
@@ -76,6 +78,10 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 	err = w.setProperties(properties)
 	if err != nil {
 		return nil, errors.Wrap(err, "could not set properties")
+	}
+
+	if !filepath.IsAbs(w.path) {
+		w.path = filepath.Join(w.machine.Directory(), w.path)
 	}
 
 	if interval != "" {
@@ -242,28 +248,27 @@ func (w *Watcher) watch() (state State, err error) {
 	return Unchanged, err
 }
 
-func (w *Watcher) setProperties(p map[string]interface{}) error {
-	path, ok := p["path"]
-	if !ok {
+func (w *Watcher) validate() error {
+	if w.path == "" {
 		return fmt.Errorf("path is required")
 	}
 
-	w.path, ok = path.(string)
-	if !ok {
-		return fmt.Errorf("path should be a string")
-	}
-
-	if !filepath.IsAbs(w.path) {
-		w.path = filepath.Join(w.machine.Directory(), w.path)
-	}
-
-	initial, ok := p["gather_initial_state"]
-	if ok {
-		w.initial, ok = initial.(bool)
-		if !ok {
-			return fmt.Errorf("gather_initial_state should be bool")
-		}
-	}
-
 	return nil
+}
+
+func (w *Watcher) setProperties(props map[string]interface{}) error {
+	var properties struct {
+		Path    string
+		Initial bool `mapstructure:"gather_initial_state"`
+	}
+
+	err := util.ParseMapStructure(props, &properties)
+	if err != nil {
+		return err
+	}
+
+	w.path = properties.Path
+	w.initial = properties.Initial
+
+	return w.validate()
 }

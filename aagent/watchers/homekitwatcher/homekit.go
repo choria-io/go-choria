@@ -5,14 +5,14 @@ import (
 	"crypto/md5"
 	"fmt"
 	"path/filepath"
-	"reflect"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/brutella/hc"
 	"github.com/brutella/hc/accessory"
+
+	"github.com/choria-io/go-choria/aagent/util"
 )
 
 type State int
@@ -375,120 +375,48 @@ func (w *Watcher) shouldCheck() bool {
 	return false
 }
 
-func (w *Watcher) setProperties(p map[string]interface{}) error {
-	sn, ok := p["serial_number"]
-	if ok {
-		w.serialNumber, ok = sn.(string)
-		if !ok {
-			return fmt.Errorf("serial_number should be a string")
-		}
-	}
-
-	m, ok := p["model"]
-	if ok {
-		w.model, ok = m.(string)
-		if !ok {
-			return fmt.Errorf("model should be a string")
-		}
-	}
-
-	pin, ok := p["pin"]
-	if !ok {
-		return fmt.Errorf("pin is required")
-	}
-	w.pin, ok = pin.(string)
-	if !ok {
-		return fmt.Errorf("pin should be a string")
-	}
-	if len(w.pin) != 8 {
+func (w *Watcher) validate() error {
+	if len(w.pin) > 0 && len(w.pin) != 8 {
 		return fmt.Errorf("pin should be 8 characters long")
 	}
 
-	sid, ok := p["setup_id"]
-	if ok {
-		w.setupID, ok = sid.(string)
-		if !ok {
-			return fmt.Errorf("setup_id should be a string")
-		}
-
-		if len(w.setupID) != 4 {
-			return fmt.Errorf("setup_id should be 4 characters long")
-		}
-	}
-
-	son, ok := p["on_when"]
-	if ok {
-		sons, ok := son.([]interface{})
-		if !ok {
-			return fmt.Errorf("on_when should be an array")
-		}
-
-		for _, state := range sons {
-			s, ok := state.(string)
-			if !ok {
-				return fmt.Errorf("on_when states should be strings")
-			}
-			w.shouldOn = append(w.shouldOn, s)
-		}
-	}
-
-	soff, ok := p["off_when"]
-	if ok {
-		soffs, ok := soff.([]interface{})
-		if !ok {
-			return fmt.Errorf("off_when should be an array")
-		}
-
-		for _, state := range soffs {
-			s, ok := state.(string)
-			if !ok {
-				return fmt.Errorf("off_when states should be strings")
-			}
-			w.shouldOff = append(w.shouldOff, s)
-		}
-	}
-
-	d, ok := p["disable_when"]
-	if ok {
-		ds, ok := d.([]interface{})
-		if !ok {
-			return fmt.Errorf("disable_when should be an array")
-		}
-
-		for _, state := range ds {
-			s, ok := state.(string)
-			if !ok {
-				return fmt.Errorf("disable_when states should be strings")
-			}
-			w.shouldDisable = append(w.shouldDisable, s)
-		}
-	}
-
-	init, ok := p["initial"]
-	if ok {
-		w.initial = Off
-		switch reflect.TypeOf(init).Kind() {
-		case reflect.Bool:
-			w.initial = Off
-			if init.(bool) {
-				w.initial = On
-			}
-
-		case reflect.String:
-			w.initial = Off
-			s, err := strconv.ParseBool(init.(string))
-			if err != nil {
-				return fmt.Errorf("initial should be 'true' or 'false'")
-			}
-
-			if s {
-				w.initial = On
-			}
-
-		default:
-			return fmt.Errorf("initial should be a string")
-		}
+	if len(w.setupID) > 0 && len(w.setupID) != 4 {
+		return fmt.Errorf("setup_id should be 4 characters long")
 	}
 
 	return nil
+}
+
+func (w *Watcher) setProperties(props map[string]interface{}) error {
+	var properties struct {
+		SerialNumber  string `mapstructure:"serial_number"`
+		Model         string
+		Pin           string
+		SetupId       string   `mapstructure:"setup_id"`
+		ShouldOn      []string `mapstructure:"on_when"`
+		ShouldOff     []string `mapstructure:"off_when"`
+		ShouldDisable []string `mapstructure:"disable_when"`
+		Initial       bool
+	}
+
+	err := util.ParseMapStructure(props, &properties)
+	if err != nil {
+		return err
+	}
+
+	w.serialNumber = properties.SerialNumber
+	w.model = properties.Model
+	w.pin = properties.Pin
+	w.setupID = properties.SetupId
+	w.shouldOn = properties.ShouldOn
+	w.shouldOff = properties.ShouldOff
+	w.shouldDisable = properties.ShouldDisable
+
+	if properties.Initial {
+		w.initial = On
+	} else {
+		w.initial = Off
+	}
+
+	return w.validate()
 }

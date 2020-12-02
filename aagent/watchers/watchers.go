@@ -17,13 +17,6 @@ import (
 
 type State int
 
-const (
-	Error State = iota
-	Skipped
-	Unchanged
-	Changed
-)
-
 // Watcher is anything that can be used to watch the system for events
 type Watcher interface {
 	Name() string
@@ -131,48 +124,30 @@ func (m *Manager) configureWatchers() (err error) {
 		switch w.Type {
 		case "file":
 			watcher, err = filewatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
-			if err != nil {
-				return fmt.Errorf("could not create file watcher '%s': %s", w.Name, err)
-			}
 
 		case "exec":
 			watcher, err = execwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
-			if err != nil {
-				return fmt.Errorf("could not create exec watcher '%s': %s", w.Name, err)
-			}
 
 		case "schedule":
 			watcher, err = schedulewatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
-			if err != nil {
-				return fmt.Errorf("could not create schedule watcher '%s': %s", w.Name, err)
-			}
 
 		case "nagios":
 			watcher, err = nagioswatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
-			if err != nil {
-				return fmt.Errorf("could not create exec watcher '%s': %s", w.Name, err)
-			}
 
 		case "homekit":
 			watcher, err = homekitwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
-			if err != nil {
-				return fmt.Errorf("could not create homekit watcher '%s': %s", w.Name, err)
-			}
 
 		case "timer":
 			watcher, err = timerwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
-			if err != nil {
-				return fmt.Errorf("could not create timer watcher '%s': %s", w.Name, err)
-			}
 
 		case "metric":
 			watcher, err = metricwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
-			if err != nil {
-				return fmt.Errorf("could not create metric watcher '%s': %s", w.Name, err)
-			}
 
 		default:
 			return fmt.Errorf("unknown watcher '%s'", w.Type)
+		}
+		if err != nil {
+			return fmt.Errorf("could not create %s watcher '%s': %s", w.Type, w.Name, err)
 		}
 
 		err = m.AddWatcher(watcher)
