@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/util"
+	"github.com/choria-io/go-choria/aagent/watchers/event"
 )
 
 type State int
@@ -278,15 +279,17 @@ func (w *Watcher) CurrentState() interface{} {
 	defer w.Unlock()
 
 	s := &StateNotification{
-		Protocol:  "io.choria.machine.watcher.schedule.v1.state",
-		Type:      w.Type(),
-		Name:      w.name,
-		Identity:  w.machine.Identity(),
-		ID:        w.machine.InstanceID(),
-		Version:   w.machine.Version(),
-		Timestamp: w.machine.TimeStampSeconds(),
-		Machine:   w.machine.Name(),
-		State:     stateNames[w.state],
+		Event: event.Event{
+			Protocol:  "io.choria.machine.watcher.schedule.v1.state",
+			Type:      w.Type(),
+			Name:      w.name,
+			Identity:  w.machine.Identity(),
+			ID:        w.machine.InstanceID(),
+			Version:   w.machine.Version(),
+			Timestamp: w.machine.TimeStampSeconds(),
+			Machine:   w.machine.Name(),
+		},
+		State: stateNames[w.state],
 	}
 
 	return s

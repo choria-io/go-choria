@@ -1,9 +1,11 @@
 package metricwatcher
 
 import (
+	"encoding/json"
 	"testing"
 	"time"
 
+	gomock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -44,6 +46,68 @@ var _ = Describe("MetricWatcher", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(w.command).To(Equal("cmd"))
 			Expect(w.checkInterval).To(Equal(time.Second))
+		})
+	})
+
+	Describe("CurrentState", func() {
+		var (
+			mockctl     *gomock.Controller
+			mockMachine *MockMachine
+			watcher     *Watcher
+			now         time.Time
+		)
+
+		BeforeEach(func() {
+			mockctl = gomock.NewController(GinkgoT())
+			mockMachine = NewMockMachine(mockctl)
+
+			now = time.Unix(1606924953, 0)
+			mockMachine.EXPECT().Name().Return("metric").AnyTimes()
+			mockMachine.EXPECT().Identity().Return("ginkgo").AnyTimes()
+			mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
+			mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
+			mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
+
+			watcher = &Watcher{command: "/bin/sh", checkInterval: time.Second, previousRunTime: 500 * time.Millisecond, machine: mockMachine, name: "ginkgo"}
+		})
+
+		AfterEach(func() {
+			mockctl.Finish()
+		})
+
+		It("Should be a valid state", func() {
+			cs := watcher.CurrentState()
+			csj, err := cs.(*StateNotification).JSON()
+			Expect(err).ToNot(HaveOccurred())
+
+			event := map[string]interface{}{}
+			err = json.Unmarshal(csj, &event)
+			Expect(err).ToNot(HaveOccurred())
+			delete(event, "id")
+
+			Expect(event).To(Equal(map[string]interface{}{
+				"time":        "2020-12-02T16:02:33Z",
+				"type":        "io.choria.machine.watcher.metric.v1.state",
+				"subject":     "ginkgo",
+				"specversion": "1.0",
+				"source":      "io.choria.machine",
+				"data": map[string]interface{}{
+					"id":        "1234567890",
+					"identity":  "ginkgo",
+					"machine":   "metric",
+					"name":      "ginkgo",
+					"protocol":  "io.choria.machine.watcher.metric.v1.state",
+					"type":      "metric",
+					"version":   "1.0.0",
+					"timestamp": float64(now.Unix()),
+					"metrics": map[string]interface{}{
+						"labels": map[string]interface{}{},
+						"metrics": map[string]interface{}{
+							"choria_runtime_seconds": 0.5,
+						},
+					},
+				},
+			}))
 		})
 	})
 })

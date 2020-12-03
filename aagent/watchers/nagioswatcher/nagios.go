@@ -18,6 +18,7 @@ import (
 	"github.com/tidwall/gjson"
 
 	"github.com/choria-io/go-choria/aagent/util"
+	"github.com/choria-io/go-choria/aagent/watchers/event"
 )
 
 type State int
@@ -175,14 +176,16 @@ func (w *Watcher) CurrentState() interface{} {
 	defer w.Unlock()
 
 	s := &StateNotification{
-		Protocol:    "io.choria.machine.watcher.nagios.v1.state",
-		Type:        "nagios",
-		Name:        w.name,
-		Identity:    w.machine.Identity(),
-		ID:          w.machine.InstanceID(),
-		Version:     w.machine.Version(),
-		Timestamp:   w.machine.TimeStampSeconds(),
-		Machine:     w.machineName,
+		Event: event.Event{
+			Protocol:  "io.choria.machine.watcher.nagios.v1.state",
+			Type:      "nagios",
+			Name:      w.name,
+			Identity:  w.machine.Identity(),
+			ID:        w.machine.InstanceID(),
+			Version:   w.machine.Version(),
+			Timestamp: w.machine.TimeStampSeconds(),
+			Machine:   w.machineName,
+		},
 		Plugin:      w.previousPlugin,
 		Status:      stateNames[w.previous],
 		StatusCode:  int(w.previous),
@@ -191,6 +194,7 @@ func (w *Watcher) CurrentState() interface{} {
 		RunTime:     w.previousRunTime.Seconds(),
 		History:     w.history,
 		Annotations: w.annotations,
+		CheckTime:   w.previousCheck.Unix(),
 	}
 
 	if !w.previousCheck.IsZero() {
