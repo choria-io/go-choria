@@ -11,6 +11,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/choria-io/go-choria/aagent/util"
+	"github.com/choria-io/go-choria/aagent/watchers/event"
 )
 
 type State int
@@ -161,14 +162,16 @@ func (w *Watcher) CurrentState() interface{} {
 	defer w.Unlock()
 
 	s := &StateNotification{
-		Protocol:        "io.choria.machine.watcher.file.v1.state",
-		Type:            "file",
-		Name:            w.name,
-		Identity:        w.machine.Identity(),
-		ID:              w.machine.InstanceID(),
-		Version:         w.machine.Version(),
-		Timestamp:       w.machine.TimeStampSeconds(),
-		Machine:         w.machine.Name(),
+		Event: event.Event{
+			Protocol:  "io.choria.machine.watcher.file.v1.state",
+			Type:      "file",
+			Name:      w.name,
+			Identity:  w.machine.Identity(),
+			ID:        w.machine.InstanceID(),
+			Version:   w.machine.Version(),
+			Timestamp: w.machine.TimeStampSeconds(),
+			Machine:   w.machine.Name(),
+		},
 		Path:            w.path,
 		PreviousOutcome: stateNames[w.previous],
 	}

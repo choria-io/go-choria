@@ -13,6 +13,7 @@ import (
 	"github.com/google/shlex"
 
 	"github.com/choria-io/go-choria/aagent/util"
+	"github.com/choria-io/go-choria/aagent/watchers/event"
 )
 
 type Machine interface {
@@ -230,23 +231,30 @@ func (w *Watcher) CurrentState() interface{} {
 	w.Lock()
 	defer w.Unlock()
 
-	res := Metric{}
-	if w.previousResult != nil {
+	var res Metric
+	if w.previousResult == nil {
+		res = Metric{
+			Labels:  make(map[string]string),
+			Metrics: make(map[string]float64),
+		}
+	} else {
 		res = *w.previousResult
 	}
 
 	res.Metrics["choria_runtime_seconds"] = w.previousRunTime.Seconds()
 
 	s := &StateNotification{
-		Protocol:  "io.choria.machine.watcher.metric.v1.state",
-		Type:      "metric",
-		Name:      w.name,
-		Identity:  w.machine.Identity(),
-		ID:        w.machine.InstanceID(),
-		Version:   w.machine.Version(),
-		Timestamp: w.machine.TimeStampSeconds(),
-		Machine:   w.machine.Name(),
-		Metrics:   res,
+		Event: event.Event{
+			Protocol:  "io.choria.machine.watcher.metric.v1.state",
+			Type:      "metric",
+			Name:      w.name,
+			Identity:  w.machine.Identity(),
+			ID:        w.machine.InstanceID(),
+			Version:   w.machine.Version(),
+			Timestamp: w.machine.TimeStampSeconds(),
+			Machine:   w.machine.Name(),
+		},
+		Metrics: res,
 	}
 
 	return s
