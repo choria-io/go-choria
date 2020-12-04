@@ -8,6 +8,8 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 )
 
 func Test(t *testing.T) {
@@ -16,6 +18,31 @@ func Test(t *testing.T) {
 }
 
 var _ = Describe("MetricWatcher", func() {
+	var (
+		mockctl     *gomock.Controller
+		mockMachine *watcher.MockMachine
+		watch       *Watcher
+		now         time.Time
+	)
+
+	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+		mockMachine = watcher.NewMockMachine(mockctl)
+
+		now = time.Unix(1606924953, 0)
+		mockMachine.EXPECT().Name().Return("metric").AnyTimes()
+		mockMachine.EXPECT().Identity().Return("ginkgo").AnyTimes()
+		mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
+		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
+		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
+
+		watch = &Watcher{previousRunTime: 500 * time.Millisecond, machine: mockMachine, name: "ginkgo"}
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
+	})
+
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
 			w := &Watcher{}
@@ -25,8 +52,8 @@ var _ = Describe("MetricWatcher", func() {
 				"interval": "1s",
 			})
 			Expect(err).ToNot(HaveOccurred())
-			Expect(w.command).To(Equal("cmd"))
-			Expect(w.checkInterval).To(Equal(time.Second))
+			Expect(w.properties.Command).To(Equal("cmd"))
+			Expect(w.properties.Interval).To(Equal(time.Second))
 		})
 
 		It("Should handle errors", func() {
@@ -44,39 +71,14 @@ var _ = Describe("MetricWatcher", func() {
 				"interval": "500ms",
 			})
 			Expect(err).ToNot(HaveOccurred())
-			Expect(w.command).To(Equal("cmd"))
-			Expect(w.checkInterval).To(Equal(time.Second))
+			Expect(w.properties.Command).To(Equal("cmd"))
+			Expect(w.properties.Interval).To(Equal(time.Second))
 		})
 	})
 
 	Describe("CurrentState", func() {
-		var (
-			mockctl     *gomock.Controller
-			mockMachine *MockMachine
-			watcher     *Watcher
-			now         time.Time
-		)
-
-		BeforeEach(func() {
-			mockctl = gomock.NewController(GinkgoT())
-			mockMachine = NewMockMachine(mockctl)
-
-			now = time.Unix(1606924953, 0)
-			mockMachine.EXPECT().Name().Return("metric").AnyTimes()
-			mockMachine.EXPECT().Identity().Return("ginkgo").AnyTimes()
-			mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
-			mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
-			mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
-
-			watcher = &Watcher{command: "/bin/sh", checkInterval: time.Second, previousRunTime: 500 * time.Millisecond, machine: mockMachine, name: "ginkgo"}
-		})
-
-		AfterEach(func() {
-			mockctl.Finish()
-		})
-
 		It("Should be a valid state", func() {
-			cs := watcher.CurrentState()
+			cs := watch.CurrentState()
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
 

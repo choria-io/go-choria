@@ -14,6 +14,7 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 )
 
 type State int
@@ -33,76 +34,63 @@ var stateNames = map[State]string{
 	Off:     "off",
 }
 
-type Machine interface {
-	Name() string
-	Identity() string
-	InstanceID() string
-	Version() string
-	State() string
-	Directory() string
-	TimeStampSeconds() int64
-	NotifyWatcherState(string, interface{})
-	Transition(t string, args ...interface{}) error
-	Infof(name string, format string, args ...interface{})
-	Errorf(name string, format string, args ...interface{})
-}
-
 type transport interface {
 	Stop() <-chan struct{}
 	Start()
 }
 
-type Watcher struct {
-	name             string
-	states           []string
-	failEvent        string
-	successEvent     string
-	machine          Machine
-	statechg         chan struct{}
-	previous         State
-	interval         time.Duration
-	announceInterval time.Duration
+type properties struct {
+	SerialNumber  string `mapstructure:"serial_number"`
+	Model         string
+	Pin           string
+	SetupId       string   `mapstructure:"setup_id"`
+	ShouldOn      []string `mapstructure:"on_when"`
+	ShouldOff     []string `mapstructure:"off_when"`
+	ShouldDisable []string `mapstructure:"disable_when"`
+	InitialState  State    `mapstructure:"-"`
+	Path          string   `mapstructure:"-"`
+	Initial       bool
+}
 
-	serialNumber  string
-	model         string
-	pin           string
-	setupID       string
-	hkt           transport
-	ac            *accessory.Switch
-	buttonPress   chan State
-	initial       State
-	path          string
-	shouldOn      []string
-	shouldOff     []string
-	shouldDisable []string
-	started       bool
+type Watcher struct {
+	*watcher.Watcher
+
+	name        string
+	machine     watcher.Machine
+	previous    State
+	interval    time.Duration
+	hkt         transport
+	ac          *accessory.Switch
+	buttonPress chan State
+	started     bool
+	properties  *properties
 
 	sync.Mutex
 }
 
-func New(machine Machine, name string, states []string, failEvent string, successEvent string, ai time.Duration, properties map[string]interface{}) (watcher *Watcher, err error) {
+func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, ai time.Duration, rawprop map[string]interface{}) (*Watcher, error) {
+	var err error
+
 	w := &Watcher{
-		name:             name,
-		successEvent:     successEvent,
-		failEvent:        failEvent,
-		states:           states,
-		machine:          machine,
-		interval:         5 * time.Second,
-		announceInterval: ai,
-		model:            "Autonomous Agent",
-		statechg:         make(chan struct{}, 1),
-		buttonPress:      make(chan State, 1),
-		path:             filepath.Join(machine.Directory(), "homekit", fmt.Sprintf("%x", md5.Sum([]byte(name)))),
-		shouldOff:        []string{},
-		shouldOn:         []string{},
-		shouldDisable:    []string{},
+		name:        name,
+		machine:     machine,
+		interval:    5 * time.Second,
+		buttonPress: make(chan State, 1),
+		properties: &properties{
+			Model:         "Autonomous Agent",
+			ShouldOn:      []string{},
+			ShouldOff:     []string{},
+			ShouldDisable: []string{},
+			Path:          filepath.Join(machine.Directory(), "homekit", fmt.Sprintf("%x", md5.Sum([]byte(name)))),
+		},
 	}
 
-	if w.path == "" {
-		return nil, fmt.Errorf("machine path could not be determined")
+	w.Watcher, err = watcher.NewWatcher(name, "homekit", ai, states, machine, failEvent, successEvent)
+	if err != nil {
+		return nil, err
 	}
 
-	err = w.setProperties(properties)
+	err = w.setProperties(rawprop)
 	if err != nil {
 		return nil, fmt.Errorf("could not set properties: %s", err)
 	}
@@ -119,38 +107,20 @@ func (w *Watcher) Delete() {
 	}
 }
 
-func (w *Watcher) Type() string {
-	return "homekit"
-}
-
-func (w *Watcher) AnnounceInterval() time.Duration {
-	return w.announceInterval
-}
-
-func (w *Watcher) Name() string {
-	return w.name
-}
-
-func (w *Watcher) NotifyStateChance() {
-	if len(w.statechg) < cap(w.statechg) {
-		w.statechg <- struct{}{}
-	}
-}
-
 func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	if w.shouldCheck() {
+	if w.ShouldWatch() {
 		w.ensureStarted()
 
-		w.machine.Infof(w.name, "homekit watcher for %s starting in state %s", w.name, stateNames[w.initial])
-		switch w.initial {
+		w.Infof("homekit watcher for %s starting in state %s", w.name, stateNames[w.properties.InitialState])
+		switch w.properties.InitialState {
 		case On:
 			w.buttonPress <- On
 		case Off:
 			w.buttonPress <- Off
 		default:
-			w.statechg <- struct{}{}
+			w.Watcher.StateChangeC() <- struct{}{}
 		}
 	}
 
@@ -160,11 +130,11 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 		case e := <-w.buttonPress:
 			err := w.handleStateChange(e)
 			if err != nil {
-				w.machine.Errorf(w.name, "Could not handle button %s press: %v", stateNames[e], err)
+				w.Errorf("Could not handle button %s press: %v", stateNames[e], err)
 			}
 
 		// rpc initiated state changes wold trigger this
-		case <-w.statechg:
+		case <-w.Watcher.StateChangeC():
 			mstate := w.machine.State()
 			switch {
 			case w.shouldBeOn(mstate):
@@ -180,7 +150,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 			}
 
 		case <-ctx.Done():
-			w.machine.Infof(w.name, "Stopping on context interrupt")
+			w.Infof("Stopping on context interrupt")
 			w.ensureStopped()
 			return
 		}
@@ -195,9 +165,9 @@ func (w *Watcher) ensureStopped() {
 		return
 	}
 
-	w.machine.Infof(w.name, "Stopping homekit integration")
+	w.Infof("Stopping homekit integration")
 	<-w.hkt.Stop()
-	w.machine.Infof(w.name, "Homekit integration stopped")
+	w.Infof("Homekit integration stopped")
 
 	w.started = false
 }
@@ -210,13 +180,13 @@ func (w *Watcher) ensureStarted() {
 		return
 	}
 
-	w.machine.Infof(w.name, "Starting homekit integration")
+	w.Infof("Starting homekit integration")
 
 	// kind of want to just hk.Start() here but stop kills a context that
 	// start does not recreate so we have to go back to start
 	err := w.startAccessoryUnlocked()
 	if err != nil {
-		w.machine.Errorf(w.name, "Could not start homekit service: %s", err)
+		w.Errorf("Could not start homekit service: %s", err)
 		return
 	}
 
@@ -226,7 +196,7 @@ func (w *Watcher) ensureStarted() {
 }
 
 func (w *Watcher) shouldBeOff(s string) bool {
-	for _, state := range w.shouldOff {
+	for _, state := range w.properties.ShouldOff {
 		if state == s {
 			return true
 		}
@@ -236,7 +206,7 @@ func (w *Watcher) shouldBeOff(s string) bool {
 }
 
 func (w *Watcher) shouldBeOn(s string) bool {
-	for _, state := range w.shouldOn {
+	for _, state := range w.properties.ShouldOn {
 		if state == s {
 			return true
 		}
@@ -246,7 +216,7 @@ func (w *Watcher) shouldBeOn(s string) bool {
 }
 
 func (w *Watcher) shouldBeDisabled(s string) bool {
-	for _, state := range w.shouldDisable {
+	for _, state := range w.properties.ShouldDisable {
 		if state == s {
 			return true
 		}
@@ -256,26 +226,26 @@ func (w *Watcher) shouldBeDisabled(s string) bool {
 }
 
 func (w *Watcher) handleStateChange(s State) error {
-	if !w.shouldCheck() {
+	if !w.ShouldWatch() {
 		return nil
 	}
 
 	switch s {
 	case On:
 		w.setPreviousState(s)
-		w.machine.NotifyWatcherState(w.name, w.CurrentState())
-		return w.machine.Transition(w.successEvent)
+		w.NotifyWatcherState(w.name, w.CurrentState())
+		return w.Transition(w.Watcher.SuccessEvent())
 
 	case OnNoTransition:
 		w.setPreviousState(On)
 		w.ac.Switch.On.SetValue(true)
-		w.machine.NotifyWatcherState(w.name, w.CurrentState())
+		w.NotifyWatcherState(w.name, w.CurrentState())
 		return nil
 
 	case Off:
 		w.setPreviousState(s)
-		w.machine.NotifyWatcherState(w.name, w.CurrentState())
-		return w.machine.Transition(w.failEvent)
+		w.NotifyWatcherState(w.name, w.CurrentState())
+		return w.Transition(w.Watcher.FailEvent())
 
 	case OffNoTransition:
 		w.setPreviousState(Off)
@@ -292,17 +262,8 @@ func (w *Watcher) CurrentState() interface{} {
 	defer w.Unlock()
 
 	s := &StateNotification{
-		Event: event.Event{
-			Protocol:  "io.choria.machine.watcher.homekit.v1.state",
-			Type:      "homekit",
-			Name:      w.name,
-			Identity:  w.machine.Identity(),
-			ID:        w.machine.InstanceID(),
-			Version:   w.machine.Version(),
-			Timestamp: w.machine.TimeStampSeconds(),
-			Machine:   w.machine.Name(),
-		},
-		Path:            w.path,
+		Event:           event.New(w.name, "homekit", "v1", w.machine),
+		Path:            w.properties.Path,
 		PreviousOutcome: stateNames[w.previous],
 	}
 
@@ -319,14 +280,14 @@ func (w *Watcher) setPreviousState(s State) {
 func (w *Watcher) startAccessoryUnlocked() error {
 	info := accessory.Info{
 		Name:             strings.Title(strings.Replace(w.name, "_", " ", -1)),
-		SerialNumber:     w.serialNumber,
+		SerialNumber:     w.properties.SerialNumber,
 		Manufacturer:     "Choria",
-		Model:            w.model,
+		Model:            w.properties.Model,
 		FirmwareRevision: w.machine.Version(),
 	}
 	w.ac = accessory.NewSwitch(info)
 
-	t, err := hc.NewIPTransport(hc.Config{Pin: w.pin, SetupId: w.setupID, StoragePath: w.path}, w.ac.Accessory)
+	t, err := hc.NewIPTransport(hc.Config{Pin: w.properties.Pin, SetupId: w.properties.SetupId, StoragePath: w.properties.Path}, w.ac.Accessory)
 	if err != nil {
 		return err
 	}
@@ -339,20 +300,20 @@ func (w *Watcher) startAccessoryUnlocked() error {
 		w.Lock()
 		defer w.Unlock()
 
-		w.machine.Infof(w.name, "Handling app button press: %v", new)
+		w.Infof("Handling app button press: %v", new)
 
-		if !w.shouldCheck() {
-			w.machine.Infof(w.name, "Ignoring event while in %s state", w.machine.State())
+		if !w.ShouldWatch() {
+			w.Infof("Ignoring event while in %s state", w.machine.State())
 			// undo the button press
 			w.ac.Switch.On.SetValue(!new)
 			return
 		}
 
 		if new {
-			w.machine.Infof(w.name, "Setting state to On")
+			w.Infof("Setting state to On")
 			w.buttonPress <- On
 		} else {
-			w.machine.Infof(w.name, "Setting state to Off")
+			w.Infof("Setting state to Off")
 			w.buttonPress <- Off
 		}
 	})
@@ -364,61 +325,32 @@ func (w *Watcher) startAccessoryUnlocked() error {
 	return nil
 }
 
-func (w *Watcher) shouldCheck() bool {
-	if len(w.states) == 0 {
-		return true
-	}
-
-	for _, e := range w.states {
-		if e == w.machine.State() {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (w *Watcher) validate() error {
-	if len(w.pin) > 0 && len(w.pin) != 8 {
+	if len(w.properties.Pin) > 0 && len(w.properties.Pin) != 8 {
 		return fmt.Errorf("pin should be 8 characters long")
 	}
 
-	if len(w.setupID) > 0 && len(w.setupID) != 4 {
+	if len(w.properties.SetupId) > 0 && len(w.properties.SetupId) != 4 {
 		return fmt.Errorf("setup_id should be 4 characters long")
+	}
+
+	if w.properties.Path == "" {
+		return fmt.Errorf("machine path could not be determined")
 	}
 
 	return nil
 }
 
 func (w *Watcher) setProperties(props map[string]interface{}) error {
-	var properties struct {
-		SerialNumber  string `mapstructure:"serial_number"`
-		Model         string
-		Pin           string
-		SetupId       string   `mapstructure:"setup_id"`
-		ShouldOn      []string `mapstructure:"on_when"`
-		ShouldOff     []string `mapstructure:"off_when"`
-		ShouldDisable []string `mapstructure:"disable_when"`
-		Initial       bool
-	}
-
-	err := util.ParseMapStructure(props, &properties)
+	err := util.ParseMapStructure(props, w.properties)
 	if err != nil {
 		return err
 	}
 
-	w.serialNumber = properties.SerialNumber
-	w.model = properties.Model
-	w.pin = properties.Pin
-	w.setupID = properties.SetupId
-	w.shouldOn = properties.ShouldOn
-	w.shouldOff = properties.ShouldOff
-	w.shouldDisable = properties.ShouldDisable
-
-	if properties.Initial {
-		w.initial = On
+	if w.properties.Initial {
+		w.properties.InitialState = On
 	} else {
-		w.initial = Off
+		w.properties.InitialState = Off
 	}
 
 	return w.validate()

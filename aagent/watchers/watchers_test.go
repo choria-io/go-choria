@@ -50,7 +50,7 @@ var _ = Describe("Aagent/Watchers", func() {
 			machine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any())
 			machine.EXPECT().Directory().Return(filepath.Dir(".")).AnyTimes()
 			machine.EXPECT().Watchers().Return([]*WatcherDef{
-				&WatcherDef{
+				{
 					Name:              "fwatcher",
 					Type:              "file",
 					StateMatch:        []string{"one"},
@@ -78,7 +78,7 @@ var _ = Describe("Aagent/Watchers", func() {
 		It("Should support exec watchers", func() {
 			machine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any())
 			machine.EXPECT().Watchers().Return([]*WatcherDef{
-				&WatcherDef{
+				{
 					Type:              "exec",
 					Name:              "execwatcher",
 					StateMatch:        []string{"one"},
@@ -106,7 +106,7 @@ var _ = Describe("Aagent/Watchers", func() {
 		It("Should handle unknown watchers", func() {
 			machine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any())
 			machine.EXPECT().Watchers().Return([]*WatcherDef{
-				&WatcherDef{
+				{
 					Type: "other",
 					Name: "otherwatcher",
 				},

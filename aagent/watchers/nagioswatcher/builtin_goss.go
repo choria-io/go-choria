@@ -17,7 +17,7 @@ func (w *Watcher) watchUsingGoss() (state State, output string, err error) {
 	opts := []gossutil.ConfigOption{
 		gossutil.WithMaxConcurrency(1),
 		gossutil.WithResultWriter(&out),
-		gossutil.WithSpecFile(w.gossFile),
+		gossutil.WithSpecFile(w.properties.Gossfile),
 	}
 
 	od, err := w.machine.OverrideData()

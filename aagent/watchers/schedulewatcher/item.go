@@ -6,6 +6,8 @@ import (
 	"time"
 
 	"github.com/robfig/cron"
+
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 )
 
 type scheduleItem struct {
@@ -14,7 +16,7 @@ type scheduleItem struct {
 	events   chan int
 	on       bool
 	duration time.Duration
-	machine  Machine
+	machine  watcher.Machine
 	watcher  *Watcher
 
 	sync.Mutex
@@ -26,7 +28,7 @@ func newSchedItem(s string, w *Watcher) (item *scheduleItem, err error) {
 		events:   w.ctrq,
 		machine:  w.machine,
 		watcher:  w,
-		duration: w.duration,
+		duration: w.properties.Duration,
 	}
 
 	parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
@@ -45,7 +47,7 @@ func (s *scheduleItem) check(ctx context.Context) {
 	// using unix time to round it to nearest second
 	if next.Unix()-1 == now.Unix() {
 		s.Lock()
-		s.machine.Infof(s.watcher.name, "Schedule %s starting", s.spec)
+		s.watcher.Infof("Schedule %s starting", s.spec)
 		s.on = true
 		s.events <- 1
 		s.Unlock()
@@ -55,7 +57,7 @@ func (s *scheduleItem) check(ctx context.Context) {
 }
 
 func (s *scheduleItem) wait(ctx context.Context) {
-	s.machine.Infof(s.watcher.name, "Scheduling on until %v", time.Now().Add(s.duration))
+	s.watcher.Infof("Scheduling on until %v", time.Now().Add(s.duration))
 	timer := time.NewTimer(s.duration)
 
 	select {
@@ -64,7 +66,7 @@ func (s *scheduleItem) wait(ctx context.Context) {
 	}
 
 	s.Lock()
-	s.machine.Infof(s.watcher.name, "Schedule %s ending", s.spec)
+	s.watcher.Infof("Schedule %s ending", s.spec)
 	s.on = false
 	s.events <- -1
 	s.Unlock()
