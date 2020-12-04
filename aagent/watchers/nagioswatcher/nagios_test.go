@@ -8,6 +8,8 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 )
 
 func Test(t *testing.T) {
@@ -16,11 +18,46 @@ func Test(t *testing.T) {
 }
 
 var _ = Describe("NagiosWatcher", func() {
+	var (
+		mockctl     *gomock.Controller
+		mockMachine *watcher.MockMachine
+		watch       *Watcher
+		now         time.Time
+	)
+
+	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+		mockMachine = watcher.NewMockMachine(mockctl)
+
+		now = time.Unix(1606924953, 0)
+		mockMachine.EXPECT().Name().Return("nagios").AnyTimes()
+		mockMachine.EXPECT().Identity().Return("ginkgo").AnyTimes()
+		mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
+		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
+		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
+
+		watch = &Watcher{
+			previousPlugin:   "/bin/sh",
+			previous:         OK,
+			previousOutput:   "OK: ginkgo",
+			machine:          mockMachine,
+			previousPerfData: []PerfData{},
+			previousRunTime:  500 * time.Millisecond,
+			history:          []*Execution{},
+			name:             "ginkgo",
+			previousCheck:    now,
+		}
+
+		watch.setProperties(map[string]interface{}{})
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
+	})
+
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
-			w := &Watcher{}
-
-			err := w.setProperties(map[string]interface{}{
+			err := watch.setProperties(map[string]interface{}{
 				"annotations": map[string]string{
 					"a1": "v1",
 					"a2": "v2",
@@ -29,87 +66,48 @@ var _ = Describe("NagiosWatcher", func() {
 				"timeout": "5s",
 			})
 			Expect(err).ToNot(HaveOccurred())
-			Expect(w.annotations).To(Equal(map[string]string{
+			Expect(watch.properties.Annotations).To(Equal(map[string]string{
 				"a1": "v1",
 				"a2": "v2",
 			}))
-			Expect(w.plugin).To(Equal("cmd"))
-			Expect(w.timeout).To(Equal(5 * time.Second))
-			Expect(w.builtin).To(BeEmpty())
-			Expect(w.gossFile).To(BeEmpty())
+			Expect(watch.properties.Plugin).To(Equal("cmd"))
+			Expect(watch.properties.Timeout).To(Equal(5 * time.Second))
+			Expect(watch.properties.Builtin).To(BeEmpty())
+			Expect(watch.properties.Gossfile).To(BeEmpty())
 		})
 
 		It("Should handle errors", func() {
-			w := &Watcher{}
-			err := w.setProperties(map[string]interface{}{})
+			err := watch.setProperties(map[string]interface{}{})
 			Expect(err).To(MatchError("plugin or builtin is required"))
 
-			w = &Watcher{}
-			err = w.setProperties(map[string]interface{}{
+			watch.properties = nil
+			err = watch.setProperties(map[string]interface{}{
 				"plugin":  "cmd",
 				"builtin": "goss",
 			})
 			Expect(err).To(MatchError("cannot set plugin and builtin"))
 
-			w = &Watcher{}
-			err = w.setProperties(map[string]interface{}{
+			watch.properties = nil
+			err = watch.setProperties(map[string]interface{}{
 				"builtin": "goss",
 			})
 			Expect(err).To(MatchError("gossfile property is required for the goss builtin check"))
 		})
 
 		It("Should handle valid goss setups", func() {
-			w := &Watcher{}
-			err := w.setProperties(map[string]interface{}{
+			err := watch.setProperties(map[string]interface{}{
 				"builtin":  "goss",
 				"gossFile": "/x",
 			})
 			Expect(err).ToNot(HaveOccurred())
-			Expect(w.builtin).To(Equal("goss"))
-			Expect(w.gossFile).To(Equal("/x"))
+			Expect(watch.properties.Builtin).To(Equal("goss"))
+			Expect(watch.properties.Gossfile).To(Equal("/x"))
 		})
 	})
 
 	Describe("CurrentState", func() {
-		var (
-			mockctl     *gomock.Controller
-			mockMachine *MockMachine
-			watcher     *Watcher
-			now         time.Time
-		)
-
-		BeforeEach(func() {
-			mockctl = gomock.NewController(GinkgoT())
-			mockMachine = NewMockMachine(mockctl)
-
-			now = time.Unix(1606924953, 0)
-			mockMachine.EXPECT().Name().Return("nagios").AnyTimes()
-			mockMachine.EXPECT().Identity().Return("ginkgo").AnyTimes()
-			mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
-			mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
-			mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
-
-			watcher = &Watcher{
-				machineName:      "ginkgo",
-				previousPlugin:   "/bin/sh",
-				previous:         OK,
-				previousOutput:   "OK: ginkgo",
-				machine:          mockMachine,
-				previousPerfData: []PerfData{},
-				previousRunTime:  500 * time.Millisecond,
-				history:          []*Execution{},
-				annotations:      map[string]string{},
-				name:             "ginkgo",
-				previousCheck:    now,
-			}
-		})
-
-		AfterEach(func() {
-			mockctl.Finish()
-		})
-
 		It("Should be a valid state", func() {
-			cs := watcher.CurrentState()
+			cs := watch.CurrentState()
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
 
@@ -127,7 +125,7 @@ var _ = Describe("NagiosWatcher", func() {
 				"data": map[string]interface{}{
 					"id":          "1234567890",
 					"identity":    "ginkgo",
-					"machine":     "ginkgo",
+					"machine":     "nagios",
 					"name":        "ginkgo",
 					"protocol":    "io.choria.machine.watcher.nagios.v1.state",
 					"type":        "nagios",

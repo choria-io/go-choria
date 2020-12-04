@@ -5,9 +5,11 @@ import (
 	"testing"
 	"time"
 
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 )
 
 func Test(t *testing.T) {
@@ -16,69 +18,79 @@ func Test(t *testing.T) {
 }
 
 var _ = Describe("ExecWatcher", func() {
+	var (
+		mockctl     *gomock.Controller
+		mockMachine *watcher.MockMachine
+		watch       *Watcher
+		now         time.Time
+	)
+
+	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+		mockMachine = watcher.NewMockMachine(mockctl)
+
+		mockMachine.EXPECT().Name().Return("exec").AnyTimes()
+		mockMachine.EXPECT().Identity().Return("ginkgo").AnyTimes()
+		mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
+		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
+		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
+
+		now = time.Unix(1606924953, 0)
+		w, err := watcher.NewWatcher("exec", "exec", time.Second, []string{"always"}, mockMachine, "fail", "success")
+		Expect(err).ToNot(HaveOccurred())
+
+		watch = &Watcher{
+			Watcher: w,
+			machine: mockMachine,
+			properties: &Properties{
+				Environment: []string{},
+			},
+			previous:        Success,
+			previousRunTime: time.Second,
+			name:            "ginkgo",
+		}
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
+	})
+
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
-			w := &Watcher{}
-
 			prop := map[string]interface{}{
 				"command":                   "cmd",
 				"timeout":                   "1.5s",
 				"environment":               []string{"key1=val1", "key2=val2"},
 				"suppress_success_announce": "true",
 			}
-			Expect(w.setProperties(prop)).ToNot(HaveOccurred())
-			Expect(w.command).To(Equal("cmd"))
-			Expect(w.timeout).To(Equal(1500 * time.Millisecond))
-			Expect(w.environment).To(Equal([]string{"key1=val1", "key2=val2"}))
-			Expect(w.suppressSuccessAnnounce).To(BeTrue())
+			Expect(watch.setProperties(prop)).ToNot(HaveOccurred())
+			Expect(watch.properties.Command).To(Equal("cmd"))
+			Expect(watch.properties.Timeout).To(Equal(1500 * time.Millisecond))
+			Expect(watch.properties.Environment).To(Equal([]string{"key1=val1", "key2=val2"}))
+			Expect(watch.properties.SuppressSuccessAnnounce).To(BeTrue())
 		})
 
 		It("Should handle errors", func() {
-			w := &Watcher{}
-			err := w.setProperties(map[string]interface{}{})
+			err := watch.setProperties(map[string]interface{}{})
 			Expect(err).To(MatchError("command is required"))
 		})
 
 		It("Should enforce 1 second intervals", func() {
-			w := &Watcher{}
-			err := w.setProperties(map[string]interface{}{
+			err := watch.setProperties(map[string]interface{}{
 				"command": "cmd",
 				"timeout": "0",
 			})
 			Expect(err).ToNot(HaveOccurred())
-			Expect(w.command).To(Equal("cmd"))
-			Expect(w.timeout).To(Equal(time.Second))
+			Expect(watch.properties.Command).To(Equal("cmd"))
+			Expect(watch.properties.Timeout).To(Equal(time.Second))
 		})
 	})
 
 	Describe("CurrentState", func() {
-		var (
-			mockctl     *gomock.Controller
-			mockMachine *MockMachine
-			watcher     *Watcher
-			now         time.Time
-		)
-
-		BeforeEach(func() {
-			mockctl = gomock.NewController(GinkgoT())
-			mockMachine = NewMockMachine(mockctl)
-
-			now = time.Unix(1606924953, 0)
-			mockMachine.EXPECT().Name().Return("exec").AnyTimes()
-			mockMachine.EXPECT().Identity().Return("ginkgo").AnyTimes()
-			mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
-			mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
-			mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
-
-			watcher = &Watcher{command: "/bin/sh", previous: Success, previousRunTime: time.Second, machine: mockMachine, name: "ginkgo"}
-		})
-
-		AfterEach(func() {
-			mockctl.Finish()
-		})
-
 		It("Should be a valid state", func() {
-			cs := watcher.CurrentState()
+			watch.properties.Command = "/bin/sh"
+
+			cs := watch.CurrentState()
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
 

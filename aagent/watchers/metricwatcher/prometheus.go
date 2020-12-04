@@ -10,9 +10,9 @@ import (
 )
 
 type logger interface {
-	Debugf(name string, format string, args ...interface{})
-	Infof(name string, format string, args ...interface{})
-	Errorf(name string, format string, args ...interface{})
+	Debugf(format string, args ...interface{})
+	Infof(format string, args ...interface{})
+	Errorf(format string, args ...interface{})
 }
 
 var (
@@ -53,18 +53,18 @@ func promName(name string) string {
 // lock should be held
 func savePromState(td string, log logger) error {
 	if td == "" {
-		log.Debugf("metrics", "Not updating prometheus - text file directory is unset")
+		log.Debugf("Not updating prometheus - text file directory is unset")
 		return nil
 	}
 
 	stat, err := os.Stat(td)
 	if err != nil {
-		log.Debugf("metrics", "%q is not accessible: %s", td, err)
+		log.Debugf("%q is not accessible: %s", td, err)
 		return nil
 	}
 
 	if !stat.IsDir() {
-		log.Debugf("metrics", "%q is not a directory", td)
+		log.Debugf("%q is not a directory", td)
 		return nil
 	}
 

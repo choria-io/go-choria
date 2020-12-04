@@ -12,6 +12,7 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 )
 
 type State int
@@ -32,48 +33,35 @@ var stateNames = map[State]string{
 	Changed:   "changed",
 }
 
-type Machine interface {
-	State() string
-	Name() string
-	Identity() string
-	InstanceID() string
-	Version() string
-	TimeStampSeconds() int64
-	Directory() string
-	Transition(t string, args ...interface{}) error
-	NotifyWatcherState(string, interface{})
-	Debugf(name string, format string, args ...interface{})
-	Infof(name string, format string, args ...interface{})
-	Errorf(name string, format string, args ...interface{})
+type Properties struct {
+	Path    string
+	Initial bool `mapstructure:"gather_initial_state"`
 }
 
 type Watcher struct {
-	name             string
-	states           []string
-	failEvent        string
-	successEvent     string
-	path             string
-	machine          Machine
-	mtime            time.Time
-	initial          bool
-	interval         time.Duration
-	announceInterval time.Duration
-	statechg         chan struct{}
-	previous         State
+	*watcher.Watcher
 
-	sync.Mutex
+	name       string
+	machine    watcher.Machine
+	previous   State
+	interval   time.Duration
+	mtime      time.Time
+	properties *Properties
 }
 
-func New(machine Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (watcher *Watcher, err error) {
+func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (*Watcher, error) {
+	var err error
+
 	w := &Watcher{
-		name:             name,
-		successEvent:     successEvent,
-		failEvent:        failEvent,
-		states:           states,
-		machine:          machine,
-		interval:         5 * time.Second,
-		announceInterval: ai,
-		statechg:         make(chan struct{}, 1),
+		properties: &Properties{},
+		name:       name,
+		machine:    machine,
+		interval:   5 * time.Second,
+	}
+
+	w.Watcher, err = watcher.NewWatcher(name, "file", ai, states, machine, failEvent, successEvent)
+	if err != nil {
+		return nil, err
 	}
 
 	err = w.setProperties(properties)
@@ -81,8 +69,8 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		return nil, errors.Wrap(err, "could not set properties")
 	}
 
-	if !filepath.IsAbs(w.path) {
-		w.path = filepath.Join(w.machine.Directory(), w.path)
+	if !filepath.IsAbs(w.properties.Path) {
+		w.properties.Path = filepath.Join(w.machine.Directory(), w.properties.Path)
 	}
 
 	if interval != "" {
@@ -99,35 +87,15 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 	return w, err
 }
 
-func (w *Watcher) Delete() {}
-
-func (w *Watcher) Type() string {
-	return "file"
-}
-
-func (w *Watcher) AnnounceInterval() time.Duration {
-	return w.announceInterval
-}
-
-func (w *Watcher) Name() string {
-	return w.name
-}
-
-func (w *Watcher) NotifyStateChance() {
-	if len(w.statechg) < cap(w.statechg) {
-		w.statechg <- struct{}{}
-	}
-}
-
 func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	w.machine.Infof(w.name, "file watcher for %s starting", w.path)
+	w.Infof("file watcher for %s starting", w.properties.Path)
 
 	tick := time.NewTicker(w.interval)
 
-	if w.initial {
-		stat, err := os.Stat(w.path)
+	if w.properties.Initial {
+		stat, err := os.Stat(w.properties.Path)
 		if err == nil {
 			w.mtime = stat.ModTime()
 		}
@@ -138,12 +106,12 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 		case <-tick.C:
 			w.performWatch(ctx)
 
-		case <-w.statechg:
+		case <-w.Watcher.StateChangeC():
 			w.performWatch(ctx)
 
 		case <-ctx.Done():
 			tick.Stop()
-			w.machine.Infof(w.name, "Stopping on context interrupt")
+			w.Infof("Stopping on context interrupt")
 			return
 		}
 	}
@@ -153,7 +121,7 @@ func (w *Watcher) performWatch(ctx context.Context) {
 	state, err := w.watch()
 	err = w.handleCheck(state, err)
 	if err != nil {
-		w.machine.Errorf(w.name, "could not handle watcher event: %s", err)
+		w.Errorf("could not handle watcher event: %s", err)
 	}
 }
 
@@ -162,17 +130,8 @@ func (w *Watcher) CurrentState() interface{} {
 	defer w.Unlock()
 
 	s := &StateNotification{
-		Event: event.Event{
-			Protocol:  "io.choria.machine.watcher.file.v1.state",
-			Type:      "file",
-			Name:      w.name,
-			Identity:  w.machine.Identity(),
-			ID:        w.machine.InstanceID(),
-			Version:   w.machine.Version(),
-			Timestamp: w.machine.TimeStampSeconds(),
-			Machine:   w.machine.Name(),
-		},
-		Path:            w.path,
+		Event:           event.New(w.name, "file", "v1", w.machine),
+		Path:            w.properties.Path,
 		PreviousOutcome: stateNames[w.previous],
 	}
 
@@ -187,18 +146,18 @@ func (w *Watcher) setPreviousState(s State) {
 }
 
 func (w *Watcher) handleCheck(s State, err error) error {
-	w.machine.Debugf(w.name, "handling check for %s %v %v", w.path, s, err)
+	w.Debugf("Handling check for %s %v %v", w.properties.Path, s, err)
 
 	w.setPreviousState(s)
 
 	switch s {
 	case Error:
-		w.machine.NotifyWatcherState(w.name, w.CurrentState())
-		return w.machine.Transition(w.failEvent)
+		w.NotifyWatcherState(w.name, w.CurrentState())
+		return w.Transition(w.Watcher.FailEvent())
 
 	case Changed:
-		w.machine.NotifyWatcherState(w.name, w.CurrentState())
-		return w.machine.Transition(w.successEvent)
+		w.NotifyWatcherState(w.name, w.CurrentState())
+		return w.Transition(w.Watcher.SuccessEvent())
 
 	case Unchanged:
 		// not notifying, regular announces happen
@@ -209,7 +168,7 @@ func (w *Watcher) handleCheck(s State, err error) error {
 		// its set to do initial check it specifically will not do that because
 		// the behavior of the first run in that case would be to only wait for
 		// future changes, this retains that behavior on becoming valid again
-		if !w.initial {
+		if !w.properties.Initial {
 			w.mtime = time.Time{}
 		}
 	}
@@ -217,26 +176,12 @@ func (w *Watcher) handleCheck(s State, err error) error {
 	return nil
 }
 
-func (w *Watcher) shouldCheck() bool {
-	if len(w.states) == 0 {
-		return true
-	}
-
-	for _, e := range w.states {
-		if e == w.machine.State() {
-			return true
-		}
-	}
-
-	return false
-}
-
 func (w *Watcher) watch() (state State, err error) {
-	if !w.shouldCheck() {
+	if !w.Watcher.ShouldWatch() {
 		return Skipped, nil
 	}
 
-	stat, err := os.Stat(w.path)
+	stat, err := os.Stat(w.properties.Path)
 	if err != nil {
 		w.mtime = time.Time{}
 
@@ -252,7 +197,7 @@ func (w *Watcher) watch() (state State, err error) {
 }
 
 func (w *Watcher) validate() error {
-	if w.path == "" {
+	if w.properties.Path == "" {
 		return fmt.Errorf("path is required")
 	}
 
@@ -260,18 +205,10 @@ func (w *Watcher) validate() error {
 }
 
 func (w *Watcher) setProperties(props map[string]interface{}) error {
-	var properties struct {
-		Path    string
-		Initial bool `mapstructure:"gather_initial_state"`
-	}
-
-	err := util.ParseMapStructure(props, &properties)
+	err := util.ParseMapStructure(props, w.properties)
 	if err != nil {
 		return err
 	}
-
-	w.path = properties.Path
-	w.initial = properties.Initial
 
 	return w.validate()
 }

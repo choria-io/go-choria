@@ -19,6 +19,7 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 )
 
 type State int
@@ -55,21 +56,12 @@ var intStates = map[int]State{
 	int(NOTCHECKED): NOTCHECKED,
 }
 
-type Machine interface {
-	State() string
-	NotifyWatcherState(string, interface{})
-	Name() string
-	Directory() string
-	Identity() string
-	InstanceID() string
-	Version() string
-	TimeStampSeconds() int64
-	TextFileDirectory() string
-	OverrideData() ([]byte, error)
-	Transition(t string, args ...interface{}) error
-	Debugf(name string, format string, args ...interface{})
-	Infof(name string, format string, args ...interface{})
-	Errorf(name string, format string, args ...interface{})
+type properties struct {
+	Annotations map[string]string
+	Plugin      string
+	Gossfile    string
+	Builtin     string
+	Timeout     time.Duration
 }
 
 type PerfData struct {
@@ -85,16 +77,12 @@ type Execution struct {
 }
 
 type Watcher struct {
+	*watcher.Watcher
+
+	properties       *properties
 	name             string
-	machineName      string
-	textFileDir      string
-	gossFile         string
-	states           []string
-	failEvent        string
-	successEvent     string
-	machine          Machine
+	machine          watcher.Machine
 	interval         time.Duration
-	announceInterval time.Duration
 	previousRunTime  time.Duration
 	previousOutput   string
 	previousPerfData []PerfData
@@ -102,30 +90,28 @@ type Watcher struct {
 	previousPlugin   string
 	previous         State
 	force            bool
-	statechg         chan struct{}
-	plugin           string
-	builtin          string
-	annotations      map[string]string
-	timeout          time.Duration
 	history          []*Execution
+	machineName      string
+	textFileDir      string
 
 	sync.Mutex
 }
 
-func New(machine Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (watcher *Watcher, err error) {
+func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (*Watcher, error) {
+	var err error
+
 	w := &Watcher{
-		name:             name,
-		machineName:      machine.Name(),
-		textFileDir:      machine.TextFileDirectory(),
-		states:           states,
-		failEvent:        failEvent,
-		successEvent:     successEvent,
-		machine:          machine,
-		statechg:         make(chan struct{}, 1),
-		previous:         NOTCHECKED,
-		announceInterval: ai,
-		history:          []*Execution{},
-		annotations:      make(map[string]string),
+		machineName: machine.Name(),
+		textFileDir: machine.TextFileDirectory(),
+		name:        name,
+		machine:     machine,
+		previous:    NOTCHECKED,
+		history:     []*Execution{},
+	}
+
+	w.Watcher, err = watcher.NewWatcher(name, "nagios", ai, states, machine, failEvent, successEvent)
+	if err != nil {
+		return nil, err
 	}
 
 	err = w.setProperties(properties)
@@ -144,7 +130,7 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 		}
 	}
 
-	updatePromState(w.machineName, UNKNOWN, machine.TextFileDirectory(), machine)
+	updatePromState(w.machineName, UNKNOWN, machine.TextFileDirectory(), w)
 
 	return w, err
 }
@@ -156,19 +142,7 @@ func (w *Watcher) Delete() {
 
 	// suppress next check and set state to unknown
 	w.previousCheck = time.Now()
-	deletePromState(w.machineName, w.textFileDir, w.machine)
-}
-
-func (w *Watcher) Type() string {
-	return "nagios"
-}
-
-func (w *Watcher) AnnounceInterval() time.Duration {
-	return w.announceInterval
-}
-
-func (w *Watcher) Name() string {
-	return w.name
+	deletePromState(w.machineName, w.textFileDir, w)
 }
 
 func (w *Watcher) CurrentState() interface{} {
@@ -176,16 +150,7 @@ func (w *Watcher) CurrentState() interface{} {
 	defer w.Unlock()
 
 	s := &StateNotification{
-		Event: event.Event{
-			Protocol:  "io.choria.machine.watcher.nagios.v1.state",
-			Type:      "nagios",
-			Name:      w.name,
-			Identity:  w.machine.Identity(),
-			ID:        w.machine.InstanceID(),
-			Version:   w.machine.Version(),
-			Timestamp: w.machine.TimeStampSeconds(),
-			Machine:   w.machineName,
-		},
+		Event:       event.New(w.name, "nagios", "v1", w.machine),
 		Plugin:      w.previousPlugin,
 		Status:      stateNames[w.previous],
 		StatusCode:  int(w.previous),
@@ -193,7 +158,7 @@ func (w *Watcher) CurrentState() interface{} {
 		PerfData:    w.previousPerfData,
 		RunTime:     w.previousRunTime.Seconds(),
 		History:     w.history,
-		Annotations: w.annotations,
+		Annotations: w.properties.Annotations,
 		CheckTime:   w.previousCheck.Unix(),
 	}
 
@@ -253,44 +218,37 @@ func (w *Watcher) parsePerfData(pd string) (perf []PerfData) {
 }
 
 func (w *Watcher) validate() error {
-	if w.builtin != "" && w.plugin != "" {
+	if w.properties.Builtin != "" && w.properties.Plugin != "" {
 		return fmt.Errorf("cannot set plugin and builtin")
 	}
 
-	if w.builtin == "" && w.plugin == "" {
+	if w.properties.Builtin == "" && w.properties.Plugin == "" {
 		return fmt.Errorf("plugin or builtin is required")
 	}
 
-	if w.builtin == "goss" && w.gossFile == "" {
+	if w.properties.Builtin == "goss" && w.properties.Gossfile == "" {
 		return fmt.Errorf("gossfile property is required for the goss builtin check")
 	}
 
-	if w.timeout == 0 {
-		w.timeout = time.Second
+	if w.properties.Timeout == 0 {
+		w.properties.Timeout = time.Second
 	}
 
 	return nil
 }
 
 func (w *Watcher) setProperties(props map[string]interface{}) error {
-	var properties struct {
-		Annotations map[string]string
-		Plugin      string
-		Gossfile    string
-		Builtin     string
-		Timeout     time.Duration
+	if w.properties == nil {
+		w.properties = &properties{
+			Annotations: make(map[string]string),
+			Timeout:     time.Second,
+		}
 	}
 
-	err := util.ParseMapStructure(props, &properties)
+	err := util.ParseMapStructure(props, &w.properties)
 	if err != nil {
 		return err
 	}
-
-	w.annotations = properties.Annotations
-	w.plugin = properties.Plugin
-	w.gossFile = properties.Gossfile
-	w.builtin = properties.Builtin
-	w.timeout = properties.Timeout
 
 	return w.validate()
 }
@@ -307,9 +265,9 @@ func (w *Watcher) NotifyStateChance() {
 	case "UNKNOWN":
 		s = UNKNOWN
 	case "FORCE_CHECK":
-		w.machine.Infof("Forcing a check of %s", w.machineName)
+		w.Infof("Forcing a check of %s", w.machineName)
 		w.force = true
-		w.statechg <- struct{}{}
+		w.StateChangeC() <- struct{}{}
 		return
 	}
 
@@ -317,9 +275,9 @@ func (w *Watcher) NotifyStateChance() {
 	w.previous = s
 	w.Unlock()
 
-	err := updatePromState(w.machineName, s, w.textFileDir, w.machine)
+	err := updatePromState(w.machineName, s, w.textFileDir, w)
 	if err != nil {
-		w.machine.Errorf(w.name, "Could not update prometheus: %s", err)
+		w.Errorf("Could not update prometheus: %s", err)
 	}
 }
 
@@ -327,9 +285,9 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	if w.textFileDir != "" {
-		w.machine.Infof(w.name, "nagios watcher starting, updating prometheus in %s", w.textFileDir)
+		w.Infof("nagios watcher starting, updating prometheus in %s", w.textFileDir)
 	} else {
-		w.machine.Infof(w.name, "nagios watcher starting, prometheus integration disabled")
+		w.Infof("nagios watcher starting, prometheus integration disabled")
 	}
 
 	if w.interval != 0 {
@@ -339,11 +297,11 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	for {
 		select {
-		case <-w.statechg:
+		case <-w.StateChangeC():
 			w.performWatch(ctx)
 
 		case <-ctx.Done():
-			w.machine.Infof(w.name, "Stopping on context interrupt")
+			w.Infof("Stopping on context interrupt")
 			return
 		}
 	}
@@ -353,7 +311,7 @@ func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	splay := time.Duration(rand.Intn(int(w.interval.Seconds()))) * time.Second
-	w.machine.Infof(w.name, "Splaying first check by %v", splay)
+	w.Infof("Splaying first check by %v", splay)
 
 	select {
 	case <-time.NewTimer(splay).C:
@@ -380,7 +338,7 @@ func (w *Watcher) performWatch(ctx context.Context) {
 	state, err := w.watch(ctx)
 	err = w.handleCheck(start, state, false, err)
 	if err != nil {
-		w.machine.Errorf(w.name, "could not handle watcher event: %s", err)
+		w.Errorf("could not handle watcher event: %s", err)
 	}
 }
 
@@ -389,7 +347,7 @@ func (w *Watcher) handleCheck(start time.Time, s State, external bool, err error
 		return nil
 	}
 
-	w.machine.Debugf(w.name, "handling check for %s %s %v", w.plugin, stateNames[s], err)
+	w.Debugf("handling check for %s %s %v", w.properties.Plugin, stateNames[s], err)
 
 	w.Lock()
 	w.previous = s
@@ -403,21 +361,21 @@ func (w *Watcher) handleCheck(start time.Time, s State, external bool, err error
 
 	// dont notify if we are externally transitioning because probably notifications were already sent
 	if !external {
-		w.machine.NotifyWatcherState(w.name, w.CurrentState())
+		w.NotifyWatcherState(w.name, w.CurrentState())
 	}
 
-	w.machine.Debugf(w.name, "Notifying prometheus")
+	w.Debugf("Notifying prometheus")
 
-	err = updatePromState(w.machineName, s, w.textFileDir, w.machine)
+	err = updatePromState(w.machineName, s, w.textFileDir, w)
 	if err != nil {
-		w.machine.Errorf(w.name, "Could not update prometheus: %s", err)
+		w.Errorf("Could not update prometheus: %s", err)
 	}
 
 	if external {
 		return nil
 	}
 
-	return w.machine.Transition(stateNames[s])
+	return w.Transition(stateNames[s])
 }
 
 func (w *Watcher) processOverrides(c string) (string, error) {
@@ -458,22 +416,20 @@ func (w *Watcher) funcMap() template.FuncMap {
 }
 
 func (w *Watcher) watchUsingPlugin(ctx context.Context) (state State, output string, err error) {
-	timeoutCtx, cancel := context.WithTimeout(ctx, w.timeout)
+	timeoutCtx, cancel := context.WithTimeout(ctx, w.properties.Timeout)
 	defer cancel()
 
-	plugin, err := w.processOverrides(w.plugin)
+	plugin, err := w.processOverrides(w.properties.Plugin)
 	if err != nil {
-		w.machine.Errorf(w.name, "could not process overrides for plugin command: %s", err)
+		w.Errorf("could not process overrides for plugin command: %s", err)
 		return UNKNOWN, "", err
 	}
 
-	w.machine.Infof(w.name, "Running %s", w.plugin)
-
-	w.machine.Infof(w.name, "command post processing is: %s", plugin)
+	w.Infof("Running %s", w.properties.Plugin)
 
 	splitcmd, err := shlex.Split(plugin)
 	if err != nil {
-		w.machine.Errorf(w.name, "Exec watcher %s failed: %s", plugin, err)
+		w.Errorf("Exec watcher %s failed: %s", plugin, err)
 		return UNKNOWN, "", err
 	}
 
@@ -493,7 +449,7 @@ func (w *Watcher) watchUsingPlugin(ctx context.Context) (state State, output str
 		if ok {
 			pstate = eerr.ProcessState
 		} else {
-			w.machine.Errorf(w.name, "Exec watcher %s failed: %s", w.plugin, err)
+			w.Errorf("Exec watcher %s failed: %s", w.properties.Plugin, err)
 			w.previousOutput = err.Error()
 			return UNKNOWN, "", err
 		}
@@ -503,7 +459,7 @@ func (w *Watcher) watchUsingPlugin(ctx context.Context) (state State, output str
 
 	output = string(outb)
 
-	w.machine.Debugf(w.name, "Output from %s: %s", w.plugin, output)
+	w.Debugf("Output from %s: %s", w.properties.Plugin, output)
 
 	s, ok := intStates[pstate.ExitCode()]
 	if ok {
@@ -515,17 +471,17 @@ func (w *Watcher) watchUsingPlugin(ctx context.Context) (state State, output str
 
 func (w *Watcher) watchUsingBuiltin(_ context.Context) (state State, output string, err error) {
 	switch {
-	case w.builtin == "heartbeat":
+	case w.properties.Builtin == "heartbeat":
 		return w.builtinHeartbeat()
-	case strings.HasPrefix(w.builtin, "goss"):
+	case strings.HasPrefix(w.properties.Builtin, "goss"):
 		return w.watchUsingGoss()
 	default:
-		return UNKNOWN, "", fmt.Errorf("unsupported builtin %q", w.builtin)
+		return UNKNOWN, "", fmt.Errorf("unsupported builtin %q", w.properties.Builtin)
 	}
 }
 
 func (w *Watcher) watch(ctx context.Context) (state State, err error) {
-	if !w.shouldWatch() {
+	if !w.ShouldWatch() {
 		return SKIPPED, nil
 	}
 
@@ -540,9 +496,9 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	var output string
 
 	switch {
-	case w.plugin != "":
+	case w.properties.Plugin != "":
 		state, output, err = w.watchUsingPlugin(ctx)
-	case w.builtin != "":
+	case w.properties.Builtin != "":
 		state, output, err = w.watchUsingBuiltin(ctx)
 	default:
 		state = UNKNOWN
@@ -555,7 +511,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	return state, err
 }
 
-func (w *Watcher) shouldWatch() bool {
+func (w *Watcher) ShouldWatch() bool {
 	if w.force {
 		w.force = false
 		return true
@@ -563,19 +519,9 @@ func (w *Watcher) shouldWatch() bool {
 
 	since := time.Since(w.previousCheck)
 	if !w.previousCheck.IsZero() && since < w.interval-time.Second {
-		w.machine.Debugf(w.name, "Skipping check due to previous check being %v sooner than interval %v", since, w.interval)
+		w.Debugf("Skipping check due to previous check being %v sooner than interval %v", since, w.interval)
 		return false
 	}
 
-	if len(w.states) == 0 {
-		return true
-	}
-
-	for _, e := range w.states {
-		if e == w.machine.State() {
-			return true
-		}
-	}
-
-	return false
+	return w.Watcher.ShouldWatch()
 }

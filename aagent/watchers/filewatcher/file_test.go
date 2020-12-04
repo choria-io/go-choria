@@ -8,6 +8,8 @@ import (
 	gomock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 )
 
 func Test(t *testing.T) {
@@ -16,54 +18,63 @@ func Test(t *testing.T) {
 }
 
 var _ = Describe("ExecWatcher", func() {
+	var (
+		mockctl     *gomock.Controller
+		mockMachine *watcher.MockMachine
+		watch       *Watcher
+		now         time.Time
+	)
+
+	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+		mockMachine = watcher.NewMockMachine(mockctl)
+
+		mockMachine.EXPECT().Name().Return("file").AnyTimes()
+		mockMachine.EXPECT().Identity().Return("ginkgo").AnyTimes()
+		mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
+		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
+		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
+
+		now = time.Unix(1606924953, 0)
+		w, err := watcher.NewWatcher("file", "file", time.Second, []string{"always"}, mockMachine, "fail", "success")
+		Expect(err).ToNot(HaveOccurred())
+
+		watch = &Watcher{
+			Watcher: w,
+			properties: &Properties{
+				Path: "/bin/sh",
+			},
+			previous: Changed,
+			machine:  mockMachine,
+			name:     "ginkgo",
+		}
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
+	})
+
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
-			w := &Watcher{}
-
 			prop := map[string]interface{}{
 				"path":                 "cmd",
 				"gather_initial_state": "t",
 			}
-			Expect(w.setProperties(prop)).ToNot(HaveOccurred())
-			Expect(w.path).To(Equal("cmd"))
-			Expect(w.initial).To(BeTrue())
+			Expect(watch.setProperties(prop)).ToNot(HaveOccurred())
+			Expect(watch.properties.Path).To(Equal("cmd"))
+			Expect(watch.properties.Initial).To(BeTrue())
 		})
 
 		It("Should handle errors", func() {
-			w := &Watcher{}
-			err := w.setProperties(map[string]interface{}{})
+			watch.properties = &Properties{}
+			err := watch.setProperties(map[string]interface{}{})
 			Expect(err).To(MatchError("path is required"))
 		})
 	})
 
 	Describe("CurrentState", func() {
-		var (
-			mockctl     *gomock.Controller
-			mockMachine *MockMachine
-			watcher     *Watcher
-			now         time.Time
-		)
-
-		BeforeEach(func() {
-			mockctl = gomock.NewController(GinkgoT())
-			mockMachine = NewMockMachine(mockctl)
-
-			now = time.Unix(1606924953, 0)
-			mockMachine.EXPECT().Name().Return("file").AnyTimes()
-			mockMachine.EXPECT().Identity().Return("ginkgo").AnyTimes()
-			mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
-			mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
-			mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
-
-			watcher = &Watcher{path: "/bin/sh", previous: Changed, machine: mockMachine, name: "ginkgo"}
-		})
-
-		AfterEach(func() {
-			mockctl.Finish()
-		})
-
 		It("Should be a valid state", func() {
-			cs := watcher.CurrentState()
+			cs := watch.CurrentState()
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
 

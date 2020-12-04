@@ -14,23 +14,8 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 )
-
-type Machine interface {
-	State() string
-	Name() string
-	Directory() string
-	Identity() string
-	InstanceID() string
-	Version() string
-	TimeStampSeconds() int64
-	NotifyWatcherState(string, interface{})
-	TextFileDirectory() string
-	Transition(t string, args ...interface{}) error
-	Debugf(name string, format string, args ...interface{})
-	Infof(name string, format string, args ...interface{})
-	Errorf(name string, format string, args ...interface{})
-}
 
 type Metric struct {
 	Labels  map[string]string  `json:"labels"`
@@ -40,80 +25,60 @@ type Metric struct {
 	seen    int
 }
 
+type properties struct {
+	Command  string
+	Interval time.Duration
+}
+
 type Watcher struct {
-	name             string
-	states           []string
-	machine          Machine
-	announceInterval time.Duration
-	failEvent        string
-	command          string        `mapstructure:"command"`
-	checkInterval    time.Duration `mapstructure:"interval"`
-	previousRunTime  time.Duration
-	previousResult   *Metric
-	statechg         chan struct{}
+	*watcher.Watcher
+
+	name            string
+	machine         watcher.Machine
+	previousRunTime time.Duration
+	previousResult  *Metric
+	properties      *properties
 
 	sync.Mutex
 }
 
-func New(machine Machine, name string, states []string, failEvent string, successEvent string, ai time.Duration, properties map[string]interface{}) (watcher *Watcher, err error) {
+func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, ai time.Duration, rawprops map[string]interface{}) (*Watcher, error) {
+	var err error
+
 	w := &Watcher{
-		name:             name,
-		states:           states,
-		machine:          machine,
-		announceInterval: ai,
-		failEvent:        failEvent,
-		checkInterval:    time.Minute,
-		statechg:         make(chan struct{}),
+		name:    name,
+		machine: machine,
 	}
 
-	err = w.setProperties(properties)
+	w.Watcher, err = watcher.NewWatcher(name, "metric", ai, states, machine, failEvent, successEvent)
+	if err != nil {
+		return nil, err
+	}
+
+	err = w.setProperties(rawprops)
 	if err != nil {
 		return nil, fmt.Errorf("could not set properties: %s", err)
 	}
 
-	savePromState(machine.TextFileDirectory(), machine)
+	savePromState(machine.TextFileDirectory(), w)
 
 	return w, nil
 }
 
 func (w *Watcher) Delete() {
-	err := deletePromState(w.machine.TextFileDirectory(), w.machine, w.machine.Name(), w.name)
+	err := deletePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name)
 	if err != nil {
-		w.machine.Errorf(w.name, "could not delete from prometheus: %s", err)
-	}
-}
-
-func (w *Watcher) Type() string {
-	return "metric"
-}
-
-func (w *Watcher) AnnounceInterval() time.Duration {
-	w.Lock()
-	defer w.Unlock()
-
-	return w.announceInterval
-}
-
-func (w *Watcher) Name() string {
-	return w.name
-}
-
-func (w *Watcher) NotifyStateChance() {
-	w.Lock()
-	defer w.Unlock()
-
-	if len(w.statechg) < cap(w.statechg) {
-		w.statechg <- struct{}{}
+		w.Errorf("could not delete from prometheus: %s", err)
 	}
 }
 
 func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	w.machine.Infof(w.name, "metric watcher for %s starting", w.command)
+	w.Infof("metric watcher for %s starting", w.properties.Command)
 
-	splay := time.Duration(rand.Intn(int(w.checkInterval.Seconds()))) * time.Second
-	w.machine.Infof(w.name, "Splaying first check by %v", splay)
+	splay := time.Duration(rand.Intn(int(w.properties.Interval.Seconds()))) * time.Second
+	w.Infof("Splaying first check by %v", splay)
 
 	select {
 	case <-time.NewTimer(splay).C:
@@ -122,18 +87,18 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 		return
 	}
 
-	tick := time.NewTicker(w.checkInterval)
+	tick := time.NewTicker(w.properties.Interval)
 
 	for {
 		select {
 		case <-tick.C:
 			w.performWatch(ctx)
 
-		case <-w.statechg:
+		case <-w.StateChangeC():
 			w.performWatch(ctx)
 
 		case <-ctx.Done():
-			w.machine.Infof(w.name, "Stopping on context interrupt")
+			w.Infof("Stopping on context interrupt")
 			tick.Stop()
 			return
 		}
@@ -141,7 +106,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (w *Watcher) watch(ctx context.Context) (state []byte, err error) {
-	if !w.shouldWatch() {
+	if !w.ShouldWatch() {
 		return nil, nil
 	}
 
@@ -152,14 +117,14 @@ func (w *Watcher) watch(ctx context.Context) (state []byte, err error) {
 		w.Unlock()
 	}()
 
-	w.machine.Infof(w.name, "Running %s", w.command)
+	w.Infof("Running %s", w.properties.Command)
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 
-	splitcmd, err := shlex.Split(w.command)
+	splitcmd, err := shlex.Split(w.properties.Command)
 	if err != nil {
-		w.machine.Errorf(w.name, "Metric watcher %s failed: %s", w.command, err)
+		w.Errorf("Metric watcher %s failed: %s", w.properties.Command, err)
 		return nil, err
 	}
 
@@ -171,34 +136,20 @@ func (w *Watcher) watch(ctx context.Context) (state []byte, err error) {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		w.machine.Errorf(w.name, "Metric watcher %s failed: %s", w.command, err)
+		w.Errorf("Metric watcher %s failed: %s", w.properties.Command, err)
 		return nil, err
 	}
 
-	w.machine.Debugf(w.name, "Output from %s: %s", w.command, output)
+	w.Debugf("Output from %s: %s", w.properties.Command, output)
 
 	return output, nil
-}
-
-func (w *Watcher) shouldWatch() bool {
-	if len(w.states) == 0 {
-		return true
-	}
-
-	for _, e := range w.states {
-		if e == w.machine.State() {
-			return true
-		}
-	}
-
-	return false
 }
 
 func (w *Watcher) performWatch(ctx context.Context) {
 	metric, err := w.watch(ctx)
 	err = w.handleCheck(metric, err)
 	if err != nil {
-		w.machine.Errorf(w.name, "could not handle watcher event: %s", err)
+		w.Errorf("could not handle watcher event: %s", err)
 	}
 }
 
@@ -210,20 +161,21 @@ func (w *Watcher) handleCheck(output []byte, err error) error {
 	}
 
 	if err != nil {
-		w.machine.NotifyWatcherState(w.name, w.CurrentState())
-		return w.machine.Transition(w.failEvent)
+		w.NotifyWatcherState(w.name, w.CurrentState())
+		return w.Transition(w.FailEvent())
 	}
 
-	err = updatePromState(w.machine.TextFileDirectory(), w.machine, w.machine.Name(), w.name, metric)
+	err = updatePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name, metric)
 	if err != nil {
-		w.machine.Errorf(w.name, "Could not update prometheus: %s", err)
+		w.Errorf("Could not update prometheus: %s", err)
 	}
 
 	w.Lock()
 	w.previousResult = metric
 	w.Unlock()
 
-	w.machine.NotifyWatcherState(w.name, w.CurrentState())
+	w.NotifyWatcherState(w.name, w.CurrentState())
+
 	return nil
 }
 
@@ -244,16 +196,7 @@ func (w *Watcher) CurrentState() interface{} {
 	res.Metrics["choria_runtime_seconds"] = w.previousRunTime.Seconds()
 
 	s := &StateNotification{
-		Event: event.Event{
-			Protocol:  "io.choria.machine.watcher.metric.v1.state",
-			Type:      "metric",
-			Name:      w.name,
-			Identity:  w.machine.Identity(),
-			ID:        w.machine.InstanceID(),
-			Version:   w.machine.Version(),
-			Timestamp: w.machine.TimeStampSeconds(),
-			Machine:   w.machine.Name(),
-		},
+		Event:   event.New(w.name, "metric", "v1", w.machine),
 		Metrics: res,
 	}
 
@@ -261,30 +204,26 @@ func (w *Watcher) CurrentState() interface{} {
 }
 
 func (w *Watcher) validate() error {
-	if w.command == "" {
+	if w.properties.Command == "" {
 		return fmt.Errorf("command is required")
 	}
 
-	if w.checkInterval < time.Second {
-		w.checkInterval = time.Second
+	if w.properties.Interval < time.Second {
+		w.properties.Interval = time.Second
 	}
 
 	return nil
 }
 
 func (w *Watcher) setProperties(props map[string]interface{}) error {
-	var properties struct {
-		Command  string
-		Interval time.Duration
+	if w.properties == nil {
+		w.properties = &properties{}
 	}
 
-	err := util.ParseMapStructure(props, &properties)
+	err := util.ParseMapStructure(props, w.properties)
 	if err != nil {
 		return err
 	}
-
-	w.command = properties.Command
-	w.checkInterval = properties.Interval
 
 	return w.validate()
 }

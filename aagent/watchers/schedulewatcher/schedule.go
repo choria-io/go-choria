@@ -8,6 +8,7 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 )
 
 type State int
@@ -26,31 +27,17 @@ var stateNames = map[State]string{
 	Skipped: "skipped",
 }
 
-type Machine interface {
-	State() string
-	Name() string
-	Identity() string
-	InstanceID() string
-	Version() string
-	TimeStampSeconds() int64
-	Transition(t string, args ...interface{}) error
-	NotifyWatcherState(string, interface{})
-	Debugf(name string, format string, args ...interface{})
-	Infof(name string, format string, args ...interface{})
-	Errorf(name string, format string, args ...interface{})
+type properties struct {
+	Duration  time.Duration
+	Schedules []string
 }
 
 type Watcher struct {
-	name             string
-	states           []string
-	failEvent        string
-	successEvent     string
-	machine          Machine
-	duration         time.Duration
-	announceInterval time.Duration
-	schedules        []string
-	items            []*scheduleItem
-	statechg         chan struct{}
+	*watcher.Watcher
+	properties *properties
+	name       string
+	machine    watcher.Machine
+	items      []*scheduleItem
 
 	// each item sends a 1 or -1 into this to increment or decrement the counter
 	// when the ctr is > 0 the switch should be on, this handles multiple schedules
@@ -64,17 +51,19 @@ type Watcher struct {
 	sync.Mutex
 }
 
-func New(machine Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (watcher *Watcher, err error) {
+func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (*Watcher, error) {
+	var err error
+
 	w := &Watcher{
-		name:             name,
-		successEvent:     successEvent,
-		failEvent:        failEvent,
-		states:           states,
-		machine:          machine,
-		announceInterval: ai,
-		statechg:         make(chan struct{}, 1),
-		ctrq:             make(chan int, 1),
-		ctr:              0,
+		name:    name,
+		machine: machine,
+		ctrq:    make(chan int, 1),
+		ctr:     0,
+	}
+
+	w.Watcher, err = watcher.NewWatcher(name, "schedule", ai, states, machine, failEvent, successEvent)
+	if err != nil {
+		return nil, err
 	}
 
 	err = w.setProperties(properties)
@@ -85,29 +74,27 @@ func New(machine Machine, name string, states []string, failEvent string, succes
 	return w, nil
 }
 
-func (w *Watcher) Delete() {}
-
 func (w *Watcher) watchSchedule(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for {
 		select {
 		case i := <-w.ctrq:
-			w.machine.Infof(w.name, "Handling state change counter %v while ctr=%v", i, w.ctr)
+			w.Infof("Handling state change counter %v while ctr=%v", i, w.ctr)
 			w.Lock()
 
 			w.ctr = w.ctr + i
 
-			// shouldnt happen but lets handle it
+			// shouldn't happen but lets handle it
 			if w.ctr < 0 {
 				w.ctr = 0
 			}
 
 			if w.ctr == 0 {
-				w.machine.Infof(w.name, "State going off due to ctr change to 0")
+				w.Infof("State going off due to ctr change to 0")
 				w.state = Off
 			} else {
-				w.machine.Infof(w.name, "State going on due to ctr change of %v", i)
+				w.Infof("State going on due to ctr change of %v", i)
 				w.state = On
 			}
 
@@ -127,7 +114,7 @@ func (w *Watcher) setPreviousState(s State) {
 }
 
 func (w *Watcher) watch() (err error) {
-	if !w.shouldCheck() {
+	if !w.ShouldWatch() {
 		w.setPreviousState(Skipped)
 		return nil
 	}
@@ -137,13 +124,13 @@ func (w *Watcher) watch() (err error) {
 
 		switch w.state {
 		case Off, Unknown:
-			w.machine.NotifyWatcherState(w.name, w.CurrentState())
-			return w.machine.Transition(w.failEvent)
+			w.NotifyWatcherState(w.name, w.CurrentState())
+			return w.Transition(w.FailEvent())
 
 		case On:
 			w.setPreviousState(w.state)
-			w.machine.NotifyWatcherState(w.name, w.CurrentState())
-			return w.machine.Transition(w.successEvent)
+			w.NotifyWatcherState(w.name, w.CurrentState())
+			return w.Transition(w.SuccessEvent())
 
 		case Skipped:
 			// not doing anything when we aren't eligible, regular announces happen
@@ -170,7 +157,7 @@ func (w *Watcher) watch() (err error) {
 func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	w.machine.Infof(w.name, "schedule watcher starting with %d items", len(w.items))
+	w.Infof("schedule watcher starting with %d items", len(w.items))
 
 	tick := time.NewTicker(500 * time.Millisecond)
 
@@ -187,61 +174,29 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 		case <-tick.C:
 			err := w.watch()
 			if err != nil {
-				w.machine.Errorf(w.name, "Could not handle current scheduler state: %s", err)
+				w.Errorf("Could not handle current scheduler state: %s", err)
 			}
 
-		case <-w.statechg:
+		case <-w.StateChangeC():
 			err := w.watch()
 			if err != nil {
-				w.machine.Errorf(w.name, "Could not handle current scheduler state: %s", err)
+				w.Errorf("Could not handle current scheduler state: %s", err)
 			}
 
 		case <-ctx.Done():
 			tick.Stop()
-			w.machine.Infof(w.name, "Stopping on context interrupt")
+			w.Infof("Stopping on context interrupt")
 			return
 		}
 	}
 }
 
-func (w *Watcher) Type() string {
-	return "schedule"
-}
-
-func (w *Watcher) AnnounceInterval() time.Duration {
-	return w.announceInterval
-}
-
-func (w *Watcher) Name() string {
-	return w.name
-}
-
-func (w *Watcher) shouldCheck() bool {
-	if len(w.states) == 0 {
-		return true
-	}
-
-	for _, e := range w.states {
-		if e == w.machine.State() {
-			return true
-		}
-	}
-
-	return false
-}
-
-func (w *Watcher) NotifyStateChance() {
-	if len(w.statechg) < cap(w.statechg) {
-		w.statechg <- struct{}{}
-	}
-}
-
 func (w *Watcher) validate() error {
-	if w.duration < time.Second {
-		w.duration = time.Minute
+	if w.properties.Duration < time.Second {
+		w.properties.Duration = time.Minute
 	}
 
-	if len(w.schedules) == 0 {
+	if len(w.properties.Schedules) == 0 {
 		return fmt.Errorf("no schedules defined")
 	}
 
@@ -249,20 +204,16 @@ func (w *Watcher) validate() error {
 }
 
 func (w *Watcher) setProperties(props map[string]interface{}) error {
-	var properties struct {
-		Duration  time.Duration
-		Schedules []string
+	if w.properties == nil {
+		w.properties = &properties{}
 	}
 
-	err := util.ParseMapStructure(props, &properties)
+	err := util.ParseMapStructure(props, w.properties)
 	if err != nil {
 		return err
 	}
 
-	w.duration = properties.Duration
-	w.schedules = properties.Schedules
-
-	for _, spec := range w.schedules {
+	for _, spec := range w.properties.Schedules {
 		item, err := newSchedItem(spec, w)
 		if err != nil {
 			return fmt.Errorf("could not parse '%s': %s", spec, err)
@@ -279,16 +230,7 @@ func (w *Watcher) CurrentState() interface{} {
 	defer w.Unlock()
 
 	s := &StateNotification{
-		Event: event.Event{
-			Protocol:  "io.choria.machine.watcher.schedule.v1.state",
-			Type:      w.Type(),
-			Name:      w.name,
-			Identity:  w.machine.Identity(),
-			ID:        w.machine.InstanceID(),
-			Version:   w.machine.Version(),
-			Timestamp: w.machine.TimeStampSeconds(),
-			Machine:   w.machine.Name(),
-		},
+		Event: event.New(w.name, "schedule", "v1", w.machine),
 		State: stateNames[w.state],
 	}
 
