@@ -28,6 +28,7 @@ type Metric struct {
 type properties struct {
 	Command  string
 	Interval time.Duration
+	Labels   map[string]string
 }
 
 type Watcher struct {
@@ -160,6 +161,10 @@ func (w *Watcher) handleCheck(output []byte, err error) error {
 		err = json.Unmarshal(output, metric)
 	}
 
+	for k, v := range w.properties.Labels {
+		metric.Labels[k] = v
+	}
+
 	if err != nil {
 		w.NotifyWatcherState(w.name, w.CurrentState())
 		return w.Transition(w.FailEvent())
@@ -217,7 +222,9 @@ func (w *Watcher) validate() error {
 
 func (w *Watcher) setProperties(props map[string]interface{}) error {
 	if w.properties == nil {
-		w.properties = &properties{}
+		w.properties = &properties{
+			Labels: make(map[string]string),
+		}
 	}
 
 	err := util.ParseMapStructure(props, w.properties)
