@@ -133,9 +133,10 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 				w.Errorf("Could not handle button %s press: %v", stateNames[e], err)
 			}
 
-		// rpc initiated state changes wold trigger this
+		// rpc initiated state changes would trigger this
 		case <-w.Watcher.StateChangeC():
 			mstate := w.machine.State()
+
 			switch {
 			case w.shouldBeOn(mstate):
 				w.ensureStarted()
@@ -347,10 +348,15 @@ func (w *Watcher) setProperties(props map[string]interface{}) error {
 		return err
 	}
 
-	if w.properties.Initial {
+	_, set := props["initial"]
+	switch {
+	case !set:
+		w.properties.InitialState = Unknown
+	case w.properties.Initial:
 		w.properties.InitialState = On
-	} else {
+	default:
 		w.properties.InitialState = Off
+
 	}
 
 	return w.validate()

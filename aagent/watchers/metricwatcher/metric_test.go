@@ -70,7 +70,10 @@ var _ = Describe("MetricWatcher", func() {
 
 			handled := false
 			mockMachine.EXPECT().NotifyWatcherState("ginkgo", gomock.Any()).Do(func(_ string, m *StateNotification) {
-				Expect(m.Metrics.Labels).To(Equal(map[string]string{"dupe": "w", "unique": "u"}))
+				Expect(m.Metrics.Labels).To(Equal(map[string]string{
+					"dupe":   "w",
+					"unique": "u",
+				}))
 				Expect(m.Metrics.Metrics["v1"]).To(Equal(float64(1)))
 				Expect(m.Metrics.Metrics["v2"]).To(Equal(1.1))
 				Expect(m.Metrics.Metrics["choria_runtime_seconds"]).To(BeNumerically(">", 0))

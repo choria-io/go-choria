@@ -69,7 +69,7 @@ var _ = Describe("HomekitWatcher", func() {
 		It("Should handle initial correctly", func() {
 			watch.properties = &properties{Path: "/bin/sh"}
 			Expect(watch.setProperties(map[string]interface{}{})).ToNot(HaveOccurred())
-			Expect(watch.properties.InitialState).To(Equal(Off))
+			Expect(watch.properties.InitialState).To(Equal(Unknown))
 
 			watch.properties = &properties{Path: "/bin/sh"}
 			Expect(watch.setProperties(map[string]interface{}{"initial": "true"})).ToNot(HaveOccurred())
