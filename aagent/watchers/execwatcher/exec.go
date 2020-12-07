@@ -96,6 +96,10 @@ func (w *Watcher) validate() error {
 	return nil
 }
 func (w *Watcher) setProperties(props map[string]interface{}) error {
+	if w.properties == nil {
+		w.properties = &Properties{Environment: []string{}}
+	}
+
 	err := util.ParseMapStructure(props, w.properties)
 	if err != nil {
 		return err

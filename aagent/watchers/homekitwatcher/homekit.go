@@ -343,6 +343,14 @@ func (w *Watcher) validate() error {
 }
 
 func (w *Watcher) setProperties(props map[string]interface{}) error {
+	if w.properties == nil {
+		w.properties = &properties{
+			ShouldDisable: []string{},
+			ShouldOff:     []string{},
+			ShouldOn:      []string{},
+		}
+	}
+
 	err := util.ParseMapStructure(props, w.properties)
 	if err != nil {
 		return err
