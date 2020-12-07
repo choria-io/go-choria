@@ -155,7 +155,10 @@ func (w *Watcher) performWatch(ctx context.Context) {
 }
 
 func (w *Watcher) handleCheck(output []byte, err error) error {
-	metric := &Metric{Labels: map[string]string{}}
+	metric := &Metric{
+		Labels:  map[string]string{},
+		Metrics: map[string]float64{},
+	}
 
 	if err == nil {
 		err = json.Unmarshal(output, metric)
