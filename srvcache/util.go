@@ -36,7 +36,15 @@ func StringHostsToServers(hosts []string, scheme string) (servers Servers, err e
 
 		port, err := strconv.Atoi(sport)
 		if err != nil {
-			return servers, fmt.Errorf("could not host port %s: %s", s, err)
+			return servers, fmt.Errorf("could not parse host port %s: %s", s, err)
+		}
+
+		if port < 0 {
+			return servers, fmt.Errorf("could not parse host port %s: negative port number", s)
+		}
+
+		if port > 65535 {
+			return servers, fmt.Errorf("could not parse host port %s: exceeds 65535", s)
 		}
 
 		server := &BasicServer{
