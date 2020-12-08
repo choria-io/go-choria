@@ -36,19 +36,12 @@ var _ = Describe("ExecWatcher", func() {
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
 
 		now = time.Unix(1606924953, 0)
-		w, err := watcher.NewWatcher("exec", "exec", time.Second, []string{"always"}, mockMachine, "fail", "success")
-		Expect(err).ToNot(HaveOccurred())
 
-		watch = &Watcher{
-			Watcher: w,
-			machine: mockMachine,
-			properties: &Properties{
-				Environment: []string{},
-			},
-			previous:        Success,
-			previousRunTime: time.Second,
-			name:            "ginkgo",
-		}
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]interface{}{
+			"command": "foo",
+		})
+		Expect(err).ToNot(HaveOccurred())
+		watch = wi.(*Watcher)
 	})
 
 	AfterEach(func() {
@@ -71,6 +64,7 @@ var _ = Describe("ExecWatcher", func() {
 		})
 
 		It("Should handle errors", func() {
+			watch.properties = nil
 			err := watch.setProperties(map[string]interface{}{})
 			Expect(err).To(MatchError("command is required"))
 		})
@@ -89,6 +83,8 @@ var _ = Describe("ExecWatcher", func() {
 	Describe("CurrentState", func() {
 		It("Should be a valid state", func() {
 			watch.properties.Command = "/bin/sh"
+			watch.previous = Success
+			watch.previousRunTime = time.Second
 
 			cs := watch.CurrentState()
 			csj, err := cs.(*StateNotification).JSON()

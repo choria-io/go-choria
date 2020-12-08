@@ -22,6 +22,9 @@ const (
 	Skipped
 	Error
 	Success
+
+	wtype   = "exec"
+	version = "v1"
 )
 
 var stateNames = map[State]string{
@@ -47,41 +50,44 @@ type Watcher struct {
 	interval        time.Duration
 	previousRunTime time.Duration
 	properties      *Properties
+
+	mu *sync.Mutex
 }
 
-func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]interface{}) (*Watcher, error) {
+func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]interface{}) (interface{}, error) {
 	var err error
 
-	w := &Watcher{
+	exec := &Watcher{
 		machine: machine,
 		name:    name,
+		mu:      &sync.Mutex{},
 		properties: &Properties{
 			Environment: []string{},
 		},
 	}
 
-	w.Watcher, err = watcher.NewWatcher(name, "exec", ai, states, machine, failEvent, successEvent)
+	exec.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
 
-	err = w.setProperties(rawprop)
+	err = exec.setProperties(rawprop)
 	if err != nil {
 		return nil, fmt.Errorf("could not set properties: %v", err)
 	}
 
 	if interval != "" {
-		w.interval, err = time.ParseDuration(interval)
+		exec.interval, err = time.ParseDuration(interval)
 		if err != nil {
 			return nil, fmt.Errorf("invalid interval: %v", err)
 		}
 
-		if w.interval < 500*time.Millisecond {
-			return nil, fmt.Errorf("interval %v is too small", w.interval)
+		if exec.interval < 500*time.Millisecond {
+			return nil, fmt.Errorf("interval %v is too small", exec.interval)
 		}
 	}
 
-	return w, nil
+	return exec, nil
 }
 
 func (w *Watcher) validate() error {
@@ -158,32 +164,32 @@ func (w *Watcher) performWatch(ctx context.Context) {
 func (w *Watcher) handleCheck(s State, err error) error {
 	w.Debugf("handling check for %s %s %v", w.properties.Command, stateNames[s], err)
 
-	w.Lock()
+	w.mu.Lock()
 	w.previous = s
-	w.Unlock()
+	w.mu.Unlock()
 
 	switch s {
 	case Error:
-		w.NotifyWatcherState(w.name, w.CurrentState())
-		return w.Transition(w.Watcher.FailEvent())
+		w.NotifyWatcherState(w.CurrentState())
+		return w.FailureTransition()
 
 	case Success:
 		if !w.properties.SuppressSuccessAnnounce {
-			w.NotifyWatcherState(w.name, w.CurrentState())
+			w.NotifyWatcherState(w.CurrentState())
 		}
 
-		return w.Transition(w.Watcher.SuccessEvent())
+		return w.SuccessTransition()
 	}
 
 	return nil
 }
 
 func (w *Watcher) CurrentState() interface{} {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	s := &StateNotification{
-		Event:           event.New(w.name, "exec", "v1", w.machine),
+		Event:           event.New(w.name, wtype, version, w.machine),
 		Command:         w.properties.Command,
 		PreviousOutcome: stateNames[w.previous],
 		PreviousRunTime: w.previousRunTime.Nanoseconds(),
@@ -199,9 +205,9 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 
 	start := time.Now()
 	defer func() {
-		w.Lock()
+		w.mu.Lock()
 		w.previousRunTime = time.Since(start)
-		w.Unlock()
+		w.mu.Unlock()
 	}()
 
 	w.Infof("Running %s", w.properties.Command)

@@ -18,6 +18,9 @@ const (
 	Off
 	On
 	Skipped
+
+	wtype   = "schedule"
+	version = "v1"
 )
 
 var stateNames = map[State]string{
@@ -48,30 +51,31 @@ type Watcher struct {
 	state         State
 	previousState State
 
-	sync.Mutex
+	mu *sync.Mutex
 }
 
-func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (*Watcher, error) {
+func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error) {
 	var err error
 
-	w := &Watcher{
+	sw := &Watcher{
 		name:    name,
 		machine: machine,
 		ctrq:    make(chan int, 1),
 		ctr:     0,
+		mu:      &sync.Mutex{},
 	}
 
-	w.Watcher, err = watcher.NewWatcher(name, "schedule", ai, states, machine, failEvent, successEvent)
+	sw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
 
-	err = w.setProperties(properties)
+	err = sw.setProperties(properties)
 	if err != nil {
 		return nil, fmt.Errorf("could not set properties: %s", err)
 	}
 
-	return w, nil
+	return sw, nil
 }
 
 func (w *Watcher) watchSchedule(ctx context.Context, wg *sync.WaitGroup) {
@@ -81,7 +85,7 @@ func (w *Watcher) watchSchedule(ctx context.Context, wg *sync.WaitGroup) {
 		select {
 		case i := <-w.ctrq:
 			w.Infof("Handling state change counter %v while ctr=%v", i, w.ctr)
-			w.Lock()
+			w.mu.Lock()
 
 			w.ctr = w.ctr + i
 
@@ -98,7 +102,7 @@ func (w *Watcher) watchSchedule(ctx context.Context, wg *sync.WaitGroup) {
 				w.state = On
 			}
 
-			w.Unlock()
+			w.mu.Unlock()
 
 		case <-ctx.Done():
 			return
@@ -107,35 +111,16 @@ func (w *Watcher) watchSchedule(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (w *Watcher) setPreviousState(s State) {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	w.previousState = s
 }
 
 func (w *Watcher) watch() (err error) {
 	if !w.ShouldWatch() {
+		w.Infof("Skipping scheduled watch while in machine state %q", w.machine.State())
 		w.setPreviousState(Skipped)
-		return nil
-	}
-
-	notifyf := func() error {
-		w.setPreviousState(w.state)
-
-		switch w.state {
-		case Off, Unknown:
-			w.NotifyWatcherState(w.name, w.CurrentState())
-			return w.Transition(w.FailEvent())
-
-		case On:
-			w.setPreviousState(w.state)
-			w.NotifyWatcherState(w.name, w.CurrentState())
-			return w.Transition(w.SuccessEvent())
-
-		case Skipped:
-			// not doing anything when we aren't eligible, regular announces happen
-
-		}
 
 		return nil
 	}
@@ -145,21 +130,30 @@ func (w *Watcher) watch() (err error) {
 		return nil
 	}
 
-	// previously skipped this means it should have become viable via state matchers
-	// since last check so we need to fire triggers
-	if w.previousState == Skipped {
-		return notifyf()
+	w.setPreviousState(w.state)
+
+	switch w.state {
+	case Off, Unknown:
+		w.NotifyWatcherState(w.CurrentState())
+		return w.FailureTransition()
+
+	case On:
+		w.setPreviousState(w.state)
+		w.NotifyWatcherState(w.CurrentState())
+		return w.SuccessTransition()
+
+	case Skipped:
+		// not doing anything when we aren't eligible, regular announces happen
+
 	}
 
-	return notifyf()
+	return nil
 }
 
 func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	w.Infof("schedule watcher starting with %d items", len(w.items))
-
-	tick := time.NewTicker(500 * time.Millisecond)
 
 	wg.Add(1)
 	go w.watchSchedule(ctx, wg)
@@ -168,6 +162,8 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 		wg.Add(1)
 		go item.start(ctx, wg)
 	}
+
+	tick := time.NewTicker(500 * time.Millisecond)
 
 	for {
 		select {
@@ -228,11 +224,11 @@ func (w *Watcher) setProperties(props map[string]interface{}) error {
 }
 
 func (w *Watcher) CurrentState() interface{} {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	s := &StateNotification{
-		Event: event.New(w.name, "schedule", "v1", w.machine),
+		Event: event.New(w.name, wtype, version, w.machine),
 		State: stateNames[w.state],
 	}
 

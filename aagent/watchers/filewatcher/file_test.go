@@ -2,10 +2,11 @@ package filewatcher
 
 import (
 	"encoding/json"
+	"path/filepath"
 	"testing"
 	"time"
 
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -34,20 +35,15 @@ var _ = Describe("ExecWatcher", func() {
 		mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
 		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
+		mockMachine.EXPECT().Directory().Return(".").AnyTimes()
 
 		now = time.Unix(1606924953, 0)
-		w, err := watcher.NewWatcher("file", "file", time.Second, []string{"always"}, mockMachine, "fail", "success")
-		Expect(err).ToNot(HaveOccurred())
 
-		watch = &Watcher{
-			Watcher: w,
-			properties: &Properties{
-				Path: "/bin/sh",
-			},
-			previous: Changed,
-			machine:  mockMachine,
-			name:     "ginkgo",
-		}
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]interface{}{
+			"path": filepath.Join("bin", "sh"),
+		})
+		Expect(err).ToNot(HaveOccurred())
+		watch = wi.(*Watcher)
 	})
 
 	AfterEach(func() {
@@ -74,6 +70,7 @@ var _ = Describe("ExecWatcher", func() {
 
 	Describe("CurrentState", func() {
 		It("Should be a valid state", func() {
+			watch.previous = Changed
 			cs := watch.CurrentState()
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
@@ -99,7 +96,7 @@ var _ = Describe("ExecWatcher", func() {
 					"version":          "1.0.0",
 					"timestamp":        float64(now.Unix()),
 					"previous_outcome": "changed",
-					"path":             "/bin/sh",
+					"path":             filepath.Join("bin", "sh"),
 				},
 			}))
 		})

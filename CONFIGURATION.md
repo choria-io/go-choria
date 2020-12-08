@@ -66,23 +66,23 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|[plugin.choria.use_srv](#pluginchoriause_srv)|
 |[plugin.nats.credentials](#pluginnatscredentials)|[plugin.nats.ngs](#pluginnatsngs)|
 |[plugin.nats.pass](#pluginnatspass)|[plugin.nats.user](#pluginnatsuser)|
-|[plugin.scout.overrides](#pluginscoutoverrides)|[plugin.scout.tags](#pluginscouttags)|
-|[plugin.security.always_overwrite_cache](#pluginsecurityalways_overwrite_cache)|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|
-|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|
-|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|
-|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|
-|[plugin.security.file.ca](#pluginsecurityfileca)|[plugin.security.file.cache](#pluginsecurityfilecache)|
-|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|[plugin.security.file.key](#pluginsecurityfilekey)|
-|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|
-|[plugin.security.provider](#pluginsecurityprovider)|[plugin.yaml](#pluginyaml)|
-|[publish_timeout](#publish_timeout)|[registerinterval](#registerinterval)|
-|[registration](#registration)|[registration_collective](#registration_collective)|
-|[registration_splay](#registration_splay)|[rpcaudit](#rpcaudit)|
-|[rpcauditprovider](#rpcauditprovider)|[rpcauthorization](#rpcauthorization)|
-|[rpcauthprovider](#rpcauthprovider)|[rpclimitmethod](#rpclimitmethod)|
-|[securityprovider](#securityprovider)|[soft_shutdown](#soft_shutdown)|
-|[soft_shutdown_timeout](#soft_shutdown_timeout)|[threaded](#threaded)|
-|[ttl](#ttl)|[](#)|
+|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|[plugin.scout.overrides](#pluginscoutoverrides)|
+|[plugin.scout.tags](#pluginscouttags)|[plugin.security.always_overwrite_cache](#pluginsecurityalways_overwrite_cache)|
+|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|
+|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|
+|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|
+|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|[plugin.security.file.ca](#pluginsecurityfileca)|
+|[plugin.security.file.cache](#pluginsecurityfilecache)|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|
+|[plugin.security.file.key](#pluginsecurityfilekey)|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|
+|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|[plugin.security.provider](#pluginsecurityprovider)|
+|[plugin.yaml](#pluginyaml)|[publish_timeout](#publish_timeout)|
+|[registerinterval](#registerinterval)|[registration](#registration)|
+|[registration_collective](#registration_collective)|[registration_splay](#registration_splay)|
+|[rpcaudit](#rpcaudit)|[rpcauditprovider](#rpcauditprovider)|
+|[rpcauthorization](#rpcauthorization)|[rpcauthprovider](#rpcauthprovider)|
+|[rpclimitmethod](#rpclimitmethod)|[securityprovider](#securityprovider)|
+|[soft_shutdown](#soft_shutdown)|[soft_shutdown_timeout](#soft_shutdown_timeout)|
+|[threaded](#threaded)|[ttl](#ttl)|
 
 
 ## activate_agents
@@ -729,6 +729,12 @@ The password to use when connecting to the NATS server
  * **Environment Variable:** MCOLLECTIVE_NATS_USERNAME
 
 The user to connect to the NATS server as. When unset no username is used.
+
+## plugin.scout.agent_disabled
+
+ * **Type:** boolean
+
+Disables the scout agent
 
 ## plugin.scout.overrides
 

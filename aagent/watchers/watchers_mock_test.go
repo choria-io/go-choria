@@ -6,6 +6,7 @@ package watchers
 
 import (
 	context "context"
+	watcher "github.com/choria-io/go-choria/aagent/watchers/watcher"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 	sync "sync"
@@ -327,4 +328,77 @@ func (m *MockMachine) Errorf(name, format string, args ...interface{}) {
 func (mr *MockMachineMockRecorder) Errorf(name, format interface{}, args ...interface{}) *gomock.Call {
 	varargs := append([]interface{}{name, format}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Errorf", reflect.TypeOf((*MockMachine)(nil).Errorf), varargs...)
+}
+
+// MockWatcherConstructor is a mock of WatcherConstructor interface
+type MockWatcherConstructor struct {
+	ctrl     *gomock.Controller
+	recorder *MockWatcherConstructorMockRecorder
+}
+
+// MockWatcherConstructorMockRecorder is the mock recorder for MockWatcherConstructor
+type MockWatcherConstructorMockRecorder struct {
+	mock *MockWatcherConstructor
+}
+
+// NewMockWatcherConstructor creates a new mock instance
+func NewMockWatcherConstructor(ctrl *gomock.Controller) *MockWatcherConstructor {
+	mock := &MockWatcherConstructor{ctrl: ctrl}
+	mock.recorder = &MockWatcherConstructorMockRecorder{mock}
+	return mock
+}
+
+// EXPECT returns an object that allows the caller to indicate expected use
+func (m *MockWatcherConstructor) EXPECT() *MockWatcherConstructorMockRecorder {
+	return m.recorder
+}
+
+// New mocks base method
+func (m *MockWatcherConstructor) New(machine watcher.Machine, name string, states []string, failEvent, successEvent, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error) {
+	ret := m.ctrl.Call(m, "New", machine, name, states, failEvent, successEvent, interval, ai, properties)
+	ret0, _ := ret[0].(interface{})
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// New indicates an expected call of New
+func (mr *MockWatcherConstructorMockRecorder) New(machine, name, states, failEvent, successEvent, interval, ai, properties interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "New", reflect.TypeOf((*MockWatcherConstructor)(nil).New), machine, name, states, failEvent, successEvent, interval, ai, properties)
+}
+
+// Type mocks base method
+func (m *MockWatcherConstructor) Type() string {
+	ret := m.ctrl.Call(m, "Type")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Type indicates an expected call of Type
+func (mr *MockWatcherConstructorMockRecorder) Type() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Type", reflect.TypeOf((*MockWatcherConstructor)(nil).Type))
+}
+
+// EventType mocks base method
+func (m *MockWatcherConstructor) EventType() string {
+	ret := m.ctrl.Call(m, "EventType")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// EventType indicates an expected call of EventType
+func (mr *MockWatcherConstructorMockRecorder) EventType() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "EventType", reflect.TypeOf((*MockWatcherConstructor)(nil).EventType))
+}
+
+// UnmarshalNotification mocks base method
+func (m *MockWatcherConstructor) UnmarshalNotification(n []byte) (interface{}, error) {
+	ret := m.ctrl.Call(m, "UnmarshalNotification", n)
+	ret0, _ := ret[0].(interface{})
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// UnmarshalNotification indicates an expected call of UnmarshalNotification
+func (mr *MockWatcherConstructorMockRecorder) UnmarshalNotification(n interface{}) *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnmarshalNotification", reflect.TypeOf((*MockWatcherConstructor)(nil).UnmarshalNotification), n)
 }

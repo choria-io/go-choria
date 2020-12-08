@@ -6,13 +6,10 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/filewatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/homekitwatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/metricwatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/schedulewatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/timerwatcher"
+	"github.com/tidwall/gjson"
+
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/choria-io/go-choria/choria"
 )
 
 type State int
@@ -55,10 +52,69 @@ type Manager struct {
 	sync.Mutex
 }
 
+// WatcherConstructor creates a new watcher plugin
+type WatcherConstructor interface {
+	New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error)
+	Type() string
+	EventType() string
+	UnmarshalNotification(n []byte) (interface{}, error)
+}
+
+var (
+	plugins map[string]WatcherConstructor
+
+	mu sync.Mutex
+)
+
+// RegisterWatcherPlugin registers a new type of watcher
+func RegisterWatcherPlugin(name string, plugin WatcherConstructor) error {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if plugins == nil {
+		plugins = map[string]WatcherConstructor{}
+	}
+
+	_, exit := plugins[plugin.Type()]
+	if exit {
+		return fmt.Errorf("plugin %q already exist", plugin.Type())
+	}
+
+	plugins[plugin.Type()] = plugin
+
+	choria.BuildInfo().RegisterMachineWatcher(name)
+
+	return nil
+}
+
 func New() *Manager {
 	return &Manager{
 		watchers: make(map[string]Watcher),
 	}
+}
+
+func ParseWatcherState(state []byte) (interface{}, error) {
+	r := gjson.GetBytes(state, "protocol")
+	if !r.Exists() {
+		return nil, fmt.Errorf("no protocol header in state json")
+	}
+
+	proto := r.String()
+	var plugin WatcherConstructor
+
+	mu.Lock()
+	for _, w := range plugins {
+		if w.EventType() == proto {
+			plugin = w
+		}
+	}
+	mu.Unlock()
+
+	if plugin == nil {
+		return nil, fmt.Errorf("unknown event type %q", proto)
+	}
+
+	return plugin.UnmarshalNotification(state)
 }
 
 // Delete gets called before a watcher is being deleted after
@@ -120,34 +176,23 @@ func (m *Manager) configureWatchers() (err error) {
 
 		var watcher Watcher
 		var err error
+		var ok bool
 
-		switch w.Type {
-		case "file":
-			watcher, err = filewatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
-
-		case "exec":
-			watcher, err = execwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
-
-		case "schedule":
-			watcher, err = schedulewatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
-
-		case "nagios":
-			watcher, err = nagioswatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.announceDuration, w.Properties)
-
-		case "homekit":
-			watcher, err = homekitwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
-
-		case "timer":
-			watcher, err = timerwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
-
-		case "metric":
-			watcher, err = metricwatcher.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.announceDuration, w.Properties)
-
-		default:
+		mu.Lock()
+		plugin, known := plugins[w.Type]
+		mu.Unlock()
+		if !known {
 			return fmt.Errorf("unknown watcher '%s'", w.Type)
 		}
+
+		wi, err := plugin.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.AnnounceDuration, w.Properties)
 		if err != nil {
 			return fmt.Errorf("could not create %s watcher '%s': %s", w.Type, w.Name, err)
+		}
+
+		watcher, ok = wi.(Watcher)
+		if !ok {
+			return fmt.Errorf("%q watcher is not a valid watcher", w.Type)
 		}
 
 		err = m.AddWatcher(watcher)

@@ -31,6 +31,9 @@ const (
 	UNKNOWN
 	SKIPPED
 	NOTCHECKED
+
+	wtype   = "nagios"
+	version = "v1"
 )
 
 var stateNames = map[State]string{
@@ -93,52 +96,52 @@ type Watcher struct {
 	history          []*Execution
 	machineName      string
 	textFileDir      string
-
-	sync.Mutex
+	mu               *sync.Mutex
 }
 
-func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (*Watcher, error) {
+func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error) {
 	var err error
 
-	w := &Watcher{
+	nw := &Watcher{
 		machineName: machine.Name(),
 		textFileDir: machine.TextFileDirectory(),
 		name:        name,
 		machine:     machine,
 		previous:    NOTCHECKED,
 		history:     []*Execution{},
+		mu:          &sync.Mutex{},
 	}
 
-	w.Watcher, err = watcher.NewWatcher(name, "nagios", ai, states, machine, failEvent, successEvent)
+	nw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
 
-	err = w.setProperties(properties)
+	err = nw.setProperties(properties)
 	if err != nil {
 		return nil, fmt.Errorf("could not set properties: %s", err)
 	}
 
 	if interval != "" {
-		w.interval, err = time.ParseDuration(interval)
+		nw.interval, err = time.ParseDuration(interval)
 		if err != nil {
 			return nil, fmt.Errorf("invalid interval: %s", err)
 		}
 
-		if w.interval < 500*time.Millisecond {
-			return nil, fmt.Errorf("interval %v is too small", w.interval)
+		if nw.interval < 500*time.Millisecond {
+			return nil, fmt.Errorf("interval %v is too small", nw.interval)
 		}
 	}
 
-	updatePromState(w.machineName, UNKNOWN, machine.TextFileDirectory(), w)
+	updatePromState(nw.machineName, UNKNOWN, machine.TextFileDirectory(), nw)
 
-	return w, err
+	return nw, err
 }
 
 // Delete stops the watcher and remove it from the prom state after the check was removed from disk
 func (w *Watcher) Delete() {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	// suppress next check and set state to unknown
 	w.previousCheck = time.Now()
@@ -146,11 +149,11 @@ func (w *Watcher) Delete() {
 }
 
 func (w *Watcher) CurrentState() interface{} {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	s := &StateNotification{
-		Event:       event.New(w.name, "nagios", "v1", w.machine),
+		Event:       event.New(w.name, wtype, version, w.machine),
 		Plugin:      w.previousPlugin,
 		Status:      stateNames[w.previous],
 		StatusCode:  int(w.previous),
@@ -271,9 +274,9 @@ func (w *Watcher) NotifyStateChance() {
 		return
 	}
 
-	w.Lock()
+	w.mu.Lock()
 	w.previous = s
-	w.Unlock()
+	w.mu.Unlock()
 
 	err := updatePromState(w.machineName, s, w.textFileDir, w)
 	if err != nil {
@@ -349,7 +352,7 @@ func (w *Watcher) handleCheck(start time.Time, s State, external bool, err error
 
 	w.Debugf("handling check for %s %s %v", w.properties.Plugin, stateNames[s], err)
 
-	w.Lock()
+	w.mu.Lock()
 	w.previous = s
 
 	if len(w.history) >= 15 {
@@ -357,11 +360,11 @@ func (w *Watcher) handleCheck(start time.Time, s State, external bool, err error
 	}
 	w.history = append(w.history, &Execution{Executed: start, Status: int(s), PerfData: w.previousPerfData})
 
-	w.Unlock()
+	w.mu.Unlock()
 
 	// dont notify if we are externally transitioning because probably notifications were already sent
 	if !external {
-		w.NotifyWatcherState(w.name, w.CurrentState())
+		w.NotifyWatcherState(w.CurrentState())
 	}
 
 	w.Debugf("Notifying prometheus")
@@ -488,9 +491,9 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	start := time.Now()
 	w.previousCheck = start
 	defer func() {
-		w.Lock()
+		w.mu.Lock()
 		w.previousRunTime = time.Since(start)
-		w.Unlock()
+		w.mu.Unlock()
 	}()
 
 	var output string

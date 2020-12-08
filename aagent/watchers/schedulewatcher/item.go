@@ -59,10 +59,12 @@ func (s *scheduleItem) check(ctx context.Context) {
 func (s *scheduleItem) wait(ctx context.Context) {
 	s.watcher.Infof("Scheduling on until %v", time.Now().Add(s.duration))
 	timer := time.NewTimer(s.duration)
+	defer timer.Stop()
 
 	select {
 	case <-timer.C:
 	case <-ctx.Done():
+		return
 	}
 
 	s.Lock()
@@ -70,8 +72,6 @@ func (s *scheduleItem) wait(ctx context.Context) {
 	s.on = false
 	s.events <- -1
 	s.Unlock()
-
-	timer.Stop()
 }
 
 func (s *scheduleItem) start(ctx context.Context, wg *sync.WaitGroup) {

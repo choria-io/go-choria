@@ -2,7 +2,6 @@ package machine
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -12,19 +11,11 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"github.com/tidwall/gjson"
 	"github.com/xeipuuv/gojsonschema"
 
-	"github.com/choria-io/go-choria/aagent/watchers"
-	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/filewatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/homekitwatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/metricwatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/schedulewatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/timerwatcher"
-
 	"github.com/ghodss/yaml"
+
+	"github.com/choria-io/go-choria/aagent/watchers"
 
 	"github.com/looplab/fsm"
 )
@@ -86,83 +77,6 @@ type WatcherManager interface {
 	SetMachine(interface{}) error
 	WatcherState(watcher string) (interface{}, bool)
 	Delete()
-}
-
-// ParseWatcherState parses the watcher state JSON
-func ParseWatcherState(state []byte) (n WatcherStateNotification, err error) {
-	r := gjson.GetBytes(state, "protocol")
-	if !r.Exists() {
-		return nil, fmt.Errorf("no protocol header in state json")
-	}
-
-	proto := r.String()
-
-	switch proto {
-	case "io.choria.machine.watcher.exec.v1.state":
-		notification := &execwatcher.StateNotification{}
-		err = json.Unmarshal(state, notification)
-		if err != nil {
-			return nil, fmt.Errorf("invalid exec watcher notification received: %s", err)
-		}
-
-		return notification, nil
-	case "io.choria.machine.watcher.file.v1.state":
-		notification := &filewatcher.StateNotification{}
-		err = json.Unmarshal(state, notification)
-		if err != nil {
-			return nil, fmt.Errorf("invalid file watcher notification received: %s", err)
-		}
-
-		return notification, nil
-
-	case "io.choria.machine.watcher.schedule.v1.state":
-		notification := &schedulewatcher.StateNotification{}
-		err = json.Unmarshal(state, notification)
-		if err != nil {
-			return nil, fmt.Errorf("invalid schedule watcher notification received: %s", err)
-		}
-
-		return notification, nil
-
-	case "io.choria.machine.watcher.nagios.v1.state":
-		notification := &nagioswatcher.StateNotification{}
-		err = json.Unmarshal(state, notification)
-		if err != nil {
-			return nil, fmt.Errorf("invalid nagios watcher notification received: %s", err)
-		}
-
-		return notification, nil
-
-	case "io.choria.machine.watcher.homekit.v1.state":
-		notification := &homekitwatcher.StateNotification{}
-		err = json.Unmarshal(state, notification)
-		if err != nil {
-			return nil, fmt.Errorf("invalid homekit watcher notification received: %s", err)
-		}
-
-		return notification, nil
-
-	case "io.choria.machine.watcher.timer.v1.state":
-		notification := &timerwatcher.StateNotification{}
-		err = json.Unmarshal(state, notification)
-		if err != nil {
-			return nil, fmt.Errorf("invalid timer watcher notification received: %s", err)
-		}
-
-		return notification, nil
-
-	case "io.choria.machine.watcher.metric.v1.state":
-		notification := &metricwatcher.StateNotification{}
-		err = json.Unmarshal(state, notification)
-		if err != nil {
-			return nil, fmt.Errorf("invalid metric watcher notification received: %s", err)
-		}
-
-		return notification, nil
-
-	}
-
-	return nil, fmt.Errorf("unknown watcher state %s", proto)
 }
 
 func yamlPath(dir string) string {

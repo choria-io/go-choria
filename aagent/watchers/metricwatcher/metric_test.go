@@ -51,10 +51,11 @@ var _ = Describe("MetricWatcher", func() {
 		mockMachine.EXPECT().TextFileDirectory().Return(td).AnyTimes()
 		mockMachine.EXPECT().State().Return("run").AnyTimes()
 
-		watch, err = New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", time.Second, map[string]interface{}{
+		wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]interface{}{
 			"command": "metric.sh",
 		})
 		Expect(err).ToNot(HaveOccurred())
+		watch = wi.(*Watcher)
 	})
 
 	AfterEach(func() {
@@ -80,11 +81,12 @@ var _ = Describe("MetricWatcher", func() {
 				handled = true
 			})
 
-			watch, err = New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", time.Second, map[string]interface{}{
+			wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]interface{}{
 				"command": filepath.Join("testdata", "metric.sh"),
 				"labels":  map[string]string{"dupe": "w"},
 			})
 			Expect(err).ToNot(HaveOccurred())
+			watch = wi.(*Watcher)
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()

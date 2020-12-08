@@ -2,6 +2,8 @@ package nagioswatcher
 
 import (
 	"encoding/json"
+	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 
@@ -23,11 +25,16 @@ var _ = Describe("NagiosWatcher", func() {
 		mockMachine *watcher.MockMachine
 		watch       *Watcher
 		now         time.Time
+		err         error
+		td          string
 	)
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 		mockMachine = watcher.NewMockMachine(mockctl)
+
+		td, err = ioutil.TempDir("", "")
+		Expect(err).ToNot(HaveOccurred())
 
 		now = time.Unix(1606924953, 0)
 		mockMachine.EXPECT().Name().Return("nagios").AnyTimes()
@@ -35,29 +42,31 @@ var _ = Describe("NagiosWatcher", func() {
 		mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
 		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
+		mockMachine.EXPECT().TextFileDirectory().Return(td).AnyTimes()
 
-		watch = &Watcher{
-			previousPlugin:   "/bin/sh",
-			previous:         OK,
-			previousOutput:   "OK: ginkgo",
-			machine:          mockMachine,
-			previousPerfData: []PerfData{},
-			previousRunTime:  500 * time.Millisecond,
-			history:          []*Execution{},
-			name:             "ginkgo",
-			previousCheck:    now,
-		}
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "1s", time.Second, map[string]interface{}{
+			"plugin": "/bin/sh",
+		})
+		Expect(err).ToNot(HaveOccurred())
 
-		watch.setProperties(map[string]interface{}{})
+		watch = wi.(*Watcher)
+		watch.previousCheck = now
+		watch.previousOutput = "OK: ginkgo"
+		watch.previousPerfData = []PerfData{}
+		watch.previousRunTime = 500 * time.Millisecond
+		watch.previous = OK
+		watch.previousPlugin = "/bin/sh"
 	})
 
 	AfterEach(func() {
 		mockctl.Finish()
+		os.RemoveAll(td)
 	})
 
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
-			err := watch.setProperties(map[string]interface{}{
+			watch.properties = nil
+			err = watch.setProperties(map[string]interface{}{
 				"annotations": map[string]string{
 					"a1": "v1",
 					"a2": "v2",
@@ -77,7 +86,8 @@ var _ = Describe("NagiosWatcher", func() {
 		})
 
 		It("Should handle errors", func() {
-			err := watch.setProperties(map[string]interface{}{})
+			watch.properties = nil
+			err = watch.setProperties(map[string]interface{}{})
 			Expect(err).To(MatchError("plugin or builtin is required"))
 
 			watch.properties = nil
@@ -95,7 +105,8 @@ var _ = Describe("NagiosWatcher", func() {
 		})
 
 		It("Should handle valid goss setups", func() {
-			err := watch.setProperties(map[string]interface{}{
+			watch.properties = nil
+			err = watch.setProperties(map[string]interface{}{
 				"builtin":  "goss",
 				"gossFile": "/x",
 			})

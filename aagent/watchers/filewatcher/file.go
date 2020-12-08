@@ -8,8 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
-
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
@@ -23,6 +21,9 @@ const (
 	Skipped
 	Unchanged
 	Changed
+
+	wtype   = "file"
+	version = "v1"
 )
 
 var stateNames = map[State]string{
@@ -47,44 +48,46 @@ type Watcher struct {
 	interval   time.Duration
 	mtime      time.Time
 	properties *Properties
+	mu         *sync.Mutex
 }
 
-func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (*Watcher, error) {
+func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error) {
 	var err error
 
-	w := &Watcher{
+	fw := &Watcher{
 		properties: &Properties{},
 		name:       name,
 		machine:    machine,
 		interval:   5 * time.Second,
+		mu:         &sync.Mutex{},
 	}
 
-	w.Watcher, err = watcher.NewWatcher(name, "file", ai, states, machine, failEvent, successEvent)
+	fw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
 
-	err = w.setProperties(properties)
+	err = fw.setProperties(properties)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not set properties")
+		return nil, fmt.Errorf("could not set properties: %s", err)
 	}
 
-	if !filepath.IsAbs(w.properties.Path) {
-		w.properties.Path = filepath.Join(w.machine.Directory(), w.properties.Path)
+	if !filepath.IsAbs(fw.properties.Path) {
+		fw.properties.Path = filepath.Join(fw.machine.Directory(), fw.properties.Path)
 	}
 
 	if interval != "" {
-		w.interval, err = time.ParseDuration(interval)
+		fw.interval, err = time.ParseDuration(interval)
 		if err != nil {
-			return nil, errors.Wrap(err, "invalid interval")
+			return nil, fmt.Errorf("invalid interval: %s", err)
 		}
 	}
 
-	if w.interval < 500*time.Millisecond {
-		return nil, errors.Errorf("interval %v is too small", w.interval)
+	if fw.interval < 500*time.Millisecond {
+		return nil, fmt.Errorf("interval %v is too small", fw.interval)
 	}
 
-	return w, err
+	return fw, err
 }
 
 func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
@@ -126,11 +129,11 @@ func (w *Watcher) performWatch(ctx context.Context) {
 }
 
 func (w *Watcher) CurrentState() interface{} {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	s := &StateNotification{
-		Event:           event.New(w.name, "file", "v1", w.machine),
+		Event:           event.New(w.name, wtype, version, w.machine),
 		Path:            w.properties.Path,
 		PreviousOutcome: stateNames[w.previous],
 	}
@@ -139,8 +142,8 @@ func (w *Watcher) CurrentState() interface{} {
 }
 
 func (w *Watcher) setPreviousState(s State) {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	w.previous = s
 }
@@ -152,12 +155,12 @@ func (w *Watcher) handleCheck(s State, err error) error {
 
 	switch s {
 	case Error:
-		w.NotifyWatcherState(w.name, w.CurrentState())
-		return w.Transition(w.Watcher.FailEvent())
+		w.NotifyWatcherState(w.CurrentState())
+		return w.FailureTransition()
 
 	case Changed:
-		w.NotifyWatcherState(w.name, w.CurrentState())
-		return w.Transition(w.Watcher.SuccessEvent())
+		w.NotifyWatcherState(w.CurrentState())
+		return w.SuccessTransition()
 
 	case Unchanged:
 		// not notifying, regular announces happen

@@ -1,6 +1,7 @@
 package build
 
 import (
+	"sort"
 	"sync"
 )
 
@@ -115,6 +116,21 @@ func (i *Info) RegisterAgentProvider(p string) {
 	defer mu.Unlock()
 
 	AgentProviders = append(AgentProviders, p)
+	sort.Strings(AgentProviders)
+}
+
+func (i *Info) MachineWatchers() []string {
+	mu.Lock()
+	defer mu.Unlock()
+	return MachineWatchers
+}
+
+func (i *Info) RegisterMachineWatcher(p string) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	MachineWatchers = append(MachineWatchers, p)
+	sort.Strings(MachineWatchers)
 }
 
 func (i *Info) SetProvisionBrokerURLs(u string) {

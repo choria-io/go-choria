@@ -26,6 +26,9 @@ const (
 	// used to indicate that an external event - rpc or other watcher - initiated a transition
 	OnNoTransition
 	OffNoTransition
+
+	wtype   = "homekit"
+	version = "v1"
 )
 
 var stateNames = map[State]string{
@@ -64,43 +67,43 @@ type Watcher struct {
 	buttonPress chan State
 	started     bool
 	properties  *properties
-
-	sync.Mutex
+	mu          *sync.Mutex
 }
 
-func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, ai time.Duration, rawprop map[string]interface{}) (*Watcher, error) {
+func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]interface{}) (interface{}, error) {
 	var err error
 
-	w := &Watcher{
+	hkw := &Watcher{
 		name:        name,
 		machine:     machine,
 		interval:    5 * time.Second,
 		buttonPress: make(chan State, 1),
+		mu:          &sync.Mutex{},
 		properties: &properties{
 			Model:         "Autonomous Agent",
 			ShouldOn:      []string{},
 			ShouldOff:     []string{},
 			ShouldDisable: []string{},
-			Path:          filepath.Join(machine.Directory(), "homekit", fmt.Sprintf("%x", md5.Sum([]byte(name)))),
+			Path:          filepath.Join(machine.Directory(), wtype, fmt.Sprintf("%x", md5.Sum([]byte(name)))),
 		},
 	}
 
-	w.Watcher, err = watcher.NewWatcher(name, "homekit", ai, states, machine, failEvent, successEvent)
+	hkw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
 
-	err = w.setProperties(rawprop)
+	err = hkw.setProperties(rawprop)
 	if err != nil {
 		return nil, fmt.Errorf("could not set properties: %s", err)
 	}
 
-	return w, err
+	return hkw, err
 }
 
 func (w *Watcher) Delete() {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	if w.hkt != nil {
 		<-w.hkt.Stop()
@@ -159,8 +162,8 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (w *Watcher) ensureStopped() {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	if !w.started {
 		return
@@ -174,8 +177,8 @@ func (w *Watcher) ensureStopped() {
 }
 
 func (w *Watcher) ensureStarted() {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	if w.started {
 		return
@@ -234,19 +237,19 @@ func (w *Watcher) handleStateChange(s State) error {
 	switch s {
 	case On:
 		w.setPreviousState(s)
-		w.NotifyWatcherState(w.name, w.CurrentState())
-		return w.Transition(w.Watcher.SuccessEvent())
+		w.NotifyWatcherState(w.CurrentState())
+		return w.SuccessTransition()
 
 	case OnNoTransition:
 		w.setPreviousState(On)
 		w.ac.Switch.On.SetValue(true)
-		w.NotifyWatcherState(w.name, w.CurrentState())
+		w.NotifyWatcherState(w.CurrentState())
 		return nil
 
 	case Off:
 		w.setPreviousState(s)
-		w.NotifyWatcherState(w.name, w.CurrentState())
-		return w.Transition(w.Watcher.FailEvent())
+		w.NotifyWatcherState(w.CurrentState())
+		return w.FailureTransition()
 
 	case OffNoTransition:
 		w.setPreviousState(Off)
@@ -259,11 +262,11 @@ func (w *Watcher) handleStateChange(s State) error {
 }
 
 func (w *Watcher) CurrentState() interface{} {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	s := &StateNotification{
-		Event:           event.New(w.name, "homekit", "v1", w.machine),
+		Event:           event.New(w.name, wtype, version, w.machine),
 		Path:            w.properties.Path,
 		PreviousOutcome: stateNames[w.previous],
 	}
@@ -272,8 +275,8 @@ func (w *Watcher) CurrentState() interface{} {
 }
 
 func (w *Watcher) setPreviousState(s State) {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	w.previous = s
 }
@@ -298,8 +301,8 @@ func (w *Watcher) startAccessoryUnlocked() error {
 	})
 
 	w.ac.Switch.On.OnValueRemoteUpdate(func(new bool) {
-		w.Lock()
-		defer w.Unlock()
+		w.mu.Lock()
+		defer w.mu.Unlock()
 
 		w.Infof("Handling app button press: %v", new)
 

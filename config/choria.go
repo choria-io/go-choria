@@ -116,6 +116,7 @@ type ChoriaPluginConfig struct {
 	PrometheusTextFileDir string `confkey:"plugin.choria.prometheus_textfile_directory" type:"path_string"` // Directory where Prometheus Node Exporter textfile collector reads data
 	ScoutOverrides        string `confkey:"plugin.scout.overrides" type:"path_string"`                      // Path to a file holding overrides for Scout checks
 	ScoutTags             string `confkey:"plugin.scout.tags" type:"path_string"`                           // Path to a file holding tags for a Scout entity
+	ScoutAgentDisabled    bool   `confkey:"plugin.scout.agent_disabled"`                                    // Disables the scout agent
 
 	RequireClientFilter bool `confkey:"plugin.choria.require_client_filter" default:"false"` // If a client filter should always be required, only used in Go clients
 }

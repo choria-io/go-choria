@@ -18,20 +18,19 @@ type WatcherDef struct {
 	Interval          string                 `json:"interval" yaml:"interval"`
 	AnnounceInterval  string                 `json:"announce_interval" yaml:"announce_interval"`
 	Properties        map[string]interface{} `json:"properties" yaml:"properties"`
-
-	announceDuration time.Duration
+	AnnounceDuration  time.Duration          `json:"-" yaml:"-"`
 }
 
 // ParseAnnounceInterval parses the announce interval and ensures its not too small
 func (w *WatcherDef) ParseAnnounceInterval() (err error) {
 	if w.AnnounceInterval != "" {
-		w.announceDuration, err = time.ParseDuration(w.AnnounceInterval)
+		w.AnnounceDuration, err = time.ParseDuration(w.AnnounceInterval)
 		if err != nil {
 			return errors.Wrapf(err, "unknown announce interval for watcher %s", w.Name)
 		}
 
-		if w.announceDuration < time.Minute {
-			return errors.Errorf("announce interval %v is too small for watcher %s", w.announceDuration, w.Name)
+		if w.AnnounceDuration < time.Minute {
+			return errors.Errorf("announce interval %v is too small for watcher %s", w.AnnounceDuration, w.Name)
 		}
 	}
 
