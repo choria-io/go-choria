@@ -12,7 +12,15 @@ import (
 // only activate when not in provisioning mode
 func activationCheck(mgr server.AgentManager) func() bool {
 	return func() bool {
-		return !mgr.Choria().ProvisionMode()
+		if mgr.Choria().ProvisionMode() {
+			return false
+		}
+
+		if mgr.Choria().Configuration().Choria.ScoutAgentDisabled {
+			return false
+		}
+
+		return true
 	}
 }
 

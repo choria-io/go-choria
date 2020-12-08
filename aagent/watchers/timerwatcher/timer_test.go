@@ -36,8 +36,9 @@ var _ = Describe("TimerWatcher", func() {
 		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
 
-		watch = &Watcher{state: Stopped, machine: mockMachine, name: "ginkgo"}
-		watch.setProperties(map[string]interface{}{})
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]interface{}{})
+		Expect(err).ToNot(HaveOccurred())
+		watch = wi.(*Watcher)
 	})
 
 	AfterEach(func() {

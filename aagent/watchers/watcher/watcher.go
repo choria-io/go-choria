@@ -19,7 +19,7 @@ type Watcher struct {
 	deleteCb       func()
 	currentStateCb func() interface{}
 
-	sync.Mutex
+	mu sync.Mutex
 }
 
 func (w *Watcher) Machine() Machine {
@@ -39,14 +39,30 @@ func (w *Watcher) StateChangeC() chan struct{} {
 }
 
 func (w *Watcher) SetDeleteFunc(f func()) {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	w.deleteCb = f
 }
 
-func (w *Watcher) NotifyWatcherState(name string, state interface{}) {
-	w.machine.NotifyWatcherState(name, state)
+func (w *Watcher) NotifyWatcherState(state interface{}) {
+	w.machine.NotifyWatcherState(w.name, state)
+}
+
+func (w *Watcher) SuccessTransition() error {
+	if w.succEvent == "" {
+		return nil
+	}
+
+	return w.machine.Transition(w.succEvent)
+}
+
+func (w *Watcher) FailureTransition() error {
+	if w.failEvent == "" {
+		return nil
+	}
+
+	return w.machine.Transition(w.failEvent)
 }
 
 func (w *Watcher) Transition(event string) error {
@@ -83,8 +99,8 @@ func NewWatcher(name string, wtype string, announceInterval time.Duration, activ
 }
 
 func (w *Watcher) NotifyStateChance() {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	if len(w.statechg) < cap(w.statechg) {
 		w.statechg <- struct{}{}
@@ -112,8 +128,8 @@ func (w *Watcher) Name() string {
 }
 
 func (w *Watcher) Delete() {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	if w.deleteCb != nil {
 		w.deleteCb()

@@ -64,6 +64,9 @@ var ProvisioningBrokerPassword = ""
 // AgentProviders are registered systems capable of extending choria with new agents
 var AgentProviders = []string{}
 
+// MachineWatchers are registered Autonomous Agent watchers
+var MachineWatchers = []string{}
+
 // HasTLS determines if TLS should be used on the wire
 func HasTLS() bool {
 	return TLS == "true"

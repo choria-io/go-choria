@@ -2,6 +2,7 @@ package homekitwatcher
 
 import (
 	"encoding/json"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -35,8 +36,11 @@ var _ = Describe("HomekitWatcher", func() {
 		mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
 		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
+		mockMachine.EXPECT().Directory().Return(".").AnyTimes()
 
-		watch = &Watcher{properties: &properties{Path: "/bin/sh"}, previous: Off, machine: mockMachine, name: "ginkgo"}
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]interface{}{})
+		Expect(err).ToNot(HaveOccurred())
+		watch = wi.(*Watcher)
 	})
 
 	AfterEach(func() {
@@ -105,6 +109,7 @@ var _ = Describe("HomekitWatcher", func() {
 
 	Describe("CurrentState", func() {
 		It("Should be a valid state", func() {
+			watch.previous = Off
 			cs := watch.CurrentState()
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
@@ -130,7 +135,7 @@ var _ = Describe("HomekitWatcher", func() {
 					"version":          "1.0.0",
 					"timestamp":        float64(now.Unix()),
 					"previous_outcome": "off",
-					"path":             "/bin/sh",
+					"path":             filepath.Join("homekit", "4bb6777bb903cae3166e826932f7fe94"),
 				},
 			}))
 		})

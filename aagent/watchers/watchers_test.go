@@ -3,13 +3,13 @@ package watchers
 import (
 	"path/filepath"
 	"testing"
+	"time"
 
-	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
-	"github.com/choria-io/go-choria/aagent/watchers/filewatcher"
-
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
+
+	"github.com/choria-io/go-choria/build"
 )
 
 func TestWatchers(t *testing.T) {
@@ -19,15 +19,19 @@ func TestWatchers(t *testing.T) {
 
 var _ = Describe("Aagent/Watchers", func() {
 	var (
-		mockctl *gomock.Controller
-		machine *MockMachine
-		manager *Manager
-		err     error
+		mockctl  *gomock.Controller
+		machine  *MockMachine
+		watcherC *MockWatcherConstructor
+		watcher  *MockWatcher
+		manager  *Manager
+		err      error
 	)
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 		machine = NewMockMachine(mockctl)
+		watcherC = NewMockWatcherConstructor(mockctl)
+		watcher = NewMockWatcher(mockctl)
 		manager = New()
 		manager.machine = machine
 	})
@@ -45,75 +49,61 @@ var _ = Describe("Aagent/Watchers", func() {
 		})
 	})
 
+	Describe("Plugins", func() {
+		BeforeEach(func() {
+			build.MachineWatchers = []string{}
+			plugins = nil
+			watcherC.EXPECT().Type().Return("mock").AnyTimes()
+		})
+
+		It("Should register watchers", func() {
+			err = RegisterWatcherPlugin("mock watcher version 1", watcherC)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(plugins).To(Equal(map[string]WatcherConstructor{
+				"mock": watcherC,
+			}))
+			Expect(build.MachineWatchers).To(Equal([]string{"mock watcher version 1"}))
+		})
+	})
+
 	Describe("configureWatchers", func() {
-		It("Should support file watchers", func() {
+		BeforeEach(func() {
+			watcherC.EXPECT().Type().Return("mock").AnyTimes()
+			plugins = nil
+			watcherC.EXPECT().Type().Return("mock").AnyTimes()
+			err = RegisterWatcherPlugin("mock watcher version 1", watcherC)
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should support registered watchers", func() {
 			machine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any())
 			machine.EXPECT().Directory().Return(filepath.Dir(".")).AnyTimes()
 			machine.EXPECT().Watchers().Return([]*WatcherDef{
 				{
-					Name:              "fwatcher",
-					Type:              "file",
+					Name:              "mwatcher",
+					Type:              "mock",
 					StateMatch:        []string{"one"},
 					FailTransition:    "failed",
 					SuccessTransition: "passed",
 					Interval:          "1m",
-					announceDuration:  0,
+					AnnounceDuration:  0,
 					Properties: map[string]interface{}{
 						"path": "/dev/null",
 					},
 				},
 			})
 
-			err := manager.configureWatchers()
+			watcher.EXPECT().Name().Return("mwatcher").AnyTimes()
+			watcherC.EXPECT().New(machine, "mwatcher", []string{"one"}, "failed", "passed", "1m", 0*time.Second, map[string]interface{}{
+				"path": "/dev/null",
+			}).Return(watcher, nil).AnyTimes()
+
+			err = manager.configureWatchers()
 			Expect(err).ToNot(HaveOccurred())
 
-			w, ok := manager.watchers["fwatcher"]
+			w, ok := manager.watchers["mwatcher"]
 			Expect(ok).To(BeTrue())
-
-			Expect(w).To(BeAssignableToTypeOf(&filewatcher.Watcher{}))
-			Expect(w.Name()).To(Equal("fwatcher"))
-			Expect(w.Type()).To(Equal("file"))
-		})
-
-		It("Should support exec watchers", func() {
-			machine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any())
-			machine.EXPECT().Watchers().Return([]*WatcherDef{
-				{
-					Type:              "exec",
-					Name:              "execwatcher",
-					StateMatch:        []string{"one"},
-					FailTransition:    "failed",
-					SuccessTransition: "passed",
-					Interval:          "1m",
-					announceDuration:  0,
-					Properties: map[string]interface{}{
-						"command": "/dev/null",
-					},
-				},
-			})
-
-			err := manager.configureWatchers()
-			Expect(err).ToNot(HaveOccurred())
-
-			w, ok := manager.watchers["execwatcher"]
-			Expect(ok).To(BeTrue())
-
-			Expect(w).To(BeAssignableToTypeOf(&execwatcher.Watcher{}))
-			Expect(w.Name()).To(Equal("execwatcher"))
-			Expect(w.Type()).To(Equal("exec"))
-		})
-
-		It("Should handle unknown watchers", func() {
-			machine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any())
-			machine.EXPECT().Watchers().Return([]*WatcherDef{
-				{
-					Type: "other",
-					Name: "otherwatcher",
-				},
-			})
-
-			err := manager.configureWatchers()
-			Expect(err).To(MatchError("unknown watcher 'other'"))
+			Expect(w).To(Equal(watcher))
 		})
 	})
 })

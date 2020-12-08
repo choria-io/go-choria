@@ -1,8 +1,7 @@
 package machine
 
 import (
-	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -13,6 +12,7 @@ var _ = Describe("Aagent/Machine/Notifications", func() {
 		service1 *MockNotificationService
 		service2 *MockNotificationService
 		manager  *MockWatcherManager
+		event    *MockWatcherStateNotification
 		machine  *Machine
 	)
 
@@ -21,6 +21,7 @@ var _ = Describe("Aagent/Machine/Notifications", func() {
 		service1 = NewMockNotificationService(mockctl)
 		service2 = NewMockNotificationService(mockctl)
 		manager = NewMockWatcherManager(mockctl)
+		event = NewMockWatcherStateNotification(mockctl)
 		machine = &Machine{
 			notifiers:   []NotificationService{},
 			manager:     manager,
@@ -47,12 +48,10 @@ var _ = Describe("Aagent/Machine/Notifications", func() {
 		})
 
 		It("Should support notifying state", func() {
-			state := &execwatcher.StateNotification{}
+			service1.EXPECT().NotifyWatcherState("w1", event)
+			service2.EXPECT().NotifyWatcherState("w1", event)
 
-			service1.EXPECT().NotifyWatcherState("w1", state)
-			service2.EXPECT().NotifyWatcherState("w1", state)
-
-			machine.NotifyWatcherState("w1", state)
+			machine.NotifyWatcherState("w1", event)
 		})
 
 		It("Should support common loggers", func() {

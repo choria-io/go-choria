@@ -10,6 +10,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent/machine"
+	"github.com/choria-io/go-choria/aagent/watchers"
 	"github.com/choria-io/go-choria/choria"
 )
 
@@ -22,6 +23,11 @@ type mWatchCommand struct {
 	log               *logrus.Entry
 
 	sync.Mutex
+}
+
+type mWatchableState interface {
+	String() string
+	SenderID() string
 }
 
 func (w *mWatchCommand) Setup() (err error) {
@@ -117,18 +123,23 @@ func (w *mWatchCommand) showState(m *choria.ConnectorMessage) {
 		return
 	}
 
-	state, err := machine.ParseWatcherState(data)
+	state, err := watchers.ParseWatcherState(data)
 	if err != nil {
 		w.log.Errorf("%s", err)
 		return
 	}
 
-	if w.filterIdentity != "" && !strings.Contains(state.SenderID(), w.filterIdentity) {
+	event, ok := state.(mWatchableState)
+	if !ok {
+		return
+	}
+
+	if w.filterIdentity != "" && !strings.Contains(event.SenderID(), w.filterIdentity) {
 		return
 	}
 
 	w.Lock()
-	fmt.Println(state.String())
+	fmt.Println(event.String())
 	w.Unlock()
 }
 

@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -36,7 +36,14 @@ var _ = Describe("ScheduleWatcher", func() {
 		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
 
-		watch = &Watcher{state: On, machine: mockMachine, name: "ginkgo"}
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]interface{}{
+			"schedules": []string{"1 * * * *"},
+		})
+		Expect(err).ToNot(HaveOccurred())
+		watch = wi.(*Watcher)
+		watch.properties = nil
+		watch.items = []*scheduleItem{}
+		watch.state = On
 	})
 
 	AfterEach(func() {

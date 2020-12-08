@@ -42,6 +42,9 @@ const (
 	// ConfigMutatorPlugin is a plugin that can dynamically adjust
 	// configuration based on local site conditions
 	ConfigMutatorPlugin
+
+	// MachineWatcherPlugin is a plugin that adds a Autonomous Agent Watcher
+	MachineWatcherPlugin
 )
 
 // Pluggable is a Choria Plugin
@@ -75,6 +78,9 @@ func Register(name string, plugin Pluggable) error {
 
 	case ConfigMutatorPlugin:
 		err = registerConfigMutator(name, plugin)
+
+	case MachineWatcherPlugin:
+		err = registerWatcherPlugin(name, plugin)
 
 	default:
 		err = fmt.Errorf("unknown plugin type %d from %s", plugin.PluginType(), name)

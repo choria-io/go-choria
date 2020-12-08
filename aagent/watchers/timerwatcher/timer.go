@@ -16,6 +16,9 @@ type State int
 const (
 	Stopped State = iota
 	Running
+
+	wtype   = "timer"
+	version = "v1"
 )
 
 var stateNames = map[State]string{
@@ -37,31 +40,31 @@ type Watcher struct {
 
 	terminate   chan struct{}
 	cancelTimer func()
-
-	sync.Mutex
+	mu          *sync.Mutex
 }
 
-func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, ai time.Duration, properties map[string]interface{}) (*Watcher, error) {
+func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error) {
 	var err error
 
-	w := &Watcher{
+	tw := &Watcher{
 		name:      name,
 		machine:   machine,
 		state:     0,
 		terminate: make(chan struct{}),
+		mu:        &sync.Mutex{},
 	}
 
-	w.Watcher, err = watcher.NewWatcher(name, "timer", ai, states, machine, failEvent, successEvent)
+	tw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
 
-	err = w.setProperties(properties)
+	err = tw.setProperties(properties)
 	if err != nil {
 		return nil, fmt.Errorf("could not set properties: %s", err)
 	}
 
-	return w, nil
+	return tw, nil
 }
 
 func (w *Watcher) Delete() {
@@ -69,9 +72,9 @@ func (w *Watcher) Delete() {
 }
 
 func (w *Watcher) forceTimerStop() {
-	w.Lock()
+	w.mu.Lock()
 	cancel := w.cancelTimer
-	w.Unlock()
+	w.mu.Unlock()
 
 	if cancel != nil {
 		w.Infof("Stopping timer early on state transition to %s", w.machine.State())
@@ -80,9 +83,9 @@ func (w *Watcher) forceTimerStop() {
 }
 
 func (w *Watcher) timeStart() {
-	w.Lock()
+	w.mu.Lock()
 	cancel := w.cancelTimer
-	w.Unlock()
+	w.mu.Unlock()
 
 	if cancel != nil {
 		w.Infof(w.name, "Timer was running, resetting to %v", w.properties.Timer)
@@ -93,41 +96,41 @@ func (w *Watcher) timeStart() {
 		timer := time.NewTimer(w.properties.Timer)
 		ctx, cancel := context.WithCancel(context.Background())
 
-		w.Lock()
+		w.mu.Lock()
 		w.state = Running
 		w.cancelTimer = cancel
-		w.Unlock()
+		w.mu.Unlock()
 
 		select {
 		case <-timer.C:
-			w.Lock()
+			w.mu.Lock()
 			w.state = Stopped
 			w.cancelTimer()
 			w.cancelTimer = nil
-			w.Unlock()
+			w.mu.Unlock()
 
-			w.NotifyWatcherState(w.name, w.CurrentState())
-			w.Transition(w.SuccessEvent())
+			w.NotifyWatcherState(w.CurrentState())
+			w.SuccessTransition()
 
 		case <-ctx.Done():
-			w.Lock()
+			w.mu.Lock()
 			w.cancelTimer = nil
 			timer.Stop()
 			w.state = Stopped
-			w.Unlock()
+			w.mu.Unlock()
 
-			w.NotifyWatcherState(w.name, w.CurrentState())
+			w.NotifyWatcherState(w.CurrentState())
 
 		case <-w.terminate:
-			w.Lock()
+			w.mu.Lock()
 			w.cancelTimer = nil
 			w.state = Stopped
-			w.Unlock()
+			w.mu.Unlock()
 			return
 		}
 	}()
 
-	w.NotifyWatcherState(w.name, w.CurrentState())
+	w.NotifyWatcherState(w.CurrentState())
 }
 
 func (w *Watcher) watch() {
@@ -185,11 +188,11 @@ func (w *Watcher) setProperties(props map[string]interface{}) error {
 }
 
 func (w *Watcher) CurrentState() interface{} {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	s := &StateNotification{
-		Event: event.New(w.name, "timer", "v1", w.machine),
+		Event: event.New(w.name, wtype, version, w.machine),
 		State: stateNames[w.state],
 		Timer: w.properties.Timer,
 	}

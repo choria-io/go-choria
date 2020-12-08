@@ -17,6 +17,11 @@ import (
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 )
 
+const (
+	wtype   = "metric"
+	version = "v1"
+)
+
 type Metric struct {
 	Labels  map[string]string  `json:"labels"`
 	Metrics map[string]float64 `json:"metrics"`
@@ -39,31 +44,31 @@ type Watcher struct {
 	previousRunTime time.Duration
 	previousResult  *Metric
 	properties      *properties
-
-	sync.Mutex
+	mu              *sync.Mutex
 }
 
-func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, ai time.Duration, rawprops map[string]interface{}) (*Watcher, error) {
+func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprops map[string]interface{}) (interface{}, error) {
 	var err error
 
-	w := &Watcher{
+	mw := &Watcher{
 		name:    name,
 		machine: machine,
+		mu:      &sync.Mutex{},
 	}
 
-	w.Watcher, err = watcher.NewWatcher(name, "metric", ai, states, machine, failEvent, successEvent)
+	mw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
 
-	err = w.setProperties(rawprops)
+	err = mw.setProperties(rawprops)
 	if err != nil {
 		return nil, fmt.Errorf("could not set properties: %s", err)
 	}
 
-	savePromState(machine.TextFileDirectory(), w)
+	savePromState(machine.TextFileDirectory(), mw)
 
-	return w, nil
+	return mw, nil
 }
 
 func (w *Watcher) Delete() {
@@ -113,9 +118,9 @@ func (w *Watcher) watch(ctx context.Context) (state []byte, err error) {
 
 	start := time.Now()
 	defer func() {
-		w.Lock()
+		w.mu.Lock()
 		w.previousRunTime = time.Since(start)
-		w.Unlock()
+		w.mu.Unlock()
 	}()
 
 	w.Infof("Running %s", w.properties.Command)
@@ -169,8 +174,8 @@ func (w *Watcher) handleCheck(output []byte, err error) error {
 	}
 
 	if err != nil {
-		w.NotifyWatcherState(w.name, w.CurrentState())
-		return w.Transition(w.FailEvent())
+		w.NotifyWatcherState(w.CurrentState())
+		return w.FailureTransition()
 	}
 
 	err = updatePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name, metric)
@@ -178,18 +183,18 @@ func (w *Watcher) handleCheck(output []byte, err error) error {
 		w.Errorf("Could not update prometheus: %s", err)
 	}
 
-	w.Lock()
+	w.mu.Lock()
 	w.previousResult = metric
-	w.Unlock()
+	w.mu.Unlock()
 
-	w.NotifyWatcherState(w.name, w.CurrentState())
+	w.NotifyWatcherState(w.CurrentState())
 
 	return nil
 }
 
 func (w *Watcher) CurrentState() interface{} {
-	w.Lock()
-	defer w.Unlock()
+	w.mu.Lock()
+	defer w.mu.Unlock()
 
 	var res Metric
 	if w.previousResult == nil {
@@ -204,7 +209,7 @@ func (w *Watcher) CurrentState() interface{} {
 	res.Metrics["choria_runtime_seconds"] = w.previousRunTime.Seconds()
 
 	s := &StateNotification{
-		Event:   event.New(w.name, "metric", "v1", w.machine),
+		Event:   event.New(w.name, wtype, version, w.machine),
 		Metrics: res,
 	}
 
