@@ -2,6 +2,7 @@ package classes
 
 import (
 	"bufio"
+	"fmt"
 	"os"
 	"regexp"
 	"strings"
@@ -20,6 +21,8 @@ func Match(needles []string, classes []string, log Logger) bool {
 		if strings.HasPrefix(needle, "/") && strings.HasSuffix(needle, "/") {
 			needle = strings.TrimPrefix(needle, "/")
 			needle = strings.TrimSuffix(needle, "/")
+
+			needle = fmt.Sprintf("(?i)%s", needle)
 
 			if hasClassMatching(needle, classes) {
 				matched++
@@ -62,8 +65,9 @@ func hasClassMatching(needle string, stack []string) bool {
 }
 
 func hasClass(needle string, stack []string) bool {
+	lneedle := strings.ToLower(needle)
 	for _, class := range stack {
-		if class == needle {
+		if class == lneedle {
 			return true
 		}
 	}
