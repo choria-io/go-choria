@@ -119,7 +119,6 @@ func (w *Watcher) setPreviousState(s State) {
 
 func (w *Watcher) watch() (err error) {
 	if !w.ShouldWatch() {
-		w.Infof("Skipping scheduled watch while in machine state %q", w.machine.State())
 		w.setPreviousState(Skipped)
 
 		return nil

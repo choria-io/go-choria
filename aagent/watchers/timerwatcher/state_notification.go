@@ -31,5 +31,5 @@ func (s *StateNotification) CloudEvent() cloudevents.Event {
 
 // String is a string representation of the notification suitable for printing
 func (s *StateNotification) String() string {
-	return fmt.Sprintf("%s %s#%s state: %s", s.Identity, s.Machine, s.Name, s.State)
+	return fmt.Sprintf("%s timer %s#%s state: %s", s.Identity, s.Machine, s.Name, s.State)
 }

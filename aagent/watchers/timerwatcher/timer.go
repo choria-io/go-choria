@@ -46,6 +46,10 @@ type Watcher struct {
 func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error) {
 	var err error
 
+	if successEvent != "" {
+		return nil, fmt.Errorf("timer watcher does not support success events")
+	}
+
 	tw := &Watcher{
 		name:      name,
 		machine:   machine,
@@ -101,6 +105,8 @@ func (w *Watcher) timeStart() {
 		w.cancelTimer = cancel
 		w.mu.Unlock()
 
+		w.NotifyWatcherState(w.CurrentState())
+
 		select {
 		case <-timer.C:
 			w.mu.Lock()
@@ -110,7 +116,7 @@ func (w *Watcher) timeStart() {
 			w.mu.Unlock()
 
 			w.NotifyWatcherState(w.CurrentState())
-			w.SuccessTransition()
+			w.FailureTransition()
 
 		case <-ctx.Done():
 			w.mu.Lock()
@@ -129,13 +135,10 @@ func (w *Watcher) timeStart() {
 			return
 		}
 	}()
-
-	w.NotifyWatcherState(w.CurrentState())
 }
 
 func (w *Watcher) watch() {
 	if !w.ShouldWatch() {
-		w.Infof("Forcing timer off")
 		w.forceTimerStop()
 		return
 	}
