@@ -12,7 +12,7 @@ import (
 func eqMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
-		return fact.String() == value, nil
+		return strings.EqualFold(fact.String(), value), nil
 
 	case gjson.Number:
 		if strings.Contains(value, ".") {
@@ -75,7 +75,7 @@ func reMatch(fact gjson.Result, value string) (bool, error) {
 func leMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
-		return fact.String() <= value, nil
+		return strings.ToLower(fact.String()) <= strings.ToLower(value), nil
 
 	case gjson.Number:
 		if strings.Contains(value, ".") {
@@ -102,7 +102,7 @@ func leMatch(fact gjson.Result, value string) (bool, error) {
 func geMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
-		return fact.String() >= value, nil
+		return strings.ToLower(fact.String()) >= strings.ToLower(value), nil
 
 	case gjson.Number:
 		if strings.Contains(value, ".") {
@@ -129,7 +129,7 @@ func geMatch(fact gjson.Result, value string) (bool, error) {
 func ltMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
-		return fact.String() < value, nil
+		return strings.ToLower(fact.String()) < strings.ToLower(value), nil
 
 	case gjson.Number:
 		if strings.Contains(value, ".") {
@@ -156,7 +156,7 @@ func ltMatch(fact gjson.Result, value string) (bool, error) {
 func gtMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
-		return fact.String() > value, nil
+		return strings.ToLower(fact.String()) > strings.ToLower(value), nil
 
 	case gjson.Number:
 		if strings.Contains(value, ".") {
@@ -183,7 +183,7 @@ func gtMatch(fact gjson.Result, value string) (bool, error) {
 func neMatch(fact gjson.Result, value string) (bool, error) {
 	switch fact.Type {
 	case gjson.String:
-		return fact.String() != value, nil
+		return !strings.EqualFold(fact.String(), value), nil
 
 	case gjson.Number:
 		if strings.Contains(value, ".") {
@@ -217,6 +217,8 @@ func neMatch(fact gjson.Result, value string) (bool, error) {
 func regexMatch(value string, pattern string) (bool, error) {
 	pattern = strings.TrimLeft(pattern, "/")
 	pattern = strings.TrimRight(pattern, "/")
+
+	pattern = fmt.Sprintf("(?i)%s", pattern)
 
 	re, err := regexp.Compile(pattern)
 	if err != nil {

@@ -27,11 +27,15 @@ var _ = Describe("Classes", func() {
 
 	It("Should support regex", func() {
 		Expect(MatchFile([]string{"/test/"}, "testdata/classes.txt", log)).To(BeTrue())
+		Expect(MatchFile([]string{"/TeSt/"}, "testdata/classes.txt", log)).To(BeTrue())
 		Expect(MatchFile([]string{"/nonxisting/"}, "testdata/classes.txt", log)).To(BeFalse())
+		Expect(MatchFile([]string{"/NoNxIsTiNg/"}, "testdata/classes.txt", log)).To(BeFalse())
 	})
 
 	It("Should support exact matches", func() {
 		Expect(MatchFile([]string{"role::testing"}, "testdata/classes.txt", log)).To(BeTrue())
+		Expect(MatchFile([]string{"RoLe::TeStInG"}, "testdata/classes.txt", log)).To(BeTrue())
 		Expect(MatchFile([]string{"nonxisting"}, "testdata/classes.txt", log)).To(BeFalse())
+		Expect(MatchFile([]string{"NoNxIsTInG"}, "testdata/classes.txt", log)).To(BeFalse())
 	})
 })
