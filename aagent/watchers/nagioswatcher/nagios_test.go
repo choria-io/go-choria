@@ -2,8 +2,10 @@ package nagioswatcher
 
 import (
 	"encoding/json"
+	"fmt"
 	"io/ioutil"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
@@ -12,6 +14,7 @@ import (
 	. "github.com/onsi/gomega"
 
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/choria-io/go-choria/statistics"
 )
 
 func Test(t *testing.T) {
@@ -102,6 +105,12 @@ var _ = Describe("NagiosWatcher", func() {
 				"builtin": "goss",
 			})
 			Expect(err).To(MatchError("gossfile property is required for the goss builtin check"))
+
+			watch.properties = nil
+			err = watch.setProperties(map[string]interface{}{
+				"builtin": "choria_status",
+			})
+			Expect(err).To(MatchError("last_message property is required for the choria_status builtin check"))
 		})
 
 		It("Should handle valid goss setups", func() {
@@ -113,6 +122,57 @@ var _ = Describe("NagiosWatcher", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(watch.properties.Builtin).To(Equal("goss"))
 			Expect(watch.properties.Gossfile).To(Equal("/x"))
+		})
+
+		It("Should handle valid choria_status setups", func() {
+			watch.properties = nil
+			err = watch.setProperties(map[string]interface{}{
+				"builtin":      "choria_status",
+				"last_message": "1h",
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(watch.properties.Builtin).To(Equal("choria_status"))
+			Expect(watch.properties.LastMessage).To(Equal(time.Hour))
+
+			sf := filepath.Join(td, "status.json")
+			mockMachine.EXPECT().ChoriaStatusFile().Return(sf, 60*60).AnyTimes()
+			state, _, err := watch.watchUsingChoria()
+			Expect(state).To(Equal(CRITICAL))
+			Expect(err).ToNot(HaveOccurred())
+
+			status := statistics.InstanceStatus{
+				Identity:        "ginkgo.example.net",
+				Uptime:          1000,
+				ConnectedServer: "broker.example.net",
+				LastMessage:     1607800631,
+				Provisioning:    false,
+				Stats: &statistics.ServerStats{
+					Total:      4,
+					Valid:      1,
+					Invalid:    1,
+					Passed:     1,
+					Filtered:   1,
+					Replies:    2,
+					TTLExpired: 1,
+				},
+				FileName: sf,
+				ModTime:  time.Now(),
+			}
+			sj, _ := json.Marshal(status)
+			ioutil.WriteFile(sf, sj, 0644)
+
+			state, output, err := watch.watchUsingChoria()
+			Expect(state).To(Equal(OK))
+			Expect(output).To(Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=1607800631;;", sf)))
+			Expect(err).ToNot(HaveOccurred())
+
+			status.LastMessage = 1607800631 - 70*70
+			sj, _ = json.Marshal(status)
+			ioutil.WriteFile(sf, sj, 0644)
+			state, output, err = watch.watchUsingChoria()
+			Expect(state).To(Equal(CRITICAL))
+			Expect(output).To(Equal("CRITICAL: last message at 2020-12-12 17:55:31 +0000 UTC 1h0m0s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=1607795731;;"))
+			Expect(err).ToNot(HaveOccurred())
 		})
 	})
 

@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/server"
+	"github.com/choria-io/go-choria/statistics"
 )
 
 type tStatusCommand struct {
@@ -35,64 +33,39 @@ func (s *tStatusCommand) Configure() error {
 	return nil
 }
 
-func (s *tStatusCommand) checkConnection(status *server.InstanceStatus) (err error) {
+func (s *tStatusCommand) checkConnection(status *statistics.InstanceStatus) (err error) {
 	if !s.checkConnected {
 		return nil
 	}
 
-	if status.ConnectedServer == "" {
-		return fmt.Errorf("not connected")
-	}
-
-	return nil
+	return status.CheckConnection()
 }
 
-func (s *tStatusCommand) checkLastMessage(status *server.InstanceStatus) (err error) {
+func (s *tStatusCommand) checkLastMessage(status *statistics.InstanceStatus) (err error) {
 	if s.lastMessage == 0 {
 		return nil
 	}
 
-	previous := time.Unix(status.LastMessage, 0)
-
-	if previous.Before(time.Now().Add(-1 * s.lastMessage)) {
-		return fmt.Errorf("last message at %v", previous)
-	}
-
-	return nil
+	return status.CheckLastMessage(s.lastMessage)
 }
 
-func (s *tStatusCommand) checkFileAge() (err error) {
+func (s *tStatusCommand) checkFileAge(status *statistics.InstanceStatus) (err error) {
 	if s.maxAge == 0 {
 		return nil
 	}
 
-	stat, err := os.Stat(s.statusFile)
-	if err != nil {
-		return err
-	}
-
-	if stat.ModTime().Before(time.Now().Add(-1 * s.maxAge)) {
-		return fmt.Errorf("older than %v", s.maxAge)
-	}
-
-	return nil
+	return status.CheckFileAge(s.maxAge)
 }
 
 func (s *tStatusCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	rawstatus, err := ioutil.ReadFile(s.statusFile)
+	status, err := statistics.LoadInstanceStatus(s.statusFile)
 	if err != nil {
 		s.exit(fmt.Errorf("%s could not be read: %s", s.statusFile, err))
 	}
 
-	status := &server.InstanceStatus{}
-	err = json.Unmarshal(rawstatus, status)
-	if err != nil {
-		s.exit(fmt.Errorf("%s could not be parsed: %s", s.statusFile, err))
-	}
-
-	err = s.checkFileAge()
+	err = s.checkFileAge(status)
 	if err != nil {
 		s.exit(err)
 	}

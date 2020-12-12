@@ -12,6 +12,7 @@ import (
 	lifecycle "github.com/choria-io/go-choria/lifecycle"
 	protocol "github.com/choria-io/go-choria/protocol"
 	agents "github.com/choria-io/go-choria/server/agents"
+	statistics "github.com/choria-io/go-choria/statistics"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
 	time "time"
@@ -295,9 +296,9 @@ func (mr *MockServerInfoSourceMockRecorder) StartTime() *gomock.Call {
 }
 
 // Stats mocks base method
-func (m *MockServerInfoSource) Stats() agents.ServerStats {
+func (m *MockServerInfoSource) Stats() statistics.ServerStats {
 	ret := m.ctrl.Call(m, "Stats")
-	ret0, _ := ret[0].(agents.ServerStats)
+	ret0, _ := ret[0].(statistics.ServerStats)
 	return ret0
 }
 

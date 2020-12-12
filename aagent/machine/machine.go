@@ -40,13 +40,15 @@ type Machine struct {
 	// SplayStart causes a random sleep of maximum this many seconds before the machine starts
 	SplayStart int `json:"splay_start" yaml:"splay_start"`
 
-	instanceID    string
-	identity      string
-	directory     string
-	manifest      string
-	txtfileDir    string
-	overridesFile string
-	startTime     time.Time
+	instanceID       string
+	identity         string
+	directory        string
+	manifest         string
+	txtfileDir       string
+	overridesFile    string
+	choriaStatusFile string
+	choriaStatusFreq int
+	startTime        time.Time
 
 	manager     WatcherManager
 	fsm         *fsm.FSM
@@ -170,6 +172,23 @@ func ValidateDir(dir string) (validationErrors []string, err error) {
 	}
 
 	return validationErrors, nil
+}
+
+// SetChoriaStatusFile sets the path and write frequency of the choria status file
+func (m *Machine) SetChoriaStatusFile(f string, freq int) {
+	m.Lock()
+	defer m.Unlock()
+
+	m.choriaStatusFile = f
+	m.choriaStatusFreq = freq
+}
+
+// ChoriaStatusFile is the path to and write frequency of the choria status file, empty when not set
+func (m *Machine) ChoriaStatusFile() (string, int) {
+	m.Lock()
+	defer m.Unlock()
+
+	return m.choriaStatusFile, m.choriaStatusFreq
 }
 
 // SetIdentity sets the identity of the node hosting this machine

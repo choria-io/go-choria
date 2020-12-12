@@ -168,6 +168,19 @@ func (mr *MockMachineMockRecorder) OverrideData() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OverrideData", reflect.TypeOf((*MockMachine)(nil).OverrideData))
 }
 
+// ChoriaStatusFile mocks base method
+func (m *MockMachine) ChoriaStatusFile() (string, int) {
+	ret := m.ctrl.Call(m, "ChoriaStatusFile")
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(int)
+	return ret0, ret1
+}
+
+// ChoriaStatusFile indicates an expected call of ChoriaStatusFile
+func (mr *MockMachineMockRecorder) ChoriaStatusFile() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChoriaStatusFile", reflect.TypeOf((*MockMachine)(nil).ChoriaStatusFile))
+}
+
 // Debugf mocks base method
 func (m *MockMachine) Debugf(name, format string, args ...interface{}) {
 	varargs := []interface{}{name, format}
