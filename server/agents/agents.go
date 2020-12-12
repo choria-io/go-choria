@@ -10,6 +10,8 @@ import (
 
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/statistics"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent"
@@ -41,20 +43,9 @@ type ServerInfoSource interface {
 	NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error
 	Provisioning() bool
 	StartTime() time.Time
-	Stats() ServerStats
+	Stats() statistics.ServerStats
 	UpTime() int64
 	PrepareForShutdown() error
-}
-
-// ServerStats are internal statistics about the running server
-type ServerStats struct {
-	Total      float64 `json:"total"`
-	Valid      float64 `json:"valid"`
-	Invalid    float64 `json:"invalid"`
-	Passed     float64 `json:"passed"`
-	Filtered   float64 `json:"filtered"`
-	Replies    float64 `json:"replies"`
-	TTLExpired float64 `json:"ttlexpired"`
 }
 
 // AgentReply is a generic reply from an agent

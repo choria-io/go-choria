@@ -12,6 +12,7 @@ type Machine interface {
 	Version() string
 	TimeStampSeconds() int64
 	OverrideData() ([]byte, error)
+	ChoriaStatusFile() (string, int)
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Errorf(name string, format string, args ...interface{})

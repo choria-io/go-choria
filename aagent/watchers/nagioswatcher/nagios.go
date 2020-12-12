@@ -65,6 +65,7 @@ type properties struct {
 	Gossfile    string
 	Builtin     string
 	Timeout     time.Duration
+	LastMessage time.Duration `mapstructure:"last_message"`
 }
 
 type PerfData struct {
@@ -231,6 +232,10 @@ func (w *Watcher) validate() error {
 
 	if w.properties.Builtin == "goss" && w.properties.Gossfile == "" {
 		return fmt.Errorf("gossfile property is required for the goss builtin check")
+	}
+
+	if w.properties.Builtin == "choria_status" && w.properties.LastMessage == 0 {
+		return fmt.Errorf("last_message property is required for the choria_status builtin check")
 	}
 
 	if w.properties.Timeout == 0 {
@@ -478,6 +483,8 @@ func (w *Watcher) watchUsingBuiltin(_ context.Context) (state State, output stri
 		return w.builtinHeartbeat()
 	case strings.HasPrefix(w.properties.Builtin, "goss"):
 		return w.watchUsingGoss()
+	case w.properties.Builtin == "choria_status":
+		return w.watchUsingChoria()
 	default:
 		return UNKNOWN, "", fmt.Errorf("unsupported builtin %q", w.properties.Builtin)
 	}

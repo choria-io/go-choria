@@ -11,6 +11,7 @@ import (
 
 	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/statistics"
 
 	"github.com/choria-io/go-choria/lifecycle"
 
@@ -21,16 +22,6 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 )
-
-// InstanceStatus describes the current instance status
-type InstanceStatus struct {
-	Identity        string              `json:"identity"`
-	Uptime          int64               `json:"uptime"`
-	ConnectedServer string              `json:"connected_server"`
-	LastMessage     int64               `json:"last_message"`
-	Provisioning    bool                `json:"provisioning_mode"`
-	Stats           *agents.ServerStats `json:"stats"`
-}
 
 // NewEvent creates a new event with the server component and identity set and publishes it
 func (srv *Instance) NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error {
@@ -152,8 +143,8 @@ func (srv *Instance) Provisioning() bool {
 }
 
 // Stats expose server statistics
-func (srv *Instance) Stats() agents.ServerStats {
-	return agents.ServerStats{
+func (srv *Instance) Stats() statistics.ServerStats {
+	return statistics.ServerStats{
 		Total:      srv.getPromCtrValue(totalCtr),
 		Valid:      srv.getPromCtrValue(validatedCtr),
 		Invalid:    srv.getPromCtrValue(unvalidatedCtr),
@@ -165,10 +156,10 @@ func (srv *Instance) Stats() agents.ServerStats {
 }
 
 // Status calculates the current server status
-func (srv *Instance) Status() *InstanceStatus {
+func (srv *Instance) Status() *statistics.InstanceStatus {
 	stats := srv.Stats()
 
-	return &InstanceStatus{
+	return &statistics.InstanceStatus{
 		Identity:        srv.cfg.Identity,
 		Uptime:          srv.UpTime(),
 		ConnectedServer: srv.ConnectedServer(),
@@ -176,6 +167,11 @@ func (srv *Instance) Status() *InstanceStatus {
 		Provisioning:    srv.Provisioning(),
 		Stats:           &stats,
 	}
+}
+
+// ServerStatusFile is the path where the server writes it's status file regularly and how frequently
+func (srv *Instance) ServerStatusFile() (string, int) {
+	return srv.cfg.Choria.StatusFilePath, srv.cfg.Choria.StatusUpdateSeconds
 }
 
 // WriteServerStatus periodically writes the server status to a file

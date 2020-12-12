@@ -7,23 +7,23 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/choria-io/go-choria/choria"
-
-	"github.com/choria-io/go-choria/protocol"
 	"github.com/nats-io/nats-server/v2/server/pse"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/protocol"
 )
 
-type cinfo struct {
-	Build      buildinfo `json:"build"`
-	System     sysinfo   `json:"system"`
+type ChoriaInfo struct {
+	Build      BuildInfo `json:"build"`
+	System     SysInfo   `json:"system"`
 	ConfigFile string    `json:"config_file"`
 	Identity   string    `json:"identity"`
 }
 
-type buildinfo struct {
+type BuildInfo struct {
 	Version          string `json:"version"`
 	SHA              string `json:"sha"`
 	BuildDate        string `json:"build_date"`
@@ -34,7 +34,7 @@ type buildinfo struct {
 	MaxBrokerClients int    `json:"max_broker_clients"`
 }
 
-type sysinfo struct {
+type SysInfo struct {
 	RSS   int64   `json:"rss"`
 	PCPU  float64 `json:"cpu_percent"`
 	Cores int     `json:"cpu_cores"`
@@ -89,7 +89,7 @@ func Start(cfw *choria.Framework, handler http.Handler) {
 	}
 }
 
-func handleRoot(w http.ResponseWriter, r *http.Request) {
+func SystemInfo() ChoriaInfo {
 	var rss, vss int64
 	var pcpu float64
 
@@ -97,10 +97,10 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 
 	bi := fw.BuildInfo()
 
-	sinfo := cinfo{
+	return ChoriaInfo{
 		ConfigFile: fw.Configuration().ConfigFile,
 		Identity:   fw.Configuration().Identity,
-		Build: buildinfo{
+		Build: BuildInfo{
 			Version:          bi.Version(),
 			SHA:              bi.SHA(),
 			BuildDate:        bi.BuildDate(),
@@ -110,14 +110,16 @@ func handleRoot(w http.ResponseWriter, r *http.Request) {
 			Go:               runtime.Version(),
 			MaxBrokerClients: bi.MaxBrokerClients(),
 		},
-		System: sysinfo{
+		System: SysInfo{
 			RSS:   rss,
 			PCPU:  pcpu,
 			Cores: runtime.NumCPU(),
 		},
 	}
+}
 
-	j, err := json.Marshal(sinfo)
+func handleRoot(w http.ResponseWriter, r *http.Request) {
+	j, err := json.Marshal(SystemInfo())
 	if err != nil {
 		j = []byte(fmt.Sprintf(`{"error":%s}`, err))
 	}
