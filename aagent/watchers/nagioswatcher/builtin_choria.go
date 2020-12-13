@@ -27,7 +27,7 @@ func (w *Watcher) watchUsingChoria() (state State, output string, err error) {
 
 	err = status.CheckLastMessage(w.properties.LastMessage)
 	if err != nil {
-		return CRITICAL, fmt.Sprintf("CRITICAL: %s %v|%v", err, w.properties.LastMessage, perfData), nil
+		return CRITICAL, fmt.Sprintf("CRITICAL: %s|%v", err, perfData), nil
 	}
 
 	err = status.CheckConnection()
