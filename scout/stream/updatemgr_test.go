@@ -19,7 +19,8 @@ func Test(t *testing.T) {
 }
 
 type thing struct {
-	H string `json:"hello"`
+	H       string `json:"hello"`
+	Updated chan struct{}
 }
 
 func (t *thing) Instance() interface{} {
@@ -28,6 +29,7 @@ func (t *thing) Instance() interface{} {
 
 func (t *thing) Update(u interface{}) {
 	t.H = u.(*thing).H
+	t.Updated <- struct{}{}
 }
 
 var _ = Describe("UpdateManager", func() {
@@ -39,7 +41,7 @@ var _ = Describe("UpdateManager", func() {
 
 	BeforeEach(func() {
 		logger := logrus.New()
-		logger.SetOutput(GinkgoWriter)
+		// logger.SetOutput(GinkgoWriter)
 		log = logrus.NewEntry(logger)
 		mockctl = gomock.NewController(GinkgoT())
 		fw = NewMockFramework(mockctl)
@@ -59,6 +61,17 @@ var _ = Describe("UpdateManager", func() {
 			Fail("jetstream did not become ready")
 		}
 
+		toSleep := func(n chan struct{}) {
+			timer := time.NewTimer(time.Second)
+			defer timer.Stop()
+
+			select {
+			case <-timer.C:
+				Fail("timeout waiting for update")
+			case <-n:
+			}
+		}
+
 		nc, err := nats.Connect(srv.ClientURL())
 		Expect(err).ToNot(HaveOccurred())
 
@@ -73,21 +86,23 @@ var _ = Describe("UpdateManager", func() {
 		_, err = nc.Request("js.test.in", []byte(`{"hello":"world"}`), time.Second)
 		Expect(err).ToNot(HaveOccurred())
 
-		id := thing{}
+		id := thing{Updated: make(chan struct{}, 1)}
 
 		mgr, err := New("TEST", "", fw)
 		Expect(err).ToNot(HaveOccurred())
+		defer mgr.Close()
 
 		err = mgr.Manage(&id)
 		Expect(err).ToNot(HaveOccurred())
 
-		time.Sleep(time.Second)
+		toSleep(id.Updated)
 
 		Expect(id.H).To(Equal("world"))
 
 		_, err = nc.Request("js.test.in", []byte(`{"hello":"bob"}`), time.Second)
 		Expect(err).ToNot(HaveOccurred())
-		time.Sleep(time.Second)
+
+		toSleep(id.Updated)
 
 		Expect(id.H).To(Equal("bob"))
 	})

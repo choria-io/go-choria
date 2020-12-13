@@ -7,7 +7,7 @@ import (
 
 var metadata = &agents.Metadata{
 	Name:        "scout",
-	Description: "Choria Scout API",
+	Description: "Choria Scout Agent Management API",
 	Author:      "R.I.Pienaar <rip@devco.net>",
 	Version:     build.Version,
 	License:     "Apache-2.0",

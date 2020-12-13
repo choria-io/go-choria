@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/nats.go"
@@ -26,6 +27,7 @@ type Mgr struct {
 	subj   string
 	log    *logrus.Entry
 	mgr    *jsm.Manager
+	eph    *Ephemeral
 
 	sync.Mutex
 }
@@ -37,13 +39,26 @@ func New(stream string, subs string, fw Framework) (*Mgr, error) {
 		return nil, err
 	}
 
-	return &Mgr{
+	m := &Mgr{
 		nc:     fw.NATSConn(),
 		stream: stream,
 		subj:   subs,
 		mgr:    mgr,
-		log:    fw.Logger("stream").WithFields(logrus.Fields{"stream": stream, "subjects": subs}),
-	}, nil
+
+		log: fw.Logger("stream").WithFields(logrus.Fields{"stream": stream, "subjects": subs}),
+	}
+
+	return m, nil
+}
+
+func (m *Mgr) Close() {
+	m.Lock()
+	eph := m.eph
+	m.Unlock()
+
+	if eph != nil {
+		eph.Close()
+	}
 }
 
 func (m *Mgr) Manage(d updatable) error {
@@ -52,9 +67,15 @@ func (m *Mgr) Manage(d updatable) error {
 		return fmt.Errorf("could not load stream %s: %s", m.stream, err)
 	}
 
-	sub, err := m.nc.Subscribe(nats.NewInbox(), func(msg *nats.Msg) {
+	ib := nats.NewInbox()
+
+	_, err = m.nc.Subscribe(ib, func(msg *nats.Msg) {
 		m.Lock()
 		defer m.Unlock()
+
+		if m.eph != nil {
+			m.eph.SetResumeSequence(msg)
+		}
 
 		t := d.Instance()
 		err = json.Unmarshal(msg.Data, t)
@@ -74,7 +95,7 @@ func (m *Mgr) Manage(d updatable) error {
 		return err
 	}
 
-	_, err = str.NewConsumer(jsm.FilterStreamBySubject(m.subj), jsm.StartWithLastReceived(), jsm.DeliverySubject(sub.Subject))
+	m.eph, err = NewEphemeral(str, time.Hour, m.log, jsm.FilterStreamBySubject(m.subj), jsm.StartWithLastReceived(), jsm.DeliverySubject(ib))
 	if err != nil {
 		return err
 	}
