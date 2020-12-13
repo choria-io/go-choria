@@ -140,11 +140,12 @@ var _ = Describe("NagiosWatcher", func() {
 			Expect(state).To(Equal(CRITICAL))
 			Expect(err).ToNot(HaveOccurred())
 
+			now := time.Now().UTC()
 			status := statistics.InstanceStatus{
 				Identity:        "ginkgo.example.net",
 				Uptime:          1000,
 				ConnectedServer: "broker.example.net",
-				LastMessage:     1607800631,
+				LastMessage:     now.Unix(),
 				Provisioning:    false,
 				Stats: &statistics.ServerStats{
 					Total:      4,
@@ -156,22 +157,23 @@ var _ = Describe("NagiosWatcher", func() {
 					TTLExpired: 1,
 				},
 				FileName: sf,
-				ModTime:  time.Now(),
+				ModTime:  now,
 			}
 			sj, _ := json.Marshal(status)
 			ioutil.WriteFile(sf, sj, 0644)
 
 			state, output, err := watch.watchUsingChoria()
+			Expect(output).To(Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;;", sf, now.Unix())))
 			Expect(state).To(Equal(OK))
-			Expect(output).To(Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=1607800631;;", sf)))
 			Expect(err).ToNot(HaveOccurred())
 
-			status.LastMessage = 1607800631 - 70*70
+			lm := now.Add(-1 * 70 * 70 * time.Second)
+			status.LastMessage = lm.Unix()
 			sj, _ = json.Marshal(status)
 			ioutil.WriteFile(sf, sj, 0644)
 			state, output, err = watch.watchUsingChoria()
 			Expect(state).To(Equal(CRITICAL))
-			Expect(output).To(Equal("CRITICAL: last message at 2020-12-12 17:55:31 +0000 UTC 1h0m0s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=1607795731;;"))
+			Expect(output).To(Equal(fmt.Sprintf("CRITICAL: last message at %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;;", time.Unix(status.LastMessage, 0).UTC(), status.LastMessage)))
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
