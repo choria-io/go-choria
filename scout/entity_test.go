@@ -2,14 +2,12 @@ package scout
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
 	"os"
 	"sync"
 	"testing"
 	"time"
 
-	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/nats-io/nats.go"
 	. "github.com/onsi/ginkgo"
@@ -56,9 +54,6 @@ var _ = Describe("Entity", func() {
 		nc, err := nats.Connect(srv.ClientURL())
 		Expect(err).ToNot(HaveOccurred())
 
-		mgr, err := jsm.New(nc)
-		Expect(err).ToNot(HaveOccurred())
-
 		err = ConfigureStreams(nc, log)
 		Expect(err).ToNot(HaveOccurred())
 
@@ -76,10 +71,6 @@ var _ = Describe("Entity", func() {
 
 		_, err = nc.Request("scout.check.swap", load, 2*time.Second)
 		Expect(err).ToNot(HaveOccurred())
-
-		names, err := mgr.StreamNames(nil)
-		Expect(err).ToNot(HaveOccurred())
-		fmt.Printf("%v\n", names)
 
 		otf, err := ioutil.TempFile("", "")
 		Expect(err).ToNot(HaveOccurred())

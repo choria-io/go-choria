@@ -7,7 +7,7 @@
     "name": "scout",
     "version": "0.0.1",
     "url": "https://choria.io",
-    "description": "Choria Scout Management API",
+    "description": "Choria Scout Agent Management API",
     "provider": "golang"
   },
   "actions": [

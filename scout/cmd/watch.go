@@ -23,6 +23,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/logger"
+	"github.com/choria-io/go-choria/scout/stream"
 )
 
 type WatchCommand struct {
@@ -34,6 +35,9 @@ type WatchCommand struct {
 	statePattern string
 	history      time.Duration
 	nc           choria.Connector
+
+	transEph *stream.Ephemeral
+	stateEph *stream.Ephemeral
 
 	status    map[string]map[string]string
 	vwBuffers map[string][]string
@@ -139,6 +143,10 @@ func (w *WatchCommand) dataFromCloudEventJSON(j []byte) ([]byte, error) {
 }
 
 func (w *WatchCommand) handleTransition(m *choria.ConnectorMessage, gui *gocui.Gui) {
+	if m == nil {
+		return
+	}
+
 	data, err := w.dataFromCloudEventJSON(m.Bytes())
 	if err != nil {
 		w.Errorf("could not parse cloud event: %s", err)
@@ -158,6 +166,8 @@ func (w *WatchCommand) handleTransition(m *choria.ConnectorMessage, gui *gocui.G
 	if w.check != "" && !strings.Contains(transition.Machine, w.check) {
 		return
 	}
+
+	w.transEph.SetResumeSequence(m.Msg.(*nats.Msg))
 
 	w.Lock()
 	defer w.Unlock()
@@ -188,6 +198,10 @@ func (w *WatchCommand) colorizeState(state string) string {
 }
 
 func (w *WatchCommand) handleState(m *choria.ConnectorMessage, gui *gocui.Gui) {
+	if m == nil {
+		return
+	}
+
 	data, err := w.dataFromCloudEventJSON(m.Bytes())
 	if err != nil {
 		w.Errorf("could not parse cloud event: %s", err)
@@ -209,6 +223,8 @@ func (w *WatchCommand) handleState(m *choria.ConnectorMessage, gui *gocui.Gui) {
 	}
 
 	output := strings.Split(state.Output, "|")
+	w.stateEph.SetResumeSequence(m.Msg.(*nats.Msg))
+
 	w.Lock()
 	defer w.Unlock()
 
@@ -230,11 +246,13 @@ func (w *WatchCommand) handleState(m *choria.ConnectorMessage, gui *gocui.Gui) {
 	}
 
 	w.updateView(gui, "Checks", true, func(o io.Writer, _ *gocui.View) {
-		fmt.Fprintln(o, fmt.Sprintf(w.statePattern, time.Unix(state.Timestamp, 0).Format("15:04:05"), w.colorizeState(state.Status), state.Identity, state.Machine)+output[0])
+		pre := fmt.Sprintf(w.statePattern, time.Unix(state.Timestamp, 0).Format("15:04:05"), w.colorizeState(state.Status), state.Identity, state.Machine)
+		line := pre + output[0]
+		fmt.Fprintln(o, line)
 
 		if w.perf {
 			for _, p := range state.PerfData {
-				fmt.Fprintf(o, "  %s = %v %s\n", p.Label, p.Value, p.Unit)
+				fmt.Fprintf(o, "%-"+strconv.Itoa(len(pre)-10)+"s %s = %v %s\n", "", p.Label, p.Value, p.Unit)
 			}
 		}
 	})
@@ -435,7 +453,10 @@ func (w *WatchCommand) setupWindows() (gui *gocui.Gui, err error) {
 		g.Close()
 		return nil, err
 	}
+
+	err = g.SetKeybinding("", gocui.KeyEsc, gocui.ModNone, func(g *gocui.Gui, v *gocui.View) error { return gocui.ErrQuit })
 	if err != nil {
+		g.Close()
 		return nil, err
 	}
 
@@ -469,7 +490,12 @@ func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan 
 		return err
 	}
 
-	_, err = mgr.NewConsumer("CHORIA_MACHINE", jsm.FilterStreamBySubject("choria.machine.transition"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(90), jsm.MaxDeliveryAttempts(2))
+	str, err := mgr.LoadStream("CHORIA_MACHINE")
+	if err != nil {
+		return err
+	}
+
+	w.transEph, err = stream.NewEphemeral(str, time.Minute, nil, jsm.FilterStreamBySubject("choria.machine.transition"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(2))
 	if err != nil {
 		return fmt.Errorf("could not subscribe to Choria Streaming stream CHORIA_MACHINE: %s", err)
 	}
@@ -480,7 +506,7 @@ func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan 
 		return fmt.Errorf("could not subscribe to %s", ib)
 	}
 
-	_, err = mgr.NewConsumer("CHORIA_MACHINE", jsm.FilterStreamBySubject("choria.machine.watcher.nagios.state"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(90), jsm.MaxDeliveryAttempts(2))
+	w.stateEph, err = stream.NewEphemeral(str, time.Minute, nil, jsm.FilterStreamBySubject("choria.machine.watcher.nagios.state"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(2))
 	if err != nil {
 		return fmt.Errorf("could not subscribe to Choria Streaming stream CHORIA_MACHINE: %s", err)
 	}
