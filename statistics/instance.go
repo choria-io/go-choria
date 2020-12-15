@@ -64,6 +64,15 @@ func (i *InstanceStatus) CheckFileAge(maxAge time.Duration) error {
 
 func (i *InstanceStatus) CheckLastMessage(maxAge time.Duration) error {
 	previous := time.Unix(i.LastMessage, 0)
+
+	// we don't check the first maxAge if uptime is low and we never had any messages
+	// to avoid large sets of critical after restarts, upgrades etc
+	if i.LastMessage == 0 {
+		if float64(i.Uptime) < maxAge.Seconds() {
+			return nil
+		}
+	}
+
 	if previous.Before(time.Now().Add(-1 * maxAge)) {
 		return fmt.Errorf("last message at %v", previous.UTC())
 	}
