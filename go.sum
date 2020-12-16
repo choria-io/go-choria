@@ -85,8 +85,8 @@ github.com/blang/semver v3.5.1+incompatible/go.mod h1:kRBLl5iJ+tD4TcOOxsy/0fnweb
 github.com/boltdb/bolt v1.3.1/go.mod h1:clJnj/oiGkjum5o1McbSZDSLxVThjynRyGBgiAx27Ps=
 github.com/briandowns/spinner v0.0.0-20181029155426-195c31b675a7 h1:IvbBe4mOtBLz3X8n95FV5FzQqGWkrkCrfKdQxj7DkUg=
 github.com/briandowns/spinner v0.0.0-20181029155426-195c31b675a7/go.mod h1:hw/JEQBIE+c/BLI4aKM8UU8v+ZqrD3h7HC27kKt8JQU=
-github.com/brutella/dnssd v1.1.1 h1:Ar5ytE2Z9x5DTmuNnASlMTBpcQWQLm9ceHb326s0ykg=
-github.com/brutella/dnssd v1.1.1/go.mod h1:9gIcMKQSJvYlO2x+HR50cqqjghb9IWK9hvykmyveVVs=
+github.com/brutella/dnssd v1.1.2-0.20201216110556-df0d88646bc5 h1:SlP5CIO7U4n+A9A9bwhFZFoeFE41qxfAx/77/ZZlBjs=
+github.com/brutella/dnssd v1.1.2-0.20201216110556-df0d88646bc5/go.mod h1:9gIcMKQSJvYlO2x+HR50cqqjghb9IWK9hvykmyveVVs=
 github.com/brutella/hc v1.2.3 h1:9a3h61apXx+63b1T+W1vscs+G3xZkLS131gypnh1FIE=
 github.com/brutella/hc v1.2.3/go.mod h1:zknCv+aeiYM27tBXr3WFL49C8UPHMxP2IVY9c5TpMOY=
 github.com/casbin/casbin/v2 v2.1.2/go.mod h1:YcPU1XXisHhLzuxH9coDNf2FbKpjGlbCg3n9yuLkIJQ=

@@ -2,6 +2,8 @@ module github.com/choria-io/go-choria
 
 go 1.14
 
+replace github.com/brutella/dnssd => github.com/brutella/dnssd v1.1.2-0.20201216110556-df0d88646bc5
+
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.5
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
