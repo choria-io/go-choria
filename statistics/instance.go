@@ -10,13 +10,13 @@ import (
 
 // ServerStats are internal statistics about the running server
 type ServerStats struct {
-	Total      float64 `json:"total"`
-	Valid      float64 `json:"valid"`
-	Invalid    float64 `json:"invalid"`
-	Passed     float64 `json:"passed"`
-	Filtered   float64 `json:"filtered"`
-	Replies    float64 `json:"replies"`
-	TTLExpired float64 `json:"ttlexpired"`
+	Total      int64 `json:"total"`
+	Valid      int64 `json:"valid"`
+	Invalid    int64 `json:"invalid"`
+	Passed     int64 `json:"passed"`
+	Filtered   int64 `json:"filtered"`
+	Replies    int64 `json:"replies"`
+	TTLExpired int64 `json:"ttlexpired"`
 }
 
 // InstanceStatus describes the current instance status

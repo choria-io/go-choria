@@ -145,13 +145,13 @@ func (srv *Instance) Provisioning() bool {
 // Stats expose server statistics
 func (srv *Instance) Stats() statistics.ServerStats {
 	return statistics.ServerStats{
-		Total:      srv.getPromCtrValue(totalCtr),
-		Valid:      srv.getPromCtrValue(validatedCtr),
-		Invalid:    srv.getPromCtrValue(unvalidatedCtr),
-		Passed:     srv.getPromCtrValue(passedCtr),
-		Filtered:   srv.getPromCtrValue(filteredCtr),
-		Replies:    srv.getPromCtrValue(repliesCtr),
-		TTLExpired: srv.getPromCtrValue(ttlExpiredCtr),
+		Total:      int64(srv.getPromCtrValue(totalCtr)),
+		Valid:      int64(srv.getPromCtrValue(validatedCtr)),
+		Invalid:    int64(srv.getPromCtrValue(unvalidatedCtr)),
+		Passed:     int64(srv.getPromCtrValue(passedCtr)),
+		Filtered:   int64(srv.getPromCtrValue(filteredCtr)),
+		Replies:    int64(srv.getPromCtrValue(repliesCtr)),
+		TTLExpired: int64(srv.getPromCtrValue(ttlExpiredCtr)),
 	}
 }
 
