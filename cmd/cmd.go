@@ -28,18 +28,20 @@ type application struct {
 	commands []runableCmd
 }
 
-var cli = application{}
-var debug = false
-var configFile = ""
-var c *choria.Framework
-var cfg *config.Config
-var ctx context.Context
-var cancel func()
-var wg *sync.WaitGroup
-var mu = &sync.Mutex{}
-var err error
-var cpuProfile string
-var bi *build.Info
+var (
+	cli        = application{}
+	debug      = false
+	configFile = ""
+	c          *choria.Framework
+	cfg        *config.Config
+	ctx        context.Context
+	cancel     func()
+	wg         *sync.WaitGroup
+	mu         = &sync.Mutex{}
+	cpuProfile string
+	bi         *build.Info
+	err        error
+)
 
 func ParseCLI() (err error) {
 	bi = &build.Info{}

@@ -51,38 +51,45 @@ type GetConfigItemReply struct {
 	Value string `json:"value"`
 }
 
+type MachineState struct {
+	Name    string `json:"name" yaml:"name"`
+	State   string `json:"state" yaml:"state"`
+	Version string `json:"version" yaml:"version"`
+}
+
 type InventoryReply struct {
 	Agents         []string        `json:"agents"`
-	Facts          json.RawMessage `json:"facts"`
 	Classes        []string        `json:"classes"`
-	Version        string          `json:"version"`
-	DataPlugins    []string        `json:"data_plugins"`
-	MainCollective string          `json:"main_collective"`
 	Collectives    []string        `json:"collectives"`
+	DataPlugins    []string        `json:"data_plugins"`
+	Facts          json.RawMessage `json:"facts"`
+	Machines       []MachineState  `json:"machines"`
+	MainCollective string          `json:"main_collective"`
+	Version        string          `json:"version"`
 }
 
 type CPUTimes struct {
-	UserTime        int `json:"utime"`
-	SystemTime      int `json:"stime"`
-	ChildUserTime   int `json:"cutime"`
 	ChildSystemTime int `json:"cstime"`
+	ChildUserTime   int `json:"cutime"`
+	SystemTime      int `json:"stime"`
+	UserTime        int `json:"utime"`
 }
 
 type DaemonStatsReply struct {
-	Procs       []string `json:"threads"`
 	Agents      []string `json:"agents"`
-	PID         int      `json:"pid"`
-	Times       CPUTimes `json:"times"`
-	StartTime   int64    `json:"starttime"`
 	ConfigFile  string   `json:"configfile"`
+	Filtered    int64    `json:"filtered"`
+	PID         int      `json:"pid"`
+	Passed      int64    `json:"passed"`
+	Procs       []string `json:"threads"`
+	Replies     int64    `json:"replies"`
+	StartTime   int64    `json:"starttime"`
+	TTLExpired  int64    `json:"ttlexpired"`
+	Times       CPUTimes `json:"times"`
+	Total       int64    `json:"total"`
+	Unvalidated int64    `json:"unvalidated"`
+	Validated   int64    `json:"validated"`
 	Version     string   `json:"version"`
-	Total       float64  `json:"total"`
-	Validated   float64  `json:"validated"`
-	Unvalidated float64  `json:"unvalidated"`
-	Passed      float64  `json:"passed"`
-	Filtered    float64  `json:"filtered"`
-	Replies     float64  `json:"replies"`
-	TTLExpired  float64  `json:"ttlexpired"`
 }
 
 // New creates a new rpcutil agent
@@ -126,20 +133,20 @@ func daemonStatsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.R
 	bi := agent.Choria.BuildInfo()
 
 	output := &DaemonStatsReply{
-		Procs:       []string{fmt.Sprintf("Go %s with %d go procs on %d cores", runtime.Version(), runtime.NumGoroutine(), runtime.NumCPU())},
 		Agents:      agent.ServerInfoSource.KnownAgents(),
-		PID:         os.Getpid(),
-		Times:       CPUTimes{},
 		ConfigFile:  agent.ServerInfoSource.ConfigFile(),
-		Version:     bi.Version(),
-		StartTime:   agent.ServerInfoSource.StartTime().Unix(),
-		Total:       stats.Total,
-		Validated:   stats.Valid,
-		Unvalidated: stats.Invalid,
-		Passed:      stats.Passed,
 		Filtered:    stats.Filtered,
+		PID:         os.Getpid(),
+		Passed:      stats.Passed,
+		Procs:       []string{fmt.Sprintf("Go %s with %d go procs on %d cores", runtime.Version(), runtime.NumGoroutine(), runtime.NumCPU())},
 		Replies:     stats.Replies,
+		StartTime:   agent.ServerInfoSource.StartTime().Unix(),
 		TTLExpired:  stats.TTLExpired,
+		Times:       CPUTimes{},
+		Total:       stats.Total,
+		Unvalidated: stats.Invalid,
+		Validated:   stats.Valid,
+		Version:     bi.Version(),
 	}
 	reply.Data = output
 }
@@ -151,8 +158,22 @@ func inventoryAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		Collectives:    agent.Config.Collectives,
 		DataPlugins:    []string{},
 		Facts:          agent.ServerInfoSource.Facts(),
+		Machines:       []MachineState{},
 		MainCollective: agent.Config.MainCollective,
 		Version:        agent.Choria.BuildInfo().Version(),
+	}
+
+	states, err := agent.ServerInfoSource.MachinesStatus()
+	if err != nil {
+		agent.Log.Warnf("Could not retrieve machine status: %s", err)
+	}
+
+	for _, s := range states {
+		output.Machines = append(output.Machines, MachineState{
+			Name:    s.Name,
+			Version: s.Version,
+			State:   s.State,
+		})
 	}
 
 	reply.Data = output

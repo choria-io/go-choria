@@ -595,6 +595,10 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}),
 	}
 
+	if !conn.choria.Config.InitiatedByServer {
+		options = append(options, nats.PingInterval(30*time.Second))
+	}
+
 	switch {
 	case conn.config.Choria.ClientAnonTLS && !conn.config.InitiatedByServer:
 		conn.logger.Debug("Setting anonymous TLS for NATS connection")
