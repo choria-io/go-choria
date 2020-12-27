@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT
 
-package {{ .Package }}
+package scoutclient
 
 import (
 	"context"
@@ -8,15 +8,15 @@ import (
 
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
-	"github.com/gosuri/uiprogress"
 	"github.com/fatih/color"
+	"github.com/gosuri/uiprogress"
 )
 
 // requester is a generic request handler
 type requester struct {
-	client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client
-	action string
-	args   map[string]interface{}
+	client   *ScoutClient
+	action   string
+	args     map[string]interface{}
 	progress *uiprogress.Bar
 }
 
@@ -62,10 +62,10 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 	}
 	r.client.Unlock()
 
-        if progress {
-        	fmt.Println()
-                r.configureProgress(len(targets))
-        }
+	if progress {
+		fmt.Println()
+		r.configureProgress(len(targets))
+	}
 
 	agent, err := rpcclient.New(r.client.fw, r.client.ddl.Metadata.Name, rpcclient.DDL(r.client.ddl))
 	if err != nil {
@@ -90,27 +90,27 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 		return nil, fmt.Errorf("could not perform disable request: %s", err)
 	}
 
-        if progress {
-                uiprogress.Stop()
-                fmt.Println()
-        }
+	if progress {
+		uiprogress.Stop()
+		fmt.Println()
+	}
 
 	return res.Stats(), nil
 }
 
 func (r *requester) configureProgress(count int) {
-        if !r.client.clientOpts.progress {
-                return
-        }
+	if !r.client.clientOpts.progress {
+		return
+	}
 
-        r.progress = uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
-        r.progress.PrependFunc(func(b *uiprogress.Bar) string {
-                if b.Current() < count {
-                        return color.RedString(fmt.Sprintf("%d / %d", b.Current(), count))
-                }
+	r.progress = uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
+	r.progress.PrependFunc(func(b *uiprogress.Bar) string {
+		if b.Current() < count {
+			return color.RedString(fmt.Sprintf("%d / %d", b.Current(), count))
+		}
 
-                return color.GreenString(fmt.Sprintf("%d / %d", b.Current(), count))
-        })
+		return color.GreenString(fmt.Sprintf("%d / %d", b.Current(), count))
+	})
 
-        uiprogress.Start()
+	uiprogress.Start()
 }

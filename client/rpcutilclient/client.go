@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT
 
-package {{ .Package }}
+package rpcutilclient
 
 import (
 	"fmt"
@@ -12,10 +12,10 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	coreclient "github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
 )
 
@@ -101,9 +101,9 @@ type Log interface {
 	Panicf(format string, args ...interface{})
 }
 
-// {{ .DDL.Metadata.Name | SnakeToCamel }}Client to the {{ .DDL.Metadata.Name }} agent
-type {{ .DDL.Metadata.Name | SnakeToCamel }}Client struct {
-	fw           ChoriaFramework
+// RpcutilClient to the rpcutil agent
+type RpcutilClient struct {
+	fw            ChoriaFramework
 	cfg           *config.Config
 	ddl           *agent.DDL
 	ns            NodeSource
@@ -111,7 +111,7 @@ type {{ .DDL.Metadata.Name | SnakeToCamel }}Client struct {
 	clientRPCOpts []rpcclient.RequestOption
 	filters       []FilterFunc
 	targets       []string
-	workers	      int
+	workers       int
 
 	sync.Mutex
 }
@@ -128,7 +128,7 @@ type Metadata struct {
 }
 
 // Must create a new client and panics on error
-func Must(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) {
+func Must(opts ...InitializationOption) (client *RpcutilClient) {
 	c, err := New(opts...)
 	if err != nil {
 		panic(err)
@@ -137,13 +137,13 @@ func Must(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeTo
 	return c
 }
 
-// New creates a new client to the {{ .DDL.Metadata.Name }} agent
-func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client, err error) {
-	c := &{{ .DDL.Metadata.Name | SnakeToCamel }}Client{
+// New creates a new client to the rpcutil agent
+func New(opts ...InitializationOption) (client *RpcutilClient, err error) {
+	c := &RpcutilClient{
 		ddl:           &agent.DDL{},
 		clientRPCOpts: []rpcclient.RequestOption{},
-		filters:       []FilterFunc{
-		    FilterFunc(coreclient.AgentFilter("{{ .DDL.Metadata.Name }}")),
+		filters: []FilterFunc{
+			FilterFunc(coreclient.AgentFilter("rpcutil")),
 		},
 		clientOpts: &initOptions{
 			cfgFile: choria.UserConfig(),
@@ -168,7 +168,7 @@ func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToC
 	c.cfg = c.fw.Configuration()
 
 	if c.clientOpts.logger == nil {
-		c.clientOpts.logger = c.fw.Logger("{{ .DDL.Metadata.Name }}")
+		c.clientOpts.logger = c.fw.Logger("rpcutil")
 	} else {
 		c.fw.SetLogger(c.clientOpts.logger.Logger)
 	}
@@ -182,7 +182,7 @@ func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToC
 }
 
 // AgentMetadata is the agent metadata this client supports
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) AgentMetadata() *Metadata {
+func (p *RpcutilClient) AgentMetadata() *Metadata {
 	return &Metadata{
 		License:     p.ddl.Metadata.License,
 		Author:      p.ddl.Metadata.Author,
@@ -195,45 +195,176 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) AgentMetadata() *Metadat
 }
 
 // DiscoverNodes performs a discovery using the configured filter and node source
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) DiscoverNodes(ctx context.Context) (nodes []string, err error) {
+func (p *RpcutilClient) DiscoverNodes(ctx context.Context) (nodes []string, err error) {
 	p.Lock()
 	defer p.Unlock()
 
 	return p.ns.Discover(ctx, p.fw, p.filters)
 }
 
-{{ range $i, $action := .DDL.Actions }}
-// {{ $action.Name | SnakeToCamel }} performs the {{ $action.Name | ToLower }} action
+// AgentInventory performs the agent_inventory action
 //
-// Description: {{ $action.Description }}
-{{- if ChoriaRequiredInputs $action }}
-//
-// Required Inputs:
-{{- range $name, $input := ChoriaRequiredInputs $action }}
-//    - {{ $name }} ({{ $input.Type | ChoriaTypeToGoType }}) - {{ $input.Description }}
-{{- end }}
-{{- end }}
-{{- if ChoriaOptionalInputs $action }}
-//
-// Optional Inputs:
-{{- range $name, $input := ChoriaOptionalInputs $action }}
-//    - {{ $name }} ({{ $input.Type | ChoriaTypeToGoType }}) - {{ $input.Description }}
-{{- end }}
-{{- end }}
-func (p *{{ $.DDL.Metadata.Name | SnakeToCamel }}Client) {{ $action.Name | SnakeToCamel }}({{ $action | ChoriaRequiredInputsToFuncArgs }}) *{{ $action.Name | SnakeToCamel }}Requester {
-	d := &{{ $action.Name | SnakeToCamel }}Requester{
+// Description: Inventory of all agents on the server
+func (p *RpcutilClient) AgentInventory() *AgentInventoryRequester {
+	d := &AgentInventoryRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{
-{{- range $name, $input := ChoriaRequiredInputs $action }}
-				"{{ $name }}": {{ $name }}I,
-{{- end }}
-			},
-			action: "{{ $action.Name | ToLower }}",
+			args:   map[string]interface{}{},
+			action: "agent_inventory",
 			client: p,
 		},
 	}
 
 	return d
 }
-{{ end }}
+
+// CollectiveInfo performs the collective_info action
+//
+// Description: Info about the main and sub collectives
+func (p *RpcutilClient) CollectiveInfo() *CollectiveInfoRequester {
+	d := &CollectiveInfoRequester{
+		outc: nil,
+		r: &requester{
+			args:   map[string]interface{}{},
+			action: "collective_info",
+			client: p,
+		},
+	}
+
+	return d
+}
+
+// DaemonStats performs the daemon_stats action
+//
+// Description: Get statistics from the running daemon
+func (p *RpcutilClient) DaemonStats() *DaemonStatsRequester {
+	d := &DaemonStatsRequester{
+		outc: nil,
+		r: &requester{
+			args:   map[string]interface{}{},
+			action: "daemon_stats",
+			client: p,
+		},
+	}
+
+	return d
+}
+
+// GetConfigItem performs the get_config_item action
+//
+// Description: Get the active value of a specific config property
+//
+// Required Inputs:
+//    - item (string) - The item to retrieve from the server
+func (p *RpcutilClient) GetConfigItem(itemI string) *GetConfigItemRequester {
+	d := &GetConfigItemRequester{
+		outc: nil,
+		r: &requester{
+			args: map[string]interface{}{
+				"item": itemI,
+			},
+			action: "get_config_item",
+			client: p,
+		},
+	}
+
+	return d
+}
+
+// GetData performs the get_data action
+//
+// Description: Get data from a data plugin
+//
+// Required Inputs:
+//    - source (string) - The data plugin to retrieve information from
+//
+// Optional Inputs:
+//    - query (string) - The query argument to supply to the data plugin
+func (p *RpcutilClient) GetData(sourceI string) *GetDataRequester {
+	d := &GetDataRequester{
+		outc: nil,
+		r: &requester{
+			args: map[string]interface{}{
+				"source": sourceI,
+			},
+			action: "get_data",
+			client: p,
+		},
+	}
+
+	return d
+}
+
+// GetFact performs the get_fact action
+//
+// Description: Retrieve a single fact from the fact store
+//
+// Required Inputs:
+//    - fact (string) - The fact to retrieve
+func (p *RpcutilClient) GetFact(factI string) *GetFactRequester {
+	d := &GetFactRequester{
+		outc: nil,
+		r: &requester{
+			args: map[string]interface{}{
+				"fact": factI,
+			},
+			action: "get_fact",
+			client: p,
+		},
+	}
+
+	return d
+}
+
+// GetFacts performs the get_facts action
+//
+// Description: Retrieve multiple facts from the fact store
+//
+// Required Inputs:
+//    - facts (string) - Facts to retrieve
+func (p *RpcutilClient) GetFacts(factsI string) *GetFactsRequester {
+	d := &GetFactsRequester{
+		outc: nil,
+		r: &requester{
+			args: map[string]interface{}{
+				"facts": factsI,
+			},
+			action: "get_facts",
+			client: p,
+		},
+	}
+
+	return d
+}
+
+// Inventory performs the inventory action
+//
+// Description: System Inventory
+func (p *RpcutilClient) Inventory() *InventoryRequester {
+	d := &InventoryRequester{
+		outc: nil,
+		r: &requester{
+			args:   map[string]interface{}{},
+			action: "inventory",
+			client: p,
+		},
+	}
+
+	return d
+}
+
+// Ping performs the ping action
+//
+// Description: Responds to requests for PING with PONG
+func (p *RpcutilClient) Ping() *PingRequester {
+	d := &PingRequester{
+		outc: nil,
+		r: &requester{
+			args:   map[string]interface{}{},
+			action: "ping",
+			client: p,
+		},
+	}
+
+	return d
+}

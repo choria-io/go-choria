@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT
 
-package {{ .Package }}
+package scoutclient
 
 import (
 	"time"
@@ -10,7 +10,7 @@ import (
 )
 
 // OptionReset resets the client options to use across requests to an empty list
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionReset() *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionReset() *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -18,14 +18,14 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionReset() *{{ .DDL.M
 	p.ns = p.clientOpts.ns
 	p.targets = []string{}
 	p.filters = []FilterFunc{
-	    FilterFunc(coreclient.AgentFilter("{{ .DDL.Metadata.Name }}")),
+		FilterFunc(coreclient.AgentFilter("scout")),
 	}
 
 	return p
 }
 
 // OptionIdentityFilter adds an identity filter
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionIdentityFilter(f ...string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionIdentityFilter(f ...string) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -39,7 +39,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionIdentityFilter(f .
 }
 
 // OptionClassFilter adds a class filter
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionClassFilter(f ...string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionClassFilter(f ...string) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -53,7 +53,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionClassFilter(f ...s
 }
 
 // OptionFactFilter adds a fact filter
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionFactFilter(f ...string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionFactFilter(f ...string) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -67,7 +67,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionFactFilter(f ...st
 }
 
 // OptionAgentFilter adds an agent filter
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionAgentFilter(a ...string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionAgentFilter(a ...string) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -81,7 +81,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionAgentFilter(a ...s
 }
 
 // OptionCombinedFilter adds a combined filter
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionCombinedFilter(f ...string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionCombinedFilter(f ...string) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -95,7 +95,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionCombinedFilter(f .
 }
 
 // OptionCollective sets the collective to target
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionCollective(c string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionCollective(c string) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -104,7 +104,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionCollective(c strin
 }
 
 // OptionInBatches performs requests in batches
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionInBatches(size int, sleep int) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionInBatches(size int, sleep int) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -113,7 +113,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionInBatches(size int
 }
 
 // OptionDiscoveryTimeout configures the request discovery timeout, defaults to configured discovery timeout
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionDiscoveryTimeout(t time.Duration) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionDiscoveryTimeout(t time.Duration) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -122,7 +122,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionDiscoveryTimeout(t
 }
 
 // OptionLimitMethod configures the method to use when limiting targets - "random" or "first"
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionLimitMethod(m string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionLimitMethod(m string) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -131,7 +131,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionLimitMethod(m stri
 }
 
 // OptionLimitSize sets limits on the targets, either a number of a percentage like "10%"
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionLimitSize(s string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionLimitSize(s string) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -140,7 +140,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionLimitSize(s string
 }
 
 // OptionLimitSeed sets the random seed used to select targets when limiting and limit method is "random"
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionLimitSeed(s int64) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionLimitSeed(s int64) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -149,7 +149,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionLimitSeed(s int64)
 }
 
 // OptionTargets sets specific node targets which would avoid discovery for all action calls until reset
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionTargets(t []string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionTargets(t []string) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -158,7 +158,7 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionTargets(t []string
 }
 
 // OptionWorkers sets how many worker connections should be started to the broker
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionWorkers(w int) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+func (p *ScoutClient) OptionWorkers(w int) *ScoutClient {
 	p.Lock()
 	defer p.Unlock()
 

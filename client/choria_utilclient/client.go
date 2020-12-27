@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT
 
-package {{ .Package }}
+package choria_utilclient
 
 import (
 	"fmt"
@@ -12,10 +12,10 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	coreclient "github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
 )
 
@@ -101,9 +101,9 @@ type Log interface {
 	Panicf(format string, args ...interface{})
 }
 
-// {{ .DDL.Metadata.Name | SnakeToCamel }}Client to the {{ .DDL.Metadata.Name }} agent
-type {{ .DDL.Metadata.Name | SnakeToCamel }}Client struct {
-	fw           ChoriaFramework
+// ChoriaUtilClient to the choria_util agent
+type ChoriaUtilClient struct {
+	fw            ChoriaFramework
 	cfg           *config.Config
 	ddl           *agent.DDL
 	ns            NodeSource
@@ -111,7 +111,7 @@ type {{ .DDL.Metadata.Name | SnakeToCamel }}Client struct {
 	clientRPCOpts []rpcclient.RequestOption
 	filters       []FilterFunc
 	targets       []string
-	workers	      int
+	workers       int
 
 	sync.Mutex
 }
@@ -128,7 +128,7 @@ type Metadata struct {
 }
 
 // Must create a new client and panics on error
-func Must(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) {
+func Must(opts ...InitializationOption) (client *ChoriaUtilClient) {
 	c, err := New(opts...)
 	if err != nil {
 		panic(err)
@@ -137,13 +137,13 @@ func Must(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeTo
 	return c
 }
 
-// New creates a new client to the {{ .DDL.Metadata.Name }} agent
-func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client, err error) {
-	c := &{{ .DDL.Metadata.Name | SnakeToCamel }}Client{
+// New creates a new client to the choria_util agent
+func New(opts ...InitializationOption) (client *ChoriaUtilClient, err error) {
+	c := &ChoriaUtilClient{
 		ddl:           &agent.DDL{},
 		clientRPCOpts: []rpcclient.RequestOption{},
-		filters:       []FilterFunc{
-		    FilterFunc(coreclient.AgentFilter("{{ .DDL.Metadata.Name }}")),
+		filters: []FilterFunc{
+			FilterFunc(coreclient.AgentFilter("choria_util")),
 		},
 		clientOpts: &initOptions{
 			cfgFile: choria.UserConfig(),
@@ -168,7 +168,7 @@ func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToC
 	c.cfg = c.fw.Configuration()
 
 	if c.clientOpts.logger == nil {
-		c.clientOpts.logger = c.fw.Logger("{{ .DDL.Metadata.Name }}")
+		c.clientOpts.logger = c.fw.Logger("choria_util")
 	} else {
 		c.fw.SetLogger(c.clientOpts.logger.Logger)
 	}
@@ -182,7 +182,7 @@ func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToC
 }
 
 // AgentMetadata is the agent metadata this client supports
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) AgentMetadata() *Metadata {
+func (p *ChoriaUtilClient) AgentMetadata() *Metadata {
 	return &Metadata{
 		License:     p.ddl.Metadata.License,
 		Author:      p.ddl.Metadata.Author,
@@ -195,45 +195,68 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) AgentMetadata() *Metadat
 }
 
 // DiscoverNodes performs a discovery using the configured filter and node source
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) DiscoverNodes(ctx context.Context) (nodes []string, err error) {
+func (p *ChoriaUtilClient) DiscoverNodes(ctx context.Context) (nodes []string, err error) {
 	p.Lock()
 	defer p.Unlock()
 
 	return p.ns.Discover(ctx, p.fw, p.filters)
 }
 
-{{ range $i, $action := .DDL.Actions }}
-// {{ $action.Name | SnakeToCamel }} performs the {{ $action.Name | ToLower }} action
+// Info performs the info action
 //
-// Description: {{ $action.Description }}
-{{- if ChoriaRequiredInputs $action }}
-//
-// Required Inputs:
-{{- range $name, $input := ChoriaRequiredInputs $action }}
-//    - {{ $name }} ({{ $input.Type | ChoriaTypeToGoType }}) - {{ $input.Description }}
-{{- end }}
-{{- end }}
-{{- if ChoriaOptionalInputs $action }}
-//
-// Optional Inputs:
-{{- range $name, $input := ChoriaOptionalInputs $action }}
-//    - {{ $name }} ({{ $input.Type | ChoriaTypeToGoType }}) - {{ $input.Description }}
-{{- end }}
-{{- end }}
-func (p *{{ $.DDL.Metadata.Name | SnakeToCamel }}Client) {{ $action.Name | SnakeToCamel }}({{ $action | ChoriaRequiredInputsToFuncArgs }}) *{{ $action.Name | SnakeToCamel }}Requester {
-	d := &{{ $action.Name | SnakeToCamel }}Requester{
+// Description: Choria related information from the running Daemon and Middleware
+func (p *ChoriaUtilClient) Info() *InfoRequester {
+	d := &InfoRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{
-{{- range $name, $input := ChoriaRequiredInputs $action }}
-				"{{ $name }}": {{ $name }}I,
-{{- end }}
-			},
-			action: "{{ $action.Name | ToLower }}",
+			args:   map[string]interface{}{},
+			action: "info",
 			client: p,
 		},
 	}
 
 	return d
 }
-{{ end }}
+
+// MachineStates performs the machine_states action
+//
+// Description: States of the hosted Choria Autonomous Agents
+func (p *ChoriaUtilClient) MachineStates() *MachineStatesRequester {
+	d := &MachineStatesRequester{
+		outc: nil,
+		r: &requester{
+			args:   map[string]interface{}{},
+			action: "machine_states",
+			client: p,
+		},
+	}
+
+	return d
+}
+
+// MachineTransition performs the machine_transition action
+//
+// Description: Attempts to force a transition in a hosted Choria Autonomous Agent
+//
+// Required Inputs:
+//    - transition (string) - The transition event to send to the machine
+//
+// Optional Inputs:
+//    - instance (string) - Machine Instance ID
+//    - name (string) - Machine Name
+//    - path (string) - Machine Path
+//    - version (string) - Machine Version
+func (p *ChoriaUtilClient) MachineTransition(transitionI string) *MachineTransitionRequester {
+	d := &MachineTransitionRequester{
+		outc: nil,
+		r: &requester{
+			args: map[string]interface{}{
+				"transition": transitionI,
+			},
+			action: "machine_transition",
+			client: p,
+		},
+	}
+
+	return d
+}

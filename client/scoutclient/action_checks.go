@@ -1,6 +1,6 @@
-// generated code; DO NOT EDIT; 2020-08-03 10:02:11.882524 +0200 CEST m=+0.026664502"
+// generated code; DO NOT EDIT; 2020-12-27 12:48:27.323374 +0100 CET m=+0.079745207"
 //
-// Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.14.0
+// Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.18.0
 
 package scoutclient
 
@@ -17,28 +17,28 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 )
 
-// ResumeRequester performs a RPC request to scout#resume
-type ResumeRequester struct {
+// ChecksRequester performs a RPC request to scout#checks
+type ChecksRequester struct {
 	r    *requester
-	outc chan *ResumeOutput
+	outc chan *ChecksOutput
 }
 
-// ResumeOutput is the output from the resume action
-type ResumeOutput struct {
+// ChecksOutput is the output from the checks action
+type ChecksOutput struct {
 	details *ResultDetails
 	reply   map[string]interface{}
 }
 
-// ResumeResult is the result from a resume action
-type ResumeResult struct {
+// ChecksResult is the result from a checks action
+type ChecksResult struct {
 	ddl        *agent.DDL
 	stats      *rpcclient.Stats
-	outputs    []*ResumeOutput
+	outputs    []*ChecksOutput
 	rpcreplies []*replyfmt.RPCReply
 	mu         sync.Mutex
 }
 
-func (d *ResumeResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
+func (d *ChecksResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -72,27 +72,27 @@ func (d *ResumeResult) RenderResults(w io.Writer, format RenderFormat, displayMo
 }
 
 // Stats is the rpc request stats
-func (d *ResumeResult) Stats() Stats {
+func (d *ChecksResult) Stats() Stats {
 	return d.stats
 }
 
 // ResultDetails is the details about the request
-func (d *ResumeOutput) ResultDetails() *ResultDetails {
+func (d *ChecksOutput) ResultDetails() *ResultDetails {
 	return d.details
 }
 
 // HashMap is the raw output data
-func (d *ResumeOutput) HashMap() map[string]interface{} {
+func (d *ChecksOutput) HashMap() map[string]interface{} {
 	return d.reply
 }
 
 // JSON is the JSON representation of the output data
-func (d *ResumeOutput) JSON() ([]byte, error) {
+func (d *ChecksOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Resume action into target
-func (d *ResumeOutput) ParseResumeOutput(target interface{}) error {
+// ParseOutput parses the result value from the Checks action into target
+func (d *ChecksOutput) ParseChecksOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -107,11 +107,11 @@ func (d *ResumeOutput) ParseResumeOutput(target interface{}) error {
 }
 
 // Do performs the request
-func (d *ResumeRequester) Do(ctx context.Context) (*ResumeResult, error) {
-	dres := &ResumeResult{ddl: d.r.client.ddl}
+func (d *ChecksRequester) Do(ctx context.Context) (*ChecksResult, error) {
+	dres := &ChecksResult{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
-		output := &ResumeOutput{
+		output := &ChecksOutput{
 			reply: make(map[string]interface{}),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
@@ -154,41 +154,16 @@ func (d *ResumeRequester) Do(ctx context.Context) (*ResumeResult, error) {
 }
 
 // EachOutput iterates over all results received
-func (d *ResumeResult) EachOutput(h func(r *ResumeOutput)) {
+func (d *ChecksResult) EachOutput(h func(r *ChecksOutput)) {
 	for _, resp := range d.outputs {
 		h(resp)
 	}
 }
 
-// Checks is an optional input to the resume action
+// Checks is the value of the checks output
 //
-// Description: Check to resume, empty means all
-func (d *ResumeRequester) Checks(v []interface{}) *ResumeRequester {
-	d.r.args["checks"] = v
-
-	return d
-}
-
-// Failed is the value of the failed output
-//
-// Description: List of checks that could not be resumed
-func (d *ResumeOutput) Failed() []interface{} {
-	val := d.reply["failed"]
-	return val.([]interface{})
-}
-
-// Skipped is the value of the skipped output
-//
-// Description: List of checks that was skipped
-func (d *ResumeOutput) Skipped() []interface{} {
-	val := d.reply["skipped"]
-	return val.([]interface{})
-}
-
-// Transitioned is the value of the transitioned output
-//
-// Description: List of checks that were resumed
-func (d *ResumeOutput) Transitioned() []interface{} {
-	val := d.reply["transitioned"]
+// Description: Details about each check
+func (d *ChecksOutput) Checks() []interface{} {
+	val := d.reply["checks"]
 	return val.([]interface{})
 }

@@ -4,6 +4,7 @@ package main
 //go:generate go run plugin/gen.go
 //go:generate go run config/gen.go
 //go:generate go run gen_config_doc.go
+//go:generate go run client/gen.go
 
 import (
 	"os"

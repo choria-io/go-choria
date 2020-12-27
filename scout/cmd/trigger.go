@@ -9,8 +9,8 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/choria-io/go-choria/client/scoutclient"
 	scoutagent "github.com/choria-io/go-choria/scout/agent/scout"
-	scoutclient "github.com/choria-io/go-choria/scout/client/scout"
 )
 
 type TriggerCommand struct {
