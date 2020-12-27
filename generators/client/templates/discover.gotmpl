@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
+	"github.com/choria-io/go-choria/client/discovery/puppetdb"
 	"github.com/choria-io/go-choria/protocol"
 )
 
@@ -65,11 +66,79 @@ func (b *BroadcastNS) Discover(ctx context.Context, fw ChoriaFramework, filters 
 	return copier(), nil
 }
 
-func (b *BroadcastNS) parseFilters(fs []FilterFunc) error {
-	b.f = protocol.NewFilter()
+
+func (p *BroadcastNS) parseFilters(fs []FilterFunc) error {
+	p.f = protocol.NewFilter()
 
 	for _, f := range fs {
-		err := f(b.f)
+		err := f(p.f)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+// PuppetDBNS is a NodeSource that uses the PuppetDB PQL Queries to discover nodes
+type PuppetDBNS struct {
+	nodeCache []string
+	f         *protocol.Filter
+
+	sync.Mutex
+}
+
+// Reset resets the internal node cache
+func (p *PuppetDBNS) Reset() {
+	p.Lock()
+	defer p.Unlock()
+
+	p.nodeCache = []string{}
+}
+
+// Discover performs the discovery of nodes against the Choria Network
+func (p *PuppetDBNS) Discover(ctx context.Context, fw ChoriaFramework, filters []FilterFunc) ([]string, error) {
+	p.Lock()
+	defer p.Unlock()
+
+	copier := func() []string {
+		out := make([]string, len(p.nodeCache))
+		for i, n := range p.nodeCache {
+			out[i] = n
+		}
+
+		return out
+	}
+
+	if !(p.nodeCache == nil || len(p.nodeCache) == 0) {
+		return copier(), nil
+	}
+
+	err := p.parseFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	if p.nodeCache == nil {
+		p.nodeCache = []string{}
+	}
+
+	cfg := fw.Configuration()
+	nodes, err := puppetdb.New(fw).Discover(ctx, puppetdb.Filter(p.f), puppetdb.Timeout(time.Second*time.Duration(cfg.DiscoveryTimeout)))
+	if err != nil {
+		return []string{}, err
+	}
+
+	p.nodeCache = nodes
+
+	return copier(), nil
+}
+
+func (p *PuppetDBNS) parseFilters(fs []FilterFunc) error {
+	p.f = protocol.NewFilter()
+
+	for _, f := range fs {
+		err := f(p.f)
 		if err != nil {
 			return err
 		}

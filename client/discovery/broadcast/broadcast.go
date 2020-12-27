@@ -1,9 +1,9 @@
-// Package broadcast implements a MCollective like broadcast discovery system for nodes running choria - either Ruby or Go editions
+// Package broadcast implements a MCollective like broadcast discovery system for nodes running choria
 //
 // It is not thread safe and a single instance of the discoverer shouldn't be shared by go routines etc, you can reuse them but should
 // not be using the same one multiple times.
 //
-// It will create a single connection to your NATS network and close it once the context to Discover is canceled.
+// It will create a single connection to your Choria network and close it once the context to Discover is canceled.
 //
 // It has been shown to discover 50 000 nodes in around 1.2 seconds, I'd suggest on such a large network setting
 // protocol.ClientStrictValidation to false

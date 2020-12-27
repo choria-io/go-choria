@@ -54,6 +54,7 @@ type ChoriaFramework interface {
 	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn choria.Connector, err error)
 	NewRequestID() (string, error)
 	Certname() string
+	PQLQueryCertNames(query string) ([]string, error)
 }
 
 // FilterFunc can generate a Choria filter
@@ -155,17 +156,22 @@ func New(opts ...InitializationOption) (client *RpcutilClient, err error) {
 		opt(c.clientOpts)
 	}
 
-	if c.clientOpts.ns == nil {
-		c.clientOpts.ns = &BroadcastNS{}
-	}
-	c.ns = c.clientOpts.ns
-
 	c.fw, err = choria.New(c.clientOpts.cfgFile)
 	if err != nil {
 		return nil, fmt.Errorf("could not initialize Choria: %s", err)
 	}
 
 	c.cfg = c.fw.Configuration()
+
+	if c.clientOpts.ns == nil {
+		switch c.cfg.DefaultDiscoveryMethod {
+		case "choria":
+			c.clientOpts.ns = &PuppetDBNS{}
+		default:
+			c.clientOpts.ns = &BroadcastNS{}
+		}
+	}
+	c.ns = c.clientOpts.ns
 
 	if c.clientOpts.logger == nil {
 		c.clientOpts.logger = c.fw.Logger("rpcutil")
