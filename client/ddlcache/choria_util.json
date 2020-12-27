@@ -1,0 +1,244 @@
+{
+  "$schema": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
+  "metadata": {
+    "name": "choria_util",
+    "description": "Choria Utilities",
+    "author": "R.I.Pienaar <rip@devco.net>",
+    "license": "Apache-2.0",
+    "version": "0.19.0",
+    "url": "https://choria.io",
+    "timeout": 2
+  },
+  "actions": [
+    {
+      "action": "info",
+      "input": {
+      },
+      "output": {
+        "security": {
+          "description": "Security Provider plugin",
+          "display_as": "Security Provider",
+          "default": null
+        },
+        "secure_protocol": {
+          "description": "If the protocol is running with PKI security enabled",
+          "display_as": "Protocol Secure",
+          "default": null
+        },
+        "connector": {
+          "description": "Connector plugin",
+          "display_as": "Connector",
+          "default": null
+        },
+        "connector_tls": {
+          "description": "If the connector is running with TLS security enabled",
+          "display_as": "Connector TLS",
+          "default": null
+        },
+        "path": {
+          "description": "Active OS PATH",
+          "display_as": "Path",
+          "default": null
+        },
+        "choria_version": {
+          "description": "Choria version",
+          "display_as": "Choria Version",
+          "default": null
+        },
+        "client_version": {
+          "description": "Middleware client library version",
+          "display_as": "Middleware Client Library Version",
+          "default": null
+        },
+        "client_flavour": {
+          "description": "Middleware client gem flavour",
+          "display_as": "Middleware Client Flavour",
+          "default": null
+        },
+        "client_options": {
+          "description": "Active Middleware client gem options",
+          "display_as": "Middleware Client Options",
+          "default": null
+        },
+        "connected_server": {
+          "description": "Connected middleware server",
+          "display_as": "Connected Broker",
+          "default": null
+        },
+        "client_stats": {
+          "description": "Middleware client gem statistics",
+          "display_as": "Middleware Client Stats",
+          "default": null
+        },
+        "facter_domain": {
+          "description": "Facter domain",
+          "display_as": "Facter Domain",
+          "default": null
+        },
+        "facter_command": {
+          "description": "Command used for Facter",
+          "display_as": "Facter",
+          "default": null
+        },
+        "srv_domain": {
+          "description": "Configured SRV domain",
+          "display_as": "SRV Domain",
+          "default": null
+        },
+        "using_srv": {
+          "description": "Indicates if SRV records are considered",
+          "display_as": "SRV Used",
+          "default": null
+        },
+        "middleware_servers": {
+          "description": "Middleware Servers configured or discovered",
+          "display_as": "Middleware",
+          "default": null
+        }
+      },
+      "display": "failed",
+      "description": "Choria related information from the running Daemon and Middleware",
+      "aggregate": [
+        {
+          "function": "summary",
+          "args": [
+            "choria_version"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "client_version"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "client_flavour"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "connected_server"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "srv_domain"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "using_srv"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "secure_protocol"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "connector_tls"
+          ]
+        }
+      ]
+    },
+    {
+      "action": "machine_states",
+      "input": {
+      },
+      "output": {
+        "machine_names": {
+          "description": "List of running machine names",
+          "display_as": "Machine Names",
+          "default": null
+        },
+        "machine_ids": {
+          "description": "List of running machine IDs",
+          "display_as": "Machine IDs",
+          "default": null
+        },
+        "states": {
+          "description": "Hash map of machine statusses indexed by machine ID",
+          "display_as": "Machine States",
+          "default": null
+        }
+      },
+      "display": "always",
+      "description": "States of the hosted Choria Autonomous Agents",
+      "aggregate": [
+        {
+          "function": "summary",
+          "args": [
+            "machine_names"
+          ]
+        }
+      ]
+    },
+    {
+      "action": "machine_transition",
+      "input": {
+        "instance": {
+          "prompt": "Instance ID",
+          "description": "Machine Instance ID",
+          "type": "string",
+          "default": null,
+          "optional": true,
+          "validation": "^.+-.+-.+-.+-.+$",
+          "maxlength": 36
+        },
+        "version": {
+          "prompt": "Version",
+          "description": "Machine Version",
+          "type": "string",
+          "default": null,
+          "optional": true,
+          "validation": "^\\d+\\.\\d+\\.\\d+$",
+          "maxlength": 20
+        },
+        "name": {
+          "prompt": "Name",
+          "description": "Machine Name",
+          "type": "string",
+          "default": null,
+          "optional": true,
+          "validation": "^[a-zA-Z][a-zA-Z0-9_-]+",
+          "maxlength": 128
+        },
+        "path": {
+          "prompt": "Path",
+          "description": "Machine Path",
+          "type": "string",
+          "default": null,
+          "optional": true,
+          "validation": ".+",
+          "maxlength": 512
+        },
+        "transition": {
+          "prompt": "Transition Name",
+          "description": "The transition event to send to the machine",
+          "type": "string",
+          "default": null,
+          "optional": false,
+          "validation": "^[a-zA-Z][a-zA-Z0-9_-]+$",
+          "maxlength": 128
+        }
+      },
+      "output": {
+        "success": {
+          "description": "Indicates if the transition was successfully accepted",
+          "display_as": "Accepted",
+          "default": null
+        }
+      },
+      "display": "failed",
+      "description": "Attempts to force a transition in a hosted Choria Autonomous Agent"
+    }
+  ]
+}

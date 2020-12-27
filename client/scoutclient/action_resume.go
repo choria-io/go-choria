@@ -1,6 +1,6 @@
-// generated code; DO NOT EDIT; 2020-08-03 10:02:11.884737 +0200 CEST m=+0.028877765"
+// generated code; DO NOT EDIT; 2020-12-27 12:48:27.325973 +0100 CET m=+0.082344120"
 //
-// Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.14.0
+// Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.18.0
 
 package scoutclient
 
@@ -17,28 +17,28 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 )
 
-// MaintenanceRequester performs a RPC request to scout#maintenance
-type MaintenanceRequester struct {
+// ResumeRequester performs a RPC request to scout#resume
+type ResumeRequester struct {
 	r    *requester
-	outc chan *MaintenanceOutput
+	outc chan *ResumeOutput
 }
 
-// MaintenanceOutput is the output from the maintenance action
-type MaintenanceOutput struct {
+// ResumeOutput is the output from the resume action
+type ResumeOutput struct {
 	details *ResultDetails
 	reply   map[string]interface{}
 }
 
-// MaintenanceResult is the result from a maintenance action
-type MaintenanceResult struct {
+// ResumeResult is the result from a resume action
+type ResumeResult struct {
 	ddl        *agent.DDL
 	stats      *rpcclient.Stats
-	outputs    []*MaintenanceOutput
+	outputs    []*ResumeOutput
 	rpcreplies []*replyfmt.RPCReply
 	mu         sync.Mutex
 }
 
-func (d *MaintenanceResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
+func (d *ResumeResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -72,27 +72,27 @@ func (d *MaintenanceResult) RenderResults(w io.Writer, format RenderFormat, disp
 }
 
 // Stats is the rpc request stats
-func (d *MaintenanceResult) Stats() Stats {
+func (d *ResumeResult) Stats() Stats {
 	return d.stats
 }
 
 // ResultDetails is the details about the request
-func (d *MaintenanceOutput) ResultDetails() *ResultDetails {
+func (d *ResumeOutput) ResultDetails() *ResultDetails {
 	return d.details
 }
 
 // HashMap is the raw output data
-func (d *MaintenanceOutput) HashMap() map[string]interface{} {
+func (d *ResumeOutput) HashMap() map[string]interface{} {
 	return d.reply
 }
 
 // JSON is the JSON representation of the output data
-func (d *MaintenanceOutput) JSON() ([]byte, error) {
+func (d *ResumeOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Maintenance action into target
-func (d *MaintenanceOutput) ParseMaintenanceOutput(target interface{}) error {
+// ParseOutput parses the result value from the Resume action into target
+func (d *ResumeOutput) ParseResumeOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -107,11 +107,11 @@ func (d *MaintenanceOutput) ParseMaintenanceOutput(target interface{}) error {
 }
 
 // Do performs the request
-func (d *MaintenanceRequester) Do(ctx context.Context) (*MaintenanceResult, error) {
-	dres := &MaintenanceResult{ddl: d.r.client.ddl}
+func (d *ResumeRequester) Do(ctx context.Context) (*ResumeResult, error) {
+	dres := &ResumeResult{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
-		output := &MaintenanceOutput{
+		output := &ResumeOutput{
 			reply: make(map[string]interface{}),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
@@ -154,16 +154,16 @@ func (d *MaintenanceRequester) Do(ctx context.Context) (*MaintenanceResult, erro
 }
 
 // EachOutput iterates over all results received
-func (d *MaintenanceResult) EachOutput(h func(r *MaintenanceOutput)) {
+func (d *ResumeResult) EachOutput(h func(r *ResumeOutput)) {
 	for _, resp := range d.outputs {
 		h(resp)
 	}
 }
 
-// Checks is an optional input to the maintenance action
+// Checks is an optional input to the resume action
 //
-// Description: Check to pause, empty means all
-func (d *MaintenanceRequester) Checks(v []interface{}) *MaintenanceRequester {
+// Description: Check to resume, empty means all
+func (d *ResumeRequester) Checks(v []interface{}) *ResumeRequester {
 	d.r.args["checks"] = v
 
 	return d
@@ -171,8 +171,8 @@ func (d *MaintenanceRequester) Checks(v []interface{}) *MaintenanceRequester {
 
 // Failed is the value of the failed output
 //
-// Description: List of checks that could not be paused
-func (d *MaintenanceOutput) Failed() []interface{} {
+// Description: List of checks that could not be resumed
+func (d *ResumeOutput) Failed() []interface{} {
 	val := d.reply["failed"]
 	return val.([]interface{})
 }
@@ -180,15 +180,15 @@ func (d *MaintenanceOutput) Failed() []interface{} {
 // Skipped is the value of the skipped output
 //
 // Description: List of checks that was skipped
-func (d *MaintenanceOutput) Skipped() []interface{} {
+func (d *ResumeOutput) Skipped() []interface{} {
 	val := d.reply["skipped"]
 	return val.([]interface{})
 }
 
 // Transitioned is the value of the transitioned output
 //
-// Description: List of checks that were paused
-func (d *MaintenanceOutput) Transitioned() []interface{} {
+// Description: List of checks that were resumed
+func (d *ResumeOutput) Transitioned() []interface{} {
 	val := d.reply["transitioned"]
 	return val.([]interface{})
 }

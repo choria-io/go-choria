@@ -3,8 +3,6 @@
 package scoutclient
 
 import (
-	"encoding/base64"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -113,6 +111,7 @@ type ScoutClient struct {
 	clientRPCOpts []rpcclient.RequestOption
 	filters       []FilterFunc
 	targets       []string
+	workers       int
 
 	sync.Mutex
 }
@@ -174,12 +173,7 @@ func New(opts ...InitializationOption) (client *ScoutClient, err error) {
 		c.fw.SetLogger(c.clientOpts.logger.Logger)
 	}
 
-	ddlj, err := base64.StdEncoding.DecodeString(rawDDL)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse embedded DDL: %s", err)
-	}
-
-	err = json.Unmarshal(ddlj, c.ddl)
+	c.ddl, err = DDL()
 	if err != nil {
 		return nil, fmt.Errorf("could not parse embedded DDL: %s", err)
 	}

@@ -1,8 +1,8 @@
-// generated code; DO NOT EDIT; 2020-08-03 10:02:11.880247 +0200 CEST m=+0.024387784"
+// generated code; DO NOT EDIT; 2020-12-27 12:48:27.251946 +0100 CET m=+0.008317620"
 //
-// Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.14.0
+// Client for Choria RPC Agent 'rpcutil'' Version 0.19.0 generated using Choria version 0.18.0
 
-package scoutclient
+package rpcutilclient
 
 import (
 	"context"
@@ -17,28 +17,28 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 )
 
-// ChecksRequester performs a RPC request to scout#checks
-type ChecksRequester struct {
+// AgentInventoryRequester performs a RPC request to rpcutil#agent_inventory
+type AgentInventoryRequester struct {
 	r    *requester
-	outc chan *ChecksOutput
+	outc chan *AgentInventoryOutput
 }
 
-// ChecksOutput is the output from the checks action
-type ChecksOutput struct {
+// AgentInventoryOutput is the output from the agent_inventory action
+type AgentInventoryOutput struct {
 	details *ResultDetails
 	reply   map[string]interface{}
 }
 
-// ChecksResult is the result from a checks action
-type ChecksResult struct {
+// AgentInventoryResult is the result from a agent_inventory action
+type AgentInventoryResult struct {
 	ddl        *agent.DDL
 	stats      *rpcclient.Stats
-	outputs    []*ChecksOutput
+	outputs    []*AgentInventoryOutput
 	rpcreplies []*replyfmt.RPCReply
 	mu         sync.Mutex
 }
 
-func (d *ChecksResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
+func (d *AgentInventoryResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -72,27 +72,27 @@ func (d *ChecksResult) RenderResults(w io.Writer, format RenderFormat, displayMo
 }
 
 // Stats is the rpc request stats
-func (d *ChecksResult) Stats() Stats {
+func (d *AgentInventoryResult) Stats() Stats {
 	return d.stats
 }
 
 // ResultDetails is the details about the request
-func (d *ChecksOutput) ResultDetails() *ResultDetails {
+func (d *AgentInventoryOutput) ResultDetails() *ResultDetails {
 	return d.details
 }
 
 // HashMap is the raw output data
-func (d *ChecksOutput) HashMap() map[string]interface{} {
+func (d *AgentInventoryOutput) HashMap() map[string]interface{} {
 	return d.reply
 }
 
 // JSON is the JSON representation of the output data
-func (d *ChecksOutput) JSON() ([]byte, error) {
+func (d *AgentInventoryOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Checks action into target
-func (d *ChecksOutput) ParseChecksOutput(target interface{}) error {
+// ParseOutput parses the result value from the AgentInventory action into target
+func (d *AgentInventoryOutput) ParseAgentInventoryOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -107,11 +107,11 @@ func (d *ChecksOutput) ParseChecksOutput(target interface{}) error {
 }
 
 // Do performs the request
-func (d *ChecksRequester) Do(ctx context.Context) (*ChecksResult, error) {
-	dres := &ChecksResult{ddl: d.r.client.ddl}
+func (d *AgentInventoryRequester) Do(ctx context.Context) (*AgentInventoryResult, error) {
+	dres := &AgentInventoryResult{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
-		output := &ChecksOutput{
+		output := &AgentInventoryOutput{
 			reply: make(map[string]interface{}),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
@@ -154,16 +154,16 @@ func (d *ChecksRequester) Do(ctx context.Context) (*ChecksResult, error) {
 }
 
 // EachOutput iterates over all results received
-func (d *ChecksResult) EachOutput(h func(r *ChecksOutput)) {
+func (d *AgentInventoryResult) EachOutput(h func(r *AgentInventoryOutput)) {
 	for _, resp := range d.outputs {
 		h(resp)
 	}
 }
 
-// Checks is the value of the checks output
+// Agents is the value of the agents output
 //
-// Description: Details about each check
-func (d *ChecksOutput) Checks() []interface{} {
-	val := d.reply["checks"]
-	return val.([]interface{})
+// Description: List of agents on the server
+func (d *AgentInventoryOutput) Agents() interface{} {
+	val := d.reply["agents"]
+	return val.(interface{})
 }

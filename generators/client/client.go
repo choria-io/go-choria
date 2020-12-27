@@ -95,7 +95,7 @@ func (g *Generator) writeActions() error {
 			return err
 		}
 
-		err = g.formatGoSource(outfile)
+		err = FormatGoSource(outfile)
 		if err != nil {
 			return err
 		}
@@ -125,7 +125,7 @@ func (g *Generator) writeBasics() error {
 			return err
 		}
 
-		err = g.formatGoSource(outfile)
+		err = FormatGoSource(outfile)
 		if err != nil {
 			return err
 		}
@@ -134,7 +134,7 @@ func (g *Generator) writeBasics() error {
 	return nil
 }
 
-func (g *Generator) formatGoSource(f string) error {
+func FormatGoSource(f string) error {
 	bs, err := ioutil.ReadFile(f)
 	if err != nil {
 		return err

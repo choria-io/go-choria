@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -14,10 +13,8 @@ import (
 	"github.com/tidwall/pretty"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/filter"
+	"github.com/choria-io/go-choria/client/rpcutilclient"
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/choria-io/go-choria/providers/agent/mcorpc"
-	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/rpcutil"
 )
 
@@ -47,47 +44,56 @@ func (i *inventoryCommand) Setup() (err error) {
 }
 
 func (i *inventoryCommand) inventoryAgent() error {
-	opts := []rpc.RequestOption{}
-	if i.ident != "" {
-		opts = append(opts, rpc.Targets([]string{i.ident}))
+	if i.ident == "" {
+		return fmt.Errorf("identity is required")
 	}
 
-	// TODO: embed rpcutil ddl somewhere and use it here or in rpc.New()
-	agent, err := rpc.New(c, "rpcutil")
+	rpcu, err := rpcutilclient.New(rpcutilclient.Logger(c.Logger("inventory")))
 	if err != nil {
 		return err
 	}
+	rpcu.OptionTargets([]string{i.ident})
+	rpcu.OptionWorkers(1)
 
 	inventory := &rpcutil.InventoryReply{}
 	stats := &rpcutil.DaemonStatsReply{}
 
-	_, err = agent.Do(ctx, "inventory", nil, append(opts, rpc.ReplyHandler(func(_ protocol.Reply, reply *rpc.RPCReply) {
-		if reply.Statuscode == mcorpc.OK {
-			err = json.Unmarshal(reply.Data, inventory)
-			if err != nil {
-				log.Errorf("%q", reply.Data)
-				log.Errorf("Could not parse inventory reply: %s", err)
-			}
-		}
-	}))...)
+	ires, err := rpcu.Inventory().Do(ctx)
 	if err != nil {
 		return err
 	}
-	if inventory == nil {
+	ires.EachOutput(func(r *rpcutilclient.InventoryOutput) {
+		if !r.ResultDetails().OK() {
+			log.Errorf("inventory failed for %s: %s", r.ResultDetails().Sender(), r.ResultDetails().StatusMessage())
+			return
+		}
+
+		err := r.ParseInventoryOutput(inventory)
+		if err != nil {
+			log.Errorf("could not parse inventory from %s: %s", r.ResultDetails().Sender(), err)
+			return
+		}
+	})
+	if inventory.Version == "" {
 		return fmt.Errorf("no inventory received")
 	}
 
-	_, err = agent.Do(ctx, "daemon_stats", nil, append(opts, rpc.ReplyHandler(func(_ protocol.Reply, reply *rpc.RPCReply) {
-		if reply.Statuscode == mcorpc.OK {
-			err = json.Unmarshal(reply.Data, stats)
-			if err != nil {
-				log.Errorf("Could not parse daemon_stats reply: %s", err)
-			}
-		}
-	}))...)
+	sres, err := rpcu.DaemonStats().Do(ctx)
 	if err != nil {
 		return err
 	}
+	sres.EachOutput(func(r *rpcutilclient.DaemonStatsOutput) {
+		if !r.ResultDetails().OK() {
+			log.Errorf("daemon_stats failed for %s: %s", r.ResultDetails().Sender(), r.ResultDetails().StatusMessage())
+			return
+		}
+
+		err := r.ParseDaemonStatsOutput(stats)
+		if err != nil {
+			log.Errorf("could not parse daemon_stats from %s: %s", r.ResultDetails().Sender(), err)
+			return
+		}
+	})
 	if stats == nil {
 		return fmt.Errorf("no daemon_stats received")
 	}
@@ -157,33 +163,36 @@ func (i *inventoryCommand) longestString(list []string, max int) int {
 }
 
 func (i *inventoryCommand) inventoryCollectives() error {
-	filter, err := i.parseFilterOptions()
+	rpcu, err := rpcutilclient.New(rpcutilclient.Logger(c.Logger("inventory")))
 	if err != nil {
 		return err
 	}
 
-	// TODO: embed rpcutil ddl somewhere and use it here or in rpc.New()
-	agent, err := rpc.New(c, "rpcutil")
-	if err != nil {
-		return err
-	}
+	rpcu.OptionFactFilter(i.factF...)
+	rpcu.OptionClassFilter(i.classF...)
+	rpcu.OptionIdentityFilter(i.identityF...)
+	rpcu.OptionCombinedFilter(i.combinedF...)
+	rpcu.OptionAgentFilter(i.agentsF...)
 
 	collectives := make(map[string]int)
-	mu := sync.Mutex{}
-	res, err := agent.Do(ctx, "inventory", nil, rpc.Filter(filter), rpc.ReplyHandler(func(pr protocol.Reply, reply *rpc.RPCReply) {
-		if reply.Statuscode != mcorpc.OK {
-			log.Errorf("Received a error response from %s: %s", pr.SenderID(), reply.Statusmsg)
+
+	res, err := rpcu.CollectiveInfo().Do(ctx)
+	if err != nil {
+		return err
+	}
+
+	res.EachOutput(func(reply *rpcutilclient.CollectiveInfoOutput) {
+		if !reply.ResultDetails().OK() {
+			log.Errorf("Received a error response from %s: %s", reply.ResultDetails().Sender(), reply.ResultDetails().StatusMessage())
 			return
 		}
 
-		inventory := &rpcutil.InventoryReply{}
-		err = json.Unmarshal(reply.Data, inventory)
+		inventory := &rpcutil.CollectiveInfoReply{}
+		err = reply.ParseCollectiveInfoOutput(&inventory)
 		if err != nil {
-			log.Errorf("Could not parse inventory reply from %s: %s", pr.SenderID(), err)
+			log.Errorf("Could not parse inventory reply from %s: %s", reply.ResultDetails().Sender(), err)
+			return
 		}
-
-		mu.Lock()
-		defer mu.Unlock()
 
 		for _, c := range inventory.Collectives {
 			_, ok := collectives[c]
@@ -192,13 +201,7 @@ func (i *inventoryCommand) inventoryCollectives() error {
 			}
 			collectives[c]++
 		}
-	}))
-	if err != nil {
-		return err
-	}
-	if res.Stats().ResponsesCount() == 0 {
-		return fmt.Errorf("no responses received")
-	}
+	})
 
 	fmt.Printf("Subcollective report for %d nodes\n\n", res.Stats().OKCount())
 	type kv struct {
@@ -242,17 +245,6 @@ func (i *inventoryCommand) Run(wg *sync.WaitGroup) (err error) {
 	default:
 		return fmt.Errorf("please specify a node to retrieve inventory for")
 	}
-}
-
-func (i *inventoryCommand) parseFilterOptions() (*protocol.Filter, error) {
-	return filter.NewFilter(
-		filter.FactFilter(i.factF...),
-		filter.AgentFilter(i.agentsF...),
-		filter.ClassFilter(i.classF...),
-		filter.IdentityFilter(i.identityF...),
-		filter.CombinedFilter(i.combinedF...),
-		filter.AgentFilter("rpcutil"),
-	)
 }
 
 func (i *inventoryCommand) Configure() error {

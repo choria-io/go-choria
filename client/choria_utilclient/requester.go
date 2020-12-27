@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT
 
-package scoutclient
+package choria_utilclient
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 
 // requester is a generic request handler
 type requester struct {
-	client   *ScoutClient
+	client   *ChoriaUtilClient
 	action   string
 	args     map[string]interface{}
 	progress *uiprogress.Bar
@@ -57,6 +57,9 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 
 	opts := []rpcclient.RequestOption{rpcclient.Targets(targets)}
 	opts = append(opts, r.client.clientRPCOpts...)
+	if r.client.workers > 0 {
+		opts = append(opts, rpcclient.Workers(r.client.workers))
+	}
 	r.client.Unlock()
 
 	if progress {
@@ -81,8 +84,6 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 	if !progress {
 		r.client.infof("Invoking %s#%s action with %#v", r.client.ddl.Metadata.Name, r.action, r.args)
 	}
-
-	r.client.infof("Invoking %s#%s action with %#v", r.client.ddl.Metadata.Name, r.action, r.args)
 
 	res, err := agent.Do(ctx, r.action, r.args, opts...)
 	if err != nil {

@@ -2,4 +2,33 @@
 
 package {{ .Package }}
 
+import (
+	"encoding/base64"
+	"encoding/json"
+
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
+)
+
+
 var rawDDL = "{{ .RawDDL | Base64Encode }}"
+
+// DDLBytes is the raw JSON encoded DDL file for the agent
+func DDLBytes() ([]byte, error) {
+	return base64.StdEncoding.DecodeString(rawDDL)
+}
+
+// DDL is a parsed and loaded DDL for the agent
+func DDL() (*agent.DDL, error) {
+	ddlj, err := DDLBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	ddl := &agent.DDL{}
+	err = json.Unmarshal(ddlj, ddl)
+	if err != nil {
+		return nil, err
+	}
+
+	return ddl, nil
+}

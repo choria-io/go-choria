@@ -1,8 +1,8 @@
-// generated code; DO NOT EDIT; 2020-08-03 10:02:11.886849 +0200 CEST m=+0.030989580"
+// generated code; DO NOT EDIT; 2020-12-27 12:48:27.306103 +0100 CET m=+0.062474291"
 //
-// Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.14.0
+// Client for Choria RPC Agent 'choria_util'' Version 0.19.0 generated using Choria version 0.18.0
 
-package scoutclient
+package choria_utilclient
 
 import (
 	"context"
@@ -17,28 +17,28 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 )
 
-// GossValidateRequester performs a RPC request to scout#goss_validate
-type GossValidateRequester struct {
+// MachineTransitionRequester performs a RPC request to choria_util#machine_transition
+type MachineTransitionRequester struct {
 	r    *requester
-	outc chan *GossValidateOutput
+	outc chan *MachineTransitionOutput
 }
 
-// GossValidateOutput is the output from the goss_validate action
-type GossValidateOutput struct {
+// MachineTransitionOutput is the output from the machine_transition action
+type MachineTransitionOutput struct {
 	details *ResultDetails
 	reply   map[string]interface{}
 }
 
-// GossValidateResult is the result from a goss_validate action
-type GossValidateResult struct {
+// MachineTransitionResult is the result from a machine_transition action
+type MachineTransitionResult struct {
 	ddl        *agent.DDL
 	stats      *rpcclient.Stats
-	outputs    []*GossValidateOutput
+	outputs    []*MachineTransitionOutput
 	rpcreplies []*replyfmt.RPCReply
 	mu         sync.Mutex
 }
 
-func (d *GossValidateResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
+func (d *MachineTransitionResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -72,27 +72,27 @@ func (d *GossValidateResult) RenderResults(w io.Writer, format RenderFormat, dis
 }
 
 // Stats is the rpc request stats
-func (d *GossValidateResult) Stats() Stats {
+func (d *MachineTransitionResult) Stats() Stats {
 	return d.stats
 }
 
 // ResultDetails is the details about the request
-func (d *GossValidateOutput) ResultDetails() *ResultDetails {
+func (d *MachineTransitionOutput) ResultDetails() *ResultDetails {
 	return d.details
 }
 
 // HashMap is the raw output data
-func (d *GossValidateOutput) HashMap() map[string]interface{} {
+func (d *MachineTransitionOutput) HashMap() map[string]interface{} {
 	return d.reply
 }
 
 // JSON is the JSON representation of the output data
-func (d *GossValidateOutput) JSON() ([]byte, error) {
+func (d *MachineTransitionOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the GossValidate action into target
-func (d *GossValidateOutput) ParseGossValidateOutput(target interface{}) error {
+// ParseOutput parses the result value from the MachineTransition action into target
+func (d *MachineTransitionOutput) ParseMachineTransitionOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -107,11 +107,11 @@ func (d *GossValidateOutput) ParseGossValidateOutput(target interface{}) error {
 }
 
 // Do performs the request
-func (d *GossValidateRequester) Do(ctx context.Context) (*GossValidateResult, error) {
-	dres := &GossValidateResult{ddl: d.r.client.ddl}
+func (d *MachineTransitionRequester) Do(ctx context.Context) (*MachineTransitionResult, error) {
+	dres := &MachineTransitionResult{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
-		output := &GossValidateOutput{
+		output := &MachineTransitionOutput{
 			reply: make(map[string]interface{}),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
@@ -154,65 +154,52 @@ func (d *GossValidateRequester) Do(ctx context.Context) (*GossValidateResult, er
 }
 
 // EachOutput iterates over all results received
-func (d *GossValidateResult) EachOutput(h func(r *GossValidateOutput)) {
+func (d *MachineTransitionResult) EachOutput(h func(r *MachineTransitionOutput)) {
 	for _, resp := range d.outputs {
 		h(resp)
 	}
 }
 
-// Vars is an optional input to the goss_validate action
+// Instance is an optional input to the machine_transition action
 //
-// Description: Path to a file to use as template variables
-func (d *GossValidateRequester) Vars(v string) *GossValidateRequester {
-	d.r.args["vars"] = v
+// Description: Machine Instance ID
+func (d *MachineTransitionRequester) Instance(v string) *MachineTransitionRequester {
+	d.r.args["instance"] = v
 
 	return d
 }
 
-// Failures is the value of the failures output
+// Name is an optional input to the machine_transition action
 //
-// Description: The number of tests that failed
-func (d *GossValidateOutput) Failures() int64 {
-	val := d.reply["failures"]
-	return val.(int64)
+// Description: Machine Name
+func (d *MachineTransitionRequester) Name(v string) *MachineTransitionRequester {
+	d.r.args["name"] = v
+
+	return d
 }
 
-// Results is the value of the results output
+// Path is an optional input to the machine_transition action
 //
-// Description: The full test results
-func (d *GossValidateOutput) Results() []interface{} {
-	val := d.reply["results"]
-	return val.([]interface{})
+// Description: Machine Path
+func (d *MachineTransitionRequester) Path(v string) *MachineTransitionRequester {
+	d.r.args["path"] = v
+
+	return d
 }
 
-// Runtime is the value of the runtime output
+// Version is an optional input to the machine_transition action
 //
-// Description: The time it took to run the tests, in seconds
-func (d *GossValidateOutput) Runtime() int64 {
-	val := d.reply["runtime"]
-	return val.(int64)
+// Description: Machine Version
+func (d *MachineTransitionRequester) Version(v string) *MachineTransitionRequester {
+	d.r.args["version"] = v
+
+	return d
 }
 
 // Success is the value of the success output
 //
-// Description: Indicates if the test passed
-func (d *GossValidateOutput) Success() string {
+// Description: Indicates if the transition was successfully accepted
+func (d *MachineTransitionOutput) Success() interface{} {
 	val := d.reply["success"]
-	return val.(string)
-}
-
-// Summary is the value of the summary output
-//
-// Description: A human friendly test result
-func (d *GossValidateOutput) Summary() string {
-	val := d.reply["summary"]
-	return val.(string)
-}
-
-// Tests is the value of the tests output
-//
-// Description: The number of tests that were run
-func (d *GossValidateOutput) Tests() int64 {
-	val := d.reply["tests"]
-	return val.(int64)
+	return val.(interface{})
 }

@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT
 
-package scoutclient
+package choria_utilclient
 
 import (
 	"time"
@@ -10,7 +10,7 @@ import (
 )
 
 // OptionReset resets the client options to use across requests to an empty list
-func (p *ScoutClient) OptionReset() *ScoutClient {
+func (p *ChoriaUtilClient) OptionReset() *ChoriaUtilClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -18,14 +18,14 @@ func (p *ScoutClient) OptionReset() *ScoutClient {
 	p.ns = p.clientOpts.ns
 	p.targets = []string{}
 	p.filters = []FilterFunc{
-		FilterFunc(coreclient.AgentFilter("scout")),
+		FilterFunc(coreclient.AgentFilter("choria_util")),
 	}
 
 	return p
 }
 
 // OptionIdentityFilter adds an identity filter
-func (p *ScoutClient) OptionIdentityFilter(f ...string) *ScoutClient {
+func (p *ChoriaUtilClient) OptionIdentityFilter(f ...string) *ChoriaUtilClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -39,7 +39,7 @@ func (p *ScoutClient) OptionIdentityFilter(f ...string) *ScoutClient {
 }
 
 // OptionClassFilter adds a class filter
-func (p *ScoutClient) OptionClassFilter(f ...string) *ScoutClient {
+func (p *ChoriaUtilClient) OptionClassFilter(f ...string) *ChoriaUtilClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -53,7 +53,7 @@ func (p *ScoutClient) OptionClassFilter(f ...string) *ScoutClient {
 }
 
 // OptionFactFilter adds a fact filter
-func (p *ScoutClient) OptionFactFilter(f ...string) *ScoutClient {
+func (p *ChoriaUtilClient) OptionFactFilter(f ...string) *ChoriaUtilClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -66,8 +66,22 @@ func (p *ScoutClient) OptionFactFilter(f ...string) *ScoutClient {
 	return p
 }
 
+// OptionAgentFilter adds an agent filter
+func (p *ChoriaUtilClient) OptionAgentFilter(a ...string) *ChoriaUtilClient {
+	p.Lock()
+	defer p.Unlock()
+
+	for _, f := range a {
+		p.filters = append(p.filters, FilterFunc(coreclient.AgentFilter(f)))
+	}
+
+	p.ns.Reset()
+
+	return p
+}
+
 // OptionCombinedFilter adds a combined filter
-func (p *ScoutClient) OptionCombinedFilter(f ...string) *ScoutClient {
+func (p *ChoriaUtilClient) OptionCombinedFilter(f ...string) *ChoriaUtilClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -81,7 +95,7 @@ func (p *ScoutClient) OptionCombinedFilter(f ...string) *ScoutClient {
 }
 
 // OptionCollective sets the collective to target
-func (p *ScoutClient) OptionCollective(c string) *ScoutClient {
+func (p *ChoriaUtilClient) OptionCollective(c string) *ChoriaUtilClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -90,7 +104,7 @@ func (p *ScoutClient) OptionCollective(c string) *ScoutClient {
 }
 
 // OptionInBatches performs requests in batches
-func (p *ScoutClient) OptionInBatches(size int, sleep int) *ScoutClient {
+func (p *ChoriaUtilClient) OptionInBatches(size int, sleep int) *ChoriaUtilClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -99,7 +113,7 @@ func (p *ScoutClient) OptionInBatches(size int, sleep int) *ScoutClient {
 }
 
 // OptionDiscoveryTimeout configures the request discovery timeout, defaults to configured discovery timeout
-func (p *ScoutClient) OptionDiscoveryTimeout(t time.Duration) *ScoutClient {
+func (p *ChoriaUtilClient) OptionDiscoveryTimeout(t time.Duration) *ChoriaUtilClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -108,7 +122,7 @@ func (p *ScoutClient) OptionDiscoveryTimeout(t time.Duration) *ScoutClient {
 }
 
 // OptionLimitMethod configures the method to use when limiting targets - "random" or "first"
-func (p *ScoutClient) OptionLimitMethod(m string) *ScoutClient {
+func (p *ChoriaUtilClient) OptionLimitMethod(m string) *ChoriaUtilClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -117,7 +131,7 @@ func (p *ScoutClient) OptionLimitMethod(m string) *ScoutClient {
 }
 
 // OptionLimitSize sets limits on the targets, either a number of a percentage like "10%"
-func (p *ScoutClient) OptionLimitSize(s string) *ScoutClient {
+func (p *ChoriaUtilClient) OptionLimitSize(s string) *ChoriaUtilClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -126,7 +140,7 @@ func (p *ScoutClient) OptionLimitSize(s string) *ScoutClient {
 }
 
 // OptionLimitSeed sets the random seed used to select targets when limiting and limit method is "random"
-func (p *ScoutClient) OptionLimitSeed(s int64) *ScoutClient {
+func (p *ChoriaUtilClient) OptionLimitSeed(s int64) *ChoriaUtilClient {
 	p.Lock()
 	defer p.Unlock()
 
@@ -135,10 +149,19 @@ func (p *ScoutClient) OptionLimitSeed(s int64) *ScoutClient {
 }
 
 // OptionTargets sets specific node targets which would avoid discovery for all action calls until reset
-func (p *ScoutClient) OptionTargets(t []string) *ScoutClient {
+func (p *ChoriaUtilClient) OptionTargets(t []string) *ChoriaUtilClient {
 	p.Lock()
 	defer p.Unlock()
 
 	p.targets = t
+	return p
+}
+
+// OptionWorkers sets how many worker connections should be started to the broker
+func (p *ChoriaUtilClient) OptionWorkers(w int) *ChoriaUtilClient {
+	p.Lock()
+	defer p.Unlock()
+
+	p.workers = w
 	return p
 }
