@@ -8,6 +8,7 @@ import (
 
 	"github.com/choria-io/go-choria/client/ddlcache"
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
+	"github.com/choria-io/go-choria/client/discovery/puppetdb"
 	config "github.com/choria-io/go-choria/config"
 
 	"github.com/choria-io/go-choria/choria"
@@ -30,6 +31,7 @@ type ChoriaFramework interface {
 	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn choria.Connector, err error)
 	NewRequestID() (string, error)
 	Certname() string
+	PQLQueryCertNames(query string) ([]string, error)
 }
 
 // RPC is a MCollective compatible RPC client
@@ -38,6 +40,7 @@ type RPC struct {
 	opts *RequestOptions
 	log  *logrus.Entry
 	cfg  *config.Config
+	dm   string
 
 	agent string
 
@@ -92,6 +95,13 @@ func DDL(d *addl.DDL) Option {
 	}
 }
 
+// DiscoveryMethod sets a specific discovery method
+func DiscoveryMethod(dm string) Option {
+	return func(r *RPC) {
+		r.dm = dm
+	}
+}
+
 // New creates a new RPC request
 //
 // A DDL is required when one is not given using the DDL() option as argument
@@ -103,6 +113,7 @@ func New(fw ChoriaFramework, agent string, opts ...Option) (rpc *RPC, err error)
 		mu:    &sync.Mutex{},
 		log:   fw.Logger("mcorpc"),
 		agent: agent,
+		dm:    fw.Configuration().DefaultDiscoveryMethod,
 	}
 
 	for _, opt := range opts {
@@ -228,8 +239,6 @@ func (r *RPC) discover(ctx context.Context) error {
 		r.opts.DiscoveryStartCB()
 	}
 
-	b := broadcast.New(r.fw)
-
 	r.opts.totalStats.StartDiscover()
 	defer r.opts.totalStats.EndDiscover()
 
@@ -239,7 +248,18 @@ func (r *RPC) discover(ctx context.Context) error {
 
 	r.opts.Filter.AddAgentFilter(r.agent)
 
-	n, err := b.Discover(ctx, broadcast.Filter(r.opts.Filter), broadcast.Timeout(r.opts.DiscoveryTimeout), broadcast.Name(r.opts.ConnectionName), broadcast.Collective(r.opts.Collective))
+	var n []string
+	var err error
+
+	switch r.dm {
+	case "choria":
+		pdb := puppetdb.New(r.fw)
+		n, err = pdb.Discover(ctx, puppetdb.Filter(r.opts.Filter), puppetdb.Timeout(r.opts.DiscoveryTimeout), puppetdb.Collective(r.opts.Collective))
+
+	default:
+		b := broadcast.New(r.fw)
+		n, err = b.Discover(ctx, broadcast.Filter(r.opts.Filter), broadcast.Timeout(r.opts.DiscoveryTimeout), broadcast.Name(r.opts.ConnectionName), broadcast.Collective(r.opts.Collective))
+	}
 	if err != nil {
 		return err
 	}

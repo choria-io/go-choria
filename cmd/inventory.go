@@ -23,17 +23,20 @@ type inventoryCommand struct {
 
 	ident          string
 	listCollective bool
-	factF          []string
-	agentsF        []string
-	classF         []string
-	identityF      []string
-	combinedF      []string
+	showFacts      bool
+
+	factF     []string
+	agentsF   []string
+	classF    []string
+	identityF []string
+	combinedF []string
 }
 
 func (i *inventoryCommand) Setup() (err error) {
 	i.cmd = cli.app.Command("inventory", "General reporting tool for nodes, collectives and subcollectives")
 	i.cmd.Arg("identity", "Identity of a Choria Server to retrieve inventory from").StringVar(&i.ident)
 	i.cmd.Flag("collectives", "List all known collectives").BoolVar(&i.listCollective)
+	i.cmd.Flag("facts", "Enable or disable displaying of facts").Default("true").BoolVar(&i.showFacts)
 	i.cmd.Flag("wf", "Match hosts with a certain fact").Short('F').StringsVar(&i.factF)
 	i.cmd.Flag("wc", "Match hosts with a certain configuration management class").Short('C').StringsVar(&i.classF)
 	i.cmd.Flag("wa", "Match hosts with a certain Choria agent").Short('A').StringsVar(&i.agentsF)
@@ -137,12 +140,15 @@ func (i *inventoryCommand) inventoryAgent() error {
 		table.Render()
 		fmt.Println()
 	}
-	fmt.Printf("  Facts:\n\n")
-	fmt.Printf("%s\n", string(pretty.PrettyOptions(inventory.Facts, &pretty.Options{
-		Prefix:   "    ",
-		Indent:   "  ",
-		SortKeys: true,
-	})))
+
+	if i.showFacts {
+		fmt.Printf("  Facts:\n\n")
+		fmt.Printf("%s\n", string(pretty.PrettyOptions(inventory.Facts, &pretty.Options{
+			Prefix:   "    ",
+			Indent:   "  ",
+			SortKeys: true,
+		})))
+	}
 
 	return nil
 }

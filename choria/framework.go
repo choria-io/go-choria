@@ -3,13 +3,17 @@ package choria
 import (
 	"context"
 	"crypto/md5"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io"
 	"io/ioutil"
 	"math/rand"
 	"net"
+	"net/http"
+	"net/url"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -260,6 +264,39 @@ func (fw *Framework) FederationMiddlewareServers() (servers srvcache.Servers, er
 	})
 
 	return servers, err
+}
+
+// PuppetDBServers resolves the PuppetDB server based on configuration of _x-puppet-db._tcp
+func (fw *Framework) PuppetDBServers() (servers srvcache.Servers, err error) {
+	configured := ""
+	if fw.Config.Choria.PuppetDBHost != "" {
+		configured = fw.Config.Choria.PuppetDBHost
+		if fw.Config.Choria.PuppetDBPort != 0 {
+			configured += ":" + strconv.Itoa(fw.Config.Choria.PuppetDBPort)
+		}
+	}
+
+	if configured != "" {
+		servers, err = srvcache.StringHostsToServers([]string{configured}, "https")
+		if err != nil {
+			return servers, fmt.Errorf("could not parse configured PuppetDB host: %s", err)
+		}
+	}
+
+	if servers.Count() == 0 {
+		servers, err = fw.QuerySrvRecords([]string{"_x-puppet-db._tcp"})
+		if err != nil {
+			return servers, fmt.Errorf("could not resolve PuppetDB Server SRV records: %s", err)
+		}
+	}
+
+	servers.Each(func(s srvcache.Server) {
+		if s.Scheme() == "" {
+			s.SetScheme("https")
+		}
+	})
+
+	return servers, nil
 }
 
 // ProvisioningServers determines the build time provisioning servers
@@ -631,4 +668,75 @@ func (fw *Framework) SignerToken() (token string, err error) {
 	}
 
 	return strings.TrimSpace(token), nil
+}
+
+// HTTPClient creates a *http.Client prepared by the security provider with certificates and more set
+func (fw *Framework) HTTPClient(secure bool) (*http.Client, error) {
+	return fw.security.HTTPClient(secure)
+}
+
+func (fw *Framework) PQLQuery(query string) ([]byte, error) {
+	q := url.Values{}
+	q.Set("query", query)
+	path := fmt.Sprintf("/pdb/query/v4?%s", q.Encode())
+
+	pdb, err := fw.PuppetDBServers()
+	if err != nil {
+		return nil, err
+	}
+	pdbhost := pdb.Strings()[0]
+
+	fw.log.Debugf("Performing PQL query against %s: %s", pdbhost, query)
+
+	client, err := fw.HTTPClient(true)
+	if err != nil {
+		return nil, err
+	}
+	request, err := http.NewRequest("GET", fmt.Sprintf("%s%s", pdbhost, path), nil)
+	if err != nil {
+		return nil, err
+	}
+
+	resp, err := client.Do(request)
+	if err != nil {
+		return nil, err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("invalid PuppetDB response: %s", resp.Status)
+	}
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	return body, nil
+}
+
+func (fw *Framework) PQLQueryCertNames(query string) ([]string, error) {
+	body, err := fw.PQLQuery(query)
+	if err != nil {
+		return nil, err
+	}
+
+	res := []struct {
+		Certname    string `json:"certname"`
+		Deactivated bool   `json:"deactivated"`
+	}{}
+
+	err = json.Unmarshal(body, &res)
+	if err != nil {
+		return nil, err
+	}
+
+	var nodes []string
+	for _, r := range res {
+		if !r.Deactivated {
+			nodes = append(nodes, r.Certname)
+		}
+	}
+
+	return nodes, nil
 }

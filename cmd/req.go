@@ -8,14 +8,16 @@ import (
 	"sync"
 	"time"
 
+	"github.com/fatih/color"
+	"github.com/gosuri/uiprogress"
+
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
+	"github.com/choria-io/go-choria/client/discovery/puppetdb"
 	"github.com/choria-io/go-choria/filter"
 	"github.com/choria-io/go-choria/protocol"
 	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
-	"github.com/fatih/color"
-	"github.com/gosuri/uiprogress"
 )
 
 type reqCommand struct {
@@ -31,6 +33,7 @@ type reqCommand struct {
 	filter          *protocol.Filter
 
 	discoveryTimeout int
+	discoveryMethod  string
 	displayOverride  string
 	noProgress       bool
 	startTime        time.Time
@@ -84,6 +87,7 @@ func (r *reqCommand) Setup() (err error) {
 	r.cmd.Flag("verbose", "Enable verbose output").Short('v').BoolVar(&r.verbose)
 	r.cmd.Flag("display", "Display only a subset of results (ok, failed, all, none)").EnumVar(&r.displayOverride, "ok", "failed", "all", "none")
 	r.cmd.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&r.discoveryTimeout)
+	r.cmd.Flag("dm", "Sets a discovery method (broadcast, choria)").EnumVar(&r.discoveryMethod, "broadcast", "choria", "mc")
 	r.cmd.Flag("output-file", "Filename to write output to").PlaceHolder("FILENAME").Short('o').StringVar(&r.outputFile)
 
 	return
@@ -174,6 +178,10 @@ func (r *reqCommand) prepareConfiguration() (err error) {
 
 	if r.discoveryTimeout == 0 {
 		r.discoveryTimeout = cfg.DiscoveryTimeout
+	}
+
+	if r.discoveryMethod == "" {
+		r.discoveryMethod = cfg.DefaultDiscoveryMethod
 	}
 
 	return nil
@@ -319,10 +327,17 @@ func (r *reqCommand) discover(filter *protocol.Filter) ([]string, error) {
 	}
 
 	if !r.silent {
-		fmt.Print("Discovering nodes .... ")
+		fmt.Printf("Discovering nodes using the %s method ....", r.discoveryMethod)
 	}
 
-	nodes, err := broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(r.collective), broadcast.Timeout(time.Second*time.Duration(r.discoveryTimeout)))
+	var nodes []string
+
+	switch r.discoveryMethod {
+	case "mc", "broadcast":
+		nodes, err = broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(r.collective), broadcast.Timeout(time.Second*time.Duration(r.discoveryTimeout)))
+	case "choria":
+		nodes, err = puppetdb.New(c).Discover(ctx, puppetdb.Filter(filter), puppetdb.Collective(r.collective), puppetdb.Timeout(time.Second*time.Duration(r.discoveryTimeout)))
+	}
 
 	if !r.silent {
 		fmt.Printf("%d\n", len(nodes))
