@@ -305,6 +305,10 @@
           "description": "List of data plugin names",
           "display_as": "Data Plugins",
           "default": null
+        },
+        "machines": {
+          "description": "Autonomous Agents",
+          "display_as": "Machines"
         }
       },
       "display": "always",
