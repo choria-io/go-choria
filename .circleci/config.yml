@@ -227,7 +227,7 @@ jobs:
       REPO: nightly
 
     docker:
-      - image: circleci/ruby
+      - image: circleci/ruby:2.7
 
     steps:
       - attach_workspace:
@@ -249,7 +249,7 @@ jobs:
       REPO: release
 
     docker:
-      - image: circleci/ruby
+      - image: circleci/ruby:2.7
 
     steps:
       - attach_workspace:
