@@ -88,7 +88,7 @@ var _ = Describe("PuppetSSL", func() {
 		})
 
 		// TODO: windows
-		if runtime.GOOS!="windows"{
+		if runtime.GOOS != "windows" {
 			It("Should use the user SSL directory when not configured", func() {
 				c, err := config.NewDefaultConfig()
 				Expect(err).ToNot(HaveOccurred())
@@ -191,7 +191,7 @@ var _ = Describe("PuppetSSL", func() {
 
 			prov.conf.Identity = "rip.mcollective"
 			prov.reinit()
-			err = prov.writeCSR(key, "rip.mcollective", "choria.io")
+			_, err = prov.writeCSR(key, "rip.mcollective", "choria.io")
 
 			Expect(err).To(MatchError("a certificate request already exist for rip.mcollective"))
 		})
@@ -209,7 +209,7 @@ var _ = Describe("PuppetSSL", func() {
 			key, err := prov.writePrivateKey()
 			Expect(err).ToNot(HaveOccurred())
 
-			err = prov.writeCSR(key, "na.mcollective", "choria.io")
+			_, err = prov.writeCSR(key, "na.mcollective", "choria.io")
 			Expect(err).ToNot(HaveOccurred())
 
 			csrpem, err := ioutil.ReadFile(csrpath)

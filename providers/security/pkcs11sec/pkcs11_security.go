@@ -283,7 +283,7 @@ func (p *Pkcs11Security) Provider() string {
 	return "pkcs11"
 }
 
-func (p *Pkcs11Security) Enroll(ctx context.Context, wait time.Duration, cb func(int)) error {
+func (p *Pkcs11Security) Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error {
 	return errors.New("pkcs11 security provider does not support enrollment")
 }
 

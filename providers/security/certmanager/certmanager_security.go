@@ -105,7 +105,7 @@ func (cm *CertManagerSecurity) reinit() error {
 
 	if cm.shouldEnroll() {
 		cm.log.Infof("Attempting to enroll with Cert Manager in namespace %q using issuer %q", cm.conf.namespace, cm.conf.issuer)
-		err = cm.Enroll(cm.ctx, time.Minute, func(i int) {
+		err = cm.Enroll(cm.ctx, time.Minute, func(_ string, i int) {
 			cm.log.Infof("Enrollment attempt %d", i)
 		})
 		if err != nil {
@@ -118,7 +118,7 @@ func (cm *CertManagerSecurity) reinit() error {
 	return nil
 }
 
-func (cm *CertManagerSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(int)) error {
+func (cm *CertManagerSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error {
 	if !cm.shouldEnroll() {
 		cm.log.Infof("Enrollment already completed, remove %q to force re-enrolment", cm.conf.sslDir)
 		return nil
