@@ -87,5 +87,5 @@ type Provider interface {
 	// if there's a process of waiting for the certificate to be signed for example this should wait
 	// no more than wait.  cb gets called on every attempt to download a cert with the attempt number
 	// as argument
-	Enroll(ctx context.Context, wait time.Duration, cb func(int)) error
+	Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error
 }

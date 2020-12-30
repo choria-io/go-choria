@@ -18,7 +18,7 @@ func (fw *Framework) TLSConfig() (tlsc *tls.Config, err error) {
 
 // Enroll performs the tasks needed to join the security system, like create
 // a new certificate, csr etc
-func (fw *Framework) Enroll(ctx context.Context, wait time.Duration, cb func(int)) error {
+func (fw *Framework) Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error {
 	return fw.security.Enroll(ctx, wait, cb)
 }
 

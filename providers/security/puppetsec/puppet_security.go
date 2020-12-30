@@ -10,6 +10,7 @@ import (
 	"context"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
@@ -153,7 +154,7 @@ func (s *PuppetSecurity) Provider() string {
 }
 
 // Enroll sends a CSR to the PuppetCA and wait for it to be signed
-func (s *PuppetSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(int)) error {
+func (s *PuppetSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error {
 	if s.privateKeyExists() && s.caExists() && s.publicCertExists() {
 		return errors.New("already have all files needed for SSL operations")
 	}
@@ -184,11 +185,12 @@ func (s *PuppetSecurity) Enroll(ctx context.Context, wait time.Duration, cb func
 	}
 
 	previousCSR := s.csrExists()
+	var digest string
 
 	if !previousCSR {
 		s.log.Debugf("Creating a new CSR for %s", s.Identity())
 
-		err = s.writeCSR(key, s.Identity(), "choria.io")
+		digest, err = s.writeCSR(key, s.Identity(), "choria.io")
 		if err != nil {
 			return fmt.Errorf("could not write CSR: %s", err)
 		}
@@ -215,7 +217,7 @@ func (s *PuppetSecurity) Enroll(ctx context.Context, wait time.Duration, cb func
 	attempt := 1
 
 	fetcher := func() {
-		cb(attempt)
+		cb(digest, attempt)
 		attempt++
 
 		err := s.fetchCert()
@@ -419,9 +421,9 @@ func (s *PuppetSecurity) sslDir() string {
 	return s.conf.SSLDir
 }
 
-func (s *PuppetSecurity) writeCSR(key *rsa.PrivateKey, cn string, ou string) error {
+func (s *PuppetSecurity) writeCSR(key *rsa.PrivateKey, cn string, ou string) (string, error) {
 	if s.csrExists() {
-		return fmt.Errorf("a certificate request already exist for %s", s.Identity())
+		return "", fmt.Errorf("a certificate request already exist for %s", s.Identity())
 	}
 
 	path := s.csrPath()
@@ -433,7 +435,7 @@ func (s *PuppetSecurity) writeCSR(key *rsa.PrivateKey, cn string, ou string) err
 
 	asn1Subj, err := asn1.Marshal(subj.ToRDNSequence())
 	if err != nil {
-		return fmt.Errorf("could not create subject: %s", err)
+		return "", fmt.Errorf("could not create subject: %s", err)
 	}
 
 	template := x509.CertificateRequest{
@@ -445,21 +447,21 @@ func (s *PuppetSecurity) writeCSR(key *rsa.PrivateKey, cn string, ou string) err
 
 	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, key)
 	if err != nil {
-		return fmt.Errorf("could not create csr: %s", err)
+		return "", fmt.Errorf("could not create csr: %s", err)
 	}
 
 	csr, err := os.OpenFile(path, os.O_RDWR|os.O_CREATE, 0640)
 	if err != nil {
-		return fmt.Errorf("could not open csr %s for writing: %s", path, err)
+		return "", fmt.Errorf("could not open csr %s for writing: %s", path, err)
 	}
 	defer csr.Close()
 
 	err = pem.Encode(csr, &pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrBytes})
 	if err != nil {
-		return fmt.Errorf("could not encode csr into %s: %s", path, err)
+		return "", fmt.Errorf("could not encode csr into %s: %s", path, err)
 	}
 
-	return nil
+	return fmt.Sprintf("%x", sha256.Sum256(csrBytes)), nil
 }
 
 func (s *PuppetSecurity) puppetCA() srvcache.Server {

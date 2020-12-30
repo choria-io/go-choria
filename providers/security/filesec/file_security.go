@@ -666,7 +666,7 @@ func (s *FileSecurity) SSLContext() (*http.Transport, error) {
 }
 
 // Enroll is not supported
-func (s *FileSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(int)) error {
+func (s *FileSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error {
 	return errors.New("the file security provider does not support enrollment")
 }
 
