@@ -94,6 +94,7 @@ type ChoriaPluginConfig struct {
 	FileSecurityKey         string `confkey:"plugin.security.file.key" type:"path_string"`         // When using file security provider, the path to the private key
 	FileSecurityCA          string `confkey:"plugin.security.file.ca" type:"path_string"`          // When using file security provider, the path to the Certificate Authority public certificate
 	FileSecurityCache       string `confkey:"plugin.security.file.cache" type:"path_string"`       // When using file security provider, the path to the client cache
+	FileSecurityAppendSAN   bool   `confkey:"plugin.security.file.append_san" default:"true"`      // Assume we are using puppet based certificates, without a SAN, and append one
 
 	CertManagerSecurityNamespace  string   `confkey:"plugin.security.certmanager.namespace" default:"choria"`   // When using Cert Manager security provider, the namespace the issuer is in
 	CertManagerSecurityIssuer     string   `confkey:"plugin.security.certmanager.issuer"`                       // When using Cert Manager security provider, the name of the issuer

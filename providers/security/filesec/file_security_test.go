@@ -6,11 +6,12 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
-	"github.com/choria-io/go-choria/tlssetup"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/choria-io/go-choria/tlssetup"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/security"
@@ -33,6 +34,7 @@ func setSSL(c *Config, parent string, id string) {
 	c.PrivilegedUsers = []string{"\\.privileged.mcollective$"}
 	c.DisableTLSVerify = false
 	c.Identity = id
+	c.AppendSAN = true
 
 	useFakeUID = true
 	fakeUID = 500

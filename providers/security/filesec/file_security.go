@@ -14,6 +14,8 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
+	"crypto/x509/pkix"
+	"encoding/asn1"
 	"encoding/json"
 	"encoding/pem"
 	"errors"
@@ -88,6 +90,9 @@ type Config struct {
 
 	// TLSSetup is the shared TLS configuration state between security providers
 	TLSConfig *tlssetup.Config
+
+	// Should we auto-append a SAN if it is not present?
+	AppendSAN bool
 }
 
 type signingRequest struct {
@@ -532,6 +537,54 @@ func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) error {
 	if err != nil {
 		s.log.Warnf("Could not parse certificate '%s': %s", name, err)
 		return err
+	}
+
+	/*
+	* So, golang 1.15 removed support for certificates that effectively only have the CommonName
+	* in the subject.
+	*
+	* Unfortunately, by default puppet does not create certificates with DNS SAN records.
+	*
+	* This leaves us in a bit of a quandry - in order to validate the certificates for our usage,
+	* they must have SAN records, which contain the DNS record.
+	*
+	* This awful hack and workaround will attempt to detect if the SAN extension is present in the certificate,
+	* and if not will add one to the result in memory before we pass to the verify process.
+	 */
+
+	// This value is defined by Joint-ISO-ITU-T, I think.  This this safe to have hard coded
+	oidExtensionSubjectAltName := []int{2, 5, 29, 17}
+
+	// Default to the premise that the cert will have a SAN
+	hasSan := false
+
+	for _, e := range cert.Extensions {
+		if e.Id.Equal(oidExtensionSubjectAltName) {
+			hasSan = true
+		}
+	}
+
+	if !hasSan && s.conf.AppendSAN {
+		s.log.Debugf("Certificate for %s does not have a SAN, appending one", cert.Subject.CommonName)
+
+		// We do not have a SAN, so continue down this path of creating one
+		var err error
+		extSubjectAltName := pkix.Extension{Id: oidExtensionSubjectAltName, Critical: false}
+
+		extSubjectAltName.Value, err = asn1.Marshal([]string{"DNS:" + cert.Subject.CommonName})
+
+		// This value is usually populated when the certificate is parsed, this is necessary
+		// since the validation code in x509/verify.go will reference this array vs rebuilding
+		// the list of SANs every time
+		cert.DNSNames = append(cert.DNSNames, cert.Subject.CommonName)
+
+		if err != nil {
+			s.log.Errorf("An error occurred somehow while marshaling the CN, you have done the impossible: %v", err.Error())
+			return err
+		}
+
+		// Append (not replace) the SAN to the list of extensions
+		cert.Extensions = append(cert.Extensions, extSubjectAltName)
 	}
 
 	intermediates := x509.NewCertPool()
