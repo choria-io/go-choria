@@ -546,12 +546,6 @@ func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) error {
 		KeyUsages:     []x509.ExtKeyUsage{x509.ExtKeyUsageClientAuth},
 	}
 
-	// If there is an email address in the name passed, we should not search by DNSName
-	// in the CN or SAN
-	if name != "" && !strings.HasPrefix(name, "email:") {
-		opts.DNSName = name
-	}
-
 	_, err = cert.Verify(opts)
 	if err != nil {
 		s.log.Warnf("Certificate does not pass verification as '%s': %s", name, err)
@@ -569,7 +563,27 @@ func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) error {
 		return fmt.Errorf("email address not found in SAN: %s, %v", name, cert.EmailAddresses)
 	}
 
+	// shouldCacheClientCert passes in an empty name, we just want it to verify validity of the CA chain at this point
+	if name == "" {
+		return nil
+	}
+
+	if !findName(cert.DNSNames, name) {
+		if cert.Subject.CommonName != name {
+			return fmt.Errorf("x509: certificate is valid for %s, not %s", cert.Subject.CommonName, name)
+		}
+	}
+
 	return nil
+}
+
+func findName(names []string, name string) bool {
+	for _, n := range names {
+		if n == name {
+			return true
+		}
+	}
+	return false
 }
 
 // HTTPClient creates a standard HTTP client with optional security, it will
