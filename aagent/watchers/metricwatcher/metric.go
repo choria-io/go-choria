@@ -1,6 +1,7 @@
 package metricwatcher
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -159,23 +160,60 @@ func (w *Watcher) performWatch(ctx context.Context) {
 	}
 }
 
-func (w *Watcher) handleCheck(output []byte, err error) error {
+func (w *Watcher) parseJSONCheck(output []byte) (*Metric, error) {
 	metric := &Metric{
-		Labels:  map[string]string{},
+		Labels:  map[string]string{"format": "choria"},
 		Metrics: map[string]float64{},
 	}
 
-	if err == nil {
-		err = json.Unmarshal(output, metric)
+	err := json.Unmarshal(output, metric)
+	if err != nil {
+		return metric, err
 	}
 
 	for k, v := range w.properties.Labels {
 		metric.Labels[k] = v
 	}
 
+	return metric, nil
+}
+
+func (w *Watcher) parseNagiosCheck(output []byte) (*Metric, error) {
+	metric := &Metric{
+		Labels:  map[string]string{"format": "nagios"},
+		Metrics: map[string]float64{},
+	}
+
+	perf := util.ParsePerfData(string(output))
+	if perf == nil {
+		return metric, nil
+	}
+
+	for _, p := range perf {
+		metric.Metrics[p.Label] = p.Value
+	}
+
+	return metric, nil
+}
+
+func (w *Watcher) handleCheck(output []byte, err error) error {
+	var metric *Metric
+
+	if err == nil {
+		if bytes.HasPrefix(bytes.TrimSpace(output), []byte("{")) {
+			metric, err = w.parseJSONCheck(output)
+		} else {
+			metric, err = w.parseNagiosCheck(output)
+		}
+	}
+
 	if err != nil {
 		w.NotifyWatcherState(w.CurrentState())
 		return w.FailureTransition()
+	}
+
+	for k, v := range w.properties.Labels {
+		metric.Labels[k] = v
 	}
 
 	err = updatePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name, metric)
