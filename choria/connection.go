@@ -436,6 +436,8 @@ func (conn *Connection) publishConnectedBroadcast(msg *Message, transport protoc
 
 	log.Debugf("Sending a broadcast message to NATS target '%s' for message %s type %s", target, msg.RequestID, msg.Type())
 
+	msg.NotifyPublish()
+
 	return conn.PublishRaw(target, []byte(j))
 
 }

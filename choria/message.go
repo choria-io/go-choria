@@ -35,6 +35,7 @@ type Message struct {
 	protoVersion         string
 	shouldCacheTransport bool
 	cachedTransport      protocol.TransportMessage
+	onPublish            func()
 
 	sync.Mutex
 
@@ -118,6 +119,26 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 	_, err = msg.Validate()
 
 	return
+}
+
+// OnPublish sets a callback that should be called just before this message is published,
+// it might be called several times for batched or direct messages. This will be called after
+// the message have been signed - potentially by a remote signer etc
+func (m *Message) OnPublish(f func()) {
+	m.Lock()
+	defer m.Unlock()
+
+	m.onPublish = f
+}
+
+// NotifyPublish triggers the callback set using OnPublish() in a blocking fasion
+func (m *Message) NotifyPublish() {
+	m.Lock()
+	defer m.Unlock()
+
+	if m.onPublish != nil {
+		m.onPublish()
+	}
 }
 
 // IsCachedTransport determines if transport messages will be cached
