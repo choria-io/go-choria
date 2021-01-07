@@ -13,6 +13,7 @@ import (
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
+	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	"github.com/choria-io/go-choria/statistics"
 )
@@ -55,7 +56,7 @@ var _ = Describe("NagiosWatcher", func() {
 		watch = wi.(*Watcher)
 		watch.previousCheck = now
 		watch.previousOutput = "OK: ginkgo"
-		watch.previousPerfData = []PerfData{}
+		watch.previousPerfData = []util.PerfData{}
 		watch.previousRunTime = 500 * time.Millisecond
 		watch.previous = OK
 		watch.previousPlugin = "/bin/sh"

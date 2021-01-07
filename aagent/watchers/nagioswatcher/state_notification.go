@@ -6,6 +6,7 @@ import (
 
 	cloudevents "github.com/cloudevents/sdk-go"
 
+	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 )
 
@@ -17,7 +18,7 @@ type StateNotification struct {
 	StatusCode  int               `json:"status_code"`
 	Output      string            `json:"output"`
 	CheckTime   int64             `json:"check_time"`
-	PerfData    []PerfData        `json:"perfdata"`
+	PerfData    []util.PerfData   `json:"perfdata"`
 	RunTime     float64           `json:"runtime"`
 	History     []*Execution      `json:"history"`
 	Annotations map[string]string `json:"annotations"`

@@ -64,7 +64,40 @@ var _ = Describe("MetricWatcher", func() {
 	})
 
 	Describe("performWatch", func() {
-		It("Should run the script and correctly parse the metrics", func() {
+		It("Should run the script and correctly parse nagios style metrics", func() {
+			if runtime.GOOS == "windows" {
+				Skip("not tested on windows yet")
+			}
+
+			handled := false
+			mockMachine.EXPECT().NotifyWatcherState("ginkgo", gomock.Any()).Do(func(_ string, m *StateNotification) {
+				Expect(m.Metrics.Labels).To(Equal(map[string]string{
+					"dupe":   "w",
+					"format": "nagios",
+				}))
+				Expect(m.Metrics.Metrics["failed_events"]).To(Equal(0.0))
+				Expect(m.Metrics.Metrics["failed_resources"]).To(Equal(0.0))
+				Expect(m.Metrics.Metrics["last_run_duration"]).To(Equal(59.67))
+				Expect(m.Metrics.Metrics["time_since_last_run"]).To(Equal(237.0))
+				Expect(m.Metrics.Metrics["choria_runtime_seconds"]).To(BeNumerically(">", 0))
+				handled = true
+			})
+
+			wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]interface{}{
+				"command": filepath.Join("testdata", "nagios.sh"),
+				"labels":  map[string]string{"dupe": "w"},
+			})
+			Expect(err).ToNot(HaveOccurred())
+			watch = wi.(*Watcher)
+
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
+
+			watch.performWatch(ctx)
+			Expect(handled).To(BeTrue())
+		})
+
+		It("Should run the script and correctly parse choria style metrics", func() {
 			if runtime.GOOS == "windows" {
 				Skip("not tested on windows yet")
 			}
@@ -74,6 +107,7 @@ var _ = Describe("MetricWatcher", func() {
 				Expect(m.Metrics.Labels).To(Equal(map[string]string{
 					"dupe":   "w",
 					"unique": "u",
+					"format": "choria",
 				}))
 				Expect(m.Metrics.Metrics["v1"]).To(Equal(float64(1)))
 				Expect(m.Metrics.Metrics["v2"]).To(Equal(1.1))
