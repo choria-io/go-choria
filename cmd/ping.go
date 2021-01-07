@@ -33,9 +33,11 @@ type pingCommand struct {
 	combinedF  []string
 	namesOnly  bool
 
-	start time.Time
-	ctr   int
-	mu    *sync.Mutex
+	start     time.Time
+	published time.Time
+
+	ctr int
+	mu  *sync.Mutex
 
 	times []float64
 }
@@ -54,6 +56,8 @@ func (p *pingCommand) Setup() (err error) {
 	p.cmd.Flag("timeout", "How long to wait for responses").IntVar(&p.timeout)
 	p.cmd.Flag("graph", "Produce a graph of the result times").BoolVar(&p.graph)
 	p.cmd.Flag("workers", "How many workers to start for receiving messages").Default("3").IntVar(&p.workers)
+
+	p.start = time.Now()
 
 	return
 }
@@ -83,19 +87,17 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("could not parse filters: %s", err)
 	}
 
-	cl, err := client.New(c, client.Receivers(p.workers), client.Timeout(time.Duration(p.timeout)*time.Second))
-	if err != nil {
-		return fmt.Errorf("could not setup client: %s", err)
-	}
-
 	msg, err := p.createMessage(protocol.NewFilter())
 	if err != nil {
 		return fmt.Errorf("could not create message: %s", err)
 	}
-
 	msg.Filter = filter
+	msg.OnPublish(func() { p.published = time.Now() })
 
-	p.start = time.Now()
+	cl, err := client.New(c, client.Receivers(p.workers), client.Timeout(time.Duration(p.timeout)*time.Second))
+	if err != nil {
+		return fmt.Errorf("could not setup client: %s", err)
+	}
 
 	err = cl.Request(ctx, msg, p.handler)
 	if err != nil {
@@ -134,7 +136,7 @@ func (p *pingCommand) summarize() error {
 
 		avg = sum / float64(len(p.times))
 
-		fmt.Printf("%d replies max: %.2f min: %.2f avg: %.2f\n", len(p.times), max, min, avg)
+		fmt.Printf("%d replies max: %.3f min: %.3f avg: %.3f overhead: %.3f\n", len(p.times), max, min, avg, p.published.Sub(p.start).Seconds()*1000)
 
 		if p.graph {
 			fmt.Println()
@@ -148,7 +150,7 @@ func (p *pingCommand) summarize() error {
 	return errors.New("no responses received")
 }
 
-func (p *pingCommand) handler(ctx context.Context, m *choria.ConnectorMessage) {
+func (p *pingCommand) handler(_ context.Context, m *choria.ConnectorMessage) {
 	reply, err := c.NewTransportFromJSON(string(m.Data))
 	if err != nil {
 		log.Errorf("Could not process a reply: %s", err)
@@ -156,7 +158,7 @@ func (p *pingCommand) handler(ctx context.Context, m *choria.ConnectorMessage) {
 	}
 
 	now := time.Now()
-	delay := now.Sub(p.start).Seconds() * 1000
+	delay := now.Sub(p.published).Seconds() * 1000
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
