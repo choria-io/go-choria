@@ -35,7 +35,7 @@ type {{ .ActionName | SnakeToCamel }}Result struct {
 	mu sync.Mutex
 }
 
-func (d *{{ .ActionName | SnakeToCamel }}Result) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
+func (d *{{ .ActionName | SnakeToCamel }}Result) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, colorize bool, log Log) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -64,7 +64,7 @@ func (d *{{ .ActionName | SnakeToCamel }}Result) RenderResults(w io.Writer, form
 		results.RenderTXTFooter(w, verbose)
 		return nil
 	default:
-		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), log)
+		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), colorize, log)
 	}
 }
 

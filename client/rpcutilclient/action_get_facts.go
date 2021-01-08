@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2020-12-27 21:55:27.045414 +0100 CET m=+0.027604254"
+// generated code; DO NOT EDIT; 2021-01-08 13:42:25.250847 +0100 CET m=+0.029121601"
 //
 // Client for Choria RPC Agent 'rpcutil'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -38,7 +38,7 @@ type GetFactsResult struct {
 	mu         sync.Mutex
 }
 
-func (d *GetFactsResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
+func (d *GetFactsResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, colorize bool, log Log) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -67,7 +67,7 @@ func (d *GetFactsResult) RenderResults(w io.Writer, format RenderFormat, display
 		results.RenderTXTFooter(w, verbose)
 		return nil
 	default:
-		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), log)
+		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), colorize, log)
 	}
 }
 

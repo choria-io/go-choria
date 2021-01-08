@@ -8,7 +8,6 @@ import (
 
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
-	"github.com/fatih/color"
 	"github.com/gosuri/uiprogress"
 )
 
@@ -106,10 +105,10 @@ func (r *requester) configureProgress(count int) {
 	r.progress = uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
 	r.progress.PrependFunc(func(b *uiprogress.Bar) string {
 		if b.Current() < count {
-			return color.RedString(fmt.Sprintf("%d / %d", b.Current(), count))
+			return r.client.fw.Colorize("red", "%d / %d", b.Current(), count)
 		}
 
-		return color.GreenString(fmt.Sprintf("%d / %d", b.Current(), count))
+		return r.client.fw.Colorize("green", "%d / %d", b.Current(), count)
 	})
 
 	uiprogress.Start()

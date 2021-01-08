@@ -238,7 +238,7 @@ func (i *inventoryCommand) inventoryCollectives() error {
 	table.Render()
 
 	if len(res.Stats().NoResponseFrom()) > 0 {
-		res.RenderResults(os.Stdout, rpcutilclient.TXTFooter, rpcutilclient.DisplayAll, debug, false, c.Logger("inventory"))
+		res.RenderResults(os.Stdout, rpcutilclient.TXTFooter, rpcutilclient.DisplayAll, debug, false, c.Config.Color, c.Logger("inventory"))
 	}
 
 	return nil

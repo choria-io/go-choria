@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2020-12-27 21:55:27.04783 +0100 CET m=+0.030020578"
+// generated code; DO NOT EDIT; 2021-01-08 13:42:25.254184 +0100 CET m=+0.032457847"
 //
 // Client for Choria RPC Agent 'rpcutil'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -38,7 +38,7 @@ type InventoryResult struct {
 	mu         sync.Mutex
 }
 
-func (d *InventoryResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
+func (d *InventoryResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, colorize bool, log Log) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -67,7 +67,7 @@ func (d *InventoryResult) RenderResults(w io.Writer, format RenderFormat, displa
 		results.RenderTXTFooter(w, verbose)
 		return nil
 	default:
-		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), log)
+		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), colorize, log)
 	}
 }
 
@@ -197,6 +197,14 @@ func (d *InventoryOutput) DataPlugins() interface{} {
 // Description: List of facts and values
 func (d *InventoryOutput) Facts() interface{} {
 	val := d.reply["facts"]
+	return val.(interface{})
+}
+
+// Machines is the value of the machines output
+//
+// Description: Autonomous Agents
+func (d *InventoryOutput) Machines() interface{} {
+	val := d.reply["machines"]
 	return val.(interface{})
 }
 

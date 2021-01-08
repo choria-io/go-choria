@@ -42,7 +42,7 @@ func (s *sResumeCommand) Configure() error {
 func (s *sResumeCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	trigger, err := scoutcmd.NewResumeCommand(s.identities, s.classes, s.facts, s.combined, s.checks, s.json, configFile, debug || s.verbose, logrus.NewEntry(c.Logger("scout").Logger))
+	trigger, err := scoutcmd.NewResumeCommand(s.identities, s.classes, s.facts, s.combined, s.checks, s.json, configFile, debug || s.verbose, c.Config.Color, logrus.NewEntry(c.Logger("scout").Logger))
 	if err != nil {
 		return err
 	}

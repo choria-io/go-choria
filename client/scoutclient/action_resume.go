@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2020-12-27 21:55:27.098096 +0100 CET m=+0.080285226"
+// generated code; DO NOT EDIT; 2021-01-08 13:42:25.309538 +0100 CET m=+0.087814279"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.18.0
 
@@ -38,7 +38,7 @@ type ResumeResult struct {
 	mu         sync.Mutex
 }
 
-func (d *ResumeResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, log Log) error {
+func (d *ResumeResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, colorize bool, log Log) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -67,7 +67,7 @@ func (d *ResumeResult) RenderResults(w io.Writer, format RenderFormat, displayMo
 		results.RenderTXTFooter(w, verbose)
 		return nil
 	default:
-		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), log)
+		return results.RenderTXT(w, addl, verbose, silent, replyfmt.DisplayMode(displayMode), colorize, log)
 	}
 }
 
