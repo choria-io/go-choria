@@ -114,7 +114,7 @@ func (r *RPCResults) RenderTXTFooter(w io.Writer, verbose bool) {
 	nodeListPrinter(stats.UnexpectedResponses, "Unexpected Responses from")
 }
 
-func (r *RPCResults) RenderTXT(w io.Writer, action ActionDDL, verbose bool, silent bool, display DisplayMode, log Logger) (err error) {
+func (r *RPCResults) RenderTXT(w io.Writer, action ActionDDL, verbose bool, silent bool, display DisplayMode, colorize bool, log Logger) (err error) {
 	fmtopts := []Option{
 		Display(display),
 	}
@@ -125,6 +125,10 @@ func (r *RPCResults) RenderTXT(w io.Writer, action ActionDDL, verbose bool, sile
 
 	if silent {
 		fmtopts = append(fmtopts, Silent())
+	}
+
+	if !colorize {
+		fmtopts = append(fmtopts, ConsoleNoColor())
 	}
 
 	for _, reply := range r.Replies {

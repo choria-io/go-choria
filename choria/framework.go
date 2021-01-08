@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
+	"github.com/fatih/color"
 
 	"github.com/choria-io/go-choria/protocol"
 	certmanagersec "github.com/choria-io/go-choria/providers/security/certmanager"
@@ -739,4 +740,23 @@ func (fw *Framework) PQLQueryCertNames(query string) ([]string, error) {
 	}
 
 	return nodes, nil
+}
+
+// Colorize returns a string of either 'red', 'green' or 'yellow'. If the 'color' configuration
+// is set to false then the string will have no color hints
+func (fw *Framework) Colorize(c string, format string, a ...interface{}) string {
+	if !fw.Config.Color {
+		return fmt.Sprintf(format, a...)
+	}
+
+	switch c {
+	case "red":
+		return color.RedString(fmt.Sprintf(format, a...))
+	case "green":
+		return color.GreenString(fmt.Sprintf(format, a...))
+	case "yellow":
+		return color.YellowString(fmt.Sprintf(format, a...))
+	default:
+		return fmt.Sprintf(format, a...)
+	}
 }

@@ -33,7 +33,7 @@ func (s *sStatusCommand) Configure() error {
 func (s *sStatusCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	status, err := scoutcmd.NewStatusCommand(s.identity, s.json, debug || s.verbose, configFile, logrus.NewEntry(c.Logger("scout").Logger))
+	status, err := scoutcmd.NewStatusCommand(s.identity, s.json, debug || s.verbose, configFile, c.Config.Color, logrus.NewEntry(c.Logger("scout").Logger))
 	if err != nil {
 		return err
 	}

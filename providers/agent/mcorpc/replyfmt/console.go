@@ -90,7 +90,12 @@ func (c *ConsoleFormatter) FormatAggregates(w io.Writer, action ActionDDL) error
 		}
 
 		if len(summaries[k]) == 0 {
-			fmt.Fprintf(w, "   %s\n\n", color.YellowString("No summary received"))
+			if c.disableColor {
+				fmt.Fprintf(w, "   No summary received\n\n")
+			} else {
+				fmt.Fprintf(w, "   %s\n\n", color.YellowString("No summary received"))
+			}
+
 			continue
 		}
 
