@@ -18,7 +18,6 @@ import (
 )
 
 // UserConfig determines what is the active config file for a user
-// TODO: windows, though I am happy not to support client on windows
 func UserConfig() string {
 	home, _ := HomeDir()
 
@@ -31,6 +30,10 @@ func UserConfig() string {
 				return homeCfg
 			}
 		}
+	}
+
+	if runtime.GOOS == "windows" {
+		return filepath.Join("C:\\", "ProgramData", "choria", "etc", "client.conf")
 	}
 
 	if FileExist("/etc/choria/client.conf") {
