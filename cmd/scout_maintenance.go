@@ -42,7 +42,7 @@ func (s *sMaintenanceCommand) Configure() error {
 func (s *sMaintenanceCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	trigger, err := scoutcmd.NewMaintenanceCommand(s.identities, s.classes, s.facts, s.combined, s.checks, s.json, configFile, debug || s.verbose, logrus.NewEntry(c.Logger("scout").Logger))
+	trigger, err := scoutcmd.NewMaintenanceCommand(s.identities, s.classes, s.facts, s.combined, s.checks, s.json, configFile, debug || s.verbose, c.Config.Color, logrus.NewEntry(c.Logger("scout").Logger))
 	if err != nil {
 		return err
 	}

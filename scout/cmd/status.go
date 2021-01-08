@@ -19,16 +19,18 @@ type StatusCommand struct {
 	json     bool
 	cfile    string
 	verbose  bool
+	colorize bool
 	log      *logrus.Entry
 }
 
-func NewStatusCommand(id string, jsonf bool, verbose bool, cfile string, log *logrus.Entry) (*StatusCommand, error) {
+func NewStatusCommand(id string, jsonf bool, verbose bool, cfile string, colorize bool, log *logrus.Entry) (*StatusCommand, error) {
 	return &StatusCommand{
 		identity: id,
 		json:     jsonf,
 		cfile:    cfile,
 		log:      log,
 		verbose:  verbose,
+		colorize: colorize,
 	}, nil
 }
 
@@ -46,7 +48,7 @@ func (s *StatusCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error)
 	}
 
 	if s.json {
-		return res.RenderResults(os.Stdout, scoutclient.JSONFormat, scoutclient.DisplayDDL, s.verbose, false, s.log)
+		return res.RenderResults(os.Stdout, scoutclient.JSONFormat, scoutclient.DisplayDDL, s.verbose, false, s.colorize, s.log)
 	}
 
 	var outputs []*scoutclient.ChecksOutput
@@ -55,7 +57,7 @@ func (s *StatusCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error)
 	})
 
 	if len(outputs) != 1 {
-		return res.RenderResults(os.Stdout, scoutclient.JSONFormat, scoutclient.DisplayDDL, s.verbose, false, s.log)
+		return res.RenderResults(os.Stdout, scoutclient.JSONFormat, scoutclient.DisplayDDL, s.verbose, false, s.colorize, s.log)
 	}
 
 	if !outputs[0].ResultDetails().OK() {
@@ -103,5 +105,5 @@ func (s *StatusCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error)
 	table.Render()
 
 	fmt.Println()
-	return res.RenderResults(os.Stdout, scoutclient.TXTFooter, scoutclient.DisplayDDL, s.verbose, false, s.log)
+	return res.RenderResults(os.Stdout, scoutclient.TXTFooter, scoutclient.DisplayDDL, s.verbose, false, s.colorize, s.log)
 }

@@ -8,7 +8,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/gosuri/uiprogress"
 
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
@@ -114,10 +113,10 @@ func (r *reqCommand) configureProgressBar(count int, expected int) {
 
 	r.progressBar.PrependFunc(func(b *uiprogress.Bar) string {
 		if b.Current() < expected {
-			return color.RedString(fmt.Sprintf("%d / %d", b.Current(), count))
+			return c.Colorize("red", "%d / %d", b.Current(), count)
 		}
 
-		return color.GreenString(fmt.Sprintf("%d / %d", b.Current(), count))
+		return c.Colorize("green", "%d / %d", b.Current(), count)
 	})
 
 	uiprogress.Start()
@@ -295,7 +294,7 @@ func (r *reqCommand) displayResults(res *replyfmt.RPCResults) error {
 		mode = replyfmt.DisplayNone
 	}
 
-	return res.RenderTXT(r.outputWriter, r.actionInterface, r.verbose, r.silent, mode, c.Logger("req"))
+	return res.RenderTXT(r.outputWriter, r.actionInterface, r.verbose, r.silent, mode, c.Config.Color, c.Logger("req"))
 }
 
 func (r *reqCommand) Configure() error {

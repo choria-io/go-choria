@@ -22,10 +22,11 @@ type MaintenanceCommand struct {
 	json       bool
 	cfile      string
 	verbose    bool
+	colorize   bool
 	log        *logrus.Entry
 }
 
-func NewMaintenanceCommand(ids []string, classes []string, facts []string, combined []string, checks []string, json bool, cfile string, verbose bool, log *logrus.Entry) (*MaintenanceCommand, error) {
+func NewMaintenanceCommand(ids []string, classes []string, facts []string, combined []string, checks []string, json bool, cfile string, verbose bool, colorize bool, log *logrus.Entry) (*MaintenanceCommand, error) {
 	return &MaintenanceCommand{
 		identities: ids,
 		classes:    classes,
@@ -36,6 +37,7 @@ func NewMaintenanceCommand(ids []string, classes []string, facts []string, combi
 		log:        log,
 		cfile:      cfile,
 		verbose:    verbose,
+		colorize:   colorize,
 	}, nil
 }
 
@@ -58,7 +60,7 @@ func (t *MaintenanceCommand) Run(ctx context.Context, wg *sync.WaitGroup) error 
 	}
 
 	if t.json {
-		return result.RenderResults(os.Stdout, scoutclient.JSONFormat, scoutclient.DisplayDDL, t.verbose, false, t.log)
+		return result.RenderResults(os.Stdout, scoutclient.JSONFormat, scoutclient.DisplayDDL, t.verbose, false, t.colorize, t.log)
 	}
 
 	if result.Stats().ResponsesCount() == 0 {
@@ -99,5 +101,5 @@ func (t *MaintenanceCommand) Run(ctx context.Context, wg *sync.WaitGroup) error 
 	}
 
 	fmt.Println()
-	return result.RenderResults(os.Stdout, scoutclient.TXTFooter, scoutclient.DisplayDDL, t.verbose, false, t.log)
+	return result.RenderResults(os.Stdout, scoutclient.TXTFooter, scoutclient.DisplayDDL, t.verbose, false, t.colorize, t.log)
 }

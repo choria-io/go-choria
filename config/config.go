@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -263,6 +264,10 @@ func (c *Config) normalize() error {
 
 		c.DisableTLSVerify = true
 		c.DisableSecurityProviderVerify = true
+	}
+
+	if runtime.GOOS == "windows" {
+		c.Color = false
 	}
 
 	return nil

@@ -41,6 +41,12 @@ var _ = Describe("Choria/Config", func() {
 			Expect(c.DefaultDiscoveryOptions).To(Equal([]string{"one", "two"}))
 			Expect(c.Choria.RandomizeMiddlewareHosts).To(BeTrue())
 
+			if runtime.GOOS == "windows" {
+				Expect(c.Color).To(BeFalse())
+			} else {
+				Expect(c.Color).To(BeTrue())
+			}
+
 			Expect(c.Choria.PrivilegedUsers).To(Equal([]string{
 				"\\.privileged.mcollective$",
 				"\\.privileged.choria$",

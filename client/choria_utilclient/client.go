@@ -55,6 +55,7 @@ type ChoriaFramework interface {
 	NewRequestID() (string, error)
 	Certname() string
 	PQLQueryCertNames(query string) ([]string, error)
+	Colorize(c string, format string, a ...interface{}) string
 }
 
 // FilterFunc can generate a Choria filter
