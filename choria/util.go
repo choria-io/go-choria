@@ -45,6 +45,10 @@ func UserConfig() string {
 		return "/etc/choria/client.cfg"
 	}
 
+	if FileExist("/usr/local/etc/choria/client.conf") {
+		return "/usr/local/etc/choria/client.conf"
+	}
+
 	return "/etc/puppetlabs/mcollective/client.cfg"
 }
 
