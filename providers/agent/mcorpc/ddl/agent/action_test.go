@@ -3,6 +3,7 @@ package agent
 import (
 	"path"
 
+	common "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -14,19 +15,19 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 
 	BeforeEach(func() {
 		act = Action{
-			Input: map[string]*ActionInputItem{
-				"int":     &ActionInputItem{Type: "integer", Optional: true, Default: 1},
-				"float":   &ActionInputItem{Type: "float", Optional: true},
-				"number":  &ActionInputItem{Type: "number", Optional: true},
-				"string":  &ActionInputItem{Type: "string", MaxLength: 20, Optional: false},
-				"boolean": &ActionInputItem{Type: "boolean", Optional: true},
-				"list":    &ActionInputItem{Type: "list", Enum: []string{"one", "two"}, Optional: true},
-				"hash":    &ActionInputItem{Type: "Hash", Optional: true},
-				"array":   &ActionInputItem{Type: "Array", Optional: true},
+			Input: map[string]*common.InputItem{
+				"int":     {Type: "integer", Optional: true, Default: 1},
+				"float":   {Type: "float", Optional: true},
+				"number":  {Type: "number", Optional: true},
+				"string":  {Type: "string", MaxLength: 20, Optional: false},
+				"boolean": {Type: "boolean", Optional: true},
+				"list":    {Type: "list", Enum: []string{"one", "two"}, Optional: true},
+				"hash":    {Type: "Hash", Optional: true},
+				"array":   {Type: "Array", Optional: true},
 			},
-			Output: map[string]*ActionOutputItem{
-				"int":    &ActionOutputItem{Type: "integer", Default: 1},
-				"string": &ActionOutputItem{Type: "string"},
+			Output: map[string]*common.OutputItem{
+				"int":    {Type: "integer", Default: 1},
+				"string": {Type: "string"},
 			},
 		}
 
@@ -97,9 +98,9 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 		})
 		It("Should accept actions without parameters", func() {
 			basicAct := Action{
-				Input: map[string]*ActionInputItem{},
-				Output: map[string]*ActionOutputItem{
-					"string": &ActionOutputItem{Type: "string"},
+				Input: map[string]*common.InputItem{},
+				Output: map[string]*common.OutputItem{
+					"string": {Type: "string"},
 				},
 			}
 			orig := map[string]string{}
@@ -112,9 +113,9 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 
 	Describe("ValidateInputString", func() {
 		It("Should correctly validate the input string as its correct type", func() {
-			err := act.ValidateInputString("int", "hello world")
+			_, err = act.ValidateInputString("int", "hello world")
 			Expect(err).To(MatchError("'hello world' is not a valid integer"))
-			err = act.ValidateInputString("int", "10")
+			_, err = act.ValidateInputString("int", "10")
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
@@ -200,7 +201,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 		})
 
 		It("Should validate unknowns", func() {
-			act.Input["unkn"] = &ActionInputItem{Type: "unknown"}
+			act.Input["unkn"] = &common.InputItem{Type: "unknown"}
 
 			warnings, err := act.ValidateInputValue("unkn", "one")
 			Expect(warnings).To(HaveLen(0))
@@ -343,65 +344,6 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 
 			Expect(install.RequiresInput("package")).To(BeTrue())
 			Expect(install.RequiresInput("version")).To(BeFalse())
-		})
-	})
-
-	Describe("validateStringValidation", func() {
-		It("Should support shellsafe", func() {
-			w, err := validateStringValidation("shellsafe", ">")
-			Expect(w).To(HaveLen(0))
-			Expect(err).To(MatchError("may not contain '>'"))
-
-			w, err = validateStringValidation("shellsafe", "foo")
-			Expect(w).To(HaveLen(0))
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("Should support ipv4address", func() {
-			w, err := validateStringValidation("ipv4address", "2a00:1450:4002:807::200e")
-			Expect(w).To(HaveLen(0))
-			Expect(err).To(MatchError("2a00:1450:4002:807::200e is not an IPv4 address"))
-
-			w, err = validateStringValidation("ipv4address", "1.1.1.1")
-			Expect(w).To(HaveLen(0))
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("Should support ipv6address", func() {
-			w, err := validateStringValidation("ipv6address", "2a00:1450:4002:807::200e")
-			Expect(w).To(HaveLen(0))
-			Expect(err).ToNot(HaveOccurred())
-
-			w, err = validateStringValidation("ipv6address", "1.1.1.1")
-			Expect(w).To(HaveLen(0))
-			Expect(err).To(MatchError("1.1.1.1 is not an IPv6 address"))
-		})
-
-		It("Should support ipaddress", func() {
-			w, err := validateStringValidation("ipaddress", "2a00:1450:4002:807::200e")
-			Expect(w).To(HaveLen(0))
-			Expect(err).ToNot(HaveOccurred())
-
-			w, err = validateStringValidation("ipaddress", "bob")
-			Expect(w).To(HaveLen(0))
-			Expect(err).To(MatchError("bob is not an IP address"))
-		})
-
-		It("Should warn but not fail for validators that start with alpha characters", func() {
-			w, err := validateStringValidation("foo", "2a00:1450:4002:807::200e")
-			Expect(w).To(HaveLen(1))
-			Expect(w[0]).To(Equal("Unsupported validator 'foo'"))
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("Should support regex validators", func() {
-			w, err := validateStringValidation("^2a00", "2a00:1450:4002:807::200e")
-			Expect(w).To(HaveLen(0))
-			Expect(err).ToNot(HaveOccurred())
-
-			w, err = validateStringValidation("\\d+", "bob")
-			Expect(w).To(HaveLen(0))
-			Expect(err).To(MatchError("input does not match '\\d+'"))
 		})
 	})
 })

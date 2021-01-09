@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
@@ -72,11 +73,11 @@ func (g *Generator) templFChoriaTypeToGo(v string) string {
 	}
 }
 
-func (g *Generator) templFChoriaOptionalInputs(act *addl.Action) map[string]*addl.ActionInputItem {
+func (g *Generator) templFChoriaOptionalInputs(act *addl.Action) map[string]*common.InputItem {
 	return g.optionalInputSelect(act, true)
 }
 
-func (g *Generator) templFChoriaRequiredInputs(act *addl.Action) map[string]*addl.ActionInputItem {
+func (g *Generator) templFChoriaRequiredInputs(act *addl.Action) map[string]*common.InputItem {
 	return g.optionalInputSelect(act, false)
 }
 

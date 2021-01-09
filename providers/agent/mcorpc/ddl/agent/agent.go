@@ -6,13 +6,12 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math"
-	"os"
-	"path/filepath"
 	"reflect"
 	"strings"
 	"text/template"
 	"time"
 
+	common "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 	"github.com/choria-io/go-choria/server/agents"
 )
 
@@ -70,30 +69,7 @@ func Find(agent string, libdirs []string) (ddl *DDL, err error) {
 
 // EachFile calls cb with a path to every found agent DDL, stops looking when br is true
 func EachFile(libdirs []string, cb func(name string, path string) (br bool)) {
-	for _, dir := range libdirs {
-		agentsdir := filepath.Join(dir, "mcollective", "agent")
-
-		filepath.Walk(agentsdir, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
-				return err
-			}
-
-			if info.IsDir() {
-				return nil
-			}
-
-			_, name := filepath.Split(path)
-			extension := filepath.Ext(name)
-
-			if extension != ".json" {
-				return nil
-			}
-
-			cb(strings.TrimSuffix(name, extension), path)
-
-			return nil
-		})
-	}
+	common.EachFile("agent", libdirs, cb)
 }
 
 func (d *DDL) normalize() {

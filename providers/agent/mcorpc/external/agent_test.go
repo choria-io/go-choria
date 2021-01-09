@@ -13,6 +13,7 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 	agents "github.com/choria-io/go-choria/server/agents"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -148,20 +149,20 @@ var _ = Describe("McoRPC/External", func() {
 				Actions: []*addl.Action{
 					&addl.Action{
 						Name: "ping",
-						Input: map[string]*addl.ActionInputItem{
-							"hello": &addl.ActionInputItem{
+						Input: map[string]*common.InputItem{
+							"hello": {
 								Type:       "string",
 								Optional:   false,
 								Validation: "shellsafe",
 								MaxLength:  0,
 							},
 						},
-						Output: map[string]*addl.ActionOutputItem{
-							"hello": &addl.ActionOutputItem{
+						Output: map[string]*common.OutputItem{
+							"hello": {
 								Type:    "string",
 								Default: "default",
 							},
-							"optional": &addl.ActionOutputItem{
+							"optional": {
 								Type:    "string",
 								Default: "optional default",
 							},

@@ -18,7 +18,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
-	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 )
 
 type RPCStats struct {
@@ -54,7 +54,7 @@ type ActionDDL interface {
 	AggregateResult(result map[string]interface{}) error
 	AggregateResultJSON(jres []byte) error
 	AggregateSummaryJSON() ([]byte, error)
-	GetOutput(string) (*agent.ActionOutputItem, bool)
+	GetOutput(string) (*common.OutputItem, bool)
 	AggregateSummaryFormattedStrings() (map[string][]string, error)
 	DisplayMode() string
 	OutputNames() []string

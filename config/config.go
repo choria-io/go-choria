@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/term"
 
 	"github.com/choria-io/go-choria/confkey"
 	"github.com/choria-io/go-choria/puppet"
@@ -332,10 +331,6 @@ func newConfig() *Config {
 	err := confkey.SetStructDefaults(m)
 	if err != nil {
 		log.Errorf("Config creation failed: %s", err)
-	}
-
-	if term.IsTerminal(int(os.Stdout.Fd())) {
-		m.Color = false
 	}
 
 	return m
