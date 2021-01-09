@@ -12,11 +12,10 @@ import (
 )
 
 type DDL struct {
-	Schema      string                        `json:"$schema"`
-	Metadata    *agents.Metadata              `json:"metadata"`
-	Description string                        `json:"description"`
-	Query       *common.InputItem             `json:"query"`
-	Output      map[string]*common.OutputItem `json:"output"`
+	Schema   string                        `json:"$schema"`
+	Metadata *agents.Metadata              `json:"metadata"`
+	Query    *common.InputItem             `json:"query"`
+	Output   map[string]*common.OutputItem `json:"output"`
 
 	SourceLocation string `json:"-"`
 
