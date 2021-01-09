@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-08 13:42:25.286105 +0100 CET m=+0.064379822"
+// generated code; DO NOT EDIT; 2021-01-09 11:16:17.659379 +0100 CET m=+0.065650146"
 //
 // Client for Choria RPC Agent 'choria_util'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -111,6 +111,11 @@ func (d *MachineTransitionRequester) Do(ctx context.Context) (*MachineTransition
 	dres := &MachineTransitionResult{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
+		// filtered by expr filter
+		if r == nil {
+			return
+		}
+
 		output := &MachineTransitionOutput{
 			reply: make(map[string]interface{}),
 			details: &ResultDetails{

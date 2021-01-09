@@ -165,3 +165,12 @@ func (p *RpcutilClient) OptionWorkers(w int) *RpcutilClient {
 	p.workers = w
 	return p
 }
+
+// OptionExprFilter sets a filter expression that will remove results from the result set
+func (p *RpcutilClient) OptionExprFilter(f string) *RpcutilClient {
+	p.Lock()
+	defer p.Unlock()
+
+	p.exprFilter = f
+	return p
+}

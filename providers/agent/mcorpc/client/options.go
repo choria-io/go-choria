@@ -34,6 +34,7 @@ type RequestOptions struct {
 	LimitSeed        int64
 	LimitMethod      string
 	LimitSize        string
+	ReplyExprFilter  string
 	DiscoveryStartCB DiscoveryStartFunc
 	DiscoveryEndCB   DiscoveryEndFunc
 
@@ -170,6 +171,19 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
 // Stats retrieves the stats for the completed request
 func (o *RequestOptions) Stats() *Stats {
 	return o.totalStats
+}
+
+// ReplyExprFilter filters reply by filter f, replies that match f will
+// not be recorded and will not be passed to any handlers - they will
+// count to received replies though as usual.
+//
+// When this filter matches a reply and a handler is set the handler will
+// be called using a nil 'rpcreply' allowing the handler to process progress
+// bars and more
+func ReplyExprFilter(f string) RequestOption {
+	return func(o *RequestOptions) {
+		o.ReplyExprFilter = f
+	}
 }
 
 // DiscoveryStartCB sets the function to be called before discovery starts

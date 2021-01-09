@@ -165,3 +165,12 @@ func (p *ScoutClient) OptionWorkers(w int) *ScoutClient {
 	p.workers = w
 	return p
 }
+
+// OptionExprFilter sets a filter expression that will remove results from the result set
+func (p *ScoutClient) OptionExprFilter(f string) *ScoutClient {
+	p.Lock()
+	defer p.Unlock()
+
+	p.exprFilter = f
+	return p
+}

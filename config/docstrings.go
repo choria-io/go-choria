@@ -1,4 +1,4 @@
-// auto generated at 2021-01-08 13:42:21.546899 +0100 CET m=+0.001902229
+// auto generated at 2021-01-09 11:16:14.201768 +0100 CET m=+0.001642051
 
 package config
 
@@ -14,7 +14,7 @@ var docStrings = map[string]string{
 	"libdir":                                                  "The directory where Agents, DDLs and other plugins are found",
 	"identity":                                                "The identity this machine is known as, when empty it's derived based on the operating system hostname or by calling facter fqdn",
 	"direct_addressing":                                       "Enables the direct-to-node communications pattern, unused in the Go clients",
-	"color":                                                   "Disables or enable CLI color, not well supported in Go based code",
+	"color":                                                   "Disables or enable CLI color",
 	"securityprovider":                                        "Used to select the security provider in Ruby clients, only sensible value is \"choria\"",
 	"connector":                                               "Configures the network connector to use, only sensible value is \"nats\", unused in Go based code",
 	"classesfile":                                             "Path to a file listing configuration classes applied to a node, used in matches using Class filters",

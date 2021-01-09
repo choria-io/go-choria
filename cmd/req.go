@@ -53,6 +53,7 @@ type reqCommand struct {
 	identityF        []string
 	combinedF        []string
 	outputFile       string
+	exprFilter       string
 
 	outputWriter     *bufio.Writer
 	outputFileHandle *os.File
@@ -61,7 +62,25 @@ type reqCommand struct {
 func (r *reqCommand) Setup() (err error) {
 	r.args = make(map[string]string)
 
-	r.cmd = cli.app.Command("req", "Performs a RPC request against the Choria network")
+	help := `Performs a RPC request against the Choria network
+
+Replies are shown according to DDL rules or --display, replies can also
+be filtered using an expression language that will entirely remove them
+from the returned result.
+
+   # remove all ok results, only errors are in the output and json
+   --filter-replies 'IsOK()'
+
+   # remove all puppet status replies where the machines are idling
+   --filter-replies '!IsOK() || Data("idling")'
+
+   # remove all replies where the last value of the array matches
+   --filter-replies 'Data("array.@reverse.0")=="last_item"'
+
+The Data() function here uses gjson Path Syntax.
+`
+
+	r.cmd = cli.app.Command("req", help)
 	r.cmd.Alias("rpc")
 
 	r.cmd.Arg("agent", "The agent to invoke").Required().StringVar(&r.agent)
@@ -88,6 +107,7 @@ func (r *reqCommand) Setup() (err error) {
 	r.cmd.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&r.discoveryTimeout)
 	r.cmd.Flag("dm", "Sets a discovery method (broadcast, choria)").EnumVar(&r.discoveryMethod, "broadcast", "choria", "mc")
 	r.cmd.Flag("output-file", "Filename to write output to").PlaceHolder("FILENAME").Short('o').StringVar(&r.outputFile)
+	r.cmd.Flag("filter-replies", "Filter replies using a expr filter").PlaceHolder("EXPR").StringVar(&r.exprFilter)
 
 	return
 }
@@ -131,7 +151,9 @@ func (r *reqCommand) responseHandler(results *replyfmt.RPCResults) func(pr proto
 			r.progressBar.Incr()
 		}
 
-		results.Replies = append(results.Replies, &replyfmt.RPCReply{Sender: pr.SenderID(), RPCReply: reply})
+		if reply != nil {
+			results.Replies = append(results.Replies, &replyfmt.RPCReply{Sender: pr.SenderID(), RPCReply: reply})
+		}
 	}
 }
 
@@ -222,6 +244,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		rpc.ReplyHandler(r.responseHandler(results)),
 		rpc.Workers(r.workers),
 		rpc.LimitMethod(cfg.RPCLimitMethod),
+		rpc.ReplyExprFilter(r.exprFilter),
 		rpc.DiscoveryEndCB(func(d, l int) error {
 			r.configureProgressBar(l, expected)
 
