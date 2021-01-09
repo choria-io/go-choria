@@ -22,7 +22,7 @@ jobs:
       - run: ls -l /go/bin
       - run: go list ./...|xargs staticcheck
       - run: find . -type f -name "*.go" | grep -v "/vendor/" | xargs misspell -error -locale US -i flavour
-      - run: go test -v ./...
+      - run: go test ./...
       - run: mkdir -p /tmp/workspace
       - run: cd .. ; tar -czf /tmp/workspace/go-choria.tgz go-choria
       - persist_to_workspace:

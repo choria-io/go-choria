@@ -214,3 +214,14 @@ func randStringRunes(n int) string {
 func BuildInfo() *build.Info {
 	return &build.Info{}
 }
+
+// ContainsString determines if needle is in hay
+func ContainsString(hay []string, needle string) bool {
+	for _, item := range hay {
+		if item == needle {
+			return true
+		}
+	}
+
+	return false
+}

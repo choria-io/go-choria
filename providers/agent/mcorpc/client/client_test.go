@@ -82,14 +82,16 @@ var _ = Describe("McoRPC/Client", func() {
 			r := RPCReply{
 				Statuscode: 0,
 				Statusmsg:  "OK",
-				Data:       json.RawMessage(`{"hello":"world"}`),
+				Data:       json.RawMessage(`{"hello":"world", "ints": [1,2,3], "strings": ["1","2","3"]}`),
 			}
 
-			Expect(r.MatchExpr("IsOK() && D('hello') == 'world'")).To(BeTrue())
-			Expect(r.MatchExpr("!IsOK() && D('hello') == 'world'")).To(BeFalse())
-			Expect(r.MatchExpr("IsOK() && D('hello') == 'other'")).To(BeFalse())
+			Expect(r.MatchExpr("ok() && code == 0 && msg == 'OK' && data('hello') in ['world', 'bob']")).To(BeTrue())
+			Expect(r.MatchExpr("!ok() && data('hello') == 'world'")).To(BeFalse())
+			Expect(r.MatchExpr("ok() && data('hello') == 'other'")).To(BeFalse())
+			Expect(r.MatchExpr("ok() && include(data('strings'), '1')")).To(BeTrue())
+			Expect(r.MatchExpr("ok() && include(data('ints'), 1)")).To(BeTrue())
 
-			res, err := r.MatchExpr("IsOK() && D('hello')")
+			res, err := r.MatchExpr("ok() && data('hello')")
 			Expect(err).To(MatchError("match expressions should return boolean"))
 			Expect(res).To(BeFalse())
 		})
