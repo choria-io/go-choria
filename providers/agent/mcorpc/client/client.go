@@ -470,18 +470,18 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 		}
 
 		if r.opts.Handler != nil {
-			shouldSkip := false
+			shouldShow := true
 			if r.opts.ReplyExprFilter != "" {
-				shouldSkip, err = rpcreply.MatchExpr(r.opts.ReplyExprFilter)
+				shouldShow, err = rpcreply.MatchExpr(r.opts.ReplyExprFilter)
 				if err != nil {
 					r.log.Errorf("Expr filter parsing failed in reply from %s: %s", reply.SenderID(), err)
 				}
 			}
 
-			if shouldSkip {
-				r.opts.Handler(reply, nil)
-			} else {
+			if shouldShow {
 				r.opts.Handler(reply, rpcreply)
+			} else {
+				r.opts.Handler(reply, nil)
 			}
 		}
 

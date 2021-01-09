@@ -1,5 +1,8 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2020/01/09|1076  |Improve support for HTTPS servers discovered by SRV records by stripping trailing `.` in names           |
+|2021/01/09|1074  |Basic support for Data plugin DDLs                                                                       |
+|2021/01/09|1072  |Add `expr` based client-side filtering of RPC results                                                    |
 |2021/01/08|1068  |Improve support for the `color` option and disable it by default on windows                              |
 |2021/01/07|1064  |Calculate `choria ping` times from the moment before publish and report overhead                         |
 |2021/01/07|1062  |Support parsing nagios format Perfdata as output format for the metric watcher                           |

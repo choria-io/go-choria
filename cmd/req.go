@@ -65,16 +65,16 @@ func (r *reqCommand) Setup() (err error) {
 	help := `Performs a RPC request against the Choria network
 
 Replies are shown according to DDL rules or --display, replies can also
-be filtered using an expression language that will entirely remove them
-from the returned result.
+be filtered using an expression language that will include only those replies
+that match the filter.
 
-   # remove all ok results, only errors are in the output and json
+   # include only OK responses
    --filter-replies 'IsOK()'
 
-   # remove all puppet status replies where the machines are idling
-   --filter-replies '!IsOK() || Data("idling")'
+   # include only replies where Puppet is not idling
+   --filter-replies 'IsOK() && !Data("idling")'
 
-   # remove all replies where the last value of the array matches
+   # include only responses where the last item of the array is 'last_item'
    --filter-replies 'Data("array.@reverse.0")=="last_item"'
 
 The Data() function here uses gjson Path Syntax.
