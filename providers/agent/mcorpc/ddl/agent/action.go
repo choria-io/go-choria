@@ -3,62 +3,35 @@ package agent
 import (
 	"encoding/json"
 	"fmt"
-	"reflect"
-	"regexp"
 	"sort"
-	"strconv"
 	"strings"
 	"sync"
 
-	"github.com/choria-io/go-choria/validator/ipaddress"
-	"github.com/choria-io/go-choria/validator/ipv4"
-	"github.com/choria-io/go-choria/validator/ipv6"
-	"github.com/choria-io/go-choria/validator/regex"
-	"github.com/choria-io/go-choria/validator/shellsafe"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 )
 
 // Action describes an individual action in an agent
 type Action struct {
-	Name        string                       `json:"action"`
-	Input       map[string]*ActionInputItem  `json:"input"`
-	Output      map[string]*ActionOutputItem `json:"output"`
-	Display     string                       `json:"display"`
-	Description string                       `json:"description"`
-	Aggregation []ActionAggregateItem        `json:"aggregate,omitempty"`
+	Name        string                        `json:"action"`
+	Input       map[string]*common.InputItem  `json:"input"`
+	Output      map[string]*common.OutputItem `json:"output"`
+	Display     string                        `json:"display"`
+	Description string                        `json:"description"`
+	Aggregation []ActionAggregateItem         `json:"aggregate,omitempty"`
 
 	agg *actionAggregators
 
 	sync.Mutex
 }
 
-// ActionOutputItem describes an individual output item
-type ActionOutputItem struct {
-	Description string      `json:"description"`
-	DisplayAs   string      `json:"display_as"`
-	Default     interface{} `json:"default,omitempty"`
-	Type        string      `json:"type,omitempty"`
-}
-
-// ActionInputItem describes an individual input item
-type ActionInputItem struct {
-	Prompt      string      `json:"prompt"`
-	Description string      `json:"description"`
-	Type        string      `json:"type"`
-	Default     interface{} `json:"default,omitempty"`
-	Optional    bool        `json:"optional"`
-	Validation  string      `json:"validation,omitempty"`
-	MaxLength   int         `json:"maxlength,omitempty"`
-	Enum        []string    `json:"list,omitempty"`
-}
-
 // GetInput gets a named input
-func (a *Action) GetInput(i string) (*ActionInputItem, bool) {
+func (a *Action) GetInput(i string) (*common.InputItem, bool) {
 	input, ok := a.Input[i]
 	return input, ok
 }
 
 // GetOutput gets a named output
-func (a *Action) GetOutput(o string) (*ActionOutputItem, bool) {
+func (a *Action) GetOutput(o string) (*common.OutputItem, bool) {
 	output, ok := a.Output[o]
 	return output, ok
 }
@@ -183,7 +156,7 @@ func (a *Action) RequiresInput(input string) bool {
 		return false
 	}
 
-	return !i.Optional
+	return i.Required()
 }
 
 // ValidateAndConvertToDDLTypes takes a map of strings like you might receive from the CLI, convert each
@@ -202,12 +175,7 @@ func (a *Action) ValidateAndConvertToDDLTypes(args map[string]string) (result ma
 			return result, warnings, fmt.Errorf("input '%s' has not been declared", kname)
 		}
 
-		converted, err := ValToDDLType(input.Type, v)
-		if err != nil {
-			return result, warnings, fmt.Errorf("invalid value for '%s': %s", kname, err)
-		}
-
-		w, err := a.ValidateInputValue(kname, converted)
+		converted, w, err := input.ValidateStringValue(v)
 		warnings = append(warnings, w...)
 		if err != nil {
 			return result, warnings, fmt.Errorf("invalid value for '%s': %s", kname, err)
@@ -221,7 +189,7 @@ func (a *Action) ValidateAndConvertToDDLTypes(args map[string]string) (result ma
 
 		_, ok := result[iname]
 		if !ok {
-			if !input.Optional && input.Default == nil {
+			if input.Required() && input.Default == nil {
 				return result, warnings, fmt.Errorf("input '%s' is required", iname)
 			}
 
@@ -295,23 +263,14 @@ func (a *Action) ValidateRequestData(data map[string]interface{}) (warnings []st
 }
 
 // ValidateInputString attempts to convert a string to the correct type and validate it based on the DDL spec
-func (a *Action) ValidateInputString(input string, val string) error {
+func (a *Action) ValidateInputString(input string, val string) (warnings []string, err error) {
 	i, ok := a.Input[input]
 	if !ok {
-		return fmt.Errorf("unknown input '%s'", input)
+		return warnings, fmt.Errorf("unknown input '%s'", input)
 	}
 
-	converted, err := ValToDDLType(i.Type, val)
-	if err != nil {
-		return err
-	}
-
-	_, err = a.ValidateInputValue(input, converted)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	_, warnings, err = i.ValidateStringValue(val)
+	return warnings, err
 }
 
 // ValidateInputValue validates the input matches requirements in the DDL
@@ -323,222 +282,5 @@ func (a *Action) ValidateInputValue(input string, val interface{}) (warnings []s
 		return warnings, fmt.Errorf("unknown input '%s'", input)
 	}
 
-	switch strings.ToLower(i.Type) {
-	case "integer":
-		if !isAnyInt(val) {
-			return warnings, fmt.Errorf("is not an integer")
-		}
-
-	case "number":
-		if !isNumber(val) {
-			return warnings, fmt.Errorf("is not a number")
-		}
-
-	case "float":
-		if !isFloat64(val) {
-			return warnings, fmt.Errorf("is not a float")
-		}
-
-	case "string":
-		if !isString(val) {
-			return warnings, fmt.Errorf("is not a string")
-		}
-
-		if i.MaxLength == 0 {
-			return warnings, nil
-		}
-
-		sval := val.(string)
-		if len(sval) > i.MaxLength {
-			return warnings, fmt.Errorf("is longer than %d characters", i.MaxLength)
-		}
-
-		if i.Validation != "" {
-			w, err := validateStringValidation(i.Validation, sval)
-
-			warnings = append(warnings, w...)
-
-			if err != nil {
-				return warnings, err
-			}
-		}
-
-	case "boolean":
-		if !isBool(val) {
-			return warnings, fmt.Errorf("is not a boolean")
-		}
-
-	case "list":
-		if len(i.Enum) == 0 {
-			return warnings, fmt.Errorf("input type of list without a valid list of items in DDL")
-		}
-
-		valstr, ok := val.(string)
-		if !ok {
-			return warnings, fmt.Errorf("should be a string")
-		}
-
-		for _, valid := range i.Enum {
-			if valid == valstr {
-				return warnings, nil
-			}
-		}
-
-		return warnings, fmt.Errorf("should be one of %s", strings.Join(i.Enum, ", "))
-
-	case "hash":
-		if !isHash(val) {
-			return warnings, fmt.Errorf("is not a hash map")
-		}
-
-	case "array":
-		if !isArray(val) {
-			return warnings, fmt.Errorf("is not an array")
-		}
-
-	default:
-		return warnings, fmt.Errorf("unsupported input type '%s'", i.Type)
-	}
-
-	return warnings, nil
-}
-
-func validateStringValidation(validation string, value string) (warnings []string, err error) {
-	warnings = []string{}
-
-	switch validation {
-	case "shellsafe":
-		_, err = shellsafe.Validate(value)
-		return warnings, err
-
-	case "ipv4address":
-		_, err := ipv4.ValidateString(value)
-		return warnings, err
-
-	case "ipv6address":
-		_, err := ipv6.ValidateString(value)
-		return warnings, err
-
-	case "ipaddress":
-		_, err := ipaddress.ValidateString(value)
-		return warnings, err
-	}
-
-	namedValidator, err := regexp.MatchString("^[a-z]", validation)
-	if namedValidator || err != nil {
-		return []string{fmt.Sprintf("Unsupported validator '%s'", validation)}, nil
-	}
-
-	_, err = regex.ValidateString(value, validation)
-	return warnings, err
-}
-
-// ValToDDLType converts val into the type described in typedef where typedef is a typical choria DDL supported type
-func ValToDDLType(typedef string, val string) (res interface{}, err error) {
-	switch strings.ToLower(typedef) {
-	case "integer":
-		i, err := strconv.Atoi(val)
-		if err != nil {
-			return nil, fmt.Errorf("'%s' is not a valid integer", val)
-		}
-
-		return int64(i), nil
-
-	case "float", "number":
-		f, err := strconv.ParseFloat(val, 64)
-		if err != nil {
-			return nil, fmt.Errorf("'%s' is not a valid float", val)
-		}
-
-		return f, nil
-
-	case "string", "list":
-		return val, nil
-
-	case "boolean":
-		b, err := strconv.ParseBool(val)
-		if err != nil {
-			return nil, fmt.Errorf("'%s' is not a valid boolean", val)
-		}
-
-		return b, nil
-
-	case "hash":
-		res := map[string]interface{}{}
-		err := json.Unmarshal([]byte(val), &res)
-		if err != nil {
-			return nil, fmt.Errorf("'%s' is not a valid JSON string with a hash inside", val)
-		}
-
-		return res, nil
-
-	case "array":
-		res := []interface{}{}
-		err := json.Unmarshal([]byte(val), &res)
-		if err != nil {
-			return nil, fmt.Errorf("'%s' is not a valid JSON string with an array inside", val)
-		}
-
-		return res, nil
-
-	}
-
-	return nil, fmt.Errorf("unsupported type '%s'", typedef)
-}
-
-func isHash(i interface{}) bool {
-	return reflect.ValueOf(i).Kind() == reflect.Map
-}
-
-func isArray(i interface{}) bool {
-	kind := reflect.ValueOf(i).Kind()
-	return kind == reflect.Array || kind == reflect.Slice
-}
-
-func isBool(i interface{}) bool {
-	return reflect.ValueOf(i).Kind() == reflect.Bool
-}
-
-func isString(i interface{}) bool {
-	return reflect.ValueOf(i).Kind() == reflect.String
-}
-
-func isNumber(i interface{}) bool {
-	return isAnyInt(i) || isAnyFloat(i)
-}
-
-func isAnyFloat(i interface{}) bool {
-	return isFloat32(i) || isFloat64(i)
-}
-
-func isFloat32(i interface{}) bool {
-	return reflect.ValueOf(i).Kind() == reflect.Float32
-}
-
-func isFloat64(i interface{}) bool {
-	return reflect.ValueOf(i).Kind() == reflect.Float64
-}
-
-func isAnyInt(i interface{}) bool {
-	return isInt(i) || isInt8(i) || isInt16(i) || isInt32(i) || isInt64(i)
-}
-
-func isInt(i interface{}) bool {
-	return reflect.ValueOf(i).Kind() == reflect.Int
-}
-
-func isInt8(i interface{}) bool {
-	return reflect.ValueOf(i).Kind() == reflect.Int8
-}
-
-func isInt16(i interface{}) bool {
-	return reflect.ValueOf(i).Kind() == reflect.Int16
-}
-
-func isInt32(i interface{}) bool {
-	return reflect.ValueOf(i).Kind() == reflect.Int32
-}
-
-func isInt64(i interface{}) bool {
-	return reflect.ValueOf(i).Kind() == reflect.Int64
+	return i.ValidateValue(val)
 }

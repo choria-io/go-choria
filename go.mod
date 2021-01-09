@@ -5,9 +5,9 @@ go 1.14
 replace github.com/brutella/dnssd => github.com/brutella/dnssd v1.1.2-0.20201216110556-df0d88646bc5
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.2.5
+	github.com/AlecAivazis/survey/v2 v2.2.7
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
-	github.com/aelsabbahy/goss v0.3.15
+	github.com/aelsabbahy/goss v0.3.16
 	github.com/antonmedv/expr v1.8.9
 	github.com/awesome-gocui/gocui v0.6.0
 	github.com/brutella/dnssd v1.1.2-0.20201216110556-df0d88646bc5 // indirect
@@ -27,10 +27,10 @@ require (
 	github.com/mitchellh/mapstructure v1.4.0
 	github.com/nats-io/jsm.go v0.0.20
 	github.com/nats-io/jwt v1.2.2
-	github.com/nats-io/jwt/v2 v2.0.0-20201207222029-6d7e74b660de
-	github.com/nats-io/nats-server/v2 v2.1.8-0.20201212175152-d5f255b98e10
+	github.com/nats-io/jwt/v2 v2.0.0-20210107222814-18c5cc45d263
+	github.com/nats-io/nats-server/v2 v2.1.8-0.20210108184047-b88cbe2e0df3
 	github.com/nats-io/nats.go v1.10.1-0.20201116154957-a35836eca1a8
-	github.com/nats-io/nsc v0.0.0-20201209191616-e473fae78e00
+	github.com/nats-io/nsc v0.0.0-20210108232822-40dcea882554
 	github.com/nats-io/stan.go v0.7.0
 	github.com/olekukonko/tablewriter v0.0.4
 	github.com/onsi/ginkgo v1.14.2
@@ -47,7 +47,7 @@ require (
 	go.uber.org/atomic v1.7.0
 	golang.org/x/crypto v0.0.0-20201208171446-5f87f3452ae9 // indirect
 	golang.org/x/sys v0.0.0-20201211090839-8ad439b19e0f
-	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf
+	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 	golang.org/x/tools v0.0.0-20201211185031-d93e913c1a58
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	rsc.io/goversion v1.2.0

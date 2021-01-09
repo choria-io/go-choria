@@ -10,6 +10,8 @@ import (
 	"text/template"
 
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
+
 	"github.com/sirupsen/logrus"
 	"golang.org/x/tools/imports"
 )
@@ -28,8 +30,8 @@ type agent struct {
 	RawDDL  string // raw text of the JSON DDL file
 }
 
-func (a *agent) ActionRequiredInputs(act string) map[string]*addl.ActionInputItem {
-	inputs := make(map[string]*addl.ActionInputItem)
+func (a *agent) ActionRequiredInputs(act string) map[string]*common.InputItem {
+	inputs := make(map[string]*common.InputItem)
 
 	for _, act := range a.DDL.Actions {
 		for name, input := range act.Input {
@@ -56,9 +58,9 @@ func (g *Generator) writeActions() error {
 		ActionDescription string
 		OutputNames       []string
 		InputNames        []string
-		RequiredInputs    map[string]*addl.ActionInputItem
-		OptionalInputs    map[string]*addl.ActionInputItem
-		Outputs           map[string]*addl.ActionOutputItem
+		RequiredInputs    map[string]*common.InputItem
+		OptionalInputs    map[string]*common.InputItem
+		Outputs           map[string]*common.OutputItem
 	}
 
 	for _, actname := range g.agent.DDL.ActionNames() {
@@ -189,8 +191,8 @@ func (g *Generator) GenerateClient() error {
 	return nil
 }
 
-func (g *Generator) optionalInputSelect(action *addl.Action, opt bool) map[string]*addl.ActionInputItem {
-	inputs := make(map[string]*addl.ActionInputItem)
+func (g *Generator) optionalInputSelect(action *addl.Action, opt bool) map[string]*common.InputItem {
+	inputs := make(map[string]*common.InputItem)
 
 	for name, act := range action.Input {
 		if act.Optional == opt {

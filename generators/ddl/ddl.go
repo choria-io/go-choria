@@ -11,6 +11,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	ddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/xeipuuv/gojsonschema"
 )
@@ -275,8 +276,8 @@ func (c *Generator) shortnameValidator(v interface{}) error {
 func (c *Generator) askActions(agent *ddl.DDL) error {
 	addAction := func() error {
 		action := &ddl.Action{
-			Input:       make(map[string]*ddl.ActionInputItem),
-			Output:      make(map[string]*ddl.ActionOutputItem),
+			Input:       make(map[string]*common.InputItem),
+			Output:      make(map[string]*common.OutputItem),
 			Aggregation: []ddl.ActionAggregateItem{},
 		}
 
@@ -339,7 +340,7 @@ For string data there are additional properties:
 				break
 			}
 
-			input := &ddl.ActionInputItem{}
+			input := &common.InputItem{}
 			name := ""
 			survey.AskOne(&survey.Input{Message: "Input Name:"}, &name, survey.WithValidator(survey.Required), survey.WithValidator(func(v interface{}) error {
 				i := v.(string)
@@ -400,7 +401,7 @@ For string data there are additional properties:
 				return err
 			}
 			if deflt != "" {
-				input.Default, err = ddl.ValToDDLType(input.Type, deflt)
+				input.Default, err = common.ValToDDLType(input.Type, deflt)
 				if err != nil {
 					return fmt.Errorf("default for %s does not validate: %s", name, err)
 				}
@@ -437,7 +438,7 @@ any number of outputs.
 				break
 			}
 
-			output := &ddl.ActionOutputItem{}
+			output := &common.OutputItem{}
 			name := ""
 			survey.AskOne(&survey.Input{Message: "Name:"}, &name, survey.WithValidator(survey.Required), survey.WithValidator(func(v interface{}) error {
 				i := v.(string)
@@ -470,7 +471,7 @@ any number of outputs.
 			}
 
 			if deflt != "" {
-				output.Default, err = ddl.ValToDDLType(output.Type, deflt)
+				output.Default, err = common.ValToDDLType(output.Type, deflt)
 				if err != nil {
 					return fmt.Errorf("default for %s does not validate: %s", name, err)
 				}

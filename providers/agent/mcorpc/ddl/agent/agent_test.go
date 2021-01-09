@@ -18,7 +18,7 @@ func TestFileContent(t *testing.T) {
 	RunSpecs(t, "Providers/Agent/McoRPC/DDL/Agent")
 }
 
-var _ = Describe("McoRPC/DDL/Agent", func() {
+var _ = Describe("Providers/McoRPC/DDL/Agent", func() {
 	var pkg *DDL
 	var err error
 
