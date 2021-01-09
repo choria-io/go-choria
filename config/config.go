@@ -52,7 +52,7 @@ type Config struct {
 	// Enables the direct-to-node communications pattern, unused in the Go clients
 	DirectAddressing bool `confkey:"direct_addressing" default:"true"`
 
-	// Disables or enable CLI color, not well supported in Go based code
+	// Disables or enable CLI color
 	Color bool `confkey:"color" default:"true"`
 
 	// Used to select the security provider in Ruby clients, only sensible value is "choria"

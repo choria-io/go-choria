@@ -77,6 +77,24 @@ var _ = Describe("McoRPC/Client", func() {
 		})
 	})
 
+	Describe("RPCReply", func() {
+		It("Should match against replies", func() {
+			r := RPCReply{
+				Statuscode: 0,
+				Statusmsg:  "OK",
+				Data:       json.RawMessage(`{"hello":"world"}`),
+			}
+
+			Expect(r.MatchExpr("IsOK() && D('hello') == 'world'")).To(BeTrue())
+			Expect(r.MatchExpr("!IsOK() && D('hello') == 'world'")).To(BeFalse())
+			Expect(r.MatchExpr("IsOK() && D('hello') == 'other'")).To(BeFalse())
+
+			res, err := r.MatchExpr("IsOK() && D('hello')")
+			Expect(err).To(MatchError("match expressions should return boolean"))
+			Expect(res).To(BeFalse())
+		})
+	})
+
 	Describe("New", func() {
 		var ddl *agent.DDL
 

@@ -114,6 +114,7 @@ type ScoutClient struct {
 	filters       []FilterFunc
 	targets       []string
 	workers       int
+	exprFilter    string
 
 	sync.Mutex
 }

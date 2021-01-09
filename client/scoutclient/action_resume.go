@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-08 13:42:25.309538 +0100 CET m=+0.087814279"
+// generated code; DO NOT EDIT; 2021-01-09 11:16:17.687611 +0100 CET m=+0.093882670"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.18.0
 
@@ -111,6 +111,11 @@ func (d *ResumeRequester) Do(ctx context.Context) (*ResumeResult, error) {
 	dres := &ResumeResult{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
+		// filtered by expr filter
+		if r == nil {
+			return
+		}
+
 		output := &ResumeOutput{
 			reply: make(map[string]interface{}),
 			details: &ResultDetails{

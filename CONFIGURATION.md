@@ -111,7 +111,7 @@ The list of known Sub Collectives this node will join or communicate with, Serve
  * **Type:** boolean
  * **Default Value:** true
 
-Disables or enable CLI color, not well supported in Go based code
+Disables or enable CLI color
 
 ## connection_timeout
 

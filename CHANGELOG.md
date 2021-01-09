@@ -1,5 +1,25 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/01/08|1068  |Improve support for the `color` option and disable it by default on windows                              |
+|2021/01/07|1064  |Calculate `choria ping` times from the moment before publish and report overhead                         |
+|2021/01/07|1062  |Support parsing nagios format Perfdata as output format for the metric watcher                           |
+|2020/12/29|1055  |Report the certificate fingerprint when doing `choria enroll` for Puppet CA                              |
+|2020/12/28|1051  |Add `choria discover`                                                                                    |
+|2020/12/27|1049  |Generated clients has a PuppetDB name source                                                             |
+|2020/12/27|1049  |rpc client will now honor the DefaultDiscoveryMethod setting for all clients                             |
+|2020/12/27|1049  |Add `--dm` to the `choria req` command to switch discovery method                                        |
+|2020/12/27|1049  |Add a PuppetDB discovery method                                                                          |
+|2020/12/27|1047  |Create generated clients for `rpcutil`, `scout` and `choria_util` in `go-choria/client`                  |
+|2020/12/26|1045  |Add `choria inventory`                                                                                   |
+|2020/12/16|1017  |Avoid listening and registering with mDNS when Homekit is not used                                       |
+|2020/12/12|1038  |Add a `choria_status` Nagios builtin allowing Choria to health checks from Scout                         |
+|2020/12/09|1035  |Ignore case when matching against configuration management classes                                       |
+|2020/12/09|1035  |Ignore case when doing fact matching                                                                     |
+|2020/12/08|1030  |Allow Autonomous Agent Watchers to be plugins, convert all core ones to plugins                          |
+|2020/12/03|      |Major code cleanups and and test coverage for the Autonomous Agents                                      |
+|2020/11/29|1009  |Perform DNS lookups on every initial reconnect retry                                                     |
+|2020/11/28|1007  |Add a `metrics` Autonomous Agent watcher that can fetch and publish metrics                              |
+|2020/11/27|1006  |Use new JetStream features to improve retrieval of event history                                         |
 |2020/11/25|      |Release 0.18.0                                                                                           |
 |2020/10/21|999   |Add a timer watcher that changes state after a time expires                                              |
 |2020/10/21|999   |Support creating Apple Homekit buttons in Autonomous Agents                                              |

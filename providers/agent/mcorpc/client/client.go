@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/antonmedv/expr"
+	"github.com/tidwall/gjson"
+
 	"github.com/choria-io/go-choria/client/ddlcache"
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
 	"github.com/choria-io/go-choria/client/discovery/puppetdb"
-	config "github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/config"
 
 	"github.com/choria-io/go-choria/choria"
 	cclient "github.com/choria-io/go-choria/client/client"
@@ -64,6 +67,66 @@ type RPCReply struct {
 	Statuscode mcorpc.StatusCode `json:"statuscode"`
 	Statusmsg  string            `json:"statusmsg"`
 	Data       json.RawMessage   `json:"data"`
+}
+
+// MatchExpr determines if the Reply  matches expression q using the expr format.
+// The query q is expected to return a boolean type else an error will be raised
+func (r *RPCReply) MatchExpr(q string) (bool, error) {
+	prog, err := expr.Compile(q)
+	if err != nil {
+		return false, err
+	}
+
+	out, err := expr.Run(prog, r)
+	if err != nil {
+		return false, err
+	}
+
+	matched, ok := out.(bool)
+	if !ok {
+		return false, fmt.Errorf("match expressions should return boolean")
+	}
+
+	return matched, nil
+}
+
+// IsOK indicates if the reply status code is OK
+func (r *RPCReply) IsOK() bool {
+	return r.Statuscode == mcorpc.OK
+}
+
+// IsAborted indicates if the reply status code is Aborted
+func (r *RPCReply) IsAborted() bool {
+	return r.Statuscode == mcorpc.Aborted
+}
+
+// IsUnknownAction indicates if the reply status code is UnknownAction
+func (r *RPCReply) IsUnknownAction() bool {
+	return r.Statuscode == mcorpc.UnknownAction
+}
+
+// IsAborted indicates if the reply status code is Aborted
+func (r *RPCReply) IsMissingData() bool {
+	return r.Statuscode == mcorpc.MissingData
+}
+
+// IsInvalidData indicates if the reply status code is InvalidData
+func (r *RPCReply) IsInvalidData() bool {
+	return r.Statuscode == mcorpc.InvalidData
+}
+
+// IsUnknownError indicates if the reply status code is UnknownError
+func (r *RPCReply) IsUnknownError() bool {
+	return r.Statuscode == mcorpc.UnknownError
+}
+
+// D queries the JSON data using gjson path syntax, nested data can
+// be fetched using D("one.two.three"), arrays using D("one.two.1") where
+// two is an array or D("one.two.@reverse.0").
+//
+// https://github.com/tidwall/gjson/blob/master/SYNTAX.md
+func (r *RPCReply) D(query string) interface{} {
+	return gjson.GetBytes(r.Data, query).Value()
 }
 
 // RequestResult is the result of a request
@@ -407,7 +470,19 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 		}
 
 		if r.opts.Handler != nil {
-			r.opts.Handler(reply, rpcreply)
+			shouldSkip := false
+			if r.opts.ReplyExprFilter != "" {
+				shouldSkip, err = rpcreply.MatchExpr(r.opts.ReplyExprFilter)
+				if err != nil {
+					r.log.Errorf("Expr filter parsing failed in reply from %s: %s", reply.SenderID(), err)
+				}
+			}
+
+			if shouldSkip {
+				r.opts.Handler(reply, nil)
+			} else {
+				r.opts.Handler(reply, rpcreply)
+			}
 		}
 
 		if r.opts.stats.All() {

@@ -165,3 +165,12 @@ func (p *ChoriaUtilClient) OptionWorkers(w int) *ChoriaUtilClient {
 	p.workers = w
 	return p
 }
+
+// OptionExprFilter sets a filter expression that will remove results from the result set
+func (p *ChoriaUtilClient) OptionExprFilter(f string) *ChoriaUtilClient {
+	p.Lock()
+	defer p.Unlock()
+
+	p.exprFilter = f
+	return p
+}

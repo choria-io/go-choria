@@ -166,7 +166,13 @@ func (s *PuppetSecurity) Enroll(ctx context.Context, wait time.Duration, cb func
 
 	var key *rsa.PrivateKey
 
-	if !s.privateKeyExists() {
+	if s.privateKeyExists() {
+		s.log.Debugf("Loading existing private key for %s", s.Identity())
+		key, err = s.readPrivateKey()
+		if err != nil {
+			return fmt.Errorf("could not read private key for %s: %s", s.Identity(), err)
+		}
+	} else {
 		s.log.Debugf("Creating a new Private Key %s", s.Identity())
 
 		key, err = s.writePrivateKey()
@@ -630,6 +636,29 @@ func (s *PuppetSecurity) HTTPClient(secure bool) (*http.Client, error) {
 
 func (s *PuppetSecurity) csrTXT() ([]byte, error) {
 	return ioutil.ReadFile(s.csrPath())
+}
+
+func (s *PuppetSecurity) readPrivateKey() (*rsa.PrivateKey, error) {
+	if !s.privateKeyExists() {
+		return nil, fmt.Errorf("key not found in %s", s.privateKeyPath())
+	}
+
+	pd, err := ioutil.ReadFile(s.privateKeyPath())
+	if err != nil {
+		return nil, err
+	}
+
+	privPem, _ := pem.Decode(pd)
+	if privPem.Type != "RSA PRIVATE KEY" {
+		return nil, fmt.Errorf("key file %s did not contain a private key", s.privateKeyPath())
+	}
+
+	parsedKey, err := x509.ParsePKCS1PrivateKey(privPem.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return parsedKey, nil
 }
 
 func (s *PuppetSecurity) writePrivateKey() (*rsa.PrivateKey, error) {

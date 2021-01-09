@@ -8,6 +8,7 @@ require (
 	github.com/AlecAivazis/survey/v2 v2.2.5
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/aelsabbahy/goss v0.3.15
+	github.com/antonmedv/expr v1.8.9
 	github.com/awesome-gocui/gocui v0.6.0
 	github.com/brutella/dnssd v1.1.2-0.20201216110556-df0d88646bc5 // indirect
 	github.com/brutella/hc v1.2.3

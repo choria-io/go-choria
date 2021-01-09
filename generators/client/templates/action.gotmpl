@@ -108,6 +108,11 @@ func (d *{{ .ActionName | SnakeToCamel }}Requester) Do(ctx context.Context) (*{{
 	dres := &{{ .ActionName | SnakeToCamel }}Result{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
+		// filtered by expr filter
+		if r ==nil {
+			return
+		}
+
 		output := &{{ .ActionName | SnakeToCamel }}Output{
 			reply: make(map[string]interface{}),
 			details: &ResultDetails{

@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-08 13:42:25.319027 +0100 CET m=+0.097303495"
+// generated code; DO NOT EDIT; 2021-01-09 11:16:17.696099 +0100 CET m=+0.102370789"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.18.0
 
@@ -111,6 +111,11 @@ func (d *GossValidateRequester) Do(ctx context.Context) (*GossValidateResult, er
 	dres := &GossValidateResult{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
+		// filtered by expr filter
+		if r == nil {
+			return
+		}
+
 		output := &GossValidateOutput{
 			reply: make(map[string]interface{}),
 			details: &ResultDetails{

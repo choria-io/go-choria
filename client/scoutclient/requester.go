@@ -59,6 +59,11 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 	if r.client.workers > 0 {
 		opts = append(opts, rpcclient.Workers(r.client.workers))
 	}
+
+	if r.client.exprFilter != "" {
+		opts = append(opts, rpcclient.ReplyExprFilter(r.client.exprFilter))
+	}
+
 	r.client.Unlock()
 
 	if progress {

@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-08 13:42:25.257994 +0100 CET m=+0.036268825"
+// generated code; DO NOT EDIT; 2021-01-09 11:16:17.628124 +0100 CET m=+0.034394952"
 //
 // Client for Choria RPC Agent 'rpcutil'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -111,6 +111,11 @@ func (d *PingRequester) Do(ctx context.Context) (*PingResult, error) {
 	dres := &PingResult{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
+		// filtered by expr filter
+		if r == nil {
+			return
+		}
+
 		output := &PingOutput{
 			reply: make(map[string]interface{}),
 			details: &ResultDetails{
