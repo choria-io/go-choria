@@ -69,15 +69,15 @@ be filtered using an expression language that will include only those replies
 that match the filter.
 
    # include only OK responses
-   --filter-replies 'IsOK()'
+   --filter-replies 'ok()'
 
    # include only replies where Puppet is not idling
-   --filter-replies 'IsOK() && !Data("idling")'
+   --filter-replies 'ok() && !data("idling")'
 
-   # include only responses where the last item of the array is 'last_item'
-   --filter-replies 'Data("array.@reverse.0")=="last_item"'
+   # include only responses where the array item includes 'needle'
+   --filter-replies 'ok() && include(data("array"), "needle")'
 
-The Data() function here uses gjson Path Syntax.
+
 `
 
 	r.cmd = cli.app.Command("req", help)

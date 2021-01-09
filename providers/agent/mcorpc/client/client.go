@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/antonmedv/expr"
+	"github.com/google/go-cmp/cmp"
 	"github.com/tidwall/gjson"
 
 	"github.com/choria-io/go-choria/client/ddlcache"
@@ -72,12 +73,25 @@ type RPCReply struct {
 // MatchExpr determines if the Reply  matches expression q using the expr format.
 // The query q is expected to return a boolean type else an error will be raised
 func (r *RPCReply) MatchExpr(q string) (bool, error) {
-	prog, err := expr.Compile(q)
+	env := map[string]interface{}{
+		"msg":            r.Statusmsg,
+		"code":           int(r.Statuscode),
+		"data":           r.lookup,
+		"ok":             r.isOK,
+		"aborted":        r.isAborted,
+		"invalid_data":   r.isInvalidData,
+		"missing_data":   r.isMissingData,
+		"unknown_action": r.isUnknownAction,
+		"unknown_error":  r.isUnknownError,
+		"include":        r.include,
+	}
+
+	prog, err := expr.Compile(q, expr.AsBool(), expr.AllowUndefinedVariables(), expr.Env(env))
 	if err != nil {
 		return false, err
 	}
 
-	out, err := expr.Run(prog, r)
+	out, err := expr.Run(prog, env)
 	if err != nil {
 		return false, err
 	}
@@ -90,43 +104,49 @@ func (r *RPCReply) MatchExpr(q string) (bool, error) {
 	return matched, nil
 }
 
-// IsOK indicates if the reply status code is OK
-func (r *RPCReply) IsOK() bool {
+func (r *RPCReply) isOK() bool {
 	return r.Statuscode == mcorpc.OK
 }
 
-// IsAborted indicates if the reply status code is Aborted
-func (r *RPCReply) IsAborted() bool {
+func (r *RPCReply) isAborted() bool {
 	return r.Statuscode == mcorpc.Aborted
 }
 
-// IsUnknownAction indicates if the reply status code is UnknownAction
-func (r *RPCReply) IsUnknownAction() bool {
+func (r *RPCReply) isUnknownAction() bool {
 	return r.Statuscode == mcorpc.UnknownAction
 }
 
-// IsAborted indicates if the reply status code is Aborted
-func (r *RPCReply) IsMissingData() bool {
+func (r *RPCReply) isMissingData() bool {
 	return r.Statuscode == mcorpc.MissingData
 }
 
-// IsInvalidData indicates if the reply status code is InvalidData
-func (r *RPCReply) IsInvalidData() bool {
+func (r *RPCReply) isInvalidData() bool {
 	return r.Statuscode == mcorpc.InvalidData
 }
 
-// IsUnknownError indicates if the reply status code is UnknownError
-func (r *RPCReply) IsUnknownError() bool {
+func (r *RPCReply) isUnknownError() bool {
 	return r.Statuscode == mcorpc.UnknownError
 }
 
-// D queries the JSON data using gjson path syntax, nested data can
-// be fetched using D("one.two.three"), arrays using D("one.two.1") where
-// two is an array or D("one.two.@reverse.0").
-//
 // https://github.com/tidwall/gjson/blob/master/SYNTAX.md
-func (r *RPCReply) D(query string) interface{} {
+func (r *RPCReply) lookup(query string) interface{} {
 	return gjson.GetBytes(r.Data, query).Value()
+}
+
+func (r *RPCReply) include(hay []interface{}, needle interface{}) bool {
+	// gjson always turns numbers into float64
+	i, ok := needle.(int)
+	if ok {
+		needle = float64(i)
+	}
+
+	for _, i := range hay {
+		if cmp.Equal(i, needle) {
+			return true
+		}
+	}
+
+	return false
 }
 
 // RequestResult is the result of a request
