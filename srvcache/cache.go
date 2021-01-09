@@ -2,6 +2,7 @@ package srvcache
 
 import (
 	"net"
+	"strings"
 	"sync"
 	"time"
 
@@ -62,7 +63,7 @@ func (c *Cache) LookupSrvServers(service string, proto string, name string, sche
 
 	servers := make([]Server, len(addrs))
 	for i, addr := range addrs {
-		servers[i] = &BasicServer{host: addr.Target, port: addr.Port, scheme: scheme}
+		servers[i] = &BasicServer{host: strings.TrimRight(addr.Target, "."), port: addr.Port, scheme: scheme}
 	}
 
 	return NewServers(servers...), nil
