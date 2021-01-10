@@ -4,6 +4,7 @@ package rpcutilclient
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
 
@@ -141,6 +142,10 @@ func (p *PuppetDBNS) parseFilters(fs []FilterFunc) error {
 		if err != nil {
 			return err
 		}
+	}
+
+	if len(p.f.Compound) > 0 {
+		return fmt.Errorf("compound filters are not supported by PuppetDB")
 	}
 
 	return nil

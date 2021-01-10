@@ -45,7 +45,7 @@ func New(fw ChoriaFramework) *PuppetDB {
 }
 
 // Discover performs a broadcast discovery using the supplied filter
-func (p *PuppetDB) Discover(ctx context.Context, opts ...DiscoverOption) (n []string, err error) {
+func (p *PuppetDB) Discover(_ context.Context, opts ...DiscoverOption) (n []string, err error) {
 	dopts := &dOpts{
 		collective: p.fw.Configuration().MainCollective,
 		discovered: []string{},
@@ -56,6 +56,10 @@ func (p *PuppetDB) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 
 	for _, opt := range opts {
 		opt(dopts)
+	}
+
+	if len(dopts.filter.Compound) > 0 {
+		return nil, fmt.Errorf("compound filters are not supported by PuppetDB")
 	}
 
 	search, err := p.searchString(dopts.collective, dopts.filter)

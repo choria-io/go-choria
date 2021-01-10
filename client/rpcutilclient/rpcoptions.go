@@ -94,6 +94,20 @@ func (p *RpcutilClient) OptionCombinedFilter(f ...string) *RpcutilClient {
 	return p
 }
 
+// OptionCompoundFilter adds a compound filter
+func (p *RpcutilClient) OptionCompoundFilter(f ...string) *RpcutilClient {
+	p.Lock()
+	defer p.Unlock()
+
+	for _, i := range f {
+		p.filters = append(p.filters, FilterFunc(coreclient.CompoundFilter(i)))
+	}
+
+	p.ns.Reset()
+
+	return p
+}
+
 // OptionCollective sets the collective to target
 func (p *RpcutilClient) OptionCollective(c string) *RpcutilClient {
 	p.Lock()
