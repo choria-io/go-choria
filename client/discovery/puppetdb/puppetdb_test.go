@@ -85,11 +85,11 @@ var _ = Describe("PuppetDB", func() {
 				Expects string
 				Error   error
 			}{
-				{[]protocol.FactFilter{{"f", "=~", "v"}}, `inventory {facts.f ~ "[vV]"}`, nil},
-				{[]protocol.FactFilter{{"f", "==", "v"}}, `inventory {facts.f = "v"}`, nil},
-				{[]protocol.FactFilter{{"f", "!=", "v"}}, `inventory {!(facts.f = "v")}`, nil},
-				{[]protocol.FactFilter{{"f", ">=", "v"}}, "", fmt.Errorf("'>=' operator supports only numeric values")},
-				{[]protocol.FactFilter{{"f", ">=", "1"}}, `inventory {facts.f >= 1}`, nil},
+				{Filter: []protocol.FactFilter{{Fact: "f", Operator: "=~", Value: "v"}}, Expects: `inventory {facts.f ~ "[vV]"}`},
+				{Filter: []protocol.FactFilter{{Fact: "f", Operator: "==", Value: "v"}}, Expects: `inventory {facts.f = "v"}`},
+				{Filter: []protocol.FactFilter{{Fact: "f", Operator: "!=", Value: "v"}}, Expects: `inventory {!(facts.f = "v")}`},
+				{Filter: []protocol.FactFilter{{Fact: "f", Operator: ">=", Value: "v"}}, Error: fmt.Errorf("'>=' operator supports only numeric values")},
+				{Filter: []protocol.FactFilter{{Fact: "f", Operator: ">=", Value: "1"}}, Expects: `inventory {facts.f >= 1}`},
 			}
 
 			for _, tc := range cases {

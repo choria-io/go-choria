@@ -11,7 +11,6 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/client"
-	"github.com/choria-io/go-choria/filter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/guptarohit/asciigraph"
 	log "github.com/sirupsen/logrus"
@@ -20,18 +19,13 @@ import (
 type pingCommand struct {
 	command
 
-	silent     bool
-	collective string
-	timeout    int
-	graph      bool
-	workers    int
-	waitfor    int
-	factF      []string
-	agentsF    []string
-	classF     []string
-	identityF  []string
-	combinedF  []string
-	compoundF  string
+	silent  bool
+	timeout int
+	graph   bool
+	workers int
+	waitfor int
+
+	fo stdFilterOptions
 
 	namesOnly bool
 
@@ -48,14 +42,10 @@ func (p *pingCommand) Setup() (err error) {
 	p.cmd = cli.app.Command("ping", "Low level Choria network testing tool")
 	p.cmd.Flag("silent", "Do not print any hostnames").BoolVar(&p.silent)
 	p.cmd.Flag("names", "Only show the names that respond, no statistics").BoolVar(&p.namesOnly)
-	p.cmd.Flag("wf", "Match hosts with a certain fact").Short('F').StringsVar(&p.factF)
-	p.cmd.Flag("wc", "Match hosts with a certain configuration management class").Short('C').StringsVar(&p.classF)
-	p.cmd.Flag("wa", "Match hosts with a certain Choria agent").Short('A').StringsVar(&p.agentsF)
-	p.cmd.Flag("wi", "Match hosts with a certain Choria identity").Short('I').StringsVar(&p.identityF)
-	p.cmd.Flag("with", "Combined classes and facts filter").Short('W').PlaceHolder("FILTER").StringsVar(&p.combinedF)
-	p.cmd.Flag("select", "Match hosts using a expr compound filter").Short('S').StringVar(&p.compoundF)
+
+	addStdFilter(p.cmd, &p.fo)
+
 	p.cmd.Flag("expect", "Wait until this many replies were received or timeout").IntVar(&p.waitfor)
-	p.cmd.Flag("target", "Target a specific sub collective").Short('T').StringVar(&p.collective)
 	p.cmd.Flag("timeout", "How long to wait for responses").IntVar(&p.timeout)
 	p.cmd.Flag("graph", "Produce a graph of the result times").BoolVar(&p.graph)
 	p.cmd.Flag("workers", "How many workers to start for receiving messages").Default("3").IntVar(&p.workers)
@@ -75,18 +65,10 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 		p.timeout = cfg.DiscoveryTimeout
 	}
 
-	if p.collective == "" {
-		p.collective = cfg.MainCollective
-	}
+	p.fo.setDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
 
-	filter, err := filter.NewFilter(
-		filter.FactFilter(p.factF...),
-		filter.AgentFilter(p.agentsF...),
-		filter.ClassFilter(p.classF...),
-		filter.IdentityFilter(p.identityF...),
-		filter.CombinedFilter(p.combinedF...),
-		filter.CompoundFilter(p.compoundF),
-	)
+	filter, err := p.fo.newFilter("")
+
 	if err != nil {
 		return fmt.Errorf("could not parse filters: %s", err)
 	}
@@ -184,7 +166,7 @@ func (p *pingCommand) handler(_ context.Context, m *choria.ConnectorMessage) {
 }
 
 func (p *pingCommand) createMessage(filter *protocol.Filter) (*choria.Message, error) {
-	msg, err := c.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", p.collective, "request", nil)
+	msg, err := c.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", p.fo.collective, "request", nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create message: %s", err)
 	}
