@@ -94,6 +94,20 @@ func (p *ChoriaUtilClient) OptionCombinedFilter(f ...string) *ChoriaUtilClient {
 	return p
 }
 
+// OptionCompoundFilter adds a compound filter
+func (p *ChoriaUtilClient) OptionCompoundFilter(f ...string) *ChoriaUtilClient {
+	p.Lock()
+	defer p.Unlock()
+
+	for _, i := range f {
+		p.filters = append(p.filters, FilterFunc(coreclient.CompoundFilter(i)))
+	}
+
+	p.ns.Reset()
+
+	return p
+}
+
 // OptionCollective sets the collective to target
 func (p *ChoriaUtilClient) OptionCollective(c string) *ChoriaUtilClient {
 	p.Lock()

@@ -14,37 +14,31 @@ import (
 )
 
 type ResumeCommand struct {
-	identities []string
-	facts      []string
-	classes    []string
-	checks     []string
-	combined   []string
-	json       bool
-	cfile      string
-	verbose    bool
-	colorize   bool
-	log        *logrus.Entry
+	sopt     StandardOptions
+	checks   []string
+	json     bool
+	cfile    string
+	verbose  bool
+	colorize bool
+	log      *logrus.Entry
 }
 
-func NewResumeCommand(ids []string, classes []string, facts []string, combined []string, checks []string, json bool, cfile string, verbose bool, colorize bool, log *logrus.Entry) (*ResumeCommand, error) {
+func NewResumeCommand(sopt StandardOptions, checks []string, json bool, cfile string, verbose bool, colorize bool, log *logrus.Entry) (*ResumeCommand, error) {
 	return &ResumeCommand{
-		identities: ids,
-		classes:    classes,
-		checks:     checks,
-		facts:      facts,
-		combined:   combined,
-		json:       json,
-		log:        log,
-		cfile:      cfile,
-		verbose:    verbose,
-		colorize:   colorize,
+		sopt:     sopt,
+		checks:   checks,
+		json:     json,
+		log:      log,
+		cfile:    cfile,
+		verbose:  verbose,
+		colorize: colorize,
 	}, nil
 }
 
 func (t *ResumeCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	sc, err := scoutclient.New(scoutclient.ConfigFile(t.cfile), scoutclient.Logger(t.log), scoutclient.Progress())
+	sc, err := t.sopt.scoutClient(t.cfile, t.log)
 	if err != nil {
 		return err
 	}
@@ -54,7 +48,7 @@ func (t *ResumeCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		checks[i] = c
 	}
 
-	result, err := sc.OptionIdentityFilter(t.identities...).OptionClassFilter(t.classes...).OptionFactFilter(t.facts...).OptionCombinedFilter(t.combined...).Resume().Checks(checks).Do(ctx)
+	result, err := sc.Resume().Checks(checks).Do(ctx)
 	if err != nil {
 		return err
 	}
