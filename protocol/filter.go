@@ -7,15 +7,10 @@ import (
 
 	"github.com/choria-io/go-choria/filter/agents"
 	"github.com/choria-io/go-choria/filter/classes"
+	"github.com/choria-io/go-choria/filter/compound"
 	"github.com/choria-io/go-choria/filter/facts"
 	"github.com/choria-io/go-choria/filter/identity"
 )
-
-// CompoundFilter is a mcollective compound filter
-type CompoundFilter []map[string]interface{}
-
-// CompoundFilters is a set of mcollective compound filters
-type CompoundFilters []CompoundFilter
 
 // FactFilter is how a fact match is represented to the Filter
 type FactFilter struct {
@@ -24,13 +19,19 @@ type FactFilter struct {
 	Value    string `json:"value"`
 }
 
-// Filter is a MCollective filter
+// note compound filter structure is not ideal at all, but this is
+// the structure old compound filters had and will let us not fail
+// on older machines as json validation errors and it's actually not
+// bad to store expr based compounds in its own key in case we later
+// support other types of filter
+
+// Filter is a Choria filter
 type Filter struct {
-	Fact     []FactFilter    `json:"fact"`
-	Class    []string        `json:"cf_class"`
-	Agent    []string        `json:"agent"`
-	Identity []string        `json:"identity"`
-	Compound CompoundFilters `json:"compound"`
+	Fact     []FactFilter          `json:"fact"`
+	Class    []string              `json:"cf_class"`
+	Agent    []string              `json:"agent"`
+	Identity []string              `json:"identity"`
+	Compound [][]map[string]string `json:"compound"`
 
 	mu sync.Mutex
 }
@@ -42,7 +43,7 @@ func NewFilter() *Filter {
 		Class:    []string{},
 		Agent:    []string{},
 		Identity: []string{},
-		Compound: CompoundFilters{},
+		Compound: [][]map[string]string{},
 	}
 
 	return filter
@@ -106,8 +107,13 @@ func (f *Filter) MatchRequest(request Request, agents []string, identity string,
 	}
 
 	if len(filter.CompoundFilters()) > 0 {
-		log.Warnf("Compound filters are not supported, not matching request %s with filter '%#v'", request.RequestID(), filter.CompoundFilters())
-		return false
+		if filter.MatchCompound(factsFile, classesFile, agents, log) {
+			log.Debugf("Matching request %s based on compound filter %#v", request.RequestID(), filter.CompoundFilters())
+			passed++
+		} else {
+			log.Debugf("Not matching request %s based on compound filter %#v", request.RequestID(), filter.CompoundFilters())
+			return false
+		}
 	}
 
 	return passed > 0
@@ -143,6 +149,11 @@ func (f *Filter) MatchClasses(knownClasses []string, log Logger) bool {
 	return classes.Match(f.ClassFilters(), knownClasses, log)
 }
 
+// MatchCompound determines if the filter would match against classes, facts and agents using a expr expression
+func (f *Filter) MatchCompound(factsFile string, classesFile string, knownAgents []string, log Logger) bool {
+	return compound.MatchExprStringFiles(f.CompoundFilters(), factsFile, classesFile, knownAgents, log)
+}
+
 // Empty determines if a filter is empty - that is all its contained filter arrays are empty
 func (f *Filter) Empty() bool {
 	if f.Fact == nil && f.Class == nil && f.Agent == nil && f.Identity == nil && f.Compound == nil {
@@ -157,7 +168,7 @@ func (f *Filter) Empty() bool {
 }
 
 // CompoundFilters retrieve the list of compound filters
-func (f *Filter) CompoundFilters() CompoundFilters {
+func (f *Filter) CompoundFilters() [][]map[string]string {
 	return f.Compound
 }
 
@@ -189,17 +200,12 @@ func (f *Filter) FactFilters() [][3]string {
 }
 
 // AddCompoundFilter appends a filter to the compound filters,
-// the filter should be a JSON string representing a valid mcollective
-// compound filter as parsed by MCollective::Matcher.create_compound_callstack
+// the filter should be a expr string representing a valid choria filter
 func (f *Filter) AddCompoundFilter(query string) error {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	var cf CompoundFilter
-	err := json.Unmarshal([]byte(query), &cf)
-	if err != nil {
-		return fmt.Errorf("could not parse query as JSON: %s", err)
-	}
+	var cf = []map[string]string{{"expr": query}}
 
 	f.Compound = append(f.Compound, cf)
 

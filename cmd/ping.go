@@ -31,7 +31,9 @@ type pingCommand struct {
 	classF     []string
 	identityF  []string
 	combinedF  []string
-	namesOnly  bool
+	compoundF  string
+
+	namesOnly bool
 
 	start     time.Time
 	published time.Time
@@ -51,6 +53,7 @@ func (p *pingCommand) Setup() (err error) {
 	p.cmd.Flag("wa", "Match hosts with a certain Choria agent").Short('A').StringsVar(&p.agentsF)
 	p.cmd.Flag("wi", "Match hosts with a certain Choria identity").Short('I').StringsVar(&p.identityF)
 	p.cmd.Flag("with", "Combined classes and facts filter").Short('W').PlaceHolder("FILTER").StringsVar(&p.combinedF)
+	p.cmd.Flag("select", "Match hosts using a expr compound filter").Short('S').StringVar(&p.compoundF)
 	p.cmd.Flag("expect", "Wait until this many replies were received or timeout").IntVar(&p.waitfor)
 	p.cmd.Flag("target", "Target a specific sub collective").Short('T').StringVar(&p.collective)
 	p.cmd.Flag("timeout", "How long to wait for responses").IntVar(&p.timeout)
@@ -82,6 +85,7 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 		filter.ClassFilter(p.classF...),
 		filter.IdentityFilter(p.identityF...),
 		filter.CombinedFilter(p.combinedF...),
+		filter.CompoundFilter(p.compoundF),
 	)
 	if err != nil {
 		return fmt.Errorf("could not parse filters: %s", err)

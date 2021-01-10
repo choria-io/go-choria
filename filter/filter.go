@@ -2,9 +2,9 @@ package filter
 
 import (
 	"fmt"
-	"regexp"
 	"strings"
 
+	"github.com/choria-io/go-choria/filter/facts"
 	"github.com/choria-io/go-choria/protocol"
 )
 
@@ -124,27 +124,14 @@ func CombinedFilter(f ...string) Filter {
 func ParseFactFilterString(f string) (pf *protocol.FactFilter, err error) {
 	pf = &protocol.FactFilter{}
 
-	if matched := regexp.MustCompile("^([^ ]+?)[ ]*=>[ ]*(.+)").FindStringSubmatch(f); len(matched) > 0 {
-		pf.Fact = matched[1]
-		pf.Operator = ">="
-		pf.Value = matched[2]
-	} else if matched := regexp.MustCompile("^([^ ]+?)[ ]*=<[ ]*(.+)").FindStringSubmatch(f); len(matched) > 0 {
-		pf.Fact = matched[1]
-		pf.Operator = "<="
-		pf.Value = matched[2]
-	} else if matched := regexp.MustCompile("^([^ ]+?)[ ]*(<=|>=|<|>|!=|==|=~)[ ]*(.+)").FindStringSubmatch(f); len(matched) > 0 {
-		pf.Fact = matched[1]
-		pf.Operator = matched[2]
-		pf.Value = matched[3]
-	} else if matched := regexp.MustCompile("^(.+?)[ ]*=[ ]*/(.+)/$").FindStringSubmatch(f); len(matched) > 0 {
-		pf.Fact = matched[1]
-		pf.Operator = "=~"
-		pf.Value = "/" + matched[2] + "/"
-	} else if matched := regexp.MustCompile("^([^= ]+?)[ ]*=[ ]*(.+)").FindStringSubmatch(f); len(matched) > 0 {
-		pf.Fact = matched[1]
-		pf.Operator = "=="
-		pf.Value = matched[2]
+	ff, err := facts.ParseFactFilterString(f)
+	if err != nil {
+		return nil, err
 	}
+
+	pf.Fact = ff[0]
+	pf.Operator = ff[1]
+	pf.Value = ff[2]
 
 	if pf.Fact == "" || pf.Operator == "" || pf.Value == "" {
 		return nil, fmt.Errorf("could not parse fact %s it does not appear to be in a valid format", f)

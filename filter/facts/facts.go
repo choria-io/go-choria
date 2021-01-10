@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/tidwall/gjson"
@@ -164,4 +165,21 @@ func HasFact(fact string, operator string, value string, file string, log Logger
 	}
 
 	return HasFactJSON(fact, operator, value, j, log)
+}
+
+// ParseFactFilterString parses a fact filter string as typically typed on the CLI
+func ParseFactFilterString(f string) (pf [3]string, err error) {
+	if matched := regexp.MustCompile("^([^ ]+?)[ ]*=>[ ]*(.+)").FindStringSubmatch(f); len(matched) > 0 {
+		return [3]string{matched[1], ">=", matched[2]}, nil
+	} else if matched := regexp.MustCompile("^([^ ]+?)[ ]*=<[ ]*(.+)").FindStringSubmatch(f); len(matched) > 0 {
+		return [3]string{matched[1], "<=", matched[2]}, nil
+	} else if matched := regexp.MustCompile("^([^ ]+?)[ ]*(<=|>=|<|>|!=|==|=~)[ ]*(.+)").FindStringSubmatch(f); len(matched) > 0 {
+		return [3]string{matched[1], matched[2], matched[3]}, nil
+	} else if matched := regexp.MustCompile("^(.+?)[ ]*=[ ]*/(.+)/$").FindStringSubmatch(f); len(matched) > 0 {
+		return [3]string{matched[1], "=~", "/" + matched[2] + "/"}, nil
+	} else if matched := regexp.MustCompile("^([^= ]+?)[ ]*=[ ]*(.+)").FindStringSubmatch(f); len(matched) > 0 {
+		return [3]string{matched[1], "==", matched[2]}, nil
+	} else {
+		return [3]string{}, fmt.Errorf("could not parse fact %s it does not appear to be in a valid format", f)
+	}
 }
