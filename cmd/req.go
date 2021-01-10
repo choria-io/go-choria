@@ -52,6 +52,7 @@ type reqCommand struct {
 	classF           []string
 	identityF        []string
 	combinedF        []string
+	compoundF        string
 	outputFile       string
 	exprFilter       string
 
@@ -91,6 +92,7 @@ that match the filter.
 	r.cmd.Flag("wc", "Match hosts with a certain configuration management class").Short('C').StringsVar(&r.classF)
 	r.cmd.Flag("wa", "Match hosts with a certain Choria agent").Short('A').StringsVar(&r.agentsF)
 	r.cmd.Flag("wi", "Match hosts with a certain Choria identity").Short('I').StringsVar(&r.identityF)
+	r.cmd.Flag("select", "Match hosts using a expr compound filter").Short('S').PlaceHolder("EXPR").StringVar(&r.compoundF)
 	r.cmd.Flag("with", "Combined classes and facts filter").Short('W').PlaceHolder("FILTER").StringsVar(&r.combinedF)
 	r.cmd.Flag("limit", "Limits request to a set of targets eg 10 or 10%").StringVar(&r.limit)
 	r.cmd.Flag("limit-seed", "Seed value for deterministic random limits").PlaceHolder("SEED").Int64Var(&r.limitSeed)
@@ -119,6 +121,7 @@ func (r *reqCommand) parseFilterOptions() (*protocol.Filter, error) {
 		filter.ClassFilter(r.classF...),
 		filter.IdentityFilter(r.identityF...),
 		filter.CombinedFilter(r.combinedF...),
+		filter.CompoundFilter(r.compoundF),
 		filter.AgentFilter(r.agent),
 	)
 }
@@ -203,6 +206,10 @@ func (r *reqCommand) prepareConfiguration() (err error) {
 
 	if r.discoveryMethod == "" {
 		r.discoveryMethod = cfg.DefaultDiscoveryMethod
+	}
+
+	if len(r.compoundF) > 0 {
+		r.discoveryMethod = "broadcast"
 	}
 
 	return nil

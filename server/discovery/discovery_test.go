@@ -77,4 +77,9 @@ var _ = Describe("Server/Discovery", func() {
 
 		Expect(mgr.ShouldProcess(req, agents)).To(BeFalse())
 	})
+
+	It("Should handle compound filters", func() {
+		filter.AddCompoundFilter("with('apache') and with('/testing/') and with('fnumber=1.2') and fact('nested.string') matches('h?llo') and include(fact('sarray'), '1') and include(fact('iarray'), 1)")
+		Expect(mgr.ShouldProcess(req, agents)).To(BeTrue())
+	})
 })

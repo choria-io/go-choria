@@ -24,6 +24,7 @@ type discoverCommand struct {
 	classF           []string
 	identityF        []string
 	combinedF        []string
+	compoundF        string
 }
 
 func (d *discoverCommand) Setup() error {
@@ -33,6 +34,7 @@ func (d *discoverCommand) Setup() error {
 	d.cmd.Flag("wa", "Match hosts with a certain Choria agent").Short('A').StringsVar(&d.agentsF)
 	d.cmd.Flag("wi", "Match hosts with a certain Choria identity").Short('I').StringsVar(&d.identityF)
 	d.cmd.Flag("with", "Combined classes and facts filter").Short('W').PlaceHolder("FILTER").StringsVar(&d.combinedF)
+	d.cmd.Flag("select", "Match hosts using a expr compound filter").Short('S').PlaceHolder("EXPR").StringVar(&d.compoundF)
 	d.cmd.Flag("dm", "Sets a discovery method (broadcast, choria)").EnumVar(&d.discoveryMethod, "broadcast", "choria", "mc")
 	d.cmd.Flag("target", "Target a specific sub collective").Short('T').StringVar(&d.collective)
 	d.cmd.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&d.discoveryTimeout)
@@ -67,6 +69,7 @@ func (d *discoverCommand) Run(wg *sync.WaitGroup) (err error) {
 		filter.ClassFilter(d.classF...),
 		filter.IdentityFilter(d.identityF...),
 		filter.CombinedFilter(d.combinedF...),
+		filter.CompoundFilter(d.compoundF),
 	)
 	if err != nil {
 		return err

@@ -4,6 +4,8 @@ inumber: 1
 fnumber: 1.2
 tbool: true
 fbool: false
+sarray: ["1","2","3"]
+iarray: [1,2,3]
 nested:
   string: "nested hello world"
   inumber: 2

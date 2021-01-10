@@ -84,9 +84,9 @@ var _ = Describe("Filter", func() {
 	})
 
 	It("Should support compound filters", func() {
-		err := filter.AddCompoundFilter(`[{"fstatement":{"r_compare":"30","operator":">","value":"total_time","name":"resource","params":null}}]`)
+		err := filter.AddCompoundFilter(`match("apache")`)
 		Expect(err).ToNot(HaveOccurred())
-		err = filter.AddCompoundFilter(`[{"statement":"environment=development"},{"or":"or"},{"statement":"customer=acme"}]`)
+		err = filter.AddCompoundFilter(`match("choria")`)
 		Expect(err).ToNot(HaveOccurred())
 
 		Expect(filter.CompoundFilters()).To(HaveLen(2))

@@ -318,6 +318,9 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 }
 
 func (r *RPC) discover(ctx context.Context) error {
+	if len(r.opts.Filter.Compound) > 0 {
+		r.dm = "choria"
+	}
 	if r.opts.DiscoveryStartCB != nil {
 		r.opts.DiscoveryStartCB()
 	}
