@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2020/01/10|1081  |Standardise filter and discovery CLI options                                                             |
+|2020/01/10|1074  |Support compound filters using `expr`                                                                    |
 |2020/01/09|1076  |Improve support for HTTPS servers discovered by SRV records by stripping trailing `.` in names           |
 |2021/01/09|1074  |Basic support for Data plugin DDLs                                                                       |
 |2021/01/09|1072  |Add `expr` based client-side filtering of RPC results                                                    |

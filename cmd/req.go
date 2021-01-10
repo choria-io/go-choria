@@ -12,7 +12,6 @@ import (
 
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
 	"github.com/choria-io/go-choria/client/discovery/puppetdb"
-	"github.com/choria-io/go-choria/filter"
 	"github.com/choria-io/go-choria/protocol"
 	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
@@ -31,30 +30,24 @@ type reqCommand struct {
 	input           map[string]interface{}
 	filter          *protocol.Filter
 
-	discoveryTimeout int
-	discoveryMethod  string
-	displayOverride  string
-	noProgress       bool
-	startTime        time.Time
-	limit            string
-	limitSeed        int64
-	batch            int
-	batchSleep       int
-	verbose          bool
-	jsonOnly         bool
-	tableOnly        bool
-	silent           bool
-	nodesFile        string
-	workers          int
-	collective       string
-	factF            []string
-	agentsF          []string
-	classF           []string
-	identityF        []string
-	combinedF        []string
-	compoundF        string
-	outputFile       string
-	exprFilter       string
+	displayOverride string
+	noProgress      bool
+	startTime       time.Time
+	limit           string
+	limitSeed       int64
+	batch           int
+	batchSleep      int
+	verbose         bool
+	jsonOnly        bool
+	tableOnly       bool
+	silent          bool
+	nodesFile       string
+	workers         int
+
+	fo stdFilterOptions
+
+	outputFile string
+	exprFilter string
 
 	outputWriter     *bufio.Writer
 	outputFileHandle *os.File
@@ -88,17 +81,13 @@ that match the filter.
 	r.cmd.Arg("action", "The action to invoke").Required().StringVar(&r.action)
 	r.cmd.Arg("args", "Arguments to pass to the action in key=val format").StringMapVar(&r.args)
 
-	r.cmd.Flag("wf", "Match hosts with a certain fact").Short('F').StringsVar(&r.factF)
-	r.cmd.Flag("wc", "Match hosts with a certain configuration management class").Short('C').StringsVar(&r.classF)
-	r.cmd.Flag("wa", "Match hosts with a certain Choria agent").Short('A').StringsVar(&r.agentsF)
-	r.cmd.Flag("wi", "Match hosts with a certain Choria identity").Short('I').StringsVar(&r.identityF)
-	r.cmd.Flag("select", "Match hosts using a expr compound filter").Short('S').PlaceHolder("EXPR").StringVar(&r.compoundF)
-	r.cmd.Flag("with", "Combined classes and facts filter").Short('W').PlaceHolder("FILTER").StringsVar(&r.combinedF)
+	addStdFilter(r.cmd, &r.fo)
+	addStdDiscovery(r.cmd, &r.fo)
+
 	r.cmd.Flag("limit", "Limits request to a set of targets eg 10 or 10%").StringVar(&r.limit)
 	r.cmd.Flag("limit-seed", "Seed value for deterministic random limits").PlaceHolder("SEED").Int64Var(&r.limitSeed)
 	r.cmd.Flag("batch", "Do requests in batches").PlaceHolder("SIZE").IntVar(&r.batch)
 	r.cmd.Flag("batch-sleep", "Sleep time between batches").PlaceHolder("SECONDS").IntVar(&r.batchSleep)
-	r.cmd.Flag("target", "Target a specific sub collective").Short('T').StringVar(&r.collective)
 	r.cmd.Flag("workers", "How many workers to start for receiving messages").Default("3").IntVar(&r.workers)
 	r.cmd.Flag("nodes", "List of nodes to interact with").ExistingFileVar(&r.nodesFile)
 	r.cmd.Flag("np", "Disable the progress bar").BoolVar(&r.noProgress)
@@ -106,8 +95,6 @@ that match the filter.
 	r.cmd.Flag("table", "Produce a Table output of successful responses").BoolVar(&r.tableOnly)
 	r.cmd.Flag("verbose", "Enable verbose output").Short('v').BoolVar(&r.verbose)
 	r.cmd.Flag("display", "Display only a subset of results (ok, failed, all, none)").EnumVar(&r.displayOverride, "ok", "failed", "all", "none")
-	r.cmd.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&r.discoveryTimeout)
-	r.cmd.Flag("dm", "Sets a discovery method (broadcast, choria)").EnumVar(&r.discoveryMethod, "broadcast", "choria", "mc")
 	r.cmd.Flag("output-file", "Filename to write output to").PlaceHolder("FILENAME").Short('o').StringVar(&r.outputFile)
 	r.cmd.Flag("filter-replies", "Filter replies using a expr filter").PlaceHolder("EXPR").StringVar(&r.exprFilter)
 
@@ -115,15 +102,7 @@ that match the filter.
 }
 
 func (r *reqCommand) parseFilterOptions() (*protocol.Filter, error) {
-	return filter.NewFilter(
-		filter.FactFilter(r.factF...),
-		filter.AgentFilter(r.agentsF...),
-		filter.ClassFilter(r.classF...),
-		filter.IdentityFilter(r.identityF...),
-		filter.CombinedFilter(r.combinedF...),
-		filter.CompoundFilter(r.compoundF),
-		filter.AgentFilter(r.agent),
-	)
+	return r.fo.newFilter(r.agent)
 }
 
 func (r *reqCommand) configureProgressBar(count int, expected int) {
@@ -196,21 +175,7 @@ func (r *reqCommand) prepareConfiguration() (err error) {
 		r.noProgress = true
 	}
 
-	if r.collective == "" {
-		r.collective = cfg.MainCollective
-	}
-
-	if r.discoveryTimeout == 0 {
-		r.discoveryTimeout = cfg.DiscoveryTimeout
-	}
-
-	if r.discoveryMethod == "" {
-		r.discoveryMethod = cfg.DefaultDiscoveryMethod
-	}
-
-	if len(r.compoundF) > 0 {
-		r.discoveryMethod = "broadcast"
-	}
+	r.fo.setDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
 
 	return nil
 }
@@ -245,7 +210,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	opts := []rpc.RequestOption{
-		rpc.Collective(r.collective),
+		rpc.Collective(r.fo.collective),
 		rpc.Targets(nodes),
 		rpc.Filter(r.filter),
 		rpc.ReplyHandler(r.responseHandler(results)),
@@ -356,16 +321,16 @@ func (r *reqCommand) discover(filter *protocol.Filter) ([]string, error) {
 	}
 
 	if !r.silent {
-		fmt.Printf("Discovering nodes using the %s method ....", r.discoveryMethod)
+		fmt.Printf("Discovering nodes using the %s method ....", r.fo.dm)
 	}
 
 	var nodes []string
 
-	switch r.discoveryMethod {
+	switch r.fo.dm {
 	case "mc", "broadcast":
-		nodes, err = broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(r.collective), broadcast.Timeout(time.Second*time.Duration(r.discoveryTimeout)))
+		nodes, err = broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(r.fo.collective), broadcast.Timeout(time.Second*time.Duration(r.fo.dt)))
 	case "choria":
-		nodes, err = puppetdb.New(c).Discover(ctx, puppetdb.Filter(filter), puppetdb.Collective(r.collective), puppetdb.Timeout(time.Second*time.Duration(r.discoveryTimeout)))
+		nodes, err = puppetdb.New(c).Discover(ctx, puppetdb.Filter(filter), puppetdb.Collective(r.fo.collective), puppetdb.Timeout(time.Second*time.Duration(r.fo.dt)))
 	}
 
 	if !r.silent {
