@@ -72,7 +72,8 @@ func newActionAggregators(a *Action) *actionAggregators {
 }
 
 func (a *actionAggregators) aggregateItem(item string, val interface{}) {
-	if reflect.ValueOf(val).Kind() == reflect.Slice {
+	kind := reflect.ValueOf(val).Kind()
+	if kind == reflect.Slice || kind == reflect.Map {
 		return
 	}
 

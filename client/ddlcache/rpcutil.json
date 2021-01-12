@@ -216,8 +216,8 @@
           "type": "string",
           "default": null,
           "optional": false,
-          "validation": "^[\\w\\-\\.]+$",
-          "maxlength": 256
+          "validation": ".+",
+          "maxlength": 512
         }
       },
       "output": {
