@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.503884 +0100 CET m=+0.019201755"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.278694 +0100 CET m=+0.022764480"
 //
 // Client for Choria RPC Agent 'rpcutil'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -169,7 +169,12 @@ func (d *GetConfigItemResult) EachOutput(h func(r *GetConfigItemOutput)) {
 //
 // Description: The config property being retrieved
 func (d *GetConfigItemOutput) Item() interface{} {
-	val := d.reply["item"]
+	val, ok := d.reply["item"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -177,6 +182,11 @@ func (d *GetConfigItemOutput) Item() interface{} {
 //
 // Description: The value that is in use
 func (d *GetConfigItemOutput) Value() interface{} {
-	val := d.reply["value"]
+	val, ok := d.reply["value"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }

@@ -2,7 +2,6 @@ package agent
 
 import (
 	"encoding/json"
-	"reflect"
 	"sync"
 
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/aggregate"
@@ -72,9 +71,13 @@ func newActionAggregators(a *Action) *actionAggregators {
 }
 
 func (a *actionAggregators) aggregateItem(item string, val interface{}) {
-	kind := reflect.ValueOf(val).Kind()
-	if kind == reflect.Slice || kind == reflect.Map {
-		return
+	vs, ok := val.(string)
+	if !ok {
+		v, err := json.Marshal(val)
+		if err != nil {
+			return
+		}
+		vs = string(v)
 	}
 
 	a.Lock()
@@ -82,7 +85,7 @@ func (a *actionAggregators) aggregateItem(item string, val interface{}) {
 
 	instance, ok := a.aggregators[item]
 	if ok {
-		instance.ProcessValue(val)
+		instance.ProcessValue(vs)
 	}
 }
 

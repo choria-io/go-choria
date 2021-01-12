@@ -30,6 +30,10 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionIdentityFilter(f .
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.IdentityFilter(i)))
 	}
 
@@ -44,6 +48,10 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionClassFilter(f ...s
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.ClassFilter(i)))
 	}
 
@@ -58,6 +66,10 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionFactFilter(f ...st
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.FactFilter(i)))
 	}
 
@@ -72,6 +84,10 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionAgentFilter(a ...s
 	defer p.Unlock()
 
 	for _, f := range a {
+		if f == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.AgentFilter(f)))
 	}
 
@@ -86,6 +102,10 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionCombinedFilter(f .
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.CombinedFilter(i)))
 	}
 
@@ -100,6 +120,10 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionCompoundFilter(f .
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.CompoundFilter(i)))
 	}
 

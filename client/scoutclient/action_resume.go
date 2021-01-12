@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.599113 +0100 CET m=+0.114431237"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.343091 +0100 CET m=+0.087162319"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.18.0
 
@@ -179,6 +179,7 @@ func (d *ResumeRequester) Checks(v []interface{}) *ResumeRequester {
 // Description: List of checks that could not be resumed
 func (d *ResumeOutput) Failed() []interface{} {
 	val := d.reply["failed"]
+
 	return val.([]interface{})
 }
 
@@ -187,6 +188,7 @@ func (d *ResumeOutput) Failed() []interface{} {
 // Description: List of checks that was skipped
 func (d *ResumeOutput) Skipped() []interface{} {
 	val := d.reply["skipped"]
+
 	return val.([]interface{})
 }
 
@@ -195,5 +197,6 @@ func (d *ResumeOutput) Skipped() []interface{} {
 // Description: List of checks that were resumed
 func (d *ResumeOutput) Transitioned() []interface{} {
 	val := d.reply["transitioned"]
+
 	return val.([]interface{})
 }

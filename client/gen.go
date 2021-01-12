@@ -17,14 +17,12 @@ var ddls map[string]string
 var ddlt = `
 // generated code; DO NOT EDIT
 
-package ddlcache
+package agent
 
 import (
         "encoding/base64"
         "encoding/json"
 		"fmt"
-
-        "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
 
 var ddls = map[string]string{
@@ -33,8 +31,8 @@ var ddls = map[string]string{
 {{- end }}
 }
 
-// DDLBytes is the raw JSON encoded DDL file for the agent
-func DDLBytes(agent string) ([]byte, error) {
+// CachedDDLBytes is the raw JSON encoded DDL file for the agent
+func CachedDDLBytes(agent string) ([]byte, error) {
 		ddl,ok:=ddls[agent]
 		if !ok {
 			return nil, fmt.Errorf("unknown agent %s", agent)
@@ -43,14 +41,14 @@ func DDLBytes(agent string) ([]byte, error) {
         return base64.StdEncoding.DecodeString(ddl)
 }
 
-// DDL is a parsed and loaded DDL for the agent a
-func DDL(a string) (*agent.DDL, error) {
-        ddlj, err := DDLBytes(a)
+// CachedDDL is a parsed and loaded DDL for the agent a
+func CachedDDL(a string) (*DDL, error) {
+        ddlj, err := CachedDDLBytes(a)
         if err != nil {
                 return nil, err
         }
 
-        ddl := &agent.DDL{}
+        ddl := &DDL{}
         err = json.Unmarshal(ddlj, ddl)
         if err != nil {
                 return nil, err
@@ -62,7 +60,7 @@ func DDL(a string) (*agent.DDL, error) {
 
 func generate(agent string, ddl string, pkg string) error {
 	if ddl == "" {
-		ddl = fmt.Sprintf("client/ddlcache/%s.json", agent)
+		ddl = fmt.Sprintf("providers/agent/mcorpc/ddl/agent/%s.json", agent)
 	}
 
 	if pkg == "" {
@@ -110,7 +108,7 @@ func main() {
 		}
 	}
 
-	out, err := os.OpenFile("client/ddlcache/cache.go", os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
+	out, err := os.OpenFile("providers/agent/mcorpc/ddl/agent/cache.go", os.O_TRUNC|os.O_WRONLY|os.O_CREATE, 0644)
 	if err != nil {
 		panic(err)
 	}

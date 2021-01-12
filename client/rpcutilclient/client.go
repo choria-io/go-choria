@@ -165,6 +165,10 @@ func New(opts ...InitializationOption) (client *RpcutilClient, err error) {
 
 	c.cfg = c.fw.Configuration()
 
+	if c.clientOpts.dt > 0 {
+		c.cfg.DiscoveryTimeout = int(c.clientOpts.dt.Seconds())
+	}
+
 	if c.clientOpts.ns == nil {
 		switch c.cfg.DefaultDiscoveryMethod {
 		case "choria":

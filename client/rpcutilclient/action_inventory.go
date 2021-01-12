@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.513942 +0100 CET m=+0.029259960"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.289681 +0100 CET m=+0.033751673"
 //
 // Client for Choria RPC Agent 'rpcutil'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -169,7 +169,12 @@ func (d *InventoryResult) EachOutput(h func(r *InventoryOutput)) {
 //
 // Description: List of agent names
 func (d *InventoryOutput) Agents() interface{} {
-	val := d.reply["agents"]
+	val, ok := d.reply["agents"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -177,7 +182,12 @@ func (d *InventoryOutput) Agents() interface{} {
 //
 // Description: List of classes on the system
 func (d *InventoryOutput) Classes() interface{} {
-	val := d.reply["classes"]
+	val, ok := d.reply["classes"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -185,7 +195,12 @@ func (d *InventoryOutput) Classes() interface{} {
 //
 // Description: All Collectives
 func (d *InventoryOutput) Collectives() interface{} {
-	val := d.reply["collectives"]
+	val, ok := d.reply["collectives"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -193,7 +208,12 @@ func (d *InventoryOutput) Collectives() interface{} {
 //
 // Description: List of data plugin names
 func (d *InventoryOutput) DataPlugins() interface{} {
-	val := d.reply["data_plugins"]
+	val, ok := d.reply["data_plugins"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -201,7 +221,12 @@ func (d *InventoryOutput) DataPlugins() interface{} {
 //
 // Description: List of facts and values
 func (d *InventoryOutput) Facts() interface{} {
-	val := d.reply["facts"]
+	val, ok := d.reply["facts"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -209,7 +234,12 @@ func (d *InventoryOutput) Facts() interface{} {
 //
 // Description: Autonomous Agents
 func (d *InventoryOutput) Machines() interface{} {
-	val := d.reply["machines"]
+	val, ok := d.reply["machines"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -217,7 +247,12 @@ func (d *InventoryOutput) Machines() interface{} {
 //
 // Description: The main Collective
 func (d *InventoryOutput) MainCollective() interface{} {
-	val := d.reply["main_collective"]
+	val, ok := d.reply["main_collective"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -225,6 +260,11 @@ func (d *InventoryOutput) MainCollective() interface{} {
 //
 // Description: MCollective Version
 func (d *InventoryOutput) Version() interface{} {
-	val := d.reply["version"]
+	val, ok := d.reply["version"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }

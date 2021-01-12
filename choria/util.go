@@ -23,7 +23,7 @@ func UserConfig() string {
 
 	if home != "" {
 		// TODO: .choria must go
-		for _, n := range []string{".choriarc", ".choria", ".mcollective"} {
+		for _, n := range []string{".choriarc", ".mcollective"} {
 			homeCfg := filepath.Join(home, n)
 
 			if FileExist(homeCfg) {
@@ -38,11 +38,6 @@ func UserConfig() string {
 
 	if FileExist("/etc/choria/client.conf") {
 		return "/etc/choria/client.conf"
-	}
-
-	// TODO: these must go
-	if FileExist("/etc/choria/client.cfg") {
-		return "/etc/choria/client.cfg"
 	}
 
 	if FileExist("/usr/local/etc/choria/client.conf") {
@@ -215,13 +210,18 @@ func BuildInfo() *build.Info {
 	return &build.Info{}
 }
 
-// ContainsString determines if needle is in hay
-func ContainsString(hay []string, needle string) bool {
-	for _, item := range hay {
-		if item == needle {
-			return true
+// LongestString determines the length of the longest string in list, capped at max
+func LongestString(list []string, max int) int {
+	longest := 0
+	for _, i := range list {
+		if len(i) > longest {
+			longest = len(i)
+		}
+
+		if longest > max {
+			return max
 		}
 	}
 
-	return false
+	return longest
 }

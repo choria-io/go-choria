@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.559381 +0100 CET m=+0.074698931"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.320557 +0100 CET m=+0.064627823"
 //
 // Client for Choria RPC Agent 'choria_util'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -205,6 +205,11 @@ func (d *MachineTransitionRequester) Version(v string) *MachineTransitionRequest
 //
 // Description: Indicates if the transition was successfully accepted
 func (d *MachineTransitionOutput) Success() interface{} {
-	val := d.reply["success"]
+	val, ok := d.reply["success"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }

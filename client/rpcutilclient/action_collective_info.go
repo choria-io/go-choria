@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.497359 +0100 CET m=+0.012676311"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.270581 +0100 CET m=+0.014651609"
 //
 // Client for Choria RPC Agent 'rpcutil'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -169,7 +169,12 @@ func (d *CollectiveInfoResult) EachOutput(h func(r *CollectiveInfoOutput)) {
 //
 // Description: All Collectives
 func (d *CollectiveInfoOutput) Collectives() interface{} {
-	val := d.reply["collectives"]
+	val, ok := d.reply["collectives"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -177,6 +182,11 @@ func (d *CollectiveInfoOutput) Collectives() interface{} {
 //
 // Description: The main Collective
 func (d *CollectiveInfoOutput) MainCollective() interface{} {
-	val := d.reply["main_collective"]
+	val, ok := d.reply["main_collective"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }

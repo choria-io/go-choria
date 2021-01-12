@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -88,7 +89,19 @@ func (r *RPCResults) RenderTXTFooter(w io.Writer, verbose bool) {
 		fmt.Fprintf(w, "          Agent Time: %v\n", stats.RequestTime-stats.PublishTime)
 		fmt.Fprintf(w, "          Total Time: %v\n", stats.RequestTime+stats.DiscoverTime)
 	} else {
-		fmt.Fprintf(w, "Finished processing %d / %d hosts in %s\n", stats.ResponseCount, stats.DiscoveredCount, stats.RequestTime+stats.DiscoverTime)
+		var rcnt, dcnt string
+
+		switch {
+		case stats.ResponseCount == 0:
+			rcnt = color.RedString(strconv.Itoa(stats.ResponseCount))
+		case stats.ResponseCount != stats.DiscoveredCount:
+			rcnt = color.YellowString(strconv.Itoa(stats.ResponseCount))
+		default:
+			dcnt = color.GreenString(strconv.Itoa(stats.DiscoveredCount))
+			rcnt = color.GreenString(strconv.Itoa(stats.ResponseCount))
+		}
+
+		fmt.Fprintf(w, "Finished processing %s / %s hosts in %s\n", rcnt, dcnt, (stats.RequestTime + stats.DiscoverTime).Round(time.Millisecond))
 	}
 
 	nodeListPrinter := func(nodes []string, message string) {

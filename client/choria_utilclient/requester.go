@@ -5,6 +5,7 @@ package choria_utilclient
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
@@ -31,6 +32,9 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 	fw := r.client.fw
 	progress := r.client.clientOpts.progress
 
+	var discoveryStart time.Time
+	var discoveryEnd time.Time
+
 	if len(targets) == 0 {
 		if progress {
 			fmt.Print("Discovering nodes .... ")
@@ -38,10 +42,12 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 			r.client.infof("Starting discovery")
 		}
 
+		discoveryStart = time.Now()
 		targets, err = discoverer.Discover(ctx, fw, filters)
 		if err != nil {
 			return nil, err
 		}
+		discoveryEnd = time.Now()
 
 		if len(targets) == 0 {
 			return nil, fmt.Errorf("no nodes were discovered")
@@ -97,6 +103,10 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 	if progress {
 		uiprogress.Stop()
 		fmt.Println()
+	}
+
+	if !discoveryStart.IsZero() && !discoveryEnd.IsZero() {
+		res.Stats().OverrideDiscoveryTime(discoveryStart, discoveryEnd)
 	}
 
 	return res.Stats(), nil

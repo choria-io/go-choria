@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.494597 +0100 CET m=+0.009915046"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.267193 +0100 CET m=+0.011264413"
 //
 // Client for Choria RPC Agent 'rpcutil'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -169,6 +169,11 @@ func (d *AgentInventoryResult) EachOutput(h func(r *AgentInventoryOutput)) {
 //
 // Description: List of agents on the server
 func (d *AgentInventoryOutput) Agents() interface{} {
-	val := d.reply["agents"]
+	val, ok := d.reply["agents"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }

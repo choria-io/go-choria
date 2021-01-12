@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.546124 +0100 CET m=+0.061442179"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.312755 +0100 CET m=+0.056825610"
 //
 // Client for Choria RPC Agent 'choria_util'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -169,7 +169,12 @@ func (d *InfoResult) EachOutput(h func(r *InfoOutput)) {
 //
 // Description: Choria version
 func (d *InfoOutput) ChoriaVersion() interface{} {
-	val := d.reply["choria_version"]
+	val, ok := d.reply["choria_version"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -177,7 +182,12 @@ func (d *InfoOutput) ChoriaVersion() interface{} {
 //
 // Description: Middleware client gem flavour
 func (d *InfoOutput) ClientFlavour() interface{} {
-	val := d.reply["client_flavour"]
+	val, ok := d.reply["client_flavour"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -185,7 +195,12 @@ func (d *InfoOutput) ClientFlavour() interface{} {
 //
 // Description: Active Middleware client gem options
 func (d *InfoOutput) ClientOptions() interface{} {
-	val := d.reply["client_options"]
+	val, ok := d.reply["client_options"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -193,7 +208,12 @@ func (d *InfoOutput) ClientOptions() interface{} {
 //
 // Description: Middleware client gem statistics
 func (d *InfoOutput) ClientStats() interface{} {
-	val := d.reply["client_stats"]
+	val, ok := d.reply["client_stats"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -201,7 +221,12 @@ func (d *InfoOutput) ClientStats() interface{} {
 //
 // Description: Middleware client library version
 func (d *InfoOutput) ClientVersion() interface{} {
-	val := d.reply["client_version"]
+	val, ok := d.reply["client_version"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -209,7 +234,12 @@ func (d *InfoOutput) ClientVersion() interface{} {
 //
 // Description: Connected middleware server
 func (d *InfoOutput) ConnectedServer() interface{} {
-	val := d.reply["connected_server"]
+	val, ok := d.reply["connected_server"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -217,7 +247,12 @@ func (d *InfoOutput) ConnectedServer() interface{} {
 //
 // Description: Connector plugin
 func (d *InfoOutput) Connector() interface{} {
-	val := d.reply["connector"]
+	val, ok := d.reply["connector"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -225,7 +260,12 @@ func (d *InfoOutput) Connector() interface{} {
 //
 // Description: If the connector is running with TLS security enabled
 func (d *InfoOutput) ConnectorTls() interface{} {
-	val := d.reply["connector_tls"]
+	val, ok := d.reply["connector_tls"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -233,7 +273,12 @@ func (d *InfoOutput) ConnectorTls() interface{} {
 //
 // Description: Command used for Facter
 func (d *InfoOutput) FacterCommand() interface{} {
-	val := d.reply["facter_command"]
+	val, ok := d.reply["facter_command"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -241,7 +286,12 @@ func (d *InfoOutput) FacterCommand() interface{} {
 //
 // Description: Facter domain
 func (d *InfoOutput) FacterDomain() interface{} {
-	val := d.reply["facter_domain"]
+	val, ok := d.reply["facter_domain"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -249,7 +299,12 @@ func (d *InfoOutput) FacterDomain() interface{} {
 //
 // Description: Middleware Servers configured or discovered
 func (d *InfoOutput) MiddlewareServers() interface{} {
-	val := d.reply["middleware_servers"]
+	val, ok := d.reply["middleware_servers"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -257,7 +312,12 @@ func (d *InfoOutput) MiddlewareServers() interface{} {
 //
 // Description: Active OS PATH
 func (d *InfoOutput) Path() interface{} {
-	val := d.reply["path"]
+	val, ok := d.reply["path"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -265,7 +325,12 @@ func (d *InfoOutput) Path() interface{} {
 //
 // Description: If the protocol is running with PKI security enabled
 func (d *InfoOutput) SecureProtocol() interface{} {
-	val := d.reply["secure_protocol"]
+	val, ok := d.reply["secure_protocol"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -273,7 +338,12 @@ func (d *InfoOutput) SecureProtocol() interface{} {
 //
 // Description: Security Provider plugin
 func (d *InfoOutput) Security() interface{} {
-	val := d.reply["security"]
+	val, ok := d.reply["security"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -281,7 +351,12 @@ func (d *InfoOutput) Security() interface{} {
 //
 // Description: Configured SRV domain
 func (d *InfoOutput) SrvDomain() interface{} {
-	val := d.reply["srv_domain"]
+	val, ok := d.reply["srv_domain"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -289,6 +364,11 @@ func (d *InfoOutput) SrvDomain() interface{} {
 //
 // Description: Indicates if SRV records are considered
 func (d *InfoOutput) UsingSrv() interface{} {
-	val := d.reply["using_srv"]
+	val, ok := d.reply["using_srv"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }

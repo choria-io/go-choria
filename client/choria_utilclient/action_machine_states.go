@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.552849 +0100 CET m=+0.068166863"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.317825 +0100 CET m=+0.061895566"
 //
 // Client for Choria RPC Agent 'choria_util'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -169,7 +169,12 @@ func (d *MachineStatesResult) EachOutput(h func(r *MachineStatesOutput)) {
 //
 // Description: List of running machine IDs
 func (d *MachineStatesOutput) MachineIds() interface{} {
-	val := d.reply["machine_ids"]
+	val, ok := d.reply["machine_ids"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -177,7 +182,12 @@ func (d *MachineStatesOutput) MachineIds() interface{} {
 //
 // Description: List of running machine names
 func (d *MachineStatesOutput) MachineNames() interface{} {
-	val := d.reply["machine_names"]
+	val, ok := d.reply["machine_names"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -185,6 +195,11 @@ func (d *MachineStatesOutput) MachineNames() interface{} {
 //
 // Description: Hash map of machine statusses indexed by machine ID
 func (d *MachineStatesOutput) States() interface{} {
-	val := d.reply["states"]
+	val, ok := d.reply["states"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }

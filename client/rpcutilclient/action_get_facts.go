@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.511604 +0100 CET m=+0.026921468"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.286445 +0100 CET m=+0.030515930"
 //
 // Client for Choria RPC Agent 'rpcutil'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -169,6 +169,11 @@ func (d *GetFactsResult) EachOutput(h func(r *GetFactsOutput)) {
 //
 // Description: List of values of the facts
 func (d *GetFactsOutput) Values() interface{} {
-	val := d.reply["values"]
+	val, ok := d.reply["values"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }

@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/confkey"
@@ -267,6 +268,10 @@ func (c *Config) normalize() error {
 
 	if runtime.GOOS == "windows" {
 		c.Color = false
+	}
+
+	if !c.Color {
+		color.NoColor = true
 	}
 
 	return nil

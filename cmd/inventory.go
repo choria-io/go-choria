@@ -121,7 +121,7 @@ func (i *inventoryCommand) inventoryAgent() error {
 	})
 	fmt.Println()
 	fmt.Printf("  Configuration Management Classes:\n\n")
-	longest := i.longestString(inventory.Classes, 40)
+	longest := choria.LongestString(inventory.Classes, 40)
 	format := fmt.Sprintf("    %%-%ds %%-%ds\n", longest, longest)
 	choria.SliceGroups(inventory.Classes, 2, func(g []string) {
 		fmt.Printf(format, g[0], g[1])
@@ -151,21 +151,6 @@ func (i *inventoryCommand) inventoryAgent() error {
 	}
 
 	return nil
-}
-
-func (i *inventoryCommand) longestString(list []string, max int) int {
-	longest := 0
-	for _, i := range list {
-		if len(i) > longest {
-			longest = len(i)
-		}
-
-		if longest > max {
-			return max
-		}
-	}
-
-	return longest
 }
 
 func (i *inventoryCommand) inventoryCollectives() error {

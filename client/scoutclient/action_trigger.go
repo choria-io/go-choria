@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.617558 +0100 CET m=+0.132876214"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.355328 +0100 CET m=+0.099398674"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.18.0
 
@@ -179,6 +179,7 @@ func (d *TriggerRequester) Checks(v []interface{}) *TriggerRequester {
 // Description: List of checks that could not be triggered
 func (d *TriggerOutput) Failed() []interface{} {
 	val := d.reply["failed"]
+
 	return val.([]interface{})
 }
 
@@ -187,6 +188,7 @@ func (d *TriggerOutput) Failed() []interface{} {
 // Description: List of checks that was skipped
 func (d *TriggerOutput) Skipped() []interface{} {
 	val := d.reply["skipped"]
+
 	return val.([]interface{})
 }
 
@@ -195,5 +197,6 @@ func (d *TriggerOutput) Skipped() []interface{} {
 // Description: List of checks that were triggered
 func (d *TriggerOutput) Transitioned() []interface{} {
 	val := d.reply["transitioned"]
+
 	return val.([]interface{})
 }
