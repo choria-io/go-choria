@@ -10,7 +10,6 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/tidwall/gjson"
 
-	"github.com/choria-io/go-choria/client/ddlcache"
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
 	"github.com/choria-io/go-choria/client/discovery/puppetdb"
 	"github.com/choria-io/go-choria/config"
@@ -204,17 +203,9 @@ func New(fw ChoriaFramework, agent string, opts ...Option) (rpc *RPC, err error)
 	}
 
 	if rpc.ddl == nil {
-		ddl, err := ddlcache.DDL(agent)
-		if err == nil {
-			rpc.log.Debugf("Using cached DDL for %s", agent)
-			rpc.ddl = ddl
-		}
-
-		if rpc.ddl == nil {
-			rpc.ddl, err = addl.Find(agent, rpc.cfg.LibDir)
-			if err != nil {
-				return nil, fmt.Errorf("could not load %s DDL: %s", agent, err)
-			}
+		rpc.ddl, err = addl.Find(agent, rpc.cfg.LibDir)
+		if err != nil {
+			return nil, fmt.Errorf("could not load %s DDL: %s", agent, err)
 		}
 	}
 

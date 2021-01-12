@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.500027 +0100 CET m=+0.015344331"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.273648 +0100 CET m=+0.017718543"
 //
 // Client for Choria RPC Agent 'rpcutil'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -169,7 +169,12 @@ func (d *DaemonStatsResult) EachOutput(h func(r *DaemonStatsOutput)) {
 //
 // Description: List of agents loaded
 func (d *DaemonStatsOutput) Agents() interface{} {
-	val := d.reply["agents"]
+	val, ok := d.reply["agents"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -177,7 +182,12 @@ func (d *DaemonStatsOutput) Agents() interface{} {
 //
 // Description: Config file used to start the daemon
 func (d *DaemonStatsOutput) Configfile() interface{} {
-	val := d.reply["configfile"]
+	val, ok := d.reply["configfile"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -185,7 +195,12 @@ func (d *DaemonStatsOutput) Configfile() interface{} {
 //
 // Description: Didn't pass filter checks
 func (d *DaemonStatsOutput) Filtered() interface{} {
-	val := d.reply["filtered"]
+	val, ok := d.reply["filtered"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -193,7 +208,12 @@ func (d *DaemonStatsOutput) Filtered() interface{} {
 //
 // Description: Passed filter checks
 func (d *DaemonStatsOutput) Passed() interface{} {
-	val := d.reply["passed"]
+	val, ok := d.reply["passed"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -201,7 +221,12 @@ func (d *DaemonStatsOutput) Passed() interface{} {
 //
 // Description: Process ID of the daemon
 func (d *DaemonStatsOutput) Pid() interface{} {
-	val := d.reply["pid"]
+	val, ok := d.reply["pid"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -209,7 +234,12 @@ func (d *DaemonStatsOutput) Pid() interface{} {
 //
 // Description: Replies sent back to clients
 func (d *DaemonStatsOutput) Replies() interface{} {
-	val := d.reply["replies"]
+	val, ok := d.reply["replies"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -217,7 +247,12 @@ func (d *DaemonStatsOutput) Replies() interface{} {
 //
 // Description: Time the server started
 func (d *DaemonStatsOutput) Starttime() interface{} {
-	val := d.reply["starttime"]
+	val, ok := d.reply["starttime"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -225,7 +260,12 @@ func (d *DaemonStatsOutput) Starttime() interface{} {
 //
 // Description: List of threads active in the daemon
 func (d *DaemonStatsOutput) Threads() interface{} {
-	val := d.reply["threads"]
+	val, ok := d.reply["threads"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -233,7 +273,12 @@ func (d *DaemonStatsOutput) Threads() interface{} {
 //
 // Description: Processor time consumed by the daemon
 func (d *DaemonStatsOutput) Times() interface{} {
-	val := d.reply["times"]
+	val, ok := d.reply["times"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -241,7 +286,12 @@ func (d *DaemonStatsOutput) Times() interface{} {
 //
 // Description: Total messages received
 func (d *DaemonStatsOutput) Total() interface{} {
-	val := d.reply["total"]
+	val, ok := d.reply["total"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -249,7 +299,12 @@ func (d *DaemonStatsOutput) Total() interface{} {
 //
 // Description: Messages that did pass TTL checks
 func (d *DaemonStatsOutput) Ttlexpired() interface{} {
-	val := d.reply["ttlexpired"]
+	val, ok := d.reply["ttlexpired"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -257,7 +312,12 @@ func (d *DaemonStatsOutput) Ttlexpired() interface{} {
 //
 // Description: Messages that failed security validation
 func (d *DaemonStatsOutput) Unvalidated() interface{} {
-	val := d.reply["unvalidated"]
+	val, ok := d.reply["unvalidated"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -265,7 +325,12 @@ func (d *DaemonStatsOutput) Unvalidated() interface{} {
 //
 // Description: Messages that passed security validation
 func (d *DaemonStatsOutput) Validated() interface{} {
-	val := d.reply["validated"]
+	val, ok := d.reply["validated"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }
 
@@ -273,6 +338,11 @@ func (d *DaemonStatsOutput) Validated() interface{} {
 //
 // Description: MCollective Version
 func (d *DaemonStatsOutput) Version() interface{} {
-	val := d.reply["version"]
+	val, ok := d.reply["version"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }

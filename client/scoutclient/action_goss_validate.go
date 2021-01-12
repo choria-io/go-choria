@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.611871 +0100 CET m=+0.127188698"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.351703 +0100 CET m=+0.095774606"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.18.0
 
@@ -179,6 +179,7 @@ func (d *GossValidateRequester) Vars(v string) *GossValidateRequester {
 // Description: The number of tests that failed
 func (d *GossValidateOutput) Failures() int64 {
 	val := d.reply["failures"]
+
 	return val.(int64)
 }
 
@@ -187,6 +188,7 @@ func (d *GossValidateOutput) Failures() int64 {
 // Description: The full test results
 func (d *GossValidateOutput) Results() []interface{} {
 	val := d.reply["results"]
+
 	return val.([]interface{})
 }
 
@@ -195,6 +197,7 @@ func (d *GossValidateOutput) Results() []interface{} {
 // Description: The time it took to run the tests, in seconds
 func (d *GossValidateOutput) Runtime() int64 {
 	val := d.reply["runtime"]
+
 	return val.(int64)
 }
 
@@ -203,6 +206,7 @@ func (d *GossValidateOutput) Runtime() int64 {
 // Description: Indicates if the test passed
 func (d *GossValidateOutput) Success() string {
 	val := d.reply["success"]
+
 	return val.(string)
 }
 
@@ -211,6 +215,7 @@ func (d *GossValidateOutput) Success() string {
 // Description: A human friendly test result
 func (d *GossValidateOutput) Summary() string {
 	val := d.reply["summary"]
+
 	return val.(string)
 }
 
@@ -219,5 +224,6 @@ func (d *GossValidateOutput) Summary() string {
 // Description: The number of tests that were run
 func (d *GossValidateOutput) Tests() int64 {
 	val := d.reply["tests"]
+
 	return val.(int64)
 }

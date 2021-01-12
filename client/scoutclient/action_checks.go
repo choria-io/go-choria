@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.591945 +0100 CET m=+0.107263080"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.340541 +0100 CET m=+0.084612171"
 //
 // Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.18.0
 
@@ -170,5 +170,6 @@ func (d *ChecksResult) EachOutput(h func(r *ChecksOutput)) {
 // Description: Details about each check
 func (d *ChecksOutput) Checks() []interface{} {
 	val := d.reply["checks"]
+
 	return val.([]interface{})
 }

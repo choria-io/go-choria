@@ -167,7 +167,7 @@ func (c *ConsoleFormatter) errorPrinter(reply *client.RPCReply) {
 
 func (c *ConsoleFormatter) writeHeader(sender string, reply *client.RPCReply) {
 	ss := statusStings[reply.Statuscode]
-	smsg := "%-40s %s\n"
+	smsg := "%-40s %s\n\n"
 	if c.disableColor {
 		fmt.Fprintf(c.out, smsg, sender, ss.color)
 	} else {

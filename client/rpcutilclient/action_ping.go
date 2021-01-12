@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-12 09:27:23.517579 +0100 CET m=+0.032897232"
+// generated code; DO NOT EDIT; 2021-01-12 18:43:24.293333 +0100 CET m=+0.037403540"
 //
 // Client for Choria RPC Agent 'rpcutil'' Version 0.19.0 generated using Choria version 0.18.0
 
@@ -169,6 +169,11 @@ func (d *PingResult) EachOutput(h func(r *PingOutput)) {
 //
 // Description: The local timestamp
 func (d *PingOutput) Pong() interface{} {
-	val := d.reply["pong"]
+	val, ok := d.reply["pong"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+
 	return val.(interface{})
 }

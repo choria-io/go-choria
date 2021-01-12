@@ -30,6 +30,10 @@ func (p *ScoutClient) OptionIdentityFilter(f ...string) *ScoutClient {
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.IdentityFilter(i)))
 	}
 
@@ -44,6 +48,10 @@ func (p *ScoutClient) OptionClassFilter(f ...string) *ScoutClient {
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.ClassFilter(i)))
 	}
 
@@ -58,6 +66,10 @@ func (p *ScoutClient) OptionFactFilter(f ...string) *ScoutClient {
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.FactFilter(i)))
 	}
 
@@ -72,6 +84,10 @@ func (p *ScoutClient) OptionAgentFilter(a ...string) *ScoutClient {
 	defer p.Unlock()
 
 	for _, f := range a {
+		if f == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.AgentFilter(f)))
 	}
 
@@ -86,6 +102,10 @@ func (p *ScoutClient) OptionCombinedFilter(f ...string) *ScoutClient {
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.CombinedFilter(i)))
 	}
 
@@ -100,6 +120,10 @@ func (p *ScoutClient) OptionCompoundFilter(f ...string) *ScoutClient {
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.CompoundFilter(i)))
 	}
 

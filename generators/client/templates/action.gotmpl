@@ -173,11 +173,21 @@ func (d *{{ $.ActionName | SnakeToCamel }}Requester) {{ $name | SnakeToCamel }}(
 }
 {{ end }}
 {{ range $name, $output := .Outputs }}
+{{- $return_type := $output.Type | ChoriaTypeToGoType -}}
 // {{ $name | SnakeToCamel }} is the value of the {{ $name }} output
 //
 // Description: {{ $output.Description }}
-func (d *{{ $.ActionName | SnakeToCamel }}Output) {{ $name | SnakeToCamel }}() {{ ChoriaTypeToGoType $output.Type }} {
+func (d *{{ $.ActionName | SnakeToCamel }}Output) {{ $name | SnakeToCamel }}() {{ $return_type }} {
+{{- if eq "interface{}" $return_type  -}}
+	val, ok := d.reply["{{ $name }}"]
+	if !ok || val == nil {
+		// we have to avoid returning nil.(interface{})
+		return nil
+	}
+{{- else -}}
 	val := d.reply["{{ $name }}"]
+{{ end }}
+
 	return {{ ChoriaTypeToValOfType $output.Type }}
 }
 {{ end }}

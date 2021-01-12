@@ -30,6 +30,10 @@ func (p *ChoriaUtilClient) OptionIdentityFilter(f ...string) *ChoriaUtilClient {
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.IdentityFilter(i)))
 	}
 
@@ -44,6 +48,10 @@ func (p *ChoriaUtilClient) OptionClassFilter(f ...string) *ChoriaUtilClient {
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.ClassFilter(i)))
 	}
 
@@ -58,6 +66,10 @@ func (p *ChoriaUtilClient) OptionFactFilter(f ...string) *ChoriaUtilClient {
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.FactFilter(i)))
 	}
 
@@ -72,6 +84,10 @@ func (p *ChoriaUtilClient) OptionAgentFilter(a ...string) *ChoriaUtilClient {
 	defer p.Unlock()
 
 	for _, f := range a {
+		if f == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.AgentFilter(f)))
 	}
 
@@ -86,6 +102,10 @@ func (p *ChoriaUtilClient) OptionCombinedFilter(f ...string) *ChoriaUtilClient {
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.CombinedFilter(i)))
 	}
 
@@ -100,6 +120,10 @@ func (p *ChoriaUtilClient) OptionCompoundFilter(f ...string) *ChoriaUtilClient {
 	defer p.Unlock()
 
 	for _, i := range f {
+		if i == "" {
+			continue
+		}
+
 		p.filters = append(p.filters, FilterFunc(coreclient.CompoundFilter(i)))
 	}
 

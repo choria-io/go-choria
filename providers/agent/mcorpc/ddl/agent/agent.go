@@ -47,6 +47,11 @@ func New(file string) (*DDL, error) {
 
 // Find looks in the supplied libdirs for a DDL file for a specific agent
 func Find(agent string, libdirs []string) (ddl *DDL, err error) {
+	ddl, err = CachedDDL(agent)
+	if err == nil {
+		return ddl, err
+	}
+
 	EachFile(libdirs, func(n string, f string) bool {
 		if n == agent {
 			ddl, err = New(f)
