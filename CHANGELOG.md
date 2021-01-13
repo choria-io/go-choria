@@ -1,5 +1,6 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/01/13|      |Release 0.19.0                                                                                           |
 |2020/01/12|1086  |Create a `choria facts` command                                                                          |
 |2020/01/12|1084  |Support full GJSON Path Syntax in rpcutil#get_fact, fix a crash on map data in aggregators               |
 |2020/01/10|1081  |Standardise filter and discovery CLI options                                                             |
