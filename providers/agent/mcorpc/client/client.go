@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/antonmedv/expr"
 	"github.com/google/go-cmp/cmp"
@@ -67,6 +68,8 @@ type RPCReply struct {
 	Statuscode mcorpc.StatusCode `json:"statuscode"`
 	Statusmsg  string            `json:"statusmsg"`
 	Data       json.RawMessage   `json:"data"`
+	Sender     string            `json:"-"`
+	Time       time.Time         `json:"-"`
 }
 
 // MatchExpr determines if the Reply  matches expression q using the expr format.
@@ -83,6 +86,8 @@ func (r *RPCReply) MatchExpr(q string) (bool, error) {
 		"unknown_action": r.isUnknownAction,
 		"unknown_error":  r.isUnknownError,
 		"include":        r.include,
+		"sender":         func() string { return r.Sender },
+		"time":           func() time.Time { return r.Time },
 	}
 
 	prog, err := expr.Compile(q, expr.AsBool(), expr.AllowUndefinedVariables(), expr.Env(env))
@@ -476,6 +481,9 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 			r.log.Errorf("Could not process reply from %s: %s", reply.SenderID(), err)
 			return
 		}
+
+		rpcreply.Sender = reply.SenderID()
+		rpcreply.Time = reply.Time()
 
 		if rpcreply.Statuscode == mcorpc.OK {
 			r.opts.stats.PassedRequestInc()

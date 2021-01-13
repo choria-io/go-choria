@@ -2,13 +2,17 @@ package cmd
 
 import (
 	"bufio"
+	"bytes"
+	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gosuri/uiprogress"
+	log "github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
 	"github.com/choria-io/go-choria/client/discovery/puppetdb"
@@ -298,28 +302,28 @@ func (r *reqCommand) Configure() error {
 	return commonConfigure()
 }
 
-func (r *reqCommand) discover(filter *protocol.Filter) ([]string, error) {
-	if r.nodesFile != "" {
-		file, err := os.Open(r.nodesFile)
-		if err != nil {
-			return []string{}, err
-		}
-		defer file.Close()
+func (r *reqCommand) fileDiscovery() ([]string, error) {
+	file, err := os.Open(r.nodesFile)
+	if err != nil {
+		return []string{}, err
+	}
+	defer file.Close()
 
-		found := []string{}
-		scanner := bufio.NewScanner(file)
-		for scanner.Scan() {
-			found = append(found, strings.TrimSpace(scanner.Text()))
-		}
-
-		err = scanner.Err()
-		if err != nil {
-			return []string{}, err
-		}
-
-		return found, nil
+	found := []string{}
+	scanner := bufio.NewScanner(file)
+	for scanner.Scan() {
+		found = append(found, strings.TrimSpace(scanner.Text()))
 	}
 
+	err = scanner.Err()
+	if err != nil {
+		return []string{}, err
+	}
+
+	return found, nil
+}
+
+func (r *reqCommand) clientDiscovery(filter *protocol.Filter) ([]string, error) {
 	if !r.silent {
 		fmt.Printf("Discovering nodes using the %s method ....", r.fo.dm)
 	}
@@ -337,7 +341,59 @@ func (r *reqCommand) discover(filter *protocol.Filter) ([]string, error) {
 		fmt.Printf("%d\n", len(nodes))
 	}
 
-	return nodes, err
+	return nodes, nil
+}
+
+func (r *reqCommand) isPiped() bool {
+	fi, err := os.Stdin.Stat()
+	if err != nil {
+		return false
+	}
+
+	return (fi.Mode() & os.ModeCharDevice) == 0
+}
+
+func (r *reqCommand) stdinDiscovery() ([]string, error) {
+	raw, err := ioutil.ReadAll(os.Stdin)
+	if err != nil {
+		return nil, err
+	}
+
+	input := bytes.TrimSpace(raw)
+	if len(input) < 2 {
+		return nil, fmt.Errorf("did not detect valid JSON on stdin")
+	}
+
+	log.Debugf("stdin discovery data: %s", input)
+
+	if input[0] != '{' && input[len(input)-1] != '}' {
+		return nil, fmt.Errorf("did not detect valid JSON on stdin")
+	}
+
+	data := replyfmt.RPCResults{}
+	err = json.Unmarshal(input, &data)
+	if err != nil {
+		return nil, err
+	}
+
+	found := []string{}
+	for _, reply := range data.Replies {
+		found = append(found, reply.Sender)
+	}
+
+	return found, nil
+}
+
+func (r *reqCommand) discover(filter *protocol.Filter) ([]string, error) {
+	log.Debugf("starting discovery using filter %#v", filter)
+	switch {
+	case r.nodesFile != "":
+		return r.fileDiscovery()
+	case r.isPiped():
+		return r.stdinDiscovery()
+	default:
+		return r.clientDiscovery(filter)
+	}
 }
 
 func init() {
