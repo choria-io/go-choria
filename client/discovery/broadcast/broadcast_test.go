@@ -50,11 +50,11 @@ var _ = Describe("Broadcast", func() {
 	})
 
 	Describe("New", func() {
-		It("Should intialize timeout to default", func() {
-			Expect(b.timeout).To(Equal(time.Duration(2000000000)))
+		It("Should initialize timeout to default", func() {
+			Expect(b.timeout).To(Equal(2 * time.Second))
 			fw.Config.DiscoveryTimeout = 100
 			b = New(fw)
-			Expect(b.timeout).To(Equal(time.Duration(100000000000)))
+			Expect(b.timeout).To(Equal(100 * time.Second))
 		})
 	})
 

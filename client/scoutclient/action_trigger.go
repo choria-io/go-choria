@@ -1,6 +1,6 @@
-// generated code; DO NOT EDIT; 2021-01-12 18:43:24.355328 +0100 CET m=+0.099398674"
+// generated code; DO NOT EDIT; 2021-01-18 10:38:24.699995 +0100 CET m=+0.122859812"
 //
-// Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.18.0
+// Client for Choria RPC Agent 'scout'' Version 0.0.1 generated using Choria version 0.19.0
 
 package scoutclient
 

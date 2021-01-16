@@ -21,6 +21,8 @@ type ChoriaPluginConfig struct {
 	SRVDomain        string `confkey:"plugin.choria.srv_domain" url:"https://choria.io/docs/deployment/dns/"`                                // The domain to use for SRV records, defaults to the domain the server FQDN is in
 	Provision        bool   `confkey:"plugin.choria.server.provision" default:"false" url:"https://github.com/choria-io/provisioning-agent"` // Specifically enable or disable provisioning
 
+	ExternalDiscoveryCommand string `confkey:"plugin.choria.discovery.external.command"` // The command to use for external discovery
+
 	// discovery proxy
 	DiscoveryHost  string `confkey:"plugin.choria.discovery_host" default:"puppet" deprecated:"1"`
 	DiscoveryPort  int    `confkey:"plugin.choria.discovery_port" default:"8085" deprecated:"1"`

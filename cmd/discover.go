@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
+	"github.com/choria-io/go-choria/client/discovery/external"
 	"github.com/choria-io/go-choria/client/discovery/puppetdb"
 )
 
@@ -50,14 +51,18 @@ func (d *discoverCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	var nodes []string
+	to := time.Second * time.Duration(d.fo.dt)
 
 	start := time.Now()
 	switch d.fo.dm {
 	case "mc", "broadcast":
-		nodes, err = broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(d.fo.collective), broadcast.Timeout(time.Second*time.Duration(d.fo.dt)))
-	case "choria":
-		nodes, err = puppetdb.New(c).Discover(ctx, puppetdb.Filter(filter), puppetdb.Collective(d.fo.collective), puppetdb.Timeout(time.Second*time.Duration(d.fo.dt)))
+		nodes, err = broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(d.fo.collective), broadcast.Timeout(to))
+	case "choria", "puppetdb":
+		nodes, err = puppetdb.New(c).Discover(ctx, puppetdb.Filter(filter), puppetdb.Collective(d.fo.collective), puppetdb.Timeout(to))
+	case "external":
+		nodes, err = external.New(c).Discover(ctx, external.Filter(filter), external.Timeout(to), external.Collective(d.fo.collective))
 	}
+
 	dt := time.Since(start)
 
 	if d.jsonFormat {

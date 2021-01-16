@@ -4,11 +4,12 @@ package {{ .Package }}
 
 import (
 	"context"
+	"fmt"
 	"sync"
 	"time"
-	"fmt"
 
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
+	"github.com/choria-io/go-choria/client/discovery/external"
 	"github.com/choria-io/go-choria/client/discovery/puppetdb"
 	"github.com/choria-io/go-choria/protocol"
 )
@@ -36,9 +37,7 @@ func (b *BroadcastNS) Discover(ctx context.Context, fw ChoriaFramework, filters 
 
 	copier := func() []string {
 		out := make([]string, len(b.nodeCache))
-		for i, n := range b.nodeCache {
-			out[i] = n
-		}
+		copy(out, b.nodeCache)
 
 		return out
 	}
@@ -47,7 +46,9 @@ func (b *BroadcastNS) Discover(ctx context.Context, fw ChoriaFramework, filters 
 		return copier(), nil
 	}
 
-	err := b.parseFilters(filters)
+	var err error
+
+	b.f, err = parseFilters(filters)
 	if err != nil {
 		return nil, err
 	}
@@ -67,18 +68,56 @@ func (b *BroadcastNS) Discover(ctx context.Context, fw ChoriaFramework, filters 
 	return copier(), nil
 }
 
+// ExternalNS is a NodeSource that calls an external command for discovery
+type ExternalNS struct {
+	nodeCache []string
+	f         *protocol.Filter
 
-func (p *BroadcastNS) parseFilters(fs []FilterFunc) error {
-	p.f = protocol.NewFilter()
+	sync.Mutex
+}
 
-	for _, f := range fs {
-		err := f(p.f)
-		if err != nil {
-			return err
-		}
+// Reset resets the internal node cache
+func (p *ExternalNS) Reset() {
+	p.Lock()
+	defer p.Unlock()
+
+	p.nodeCache = []string{}
+}
+
+func (p *ExternalNS) Discover(ctx context.Context, fw ChoriaFramework, filters []FilterFunc) ([]string, error) {
+	p.Lock()
+	defer p.Unlock()
+
+	copier := func() []string {
+		out := make([]string, len(p.nodeCache))
+		copy(out, p.nodeCache)
+
+		return out
 	}
 
-	return nil
+	if !(p.nodeCache == nil || len(p.nodeCache) == 0) {
+		return copier(), nil
+	}
+
+	var err error
+	p.f, err = parseFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	if p.nodeCache == nil {
+		p.nodeCache = []string{}
+	}
+
+	cfg := fw.Configuration()
+	nodes, err := external.New(fw).Discover(ctx, external.Filter(p.f), external.Timeout(time.Second*time.Duration(cfg.DiscoveryTimeout)))
+	if err != nil {
+		return []string{}, err
+	}
+
+	p.nodeCache = nodes
+
+	return copier(), nil
 }
 
 // PuppetDBNS is a NodeSource that uses the PuppetDB PQL Queries to discover nodes
@@ -104,9 +143,7 @@ func (p *PuppetDBNS) Discover(ctx context.Context, fw ChoriaFramework, filters [
 
 	copier := func() []string {
 		out := make([]string, len(p.nodeCache))
-		for i, n := range p.nodeCache {
-			out[i] = n
-		}
+		copy(out, p.nodeCache)
 
 		return out
 	}
@@ -115,9 +152,14 @@ func (p *PuppetDBNS) Discover(ctx context.Context, fw ChoriaFramework, filters [
 		return copier(), nil
 	}
 
-	err := p.parseFilters(filters)
+	var err error
+	p.f, err = parseFilters(filters)
 	if err != nil {
 		return nil, err
+	}
+
+	if len(p.f.Compound) > 0 {
+		return nil, fmt.Errorf("compound filters are not supported by PuppetDB")
 	}
 
 	if p.nodeCache == nil {
@@ -135,19 +177,15 @@ func (p *PuppetDBNS) Discover(ctx context.Context, fw ChoriaFramework, filters [
 	return copier(), nil
 }
 
-func (p *PuppetDBNS) parseFilters(fs []FilterFunc) error {
-	p.f = protocol.NewFilter()
+func parseFilters(fs []FilterFunc) (*protocol.Filter, error) {
+	filter := protocol.NewFilter()
 
 	for _, f := range fs {
-		err := f(p.f)
+		err := f(filter)
 		if err != nil {
-			return err
+			return nil, err
 		}
 	}
 
-	if len(p.f.Compound) > 0 {
-		return fmt.Errorf("compound filters are not supported by PuppetDB")
-	}
-
-	return nil
+	return filter, nil
 }
