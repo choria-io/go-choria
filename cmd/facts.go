@@ -145,7 +145,7 @@ func (f *factsCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	logger := c.Logger("facts")
-	f.fo.SetDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
+	f.fo.SetDefaultsFromChoria(c)
 
 	start := time.Now()
 	nodes, _, err := f.fo.Discover(ctx, c, "rpcutil", true, false, c.Logger("facts"))

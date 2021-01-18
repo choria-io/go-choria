@@ -67,7 +67,7 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 		p.timeout = cfg.DiscoveryTimeout
 	}
 
-	p.fo.SetDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
+	p.fo.SetDefaultsFromChoria(c)
 
 	filter, err := p.fo.NewFilter("")
 

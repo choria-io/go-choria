@@ -15,6 +15,7 @@ import (
 	"github.com/choria-io/go-choria/client/discovery/external"
 	"github.com/choria-io/go-choria/client/discovery/flatfile"
 	"github.com/choria-io/go-choria/client/discovery/puppetdb"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/filter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/client"
@@ -38,14 +39,18 @@ func NewStandardOptions() *StandardOptions {
 	return &StandardOptions{}
 }
 
+type FlagApp interface {
+	Flag(name, help string) *kingpin.FlagClause
+}
+
 // AddSelectionFlags adds the --dm and --discovery-timeout options
-func (o *StandardOptions) AddSelectionFlags(app *kingpin.CmdClause) {
+func (o *StandardOptions) AddSelectionFlags(app FlagApp) {
 	app.Flag("dm", "Sets a discovery method (mc, choria)").EnumVar(&o.DiscoveryMethod, "broadcast", "choria", "mc")
 	app.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&o.DiscoveryTimeout)
 }
 
 // AddFilterFlags adds the various flags like -W, -S, -T etc
-func (o *StandardOptions) AddFilterFlags(app *kingpin.CmdClause) {
+func (o *StandardOptions) AddFilterFlags(app FlagApp) {
 	app.Flag("wf", "Match hosts with a certain fact").Short('F').StringsVar(&o.FactFilter)
 	app.Flag("wc", "Match hosts with a certain configuration management class").Short('C').StringsVar(&o.ClassFilter)
 	app.Flag("wa", "Match hosts with a certain Choria agent").Short('A').StringsVar(&o.AgentFilter)
@@ -56,7 +61,7 @@ func (o *StandardOptions) AddFilterFlags(app *kingpin.CmdClause) {
 }
 
 // AddFlatFileFlags adds the flags to select nodes using --nodes in text, json and yaml formats
-func (o *StandardOptions) AddFlatFileFlags(app *kingpin.CmdClause) {
+func (o *StandardOptions) AddFlatFileFlags(app FlagApp) {
 	app.Flag("nodes", "List of nodes to interact with in JSON, YAML or TEXT formats").ExistingFileVar(&o.NodesFile)
 }
 
@@ -139,6 +144,16 @@ func (o *StandardOptions) isPiped() bool {
 	}
 
 	return (fi.Mode() & os.ModeCharDevice) == 0
+}
+
+// SetDefaultsFromChoria sets the defaults based on cfg
+func (o *StandardOptions) SetDefaultsFromChoria(fw client.ChoriaFramework) {
+	o.SetDefaultsFromConfig(fw.Configuration())
+}
+
+// SetDefaultsFromConfig sets the defaults based on cfg
+func (o *StandardOptions) SetDefaultsFromConfig(cfg *config.Config) {
+	o.SetDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
 }
 
 // SetDefaults sets default values for options, should be called before doing any discovery after flags are parsed
