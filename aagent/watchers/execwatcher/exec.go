@@ -221,7 +221,17 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 		return Error, err
 	}
 
-	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], splitcmd[1:]...)
+	if len(splitcmd) == 0 {
+		w.Errorf("Invalid command %q", w.properties.Command)
+		return Error, err
+	}
+
+	var args []string
+	if len(splitcmd) > 1 {
+		args = splitcmd[1:]
+	}
+
+	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], args...)
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machine.Name()))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s%s%s", os.Getenv("PATH"), string(os.PathListSeparator), w.machine.Directory()))

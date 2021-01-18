@@ -15,6 +15,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
+	"github.com/choria-io/go-choria/client/discovery/external"
 	"github.com/choria-io/go-choria/client/discovery/puppetdb"
 	"github.com/choria-io/go-choria/protocol"
 	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
@@ -329,12 +330,14 @@ func (r *reqCommand) clientDiscovery(filter *protocol.Filter) ([]string, error) 
 	}
 
 	var nodes []string
-
+	to := time.Second * time.Duration(r.fo.dt)
 	switch r.fo.dm {
 	case "mc", "broadcast":
-		nodes, err = broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(r.fo.collective), broadcast.Timeout(time.Second*time.Duration(r.fo.dt)))
-	case "choria":
-		nodes, err = puppetdb.New(c).Discover(ctx, puppetdb.Filter(filter), puppetdb.Collective(r.fo.collective), puppetdb.Timeout(time.Second*time.Duration(r.fo.dt)))
+		nodes, err = broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(r.fo.collective), broadcast.Timeout(to))
+	case "choria", "puppetdb":
+		nodes, err = puppetdb.New(c).Discover(ctx, puppetdb.Filter(filter), puppetdb.Collective(r.fo.collective), puppetdb.Timeout(to))
+	case "external":
+		nodes, err = external.New(c).Discover(ctx, external.Filter(filter), external.Timeout(to), external.Collective(r.fo.collective))
 	}
 
 	if !r.silent {
