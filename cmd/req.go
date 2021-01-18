@@ -174,7 +174,7 @@ func (r *reqCommand) prepareConfiguration() (err error) {
 		r.noProgress = true
 	}
 
-	r.fo.SetDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
+	r.fo.SetDefaultsFromChoria(c)
 
 	return nil
 }

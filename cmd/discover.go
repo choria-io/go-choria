@@ -38,8 +38,7 @@ func (d *discoverCommand) Configure() error {
 func (d *discoverCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	d.fo.SetDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
-
+	d.fo.SetDefaultsFromChoria(c)
 	nodes, dt, err := d.fo.Discover(ctx, c, "", true, d.verbose && !d.jsonFormat, c.Logger("discovery"))
 	if err != nil {
 		return err

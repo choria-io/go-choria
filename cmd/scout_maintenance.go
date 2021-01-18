@@ -41,7 +41,7 @@ func (s *sMaintenanceCommand) Configure() error {
 func (s *sMaintenanceCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	s.fo.SetDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
+	s.fo.SetDefaultsFromChoria(c)
 	trigger, err := scoutcmd.NewMaintenanceCommand(s.fo, s.checks, s.json, configFile, debug || s.verbose, c.Config.Color, logrus.NewEntry(c.Logger("scout").Logger))
 	if err != nil {
 		return err
