@@ -34,6 +34,7 @@ type Stats interface {
 	PublishDuration() (time.Duration, error)
 	RequestDuration() (time.Duration, error)
 	DiscoveryDuration() (time.Duration, error)
+	OverrideDiscoveryTime(start time.Time, end time.Time)
 }
 
 // NodeSource discovers nodes

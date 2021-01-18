@@ -4,11 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
-	"time"
 
-	"github.com/choria-io/go-choria/client/discovery/broadcast"
-	"github.com/choria-io/go-choria/client/discovery/external"
-	"github.com/choria-io/go-choria/client/discovery/puppetdb"
+	"github.com/choria-io/go-choria/client/discovery"
 )
 
 type discoverCommand struct {
@@ -17,14 +14,16 @@ type discoverCommand struct {
 	jsonFormat bool
 	verbose    bool
 
-	fo stdFilterOptions
+	fo *discovery.StandardOptions
 }
 
 func (d *discoverCommand) Setup() error {
 	d.cmd = cli.app.Command("discover", "Discover nodes using the discovery system matching filter criteria").Alias("find")
 
-	addStdFilter(d.cmd, &d.fo)
-	addStdDiscovery(d.cmd, &d.fo)
+	d.fo = discovery.NewStandardOptions()
+	d.fo.AddFilterFlags(d.cmd)
+	d.fo.AddSelectionFlags(d.cmd)
+	d.fo.AddFlatFileFlags(d.cmd)
 
 	d.cmd.Flag("verbose", "Log verbosely").Default("false").Short('v').BoolVar(&d.verbose)
 	d.cmd.Flag("json", "Produce JSON output").Short('j').BoolVar(&d.jsonFormat)
@@ -39,31 +38,12 @@ func (d *discoverCommand) Configure() error {
 func (d *discoverCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	d.fo.setDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
+	d.fo.SetDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
 
-	filter, err := d.fo.newFilter("")
+	nodes, dt, err := d.fo.Discover(ctx, c, "", true, d.verbose && !d.jsonFormat, c.Logger("discovery"))
 	if err != nil {
 		return err
 	}
-
-	if d.verbose && !d.jsonFormat {
-		fmt.Printf("Discovering nodes using the %s method ....\n\n", d.fo.dm)
-	}
-
-	var nodes []string
-	to := time.Second * time.Duration(d.fo.dt)
-
-	start := time.Now()
-	switch d.fo.dm {
-	case "mc", "broadcast":
-		nodes, err = broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(d.fo.collective), broadcast.Timeout(to))
-	case "choria", "puppetdb":
-		nodes, err = puppetdb.New(c).Discover(ctx, puppetdb.Filter(filter), puppetdb.Collective(d.fo.collective), puppetdb.Timeout(to))
-	case "external":
-		nodes, err = external.New(c).Discover(ctx, external.Filter(filter), external.Timeout(to), external.Collective(d.fo.collective))
-	}
-
-	dt := time.Since(start)
 
 	if d.jsonFormat {
 		out, err := json.MarshalIndent(nodes, "", "  ")
@@ -80,7 +60,7 @@ func (d *discoverCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	if d.verbose {
 		fmt.Println()
-		fmt.Printf("Discovered %d nodes using the %s method in %.02f seconds\n", len(nodes), d.fo.dm, dt.Seconds())
+		fmt.Printf("Discovered %d nodes using the %s method in %.02f seconds\n", len(nodes), d.fo.DiscoveryMethod, dt.Seconds())
 	}
 
 	return nil

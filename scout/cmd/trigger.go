@@ -9,12 +9,13 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/client/scoutclient"
 	scoutagent "github.com/choria-io/go-choria/scout/agent/scout"
 )
 
 type TriggerCommand struct {
-	sopt     StandardOptions
+	sopt     *discovery.StandardOptions
 	checks   []string
 	json     bool
 	cfile    string
@@ -23,7 +24,7 @@ type TriggerCommand struct {
 	log      *logrus.Entry
 }
 
-func NewTriggerCommand(sopt StandardOptions, checks []string, json bool, cfile string, verbose bool, colorize bool, log *logrus.Entry) (*TriggerCommand, error) {
+func NewTriggerCommand(sopt *discovery.StandardOptions, checks []string, json bool, cfile string, verbose bool, colorize bool, log *logrus.Entry) (*TriggerCommand, error) {
 	return &TriggerCommand{
 		sopt:     sopt,
 		checks:   checks,
@@ -38,7 +39,7 @@ func NewTriggerCommand(sopt StandardOptions, checks []string, json bool, cfile s
 func (t *TriggerCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	sc, err := t.sopt.scoutClient(t.cfile, t.log)
+	sc, err := scoutClient(t.cfile, t.sopt, t.log)
 	if err != nil {
 		return err
 	}

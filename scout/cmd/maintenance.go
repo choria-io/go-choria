@@ -9,12 +9,13 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/client/scoutclient"
 	scoutagent "github.com/choria-io/go-choria/scout/agent/scout"
 )
 
 type MaintenanceCommand struct {
-	sopt     StandardOptions
+	sopt     *discovery.StandardOptions
 	checks   []string
 	json     bool
 	cfile    string
@@ -23,7 +24,7 @@ type MaintenanceCommand struct {
 	log      *logrus.Entry
 }
 
-func NewMaintenanceCommand(sopt StandardOptions, checks []string, json bool, cfile string, verbose bool, colorize bool, log *logrus.Entry) (*MaintenanceCommand, error) {
+func NewMaintenanceCommand(sopt *discovery.StandardOptions, checks []string, json bool, cfile string, verbose bool, colorize bool, log *logrus.Entry) (*MaintenanceCommand, error) {
 	return &MaintenanceCommand{
 		sopt:     sopt,
 		checks:   checks,
@@ -38,7 +39,7 @@ func NewMaintenanceCommand(sopt StandardOptions, checks []string, json bool, cfi
 func (t *MaintenanceCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	sc, err := t.sopt.scoutClient(t.cfile, t.log)
+	sc, err := scoutClient(t.cfile, t.sopt, t.log)
 	if err != nil {
 		return err
 	}

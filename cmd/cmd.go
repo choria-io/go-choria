@@ -13,14 +13,14 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/choria-io/go-choria/filter"
 	"github.com/choria-io/go-choria/protocol"
+
+	log "github.com/sirupsen/logrus"
+	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 type application struct {
@@ -43,18 +43,6 @@ var (
 	bi         *build.Info
 	err        error
 )
-
-type stdFilterOptions struct {
-	collective string
-	factF      []string
-	agentsF    []string
-	classF     []string
-	identityF  []string
-	combinedF  []string
-	compoundF  string
-	dm         string
-	dt         int
-}
 
 func ParseCLI() (err error) {
 	bi = &build.Info{}
@@ -269,57 +257,4 @@ func cmdWithFullCommand(command string) (cmd runableCmd, ok bool) {
 	}
 
 	return cmd, false
-}
-
-func addStdDiscovery(app *kingpin.CmdClause, opts *stdFilterOptions) {
-	app.Flag("dm", "Sets a discovery method (broadcast, choria)").EnumVar(&opts.dm, "broadcast", "choria", "mc")
-	app.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&opts.dt)
-}
-
-func addStdFilter(app *kingpin.CmdClause, opts *stdFilterOptions) {
-	app.Flag("wf", "Match hosts with a certain fact").Short('F').StringsVar(&opts.factF)
-	app.Flag("wc", "Match hosts with a certain configuration management class").Short('C').StringsVar(&opts.classF)
-	app.Flag("wa", "Match hosts with a certain Choria agent").Short('A').StringsVar(&opts.agentsF)
-	app.Flag("wi", "Match hosts with a certain Choria identity").Short('I').StringsVar(&opts.identityF)
-	app.Flag("with", "Combined classes and facts filter").Short('W').PlaceHolder("FILTER").StringsVar(&opts.combinedF)
-	app.Flag("select", "Match hosts using a expr compound filter").Short('S').PlaceHolder("EXPR").StringVar(&opts.compoundF)
-	app.Flag("target", "Target a specific sub collective").Short('T').StringVar(&opts.collective)
-}
-
-func (o *stdFilterOptions) setDefaults(collective string, dm string, dt int) {
-	if o.dm == "" {
-		o.dm = dm
-	}
-
-	if o.collective == "" {
-		o.collective = collective
-	}
-
-	if o.dt == 0 {
-		o.dt = dt
-	}
-
-	if len(o.compoundF) > 0 {
-		o.dm = "broadcast"
-	}
-}
-
-func (o *stdFilterOptions) newFilter(agent string) (*protocol.Filter, error) {
-	f, err := filter.NewFilter(
-		filter.FactFilter(o.factF...),
-		filter.AgentFilter(o.agentsF...),
-		filter.ClassFilter(o.classF...),
-		filter.IdentityFilter(o.identityF...),
-		filter.CombinedFilter(o.combinedF...),
-		filter.CompoundFilter(o.compoundF),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	if agent != "" {
-		f.AddAgentFilter(agent)
-	}
-
-	return f, nil
 }

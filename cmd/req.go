@@ -2,21 +2,15 @@ package cmd
 
 import (
 	"bufio"
-	"bytes"
-	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/gosuri/uiprogress"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-choria/client/discovery/broadcast"
-	"github.com/choria-io/go-choria/client/discovery/external"
-	"github.com/choria-io/go-choria/client/discovery/puppetdb"
+	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/protocol"
 	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
@@ -46,10 +40,9 @@ type reqCommand struct {
 	jsonOnly        bool
 	tableOnly       bool
 	silent          bool
-	nodesFile       string
 	workers         int
 
-	fo stdFilterOptions
+	fo *discovery.StandardOptions
 
 	outputFile string
 	exprFilter string
@@ -88,10 +81,11 @@ that match the filter.
 	r.cmd.Flag("json", "Produce JSON output only").Short('j').BoolVar(&r.jsonOnly)
 	r.cmd.Flag("table", "Produce a Table output of successful responses").BoolVar(&r.tableOnly)
 
-	addStdFilter(r.cmd, &r.fo)
-	addStdDiscovery(r.cmd, &r.fo)
+	r.fo = discovery.NewStandardOptions()
+	r.fo.AddFilterFlags(r.cmd)
+	r.fo.AddFlatFileFlags(r.cmd)
+	r.fo.AddSelectionFlags(r.cmd)
 
-	r.cmd.Flag("nodes", "List of nodes to interact with").ExistingFileVar(&r.nodesFile)
 	r.cmd.Flag("limit", "Limits request to a set of targets eg 10 or 10%").StringVar(&r.limit)
 	r.cmd.Flag("limit-seed", "Seed value for deterministic random limits").PlaceHolder("SEED").Int64Var(&r.limitSeed)
 	r.cmd.Flag("batch", "Do requests in batches").PlaceHolder("SIZE").IntVar(&r.batch)
@@ -107,7 +101,7 @@ that match the filter.
 }
 
 func (r *reqCommand) parseFilterOptions() (*protocol.Filter, error) {
-	return r.fo.newFilter(r.agent)
+	return r.fo.NewFilter(r.agent)
 }
 
 func (r *reqCommand) configureProgressBar(count int, expected int) {
@@ -180,7 +174,7 @@ func (r *reqCommand) prepareConfiguration() (err error) {
 		r.noProgress = true
 	}
 
-	r.fo.setDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
+	r.fo.SetDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
 
 	return nil
 }
@@ -215,7 +209,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	opts := []rpc.RequestOption{
-		rpc.Collective(r.fo.collective),
+		rpc.Collective(r.fo.Collective),
 		rpc.Targets(nodes),
 		rpc.Filter(r.filter),
 		rpc.ReplyHandler(r.responseHandler(results)),
@@ -303,100 +297,15 @@ func (r *reqCommand) Configure() error {
 	return commonConfigure()
 }
 
-func (r *reqCommand) fileDiscovery() ([]string, error) {
-	file, err := os.Open(r.nodesFile)
+func (r *reqCommand) discover(filter *protocol.Filter) ([]string, error) {
+	log.Debugf("starting discovery using filter %#v", filter)
+
+	nodes, _, err := r.fo.Discover(ctx, c, r.agent, true, !r.silent, c.Logger("discovery"))
 	if err != nil {
-		return []string{}, err
-	}
-	defer file.Close()
-
-	found := []string{}
-	scanner := bufio.NewScanner(file)
-	for scanner.Scan() {
-		found = append(found, strings.TrimSpace(scanner.Text()))
-	}
-
-	err = scanner.Err()
-	if err != nil {
-		return []string{}, err
-	}
-
-	return found, nil
-}
-
-func (r *reqCommand) clientDiscovery(filter *protocol.Filter) ([]string, error) {
-	if !r.silent {
-		fmt.Printf("Discovering nodes using the %s method ....", r.fo.dm)
-	}
-
-	var nodes []string
-	to := time.Second * time.Duration(r.fo.dt)
-	switch r.fo.dm {
-	case "mc", "broadcast":
-		nodes, err = broadcast.New(c).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(r.fo.collective), broadcast.Timeout(to))
-	case "choria", "puppetdb":
-		nodes, err = puppetdb.New(c).Discover(ctx, puppetdb.Filter(filter), puppetdb.Collective(r.fo.collective), puppetdb.Timeout(to))
-	case "external":
-		nodes, err = external.New(c).Discover(ctx, external.Filter(filter), external.Timeout(to), external.Collective(r.fo.collective))
-	}
-
-	if !r.silent {
-		fmt.Printf("%d\n", len(nodes))
+		return nil, err
 	}
 
 	return nodes, nil
-}
-
-func (r *reqCommand) isPiped() bool {
-	fi, err := os.Stdin.Stat()
-	if err != nil {
-		return false
-	}
-
-	return (fi.Mode() & os.ModeCharDevice) == 0
-}
-
-func (r *reqCommand) stdinDiscovery() ([]string, error) {
-	raw, err := ioutil.ReadAll(os.Stdin)
-	if err != nil {
-		return nil, err
-	}
-
-	input := bytes.TrimSpace(raw)
-	if len(input) < 2 {
-		return nil, fmt.Errorf("did not detect valid JSON on stdin")
-	}
-
-	log.Debugf("stdin discovery data: %s", input)
-
-	if input[0] != '{' && input[len(input)-1] != '}' {
-		return nil, fmt.Errorf("did not detect valid JSON on stdin")
-	}
-
-	data := replyfmt.RPCResults{}
-	err = json.Unmarshal(input, &data)
-	if err != nil {
-		return nil, err
-	}
-
-	found := []string{}
-	for _, reply := range data.Replies {
-		found = append(found, reply.Sender)
-	}
-
-	return found, nil
-}
-
-func (r *reqCommand) discover(filter *protocol.Filter) ([]string, error) {
-	log.Debugf("starting discovery using filter %#v", filter)
-	switch {
-	case r.nodesFile != "":
-		return r.fileDiscovery()
-	case r.isPiped():
-		return r.stdinDiscovery()
-	default:
-		return r.clientDiscovery(filter)
-	}
 }
 
 func init() {

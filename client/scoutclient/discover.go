@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
 	"github.com/choria-io/go-choria/client/discovery/external"
 	"github.com/choria-io/go-choria/client/discovery/puppetdb"
@@ -170,6 +171,63 @@ func (p *PuppetDBNS) Discover(ctx context.Context, fw ChoriaFramework, filters [
 	nodes, err := puppetdb.New(fw).Discover(ctx, puppetdb.Filter(p.f), puppetdb.Timeout(time.Second*time.Duration(cfg.DiscoveryTimeout)))
 	if err != nil {
 		return []string{}, err
+	}
+
+	p.nodeCache = nodes
+
+	return copier(), nil
+}
+
+// MetaNS is a NodeSource that assists CLI tools in creating Choria standard command line based discovery.
+type MetaNS struct {
+	// Options is the CLI options to discover based on
+	Options *discovery.StandardOptions
+
+	// Agent should be the agent the request is targeted at
+	Agent string
+
+	// DisablePipedDiscovery prevents the STDIN being used as a discovery source
+	DisablePipedDiscovery bool
+
+	nodeCache []string
+	sync.Mutex
+}
+
+// Reset resets the internal node cache
+func (p *MetaNS) Reset() {
+	p.Lock()
+	defer p.Unlock()
+
+	p.nodeCache = []string{}
+}
+
+// Discover performs the discovery of nodes against the Choria Network.
+func (p *MetaNS) Discover(ctx context.Context, fw ChoriaFramework, _ []FilterFunc) ([]string, error) {
+	p.Lock()
+	defer p.Unlock()
+
+	copier := func() []string {
+		out := make([]string, len(p.nodeCache))
+		copy(out, p.nodeCache)
+
+		return out
+	}
+
+	if !(p.nodeCache == nil || len(p.nodeCache) == 0) {
+		return copier(), nil
+	}
+
+	if p.nodeCache == nil {
+		p.nodeCache = []string{}
+	}
+
+	if p.Options == nil {
+		return nil, fmt.Errorf("options have not been set")
+	}
+
+	nodes, _, err := p.Options.Discover(ctx, fw, p.Agent, !p.DisablePipedDiscovery, false, fw.Logger("discovery"))
+	if err != nil {
+		return nil, err
 	}
 
 	p.nodeCache = nodes
