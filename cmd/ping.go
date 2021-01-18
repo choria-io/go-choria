@@ -11,6 +11,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/client"
+	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/guptarohit/asciigraph"
 	log "github.com/sirupsen/logrus"
@@ -25,7 +26,7 @@ type pingCommand struct {
 	workers int
 	waitfor int
 
-	fo stdFilterOptions
+	fo *discovery.StandardOptions
 
 	namesOnly bool
 
@@ -43,7 +44,8 @@ func (p *pingCommand) Setup() (err error) {
 	p.cmd.Flag("silent", "Do not print any hostnames").BoolVar(&p.silent)
 	p.cmd.Flag("names", "Only show the names that respond, no statistics").BoolVar(&p.namesOnly)
 
-	addStdFilter(p.cmd, &p.fo)
+	p.fo = discovery.NewStandardOptions()
+	p.fo.AddFilterFlags(p.cmd)
 
 	p.cmd.Flag("expect", "Wait until this many replies were received or timeout").IntVar(&p.waitfor)
 	p.cmd.Flag("timeout", "How long to wait for responses").IntVar(&p.timeout)
@@ -65,9 +67,9 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 		p.timeout = cfg.DiscoveryTimeout
 	}
 
-	p.fo.setDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
+	p.fo.SetDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
 
-	filter, err := p.fo.newFilter("")
+	filter, err := p.fo.NewFilter("")
 
 	if err != nil {
 		return fmt.Errorf("could not parse filters: %s", err)
@@ -166,7 +168,7 @@ func (p *pingCommand) handler(_ context.Context, m *choria.ConnectorMessage) {
 }
 
 func (p *pingCommand) createMessage(filter *protocol.Filter) (*choria.Message, error) {
-	msg, err := c.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", p.fo.collective, "request", nil)
+	msg, err := c.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", p.fo.Collective, "request", nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create message: %s", err)
 	}

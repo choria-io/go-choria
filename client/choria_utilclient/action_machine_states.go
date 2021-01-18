@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT; 2021-01-18 10:38:24.650465 +0100 CET m=+0.073329922"
+// generated code; DO NOT EDIT; 2021-01-18 20:47:36.247887 +0100 CET m=+0.070604747"
 //
 // Client for Choria RPC Agent 'choria_util'' Version 0.19.0 generated using Choria version 0.19.0
 

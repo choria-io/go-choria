@@ -224,6 +224,10 @@ func (f *Filter) AddIdentityFilter(id string) {
 
 // AddAgentFilter appends a filter to the agent filters
 func (f *Filter) AddAgentFilter(agent string) {
+	if agent == "" {
+		return
+	}
+
 	f.mu.Lock()
 	defer f.mu.Unlock()
 

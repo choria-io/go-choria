@@ -14,6 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/client/rpcutilclient"
 )
 
@@ -25,7 +26,7 @@ type factsCommand struct {
 	nodes   bool
 	reverse bool
 
-	fo stdFilterOptions
+	fo *discovery.StandardOptions
 
 	command
 }
@@ -42,11 +43,13 @@ func (f *factsCommand) Setup() error {
 	f.cmd.Flag("table", "Produce tabular output").Short('t').BoolVar(&f.table)
 	f.cmd.Flag("json", "Produce JSON output").Default("false").Short('j').BoolVar(&f.json)
 	f.cmd.Flag("verbose", "Log verbosely").Default("false").Short('v').BoolVar(&f.verbose)
-	f.cmd.Flag("nodes", "Show matching nodes").Default("false").Short('n').BoolVar(&f.nodes)
+	f.cmd.Flag("show-nodes", "Show matching nodes").Default("false").Short('n').BoolVar(&f.nodes)
 	f.cmd.Flag("reverse", "Reverse sorting order").Short('r').BoolVar(&f.reverse)
 
-	addStdFilter(f.cmd, &f.fo)
-	addStdDiscovery(f.cmd, &f.fo)
+	f.fo = discovery.NewStandardOptions()
+	f.fo.AddFilterFlags(f.cmd)
+	f.fo.AddSelectionFlags(f.cmd)
+	f.fo.AddFlatFileFlags(f.cmd)
 
 	return nil
 }
@@ -142,20 +145,18 @@ func (f *factsCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	logger := c.Logger("facts")
-	f.fo.setDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
+	f.fo.SetDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
 
-	c, err := rpcutilclient.New(rpcutilclient.Logger(logger), rpcutilclient.DiscoveryMethod(f.fo.dm), rpcutilclient.DiscoveryTimeout(time.Duration(f.fo.dt)*time.Second))
+	start := time.Now()
+	nodes, _, err := f.fo.Discover(ctx, c, "rpcutil", true, false, c.Logger("facts"))
+	finish := time.Now()
+
+	c, err := rpcutilclient.New(rpcutilclient.Logger(logger))
 	if err != nil {
 		return err
 	}
 
-	c.OptionAgentFilter(f.fo.agentsF...)
-	c.OptionClassFilter(f.fo.classF...)
-	c.OptionCollective(f.fo.collective)
-	c.OptionCombinedFilter(f.fo.combinedF...)
-	c.OptionCompoundFilter(f.fo.compoundF)
-	c.OptionFactFilter(f.fo.factF...)
-	c.OptionIdentityFilter(f.fo.identityF...)
+	c.OptionTargets(nodes)
 
 	res, err := c.GetFact(f.fact).Do(ctx)
 	if err != nil {
@@ -165,6 +166,8 @@ func (f *factsCommand) Run(wg *sync.WaitGroup) (err error) {
 	if res.Stats().OKCount() == 0 {
 		return fmt.Errorf("no responses received")
 	}
+
+	res.Stats().OverrideDiscoveryTime(start, finish)
 
 	facts := map[string]*factCommandValue{}
 

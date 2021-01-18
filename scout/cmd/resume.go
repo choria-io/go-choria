@@ -9,12 +9,13 @@ import (
 
 	"github.com/sirupsen/logrus"
 
+	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/client/scoutclient"
 	scoutagent "github.com/choria-io/go-choria/scout/agent/scout"
 )
 
 type ResumeCommand struct {
-	sopt     StandardOptions
+	sopt     *discovery.StandardOptions
 	checks   []string
 	json     bool
 	cfile    string
@@ -23,7 +24,7 @@ type ResumeCommand struct {
 	log      *logrus.Entry
 }
 
-func NewResumeCommand(sopt StandardOptions, checks []string, json bool, cfile string, verbose bool, colorize bool, log *logrus.Entry) (*ResumeCommand, error) {
+func NewResumeCommand(sopt *discovery.StandardOptions, checks []string, json bool, cfile string, verbose bool, colorize bool, log *logrus.Entry) (*ResumeCommand, error) {
 	return &ResumeCommand{
 		sopt:     sopt,
 		checks:   checks,
@@ -38,7 +39,7 @@ func NewResumeCommand(sopt StandardOptions, checks []string, json bool, cfile st
 func (t *ResumeCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	sc, err := t.sopt.scoutClient(t.cfile, t.log)
+	sc, err := scoutClient(t.cfile, t.sopt, t.log)
 	if err != nil {
 		return err
 	}
