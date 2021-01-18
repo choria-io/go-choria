@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/vm"
 	"github.com/google/go-cmp/cmp"
 	"github.com/tidwall/gjson"
 
@@ -74,7 +75,7 @@ type RPCReply struct {
 
 // MatchExpr determines if the Reply  matches expression q using the expr format.
 // The query q is expected to return a boolean type else an error will be raised
-func (r *RPCReply) MatchExpr(q string) (bool, error) {
+func (r *RPCReply) MatchExpr(q string, prog *vm.Program) (bool, error) {
 	env := map[string]interface{}{
 		"msg":            r.Statusmsg,
 		"code":           int(r.Statuscode),
@@ -90,9 +91,12 @@ func (r *RPCReply) MatchExpr(q string) (bool, error) {
 		"time":           func() time.Time { return r.Time },
 	}
 
-	prog, err := expr.Compile(q, expr.AsBool(), expr.AllowUndefinedVariables(), expr.Env(env))
-	if err != nil {
-		return false, err
+	var err error
+	if prog == nil {
+		prog, err = expr.Compile(q, expr.AsBool(), expr.AllowUndefinedVariables(), expr.Env(env))
+		if err != nil {
+			return false, err
+		}
 	}
 
 	out, err := expr.Run(prog, env)
@@ -465,6 +469,17 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 		return nil
 	}
 
+	var prog *vm.Program
+	var err error
+
+	if r.opts.ReplyExprFilter != "" {
+		prog, err = expr.Compile(r.opts.ReplyExprFilter, expr.AsBool(), expr.AllowUndefinedVariables())
+		if err != nil {
+			r.log.Errorf("failed to compile expression: %v", err)
+			prog = nil
+		}
+	}
+
 	handler := func(ctx context.Context, rawmsg *choria.ConnectorMessage) {
 		reply, err := r.fw.NewReplyFromTransportJSON(rawmsg.Data, false)
 		if err != nil {
@@ -494,7 +509,7 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 		if r.opts.Handler != nil {
 			shouldShow := true
 			if r.opts.ReplyExprFilter != "" {
-				shouldShow, err = rpcreply.MatchExpr(r.opts.ReplyExprFilter)
+				shouldShow, err = rpcreply.MatchExpr(r.opts.ReplyExprFilter, prog)
 				if err != nil {
 					r.log.Errorf("Expr filter parsing failed in reply from %s: %s", reply.SenderID(), err)
 				}
