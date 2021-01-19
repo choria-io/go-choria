@@ -71,12 +71,13 @@ func (i *inventoryCommand) inventoryAgent() error {
 			return
 		}
 
-		err := r.ParseInventoryOutput(inventory)
+		err = r.ParseInventoryOutput(inventory)
 		if err != nil {
 			log.Errorf("could not parse inventory from %s: %s", r.ResultDetails().Sender(), err)
 			return
 		}
 	})
+
 	if inventory.Version == "" {
 		return fmt.Errorf("no inventory received")
 	}
