@@ -193,6 +193,16 @@ type MetaNS struct {
 	sync.Mutex
 }
 
+// NewMetaNS creates a new meta discovery node source
+func NewMetaNS(opts *discovery.StandardOptions, enablePipeMode bool) *MetaNS {
+	return &MetaNS{
+		Options:               opts,
+		Agent:                 "{{ .DDL.Metadata.Name }}",
+		DisablePipedDiscovery: !enablePipeMode,
+		nodeCache:             []string{},
+	}
+}
+
 // Reset resets the internal node cache
 func (p *MetaNS) Reset() {
 	p.Lock()
