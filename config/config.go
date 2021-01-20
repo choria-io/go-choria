@@ -180,12 +180,26 @@ func NewConfig(path string) (*Config, error) {
 		return nil, err
 	}
 
-	err = parseConfig(c.ConfigFile, c.Choria, "", c.rawOpts)
+	err = parseConfig(path, c.Choria, "", c.rawOpts)
 	if err != nil {
 		return nil, err
 	}
 
 	c.parseAllDotCfg()
+
+	if !c.InitiatedByServer {
+		for _, path := range ProjectConfigurationFiles(os.Getwd()) {
+			err = parseConfig(path, c, "", c.rawOpts)
+			if err != nil {
+				return nil, err
+			}
+
+			err = parseConfig(path, c.Choria, "", c.rawOpts)
+			if err != nil {
+				return nil, err
+			}
+		}
+	}
 
 	err = c.normalize()
 	if err != nil {

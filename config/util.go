@@ -15,6 +15,37 @@ import (
 	"github.com/choria-io/go-choria/confkey"
 )
 
+// ProjectConfigurationFiles returns any configuration file in the specified directory and their parents directories.
+func ProjectConfigurationFiles(path string, err error) []string {
+	var res []string
+
+	if !filepath.IsAbs(path) {
+		path, err = filepath.Abs(path)
+	}
+
+	var parent = filepath.Dir(path)
+	if parent != path {
+		res = ProjectConfigurationFiles(parent, err)
+	}
+
+	var config = filepath.Join(path, "choria.conf")
+
+	if FileExist(config) {
+		res = append(res, config)
+	}
+
+	return res
+}
+
+// FileExist checks if a file exist on disk
+func FileExist(path string) bool {
+	if _, err := os.Stat(path); os.IsNotExist(err) {
+		return false
+	}
+
+	return true
+}
+
 // DNSFQDN attempts to find the FQDN using DNS resolution
 func DNSFQDN() (string, error) {
 	hostname, err := os.Hostname()
