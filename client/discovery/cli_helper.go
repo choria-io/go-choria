@@ -54,7 +54,7 @@ type FlagApp interface {
 
 // AddSelectionFlags adds the --dm and --discovery-timeout options
 func (o *StandardOptions) AddSelectionFlags(app FlagApp) {
-	app.Flag("dm", "Sets a discovery method (mc, choria)").EnumVar(&o.DiscoveryMethod, "broadcast", "choria", "mc")
+	app.Flag("dm", "Sets a discovery method (mc, choria, file)").EnumVar(&o.DiscoveryMethod, "broadcast", "choria", "mc", "file", "flatfile")
 	app.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&o.DiscoveryTimeout)
 }
 
@@ -120,7 +120,7 @@ func (o *StandardOptions) Discover(ctx context.Context, fw client.ChoriaFramewor
 		}
 	}
 
-	if o.DiscoveryMethod == "flatfile" && (fformat == 0 || sourceFile == nil) {
+	if o.DiscoveryMethod == "flatfile" && (fformat == 0 || sourceFile == nil) && len(o.DiscoveryOptions) == 0 {
 		return nil, 0, fmt.Errorf("could not determine file to use as discovery source")
 	}
 
@@ -136,7 +136,7 @@ func (o *StandardOptions) Discover(ctx context.Context, fw client.ChoriaFramewor
 		nodes, err = puppetdb.New(fw).Discover(ctx, puppetdb.Filter(filter), puppetdb.Collective(o.Collective), puppetdb.Timeout(to))
 	case "external":
 		nodes, err = external.New(fw).Discover(ctx, external.Filter(filter), external.Timeout(to), external.Collective(o.Collective), external.DiscoveryOptions(o.DiscoveryOptions))
-	case "flatfile":
+	case "flatfile", "file":
 		nodes, err = flatfile.New(fw).Discover(ctx, flatfile.Reader(sourceFile), flatfile.Format(fformat), flatfile.DiscoveryOptions(o.DiscoveryOptions))
 	}
 
