@@ -1,4 +1,4 @@
-// auto generated at 2021-01-19 14:29:18.390046 +0100 CET m=+0.001767946
+// auto generated at 2021-01-21 18:37:13.139441 +0100 CET m=+0.001505621
 
 package config
 
@@ -31,6 +31,7 @@ var docStrings = map[string]string{
 	"ttl":                             "How long published messages are allowed to linger on the network, lower numbers have a higher reliance on clocks being in sync",
 	"default_discovery_method":        "The default discovery plugin to use. The default \"mc\" uses a network broadcast, \"choria\" uses PuppetDB, external calls external commands",
 	"plugin.yaml":                     "Where to look for YAML or JSON based facts",
+	"default_discovery_options":       "Default options to pass to the discovery plugin",
 	"plugin.choria.puppetserver_host": "The hostname where your Puppet Server can be found",
 	"plugin.choria.puppetserver_port": "The port your Puppet Server listens on",
 	"plugin.choria.puppetca_host":     "The hostname where your Puppet Certificate Authority can be found",

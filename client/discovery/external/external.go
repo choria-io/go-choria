@@ -64,6 +64,7 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 		collective: e.fw.Configuration().MainCollective,
 		timeout:    e.timeout,
 		command:    e.fw.Configuration().Choria.ExternalDiscoveryCommand,
+		do:         make(map[string]string),
 	}
 
 	for _, opt := range opts {
@@ -77,6 +78,11 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 	if dopts.timeout < time.Second {
 		e.log.Warnf("Forcing discovery timeout to minimum 1 second")
 		dopts.timeout = time.Second
+	}
+
+	command, ok := dopts.do["command"]
+	if ok && command != "" {
+		dopts.command = command
 	}
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, dopts.timeout)

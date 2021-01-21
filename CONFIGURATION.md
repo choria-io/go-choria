@@ -146,7 +146,7 @@ The default discovery plugin to use. The default "mc" uses a network broadcast, 
 
  * **Type:** strings
 
-**This setting is deprecated or already unused**
+Default options to pass to the discovery plugin
 
 ## direct_addressing
 

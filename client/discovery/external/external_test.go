@@ -61,5 +61,23 @@ var _ = Describe("Broadcast", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(nodes).To(Equal([]string{"one", "two"}))
 		})
+
+		It("Should support command overrides via options", func() {
+			if runtime.GOOS == "windows" {
+				Skip("not tested on windows")
+			}
+
+			f := protocol.NewFilter()
+			f.AddAgentFilter("rpcutil")
+			f.AddFactFilter("country", "==", "mt")
+
+			wd, _ := os.Getwd()
+			fw.Config.Choria.ExternalDiscoveryCommand = filepath.Join(wd, "testdata/missing.rb")
+			cmd := filepath.Join(wd, "testdata/good.rb")
+			nodes, err := e.Discover(context.Background(), Filter(f), DiscoveryOptions(map[string]string{"command": cmd}))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(nodes).To(Equal([]string{"one", "two"}))
+
+		})
 	})
 })

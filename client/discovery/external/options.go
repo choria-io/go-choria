@@ -11,6 +11,7 @@ type dOpts struct {
 	collective string
 	timeout    time.Duration
 	command    string
+	do         map[string]string
 }
 
 // DiscoverOption configures the broadcast discovery method
@@ -40,5 +41,16 @@ func Timeout(t time.Duration) DiscoverOption {
 func Command(c string) DiscoverOption {
 	return func(o *dOpts) {
 		o.command = c
+	}
+}
+
+// DiscoveryOptions sets the key value pairs that make user supplied discovery options.
+//
+// Supported options:
+//
+//   command - The command to execute instead of configured default
+func DiscoveryOptions(opt map[string]string) DiscoverOption {
+	return func(o *dOpts) {
+		o.do = opt
 	}
 }
