@@ -32,13 +32,6 @@ var _ = Describe("Flatfile", func() {
 		Expect(err).To(MatchError("only identity filters are supported"))
 	})
 
-	It("Should require a file format", func() {
-		ff := &FlatFile{}
-		n, err := ff.Discover(context.Background(), File("testdata/nodes.txt"))
-		Expect(n).To(HaveLen(0))
-		Expect(err).To(MatchError("unknown file format"))
-	})
-
 	It("Should support flat files", func() {
 		ff := &FlatFile{}
 		n, err := ff.Discover(context.Background(), File("testdata/nodes.txt"), Format(TextFormat))
@@ -92,5 +85,15 @@ var _ = Describe("Flatfile", func() {
 		}))
 		Expect(err).ToNot(HaveOccurred())
 		Expect(n).To(Equal([]string{"n1.example.net", "n2.example.net", "n3.example.net"}))
+	})
+
+	It("Should support file overrides", func() {
+		ff := &FlatFile{}
+		n, err := ff.Discover(context.Background(), File("testdata/choria.json"), DiscoveryOptions(map[string]string{
+			"format": "text",
+			"file":   "testdata/nodes.txt",
+		}))
+		Expect(err).ToNot(HaveOccurred())
+		Expect(n).To(Equal([]string{"one", "two", "three"}))
 	})
 })

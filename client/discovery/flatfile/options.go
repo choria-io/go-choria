@@ -9,8 +9,9 @@ import (
 type SourceFormat int
 
 const (
+	unknownFormat SourceFormat = iota
 	// TextFormat reads nodes from a text file 1 node per line
-	TextFormat = iota + 1
+	TextFormat
 
 	// JSONFormat parses a JSON file expecting an array of nodes
 	JSONFormat
@@ -66,6 +67,8 @@ func Reader(r io.Reader) DiscoverOption {
 // Supported options:
 //
 //   filter - GJSON Path Syntax search over YAML or JSON data
+//     file - set the file to read
+//   format - override format detection: json, yaml, yml, choriarpc, results, rpc, response, text, txt
 func DiscoveryOptions(opt map[string]string) DiscoverOption {
 	return func(o *dOpts) {
 		o.do = opt

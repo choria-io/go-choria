@@ -44,14 +44,34 @@ func (f *FlatFile) Discover(_ context.Context, opts ...DiscoverOption) (n []stri
 		opt(dopts)
 	}
 
-	if dopts.source == "" && dopts.reader == nil {
-		return nil, fmt.Errorf("source file not specified")
-	}
-
 	if dopts.filter != nil {
 		if len(dopts.filter.Agent) > 0 || len(dopts.filter.Compound) > 0 || len(dopts.filter.Class) > 0 || len(dopts.filter.Fact) > 0 {
 			return nil, fmt.Errorf("only identity filters are supported")
 		}
+	}
+
+	file, ok := dopts.do["file"]
+	if ok {
+		dopts.reader = nil
+		dopts.source = file
+	}
+
+	format, ok := dopts.do["format"]
+	if ok {
+		switch format {
+		case "json":
+			dopts.format = JSONFormat
+		case "yaml", "yml":
+			dopts.format = YAMLFormat
+		case "choriarpc", "results", "rpc", "response":
+			dopts.format = ChoriaResponsesFormat
+		default:
+			dopts.format = TextFormat
+		}
+	}
+
+	if dopts.source == "" && dopts.reader == nil {
+		return nil, fmt.Errorf("source file not specified")
 	}
 
 	if dopts.reader == nil {
@@ -67,7 +87,7 @@ func (f *FlatFile) Discover(_ context.Context, opts ...DiscoverOption) (n []stri
 	var nodes []string
 
 	switch dopts.format {
-	case TextFormat:
+	case TextFormat, unknownFormat:
 		nodes, err = f.textDiscover(dopts.reader)
 
 	case JSONFormat:
