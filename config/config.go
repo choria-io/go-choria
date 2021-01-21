@@ -103,19 +103,21 @@ type Config struct {
 	// Where to look for YAML or JSON based facts
 	FactSourceFile string `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml" type:"path_string"`
 
+	// Default options to pass to the discovery plugin
+	DefaultDiscoveryOptions []string `confkey:"default_discovery_options"`
+
 	// Deprecated settings
 
-	ActivateAgents            bool     `confkey:"activate_agents" default:"true" deprecated:"1"`
-	Daemonize                 bool     `confkey:"daemonize" default:"false" deprecated:"1"`
-	DefaultDiscoveryOptions   []string `confkey:"default_discovery_options" deprecated:"1"`
-	DirectAddressingThreshold int      `confkey:"direct_addressing_threshold" default:"10" deprecated:"1"`
-	FactCacheTime             int      `confkey:"fact_cache_time" default:"300" deprecated:"1"`
-	FactSource                string   `confkey:"factsource" default:"yaml" deprecated:"1"`
-	KeepLogs                  int      `confkey:"keeplogs" default:"5" deprecated:"1"`
-	LogFacility               string   `confkey:"logfacility" default:"user" deprecated:"1"`
-	MaxLogSize                int      `confkey:"max_log_size" default:"2097152" deprecated:"1"`
-	SoftShutdown              bool     `confkey:"soft_shutdown" default:"true" deprecated:"1"`
-	SoftShutdownTimeout       int      `confkey:"soft_shutdown_timeout" default:"2" deprecated:"1"`
+	ActivateAgents            bool   `confkey:"activate_agents" default:"true" deprecated:"1"`
+	Daemonize                 bool   `confkey:"daemonize" default:"false" deprecated:"1"`
+	DirectAddressingThreshold int    `confkey:"direct_addressing_threshold" default:"10" deprecated:"1"`
+	FactCacheTime             int    `confkey:"fact_cache_time" default:"300" deprecated:"1"`
+	FactSource                string `confkey:"factsource" default:"yaml" deprecated:"1"`
+	KeepLogs                  int    `confkey:"keeplogs" default:"5" deprecated:"1"`
+	LogFacility               string `confkey:"logfacility" default:"user" deprecated:"1"`
+	MaxLogSize                int    `confkey:"max_log_size" default:"2097152" deprecated:"1"`
+	SoftShutdown              bool   `confkey:"soft_shutdown" default:"true" deprecated:"1"`
+	SoftShutdownTimeout       int    `confkey:"soft_shutdown_timeout" default:"2" deprecated:"1"`
 
 	ConfigFile string
 

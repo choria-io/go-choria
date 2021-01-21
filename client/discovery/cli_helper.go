@@ -6,6 +6,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	log "github.com/sirupsen/logrus"
@@ -32,11 +33,19 @@ type StandardOptions struct {
 	DiscoveryMethod  string
 	DiscoveryTimeout int
 	NodesFile        string
+	DiscoveryOptions map[string]string
 }
 
 // NewStandardOptions creates a new CLI options helper
 func NewStandardOptions() *StandardOptions {
-	return &StandardOptions{}
+	return &StandardOptions{
+		FactFilter:       []string{},
+		AgentFilter:      []string{},
+		ClassFilter:      []string{},
+		IdentityFilter:   []string{},
+		CombinedFilter:   []string{},
+		DiscoveryOptions: make(map[string]string),
+	}
 }
 
 type FlagApp interface {
@@ -58,6 +67,7 @@ func (o *StandardOptions) AddFilterFlags(app FlagApp) {
 	app.Flag("with", "Combined classes and facts filter").Short('W').PlaceHolder("FILTER").StringsVar(&o.CombinedFilter)
 	app.Flag("select", "Match hosts using a expr compound filter").Short('S').PlaceHolder("EXPR").StringVar(&o.CompoundFilter)
 	app.Flag("target", "Target a specific sub collective").Short('T').StringVar(&o.Collective)
+	app.Flag("do", "Options for the chosen discovery method").PlaceHolder("K=V").StringMapVar(&o.DiscoveryOptions)
 }
 
 // AddFlatFileFlags adds the flags to select nodes using --nodes in text, json and yaml formats
@@ -85,7 +95,7 @@ func (o *StandardOptions) Discover(ctx context.Context, fw client.ChoriaFramewor
 
 	case supportStdin && o.isPiped():
 		o.DiscoveryMethod = "flatfile"
-		fformat = flatfile.ChoriaResponses
+		fformat = flatfile.ChoriaResponsesFormat
 		sourceFile = os.Stdin
 		logger.Debugf("Forcing discovery mode to flatfile with Choria responses on STDIN")
 
@@ -125,9 +135,9 @@ func (o *StandardOptions) Discover(ctx context.Context, fw client.ChoriaFramewor
 	case "choria", "puppetdb":
 		nodes, err = puppetdb.New(fw).Discover(ctx, puppetdb.Filter(filter), puppetdb.Collective(o.Collective), puppetdb.Timeout(to))
 	case "external":
-		nodes, err = external.New(fw).Discover(ctx, external.Filter(filter), external.Timeout(to), external.Collective(o.Collective))
+		nodes, err = external.New(fw).Discover(ctx, external.Filter(filter), external.Timeout(to), external.Collective(o.Collective), external.DiscoveryOptions(o.DiscoveryOptions))
 	case "flatfile":
-		nodes, err = flatfile.New(fw).Discover(ctx, flatfile.Reader(sourceFile), flatfile.Format(fformat))
+		nodes, err = flatfile.New(fw).Discover(ctx, flatfile.Reader(sourceFile), flatfile.Format(fformat), flatfile.DiscoveryOptions(o.DiscoveryOptions))
 	}
 
 	if progress {
@@ -153,7 +163,26 @@ func (o *StandardOptions) SetDefaultsFromChoria(fw client.ChoriaFramework) {
 
 // SetDefaultsFromConfig sets the defaults based on cfg
 func (o *StandardOptions) SetDefaultsFromConfig(cfg *config.Config) {
-	o.SetDefaults(cfg.MainCollective, cfg.DefaultDiscoveryMethod, cfg.DiscoveryTimeout)
+	if o.DiscoveryMethod == "" {
+		o.DiscoveryMethod = cfg.DefaultDiscoveryMethod
+	}
+
+	if o.Collective == "" {
+		o.Collective = cfg.MainCollective
+	}
+
+	if o.DiscoveryTimeout == 0 {
+		o.DiscoveryTimeout = cfg.DiscoveryTimeout
+	}
+
+	if len(o.DiscoveryOptions) == 0 {
+		for _, val := range cfg.DefaultDiscoveryOptions {
+			parts := strings.Split(val, "=")
+			if len(parts) == 2 {
+				o.DiscoveryOptions[strings.TrimSpace(parts[0])] = strings.TrimSpace(parts[1])
+			}
+		}
+	}
 }
 
 // SetDefaults sets default values for options, should be called before doing any discovery after flags are parsed

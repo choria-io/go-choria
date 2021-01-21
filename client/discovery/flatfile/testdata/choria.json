@@ -1,0 +1,44 @@
+{
+  "agent": "rpcutil",
+  "action": "ping",
+  "replies": [
+    {
+      "sender": "n1.example.net",
+      "statuscode": 0,
+      "statusmsg": "OK",
+      "data": {
+        "pong": 1611245602
+      }
+    },
+    {
+      "sender": "n2.example.net",
+      "statuscode": 0,
+      "statusmsg": "OK",
+      "data": {
+        "pong": 1611245602
+      }
+    },
+    {
+      "sender": "n3.example.net",
+      "statuscode": 0,
+      "statusmsg": "OK",
+      "data": {
+        "pong": 1611245603
+      }
+    }
+  ],
+  "request_stats": {
+    "requestid": "64ad3de0bd284470824105b12ed64a81",
+    "no_responses": [],
+    "unexpected_responses": [],
+    "discovered": 3,
+    "failed": 0,
+    "ok": 3,
+    "responses": 3,
+    "publish_time": 256562143,
+    "request_time": 925439588,
+    "discover_time": 324561798,
+    "start_time_utc": "2021-01-21T16:13:22.167759243Z"
+  },
+  "summaries": {}
+}

@@ -9,10 +9,14 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
+	"github.com/tidwall/gjson"
+
 	"github.com/choria-io/go-choria/client/client"
+	"github.com/choria-io/go-choria/filter/identity"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 
 	"github.com/ghodss/yaml"
@@ -33,8 +37,8 @@ func New(fw client.ChoriaFramework) *FlatFile {
 	}
 }
 
-func (f *FlatFile) Discover(ctx context.Context, opts ...DiscoverOption) (n []string, err error) {
-	dopts := &dOpts{}
+func (f *FlatFile) Discover(_ context.Context, opts ...DiscoverOption) (n []string, err error) {
+	dopts := &dOpts{do: make(map[string]string)}
 
 	for _, opt := range opts {
 		opt(dopts)
@@ -42,6 +46,12 @@ func (f *FlatFile) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 
 	if dopts.source == "" && dopts.reader == nil {
 		return nil, fmt.Errorf("source file not specified")
+	}
+
+	if dopts.filter != nil {
+		if len(dopts.filter.Agent) > 0 || len(dopts.filter.Compound) > 0 || len(dopts.filter.Class) > 0 || len(dopts.filter.Fact) > 0 {
+			return nil, fmt.Errorf("only identity filters are supported")
+		}
 	}
 
 	if dopts.reader == nil {
@@ -54,22 +64,58 @@ func (f *FlatFile) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 		dopts.reader = sf
 	}
 
+	var nodes []string
+
 	switch dopts.format {
 	case TextFormat:
-		return f.textDiscover(dopts.reader)
+		nodes, err = f.textDiscover(dopts.reader)
 
 	case JSONFormat:
-		return f.jsonDiscover(dopts.reader)
+		nodes, err = f.jsonDiscover(dopts.reader, dopts.do)
 
 	case YAMLFormat:
-		return f.yamlDiscover(dopts.reader)
+		nodes, err = f.yamlDiscover(dopts.reader, dopts.do)
 
-	case ChoriaResponses:
-		return f.choriaDiscover(dopts.reader)
+	case ChoriaResponsesFormat:
+		nodes, err = f.choriaDiscover(dopts.reader)
 
 	default:
-		return nil, fmt.Errorf("unknow file format")
+		return nil, fmt.Errorf("unknown file format")
 	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	err = f.validateNodes(nodes)
+	if err != nil {
+		return nil, err
+	}
+
+	if dopts.filter != nil && len(dopts.filter.Identity) > 0 {
+		matched := []string{}
+		for _, idf := range dopts.filter.Identity {
+			matched = append(matched, identity.FilterNodes(nodes, idf)...)
+		}
+		return matched, nil
+	}
+
+	return nodes, nil
+}
+
+func (f *FlatFile) validateNodes(nodes []string) error {
+	matcher, err := regexp.Compile(`^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$`)
+	if err != nil {
+		return err
+	}
+
+	for _, n := range nodes {
+		if !matcher.MatchString(n) {
+			return fmt.Errorf("invalid identity string %q", n)
+		}
+	}
+
+	return nil
 }
 
 func (f *FlatFile) choriaDiscover(file io.Reader) ([]string, error) {
@@ -101,28 +147,48 @@ func (f *FlatFile) choriaDiscover(file io.Reader) ([]string, error) {
 	return found, nil
 }
 
-func (f *FlatFile) yamlDiscover(file io.Reader) ([]string, error) {
+func (f *FlatFile) yamlDiscover(file io.Reader, do map[string]string) ([]string, error) {
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
 
-	nodes := []string{}
-	err = yaml.Unmarshal(data, &nodes)
+	jdata, err := yaml.YAMLToJSON(data)
 	if err != nil {
 		return nil, err
 	}
 
-	return nodes, nil
+	return f.jsonDiscover(bytes.NewReader(jdata), do)
 }
 
-func (f *FlatFile) jsonDiscover(file io.Reader) ([]string, error) {
+func (f *FlatFile) jsonDiscover(file io.Reader, do map[string]string) ([]string, error) {
 	data, err := ioutil.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
 
 	nodes := []string{}
+	filter, ok := do["filter"]
+	if ok {
+		if filter == "" {
+			return nil, fmt.Errorf("empty filter string found in discovery options")
+		}
+
+		res := gjson.GetBytes(data, filter)
+		if res.IsArray() {
+			res.ForEach(func(_ gjson.Result, v gjson.Result) bool {
+				if v.Exists() && v.Type == gjson.String {
+					nodes = append(nodes, v.String())
+				}
+
+				return true
+			})
+			return nodes, nil
+		} else {
+			return nodes, fmt.Errorf("query %q did not result in a array of nodes", filter)
+		}
+	}
+
 	err = json.Unmarshal(data, &nodes)
 	if err != nil {
 		return nil, err
