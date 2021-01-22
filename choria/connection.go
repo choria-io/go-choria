@@ -574,7 +574,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 		nats.DisconnectErrHandler(func(nc *nats.Conn, err error) {
 			if err != nil {
-				conn.logger.Warnf("NATS client connection got disconnected: %s", nc.LastError())
+				conn.logger.Warnf("NATS client connection got disconnected: %v", nc.LastError())
 			}
 		}),
 
@@ -586,7 +586,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		nats.ClosedHandler(func(nc *nats.Conn) {
 			err = nc.LastError()
 			if err != nil {
-				conn.logger.Warnf("NATS client connection closed: %s", nc.LastError())
+				conn.logger.Warnf("NATS client connection closed: %v", nc.LastError())
 			}
 			connClosedCtr.Inc()
 		}),

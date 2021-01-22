@@ -48,14 +48,15 @@ func WithChoriaConfig(c *config.Config) Option {
 
 		if c.OverrideCertname != "" {
 			cfg.Identity = c.OverrideCertname
-		} else if !c.InitiatedByServer {
-			var user_variable_name = "USER"
+		} else if !c.InitiatedByServer && !c.InitiatedBySystem {
+			userEnvVar := "USER"
 
 			if runtime.GOOS == "windows" {
-				user_variable_name = "USERNAME"
+				userEnvVar = "USERNAME"
 			}
 
-			if u, ok := os.LookupEnv(user_variable_name); ok {
+			u, ok := os.LookupEnv(userEnvVar)
+			if ok {
 				cfg.Identity = fmt.Sprintf("%s.mcollective", u)
 			}
 		}

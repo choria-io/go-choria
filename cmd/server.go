@@ -66,13 +66,13 @@ func (r *serverRunCommand) Configure() error {
 
 	switch {
 	case choria.FileExist(configFile):
-		cfg, err = config.NewConfig(configFile)
+		cfg, err = config.NewSystemConfig(configFile, true)
 		if err != nil {
 			return fmt.Errorf("could not parse configuration: %s", err)
 		}
 
 	case bi.ProvisionBrokerURLs() != "":
-		cfg, err = config.NewDefaultConfig()
+		cfg, err = config.NewDefaultSystemConfig(true)
 		if err != nil {
 			return fmt.Errorf("could not create default configuration for provisioning: %s", err)
 		}
@@ -84,7 +84,6 @@ func (r *serverRunCommand) Configure() error {
 	cfg.ApplyBuildSettings(bi)
 
 	cfg.DisableSecurityProviderVerify = true
-	cfg.InitiatedByServer = true
 
 	if os.Getenv("INSECURE_YES_REALLY") == "true" {
 		protocol.Secure = "false"
