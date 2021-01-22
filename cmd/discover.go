@@ -39,7 +39,7 @@ func (d *discoverCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	d.fo.SetDefaultsFromChoria(c)
-	nodes, dt, err := d.fo.Discover(ctx, c, "", true, d.verbose && !d.jsonFormat, c.Logger("discovery"))
+	nodes, dt, err := d.fo.Discover(ctx, c, "rpcutil", true, d.verbose && !d.jsonFormat, c.Logger("discovery"))
 	if err != nil {
 		return err
 	}
