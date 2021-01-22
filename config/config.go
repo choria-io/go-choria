@@ -146,6 +146,11 @@ type Config struct {
 	// initialization steps - like Provisioning mode - should be performed.
 	InitiatedByServer bool
 
+	// InitiatedBySystem indicates to the framework that a system component - server or broker usually
+	// initialized the configuration and this will avoid loading project based configs and use the
+	// SSL certs for the server within the Puppet security framework
+	InitiatedBySystem bool
+
 	// Puppet provides access to puppet config data, settings and facts
 	Puppet *puppet.Wrapper
 
@@ -156,6 +161,20 @@ type Config struct {
 	// setting will hint to choria.Message to return the same transport message
 	// repeatedly
 	CacheBatchedTransports bool
+}
+
+// NewDefaultSystemConfig creates a new configuration for system services
+func NewDefaultSystemConfig(server bool) (*Config, error) {
+	c := newConfig()
+	c.InitiatedBySystem = true
+	c.InitiatedByServer = server
+
+	err := c.normalize()
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
 }
 
 // NewDefaultConfig creates a empty configuration
@@ -170,38 +189,65 @@ func NewDefaultConfig() (*Config, error) {
 	return c, nil
 }
 
+func NewSystemConfig(path string, server bool) (*Config, error) {
+	c := newConfig()
+	c.ConfigFile = path
+	c.InitiatedBySystem = true
+	c.InitiatedByServer = server
+
+	err := loadConfigFiles(path, false, c)
+	if err != nil {
+		return nil, err
+	}
+
+	return c, nil
+}
+
+func loadConfigFiles(path string, projects bool, c *Config) error {
+	err := parseConfig(path, c, "", c.rawOpts)
+	if err != nil {
+		return err
+	}
+
+	err = parseConfig(path, c.Choria, "", c.rawOpts)
+	if err != nil {
+		return err
+	}
+
+	c.parseAllDotCfg()
+
+	if projects {
+		pwd, err := os.Getwd()
+		if err != nil {
+			return err
+		}
+		pfiles, err := ProjectConfigurationFiles(pwd)
+		if err != nil {
+			return err
+		}
+
+		for _, pp := range pfiles {
+			err = parseConfig(pp, c, "", c.rawOpts)
+			if err != nil {
+				return err
+			}
+
+			err = parseConfig(pp, c.Choria, "", c.rawOpts)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return c.normalize()
+}
+
 // NewConfig parses a config file and return the config
 func NewConfig(path string) (*Config, error) {
 	c := newConfig()
 	c.ConfigFile = path
 
-	err := parseConfig(path, c, "", c.rawOpts)
-	if err != nil {
-		return nil, err
-	}
-
-	err = parseConfig(path, c.Choria, "", c.rawOpts)
-	if err != nil {
-		return nil, err
-	}
-
-	c.parseAllDotCfg()
-
-	if !c.InitiatedByServer {
-		for _, path := range ProjectConfigurationFiles(os.Getwd()) {
-			err = parseConfig(path, c, "", c.rawOpts)
-			if err != nil {
-				return nil, err
-			}
-
-			err = parseConfig(path, c.Choria, "", c.rawOpts)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	err = c.normalize()
+	err := loadConfigFiles(path, true, c)
 	if err != nil {
 		return nil, err
 	}

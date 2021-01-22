@@ -2,6 +2,7 @@ package config
 
 import (
 	"os"
+	"path/filepath"
 	"runtime"
 	"testing"
 	"time"
@@ -17,7 +18,7 @@ func TestChoria(t *testing.T) {
 }
 
 var _ = Describe("Choria/Config", func() {
-	var _ = Describe("NewConfig", func() {
+	Describe("NewConfig", func() {
 		It("Should correctly parse config files", func() {
 			var c *Config
 			var err error
@@ -62,6 +63,36 @@ var _ = Describe("Choria/Config", func() {
 			c.SetOption("plugin.package.other_setting", "override")
 			Expect(c.Option("plugin.package.setting", "default")).To(Equal("1"))
 			Expect(c.Option("plugin.package.other_setting", "default")).To(Equal("override"))
+		})
+	})
+
+	Context("Projects", func() {
+		It("Should find the project configs", func() {
+			c, err := ProjectConfigurationFiles("testdata/project")
+			Expect(err).ToNot(HaveOccurred())
+			pwd, _ := os.Getwd()
+			Expect(len(c)).To(BeNumerically(">=", 1))
+			Expect(c[len(c)-1]).To(Equal(filepath.Join(pwd, "testdata", "project", "choria.conf")))
+		})
+
+		It("Should load project configs for users", func() {
+			pwd, _ := os.Getwd()
+			Expect(os.Chdir(filepath.Join(pwd, "testdata", "project"))).ToNot(HaveOccurred())
+			defer os.Chdir(pwd)
+
+			cfg, err := NewConfig(filepath.Join("..", "choria.cfg"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(cfg.Option("plugin.project.test", "")).To(Equal("1"))
+		})
+
+		It("Should not load project configs for system components", func() {
+			pwd, _ := os.Getwd()
+			Expect(os.Chdir(filepath.Join(pwd, "testdata", "project"))).ToNot(HaveOccurred())
+			defer os.Chdir(pwd)
+
+			cfg, err := NewSystemConfig(filepath.Join("..", "choria.cfg"), false)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(cfg.Option("plugin.project.test", "")).To(Equal("0"))
 		})
 	})
 })

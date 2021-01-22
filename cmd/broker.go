@@ -14,6 +14,7 @@ import (
 	"github.com/choria-io/go-choria/broker/adapter"
 	"github.com/choria-io/go-choria/broker/federation"
 	"github.com/choria-io/go-choria/broker/network"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/statistics"
 )
 
@@ -62,7 +63,18 @@ func (r *brokerRunCommand) Setup() (err error) {
 }
 
 func (r *brokerRunCommand) Configure() error {
-	return commonConfigure()
+	if configFile == "" {
+		return fmt.Errorf("configuration file required")
+	}
+
+	cfg, err = config.NewSystemConfig(configFile, false)
+	if err != nil {
+		return fmt.Errorf("could not parse configuration: %s", err)
+	}
+
+	cfg.ApplyBuildSettings(bi)
+
+	return nil
 }
 
 func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {

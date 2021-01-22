@@ -16,25 +16,33 @@ import (
 )
 
 // ProjectConfigurationFiles returns any configuration file in the specified directory and their parents directories.
-func ProjectConfigurationFiles(path string, err error) []string {
-	var res []string
+func ProjectConfigurationFiles(path string) ([]string, error) {
+	var (
+		res []string
+		err error
+	)
 
 	if !filepath.IsAbs(path) {
 		path, err = filepath.Abs(path)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	var parent = filepath.Dir(path)
 	if parent != path {
-		res = ProjectConfigurationFiles(parent, err)
+		res, err = ProjectConfigurationFiles(parent)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	var config = filepath.Join(path, "choria.conf")
-
+	config := filepath.Join(path, "choria.conf")
 	if FileExist(config) {
 		res = append(res, config)
 	}
 
-	return res
+	return res, nil
 }
 
 // FileExist checks if a file exist on disk

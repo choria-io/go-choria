@@ -185,21 +185,6 @@ func (o *StandardOptions) SetDefaultsFromConfig(cfg *config.Config) {
 	}
 }
 
-// SetDefaults sets default values for options, should be called before doing any discovery after flags are parsed
-func (o *StandardOptions) SetDefaults(collective string, dm string, dt int) {
-	if o.DiscoveryMethod == "" {
-		o.DiscoveryMethod = dm
-	}
-
-	if o.Collective == "" {
-		o.Collective = collective
-	}
-
-	if o.DiscoveryTimeout == 0 {
-		o.DiscoveryTimeout = dt
-	}
-}
-
 // NewFilter creates a new filter based on the options supplied, additionally agent will be added to the list
 func (o *StandardOptions) NewFilter(agent string) (*protocol.Filter, error) {
 	return filter.NewFilter(
