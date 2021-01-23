@@ -53,12 +53,15 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	if !cc.list {
 		fmt.Printf("Configuration Files: \n\n")
-		fmt.Printf("            User Config: %s\n", choria.UserConfig())
-		fmt.Printf("          Active Config: %s\n", cfg.ConfigFile)
-
-		paths, err := config.ProjectConfigurationFiles(".")
-		if err == nil && len(paths) > 0 {
-			fmt.Printf("   Project Confguration: %s\n", strings.Join(paths, ", "))
+		fmt.Printf("   User Config: %s\n", choria.UserConfig())
+		if len(cfg.ParsedFiles) > 0 {
+			for i, f := range cfg.ParsedFiles {
+				if i == 0 {
+					fmt.Printf("  Loaded Files: %s\n", f)
+					continue
+				}
+				fmt.Printf("                %s\n", f)
+			}
 		}
 		fmt.Println()
 	}

@@ -92,11 +92,13 @@ func DNSFQDN() (string, error) {
 // can be used to extract the parsed settings
 func parseDotConfFile(plugin string, conf *Config, target interface{}) error {
 	cfgPath := filepath.Join(conf.dotdDir(), fmt.Sprintf("%s.cfg", plugin))
-	if _, err := os.Stat(cfgPath); err == nil {
-		err = parseConfig(cfgPath, target, fmt.Sprintf("plugin.%s", plugin), conf.rawOpts)
+	if FileExist(cfgPath) {
+		err := parseConfig(cfgPath, target, fmt.Sprintf("plugin.%s", plugin), conf.rawOpts)
 		if err != nil {
 			return err
 		}
+
+		conf.ParsedFiles = append(conf.ParsedFiles, cfgPath)
 	}
 
 	return nil
@@ -130,7 +132,7 @@ func (c *Config) parseAllDotCfg() error {
 			}
 
 			plugin := strings.TrimSuffix(base, filepath.Ext(base))
-			err := parseDotConfFile(plugin, c, target)
+			err = parseDotConfFile(plugin, c, target)
 			if err != nil {
 				return err
 			}
@@ -147,6 +149,11 @@ func parseConfig(path string, config interface{}, prefix string, found map[strin
 		return err
 	}
 	defer file.Close()
+
+	c, ok := config.(*Config)
+	if ok {
+		c.ParsedFiles = append(c.ParsedFiles, path)
+	}
 
 	parseConfigContents(file, config, prefix, found)
 
