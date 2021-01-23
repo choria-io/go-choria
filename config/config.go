@@ -191,7 +191,6 @@ func NewDefaultConfig() (*Config, error) {
 
 func NewSystemConfig(path string, server bool) (*Config, error) {
 	c := newConfig()
-	c.ConfigFile = path
 	c.InitiatedBySystem = true
 	c.InitiatedByServer = server
 
@@ -204,6 +203,12 @@ func NewSystemConfig(path string, server bool) (*Config, error) {
 }
 
 func loadConfigFiles(path string, projects bool, c *Config) error {
+	if !filepath.IsAbs(path) {
+		path, _ = filepath.Abs(path)
+	}
+
+	c.ConfigFile = path
+
 	err := parseConfig(path, c, "", c.rawOpts)
 	if err != nil {
 		return err
@@ -245,7 +250,6 @@ func loadConfigFiles(path string, projects bool, c *Config) error {
 // NewConfig parses a config file and return the config
 func NewConfig(path string) (*Config, error) {
 	c := newConfig()
-	c.ConfigFile = path
 
 	err := loadConfigFiles(path, true, c)
 	if err != nil {
@@ -376,13 +380,14 @@ func (c *Config) SetOption(option string, value string) {
 	c.rawOpts[option] = value
 }
 
-// parseDotConfFile parses a file like /etc/..../plugin.d/package.cfg as if its full of
-// plugin.package.x = y lines and fill in a structure with the results if that structure
-// declares its options using the same tag structure as Config.
-//
-// If the supplied target structure is nil then the only side effect will be that the
-// supplied conf will be updated with the raw options so that HasOption() and Option()
 func (c *Config) dotdDir() string {
+	home, err := HomeDir()
+	if err == nil {
+		if strings.HasPrefix(c.ConfigFile, home) {
+			return ""
+		}
+	}
+
 	return filepath.Join(filepath.Dir(c.ConfigFile), "plugin.d")
 }
 

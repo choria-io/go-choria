@@ -10,6 +10,7 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"strings"
 
 	"github.com/choria-io/go-choria/confkey"
@@ -101,23 +102,35 @@ func parseDotConfFile(plugin string, conf *Config, target interface{}) error {
 	return nil
 }
 
-func (conf *Config) parseAllDotCfg() error {
-	files, err := ioutil.ReadDir(conf.dotdDir())
+// parseAllDotCfg parses a file like /etc/..../plugin.d/package.cfg as if its full of
+// plugin.package.x = y lines and fill in a structure with the results if that structure
+// declares its options using the same tag structure as Config.
+//
+// If the supplied target structure is nil then the only side effect will be that the
+// supplied conf will be updated with the raw options so that HasOption() and Option()
+func (c *Config) parseAllDotCfg() error {
+	dir := c.dotdDir()
+	if dir == "" {
+		return nil
+	}
+
+	files, err := ioutil.ReadDir(c.dotdDir())
 	if err != nil {
 		return err
 	}
 
 	for _, file := range files {
-		if strings.HasSuffix(file.Name(), ".cfg") {
+		ext := filepath.Ext(file.Name())
+		if ext == ".cfg" || ext == ".conf" {
 			base := path.Base(file.Name())
 			var target interface{}
 
 			if base == "choria.cfg" {
-				target = conf.Choria
+				target = c.Choria
 			}
 
 			plugin := strings.TrimSuffix(base, filepath.Ext(base))
-			err := parseDotConfFile(plugin, conf, target)
+			err := parseDotConfFile(plugin, c, target)
 			if err != nil {
 				return err
 			}
@@ -168,4 +181,29 @@ func parseConfigContents(content io.Reader, config interface{}, prefix string, f
 			}
 		}
 	}
+}
+
+// HomeDir determines the home location without using the user package or requiring cgo
+//
+// On Unix it needs HOME set and on windows HOMEDRIVE and HOMEDIR
+func HomeDir() (string, error) {
+	if runtime.GOOS == "windows" {
+		drive := os.Getenv("HOMEDRIVE")
+		home := os.Getenv("HOMEDIR")
+
+		if home == "" || drive == "" {
+			return "", fmt.Errorf("cannot determine home dir, ensure HOMEDRIVE and HOMEDIR is set")
+		}
+
+		return filepath.Join(os.Getenv("HOMEDRIVE"), os.Getenv("HOMEDIR")), nil
+	}
+
+	home := os.Getenv("HOME")
+
+	if home == "" {
+		return "", fmt.Errorf("cannot determine home dir, ensure HOME is set")
+	}
+
+	return home, nil
+
 }
