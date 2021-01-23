@@ -13,6 +13,8 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/shlex"
+
 	"github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/protocol"
 
@@ -123,7 +125,19 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 		return nil, fmt.Errorf("could not create reply temp file: %s", err)
 	}
 
-	cmd := exec.CommandContext(timeoutCtx, dopts.command, reqfile.Name(), repfile.Name(), RequestProtocol)
+	var args []string
+	parts, err := shlex.Split(dopts.command)
+	if err != nil {
+		return nil, err
+	}
+	args = append(args, parts[0])
+	if len(parts) > 1 {
+		args = append(args, parts[1:]...)
+	}
+	args = append(args, reqfile.Name(), repfile.Name(), RequestProtocol)
+	command = args[0]
+
+	cmd := exec.CommandContext(timeoutCtx, command, args[1:]...)
 	cmd.Dir = os.TempDir()
 	cmd.Env = []string{
 		"CHORIA_EXTERNAL_REQUEST=" + reqfile.Name(),
@@ -159,14 +173,14 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 
 	err = cmd.Start()
 	if err != nil {
-		return nil, fmt.Errorf("executing %s failed: %s", filepath.Base(dopts.command), err)
+		return nil, fmt.Errorf("executing %s failed: %s", filepath.Base(command), err)
 	}
 
 	cmd.Wait()
 	wg.Wait()
 
 	if cmd.ProcessState.ExitCode() != 0 {
-		return nil, fmt.Errorf("executing %s failed: exit status %d", filepath.Base(dopts.command), cmd.ProcessState.ExitCode())
+		return nil, fmt.Errorf("executing %s failed: exit status %d", filepath.Base(command), cmd.ProcessState.ExitCode())
 	}
 
 	repjson, err := ioutil.ReadFile(repfile.Name())

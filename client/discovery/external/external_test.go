@@ -60,6 +60,11 @@ var _ = Describe("Broadcast", func() {
 			nodes, err := e.Discover(context.Background(), Filter(f))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(nodes).To(Equal([]string{"one", "two"}))
+
+			fw.Config.Choria.ExternalDiscoveryCommand = filepath.Join(wd, "testdata/good_with_argument.rb") + " discover --test"
+			nodes, err = e.Discover(context.Background(), Filter(f))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(nodes).To(Equal([]string{"one", "two"}))
 		})
 
 		It("Should support command overrides via options", func() {
@@ -73,7 +78,7 @@ var _ = Describe("Broadcast", func() {
 
 			wd, _ := os.Getwd()
 			fw.Config.Choria.ExternalDiscoveryCommand = filepath.Join(wd, "testdata/missing.rb")
-			cmd := filepath.Join(wd, "testdata/good.rb")
+			cmd := filepath.Join(wd, "testdata/good_with_argument.rb") + " discover --test"
 			nodes, err := e.Discover(context.Background(), Filter(f), DiscoveryOptions(map[string]string{"command": cmd}))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(nodes).To(Equal([]string{"one", "two"}))
