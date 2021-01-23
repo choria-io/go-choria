@@ -15,6 +15,7 @@ import (
 	"github.com/gofrs/uuid"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/config"
 )
 
 // UserConfig determines what is the active config file for a user
@@ -127,25 +128,7 @@ func SliceGroups(input []string, size int, fn func(group []string)) {
 //
 // On Unix it needs HOME set and on windows HOMEDRIVE and HOMEDIR
 func HomeDir() (string, error) {
-	if runtime.GOOS == "windows" {
-		drive := os.Getenv("HOMEDRIVE")
-		home := os.Getenv("HOMEDIR")
-
-		if home == "" || drive == "" {
-			return "", fmt.Errorf("cannot determine home dir, ensure HOMEDRIVE and HOMEDIR is set")
-		}
-
-		return filepath.Join(os.Getenv("HOMEDRIVE"), os.Getenv("HOMEDIR")), nil
-	}
-
-	home := os.Getenv("HOME")
-
-	if home == "" {
-		return "", fmt.Errorf("cannot determine home dir, ensure HOME is set")
-	}
-
-	return home, nil
-
+	return config.HomeDir()
 }
 
 // MatchAnyRegex checks str against a list of possible regex, if any match true is returned
