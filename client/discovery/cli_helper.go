@@ -54,7 +54,7 @@ type FlagApp interface {
 
 // AddSelectionFlags adds the --dm and --discovery-timeout options
 func (o *StandardOptions) AddSelectionFlags(app FlagApp) {
-	app.Flag("dm", "Sets a discovery method (mc, choria, file)").EnumVar(&o.DiscoveryMethod, "broadcast", "choria", "mc", "file", "flatfile")
+	app.Flag("dm", "Sets a discovery method (mc, choria, file, external)").EnumVar(&o.DiscoveryMethod, "broadcast", "choria", "mc", "file", "flatfile", "external")
 	app.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&o.DiscoveryTimeout)
 }
 

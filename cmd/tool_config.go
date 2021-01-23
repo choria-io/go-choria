@@ -10,6 +10,7 @@ import (
 
 	"github.com/fatih/color"
 
+	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 )
 
@@ -24,7 +25,7 @@ type tConfigCommand struct {
 func (cc *tConfigCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		cc.cmd = tool.Cmd().Command("config", "Show documentation for a configuration item")
-		cc.cmd.Arg("key", "The configuration keys to look up, supports regular expressions").Required().StringVar(&cc.key)
+		cc.cmd.Arg("key", "The configuration keys to look up, supports regular expressions").StringVar(&cc.key)
 		cc.cmd.Flag("list", "Only list matching config keys").Short('l').BoolVar(&cc.list)
 	}
 
@@ -49,6 +50,21 @@ func (cc *tConfigCommand) Configure() (err error) {
 
 func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
+
+	if !cc.list {
+		fmt.Printf("Configuration Files: \n\n")
+		fmt.Printf("            User Config: %s\n", choria.UserConfig())
+
+		paths, err := config.ProjectConfigurationFiles(".")
+		if err == nil {
+			fmt.Printf("   Project Confguration: %s\n", strings.Join(paths, ", "))
+		}
+		fmt.Println()
+	}
+
+	if cc.key == "" && !cc.list {
+		return nil
+	}
 
 	keys, err := cfg.ConfigKeys(cc.key)
 	if err != nil {

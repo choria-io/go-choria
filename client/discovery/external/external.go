@@ -85,6 +85,10 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 		dopts.command = command
 	}
 
+	if dopts.command == "" {
+		return nil, fmt.Errorf("no command specified for external discovery")
+	}
+
 	timeoutCtx, cancel := context.WithTimeout(ctx, dopts.timeout)
 	defer cancel()
 

@@ -64,6 +64,10 @@ func (r *serverRunCommand) Configure() error {
 		log.Debug("Logging at debug level due to CLI override")
 	}
 
+	if configFile == "" {
+		return fmt.Errorf("configuration file required")
+	}
+
 	switch {
 	case choria.FileExist(configFile):
 		cfg, err = config.NewSystemConfig(configFile, true)
