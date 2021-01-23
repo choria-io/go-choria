@@ -119,7 +119,11 @@ type Config struct {
 	SoftShutdown              bool   `confkey:"soft_shutdown" default:"true" deprecated:"1"`
 	SoftShutdownTimeout       int    `confkey:"soft_shutdown_timeout" default:"2" deprecated:"1"`
 
+	// ConfigFile is the main configuration that got parsed
 	ConfigFile string
+
+	// ParsedFiles is a list of all files parsed to create the current config
+	ParsedFiles []string
 
 	// the options exactly as they were found in the config files
 	rawOpts map[string]string
