@@ -93,8 +93,10 @@ func (r *RPCResults) RenderTXTFooter(w io.Writer, verbose bool) {
 
 		switch {
 		case stats.ResponseCount == 0:
+			dcnt = color.RedString(strconv.Itoa(stats.DiscoveredCount))
 			rcnt = color.RedString(strconv.Itoa(stats.ResponseCount))
 		case stats.ResponseCount != stats.DiscoveredCount:
+			dcnt = color.YellowString(strconv.Itoa(stats.DiscoveredCount))
 			rcnt = color.YellowString(strconv.Itoa(stats.ResponseCount))
 		default:
 			dcnt = color.GreenString(strconv.Itoa(stats.DiscoveredCount))
