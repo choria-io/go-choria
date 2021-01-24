@@ -13,7 +13,7 @@ type Logger interface {
 	Warnf(format string, args ...interface{})
 }
 
-func Match(needles []string, classes []string, log Logger) bool {
+func Match(needles []string, classes []string) bool {
 	matched := 0
 	failed := 0
 
@@ -51,7 +51,7 @@ func MatchFile(needles []string, source string, log Logger) bool {
 		return false
 	}
 
-	return Match(needles, classes, log)
+	return Match(needles, classes)
 }
 
 func hasClassMatching(needle string, stack []string) bool {

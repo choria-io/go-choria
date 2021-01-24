@@ -14,6 +14,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/srvcache"
 )
 
@@ -127,8 +128,7 @@ func (s *Scout) Tags() ([]string, error) {
 		return []string{"common"}, nil
 	}
 
-	_, err := os.Stat(s.cfg.Choria.ScoutTags)
-	if err != nil {
+	if !util.FileExist(s.cfg.Choria.ScoutTags) {
 		s.Info("Tags file is not configured or present, using ['common']")
 		return []string{"common"}, nil
 	}

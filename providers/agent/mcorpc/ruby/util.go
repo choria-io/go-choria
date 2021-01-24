@@ -5,6 +5,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/choria-io/go-choria/internal/util"
 	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
 
@@ -45,8 +46,7 @@ func (p *Provider) eachAgent(libdirs []string, cb func(ddl *agentddl.DDL)) {
 			bpath := strings.TrimSuffix(path, extension)
 			rbfile := bpath + ".rb"
 
-			rbstat, err := os.Stat(rbfile)
-			if os.IsNotExist(err) || rbstat.IsDir() {
+			if !util.FileExist(rbfile) || util.FileIsDir(rbfile) {
 				return nil
 			}
 

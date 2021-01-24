@@ -6,7 +6,7 @@ import (
 	"os"
 	"os/exec"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 type generator struct {
@@ -77,7 +77,7 @@ func (g *generator) generate() bool {
 	success := true
 
 	for _, file := range []string{"packager/plugins.yaml", "packager/user_plugins.yaml"} {
-		if !choria.FileExist(file) {
+		if !util.FileExist(file) {
 			continue
 		}
 

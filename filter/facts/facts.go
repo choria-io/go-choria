@@ -11,6 +11,8 @@ import (
 	"github.com/tidwall/gjson"
 
 	"github.com/ghodss/yaml"
+
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 // Logger provides logging facilities
@@ -61,7 +63,7 @@ func JSON(file string, log Logger) (json.RawMessage, error) {
 			continue
 		}
 
-		if _, err := os.Stat(f); os.IsNotExist(err) {
+		if !util.FileExist(f) {
 			log.Warnf("Fact file %s does not exist", f)
 			continue
 		}

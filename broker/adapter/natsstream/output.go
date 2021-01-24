@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/nats-io/stan.go"
 	"github.com/prometheus/client_golang/prometheus"
@@ -63,7 +64,7 @@ func newStream(name string, work chan ingest.Adaptable, logger *log.Entry) ([]*s
 	for i := 0; i < instances; i++ {
 		logger.Infof("Creating NATS Streaming Adapter %s NATS Streaming instance %d / %d publishing to %s on cluster %s", name, i, instances, topic, clusterID)
 
-		iname := fmt.Sprintf("%s_%d-%s", name, i, strings.Replace(choria.UniqueID(), "-", "", -1))
+		iname := fmt.Sprintf("%s_%d-%s", name, i, strings.Replace(util.UniqueID(), "-", "", -1))
 
 		st := &stream{
 			clusterID:   clusterID,

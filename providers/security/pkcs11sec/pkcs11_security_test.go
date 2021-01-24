@@ -4,15 +4,17 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/providers/security"
-	. "github.com/onsi/ginkgo"
-	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
+	"github.com/choria-io/go-choria/providers/security"
+	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/gomega"
+	"github.com/sirupsen/logrus"
 )
 
 func TestFileSecurity(t *testing.T) {
@@ -23,7 +25,6 @@ func TestFileSecurity(t *testing.T) {
 }
 
 var _ = Describe("Pkcs11SSL", func() {
-
 	var err error
 	var prov *Pkcs11Security
 	var l *logrus.Logger
@@ -438,8 +439,7 @@ var _ = Describe("Pkcs11SSL", func() {
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(cpath)
 
-			_, err = os.Stat(cpath)
-			Expect(err).To(HaveOccurred())
+			Expect(util.FileExist(cpath)).To(BeTrue())
 		})
 
 		It("Should write trusted files to disk", func() {
@@ -450,8 +450,7 @@ var _ = Describe("Pkcs11SSL", func() {
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(cpath)
 
-			_, err = os.Stat(cpath)
-			Expect(err).ToNot(HaveOccurred())
+			Expect(util.FileExist(cpath)).To(BeTrue())
 		})
 
 		It("Should not overwrite existing files", func() {

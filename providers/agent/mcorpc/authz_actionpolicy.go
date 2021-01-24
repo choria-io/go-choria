@@ -13,6 +13,8 @@ import (
 	"github.com/choria-io/go-choria/filter"
 	"github.com/choria-io/go-choria/filter/classes"
 	"github.com/choria-io/go-choria/filter/facts"
+	"github.com/choria-io/go-choria/internal/util"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -192,7 +194,7 @@ func (a *actionPolicy) checkRequestAgainstPolicy() (bool, error) {
 }
 
 func (a *actionPolicy) allowUnconfigured() bool {
-	unconfigured, err := choria.StrToBool(a.cfg.Option("plugin.actionpolicy.allow_unconfiguredt", "n"))
+	unconfigured, err := util.StrToBool(a.cfg.Option("plugin.actionpolicy.allow_unconfiguredt", "n"))
 	if err != nil {
 		return false
 	}
@@ -201,7 +203,7 @@ func (a *actionPolicy) allowUnconfigured() bool {
 }
 
 func (a *actionPolicy) shouldUseDefault() bool {
-	enabled, err := choria.StrToBool(a.cfg.Option("plugin.actionpolicy.enable_default", "n"))
+	enabled, err := util.StrToBool(a.cfg.Option("plugin.actionpolicy.enable_default", "n"))
 	if err != nil {
 		return false
 	}
@@ -217,13 +219,13 @@ func (a *actionPolicy) lookupPolicyFile() (string, error) {
 	agentPolicy := filepath.Join(filepath.Dir(a.cfg.ConfigFile), "policies", a.agent.Name()+".policy")
 
 	a.log.Debugf("Looking up agent policy in %s", agentPolicy)
-	if choria.FileExist(agentPolicy) {
+	if util.FileExist(agentPolicy) {
 		return agentPolicy, nil
 	}
 
 	if a.shouldUseDefault() {
 		defaultPolicy := filepath.Join(filepath.Dir(a.cfg.ConfigFile), "policies", a.defaultPolicyFileName()+".policy")
-		if choria.FileExist(defaultPolicy) {
+		if util.FileExist(defaultPolicy) {
 			return defaultPolicy, nil
 		}
 	}
@@ -236,7 +238,7 @@ func (a *actionPolicy) parseGroupFile(gfile string) error {
 		gfile = filepath.Join(filepath.Dir(a.cfg.ConfigFile), "policies", "groups")
 	}
 
-	if !choria.FileExist(gfile) {
+	if !util.FileExist(gfile) {
 		return nil
 	}
 

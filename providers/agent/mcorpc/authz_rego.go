@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"path/filepath"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/opa"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/sirupsen/logrus"
@@ -86,13 +86,13 @@ func (r *regoPolicy) lookupPolicyFile() (string, error) {
 	regoPolicy := filepath.Join(dir, r.agent.Name()+".rego")
 
 	r.log.Debugf("Looking up rego policy in %s", regoPolicy)
-	if choria.FileExist(regoPolicy) {
+	if util.FileExist(regoPolicy) {
 		r.log.Debugf("Using policy file: %s", regoPolicy)
 		return regoPolicy, nil
 	}
 
 	defaultPolicy := filepath.Join(dir, "default.rego")
-	if choria.FileExist(defaultPolicy) {
+	if util.FileExist(defaultPolicy) {
 		r.log.Debugf("Using policy file: %s", defaultPolicy)
 		return defaultPolicy, nil
 	}
@@ -130,7 +130,7 @@ func (r *regoPolicy) regoInputs() map[string]interface{} {
 }
 
 func (r *regoPolicy) enableTracing() bool {
-	tracing, err := choria.StrToBool(r.cfg.Option("plugin.regopolicy.tracing", "n"))
+	tracing, err := util.StrToBool(r.cfg.Option("plugin.regopolicy.tracing", "n"))
 	if err != nil {
 		return false
 	}

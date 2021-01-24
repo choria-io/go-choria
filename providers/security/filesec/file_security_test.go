@@ -6,11 +6,13 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
-	"github.com/choria-io/go-choria/tlssetup"
 	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
+
+	"github.com/choria-io/go-choria/internal/util"
+	"github.com/choria-io/go-choria/tlssetup"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/security"
@@ -544,8 +546,7 @@ var _ = Describe("FileSSL", func() {
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(cpath)
 
-			_, err = os.Stat(cpath)
-			Expect(err).To(HaveOccurred())
+			Expect(util.FileExist(cpath)).To(BeFalse())
 		})
 
 		It("Should write trusted files to disk", func() {
@@ -562,8 +563,7 @@ var _ = Describe("FileSSL", func() {
 			Expect(err).ToNot(HaveOccurred())
 			defer os.Remove(cpath)
 
-			_, err = os.Stat(cpath)
-			Expect(err).ToNot(HaveOccurred())
+			Expect(util.FileExist(cpath)).To(BeTrue())
 		})
 
 		It("Should not overwrite existing files", func() {

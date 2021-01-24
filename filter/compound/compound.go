@@ -95,7 +95,7 @@ func matchFunc(f json.RawMessage, c []string, a []string, log Logger) func(strin
 			return facts.MatchFacts([][3]string{pf}, f, log)
 		}
 
-		if classes.Match([]string{query}, c, log) {
+		if classes.Match([]string{query}, c) {
 			return true
 		}
 

@@ -21,6 +21,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/backoff"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/security/filesec"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
@@ -453,49 +454,27 @@ func (cm *CertManagerSecurity) createSSLDirectories() error {
 }
 
 func (cm *CertManagerSecurity) csrExists() bool {
-	return FileExist(cm.conf.csr)
+	return util.FileExist(cm.conf.csr)
 }
 
 func (cm *CertManagerSecurity) privateKeyExists() bool {
-	return FileExist(cm.conf.key)
+	return util.FileExist(cm.conf.key)
 }
 
 func (cm *CertManagerSecurity) publicCertExists() bool {
-	return FileExist(cm.conf.cert)
+	return util.FileExist(cm.conf.cert)
 }
 
 func (cm *CertManagerSecurity) caExists() bool {
-	return FileExist(cm.conf.ca)
-}
-
-// FileExist checks if a file exist on disk
-func FileExist(path string) bool {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return false
-	}
-
-	return true
-}
-
-func FileIsDir(path string) bool {
-	stat, err := os.Stat(path)
-	if os.IsNotExist(err) {
-		return false
-	}
-
-	if !stat.IsDir() {
-		return false
-	}
-
-	return true
+	return util.FileExist(cm.conf.ca)
 }
 
 func (cm *CertManagerSecurity) Validate() (errs []string, ok bool) {
-	if !FileIsDir(cm.conf.sslDir) {
+	if !util.FileIsDir(cm.conf.sslDir) {
 		errs = append(errs, fmt.Sprintf("%s does not exist or is not a directory", cm.conf.sslDir))
 	}
 
-	if !FileIsDir(cm.conf.cache) {
+	if !util.FileIsDir(cm.conf.cache) {
 		errs = append(errs, fmt.Sprintf("%s does not exist or is not a diectory", cm.conf.cache))
 	}
 

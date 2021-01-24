@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
-	"os"
 	"path/filepath"
 	"sync"
 	"time"
@@ -16,6 +15,7 @@ import (
 	"github.com/ghodss/yaml"
 
 	"github.com/choria-io/go-choria/aagent/watchers"
+	"github.com/choria-io/go-choria/internal/util"
 
 	"github.com/looplab/fsm"
 )
@@ -88,14 +88,13 @@ func yamlPath(dir string) string {
 func FromDir(dir string, manager WatcherManager) (m *Machine, err error) {
 	mpath := yamlPath(dir)
 
-	_, err = os.Stat(mpath)
-	if err != nil {
-		return nil, errors.Wrapf(err, "cannot read %s", mpath)
+	if !util.FileExist(mpath) {
+		return nil, fmt.Errorf("cannot read %s: %s", mpath, err)
 	}
 
 	m, err = FromYAML(mpath, manager)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not load machine.yaml")
+		return nil, fmt.Errorf("could not load machine.yaml: %s", err)
 	}
 
 	m.directory, err = filepath.Abs(dir)

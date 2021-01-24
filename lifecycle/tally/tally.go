@@ -9,6 +9,7 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
 	cloudevents "github.com/cloudevents/sdk-go"
 	"github.com/prometheus/client_golang/prometheus"
@@ -227,7 +228,7 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 	machineTransitions := make(chan *choria.ConnectorMessage, 100)
 
 	maintSched := time.NewTicker(time.Minute)
-	subid := choria.UniqueID()
+	subid := util.UniqueID()
 
 	if r.options.Component == "" {
 		r.options.Log.Warn("Component was not specified, disabling lifecycle tallies")

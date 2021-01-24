@@ -1,0 +1,43 @@
+$schema: "https://choria.io/schemas/choria/discovery/v1/inventory_file.json"
+groups:
+  - name: malta
+    filter:
+      facts:
+        - country=mt
+
+  - name: germany
+    filter:
+      facts:
+        - country=de
+
+  - name: all
+
+nodes:
+  - name: dev1.example.net
+    collectives:
+      - mcollective
+      - mt_collective
+    facts:
+      country: mt
+      customer: acme
+    classes:
+      - one
+      - two
+    agents:
+      - name: rpcutil
+        version: 1.0.0
+  - name: dev2.example.net
+    collectives:
+      - mcollective
+      - de_collective
+    facts:
+      country: de
+    classes:
+      - one
+      - two
+      - three
+    agents:
+      - name: other
+        version: 1.0.0
+      - name: rpcutil
+        version: 1.0.0

@@ -3,12 +3,13 @@ package puppet
 import (
 	"errors"
 	"fmt"
-	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
 	"strings"
 	"sync"
+
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 // Wrapper provides ways to interact with Puppet and Facter
@@ -90,7 +91,7 @@ func (p *Wrapper) AIOCmd(command string, def string) string {
 		aioPath = filepath.FromSlash(filepath.Join("C:/Program Files/Puppet Labs/Puppet/bin", fmt.Sprintf("%s.bat", command)))
 	}
 
-	if _, err := os.Stat(aioPath); err == nil {
+	if util.FileExist(aioPath) {
 		return aioPath
 	}
 

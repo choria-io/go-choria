@@ -12,6 +12,7 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/confkey"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/puppet"
 )
 
@@ -98,7 +99,7 @@ type Config struct {
 	TTL int `confkey:"ttl" default:"60"`
 
 	// The default discovery plugin to use. The default "mc" uses a network broadcast, "choria" uses PuppetDB, external calls external commands
-	DefaultDiscoveryMethod string `confkey:"default_discovery_method" default:"mc" validate:"enum=mc,broadcast,puppetdb,choria,external"`
+	DefaultDiscoveryMethod string `confkey:"default_discovery_method" default:"mc" validate:"enum=mc,broadcast,puppetdb,choria,external,inventory"`
 
 	// Where to look for YAML or JSON based facts
 	FactSourceFile string `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml" type:"path_string"`
@@ -385,7 +386,7 @@ func (c *Config) SetOption(option string, value string) {
 }
 
 func (c *Config) dotdDir() string {
-	home, err := HomeDir()
+	home, err := util.HomeDir()
 	if err == nil {
 		if strings.HasPrefix(c.ConfigFile, home) {
 			return ""

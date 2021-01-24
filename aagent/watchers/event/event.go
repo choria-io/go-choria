@@ -7,7 +7,7 @@ import (
 	cloudevents "github.com/cloudevents/sdk-go"
 
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 // New creates a new event
@@ -42,7 +42,7 @@ func (e *Event) CloudEvent(data interface{}) cloudevents.Event {
 	event.SetType(e.Protocol)
 	event.SetSource("io.choria.machine")
 	event.SetSubject(e.Identity)
-	event.SetID(choria.UniqueID())
+	event.SetID(util.UniqueID())
 	event.SetTime(time.Unix(e.Timestamp, 0))
 	event.SetData(data)
 

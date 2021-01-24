@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"os"
 	"strings"
 	"time"
 
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/dgrijalva/jwt-go"
 	"github.com/sirupsen/logrus"
@@ -57,8 +57,7 @@ func (b *Resolver) Configure(cfg *config.Config, log *logrus.Entry) {
 		return
 	}
 
-	_, err := os.Stat(jwtf)
-	if os.IsNotExist(err) {
+	if !util.FileExist(jwtf) {
 		return
 	}
 
@@ -66,7 +65,7 @@ func (b *Resolver) Configure(cfg *config.Config, log *logrus.Entry) {
 
 	b.identity = cfg.Identity
 
-	_, err = b.setBuildBasedOnJWT()
+	_, err := b.setBuildBasedOnJWT()
 	if err != nil {
 		log.Errorf("Configuration of the provisioner settings based on JWT file %s failed: %s", jwtf, err)
 	}
@@ -129,8 +128,7 @@ func (b *Resolver) setBuildBasedOnJWT() (*ProvClaims, error) {
 	bi := b.bi
 	jwtf := bi.ProvisionJWTFile()
 
-	_, err := os.Stat(jwtf)
-	if os.IsNotExist(err) {
+	if !util.FileExist(jwtf) {
 		return &ProvClaims{}, nil
 	}
 

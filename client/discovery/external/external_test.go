@@ -21,7 +21,7 @@ func TestExternal(t *testing.T) {
 	RunSpecs(t, "Client/Discovery/External")
 }
 
-var _ = Describe("Broadcast", func() {
+var _ = Describe("External", func() {
 	var (
 		fw *choria.Framework
 		e  *External

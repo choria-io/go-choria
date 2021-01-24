@@ -29,6 +29,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/tlssetup"
 
 	"github.com/sirupsen/logrus"
@@ -421,8 +422,7 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 		return err
 	}
 
-	_, err = os.Stat(certfile)
-	if err == nil {
+	if util.FileExist(certfile) {
 		if !s.conf.AlwaysOverwriteCache {
 			s.log.Debugf("Already have a certificate in %s, refusing to overwrite with a new one", certfile)
 			return nil
@@ -430,7 +430,7 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 
 		// it exists, lets check if its required to update it, quicker to just update it but that
 		// risks failing when disks are full etc this attempts that risky step only when needed
-		rsum := sha256.Sum256([]byte(data))
+		rsum := sha256.Sum256(data)
 		fsum, err := fsha256(certfile)
 		if err != nil {
 			return fmt.Errorf("could not determine sha256 of current certificate in %s: %s", certfile, err)
@@ -442,7 +442,7 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 		}
 	}
 
-	err = ioutil.WriteFile(certfile, []byte(data), os.FileMode(int(0644)))
+	err = ioutil.WriteFile(certfile, data, os.FileMode(0644))
 	if err != nil {
 		return fmt.Errorf("could not cache client public certificate: %s", err.Error())
 	}
@@ -466,7 +466,7 @@ func (s *FileSecurity) CachedPublicData(identity string) ([]byte, error) {
 		return []byte{}, fmt.Errorf("could not cache public data: %s", err)
 	}
 
-	if _, err := os.Stat(certfile); os.IsNotExist(err) {
+	if !util.FileExist(certfile) {
 		return []byte{}, fmt.Errorf("unknown public data: %s", identity)
 	}
 
@@ -723,21 +723,15 @@ func (s *FileSecurity) caPath() string {
 }
 
 func (s *FileSecurity) privateKeyExists() bool {
-	_, err := os.Stat(s.privateKeyPath())
-
-	return !os.IsNotExist(err)
+	return util.FileExist(s.privateKeyPath())
 }
 
 func (s *FileSecurity) publicCertExists() bool {
-	_, err := os.Stat(s.publicCertPath())
-
-	return !os.IsNotExist(err)
+	return util.FileExist(s.publicCertPath())
 }
 
 func (s *FileSecurity) caExists() bool {
-	_, err := os.Stat(s.caPath())
-
-	return !os.IsNotExist(err)
+	return util.FileExist(s.caPath())
 }
 
 func (s *FileSecurity) cachedCertExists(identity string) bool {
@@ -746,9 +740,7 @@ func (s *FileSecurity) cachedCertExists(identity string) bool {
 		return false
 	}
 
-	_, err = os.Stat(f)
-
-	return !os.IsNotExist(err)
+	return util.FileExist(f)
 }
 
 func (s *FileSecurity) privateKeyPEM() (pb *pem.Block, err error) {

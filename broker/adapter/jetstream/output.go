@@ -12,6 +12,7 @@ import (
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/broker/adapter/transformer"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
@@ -52,7 +53,7 @@ func newStream(name string, work chan ingest.Adaptable, logger *log.Entry) ([]*s
 	for i := 0; i < instances; i++ {
 		logger.Infof("Creating NATS JetStream Adapter %s instance %d / %d publishing to message set %s", name, i, instances, topic)
 
-		iname := fmt.Sprintf("%s_%d-%s", name, i, strings.Replace(choria.UniqueID(), "-", "", -1))
+		iname := fmt.Sprintf("%s_%d-%s", name, i, strings.Replace(util.UniqueID(), "-", "", -1))
 
 		st := &stream{
 			clientID:    iname,

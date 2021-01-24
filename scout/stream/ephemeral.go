@@ -14,7 +14,7 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/backoff"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 type Ephemeral struct {
@@ -150,7 +150,7 @@ func (e *Ephemeral) manageConsumer() error {
 	go func() {
 		r := rand.New(rand.NewSource(time.Now().UnixNano()))
 		splay := time.Duration(r.Intn(int(e.interval)))
-		err = choria.InterruptibleSleep(e.ctx, splay)
+		err = util.InterruptibleSleep(e.ctx, splay)
 		if err != nil {
 			return
 		}

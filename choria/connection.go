@@ -14,6 +14,7 @@ import (
 
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-choria/tlssetup"
@@ -352,7 +353,7 @@ func (conn *Connection) publishFederated(msg *Message, transport protocol.Transp
 func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.TransportMessage) error {
 	var err error
 
-	SliceGroups(msg.DiscoveredHosts, 200, func(nodes []string) {
+	util.SliceGroups(msg.DiscoveredHosts, 200, func(nodes []string) {
 		targets := []string{}
 		var j string
 
