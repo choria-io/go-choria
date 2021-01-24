@@ -7,6 +7,8 @@ import (
 	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 var promStates map[string]State
@@ -63,13 +65,7 @@ func savePromState(td string, log logger) error {
 		return nil
 	}
 
-	stat, err := os.Stat(td)
-	if err != nil {
-		log.Debugf("%q is not accessible: %s", td, err)
-		return nil
-	}
-
-	if !stat.IsDir() {
+	if !util.FileIsDir(td) {
 		log.Debugf("%q is not a directory", td)
 		return nil
 	}

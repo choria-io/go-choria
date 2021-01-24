@@ -22,6 +22,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/logger"
 	"github.com/choria-io/go-choria/scout/stream"
 )
@@ -501,7 +502,7 @@ func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan 
 	}
 
 	ib = nats.NewInbox()
-	err = w.nc.QueueSubscribe(ctx, choria.UniqueID(), ib, "", states)
+	err = w.nc.QueueSubscribe(ctx, util.UniqueID(), ib, "", states)
 	if err != nil {
 		return fmt.Errorf("could not subscribe to %s", ib)
 	}

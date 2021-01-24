@@ -4,7 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
+
 	cloudevents "github.com/cloudevents/sdk-go"
 )
 
@@ -35,7 +36,7 @@ func (t *TransitionNotification) CloudEvent() cloudevents.Event {
 	event.SetType(t.Protocol)
 	event.SetSource("io.choria.machine")
 	event.SetSubject(t.Identity)
-	event.SetID(choria.UniqueID())
+	event.SetID(util.UniqueID())
 	event.SetTime(time.Unix(t.Timestamp, 0))
 	event.SetData(t)
 

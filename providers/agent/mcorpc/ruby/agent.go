@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -14,6 +13,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server"
@@ -103,12 +103,12 @@ func rubyAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 		return
 	}
 
-	if _, err := os.Stat(shim); os.IsNotExist(err) {
+	if !util.FileExist(shim) {
 		abortAction(fmt.Sprintf("Cannot call Ruby action %s: Ruby compatibility shim was not found in %s", action, shim), agent, reply)
 		return
 	}
 
-	if _, err := os.Stat(shimcfg); os.IsNotExist(err) {
+	if !util.FileExist(shimcfg) {
 		abortAction(fmt.Sprintf("Cannot call Ruby action %s: Ruby compatibility shim configuration file was not found in %s", action, shimcfg), agent, reply)
 		return
 	}

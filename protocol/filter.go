@@ -66,12 +66,12 @@ func (f *Filter) MatchRequest(request Request, agents []string, identity string,
 		return true
 	}
 
-	if len(filter.ClassFilters()) > 0 {
-		if filter.MatchClassesFile(classesFile, log) {
-			log.Debugf("Matching request %s with class filters '%#v'", request.RequestID(), filter.ClassFilters())
+	if len(filter.IdentityFilters()) > 0 {
+		if filter.MatchIdentity(identity) {
+			log.Debugf("Matching request %s with identity filters '%#v'", request.RequestID(), filter.IdentityFilters())
 			passed++
 		} else {
-			log.Debugf("Not matching request %s with class filters '%#v'", request.RequestID(), filter.ClassFilters())
+			log.Debugf("Not matching request %s with identity filters '%#v'", request.RequestID(), filter.IdentityFilters())
 			return false
 		}
 	}
@@ -86,12 +86,12 @@ func (f *Filter) MatchRequest(request Request, agents []string, identity string,
 		}
 	}
 
-	if len(filter.IdentityFilters()) > 0 {
-		if filter.MatchIdentity(identity) {
-			log.Debugf("Matching request %s with identity filters '%#v'", request.RequestID(), filter.IdentityFilters())
+	if len(filter.ClassFilters()) > 0 {
+		if filter.MatchClassesFile(classesFile, log) {
+			log.Debugf("Matching request %s with class filters '%#v'", request.RequestID(), filter.ClassFilters())
 			passed++
 		} else {
-			log.Debugf("Not matching request %s with identity filters '%#v'", request.RequestID(), filter.IdentityFilters())
+			log.Debugf("Not matching request %s with class filters '%#v'", request.RequestID(), filter.ClassFilters())
 			return false
 		}
 	}
@@ -145,8 +145,8 @@ func (f *Filter) MatchClassesFile(file string, log Logger) bool {
 }
 
 // MatchClasses determines if the filter would match against the list of classes
-func (f *Filter) MatchClasses(knownClasses []string, log Logger) bool {
-	return classes.Match(f.ClassFilters(), knownClasses, log)
+func (f *Filter) MatchClasses(knownClasses []string, _ Logger) bool {
+	return classes.Match(f.ClassFilters(), knownClasses)
 }
 
 // MatchCompound determines if the filter would match against classes, facts and agents using a expr expression
@@ -156,6 +156,9 @@ func (f *Filter) MatchCompound(factsFile string, classesFile string, knownAgents
 
 // Empty determines if a filter is empty - that is all its contained filter arrays are empty
 func (f *Filter) Empty() bool {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+
 	if f.Fact == nil && f.Class == nil && f.Agent == nil && f.Identity == nil && f.Compound == nil {
 		return true
 	}

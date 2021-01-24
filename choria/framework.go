@@ -20,6 +20,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"github.com/fatih/color"
 
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 	certmanagersec "github.com/choria-io/go-choria/providers/security/certmanager"
 
@@ -592,7 +593,7 @@ func (fw *Framework) NewRequestID() (string, error) {
 
 // UniqueID creates a new unique ID, usually a v4 uuid, if that fails a random string based ID is made
 func (fw *Framework) UniqueID() string {
-	return UniqueID()
+	return util.UniqueID()
 }
 
 // CallerID determines the cert based callerid

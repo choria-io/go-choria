@@ -22,6 +22,7 @@ type ChoriaPluginConfig struct {
 	Provision        bool   `confkey:"plugin.choria.server.provision" default:"false" url:"https://github.com/choria-io/provisioning-agent"` // Specifically enable or disable provisioning
 
 	ExternalDiscoveryCommand string `confkey:"plugin.choria.discovery.external.command"` // The command to use for external discovery
+	InventoryDiscoverySource string `confkey:"plugin.choria.discovery.inventory.source"` // The file to read for inventory discovery
 
 	// discovery proxy
 	DiscoveryHost  string `confkey:"plugin.choria.discovery_host" default:"puppet" deprecated:"1"`

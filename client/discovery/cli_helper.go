@@ -15,6 +15,7 @@ import (
 	"github.com/choria-io/go-choria/client/discovery/broadcast"
 	"github.com/choria-io/go-choria/client/discovery/external"
 	"github.com/choria-io/go-choria/client/discovery/flatfile"
+	"github.com/choria-io/go-choria/client/discovery/inventory"
 	"github.com/choria-io/go-choria/client/discovery/puppetdb"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/filter"
@@ -54,7 +55,7 @@ type FlagApp interface {
 
 // AddSelectionFlags adds the --dm and --discovery-timeout options
 func (o *StandardOptions) AddSelectionFlags(app FlagApp) {
-	app.Flag("dm", "Sets a discovery method (mc, choria, file, external)").EnumVar(&o.DiscoveryMethod, "broadcast", "choria", "mc", "file", "flatfile", "external")
+	app.Flag("dm", "Sets a discovery method (mc, choria, file, external, inventory)").EnumVar(&o.DiscoveryMethod, "broadcast", "choria", "mc", "file", "flatfile", "external", "inventory")
 	app.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&o.DiscoveryTimeout)
 }
 
@@ -138,6 +139,10 @@ func (o *StandardOptions) Discover(ctx context.Context, fw client.ChoriaFramewor
 		nodes, err = external.New(fw).Discover(ctx, external.Filter(filter), external.Timeout(to), external.Collective(o.Collective), external.DiscoveryOptions(o.DiscoveryOptions))
 	case "flatfile", "file":
 		nodes, err = flatfile.New(fw).Discover(ctx, flatfile.Reader(sourceFile), flatfile.Format(fformat), flatfile.DiscoveryOptions(o.DiscoveryOptions))
+	case "inventory":
+		nodes, err = inventory.New(fw).Discover(ctx, inventory.Filter(filter), inventory.Collective(o.Collective), inventory.DiscoveryOptions(o.DiscoveryOptions))
+	default:
+		return nil, 0, fmt.Errorf("unsupported discovery method %q", o.DiscoveryMethod)
 	}
 
 	if progress {

@@ -12,8 +12,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/pretty"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/rpcutilclient"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/rpcutil"
 )
@@ -117,14 +117,14 @@ func (i *inventoryCommand) inventoryAgent() error {
 	fmt.Printf("               Replies Sent: %d\n", stats.Replies)
 	fmt.Println()
 	fmt.Printf("  Agents:\n\n")
-	choria.SliceGroups(inventory.Agents, 3, func(g []string) {
+	util.SliceGroups(inventory.Agents, 3, func(g []string) {
 		fmt.Printf("    %-15s %-15s %-15s\n", g[0], g[1], g[2])
 	})
 	fmt.Println()
 	fmt.Printf("  Configuration Management Classes:\n\n")
-	longest := choria.LongestString(inventory.Classes, 40)
+	longest := util.LongestString(inventory.Classes, 40)
 	format := fmt.Sprintf("    %%-%ds %%-%ds\n", longest, longest)
-	choria.SliceGroups(inventory.Classes, 2, func(g []string) {
+	util.SliceGroups(inventory.Classes, 2, func(g []string) {
 		fmt.Printf(format, g[0], g[1])
 	})
 	fmt.Println()

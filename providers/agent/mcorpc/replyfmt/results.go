@@ -16,7 +16,7 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/pretty"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
@@ -116,7 +116,7 @@ func (r *RPCResults) RenderTXTFooter(w io.Writer, verbose bool) {
 
 			w := new(tabwriter.Writer)
 			w.Init(out, 0, 0, 4, ' ', 0)
-			choria.SliceGroups(nodes, 3, func(g []string) {
+			util.SliceGroups(nodes, 3, func(g []string) {
 				fmt.Fprintln(w, "    "+strings.Join(g, "\t")+"\t")
 			})
 			w.Flush()

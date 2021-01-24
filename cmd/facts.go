@@ -13,9 +13,9 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/client/rpcutilclient"
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 type factsCommand struct {
@@ -119,7 +119,7 @@ func (f *factsCommand) showText(res *rpcutilclient.GetFactResult, facts map[stri
 	for k := range facts {
 		vals = append(vals, k)
 	}
-	longest := choria.LongestString(vals, 4000)
+	longest := util.LongestString(vals, 4000)
 	format := fmt.Sprintf("  %%-%ds found %%d times\n", longest)
 
 	for _, v := range f.sortByCount(facts) {

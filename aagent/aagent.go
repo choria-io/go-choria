@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
-	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -16,7 +15,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/machine"
 	notifier "github.com/choria-io/go-choria/aagent/notifiers/choria"
 	"github.com/choria-io/go-choria/aagent/watchers"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 type AAgent struct {
@@ -159,7 +158,7 @@ func (a *AAgent) loadFromSource(ctx context.Context, wg *sync.WaitGroup) error {
 				a.logger.Errorf("could not delete machine for %s", path)
 			}
 			a.logger.Debugf("Sleeping 1 second to allow old machine to exit")
-			choria.InterruptibleSleep(ctx, time.Second)
+			util.InterruptibleSleep(ctx, time.Second)
 		}
 
 		a.logger.Infof("Attempting to load Choria Machine from %s", path)
@@ -184,13 +183,12 @@ func (a *AAgent) watchSource(ctx context.Context, wg *sync.WaitGroup) {
 			return
 		}
 
-		_, err := os.Stat(a.source)
-		if err != nil {
+		if !util.FileIsDir(a.source) {
 			a.logger.Debugf("Autonomous Agent source directory %s does not exist, skipping", a.source)
 			return
 		}
 
-		err = a.loadFromSource(ctx, wg)
+		err := a.loadFromSource(ctx, wg)
 		if err != nil {
 			a.logger.Errorf("Could not load Autonomous Agents: %s", err)
 		}
@@ -202,8 +200,7 @@ func (a *AAgent) watchSource(ctx context.Context, wg *sync.WaitGroup) {
 
 		a.Lock()
 		for _, m := range a.machines {
-			_, err := os.Stat(m.path)
-			if err != nil {
+			if !util.FileExist(m.path) {
 				a.logger.Infof("Machine %s does not exist anymore in %s, terminating", m.machine.Name(), m.path)
 				targets = append(targets, m.path)
 				m.machine.Delete()

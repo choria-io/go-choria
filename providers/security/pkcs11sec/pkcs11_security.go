@@ -20,6 +20,7 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/security/filesec"
 	"github.com/miekg/pkcs11"
 	"github.com/miekg/pkcs11/p11"
@@ -568,9 +569,7 @@ func (p *Pkcs11Security) cachedCertExists(identity string) bool {
 		return false
 	}
 
-	_, err = os.Stat(f)
-
-	return !os.IsNotExist(err)
+	return util.FileExist(f)
 }
 
 func (p *Pkcs11Security) privilegedCerts() []string {

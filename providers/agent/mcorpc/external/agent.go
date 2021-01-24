@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server"
@@ -132,7 +133,7 @@ func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, repl
 
 	agent.Log.Debugf("Attempting to call external agent %s (%s) with a timeout %d", action, agentPath, agent.Metadata().Timeout)
 
-	if _, err := os.Stat(agentPath); os.IsNotExist(err) {
+	if !util.FileExist(agentPath) {
 		p.abortAction(fmt.Sprintf("Cannot call external agent %s: agent executable %s was not found", action, agentPath), agent, reply)
 		return
 	}

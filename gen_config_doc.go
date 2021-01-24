@@ -9,9 +9,9 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/confkey"
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 type configs struct {
@@ -91,7 +91,7 @@ func main() {
 		Docs: []*confkey.Doc{},
 	}
 
-	choria.SliceGroups(keys, 2, func(grp []string) {
+	util.SliceGroups(keys, 2, func(grp []string) {
 		docs.Keys = append(docs.Keys, grp)
 	})
 

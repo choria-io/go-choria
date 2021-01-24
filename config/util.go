@@ -10,10 +10,10 @@ import (
 	"path"
 	"path/filepath"
 	"regexp"
-	"runtime"
 	"strings"
 
 	"github.com/choria-io/go-choria/confkey"
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 // ProjectConfigurationFiles returns any configuration file in the specified directory and their parents directories.
@@ -39,20 +39,11 @@ func ProjectConfigurationFiles(path string) ([]string, error) {
 	}
 
 	config := filepath.Join(path, "choria.conf")
-	if FileExist(config) {
+	if util.FileExist(config) {
 		res = append(res, config)
 	}
 
 	return res, nil
-}
-
-// FileExist checks if a file exist on disk
-func FileExist(path string) bool {
-	if _, err := os.Stat(path); os.IsNotExist(err) {
-		return false
-	}
-
-	return true
 }
 
 // DNSFQDN attempts to find the FQDN using DNS resolution
@@ -92,7 +83,7 @@ func DNSFQDN() (string, error) {
 // can be used to extract the parsed settings
 func parseDotConfFile(plugin string, conf *Config, target interface{}) error {
 	cfgPath := filepath.Join(conf.dotdDir(), fmt.Sprintf("%s.cfg", plugin))
-	if FileExist(cfgPath) {
+	if util.FileExist(cfgPath) {
 		err := parseConfig(cfgPath, target, fmt.Sprintf("plugin.%s", plugin), conf.rawOpts)
 		if err != nil {
 			return err
@@ -188,29 +179,4 @@ func parseConfigContents(content io.Reader, config interface{}, prefix string, f
 			}
 		}
 	}
-}
-
-// HomeDir determines the home location without using the user package or requiring cgo
-//
-// On Unix it needs HOME set and on windows HOMEDRIVE and HOMEDIR
-func HomeDir() (string, error) {
-	if runtime.GOOS == "windows" {
-		drive := os.Getenv("HOMEDRIVE")
-		home := os.Getenv("HOMEDIR")
-
-		if home == "" || drive == "" {
-			return "", fmt.Errorf("cannot determine home dir, ensure HOMEDRIVE and HOMEDIR is set")
-		}
-
-		return filepath.Join(os.Getenv("HOMEDRIVE"), os.Getenv("HOMEDIR")), nil
-	}
-
-	home := os.Getenv("HOME")
-
-	if home == "" {
-		return "", fmt.Errorf("cannot determine home dir, ensure HOME is set")
-	}
-
-	return home, nil
-
 }

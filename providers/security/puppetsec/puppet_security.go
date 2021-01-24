@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/tlssetup"
 
 	"github.com/choria-io/go-choria/providers/security/filesec"
@@ -687,27 +688,17 @@ func (s *PuppetSecurity) writePrivateKey() (*rsa.PrivateKey, error) {
 }
 
 func (s *PuppetSecurity) csrExists() bool {
-	if _, err := os.Stat(s.csrPath()); err != nil {
-		return false
-	}
-
-	return true
+	return util.FileExist(s.csrPath())
 }
 
 func (s *PuppetSecurity) privateKeyExists() bool {
-	_, err := os.Stat(s.privateKeyPath())
-
-	return !os.IsNotExist(err)
+	return util.FileExist(s.privateKeyPath())
 }
 
 func (s *PuppetSecurity) publicCertExists() bool {
-	_, err := os.Stat(s.publicCertPath())
-
-	return !os.IsNotExist(err)
+	return util.FileExist(s.publicCertPath())
 }
 
 func (s *PuppetSecurity) caExists() bool {
-	_, err := os.Stat(s.caPath())
-
-	return !os.IsNotExist(err)
+	return util.FileExist(s.caPath())
 }
