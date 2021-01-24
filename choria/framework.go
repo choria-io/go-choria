@@ -13,7 +13,6 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -269,33 +268,51 @@ func (fw *Framework) FederationMiddlewareServers() (servers srvcache.Servers, er
 
 // PuppetDBServers resolves the PuppetDB server based on configuration of _x-puppet-db._tcp
 func (fw *Framework) PuppetDBServers() (servers srvcache.Servers, err error) {
-	configured := ""
 	if fw.Config.Choria.PuppetDBHost != "" {
-		configured = fw.Config.Choria.PuppetDBHost
-		if fw.Config.Choria.PuppetDBPort != 0 {
-			configured += ":" + strconv.Itoa(fw.Config.Choria.PuppetDBPort)
+		configured := fmt.Sprintf("%s:%d", fw.Config.Choria.PuppetDBHost, fw.Config.Choria.PuppetDBPort)
+
+		servers, err = srvcache.StringHostsToServers([]string{configured}, "https")
+		if err != nil {
+			return servers, fmt.Errorf("could not parse configured PuppetDB host: %s", err)
 		}
+
+		return servers, nil
 	}
 
-	if configured != "" {
+	if fw.Config.Choria.UseSRVRecords {
+		servers, err = fw.QuerySrvRecords([]string{"_x-puppet-db._tcp"})
+		if err != nil {
+			return servers, fmt.Errorf("could not resolve PuppetDB Server SRV records: %s", err)
+		}
+
+		if servers.Count() == 0 {
+			servers, err = fw.QuerySrvRecords([]string{"_x-puppet._tcp"})
+			if err != nil {
+				return servers, fmt.Errorf("could not resolve Puppet Server SRV records: %s", err)
+			}
+
+			// In the case where we take _x-puppet._tcp SRV records we unfortunately have
+			// to force the port else it uses the one from Puppet which will 404
+			servers.Each(func(s srvcache.Server) {
+				s.SetPort(fw.Config.Choria.PuppetDBPort)
+			})
+		}
+
+		servers.Each(func(s srvcache.Server) {
+			if s.Scheme() == "" {
+				s.SetScheme("https")
+			}
+		})
+	}
+
+	if servers == nil || servers.Count() == 0 {
+		configured := fmt.Sprintf("%s:%d", "puppet", fw.Config.Choria.PuppetDBPort)
+
 		servers, err = srvcache.StringHostsToServers([]string{configured}, "https")
 		if err != nil {
 			return servers, fmt.Errorf("could not parse configured PuppetDB host: %s", err)
 		}
 	}
-
-	if servers.Count() == 0 {
-		servers, err = fw.QuerySrvRecords([]string{"_x-puppet-db._tcp"})
-		if err != nil {
-			return servers, fmt.Errorf("could not resolve PuppetDB Server SRV records: %s", err)
-		}
-	}
-
-	servers.Each(func(s srvcache.Server) {
-		if s.Scheme() == "" {
-			s.SetScheme("https")
-		}
-	})
 
 	return servers, nil
 }

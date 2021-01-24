@@ -15,7 +15,7 @@ type ChoriaPluginConfig struct {
 	PuppetServerPort int    `confkey:"plugin.choria.puppetserver_port" default:"8140"`                                                       // The port your Puppet Server listens on
 	PuppetCAHost     string `confkey:"plugin.choria.puppetca_host" default:"puppet"`                                                         // The hostname where your Puppet Certificate Authority can be found
 	PuppetCAPort     int    `confkey:"plugin.choria.puppetca_port" default:"8140"`                                                           // The port your Puppet Certificate Authority listens on
-	PuppetDBHost     string `confkey:"plugin.choria.puppetdb_host" default:"puppet"`                                                         // The host hosting your PuppetDB, used by the "choria" discovery plugin
+	PuppetDBHost     string `confkey:"plugin.choria.puppetdb_host" default:""`                                                               // The host hosting your PuppetDB, used by the "choria" discovery plugin
 	PuppetDBPort     int    `confkey:"plugin.choria.puppetdb_port" default:"8081"`                                                           // The port your PuppetDB listens on
 	UseSRVRecords    bool   `confkey:"plugin.choria.use_srv" default:"true" url:"https://choria.io/docs/deployment/dns/"`                    // If SRV record lookups should be attempted to find Puppet, PuppetDB, Brokers etc
 	SRVDomain        string `confkey:"plugin.choria.srv_domain" url:"https://choria.io/docs/deployment/dns/"`                                // The domain to use for SRV records, defaults to the domain the server FQDN is in
