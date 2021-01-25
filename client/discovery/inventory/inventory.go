@@ -6,113 +6,20 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"reflect"
 	"strings"
 
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/filter/facts"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 )
 
-// DataSchema the schema of supported inventory files
-const DataSchema = "https://choria.io/schemas/choria/discovery/v1/inventory_file.json"
-
 type Inventory struct {
 	fw  ChoriaFramework
 	log *logrus.Entry
-}
-
-// DataFile is a source for discovery information that describes a fleet
-type DataFile struct {
-	Schema string   `json:"$schema" yaml:"$schema"`
-	Groups []*Group `json:"groups,omitempty" yaml:"groups,omitempty"`
-	Nodes  []*Node  `json:"nodes" yaml:"nodes"`
-}
-
-type GroupFilter struct {
-	Facts      []string `json:"facts" yaml:"facts"`
-	Agents     []string `json:"agents" yaml:"agents"`
-	Identities []string `json:"identities" yaml:"identities"`
-	Classes    []string `json:"classes" yaml:"classes"`
-}
-
-func (f *GroupFilter) ToProtocolFilter() (*protocol.Filter, error) {
-	filter := protocol.NewFilter()
-
-	if f == nil {
-		return filter, nil
-	}
-
-	for _, fact := range f.Facts {
-		ff, err := facts.ParseFactFilterString(fact)
-		if err != nil {
-			return nil, err
-		}
-
-		err = filter.AddFactFilter(ff[0], ff[1], ff[2])
-		if err != nil {
-			return nil, err
-		}
-	}
-
-	for _, agent := range f.Agents {
-		filter.AddAgentFilter(agent)
-	}
-
-	for _, id := range f.Identities {
-		filter.AddIdentityFilter(id)
-	}
-
-	for _, c := range f.Classes {
-		filter.AddClassFilter(c)
-	}
-
-	return filter, nil
-}
-
-// Group is a view over the inventory expressed as a filter saved by name
-type Group struct {
-	Name   string       `json:"name" yaml:"name"`
-	Filter *GroupFilter `json:"filter" yaml:"filter"`
-}
-
-// Agent describes an agent available on the node
-type Agent struct {
-	Name    string `json:"name" yaml:"name"`
-	Version string `json:"version" yaml:"version"`
-}
-
-// Node describes a single node on the network
-type Node struct {
-	Name        string                 `json:"name" yaml:"name"`
-	Collectives []string               `json:"collectives" yaml:"collectives"`
-	Facts       map[string]interface{} `json:"facts" yaml:"facts"`
-	Classes     []string               `json:"classes" yaml:"classes"`
-	Agents      []*Agent               `json:"agents" yaml:"agents"`
-}
-
-// AgentNames returns the list of names for known agents
-func (n *Node) AgentNames() []string {
-	var names []string
-	for _, a := range n.Agents {
-		names = append(names, a.Name)
-	}
-
-	return names
-}
-
-// LookupGroup finds a group by name
-func (d *DataFile) LookupGroup(name string) (*Group, bool) {
-	for _, g := range d.Groups {
-		if g.Name == name {
-			return g, true
-		}
-	}
-
-	return nil, false
 }
 
 type ChoriaFramework interface {
@@ -154,10 +61,6 @@ func (i *Inventory) Discover(_ context.Context, opts ...DiscoverOption) (n []str
 
 	if !util.FileExist(dopts.source) {
 		return nil, fmt.Errorf("discovery source %q does not exist", dopts.source)
-	}
-
-	if len(dopts.filter.CompoundFilters()) > 0 {
-		return nil, fmt.Errorf("compound filters are not supported")
 	}
 
 	return i.discover(dopts)
@@ -224,7 +127,7 @@ func (i *Inventory) isValidGroupLookup(f *protocol.Filter) (grouped bool, err er
 		return true, fmt.Errorf("group matches cannot be combined with other filters")
 	}
 
-	if len(f.FactFilters()) > 0 || len(f.ClassFilters()) > 0 || len(f.AgentFilters()) > 0 || len(f.CompoundFilters()) > 0 {
+	if len(f.FactFilters()) > 0 || len(f.ClassFilters()) > 0 || (len(f.AgentFilters()) > 0 && !reflect.DeepEqual(f.AgentFilters(), []string{"rpcutil"})) || len(f.CompoundFilters()) > 0 {
 		return true, fmt.Errorf("group matches cannot be combined with other filters")
 	}
 
@@ -254,8 +157,9 @@ func (i *Inventory) selectMatchingNodes(d *DataFile, collective string, f *proto
 			}
 		}
 
+		agents := node.AgentNames()
 		if len(f.AgentFilters()) > 0 {
-			if f.MatchAgents(node.AgentNames()) {
+			if f.MatchAgents(agents) {
 				passed++
 			} else {
 				continue
@@ -270,12 +174,21 @@ func (i *Inventory) selectMatchingNodes(d *DataFile, collective string, f *proto
 			}
 		}
 
+		fj, err := json.Marshal(node.Facts)
+		if err != nil {
+			return nil, fmt.Errorf("invalid facts: %s", err)
+		}
+
 		if len(f.FactFilters()) > 0 {
-			fj, err := json.Marshal(node.Facts)
-			if err != nil {
-				return nil, fmt.Errorf("invalid facts: %s", err)
-			}
 			if f.MatchFacts(fj, i.log) {
+				passed++
+			} else {
+				continue
+			}
+		}
+
+		if len(f.CompoundFilters()) > 0 {
+			if f.MatchCompound(fj, node.Classes, agents, i.log) {
 				passed++
 			} else {
 				continue
@@ -304,6 +217,11 @@ func (i *Inventory) readInventory(path string) (*DataFile, error) {
 		if err != nil {
 			return nil, err
 		}
+	}
+
+	err = ValidateInventory(f)
+	if err != nil {
+		return nil, err
 	}
 
 	err = json.Unmarshal(f, data)

@@ -59,7 +59,7 @@ func MatchExprString(queries [][]map[string]string, facts json.RawMessage, class
 
 		prog, err := expr.Compile(query, expr.Env(env), expr.AsBool(), expr.AllowUndefinedVariables())
 		if err != nil {
-			log.Errorf("Could not compile compound query: %s", err)
+			log.Errorf("Could not compile compound query '%s': %s", query, err)
 			failed++
 			continue
 		}

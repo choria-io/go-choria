@@ -107,7 +107,7 @@ func (f *Filter) MatchRequest(request Request, agents []string, identity string,
 	}
 
 	if len(filter.CompoundFilters()) > 0 {
-		if filter.MatchCompound(factsFile, classesFile, agents, log) {
+		if filter.MatchCompoundFiles(factsFile, classesFile, agents, log) {
 			log.Debugf("Matching request %s based on compound filter %#v", request.RequestID(), filter.CompoundFilters())
 			passed++
 		} else {
@@ -149,9 +149,14 @@ func (f *Filter) MatchClasses(knownClasses []string, _ Logger) bool {
 	return classes.Match(f.ClassFilters(), knownClasses)
 }
 
-// MatchCompound determines if the filter would match against classes, facts and agents using a expr expression
-func (f *Filter) MatchCompound(factsFile string, classesFile string, knownAgents []string, log Logger) bool {
+// MatchCompoundFiles determines if the filter would match against classes, facts and agents using a expr expression
+func (f *Filter) MatchCompoundFiles(factsFile string, classesFile string, knownAgents []string, log Logger) bool {
 	return compound.MatchExprStringFiles(f.CompoundFilters(), factsFile, classesFile, knownAgents, log)
+}
+
+// MatchCompound determines if the filter would match against classes, facts and agents using a expr expression
+func (f *Filter) MatchCompound(facts json.RawMessage, knownClasses []string, knownAgents []string, log Logger) bool {
+	return compound.MatchExprString(f.CompoundFilters(), facts, knownClasses, knownAgents, log)
 }
 
 // Empty determines if a filter is empty - that is all its contained filter arrays are empty
@@ -205,6 +210,10 @@ func (f *Filter) FactFilters() [][3]string {
 // AddCompoundFilter appends a filter to the compound filters,
 // the filter should be a expr string representing a valid choria filter
 func (f *Filter) AddCompoundFilter(query string) error {
+	if query == "" {
+		return nil
+	}
+
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
