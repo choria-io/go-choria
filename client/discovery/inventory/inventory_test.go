@@ -72,6 +72,11 @@ var _ = Describe("Inventory", func() {
 			Expect(err).To(Not(HaveOccurred()))
 			Expect(nodes).To(Equal([]string{"dev1.example.net", "dev2.example.net"}))
 
+			filter = protocol.NewFilter()
+			filter.AddIdentityFilter("group:acme")
+			nodes, err = inv.Discover(context.Background(), Filter(filter))
+			Expect(err).To(Not(HaveOccurred()))
+			Expect(nodes).To(Equal([]string{"dev1.example.net"}))
 		})
 
 		It("Should resolve multiple groups", func() {
@@ -118,6 +123,15 @@ var _ = Describe("Inventory", func() {
 			nodes, err = inv.Discover(context.Background(), Collective("mcollective"), Filter(filter))
 			Expect(err).To(Not(HaveOccurred()))
 			Expect(nodes).To(Equal([]string{"dev2.example.net"}))
+		})
+
+		It("Should match compound filters", func() {
+			filter := protocol.NewFilter()
+			err := filter.AddCompoundFilter(`with("customer=acme") and with("one")`)
+			Expect(err).To(Not(HaveOccurred()))
+			nodes, err := inv.Discover(context.Background(), Collective("mcollective"), Filter(filter))
+			Expect(err).To(Not(HaveOccurred()))
+			Expect(nodes).To(Equal([]string{"dev1.example.net"}))
 		})
 	})
 })

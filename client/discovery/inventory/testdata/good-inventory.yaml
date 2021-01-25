@@ -1,4 +1,4 @@
-$schema: "https://choria.io/schemas/choria/discovery/v1/inventory_file.json"
+$schema: https://choria.io/schemas/choria/discovery/v1/inventory_file.json
 groups:
   - name: malta
     filter:
@@ -9,6 +9,11 @@ groups:
     filter:
       facts:
         - country=de
+
+  - name: acme
+    filter:
+      compound: with("customer=acme")
+
 
   - name: all
 

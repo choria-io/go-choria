@@ -158,7 +158,7 @@ func ValidateDir(dir string) (validationErrors []string, err error) {
 
 	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not perform schema validation")
+		return nil, fmt.Errorf("could not perform schema validation: %s", err)
 	}
 
 	if result.Valid() {
