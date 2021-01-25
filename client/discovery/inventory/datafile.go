@@ -10,17 +10,17 @@ const DataSchema = "https://choria.io/schemas/choria/discovery/v1/inventory_file
 
 // DataFile is a source for discovery information that describes a fleet
 type DataFile struct {
-	Schema string   `json:"$schema" yaml:"$schema"`
-	Groups []*Group `json:"groups,omitempty" yaml:"groups,omitempty"`
-	Nodes  []*Node  `json:"nodes" yaml:"nodes"`
+	Schema string  `json:"$schema" yaml:"$schema"`
+	Groups []Group `json:"groups,omitempty" yaml:"groups,omitempty"`
+	Nodes  []Node  `json:"nodes" yaml:"nodes"`
 }
 
 type GroupFilter struct {
-	Agents     []string `json:"agents" yaml:"agents"`
-	Classes    []string `json:"classes" yaml:"classes"`
-	Facts      []string `json:"facts" yaml:"facts"`
-	Identities []string `json:"identities" yaml:"identities"`
-	Compound   string   `json:"compound" yaml:"compound"`
+	Agents     []string `json:"agents,omitempty" yaml:"agents,omitempty"`
+	Classes    []string `json:"classes,omitempty" yaml:"classes,omitempty"`
+	Facts      []string `json:"facts,omitempty" yaml:"facts,omitempty"`
+	Identities []string `json:"identities,omitempty" yaml:"identities,omitempty"`
+	Compound   string   `json:"compound,omitempty" yaml:"compound,omitempty"`
 }
 
 func (f *GroupFilter) ToProtocolFilter() (*protocol.Filter, error) {
@@ -67,13 +67,7 @@ func (f *GroupFilter) ToProtocolFilter() (*protocol.Filter, error) {
 // Group is a view over the inventory expressed as a filter saved by name
 type Group struct {
 	Name   string       `json:"name" yaml:"name"`
-	Filter *GroupFilter `json:"filter" yaml:"filter"`
-}
-
-// Agent describes an agent available on the node
-type Agent struct {
-	Name    string `json:"name" yaml:"name"`
-	Version string `json:"version" yaml:"version"`
+	Filter *GroupFilter `json:"filter,omitempty" yaml:"filter,omitempty"`
 }
 
 // Node describes a single node on the network
@@ -82,24 +76,14 @@ type Node struct {
 	Collectives []string               `json:"collectives" yaml:"collectives"`
 	Facts       map[string]interface{} `json:"facts" yaml:"facts"`
 	Classes     []string               `json:"classes" yaml:"classes"`
-	Agents      []*Agent               `json:"agents" yaml:"agents"`
-}
-
-// AgentNames returns the list of names for known agents
-func (n *Node) AgentNames() []string {
-	var names []string
-	for _, a := range n.Agents {
-		names = append(names, a.Name)
-	}
-
-	return names
+	Agents      []string               `json:"agents" yaml:"agents"`
 }
 
 // LookupGroup finds a group by name
 func (d *DataFile) LookupGroup(name string) (*Group, bool) {
 	for _, g := range d.Groups {
 		if g.Name == name {
-			return g, true
+			return &g, true
 		}
 	}
 

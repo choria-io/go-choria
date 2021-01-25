@@ -67,7 +67,7 @@ func (i *Inventory) Discover(_ context.Context, opts ...DiscoverOption) (n []str
 }
 
 func (i *Inventory) discover(dopts *dOpts) ([]string, error) {
-	data, err := i.readInventory(dopts.source)
+	data, err := ReadInventory(dopts.source)
 	if err != nil {
 		return nil, err
 	}
@@ -157,9 +157,8 @@ func (i *Inventory) selectMatchingNodes(d *DataFile, collective string, f *proto
 			}
 		}
 
-		agents := node.AgentNames()
 		if len(f.AgentFilters()) > 0 {
-			if f.MatchAgents(agents) {
+			if f.MatchAgents(node.Agents) {
 				passed++
 			} else {
 				continue
@@ -188,7 +187,7 @@ func (i *Inventory) selectMatchingNodes(d *DataFile, collective string, f *proto
 		}
 
 		if len(f.CompoundFilters()) > 0 {
-			if f.MatchCompound(fj, node.Classes, agents, i.log) {
+			if f.MatchCompound(fj, node.Classes, node.Agents, i.log) {
 				passed++
 			} else {
 				continue
@@ -203,7 +202,8 @@ func (i *Inventory) selectMatchingNodes(d *DataFile, collective string, f *proto
 	return matched, nil
 }
 
-func (i *Inventory) readInventory(path string) (*DataFile, error) {
+// ReadInventory reads and validates an inventory file
+func ReadInventory(path string) (*DataFile, error) {
 	ext := filepath.Ext(path)
 	f, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -219,9 +219,12 @@ func (i *Inventory) readInventory(path string) (*DataFile, error) {
 		}
 	}
 
-	err = ValidateInventory(f)
+	warnings, err := ValidateInventory(f)
 	if err != nil {
 		return nil, err
+	}
+	if len(warnings) > 0 {
+		return nil, fmt.Errorf("invalid inventory file, validate using 'choria tool inventory'")
 	}
 
 	err = json.Unmarshal(f, data)

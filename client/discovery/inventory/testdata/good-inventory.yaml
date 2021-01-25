@@ -29,8 +29,7 @@ nodes:
       - one
       - two
     agents:
-      - name: rpcutil
-        version: 1.0.0
+      - rpcutil
   - name: dev2.example.net
     collectives:
       - mcollective
@@ -42,7 +41,6 @@ nodes:
       - two
       - three
     agents:
-      - name: other
-        version: 1.0.0
-      - name: rpcutil
-        version: 1.0.0
+      - other
+      - rpcutil
+
