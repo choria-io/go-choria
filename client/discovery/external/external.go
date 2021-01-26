@@ -37,11 +37,12 @@ type Response struct {
 
 // Request is the request sent to the external script on its STDIN
 type Request struct {
-	Schema     string           `json:"$schema"`
-	Protocol   string           `json:"protocol"`
-	Timeout    float64          `json:"timeout"`
-	Collective string           `json:"collective"`
-	Filter     *protocol.Filter `json:"filter"`
+	Protocol   string            `json:"protocol"`
+	Collective string            `json:"collective"`
+	Filter     *protocol.Filter  `json:"filter"`
+	Options    map[string]string `json:"options"`
+	Schema     string            `json:"$schema"`
+	Timeout    float64           `json:"timeout"`
 }
 
 const (
@@ -85,6 +86,7 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 	command, ok := dopts.do["command"]
 	if ok && command != "" {
 		dopts.command = command
+		delete(dopts.do, "command")
 	}
 
 	if dopts.command == "" {
@@ -100,6 +102,7 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 		Timeout:    dopts.timeout.Seconds(),
 		Collective: dopts.collective,
 		Filter:     dopts.filter,
+		Options:    dopts.do,
 	}
 
 	req, err := json.Marshal(idat)

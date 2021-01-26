@@ -57,12 +57,12 @@ var _ = Describe("External", func() {
 
 			wd, _ := os.Getwd()
 			fw.Config.Choria.ExternalDiscoveryCommand = filepath.Join(wd, "testdata/good.rb")
-			nodes, err := e.Discover(context.Background(), Filter(f))
+			nodes, err := e.Discover(context.Background(), Filter(f), DiscoveryOptions(map[string]string{"foo": "bar"}))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(nodes).To(Equal([]string{"one", "two"}))
 
 			fw.Config.Choria.ExternalDiscoveryCommand = filepath.Join(wd, "testdata/good_with_argument.rb") + " discover --test"
-			nodes, err = e.Discover(context.Background(), Filter(f))
+			nodes, err = e.Discover(context.Background(), Filter(f), DiscoveryOptions(map[string]string{"foo": "bar"}))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(nodes).To(Equal([]string{"one", "two"}))
 		})
@@ -79,7 +79,7 @@ var _ = Describe("External", func() {
 			wd, _ := os.Getwd()
 			fw.Config.Choria.ExternalDiscoveryCommand = filepath.Join(wd, "testdata/missing.rb")
 			cmd := filepath.Join(wd, "testdata/good_with_argument.rb") + " discover --test"
-			nodes, err := e.Discover(context.Background(), Filter(f), DiscoveryOptions(map[string]string{"command": cmd}))
+			nodes, err := e.Discover(context.Background(), Filter(f), DiscoveryOptions(map[string]string{"command": cmd, "foo": "bar"}))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(nodes).To(Equal([]string{"one", "two"}))
 

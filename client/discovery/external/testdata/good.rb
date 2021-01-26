@@ -18,6 +18,9 @@ end
 request = JSON.parse(File.read(ENV["CHORIA_EXTERNAL_REQUEST"]))
 expected = {
   "$schema" => "https://choria.io/schemas/choria/discovery/v1/external_request.json",
+  "options" => {
+  	"foo" => "bar"
+  },
   "protocol" => "io.choria.choria.discovery.v1.external_request",
   "filter" => {
     "fact" => [{"fact" => "country", "operator"=>"==","value"=>"mt"}],
