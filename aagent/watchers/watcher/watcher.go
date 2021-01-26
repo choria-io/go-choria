@@ -104,8 +104,9 @@ func (w *Watcher) NotifyStateChance() {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
-	if len(w.statechg) < cap(w.statechg) {
-		w.statechg <- struct{}{}
+	select {
+	case w.statechg <- struct{}{}:
+	default:
 	}
 }
 

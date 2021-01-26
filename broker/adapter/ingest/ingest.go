@@ -166,13 +166,13 @@ func (na *NatsIngest) Receiver(ctx context.Context, wg *sync.WaitGroup) {
 		// side has to be careful to handle when the other side gets
 		// into a bad place.  The work channel has 1000 capacity so
 		// this gives us a good buffer to weather short lived storms
-		if len(na.work) == cap(na.work) {
+		select {
+		case na.work <- msg:
+		default:
 			na.log.Warn("Work queue is full, discarding message")
 			ectr.Inc()
 			return
 		}
-
-		na.work <- msg
 
 		ctr.Inc()
 	}
