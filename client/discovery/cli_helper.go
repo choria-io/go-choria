@@ -90,7 +90,7 @@ func (o *StandardOptions) Discover(ctx context.Context, fw client.ChoriaFramewor
 	}
 
 	switch {
-	case len(filter.Compound) > 0:
+	case len(filter.Compound) > 0 && o.DiscoveryMethod != "broadcast" && o.DiscoveryMethod != "inventory" && o.DiscoveryMethod != "mc":
 		o.DiscoveryMethod = "broadcast"
 		logger.Debugf("Forcing discovery mode to broadcast to support compound filters")
 

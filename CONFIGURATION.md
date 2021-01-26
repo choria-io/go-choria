@@ -294,13 +294,13 @@ Enables the Network Broker
 
 ## plugin.choria.discovery.external.command
 
- * **Type:** string
+ * **Type:** path_string
 
 The command to use for external discovery
 
 ## plugin.choria.discovery.inventory.source
 
- * **Type:** string
+ * **Type:** path_string
 
 The file to read for inventory discovery
 

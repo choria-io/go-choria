@@ -79,7 +79,7 @@ func (e *tInventoryCommand) updateFile() error {
 	}
 
 	if util.FileExist(e.file) {
-		dat, err = inventory.ReadInventory(e.file)
+		dat, err = inventory.ReadInventory(e.file, false)
 		if err != nil {
 			return err
 		}

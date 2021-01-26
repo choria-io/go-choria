@@ -2,8 +2,10 @@ package compound
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/antonmedv/expr"
+	"github.com/antonmedv/expr/vm"
 	"github.com/google/go-cmp/cmp"
 	"github.com/tidwall/gjson"
 
@@ -35,6 +37,40 @@ func MatchExprStringFiles(queries [][]map[string]string, factFile string, classe
 	return MatchExprString(queries, f, c, knownAgents, log)
 }
 
+func CompileExprQuery(query string) (*vm.Program, error) {
+	env := EmptyEnv()
+	env["classes"] = []string{}
+	env["agents"] = []string{}
+	env["facts"] = []string{}
+	env["with"] = matchFunc(json.RawMessage{}, []string{}, []string{}, nil)
+	env["fact"] = factFunc(json.RawMessage{})
+	env["include"] = includeFunc
+
+	return expr.Compile(query, expr.Env(env), expr.AsBool(), expr.AllowUndefinedVariables())
+}
+
+func MatchExprProgram(prog *vm.Program, query string, facts json.RawMessage, classes []string, knownAgents []string, log Logger) (bool, error) {
+	env := EmptyEnv()
+	env["classes"] = classes
+	env["agents"] = knownAgents
+	env["facts"] = facts
+	env["with"] = matchFunc(facts, classes, knownAgents, log)
+	env["fact"] = factFunc(facts)
+	env["include"] = includeFunc
+
+	res, err := expr.Run(prog, env)
+	if err != nil {
+		return false, fmt.Errorf("could not execute compound query: %s", err)
+	}
+
+	b, ok := res.(bool)
+	if !ok {
+		return false, fmt.Errorf("compound query returned non boolean")
+	}
+
+	return b, nil
+}
+
 func MatchExprString(queries [][]map[string]string, facts json.RawMessage, classes []string, knownAgents []string, log Logger) bool {
 	matched := 0
 	failed := 0
@@ -64,21 +100,14 @@ func MatchExprString(queries [][]map[string]string, facts json.RawMessage, class
 			continue
 		}
 
-		res, err := expr.Run(prog, env)
+		res, err := MatchExprProgram(prog, query, facts, classes, knownAgents, log)
 		if err != nil {
-			log.Errorf("Could not execute compound query: %s", err)
+			log.Errorf("Could not match compound query '%s': %s", query, err)
 			failed++
 			continue
 		}
 
-		b, ok := res.(bool)
-		if !ok {
-			log.Errorf("Compound query returned non boolean")
-			failed++
-			continue
-		}
-
-		if b {
+		if res {
 			matched++
 		} else {
 			matched--

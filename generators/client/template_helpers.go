@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
@@ -87,9 +86,9 @@ func (g *Generator) templFBase64Encode(v string) string {
 
 func (g *Generator) templFGeneratedWarning() string {
 	meta := g.agent.DDL.Metadata
-	return fmt.Sprintf(`// generated code; DO NOT EDIT; %v"
+	return fmt.Sprintf(`// generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent '%s'' Version %s generated using Choria version %s`, time.Now(), meta.Name, meta.Version, choria.BuildInfo().Version())
+// Client for Choria RPC Agent '%s'' Version %s generated using Choria version %s`, meta.Name, meta.Version, choria.BuildInfo().Version())
 }
 
 func (g *Generator) funcMap() template.FuncMap {

@@ -1,6 +1,8 @@
 package inventory
 
 import (
+	"encoding/json"
+
 	"github.com/choria-io/go-choria/filter/facts"
 	"github.com/choria-io/go-choria/protocol"
 )
@@ -72,11 +74,11 @@ type Group struct {
 
 // Node describes a single node on the network
 type Node struct {
-	Name        string                 `json:"name" yaml:"name"`
-	Collectives []string               `json:"collectives" yaml:"collectives"`
-	Facts       map[string]interface{} `json:"facts" yaml:"facts"`
-	Classes     []string               `json:"classes" yaml:"classes"`
-	Agents      []string               `json:"agents" yaml:"agents"`
+	Name        string          `json:"name" yaml:"name"`
+	Collectives []string        `json:"collectives" yaml:"collectives"`
+	Facts       json.RawMessage `json:"facts" yaml:"facts"`
+	Classes     []string        `json:"classes" yaml:"classes"`
+	Agents      []string        `json:"agents" yaml:"agents"`
 }
 
 // LookupGroup finds a group by name

@@ -9,10 +9,12 @@ import (
 	"reflect"
 	"strings"
 
+	"github.com/antonmedv/expr/vm"
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/filter/compound"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 )
@@ -38,7 +40,7 @@ func New(fw ChoriaFramework) *Inventory {
 }
 
 // Discover performs a broadcast discovery using the supplied filter
-func (i *Inventory) Discover(_ context.Context, opts ...DiscoverOption) (n []string, err error) {
+func (i *Inventory) Discover(ctx context.Context, opts ...DiscoverOption) (n []string, err error) {
 	dopts := &dOpts{
 		collective: i.fw.Configuration().MainCollective,
 		source:     i.fw.Configuration().Choria.InventoryDiscoverySource,
@@ -55,6 +57,11 @@ func (i *Inventory) Discover(_ context.Context, opts ...DiscoverOption) (n []str
 		dopts.source = file
 	}
 
+	_, ok = dopts.do["novalidate"]
+	if ok {
+		dopts.noValidate = true
+	}
+
 	if dopts.source == "" {
 		return nil, fmt.Errorf("no discovery source file specified")
 	}
@@ -63,11 +70,11 @@ func (i *Inventory) Discover(_ context.Context, opts ...DiscoverOption) (n []str
 		return nil, fmt.Errorf("discovery source %q does not exist", dopts.source)
 	}
 
-	return i.discover(dopts)
+	return i.discover(ctx, dopts)
 }
 
-func (i *Inventory) discover(dopts *dOpts) ([]string, error) {
-	data, err := ReadInventory(dopts.source)
+func (i *Inventory) discover(ctx context.Context, dopts *dOpts) ([]string, error) {
+	data, err := ReadInventory(dopts.source, dopts.noValidate)
 	if err != nil {
 		return nil, err
 	}
@@ -87,7 +94,7 @@ func (i *Inventory) discover(dopts *dOpts) ([]string, error) {
 				if err != nil {
 					return nil, err
 				}
-				selected, err := i.selectMatchingNodes(data, "", gf)
+				selected, err := i.selectMatchingNodes(ctx, data, "", gf)
 				if err != nil {
 					return nil, err
 				}
@@ -101,7 +108,7 @@ func (i *Inventory) discover(dopts *dOpts) ([]string, error) {
 		return util.UniqueStrings(matched, true), nil
 	}
 
-	return i.selectMatchingNodes(data, dopts.collective, dopts.filter)
+	return i.selectMatchingNodes(ctx, data, dopts.collective, dopts.filter)
 }
 
 func (i *Inventory) isValidGroupLookup(f *protocol.Filter) (grouped bool, err error) {
@@ -134,10 +141,27 @@ func (i *Inventory) isValidGroupLookup(f *protocol.Filter) (grouped bool, err er
 	return true, nil
 }
 
-func (i *Inventory) selectMatchingNodes(d *DataFile, collective string, f *protocol.Filter) ([]string, error) {
-	var matched []string
+func (i *Inventory) selectMatchingNodes(ctx context.Context, d *DataFile, collective string, f *protocol.Filter) ([]string, error) {
+	var (
+		matched []string
+		query   string
+		prog    *vm.Program
+		err     error
+	)
+
+	if len(f.CompoundFilters()) > 0 {
+		query = f.CompoundFilters()[0][0]["expr"]
+		prog, err = compound.CompileExprQuery(query)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	for _, node := range d.Nodes {
+		if ctx.Err() != nil {
+			return nil, ctx.Err()
+		}
+
 		if collective != "" && !util.StringInList(node.Collectives, collective) {
 			continue
 		}
@@ -173,13 +197,8 @@ func (i *Inventory) selectMatchingNodes(d *DataFile, collective string, f *proto
 			}
 		}
 
-		fj, err := json.Marshal(node.Facts)
-		if err != nil {
-			return nil, fmt.Errorf("invalid facts: %s", err)
-		}
-
 		if len(f.FactFilters()) > 0 {
-			if f.MatchFacts(fj, i.log) {
+			if f.MatchFacts(node.Facts, i.log) {
 				passed++
 			} else {
 				continue
@@ -187,7 +206,8 @@ func (i *Inventory) selectMatchingNodes(d *DataFile, collective string, f *proto
 		}
 
 		if len(f.CompoundFilters()) > 0 {
-			if f.MatchCompound(fj, node.Classes, node.Agents, i.log) {
+			b, _ := compound.MatchExprProgram(prog, query, node.Facts, node.Classes, node.Agents, i.log)
+			if b {
 				passed++
 			} else {
 				continue
@@ -203,7 +223,7 @@ func (i *Inventory) selectMatchingNodes(d *DataFile, collective string, f *proto
 }
 
 // ReadInventory reads and validates an inventory file
-func ReadInventory(path string) (*DataFile, error) {
+func ReadInventory(path string, noValidate bool) (*DataFile, error) {
 	ext := filepath.Ext(path)
 	f, err := ioutil.ReadFile(path)
 	if err != nil {
@@ -219,12 +239,14 @@ func ReadInventory(path string) (*DataFile, error) {
 		}
 	}
 
-	warnings, err := ValidateInventory(f)
-	if err != nil {
-		return nil, err
-	}
-	if len(warnings) > 0 {
-		return nil, fmt.Errorf("invalid inventory file, validate using 'choria tool inventory'")
+	if !noValidate {
+		warnings, err := ValidateInventory(f)
+		if err != nil {
+			return nil, err
+		}
+		if len(warnings) > 0 {
+			return nil, fmt.Errorf("invalid inventory file, validate using 'choria tool inventory'")
+		}
 	}
 
 	err = json.Unmarshal(f, data)

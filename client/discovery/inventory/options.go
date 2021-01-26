@@ -9,6 +9,7 @@ type dOpts struct {
 	collective string
 	do         map[string]string
 	source     string
+	noValidate bool
 }
 
 // DiscoverOption configures the broadcast discovery method
