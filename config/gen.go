@@ -14,7 +14,6 @@ import (
 	"path/filepath"
 	"strings"
 	"text/template"
-	"time"
 
 	"github.com/fatih/structtag"
 )
@@ -152,7 +151,7 @@ func main() {
 		panic(err)
 	}
 
-	fmt.Fprintf(out, "	// auto generated at %s\n\n", time.Now())
+	fmt.Fprintf(out, "	// generated code; DO NOT EDIT\n\n")
 
 	err = t.Execute(out, docs)
 	out.Close()

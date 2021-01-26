@@ -1,4 +1,4 @@
-// auto generated at 2021-01-21 18:37:13.139441 +0100 CET m=+0.001505621
+// generated code; DO NOT EDIT
 
 package config
 
@@ -42,6 +42,7 @@ var docStrings = map[string]string{
 	"plugin.choria.srv_domain":        "The domain to use for SRV records, defaults to the domain the server FQDN is in",
 	"plugin.choria.server.provision":  "Specifically enable or disable provisioning",
 	"plugin.choria.discovery.external.command":                "The command to use for external discovery",
+	"plugin.choria.discovery.inventory.source":                "The file to read for inventory discovery",
 	"plugin.choria.discovery_host":                            "discovery proxy",
 	"plugin.choria.federation.collectives":                    "List of known remote collectives accessible via Federation Brokers",
 	"plugin.choria.federation_middleware_hosts":               "Middleware brokers used by the Federation Broker, if unset uses SRV",
