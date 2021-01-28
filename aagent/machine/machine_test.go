@@ -2,11 +2,11 @@ package machine
 
 import (
 	"context"
+	"fmt"
 	sync "sync"
 	"testing"
 
 	"github.com/choria-io/go-choria/aagent/watchers"
-	"github.com/pkg/errors"
 
 	gomock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -44,15 +44,15 @@ var _ = Describe("Aagent/Machine", func() {
 
 	Describe("FromYAML", func() {
 		It("Should configure the manager", func() {
-			manager.EXPECT().SetMachine(gomock.AssignableToTypeOf(&Machine{})).Return(errors.New("set machine error"))
+			manager.EXPECT().SetMachine(gomock.AssignableToTypeOf(&Machine{})).Return(fmt.Errorf("set machine error"))
 			machine, err = FromYAML("testdata/empty.yaml", manager)
-			Expect(errors.Cause(err)).To(MatchError("set machine error"))
+			Expect(err).To(MatchError("could not register with manager: set machine error"))
 		})
 
 		It("Should setup the machine", func() {
 			manager.EXPECT().SetMachine(gomock.AssignableToTypeOf(&Machine{}))
 			machine, err = FromYAML("testdata/empty.yaml", manager)
-			Expect(errors.Cause(err)).To(MatchError("a machine name is required"))
+			Expect(err).To(MatchError("validation failed: a machine name is required"))
 		})
 
 		It("Should load good machines", func() {

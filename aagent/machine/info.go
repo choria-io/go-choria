@@ -10,7 +10,6 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
-	"github.com/pkg/errors"
 )
 
 // WatcherState is the status of a given watcher, boolean result is false for unknown watchers
@@ -106,13 +105,13 @@ func randStringRunes(n int) string {
 func filemd5(path string) (string, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return "", errors.Wrapf(err, "could not open data for md5 hash")
+		return "", fmt.Errorf("could not open data for md5 hash: %s", err)
 	}
 	defer f.Close()
 
 	h := md5.New()
 	if _, err := io.Copy(h, f); err != nil {
-		return "", errors.Wrapf(err, "could not copy data to md5")
+		return "", fmt.Errorf("could not copy data to md5: %s", err)
 	}
 
 	return fmt.Sprintf("%x", h.Sum(nil)), nil

@@ -3,8 +3,6 @@ package watchers
 import (
 	"fmt"
 	"time"
-
-	"github.com/pkg/errors"
 )
 
 // WatcherDef is the core definition of a watcher, watcher type specific
@@ -26,11 +24,11 @@ func (w *WatcherDef) ParseAnnounceInterval() (err error) {
 	if w.AnnounceInterval != "" {
 		w.AnnounceDuration, err = time.ParseDuration(w.AnnounceInterval)
 		if err != nil {
-			return errors.Wrapf(err, "unknown announce interval for watcher %s", w.Name)
+			return fmt.Errorf("unknown announce interval for watcher %s: %s", w.Name, err)
 		}
 
 		if w.AnnounceDuration < time.Minute {
-			return errors.Errorf("announce interval %v is too small for watcher %s", w.AnnounceDuration, w.Name)
+			return fmt.Errorf("announce interval %v is too small for watcher %s", w.AnnounceDuration, w.Name)
 		}
 	}
 

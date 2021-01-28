@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/ghodss/yaml"
@@ -106,7 +105,7 @@ func FromDir(dir string, manager WatcherManager) (m *Machine, err error) {
 func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 	afile, err := filepath.Abs(file)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not determine absolute path for %s", file)
+		return nil, fmt.Errorf("could not determine absolute path for %s: %s", file, err)
 	}
 
 	f, err := ioutil.ReadFile(afile)
@@ -129,7 +128,7 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 
 	err = m.manager.SetMachine(m)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not register with manager")
+		return nil, fmt.Errorf("could not register with manager: %s", err)
 	}
 
 	err = m.Setup()
@@ -150,7 +149,7 @@ func ValidateDir(dir string) (validationErrors []string, err error) {
 
 	jbytes, err := yaml.YAMLToJSON(yml)
 	if err != nil {
-		return nil, errors.Wrap(err, "could not transform YAML to JSON")
+		return nil, fmt.Errorf("could not transform YAML to JSON: %s", err)
 	}
 
 	schemaLoader := gojsonschema.NewReferenceLoader("https://choria.io/schemas/choria/machine/v1/manifest.json")
@@ -332,7 +331,7 @@ func (m *Machine) Validate() error {
 func (m *Machine) Setup() error {
 	err := m.Validate()
 	if err != nil {
-		return errors.Wrapf(err, "validation failed")
+		return fmt.Errorf("validation failed: %s", err)
 	}
 
 	return m.buildFSM()

@@ -4,9 +4,9 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/choria-io/go-choria/aagent/machine"
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
+
+	"github.com/choria-io/go-choria/aagent/machine"
 )
 
 // Notifier implements machine.NotificationService
@@ -57,12 +57,12 @@ func (n *Notifier) NotifyPostTransition(transition *machine.TransitionNotificati
 
 	j, err := json.Marshal(transition.CloudEvent())
 	if err != nil {
-		return errors.Wrap(err, "could not JSON encode transition notification")
+		return fmt.Errorf("could not JSON encode transition notification: %s", err)
 	}
 
 	err = n.fw.PublishRaw("choria.machine.transition", j)
 	if err != nil {
-		return errors.Wrap(err, "could not publish notification")
+		return fmt.Errorf("could not publish notification: %s", err)
 	}
 
 	return nil
@@ -86,7 +86,7 @@ func (n *Notifier) NotifyWatcherState(name string, detail machine.WatcherStateNo
 
 	err = n.fw.PublishRaw(fmt.Sprintf("choria.machine.watcher.%s.state", wtype), j)
 	if err != nil {
-		return errors.Wrap(err, "could not publish notification")
+		return fmt.Errorf("could not publish notification: %s", err)
 	}
 
 	return nil

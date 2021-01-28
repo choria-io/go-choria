@@ -17,6 +17,8 @@ func (m *scoutCommand) Configure() error {
 }
 
 func (m *scoutCommand) Run(wg *sync.WaitGroup) (err error) {
+	defer wg.Done()
+
 	return nil
 }
 

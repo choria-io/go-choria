@@ -9,7 +9,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/pkg/errors"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent/machine"
@@ -50,7 +49,7 @@ type ChoriaProvider interface {
 func New(dir string, fw ChoriaProvider) (aa *AAgent, err error) {
 	n, err := notifier.New(fw)
 	if err != nil {
-		return nil, errors.Wrapf(err, "could not create notifier")
+		return nil, fmt.Errorf("could not create notifier: %s", err)
 	}
 
 	return &AAgent{
@@ -129,7 +128,7 @@ func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path strin
 func (a *AAgent) loadFromSource(ctx context.Context, wg *sync.WaitGroup) error {
 	files, err := ioutil.ReadDir(a.source)
 	if err != nil {
-		return errors.Wrapf(err, "could not read machine source")
+		return fmt.Errorf("could not read machine source: %s", err)
 	}
 
 	for _, file := range files {
