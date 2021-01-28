@@ -17,6 +17,8 @@ func (m *machineCommand) Configure() error {
 }
 
 func (m *machineCommand) Run(wg *sync.WaitGroup) (err error) {
+	defer wg.Done()
+
 	return nil
 }
 

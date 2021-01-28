@@ -92,6 +92,11 @@ func (p *Provider) externalActivationCheck(ddl *agentddl.DDL) (mcorpc.Activation
 	}
 
 	agentPath := filepath.Join(filepath.Dir(ddl.SourceLocation), ddl.Metadata.Name)
+	if !util.FileExist(agentPath) {
+		p.log.Debugf("Agent %s does not exist in %s, not activating", ddl.Metadata.Name, agentPath)
+		return func() bool { return false }, nil
+	}
+
 	rep := &ActivationReply{}
 	req := &ActivationCheck{
 		Schema:   activationSchema,

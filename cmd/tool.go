@@ -19,6 +19,8 @@ func (t *toolCommand) Configure() error {
 }
 
 func (t *toolCommand) Run(wg *sync.WaitGroup) (err error) {
+	defer wg.Done()
+
 	return nil
 }
 

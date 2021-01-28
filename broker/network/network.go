@@ -71,6 +71,7 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	s.opts.MaxConn = bi.MaxBrokerClients()
 	s.opts.NoSigs = true
 	s.opts.Logtime = false
+	s.opts.Cluster.Name = s.config.Choria.NetworkGatewayName
 
 	if s.config.Choria.NetworkClientAdvertiseName != "" {
 		s.opts.ClientAdvertise = s.config.Choria.NetworkClientAdvertiseName
