@@ -1,6 +1,6 @@
 module github.com/choria-io/go-choria
 
-go 1.14
+go 1.15
 
 replace github.com/brutella/dnssd => github.com/brutella/dnssd v1.1.2-0.20201216110556-df0d88646bc5
 

@@ -87,6 +87,7 @@ type ChoriaPluginConfig struct {
 	Serializer                   string   `confkey:"plugin.choria.security.serializer" validate:"enum=json,yaml" default:"json" deprecated:"1"`
 	SecurityProvider             string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11,certmanager"`                      // The Security Provider to use
 	SecurityAlwaysOverwriteCache bool     `confkey:"plugin.security.always_overwrite_cache" default:"false"`                                                        // Always store new Public Keys to the cache overwriting existing ones
+	SecurityAllowLegacyCerts     bool     `confkey:"plugin.security.support_legacy_certificates" default:"false"`                                                   // Allow certificates without SANs to be used
 	RemoteSignerTokenFile        string   `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"` // Path to the token used to access a Central Authenticator
 	RemoteSignerTokenEnvironment string   `confkey:"plugin.choria.security.request_signer.token_environment" url:"https://github.com/choria-io/aaasvc"`             // Environment variable to store Central Authenticator tokens
 	RemoteSignerSigningCert      string   `confkey:"plugin.choria.security.request_signing_certificate"`                                                            // The public certificate of the key used to sign the JWTs in the Signing Service

@@ -89,6 +89,9 @@ type Config struct {
 
 	// TLSSetup is the shared TLS configuration state between security providers
 	TLSConfig *tlssetup.Config
+
+	// BackwardCompatVerification enables custom verification that allows legacy certificates without SANs
+	BackwardCompatVerification bool
 }
 
 type signingRequest struct {
@@ -124,6 +127,10 @@ func New(opts ...Option) (*FileSecurity, error) {
 
 	if f.conf.Identity == "" {
 		return nil, errors.New("identity could not be determine automatically via Choria or was not supplied")
+	}
+
+	if f.conf.BackwardCompatVerification {
+		f.log.Infof("Enabling support for legacy SAN free certificates")
 	}
 
 	return f, nil
@@ -646,11 +653,49 @@ func (s *FileSecurity) TLSConfig() (*tls.Config, error) {
 		tlsc.RootCAs = caCertPool
 	}
 
+	if s.conf.BackwardCompatVerification {
+		tlsc.InsecureSkipVerify = true
+		tlsc.VerifyConnection = s.constructCustomVerifier(tlsc.RootCAs)
+	}
+
 	if s.conf.DisableTLSVerify {
 		tlsc.InsecureSkipVerify = true
 	}
 
 	return tlsc, nil
+}
+
+func (s *FileSecurity) constructCustomVerifier(pool *x509.CertPool) func(cs tls.ConnectionState) error {
+	return func(cs tls.ConnectionState) error {
+		s.log.Debug("Verifying connection using legacy SAN free certificate support")
+		opts := x509.VerifyOptions{
+			Roots:         pool,
+			Intermediates: x509.NewCertPool(),
+		}
+		// If there is no SAN, then fallback to using the CommonName
+		hasSanExtension := func(cert *x509.Certificate) bool {
+			// oid taken from crypt/x509/x509.go
+			var oidExtensionSubjectAltName = []int{2, 5, 29, 17}
+			for _, e := range cert.Extensions {
+				if e.Id.Equal(oidExtensionSubjectAltName) {
+					return true
+				}
+			}
+			return false
+		}
+		if !hasSanExtension(cs.PeerCertificates[0]) {
+			if !strings.EqualFold(cs.ServerName, cs.PeerCertificates[0].Subject.CommonName) {
+				return x509.HostnameError{Certificate: cs.PeerCertificates[0], Host: cs.ServerName}
+			}
+		} else {
+			opts.DNSName = cs.ServerName
+		}
+		for _, cert := range cs.PeerCertificates[1:] {
+			opts.Intermediates.AddCert(cert)
+		}
+		_, err := cs.PeerCertificates[0].Verify(opts)
+		return err
+	}
 }
 
 // PublicCertPem retrieves the public certificate for this instance

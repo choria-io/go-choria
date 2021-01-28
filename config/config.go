@@ -16,6 +16,8 @@ import (
 	"github.com/choria-io/go-choria/puppet"
 )
 
+var forceDotParse bool
+
 // Config represents Choria configuration
 //
 // NOTE: When adding or updating doc strings please run `go generate` in the root of the repository
@@ -386,10 +388,12 @@ func (c *Config) SetOption(option string, value string) {
 }
 
 func (c *Config) dotdDir() string {
-	home, err := util.HomeDir()
-	if err == nil {
-		if strings.HasPrefix(c.ConfigFile, home) {
-			return ""
+	if !forceDotParse {
+		home, err := util.HomeDir()
+		if err == nil {
+			if strings.HasPrefix(c.ConfigFile, home) {
+				return ""
+			}
 		}
 	}
 
