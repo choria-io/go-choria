@@ -62,12 +62,30 @@ func (p *PuppetDB) Discover(_ context.Context, opts ...DiscoverOption) (n []stri
 		return nil, fmt.Errorf("compound filters are not supported by PuppetDB")
 	}
 
+	if p.identityOptimize(dopts.filter) {
+		return dopts.filter.IdentityFilters(), nil
+	}
+
 	search, err := p.searchString(dopts.collective, dopts.filter)
 	if err != nil {
 		return nil, err
 	}
 
 	return p.fw.PQLQueryCertNames(search)
+}
+
+func (p *PuppetDB) identityOptimize(filter *protocol.Filter) bool {
+	if !(len(filter.CompoundFilters()) == 0 && len(filter.FactFilters()) == 0 && len(filter.ClassFilters()) == 0 && len(filter.IdentityFilters()) > 0) {
+		return false
+	}
+
+	for _, f := range filter.IdentityFilters() {
+		if stringIsRegex.MatchString(f) || stringIsPQL.MatchString(f) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (p *PuppetDB) searchString(collective string, filter *protocol.Filter) (string, error) {

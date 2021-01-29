@@ -13,6 +13,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"regexp"
 	"sync"
 	"time"
 
@@ -33,6 +34,10 @@ type Broadcast struct {
 type ChoriaClient interface {
 	Request(ctx context.Context, msg *choria.Message, handler client.Handler) (err error)
 }
+
+var (
+	stringIsRegex = regexp.MustCompile(`^/(.+)/$`)
+)
 
 // New creates a new broadcast discovery client
 func New(fw client.ChoriaFramework) *Broadcast {
@@ -75,6 +80,11 @@ func (b *Broadcast) Discover(ctx context.Context, opts ...DiscoverOption) (n []s
 		}
 	}
 
+	if b.identityOptimize(dopts.filter) {
+		b.log.Debugf("Performing identity-only filter optimization")
+		return dopts.filter.IdentityFilters(), nil
+	}
+
 	dopts.msg, err = b.createMessage(dopts.filter, dopts.collective)
 	if err != nil {
 		return n, fmt.Errorf("could not create message: %s", err)
@@ -93,6 +103,20 @@ func (b *Broadcast) Discover(ctx context.Context, opts ...DiscoverOption) (n []s
 	}
 
 	return dopts.discovered, nil
+}
+
+func (b *Broadcast) identityOptimize(filter *protocol.Filter) bool {
+	if !(len(filter.CompoundFilters()) == 0 && len(filter.FactFilters()) == 0 && len(filter.ClassFilters()) == 0 && len(filter.IdentityFilters()) > 0) {
+		return false
+	}
+
+	for _, f := range filter.IdentityFilters() {
+		if stringIsRegex.MatchString(f) {
+			return false
+		}
+	}
+
+	return true
 }
 
 func (b *Broadcast) createMessage(filter *protocol.Filter, collective string) (*choria.Message, error) {
