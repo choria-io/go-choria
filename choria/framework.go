@@ -380,7 +380,7 @@ func (fw *Framework) MiddlewareServers() (servers srvcache.Servers, err error) {
 
 func (fw *Framework) SetLogWriter(out io.Writer) {
 	if fw.log != nil {
-		fw.log.Out = out
+		fw.log.SetOutput(out)
 	}
 }
 

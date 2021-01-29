@@ -29,7 +29,8 @@ var _ = Describe("TransportMessage", func() {
 		reply, _ := NewReply(request, "testing")
 		sreply, _ := NewSecureReply(reply, security)
 		treply, _ := NewTransportMessage("rip.mcollective")
-		treply.SetReplyData(sreply)
+		err := treply.SetReplyData(sreply)
+		Expect(err).ToNot(HaveOccurred())
 
 		sj, err := sreply.JSON()
 		Expect(err).ToNot(HaveOccurred())

@@ -107,7 +107,11 @@ func (c *Config) parseAllDotCfg() error {
 		return nil
 	}
 
-	files, err := ioutil.ReadDir(c.dotdDir())
+	if !util.FileIsDir(dir) {
+		return nil
+	}
+
+	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		return err
 	}

@@ -226,7 +226,10 @@ func loadConfigFiles(path string, projects bool, c *Config) error {
 		return err
 	}
 
-	c.parseAllDotCfg()
+	err = c.parseAllDotCfg()
+	if err != nil {
+		return err
+	}
 
 	if projects {
 		pwd, err := os.Getwd()
