@@ -211,3 +211,16 @@ func UniqueStrings(items []string, shouldSort bool) []string {
 
 	return result
 }
+
+// ExpandPath expands a path that starts in ~ to the users homedir
+func ExpandPath(p string) (string, error) {
+	a := strings.TrimSpace(p)
+	if a[0] == '~' {
+		home, err := HomeDir()
+		if err != nil {
+			return "", err
+		}
+		a = strings.Replace(a, "~", home, 1)
+	}
+	return a, nil
+}
