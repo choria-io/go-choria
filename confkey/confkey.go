@@ -32,17 +32,16 @@ import (
 	"errors"
 	"fmt"
 	"os"
-	"path/filepath"
 	"reflect"
 	"regexp"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
 	"time"
 	"unicode"
 
-	validator "github.com/choria-io/go-choria/validator"
+	"github.com/choria-io/go-choria/internal/util"
+	"github.com/choria-io/go-choria/validator"
 )
 
 // Validate validates the struct
@@ -274,13 +273,9 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 				a[0] = unicode.ToUpper(a[0])
 				*ptr = string(a)
 			case "path_string":
-				a := strings.TrimSpace(value.(string))
-				if a[0] == '~' {
-					home, err := homeDir()
-					if err != nil {
-						return err
-					}
-					a = strings.Replace(a, "~", home, 1)
+				a, err := util.ExpandPath(value.(string))
+				if err != nil {
+					return err
 				}
 				*ptr = a
 			}
@@ -295,27 +290,6 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 	_, err = validator.ValidateStructField(target, item)
 
 	return err
-}
-
-func homeDir() (string, error) {
-	if runtime.GOOS == "windows" {
-		drive := os.Getenv("HOMEDRIVE")
-		home := os.Getenv("HOMEDIR")
-
-		if home == "" || drive == "" {
-			return "", fmt.Errorf("cannot determine home dir, ensure HOMEDRIVE and HOMEDIR is set")
-		}
-
-		return filepath.Join(os.Getenv("HOMEDRIVE"), os.Getenv("HOMEDIR")), nil
-	}
-
-	home := os.Getenv("HOME")
-
-	if home == "" {
-		return "", fmt.Errorf("cannot determine home dir, ensure HOME is set")
-	}
-
-	return home, nil
 }
 
 // FieldWithKey determines the struct key name that is tagged with a certain confkey

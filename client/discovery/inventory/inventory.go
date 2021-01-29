@@ -66,6 +66,11 @@ func (i *Inventory) Discover(ctx context.Context, opts ...DiscoverOption) (n []s
 		return nil, fmt.Errorf("no discovery source file specified")
 	}
 
+	dopts.source, err = util.ExpandPath(dopts.source)
+	if err != nil {
+		return nil, err
+	}
+
 	if !util.FileExist(dopts.source) {
 		return nil, fmt.Errorf("discovery source %q does not exist", dopts.source)
 	}
@@ -224,6 +229,12 @@ func (i *Inventory) selectMatchingNodes(ctx context.Context, d *DataFile, collec
 
 // ReadInventory reads and validates an inventory file
 func ReadInventory(path string, noValidate bool) (*DataFile, error) {
+	var err error
+
+	if !util.FileExist(path) {
+		return nil, fmt.Errorf("discovery source %s does not exist", path)
+	}
+
 	ext := filepath.Ext(path)
 	f, err := ioutil.ReadFile(path)
 	if err != nil {
