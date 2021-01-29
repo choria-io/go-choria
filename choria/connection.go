@@ -654,9 +654,9 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		if err != nil {
 			return fmt.Errorf("could not determine servers to connect to: %s", err)
 		}
-		urls := servers.Strings()
-
-		conn.nats, err = nats.Connect(strings.Join(urls, ", "), options...)
+		urls := strings.Join(servers.Strings(), ", ")
+		conn.logger.Infof("Attempting to connect to: %s", urls)
+		conn.nats, err = nats.Connect(urls, options...)
 		if err == nil {
 			return nil
 		}

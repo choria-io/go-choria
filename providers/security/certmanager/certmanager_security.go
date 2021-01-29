@@ -53,6 +53,7 @@ type Config struct {
 	key                  string
 	ca                   string
 	cache                string
+	legacyCerts          bool
 }
 
 func New(opts ...Option) (*CertManagerSecurity, error) {
@@ -90,13 +91,14 @@ func (cm *CertManagerSecurity) reinit() error {
 	var err error
 
 	fc := filesec.Config{
-		Identity:             cm.conf.identity,
-		Certificate:          cm.conf.cert,
-		Key:                  cm.conf.key,
-		CA:                   cm.conf.ca,
-		Cache:                cm.conf.cache,
-		PrivilegedUsers:      cm.conf.privilegedUsers,
-		AlwaysOverwriteCache: cm.conf.alwaysOverwriteCache,
+		Identity:                   cm.conf.identity,
+		Certificate:                cm.conf.cert,
+		Key:                        cm.conf.key,
+		CA:                         cm.conf.ca,
+		Cache:                      cm.conf.cache,
+		PrivilegedUsers:            cm.conf.privilegedUsers,
+		AlwaysOverwriteCache:       cm.conf.alwaysOverwriteCache,
+		BackwardCompatVerification: cm.conf.legacyCerts,
 	}
 
 	cm.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(cm.log))

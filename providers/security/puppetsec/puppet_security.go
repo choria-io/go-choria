@@ -139,6 +139,7 @@ func (s *PuppetSecurity) reinit() error {
 		RemoteSignerTokenFile:        s.conf.RemoteSignerTokenFile,
 		RemoteSignerTokenEnvironment: s.conf.RemoteSignerTokenEnvironment,
 		TLSConfig:                    s.conf.TLSConfig,
+		BackwardCompatVerification:   true,
 	}
 
 	s.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(s.log))

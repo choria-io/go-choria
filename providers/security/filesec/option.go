@@ -2,8 +2,9 @@ package filesec
 
 import (
 	"fmt"
-	"github.com/choria-io/go-choria/tlssetup"
 	"os"
+
+	"github.com/choria-io/go-choria/tlssetup"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/sirupsen/logrus"
@@ -28,6 +29,7 @@ func WithChoriaConfig(c *config.Config) Option {
 		RemoteSignerTokenFile:        c.Choria.RemoteSignerTokenFile,
 		RemoteSignerTokenEnvironment: c.Choria.RemoteSignerTokenEnvironment,
 		TLSConfig:                    tlssetup.TLSConfig(c),
+		BackwardCompatVerification:   c.Choria.SecurityAllowLegacyCerts,
 	}
 
 	if cn, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {

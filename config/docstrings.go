@@ -93,6 +93,7 @@ var docStrings = map[string]string{
 	"plugin.choria.security.certname_whitelist":               "Patterns of certificate names that are allowed to be clients",
 	"plugin.security.provider":                                "The Security Provider to use",
 	"plugin.security.always_overwrite_cache":                  "Always store new Public Keys to the cache overwriting existing ones",
+	"plugin.security.support_legacy_certificates":             "Allow certificates without SANs to be used",
 	"plugin.choria.security.request_signer.token_file":        "Path to the token used to access a Central Authenticator",
 	"plugin.choria.security.request_signer.token_environment": "Environment variable to store Central Authenticator tokens",
 	"plugin.choria.security.request_signing_certificate":      "The public certificate of the key used to sign the JWTs in the Signing Service",

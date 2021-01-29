@@ -23,6 +23,7 @@ func WithChoriaConfig(c *config.Config) Option {
 			replace:              c.Choria.CertManagerSecurityReplaceCSR,
 			altnames:             c.Choria.CertManagerSecurityAltNames,
 			identity:             c.Identity,
+			legacyCerts:          c.Choria.SecurityAllowLegacyCerts,
 		}
 
 		if c.OverrideCertname == "" {

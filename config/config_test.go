@@ -23,12 +23,14 @@ var _ = Describe("Choria/Config", func() {
 			var c *Config
 			var err error
 
+			forceDotParse = true
 			if runtime.GOOS == "windows" {
 				c, err = NewConfig("testdata/choria_windows.cfg")
 			} else {
 				c, err = NewConfig("testdata/choria.cfg")
 			}
 			Expect(err).ToNot(HaveOccurred())
+			forceDotParse = false
 
 			Expect(c.Choria.NetworkWriteDeadline).To(Equal(10 * time.Second))
 			Expect(c.Choria.DiscoveryHost).To(Equal("pdb.example.com"))
