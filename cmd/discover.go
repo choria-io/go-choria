@@ -3,7 +3,10 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
+	"os"
 	"sync"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/discovery"
 )
@@ -13,8 +16,8 @@ type discoverCommand struct {
 
 	jsonFormat bool
 	verbose    bool
-
-	fo *discovery.StandardOptions
+	silent     bool
+	fo         *discovery.StandardOptions
 }
 
 func (d *discoverCommand) Setup() error {
@@ -27,12 +30,25 @@ func (d *discoverCommand) Setup() error {
 
 	d.cmd.Flag("verbose", "Log verbosely").Default("false").Short('v').BoolVar(&d.verbose)
 	d.cmd.Flag("json", "Produce JSON output").Short('j').BoolVar(&d.jsonFormat)
+	d.cmd.Flag("silent", "Produce as little logging as possible").Hidden().BoolVar(&d.silent)
 
 	return nil
 }
 
 func (d *discoverCommand) Configure() error {
-	return commonConfigure()
+	err = commonConfigure()
+	if err != nil {
+		return err
+	}
+
+	if d.silent {
+		logrus.SetOutput(os.Stderr)
+		logrus.SetLevel(logrus.PanicLevel)
+	}
+
+	cfg.LogLevel = "fatal"
+
+	return nil
 }
 
 func (d *discoverCommand) Run(wg *sync.WaitGroup) (err error) {

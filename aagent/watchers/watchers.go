@@ -171,7 +171,10 @@ func (m *Manager) WatcherState(watcher string) (interface{}, bool) {
 
 func (m *Manager) configureWatchers() (err error) {
 	for _, w := range m.machine.Watchers() {
-		w.ParseAnnounceInterval()
+		err = w.ParseAnnounceInterval()
+		if err != nil {
+			return fmt.Errorf("could not create %s watcher '%s': %s", w.Type, w.Name, err)
+		}
 
 		m.machine.Infof("manager", "Starting %s watcher %s", w.Type, w.Name)
 

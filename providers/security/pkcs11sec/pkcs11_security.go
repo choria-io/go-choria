@@ -575,7 +575,7 @@ func (p *Pkcs11Security) cachedCertExists(identity string) bool {
 func (p *Pkcs11Security) privilegedCerts() []string {
 	certs := []string{}
 
-	filepath.Walk(p.conf.CertCacheDir, func(path string, info os.FileInfo, err error) error {
+	err := filepath.Walk(p.conf.CertCacheDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
@@ -590,6 +590,9 @@ func (p *Pkcs11Security) privilegedCerts() []string {
 
 		return nil
 	})
+	if err != nil {
+		return nil
+	}
 
 	sort.Strings(certs)
 

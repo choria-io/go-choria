@@ -81,7 +81,10 @@ func (reg *Manager) Start(ctx context.Context, wg *sync.WaitGroup) error {
 		}
 
 		reg.log.Infof("Starting registration worker for %s", rtype)
-		reg.RegisterProvider(ctx, wg, registrator)
+		err = reg.RegisterProvider(ctx, wg, registrator)
+		if err != nil {
+			reg.log.Errorf("Could not register registration worker for %s: %s", rtype, err)
+		}
 	}
 
 	return nil

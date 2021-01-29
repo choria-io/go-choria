@@ -94,7 +94,7 @@ func (o *StandardOptions) Discover(ctx context.Context, fw client.ChoriaFramewor
 		o.DiscoveryMethod = "broadcast"
 		logger.Debugf("Forcing discovery mode to broadcast to support compound filters")
 
-	case supportStdin && o.isPiped():
+	case supportStdin && o.isPiped() && o.DiscoveryMethod == "":
 		o.DiscoveryMethod = "flatfile"
 		fformat = flatfile.ChoriaResponsesFormat
 		sourceFile = os.Stdin

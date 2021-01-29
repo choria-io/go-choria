@@ -16,7 +16,7 @@ func Example_enum() {
 
 	fmt.Println("slice 1 is valid")
 
-	ok, err = enum.ValidateSlice([]string{"5", "6"}, valid)
+	ok, _ = enum.ValidateSlice([]string{"5", "6"}, valid)
 	if !ok {
 		fmt.Println("slice 2 is invalid")
 	}
