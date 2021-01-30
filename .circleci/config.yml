@@ -2,7 +2,7 @@ version: 2
 jobs:
   test:
     docker:
-      - image: choria/packager:el7-go-puppet-1.15
+      - image: choria/packager:el7-puppet-go1.15
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
