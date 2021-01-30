@@ -51,9 +51,21 @@ func (d *discoverCommand) Configure() error {
 	return nil
 }
 
-func (d *discoverCommand) Run(wg *sync.WaitGroup) (err error) {
+func (d *discoverCommand) Run(wg *sync.WaitGroup) error {
 	defer wg.Done()
 
+	err = d.run()
+	if err != nil {
+		if d.silent {
+			fmt.Fprint(os.Stderr, err)
+			os.Exit(1)
+		}
+	}
+
+	return err
+}
+
+func (d *discoverCommand) run() (err error) {
 	d.fo.SetDefaultsFromChoria(c)
 	nodes, dt, err := d.fo.Discover(ctx, c, "rpcutil", true, d.verbose && !d.jsonFormat, c.Logger("discovery"))
 	if err != nil {
