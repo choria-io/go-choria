@@ -3,7 +3,6 @@ package broadcast
 import (
 	"context"
 	"fmt"
-	"os"
 	"sort"
 	"testing"
 	"time"
@@ -11,18 +10,18 @@ import (
 	"github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/protocol"
 
+	"github.com/golang/mock/gomock"
+
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
-	"github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 func TestBroadcast(t *testing.T) {
-	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Client/Discovery/Broadcast")
+	RunSpecs(t, "Providers/Discovery/Broadcast")
 }
 
 var _ = Describe("Broadcast", func() {

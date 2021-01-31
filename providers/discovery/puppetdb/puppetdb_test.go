@@ -2,7 +2,6 @@ package puppetdb
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -12,9 +11,8 @@ import (
 )
 
 func TestPuppetDB(t *testing.T) {
-	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Client/Discovery/PuppetDB")
+	RunSpecs(t, "Providers/Discovery/PuppetDB")
 }
 
 var _ = Describe("PuppetDB", func() {

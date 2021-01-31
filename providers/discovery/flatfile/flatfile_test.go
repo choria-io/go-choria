@@ -12,7 +12,7 @@ import (
 
 func TestFlatfile(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Client/Discovery/Flatfile")
+	RunSpecs(t, "Providers/Discovery/Flatfile")
 }
 
 var _ = Describe("Flatfile", func() {

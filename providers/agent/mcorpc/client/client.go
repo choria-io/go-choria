@@ -12,9 +12,9 @@ import (
 	"github.com/google/go-cmp/cmp"
 	"github.com/tidwall/gjson"
 
-	"github.com/choria-io/go-choria/client/discovery/broadcast"
-	"github.com/choria-io/go-choria/client/discovery/puppetdb"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/providers/discovery/broadcast"
+	"github.com/choria-io/go-choria/providers/discovery/puppetdb"
 
 	"github.com/choria-io/go-choria/choria"
 	cclient "github.com/choria-io/go-choria/client/client"

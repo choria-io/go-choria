@@ -12,10 +12,10 @@ import (
 	log "github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/discovery"
-	"github.com/choria-io/go-choria/client/discovery/inventory"
 	"github.com/choria-io/go-choria/client/rpcutilclient"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/rpcutil"
+	"github.com/choria-io/go-choria/providers/discovery/inventory"
 )
 
 type tInventoryCommand struct {

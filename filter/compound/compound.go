@@ -49,7 +49,7 @@ func CompileExprQuery(query string) (*vm.Program, error) {
 	return expr.Compile(query, expr.Env(env), expr.AsBool(), expr.AllowUndefinedVariables())
 }
 
-func MatchExprProgram(prog *vm.Program, query string, facts json.RawMessage, classes []string, knownAgents []string, log Logger) (bool, error) {
+func MatchExprProgram(prog *vm.Program, facts json.RawMessage, classes []string, knownAgents []string, log Logger) (bool, error) {
 	env := EmptyEnv()
 	env["classes"] = classes
 	env["agents"] = knownAgents
@@ -100,7 +100,7 @@ func MatchExprString(queries [][]map[string]string, facts json.RawMessage, class
 			continue
 		}
 
-		res, err := MatchExprProgram(prog, query, facts, classes, knownAgents, log)
+		res, err := MatchExprProgram(prog, facts, classes, knownAgents, log)
 		if err != nil {
 			log.Errorf("Could not match compound query '%s': %s", query, err)
 			failed++
