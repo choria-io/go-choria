@@ -18,7 +18,7 @@ import (
 
 func TestExternal(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Client/Discovery/External")
+	RunSpecs(t, "Providers/Discovery/External")
 }
 
 var _ = Describe("External", func() {

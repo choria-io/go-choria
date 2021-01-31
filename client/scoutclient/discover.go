@@ -9,10 +9,10 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/client/discovery"
-	"github.com/choria-io/go-choria/client/discovery/broadcast"
-	"github.com/choria-io/go-choria/client/discovery/external"
-	"github.com/choria-io/go-choria/client/discovery/puppetdb"
 	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/providers/discovery/broadcast"
+	"github.com/choria-io/go-choria/providers/discovery/external"
+	"github.com/choria-io/go-choria/providers/discovery/puppetdb"
 )
 
 // BroadcastNS is a NodeSource that uses the Choria network broadcast method to discover nodes

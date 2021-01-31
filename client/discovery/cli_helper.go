@@ -12,15 +12,15 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 
-	"github.com/choria-io/go-choria/client/discovery/broadcast"
-	"github.com/choria-io/go-choria/client/discovery/external"
-	"github.com/choria-io/go-choria/client/discovery/flatfile"
-	"github.com/choria-io/go-choria/client/discovery/inventory"
-	"github.com/choria-io/go-choria/client/discovery/puppetdb"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/filter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/client"
+	"github.com/choria-io/go-choria/providers/discovery/broadcast"
+	"github.com/choria-io/go-choria/providers/discovery/external"
+	"github.com/choria-io/go-choria/providers/discovery/flatfile"
+	"github.com/choria-io/go-choria/providers/discovery/inventory"
+	"github.com/choria-io/go-choria/providers/discovery/puppetdb"
 )
 
 type StandardOptions struct {
