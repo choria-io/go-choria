@@ -12,6 +12,7 @@ import (
 	"github.com/choria-io/go-choria/filter/agents"
 	"github.com/choria-io/go-choria/filter/classes"
 	"github.com/choria-io/go-choria/filter/facts"
+	"github.com/choria-io/go-choria/providers/data/ddl"
 )
 
 // Logger provides logging facilities
@@ -34,23 +35,15 @@ func MatchExprStringFiles(queries [][]map[string]string, factFile string, classe
 		return false
 	}
 
-	return MatchExprString(queries, f, c, knownAgents, log)
+	return MatchExprString(queries, f, c, knownAgents, nil, log)
 }
 
-func CompileExprQuery(query string) (*vm.Program, error) {
-	env := EmptyEnv()
-	env["classes"] = []string{}
-	env["agents"] = []string{}
-	env["facts"] = []string{}
-	env["with"] = matchFunc(json.RawMessage{}, []string{}, []string{}, nil)
-	env["fact"] = factFunc(json.RawMessage{})
-	env["include"] = includeFunc
-
-	return expr.Compile(query, expr.Env(env), expr.AsBool(), expr.AllowUndefinedVariables())
+func CompileExprQuery(query string, df ddl.FuncMap) (*vm.Program, error) {
+	return expr.Compile(query, expr.Env(EmptyEnv(df)), expr.AsBool(), expr.AllowUndefinedVariables())
 }
 
-func MatchExprProgram(prog *vm.Program, facts json.RawMessage, classes []string, knownAgents []string, log Logger) (bool, error) {
-	env := EmptyEnv()
+func MatchExprProgram(prog *vm.Program, facts json.RawMessage, classes []string, knownAgents []string, df ddl.FuncMap, log Logger) (bool, error) {
+	env := EmptyEnv(df)
 	env["classes"] = classes
 	env["agents"] = knownAgents
 	env["facts"] = facts
@@ -71,17 +64,9 @@ func MatchExprProgram(prog *vm.Program, facts json.RawMessage, classes []string,
 	return b, nil
 }
 
-func MatchExprString(queries [][]map[string]string, facts json.RawMessage, classes []string, knownAgents []string, log Logger) bool {
+func MatchExprString(queries [][]map[string]string, facts json.RawMessage, classes []string, knownAgents []string, df ddl.FuncMap, log Logger) bool {
 	matched := 0
 	failed := 0
-
-	env := EmptyEnv()
-	env["classes"] = classes
-	env["agents"] = knownAgents
-	env["facts"] = facts
-	env["with"] = matchFunc(facts, classes, knownAgents, log)
-	env["fact"] = factFunc(facts)
-	env["include"] = includeFunc
 
 	for _, cf := range queries {
 		if len(cf) != 1 {
@@ -93,14 +78,14 @@ func MatchExprString(queries [][]map[string]string, facts json.RawMessage, class
 			return false
 		}
 
-		prog, err := expr.Compile(query, expr.Env(env), expr.AsBool(), expr.AllowUndefinedVariables())
+		prog, err := CompileExprQuery(query, df)
 		if err != nil {
 			log.Errorf("Could not compile compound query '%s': %s", query, err)
 			failed++
 			continue
 		}
 
-		res, err := MatchExprProgram(prog, facts, classes, knownAgents, log)
+		res, err := MatchExprProgram(prog, facts, classes, knownAgents, df, log)
 		if err != nil {
 			log.Errorf("Could not match compound query '%s': %s", query, err)
 			failed++
@@ -154,13 +139,24 @@ func includeFunc(hay []interface{}, needle interface{}) bool {
 	return false
 }
 
-func EmptyEnv() map[string]interface{} {
-	return map[string]interface{}{
+func EmptyEnv(df ddl.FuncMap) map[string]interface{} {
+	env := map[string]interface{}{
 		"agents":  []string{},
 		"classes": []string{},
 		"facts":   json.RawMessage{},
 		"with":    func(_ string) bool { return false },
 		"fact":    func(_ string) interface{} { return nil },
-		"include": func(_ string) bool { return false },
+		"include": func(_ []interface{}, _ interface{}) bool { return false },
 	}
+
+	for k, v := range df {
+		_, ok := env[k]
+		if ok {
+			continue
+		}
+
+		env[k] = v.F
+	}
+
+	return env
 }

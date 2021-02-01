@@ -1,33 +1,45 @@
 package discovery
 
 import (
-	"github.com/choria-io/go-choria/config"
+	"encoding/json"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/sirupsen/logrus"
+	"github.com/choria-io/go-choria/providers/data/ddl"
 )
+
+type ServerInfoSource interface {
+	Classes() []string
+	Facts() json.RawMessage
+	Identity() string
+	KnownAgents() []string
+	DataFuncMap() (ddl.FuncMap, error)
+}
 
 // Manager manages the full discovery life cycle
 type Manager struct {
 	fw  *choria.Framework
 	cfg *config.Config
+	si  ServerInfoSource
 	log *logrus.Entry
 }
 
 // New creates a new discovery Manager
-func New(framework *choria.Framework, logger *logrus.Entry) *Manager {
+func New(framework *choria.Framework, si ServerInfoSource, logger *logrus.Entry) *Manager {
 	return &Manager{
 		fw:  framework,
 		cfg: framework.Configuration(),
+		si:  si,
 		log: logger.WithFields(logrus.Fields{"subsystem": "discovery"}),
 	}
 }
 
-// ShouldProcess checks all filters against methods for filtering
-// and returns boolean if it matches
-func (mgr *Manager) ShouldProcess(request protocol.Request, knownAgents []string) bool {
+// ShouldProcess checks all filters against methods for filtering and returns boolean if it matches
+func (mgr *Manager) ShouldProcess(request protocol.Request) bool {
 	filter, _ := request.Filter()
 
-	return filter.MatchRequest(request, knownAgents, mgr.cfg.Identity, mgr.cfg.ClassesFile, mgr.cfg.FactSourceFile, mgr.log)
+	return filter.MatchServerRequest(request, mgr.si, mgr.log.WithField("request", request.RequestID()))
 }

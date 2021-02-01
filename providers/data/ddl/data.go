@@ -8,12 +8,23 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
-	"github.com/choria-io/go-choria/server/agents"
 )
+
+// Metadata describes an agent at a high level and is required for any agent
+type Metadata struct {
+	License     string `json:"license"`
+	Author      string `json:"author"`
+	Timeout     int    `json:"timeout"`
+	Name        string `json:"name"`
+	Version     string `json:"version"`
+	URL         string `json:"url"`
+	Description string `json:"description"`
+	Provider    string `json:"provider,omitempty"`
+}
 
 type DDL struct {
 	Schema   string                        `json:"$schema"`
-	Metadata *agents.Metadata              `json:"metadata"`
+	Metadata Metadata                      `json:"metadata"`
 	Query    *common.InputItem             `json:"query"`
 	Output   map[string]*common.OutputItem `json:"output"`
 

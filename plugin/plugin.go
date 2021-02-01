@@ -45,6 +45,9 @@ const (
 
 	// MachineWatcherPlugin is a plugin that adds a Autonomous Agent Watcher
 	MachineWatcherPlugin
+
+	// DataPlugin is a plugin that provides data to choria
+	DataPlugin
 )
 
 // Pluggable is a Choria Plugin
@@ -81,6 +84,9 @@ func Register(name string, plugin Pluggable) error {
 
 	case MachineWatcherPlugin:
 		err = registerWatcherPlugin(name, plugin)
+
+	case DataPlugin:
+		err = registerDataPlugin(name, plugin)
 
 	default:
 		err = fmt.Errorf("unknown plugin type %d from %s", plugin.PluginType(), name)

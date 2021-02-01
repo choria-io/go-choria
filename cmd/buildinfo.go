@@ -123,6 +123,13 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	fmt.Println()
+	fmt.Println("Data Providers:")
+
+	for _, p := range bi.DataProviders() {
+		fmt.Printf("  %s\n", p)
+	}
+
+	fmt.Println()
 	fmt.Println("Autonomous Agent Watchers:")
 
 	for _, p := range bi.MachineWatchers() {

@@ -67,6 +67,9 @@ var AgentProviders = []string{}
 // MachineWatchers are registered Autonomous Agent watchers
 var MachineWatchers = []string{}
 
+// DataProviders are registered Data plugins
+var DataProviders = []string{}
+
 // HasTLS determines if TLS should be used on the wire
 func HasTLS() bool {
 	return TLS == "true"
