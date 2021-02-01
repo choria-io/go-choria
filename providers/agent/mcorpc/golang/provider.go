@@ -20,7 +20,7 @@ type Provider struct {
 }
 
 // Initialize configures the agent provider
-func (p Provider) Initialize(fw *choria.Framework, log *logrus.Entry) {
+func (p Provider) Initialize(fw *choria.Framework, _ *logrus.Entry) {
 	p.fw = fw
 	p.log = fw.Logger("agents").WithFields(logrus.Fields{"provider": "golang"})
 }
@@ -31,7 +31,7 @@ func (p *Provider) Version() string {
 }
 
 // RegisterAgents registers known ruby agents using a shimm agent
-func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, connector choria.InstanceConnector, log *logrus.Entry) error {
+func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, connector choria.InstanceConnector, _ *logrus.Entry) error {
 	var agent agents.Agent
 
 	agent, err := discovery.New(mgr)

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/gofrs/uuid"
+	"github.com/olekukonko/tablewriter"
 )
 
 // FileExist checks if a file exist on disk
@@ -119,7 +120,7 @@ func LongestString(list []string, max int) int {
 			longest = len(i)
 		}
 
-		if longest > max {
+		if max != 0 && longest > max {
 			return max
 		}
 	}
@@ -223,4 +224,46 @@ func ExpandPath(p string) (string, error) {
 		a = strings.Replace(a, "~", home, 1)
 	}
 	return a, nil
+}
+
+// NewMarkdownTable makes a new table writer formatted to be valid markdown
+func NewMarkdownTable(hdr ...string) *tablewriter.Table {
+	table := tablewriter.NewWriter(os.Stdout)
+	table.SetAutoWrapText(true)
+	table.SetAutoFormatHeaders(true)
+	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
+	table.SetAlignment(tablewriter.ALIGN_LEFT)
+	table.SetHeader(hdr)
+
+	return table
+}
+
+// StringsMapKeys returns the keys from a map[string]string in sorted order
+func StringsMapKeys(data map[string]string) []string {
+	keys := make([]string, len(data))
+	i := 0
+	for k := range data {
+		keys[i] = k
+		i++
+	}
+
+	sort.Strings(keys)
+
+	return keys
+}
+
+// IterateStringsMap iterates a map[string]string in key sorted order
+func IterateStringsMap(data map[string]string, cb func(k string, v string)) {
+	for _, k := range StringsMapKeys(data) {
+		cb(k, data[k])
+	}
+}
+
+// DumpMapStrings shows k: v of a map[string]string left padded by int, the k will be right aligned and value left aligned
+func DumpMapStrings(data map[string]string, leftPad int) {
+	longest := LongestString(StringsMapKeys(data), 0) + leftPad
+
+	IterateStringsMap(data, func(k, v string) {
+		fmt.Printf("%s: %s\n", strings.Repeat(" ", longest-len(k))+k, v)
+	})
 }

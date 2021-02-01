@@ -1,4 +1,4 @@
-package data
+package ddl
 
 import (
 	"encoding/json"

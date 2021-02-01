@@ -390,6 +390,11 @@ func (c *Config) SetOption(option string, value string) {
 	c.rawOpts[option] = value
 }
 
+// UnParsedOptions are the options loaded
+func (c *Config) UnParsedOptions() map[string]string {
+	return c.rawOpts
+}
+
 func (c *Config) dotdDir() string {
 	if !forceDotParse {
 		home, err := util.HomeDir()
