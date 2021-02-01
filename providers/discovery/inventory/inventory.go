@@ -156,7 +156,7 @@ func (i *Inventory) selectMatchingNodes(ctx context.Context, d *DataFile, collec
 
 	if len(f.CompoundFilters()) > 0 {
 		query = f.CompoundFilters()[0][0]["expr"]
-		prog, err = compound.CompileExprQuery(query)
+		prog, err = compound.CompileExprQuery(query, nil)
 		if err != nil {
 			return nil, err
 		}
@@ -211,7 +211,7 @@ func (i *Inventory) selectMatchingNodes(ctx context.Context, d *DataFile, collec
 		}
 
 		if len(f.CompoundFilters()) > 0 {
-			b, _ := compound.MatchExprProgram(prog, node.Facts, node.Classes, node.Agents, i.log)
+			b, _ := compound.MatchExprProgram(prog, node.Facts, node.Classes, node.Agents, nil, i.log)
 			if b {
 				passed++
 			} else {

@@ -39,7 +39,7 @@ func (srv *Instance) handleRawMessage(ctx context.Context, wg *sync.WaitGroup, r
 
 	protocol.CopyFederationData(transport, req)
 
-	if !srv.discovery.ShouldProcess(req, srv.agents.KnownAgents()) {
+	if !srv.discovery.ShouldProcess(req) {
 		filteredCtr.WithLabelValues(srv.cfg.Identity).Inc()
 		srv.log.Debugf("Skipping message %s that does not match local properties", req.RequestID())
 		return

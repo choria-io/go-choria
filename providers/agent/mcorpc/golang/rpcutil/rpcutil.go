@@ -13,6 +13,7 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/filter/facts"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
+	"github.com/choria-io/go-choria/providers/data"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/sirupsen/logrus"
@@ -92,6 +93,20 @@ type DaemonStatsReply struct {
 	Version     string   `json:"version"`
 }
 
+type GetDataRequest struct {
+	Query  string `json:"query"`
+	Source string `json:"source"`
+}
+
+type GetConfigItemRequest struct {
+	Item string `json:"item"`
+}
+
+type GetConfigItemResponse struct {
+	Item  string      `json:"item"`
+	Value interface{} `json:"value"`
+}
+
 // New creates a new rpcutil agent
 func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 	bi := mgr.Choria().BuildInfo()
@@ -119,12 +134,55 @@ func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 	agent.MustRegisterAction("agent_inventory", agentInventoryAction)
 	agent.MustRegisterAction("inventory", inventoryAction)
 	agent.MustRegisterAction("daemon_stats", daemonStatsAction)
-
-	for _, a := range []string{"get_config_item", "get_data"} {
-		agent.MustRegisterAction(a, incompatibleAction)
-	}
+	agent.MustRegisterAction("get_data", getData)
+	agent.MustRegisterAction("get_config_item", incompatibleAction)
 
 	return agent, nil
+}
+
+func getData(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+	dfm, err := agent.ServerInfoSource.DataFuncMap()
+	if err != nil {
+		reply.Statuscode = mcorpc.Aborted
+		reply.Statusmsg = "Could not load data sources"
+		agent.Log.Errorf("Failed to load data sources: %s", err)
+		return
+	}
+
+	i := GetDataRequest{}
+	if !mcorpc.ParseRequestData(&i, req, reply) {
+		return
+	}
+
+	df, ok := dfm[i.Source]
+	if !ok {
+		reply.Statuscode = mcorpc.Aborted
+		reply.Statusmsg = "Unknown data plugin"
+		return
+	}
+
+	var output map[string]data.OutputItem
+
+	if df.DDL.Query == nil {
+		f, ok := df.F.(func() map[string]data.OutputItem)
+		if !ok {
+			reply.Statuscode = mcorpc.Aborted
+			reply.Statusmsg = "Invalid data plugin"
+			return
+		}
+
+		output = f()
+	} else {
+		f, ok := df.F.(func(string) map[string]data.OutputItem)
+		if !ok {
+			reply.Statuscode = mcorpc.Aborted
+			reply.Statusmsg = "Invalid data plugin"
+			return
+		}
+		output = f(i.Query)
+	}
+
+	reply.Data = output
 }
 
 func daemonStatsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {

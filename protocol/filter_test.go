@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"testing"
 
+	"github.com/ghodss/yaml"
 	gomock "github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,7 +22,7 @@ var _ = Describe("Filter", func() {
 		log     *logrus.Entry
 		mockctl *gomock.Controller
 		request *MockRequest
-		agents  []string
+		si      *MockServerInfoSource
 	)
 
 	BeforeEach(func() {
@@ -30,17 +31,29 @@ var _ = Describe("Filter", func() {
 		log = logrus.NewEntry(logrus.New())
 		log.Logger.Out = ioutil.Discard
 
-		agents = []string{"apache", "rpcutil"}
 		filter = NewFilter()
 
 		request = NewMockRequest(mockctl)
 		request.EXPECT().Filter().Return(filter, false).AnyTimes()
 		request.EXPECT().RequestID().Return("mock.request.id").AnyTimes()
+
+		yd, _ := ioutil.ReadFile("testdata/facts.yaml")
+		jd, _ := yaml.YAMLToJSON(yd)
+
+		si = NewMockServerInfoSource(mockctl)
+		si.EXPECT().Classes().Return([]string{"role::testing", "testing", "apache"}).AnyTimes()
+		si.EXPECT().KnownAgents().Return([]string{"apache", "rpcutil"}).AnyTimes()
+		si.EXPECT().Identity().Return("test.example.net").AnyTimes()
+		si.EXPECT().Facts().Return(jd).AnyTimes()
 	})
 
-	Describe("MatchRequest", func() {
+	AfterEach(func() {
+		mockctl.Finish()
+	})
+
+	Describe("MatchServerRequest", func() {
 		It("Should match on empty filters", func() {
-			Expect(filter.MatchRequest(request, []string{}, "test.example.net", "testdata/classes.txt", "testdata/facts.yaml", log)).To(BeTrue())
+			Expect(filter.MatchServerRequest(request, si, log)).To(BeTrue())
 		})
 
 		It("Should match if all filters matched", func() {
@@ -50,7 +63,7 @@ var _ = Describe("Filter", func() {
 			filter.AddFactFilter("nested.string", "=~", "/hello/")
 			filter.AddIdentityFilter("/test/")
 
-			Expect(filter.MatchRequest(request, agents, "test.example.net", "testdata/classes.txt", "testdata/facts.yaml", log)).To(BeTrue())
+			Expect(filter.MatchServerRequest(request, si, log)).To(BeTrue())
 		})
 
 		It("Should fail if some filters matched", func() {
@@ -58,7 +71,7 @@ var _ = Describe("Filter", func() {
 			filter.AddClassFilter("role::test")
 			filter.AddFactFilter("nested.string", "=~", "/meh/")
 
-			Expect(filter.MatchRequest(request, agents, "test.example.net", "testdata/classes.txt", "testdata/facts.yaml", log)).To(BeFalse())
+			Expect(filter.MatchServerRequest(request, si, log)).To(BeFalse())
 		})
 	})
 

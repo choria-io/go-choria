@@ -57,6 +57,16 @@ var intStates = map[int]State{
 	int(NOTCHECKED): NOTCHECKED,
 }
 
+// StateName returns friendly name for a state
+func StateName(s int) string {
+	state, ok := intStates[s]
+	if !ok {
+		return stateNames[UNKNOWN]
+	}
+
+	return stateNames[state]
+}
+
 type properties struct {
 	Annotations map[string]string
 	Plugin      string

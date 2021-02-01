@@ -10,6 +10,7 @@ import (
 
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/providers/data/ddl"
 	"github.com/choria-io/go-choria/statistics"
 
 	"github.com/sirupsen/logrus"
@@ -46,6 +47,7 @@ type ServerInfoSource interface {
 	Stats() statistics.ServerStats
 	UpTime() int64
 	PrepareForShutdown() error
+	DataFuncMap() (ddl.FuncMap, error)
 }
 
 // AgentReply is a generic reply from an agent

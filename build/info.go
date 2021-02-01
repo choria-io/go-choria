@@ -133,6 +133,20 @@ func (i *Info) RegisterMachineWatcher(p string) {
 	sort.Strings(MachineWatchers)
 }
 
+func (i *Info) RegisterDataProvider(p string) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	DataProviders = append(DataProviders, p)
+	sort.Strings(DataProviders)
+}
+
+func (i *Info) DataProviders() []string {
+	mu.Lock()
+	defer mu.Unlock()
+	return DataProviders
+}
+
 func (i *Info) SetProvisionBrokerURLs(u string) {
 	mu.Lock()
 	defer mu.Unlock()

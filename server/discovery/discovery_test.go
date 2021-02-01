@@ -1,33 +1,40 @@
 package discovery
 
 import (
-	"os"
 	"testing"
 
+	"github.com/golang/mock/gomock"
+
+	"github.com/choria-io/go-choria/filter/classes"
+	"github.com/choria-io/go-choria/filter/facts"
 	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/providers/data/ddl"
+
+	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
-	"github.com/sirupsen/logrus"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
 
 func Test(t *testing.T) {
-	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Server/Discovery")
 }
 
 var _ = Describe("Server/Discovery", func() {
-	var fw *choria.Framework
-	var log *logrus.Entry
-	var err error
-	var mgr *Manager
-	var req protocol.Request
-	var filter *protocol.Filter
-	var agents []string
+	var (
+		fw     *choria.Framework
+		log    *logrus.Entry
+		err    error
+		mgr    *Manager
+		req    protocol.Request
+		filter *protocol.Filter
+		si     *MockServerInfoSource
+		ctrl   *gomock.Controller
+	)
 
 	BeforeSuite(func() {
 		log = logrus.WithFields(logrus.Fields{"test": true})
@@ -37,13 +44,13 @@ var _ = Describe("Server/Discovery", func() {
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
-		fw.Config.ClassesFile = "testdata/classes.txt"
-		fw.Config.FactSourceFile = "testdata/facts.yaml"
 		fw.Config.Identity = "test.example.net"
 	})
 
 	BeforeEach(func() {
-		mgr = New(fw, log)
+		ctrl = gomock.NewController(GinkgoT())
+		si = NewMockServerInfoSource(ctrl)
+		mgr = New(fw, si, log)
 		rid, err := fw.NewRequestID()
 		Expect(err).ToNot(HaveOccurred())
 
@@ -53,11 +60,23 @@ var _ = Describe("Server/Discovery", func() {
 		filter = req.NewFilter()
 		req.SetFilter(filter)
 
-		agents = []string{"apache", "rpcutil"}
+		klasses, err := classes.ReadClasses("testdata/classes.txt")
+		Expect(err).ToNot(HaveOccurred())
+		factsj, err := facts.JSON("testdata/facts.yaml", log)
+		Expect(err).ToNot(HaveOccurred())
+
+		si.EXPECT().Identity().Return("test.example.net").AnyTimes()
+		si.EXPECT().Classes().Return(klasses).AnyTimes()
+		si.EXPECT().Facts().Return(factsj).AnyTimes()
+	})
+
+	AfterEach(func() {
+		ctrl.Finish()
 	})
 
 	It("Should match on empty filters", func() {
-		Expect(mgr.ShouldProcess(req, []string{})).To(BeTrue())
+		si.EXPECT().KnownAgents().Return([]string{}).AnyTimes()
+		Expect(mgr.ShouldProcess(req)).To(BeTrue())
 	})
 
 	It("Should match if all filters matched", func() {
@@ -67,19 +86,22 @@ var _ = Describe("Server/Discovery", func() {
 		filter.AddFactFilter("nested.string", "=~", "/hello/")
 		filter.AddIdentityFilter("/test/")
 
-		Expect(mgr.ShouldProcess(req, agents)).To(BeTrue())
+		si.EXPECT().KnownAgents().Return([]string{"apache", "rpcutil"}).AnyTimes()
+		Expect(mgr.ShouldProcess(req)).To(BeTrue())
 	})
 
 	It("Should fail if some filters matched", func() {
 		filter.AddAgentFilter("apache")
 		filter.AddClassFilter("role::test")
 		filter.AddFactFilter("nested.string", "=~", "/meh/")
-
-		Expect(mgr.ShouldProcess(req, agents)).To(BeFalse())
+		si.EXPECT().KnownAgents().Return([]string{"apache", "rpcutil"}).AnyTimes()
+		Expect(mgr.ShouldProcess(req)).To(BeFalse())
 	})
 
 	It("Should handle compound filters", func() {
 		filter.AddCompoundFilter("with('apache') and with('/testing/') and with('fnumber=1.2') and fact('nested.string') matches('h?llo') and include(fact('sarray'), '1') and include(fact('iarray'), 1)")
-		Expect(mgr.ShouldProcess(req, agents)).To(BeTrue())
+		si.EXPECT().DataFuncMap().Return(ddl.FuncMap{}, nil).AnyTimes()
+		si.EXPECT().KnownAgents().Return([]string{"apache", "rpcutil"}).AnyTimes()
+		Expect(mgr.ShouldProcess(req)).To(BeTrue())
 	})
 })

@@ -10,6 +10,7 @@ import (
 	"github.com/choria-io/go-choria/filter/compound"
 	"github.com/choria-io/go-choria/filter/facts"
 	"github.com/choria-io/go-choria/filter/identity"
+	"github.com/choria-io/go-choria/providers/data/ddl"
 )
 
 // FactFilter is how a fact match is represented to the Filter
@@ -56,8 +57,15 @@ type Logger interface {
 	Errorf(format string, args ...interface{})
 }
 
-// MatchRequest determines if a request matches the filter
-func (f *Filter) MatchRequest(request Request, agents []string, identity string, classesFile string, factsFile string, log Logger) bool {
+type ServerInfoSource interface {
+	Classes() []string
+	Facts() json.RawMessage
+	Identity() string
+	KnownAgents() []string
+	DataFuncMap() (ddl.FuncMap, error)
+}
+
+func (f *Filter) MatchServerRequest(request Request, si ServerInfoSource, log Logger) bool {
 	filter, _ := request.Filter()
 	passed := 0
 
@@ -67,7 +75,7 @@ func (f *Filter) MatchRequest(request Request, agents []string, identity string,
 	}
 
 	if len(filter.IdentityFilters()) > 0 {
-		if filter.MatchIdentity(identity) {
+		if filter.MatchIdentity(si.Identity()) {
 			log.Debugf("Matching request %s with identity filters '%#v'", request.RequestID(), filter.IdentityFilters())
 			passed++
 		} else {
@@ -77,7 +85,7 @@ func (f *Filter) MatchRequest(request Request, agents []string, identity string,
 	}
 
 	if len(filter.AgentFilters()) > 0 {
-		if filter.MatchAgents(agents) {
+		if filter.MatchAgents(si.KnownAgents()) {
 			log.Debugf("Matching request %s with agent filters '%#v'", request.RequestID(), filter.AgentFilters())
 			passed++
 		} else {
@@ -87,7 +95,7 @@ func (f *Filter) MatchRequest(request Request, agents []string, identity string,
 	}
 
 	if len(filter.ClassFilters()) > 0 {
-		if filter.MatchClassesFile(classesFile, log) {
+		if filter.MatchClasses(si.Classes(), log) {
 			log.Debugf("Matching request %s with class filters '%#v'", request.RequestID(), filter.ClassFilters())
 			passed++
 		} else {
@@ -97,7 +105,7 @@ func (f *Filter) MatchRequest(request Request, agents []string, identity string,
 	}
 
 	if len(filter.FactFilters()) > 0 {
-		if filter.MatchFactsFile(factsFile, log) {
+		if filter.MatchFacts(si.Facts(), log) {
 			log.Debugf("Matching request %s based on fact filters '%#v'", request.RequestID(), filter.FactFilters())
 			passed++
 		} else {
@@ -107,7 +115,11 @@ func (f *Filter) MatchRequest(request Request, agents []string, identity string,
 	}
 
 	if len(filter.CompoundFilters()) > 0 {
-		if filter.MatchCompoundFiles(factsFile, classesFile, agents, log) {
+		df, err := si.DataFuncMap()
+		if err != nil {
+			log.Errorf("Cannot resolve data functions map: %s", err)
+		}
+		if filter.MatchCompound(si.Facts(), si.Classes(), si.KnownAgents(), df, log) {
 			log.Debugf("Matching request %s based on compound filter %#v", request.RequestID(), filter.CompoundFilters())
 			passed++
 		} else {
@@ -155,8 +167,8 @@ func (f *Filter) MatchCompoundFiles(factsFile string, classesFile string, knownA
 }
 
 // MatchCompound determines if the filter would match against classes, facts and agents using a expr expression
-func (f *Filter) MatchCompound(facts json.RawMessage, knownClasses []string, knownAgents []string, log Logger) bool {
-	return compound.MatchExprString(f.CompoundFilters(), facts, knownClasses, knownAgents, log)
+func (f *Filter) MatchCompound(facts json.RawMessage, knownClasses []string, knownAgents []string, fm ddl.FuncMap, log Logger) bool {
+	return compound.MatchExprString(f.CompoundFilters(), facts, knownClasses, knownAgents, fm, log)
 }
 
 // Empty determines if a filter is empty - that is all its contained filter arrays are empty

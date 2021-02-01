@@ -11,6 +11,7 @@ import (
 	choria "github.com/choria-io/go-choria/choria"
 	lifecycle "github.com/choria-io/go-choria/lifecycle"
 	protocol "github.com/choria-io/go-choria/protocol"
+	ddl "github.com/choria-io/go-choria/providers/data/ddl"
 	statistics "github.com/choria-io/go-choria/statistics"
 	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
@@ -328,4 +329,17 @@ func (m *MockServerInfoSource) PrepareForShutdown() error {
 // PrepareForShutdown indicates an expected call of PrepareForShutdown
 func (mr *MockServerInfoSourceMockRecorder) PrepareForShutdown() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareForShutdown", reflect.TypeOf((*MockServerInfoSource)(nil).PrepareForShutdown))
+}
+
+// DataFuncMap mocks base method
+func (m *MockServerInfoSource) DataFuncMap() (ddl.FuncMap, error) {
+	ret := m.ctrl.Call(m, "DataFuncMap")
+	ret0, _ := ret[0].(ddl.FuncMap)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DataFuncMap indicates an expected call of DataFuncMap
+func (mr *MockServerInfoSourceMockRecorder) DataFuncMap() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DataFuncMap", reflect.TypeOf((*MockServerInfoSource)(nil).DataFuncMap))
 }

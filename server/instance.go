@@ -9,6 +9,7 @@ import (
 	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/providers/data"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/discovery"
 	"github.com/choria-io/go-choria/server/registration"
@@ -31,6 +32,7 @@ type Instance struct {
 	agentDenyList      []string
 	lifecycleComponent string
 	machines           *aagent.AAgent
+	data               *data.Manager
 
 	requests chan *choria.ConnectorMessage
 
@@ -52,8 +54,8 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 		agentDenyList:    []string{},
 	}
 
-	i.log = log.WithFields(log.Fields{"identity": i.cfg.Identity, "component": "server"})
-	i.discovery = discovery.New(fw, i.log)
+	i.log = fw.Logger("server").WithFields(log.Fields{"identity": i.cfg.Identity})
+	i.discovery = discovery.New(fw, i, fw.Logger("discovery"))
 
 	return i, nil
 }
@@ -144,6 +146,11 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		srv.connector.Close()
 
 		return fmt.Errorf("could not initialize initial additional agents: %s", err)
+	}
+
+	err = srv.StartDataProviders(sctx)
+	if err != nil {
+		srv.log.Errorf("Could not start Choria Data Providers: %s", err)
 	}
 
 	err = srv.subscribeNode(sctx)

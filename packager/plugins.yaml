@@ -16,3 +16,6 @@ metric_watcher: github.com/choria-io/go-choria/aagent/watchers/metricwatcher
 nagios_watcher: github.com/choria-io/go-choria/aagent/watchers/nagioswatcher
 schedule_watcher: github.com/choria-io/go-choria/aagent/watchers/schedulewatcher
 timer_watcher: github.com/choria-io/go-choria/aagent/watchers/timerwatcher
+
+# Data Plugins
+scout_data: github.com/choria-io/go-choria/scout/data/scoutdata

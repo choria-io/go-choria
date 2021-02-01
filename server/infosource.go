@@ -71,6 +71,25 @@ func (srv *Instance) MachinesStatus() ([]aagent.MachineState, error) {
 	return srv.machines.AllMachineStates()
 }
 
+// MachinesStatusJSON returns the status of all loaded autonomous agents
+func (srv *Instance) MachinesStatusJSON() (json.RawMessage, error) {
+	if srv.machines == nil {
+		return json.RawMessage{}, nil
+	}
+
+	stats, err := srv.machines.AllMachineStates()
+	if err != nil {
+		return nil, err
+	}
+
+	sj, err := json.Marshal(stats)
+	if err != nil {
+		return nil, err
+	}
+
+	return sj, nil
+}
+
 // MachineTransition sends a transition event to a specific running machine instance
 func (srv *Instance) MachineTransition(name string, version string, path string, id string, transition string) error {
 	if srv.machines == nil {
