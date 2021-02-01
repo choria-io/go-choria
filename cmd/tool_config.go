@@ -12,6 +12,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 type tConfigCommand struct {
@@ -63,6 +64,10 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 				fmt.Printf("                %s\n", f)
 			}
 		}
+		fmt.Println()
+		fmt.Println("Loaded Configuration:")
+		fmt.Println()
+		util.DumpMapStrings(cfg.UnParsedOptions(), 2)
 		fmt.Println()
 	}
 

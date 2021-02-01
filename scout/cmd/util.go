@@ -1,13 +1,12 @@
 package scoutcmd
 
 import (
-	"os"
-
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/client/scoutclient"
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 func scoutClient(cfile string, opt *discovery.StandardOptions, log *logrus.Entry) (*scoutclient.ScoutClient, error) {
@@ -31,12 +30,5 @@ func scoutClient(cfile string, opt *discovery.StandardOptions, log *logrus.Entry
 }
 
 func newMarkdownTable(hdr ...string) *tablewriter.Table {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetAutoWrapText(true)
-	table.SetAutoFormatHeaders(true)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetHeader(hdr)
-
-	return table
+	return util.NewMarkdownTable(hdr...)
 }
