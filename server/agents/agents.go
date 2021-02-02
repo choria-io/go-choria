@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/data/ddl"
@@ -32,9 +33,11 @@ type Agent interface {
 // ServerInfoSource provides data about a running server instance
 type ServerInfoSource interface {
 	AgentMetadata(string) (Metadata, bool)
+	BuildInfo() *build.Info
 	Classes() []string
 	ConfigFile() string
 	ConnectedServer() string
+	DataFuncMap() (ddl.FuncMap, error)
 	Facts() json.RawMessage
 	Identity() string
 	KnownAgents() []string
@@ -42,12 +45,11 @@ type ServerInfoSource interface {
 	MachineTransition(name string, version string, path string, id string, transition string) error
 	MachinesStatus() ([]aagent.MachineState, error)
 	NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error
+	PrepareForShutdown() error
 	Provisioning() bool
 	StartTime() time.Time
 	Stats() statistics.ServerStats
 	UpTime() int64
-	PrepareForShutdown() error
-	DataFuncMap() (ddl.FuncMap, error)
 }
 
 // AgentReply is a generic reply from an agent
