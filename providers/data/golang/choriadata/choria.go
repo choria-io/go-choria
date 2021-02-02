@@ -2,6 +2,8 @@ package choriadata
 
 import (
 	"context"
+	"os"
+	"runtime"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
@@ -24,22 +26,41 @@ func New(_ data.Framework) (data.Plugin, error) {
 func (s *ChoriaData) Run(_ context.Context, q data.Query, si agents.ServerInfoSource) (map[string]data.OutputItem, error) {
 	machines, _ := si.MachinesStatus()
 	stats := si.Stats()
+	classes := si.Classes()
+	agents := si.KnownAgents()
+	machineNames := []string{}
 
-	result := make(map[string]data.OutputItem)
-	result["agents_count"] = len(si.KnownAgents())
-	result["classes_count"] = len(si.Classes())
-	result["machines_count"] = len(machines)
-	result["config_file"] = si.ConfigFile()
-	result["connected_broker"] = si.ConnectedServer()
-	result["provisioning"] = si.Provisioning()
-	result["uptime"] = si.UpTime()
-	result["total_messages"] = stats.Total
-	result["valid_messages"] = stats.Valid
-	result["invalid_messages"] = stats.Invalid
-	result["passed_messages"] = stats.Passed
-	result["filtered_messages"] = stats.Filtered
-	result["reply_messages"] = stats.Replies
-	result["expired_messages"] = stats.TTLExpired
+	for _, m := range machines {
+		machineNames = append(machineNames, m.Name)
+	}
+
+	result := map[string]data.OutputItem{
+		"agents":           agents,
+		"agents_count":     len(agents),
+		"built":            si.BuildInfo().BuildDate(),
+		"classes":          classes,
+		"classes_count":    len(classes),
+		"commit":           si.BuildInfo().SHA(),
+		"configfile":       si.ConfigFile(),
+		"connected_broker": si.ConnectedServer(),
+		"cpus":             runtime.NumCPU(),
+		"filtered":         stats.Filtered,
+		"go_version":       runtime.Version(),
+		"goroutines":       runtime.NumGoroutine(),
+		"license":          si.BuildInfo().License(),
+		"machines_count":   len(machines),
+		"machines":         machineNames,
+		"passed":           stats.Passed,
+		"pid":              os.Getpid(),
+		"provisioning":     si.Provisioning(),
+		"replies":          stats.Replies,
+		"total":            stats.Total,
+		"ttlexpired":       stats.TTLExpired,
+		"unvalidated":      stats.Invalid,
+		"uptime":           si.UpTime(),
+		"validated":        stats.Valid,
+		"version":          si.BuildInfo().Version(),
+	}
 
 	return result, nil
 }
@@ -57,22 +78,42 @@ func (s *ChoriaData) DLL() (*ddl.DDL, error) {
 			Provider:    "golang",
 		},
 		Output: map[string]*common.OutputItem{
+			"agents": {
+				Description: "Known agents hosted by this server",
+				DisplayAs:   "Agents",
+				Type:        "array",
+			},
+			"pid": {
+				Description: "The process ID of the running process",
+				DisplayAs:   "PID",
+				Type:        "integer",
+			},
 			"agents_count": {
 				Description: "Number of active agents on the node",
 				DisplayAs:   "Agents",
 				Type:        "integer",
+			},
+			"classes": {
+				Description: "List of classes this machine is tagged with",
+				DisplayAs:   "Class Names",
+				Type:        "array",
 			},
 			"classes_count": {
 				Description: "Number of classes this node is tagged with",
 				DisplayAs:   "Classes",
 				Type:        "integer",
 			},
+			"machines": {
+				Description: "The names of running machines",
+				DisplayAs:   "Machines Names",
+				Type:        "array",
+			},
 			"machines_count": {
 				Description: "The number of running Autonomous Agents",
 				DisplayAs:   "Machines",
 				Type:        "integer",
 			},
-			"config_file": {
+			"configfile": {
 				Description: "The path to the running configuration",
 				DisplayAs:   "Configuration File",
 				Type:        "string",
@@ -92,40 +133,75 @@ func (s *ChoriaData) DLL() (*ddl.DDL, error) {
 				DisplayAs:   "Uptime",
 				Type:        "integer",
 			},
-			"total_messages": {
+			"total": {
 				Description: "The number of messages this server processed",
 				DisplayAs:   "Total Messages",
 				Type:        "integer",
 			},
-			"valid_messages": {
+			"validated": {
 				Description: "The number of messages this server processed that passed validation",
 				DisplayAs:   "Valid Messages",
 				Type:        "integer",
 			},
-			"invalid_messages": {
+			"unvalidated": {
 				Description: "The number of messages this server processed that did not pass validation",
 				DisplayAs:   "Invalid Messages",
 				Type:        "integer",
 			},
-			"passed_messages": {
+			"passed": {
 				Description: "The number of messages this server processed that matched filters",
 				DisplayAs:   "Passed Messages",
 				Type:        "integer",
 			},
-			"filtered_messages": {
+			"filtered": {
 				Description: "The number of messages this server processed that did not match filters",
 				DisplayAs:   "Filtered Messages",
 				Type:        "integer",
 			},
-			"reply_messages": {
+			"replies": {
 				Description: "The number of reply messages this server sent",
 				DisplayAs:   "Reply Messages",
 				Type:        "integer",
 			},
-			"expired_messages": {
+			"ttlexpired": {
 				Description: "The number of messages this server rejected due to TTL expiration",
 				DisplayAs:   "Expired Messages",
 				Type:        "integer",
+			},
+			"version": {
+				Description: "The running version of the server",
+				DisplayAs:   "Version",
+				Type:        "string",
+			},
+			"go_version": {
+				Description: "Version of Go used to build the server",
+				DisplayAs:   "Golang",
+				Type:        "string",
+			},
+			"goroutines": {
+				Description: "The number of active Go Routines in the server process",
+				DisplayAs:   "Go Routines",
+				Type:        "integer",
+			},
+			"cpus": {
+				Description: "The number of logical CPUs available to the Go runtime",
+				DisplayAs:   "CPUs",
+				Type:        "integer",
+			},
+			"license": {
+				Description: "The license this binary is relased under",
+				DisplayAs:   "License",
+				Type:        "string",
+			},
+			"built": {
+				Description: "The time when the build was performed",
+				DisplayAs:   "Built",
+				Type:        "string",
+			},
+			"commit": {
+				Description: "The source commit used to build this instance",
+				DisplayAs:   "Commit",
+				Type:        "string",
 			},
 		},
 	}

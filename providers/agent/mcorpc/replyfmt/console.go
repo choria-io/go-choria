@@ -218,12 +218,12 @@ func (c *ConsoleFormatter) ddlAssistedPrinter(reply *client.RPCReply) {
 			valStr = string(pretty.PrettyOptions([]byte(valStr), &pretty.Options{
 				SortKeys: true,
 				Prefix:   fmt.Sprintf(prefixFormatStr, " "),
-				Indent:   "   ",
+				Indent:   "  ",
 				Width:    80,
 			}))
 		}
 
-		fmt.Fprintf(c.out, formatStr, keyStr, strings.TrimLeft(valStr, " "))
+		fmt.Fprintf(c.out, formatStr, keyStr, strings.TrimSpace(valStr))
 	}
 
 	fmt.Fprintln(c.out)

@@ -8,6 +8,7 @@ import (
 	context "context"
 	json "encoding/json"
 	aagent "github.com/choria-io/go-choria/aagent"
+	build "github.com/choria-io/go-choria/build"
 	choria "github.com/choria-io/go-choria/choria"
 	lifecycle "github.com/choria-io/go-choria/lifecycle"
 	protocol "github.com/choria-io/go-choria/protocol"
@@ -145,6 +146,18 @@ func (mr *MockServerInfoSourceMockRecorder) AgentMetadata(arg0 interface{}) *gom
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentMetadata", reflect.TypeOf((*MockServerInfoSource)(nil).AgentMetadata), arg0)
 }
 
+// BuildInfo mocks base method
+func (m *MockServerInfoSource) BuildInfo() *build.Info {
+	ret := m.ctrl.Call(m, "BuildInfo")
+	ret0, _ := ret[0].(*build.Info)
+	return ret0
+}
+
+// BuildInfo indicates an expected call of BuildInfo
+func (mr *MockServerInfoSourceMockRecorder) BuildInfo() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BuildInfo", reflect.TypeOf((*MockServerInfoSource)(nil).BuildInfo))
+}
+
 // Classes mocks base method
 func (m *MockServerInfoSource) Classes() []string {
 	ret := m.ctrl.Call(m, "Classes")
@@ -179,6 +192,19 @@ func (m *MockServerInfoSource) ConnectedServer() string {
 // ConnectedServer indicates an expected call of ConnectedServer
 func (mr *MockServerInfoSourceMockRecorder) ConnectedServer() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConnectedServer", reflect.TypeOf((*MockServerInfoSource)(nil).ConnectedServer))
+}
+
+// DataFuncMap mocks base method
+func (m *MockServerInfoSource) DataFuncMap() (ddl.FuncMap, error) {
+	ret := m.ctrl.Call(m, "DataFuncMap")
+	ret0, _ := ret[0].(ddl.FuncMap)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DataFuncMap indicates an expected call of DataFuncMap
+func (mr *MockServerInfoSourceMockRecorder) DataFuncMap() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DataFuncMap", reflect.TypeOf((*MockServerInfoSource)(nil).DataFuncMap))
 }
 
 // Facts mocks base method
@@ -271,6 +297,18 @@ func (mr *MockServerInfoSourceMockRecorder) NewEvent(t interface{}, opts ...inte
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewEvent", reflect.TypeOf((*MockServerInfoSource)(nil).NewEvent), varargs...)
 }
 
+// PrepareForShutdown mocks base method
+func (m *MockServerInfoSource) PrepareForShutdown() error {
+	ret := m.ctrl.Call(m, "PrepareForShutdown")
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// PrepareForShutdown indicates an expected call of PrepareForShutdown
+func (mr *MockServerInfoSourceMockRecorder) PrepareForShutdown() *gomock.Call {
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareForShutdown", reflect.TypeOf((*MockServerInfoSource)(nil).PrepareForShutdown))
+}
+
 // Provisioning mocks base method
 func (m *MockServerInfoSource) Provisioning() bool {
 	ret := m.ctrl.Call(m, "Provisioning")
@@ -317,29 +355,4 @@ func (m *MockServerInfoSource) UpTime() int64 {
 // UpTime indicates an expected call of UpTime
 func (mr *MockServerInfoSourceMockRecorder) UpTime() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UpTime", reflect.TypeOf((*MockServerInfoSource)(nil).UpTime))
-}
-
-// PrepareForShutdown mocks base method
-func (m *MockServerInfoSource) PrepareForShutdown() error {
-	ret := m.ctrl.Call(m, "PrepareForShutdown")
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// PrepareForShutdown indicates an expected call of PrepareForShutdown
-func (mr *MockServerInfoSourceMockRecorder) PrepareForShutdown() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrepareForShutdown", reflect.TypeOf((*MockServerInfoSource)(nil).PrepareForShutdown))
-}
-
-// DataFuncMap mocks base method
-func (m *MockServerInfoSource) DataFuncMap() (ddl.FuncMap, error) {
-	ret := m.ctrl.Call(m, "DataFuncMap")
-	ret0, _ := ret[0].(ddl.FuncMap)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DataFuncMap indicates an expected call of DataFuncMap
-func (mr *MockServerInfoSourceMockRecorder) DataFuncMap() *gomock.Call {
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DataFuncMap", reflect.TypeOf((*MockServerInfoSource)(nil).DataFuncMap))
 }

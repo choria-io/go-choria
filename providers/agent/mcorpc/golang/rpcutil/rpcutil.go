@@ -227,6 +227,7 @@ func daemonStatsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.R
 		Validated:   stats.Valid,
 		Version:     bi.Version(),
 	}
+
 	reply.Data = output
 }
 

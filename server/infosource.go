@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent"
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/statistics"
 
@@ -40,6 +41,11 @@ func (srv *Instance) NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error 
 // Choria returns the choria framework
 func (srv *Instance) Choria() *choria.Framework {
 	return srv.fw
+}
+
+// BuildInfo is the compile time settings for this process
+func (srv *Instance) BuildInfo() *build.Info {
+	return srv.fw.BuildInfo()
 }
 
 // Identity is the configured identity of the running server
