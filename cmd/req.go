@@ -9,6 +9,7 @@ import (
 
 	"github.com/gosuri/uiprogress"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/term"
 
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/protocol"
@@ -110,6 +111,15 @@ func (r *reqCommand) configureProgressBar(count int, expected int) {
 	}
 
 	r.progressBar = uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
+
+	width, _, err := term.GetSize(0)
+
+	if err != nil {
+		width = 80
+	}
+
+	r.progressBar.Width = width - 30
+
 	fmt.Println()
 
 	r.progressBar.PrependFunc(func(b *uiprogress.Bar) string {
