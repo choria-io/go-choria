@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/sirupsen/logrus"
 
@@ -88,7 +87,7 @@ func RegisterPlugin(name string, plugin *Creator) error {
 
 	_, ok := plugins[plugin.Name]
 	if ok {
-		return fmt.Errorf("plugin %s is already registered", plugin.Name)
+		return fmt.Errorf("data plugin %s is already registered", plugin.Name)
 	}
 
 	plugins[plugin.Name] = plugin
@@ -122,7 +121,7 @@ func (m *Manager) arityZeroRunner(ctx context.Context, si agents.ServerInfoSourc
 
 func (m *Manager) arityOneRunner(ctx context.Context, si agents.ServerInfoSource, name string, ddl *ddl.DDL, plugin *Creator) func(q string) map[string]OutputItem {
 	return func(q string) map[string]OutputItem {
-		ctx, cancel := context.WithTimeout(ctx, time.Duration(ddl.Metadata.Timeout)*time.Second)
+		ctx, cancel := context.WithTimeout(ctx, ddl.Timeout())
 		defer cancel()
 
 		i, err := plugin.F(m.fw)
@@ -177,7 +176,7 @@ func (m *Manager) Execute(ctx context.Context, plugin string, query string, srv 
 		}
 	}
 
-	timeout, cancel := context.WithTimeout(ctx, time.Duration(pddl.Metadata.Timeout)*time.Second)
+	timeout, cancel := context.WithTimeout(ctx, pddl.Timeout())
 	defer cancel()
 
 	return dp.Run(timeout, q, srv)

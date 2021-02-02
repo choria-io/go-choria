@@ -9,7 +9,7 @@ var docStrings = map[string]string{
 	"registration_splay":              "When true delays initial registration publish by a random period up to registerinterval following registration publishes will be at registerinterval without further splay",
 	"collectives":                     "The list of known Sub Collectives this node will join or communicate with, Servers will subscribe the node and each agent to each sub collective and Clients will publish to a chosen sub collective",
 	"main_collective":                 "The Sub Collective where a Client will publish to when no specific Sub Collective is configured",
-	"logfile":                         "The file to write logs to, when set to an empty string logging will be to the console",
+	"logfile":                         "The file to write logs to, when set to an empty string logging will be to the console, when set to 'discard' logging will be disabled",
 	"loglevel":                        "The lowest level log to add to the logfile",
 	"libdir":                          "The directory where Agents, DDLs and other plugins are found",
 	"identity":                        "The identity this machine is known as, when empty it's derived based on the operating system hostname or by calling facter fqdn",

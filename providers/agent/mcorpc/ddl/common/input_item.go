@@ -61,7 +61,7 @@ func (i *InputItem) ValidateStringValue(val string) (converted interface{}, warn
 // ValidateValue validates a value against this input, should be of the right data type already. See ValToDDLType()
 func (i *InputItem) ValidateValue(val interface{}) (warnings []string, err error) {
 	switch strings.ToLower(i.Type) {
-	case "integer":
+	case "integer", "int":
 		if !validator.IsAnyInt(val) {
 			return warnings, fmt.Errorf("is not an integer")
 		}

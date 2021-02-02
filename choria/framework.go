@@ -385,7 +385,11 @@ func (fw *Framework) SetLogWriter(out io.Writer) {
 }
 
 func (fw *Framework) commonLogOpener() error {
-	if fw.Config.LogFile != "" {
+	switch {
+	case fw.Config.LogFile == "discard":
+		fw.log.SetOutput(ioutil.Discard)
+
+	case fw.Config.LogFile != "":
 		fw.log.Formatter = &log.JSONFormatter{}
 
 		file, err := os.OpenFile(fw.Config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
@@ -393,7 +397,7 @@ func (fw *Framework) commonLogOpener() error {
 			return fmt.Errorf("could not set up logging: %s", err)
 		}
 
-		fw.log.Out = file
+		fw.log.SetOutput(file)
 	}
 
 	return nil
