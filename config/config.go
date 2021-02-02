@@ -40,7 +40,7 @@ type Config struct {
 	// The Sub Collective where a Client will publish to when no specific Sub Collective is configured
 	MainCollective string `confkey:"main_collective"`
 
-	// The file to write logs to, when set to an empty string logging will be to the console
+	// The file to write logs to, when set to an empty string logging will be to the console, when set to 'discard' logging will be disabled
 	LogFile string `confkey:"logfile" type:"path_string"`
 
 	// The lowest level log to add to the logfile
@@ -278,6 +278,8 @@ func NewConfigForTests() *Config {
 	c.OverrideCertname = "rip.mcollective"
 	c.LogLevel = "fatal"
 	c.Choria.SSLDir = "/nonexisting"
+	c.DisableSecurityProviderVerify = true
+	c.LogFile = "discard"
 
 	return c
 }

@@ -49,7 +49,7 @@ func New(file string) (*DDL, error) {
 func Find(agent string, libdirs []string) (ddl *DDL, err error) {
 	ddl, err = CachedDDL(agent)
 	if err == nil {
-		return ddl, err
+		return ddl, nil
 	}
 
 	EachFile(libdirs, func(n string, f string) bool {

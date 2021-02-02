@@ -111,12 +111,12 @@ func (s *ScoutData) DLL() (*ddl.DDL, error) {
 			"start_time": {
 				Description: "The time the check started in UTC",
 				DisplayAs:   "Start Time",
-				Type:        "int",
+				Type:        "integer",
 			},
 			"uptime": {
 				Description: "The time the check has been running in seconds",
 				DisplayAs:   "Uptime",
-				Type:        "int",
+				Type:        "integer",
 			},
 			"history": {
 				Description: "Recent past states of the check",

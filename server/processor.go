@@ -87,6 +87,7 @@ func (srv *Instance) handleReply(reply *agents.AgentReply) {
 		srv.log.Errorf("Publishing reply Message for %s failed: %s", reply.Message.RequestID, err)
 	}
 
+	repliesCtr.WithLabelValues(srv.cfg.Identity).Inc()
 }
 
 func (srv *Instance) processRequests(ctx context.Context, wg *sync.WaitGroup) {

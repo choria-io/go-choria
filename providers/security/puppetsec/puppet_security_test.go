@@ -50,7 +50,7 @@ var _ = Describe("PuppetSSL", func() {
 		}
 
 		l = logrus.New()
-		l.Out = ioutil.Discard
+		l.SetOutput(GinkgoWriter)
 
 		prov, err = New(WithConfig(cfg), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
 		Expect(err).ToNot(HaveOccurred())

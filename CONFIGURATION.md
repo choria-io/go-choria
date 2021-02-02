@@ -214,7 +214,7 @@ The directory where Agents, DDLs and other plugins are found
 
  * **Type:** path_string
 
-The file to write logs to, when set to an empty string logging will be to the console
+The file to write logs to, when set to an empty string logging will be to the console, when set to 'discard' logging will be disabled
 
 ## logger_type
 
