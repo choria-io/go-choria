@@ -169,6 +169,21 @@ func Int64WithKey(target interface{}, key string) int64 {
 	return 0
 }
 
+// InterfaceWithKey retrieves the value from target that matches key as an interface{}
+func InterfaceWithKey(target interface{}, key string) (interface{}, bool) {
+	item, err := FieldWithKey(target, key)
+	if err != nil {
+		return nil, false
+	}
+
+	field := reflect.ValueOf(target).Elem().FieldByName(item)
+	if !field.IsValid() {
+		return nil, false
+	}
+
+	return field.Interface(), true
+}
+
 // SetStructFieldWithKey finds the struct key that matches the confkey on target and assign the value to it
 func SetStructFieldWithKey(target interface{}, key string, value interface{}) error {
 	if reflect.TypeOf(target).Kind() != reflect.Ptr {
@@ -341,6 +356,7 @@ func FindFields(target interface{}, re string) ([]string, error) {
 	return found, nil
 }
 
+// KeyTag retrieves a specific tag from a field with key on target
 func KeyTag(target interface{}, key string, tag string) (string, bool) {
 	item, err := FieldWithKey(target, key)
 	if err != nil {
@@ -350,6 +366,7 @@ func KeyTag(target interface{}, key string, tag string) (string, bool) {
 	return Tag(target, item, tag)
 }
 
+// Description retrieves the description tag from a key in target
 func Description(target interface{}, key string) (string, bool) {
 	return KeyTag(target, key, "description")
 }
@@ -369,11 +386,12 @@ func Environment(target interface{}, key string) (string, bool) {
 	return KeyTag(target, key, "environment")
 }
 
-// Environment retrieves the url for additional docs for a key
+// URL retrieves the url for additional docs for a key
 func URL(target interface{}, key string) (string, bool) {
 	return KeyTag(target, key, "url")
 }
 
+// IsDeprecated determines if the key is set to be deprecated on target
 func IsDeprecated(target interface{}, key string) (bool, bool) {
 	d, ok := KeyTag(target, key, "deprecated")
 	if !ok {

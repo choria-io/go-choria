@@ -1,7 +1,9 @@
 package confkey
 
 import (
+	"fmt"
 	"os"
+	"reflect"
 	"runtime"
 	"strings"
 	"time"
@@ -137,6 +139,24 @@ var _ = Describe("Confkey", func() {
 			k, err = FieldWithKey(d, "nonexisting")
 			Expect(k).To(Equal(""))
 			Expect(err).To(HaveOccurred())
+		})
+	})
+
+	Describe("InterfaceWithKey", func() {
+		It("Should retrieve the right value", func() {
+			d.Int64 = 10
+			untyped, ok := InterfaceWithKey(&d, "int64")
+			Expect(ok).To(BeTrue())
+
+			_, ok = InterfaceWithKey(&d, "foo")
+			Expect(ok).To(BeFalse())
+
+			i64, ok := untyped.(int64)
+			if !ok {
+				Fail(fmt.Sprintf("Retrieved data is not int64: <%v %v>", reflect.TypeOf(untyped), untyped))
+			}
+
+			Expect(i64).To(Equal(int64(10)))
 		})
 	})
 
