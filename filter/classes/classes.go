@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"regexp"
+	"sort"
 	"strings"
 )
 
@@ -90,6 +91,8 @@ func ReadClasses(file string) ([]string, error) {
 	for scanner.Scan() {
 		classes = append(classes, scanner.Text())
 	}
+
+	sort.Strings(classes)
 
 	return classes, nil
 }
