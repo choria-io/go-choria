@@ -20,3 +20,4 @@ timer_watcher: github.com/choria-io/go-choria/aagent/watchers/timerwatcher
 # Data Plugins
 scout_data: github.com/choria-io/go-choria/scout/data/scoutdata
 choria_data: github.com/choria-io/go-choria/providers/data/golang/choriadata
+config_item_data: github.com/choria-io/go-choria/providers/data/golang/configdata

@@ -11,6 +11,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/confkey"
 	"github.com/choria-io/go-choria/filter/facts"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/providers/data"
@@ -135,9 +136,29 @@ func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 	agent.MustRegisterAction("inventory", inventoryAction)
 	agent.MustRegisterAction("daemon_stats", daemonStatsAction)
 	agent.MustRegisterAction("get_data", getData)
-	agent.MustRegisterAction("get_config_item", incompatibleAction)
+	agent.MustRegisterAction("get_config_item", getConfigItem)
 
 	return agent, nil
+}
+
+func getConfigItem(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+	i := GetConfigItemRequest{}
+	if !mcorpc.ParseRequestData(&i, req, reply) {
+		return
+	}
+
+	val, ok := confkey.InterfaceWithKey(agent.Config, i.Item)
+	if !ok {
+		val, ok = confkey.InterfaceWithKey(agent.Config.Choria, i.Item)
+		if !ok {
+			reply.Statuscode = mcorpc.Aborted
+			reply.Statusmsg = "Unknown key"
+			return
+		}
+	}
+
+	r := &GetConfigItemResponse{Item: i.Item, Value: val}
+	reply.Data = r
 }
 
 func getData(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
@@ -303,11 +324,6 @@ func collectiveInfoAction(ctx context.Context, req *mcorpc.Request, reply *mcorp
 		MainCollective: agent.Config.MainCollective,
 		Collectives:    agent.Config.Collectives,
 	}
-}
-
-func incompatibleAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
-	reply.Statuscode = mcorpc.Aborted
-	reply.Statusmsg = fmt.Sprintf("The %s action has not been implemented in the Go Choria server as it cannot be done in a compatible manner", req.Action)
 }
 
 func getFactValue(fact string, c *config.Config, log *logrus.Entry) (interface{}, error) {
