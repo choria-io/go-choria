@@ -10,6 +10,7 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/gosuri/uiprogress"
+	"golang.org/x/term"
 )
 
 // requester is a generic request handler
@@ -118,6 +119,15 @@ func (r *requester) configureProgress(count int) {
         }
 
         r.progress = uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
+		
+		width, _, err := term.GetSize(0)
+
+		if err != nil {
+			width = 80
+		}
+
+		r.progress.Width = width - 30
+
         r.progress.PrependFunc(func(b *uiprogress.Bar) string {
                 if b.Current() < count {
                         return r.client.fw.Colorize("red","%d / %d", b.Current(), count)
