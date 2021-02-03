@@ -10,7 +10,6 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/gosuri/uiprogress"
-	"golang.org/x/term"
 )
 
 // requester is a generic request handler
@@ -31,13 +30,12 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 	discoverer := r.client.ns
 	filters := r.client.filters
 	fw := r.client.fw
-	progress := r.client.clientOpts.progress
 
  	var discoveryStart time.Time
 	var discoveryEnd time.Time
 
 	if len(targets) == 0 {
-		if progress {
+		if r.client.clientOpts.progress {
 			fmt.Print("Discovering nodes .... ")
 		} else {
 			r.client.infof("Starting discovery")
@@ -54,7 +52,7 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 			return nil, fmt.Errorf("no nodes were discovered")
 		}
 
-		if progress {
+		if r.client.clientOpts.progress {
 			fmt.Printf("%d\n", len(targets))
 		} else {
 			r.client.infof("Discovered %d nodes", len(targets))
@@ -73,7 +71,7 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 
 	r.client.Unlock()
 
-        if progress {
+        if r.client.clientOpts.progress {
         	fmt.Println()
                 r.configureProgress(len(targets))
         }
@@ -83,7 +81,7 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 		return nil, fmt.Errorf("could not create client: %s", err)
 	}
 
-	if progress {
+	if r.client.clientOpts.progress {
 		opts = append(opts, rpcclient.ReplyHandler(func(pr protocol.Reply, rpcr *rpcclient.RPCReply) {
 			r.progress.Incr()
 			handler(pr, rpcr)
@@ -92,7 +90,7 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 		opts = append(opts, rpcclient.ReplyHandler(handler))
 	}
 
-	if !progress {
+	if !r.client.clientOpts.progress {
 		r.client.infof("Invoking %s#%s action with %#v", r.client.ddl.Metadata.Name, r.action, r.args)
 	}
 
@@ -101,7 +99,7 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 		return nil, fmt.Errorf("could not perform disable request: %s", err)
 	}
 
-        if progress {
+        if r.client.clientOpts.progress {
                 uiprogress.Stop()
                 fmt.Println()
         }
@@ -119,14 +117,14 @@ func (r *requester) configureProgress(count int) {
         }
 
         r.progress = uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
-		
-		width, _, err := term.GetSize(0)
 
-		if err != nil {
-			width = 80
-		}
+	width := r.client.fw.ProgressWidth()
+	if width == -1 {
+		r.client.clientOpts.progress = false
+		return
+	}
 
-		r.progress.Width = width - 30
+	r.progress.Width = width
 
         r.progress.PrependFunc(func(b *uiprogress.Bar) string {
                 if b.Current() < count {

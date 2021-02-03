@@ -9,7 +9,6 @@ import (
 
 	"github.com/gosuri/uiprogress"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/term"
 
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/protocol"
@@ -110,15 +109,16 @@ func (r *reqCommand) configureProgressBar(count int, expected int) {
 		return
 	}
 
-	r.progressBar = uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
+	width := c.ProgressWidth()
+	if width == -1 {
+		r.noProgress = true
+		fmt.Printf("\nInvoking %s#%s action\n\n", r.agent, r.action)
 
-	width, _, err := term.GetSize(0)
-
-	if err != nil {
-		width = 80
+		return
 	}
 
-	r.progressBar.Width = width - 30
+	r.progressBar = uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
+	r.progressBar.Width = width
 
 	fmt.Println()
 

@@ -19,6 +19,7 @@ import (
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/fatih/color"
+	"golang.org/x/term"
 
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
@@ -781,4 +782,23 @@ func (fw *Framework) Colorize(c string, format string, a ...interface{}) string 
 	default:
 		return fmt.Sprintf(format, a...)
 	}
+}
+
+// ProgressWidth determines the width of the progress bar, when -1 there is not enough space for a progress bar
+func (fw *Framework) ProgressWidth() int {
+	width, _, err := term.GetSize(0)
+	if err != nil {
+		width = 80
+	}
+
+	if width < 35 {
+		return -1
+	}
+
+	width -= 30
+	if width > 80 {
+		width = 80
+	}
+
+	return width
 }
