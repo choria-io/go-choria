@@ -150,7 +150,7 @@ func (s *PuppetSecurity) reinit() error {
 	}
 
 	if fc.BackwardCompatVerification {
-		s.log.Warnf("Puppet security system requesting legacy TLS support")
+		s.log.Debugf("Puppet security system requesting legacy TLS support")
 	} else {
 		s.log.Debugf("Puppet security system supporting only new certificates")
 	}

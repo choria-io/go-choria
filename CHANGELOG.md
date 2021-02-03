@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/02/03|      |Release 0.20.2                                                                                           |
+|2021/02/03|1140  |Ensure logging doesn't happen at warn level                                                              |
 |2021/02/03|      |Release 0.20.1                                                                                           |
 |2021/02/03|1140  |Ensure that only client/server connections use no SAN TLS work around, not brokers                       |
 |2021/02/03|      |Release 0.20.0                                                                                           |
