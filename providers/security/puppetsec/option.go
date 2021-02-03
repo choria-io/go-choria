@@ -30,6 +30,7 @@ func WithChoriaConfig(c *config.Config) Option {
 			RemoteSignerTokenFile:        c.Choria.RemoteSignerTokenFile,
 			RemoteSignerTokenEnvironment: c.Choria.RemoteSignerTokenEnvironment,
 			TLSConfig:                    tlssetup.TLSConfig(c),
+			noLegacyTLS:                  c.InitiatedBySystem && !c.InitiatedByServer,
 		}
 
 		if c.Choria.NetworkClientAdvertiseName != "" {
