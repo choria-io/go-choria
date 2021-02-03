@@ -1,5 +1,24 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/02/03|      |Release 0.20.0                                                                                           |
+|2021/02/02|1136  |Improve progress bars on small screens                                                                   |
+|2021/02/02|      |Sort classes tags in discovery command and elsewhere                                                     |
+|2021/02/01|1074  |Initial support for Data Providers, add `choria`, `scout`, `config_item` providers                       |
+|2021/01/29|1123  |Perform identity-only discovery optimization in `broadcast` and `puppetdb` discovery methods             |
+|2021/01/29|1121  |Add a `--silent` flag to `choria discover` to improve script integration                                 |
+|2021/01/28|1060  |Support go 1.15 by putting in work around to support Puppet SAN free TLS certificates                    |
+|2021/01/28|      |Add a bash completion script in `choria completion` in addition to current ZSH support                   |
+|2021/01/24|1113  |Adds a new `inventory` discovery method                                                                  |
+|2021/01/23|1110  |Improve SRV handling when trying to find PuppetDB host                                                   |
+|2021/01/23|1098  |Improve `choria tool config` to show config files and active settings                                    |
+|2021/01/22|1102  |Ensure we discover `rpcutil` in the `discover` command, improves PuppetDB integration                    |
+|2021/01/20|751   |Add project level Choria configuration                                                                   |
+|2021/01/21|1098  |Allow options to be passed to discovery methods using `--discovery-option`                               |
+|2021/01/18|1081  |Support flatfile discovery from json, yaml, stdin and improve generated clients                          |
+|2021/01/16|1092  |Add the `external` discovery method                                                                      |
+|2021/01/18|1072  |Performance improvements for expr expression handling                                                    |
+|2021/01/14|281   |Improve identity handling when running on windows, non root and other situations                         |
+|2021/01/13|1089  |Support request chaining in the req command                                                              |
 |2021/01/13|      |Release 0.19.0                                                                                           |
 |2020/01/12|1086  |Create a `choria facts` command                                                                          |
 |2020/01/12|1084  |Support full GJSON Path Syntax in rpcutil#get_fact, fix a crash on map data in aggregators               |
