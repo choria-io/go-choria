@@ -94,6 +94,8 @@ type Config struct {
 
 	// AltNames are additional names to add to the CSR
 	AltNames []string
+
+	noLegacyTLS bool
 }
 
 // New creates a new instance of the Puppet Security Provider
@@ -139,12 +141,18 @@ func (s *PuppetSecurity) reinit() error {
 		RemoteSignerTokenFile:        s.conf.RemoteSignerTokenFile,
 		RemoteSignerTokenEnvironment: s.conf.RemoteSignerTokenEnvironment,
 		TLSConfig:                    s.conf.TLSConfig,
-		BackwardCompatVerification:   true,
+		BackwardCompatVerification:   !s.conf.noLegacyTLS,
 	}
 
 	s.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(s.log))
 	if err != nil {
 		return err
+	}
+
+	if fc.BackwardCompatVerification {
+		s.log.Warnf("Puppet security system requesting legacy TLS support")
+	} else {
+		s.log.Debugf("Puppet security system supporting only new certificates")
 	}
 
 	return nil
