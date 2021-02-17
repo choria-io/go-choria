@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/gosuri/uiprogress"
-	log "github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/protocol"
@@ -201,7 +200,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer r.outputWriter.Flush()
 
 	dstart := time.Now()
-	nodes, err := r.discover(r.filter)
+	nodes, err := r.discover()
 	if err != nil {
 		return fmt.Errorf("could not discover nodes: %s", err)
 	}
@@ -307,9 +306,7 @@ func (r *reqCommand) Configure() error {
 	return commonConfigure()
 }
 
-func (r *reqCommand) discover(filter *protocol.Filter) ([]string, error) {
-	log.Debugf("starting discovery using filter %#v", filter)
-
+func (r *reqCommand) discover() ([]string, error) {
 	nodes, _, err := r.fo.Discover(ctx, c, r.agent, true, !r.silent, c.Logger("discovery"))
 	if err != nil {
 		return nil, err

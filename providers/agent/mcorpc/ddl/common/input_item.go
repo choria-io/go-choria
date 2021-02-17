@@ -22,6 +22,7 @@ var (
 	InputTypeList    = "list"
 	InputTypeNumber  = "number"
 	InputTypeString  = "string"
+	InputTypeAny     = ""
 )
 
 // InputItem describes an individual input item
@@ -61,22 +62,22 @@ func (i *InputItem) ValidateStringValue(val string) (converted interface{}, warn
 // ValidateValue validates a value against this input, should be of the right data type already. See ValToDDLType()
 func (i *InputItem) ValidateValue(val interface{}) (warnings []string, err error) {
 	switch strings.ToLower(i.Type) {
-	case "integer", "int":
+	case InputTypeInteger, "int":
 		if !validator.IsAnyInt(val) {
 			return warnings, fmt.Errorf("is not an integer")
 		}
 
-	case "number":
+	case InputTypeNumber:
 		if !validator.IsNumber(val) {
 			return warnings, fmt.Errorf("is not a number")
 		}
 
-	case "float":
+	case InputTypeFloat:
 		if !validator.IsFloat64(val) {
 			return warnings, fmt.Errorf("is not a float")
 		}
 
-	case "string":
+	case InputTypeString:
 		if !validator.IsString(val) {
 			return warnings, fmt.Errorf("is not a string")
 		}
@@ -100,12 +101,12 @@ func (i *InputItem) ValidateValue(val interface{}) (warnings []string, err error
 			}
 		}
 
-	case "boolean":
+	case InputTypeBoolean:
 		if !validator.IsBool(val) {
 			return warnings, fmt.Errorf("is not a boolean")
 		}
 
-	case "list":
+	case InputTypeList:
 		if len(i.Enum) == 0 {
 			return warnings, fmt.Errorf("input type of list without a valid list of items in DDL")
 		}
@@ -123,12 +124,12 @@ func (i *InputItem) ValidateValue(val interface{}) (warnings []string, err error
 
 		return warnings, fmt.Errorf("should be one of %s", strings.Join(i.Enum, ", "))
 
-	case "hash":
+	case InputTypeHash, "hash":
 		if !validator.IsMap(val) {
 			return warnings, fmt.Errorf("is not a hash map")
 		}
 
-	case "array":
+	case InputTypeArray, "array":
 		if !validator.IsArray(val) {
 			return warnings, fmt.Errorf("is not an array")
 		}

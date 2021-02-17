@@ -137,14 +137,16 @@ func Run() (err error) {
 	}
 
 	if cfg != nil {
+		if debug {
+			cfg.LogLevel = "debug"
+		}
+
 		// we do this here so that the command setup has a chance to fiddle the config for
 		// things like disabling full verification of the security system during enrollment
 		c, err = choria.NewWithConfig(cfg)
 		if err != nil {
 			return fmt.Errorf("could not initialize Choria: %s", err)
 		}
-
-		c.SetupLogging(debug)
 	}
 
 	for _, cmd := range cli.commands {

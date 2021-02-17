@@ -77,7 +77,7 @@ func (s *ScoutData) DLL() (*ddl.DDL, error) {
 		Query: &common.InputItem{
 			Prompt:      "Check",
 			Description: "The Scout check to retrieve data for",
-			Type:        "string",
+			Type:        common.InputTypeString,
 			Optional:    false,
 			Validation:  "^[a-zA-Z][a-zA-Z0-9_-]+$",
 			MaxLength:   50,
@@ -86,42 +86,42 @@ func (s *ScoutData) DLL() (*ddl.DDL, error) {
 			"name": {
 				Description: "The name of the Scout check",
 				DisplayAs:   "Name",
-				Type:        "string",
+				Type:        common.OutputTypeString,
 			},
 			"version": {
 				Description: "The version of the Scout check state machine",
 				DisplayAs:   "Version",
-				Type:        "string",
+				Type:        common.OutputTypeString,
 			},
 			"state": {
 				Description: "The state the Scout check is in",
 				DisplayAs:   "State",
-				Type:        "string",
+				Type:        common.OutputTypeString,
 			},
 			"path": {
 				Description: "The path on disk where the Scout check is stored",
 				DisplayAs:   "Path",
-				Type:        "string",
+				Type:        common.OutputTypeString,
 			},
 			"id": {
 				Description: "The unique ID of the running state machine",
 				DisplayAs:   "ID",
-				Type:        "string",
+				Type:        common.OutputTypeString,
 			},
 			"start_time": {
 				Description: "The time the check started in UTC",
 				DisplayAs:   "Start Time",
-				Type:        "integer",
+				Type:        common.OutputTypeInteger,
 			},
 			"uptime": {
 				Description: "The time the check has been running in seconds",
 				DisplayAs:   "Uptime",
-				Type:        "integer",
+				Type:        common.OutputTypeInteger,
 			},
 			"history": {
 				Description: "Recent past states of the check",
 				DisplayAs:   "History",
-				Type:        "hash",
+				Type:        common.OutputTypeHash,
 			},
 		},
 	}

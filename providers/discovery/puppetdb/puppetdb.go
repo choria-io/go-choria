@@ -123,7 +123,7 @@ func (p *PuppetDB) discoverAgents(agents []string) string {
 
 	for _, a := range agents {
 		switch {
-		case a == "scout" || a == "rpcutil":
+		case a == "scout" || a == "rpcutil" || a == "choria_util":
 			pql = append(pql, fmt.Sprintf("(%s or %s)", p.discoverClasses([]string{"choria::service"}), p.discoverClasses([]string{"mcollective::service"})))
 		case stringIsRegex.MatchString(a):
 			matches := stringIsRegex.FindStringSubmatch(a)

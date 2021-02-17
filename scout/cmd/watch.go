@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"os"
 	"strconv"
 	"strings"
 	"sync"
@@ -22,7 +21,6 @@ import (
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/logger"
 	"github.com/choria-io/go-choria/scout/stream"
 )
@@ -78,13 +76,11 @@ func (w *WatchCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error) 
 	}
 	defer gui.Close()
 
-	transitions := make(chan *choria.ConnectorMessage, 100)
-	states := make(chan *choria.ConnectorMessage, 100)
+	transitions := make(chan *nats.Msg, 100)
+	states := make(chan *nats.Msg, 100)
 
 	go func() {
-		var m *choria.ConnectorMessage
-		var nm *nats.Msg
-		var ok bool
+		var m *nats.Msg
 
 		for {
 			select {
@@ -101,17 +97,14 @@ func (w *WatchCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error) 
 				continue
 			}
 
-			nm, ok = m.Msg.(*nats.Msg)
-			if ok {
-				nm.Ack()
-			}
+			m.Ack()
 		}
 	}()
 
 	if w.history > 0 {
 		err = w.subscribeJetStream(lctx, transitions, states)
 	} else {
-		err = w.subscribeDirect(lctx, transitions, states)
+		err = w.subscribeDirect(transitions, states)
 	}
 	if err != nil {
 		return err
@@ -143,12 +136,12 @@ func (w *WatchCommand) dataFromCloudEventJSON(j []byte) ([]byte, error) {
 	return data, nil
 }
 
-func (w *WatchCommand) handleTransition(m *choria.ConnectorMessage, gui *gocui.Gui) {
+func (w *WatchCommand) handleTransition(m *nats.Msg, gui *gocui.Gui) {
 	if m == nil {
 		return
 	}
 
-	data, err := w.dataFromCloudEventJSON(m.Bytes())
+	data, err := w.dataFromCloudEventJSON(m.Data)
 	if err != nil {
 		w.Errorf("could not parse cloud event: %s", err)
 		return
@@ -168,7 +161,7 @@ func (w *WatchCommand) handleTransition(m *choria.ConnectorMessage, gui *gocui.G
 		return
 	}
 
-	w.transEph.SetResumeSequence(m.Msg.(*nats.Msg))
+	w.transEph.SetResumeSequence(m)
 
 	w.Lock()
 	defer w.Unlock()
@@ -198,12 +191,12 @@ func (w *WatchCommand) colorizeState(state string) string {
 	}
 }
 
-func (w *WatchCommand) handleState(m *choria.ConnectorMessage, gui *gocui.Gui) {
+func (w *WatchCommand) handleState(m *nats.Msg, gui *gocui.Gui) {
 	if m == nil {
 		return
 	}
 
-	data, err := w.dataFromCloudEventJSON(m.Bytes())
+	data, err := w.dataFromCloudEventJSON(m.Data)
 	if err != nil {
 		w.Errorf("could not parse cloud event: %s", err)
 		return
@@ -224,7 +217,7 @@ func (w *WatchCommand) handleState(m *choria.ConnectorMessage, gui *gocui.Gui) {
 	}
 
 	output := strings.Split(state.Output, "|")
-	w.stateEph.SetResumeSequence(m.Msg.(*nats.Msg))
+	w.stateEph.SetResumeSequence(m)
 
 	w.Lock()
 	defer w.Unlock()
@@ -479,13 +472,7 @@ func (w *WatchCommand) setupWindows() (gui *gocui.Gui, err error) {
 	return g, nil
 }
 
-func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan *choria.ConnectorMessage, states chan *choria.ConnectorMessage) error {
-	ib := nats.NewInbox()
-	err := w.nc.QueueSubscribe(ctx, fmt.Sprintf("scout-watch-transitions-%d", os.Getpid()), ib, "", transitions)
-	if err != nil {
-		return fmt.Errorf("could not subscribe to %s", ib)
-	}
-
+func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan *nats.Msg, states chan *nats.Msg) error {
 	mgr, err := jsm.New(w.nc.Nats())
 	if err != nil {
 		return err
@@ -496,18 +483,14 @@ func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan 
 		return err
 	}
 
-	w.transEph, err = stream.NewEphemeral(str, time.Minute, nil, jsm.FilterStreamBySubject("choria.machine.transition"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(2))
+	le := w.Logrus.(*logrus.Entry)
+
+	w.transEph, err = stream.NewEphemeral(ctx, w.nc.Nats(), str, time.Minute, transitions, le, jsm.FilterStreamBySubject("choria.machine.transition"), jsm.StartAtTimeDelta(w.history), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(2))
 	if err != nil {
 		return fmt.Errorf("could not subscribe to Choria Streaming stream CHORIA_MACHINE: %s", err)
 	}
 
-	ib = nats.NewInbox()
-	err = w.nc.QueueSubscribe(ctx, util.UniqueID(), ib, "", states)
-	if err != nil {
-		return fmt.Errorf("could not subscribe to %s", ib)
-	}
-
-	w.stateEph, err = stream.NewEphemeral(str, time.Minute, nil, jsm.FilterStreamBySubject("choria.machine.watcher.nagios.state"), jsm.StartAtTimeDelta(w.history), jsm.DeliverySubject(ib), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(2))
+	w.stateEph, err = stream.NewEphemeral(ctx, w.nc.Nats(), str, time.Minute, states, le, jsm.FilterStreamBySubject("choria.machine.watcher.nagios.state"), jsm.StartAtTimeDelta(w.history), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(2))
 	if err != nil {
 		return fmt.Errorf("could not subscribe to Choria Streaming stream CHORIA_MACHINE: %s", err)
 	}
@@ -515,13 +498,14 @@ func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan 
 	return nil
 }
 
-func (w *WatchCommand) subscribeDirect(ctx context.Context, transitions chan *choria.ConnectorMessage, states chan *choria.ConnectorMessage) error {
-	err := w.nc.QueueSubscribe(ctx, fmt.Sprintf("scout-watch-transitions-%d", os.Getpid()), "choria.machine.transition", "", transitions)
+func (w *WatchCommand) subscribeDirect(transitions chan *nats.Msg, states chan *nats.Msg) error {
+	nc := w.nc.Nats()
+	_, err := nc.ChanSubscribe("choria.machine.transition", transitions)
 	if err != nil {
 		return fmt.Errorf("could not subscribe to transitions: %s", err)
 	}
 
-	err = w.nc.QueueSubscribe(ctx, fmt.Sprintf("scout-watch-state-%d", os.Getpid()), "choria.machine.watcher.nagios.state", "", states)
+	_, err = nc.ChanSubscribe("choria.machine.watcher.nagios.state", states)
 	if err != nil {
 		return fmt.Errorf("could not subscribe to states: %s", err)
 	}
