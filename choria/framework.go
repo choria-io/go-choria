@@ -413,8 +413,7 @@ func (fw *Framework) SetLogger(logger *log.Logger) {
 // currently only file and console behaviors are supported
 func (fw *Framework) SetupLogging(debug bool) (err error) {
 	fw.log = log.New()
-
-	fw.log.Out = os.Stdout
+	fw.log.SetOutput(os.Stdout)
 
 	err = fw.openLogfile()
 	if err != nil {

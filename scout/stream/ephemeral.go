@@ -3,7 +3,6 @@ package stream
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"sync"
 	"time"
@@ -18,58 +17,102 @@ import (
 )
 
 type Ephemeral struct {
-	ctx       context.Context
-	cancel    func()
-	stream    *jsm.Stream
-	cons      *jsm.Consumer
-	opts      *api.ConsumerConfig
-	log       *logrus.Entry
-	interval  time.Duration
-	resumeSeq uint64
+	stream   *jsm.Stream
+	conn     *nats.Conn
+	interval time.Duration
+	cfg      *api.ConsumerConfig
+	q        chan *nats.Msg
+	ctx      context.Context
+	cancel   func()
+	sub      *nats.Subscription
+	cons     *jsm.Consumer
+	log      *logrus.Entry
+
+	resumeSequence uint64
 
 	sync.Mutex
 }
 
-func NewEphemeral(stream *jsm.Stream, interval time.Duration, log *logrus.Entry, opts ...jsm.ConsumerOption) (e *Ephemeral, err error) {
-	if stream == nil {
-		return nil, fmt.Errorf("stream is required")
-	}
-
-	e = &Ephemeral{
+func NewEphemeral(ctx context.Context, nc *nats.Conn, stream *jsm.Stream, interval time.Duration, q chan *nats.Msg, log *logrus.Entry, opts ...jsm.ConsumerOption) (*Ephemeral, error) {
+	eph := &Ephemeral{
 		stream:   stream,
+		conn:     nc,
 		interval: interval,
+		q:        q,
+		log:      log.WithFields(logrus.Fields{"component": "ephemeral", "stream": stream.Name()}),
 	}
 
-	if log == nil {
-		logger := logrus.New()
-		logger.SetOutput(ioutil.Discard)
-		e.log = logrus.NewEntry(logger)
-	} else {
-		e.log = log.WithFields(logrus.Fields{"stream": stream.Name()})
-	}
-
-	e.opts, err = jsm.NewConsumerConfiguration(jsm.DefaultConsumer, opts...)
+	var err error
+	eph.cfg, err = jsm.NewConsumerConfiguration(jsm.DefaultConsumer, opts...)
 	if err != nil {
 		return nil, err
 	}
 
-	if e.opts.MaxAckPending == 0 || e.opts.MaxAckPending > 100 {
-		e.opts.MaxAckPending = 100
+	if eph.cfg.MaxAckPending == 0 || eph.cfg.MaxAckPending > 100 {
+		eph.cfg.MaxAckPending = 100
 	}
 
-	if e.opts.AckPolicy == api.AckNone {
+	if eph.cfg.AckPolicy == api.AckNone {
 		return nil, fmt.Errorf("ack policy has to be all or explicit")
 	}
 
-	e.ctx, e.cancel = context.WithCancel(context.Background())
+	eph.ctx, eph.cancel = context.WithCancel(ctx)
 
-	err = e.start()
+	return eph, eph.start()
+}
+
+func (e *Ephemeral) start() error {
+	go func() {
+		err := e.manage()
+		if err != nil {
+			e.log.Errorf("Managed ephemeral failed: %s", err)
+		}
+	}()
+
+	return nil
+}
+
+func (e *Ephemeral) manage() error {
+	e.log.Debugf("Creating consumer")
+	err := e.createConsumer()
 	if err != nil {
-		e.Close()
-		return nil, err
+		return err
 	}
 
-	return e, nil
+	r := rand.New(rand.NewSource(time.Now().UnixNano()))
+	splay := time.Duration(r.Intn(int(e.interval)))
+	e.log.Debugf("Splaying health management by %s", splay)
+	err = util.InterruptibleSleep(e.ctx, splay)
+	if err != nil {
+		return err
+	}
+
+	ticker := time.NewTicker(e.interval)
+	defer ticker.Stop()
+
+	for {
+		select {
+		case <-e.ctx.Done():
+			return e.ctx.Err()
+		case <-ticker.C:
+			e.log.Debugf("Checking consumer %s state", e.cons.Name())
+
+			e.Lock()
+			cons := e.cons
+			e.Unlock()
+
+			_, err = cons.State()
+			if err != nil {
+				e.log.Warnf("Consumer failed: %s", err)
+				cons.Delete()
+				err = e.createConsumer()
+				if err != nil {
+					e.log.Warnf("Consumer creation failed: %s", err)
+					return err
+				}
+			}
+		}
+	}
 }
 
 func (e *Ephemeral) SetResumeSequence(m *nats.Msg) {
@@ -89,91 +132,72 @@ func (e *Ephemeral) SetResumeSequence(m *nats.Msg) {
 	e.Lock()
 	defer e.Unlock()
 
-	e.resumeSeq = meta.StreamSequence() + 1
+	e.resumeSequence = meta.StreamSequence() + 1
 }
 
-func (e *Ephemeral) Consumer() *jsm.Consumer {
+func (e *Ephemeral) createConsumer() error {
 	e.Lock()
 	defer e.Unlock()
 
-	return e.cons
-}
-func (e *Ephemeral) start() error {
-	return e.manageConsumer()
+	if e.sub != nil {
+		e.sub.Unsubscribe()
+	}
+
+	var err error
+
+	return backoff.TwentySec.For(e.ctx, func(i int) error {
+		if e.sub != nil {
+			e.log.Debugf("Unsubscribing from inbox %s", e.sub.Subject)
+			e.sub.Unsubscribe()
+		}
+
+		if e.cons != nil {
+			e.log.Debugf("Deleting existing consumer")
+			e.cons.Delete()
+		}
+
+		e.sub, err = e.conn.ChanSubscribe(nats.NewInbox(), e.q)
+		if err != nil {
+			e.log.Warnf("Subscription failed on try %d: %s", i, err)
+			return err
+		}
+		e.log.Debugf("Subscribed to %s", e.sub.Subject)
+
+		e.cfg.DeliverSubject = e.sub.Subject
+		if e.resumeSequence != 0 {
+			e.cfg.OptStartSeq = e.resumeSequence
+			e.cfg.DeliverPolicy = api.DeliverByStartSequence
+			e.cfg.OptStartTime = nil
+		}
+
+		e.cons, err = e.stream.NewConsumerFromDefault(*e.cfg)
+		e.conn.Flush()
+		if err != nil {
+			e.log.Warnf("Creating consumer failed: %s", err)
+			return err
+		}
+		e.log.Debugf("Created new consumer %s", e.cons.Name())
+
+		return nil
+	})
 }
 
 func (e *Ephemeral) Close() {
 	e.Lock()
 	cancel := e.cancel
+	sub := e.sub
+	cons := e.cons
 	e.Unlock()
 
 	if cancel != nil {
 		cancel()
 	}
-}
 
-func (e *Ephemeral) createConsumer() (cons *jsm.Consumer, err error) {
-	e.Lock()
-	opts := *e.opts
-	rseq := e.resumeSeq
-	e.Unlock()
-
-	if rseq > 0 {
-		opts.OptStartSeq = rseq
-		opts.DeliverPolicy = api.DeliverByStartSequence
-		opts.OptStartTime = nil
+	if sub != nil {
+		sub.Unsubscribe()
 	}
 
-	cons, err = e.stream.NewConsumerFromDefault(opts)
-	if err != nil {
-		e.log.Errorf("Could not create consumer on stream %q: %s", e.stream.Name(), err)
-		err = backoff.TwentySec.For(e.ctx, func(try int) error {
-			e.log.Warnf("Trying to create consumer on stream %q, try %d", e.stream.Name(), try)
-			cons, err = e.stream.NewConsumerFromDefault(opts)
-			return err
-		})
+	if cons != nil {
+		cons.Delete()
 	}
-
-	e.Lock()
-	e.cons = cons
-	e.Unlock()
-
-	return cons, err
-}
-
-func (e *Ephemeral) manageConsumer() error {
-	cons, err := e.createConsumer()
-	if err != nil {
-		return err
-	}
-
-	go func() {
-		r := rand.New(rand.NewSource(time.Now().UnixNano()))
-		splay := time.Duration(r.Intn(int(e.interval)))
-		err = util.InterruptibleSleep(e.ctx, splay)
-		if err != nil {
-			return
-		}
-
-		ticker := time.NewTicker(e.interval)
-		defer ticker.Stop()
-
-		for {
-			select {
-			case <-e.ctx.Done():
-				return
-			case <-ticker.C:
-				_, err = cons.State()
-				if err != nil {
-					e.log.Warnf("Ephemeral consumer %q > %q has failed, recreating", cons.StreamName(), cons.Name())
-					cons, err = e.createConsumer()
-					if err != nil {
-						return
-					}
-				}
-			}
-		}
-	}()
-
-	return nil
 }

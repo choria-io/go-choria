@@ -59,7 +59,7 @@ func (s *ConfigData) DLL() (*ddl.DDL, error) {
 		Query: &common.InputItem{
 			Prompt:      "Configuration Key",
 			Description: "A key as found in the configuration file",
-			Type:        "string",
+			Type:        common.InputTypeString,
 			Default:     "",
 			Optional:    false,
 			Validation:  ".+",
@@ -69,11 +69,12 @@ func (s *ConfigData) DLL() (*ddl.DDL, error) {
 			"present": {
 				Description: "Indicates if the configuration item is known",
 				DisplayAs:   "Present",
-				Type:        "bool",
+				Type:        common.OutputTypeBoolean,
 			},
 			"value": {
 				Description: "The current value of the configuration item, in it's native data type",
 				DisplayAs:   "Value",
+				Type:        common.OutputTypeAny,
 			},
 		},
 	}

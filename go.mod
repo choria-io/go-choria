@@ -28,8 +28,8 @@ require (
 	github.com/nats-io/jsm.go v0.0.20
 	github.com/nats-io/jwt v1.2.2
 	github.com/nats-io/jwt/v2 v2.0.0-20210125223648-1c24d462becc
-	github.com/nats-io/nats-server/v2 v2.1.8-0.20210128190858-c9e0eb6c3a0e
-	github.com/nats-io/nats.go v1.10.1-0.20210127212649-5b4924938a9a
+	github.com/nats-io/nats-server/v2 v2.1.8-0.20210205154825-f7ab27f7dad4
+	github.com/nats-io/nats.go v1.10.1-0.20210211000709-75ded9c77585
 	github.com/nats-io/nsc v0.0.0-20210108232822-40dcea882554
 	github.com/nats-io/stan.go v0.7.0
 	github.com/nxadm/tail v1.4.6 // indirect
