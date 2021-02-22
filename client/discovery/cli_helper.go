@@ -35,6 +35,8 @@ type StandardOptions struct {
 	DiscoveryTimeout int
 	NodesFile        string
 	DiscoveryOptions map[string]string
+
+	unsetMethod bool
 }
 
 // NewStandardOptions creates a new CLI options helper
@@ -90,15 +92,15 @@ func (o *StandardOptions) Discover(ctx context.Context, fw client.ChoriaFramewor
 	}
 
 	switch {
-	case len(filter.Compound) > 0 && o.DiscoveryMethod != "broadcast" && o.DiscoveryMethod != "inventory" && o.DiscoveryMethod != "mc":
-		o.DiscoveryMethod = "broadcast"
-		logger.Debugf("Forcing discovery mode to broadcast to support compound filters")
-
-	case supportStdin && o.isPiped() && o.DiscoveryMethod == "":
+	case supportStdin && o.isPiped() && (o.DiscoveryMethod == "" || o.unsetMethod):
 		o.DiscoveryMethod = "flatfile"
 		fformat = flatfile.ChoriaResponsesFormat
 		sourceFile = os.Stdin
 		logger.Debugf("Forcing discovery mode to flatfile with Choria responses on STDIN")
+
+	case len(filter.Compound) > 0 && o.DiscoveryMethod != "broadcast" && o.DiscoveryMethod != "inventory" && o.DiscoveryMethod != "mc":
+		o.DiscoveryMethod = "broadcast"
+		logger.Debugf("Forcing discovery mode to broadcast to support compound filters")
 
 	case o.NodesFile != "":
 		o.DiscoveryMethod = "flatfile"
@@ -170,6 +172,7 @@ func (o *StandardOptions) SetDefaultsFromChoria(fw client.ChoriaFramework) {
 func (o *StandardOptions) SetDefaultsFromConfig(cfg *config.Config) {
 	if o.DiscoveryMethod == "" {
 		o.DiscoveryMethod = cfg.DefaultDiscoveryMethod
+		o.unsetMethod = true
 	}
 
 	if o.Collective == "" {
