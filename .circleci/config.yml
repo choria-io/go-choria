@@ -310,11 +310,6 @@ workflows:
           requires:
             - test
 
-      - build_el6_64bit_rpms:
-          context: org-global
-          requires:
-            - test
-
       - build_windows_64bit_msi:
           context: org-global
           requires:
@@ -322,9 +317,9 @@ workflows:
 
       - gather_artifacts:
           requires:
-            - build_el6_64bit_rpms
             - build_el7_64bit_rpms
             - build_el8_64bit_rpms
+            - build_windows_64bit_msi
 
       - nightly_packagecloud:
           requires:
@@ -346,16 +341,6 @@ workflows:
               only: /^v\d+\.\d+\.\d+$/
             branches:
               ignore: /.*/
-
-      - build_el6_32bit_rpms:
-          filters: *semver_only
-          requires:
-            - hold
-
-      - build_el6_64bit_rpms:
-          filters: *semver_only
-          requires:
-            - hold
 
       - build_el7_64bit_rpms:
           filters: *semver_only
@@ -399,8 +384,6 @@ workflows:
 
       - gather_artifacts:
           requires:
-            - build_el6_32bit_rpms
-            - build_el6_64bit_rpms
             - build_el7_64bit_rpms
             - build_el8_64bit_rpms
             - build_xenial_64bit_debs
