@@ -359,7 +359,7 @@ func (fw *Framework) MiddlewareServers() (servers srvcache.Servers, err error) {
 		}
 	}
 
-	if servers.Count() == 0 {
+	if servers.Count() == 0 && fw.Config.Choria.UseSRVRecords {
 		servers, err = fw.QuerySrvRecords([]string{"_mcollective-server._tcp", "_x-puppet-mcollective._tcp"})
 		if err != nil {
 			log.Warnf("Could not resolve Middleware Server SRV records: %s", err)
