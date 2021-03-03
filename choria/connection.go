@@ -407,6 +407,8 @@ func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protoc
 
 		log.Debugf("Sending a federated broadcast message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
 
+		msg.NotifyPublish()
+
 		err = conn.PublishRaw(target, []byte(j))
 		if err != nil {
 			return err
@@ -440,7 +442,6 @@ func (conn *Connection) publishConnectedBroadcast(msg *Message, transport protoc
 	msg.NotifyPublish()
 
 	return conn.PublishRaw(target, []byte(j))
-
 }
 
 func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.TransportMessage) error {
@@ -458,6 +459,8 @@ func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.
 		}
 
 		log.Debugf("Sending a direct message to %s via NATS target '%s' for message %s type %s", host, target, msg.RequestID, msg.Type())
+
+		msg.NotifyPublish()
 
 		err = conn.PublishRaw(target, rawmsg)
 		if err != nil {
