@@ -46,10 +46,23 @@ foss:
       os: linux
       arch: arm
       arm: 7
+      pre:
+        - rm plugin_*.go || true
+        - GOOS=linux GOARCH=amd64 go generate --run plugin
+
+    ppc64le_linux:
+      os: linux
+      arch: ppc64le
+      pre:
+        - rm plugin_*.go || true
+        - GOOS=linux GOARCH=amd64 go generate --run plugin
 
     darwin:
       os: darwin
       arch: amd64
+      pre:
+        - rm plugin_*.go || true
+        - GOOS=linux GOARCH=amd64 go generate --run plugin
 
     # can probably not be built on an actual windows machine
     64bit_windows:
@@ -113,11 +126,23 @@ foss:
       target_arch: x86_64
       binary: 64bit_linux
 
+    el7_ppc64le:
+      template: el/el7
+      dist: el7
+      target_arch: ppc64le
+      binary: ppc64le_linux
+
     el8_64:
       template: el/el8
       dist: el8
       target_arch: x86_64
       binary: 64bit_linux
+
+    el8_ppc64le:
+      template: el/el8
+      dist: el8
+      target_arch: ppc64le
+      binary: ppc64le_linux
 
     xenial_64:
       template: debian/generic
