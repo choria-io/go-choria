@@ -80,7 +80,11 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("could not create message: %s", err)
 	}
 	msg.Filter = filter
-	msg.OnPublish(func() { p.published = time.Now() })
+	msg.OnPublish(func() {
+		if p.published.IsZero() {
+			p.published = time.Now()
+		}
+	})
 
 	cl, err := client.New(c, client.Receivers(p.workers), client.Timeout(time.Duration(p.timeout)*time.Second))
 	if err != nil {

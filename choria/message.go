@@ -131,7 +131,7 @@ func (m *Message) OnPublish(f func()) {
 	m.onPublish = f
 }
 
-// NotifyPublish triggers the callback set using OnPublish() in a blocking fasion
+// NotifyPublish triggers the callback set using OnPublish() in a blocking fashion
 func (m *Message) NotifyPublish() {
 	m.Lock()
 	defer m.Unlock()
