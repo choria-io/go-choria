@@ -114,7 +114,9 @@ func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.
 		return
 	}
 
-	output := &machineStateResponse{}
+	output := &machineStateResponse{
+		aagent.MachineState{Name: "unknown machine", State: "unknown machine", Version: "unknown machine"},
+	}
 	reply.Data = output
 
 	states, err := agent.ServerInfoSource.MachinesStatus()
@@ -126,7 +128,7 @@ func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.
 
 	if len(states) == 0 {
 		reply.Statuscode = mcorpc.Aborted
-		reply.Statusmsg = "Could not find a matching machine"
+		reply.Statusmsg = "No running machines"
 		return
 	}
 
@@ -136,16 +138,16 @@ func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.
 		pathMatch := i.Path == ""
 		idMatch := i.ID == ""
 
-		if nameMatch {
+		if i.Name != "" {
 			nameMatch = state.Name == i.Name
 		}
 
-		if pathMatch {
+		if i.Path != "" {
 			pathMatch = state.Path == i.Path
 
 		}
 
-		if idMatch {
+		if i.ID != "" {
 			idMatch = state.ID == i.ID
 		}
 
@@ -154,7 +156,7 @@ func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.
 		}
 	}
 
-	if len(found) > 0 {
+	if len(found) > 1 {
 		reply.Statuscode = mcorpc.Aborted
 		reply.Statusmsg = "Found multiple machines matching criteria"
 		return
