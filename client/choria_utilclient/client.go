@@ -232,6 +232,27 @@ func (p *ChoriaUtilClient) Info() *InfoRequester {
 	return d
 }
 
+// MachineState performs the machine_state action
+//
+// Description: Retrieves the current state of a specific Choria Autonomous Agent
+//
+// Optional Inputs:
+//    - instance (string) - Machine Instance ID
+//    - name (string) - Machine Name
+//    - path (string) - Machine Path
+func (p *ChoriaUtilClient) MachineState() *MachineStateRequester {
+	d := &MachineStateRequester{
+		outc: nil,
+		r: &requester{
+			args:   map[string]interface{}{},
+			action: "machine_state",
+			client: p,
+		},
+	}
+
+	return d
+}
+
 // MachineStates performs the machine_states action
 //
 // Description: States of the hosted Choria Autonomous Agents

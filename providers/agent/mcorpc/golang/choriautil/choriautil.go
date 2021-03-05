@@ -74,6 +74,16 @@ type machineTransitionReply struct {
 	Success bool `json:"success"`
 }
 
+type machineStateRequest struct {
+	Name string `json:"name"`
+	ID   string `json:"instance"`
+	Path string `json:"path"`
+}
+
+type machineStateResponse struct {
+	aagent.MachineState
+}
+
 // New creates a new choria_util agent
 func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 	bi := mgr.Choria().BuildInfo()
@@ -92,9 +102,71 @@ func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 
 	agent.MustRegisterAction("info", infoAction)
 	agent.MustRegisterAction("machine_states", machineStatesAction)
+	agent.MustRegisterAction("machine_state", machineStateAction)
 	agent.MustRegisterAction("machine_transition", machineTransitionAction)
 
 	return agent, nil
+}
+
+func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+	i := machineStateRequest{}
+	if !mcorpc.ParseRequestData(&i, req, reply) {
+		return
+	}
+
+	output := &machineStateResponse{}
+	reply.Data = output
+
+	states, err := agent.ServerInfoSource.MachinesStatus()
+	if err != nil {
+		reply.Statuscode = mcorpc.Aborted
+		reply.Statusmsg = fmt.Sprintf("Failed to retrieve states: %s", err)
+		return
+	}
+
+	if len(states) == 0 {
+		reply.Statuscode = mcorpc.Aborted
+		reply.Statusmsg = "Could not find a matching machine"
+		return
+	}
+
+	var found []*aagent.MachineState
+	for _, state := range states {
+		nameMatch := i.Name == ""
+		pathMatch := i.Path == ""
+		idMatch := i.ID == ""
+
+		if nameMatch {
+			nameMatch = state.Name == i.Name
+		}
+
+		if pathMatch {
+			pathMatch = state.Path == i.Path
+
+		}
+
+		if idMatch {
+			idMatch = state.ID == i.ID
+		}
+
+		if nameMatch && pathMatch && idMatch {
+			found = append(found, &state)
+		}
+	}
+
+	if len(found) > 0 {
+		reply.Statuscode = mcorpc.Aborted
+		reply.Statusmsg = "Found multiple machines matching criteria"
+		return
+	}
+
+	if len(found) == 0 {
+		reply.Statuscode = mcorpc.Aborted
+		reply.Statusmsg = "Could not find a matching machine"
+		return
+	}
+
+	output.MachineState = *found[0]
 }
 
 func machineTransitionAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {

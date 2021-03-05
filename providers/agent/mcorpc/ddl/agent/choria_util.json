@@ -150,6 +150,106 @@
       ]
     },
     {
+      "action": "machine_state",
+      "description": "Retrieves the current state of a specific Choria Autonomous Agent",
+      "display": "ok",
+      "input": {
+        "instance": {
+          "prompt": "Instance ID",
+          "description": "Machine Instance ID",
+          "type": "string",
+          "default": null,
+          "optional": true,
+          "validation": "^.+-.+-.+-.+-.+$",
+          "maxlength": 36
+        },
+        "name": {
+          "prompt": "Name",
+          "description": "Machine Name",
+          "type": "string",
+          "default": null,
+          "optional": true,
+          "validation": "^[a-zA-Z][a-zA-Z0-9_-]+",
+          "maxlength": 128
+        },
+        "path": {
+          "prompt": "Path",
+          "description": "Machine Path",
+          "type": "string",
+          "default": null,
+          "optional": true,
+          "validation": ".+",
+          "maxlength": 512
+        }
+      },
+      "aggregate": [
+        {
+          "function": "summary",
+          "args": [
+            "state"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "name"
+          ]
+        },
+        {
+          "function": "summary",
+          "args": [
+            "version"
+          ]
+        }
+      ],
+      "output": {
+        "name": {
+          "type": "string",
+          "description": "The name of the autonomous agent",
+          "display_as": "Name"
+        },
+        "version": {
+          "type": "string",
+          "description": "The version of the autonomous agent",
+          "display_as": "Version"
+        },
+        "state": {
+          "type": "string",
+          "description": "The current state the agent is in",
+          "display_as": "State"
+        },
+        "path": {
+          "type": "string",
+          "description": "The location on disk where the autonomous agent is stored",
+          "display_as": "Path"
+        },
+        "id": {
+          "type": "string",
+          "description": "The unique running ID of the autonomous agent",
+          "display_as": "ID"
+        },
+        "start_time": {
+          "type": "string",
+          "description": "The time the autonomous agent was started in unix seconds",
+          "display_as": "Started"
+        },
+        "available_transitions": {
+          "type": "array",
+          "description": "The list of available transitions this autonomous agent can make",
+          "display_as": "Available Transitions"
+        },
+        "scout": {
+          "type": "boolean",
+          "description": "True when this autonomous agent represents a Choria Scout Check",
+          "display_as": "Scout Check"
+        },
+        "current_state": {
+          "description": "The Choria Scout specific state for Scout checks",
+          "display_as": "Scout State"
+        }
+      }
+    },
+    {
       "action": "machine_states",
       "input": {
       },
