@@ -119,6 +119,12 @@ func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.
 	}
 	reply.Data = output
 
+	if i.Name == "" && i.Path == "" && i.ID == "" {
+		reply.Statuscode = mcorpc.Aborted
+		reply.Statusmsg = "No search criteria given"
+		return
+	}
+
 	states, err := agent.ServerInfoSource.MachinesStatus()
 	if err != nil {
 		reply.Statuscode = mcorpc.Aborted
@@ -132,7 +138,7 @@ func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.
 		return
 	}
 
-	var found []*aagent.MachineState
+	var found []aagent.MachineState
 	for _, state := range states {
 		nameMatch := i.Name == ""
 		pathMatch := i.Path == ""
@@ -144,7 +150,6 @@ func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.
 
 		if i.Path != "" {
 			pathMatch = state.Path == i.Path
-
 		}
 
 		if i.ID != "" {
@@ -152,7 +157,7 @@ func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.
 		}
 
 		if nameMatch && pathMatch && idMatch {
-			found = append(found, &state)
+			found = append(found, state)
 		}
 	}
 
@@ -168,7 +173,7 @@ func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.
 		return
 	}
 
-	output.MachineState = *found[0]
+	output.MachineState = found[0]
 }
 
 func machineTransitionAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
