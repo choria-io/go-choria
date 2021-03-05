@@ -88,7 +88,7 @@ func (g *Generator) templFGeneratedWarning() string {
 	meta := g.agent.DDL.Metadata
 	return fmt.Sprintf(`// generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent '%s'' Version %s generated using Choria version %s`, meta.Name, meta.Version, choria.BuildInfo().Version())
+// Client for Choria RPC Agent '%s' Version %s generated using Choria version %s`, meta.Name, meta.Version, choria.BuildInfo().Version())
 }
 
 func (g *Generator) funcMap() template.FuncMap {

@@ -150,18 +150,18 @@ func (p *pingCommand) handler(_ context.Context, m *choria.ConnectorMessage) {
 	}
 
 	now := time.Now()
-	delay := now.Sub(p.published).Seconds() * 1000
+	delay := now.Sub(p.published)
 
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	p.times = append(p.times, delay)
+	p.times = append(p.times, delay.Seconds())
 
 	if !p.silent {
 		if p.namesOnly {
 			fmt.Println(reply.SenderID())
 		} else {
-			fmt.Printf("%-40s time=%0.3f ms\n", reply.SenderID(), delay)
+			fmt.Printf("%-40s time=%d ms\n", reply.SenderID(), delay.Milliseconds())
 		}
 	}
 
