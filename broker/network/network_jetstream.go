@@ -1,12 +1,14 @@
 package network
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/nats.go"
 
+	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/scout"
 )
 
@@ -23,7 +25,7 @@ func (s *Server) setupStreaming() error {
 	return nil
 }
 
-func (s *Server) configureSystemStreams() error {
+func (s *Server) configureSystemStreams(ctx context.Context) error {
 	if !s.opts.JetStream {
 		return nil
 	}
@@ -33,12 +35,24 @@ func (s *Server) configureSystemStreams() error {
 	if s.IsTLS() {
 		s.log.Info("Connecting to Choria Stream using TLS")
 		opts = append(opts, nats.Secure(s.opts.TLSConfig))
+	} else {
+		s.log.Info("Configuring Choria System Streams without TLS")
 	}
 
-	nc, err := nats.Connect(s.gnatsd.ClientURL(), opts...)
-	if err != nil {
-		s.log.Errorf("could not connect to %s to configure Choria Streams: %s", s.gnatsd.ClientURL(), err)
+	var nc *nats.Conn
+	var err error
+
+	err = backoff.TwentySec.For(ctx, func(try int) error {
+		nc, err = nats.Connect(s.opts.ClientAdvertise, opts...)
+		if err != nil {
+			s.log.Warnf("Could not connect to broker %s to configure System Streams: %s", s.opts.ClientAdvertise, err)
+			return err
+		}
+
 		return nil
+	})
+	if err != nil {
+		return err
 	}
 	defer nc.Close()
 

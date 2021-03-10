@@ -48,7 +48,7 @@ type ChoriaPluginConfig struct {
 	NetworkClientPort             int           `confkey:"plugin.choria.network.client_port" default:"4222" url:"https://choria.io/docs/deployment/broker/"`  // Port the Network Broker will accept client connections on
 	NetworkClientTLSForce         bool          `confkey:"plugin.choria.network.client_tls_force_required"`                                                   // Force requiring/not requiring TLS for all clients
 	NetworkClientTLSAnon          bool          `confkey:"plugin.choria.network.client_anon_tls"`                                                             // Use anonymous TLS for client connections (disables verification)
-	NetworkPeerPort               int           `confkey:"plugin.choria.network.peer_port" default:"5222" url:"https://choria.io/docs/deployment/broker/"`    // Port used to communicate with other local cluster peers
+	NetworkPeerPort               int           `confkey:"plugin.choria.network.peer_port" url:"https://choria.io/docs/deployment/broker/"`                   // Port used to communicate with other local cluster peers
 	NetworkPeerUser               string        `confkey:"plugin.choria.network.peer_user"`                                                                   // Username to use when connecting to cluster peers
 	NetworkPeerPassword           string        `confkey:"plugin.choria.network.peer_password"`                                                               // Password to use when connecting to cluster peers
 	NetworkPeers                  []string      `confkey:"plugin.choria.network.peers" type:"comma_split" url:"https://choria.io/docs/deployment/broker/"`    // List of cluster peers in host:port format

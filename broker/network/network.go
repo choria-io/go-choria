@@ -65,6 +65,7 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	if s.config.Identity != "" {
 		s.opts.ServerName = s.config.Identity
 	}
+
 	s.opts.Host = s.config.Choria.NetworkListenAddress
 	s.opts.Port = s.config.Choria.NetworkClientPort
 	s.opts.WriteDeadline = s.config.Choria.NetworkWriteDeadline
@@ -74,7 +75,9 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	s.opts.Cluster.Name = s.config.Choria.NetworkGatewayName
 
 	if s.config.Choria.NetworkClientAdvertiseName != "" {
-		s.opts.ClientAdvertise = s.config.Choria.NetworkClientAdvertiseName
+		s.opts.ClientAdvertise = fmt.Sprintf("%s:%d", s.config.Choria.NetworkClientAdvertiseName, s.config.Choria.NetworkClientPort)
+	} else if s.config.Identity != "" {
+		s.opts.ClientAdvertise = fmt.Sprintf("%s:%d", s.config.Identity, s.config.Choria.NetworkClientPort)
 	}
 
 	if debug || s.config.LogLevel == "debug" {
@@ -104,11 +107,6 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		return s, fmt.Errorf("could not set up accounts: %s", err)
 	}
 
-	err = s.setupStreaming()
-	if err != nil {
-		return s, fmt.Errorf("could not set up streaming: %s", err)
-	}
-
 	err = s.setupCluster()
 	if err != nil {
 		s.log.Errorf("Could not setup clustering: %s", err)
@@ -122,6 +120,11 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	err = s.setupGateways()
 	if err != nil {
 		s.log.Errorf("Could not setup gateways: %s", err)
+	}
+
+	err = s.setupStreaming()
+	if err != nil {
+		return s, fmt.Errorf("could not set up streaming: %s", err)
 	}
 
 	s.gnatsd, err = gnatsd.NewServer(s.opts)
@@ -162,7 +165,7 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	go s.publishStats(ctx, 10*time.Second)
 
-	err := s.configureSystemStreams()
+	err := s.configureSystemStreams(ctx)
 	if err != nil {
 		s.log.Errorf("could not setup system streams: %s", err)
 	}
