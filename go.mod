@@ -1,8 +1,6 @@
 module github.com/choria-io/go-choria
 
-go 1.15
-
-replace github.com/brutella/dnssd => github.com/brutella/dnssd v1.1.2-0.20201216110556-df0d88646bc5
+go 1.16
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.8
@@ -15,8 +13,9 @@ require (
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
 	github.com/fatih/color v1.10.0
+	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/ghodss/yaml v1.0.0
-	github.com/gofrs/uuid v3.3.0+incompatible
+	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang/mock v1.5.0
 	github.com/google/go-cmp v0.5.5
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -28,19 +27,18 @@ require (
 	github.com/nats-io/jsm.go v0.0.20
 	github.com/nats-io/jwt v1.2.2
 	github.com/nats-io/jwt/v2 v2.0.0-20210208203759-ff814ca5f813
-	github.com/nats-io/nats-server/v2 v2.1.8-0.20210305034744-ca536e1b2872
+	github.com/nats-io/nats-server/v2 v2.1.8-0.20210310015135-5a3c5720b18b
 	github.com/nats-io/nats.go v1.10.1-0.20210304221735-3678d91ccfc0
 	github.com/nats-io/nsc v0.0.0-20210302012357-493bd33d12ef
 	github.com/nats-io/stan.go v0.8.3
-	github.com/nxadm/tail v1.4.8 // indirect
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/onsi/ginkgo v1.15.0
-	github.com/onsi/gomega v1.10.5
-	github.com/open-policy-agent/opa v0.26.0
+	github.com/onsi/ginkgo v1.15.1
+	github.com/onsi/gomega v1.11.0
+	github.com/open-policy-agent/opa v0.27.0
 	github.com/prometheus/client_golang v1.9.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/robfig/cron v1.2.0
-	github.com/sirupsen/logrus v1.8.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/tidwall/gjson v1.6.8
 	github.com/tidwall/pretty v1.1.0
 	github.com/xeipuuv/gojsonschema v1.2.0
