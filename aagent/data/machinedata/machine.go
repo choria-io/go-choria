@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 	"github.com/choria-io/go-choria/providers/data"
@@ -16,7 +15,7 @@ import (
 type MachineData struct{}
 
 func ChoriaPlugin() *plugin.DataPlugin {
-	return plugin.NewDataPlugin("machine", New)
+	return plugin.NewDataPlugin("machine_state", New)
 }
 
 func New(_ data.Framework) (data.Plugin, error) {
@@ -29,35 +28,29 @@ func (s *MachineData) Run(_ context.Context, q data.Query, si agents.ServerInfoS
 		return nil, err
 	}
 
-	machine := q.(string)
-	var matched aagent.MachineState
+	query := q.(string)
 	for _, m := range machines {
-		if m.Name == machine || m.ID == machine || m.Path == machine {
-			matched = m
-			break
+		if m.ID == query || m.Path == query || m.Name == query {
+			response := map[string]data.OutputItem{
+				"name":                  m.Name,
+				"version":               m.Version,
+				"state":                 m.State,
+				"path":                  m.Path,
+				"id":                    m.ID,
+				"start_time":            m.StartTimeUTC,
+				"available_transitions": m.AvailableTransitions,
+				"scout":                 m.Scout,
+			}
+
+			if m.Scout {
+				response["current_state"] = m.ScoutState
+			}
+
+			return response, nil
 		}
 	}
 
-	if matched.ID == "" {
-		return nil, fmt.Errorf("no machine matching %q found", machine)
-	}
-
-	response := map[string]data.OutputItem{
-		"name":                  matched.Name,
-		"version":               matched.Version,
-		"state":                 matched.State,
-		"path":                  matched.Path,
-		"id":                    matched.ID,
-		"start_time":            matched.StartTimeUTC,
-		"available_transitions": matched.AvailableTransitions,
-		"scout":                 matched.Scout,
-	}
-
-	if matched.Scout {
-		response["current_state"] = matched.ScoutState
-	}
-
-	return response, nil
+	return nil, fmt.Errorf("no machine matching %q found", query)
 }
 
 func (s *MachineData) DLL() (*ddl.DDL, error) {
@@ -66,12 +59,22 @@ func (s *MachineData) DLL() (*ddl.DDL, error) {
 			License:     "Apache-2.0",
 			Author:      "R.I.Pienaar <rip@devco.net>",
 			Timeout:     1,
-			Name:        "machine",
+			Name:        "machine_state",
 			Version:     build.Version,
 			URL:         "https://choria.io",
 			Description: "Data about a Choria Autonomous Agent",
 			Provider:    "golang",
 		},
+		Query: &common.InputItem{
+			Prompt:      "Machine",
+			Description: "The machine name, path or ID to match",
+			Type:        common.InputTypeString,
+			Default:     "",
+			Optional:    false,
+			Validation:  ".+",
+			MaxLength:   256,
+		},
+
 		Output: map[string]*common.OutputItem{
 			"name": {
 				Description: "The machine name",
