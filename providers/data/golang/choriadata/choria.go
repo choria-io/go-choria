@@ -207,5 +207,4 @@ func (s *ChoriaData) DLL() (*ddl.DDL, error) {
 	}
 
 	return sddl, nil
-
 }
