@@ -14,6 +14,7 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
+      - run: go mod download github.com/fatih/structtag
       - run: go generate
       - run: go get -u github.com/onsi/ginkgo/ginkgo
       - run: go get -u honnef.co/go/tools/cmd/staticcheck
