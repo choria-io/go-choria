@@ -13,7 +13,6 @@ require (
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
 	github.com/fatih/color v1.10.0
-	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang/mock v1.5.0
@@ -26,8 +25,8 @@ require (
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/nats-io/jsm.go v0.0.20
 	github.com/nats-io/jwt v1.2.2
-	github.com/nats-io/jwt/v2 v2.0.0-20210208203759-ff814ca5f813
-	github.com/nats-io/nats-server/v2 v2.1.8-0.20210310015135-5a3c5720b18b
+	github.com/nats-io/jwt/v2 v2.0.1
+	github.com/nats-io/nats-server/v2 v2.2.0
 	github.com/nats-io/nats.go v1.10.1-0.20210304221735-3678d91ccfc0
 	github.com/nats-io/nsc v0.0.0-20210302012357-493bd33d12ef
 	github.com/nats-io/stan.go v0.8.3

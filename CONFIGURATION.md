@@ -460,7 +460,6 @@ Password to use when connecting to cluster peers
 
  * **Type:** integer
  * **Additional Information:** https://choria.io/docs/deployment/broker/
- * **Default Value:** 5222
 
 Port used to communicate with other local cluster peers
 
