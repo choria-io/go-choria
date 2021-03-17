@@ -3,7 +3,6 @@ package stream
 import (
 	"context"
 	"fmt"
-	"math/rand"
 	"sync"
 	"time"
 
@@ -13,20 +12,19 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/backoff"
-	"github.com/choria-io/go-choria/internal/util"
 )
 
 type Ephemeral struct {
-	stream   *jsm.Stream
-	conn     *nats.Conn
-	interval time.Duration
-	cfg      *api.ConsumerConfig
-	q        chan *nats.Msg
-	ctx      context.Context
-	cancel   func()
-	sub      *nats.Subscription
-	cons     *jsm.Consumer
-	log      *logrus.Entry
+	stream *jsm.Stream
+	conn   *nats.Conn
+	seen   time.Time
+	cfg    *api.ConsumerConfig
+	q      chan *nats.Msg
+	ctx    context.Context
+	cancel func()
+	sub    *nats.Subscription
+	cons   *jsm.Consumer
+	log    *logrus.Entry
 
 	resumeSequence uint64
 
@@ -35,11 +33,10 @@ type Ephemeral struct {
 
 func NewEphemeral(ctx context.Context, nc *nats.Conn, stream *jsm.Stream, interval time.Duration, q chan *nats.Msg, log *logrus.Entry, opts ...jsm.ConsumerOption) (*Ephemeral, error) {
 	eph := &Ephemeral{
-		stream:   stream,
-		conn:     nc,
-		interval: interval,
-		q:        q,
-		log:      log.WithFields(logrus.Fields{"component": "ephemeral", "stream": stream.Name()}),
+		stream: stream,
+		conn:   nc,
+		q:      q,
+		log:    log.WithFields(logrus.Fields{"component": "ephemeral", "stream": stream.Name()}),
 	}
 
 	var err error
@@ -55,6 +52,8 @@ func NewEphemeral(ctx context.Context, nc *nats.Conn, stream *jsm.Stream, interv
 	if eph.cfg.AckPolicy == api.AckNone {
 		return nil, fmt.Errorf("ack policy has to be all or explicit")
 	}
+
+	eph.cfg.Heartbeat = interval
 
 	eph.ctx, eph.cancel = context.WithCancel(ctx)
 
@@ -73,39 +72,46 @@ func (e *Ephemeral) start() error {
 }
 
 func (e *Ephemeral) manage() error {
+	msgq := make(chan *nats.Msg, 1000)
+
 	e.log.Debugf("Creating consumer")
-	err := e.createConsumer()
+	err := e.createConsumer(msgq)
 	if err != nil {
 		return err
 	}
 
-	r := rand.New(rand.NewSource(time.Now().UnixNano()))
-	splay := time.Duration(r.Intn(int(e.interval)))
-	e.log.Debugf("Splaying health management by %s", splay)
-	err = util.InterruptibleSleep(e.ctx, splay)
-	if err != nil {
-		return err
-	}
-
-	ticker := time.NewTicker(e.interval)
+	ticker := time.NewTicker(e.cfg.Heartbeat / 2)
 	defer ticker.Stop()
 
 	for {
 		select {
+		case msg := <-msgq:
+			e.markLastSeen()
+
+			// handle and discard the keep alive messages
+			if msg.Header.Get("Status") == "100" {
+				continue
+			}
+
+			e.q <- msg
+
 		case <-e.ctx.Done():
+			close(msgq)
 			return e.ctx.Err()
+
 		case <-ticker.C:
 			e.log.Debugf("Checking consumer %s state", e.cons.Name())
 
 			e.Lock()
 			cons := e.cons
+			seen := e.seen
 			e.Unlock()
 
-			_, err = cons.State()
-			if err != nil {
-				e.log.Warnf("Consumer failed: %s", err)
+			since := time.Since(seen)
+			if since > e.cfg.Heartbeat {
+				e.log.Warnf("Consumer failed, last seen %v", since)
 				cons.Delete()
-				err = e.createConsumer()
+				err = e.createConsumer(msgq)
 				if err != nil {
 					e.log.Warnf("Consumer creation failed: %s", err)
 					return err
@@ -113,6 +119,12 @@ func (e *Ephemeral) manage() error {
 			}
 		}
 	}
+}
+
+func (e *Ephemeral) markLastSeen() {
+	e.Lock()
+	e.seen = time.Now()
+	e.Unlock()
 }
 
 func (e *Ephemeral) SetResumeSequence(m *nats.Msg) {
@@ -135,13 +147,9 @@ func (e *Ephemeral) SetResumeSequence(m *nats.Msg) {
 	e.resumeSequence = meta.StreamSequence() + 1
 }
 
-func (e *Ephemeral) createConsumer() error {
+func (e *Ephemeral) createConsumer(msgq chan *nats.Msg) error {
 	e.Lock()
 	defer e.Unlock()
-
-	if e.sub != nil {
-		e.sub.Unsubscribe()
-	}
 
 	var err error
 
@@ -156,7 +164,7 @@ func (e *Ephemeral) createConsumer() error {
 			e.cons.Delete()
 		}
 
-		e.sub, err = e.conn.ChanSubscribe(nats.NewInbox(), e.q)
+		e.sub, err = e.conn.ChanSubscribe(nats.NewInbox(), msgq)
 		if err != nil {
 			e.log.Warnf("Subscription failed on try %d: %s", i, err)
 			return err

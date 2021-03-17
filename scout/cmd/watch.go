@@ -76,8 +76,8 @@ func (w *WatchCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error) 
 	}
 	defer gui.Close()
 
-	transitions := make(chan *nats.Msg, 100)
-	states := make(chan *nats.Msg, 100)
+	transitions := make(chan *nats.Msg, 1000)
+	states := make(chan *nats.Msg, 1000)
 
 	go func() {
 		var m *nats.Msg
