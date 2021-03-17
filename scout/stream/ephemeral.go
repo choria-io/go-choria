@@ -80,7 +80,7 @@ func (e *Ephemeral) manage() error {
 		return err
 	}
 
-	ticker := time.NewTicker(e.cfg.Heartbeat / 2)
+	ticker := time.NewTicker((e.cfg.Heartbeat / 2) + time.Second)
 	defer ticker.Stop()
 
 	for {
@@ -90,6 +90,7 @@ func (e *Ephemeral) manage() error {
 
 			// handle and discard the keep alive messages
 			if msg.Header.Get("Status") == "100" {
+				e.log.Warnf("got heartbeat: %#v", msg)
 				continue
 			}
 
@@ -97,7 +98,7 @@ func (e *Ephemeral) manage() error {
 
 		case <-e.ctx.Done():
 			close(msgq)
-			return e.ctx.Err()
+			return nil
 
 		case <-ticker.C:
 			e.log.Debugf("Checking consumer %s state", e.cons.Name())
@@ -178,12 +179,15 @@ func (e *Ephemeral) createConsumer(msgq chan *nats.Msg) error {
 			e.cfg.OptStartTime = nil
 		}
 
+		e.log.Debugf("Creating consumer using configuration: %#v", e.cfg)
+
 		e.cons, err = e.stream.NewConsumerFromDefault(*e.cfg)
 		e.conn.Flush()
 		if err != nil {
 			e.log.Warnf("Creating consumer failed: %s", err)
 			return err
 		}
+		e.seen = time.Now()
 		e.log.Debugf("Created new consumer %s", e.cons.Name())
 
 		return nil
