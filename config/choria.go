@@ -66,8 +66,11 @@ type ChoriaPluginConfig struct {
 	NetworkClientAdvertiseName    string        `confkey:"plugin.choria.network.public_url"`                                                                  // Name to advertise to clients, useful when fronted by a proxy
 	NetworkStreamStore            string        `confkey:"plugin.choria.network.stream.store" type:"path_string"`                                             // Enables Streaming data persistence stored in this path
 	NetworkEventStoreDuration     time.Duration `confkey:"plugin.choria.network.stream.event_retention" type:"duration" default:"24h"`                        // When not zero enables retaining Lifecycle events in the Stream Store
+	NetworkEventStoreReplicas     int           `confkey:"plugin.choria.network.stream.event_replicas" default:"1"`                                           // When configuring LifeCycle events ensure data is replicated in the cluster over this many servers
 	NetworkMachineStoreDuration   time.Duration `confkey:"plugin.choria.network.stream.machine_retention" type:"duration" default:"24h"`                      // When not zero enables retaining Autonomous Agent events in the Stream Store
+	NetworkMachineStoreReplicas   int           `confkey:"plugin.choria.network.stream.machine_replicas" default:"1"`                                         // When configuring Autonomous Agent event storage ensure data is replicated in the cluster over this many servers
 	NetworkStreamAdvisoryDuration time.Duration `confkey:"plugin.choria.network.stream.advisory_retention" type:"duration" default:"168h"`                    // When not zero enables retaining Stream advisories in the Stream Store
+	NetworkStreamAdvisoryReplicas int           `confkey:"plugin.choria.network.stream.advisory_replicas" default:"1"`                                        // When configuring Stream advisories storage ensure data is replicated in the cluster over this many servers
 
 	BrokerNetwork    bool `confkey:"plugin.choria.broker_network" default:"false" url:"https://choria.io/docs/deployment/broker/"` // Enables the Network Broker
 	BrokerDiscovery  bool `confkey:"plugin.choria.broker_discovery" default:"false" deprecated:"1"`

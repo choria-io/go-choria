@@ -26,7 +26,7 @@ require (
 	github.com/nats-io/jsm.go v0.0.23-0.20210316135330-593ef2a86645
 	github.com/nats-io/jwt v1.2.2
 	github.com/nats-io/jwt/v2 v2.0.1
-	github.com/nats-io/nats-server/v2 v2.2.0
+	github.com/nats-io/nats-server/v2 v2.2.1-0.20210317155042-716c6d60b593
 	github.com/nats-io/nats.go v1.10.1-0.20210313040237-18aff2894af3
 	github.com/nats-io/nsc v0.0.0-20210302012357-493bd33d12ef
 	github.com/nats-io/stan.go v0.8.3
