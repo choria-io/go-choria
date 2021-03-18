@@ -106,7 +106,7 @@ func (s *Server) createOrUpdateStream(name string, subjects []string, maxAge tim
 		return nil
 	}
 
-	str, err := mgr.NewStream(name, jsm.FileStorage(), jsm.Subjects(subjects...), jsm.MaxAge(s.config.Choria.NetworkEventStoreDuration), jsm.Replicas(replicas))
+	str, err := mgr.LoadOrNewStream(name, jsm.FileStorage(), jsm.Subjects(subjects...), jsm.MaxAge(s.config.Choria.NetworkEventStoreDuration), jsm.Replicas(replicas))
 	if err != nil {
 		return fmt.Errorf("could not load or create %s: %s", name, err)
 	}
