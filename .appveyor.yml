@@ -1,10 +1,10 @@
-version: "{build}"
+goversion: "{build}"
 
 clone_folder: c:\gopath\src\github.com\choria-io\go-choria
 
 environment:
   GOPATH: c:\gopath
-  GOVERSION: "1.15"
+  GOVERSION: "1.16.2"
   MCOLLECTIVE_CERTNAME: rip.mcollective
   RUBY_VERSION: 24
   CGO_ENABLED: 0
@@ -15,12 +15,16 @@ init:
 before_test:
   - ruby -v
 
+stack: go 1.16
+
 install:
   # Install the specific Go version.
   - rmdir c:\go /s /q
-  - appveyor DownloadFile https://storage.googleapis.com/golang/go%GOVERSION%.windows-amd64.msi
+  - appveyor DownloadFile https://golang.org/dl/go%GOVERSION%.windows-amd64.msi
   - msiexec /i go%GOVERSION%.windows-amd64.msi /q
-  - set Path=C:\Ruby%RUBY_VERSION%\bin;c:\go\bin;c:\gopath\bin;%Path%
+  - set Path=C:\Ruby%RUBY_VERSION%\bin;c:\go\bin;c:\gopath\bin;c:\Program Files\Go\bin;%Path%
+  - go env
+  - go version
   # Install vendor dependencies
   - go get github.com/onsi/ginkgo/ginkgo
 
