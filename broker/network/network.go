@@ -75,7 +75,7 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	s.opts.Cluster.Name = s.config.Choria.NetworkGatewayName
 
 	if s.config.Choria.NetworkClientAdvertiseName != "" {
-		s.opts.ClientAdvertise = fmt.Sprintf("%s:%d", s.config.Choria.NetworkClientAdvertiseName, s.config.Choria.NetworkClientPort)
+		s.opts.ClientAdvertise = s.config.Choria.NetworkClientAdvertiseName
 	} else if s.config.Identity != "" {
 		s.opts.ClientAdvertise = fmt.Sprintf("%s:%d", s.config.Identity, s.config.Choria.NetworkClientPort)
 	}
