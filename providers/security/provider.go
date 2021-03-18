@@ -59,6 +59,9 @@ type Provider interface {
 	// TLSConfig produce a tls.Config for the current identity using it's certificates etc
 	TLSConfig() (*tls.Config, error)
 
+	// ClientTLSConfig produces a tls.Config specifically for clients
+	ClientTLSConfig() (*tls.Config, error)
+
 	// SSLContext produce a http.Transport for the current identity using it's certificates etc
 	SSLContext() (*http.Transport, error)
 

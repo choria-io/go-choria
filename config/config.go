@@ -153,11 +153,6 @@ type Config struct {
 	// initialization steps - like Provisioning mode - should be performed.
 	InitiatedByServer bool
 
-	// InitiatedBySystem indicates to the framework that a system component - server or broker usually
-	// initialized the configuration and this will avoid loading project based configs and use the
-	// SSL certs for the server within the Puppet security framework
-	InitiatedBySystem bool
-
 	// Puppet provides access to puppet config data, settings and facts
 	Puppet *puppet.Wrapper
 
@@ -173,7 +168,6 @@ type Config struct {
 // NewDefaultSystemConfig creates a new configuration for system services
 func NewDefaultSystemConfig(server bool) (*Config, error) {
 	c := newConfig()
-	c.InitiatedBySystem = true
 	c.InitiatedByServer = server
 
 	err := c.normalize()
@@ -198,7 +192,6 @@ func NewDefaultConfig() (*Config, error) {
 
 func NewSystemConfig(path string, server bool) (*Config, error) {
 	c := newConfig()
-	c.InitiatedBySystem = true
 	c.InitiatedByServer = server
 
 	err := loadConfigFiles(path, false, c)

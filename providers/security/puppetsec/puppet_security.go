@@ -94,8 +94,6 @@ type Config struct {
 
 	// AltNames are additional names to add to the CSR
 	AltNames []string
-
-	noLegacyTLS bool
 }
 
 // New creates a new instance of the Puppet Security Provider
@@ -141,7 +139,7 @@ func (s *PuppetSecurity) reinit() error {
 		RemoteSignerTokenFile:        s.conf.RemoteSignerTokenFile,
 		RemoteSignerTokenEnvironment: s.conf.RemoteSignerTokenEnvironment,
 		TLSConfig:                    s.conf.TLSConfig,
-		BackwardCompatVerification:   !s.conf.noLegacyTLS,
+		BackwardCompatVerification:   true,
 	}
 
 	s.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(s.log))
@@ -375,6 +373,11 @@ func (s *PuppetSecurity) Identity() string {
 // TLSConfig creates a TLS configuration for use by NATS, HTTPS etc
 func (s *PuppetSecurity) TLSConfig() (*tls.Config, error) {
 	return s.fsec.TLSConfig()
+}
+
+// ClientTLSConfig creates a TLS configuration for use by NATS, HTTPS etc
+func (s *PuppetSecurity) ClientTLSConfig() (*tls.Config, error) {
+	return s.fsec.ClientTLSConfig()
 }
 
 // SSLContext creates a SSL context loaded with our certs and ca

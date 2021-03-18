@@ -37,7 +37,6 @@ func (p *tProvisionerCommand) Configure() error {
 
 	cfg.DisableSecurityProviderVerify = true
 	cfg.InitiatedByServer = true
-	cfg.InitiatedBySystem = true
 	cfg.Choria.Provision = true
 
 	return nil

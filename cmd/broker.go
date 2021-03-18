@@ -67,7 +67,7 @@ func (r *brokerRunCommand) Configure() error {
 		return fmt.Errorf("configuration file required")
 	}
 
-	cfg, err = config.NewSystemConfig(configFile, false)
+	cfg, err = config.NewSystemConfig(configFile, true)
 	if err != nil {
 		return fmt.Errorf("could not parse configuration: %s", err)
 	}

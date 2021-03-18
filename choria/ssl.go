@@ -11,9 +11,14 @@ func (fw *Framework) Certname() string {
 	return fw.security.Identity()
 }
 
-// TLSConfig creates a TLS configuration for use by NATS, HTTPS etc
-func (fw *Framework) TLSConfig() (tlsc *tls.Config, err error) {
+// TLSConfig creates a generic TLS configuration for use by NATS, HTTPS etc
+func (fw *Framework) TLSConfig() (*tls.Config, error) {
 	return fw.security.TLSConfig()
+}
+
+// ClientTLSConfig creates a TLS configuration for use by NATS, HTTPS, specifically configured for clients
+func (fw *Framework) ClientTLSConfig() (*tls.Config, error) {
+	return fw.security.ClientTLSConfig()
 }
 
 // Enroll performs the tasks needed to join the security system, like create
