@@ -26,6 +26,7 @@ type ChoriaFramework interface {
 	Logger(string) *logrus.Entry
 	NetworkBrokerPeers() (srvcache.Servers, error)
 	TLSConfig() (*tls.Config, error)
+	ClientTLSConfig() (*tls.Config, error)
 	Configuration() *config.Config
 	ValidateSecurity() (errors []string, ok bool)
 }

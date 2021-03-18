@@ -30,7 +30,6 @@ func WithChoriaConfig(c *config.Config) Option {
 			RemoteSignerTokenFile:        c.Choria.RemoteSignerTokenFile,
 			RemoteSignerTokenEnvironment: c.Choria.RemoteSignerTokenEnvironment,
 			TLSConfig:                    tlssetup.TLSConfig(c),
-			noLegacyTLS:                  c.InitiatedBySystem && !c.InitiatedByServer,
 		}
 
 		if c.Choria.NetworkClientAdvertiseName != "" {
@@ -49,7 +48,7 @@ func WithChoriaConfig(c *config.Config) Option {
 
 		if c.OverrideCertname != "" {
 			cfg.Identity = c.OverrideCertname
-		} else if !c.InitiatedByServer && !c.InitiatedBySystem {
+		} else if !c.InitiatedByServer {
 			userEnvVar := "USER"
 
 			if runtime.GOOS == "windows" {

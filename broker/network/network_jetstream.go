@@ -47,7 +47,11 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 
 	if s.IsTLS() {
 		s.log.Info("Connecting to Choria Stream using TLS")
-		opts = append(opts, nats.Secure(s.opts.TLSConfig))
+		tlsc, err := s.choria.ClientTLSConfig()
+		if err != nil {
+			return err
+		}
+		opts = append(opts, nats.Secure(tlsc))
 	} else {
 		s.log.Info("Configuring Choria System Streams without TLS")
 	}

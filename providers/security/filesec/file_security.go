@@ -611,6 +611,20 @@ func (s *FileSecurity) HTTPClient(secure bool) (*http.Client, error) {
 	return client, nil
 }
 
+func (s *FileSecurity) ClientTLSConfig() (*tls.Config, error) {
+	tlsc, err := s.TLSConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	if s.conf.BackwardCompatVerification {
+		tlsc.InsecureSkipVerify = true
+		tlsc.VerifyConnection = s.constructCustomVerifier(tlsc.RootCAs)
+	}
+
+	return tlsc, nil
+}
+
 // TLSConfig creates a TLS configuration for use by NATS, HTTPS etc
 func (s *FileSecurity) TLSConfig() (*tls.Config, error) {
 	pub := s.publicCertPath()
@@ -651,11 +665,6 @@ func (s *FileSecurity) TLSConfig() (*tls.Config, error) {
 
 		tlsc.ClientCAs = caCertPool
 		tlsc.RootCAs = caCertPool
-	}
-
-	if s.conf.BackwardCompatVerification {
-		tlsc.InsecureSkipVerify = true
-		tlsc.VerifyConnection = s.constructCustomVerifier(tlsc.RootCAs)
 	}
 
 	if s.conf.DisableTLSVerify {
@@ -714,7 +723,7 @@ func (s *FileSecurity) PublicCertTXT() ([]byte, error) {
 
 // SSLContext creates a SSL context loaded with our certs and ca
 func (s *FileSecurity) SSLContext() (*http.Transport, error) {
-	tlsConfig, err := s.TLSConfig()
+	tlsConfig, err := s.ClientTLSConfig()
 	if err != nil {
 		return nil, err
 	}

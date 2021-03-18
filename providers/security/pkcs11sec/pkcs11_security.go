@@ -482,9 +482,13 @@ func (p *Pkcs11Security) Identity() string {
 	return p.cert.Leaf.Subject.CommonName
 }
 
+// ClientTLSConfig creates a client TLS configuration
+func (p *Pkcs11Security) ClientTLSConfig() (*tls.Config, error) {
+	return p.TLSConfig()
+}
+
 // TLSConfig creates a TLS configuration for use by NATS, HTTPS etc
 func (p *Pkcs11Security) TLSConfig() (*tls.Config, error) {
-
 	caCert, err := ioutil.ReadFile(p.conf.CAFile)
 	if err != nil {
 		return nil, err

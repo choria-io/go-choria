@@ -531,6 +531,10 @@ func (cm *CertManagerSecurity) ChecksumString(data string) []byte {
 	return cm.fsec.ChecksumString(data)
 }
 
+func (cm *CertManagerSecurity) ClientTLSConfig() (*tls.Config, error) {
+	return cm.fsec.ClientTLSConfig()
+}
+
 func (cm *CertManagerSecurity) TLSConfig() (*tls.Config, error) {
 	return cm.fsec.TLSConfig()
 }
