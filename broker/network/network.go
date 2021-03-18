@@ -30,13 +30,6 @@ type ChoriaFramework interface {
 	ValidateSecurity() (errors []string, ok bool)
 }
 
-type accountStore interface {
-	StoreStart(context.Context, *sync.WaitGroup)
-	Stop()
-
-	gnatsd.AccountResolver
-}
-
 // Server represents the Choria network broker server
 type Server struct {
 	gnatsd *gnatsd.Server
@@ -44,7 +37,9 @@ type Server struct {
 	choria ChoriaFramework
 	config *config.Config
 	log    *logrus.Entry
-	as     accountStore
+
+	choriaAccount *gnatsd.Account
+	systemAccount *gnatsd.Account
 
 	started bool
 
@@ -94,19 +89,6 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		s.opts.HTTPPort = s.config.Choria.StatsPort
 	}
 
-	s.opts.CustomClientAuthentication = &IPAuth{
-		allowList:   s.config.Choria.NetworkAllowedClientHosts,
-		log:         s.choria.Logger("ipauth"),
-		denyServers: s.config.Choria.NetworkDenyServers,
-		anonTLS:     s.config.Choria.NetworkClientTLSAnon,
-		jwtSigner:   s.config.Choria.RemoteSignerSigningCert,
-	}
-
-	err = s.setupAccounts()
-	if err != nil {
-		return s, fmt.Errorf("could not set up accounts: %s", err)
-	}
-
 	err = s.setupCluster()
 	if err != nil {
 		s.log.Errorf("Could not setup clustering: %s", err)
@@ -122,17 +104,29 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		s.log.Errorf("Could not setup gateways: %s", err)
 	}
 
-	err = s.setupStreaming()
-	if err != nil {
-		return s, fmt.Errorf("could not set up streaming: %s", err)
-	}
-
 	s.gnatsd, err = gnatsd.NewServer(s.opts)
 	if err != nil {
 		return s, fmt.Errorf("could not setup server: %s", err)
 	}
-
 	s.gnatsd.SetLogger(newLogger(), s.opts.Debug, false)
+
+	err = s.setupAccounts()
+	if err != nil {
+		return s, fmt.Errorf("could not set up accounts: %s", err)
+	}
+
+	ipauth := &IPAuth{
+		allowList:     s.config.Choria.NetworkAllowedClientHosts,
+		log:           s.choria.Logger("ipauth"),
+		denyServers:   s.config.Choria.NetworkDenyServers,
+		anonTLS:       s.config.Choria.NetworkClientTLSAnon,
+		jwtSigner:     s.config.Choria.RemoteSignerSigningCert,
+		systemAccount: s.systemAccount,
+		choriaAccount: s.choriaAccount,
+		systemUser:    s.config.Choria.NetworkSystemUsername,
+		systemPass:    s.config.Choria.NetworkSystemPassword,
+	}
+	s.opts.CustomClientAuthentication = ipauth
 
 	return
 }
@@ -147,11 +141,6 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 	s.log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, s.config.ConfigFile)
 
-	if s.as != nil {
-		wg.Add(1)
-		go s.as.StoreStart(ctx, wg)
-	}
-
 	go s.gnatsd.Start()
 
 	if !s.gnatsd.ReadyForConnections(time.Minute) {
@@ -165,7 +154,12 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	go s.publishStats(ctx, 10*time.Second)
 
-	err := s.configureSystemStreams(ctx)
+	err := s.setupStreaming()
+	if err != nil {
+		s.log.Errorf("Could not set up Choria Streams: %s", err)
+	}
+
+	err = s.configureSystemStreams(ctx)
 	if err != nil {
 		s.log.Errorf("could not setup system streams: %s", err)
 	}
@@ -174,11 +168,6 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	s.log.Warn("Choria Network Broker shutting down")
 	s.gnatsd.Shutdown()
-
-	if s.as != nil {
-		s.as.Stop()
-	}
-
 	s.log.Warn("Choria Network Broker shut down")
 }
 

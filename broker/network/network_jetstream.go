@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/nats-io/jsm.go"
+	"github.com/nats-io/nats-server/v2/server"
 	"github.com/nats-io/nats.go"
 
 	"github.com/choria-io/go-choria/backoff"
@@ -17,16 +18,28 @@ func (s *Server) setupStreaming() error {
 		return nil
 	}
 
+	if s.gnatsd.SystemAccount() == nil {
+		return fmt.Errorf("system Account is required for Choria Streams")
+	}
+
 	s.log.Infof("Configuring Choria Stream Processing in %v", s.config.Choria.NetworkStreamStore)
 
-	s.opts.JetStream = true
-	s.opts.StoreDir = s.config.Choria.NetworkStreamStore
+	s.gnatsd.EnableJetStream(&server.JetStreamConfig{StoreDir: s.config.Choria.NetworkStreamStore})
+
+	err := s.choriaAccount.EnableJetStream(&server.JetStreamAccountLimits{})
+	if err != nil {
+		s.log.Errorf("Could not enable Choria Streams for the %s account: %s", s.choriaAccount.Name, err)
+	}
+
+	if !s.choriaAccount.JetStreamEnabled() {
+		s.log.Errorf("Choria Streams enabled for account %q but it's not reporting as enabled", s.choriaAccount.Name)
+	}
 
 	return nil
 }
 
 func (s *Server) configureSystemStreams(ctx context.Context) error {
-	if !s.opts.JetStream {
+	if s.config.Choria.NetworkStreamStore == "" {
 		return nil
 	}
 
@@ -102,6 +115,8 @@ func (s *Server) createOrUpdateStream(name string, subjects []string, maxAge tim
 			return fmt.Errorf("could not update retention period for %s Stream: %s", name, err)
 		}
 	}
+
+	s.log.Infof("Configured stream %q with %d replicas", name, replicas)
 
 	return nil
 }

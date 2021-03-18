@@ -60,8 +60,6 @@ type ChoriaPluginConfig struct {
 	NetworkWriteDeadline          time.Duration `confkey:"plugin.choria.network.write_deadline" type:"duration" default:"10s"`                                // How long to allow clients to process traffic before treating them as slow, increase this on large networks or slow networks
 	NetworkAllowedClientHosts     []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`                                             // CIDRs to limit client connections from, appropriate ACLs are added based on this
 	NetworkDenyServers            bool          `confkey:"plugin.choria.network.deny_server_connections"`                                                     // Set ACLs denying server connections to this broker
-	NetworkAccountOperator        string        `confkey:"plugin.choria.network.operator_account"`                                                            // NATS 2.0 Operator account
-	NetworkSystemAccount          string        `confkey:"plugin.choria.network.system_account"`                                                              // NATS 2.0 System Account
 	NetworkTLSTimeout             int           `confkey:"plugin.choria.network.tls_timeout" default:"2"`                                                     // Time to allow for TLS connections to establish, increase on slow or very large networks
 	NetworkClientAdvertiseName    string        `confkey:"plugin.choria.network.public_url"`                                                                  // Name to advertise to clients, useful when fronted by a proxy
 	NetworkStreamStore            string        `confkey:"plugin.choria.network.stream.store" type:"path_string"`                                             // Enables Streaming data persistence stored in this path
@@ -71,6 +69,8 @@ type ChoriaPluginConfig struct {
 	NetworkMachineStoreReplicas   int           `confkey:"plugin.choria.network.stream.machine_replicas" default:"1"`                                         // When configuring Autonomous Agent event storage ensure data is replicated in the cluster over this many servers
 	NetworkStreamAdvisoryDuration time.Duration `confkey:"plugin.choria.network.stream.advisory_retention" type:"duration" default:"168h"`                    // When not zero enables retaining Stream advisories in the Stream Store
 	NetworkStreamAdvisoryReplicas int           `confkey:"plugin.choria.network.stream.advisory_replicas" default:"1"`                                        // When configuring Stream advisories storage ensure data is replicated in the cluster over this many servers
+	NetworkSystemUsername         string        `confkey:"plugin.choria.network.system.user"`                                                                 // Username used to access the Choria system account
+	NetworkSystemPassword         string        `confkey:"plugin.choria.network.system.password"`                                                             // Password used to access the Choria system account
 
 	BrokerNetwork    bool `confkey:"plugin.choria.broker_network" default:"false" url:"https://choria.io/docs/deployment/broker/"` // Enables the Network Broker
 	BrokerDiscovery  bool `confkey:"plugin.choria.broker_discovery" default:"false" deprecated:"1"`

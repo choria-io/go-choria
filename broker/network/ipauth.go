@@ -23,45 +23,53 @@ import (
 // clients are allowed but restricted based on the JWT issued by the
 // AAA Service.
 type IPAuth struct {
-	allowList   []string
-	anonTLS     bool
-	denyServers bool
-	jwtSigner   string
-	log         *logrus.Entry
+	allowList     []string
+	anonTLS       bool
+	denyServers   bool
+	jwtSigner     string
+	choriaAccount *server.Account
+	systemAccount *server.Account
+	systemUser    string
+	systemPass    string
+	log           *logrus.Entry
 }
 
 // Check checks and registers the incoming connection
 func (a *IPAuth) Check(c server.ClientAuthentication) (verified bool) {
 	user := a.createUser(c)
 	remote := c.RemoteAddress()
-	jwts := c.GetOpts().Token
+	opts := c.GetOpts()
+	jwts := opts.Token
 	caller := ""
 
 	var err error
 
-	if a.anonTLS {
-		if remote == nil {
-			a.log.Warn("Denying unknown remote client while in AnonTLS mode")
-			return false
+	if !a.isSystemUser(c) {
+		if a.anonTLS {
+			if remote == nil {
+				a.log.Warn("Denying unknown remote client while in AnonTLS mode")
+				return false
+			}
+
+			caller, err = a.parseAnonTLSJWTUser(jwts)
+			if err != nil {
+				a.log.Warnf("Could not parse JWT from %s, denying client: %s", remote.String(), err)
+				return false
+			}
 		}
 
-		caller, err = a.parseAnonTLSJWTUser(jwts)
-		if err != nil {
-			a.log.Warnf("Could not parse JWT from %s, denying client: %s", remote.String(), err)
-			return false
+		// only if allow lists are set else its a noop and all traffic is passed
+		switch {
+		case a.remoteInClientAllowList(remote):
+			a.setClientPermissions(user, caller)
+
+		case len(a.allowList) > 0:
+			a.setServerPermissions(user)
+
 		}
 	}
 
-	// only if allow lists are set else its a noop and all traffic is passed
-	switch {
-	case a.remoteInClientAllowList(remote):
-		a.setClientPermissions(user, caller)
-
-	case len(a.allowList) > 0:
-		a.setServerPermissions(user)
-
-	}
-
+	a.log.Debugf("Registering user %q in account %q", user.Username, user.Account.Name)
 	c.RegisterUser(user)
 
 	return true
@@ -221,12 +229,23 @@ func (a *IPAuth) remoteInClientAllowList(remote net.Addr) bool {
 	return false
 }
 
+func (a *IPAuth) isSystemUser(c server.ClientAuthentication) bool {
+	opts := c.GetOpts()
+	return opts.Username != "" && opts.Password != "" && opts.Username == a.systemUser && opts.Password == a.systemPass
+}
+
 func (a *IPAuth) createUser(c server.ClientAuthentication) *server.User {
 	opts := c.GetOpts()
+
+	acct := a.choriaAccount
+	if a.isSystemUser(c) {
+		acct = a.systemAccount
+	}
 
 	return &server.User{
 		Username:    opts.Username,
 		Password:    opts.Password,
+		Account:     acct,
 		Permissions: &server.Permissions{},
 	}
 }

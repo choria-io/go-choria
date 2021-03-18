@@ -2,37 +2,18 @@ package network
 
 import (
 	"fmt"
-	"path/filepath"
-
-	gnatsd "github.com/nats-io/nats-server/v2/server"
 )
 
 func (s *Server) setupAccounts() (err error) {
-	if s.config.Choria.NetworkAccountOperator == "" {
-		return nil
+	s.systemAccount, _ = s.gnatsd.LookupOrRegisterAccount("system")
+	if s.systemAccount == nil {
+		return fmt.Errorf("system account creation failed")
 	}
+	s.opts.SystemAccount = "system"
 
-	s.log.Infof("Starting Broker Account services under operator %s", s.config.Choria.NetworkAccountOperator)
-
-	operatorRoot := filepath.Join(filepath.Dir(s.config.ConfigFile), "accounts", "nats", s.config.Choria.NetworkAccountOperator)
-	operatorPath := filepath.Join(operatorRoot, fmt.Sprintf("%s.jwt", s.config.Choria.NetworkAccountOperator))
-
-	opc, err := gnatsd.ReadOperatorJWT(operatorPath)
-	if err != nil {
-		return fmt.Errorf("could not load operator JWT from %s: %s", operatorPath, err)
-	}
-	s.opts.TrustedOperators = append(s.opts.TrustedOperators, opc)
-
-	s.as, err = newDirAccountStore(s.gnatsd, operatorRoot)
-	if err != nil {
-		return fmt.Errorf("could not start account store: %s", err)
-	}
-
-	s.opts.AccountResolver = s.as
-
-	if s.config.Choria.NetworkSystemAccount != "" {
-		s.log.Infof("Setting the Broker Systems Account to %s and enabling broker events", s.config.Choria.NetworkSystemAccount)
-		s.opts.SystemAccount = s.config.Choria.NetworkSystemAccount
+	s.choriaAccount, _ = s.gnatsd.LookupOrRegisterAccount("choria")
+	if s.choriaAccount == nil {
+		return fmt.Errorf("choria account creation failed")
 	}
 
 	return nil
