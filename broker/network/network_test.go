@@ -2,8 +2,6 @@ package network
 
 import (
 	tls "crypto/tls"
-	"io/ioutil"
-	"os"
 	"testing"
 	"time"
 
@@ -102,17 +100,6 @@ var _ = Describe("Network Broker", func() {
 			Expect(srv.opts.LeafNode.Host).To(Equal(""))
 			Expect(srv.opts.LeafNode.Port).To(Equal(0))
 		})
-
-		// It("Should support disabling TLS Verify", func() {
-		// 	cfg.DisableTLSVerify = true
-
-		// 	fw, err = choria.NewWithConfig(cfg)
-		// 	Expect(err).ToNot(HaveOccurred())
-
-		// 	srv, err = NewServer(fw, false)
-		// 	Expect(err).ToNot(HaveOccurred())
-		// 	Expect(srv.opts.TLSVerify).To(BeFalse())
-		// })
 
 		It("Should support disabling TLS", func() {
 			cfg.DisableTLS = true
@@ -277,58 +264,6 @@ var _ = Describe("Network Broker", func() {
 				Expect(srv.opts.LeafNode.Remotes[0].URLs[0].String()).To(Equal("leafnode://ln1.example.net:6222"))
 				Expect(srv.opts.LeafNode.Remotes[0].TLS).To(BeTrue())
 				Expect(srv.opts.LeafNode.Remotes[0].TLSConfig).ToNot(BeNil())
-			})
-		})
-
-		Describe("Accounts", func() {
-			It("Should support JWT accounts", func() {
-				cfg.Choria.NetworkAccountOperator = "choria_operator"
-				cfg.ConfigFile = "testdata/broker.cfg"
-				cfg.DisableTLS = true
-				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
-
-				srv, err = NewServer(fw, bi, false)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(srv.as).ToNot(BeNil())
-			})
-
-			It("Should fail when starting JWT accounts fails", func() {
-				cfg.Choria.NetworkAccountOperator = "choria_operator"
-				cfg.ConfigFile = "testdata/nonexisting/broker.cfg"
-				cfg.DisableTLS = true
-
-				srv, err = NewServer(fw, bi, false)
-				Expect(err).To(HaveOccurred())
-			})
-
-			It("Should support setting system accounts", func() {
-				cfg.Choria.NetworkAccountOperator = "choria_operator"
-				cfg.Choria.NetworkSystemAccount = "ADMB22B4NQU27GI3KP6XUEFM5RSMOJY4O75NCP2P5JPQC2NGQNG6NJX2"
-				cfg.ConfigFile = "testdata/broker.cfg"
-				cfg.DisableTLS = true
-
-				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
-
-				srv, err = NewServer(fw, bi, false)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(srv.as).ToNot(BeNil())
-
-				Expect(srv.opts.SystemAccount).To(Equal("ADMB22B4NQU27GI3KP6XUEFM5RSMOJY4O75NCP2P5JPQC2NGQNG6NJX2"))
-			})
-
-			It("Should support jetstream", func() {
-				td, err := ioutil.TempDir("", "")
-				Expect(err).ToNot(HaveOccurred())
-				defer os.RemoveAll(td)
-
-				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
-				cfg.DisableTLS = true
-				cfg.Choria.NetworkStreamStore = td
-				srv, err = NewServer(fw, bi, false)
-
-				Expect(err).ToNot(HaveOccurred())
-				Expect(srv.opts.JetStream).To(BeTrue())
-				Expect(srv.opts.StoreDir).To(Equal(td))
 			})
 		})
 	})

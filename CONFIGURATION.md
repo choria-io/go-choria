@@ -45,13 +45,13 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.network.gateway_name](#pluginchorianetworkgateway_name)|[plugin.choria.network.gateway_port](#pluginchorianetworkgateway_port)|
 |[plugin.choria.network.gateway_remotes](#pluginchorianetworkgateway_remotes)|[plugin.choria.network.leafnode_port](#pluginchorianetworkleafnode_port)|
 |[plugin.choria.network.leafnode_remotes](#pluginchorianetworkleafnode_remotes)|[plugin.choria.network.listen_address](#pluginchorianetworklisten_address)|
-|[plugin.choria.network.operator_account](#pluginchorianetworkoperator_account)|[plugin.choria.network.peer_password](#pluginchorianetworkpeer_password)|
-|[plugin.choria.network.peer_port](#pluginchorianetworkpeer_port)|[plugin.choria.network.peer_user](#pluginchorianetworkpeer_user)|
-|[plugin.choria.network.peers](#pluginchorianetworkpeers)|[plugin.choria.network.public_url](#pluginchorianetworkpublic_url)|
-|[plugin.choria.network.stream.advisory_replicas](#pluginchorianetworkstreamadvisory_replicas)|[plugin.choria.network.stream.advisory_retention](#pluginchorianetworkstreamadvisory_retention)|
-|[plugin.choria.network.stream.event_replicas](#pluginchorianetworkstreamevent_replicas)|[plugin.choria.network.stream.event_retention](#pluginchorianetworkstreamevent_retention)|
-|[plugin.choria.network.stream.machine_replicas](#pluginchorianetworkstreammachine_replicas)|[plugin.choria.network.stream.machine_retention](#pluginchorianetworkstreammachine_retention)|
-|[plugin.choria.network.stream.store](#pluginchorianetworkstreamstore)|[plugin.choria.network.system_account](#pluginchorianetworksystem_account)|
+|[plugin.choria.network.peer_password](#pluginchorianetworkpeer_password)|[plugin.choria.network.peer_port](#pluginchorianetworkpeer_port)|
+|[plugin.choria.network.peer_user](#pluginchorianetworkpeer_user)|[plugin.choria.network.peers](#pluginchorianetworkpeers)|
+|[plugin.choria.network.public_url](#pluginchorianetworkpublic_url)|[plugin.choria.network.stream.advisory_replicas](#pluginchorianetworkstreamadvisory_replicas)|
+|[plugin.choria.network.stream.advisory_retention](#pluginchorianetworkstreamadvisory_retention)|[plugin.choria.network.stream.event_replicas](#pluginchorianetworkstreamevent_replicas)|
+|[plugin.choria.network.stream.event_retention](#pluginchorianetworkstreamevent_retention)|[plugin.choria.network.stream.machine_replicas](#pluginchorianetworkstreammachine_replicas)|
+|[plugin.choria.network.stream.machine_retention](#pluginchorianetworkstreammachine_retention)|[plugin.choria.network.stream.store](#pluginchorianetworkstreamstore)|
+|[plugin.choria.network.system.password](#pluginchorianetworksystempassword)|[plugin.choria.network.system.user](#pluginchorianetworksystemuser)|
 |[plugin.choria.network.tls_timeout](#pluginchorianetworktls_timeout)|[plugin.choria.network.write_deadline](#pluginchorianetworkwrite_deadline)|
 |[plugin.choria.prometheus_textfile_directory](#pluginchoriaprometheus_textfile_directory)|[plugin.choria.puppetca_host](#pluginchoriapuppetca_host)|
 |[plugin.choria.puppetca_port](#pluginchoriapuppetca_port)|[plugin.choria.puppetdb_host](#pluginchoriapuppetdb_host)|
@@ -445,12 +445,6 @@ Remote networks to connect to as a Leafnode
 
 Address the Network Broker will listen on
 
-## plugin.choria.network.operator_account
-
- * **Type:** string
-
-NATS 2.0 Operator account
-
 ## plugin.choria.network.peer_password
 
  * **Type:** string
@@ -531,11 +525,17 @@ When not zero enables retaining Autonomous Agent events in the Stream Store
 
 Enables Streaming data persistence stored in this path
 
-## plugin.choria.network.system_account
+## plugin.choria.network.system.password
 
  * **Type:** string
 
-NATS 2.0 System Account
+Password used to access the Choria system account
+
+## plugin.choria.network.system.user
+
+ * **Type:** string
+
+Username used to access the Choria system account
 
 ## plugin.choria.network.tls_timeout
 

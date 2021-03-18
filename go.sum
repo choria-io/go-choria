@@ -387,10 +387,8 @@ github.com/mitchellh/cli v1.0.0/go.mod h1:hNIlj7HEI86fIcpObd7a0FcrxTWetlwJDGcceT
 github.com/mitchellh/copystructure v1.0.0 h1:Laisrj+bAB6b/yJwB5Bt3ITZhGJdqmxquMKeZ+mmkFQ=
 github.com/mitchellh/copystructure v1.0.0/go.mod h1:SNtv71yrdKgLRyLFxmLdkAbkKEFWgYaq1OVrnRcwhnw=
 github.com/mitchellh/go-homedir v1.0.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
-github.com/mitchellh/go-homedir v1.1.0 h1:lukF9ziXFxDFPkA1vsr5zpc1XuPDn/wFntq5mG+4E0Y=
 github.com/mitchellh/go-homedir v1.1.0/go.mod h1:SfyaCUpYCn1Vlf4IUYiD9fPX4A5wJrkLzIz1N1q0pr0=
 github.com/mitchellh/go-testing-interface v1.0.0/go.mod h1:kRemZodwjscx+RGhAo8eIhFbs2+BFgRtFPeD/KE+zxI=
-github.com/mitchellh/go-wordwrap v1.0.0 h1:6GlHJ/LTGMrIJbwgdqdl2eEH8o+Exx/0m8ir9Gns0u4=
 github.com/mitchellh/go-wordwrap v1.0.0/go.mod h1:ZXFpozHsX6DPmq2I0TCekCxypsnAUbP2oI0UX1GXzOo=
 github.com/mitchellh/gox v0.4.0/go.mod h1:Sd9lOJ0+aimLBi73mGofS1ycjY8lL3uZM3JPS42BGNg=
 github.com/mitchellh/iochan v1.0.0/go.mod h1:JwYml1nuB7xOzsp52dPpHFffvOCDupsG0QubkSMEySY=
@@ -410,7 +408,6 @@ github.com/modern-go/reflect2 v1.0.1/go.mod h1:bx2lNnkwVCuqBIxFjflWJWanXIb3Rllmb
 github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/nats-io/cliprompts/v2 v2.0.0-20191203200115-ae8d3743105d/go.mod h1:oweZn7AeaVJYKlNHfCIhznJVsdySLSng55vfuINE/d0=
-github.com/nats-io/cliprompts/v2 v2.0.0-20191226174129-372d79b36768 h1:sdr8zfPeN/b4/TDoxbD9ARAtyP92zDFDvj87MeAAyjk=
 github.com/nats-io/cliprompts/v2 v2.0.0-20191226174129-372d79b36768/go.mod h1:oweZn7AeaVJYKlNHfCIhznJVsdySLSng55vfuINE/d0=
 github.com/nats-io/jsm.go v0.0.17/go.mod h1:msS6FbFXoH/bJxEEDx8/+4LCD3r7YNmDI1MrlH67FdE=
 github.com/nats-io/jsm.go v0.0.20/go.mod h1:bTqguyGWAwFWvO4aPTXygTc5n0QnLlQTrZlReO//aaA=
@@ -431,7 +428,6 @@ github.com/nats-io/jwt/v2 v2.0.0-20201015190852-e11ce317263c/go.mod h1:vs+ZEjP+X
 github.com/nats-io/jwt/v2 v2.0.0-20210104170214-da06b7f0b569/go.mod h1:PuO5FToRL31ecdFqVjc794vK0Bj0CwzveQEDvkb7MoQ=
 github.com/nats-io/jwt/v2 v2.0.0-20210107222814-18c5cc45d263/go.mod h1:PuO5FToRL31ecdFqVjc794vK0Bj0CwzveQEDvkb7MoQ=
 github.com/nats-io/jwt/v2 v2.0.0-20210125223648-1c24d462becc/go.mod h1:PuO5FToRL31ecdFqVjc794vK0Bj0CwzveQEDvkb7MoQ=
-github.com/nats-io/jwt/v2 v2.0.0-20210129014916-f3ef7d605453/go.mod h1:PuO5FToRL31ecdFqVjc794vK0Bj0CwzveQEDvkb7MoQ=
 github.com/nats-io/jwt/v2 v2.0.0-20210208203759-ff814ca5f813/go.mod h1:PuO5FToRL31ecdFqVjc794vK0Bj0CwzveQEDvkb7MoQ=
 github.com/nats-io/jwt/v2 v2.0.1 h1:SycklijeduR742i/1Y3nRhURYM7imDzZZ3+tuAQqhQA=
 github.com/nats-io/jwt/v2 v2.0.1/go.mod h1:VRP+deawSXyhNjXmxPCHskrR6Mq50BqpEI5SEcNiGlY=
@@ -484,8 +480,6 @@ github.com/nats-io/nsc v0.0.0-20191204192136-dc3fc58b4695/go.mod h1:1S/Laa25NRM/
 github.com/nats-io/nsc v0.0.0-20200512140943-73ba3f2347d1/go.mod h1:kBPhRctX+5Lcp850xhCo0j5O1oK7ugklfXFqLDLIVbg=
 github.com/nats-io/nsc v0.0.0-20200617223447-2aca79c9d220/go.mod h1:B/F9ANTLtUmosL2s90bH/+USYTF/qKgIG8AbWqalzCI=
 github.com/nats-io/nsc v0.0.0-20210108232822-40dcea882554/go.mod h1:7R2Im/wRPlLbJKxm6zTgiLc1AWIFKS7xKLN/pGszuqs=
-github.com/nats-io/nsc v0.0.0-20210302012357-493bd33d12ef h1:tGrVeuEPcf1itZWAAagk5lz5CyeN6rsna6dAs3mt7K8=
-github.com/nats-io/nsc v0.0.0-20210302012357-493bd33d12ef/go.mod h1:pJVexKf60nqCv67FpU/VcqqICZMnOof3QseZxue1BrQ=
 github.com/nats-io/nuid v1.0.1 h1:5iA8DT8V7q8WK2EScv2padNa/rTESc1KdnPw4TC2paw=
 github.com/nats-io/nuid v1.0.1/go.mod h1:19wcPz3Ph3q0Jbyiqsd0kePYG7A95tJPxeL+1OSON2c=
 github.com/nats-io/stan.go v0.5.0/go.mod h1:dYqB+vMN3C2F9pT1FRQpg9eHbjPj6mP0yYuyBNuXHZE=
@@ -516,6 +510,8 @@ github.com/onsi/ginkgo v1.13.0/go.mod h1:+REjRxOmWfHCjfv9TTWB1jD1Frx4XydAD3zm1ls
 github.com/onsi/ginkgo v1.14.2/go.mod h1:iSB4RoI2tjJc9BBv4NKIKWKya62Rps+oPG/Lv9klQyY=
 github.com/onsi/ginkgo v1.15.1 h1:DsXNrKujDlkMS9Rsxmd+Fg7S6Kc5lhE+qX8tY6laOxc=
 github.com/onsi/ginkgo v1.15.1/go.mod h1:Dd6YFfwBW84ETqqtL0CPyPXillHgY6XhQH3uuCCTr/o=
+github.com/onsi/ginkgo v1.15.2 h1:l77YT15o814C2qVL47NOyjV/6RbaP7kKdrvZnxQ3Org=
+github.com/onsi/ginkgo v1.15.2/go.mod h1:Dd6YFfwBW84ETqqtL0CPyPXillHgY6XhQH3uuCCTr/o=
 github.com/onsi/gomega v1.4.2/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
 github.com/onsi/gomega v1.4.3/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
 github.com/onsi/gomega v1.7.1/go.mod h1:XdKZgCCFLUoM/7CFJVPcG8C1xQ1AJ0vpAezJrB7JYyY=

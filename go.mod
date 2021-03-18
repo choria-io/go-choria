@@ -24,14 +24,11 @@ require (
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/nats-io/jsm.go v0.0.23-0.20210316135330-593ef2a86645
-	github.com/nats-io/jwt v1.2.2
-	github.com/nats-io/jwt/v2 v2.0.1
 	github.com/nats-io/nats-server/v2 v2.2.1-0.20210317155042-716c6d60b593
 	github.com/nats-io/nats.go v1.10.1-0.20210313040237-18aff2894af3
-	github.com/nats-io/nsc v0.0.0-20210302012357-493bd33d12ef
 	github.com/nats-io/stan.go v0.8.3
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/onsi/ginkgo v1.15.1
+	github.com/onsi/ginkgo v1.15.2
 	github.com/onsi/gomega v1.11.0
 	github.com/open-policy-agent/opa v0.27.0
 	github.com/prometheus/client_golang v1.9.0
