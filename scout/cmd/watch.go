@@ -485,12 +485,12 @@ func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan 
 
 	le := w.Logrus.(*logrus.Entry)
 
-	w.transEph, err = stream.NewEphemeral(ctx, w.nc.Nats(), str, time.Minute, transitions, le, jsm.FilterStreamBySubject("choria.machine.transition"), jsm.StartAtTimeDelta(w.history), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(2))
+	w.transEph, err = stream.NewEphemeral(ctx, w.nc.Nats(), str, time.Minute, transitions, le, jsm.FilterStreamBySubject("choria.machine.transition"), jsm.StartAtTimeDelta(w.history), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(1))
 	if err != nil {
 		return fmt.Errorf("could not subscribe to Choria Streaming stream CHORIA_MACHINE: %s", err)
 	}
 
-	w.stateEph, err = stream.NewEphemeral(ctx, w.nc.Nats(), str, time.Minute, states, le, jsm.FilterStreamBySubject("choria.machine.watcher.nagios.state"), jsm.StartAtTimeDelta(w.history), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(2))
+	w.stateEph, err = stream.NewEphemeral(ctx, w.nc.Nats(), str, time.Minute, states, le, jsm.FilterStreamBySubject("choria.machine.watcher.nagios.state"), jsm.StartAtTimeDelta(w.history), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(1))
 	if err != nil {
 		return fmt.Errorf("could not subscribe to Choria Streaming stream CHORIA_MACHINE: %s", err)
 	}
