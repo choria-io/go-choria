@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 
@@ -111,10 +112,9 @@ type GetConfigItemResponse struct {
 // New creates a new rpcutil agent
 func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 	bi := mgr.Choria().BuildInfo()
-
 	metadata := &agents.Metadata{
 		Name:        "rpcutil",
-		Description: "Choria MCollective RPC Compatibility Utilities",
+		Description: "Choria RPC Utilities",
 		Author:      "R.I.Pienaar <rip@devco.net>",
 		Version:     bi.Version(),
 		License:     bi.License(),
@@ -242,6 +242,15 @@ func inventoryAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		MainCollective: agent.Config.MainCollective,
 		Version:        agent.Choria.BuildInfo().Version(),
 	}
+
+	dfm, err := agent.ServerInfoSource.DataFuncMap()
+	if err != nil {
+		agent.Log.Warnf("Could not retrieve data plugin list: %s", err)
+	}
+	for _, d := range dfm {
+		output.DataPlugins = append(output.DataPlugins, d.Name)
+	}
+	sort.Strings(output.DataPlugins)
 
 	states, err := agent.ServerInfoSource.MachinesStatus()
 	if err != nil {

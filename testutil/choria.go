@@ -7,6 +7,9 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/providers/data"
+	"github.com/choria-io/go-choria/providers/data/golang/choriadata"
+	"github.com/choria-io/go-choria/scout/data/scoutdata"
 	"github.com/choria-io/go-choria/server"
 )
 
@@ -36,6 +39,9 @@ func (c *ChoriaServer) Start() (err error) {
 	if err != nil {
 		return err
 	}
+
+	data.RegisterPlugin("scout", scoutdata.ChoriaPlugin().Creator)
+	data.RegisterPlugin("choria", choriadata.ChoriaPlugin().Creator)
 
 	c.Instance, err = server.NewInstance(c.fw)
 	if err != nil {

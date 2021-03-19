@@ -3,13 +3,17 @@ package testutil
 import (
 	"context"
 	"sync"
-	"testing"
 
 	"github.com/choria-io/go-choria/config"
 )
 
+type TestReporter interface {
+	Errorf(format string, args ...interface{})
+	Fatalf(format string, args ...interface{})
+}
+
 // StartTestChoriaNetwork starts a broker and instance server connected to the broker
-func StartTestChoriaNetwork(cfg *config.Config, t *testing.T) (n *ChoriaNetwork) {
+func StartTestChoriaNetwork(t TestReporter, cfg *config.Config) (n *ChoriaNetwork) {
 	n, err := StartChoriaNetwork(cfg)
 	if err != nil {
 		t.Fatalf("instance network failed to start: %v", err)

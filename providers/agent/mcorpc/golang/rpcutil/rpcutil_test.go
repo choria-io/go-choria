@@ -50,8 +50,7 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 		fw, err = choria.NewWithConfig(cfg)
 		Expect(err).ToNot(HaveOccurred())
 
-		cn, err = testutil.StartChoriaNetwork(cfg)
-		Expect(err).ToNot(HaveOccurred())
+		cn = testutil.StartTestChoriaNetwork(GinkgoT(), cfg)
 
 		am = agents.New(requests, fw, nil, cn.ServerInstance(), logrus.WithFields(logrus.Fields{"test": "1"}))
 
@@ -91,7 +90,7 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 			Expect(r.Classes).To(Equal([]string{"one", "two"}))
 			Expect(r.Collectives).To(Equal([]string{"mcollective", "other"}))
 			Expect(r.MainCollective).To(Equal("mcollective"))
-			Expect(r.DataPlugins).To(Equal([]string{}))
+			Expect(r.DataPlugins).To(Equal([]string{"choria", "scout"}))
 			Expect(r.Facts).To(Equal(json.RawMessage(`{"bool":false,"float":1.1,"int":1,"string":"hello world","struct":{"foo":"bar"}}`)))
 			Expect(r.Version).To(Equal("1.0.0"))
 		})
