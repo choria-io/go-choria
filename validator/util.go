@@ -50,6 +50,16 @@ func IsAnyInt(i interface{}) bool {
 	return IsInt(i) || IsInt8(i) || IsInt16(i) || IsInt32(i) || IsInt64(i)
 }
 
+// IsIntFloat64 checks if a float64 is a whole integer, important when comparing data from JSON Unmarshal that's always float64 if an intefa
+func IsIntFloat64(i interface{}) bool {
+	f, ok := i.(float64)
+	if !ok {
+		return false
+	}
+
+	return f == float64(int(f))
+}
+
 // IsInt determines if i is a int
 func IsInt(i interface{}) bool {
 	return reflect.ValueOf(i).Kind() == reflect.Int

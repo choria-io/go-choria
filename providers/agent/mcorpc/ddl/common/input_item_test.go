@@ -1,6 +1,8 @@
 package common
 
 import (
+	"encoding/json"
+
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -21,6 +23,24 @@ var _ = Describe("InputItem", func() {
 			warnings, err = input.ValidateValue("a")
 			Expect(err).To(MatchError("is not an integer"))
 			Expect(warnings).To(HaveLen(0))
+
+			i := map[string]interface{}{}
+			err = json.Unmarshal([]byte(`{"x":1}`), &i)
+			Expect(err).ToNot(HaveOccurred())
+			warnings, err = input.ValidateValue(i["x"])
+			Expect(err).To(BeNil())
+			Expect(warnings).To(HaveLen(0))
+
+			err = json.Unmarshal([]byte(`{"x":1.1}`), &i)
+			Expect(err).To(BeNil())
+			warnings, err = input.ValidateValue(i["x"])
+			Expect(err).To(MatchError("is not an integer"))
+			Expect(warnings).To(HaveLen(0))
+
+			converted, warnings, err := input.ValidateStringValue("10")
+			Expect(err).To(BeNil())
+			Expect(warnings).To(HaveLen(0))
+			Expect(converted).To(BeAssignableToTypeOf(int64(1)))
 		})
 
 		It("Should validate number", func() {

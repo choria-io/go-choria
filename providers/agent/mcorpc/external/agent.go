@@ -178,6 +178,8 @@ func (p *Provider) validateRequest(ddl *agentddl.DDL, req *mcorpc.Request, log *
 		return fmt.Errorf("could not load action: %s", err)
 	}
 
+	p.log.Debugf("Validating request %s: %s", req.RequestID, string(req.Data))
+
 	warnings, err := actint.ValidateRequestJSON(req.Data)
 	if err != nil {
 		return err
