@@ -376,6 +376,8 @@ func (r *RPC) setupMessage(ctx context.Context, action string, payload interface
 		return nil, nil, fmt.Errorf("could not encode request: %s", err)
 	}
 
+	r.log.Debugf("Request: %s", string(rpcp))
+
 	msg, err = r.fw.NewMessage(string(rpcp), r.agent, r.cfg.MainCollective, "request", nil)
 	if err != nil {
 		return nil, nil, err

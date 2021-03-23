@@ -63,7 +63,7 @@ func (i *InputItem) ValidateStringValue(val string) (converted interface{}, warn
 func (i *InputItem) ValidateValue(val interface{}) (warnings []string, err error) {
 	switch strings.ToLower(i.Type) {
 	case InputTypeInteger, "int":
-		if !validator.IsAnyInt(val) {
+		if !validator.IsAnyInt(val) && !validator.IsIntFloat64(val) {
 			return warnings, fmt.Errorf("is not an integer")
 		}
 
