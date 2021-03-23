@@ -149,7 +149,14 @@ func (f *factsCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	start := time.Now()
 	nodes, _, err := f.fo.Discover(ctx, c, "rpcutil", true, false, c.Logger("facts"))
+	if err != nil {
+		return err
+	}
 	finish := time.Now()
+
+	if len(nodes) == 0 {
+		return fmt.Errorf("did not discover any nodes")
+	}
 
 	c, err := rpcutilclient.New(rpcutilclient.Logger(logger))
 	if err != nil {
