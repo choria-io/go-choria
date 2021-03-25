@@ -47,45 +47,46 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.network.leafnode_remotes](#pluginchorianetworkleafnode_remotes)|[plugin.choria.network.listen_address](#pluginchorianetworklisten_address)|
 |[plugin.choria.network.peer_password](#pluginchorianetworkpeer_password)|[plugin.choria.network.peer_port](#pluginchorianetworkpeer_port)|
 |[plugin.choria.network.peer_user](#pluginchorianetworkpeer_user)|[plugin.choria.network.peers](#pluginchorianetworkpeers)|
-|[plugin.choria.network.public_url](#pluginchorianetworkpublic_url)|[plugin.choria.network.stream.advisory_replicas](#pluginchorianetworkstreamadvisory_replicas)|
-|[plugin.choria.network.stream.advisory_retention](#pluginchorianetworkstreamadvisory_retention)|[plugin.choria.network.stream.event_replicas](#pluginchorianetworkstreamevent_replicas)|
-|[plugin.choria.network.stream.event_retention](#pluginchorianetworkstreamevent_retention)|[plugin.choria.network.stream.machine_replicas](#pluginchorianetworkstreammachine_replicas)|
-|[plugin.choria.network.stream.machine_retention](#pluginchorianetworkstreammachine_retention)|[plugin.choria.network.stream.store](#pluginchorianetworkstreamstore)|
-|[plugin.choria.network.system.password](#pluginchorianetworksystempassword)|[plugin.choria.network.system.user](#pluginchorianetworksystemuser)|
-|[plugin.choria.network.tls_timeout](#pluginchorianetworktls_timeout)|[plugin.choria.network.write_deadline](#pluginchorianetworkwrite_deadline)|
-|[plugin.choria.prometheus_textfile_directory](#pluginchoriaprometheus_textfile_directory)|[plugin.choria.puppetca_host](#pluginchoriapuppetca_host)|
-|[plugin.choria.puppetca_port](#pluginchoriapuppetca_port)|[plugin.choria.puppetdb_host](#pluginchoriapuppetdb_host)|
-|[plugin.choria.puppetdb_port](#pluginchoriapuppetdb_port)|[plugin.choria.puppetserver_host](#pluginchoriapuppetserver_host)|
-|[plugin.choria.puppetserver_port](#pluginchoriapuppetserver_port)|[plugin.choria.randomize_middleware_hosts](#pluginchoriarandomize_middleware_hosts)|
-|[plugin.choria.registration.file_content.compression](#pluginchoriaregistrationfile_contentcompression)|[plugin.choria.registration.file_content.data](#pluginchoriaregistrationfile_contentdata)|
-|[plugin.choria.registration.file_content.target](#pluginchoriaregistrationfile_contenttarget)|[plugin.choria.require_client_filter](#pluginchoriarequire_client_filter)|
-|[plugin.choria.security.certname_whitelist](#pluginchoriasecuritycertname_whitelist)|[plugin.choria.security.privileged_users](#pluginchoriasecurityprivileged_users)|
-|[plugin.choria.security.request_signer.token_environment](#pluginchoriasecurityrequest_signertoken_environment)|[plugin.choria.security.request_signer.token_file](#pluginchoriasecurityrequest_signertoken_file)|
-|[plugin.choria.security.request_signer.url](#pluginchoriasecurityrequest_signerurl)|[plugin.choria.security.request_signing_certificate](#pluginchoriasecurityrequest_signing_certificate)|
-|[plugin.choria.security.serializer](#pluginchoriasecurityserializer)|[plugin.choria.server.provision](#pluginchoriaserverprovision)|
-|[plugin.choria.srv_domain](#pluginchoriasrv_domain)|[plugin.choria.ssldir](#pluginchoriassldir)|
-|[plugin.choria.stats_address](#pluginchoriastats_address)|[plugin.choria.stats_port](#pluginchoriastats_port)|
-|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|
-|[plugin.choria.use_srv](#pluginchoriause_srv)|[plugin.nats.credentials](#pluginnatscredentials)|
-|[plugin.nats.ngs](#pluginnatsngs)|[plugin.nats.pass](#pluginnatspass)|
-|[plugin.nats.user](#pluginnatsuser)|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|
-|[plugin.scout.overrides](#pluginscoutoverrides)|[plugin.scout.tags](#pluginscouttags)|
-|[plugin.security.always_overwrite_cache](#pluginsecurityalways_overwrite_cache)|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|
-|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|
-|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|
-|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|
-|[plugin.security.file.ca](#pluginsecurityfileca)|[plugin.security.file.cache](#pluginsecurityfilecache)|
-|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|[plugin.security.file.key](#pluginsecurityfilekey)|
-|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|
-|[plugin.security.provider](#pluginsecurityprovider)|[plugin.security.support_legacy_certificates](#pluginsecuritysupport_legacy_certificates)|
-|[plugin.yaml](#pluginyaml)|[publish_timeout](#publish_timeout)|
-|[registerinterval](#registerinterval)|[registration](#registration)|
-|[registration_collective](#registration_collective)|[registration_splay](#registration_splay)|
-|[rpcaudit](#rpcaudit)|[rpcauditprovider](#rpcauditprovider)|
-|[rpcauthorization](#rpcauthorization)|[rpcauthprovider](#rpcauthprovider)|
-|[rpclimitmethod](#rpclimitmethod)|[securityprovider](#securityprovider)|
-|[soft_shutdown](#soft_shutdown)|[soft_shutdown_timeout](#soft_shutdown_timeout)|
-|[threaded](#threaded)|[ttl](#ttl)|
+|[plugin.choria.network.pprof_port](#pluginchorianetworkpprof_port)|[plugin.choria.network.public_url](#pluginchorianetworkpublic_url)|
+|[plugin.choria.network.stream.advisory_replicas](#pluginchorianetworkstreamadvisory_replicas)|[plugin.choria.network.stream.advisory_retention](#pluginchorianetworkstreamadvisory_retention)|
+|[plugin.choria.network.stream.event_replicas](#pluginchorianetworkstreamevent_replicas)|[plugin.choria.network.stream.event_retention](#pluginchorianetworkstreamevent_retention)|
+|[plugin.choria.network.stream.machine_replicas](#pluginchorianetworkstreammachine_replicas)|[plugin.choria.network.stream.machine_retention](#pluginchorianetworkstreammachine_retention)|
+|[plugin.choria.network.stream.store](#pluginchorianetworkstreamstore)|[plugin.choria.network.system.password](#pluginchorianetworksystempassword)|
+|[plugin.choria.network.system.user](#pluginchorianetworksystemuser)|[plugin.choria.network.tls_timeout](#pluginchorianetworktls_timeout)|
+|[plugin.choria.network.write_deadline](#pluginchorianetworkwrite_deadline)|[plugin.choria.prometheus_textfile_directory](#pluginchoriaprometheus_textfile_directory)|
+|[plugin.choria.puppetca_host](#pluginchoriapuppetca_host)|[plugin.choria.puppetca_port](#pluginchoriapuppetca_port)|
+|[plugin.choria.puppetdb_host](#pluginchoriapuppetdb_host)|[plugin.choria.puppetdb_port](#pluginchoriapuppetdb_port)|
+|[plugin.choria.puppetserver_host](#pluginchoriapuppetserver_host)|[plugin.choria.puppetserver_port](#pluginchoriapuppetserver_port)|
+|[plugin.choria.randomize_middleware_hosts](#pluginchoriarandomize_middleware_hosts)|[plugin.choria.registration.file_content.compression](#pluginchoriaregistrationfile_contentcompression)|
+|[plugin.choria.registration.file_content.data](#pluginchoriaregistrationfile_contentdata)|[plugin.choria.registration.file_content.target](#pluginchoriaregistrationfile_contenttarget)|
+|[plugin.choria.require_client_filter](#pluginchoriarequire_client_filter)|[plugin.choria.security.certname_whitelist](#pluginchoriasecuritycertname_whitelist)|
+|[plugin.choria.security.privileged_users](#pluginchoriasecurityprivileged_users)|[plugin.choria.security.request_signer.token_environment](#pluginchoriasecurityrequest_signertoken_environment)|
+|[plugin.choria.security.request_signer.token_file](#pluginchoriasecurityrequest_signertoken_file)|[plugin.choria.security.request_signer.url](#pluginchoriasecurityrequest_signerurl)|
+|[plugin.choria.security.request_signing_certificate](#pluginchoriasecurityrequest_signing_certificate)|[plugin.choria.security.serializer](#pluginchoriasecurityserializer)|
+|[plugin.choria.server.provision](#pluginchoriaserverprovision)|[plugin.choria.srv_domain](#pluginchoriasrv_domain)|
+|[plugin.choria.ssldir](#pluginchoriassldir)|[plugin.choria.stats_address](#pluginchoriastats_address)|
+|[plugin.choria.stats_port](#pluginchoriastats_port)|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|
+|[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|[plugin.choria.use_srv](#pluginchoriause_srv)|
+|[plugin.nats.credentials](#pluginnatscredentials)|[plugin.nats.ngs](#pluginnatsngs)|
+|[plugin.nats.pass](#pluginnatspass)|[plugin.nats.user](#pluginnatsuser)|
+|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|[plugin.scout.overrides](#pluginscoutoverrides)|
+|[plugin.scout.tags](#pluginscouttags)|[plugin.security.always_overwrite_cache](#pluginsecurityalways_overwrite_cache)|
+|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|
+|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|
+|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|
+|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|[plugin.security.file.ca](#pluginsecurityfileca)|
+|[plugin.security.file.cache](#pluginsecurityfilecache)|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|
+|[plugin.security.file.key](#pluginsecurityfilekey)|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|
+|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|[plugin.security.provider](#pluginsecurityprovider)|
+|[plugin.security.support_legacy_certificates](#pluginsecuritysupport_legacy_certificates)|[plugin.yaml](#pluginyaml)|
+|[publish_timeout](#publish_timeout)|[registerinterval](#registerinterval)|
+|[registration](#registration)|[registration_collective](#registration_collective)|
+|[registration_splay](#registration_splay)|[rpcaudit](#rpcaudit)|
+|[rpcauditprovider](#rpcauditprovider)|[rpcauthorization](#rpcauthorization)|
+|[rpcauthprovider](#rpcauthprovider)|[rpclimitmethod](#rpclimitmethod)|
+|[securityprovider](#securityprovider)|[soft_shutdown](#soft_shutdown)|
+|[soft_shutdown_timeout](#soft_shutdown_timeout)|[threaded](#threaded)|
+|[ttl](#ttl)|[](#)|
 
 
 ## activate_agents
@@ -470,6 +471,13 @@ Username to use when connecting to cluster peers
  * **Additional Information:** https://choria.io/docs/deployment/broker/
 
 List of cluster peers in host:port format
+
+## plugin.choria.network.pprof_port
+
+ * **Type:** integer
+ * **Default Value:** 0
+
+The port the network broker will listen on for pprof requests
 
 ## plugin.choria.network.public_url
 
