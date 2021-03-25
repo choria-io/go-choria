@@ -83,6 +83,7 @@ var docStrings = map[string]string{
 	"plugin.choria.network.stream.advisory_replicas":          "When configuring Stream advisories storage ensure data is replicated in the cluster over this many servers",
 	"plugin.choria.network.system.user":                       "Username used to access the Choria system account",
 	"plugin.choria.network.system.password":                   "Password used to access the Choria system account",
+	"plugin.choria.network.pprof_port":                        "The port the network broker will listen on for pprof requests",
 	"plugin.choria.broker_network":                            "Enables the Network Broker",
 	"plugin.choria.broker_federation":                         "Enables the Federation Broker",
 	"plugin.choria.registration.file_content.data":            "YAML or JSON file to use as data source for registration",

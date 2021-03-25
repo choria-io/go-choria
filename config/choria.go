@@ -71,6 +71,7 @@ type ChoriaPluginConfig struct {
 	NetworkStreamAdvisoryReplicas int           `confkey:"plugin.choria.network.stream.advisory_replicas" default:"1"`                                        // When configuring Stream advisories storage ensure data is replicated in the cluster over this many servers
 	NetworkSystemUsername         string        `confkey:"plugin.choria.network.system.user"`                                                                 // Username used to access the Choria system account
 	NetworkSystemPassword         string        `confkey:"plugin.choria.network.system.password"`                                                             // Password used to access the Choria system account
+	NetworkProfilePort            int           `confkey:"plugin.choria.network.pprof_port" default:"0"`                                                      // The port the network broker will listen on for pprof requests
 
 	BrokerNetwork    bool `confkey:"plugin.choria.broker_network" default:"false" url:"https://choria.io/docs/deployment/broker/"` // Enables the Network Broker
 	BrokerDiscovery  bool `confkey:"plugin.choria.broker_discovery" default:"false" deprecated:"1"`

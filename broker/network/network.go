@@ -69,6 +69,7 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	s.opts.NoSigs = true
 	s.opts.Logtime = false
 	s.opts.Cluster.Name = s.config.Choria.NetworkGatewayName
+	s.opts.ProfPort = s.config.Choria.NetworkProfilePort
 
 	if s.config.Choria.NetworkClientAdvertiseName != "" {
 		s.opts.ClientAdvertise = s.config.Choria.NetworkClientAdvertiseName
