@@ -59,6 +59,7 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.puppetserver_host](#pluginchoriapuppetserver_host)|[plugin.choria.puppetserver_port](#pluginchoriapuppetserver_port)|
 |[plugin.choria.randomize_middleware_hosts](#pluginchoriarandomize_middleware_hosts)|[plugin.choria.registration.file_content.compression](#pluginchoriaregistrationfile_contentcompression)|
 |[plugin.choria.registration.file_content.data](#pluginchoriaregistrationfile_contentdata)|[plugin.choria.registration.file_content.target](#pluginchoriaregistrationfile_contenttarget)|
+|[plugin.choria.registration.inventory_content.compression](#pluginchoriaregistrationinventory_contentcompression)|[plugin.choria.registration.inventory_content.target](#pluginchoriaregistrationinventory_contenttarget)|
 |[plugin.choria.require_client_filter](#pluginchoriarequire_client_filter)|[plugin.choria.security.certname_whitelist](#pluginchoriasecuritycertname_whitelist)|
 |[plugin.choria.security.privileged_users](#pluginchoriasecurityprivileged_users)|[plugin.choria.security.request_signer.token_environment](#pluginchoriasecurityrequest_signertoken_environment)|
 |[plugin.choria.security.request_signer.token_file](#pluginchoriasecurityrequest_signertoken_file)|[plugin.choria.security.request_signer.url](#pluginchoriasecurityrequest_signerurl)|
@@ -627,6 +628,19 @@ Enables gzip compression of registration data
 YAML or JSON file to use as data source for registration
 
 ## plugin.choria.registration.file_content.target
+
+ * **Type:** string
+
+NATS Subject to publish registration data to
+
+## plugin.choria.registration.inventory_content.compression
+
+ * **Type:** boolean
+ * **Default Value:** true
+
+Enables gzip compression of registration data
+
+## plugin.choria.registration.inventory_content.target
 
  * **Type:** string
 

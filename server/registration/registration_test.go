@@ -24,6 +24,7 @@ var _ = Describe("Server/Registration", func() {
 	var _ = Describe("publish", func() {
 		var (
 			conn    *MockConnection
+			si      *MockServerInfoSource
 			err     error
 			choria  *framework.Framework
 			cfg     *config.Config
@@ -53,7 +54,8 @@ var _ = Describe("Server/Registration", func() {
 		BeforeEach(func() {
 			mockctl = gomock.NewController(GinkgoT())
 			conn = NewMockConnection(mockctl)
-			manager = New(choria, conn, log)
+			si = NewMockServerInfoSource(mockctl)
+			manager = New(choria, si, conn, log)
 		})
 
 		AfterEach(func() {

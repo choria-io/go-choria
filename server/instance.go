@@ -117,7 +117,7 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	go srv.WriteServerStatus(sctx, wg)
 
 	srv.agents = agents.New(srv.requests, srv.fw, srv.connector, srv, srv.log)
-	srv.registration = registration.New(srv.fw, srv.connector, srv.log)
+	srv.registration = registration.New(srv.fw, srv, srv.connector, srv.log)
 
 	for _, n := range srv.agentDenyList {
 		srv.agents.DenyAgent(n)

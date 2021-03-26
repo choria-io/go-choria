@@ -1,8 +1,6 @@
 package registration
 
 import (
-	"bytes"
-	"compress/gzip"
 	"context"
 	"encoding/json"
 	"fmt"
@@ -30,16 +28,16 @@ type FileContent struct {
 
 // FileContentMessage contains message being published
 type FileContentMessage struct {
-	Mtime    int64   `json:"mtime"`
-	File     string  `json:"file"`
-	Updated  bool    `json:"updated"`
-	Protocol string  `json:"protocol"`
-	Content  *[]byte `json:"content,omitempty"`
-	ZContent *[]byte `json:"zcontent,omitempty"`
+	Mtime    int64  `json:"mtime"`
+	File     string `json:"file"`
+	Updated  bool   `json:"updated"`
+	Protocol string `json:"protocol"`
+	Content  []byte `json:"content,omitempty"`
+	ZContent []byte `json:"zcontent,omitempty"`
 }
 
 // NewFileContent creates a new fully managed registration plugin instance
-func NewFileContent(c *config.Config, logger *logrus.Entry) (*FileContent, error) {
+func NewFileContent(c *config.Config, _ ServerInfoSource, logger *logrus.Entry) (*FileContent, error) {
 	if c.Choria.FileContentRegistrationData == "" {
 		return nil, fmt.Errorf("file fontent registration is enabled but no source data is configured, please set plugin.choria.registration.file_content.data")
 	}
@@ -63,7 +61,7 @@ func (fc *FileContent) Init(c *config.Config, logger *logrus.Entry) {
 func (fc *FileContent) StartRegistration(ctx context.Context, wg *sync.WaitGroup, interval int, output chan *data.RegistrationItem) {
 	defer wg.Done()
 
-	delay := time.Duration(rand.Intn(4) + 1)
+	delay := time.Duration(rand.Intn(4)+1) * time.Second
 	fc.log.Infof("Sleeping %v before first registration publish", delay)
 	time.Sleep(delay)
 
@@ -129,16 +127,16 @@ func (fc *FileContent) publish(output chan *data.RegistrationItem) error {
 	}
 
 	if fc.c.Choria.FileContentCompression {
-		zdat, err := fc.compress(dat)
+		zdat, err := compress(dat)
 		if err != nil {
 			fc.log.Warnf("Could not compress file registration data: %s", err)
 		} else {
-			msg.ZContent = &zdat
+			msg.ZContent = zdat
 		}
 	}
 
 	if msg.ZContent == nil {
-		msg.Content = &dat
+		msg.Content = dat
 	}
 
 	jdat, err := json.Marshal(msg)
@@ -158,27 +156,4 @@ func (fc *FileContent) publish(output chan *data.RegistrationItem) error {
 	output <- item
 
 	return nil
-}
-
-func (fc *FileContent) compress(data []byte) ([]byte, error) {
-	var b bytes.Buffer
-
-	gz := gzip.NewWriter(&b)
-
-	_, err := gz.Write(data)
-	if err != nil {
-		return []byte{}, err
-	}
-
-	err = gz.Flush()
-	if err != nil {
-		return []byte{}, err
-	}
-
-	err = gz.Close()
-	if err != nil {
-		return []byte{}, err
-	}
-
-	return b.Bytes(), nil
 }
