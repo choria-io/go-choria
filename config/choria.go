@@ -77,9 +77,11 @@ type ChoriaPluginConfig struct {
 	BrokerDiscovery  bool `confkey:"plugin.choria.broker_discovery" default:"false" deprecated:"1"`
 	BrokerFederation bool `confkey:"plugin.choria.broker_federation" default:"false" url:"https://choria.io/docs/federation/"` // Enables the Federation Broker
 
-	FileContentRegistrationData   string `confkey:"plugin.choria.registration.file_content.data" default:""`            // YAML or JSON file to use as data source for registration
-	FileContentRegistrationTarget string `confkey:"plugin.choria.registration.file_content.target" default:""`          // NATS Subject to publish registration data to
-	FileContentCompression        bool   `confkey:"plugin.choria.registration.file_content.compression" default:"true"` // Enables gzip compression of registration data
+	FileContentRegistrationData        string `confkey:"plugin.choria.registration.file_content.data" default:""`                 // YAML or JSON file to use as data source for registration
+	FileContentRegistrationTarget      string `confkey:"plugin.choria.registration.file_content.target" default:""`               // NATS Subject to publish registration data to
+	FileContentCompression             bool   `confkey:"plugin.choria.registration.file_content.compression" default:"true"`      // Enables gzip compression of registration data
+	InventoryContentCompression        bool   `confkey:"plugin.choria.registration.inventory_content.compression" default:"true"` // Enables gzip compression of registration data
+	InventoryContentRegistrationTarget string `confkey:"plugin.choria.registration.inventory_content.target" default:""`          // NATS Subject to publish registration data to
 
 	RubyAgentShim   string   `confkey:"plugin.choria.agent_provider.mcorpc.agent_shim"`               // Path to the helper used to call MCollective Ruby agents
 	RubyAgentConfig string   `confkey:"plugin.choria.agent_provider.mcorpc.config"`                   // Path to the MCollective configuration file used when running MCollective Ruby agents

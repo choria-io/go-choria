@@ -348,7 +348,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			l, err := o.limitTargets(targets)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(l).To(HaveLen(5))
-			Expect(l).To(Equal([]string{"target0", "target1", "target2", "target3", "target4"}))
+			Expect(l).To(Equal(targets[0:5]))
 
 			o.LimitMethod = "random"
 			o.LimitSeed = 1

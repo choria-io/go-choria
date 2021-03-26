@@ -12,6 +12,7 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/registration"
 	"github.com/choria-io/go-choria/server/data"
+
 	"github.com/sirupsen/logrus"
 )
 
@@ -40,13 +41,15 @@ type Manager struct {
 	cfg       *config.Config
 	connector Connection
 	datac     chan *data.RegistrationItem
+	si        registration.ServerInfoSource
 }
 
 // New creates a new instance of the registration subsystem manager
-func New(c *choria.Framework, conn Connection, logger *logrus.Entry) *Manager {
+func New(c *choria.Framework, si registration.ServerInfoSource, conn Connection, logger *logrus.Entry) *Manager {
 	r := &Manager{
 		log:       logger.WithFields(logrus.Fields{"subsystem": "registration"}),
 		choria:    c,
+		si:        si,
 		cfg:       c.Configuration(),
 		connector: conn,
 		datac:     make(chan *data.RegistrationItem, 1),
@@ -72,10 +75,17 @@ func (reg *Manager) Start(ctx context.Context, wg *sync.WaitGroup) error {
 		case "":
 			return nil
 		case "file_content":
-			registrator, err = registration.NewFileContent(reg.cfg, reg.log)
+			registrator, err = registration.NewFileContent(reg.cfg, reg.si, reg.log)
 			if err != nil {
 				return fmt.Errorf("cannot start File Content Registrator: %s", err)
 			}
+
+		case "inventory_content":
+			registrator, err = registration.NewInventoryContent(reg.cfg, reg.si, reg.log)
+			if err != nil {
+				return fmt.Errorf("cannot start File Content Registrator: %s", err)
+			}
+
 		default:
 			return fmt.Errorf("unknown registration plugin: %s", reg.cfg.Registration)
 		}
@@ -102,9 +112,9 @@ func (reg *Manager) registrationWorker(ctx context.Context, wg *sync.WaitGroup, 
 	defer wg.Done()
 
 	if reg.cfg.RegistrationSplay {
-		sleepTime := time.Duration(rand.Intn(reg.cfg.RegisterInterval))
+		sleepTime := time.Duration(rand.Intn(reg.cfg.RegisterInterval)) * time.Second
 		reg.log.Infof("Sleeping %d seconds before first poll due to RegistrationSplay", sleepTime)
-		time.Sleep(sleepTime * time.Second)
+		time.Sleep(sleepTime)
 	}
 
 	wg.Add(1)
