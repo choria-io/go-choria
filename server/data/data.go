@@ -3,7 +3,7 @@ package data
 // RegistrationItem contains a single registration message
 type RegistrationItem struct {
 	// Data is the raw data to publish
-	Data *[]byte
+	Data []byte
 
 	// Destination let you set custom NATS targets, when this is not set
 	// the TargetAgent will be used to create a normal agent target

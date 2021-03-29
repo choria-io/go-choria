@@ -142,7 +142,7 @@ func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 		return
 	}
 
-	if len(*rmsg.Data) == 0 {
+	if len(rmsg.Data) == 0 {
 		reg.log.Warnf("Received empty data from Registratoin Plugin, skipping")
 		return
 	}
@@ -151,7 +151,7 @@ func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 		rmsg.TargetAgent = "registration"
 	}
 
-	msg, err := choria.NewMessage(string(*rmsg.Data), rmsg.TargetAgent, reg.cfg.RegistrationCollective, "request", nil, reg.choria)
+	msg, err := choria.NewMessage(string(rmsg.Data), rmsg.TargetAgent, reg.cfg.RegistrationCollective, "request", nil, reg.choria)
 	if err != nil {
 		reg.log.Warnf("Could not create Message for registration data: %s", err)
 		return
