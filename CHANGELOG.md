@@ -1,5 +1,24 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/03/29|      |Release 0.21.0                                                                                           |
+|2021/03/26|1189  |Add a new registration plugin that sends the running inventory rather than file contents                 |
+|2021/03/25|1187  |Support enabling listening `pprof` port                                                                  |
+|2021/03/23|1185  |Fix validation for integers in the DDLs                                                                  |
+|2021/03/23|1183  |Fail `choria facts` when no nodes match supplied filters                                                 |
+|2021/03/19|1180  |Restore the data plugin report in rpcutil#inventory                                                      |
+|2021/03/19|1178  |Do not send the filter verbatim in `choria req`                                                          |
+|2021/03/18|1175  |Add a client specific `TLSConfig()`, improve adapters and federation support for legacy certs            |
+|2021/03/18|1173  |Create a `choria` account in NATS, move all connections there, enable `system` account                   |
+|2021/03/17|1170  |Correctly calculate advertise URL                                                                        |
+|2021/03/10|1165  |Improve support for Clustered JetStream                                                                  |
+|2021/03/10|1161  |Add a `machine_state` data plugin                                                                        |
+|2021/03/05|1156  |Support retrieving a single choria autonomous agent state using choria_util                              |
+|2021/03/02|1154  |Support building ppc64le EL7 and EL8 RPMs                                                                |
+|2021/03/02|1152  |Improve ping response calculations in federated networks                                                 |
+|2021/03/01|1150  |Avoid unnecessary warning level logs                                                                     | 
+|2021/02/23|      |Drop support for Enterprise Linux 6 due to go1.16                                                        |
+|2021/02/22|1147  |Correctly detect stdin discovery                                                                         |
+|2021/02/17|1145  |Improve stability of `choria scout watch`                                                                |
 |2021/02/03|      |Release 0.20.2                                                                                           |
 |2021/02/03|1140  |Ensure logging doesn't happen at warn level                                                              |
 |2021/02/03|      |Release 0.20.1                                                                                           |
