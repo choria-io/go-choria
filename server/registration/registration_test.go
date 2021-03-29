@@ -72,7 +72,7 @@ var _ = Describe("Server/Registration", func() {
 
 		It("Should do nothing for empty data", func() {
 			dat := []byte{}
-			manager.publish(&data.RegistrationItem{Data: &dat})
+			manager.publish(&data.RegistrationItem{Data: dat})
 		})
 
 		It("Should publish to registration agent when not set", func() {
@@ -84,7 +84,7 @@ var _ = Describe("Server/Registration", func() {
 				Expect(m.Agent).To(Equal("registration"))
 			}).Return(nil).AnyTimes()
 
-			manager.publish(&data.RegistrationItem{Data: &dat})
+			manager.publish(&data.RegistrationItem{Data: dat})
 		})
 
 		It("Should publish to the configured agent when set", func() {
@@ -95,7 +95,7 @@ var _ = Describe("Server/Registration", func() {
 				Expect(m.Agent).To(Equal("ginkgo"))
 			}).Return(nil).AnyTimes()
 
-			manager.publish(&data.RegistrationItem{Data: &dat, TargetAgent: "ginkgo"})
+			manager.publish(&data.RegistrationItem{Data: dat, TargetAgent: "ginkgo"})
 		})
 
 		It("Should handle publish failures gracefully", func() {
@@ -103,13 +103,13 @@ var _ = Describe("Server/Registration", func() {
 			msg := &framework.Message{}
 			conn.EXPECT().IsConnected().Return(true)
 			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).Return(errors.New("simulated failure")).AnyTimes()
-			manager.publish(&data.RegistrationItem{Data: &dat, TargetAgent: "ginkgo"})
+			manager.publish(&data.RegistrationItem{Data: dat, TargetAgent: "ginkgo"})
 		})
 
 		It("Should not publish when not connected", func() {
 			dat := []byte("hello world")
 			conn.EXPECT().IsConnected().Return(false)
-			manager.publish(&data.RegistrationItem{Data: &dat, TargetAgent: "ginkgo"})
+			manager.publish(&data.RegistrationItem{Data: dat, TargetAgent: "ginkgo"})
 		})
 	})
 })

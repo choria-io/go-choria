@@ -70,7 +70,7 @@ var _ = Describe("RegistrationData", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		msg := <-msgs
-		Expect(string(*msg.Data)).To(Equal(`{"mtime":1511865541,"file":"testdata/sample.json","updated":false,"protocol":"choria:registration:filecontent:1","zcontent":"H4sIAAAAAAAA/6pWSsvMSVWyUigpKk2tBQAAAP//AQAA//9QwpuPDgAAAA=="}`))
+		Expect(string(msg.Data)).To(Equal(`{"mtime":1511865541,"file":"testdata/sample.json","updated":false,"protocol":"choria:registration:filecontent:1","zcontent":"H4sIAAAAAAAA/6pWSsvMSVWyUigpKk2tBQAAAP//AQAA//9QwpuPDgAAAA=="}`))
 		Expect(msg.TargetAgent).To(Equal("registration"))
 	})
 
@@ -84,7 +84,7 @@ var _ = Describe("RegistrationData", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		msg := <-msgs
-		Expect(string(*msg.Data)).To(Equal(`{"mtime":1511865541,"file":"testdata/sample.json","updated":false,"protocol":"choria:registration:filecontent:1","zcontent":"H4sIAAAAAAAA/6pWSsvMSVWyUigpKk2tBQAAAP//AQAA//9QwpuPDgAAAA=="}`))
+		Expect(string(msg.Data)).To(Equal(`{"mtime":1511865541,"file":"testdata/sample.json","updated":false,"protocol":"choria:registration:filecontent:1","zcontent":"H4sIAAAAAAAA/6pWSsvMSVWyUigpKk2tBQAAAP//AQAA//9QwpuPDgAAAA=="}`))
 		Expect(msg.TargetAgent).To(Equal(""))
 		Expect(msg.Destination).To(Equal("my.cmdb"))
 	})
@@ -98,7 +98,7 @@ var _ = Describe("RegistrationData", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		msg := <-msgs
-		Expect(string(*msg.Data)).To(Equal(`{"mtime":1511865541,"file":"testdata/sample.json","updated":false,"protocol":"choria:registration:filecontent:1","content":"eyJmaWxlIjogdHJ1ZX0="}`))
+		Expect(string(msg.Data)).To(Equal(`{"mtime":1511865541,"file":"testdata/sample.json","updated":false,"protocol":"choria:registration:filecontent:1","content":"eyJmaWxlIjogdHJ1ZX0="}`))
 		Expect(msg.TargetAgent).To(Equal("registration"))
 	})
 
@@ -111,7 +111,7 @@ var _ = Describe("RegistrationData", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		msg := <-msgs
-		Expect(gjson.GetBytes(*msg.Data, "updated").Bool()).To(BeFalse())
+		Expect(gjson.GetBytes(msg.Data, "updated").Bool()).To(BeFalse())
 
 		err = os.Chtimes("testdata/sample.json", time.Now(), time.Now())
 		Expect(err).ToNot(HaveOccurred())
@@ -121,6 +121,6 @@ var _ = Describe("RegistrationData", func() {
 
 		msg = <-msgs
 
-		Expect(gjson.GetBytes(*msg.Data, "updated").Bool()).To(BeTrue())
+		Expect(gjson.GetBytes(msg.Data, "updated").Bool()).To(BeTrue())
 	})
 })

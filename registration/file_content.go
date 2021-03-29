@@ -145,7 +145,7 @@ func (fc *FileContent) publish(output chan *data.RegistrationItem) error {
 	}
 
 	item := &data.RegistrationItem{
-		Data:        &jdat,
+		Data:        jdat,
 		Destination: fc.c.Choria.FileContentRegistrationTarget,
 	}
 

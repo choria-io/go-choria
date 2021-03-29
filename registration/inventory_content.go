@@ -129,14 +129,15 @@ func (ic *InventoryContent) publish(output chan *data.RegistrationItem) error {
 	}
 
 	item := &data.RegistrationItem{
-		Data:        &jdat,
-		Destination: ic.c.Choria.FileContentRegistrationTarget,
+		Data:        jdat,
+		Destination: ic.c.Choria.InventoryContentRegistrationTarget,
 	}
 
 	if item.Destination == "" {
 		item.TargetAgent = "registration"
 	}
 
+	ic.log.Infof("Sending to %v: %+v", output, item)
 	output <- item
 
 	return nil
