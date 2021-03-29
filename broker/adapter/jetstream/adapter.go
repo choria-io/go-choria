@@ -31,7 +31,7 @@ import (
 // Configure the stream output:
 //
 //   plugin.choria.adapter.discovery.stream.servers = js1:4222,js2:4222
-//   plugin.choria.adapter.discovery.stream.topic = discovery # default
+//   plugin.choria.adapter.discovery.stream.topic = discovery # default, %s gets replaced with sender id
 //   plugin.choria.adapter.discovery.stream.workers = 10 # default
 //
 // Configure the NATS ingest:
