@@ -128,7 +128,7 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 
 		bytes.Add(float64(len(j)))
 
-		err = sc.conn.PublishRaw(sc.topic, j)
+		err = sc.conn.PublishRaw(strings.ReplaceAll(sc.topic, "%s", r.SenderID()), j)
 		if err != nil {
 			sc.log.Warnf("Could not publish message to JetStream %s, discarding: %s", sc.topic, err)
 			ectr.Inc()

@@ -451,8 +451,8 @@ github.com/nats-io/nats-server/v2 v2.1.8-0.20210108184047-b88cbe2e0df3/go.mod h1
 github.com/nats-io/nats-server/v2 v2.1.8-0.20210205154825-f7ab27f7dad4/go.mod h1:kauGd7hB5517KeSqspW2U1Mz/jhPbTrE8eOXzUPk1m0=
 github.com/nats-io/nats-server/v2 v2.1.8-0.20210227190344-51550e242af8/go.mod h1:/QQ/dpqFavkNhVnjvMILSQ3cj5hlmhB66adlgNbjuoA=
 github.com/nats-io/nats-server/v2 v2.2.0/go.mod h1:eKlAaGmSQHZMFQA6x56AaP5/Bl9N3mWF4awyT2TTpzc=
-github.com/nats-io/nats-server/v2 v2.2.1-0.20210328003857-c8d812d805cc h1:4KlxUSI+otPBcoOyEPFklKX2VwtVn/CjL+aIqzDqM98=
-github.com/nats-io/nats-server/v2 v2.2.1-0.20210328003857-c8d812d805cc/go.mod h1:eKlAaGmSQHZMFQA6x56AaP5/Bl9N3mWF4awyT2TTpzc=
+github.com/nats-io/nats-server/v2 v2.2.1-0.20210329162504-874e13f5b912 h1:8NmSlf+5QGup/0xhsCy3j5iOF3Pxa6Oc+UMjVeiq6qs=
+github.com/nats-io/nats-server/v2 v2.2.1-0.20210329162504-874e13f5b912/go.mod h1:eKlAaGmSQHZMFQA6x56AaP5/Bl9N3mWF4awyT2TTpzc=
 github.com/nats-io/nats-streaming-server v0.16.1-0.20190905144423-ed7405a40a25 h1:MQ4JWoWISowk7+cZHKkUR5TTfSLZ1GZSuNJn+DhdFDE=
 github.com/nats-io/nats-streaming-server v0.16.1-0.20190905144423-ed7405a40a25/go.mod h1:P12vTqmBpT6Ufs+cu0W1C4N2wmISqa6G4xdLQeO2e2s=
 github.com/nats-io/nats.go v1.8.1/go.mod h1:BrFz9vVn0fU3AcH9Vn4Kd7W0NpJ651tD5omQ3M8LwxM=

@@ -235,13 +235,13 @@ func (a *Manager) Dispatch(ctx context.Context, wg *sync.WaitGroup, replies chan
 		replies <- &AgentReply{
 			Message: msg,
 			Request: request,
-			Error:   fmt.Errorf("Agent dispatcher for request %s exiting on interrupt", msg.RequestID),
+			Error:   fmt.Errorf("agent dispatcher for request %s exiting on interrupt", msg.RequestID),
 		}
 	case <-timeout.Done():
 		replies <- &AgentReply{
 			Message: msg,
 			Request: request,
-			Error:   fmt.Errorf("Agent dispatcher for request %s exiting on %ds timeout", msg.RequestID, agent.Metadata().Timeout),
+			Error:   fmt.Errorf("agent dispatcher for request %s exiting on %ds timeout", msg.RequestID, agent.Metadata().Timeout),
 		}
 	}
 }
