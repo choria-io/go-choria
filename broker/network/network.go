@@ -96,11 +96,6 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		s.log.Errorf("Could not setup clustering: %s", err)
 	}
 
-	err = s.setupLeafNodes()
-	if err != nil {
-		s.log.Errorf("Could not setup leafnodes: %s", err)
-	}
-
 	err = s.setupGateways()
 	if err != nil {
 		s.log.Errorf("Could not setup gateways: %s", err)
@@ -115,6 +110,12 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	err = s.setupAccounts()
 	if err != nil {
 		return s, fmt.Errorf("could not set up accounts: %s", err)
+	}
+
+	// This has to happen after accounts to ensure local accounts exist to map things
+	err = s.setupLeafNodes()
+	if err != nil {
+		s.log.Errorf("Could not setup leafnodes: %s", err)
 	}
 
 	ipauth := &IPAuth{
