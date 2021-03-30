@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"errors"
 	"fmt"
+	"math"
 	"sort"
 	"sync"
 	"time"
@@ -36,7 +37,7 @@ type pingCommand struct {
 	ctr int
 	mu  *sync.Mutex
 
-	times []float64
+	times []time.Duration
 }
 
 func (p *pingCommand) Setup() (err error) {
@@ -60,7 +61,7 @@ func (p *pingCommand) Setup() (err error) {
 func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	p.times = []float64{}
+	p.times = []time.Duration{}
 	p.mu = &sync.Mutex{}
 
 	if p.timeout == 0 {
@@ -111,10 +112,10 @@ func (p *pingCommand) summarize() error {
 	fmt.Println("---- ping statistics ----")
 
 	if len(p.times) > 0 {
-		sum := 0.0
-		min := 999999.0
-		max := -1.0
-		avg := 0.0
+		sum := time.Duration(0)
+		min := time.Duration(math.MaxInt64)
+		max := time.Duration(0)
+		avg := time.Duration(0)
 
 		for _, value := range p.times {
 			sum += value
@@ -126,9 +127,9 @@ func (p *pingCommand) summarize() error {
 			}
 		}
 
-		avg = sum / float64(len(p.times))
+		avg = sum / time.Duration(len(p.times))
 
-		fmt.Printf("%d replies max: %.3f min: %.3f avg: %.3f overhead: %.3f\n", len(p.times), max, min, avg, p.published.Sub(p.start).Seconds()*1000)
+		fmt.Printf("%d replies max: %s min: %s avg: %s overhead: %s\n", len(p.times), max.Round(time.Millisecond), min.Round(time.Millisecond), avg.Round(time.Millisecond), p.published.Sub(p.start).Round(time.Millisecond))
 
 		if p.graph {
 			fmt.Println()
@@ -155,7 +156,7 @@ func (p *pingCommand) handler(_ context.Context, m *choria.ConnectorMessage) {
 	p.mu.Lock()
 	defer p.mu.Unlock()
 
-	p.times = append(p.times, delay.Seconds())
+	p.times = append(p.times, delay)
 
 	if !p.silent {
 		if p.namesOnly {
@@ -195,7 +196,9 @@ func (p *pingCommand) Configure() error {
 // in buckets of 50ms time brackets, it then use the amount
 // of messages received in each bucket as the height
 func (p *pingCommand) chart() string {
-	sort.Float64s(p.times)
+	sort.Slice(p.times, func(i, j int) bool {
+		return p.times[i] < p.times[j]
+	})
 
 	latest := p.times[len(p.times)-1]
 	bcount := int(latest/50) + 1
