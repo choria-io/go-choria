@@ -200,12 +200,17 @@ func (p *pingCommand) chart() string {
 		return p.times[i] < p.times[j]
 	})
 
-	latest := p.times[len(p.times)-1]
+	ftimes := make([]int64, len(p.times))
+	for i, d := range p.times {
+		ftimes[i] = d.Milliseconds()
+	}
+
+	latest := ftimes[len(ftimes)-1]
 	bcount := int(latest/50) + 1
 	buckets := make([]float64, bcount)
 
-	for _, t := range p.times {
-		b := t / 50.0
+	for _, t := range ftimes {
+		b := t / 50
 		buckets[int(b)]++
 	}
 
