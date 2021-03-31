@@ -33,9 +33,9 @@ type InventoryData struct {
 }
 
 type InventoryContentMessage struct {
-	Protocol string `json:"protocol"`
-	Content  []byte `json:"content,omitempty"`
-	ZContent []byte `json:"zcontent,omitempty"`
+	Protocol string          `json:"protocol"`
+	Content  json.RawMessage `json:"content,omitempty"`
+	ZContent []byte          `json:"zcontent,omitempty"`
 }
 
 // NewInventoryContent creates a new fully managed registration plugin instance

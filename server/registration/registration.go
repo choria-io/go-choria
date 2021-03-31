@@ -10,7 +10,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/choria-io/go-choria/registration"
+	"github.com/choria-io/go-choria/providers/registration"
 	"github.com/choria-io/go-choria/server/data"
 
 	"github.com/sirupsen/logrus"

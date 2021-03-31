@@ -9,11 +9,12 @@ import (
 
 	"github.com/tidwall/gjson"
 
-	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/server/data"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
+
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/server/data"
 )
 
 func Test(t *testing.T) {
