@@ -210,8 +210,7 @@ func (p *pingCommand) chart() string {
 	buckets := make([]float64, bcount)
 
 	for _, t := range ftimes {
-		b := t / 50
-		buckets[int(b)]++
+		buckets[t/50]++
 	}
 
 	return asciigraph.Plot(

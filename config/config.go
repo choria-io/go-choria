@@ -32,7 +32,7 @@ type Config struct {
 	RegisterInterval int `confkey:"registerinterval" default:"300"`
 
 	// When true delays initial registration publish by a random period up to registerinterval following registration publishes will be at registerinterval without further splay
-	RegistrationSplay bool `confkey:"registration_splay" default:"false"`
+	RegistrationSplay bool `confkey:"registration_splay" default:"true"`
 
 	// The list of known Sub Collectives this node will join or communicate with, Servers will subscribe the node and each agent to each sub collective and Clients will publish to a chosen sub collective
 	Collectives []string `confkey:"collectives" type:"comma_split" default:"mcollective"`
