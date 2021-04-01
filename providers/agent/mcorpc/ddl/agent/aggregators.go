@@ -16,7 +16,6 @@ type ActionAggregateItem struct {
 type actionAggregators struct {
 	aggregators map[string]aggregate.Aggregator
 	action      *Action
-
 	sync.Mutex
 }
 

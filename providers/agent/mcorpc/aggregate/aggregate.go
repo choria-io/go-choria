@@ -16,7 +16,7 @@ type Aggregator interface {
 // AggregatorByType retrieves an instance of an aggregator given its type like "summarize"
 func AggregatorByType(t string, args []interface{}) (Aggregator, error) {
 	switch t {
-	case "summary":
+	case "summary", "boolean_summary":
 		return NewSummaryAggregator(args)
 
 	case "average":
