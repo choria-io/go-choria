@@ -13,15 +13,31 @@ type SummaryAggregator struct {
 	args   []interface{}
 	format string
 
+	jsonTrue  string
+	jsonFalse string
+
+	mapping map[string]string
+
 	sync.Mutex
 }
 
 // NewSummaryAggregator creates a new SummaryAggregator with the specific options supplied
 func NewSummaryAggregator(args []interface{}) (*SummaryAggregator, error) {
 	agg := &SummaryAggregator{
-		items:  make(map[interface{}]int),
-		args:   args,
-		format: parseFormatFromArgs(args),
+		items:   make(map[interface{}]int),
+		args:    args,
+		format:  parseFormatFromArgs(args),
+		mapping: make(map[string]string),
+	}
+
+	s, _ := json.Marshal(true)
+	agg.jsonTrue = string(s)
+	s, _ = json.Marshal(false)
+	agg.jsonFalse = string(s)
+
+	err := agg.parseBoolMapsFromArgs()
+	if err != nil {
+		return nil, err
 	}
 
 	return agg, nil
@@ -37,12 +53,46 @@ func (s *SummaryAggregator) ProcessValue(v interface{}) error {
 	s.Lock()
 	defer s.Unlock()
 
-	_, ok := s.items[v]
-	if !ok {
-		s.items[v] = 0
+	item := v
+
+	switch val := v.(type) {
+	case bool:
+		var tm string
+		var ok bool
+
+		if val {
+			tm, ok = s.mapping[s.jsonTrue]
+		} else {
+			tm, ok = s.mapping[s.jsonFalse]
+		}
+		if ok {
+			item = tm
+		}
+
+	case string:
+		tm, ok := s.mapping[val]
+		if ok {
+			item = tm
+		}
+	default:
+		// we'll almost never get to this cpu intensive default as
+		// the ddl always send string values in reality but I want to support
+		// different types in the plugins for future uses
+		vs, err := json.Marshal(v)
+		if err == nil {
+			tm, ok := s.mapping[string(vs)]
+			if ok {
+				item = tm
+			}
+		}
 	}
 
-	s.items[v]++
+	_, ok := s.items[item]
+	if !ok {
+		s.items[item] = 0
+	}
+
+	s.items[item]++
 
 	return nil
 }
@@ -124,4 +174,28 @@ func (s *SummaryAggregator) ResultFormattedStrings(format string) ([]string, err
 	}
 
 	return output, nil
+}
+
+func (a *SummaryAggregator) parseBoolMapsFromArgs() error {
+	if len(a.args) == 2 {
+		cfg, ok := a.args[1].(map[string]interface{})
+		if !ok {
+			return nil
+		}
+
+		for k, v := range cfg {
+			switch k {
+			case "true":
+				a.mapping[a.jsonTrue] = fmt.Sprintf("%v", v)
+			case "false":
+				a.mapping[a.jsonFalse] = fmt.Sprintf("%v", v)
+			case "format":
+				// nothing its reserved
+			default:
+				a.mapping[k] = fmt.Sprintf("%v", v)
+			}
+		}
+	}
+
+	return nil
 }
