@@ -946,7 +946,7 @@ The Sub Collective to publish registration data to
 ## registration_splay
 
  * **Type:** boolean
- * **Default Value:** false
+ * **Default Value:** true
 
 When true delays initial registration publish by a random period up to registerinterval following registration publishes will be at registerinterval without further splay
 
@@ -969,7 +969,7 @@ The audit provider to use, unused at present as there is only a "choria" one
 
  * **Type:** boolean
  * **Additional Information:** https://choria.io/docs/configuration/aaa/
- * **Default Value:** false
+ * **Default Value:** true
 
 When enables authorization is performed on every RPC request based on rpcauthprovider
 

@@ -83,7 +83,7 @@ type Config struct {
 	RPCAuditProvider string `confkey:"rpcauditprovider" type:"title_string" url:"https://choria.io/docs/configuration/aaa/"`
 
 	// When enables authorization is performed on every RPC request based on rpcauthprovider
-	RPCAuthorization bool `confkey:"rpcauthorization" default:"false" url:"https://choria.io/docs/configuration/aaa/"`
+	RPCAuthorization bool `confkey:"rpcauthorization" default:"true" url:"https://choria.io/docs/configuration/aaa/"`
 
 	// The Authorization system to use
 	RPCAuthorizationProvider string `confkey:"rpcauthprovider" type:"title_string" default:"action_policy" url:"https://choria.io/docs/configuration/aaa/"`
@@ -273,6 +273,7 @@ func NewConfigForTests() *Config {
 	c.Choria.SSLDir = "/nonexisting"
 	c.DisableSecurityProviderVerify = true
 	c.LogFile = "discard"
+	c.RPCAuthorization = false
 
 	return c
 }
