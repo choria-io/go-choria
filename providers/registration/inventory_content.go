@@ -137,7 +137,6 @@ func (ic *InventoryContent) publish(output chan *data.RegistrationItem) error {
 		item.TargetAgent = "registration"
 	}
 
-	ic.log.Infof("Sending to %v: %+v", output, item)
 	output <- item
 
 	return nil

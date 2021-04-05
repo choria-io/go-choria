@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'choria_util' Version 0.19.0 generated using Choria version 0.20.2
+// Client for Choria RPC Agent 'choria_util' Version 0.19.0 generated using Choria version 0.21.0
 
 // Package choria_utilclient is an API client to the Choria Choria_util agent Version 0.19.0.
 //
