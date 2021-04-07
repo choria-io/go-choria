@@ -3,6 +3,8 @@ package watchers
 import (
 	"fmt"
 	"time"
+
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 // WatcherDef is the core definition of a watcher, watcher type specific
@@ -22,7 +24,7 @@ type WatcherDef struct {
 // ParseAnnounceInterval parses the announce interval and ensures its not too small
 func (w *WatcherDef) ParseAnnounceInterval() (err error) {
 	if w.AnnounceInterval != "" {
-		w.AnnounceDuration, err = time.ParseDuration(w.AnnounceInterval)
+		w.AnnounceDuration, err = util.ParseDuration(w.AnnounceInterval)
 		if err != nil {
 			return fmt.Errorf("unknown announce interval for watcher %s: %s", w.Name, err)
 		}

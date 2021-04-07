@@ -268,7 +268,7 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 					break
 				}
 
-				d, err := time.ParseDuration(value.(string))
+				d, err := util.ParseDuration(value.(string))
 				if err != nil {
 					return err
 				}

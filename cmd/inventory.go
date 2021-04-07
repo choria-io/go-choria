@@ -38,7 +38,7 @@ func (i *inventoryCommand) Setup() (err error) {
 	i.cmd.Flag("collectives", "List all known collectives").BoolVar(&i.listCollective)
 	i.cmd.Flag("facts", "Enable or disable displaying of facts").Default("true").BoolVar(&i.showFacts)
 	i.cmd.Flag("wf", "Match hosts with a certain fact").Short('F').StringsVar(&i.factF)
-	i.cmd.Flag("wc", "Match hosts with a certain configuration management class").Short('C').StringsVar(&i.classF)
+	i.cmd.Flag("wc", "Match hosts with a certain tagged class").Short('C').StringsVar(&i.classF)
 	i.cmd.Flag("wa", "Match hosts with a certain Choria agent").Short('A').StringsVar(&i.agentsF)
 	i.cmd.Flag("wi", "Match hosts with a certain Choria identity").Short('I').StringsVar(&i.identityF)
 	i.cmd.Flag("with", "Combined classes and facts filter").Short('W').PlaceHolder("FILTER").StringsVar(&i.combinedF)
@@ -121,7 +121,7 @@ func (i *inventoryCommand) inventoryAgent() error {
 		fmt.Printf("    %-15s %-15s %-15s\n", g[0], g[1], g[2])
 	})
 	fmt.Println()
-	fmt.Printf("  Configuration Management Classes:\n\n")
+	fmt.Printf("  Tagged Classes:\n\n")
 	longest := util.LongestString(inventory.Classes, 40)
 	format := fmt.Sprintf("    %%-%ds %%-%ds\n", longest, longest)
 	util.SliceGroups(inventory.Classes, 2, func(g []string) {

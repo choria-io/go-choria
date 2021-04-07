@@ -13,6 +13,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	iu "github.com/choria-io/go-choria/internal/util"
 )
 
 type State int
@@ -77,7 +78,7 @@ func New(machine watcher.Machine, name string, states []string, failEvent string
 	}
 
 	if interval != "" {
-		exec.interval, err = time.ParseDuration(interval)
+		exec.interval, err = iu.ParseDuration(interval)
 		if err != nil {
 			return nil, fmt.Errorf("invalid interval: %v", err)
 		}

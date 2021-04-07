@@ -9,6 +9,7 @@ import (
 	"regexp"
 	"runtime"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 
@@ -266,4 +267,60 @@ func DumpMapStrings(data map[string]string, leftPad int) {
 	IterateStringsMap(data, func(k, v string) {
 		fmt.Printf("%s: %s\n", strings.Repeat(" ", longest-len(k))+k, v)
 	})
+}
+
+// ParseDuration is an extended version of go duration parsing that
+// also supports w,W,d,D,M,Y,y in addition to what go supports
+func ParseDuration(dstr string) (dur time.Duration, err error) {
+	dstr = strings.TrimSpace(dstr)
+
+	if len(dstr) <= 0 {
+		return dur, nil
+	}
+
+	ls := len(dstr)
+	di := ls - 1
+	unit := dstr[di:]
+
+	switch unit {
+	case "w", "W":
+		val, err := strconv.ParseFloat(dstr[:di], 32)
+		if err != nil {
+			return dur, err
+		}
+
+		dur = time.Duration(val*7*24) * time.Hour
+
+	case "d", "D":
+		val, err := strconv.ParseFloat(dstr[:di], 32)
+		if err != nil {
+			return dur, err
+		}
+
+		dur = time.Duration(val*24) * time.Hour
+	case "M":
+		val, err := strconv.ParseFloat(dstr[:di], 32)
+		if err != nil {
+			return dur, err
+		}
+
+		dur = time.Duration(val*24*30) * time.Hour
+	case "Y", "y":
+		val, err := strconv.ParseFloat(dstr[:di], 32)
+		if err != nil {
+			return dur, err
+		}
+
+		dur = time.Duration(val*24*365) * time.Hour
+	case "s", "S", "m", "h", "H":
+		dur, err = time.ParseDuration(dstr)
+		if err != nil {
+			return dur, err
+		}
+
+	default:
+		return dur, fmt.Errorf("invalid time unit %s", unit)
+	}
+
+	return dur, nil
 }
