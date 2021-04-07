@@ -11,6 +11,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	iu "github.com/choria-io/go-choria/internal/util"
 )
 
 type State int
@@ -77,7 +78,7 @@ func New(machine watcher.Machine, name string, states []string, failEvent string
 	}
 
 	if interval != "" {
-		fw.interval, err = time.ParseDuration(interval)
+		fw.interval, err = iu.ParseDuration(interval)
 		if err != nil {
 			return nil, fmt.Errorf("invalid interval: %s", err)
 		}
@@ -120,7 +121,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (w *Watcher) performWatch(ctx context.Context) {
+func (w *Watcher) performWatch(_ context.Context) {
 	state, err := w.watch()
 	err = w.handleCheck(state, err)
 	if err != nil {

@@ -46,7 +46,7 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 	var opts []nats.Option
 
 	if s.IsTLS() {
-		s.log.Info("Connecting to Choria Stream using TLS")
+		s.log.Info("Configuring Choria System Streams with TLS")
 		tlsc, err := s.choria.ClientTLSConfig()
 		if err != nil {
 			return err
@@ -83,12 +83,12 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 		return err
 	}
 
-	err = s.createOrUpdateStream("CHORIA_MACHINE", []string{"choria.machine.>"}, s.config.Choria.NetworkEventStoreDuration, s.config.Choria.NetworkEventStoreReplicas, mgr)
+	err = s.createOrUpdateStream("CHORIA_MACHINE", []string{"choria.machine.>"}, s.config.Choria.NetworkMachineStoreDuration, s.config.Choria.NetworkMachineStoreReplicas, mgr)
 	if err != nil {
 		return err
 	}
 
-	err = s.createOrUpdateStream("CHORIA_STREAM_ADVISORIES", []string{"$JS.EVENT.ADVISORY.>"}, s.config.Choria.NetworkEventStoreDuration, s.config.Choria.NetworkEventStoreReplicas, mgr)
+	err = s.createOrUpdateStream("CHORIA_STREAM_ADVISORIES", []string{"$JS.EVENT.ADVISORY.>"}, s.config.Choria.NetworkStreamAdvisoryDuration, s.config.Choria.NetworkStreamAdvisoryReplicas, mgr)
 	if err != nil {
 		return err
 	}
@@ -106,13 +106,14 @@ func (s *Server) createOrUpdateStream(name string, subjects []string, maxAge tim
 		return nil
 	}
 
-	str, err := mgr.LoadOrNewStream(name, jsm.FileStorage(), jsm.Subjects(subjects...), jsm.MaxAge(s.config.Choria.NetworkEventStoreDuration), jsm.Replicas(replicas))
+	str, err := mgr.LoadOrNewStream(name, jsm.FileStorage(), jsm.Subjects(subjects...), jsm.MaxAge(maxAge), jsm.Replicas(replicas))
 	if err != nil {
 		return fmt.Errorf("could not load or create %s: %s", name, err)
 	}
 
 	cfg := str.Configuration()
 	if cfg.MaxAge != maxAge {
+		s.log.Infof("Updating %s retention from %s to %s", str.Name(), cfg.MaxAge, maxAge)
 		cfg.MaxAge = maxAge
 		err = str.UpdateConfiguration(cfg)
 		if err != nil {
@@ -120,7 +121,7 @@ func (s *Server) createOrUpdateStream(name string, subjects []string, maxAge tim
 		}
 	}
 
-	s.log.Infof("Configured stream %q with %d replicas", name, replicas)
+	s.log.Infof("Configured stream %q with %d replicas and %s retention", name, replicas, maxAge)
 
 	return nil
 }

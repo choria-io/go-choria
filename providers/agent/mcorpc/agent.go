@@ -7,12 +7,13 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/audit"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/sirupsen/logrus"
 )
 
 // Action is a function that implements a RPC Action
@@ -111,6 +112,7 @@ func (a *Agent) HandleMessage(ctx context.Context, msg *choria.Message, request 
 
 	if a.Config.RPCAuthorization {
 		if !a.authorize(rpcrequest) {
+			a.Log.Warnf("Denying %s access to %s#%s based on authorization policy for request %s", request.CallerID(), rpcrequest.Agent, rpcrequest.Action, request.RequestID())
 			reply.Statuscode = Aborted
 			reply.Statusmsg = "You are not authorized to call this agent or action"
 			return
@@ -133,7 +135,7 @@ func (a *Agent) Name() string {
 
 // ActionNames returns a list of known actions in the agent
 func (a *Agent) ActionNames() []string {
-	actions := []string{}
+	var actions []string
 
 	for k := range a.actions {
 		actions = append(actions, k)
