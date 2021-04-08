@@ -339,7 +339,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			l, err = o.limitTargets(targets)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(l).To(HaveLen(5))
-			Expect(l).To(Equal([]string{"target2", "target0", "target1", "target4", "target3"}))
+			Expect(l).To(Equal([]string{"target19", "target26", "target0", "target73", "target94"}))
 		})
 
 		It("Should limit to specific percentage and optionally shuffle the targets", func() {
@@ -355,7 +355,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			l, err = o.limitTargets(targets)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(l).To(HaveLen(5))
-			Expect(l).To(Equal([]string{"target2", "target0", "target1", "target4", "target3"}))
+			Expect(l).To(Equal([]string{"target19", "target26", "target0", "target73", "target94"}))
 		})
 	})
 
