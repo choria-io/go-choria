@@ -98,6 +98,7 @@ func (s *Server) setupLeafNodes() (err error) {
 		s.opts.LeafNode.Host = s.config.Choria.NetworkListenAddress
 		s.opts.LeafNode.Port = s.config.Choria.NetworkLeafPort
 		s.opts.LeafNode.NoAdvertise = true
+		s.opts.LeafNode.AuthTimeout = 10
 
 		advertise := s.config.Choria.NetworkClientAdvertiseName
 		parts := strings.Split(s.config.Choria.NetworkClientAdvertiseName, ":")
