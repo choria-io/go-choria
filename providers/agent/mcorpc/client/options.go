@@ -382,7 +382,7 @@ func (o *RequestOptions) limitTargets(targets []string) (limited []string, err e
 	}
 
 	limited = make([]string, count)
-	copy(limited, targets)
+	copy(limited, o.shuffleLimitedTargets(targets))
 
-	return o.shuffleLimitedTargets(limited), err
+	return limited, err
 }
