@@ -7,11 +7,12 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/sirupsen/logrus"
+
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server"
-	"github.com/sirupsen/logrus"
 )
 
 // agents we do not ever wish to load from external agents
@@ -105,22 +106,23 @@ func (p *Provider) eachAgent(cb func(ddl *agent.DDL)) {
 				return nil
 			}
 
+			p.log.Debugf("Attempting to load %s as an agent DDL", path)
+			ddl, err := agent.New(path)
+			if err != nil {
+				p.log.Errorf("Could not load agent DDL %s: %s", path, err)
+				return nil
+			}
+
+			if ddl.Metadata.Provider != "external" {
+				return nil
+			}
+
 			if !shouldLoadAgent(name) {
 				p.log.Warnf("External agents are not allowed to supply an agent called '%s', skipping", name)
 				return nil
 			}
 
-			p.log.Debugf("Attempting to load %s as an agent DDL", path)
-
-			ddl, err := agent.New(path)
-			if err != nil {
-				p.log.Errorf("Could not load external agent DDL %s: %s", path, err)
-				return nil
-			}
-
-			if ddl.Metadata.Provider == "external" {
-				cb(ddl)
-			}
+			cb(ddl)
 
 			return nil
 		})

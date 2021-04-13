@@ -33,7 +33,6 @@ func TestFederation(t *testing.T) {
 	RunSpecs(t, "Broker/Federation")
 }
 
-
 func newDiscardLogger() (*log.Entry, *bufio.Writer, *bytes.Buffer) {
 	var logbuf bytes.Buffer
 

@@ -85,8 +85,8 @@ var _ = Describe("McoRPC/External", func() {
 					Timeout: 1,
 				},
 				Actions: []*addl.Action{
-					&addl.Action{Name: "act1"},
-					&addl.Action{Name: "act2"},
+					{Name: "act1"},
+					{Name: "act2"},
 				},
 			}
 		})
@@ -147,7 +147,7 @@ var _ = Describe("McoRPC/External", func() {
 					Timeout: 1,
 				},
 				Actions: []*addl.Action{
-					&addl.Action{
+					{
 						Name: "ping",
 						Input: map[string]*common.InputItem{
 							"hello": {

@@ -236,7 +236,7 @@ func (m *transportMessage) IsValidJSON(data string) (err error) {
 
 	_, errors, err := schemas.Validate(schemas.TransportV1, data)
 	if err != nil {
-    return fmt.Errorf("could not validate Transport JSON data: %s", err)
+		return fmt.Errorf("could not validate Transport JSON data: %s", err)
 	}
 
 	if len(errors) != 0 {

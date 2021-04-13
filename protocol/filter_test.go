@@ -114,6 +114,6 @@ var _ = Describe("Filter", func() {
 		e = filter.AddFactFilter("test3", "foo", "3")
 		Expect(e).To(HaveOccurred())
 
-		Expect(filter.FactFilters()).To(Equal([][3]string{[3]string{"test1", ">=", "1"}, [3]string{"test2", ">=", "2"}}))
+		Expect(filter.FactFilters()).To(Equal([][3]string{{"test1", ">=", "1"}, {"test2", ">=", "2"}}))
 	})
 })

@@ -143,10 +143,10 @@ var _ = Describe("Providers/McoRPC/DDL/Agent", func() {
 			summary, err := act.AggregateSummaryStrings()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(summary).To(Equal(map[string]map[string]string{
-				"arch": map[string]string{
+				"arch": {
 					"x86_64": "6",
 				},
-				"ensure": map[string]string{
+				"ensure": {
 					"5.0.2-33.el7": "5",
 					"5.0.2-31.el7": "1",
 				},
@@ -155,11 +155,11 @@ var _ = Describe("Providers/McoRPC/DDL/Agent", func() {
 			formatted, err := act.AggregateSummaryFormattedStrings()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(formatted).To(Equal(map[string][]string{
-				"ensure": []string{
+				"ensure": {
 					"5.0.2-33.el7: 5",
 					"5.0.2-31.el7: 1",
 				},
-				"arch": []string{
+				"arch": {
 					"x86_64: 6",
 				},
 			}))

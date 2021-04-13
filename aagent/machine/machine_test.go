@@ -99,10 +99,10 @@ var _ = Describe("Aagent/Machine", func() {
 			machine.InitialState = "unknown"
 			Expect(machine.Validate()).To(MatchError("no transitions defined"))
 
-			machine.Transitions = []*Transition{&Transition{}}
+			machine.Transitions = []*Transition{{}}
 			Expect(machine.Validate()).To(MatchError("no watchers defined"))
 
-			machine.WatcherDefs = []*watchers.WatcherDef{&watchers.WatcherDef{}}
+			machine.WatcherDefs = []*watchers.WatcherDef{{}}
 			Expect(machine.Validate()).ToNot(HaveOccurred())
 		})
 	})
