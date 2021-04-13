@@ -38,11 +38,6 @@ func (p *Provider) eachAgent(libdirs []string, cb func(ddl *agentddl.DDL)) {
 				return nil
 			}
 
-			if !shouldLoadAgent(name) {
-				p.log.Warnf("Ruby agents are not allowed to supply an agent called '%s', skipping", name)
-				return nil
-			}
-
 			bpath := strings.TrimSuffix(path, extension)
 			rbfile := bpath + ".rb"
 
@@ -50,8 +45,12 @@ func (p *Provider) eachAgent(libdirs []string, cb func(ddl *agentddl.DDL)) {
 				return nil
 			}
 
-			p.log.Debugf("Attempting to load %s as an agent DDL", path)
+			if !shouldLoadAgent(name) {
+				p.log.Warnf("Ruby agents are not allowed to supply an agent called '%s', skipping", name)
+				return nil
+			}
 
+			p.log.Debugf("Attempting to load %s as an agent DDL", path)
 			ddl, err := agentddl.New(path)
 			if err != nil {
 				p.log.Errorf("Could not load ruby agent DDL %s: %s", path, err)

@@ -29,7 +29,7 @@ var _ = Describe("Filter", func() {
 			Expect(pf.ClassFilters()).To(Equal([]string{"klass"}))
 			Expect(pf.AgentFilters()).To(Equal([]string{"agent"}))
 			Expect(pf.IdentityFilters()).To(Equal([]string{"ident"}))
-			Expect(pf.FactFilters()).To(Equal([][3]string{[3]string{"country", "==", "mt"}}))
+			Expect(pf.FactFilters()).To(Equal([][3]string{{"country", "==", "mt"}}))
 		})
 
 		It("Should handle empty filter lists", func() {
@@ -46,7 +46,7 @@ var _ = Describe("Filter", func() {
 		It("Should add each filter", func() {
 			err := FactFilter("country=mt", "country=uk", "")(pf)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(pf.FactFilters()).To(Equal([][3]string{[3]string{"country", "==", "mt"}, [3]string{"country", "==", "uk"}}))
+			Expect(pf.FactFilters()).To(Equal([][3]string{{"country", "==", "mt"}, {"country", "==", "uk"}}))
 		})
 
 		It("Should handle errors", func() {
@@ -88,7 +88,7 @@ var _ = Describe("Filter", func() {
 		It("Should add each filter", func() {
 			CombinedFilter("foo", "/bar/", "baz", "country=mt", "")(pf)
 			Expect(pf.ClassFilters()).To(Equal([]string{"foo", "/bar/", "baz"}))
-			Expect(pf.FactFilters()).To(Equal([][3]string{[3]string{"country", "==", "mt"}}))
+			Expect(pf.FactFilters()).To(Equal([][3]string{{"country", "==", "mt"}}))
 		})
 	})
 

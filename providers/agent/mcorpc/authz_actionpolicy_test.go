@@ -57,9 +57,9 @@ var _ = Describe("ActionPolicy", func() {
 			err := authz.parseGroupFile("testdata/policies/groups")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(authz.groups).To(Equal(map[string][]string{
-				"sysadmin":     []string{"cert=sa1", "cert=sa2", "rspec_caller"},
-				"app_admin":    []string{"cert=aa1", "cert=aa2"},
-				"single_group": []string{"rspec_caller"},
+				"sysadmin":     {"cert=sa1", "cert=sa2", "rspec_caller"},
+				"app_admin":    {"cert=aa1", "cert=aa2"},
+				"single_group": {"rspec_caller"},
 			}))
 		})
 	})
@@ -652,9 +652,9 @@ var _ = Describe("Policy", func() {
 	Describe("isCallerInGroups", func() {
 		It("Should match on known groups", func() {
 			groups := map[string][]string{
-				"sysadmin":     []string{"cert=sa1", "cert=sa2", "rspec_caller"},
-				"app_admin":    []string{"cert=aa1", "cert=aa2"},
-				"single_group": []string{"rspec_caller"},
+				"sysadmin":     {"cert=sa1", "cert=sa2", "rspec_caller"},
+				"app_admin":    {"cert=aa1", "cert=aa2"},
+				"single_group": {"rspec_caller"},
 			}
 
 			pol.groups = groups
