@@ -75,7 +75,7 @@ type RPCReply struct {
 
 // MatchExpr determines if the Reply  matches expression q using the expr format.
 // The query q is expected to return a boolean type else an error will be raised
-func (r *RPCReply) MatchExpr(q string, prog *vm.Program) (bool, error) {
+func (r *RPCReply) MatchExpr(q string, prog *vm.Program) (bool, *vm.Program, error) {
 	env := map[string]interface{}{
 		"msg":            r.Statusmsg,
 		"code":           int(r.Statuscode),
@@ -95,21 +95,21 @@ func (r *RPCReply) MatchExpr(q string, prog *vm.Program) (bool, error) {
 	if prog == nil {
 		prog, err = expr.Compile(q, expr.AsBool(), expr.AllowUndefinedVariables(), expr.Env(env))
 		if err != nil {
-			return false, err
+			return false, nil, err
 		}
 	}
 
 	out, err := expr.Run(prog, env)
 	if err != nil {
-		return false, err
+		return false, prog, err
 	}
 
 	matched, ok := out.(bool)
 	if !ok {
-		return false, fmt.Errorf("match expressions should return boolean")
+		return false, prog, fmt.Errorf("match expressions should return boolean")
 	}
 
-	return matched, nil
+	return matched, prog, nil
 }
 
 func (r *RPCReply) isOK() bool {
@@ -472,15 +472,6 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 	}
 
 	var prog *vm.Program
-	var err error
-
-	if r.opts.ReplyExprFilter != "" {
-		prog, err = expr.Compile(r.opts.ReplyExprFilter, expr.AsBool(), expr.AllowUndefinedVariables())
-		if err != nil {
-			r.log.Errorf("failed to compile expression: %v", err)
-			prog = nil
-		}
-	}
 
 	handler := func(ctx context.Context, rawmsg *choria.ConnectorMessage) {
 		reply, err := r.fw.NewReplyFromTransportJSON(rawmsg.Data, false)
@@ -511,7 +502,7 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 		if r.opts.Handler != nil {
 			shouldShow := true
 			if r.opts.ReplyExprFilter != "" {
-				shouldShow, err = rpcreply.MatchExpr(r.opts.ReplyExprFilter, prog)
+				shouldShow, prog, err = rpcreply.MatchExpr(r.opts.ReplyExprFilter, prog)
 				if err != nil {
 					r.log.Errorf("Expr filter parsing failed in reply from %s: %s", reply.SenderID(), err)
 				}

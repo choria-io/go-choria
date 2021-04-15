@@ -85,13 +85,19 @@ var _ = Describe("McoRPC/Client", func() {
 				Data:       json.RawMessage(`{"hello":"world", "ints": [1,2,3], "strings": ["1","2","3"]}`),
 			}
 
-			Expect(r.MatchExpr("ok() && code == 0 && msg == 'OK' && data('hello') in ['world', 'bob']", nil)).To(BeTrue())
-			Expect(r.MatchExpr("!ok() && data('hello') == 'world'", nil)).To(BeFalse())
-			Expect(r.MatchExpr("ok() && data('hello') == 'other'", nil)).To(BeFalse())
-			Expect(r.MatchExpr("ok() && include(data('strings'), '1')", nil)).To(BeTrue())
-			Expect(r.MatchExpr("ok() && include(data('ints'), 1)", nil)).To(BeTrue())
+			check := func(f string) (bool, error) {
+				res, _, err := r.MatchExpr(f, nil)
+				return res, err
+			}
 
-			res, err := r.MatchExpr("ok() && data('hello')", nil)
+			Expect(check("ok() && code == 0 && msg == 'OK' && data('hello') in ['world', 'bob']")).To(BeTrue())
+			Expect(check("!ok() && data('hello') == 'world'")).To(BeFalse())
+			Expect(check("ok() && data('hello') == 'other'")).To(BeFalse())
+			Expect(check("ok() && include(data('strings'), '1')")).To(BeTrue())
+			Expect(check("ok() && include(data('ints'), 1)")).To(BeTrue())
+			Expect(check("include(data('ints'), 1)")).To(BeTrue())
+
+			res, _, err := r.MatchExpr("ok() && data('hello')", nil)
 			Expect(err).To(MatchError("match expressions should return boolean"))
 			Expect(res).To(BeFalse())
 		})
