@@ -1,11 +1,11 @@
 {{.Description}}
 {{- if ne .Display "failed" }}
 
-Displaying {{.Display | Bold}} results
+Displaying {{.Display | Bold}}
 {{- end }}
 {{- if .Input }}
 
-Inputs:
+{{Bold "Inputs:"}}
         {{- range $key, $value := .Input }}
 
   {{ Bold $key }}:
@@ -13,7 +13,7 @@ Inputs:
         {{- end }}
 {{- end}}
 
-Outputs:
+{{Bold "Outputs:"}}
 {{ range $key, $value := .Output }}
   {{ Bold $key }}:
 {{RenderConsole $value 4}}
