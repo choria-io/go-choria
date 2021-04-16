@@ -96,6 +96,16 @@ func RegisterPlugin(name string, plugin *Creator) error {
 	return nil
 }
 
+// DDLs is a list of DDLs for all known data plugins
+func (m *Manager) DDLs() []*ddl.DDL {
+	res := []*ddl.DDL{}
+	for _, v := range m.ddls {
+		res = append(res, v)
+	}
+
+	return res
+}
+
 func (m *Manager) FuncMap(si agents.ServerInfoSource) (ddl.FuncMap, error) {
 	funcs := make(ddl.FuncMap)
 

@@ -1,0 +1,15 @@
+
+║ Description: {{.Description}}
+║      Prompt: {{.Prompt}}
+║        Type: {{.Type}}
+║    Optional: {{.Optional}}
+{{- if eq .Type "string" }}
+║  Validation: {{.Validation}}
+║  Max Length: {{.MaxLength}}
+{{- else if eq .Type "list" }}
+║    Enum: {{StringsJoin .Enum}}
+{{- end }}
+{{- if .Default }}
+║     Default: {{.Default}}
+{{- end }}
+╙─

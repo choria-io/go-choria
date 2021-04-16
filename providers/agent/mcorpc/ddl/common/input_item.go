@@ -5,6 +5,7 @@ import (
 	"regexp"
 	"strings"
 
+	"github.com/choria-io/go-choria/internal/templates"
 	"github.com/choria-io/go-choria/validator"
 	"github.com/choria-io/go-choria/validator/ipaddress"
 	"github.com/choria-io/go-choria/validator/ipv4"
@@ -35,6 +36,10 @@ type InputItem struct {
 	Validation  string      `json:"validation,omitempty"`
 	MaxLength   int         `json:"maxlength,omitempty"`
 	Enum        []string    `json:"list,omitempty"`
+}
+
+func (i *InputItem) RenderConsole() ([]byte, error) {
+	return templates.ExecuteTemplate("ddl/input_item_console.templ", i, nil)
 }
 
 // Required indicates if this item is required

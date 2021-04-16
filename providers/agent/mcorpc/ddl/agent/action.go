@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/internal/templates"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 )
 
@@ -22,6 +23,10 @@ type Action struct {
 	agg *actionAggregators
 
 	sync.Mutex
+}
+
+func (a *Action) RenderConsole() ([]byte, error) {
+	return templates.ExecuteTemplate("ddl/action_console.templ", a, nil)
 }
 
 // GetInput gets a named input

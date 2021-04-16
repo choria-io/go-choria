@@ -11,6 +11,7 @@ import (
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/confkey"
+	"github.com/choria-io/go-choria/internal/templates"
 	"github.com/choria-io/go-choria/internal/util"
 )
 
@@ -18,57 +19,6 @@ type configs struct {
 	Keys [][]string
 	Docs []*confkey.Doc
 }
-
-var templ = `# Choria Configuration Settings
-
-This is a list of all known Configuration settings. This list is based on declared settings within the Choria Go code base and so will not cover 100% of settings - plugins can contribute their own settings which are note known at compile time.
-
-## Data Types
-
-A few special types are defined, the rest map to standard Go types
-
-|Type|Description|
-|----|-----------|
-|comma_split|A comma separated list of strings, possibly with spaces between|
-|duration|A duration such as "1h", "300ms", "-1.5h" or "2h45m". Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h"|
-|path_split|A list of paths split by a OS specific PATH separator|
-|path_string|A path that can include "~" for the users home directory|
-|strings|A space separated list of strings|
-|title_string|A string that will be stored as a Title String|
-
-## Index
-
-| | |
-|-|-|
-{{- range $i, $k := .Keys }}
-|[{{ index $k 0 }}](#{{ index $k 0 | gha }})|[{{ index $k 1 }}](#{{ index $k 1 | gha }})|
-{{- end }}
-
-{{ range .Docs }}
-## {{ .ConfigKey }}
-
- * **Type:** {{ .Type }}
-{{- if .URL }}
- * **Additional Information:** {{ .URL }}
-{{- end }}
-{{- if .Validation }}
- * **Validation:** {{ .Validation }}
-{{- end }}
-{{- if .Default }}
- * **Default Value:** {{ .Default }}
-{{- end }}
-{{- if .Environment }}
- * **Environment Variable:** {{ .Environment }}
-{{- end }}
-{{- if ne .Description "Undocumented" }}
-
-{{ .Description }}{{ end }}
-{{- if .Deprecate }}
-
-**This setting is deprecated or already unused**
-{{- end }}
-{{ end }}
-`
 
 func panicIfErr(err error) {
 	if err != nil {
@@ -114,7 +64,12 @@ func main() {
 		},
 	}
 
-	t, err := template.New("templates").Funcs(funcs).Parse(templ)
+	templ, err := templates.FS.ReadFile("misc/config_doc.templ")
+	if err != nil {
+		return
+	}
+
+	t, err := template.New("templates").Funcs(funcs).Parse(string(templ))
 	if err != nil {
 		panic(err)
 	}

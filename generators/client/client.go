@@ -1,14 +1,15 @@
 package client
 
 import (
-	"encoding/base64"
 	"fmt"
 	"io/ioutil"
 	"os"
 	"path"
+	"path/filepath"
 	"strings"
 	"text/template"
 
+	"github.com/choria-io/go-choria/internal/templates"
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 
@@ -45,7 +46,7 @@ func (a *agent) ActionRequiredInputs(act string) map[string]*common.InputItem {
 }
 
 func (g *Generator) writeActions() error {
-	code, err := base64.StdEncoding.DecodeString(templates["action"])
+	code, err := templates.FS.ReadFile("client/action.templ")
 	if err != nil {
 		return err
 	}
@@ -107,7 +108,17 @@ func (g *Generator) writeActions() error {
 }
 
 func (g *Generator) writeBasics() error {
-	for _, t := range []string{"resultdetails", "requester", "ddl", "discover", "rpcoptions", "client", "initoptions", "logging", "doc"} {
+	dir, err := templates.FS.ReadDir("client")
+	if err != nil {
+		return err
+	}
+
+	for _, file := range dir {
+		t := strings.TrimSuffix(filepath.Base(file.Name()), filepath.Ext(file.Name()))
+		if t == "action" {
+			continue
+		}
+
 		outfile := path.Join(g.OutDir, t+".go")
 		logrus.Infof("Writing %s", outfile)
 		out, err := os.Create(outfile)
@@ -115,7 +126,7 @@ func (g *Generator) writeBasics() error {
 			return err
 		}
 
-		code, err := base64.StdEncoding.DecodeString(templates[t])
+		code, err := templates.FS.ReadFile(filepath.Join("client", file.Name()))
 		if err != nil {
 			return err
 		}

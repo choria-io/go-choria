@@ -1,0 +1,54 @@
+metadata :name        => "{{ .Metadata.Name }}",
+         :description => "{{ .Metadata.Description }}",
+         :author      => "{{ .Metadata.Author }}",
+         :license     => "{{ .Metadata.License }}",
+         :version     => "{{ .Metadata.Version }}",
+         :url         => "{{ .Metadata.URL }}",
+{{- if .Metadata.Provider }}
+         :provider    => "{{ .Metadata.Provider }}",
+{{- end }}
+         :timeout     => {{ .Metadata.Timeout }}
+
+{{ range $aname, $action := .Actions }}
+action "{{ $action.Name }}", :description => "{{ $action.Description }}" do
+  display :{{ $action.Display }}
+{{ range $iname, $input := $action.Input }}
+  input :{{ $iname }},
+        :prompt      => "{{ $input.Prompt }}",
+        :description => "{{ $input.Description }}",
+        :type        => :{{ $input.Type }},
+{{- if $input.Default }}
+        :default     => {{ $input.Default | goval2rubyval $input.Type }},
+{{- end -}}
+{{- if eq $input.Type "string" }}
+        :validation  => {{ $input.Validation | validatorStr }},
+        :maxlength   => {{ $input.MaxLength }},
+{{- end }}
+{{- if eq $input.Type "list" }}
+        :list        => {{ $input.Enum | enum2list }},
+{{- end }}
+        :optional    => {{ $input.Optional }}
+
+{{ end }}
+
+{{ range $oname, $output := $action.Output }}
+  output :{{ $oname }},
+         :description => "{{ $output.Description }}",
+{{- if $output.Default }}
+         :default     => {{ $output.Default | goval2rubyval $output.Type }},
+{{- end }}
+{{- if ne $output.Type "" }}
+         :type        => "{{ $output.Type }}",
+{{- end }}
+         :display_as  => "{{ $output.DisplayAs }}"
+{{ end }}
+
+{{- if $action.Aggregation }}
+  summarize do
+{{- range $aname, $aggregate := $action.Aggregation }}
+    aggregate {{ $aggregate.Function }}({{ fmtAggregateArguments $aggregate.OutputName $aggregate.Arguments }})
+{{- end }}
+  end
+{{- end }}
+end
+{{ end }}

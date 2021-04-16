@@ -1,15 +1,14 @@
 package plugin
 
 import (
-	"bufio"
-	"bytes"
 	"fmt"
 	"io/ioutil"
 	"sort"
-	"text/template"
 	"time"
 
 	"github.com/ghodss/yaml"
+
+	"github.com/choria-io/go-choria/internal/templates"
 )
 
 // Type are types of choria plugin
@@ -127,13 +126,10 @@ func (p *Plugin) Now() string {
 
 // Loader is the loader go code
 func (p *Plugin) Loader() (string, error) {
-	templ := template.Must(template.New("provider").Parse(ftempl))
+	out, err := templates.ExecuteTemplate("plugin/plugin.templ", p, nil)
+	if err != nil {
+		return "", err
+	}
 
-	var b bytes.Buffer
-	writer := bufio.NewWriter(&b)
-
-	err := templ.Execute(writer, p)
-	writer.Flush()
-
-	return b.String(), err
+	return string(out), err
 }

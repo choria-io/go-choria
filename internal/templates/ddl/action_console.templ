@@ -1,0 +1,19 @@
+{{.Description}}
+{{- if ne .Display "failed" }}
+
+Displaying {{.Display | Bold}} results
+{{- end }}
+{{- if .Input }}
+
+Inputs:
+        {{- range $key, $value := .Input }}
+  {{ Bold $key }}:
+{{RenderConsole $value 4}}
+        {{- end }}
+{{- end}}
+
+Outputs:
+{{ range $key, $value := .Output }}
+  {{ Bold $key }}:
+{{RenderConsole $value 4}}
+{{- end }}

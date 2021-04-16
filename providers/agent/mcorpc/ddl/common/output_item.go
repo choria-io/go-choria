@@ -1,5 +1,9 @@
 package common
 
+import (
+	"github.com/choria-io/go-choria/internal/templates"
+)
+
 var (
 	OutputTypeArray   = "Array"
 	OutputTypeBoolean = "boolean"
@@ -18,4 +22,8 @@ type OutputItem struct {
 	DisplayAs   string      `json:"display_as"`
 	Default     interface{} `json:"default,omitempty"`
 	Type        string      `json:"type,omitempty"`
+}
+
+func (i *OutputItem) RenderConsole() ([]byte, error) {
+	return templates.ExecuteTemplate("ddl/output_item_console.templ", i, nil)
 }
