@@ -1,0 +1,18 @@
+{{Title .Metadata.Name}} Data Provider
+
+{{.Metadata.Description}}
+
+Plugin Metadata:
+
+   Version: Version {{.Metadata.Version}} by {{.Metadata.Author}}
+       URL: {{.Metadata.URL}}
+   License: {{.Metadata.License}}
+   Timeout: {{.Metadata.Timeout}}
+{{ if .Query }}
+Data Query:
+{{RenderConsole .Query 2}}{{- end }}
+Outputs:
+{{ range $key, $value := .Output }}
+  {{ Bold $key }}:
+{{RenderConsole $value 4}}
+{{- end }}

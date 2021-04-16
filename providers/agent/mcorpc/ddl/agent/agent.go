@@ -7,10 +7,12 @@ import (
 	"io/ioutil"
 	"math"
 	"reflect"
+	"sort"
 	"strings"
 	"text/template"
 	"time"
 
+	"github.com/choria-io/go-choria/internal/templates"
 	common "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 	"github.com/choria-io/go-choria/server/agents"
 )
@@ -43,6 +45,39 @@ func New(file string) (*DDL, error) {
 	ddl.normalize()
 
 	return ddl, nil
+}
+
+// FindAll loads all plugins from the libdirs and optionally the cache
+func FindAll(libdirs []string, cached bool) ([]*DDL, error) {
+	var found []*DDL
+	var err error
+	var ddl *DDL
+
+	EachFile(libdirs, func(n string, f string) bool {
+		ddl, err = New(f)
+		if err != nil {
+			return false
+		}
+
+		found = append(found, ddl)
+
+		return true
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	if cached {
+		for _, name := range CachedDDLs() {
+			ddl, err = CachedDDL(name)
+			if err != nil {
+				return nil, err
+			}
+			found = append(found, ddl)
+		}
+	}
+
+	return found, nil
 }
 
 // Find looks in the supplied libdirs for a DDL file for a specific agent
@@ -94,6 +129,8 @@ func (d *DDL) ActionNames() []string {
 			actions = append(actions, act.Name)
 		}
 	}
+
+	sort.Strings(actions)
 
 	return actions
 }
@@ -269,63 +306,12 @@ func (d *DDL) ToRuby() (string, error) {
 		},
 	}
 
-	tpl := template.Must(template.New(d.Metadata.Name).Funcs(funcs).Parse(rubyDDLTemplate))
-	err := tpl.Execute(&out, d)
+	rubyDDLTemplate, err := templates.FS.ReadFile("ddl/agent_ruby_ddl.templ")
+	if err != nil {
+		return "", err
+	}
+
+	tpl := template.Must(template.New(d.Metadata.Name).Funcs(funcs).Parse(string(rubyDDLTemplate)))
+	err = tpl.Execute(&out, d)
 	return out.String(), err
 }
-
-var rubyDDLTemplate = `metadata :name        => "{{ .Metadata.Name }}",
-         :description => "{{ .Metadata.Description }}",
-         :author      => "{{ .Metadata.Author }}",
-         :license     => "{{ .Metadata.License }}",
-         :version     => "{{ .Metadata.Version }}",
-         :url         => "{{ .Metadata.URL }}",
-{{- if .Metadata.Provider }}
-         :provider    => "{{ .Metadata.Provider }}",
-{{- end }}
-         :timeout     => {{ .Metadata.Timeout }}
-
-{{ range $aname, $action := .Actions }}
-action "{{ $action.Name }}", :description => "{{ $action.Description }}" do
-  display :{{ $action.Display }}
-{{ range $iname, $input := $action.Input }}
-  input :{{ $iname }},
-        :prompt      => "{{ $input.Prompt }}",
-        :description => "{{ $input.Description }}",
-        :type        => :{{ $input.Type }},
-{{- if $input.Default }}
-        :default     => {{ $input.Default | goval2rubyval $input.Type }},
-{{- end -}}
-{{- if eq $input.Type "string" }}
-        :validation  => {{ $input.Validation | validatorStr }},
-        :maxlength   => {{ $input.MaxLength }},
-{{- end }}
-{{- if eq $input.Type "list" }}
-        :list        => {{ $input.Enum | enum2list }},
-{{- end }}
-        :optional    => {{ $input.Optional }}
-
-{{ end }}
-
-{{ range $oname, $output := $action.Output }}
-  output :{{ $oname }},
-         :description => "{{ $output.Description }}",
-{{- if $output.Default }}
-         :default     => {{ $output.Default | goval2rubyval $output.Type }},
-{{- end }}
-{{- if ne $output.Type "" }}
-         :type        => "{{ $output.Type }}",
-{{- end }}
-         :display_as  => "{{ $output.DisplayAs }}"
-{{ end }}
-
-{{- if $action.Aggregation }}
-  summarize do
-{{- range $aname, $aggregate := $action.Aggregation }}
-    aggregate {{ $aggregate.Function }}({{ fmtAggregateArguments $aggregate.OutputName $aggregate.Arguments }})
-{{- end }}
-  end
-{{- end }}
-end
-{{ end }}
-`

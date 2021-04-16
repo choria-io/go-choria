@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
@@ -127,6 +128,18 @@ func LongestString(list []string, max int) int {
 	}
 
 	return longest
+}
+
+// ParagraphPadding pads paragraph with padding spaces
+func ParagraphPadding(paragraph string, padding int) string {
+	parts := strings.Split(paragraph, "\n")
+	ps := fmt.Sprintf("%"+strconv.Itoa(padding)+"s", " ")
+
+	for i := range parts {
+		parts[i] = ps + parts[i]
+	}
+
+	return strings.Join(parts, "\n")
 }
 
 // SliceGroups takes a slice of words and make new chunks of given size
@@ -267,6 +280,17 @@ func DumpMapStrings(data map[string]string, leftPad int) {
 	IterateStringsMap(data, func(k, v string) {
 		fmt.Printf("%s: %s\n", strings.Repeat(" ", longest-len(k))+k, v)
 	})
+}
+
+// DumpJSONIndent dumps data to stdout as indented JSON
+func DumpJSONIndent(data interface{}) error {
+	j, err := json.MarshalIndent(data, "", "  ")
+	if err != nil {
+		return err
+	}
+	fmt.Println(string(j))
+
+	return nil
 }
 
 // ParseDuration is an extended version of go duration parsing that

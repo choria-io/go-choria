@@ -1,0 +1,22 @@
+{{Title .Metadata.Name}} Agent
+
+{{.Metadata.Description}}
+
+Plugin Metadata:
+
+   Version: Version {{.Metadata.Version}} by {{.Metadata.Author}}
+       URL: {{.Metadata.URL}}
+   License: {{.Metadata.License}}
+   Timeout: {{.Metadata.Timeout}}
+{{ if .Metadata.Provider }}
+  Provider: {{.Metadata.Provider}}
+{{- end }}
+
+Available Action: {{ .ActionNames | StringsJoin }}
+
+Actions:
+{{ range $action := .Actions }}
+  {{ Bold $action.Name }}:
+
+{{RenderConsole $action 4}}
+{{- end }}

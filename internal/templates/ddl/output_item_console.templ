@@ -1,0 +1,12 @@
+
+║ Description: {{.Description}}
+║  Display As: {{.DisplayAs}}
+{{- if .Type }}
+║        Type: {{.Type}}
+{{- else }}
+║        Type: undefined
+{{- end }}
+{{- if .Default }}
+║     Default: {{.Default}}
+{{- end }}
+╙─
