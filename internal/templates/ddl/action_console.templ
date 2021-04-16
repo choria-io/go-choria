@@ -7,6 +7,7 @@ Displaying {{.Display | Bold}} results
 
 Inputs:
         {{- range $key, $value := .Input }}
+
   {{ Bold $key }}:
 {{RenderConsole $value 4}}
         {{- end }}
