@@ -1,7 +1,8 @@
 
-║ Description: {{.Description}}
+{{.Description}}
+
 ║      Prompt: {{.Prompt}}
-║        Type: {{.Type}}
+║        Type: {{.Type | Title}}
 ║    Optional: {{.Optional}}
 {{- if eq .Type "string" }}
 ║  Validation: {{.Validation}}

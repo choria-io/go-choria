@@ -1,17 +1,17 @@
-{{Title .Metadata.Name}} Data Provider
+{{Title .Metadata.Name}} Data Provider version {{.Metadata.Version}}
 
 {{.Metadata.Description}}
 
 Plugin Metadata:
 
-   Version: Version {{.Metadata.Version}} by {{.Metadata.Author}}
+    Author: {{.Metadata.Author}}
        URL: {{.Metadata.URL}}
    License: {{.Metadata.License}}
    Timeout: {{.Metadata.Timeout}}
 {{ if .Query }}
-Data Query:
+{{"Data Query:" | Bold}}
 {{RenderConsole .Query 2}}{{- end }}
-Outputs:
+{{"Outputs:" | Bold}}
 {{ range $key, $value := .Output }}
   {{ Bold $key }}:
 {{RenderConsole $value 4}}

@@ -1,10 +1,10 @@
-{{Title .Metadata.Name}} Agent
+{{Title .Metadata.Name}} Agent version {{.Metadata.Version}}
 
 {{.Metadata.Description}}
 
 Plugin Metadata:
 
-   Version: Version {{.Metadata.Version}} by {{.Metadata.Author}}
+    Author: {{.Metadata.Author}}
        URL: {{.Metadata.URL}}
    License: {{.Metadata.License}}
    Timeout: {{.Metadata.Timeout}}
@@ -14,9 +14,9 @@ Plugin Metadata:
 
 Available Action: {{ .ActionNames | StringsJoin }}
 
-Actions:
+{{ Bold "Actions:" }}
 {{ range $action := .Actions }}
-  {{ Bold $action.Name }}:
+  {{ Bold $action.Name }} {{ Bold "Action"}}:
 
 {{RenderConsole $action 4}}
 {{- end }}
