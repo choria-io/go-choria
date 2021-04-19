@@ -1,0 +1,26 @@
+# {{Title .Metadata.Name}} Agent version {{.Metadata.Version}}
+
+{{.Metadata.Description}}
+
+## Metadata
+
+|Item|Value|
+|----|-----|
+|Author|{{.Metadata.Author}}|
+|URL|[{{.Metadata.URL}}]({{.Metadata.URL}})|
+|License|{{.Metadata.License}}|
+|Timeout|{{.Metadata.Timeout}}|
+{{- if .Metadata.Provider }}
+|Provider|{{.Metadata.Provider}}|
+{{- end }}
+
+## Actions
+
+|Action|Description|
+|------|-----------|
+{{- range $action := .Actions }}
+|{{$action.Name}}|{{$action.Description}}|{{- end }}
+{{range $action := .Actions }}
+### *{{$action.Name}}* Action
+
+{{ RenderMarkdown $action }}{{- end }}

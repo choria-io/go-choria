@@ -11,7 +11,7 @@ import (
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/confkey"
-	"github.com/choria-io/go-choria/internal/templates"
+	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/choria-io/go-choria/internal/util"
 )
 
@@ -64,7 +64,7 @@ func main() {
 		},
 	}
 
-	templ, err := templates.FS.ReadFile("misc/config_doc.templ")
+	templ, err := fs.FS.ReadFile("misc/config_doc.templ")
 	if err != nil {
 		return
 	}

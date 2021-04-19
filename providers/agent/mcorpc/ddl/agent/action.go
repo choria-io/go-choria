@@ -7,7 +7,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/choria-io/go-choria/internal/templates"
+	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 )
 
@@ -26,7 +26,11 @@ type Action struct {
 }
 
 func (a *Action) RenderConsole() ([]byte, error) {
-	return templates.ExecuteTemplate("ddl/action_console.templ", a, nil)
+	return fs.ExecuteTemplate("ddl/console/action.templ", a, nil)
+}
+
+func (a *Action) RenderMarkdown() ([]byte, error) {
+	return fs.ExecuteTemplate("ddl/markdown/action.templ", a, nil)
 }
 
 // GetInput gets a named input

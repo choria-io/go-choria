@@ -6,9 +6,8 @@ import (
 	"sort"
 	"time"
 
+	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/ghodss/yaml"
-
-	"github.com/choria-io/go-choria/internal/templates"
 )
 
 // Type are types of choria plugin
@@ -126,7 +125,7 @@ func (p *Plugin) Now() string {
 
 // Loader is the loader go code
 func (p *Plugin) Loader() (string, error) {
-	out, err := templates.ExecuteTemplate("plugin/plugin.templ", p, nil)
+	out, err := fs.ExecuteTemplate("plugin/plugin.templ", p, nil)
 	if err != nil {
 		return "", err
 	}

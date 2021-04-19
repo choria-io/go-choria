@@ -1,0 +1,24 @@
+# {{Title .Metadata.Name}} Data Provider version {{.Metadata.Version}}
+
+{{.Metadata.Description}}
+
+## Metadata
+
+|Item|Value|
+|----|-----|
+|Author|{{.Metadata.Author}}|
+|URL|[{{.Metadata.URL}}]({{.Metadata.URL}})|
+|License|{{.Metadata.License}}|
+|Timeout|{{.Metadata.Timeout}}|
+
+{{if .Query }}
+## Query
+
+|Description|Prompt|Optional|Validation|Type|Default|
+|-----------|------|--------|----------|----|-------|
+{{ RenderMarkdown .Query}}{{- end}}
+## Outputs
+
+|Output|Description|Display As|Type|
+|------|-----------|----------|----|
+{{range $name, $output := .Output}}|{{$name}}|{{- RenderMarkdown $output}}{{- end}}
