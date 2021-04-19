@@ -32,6 +32,7 @@ func ExecuteTemplate(file string, i interface{}, funcMap template.FuncMap) ([]by
 		"StringsJoin":    stringsJoin,
 		"RenderConsole":  renderConsolePadded,
 		"RenderMarkdown": renderMarkdown,
+		"MarkdownEscape": markdownEscape,
 		"Bold":           boldString,
 		"Title":          strings.Title,
 	}
@@ -84,4 +85,14 @@ func renderConsolePadded(i consoleRender, padding int) string {
 	}
 
 	return util.ParagraphPadding(string(out), padding)
+}
+
+// use to escape within backticks, not for general full md escape, we mainly want to avoid escaping backticks and tables
+func markdownEscape(s string) string {
+	escaped := s
+	for _, c := range strings.Fields("` |") {
+		escaped = strings.Replace(escaped, c, "\\"+c, -1)
+	}
+
+	return escaped
 }
