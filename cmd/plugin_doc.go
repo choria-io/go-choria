@@ -16,6 +16,7 @@ import (
 type pDocCommand struct {
 	name     string
 	jsonOnly bool
+	markdown bool
 	command
 }
 
@@ -24,6 +25,7 @@ func (d *pDocCommand) Setup() (err error) {
 		d.cmd = tool.Cmd().Command("doc", "Inspect plugin documentation")
 		d.cmd.Arg("name", "Plugin to inspect").StringVar(&d.name)
 		d.cmd.Flag("json", "Produce JSON output only").Short('j').BoolVar(&d.jsonOnly)
+		d.cmd.Flag("markdown", "Produce Markdown output").Short('m').BoolVar(&d.markdown)
 	}
 
 	return nil
@@ -157,15 +159,24 @@ func (d *pDocCommand) renderAgent(agent string) error {
 		return fmt.Errorf("unknown agent %s", agent)
 	}
 
-	if d.jsonOnly {
+	switch {
+	case d.jsonOnly:
 		return util.DumpJSONIndent(ddl)
-	}
 
-	out, err := ddl.RenderConsole()
-	if err != nil {
-		return err
+	case d.markdown:
+		out, err := ddl.RenderMarkdown()
+		if err != nil {
+			return err
+		}
+		fmt.Print(string(out))
+
+	default:
+		out, err := ddl.RenderConsole()
+		if err != nil {
+			return err
+		}
+		fmt.Print(string(out))
 	}
-	fmt.Print(string(out))
 
 	return nil
 }
@@ -181,15 +192,25 @@ func (d *pDocCommand) renderData(data string) error {
 		return fmt.Errorf("unknown data provider %s", data)
 	}
 
-	if d.jsonOnly {
+	switch {
+	case d.jsonOnly:
 		return util.DumpJSONIndent(ddl)
-	}
 
-	out, err := ddl.RenderConsole()
-	if err != nil {
-		return err
+	case d.markdown:
+		out, err := ddl.RenderMarkdown()
+		if err != nil {
+			return err
+		}
+		fmt.Print(string(out))
+
+	default:
+		out, err := ddl.RenderConsole()
+		if err != nil {
+			return err
+		}
+		fmt.Print(string(out))
+
 	}
-	fmt.Print(string(out))
 
 	return nil
 }

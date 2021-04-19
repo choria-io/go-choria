@@ -1,8 +1,6 @@
 package common
 
-import (
-	"github.com/choria-io/go-choria/internal/templates"
-)
+import "github.com/choria-io/go-choria/internal/fs"
 
 var (
 	OutputTypeArray   = "Array"
@@ -25,5 +23,9 @@ type OutputItem struct {
 }
 
 func (i *OutputItem) RenderConsole() ([]byte, error) {
-	return templates.ExecuteTemplate("ddl/output_item_console.templ", i, nil)
+	return fs.ExecuteTemplate("ddl/console/output_item.templ", i, nil)
+}
+
+func (i *OutputItem) RenderMarkdown() ([]byte, error) {
+	return fs.ExecuteTemplate("ddl/markdown/output_item.templ", i, nil)
 }

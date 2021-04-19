@@ -9,7 +9,7 @@ import (
 	"strings"
 	"text/template"
 
-	"github.com/choria-io/go-choria/internal/templates"
+	"github.com/choria-io/go-choria/internal/fs"
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 
@@ -46,7 +46,7 @@ func (a *agent) ActionRequiredInputs(act string) map[string]*common.InputItem {
 }
 
 func (g *Generator) writeActions() error {
-	code, err := templates.FS.ReadFile("client/action.templ")
+	code, err := fs.FS.ReadFile("client/action.templ")
 	if err != nil {
 		return err
 	}
@@ -108,7 +108,7 @@ func (g *Generator) writeActions() error {
 }
 
 func (g *Generator) writeBasics() error {
-	dir, err := templates.FS.ReadDir("client")
+	dir, err := fs.FS.ReadDir("client")
 	if err != nil {
 		return err
 	}
@@ -126,7 +126,7 @@ func (g *Generator) writeBasics() error {
 			return err
 		}
 
-		code, err := templates.FS.ReadFile(filepath.Join("client", file.Name()))
+		code, err := fs.FS.ReadFile(filepath.Join("client", file.Name()))
 		if err != nil {
 			return err
 		}

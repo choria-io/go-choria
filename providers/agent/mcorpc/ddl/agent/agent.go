@@ -12,8 +12,8 @@ import (
 	"text/template"
 	"time"
 
-	"github.com/choria-io/go-choria/internal/templates"
-	common "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
+	"github.com/choria-io/go-choria/internal/fs"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 	"github.com/choria-io/go-choria/server/agents"
 )
 
@@ -306,7 +306,7 @@ func (d *DDL) ToRuby() (string, error) {
 		},
 	}
 
-	rubyDDLTemplate, err := templates.FS.ReadFile("ddl/agent_ruby_ddl.templ")
+	rubyDDLTemplate, err := fs.FS.ReadFile("ddl/agent_ruby_ddl.templ")
 	if err != nil {
 		return "", err
 	}

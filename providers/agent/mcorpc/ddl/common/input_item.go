@@ -5,7 +5,7 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/choria-io/go-choria/internal/templates"
+	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/choria-io/go-choria/validator"
 	"github.com/choria-io/go-choria/validator/ipaddress"
 	"github.com/choria-io/go-choria/validator/ipv4"
@@ -39,7 +39,11 @@ type InputItem struct {
 }
 
 func (i *InputItem) RenderConsole() ([]byte, error) {
-	return templates.ExecuteTemplate("ddl/input_item_console.templ", i, nil)
+	return fs.ExecuteTemplate("ddl/console/input_item.templ", i, nil)
+}
+
+func (i *InputItem) RenderMarkdown() ([]byte, error) {
+	return fs.ExecuteTemplate("ddl/markdown/input_item.templ", i, nil)
 }
 
 // Required indicates if this item is required

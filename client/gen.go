@@ -15,7 +15,7 @@ var ddls map[string]string
 
 func generate(agent string, ddl string, pkg string) error {
 	if ddl == "" {
-		ddl = fmt.Sprintf("internal/templates/ddl/cache/agent/%s.json", agent)
+		ddl = fmt.Sprintf("internal/fs/ddl/cache/agent/%s.json", agent)
 	}
 
 	if pkg == "" {

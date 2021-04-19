@@ -1,4 +1,4 @@
-package templates
+package fs
 
 import (
 	"bytes"
@@ -21,14 +21,19 @@ type consoleRender interface {
 	RenderConsole() ([]byte, error)
 }
 
+type mdRender interface {
+	RenderMarkdown() ([]byte, error)
+}
+
 func ExecuteTemplate(file string, i interface{}, funcMap template.FuncMap) ([]byte, error) {
 	buf := bytes.NewBuffer([]byte{})
 	t := template.New(file)
 	funcs := map[string]interface{}{
-		"StringsJoin":   stringsJoin,
-		"RenderConsole": renderConsolePadded,
-		"Bold":          boldString,
-		"Title":         strings.Title,
+		"StringsJoin":    stringsJoin,
+		"RenderConsole":  renderConsolePadded,
+		"RenderMarkdown": renderMarkdown,
+		"Bold":           boldString,
+		"Title":          strings.Title,
 	}
 
 	for k, v := range funcMap {
@@ -61,6 +66,15 @@ func stringsJoin(s []string) string {
 
 func boldString(s string) string {
 	return color.New(color.Bold).Sprintf(s)
+}
+
+func renderMarkdown(i mdRender) string {
+	out, err := i.RenderMarkdown()
+	if err != nil {
+		panic(err)
+	}
+
+	return string(out)
 }
 
 func renderConsolePadded(i consoleRender, padding int) string {

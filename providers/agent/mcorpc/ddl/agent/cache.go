@@ -5,11 +5,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/choria-io/go-choria/internal/templates"
+	"github.com/choria-io/go-choria/internal/fs"
 )
 
 func CachedDDLs() []string {
-	dir, err := templates.FS.ReadDir("ddl/cache/agent")
+	dir, err := fs.FS.ReadDir("ddl/cache/agent")
 	if err != nil {
 		return nil
 	}
@@ -33,7 +33,7 @@ func CachedDDLs() []string {
 
 // CachedDDLBytes is the raw JSON encoded DDL file for the agent
 func CachedDDLBytes(agent string) ([]byte, error) {
-	return templates.FS.ReadFile("ddl/cache/agent/" + agent + ".json")
+	return fs.FS.ReadFile("ddl/cache/agent/" + agent + ".json")
 }
 
 // CachedDDL is a parsed and loaded DDL for the agent a
