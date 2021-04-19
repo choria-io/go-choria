@@ -5,7 +5,7 @@ rubymco: github.com/choria-io/go-choria/providers/agent/mcorpc/ruby
 externalmco: github.com/choria-io/go-choria/providers/agent/mcorpc/external
 
 # Agents
-choria_provision: github.com/choria-io/provisioning-agent/agent
+choria_provision: github.com/choria-io/go-choria/providers/agent/mcorpc/golang/provision
 scout: github.com/choria-io/go-choria/scout/agent/scout
 
 # Autonomous Agent Watchers
