@@ -9,6 +9,7 @@ require (
 	github.com/antonmedv/expr v1.8.9
 	github.com/awesome-gocui/gocui v0.6.0
 	github.com/brutella/hc v1.2.4
+	github.com/choria-io/go-updater v0.0.3 // indirect
 	github.com/choria-io/provisioning-agent v0.9.1-0.20210128191358-ac3a9cf4a41b
 	github.com/cloudevents/sdk-go v1.2.0
 	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
