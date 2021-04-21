@@ -4,6 +4,8 @@ Choria is a framework for building Control Planes, Orchestration Systems and Pro
 
 This is a daemon and related tools written in Go that hosts services, autonomous agents and generally provide a secure hosting environment for callable logic that you can interact with from code.
 
+Additionally, this is the foundational technology for a monitoring pipeline called Choria Scout.
+
 More information about the project can be found on [Choria.IO](https://choria.io).
 
 [![CodeFactor](https://www.codefactor.io/repository/github/choria-io/go-choria/badge)](https://www.codefactor.io/repository/github/choria-io/go-choria) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3558/badge)](https://bestpractices.coreinfrastructure.org/projects/3558)
@@ -16,11 +18,21 @@ These will connect to the middleware using your usual client configuration.
 
 |Command|Description|
 |-------|-----------|
+|`choria discover`|Do network discoveries using the discovery subsystem|
+|`choria enroll`|Enroll with the configured security system|
+|`choria facts`|Report on fleet wide values of certain facts|
+|`choria inventory`|View the metadata of a specific host|
 |`choria ping`|Basic network testing utility, like `mco ping` but fast and with extra options|
-|`choria req`|Generic RPC request tool to interact with remove RPC Agents|
+|`choria plugin doc`|View auto generated documentation for agents, data providers and more|
+|`choria plugin generate`|Generates various related files like DDLs|
+|`choria req`|Generic client for RPC agents hosted on the Choria network|
+|`choria scout maintenance`|Sets Scout checks to maintenance state|
+|`choria scout resume`|Resume Scout checks after being in maintenance mode|
+|`choria scout trigger`|Trigger Scout checks|
+|`choria scout watch`|Watch live events from the Scout system|
+|`choria sout status`|View the Scout status of a particular node|
 |`choria tool config`|To view details about known configuration options|
 |`choria tool event`|Listens for Choria life cycle events emitted by various daemons and related tools|
-|`choria tool generate`|Generates various related files like DDLs|
 |`choria tool jwt`|Generates JWT tokens used to configure automatic provisioning|
 |`choria tool provision`|Tool to test provision target discovery|
 |`choria tool pub`|Publishes to any middleware topic|
@@ -29,7 +41,7 @@ These will connect to the middleware using your usual client configuration.
 
 # Configuration
 
-This code base represents the current recommended Choria Broker and Federation and will soon also be the recommended Server component.
+This code base represents the Choria Broker, Federation Broker, Adapters, Streaming Server and Server components.
 Follow [choria.io](https://choria.io) for the official means of installing and configuring it.
 
 Sample configs are shown, subject to change
@@ -234,9 +246,7 @@ plugin.choria.adapter.discovery.ingest.workers = 10 # default
 
 ## Choria Server
 
-This is a replacement `mcollectived`, that can host MCollective agents written in ruby along with a host of other features, notable absence:
-
-  * Compound filters do not work at all - those with -S
+This is a replacement `mcollectived`, that can host MCollective agents written in ruby along with a host of other features.
 
 You run it with `choria server run --config server.cfg`
 
@@ -322,28 +332,18 @@ Your agent must implement the `plugin.Pluggable` interface.
 
 ### Provisioning
 
-Choria supports a auto provisioning flow where should it start with a configuration that enables provisioning - or optionally one that does not specifically disable it - it will connect to a broker that gets set during compile time.
+Choria supports an auto provisioning flow where should it start with a configuration that enables provisioning - or optionally one that does not specifically disable it - it will connect to a broker that gets set during compile time.
 
-Provisioning is not enabled - or configurable - in the default shipped binaries, as an advanced feature this is reserved for people who build their own custom setups.
-
-The Choria Server in provisioning mode will be configured with:
-
- * Federation is disabled
- * The `provisioning` collective is the only active one and the main collective
- * Registration is enabled with a 120 second interval
- * Registration splay is off
- * File registration gets published to `choria.provisioning_data`
- * File registration data source set to what is in `build.ProvisionRegistrationData`
- * The default [provisioning-agent](https://github.com/choria-io/provisioning-agent) unless `build.ProvisionAgent` is `"false"`
- * Security enabled - requiring SSL certificates like those from Puppet - unless `build.ProvisionSecure` is `"false"`
+Provisioning is supported but by disabled in the shipped binaries and can be enabled using a provisioning JWT file.
 
 Please see the documentation in the [provisioning-agent](https://github.com/choria-io/provisioning-agent) repository for how to enable and use this feature.
 
 ### Compiling in custom agent providers
+
 Agent Providers allow entirely new ways of writing agents to be created.  An example is the one that runs old mcollective ruby agents
 within a choria instance.
 
-During your CI or whatever you have to `glide get` the repo with your agent so it's available during compile, then create a file `packager/user_plugins.yaml`:
+During your CI or whatever you have to `go get` the repo with your agent, so it's available during compile, then create a file `packager/user_plugins.yaml`:
 
 ```yaml
 ---
