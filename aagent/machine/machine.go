@@ -69,6 +69,9 @@ type Transition struct {
 
 	// Destination is the name of the target state this event will move the machine into
 	Destination string `json:"destination" yaml:"destination"`
+
+	// Description is a human friendly description of the purpose of this transition
+	Description string `json:"description" yaml:"description"`
 }
 
 // WatcherManager manages watchers
