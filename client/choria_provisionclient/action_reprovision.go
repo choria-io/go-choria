@@ -91,7 +91,7 @@ func (d *ReprovisionOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Reprovision action into target
+// ParseReprovisionOutput parses the result value from the Reprovision action into target
 func (d *ReprovisionOutput) ParseReprovisionOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

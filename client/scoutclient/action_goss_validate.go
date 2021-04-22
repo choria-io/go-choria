@@ -91,7 +91,7 @@ func (d *GossValidateOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the GossValidate action into target
+// ParseGossValidateOutput parses the result value from the GossValidate action into target
 func (d *GossValidateOutput) ParseGossValidateOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

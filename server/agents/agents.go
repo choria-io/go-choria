@@ -70,6 +70,7 @@ type Metadata struct {
 	URL         string `json:"url"`
 	Description string `json:"description"`
 	Provider    string `json:"provider,omitempty"`
+	Service     bool   `json:"service,omitempty"`
 }
 
 // Manager manages agents, handles registration, dispatches requests etc
@@ -178,11 +179,21 @@ func (a *Manager) subscribeAgent(ctx context.Context, name string, agent Agent, 
 	a.subs[name] = []string{}
 
 	for _, collective := range a.fw.Config.Collectives {
-		target := conn.AgentBroadcastTarget(collective, name)
+		var target string
+		group := ""
+
+		if agent.Metadata().Service {
+			target = conn.ServiceBroadcastTarget(collective, name)
+			group = name
+			a.log.Infof("Subscribing service agent %s to %s in group %s", name, target, group)
+		} else {
+			target = conn.AgentBroadcastTarget(collective, name)
+			a.log.Infof("Subscribing agent %s to %s", name, target)
+		}
+
 		subname := fmt.Sprintf("%s.%s", collective, name)
 
-		a.log.Infof("Subscribing agent %s to %s", name, target)
-		err := conn.QueueSubscribe(ctx, subname, target, "", a.requests)
+		err := conn.QueueSubscribe(ctx, subname, target, group, a.requests)
 		if err != nil {
 			a.log.Errorf("could not subscribe agent %s to %s, rewinding all subscriptions for this agent", name, target)
 			for _, sub := range a.subs[name] {

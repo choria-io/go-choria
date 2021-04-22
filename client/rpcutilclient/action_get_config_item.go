@@ -91,7 +91,7 @@ func (d *GetConfigItemOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the GetConfigItem action into target
+// ParseGetConfigItemOutput parses the result value from the GetConfigItem action into target
 func (d *GetConfigItemOutput) ParseGetConfigItemOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

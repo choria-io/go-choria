@@ -91,7 +91,7 @@ func (d *ResumeOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Resume action into target
+// ParseResumeOutput parses the result value from the Resume action into target
 func (d *ResumeOutput) ParseResumeOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

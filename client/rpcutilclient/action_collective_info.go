@@ -91,7 +91,7 @@ func (d *CollectiveInfoOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the CollectiveInfo action into target
+// ParseCollectiveInfoOutput parses the result value from the CollectiveInfo action into target
 func (d *CollectiveInfoOutput) ParseCollectiveInfoOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

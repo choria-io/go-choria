@@ -91,7 +91,7 @@ func (d *DaemonStatsOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the DaemonStats action into target
+// ParseDaemonStatsOutput parses the result value from the DaemonStats action into target
 func (d *DaemonStatsOutput) ParseDaemonStatsOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

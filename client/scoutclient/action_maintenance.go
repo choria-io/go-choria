@@ -91,7 +91,7 @@ func (d *MaintenanceOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Maintenance action into target
+// ParseMaintenanceOutput parses the result value from the Maintenance action into target
 func (d *MaintenanceOutput) ParseMaintenanceOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

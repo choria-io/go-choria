@@ -91,7 +91,7 @@ func (d *TriggerOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Trigger action into target
+// ParseTriggerOutput parses the result value from the Trigger action into target
 func (d *TriggerOutput) ParseTriggerOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

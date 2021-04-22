@@ -91,7 +91,7 @@ func (d *GencsrOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Gencsr action into target
+// ParseGencsrOutput parses the result value from the Gencsr action into target
 func (d *GencsrOutput) ParseGencsrOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

@@ -2,17 +2,17 @@ package agents
 
 import (
 	"context"
-	json "encoding/json"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"os"
 	"sync"
 	"testing"
-	time "time"
+	"time"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 
 	"github.com/choria-io/go-choria/choria"
 	. "github.com/onsi/ginkgo"
@@ -145,6 +145,17 @@ var _ = Describe("Server/Agents", func() {
 			conn.EXPECT().QueueSubscribe(gomock.Any(), "cone.stub", "cone.stub", "", gomock.Any()).Return(nil).Times(1)
 			conn.EXPECT().QueueSubscribe(gomock.Any(), "ctwo.stub", "ctwo.stub", "", gomock.Any()).Return(nil).Times(1)
 
+			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
+			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("should support service agents", func() {
+			agent.Metadata().Service = true
+			conn.EXPECT().ServiceBroadcastTarget("cone", "stub").Return("cone.stub")
+			conn.EXPECT().ServiceBroadcastTarget("ctwo", "stub").Return("ctwo.stub")
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "cone.stub", "cone.stub", "stub", gomock.Any()).Return(nil).Times(1)
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "ctwo.stub", "ctwo.stub", "stub", gomock.Any()).Return(nil).Times(1)
 			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())

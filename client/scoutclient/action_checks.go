@@ -91,7 +91,7 @@ func (d *ChecksOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Checks action into target
+// ParseChecksOutput parses the result value from the Checks action into target
 func (d *ChecksOutput) ParseChecksOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

@@ -240,6 +240,7 @@ var _ = Describe("Network Broker/IPAuth", func() {
 			Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 				Allow: []string{
 					"*.broadcast.agent.>",
+					"*.broadcast.service.>",
 					"*.node.>",
 					"choria.federation.*.federation",
 				},
@@ -255,6 +256,7 @@ var _ = Describe("Network Broker/IPAuth", func() {
 			Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 				Allow: []string{
 					"*.broadcast.agent.>",
+					"*.broadcast.service.>",
 					"*.node.>",
 					"choria.federation.*.federation",
 				},
@@ -272,6 +274,7 @@ var _ = Describe("Network Broker/IPAuth", func() {
 
 			Expect(user.Permissions.Publish.Deny).To(Equal([]string{
 				"*.broadcast.agent.>",
+				"*.broadcast.service.>",
 				"*.node.>",
 				"choria.federation.*.federation",
 			}))

@@ -255,8 +255,8 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 	dctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	if len(r.opts.Targets) == 0 {
-		err := r.discover(ctx)
+	if len(r.opts.Targets) == 0 && r.opts.RequestType != choria.ServiceRequestMessageType {
+		err = r.discover(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("discovery failed: %s", err)
 		}
@@ -280,39 +280,64 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 
 	ctr := 0
 
-	// the client is always batched, when batched mode is not request the size of
-	// the batch matches the size of the total targets and during setupMessage()
-	// an appropriate connection will be made
-	err = InGroups(r.opts.Targets, r.opts.BatchSize, func(nodes []string) error {
+	r.opts.totalStats.SetAction(action)
+	r.opts.totalStats.SetAgent(r.agent)
+
+	switch {
+	case r.opts.RequestType == choria.ServiceRequestMessageType:
 		r.opts.stats = NewStats()
-		r.opts.stats.SetDiscoveredNodes(nodes)
-		msg.DiscoveredHosts = nodes
 
-		r.opts.stats.Start()
-		defer r.opts.totalStats.Merge(r.opts.stats)
-		defer r.opts.stats.End()
-
-		if ctr > 0 {
-			err := InterruptableSleep(dctx, r.opts.BatchSleep)
-			if err != nil {
-				return err
+		var responded []string
+		handler := r.opts.Handler
+		r.opts.Handler = func(r protocol.Reply, rpc *RPCReply) {
+			responded = append(responded, r.SenderID())
+			if handler != nil {
+				handler(r, rpc)
 			}
 		}
 
-		r.log.Debugf("Performing batched request %d for %d/%d nodes", ctr, len(nodes), len(r.opts.Targets))
-
 		err = r.request(dctx, msg, cl)
-		if err != nil {
-			return err
+		if len(responded) > 0 {
+			r.opts.stats.SetDiscoveredNodes(responded)
+			r.opts.totalStats.SetDiscoveredNodes(responded)
+			r.opts.stats.RecordReceived(responded[0])
 		}
 
-		ctr++
+		r.opts.stats.End()
+		r.opts.totalStats.Merge(r.opts.stats)
 
-		return nil
-	})
+	default:
+		// the client is always batched, when batched mode is not request the size of
+		// the batch matches the size of the total targets and during setupMessage()
+		// an appropriate connection will be made
+		err = InGroups(r.opts.Targets, r.opts.BatchSize, func(nodes []string) error {
+			r.opts.stats = NewStats()
+			r.opts.stats.SetDiscoveredNodes(nodes)
+			msg.DiscoveredHosts = nodes
 
-	r.opts.totalStats.SetAction(action)
-	r.opts.totalStats.SetAgent(r.agent)
+			r.opts.stats.Start()
+			defer r.opts.totalStats.Merge(r.opts.stats)
+			defer r.opts.stats.End()
+
+			if ctr > 0 {
+				err := InterruptableSleep(dctx, r.opts.BatchSleep)
+				if err != nil {
+					return err
+				}
+			}
+
+			r.log.Debugf("Performing batched request %d for %d/%d nodes", ctr, len(nodes), len(r.opts.Targets))
+
+			err = r.request(dctx, msg, cl)
+			if err != nil {
+				return err
+			}
+
+			ctr++
+
+			return nil
+		})
+	}
 
 	return &RequestOptions{totalStats: r.opts.totalStats}, err
 }
@@ -337,6 +362,7 @@ func (r *RPC) discover(ctx context.Context) error {
 	var n []string
 	var err error
 
+	// TODO: other discovery options? honestly the magical discovery here should just go
 	switch r.dm {
 	case "choria":
 		pdb := puppetdb.New(r.fw)
@@ -376,9 +402,15 @@ func (r *RPC) setupMessage(ctx context.Context, action string, payload interface
 		return nil, nil, fmt.Errorf("could not encode request: %s", err)
 	}
 
-	r.log.Debugf("Request: %s", string(rpcp))
+	msgType := choria.RequestMessageType
+	if r.ddl.Metadata.Service {
+		msgType = choria.ServiceRequestMessageType
+		r.opts.Workers = 1
+	}
 
-	msg, err = r.fw.NewMessage(string(rpcp), r.agent, r.cfg.MainCollective, "request", nil)
+	r.log.Debugf("%s: %s", msgType, string(rpcp))
+
+	msg, err = r.fw.NewMessage(string(rpcp), r.agent, r.cfg.MainCollective, msgType, nil)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -481,7 +513,10 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 			return
 		}
 
-		r.opts.stats.RecordReceived(reply.SenderID())
+		// defer because we do not do any discovery so recording the response here would mark it as unknown
+		if r.opts.RequestType != choria.ServiceRequestMessageType {
+			r.opts.stats.RecordReceived(reply.SenderID())
+		}
 
 		rpcreply, err := ParseReplyData([]byte(reply.Message()))
 		if err != nil {

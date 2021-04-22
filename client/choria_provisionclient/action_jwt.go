@@ -91,7 +91,7 @@ func (d *JwtOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Jwt action into target
+// ParseJwtOutput parses the result value from the Jwt action into target
 func (d *JwtOutput) ParseJwtOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

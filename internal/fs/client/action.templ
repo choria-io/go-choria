@@ -88,7 +88,7 @@ func (d *{{ .ActionName | SnakeToCamel }}Output) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the {{ .ActionName | SnakeToCamel }} action into target
+// Parse{{ .ActionName | SnakeToCamel }}Output parses the result value from the {{ .ActionName | SnakeToCamel }} action into target
 func (d *{{ $.ActionName | SnakeToCamel }}Output) Parse{{ .ActionName | SnakeToCamel }}Output(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

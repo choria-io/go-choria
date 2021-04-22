@@ -91,7 +91,7 @@ func (d *ReleaseUpdateOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the ReleaseUpdate action into target
+// ParseReleaseUpdateOutput parses the result value from the ReleaseUpdate action into target
 func (d *ReleaseUpdateOutput) ParseReleaseUpdateOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {
