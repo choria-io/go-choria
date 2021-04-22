@@ -11,7 +11,9 @@ Plugin Metadata:
 {{- if .Metadata.Provider }}
   Provider: {{.Metadata.Provider}}
 {{- end }}
-
+{{- if .Metadata.Service }}
+   Service: true
+{{- end }}
 Available Action: {{ .ActionNames | StringsJoin }}
 
 {{ Bold "Actions:" }}

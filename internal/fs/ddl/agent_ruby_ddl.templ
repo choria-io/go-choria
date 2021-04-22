@@ -7,6 +7,9 @@ metadata :name        => "{{ .Metadata.Name }}",
 {{- if .Metadata.Provider }}
          :provider    => "{{ .Metadata.Provider }}",
 {{- end }}
+{{- if .Metadata.Service }}
+         :service     => true,
+{{- end }}
          :timeout     => {{ .Metadata.Timeout }}
 
 {{ range $aname, $action := .Actions }}
