@@ -91,7 +91,7 @@ func (d *GetFactsOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the GetFacts action into target
+// ParseGetFactsOutput parses the result value from the GetFacts action into target
 func (d *GetFactsOutput) ParseGetFactsOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

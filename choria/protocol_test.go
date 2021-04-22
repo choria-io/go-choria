@@ -19,13 +19,13 @@ var _ = Describe("Protocol", func() {
 			c, err = NewWithConfig(cfg)
 			Expect(err).ToNot(HaveOccurred())
 
-			rm, err := NewMessage("ping", "discovery", "mcollective", "request", nil, c)
+			rm, err := NewMessage("ping", "discovery", "mcollective", RequestMessageType, nil, c)
 			Expect(err).ToNot(HaveOccurred())
 
 			req, err := c.NewRequestFromMessage(protocol.RequestV1, rm)
 			Expect(err).ToNot(HaveOccurred())
 
-			reply, err := NewMessage("pong", "discovery", "mcollective", "reply", rm, c)
+			reply, err := NewMessage("pong", "discovery", "mcollective", ReplyMessageType, rm, c)
 			Expect(err).ToNot(HaveOccurred())
 
 			replyT, err := c.NewReplyTransportForMessage(reply, req)

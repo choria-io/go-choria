@@ -121,7 +121,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 				targets[i] = fmt.Sprintf("target%d", i)
 			}
 
-			msg, err := fw.NewMessage("", "test", "mcollective", "request", nil)
+			msg, err := fw.NewMessage("", "test", "mcollective", choria.RequestMessageType, nil)
 			Expect(err).ToNot(HaveOccurred())
 
 			msg.CacheTransport()
@@ -133,6 +133,20 @@ var _ = Describe("McoRPC/Client/Options", func() {
 
 			err = o.ConfigureMessage(msg)
 			Expect(err).To(MatchError("cached transport TTL is unreasonably long"))
+		})
+
+		It("Should support service requests", func() {
+			msg, err := fw.NewMessage("", "test", "mcollective", choria.RequestMessageType, nil)
+			Expect(err).ToNot(HaveOccurred())
+
+			msg.CacheTransport()
+			ServiceRequest()(o)
+			err = o.ConfigureMessage(msg)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(msg.Type()).To(Equal(choria.ServiceRequestMessageType))
+			Expect(msg.Filter.Empty()).To(BeTrue())
+			Expect(msg.DiscoveredHosts).To(HaveLen(0))
 		})
 	})
 

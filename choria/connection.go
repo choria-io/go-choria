@@ -19,7 +19,7 @@ import (
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-choria/tlssetup"
 
-	nats "github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -44,6 +44,7 @@ type AgentConnector interface {
 	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error
 	Unsubscribe(name string) error
 	AgentBroadcastTarget(collective string, agent string) string
+	ServiceBroadcastTarget(collective string, agent string) string
 }
 
 type ClientConnector interface {
@@ -343,7 +344,7 @@ func (conn *Connection) Publish(msg *Message) error {
 }
 
 func (conn *Connection) publishFederated(msg *Message, transport protocol.TransportMessage) error {
-	if msg.Type() == "direct_request" {
+	if msg.Type() == DirectRequestMessageType {
 		return conn.publishFederatedDirect(msg, transport)
 	}
 
@@ -419,7 +420,7 @@ func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protoc
 }
 
 func (conn *Connection) publishConnected(msg *Message, transport protocol.TransportMessage) error {
-	if msg.Type() == "direct_request" {
+	if msg.Type() == DirectRequestMessageType {
 		return conn.publishConnectedDirect(msg, transport)
 	}
 
@@ -476,21 +477,26 @@ func TargetForMessage(msg *Message, identity string) (string, error) {
 		return msg.CustomTarget, nil
 	}
 
-	if msg.Type() == "reply" {
+	switch msg.Type() {
+	case ReplyMessageType:
 		if msg.ReplyTo() == "" {
 			return "", fmt.Errorf("do not know how to reply, no reply-to header has been set on message %s", msg.RequestID)
 		}
 
 		return msg.ReplyTo(), nil
 
-	} else if msg.Type() == "request" {
+	case RequestMessageType:
 		return AgentBroadcastTarget(msg.Collective(), msg.Agent), nil
 
-	} else if msg.Type() == "direct_request" {
-		return NodeDirectedTarget(msg.Collective(), identity), nil
-	}
+	case ServiceRequestMessageType:
+		return ServiceBroadcastTarget(msg.Collective(), msg.Agent), nil
 
-	return "", fmt.Errorf("do not know how to determine the target for Message %s with type %s", msg.RequestID, msg.Type())
+	case DirectRequestMessageType:
+		return NodeDirectedTarget(msg.Collective(), identity), nil
+
+	default:
+		return "", fmt.Errorf("do not know how to determine the target for Message %s with type %s", msg.RequestID, msg.Type())
+	}
 }
 
 func (conn *Connection) TargetForMessage(msg *Message, identity string) (string, error) {
@@ -507,6 +513,14 @@ func (conn *Connection) NodeDirectedTarget(collective string, identity string) s
 
 func AgentBroadcastTarget(collective string, agent string) string {
 	return fmt.Sprintf("%s.broadcast.agent.%s", collective, agent)
+}
+
+func ServiceBroadcastTarget(collective string, agent string) string {
+	return fmt.Sprintf("%s.broadcast.service.%s", collective, agent)
+}
+
+func (conn *Connection) ServiceBroadcastTarget(collective string, agent string) string {
+	return ServiceBroadcastTarget(collective, agent)
 }
 
 func (conn *Connection) AgentBroadcastTarget(collective string, agent string) string {

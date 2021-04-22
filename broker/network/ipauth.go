@@ -152,6 +152,7 @@ func (a *IPAuth) setClientPermissions(user *server.User, caller string) {
 	user.Permissions.Publish = &server.SubjectPermission{
 		Allow: []string{
 			"*.broadcast.agent.>",
+			"*.broadcast.service.>",
 			"*.node.>",
 			"choria.federation.*.federation",
 		},
@@ -185,6 +186,7 @@ func (a *IPAuth) setServerPermissions(user *server.User) {
 
 			Deny: []string{
 				"*.broadcast.agent.>",
+				"*.broadcast.service.>",
 				"*.node.>",
 				"choria.federation.*.federation",
 			},

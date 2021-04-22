@@ -91,7 +91,7 @@ func (d *PingOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Ping action into target
+// ParsePingOutput parses the result value from the Ping action into target
 func (d *PingOutput) ParsePingOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

@@ -91,7 +91,7 @@ func (d *InventoryOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Inventory action into target
+// ParseInventoryOutput parses the result value from the Inventory action into target
 func (d *InventoryOutput) ParseInventoryOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

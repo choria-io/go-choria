@@ -99,8 +99,8 @@ func (fw *Framework) NewRequest(version string, agent string, senderid string, c
 
 // NewRequestFromMessage creates a new Request with the Message settings preloaded complying with a specific protocol version like protocol.RequestV1
 func (fw *Framework) NewRequestFromMessage(version string, msg *Message) (req protocol.Request, err error) {
-	if !(msg.Type() == "request" || msg.Type() == "direct_request") {
-		err = fmt.Errorf("cannot use `%s` message to construct a Request", msg.Type())
+	if !(msg.Type() == RequestMessageType || msg.Type() == DirectRequestMessageType || msg.Type() == ServiceRequestMessageType) {
+		err = fmt.Errorf("cannot use '%s' message to construct a Request", msg.Type())
 		return nil, err
 	}
 

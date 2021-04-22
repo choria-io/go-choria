@@ -70,7 +70,7 @@ func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, err
 	return &RequestOptions{
 		fw:              fw,
 		ProtocolVersion: protocol.RequestV1,
-		RequestType:     "direct_request",
+		RequestType:     choria.DirectRequestMessageType,
 		Collective:      cfg.MainCollective,
 		ProcessReplies:  true,
 		Workers:         3,
@@ -93,31 +93,49 @@ func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, err
 func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
 	o.totalStats.RequestID = msg.RequestID
 	o.RequestID = msg.RequestID
-	msg.Filter = o.Filter
 
-	if len(o.Targets) > 0 {
-		limited, err := o.limitTargets(o.Targets)
-		if err != nil {
-			return fmt.Errorf("could not limit targets: %s", err)
+	switch o.RequestType {
+	case choria.RequestMessageType, choria.DirectRequestMessageType:
+		if o.RequestType == choria.RequestMessageType && o.BatchSize > 0 {
+			return fmt.Errorf("batched mode requires %s mode", choria.DirectRequestMessageType)
 		}
 
-		o.Targets = limited
-		msg.DiscoveredHosts = limited
-	} else {
-		limited, err := o.limitTargets(msg.DiscoveredHosts)
-		if err != nil {
-			return fmt.Errorf("could not limit targets: %s", err)
+		if o.BatchSize == 0 {
+			o.BatchSize = len(o.Targets)
 		}
 
-		o.Targets = limited
-	}
+		msg.Filter = o.Filter
 
-	o.totalStats.SetDiscoveredNodes(o.Targets)
+		if len(o.Targets) > 0 {
+			limited, err := o.limitTargets(o.Targets)
+			if err != nil {
+				return fmt.Errorf("could not limit targets: %s", err)
+			}
 
-	msg.SetProtocolVersion(o.ProtocolVersion)
+			o.Targets = limited
+			msg.DiscoveredHosts = limited
+		} else {
+			limited, err := o.limitTargets(msg.DiscoveredHosts)
+			if err != nil {
+				return fmt.Errorf("could not limit targets: %s", err)
+			}
 
-	if o.RequestType == "request" && o.BatchSize > 0 {
-		return fmt.Errorf("batched mode requires direct_request mode")
+			o.Targets = limited
+		}
+
+		o.totalStats.SetDiscoveredNodes(o.Targets)
+
+	case choria.ServiceRequestMessageType:
+		if len(o.Targets) > 0 {
+			return fmt.Errorf("service requests does not support custom targets")
+		}
+
+		if !o.Filter.Empty() {
+			return fmt.Errorf("service requests does not support filters")
+		}
+
+		msg.Filter = protocol.NewFilter()
+		msg.DiscoveredHosts = []string{}
 	}
 
 	err = msg.SetType(o.RequestType)
@@ -125,9 +143,7 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
 		return err
 	}
 
-	if o.BatchSize == 0 {
-		o.BatchSize = len(o.Targets)
-	}
+	msg.SetProtocolVersion(o.ProtocolVersion)
 
 	stdtarget := choria.ReplyTarget(msg, msg.RequestID)
 	if o.ReplyTo == "" {
@@ -228,7 +244,7 @@ func Protocol(v string) RequestOption {
 // DirectRequest force the request to be a direct request
 func DirectRequest() RequestOption {
 	return func(o *RequestOptions) {
-		o.RequestType = "direct_request"
+		o.RequestType = choria.DirectRequestMessageType
 	}
 }
 
@@ -237,8 +253,15 @@ func DirectRequest() RequestOption {
 // **NOTE:** You need to ensure you have filters etc done
 func BroadcastRequest() RequestOption {
 	return func(o *RequestOptions) {
-		o.RequestType = "request"
+		o.RequestType = choria.RequestMessageType
 	}
+}
+
+// ServiceRequest for the request to be directed at a specific service agent
+//
+// **Note**: does not support filters or targets
+func ServiceRequest() RequestOption {
+	return func(o *RequestOptions) { o.RequestType = choria.ServiceRequestMessageType }
 }
 
 // Workers configures the amount of workers used to process responses

@@ -82,6 +82,10 @@ func (s *stubConnection) AgentBroadcastTarget(collective string, agent string) s
 	return fmt.Sprintf("%s.broadcast.agent.%s", collective, agent)
 }
 
+func (s *stubConnection) ServiceBroadcastTarget(collective string, agent string) string {
+	return fmt.Sprintf("%s.broadcast.service.%s", collective, agent)
+}
+
 func (s *stubConnection) NodeDirectedTarget(collective string, identity string) string {
 	return fmt.Sprintf("%s.node.%s", collective, identity)
 }

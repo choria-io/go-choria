@@ -91,7 +91,7 @@ func (d *MachineTransitionOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the MachineTransition action into target
+// ParseMachineTransitionOutput parses the result value from the MachineTransition action into target
 func (d *MachineTransitionOutput) ParseMachineTransitionOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

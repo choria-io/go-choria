@@ -91,7 +91,7 @@ func (d *ConfigureOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Configure action into target
+// ParseConfigureOutput parses the result value from the Configure action into target
 func (d *ConfigureOutput) ParseConfigureOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {

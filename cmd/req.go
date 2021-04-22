@@ -7,13 +7,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/gosuri/uiprogress"
-
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/protocol"
 	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
+	"github.com/gosuri/uiprogress"
 )
 
 type reqCommand struct {
@@ -104,7 +103,7 @@ func (r *reqCommand) parseFilterOptions() (*protocol.Filter, error) {
 }
 
 func (r *reqCommand) configureProgressBar(count int, expected int) {
-	if r.noProgress {
+	if r.noProgress || r.progressBar != nil {
 		return
 	}
 
@@ -199,17 +198,28 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 	defer r.outputWriter.Flush()
 
+	expected := 0
 	dstart := time.Now()
-	nodes, err := r.discover()
-	if err != nil {
-		return fmt.Errorf("could not discover nodes: %s", err)
-	}
-	dend := time.Now()
+	var nodes []string
 
-	expected := len(nodes)
-	if expected == 0 {
-		return fmt.Errorf("did not discover any nodes")
+	if r.ddl.Metadata.Service {
+		expected = 1
+		nodes = []string{"service"}
+		r.configureProgressBar(1, 1)
+
+	} else {
+		nodes, err = r.discover()
+		if err != nil {
+			return fmt.Errorf("could not discover nodes: %s", err)
+		}
+
+		expected = len(nodes)
+		if expected == 0 {
+			return fmt.Errorf("did not discover any nodes")
+		}
 	}
+
+	dend := time.Now()
 
 	results := &replyfmt.RPCResults{
 		Agent:   r.agent,
@@ -219,7 +229,6 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	opts := []rpc.RequestOption{
 		rpc.Collective(r.fo.Collective),
-		rpc.Targets(nodes),
 		rpc.ReplyHandler(r.responseHandler(results)),
 		rpc.Workers(r.workers),
 		rpc.LimitMethod(cfg.RPCLimitMethod),
@@ -245,6 +254,12 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	if r.limitSeed > 0 {
 		opts = append(opts, rpc.LimitSeed(r.limitSeed))
+	}
+
+	if r.ddl.Metadata.Service {
+		opts = append(opts, rpc.ServiceRequest())
+	} else {
+		opts = append(opts, rpc.Targets(nodes))
 	}
 
 	agent, err := rpc.New(c, r.agent, rpc.DDL(r.ddl))

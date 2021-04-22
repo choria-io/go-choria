@@ -91,7 +91,7 @@ func (d *RestartOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseOutput parses the result value from the Restart action into target
+// ParseRestartOutput parses the result value from the Restart action into target
 func (d *RestartOutput) ParseRestartOutput(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {
