@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/choria-io/go-choria/internal/util"
 	ddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 	"github.com/choria-io/go-choria/server/agents"
@@ -253,6 +254,20 @@ func (c *Generator) semVerValidator(v interface{}) error {
 	}
 
 	return nil
+}
+
+func (c *Generator) boolValidator(v interface{}) error {
+	vs, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("should be a string")
+	}
+
+	if vs == "" {
+		return nil
+	}
+
+	_, err := util.StrToBool(vs)
+	return err
 }
 
 func (c *Generator) shortnameValidator(v interface{}) error {
@@ -548,7 +563,9 @@ this metadata is used to keep an internal inventory of all the available service
           URL: A URL one can visit for further information about the agent
       Timeout: Maximum time in seconds any action will be allowed to run
      Provider: The provider to use - ruby for traditional mcollective ones,
-               external for ones complying to the External Agent structure\n`)
+               external for ones complying to the External Agent structure
+      Service: Indicates an agent will be a service, hosted in a load sharing
+               group rather than 1:n as normal agents.\n`)
 
 	qs := []*survey.Question{
 		c.askBasicItem("name", "Agent Name", "", survey.ToLower, c.shortnameValidator),
@@ -559,6 +576,7 @@ this metadata is used to keep an internal inventory of all the available service
 		c.askBasicItem("url", "URL", "", survey.ToLower, c.urlValidator),
 		c.askBasicItem("timeout", "Timeout", "", nil, survey.Required),
 		c.askEnum("provider", "Backend Provider", "", []string{"ruby", "external", "golang"}, nil),
+		c.askBasicItem("service", "Service", "", nil, c.boolValidator),
 	}
 
 	err := survey.Ask(qs, agent.Metadata)
