@@ -2,7 +2,7 @@ metadata    :name        => "rpcutil",
             :description => "General helpful actions that expose stats and internals to SimpleRPC clients",
             :author      => "R.I.Pienaar <rip@devco.net>",
             :license     => "Apache License, Version 2.0",
-            :version     => "0.19.0",
+            :version     => "0.22.0",
             :url         => "https://choria.io/",
             :timeout     => 2
 

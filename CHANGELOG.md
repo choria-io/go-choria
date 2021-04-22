@@ -1,5 +1,22 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/04/22|      |Release 0.22.0                                                                                           |
+|2021/04/22|1234  |Initial support for Service Agents                                                                       |
+|2021/04/21|1232  |Autonomous Agent transitions now support a human friendly description                                    |
+|2021/04/19|1227  |Import the provisioning agent into this code base since it's now always compiled in                      |
+|2021/04/16|1222  |Create `choria plugin doc` and move `tool generate` to `plugin generate`                                 |
+|2021/04/15|1220  |Handle filter expressions that are not obviously boolean better                                          |
+|2021/04/13|1216  |Improve startup logs when skipping agents in specific providers                                          |
+|2021/04/08|1213  |Increase leafnode authentication timeout                                                                 |
+|2021/04/08|1211  |Improve randomness of limited targets                                                                    |
+|2021/04/07|1207  |Support wider duration specification by supporting week, month, year etc                                 |
+|2021/04/05|1204  |Enable new Go based action policy by default                                                             |
+|2021/04/01|1201  |Support the old `boolean_summary` aggregator and generic output name remapping in summary aggregator     |
+|2021/03/30|1195  |Default to the `choria` account for leafnodes                                                            |
+|2021/03/30|1197  |Improve consistency of time durations in ping output                                                     |
+|2021/03/30|1195  |Fix ordering of leafnode and acounts setup                                                               |
+|2021/03/29|1193  |JetStream Adapter can publish to wildcard streams with per identity subjects                             |
+|2021/03/29|1189  |Use correct target for registration messages                                                             |
 |2021/03/29|      |Release 0.21.0                                                                                           |
 |2021/03/26|1189  |Add a new registration plugin that sends the running inventory rather than file contents                 |
 |2021/03/25|1187  |Support enabling listening `pprof` port                                                                  |
