@@ -21,6 +21,7 @@ type serverCommand struct {
 type serverRunCommand struct {
 	command
 
+	serviceHost      bool
 	disableTLS       bool
 	disableTLSVerify bool
 	pidFile          string
@@ -52,6 +53,7 @@ func (r *serverRunCommand) Setup() (err error) {
 		r.cmd.Flag("disable-tls", "Disables TLS").Hidden().Default("false").BoolVar(&r.disableTLS)
 		r.cmd.Flag("disable-ssl-verification", "Disables SSL Verification").Hidden().Default("false").BoolVar(&r.disableTLSVerify)
 		r.cmd.Flag("pid", "Write running PID to a file").StringVar(&r.pidFile)
+		r.cmd.Flag("service-host", "Runs as a Service Agent host").BoolVar(&r.serviceHost)
 	}
 
 	return

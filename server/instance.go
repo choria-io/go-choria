@@ -95,6 +95,58 @@ func (srv *Instance) PrepareForShutdown() error {
 	return nil
 }
 
+func (srv *Instance) RunServiceHost(ctx context.Context, wg *sync.WaitGroup) error {
+	defer wg.Done()
+
+	var sctx, pctx context.Context
+	srv.mu.Lock()
+	// server shutdown context
+	sctx, srv.shutdown = context.WithCancel(ctx)
+
+	// processing stop context
+	pctx, srv.stopProcess = context.WithCancel(sctx)
+	srv.mu.Unlock()
+
+	srv.lifecycleComponent = "service_host"
+
+	err := srv.initialConnect(sctx)
+	if err != nil {
+		srv.log.Errorf("Initial Choria Broker connection failed: %s", err)
+		return fmt.Errorf("initial Choria Broker connection failed: %s", err)
+	}
+
+	wg.Add(1)
+	go srv.WriteServerStatus(sctx, wg)
+
+	srv.agents = agents.NewServices(srv.requests, srv.fw, srv.connector, srv, srv.log)
+
+	err = srv.setupAdditionalAgentProviders(sctx)
+	if err != nil {
+		srv.log.Errorf("Could not initialize initial additional agent providers: %s", err)
+		srv.connector.Close()
+
+		return fmt.Errorf("could not initialize initial additional agent providers: %s", err)
+	}
+
+	err = srv.setupAdditionalAgents(sctx)
+	if err != nil {
+		srv.log.Errorf("Could not initialize initial additional agents: %s", err)
+		srv.connector.Close()
+
+		return fmt.Errorf("could not initialize initial additional agents: %s", err)
+	}
+
+	srv.publishStartupEvent()
+
+	wg.Add(1)
+	go srv.publishAliveEvents(sctx, wg)
+
+	wg.Add(1)
+	go srv.processRequests(pctx, wg)
+
+	return nil
+}
+
 func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 

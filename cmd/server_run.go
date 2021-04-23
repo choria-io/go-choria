@@ -20,5 +20,9 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	wg.Add(1)
-	return instance.Run(ctx, wg)
+	if r.serviceHost {
+		return instance.RunServiceHost(ctx, wg)
+	} else {
+		return instance.Run(ctx, wg)
+	}
 }
