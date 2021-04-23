@@ -14,66 +14,82 @@ action "info", :description => "Choria related information from the running Daem
 
   output :choria_version,
          :description => "Choria version",
+         :type        => "string",
          :display_as  => "Choria Version"
 
   output :client_flavour,
-         :description => "Middleware client gem flavour",
+         :description => "Middleware client library flavour",
+         :type        => "string",
          :display_as  => "Middleware Client Flavour"
 
   output :client_options,
-         :description => "Active Middleware client gem options",
+         :description => "Active Middleware client options",
+         :type        => "hash",
          :display_as  => "Middleware Client Options"
 
   output :client_stats,
-         :description => "Middleware client gem statistics",
+         :description => "Middleware client statistics",
+         :type        => "hash",
          :display_as  => "Middleware Client Stats"
 
   output :client_version,
          :description => "Middleware client library version",
+         :type        => "string",
          :display_as  => "Middleware Client Library Version"
 
   output :connected_server,
          :description => "Connected middleware server",
+         :type        => "string",
          :display_as  => "Connected Broker"
 
   output :connector,
          :description => "Connector plugin",
+         :type        => "string",
          :display_as  => "Connector"
 
   output :connector_tls,
          :description => "If the connector is running with TLS security enabled",
+         :type        => "boolean",
          :display_as  => "Connector TLS"
 
   output :facter_command,
          :description => "Command used for Facter",
+         :type        => "string",
          :display_as  => "Facter"
 
   output :facter_domain,
          :description => "Facter domain",
+         :type        => "string",
          :display_as  => "Facter Domain"
 
   output :middleware_servers,
          :description => "Middleware Servers configured or discovered",
+         :type        => "array",
          :display_as  => "Middleware"
 
   output :path,
          :description => "Active OS PATH",
+         :type        => "string",
          :display_as  => "Path"
 
   output :secure_protocol,
          :description => "If the protocol is running with PKI security enabled",
+         :type        => "boolean",
          :display_as  => "Protocol Secure"
 
   output :security,
          :description => "Security Provider plugin",
+         :type        => "string",
          :display_as  => "Security Provider"
 
   output :srv_domain,
          :description => "Configured SRV domain",
+         :type        => "string",
          :display_as  => "SRV Domain"
 
   output :using_srv,
          :description => "Indicates if SRV records are considered",
+         :type        => "boolean",
          :display_as  => "SRV Used"
 
   summarize do
@@ -178,14 +194,17 @@ action "machine_states", :description => "States of the hosted Choria Autonomous
 
   output :machine_ids,
          :description => "List of running machine IDs",
+         :type        => "array",
          :display_as  => "Machine IDs"
 
   output :machine_names,
          :description => "List of running machine names",
+         :type        => "array",
          :display_as  => "Machine Names"
 
   output :states,
          :description => "Hash map of machine statusses indexed by machine ID",
+         :type        => "hash",
          :display_as  => "Machine States"
 
   summarize do
@@ -245,6 +264,7 @@ action "machine_transition", :description => "Attempts to force a transition in 
 
   output :success,
          :description => "Indicates if the transition was successfully accepted",
+         :type        => "boolean",
          :display_as  => "Accepted"
 
 end

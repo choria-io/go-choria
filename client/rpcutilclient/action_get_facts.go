@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'rpcutil' Version 0.19.0 generated using Choria version 0.21.0
+// Client for Choria RPC Agent 'rpcutil' Version 0.22.0 generated using Choria version 0.22.0
 
 package rpcutilclient
 
@@ -168,12 +168,8 @@ func (d *GetFactsResult) EachOutput(h func(r *GetFactsOutput)) {
 // Values is the value of the values output
 //
 // Description: List of values of the facts
-func (d *GetFactsOutput) Values() interface{} {
-	val, ok := d.reply["values"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *GetFactsOutput) Values() map[string]interface{} {
+	val := d.reply["values"]
 
-	return val.(interface{})
+	return val.(map[string]interface{})
 }

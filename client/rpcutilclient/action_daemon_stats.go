@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'rpcutil' Version 0.19.0 generated using Choria version 0.21.0
+// Client for Choria RPC Agent 'rpcutil' Version 0.22.0 generated using Choria version 0.22.0
 
 package rpcutilclient
 
@@ -168,181 +168,125 @@ func (d *DaemonStatsResult) EachOutput(h func(r *DaemonStatsOutput)) {
 // Agents is the value of the agents output
 //
 // Description: List of agents loaded
-func (d *DaemonStatsOutput) Agents() interface{} {
-	val, ok := d.reply["agents"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *DaemonStatsOutput) Agents() []interface{} {
+	val := d.reply["agents"]
 
-	return val.(interface{})
+	return val.([]interface{})
 }
 
 // Configfile is the value of the configfile output
 //
 // Description: Config file used to start the daemon
-func (d *DaemonStatsOutput) Configfile() interface{} {
-	val, ok := d.reply["configfile"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *DaemonStatsOutput) Configfile() string {
+	val := d.reply["configfile"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // Filtered is the value of the filtered output
 //
-// Description: Didn't pass filter checks
-func (d *DaemonStatsOutput) Filtered() interface{} {
-	val, ok := d.reply["filtered"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Count of message that didn't pass filter checks
+func (d *DaemonStatsOutput) Filtered() int64 {
+	val := d.reply["filtered"]
 
-	return val.(interface{})
+	return val.(int64)
 }
 
 // Passed is the value of the passed output
 //
-// Description: Passed filter checks
-func (d *DaemonStatsOutput) Passed() interface{} {
-	val, ok := d.reply["passed"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Count of messages that passed filter checks
+func (d *DaemonStatsOutput) Passed() int64 {
+	val := d.reply["passed"]
 
-	return val.(interface{})
+	return val.(int64)
 }
 
 // Pid is the value of the pid output
 //
-// Description: Process ID of the daemon
-func (d *DaemonStatsOutput) Pid() interface{} {
-	val, ok := d.reply["pid"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Process ID of the Choria Server
+func (d *DaemonStatsOutput) Pid() int64 {
+	val := d.reply["pid"]
 
-	return val.(interface{})
+	return val.(int64)
 }
 
 // Replies is the value of the replies output
 //
-// Description: Replies sent back to clients
-func (d *DaemonStatsOutput) Replies() interface{} {
-	val, ok := d.reply["replies"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Count of replies sent back to clients
+func (d *DaemonStatsOutput) Replies() int64 {
+	val := d.reply["replies"]
 
-	return val.(interface{})
+	return val.(int64)
 }
 
 // Starttime is the value of the starttime output
 //
-// Description: Time the server started
-func (d *DaemonStatsOutput) Starttime() interface{} {
-	val, ok := d.reply["starttime"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Time the Choria Server started in unix seconds
+func (d *DaemonStatsOutput) Starttime() int64 {
+	val := d.reply["starttime"]
 
-	return val.(interface{})
+	return val.(int64)
 }
 
 // Threads is the value of the threads output
 //
-// Description: List of threads active in the daemon
-func (d *DaemonStatsOutput) Threads() interface{} {
-	val, ok := d.reply["threads"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: List of threads active in the Choria Server
+func (d *DaemonStatsOutput) Threads() []interface{} {
+	val := d.reply["threads"]
 
-	return val.(interface{})
+	return val.([]interface{})
 }
 
 // Times is the value of the times output
 //
-// Description: Processor time consumed by the daemon
-func (d *DaemonStatsOutput) Times() interface{} {
-	val, ok := d.reply["times"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Processor time consumed by the Choria Server
+func (d *DaemonStatsOutput) Times() map[string]interface{} {
+	val := d.reply["times"]
 
-	return val.(interface{})
+	return val.(map[string]interface{})
 }
 
 // Total is the value of the total output
 //
-// Description: Total messages received
-func (d *DaemonStatsOutput) Total() interface{} {
-	val, ok := d.reply["total"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Count of messages received by the Choria Server
+func (d *DaemonStatsOutput) Total() int64 {
+	val := d.reply["total"]
 
-	return val.(interface{})
+	return val.(int64)
 }
 
 // Ttlexpired is the value of the ttlexpired output
 //
-// Description: Messages that did pass TTL checks
-func (d *DaemonStatsOutput) Ttlexpired() interface{} {
-	val, ok := d.reply["ttlexpired"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Count of messages that did pass TTL checks
+func (d *DaemonStatsOutput) Ttlexpired() int64 {
+	val := d.reply["ttlexpired"]
 
-	return val.(interface{})
+	return val.(int64)
 }
 
 // Unvalidated is the value of the unvalidated output
 //
-// Description: Messages that failed security validation
-func (d *DaemonStatsOutput) Unvalidated() interface{} {
-	val, ok := d.reply["unvalidated"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Count of messages that failed security validation
+func (d *DaemonStatsOutput) Unvalidated() int64 {
+	val := d.reply["unvalidated"]
 
-	return val.(interface{})
+	return val.(int64)
 }
 
 // Validated is the value of the validated output
 //
-// Description: Messages that passed security validation
-func (d *DaemonStatsOutput) Validated() interface{} {
-	val, ok := d.reply["validated"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Count of messages that passed security validation
+func (d *DaemonStatsOutput) Validated() int64 {
+	val := d.reply["validated"]
 
-	return val.(interface{})
+	return val.(int64)
 }
 
 // Version is the value of the version output
 //
-// Description: MCollective Version
-func (d *DaemonStatsOutput) Version() interface{} {
-	val, ok := d.reply["version"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Choria Server Version
+func (d *DaemonStatsOutput) Version() string {
+	val := d.reply["version"]
 
-	return val.(interface{})
+	return val.(string)
 }

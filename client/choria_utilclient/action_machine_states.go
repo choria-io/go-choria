@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'choria_util' Version 0.19.0 generated using Choria version 0.21.0
+// Client for Choria RPC Agent 'choria_util' Version 0.22.0 generated using Choria version 0.22.0
 
 package choria_utilclient
 
@@ -168,38 +168,26 @@ func (d *MachineStatesResult) EachOutput(h func(r *MachineStatesOutput)) {
 // MachineIds is the value of the machine_ids output
 //
 // Description: List of running machine IDs
-func (d *MachineStatesOutput) MachineIds() interface{} {
-	val, ok := d.reply["machine_ids"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *MachineStatesOutput) MachineIds() []interface{} {
+	val := d.reply["machine_ids"]
 
-	return val.(interface{})
+	return val.([]interface{})
 }
 
 // MachineNames is the value of the machine_names output
 //
 // Description: List of running machine names
-func (d *MachineStatesOutput) MachineNames() interface{} {
-	val, ok := d.reply["machine_names"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *MachineStatesOutput) MachineNames() []interface{} {
+	val := d.reply["machine_names"]
 
-	return val.(interface{})
+	return val.([]interface{})
 }
 
 // States is the value of the states output
 //
 // Description: Hash map of machine statusses indexed by machine ID
-func (d *MachineStatesOutput) States() interface{} {
-	val, ok := d.reply["states"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *MachineStatesOutput) States() map[string]interface{} {
+	val := d.reply["states"]
 
-	return val.(interface{})
+	return val.(map[string]interface{})
 }

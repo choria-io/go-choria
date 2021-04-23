@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'rpcutil' Version 0.19.0 generated using Choria version 0.21.0
+// Client for Choria RPC Agent 'rpcutil' Version 0.22.0 generated using Choria version 0.22.0
 
 package rpcutilclient
 
@@ -167,13 +167,9 @@ func (d *PingResult) EachOutput(h func(r *PingOutput)) {
 
 // Pong is the value of the pong output
 //
-// Description: The local timestamp
-func (d *PingOutput) Pong() interface{} {
-	val, ok := d.reply["pong"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: The local Unix timestamp
+func (d *PingOutput) Pong() string {
+	val := d.reply["pong"]
 
-	return val.(interface{})
+	return val.(string)
 }

@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'choria_util' Version 0.19.0 generated using Choria version 0.21.0
+// Client for Choria RPC Agent 'choria_util' Version 0.22.0 generated using Choria version 0.22.0
 
 package choria_utilclient
 
@@ -168,207 +168,143 @@ func (d *InfoResult) EachOutput(h func(r *InfoOutput)) {
 // ChoriaVersion is the value of the choria_version output
 //
 // Description: Choria version
-func (d *InfoOutput) ChoriaVersion() interface{} {
-	val, ok := d.reply["choria_version"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) ChoriaVersion() string {
+	val := d.reply["choria_version"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // ClientFlavour is the value of the client_flavour output
 //
-// Description: Middleware client gem flavour
-func (d *InfoOutput) ClientFlavour() interface{} {
-	val, ok := d.reply["client_flavour"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Middleware client library flavour
+func (d *InfoOutput) ClientFlavour() string {
+	val := d.reply["client_flavour"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // ClientOptions is the value of the client_options output
 //
-// Description: Active Middleware client gem options
-func (d *InfoOutput) ClientOptions() interface{} {
-	val, ok := d.reply["client_options"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Active Middleware client options
+func (d *InfoOutput) ClientOptions() map[string]interface{} {
+	val := d.reply["client_options"]
 
-	return val.(interface{})
+	return val.(map[string]interface{})
 }
 
 // ClientStats is the value of the client_stats output
 //
-// Description: Middleware client gem statistics
-func (d *InfoOutput) ClientStats() interface{} {
-	val, ok := d.reply["client_stats"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Middleware client statistics
+func (d *InfoOutput) ClientStats() map[string]interface{} {
+	val := d.reply["client_stats"]
 
-	return val.(interface{})
+	return val.(map[string]interface{})
 }
 
 // ClientVersion is the value of the client_version output
 //
 // Description: Middleware client library version
-func (d *InfoOutput) ClientVersion() interface{} {
-	val, ok := d.reply["client_version"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) ClientVersion() string {
+	val := d.reply["client_version"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // ConnectedServer is the value of the connected_server output
 //
 // Description: Connected middleware server
-func (d *InfoOutput) ConnectedServer() interface{} {
-	val, ok := d.reply["connected_server"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) ConnectedServer() string {
+	val := d.reply["connected_server"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // Connector is the value of the connector output
 //
 // Description: Connector plugin
-func (d *InfoOutput) Connector() interface{} {
-	val, ok := d.reply["connector"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) Connector() string {
+	val := d.reply["connector"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // ConnectorTls is the value of the connector_tls output
 //
 // Description: If the connector is running with TLS security enabled
-func (d *InfoOutput) ConnectorTls() interface{} {
-	val, ok := d.reply["connector_tls"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) ConnectorTls() bool {
+	val := d.reply["connector_tls"]
 
-	return val.(interface{})
+	return val.(bool)
 }
 
 // FacterCommand is the value of the facter_command output
 //
 // Description: Command used for Facter
-func (d *InfoOutput) FacterCommand() interface{} {
-	val, ok := d.reply["facter_command"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) FacterCommand() string {
+	val := d.reply["facter_command"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // FacterDomain is the value of the facter_domain output
 //
 // Description: Facter domain
-func (d *InfoOutput) FacterDomain() interface{} {
-	val, ok := d.reply["facter_domain"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) FacterDomain() string {
+	val := d.reply["facter_domain"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // MiddlewareServers is the value of the middleware_servers output
 //
 // Description: Middleware Servers configured or discovered
-func (d *InfoOutput) MiddlewareServers() interface{} {
-	val, ok := d.reply["middleware_servers"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) MiddlewareServers() []interface{} {
+	val := d.reply["middleware_servers"]
 
-	return val.(interface{})
+	return val.([]interface{})
 }
 
 // Path is the value of the path output
 //
 // Description: Active OS PATH
-func (d *InfoOutput) Path() interface{} {
-	val, ok := d.reply["path"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) Path() string {
+	val := d.reply["path"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // SecureProtocol is the value of the secure_protocol output
 //
 // Description: If the protocol is running with PKI security enabled
-func (d *InfoOutput) SecureProtocol() interface{} {
-	val, ok := d.reply["secure_protocol"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) SecureProtocol() bool {
+	val := d.reply["secure_protocol"]
 
-	return val.(interface{})
+	return val.(bool)
 }
 
 // Security is the value of the security output
 //
 // Description: Security Provider plugin
-func (d *InfoOutput) Security() interface{} {
-	val, ok := d.reply["security"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) Security() string {
+	val := d.reply["security"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // SrvDomain is the value of the srv_domain output
 //
 // Description: Configured SRV domain
-func (d *InfoOutput) SrvDomain() interface{} {
-	val, ok := d.reply["srv_domain"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) SrvDomain() string {
+	val := d.reply["srv_domain"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // UsingSrv is the value of the using_srv output
 //
 // Description: Indicates if SRV records are considered
-func (d *InfoOutput) UsingSrv() interface{} {
-	val, ok := d.reply["using_srv"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InfoOutput) UsingSrv() bool {
+	val := d.reply["using_srv"]
 
-	return val.(interface{})
+	return val.(bool)
 }

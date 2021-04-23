@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'choria_util' Version 0.19.0 generated using Choria version 0.21.0
+// Client for Choria RPC Agent 'choria_util' Version 0.22.0 generated using Choria version 0.22.0
 
 package choria_utilclient
 
@@ -204,12 +204,8 @@ func (d *MachineTransitionRequester) Version(v string) *MachineTransitionRequest
 // Success is the value of the success output
 //
 // Description: Indicates if the transition was successfully accepted
-func (d *MachineTransitionOutput) Success() interface{} {
-	val, ok := d.reply["success"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *MachineTransitionOutput) Success() bool {
+	val := d.reply["success"]
 
-	return val.(interface{})
+	return val.(bool)
 }

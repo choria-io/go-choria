@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'rpcutil' Version 0.19.0 generated using Choria version 0.21.0
+// Client for Choria RPC Agent 'rpcutil' Version 0.22.0 generated using Choria version 0.22.0
 
 package rpcutilclient
 
@@ -168,14 +168,10 @@ func (d *GetConfigItemResult) EachOutput(h func(r *GetConfigItemOutput)) {
 // Item is the value of the item output
 //
 // Description: The config property being retrieved
-func (d *GetConfigItemOutput) Item() interface{} {
-	val, ok := d.reply["item"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *GetConfigItemOutput) Item() string {
+	val := d.reply["item"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // Value is the value of the value output
