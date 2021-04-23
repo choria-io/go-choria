@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'rpcutil' Version 0.19.0 generated using Choria version 0.21.0
+// Client for Choria RPC Agent 'rpcutil' Version 0.22.0 generated using Choria version 0.22.0
 
 package rpcutilclient
 
@@ -168,103 +168,71 @@ func (d *InventoryResult) EachOutput(h func(r *InventoryOutput)) {
 // Agents is the value of the agents output
 //
 // Description: List of agent names
-func (d *InventoryOutput) Agents() interface{} {
-	val, ok := d.reply["agents"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InventoryOutput) Agents() []interface{} {
+	val := d.reply["agents"]
 
-	return val.(interface{})
+	return val.([]interface{})
 }
 
 // Classes is the value of the classes output
 //
 // Description: List of classes on the system
-func (d *InventoryOutput) Classes() interface{} {
-	val, ok := d.reply["classes"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InventoryOutput) Classes() []interface{} {
+	val := d.reply["classes"]
 
-	return val.(interface{})
+	return val.([]interface{})
 }
 
 // Collectives is the value of the collectives output
 //
 // Description: All Collectives
-func (d *InventoryOutput) Collectives() interface{} {
-	val, ok := d.reply["collectives"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InventoryOutput) Collectives() []interface{} {
+	val := d.reply["collectives"]
 
-	return val.(interface{})
+	return val.([]interface{})
 }
 
 // DataPlugins is the value of the data_plugins output
 //
 // Description: List of data plugin names
-func (d *InventoryOutput) DataPlugins() interface{} {
-	val, ok := d.reply["data_plugins"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InventoryOutput) DataPlugins() []interface{} {
+	val := d.reply["data_plugins"]
 
-	return val.(interface{})
+	return val.([]interface{})
 }
 
 // Facts is the value of the facts output
 //
 // Description: List of facts and values
-func (d *InventoryOutput) Facts() interface{} {
-	val, ok := d.reply["facts"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InventoryOutput) Facts() map[string]interface{} {
+	val := d.reply["facts"]
 
-	return val.(interface{})
+	return val.(map[string]interface{})
 }
 
 // Machines is the value of the machines output
 //
 // Description: Autonomous Agents
-func (d *InventoryOutput) Machines() interface{} {
-	val, ok := d.reply["machines"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InventoryOutput) Machines() map[string]interface{} {
+	val := d.reply["machines"]
 
-	return val.(interface{})
+	return val.(map[string]interface{})
 }
 
 // MainCollective is the value of the main_collective output
 //
 // Description: The main Collective
-func (d *InventoryOutput) MainCollective() interface{} {
-	val, ok := d.reply["main_collective"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *InventoryOutput) MainCollective() string {
+	val := d.reply["main_collective"]
 
-	return val.(interface{})
+	return val.(string)
 }
 
 // Version is the value of the version output
 //
-// Description: MCollective Version
-func (d *InventoryOutput) Version() interface{} {
-	val, ok := d.reply["version"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+// Description: Choria Server Version
+func (d *InventoryOutput) Version() string {
+	val := d.reply["version"]
 
-	return val.(interface{})
+	return val.(string)
 }

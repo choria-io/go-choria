@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'rpcutil' Version 0.19.0 generated using Choria version 0.21.0
+// Client for Choria RPC Agent 'rpcutil' Version 0.22.0 generated using Choria version 0.22.0
 
 package rpcutilclient
 
@@ -168,12 +168,8 @@ func (d *AgentInventoryResult) EachOutput(h func(r *AgentInventoryOutput)) {
 // Agents is the value of the agents output
 //
 // Description: List of agents on the server
-func (d *AgentInventoryOutput) Agents() interface{} {
-	val, ok := d.reply["agents"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *AgentInventoryOutput) Agents() []interface{} {
+	val := d.reply["agents"]
 
-	return val.(interface{})
+	return val.([]interface{})
 }

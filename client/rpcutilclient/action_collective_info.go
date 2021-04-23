@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'rpcutil' Version 0.19.0 generated using Choria version 0.21.0
+// Client for Choria RPC Agent 'rpcutil' Version 0.22.0 generated using Choria version 0.22.0
 
 package rpcutilclient
 
@@ -168,25 +168,17 @@ func (d *CollectiveInfoResult) EachOutput(h func(r *CollectiveInfoOutput)) {
 // Collectives is the value of the collectives output
 //
 // Description: All Collectives
-func (d *CollectiveInfoOutput) Collectives() interface{} {
-	val, ok := d.reply["collectives"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *CollectiveInfoOutput) Collectives() []interface{} {
+	val := d.reply["collectives"]
 
-	return val.(interface{})
+	return val.([]interface{})
 }
 
 // MainCollective is the value of the main_collective output
 //
 // Description: The main Collective
-func (d *CollectiveInfoOutput) MainCollective() interface{} {
-	val, ok := d.reply["main_collective"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *CollectiveInfoOutput) MainCollective() string {
+	val := d.reply["main_collective"]
 
-	return val.(interface{})
+	return val.(string)
 }

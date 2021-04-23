@@ -2,9 +2,9 @@
   "$schema": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
   "metadata": {
     "name": "rpcutil",
-    "description": "General helpful actions that expose stats and internals to SimpleRPC clients",
+    "description": "Utility actions that expose information about the state of the running Server",
     "author": "R.I.Pienaar <rip@devco.net>",
-    "license": "Apache License, Version 2.0",
+    "license": "Apache-2.0",
     "version": "0.22.0",
     "url": "https://choria.io/",
     "timeout": 2
@@ -18,11 +18,11 @@
         "agents": {
           "description": "List of agents on the server",
           "display_as": "Agents",
-          "default": null
+          "type": "array"
         }
       },
       "display": "always",
-      "description": "Inventory of all agents on the server"
+      "description": "Inventory of all agents on the server including versions, licenses and more"
     },
     {
       "action": "collective_info",
@@ -32,16 +32,16 @@
         "main_collective": {
           "description": "The main Collective",
           "display_as": "Main Collective",
-          "default": null
+          "type": "string"
         },
         "collectives": {
           "description": "All Collectives",
           "display_as": "All Collectives",
-          "default": null
+          "type": "array"
         }
       },
       "display": "always",
-      "description": "Info about the main and sub collectives",
+      "description": "Info about the main and sub collectives that the server belongs to",
       "aggregate": [
         {
           "function": "summary",
@@ -57,74 +57,74 @@
       },
       "output": {
         "threads": {
-          "description": "List of threads active in the daemon",
+          "description": "List of threads active in the Choria Server",
           "display_as": "Threads",
-          "default": null
+          "type": "array"
         },
         "agents": {
           "description": "List of agents loaded",
           "display_as": "Agents",
-          "default": null
+          "type": "array"
         },
         "pid": {
-          "description": "Process ID of the daemon",
+          "description": "Process ID of the Choria Server",
           "display_as": "PID",
-          "default": null
+          "type": "integer"
         },
         "times": {
-          "description": "Processor time consumed by the daemon",
+          "description": "Processor time consumed by the Choria Server",
           "display_as": "Times",
-          "default": null
+          "type": "hash"
         },
         "validated": {
-          "description": "Messages that passed security validation",
+          "description": "Count of messages that passed security validation",
           "display_as": "Security Validated",
-          "default": null
+          "type": "integer"
         },
         "unvalidated": {
-          "description": "Messages that failed security validation",
+          "description": "Count of messages that failed security validation",
           "display_as": "Failed Security",
-          "default": null
+          "type": "integer"
         },
         "passed": {
-          "description": "Passed filter checks",
+          "description": "Count of messages that passed filter checks",
           "display_as": "Passed Filter",
-          "default": null
+          "type": "integer"
         },
         "filtered": {
-          "description": "Didn't pass filter checks",
+          "description": "Count of message that didn't pass filter checks",
           "display_as": "Failed Filter",
-          "default": null
+          "type": "integer"
         },
         "starttime": {
-          "description": "Time the server started",
+          "description": "Time the Choria Server started in unix seconds",
           "display_as": "Start Time",
-          "default": null
+          "type": "integer"
         },
         "total": {
-          "description": "Total messages received",
+          "description": "Count of messages received by the Choria Server",
           "display_as": "Total Messages",
-          "default": null
+          "type": "integer"
         },
         "replies": {
-          "description": "Replies sent back to clients",
+          "description": "Count of replies sent back to clients",
           "display_as": "Replies",
-          "default": null
+          "type": "integer"
         },
         "configfile": {
           "description": "Config file used to start the daemon",
           "display_as": "Config File",
-          "default": null
+          "type": "string"
         },
         "version": {
-          "description": "MCollective Version",
+          "description": "Choria Server Version",
           "display_as": "Version",
-          "default": null
+          "type": "string"
         },
         "ttlexpired": {
-          "description": "Messages that did pass TTL checks",
+          "description": "Count of messages that did pass TTL checks",
           "display_as": "TTL Expired",
-          "default": null
+          "type": "integer"
         }
       },
       "display": "always",
@@ -151,22 +151,20 @@
           "prompt": "Configuration Item",
           "description": "The item to retrieve from the server",
           "type": "string",
-          "default": null,
           "optional": false,
           "validation": "^.+$",
-          "maxlength": 50
+          "maxlength": 120
         }
       },
       "output": {
         "item": {
           "description": "The config property being retrieved",
           "display_as": "Property",
-          "default": null
+          "type": "string"
         },
         "value": {
           "description": "The value that is in use",
-          "display_as": "Value",
-          "default": null
+          "display_as": "Value"
         }
       },
       "display": "always",
@@ -187,7 +185,6 @@
           "prompt": "Data Source",
           "description": "The data plugin to retrieve information from",
           "type": "string",
-          "default": null,
           "optional": false,
           "validation": "^\\w+$",
           "maxlength": 50
@@ -202,8 +199,7 @@
           "maxlength": 200
         }
       },
-      "output": {
-      },
+      "output": {},
       "display": "always",
       "description": "Get data from a data plugin"
     },
@@ -224,7 +220,7 @@
         "fact": {
           "description": "The name of the fact being returned",
           "display_as": "Fact",
-          "default": null
+          "type": "string"
         },
         "value": {
           "description": "The value of the fact",
@@ -247,7 +243,7 @@
       "action": "get_facts",
       "input": {
         "facts": {
-          "prompt": "Comma-separated list of facts",
+          "prompt": "Comma-separated list of facts to retrieve",
           "description": "Facts to retrieve",
           "type": "string",
           "default": null,
@@ -260,7 +256,7 @@
         "values": {
           "description": "List of values of the facts",
           "display_as": "Values",
-          "default": null
+          "type": "hash"
         }
       },
       "display": "always",
@@ -274,41 +270,42 @@
         "agents": {
           "description": "List of agent names",
           "display_as": "Agents",
-          "default": null
+          "type": "array"
         },
         "facts": {
           "description": "List of facts and values",
           "display_as": "Facts",
-          "default": null
+          "type": "hash"
         },
         "classes": {
           "description": "List of classes on the system",
           "display_as": "Classes",
-          "default": null
+          "type": "array"
         },
         "version": {
-          "description": "MCollective Version",
+          "description": "Choria Server Version",
           "display_as": "Version",
-          "default": null
+          "type": "string"
         },
         "main_collective": {
           "description": "The main Collective",
           "display_as": "Main Collective",
-          "default": null
+          "type": "string"
         },
         "collectives": {
           "description": "All Collectives",
           "display_as": "All Collectives",
-          "default": null
+          "type": "array"
         },
         "data_plugins": {
           "description": "List of data plugin names",
           "display_as": "Data Plugins",
-          "default": null
+          "type": "array"
         },
         "machines": {
           "description": "Autonomous Agents",
-          "display_as": "Machines"
+          "display_as": "Machines",
+          "type": "hash"
         }
       },
       "display": "always",
@@ -320,9 +317,9 @@
       },
       "output": {
         "pong": {
-          "description": "The local timestamp",
+          "description": "The local Unix timestamp",
           "display_as": "Timestamp",
-          "default": null
+          "type": "string"
         }
       },
       "display": "always",

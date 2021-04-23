@@ -218,7 +218,7 @@ func (p *RpcutilClient) DiscoverNodes(ctx context.Context) (nodes []string, err 
 
 // AgentInventory performs the agent_inventory action
 //
-// Description: Inventory of all agents on the server
+// Description: Inventory of all agents on the server including versions, licenses and more
 func (p *RpcutilClient) AgentInventory() *AgentInventoryRequester {
 	d := &AgentInventoryRequester{
 		outc: nil,
@@ -234,7 +234,7 @@ func (p *RpcutilClient) AgentInventory() *AgentInventoryRequester {
 
 // CollectiveInfo performs the collective_info action
 //
-// Description: Info about the main and sub collectives
+// Description: Info about the main and sub collectives that the server belongs to
 func (p *RpcutilClient) CollectiveInfo() *CollectiveInfoRequester {
 	d := &CollectiveInfoRequester{
 		outc: nil,
