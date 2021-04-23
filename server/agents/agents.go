@@ -13,7 +13,6 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/data/ddl"
 	"github.com/choria-io/go-choria/statistics"
-
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent"
@@ -75,15 +74,25 @@ type Metadata struct {
 
 // Manager manages agents, handles registration, dispatches requests etc
 type Manager struct {
-	agents     map[string]Agent
-	subs       map[string][]string
-	fw         *choria.Framework
-	log        *logrus.Entry
-	mu         *sync.Mutex
-	conn       choria.ConnectorInfo
-	serverInfo ServerInfoSource
-	denylist   []string
-	requests   chan *choria.ConnectorMessage
+	agents       map[string]Agent
+	subs         map[string][]string
+	fw           *choria.Framework
+	log          *logrus.Entry
+	mu           *sync.Mutex
+	conn         choria.ConnectorInfo
+	serverInfo   ServerInfoSource
+	denylist     []string
+	requests     chan *choria.ConnectorMessage
+	servicesOnly bool
+}
+
+// NewServices creates an agent manager restricted to service agents
+func NewServices(requests chan *choria.ConnectorMessage, fw *choria.Framework, conn choria.ConnectorInfo, srv ServerInfoSource, log *logrus.Entry) *Manager {
+	m := New(requests, fw, conn, srv, log)
+	m.servicesOnly = true
+	m.log = m.log.WithField("service_host", true)
+
+	return m
 }
 
 // New creates a new Agent Manager
@@ -109,6 +118,11 @@ func (a *Manager) DenyAgent(agent string) {
 func (a *Manager) RegisterAgent(ctx context.Context, name string, agent Agent, conn choria.AgentConnector) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
+
+	if a.servicesOnly && !agent.Metadata().Service {
+		a.log.Infof("Denying non Service Agent %s", name)
+		return nil
+	}
 
 	if !agent.ShouldActivate() {
 		a.log.Infof("Agent %s not activating due to ShouldActivate checks", name)
@@ -154,9 +168,9 @@ func (a *Manager) KnownAgents() []string {
 	return known
 }
 
-func (a *Manager) agentDenied(agent string) bool {
+func (a *Manager) agentDenied(name string) bool {
 	for _, n := range a.denylist {
-		if n == agent {
+		if n == name {
 			return true
 		}
 	}

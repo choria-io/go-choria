@@ -161,6 +161,24 @@ var _ = Describe("Server/Agents", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
+		It("should only register service agents in service host mode", func() {
+			mgr.servicesOnly = true
+
+			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(mgr.agents).To(HaveLen(0))
+
+			agent.Metadata().Service = true
+			conn.EXPECT().ServiceBroadcastTarget("cone", "stub").Return("cone.stub")
+			conn.EXPECT().ServiceBroadcastTarget("ctwo", "stub").Return("ctwo.stub")
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "cone.stub", "cone.stub", "stub", gomock.Any()).Return(nil).Times(1)
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "ctwo.stub", "ctwo.stub", "stub", gomock.Any()).Return(nil).Times(1)
+			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
+			err = mgr.RegisterAgent(ctx, "stub", agent, conn)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(mgr.agents).To(HaveLen(1))
+		})
+
 		It("should handle subscribe failures", func() {
 			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
 			conn.EXPECT().AgentBroadcastTarget("cone", "stub").Return("cone.stub")
