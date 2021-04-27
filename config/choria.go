@@ -45,6 +45,8 @@ type ChoriaPluginConfig struct {
 	RandomizeMiddlewareHosts bool     `confkey:"plugin.choria.randomize_middleware_hosts" default:"true"`            // Shuffle middleware hosts before connecting to spread traffic of initial connections
 
 	NetworkListenAddress          string        `confkey:"plugin.choria.network.listen_address" default:"::" url:"https://choria.io/docs/deployment/broker/"` // Address the Network Broker will listen on
+	NetworkWebSocketPort          int           `confkey:"plugin.choria.network.websocket_port" url:"https://choria.io/docs/deployment/broker/"`              // Port to listen on for websocket connections
+	NetworkWebSocketAdvertise     string        `confkey:"plugin.choria.network.websocket_advertise" url:"https://choria.io/docs/deployment/broker/"`         // The URL to advertise for websocket connections
 	NetworkClientPort             int           `confkey:"plugin.choria.network.client_port" default:"4222" url:"https://choria.io/docs/deployment/broker/"`  // Port the Network Broker will accept client connections on
 	NetworkClientTLSForce         bool          `confkey:"plugin.choria.network.client_tls_force_required"`                                                   // Force requiring/not requiring TLS for all clients
 	NetworkClientTLSAnon          bool          `confkey:"plugin.choria.network.client_anon_tls"`                                                             // Use anonymous TLS for client connections (disables verification)
@@ -61,7 +63,7 @@ type ChoriaPluginConfig struct {
 	NetworkAllowedClientHosts     []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`                                             // CIDRs to limit client connections from, appropriate ACLs are added based on this
 	NetworkDenyServers            bool          `confkey:"plugin.choria.network.deny_server_connections"`                                                     // Set ACLs denying server connections to this broker
 	NetworkTLSTimeout             int           `confkey:"plugin.choria.network.tls_timeout" default:"2"`                                                     // Time to allow for TLS connections to establish, increase on slow or very large networks
-	NetworkClientAdvertiseName    string        `confkey:"plugin.choria.network.public_url"`                                                                  // Name to advertise to clients, useful when fronted by a proxy
+	NetworkClientAdvertiseName    string        `confkey:"plugin.choria.network.public_url"`                                                                  // Name:Port to advertise to clients, useful when fronted by a proxy
 	NetworkStreamStore            string        `confkey:"plugin.choria.network.stream.store" type:"path_string"`                                             // Enables Streaming data persistence stored in this path
 	NetworkEventStoreDuration     time.Duration `confkey:"plugin.choria.network.stream.event_retention" type:"duration" default:"24h"`                        // When not zero enables retaining Lifecycle events in the Stream Store
 	NetworkEventStoreReplicas     int           `confkey:"plugin.choria.network.stream.event_replicas" default:"1"`                                           // When configuring LifeCycle events ensure data is replicated in the cluster over this many servers

@@ -560,7 +560,7 @@ func (conn *Connection) ConnectedServer() string {
 		return "unknown"
 	}
 
-	return fmt.Sprintf("nats://%s:%s", strings.TrimSuffix(url.Hostname(), "."), url.Port())
+	return url.String()
 }
 
 // Connect creates a new connection to NATS.
