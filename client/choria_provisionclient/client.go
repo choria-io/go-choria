@@ -278,7 +278,7 @@ func (p *ChoriaProvisionClient) Gencsr() *GencsrRequester {
 //
 // Optional Inputs:
 //    - token (string) - Authentication token to pass to the server
-func (p *ChoriaProvisionClient) ReleaseUpdate(repositoryI string, versionI string) *ReleaseUpdateRequester {
+func (p *ChoriaProvisionClient) ReleaseUpdate(versionI string, repositoryI string) *ReleaseUpdateRequester {
 	d := &ReleaseUpdateRequester{
 		outc: nil,
 		r: &requester{

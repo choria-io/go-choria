@@ -24,7 +24,7 @@ func StringHostsToServers(hosts []string, scheme string) (servers Servers, err e
 		if err == nil && u.Host != "" {
 			s = u.Host
 
-			if scheme == "" {
+			if u.Scheme != "" {
 				detectedScheme = u.Scheme
 			}
 		}

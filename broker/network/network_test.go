@@ -1,13 +1,13 @@
 package network
 
 import (
-	tls "crypto/tls"
+	"crypto/tls"
 	"testing"
 	"time"
 
 	"github.com/choria-io/go-choria/srvcache"
-	gomock "github.com/golang/mock/gomock"
-	logrus "github.com/sirupsen/logrus"
+	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/config"
 	. "github.com/onsi/ginkgo"
@@ -121,6 +121,37 @@ var _ = Describe("Network Broker", func() {
 			srv, err = NewServer(fw, bi, false)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(srv.opts.TLS).To(BeTrue())
+		})
+
+		Describe("WebSocket", func() {
+			BeforeEach(func() {
+				fw = NewMockChoriaFramework(mockctl)
+
+				fw.EXPECT().Configuration().Return(cfg).AnyTimes()
+				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
+				fw.EXPECT().Logger(gomock.Any()).Return(logger).AnyTimes()
+			})
+
+			It("Should fail in anon tls mode", func() {
+				cfg.Choria.NetworkLeafPort = 6222
+				cfg.Choria.NetworkClientTLSAnon = true
+				cfg.Choria.NetworkWebSocketPort = 4223
+				cfg.Choria.NetworkLeafRemotes = []string{"n1.example.net:6222"}
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).To(MatchError("could not set up WebSocket: disabled when anonymous TLS is configured"))
+
+			})
+			It("Should correctly configure websockets", func() {
+				cfg.Choria.NetworkWebSocketPort = 4223
+				cfg.Choria.NetworkWebSocketAdvertise = "wss://example.net:433"
+				srv, err = NewServer(fw, bi, false)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(srv.opts.Websocket.Port).To(Equal(cfg.Choria.NetworkWebSocketPort))
+
+				tlsc, _ := fw.TLSConfig()
+				Expect(srv.opts.Websocket.TLSConfig).To(Equal(tlsc))
+			})
 		})
 
 		Describe("Gateways", func() {

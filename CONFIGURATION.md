@@ -53,6 +53,7 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.network.stream.machine_replicas](#pluginchorianetworkstreammachine_replicas)|[plugin.choria.network.stream.machine_retention](#pluginchorianetworkstreammachine_retention)|
 |[plugin.choria.network.stream.store](#pluginchorianetworkstreamstore)|[plugin.choria.network.system.password](#pluginchorianetworksystempassword)|
 |[plugin.choria.network.system.user](#pluginchorianetworksystemuser)|[plugin.choria.network.tls_timeout](#pluginchorianetworktls_timeout)|
+|[plugin.choria.network.websocket_advertise](#pluginchorianetworkwebsocket_advertise)|[plugin.choria.network.websocket_port](#pluginchorianetworkwebsocket_port)|
 |[plugin.choria.network.write_deadline](#pluginchorianetworkwrite_deadline)|[plugin.choria.prometheus_textfile_directory](#pluginchoriaprometheus_textfile_directory)|
 |[plugin.choria.puppetca_host](#pluginchoriapuppetca_host)|[plugin.choria.puppetca_port](#pluginchoriapuppetca_port)|
 |[plugin.choria.puppetdb_host](#pluginchoriapuppetdb_host)|[plugin.choria.puppetdb_port](#pluginchoriapuppetdb_port)|
@@ -484,7 +485,7 @@ The port the network broker will listen on for pprof requests
 
  * **Type:** string
 
-Name to advertise to clients, useful when fronted by a proxy
+Name:Port to advertise to clients, useful when fronted by a proxy
 
 ## plugin.choria.network.stream.advisory_replicas
 
@@ -552,6 +553,20 @@ Username used to access the Choria system account
  * **Default Value:** 2
 
 Time to allow for TLS connections to establish, increase on slow or very large networks
+
+## plugin.choria.network.websocket_advertise
+
+ * **Type:** string
+ * **Additional Information:** https://choria.io/docs/deployment/broker/
+
+The URL to advertise for websocket connections
+
+## plugin.choria.network.websocket_port
+
+ * **Type:** integer
+ * **Additional Information:** https://choria.io/docs/deployment/broker/
+
+Port to listen on for websocket connections
 
 ## plugin.choria.network.write_deadline
 

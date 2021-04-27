@@ -112,6 +112,11 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		return s, fmt.Errorf("could not set up accounts: %s", err)
 	}
 
+	err = s.setupWebSockets()
+	if err != nil {
+		return s, fmt.Errorf("could not set up WebSocket: %s", err)
+	}
+
 	// This has to happen after accounts to ensure local accounts exist to map things
 	err = s.setupLeafNodes()
 	if err != nil {
