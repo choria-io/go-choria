@@ -229,6 +229,9 @@ func (p *ChoriaUtilClient) Info() *InfoRequester {
 		},
 	}
 
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
 	return d
 }
 
@@ -250,6 +253,9 @@ func (p *ChoriaUtilClient) MachineState() *MachineStateRequester {
 		},
 	}
 
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
 	return d
 }
 
@@ -266,6 +272,9 @@ func (p *ChoriaUtilClient) MachineStates() *MachineStatesRequester {
 		},
 	}
 
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
 	return d
 }
 
@@ -281,17 +290,20 @@ func (p *ChoriaUtilClient) MachineStates() *MachineStatesRequester {
 //    - name (string) - Machine Name
 //    - path (string) - Machine Path
 //    - version (string) - Machine Version
-func (p *ChoriaUtilClient) MachineTransition(transitionI string) *MachineTransitionRequester {
+func (p *ChoriaUtilClient) MachineTransition(inputTransition string) *MachineTransitionRequester {
 	d := &MachineTransitionRequester{
 		outc: nil,
 		r: &requester{
 			args: map[string]interface{}{
-				"transition": transitionI,
+				"transition": inputTransition,
 			},
 			action: "machine_transition",
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }

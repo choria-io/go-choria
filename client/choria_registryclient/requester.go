@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT
 
-package rpcutilclient
+package choria_registryclient
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 
 // requester is a generic request handler
 type requester struct {
-	client   *RpcutilClient
+	client   *ChoriaRegistryClient
 	action   string
 	args     map[string]interface{}
 	progress *uiprogress.Bar

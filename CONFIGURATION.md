@@ -65,7 +65,8 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.security.privileged_users](#pluginchoriasecurityprivileged_users)|[plugin.choria.security.request_signer.token_environment](#pluginchoriasecurityrequest_signertoken_environment)|
 |[plugin.choria.security.request_signer.token_file](#pluginchoriasecurityrequest_signertoken_file)|[plugin.choria.security.request_signer.url](#pluginchoriasecurityrequest_signerurl)|
 |[plugin.choria.security.request_signing_certificate](#pluginchoriasecurityrequest_signing_certificate)|[plugin.choria.security.serializer](#pluginchoriasecurityserializer)|
-|[plugin.choria.server.provision](#pluginchoriaserverprovision)|[plugin.choria.srv_domain](#pluginchoriasrv_domain)|
+|[plugin.choria.server.provision](#pluginchoriaserverprovision)|[plugin.choria.services.registry.client](#pluginchoriaservicesregistryclient)|
+|[plugin.choria.services.registry.enable](#pluginchoriaservicesregistryenable)|[plugin.choria.srv_domain](#pluginchoriasrv_domain)|
 |[plugin.choria.ssldir](#pluginchoriassldir)|[plugin.choria.stats_address](#pluginchoriastats_address)|
 |[plugin.choria.stats_port](#pluginchoriastats_port)|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|
 |[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|[plugin.choria.use_srv](#pluginchoriause_srv)|
@@ -725,6 +726,20 @@ The public certificate of the key used to sign the JWTs in the Signing Service
  * **Default Value:** false
 
 Specifically enable or disable provisioning
+
+## plugin.choria.services.registry.client
+
+ * **Type:** boolean
+ * **Default Value:** false
+
+Enable downloading DDLs and other schemas from the registry service
+
+## plugin.choria.services.registry.enable
+
+ * **Type:** boolean
+ * **Default Value:** false
+
+If the registry service should be enabled on this server
 
 ## plugin.choria.srv_domain
 

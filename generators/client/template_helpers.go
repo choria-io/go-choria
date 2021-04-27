@@ -22,6 +22,20 @@ func (g *Generator) templFSnakeToCamel(v string) string {
 	return strings.Join(out, "")
 }
 
+func (g *Generator) templFSnakeToCamelUnexported(v string) string {
+	parts := strings.Split(v, "_")
+	out := []string{}
+	for i, s := range parts {
+		if i == 0 {
+			out = append(out, strings.ToLower(s))
+		} else {
+			out = append(out, strings.Title(s))
+		}
+	}
+
+	return strings.Join(out, "")
+}
+
 func (g *Generator) templFChoriaTypeToValOfType(v string) string {
 	switch v {
 	case "string", "list":
@@ -43,11 +57,11 @@ func (g *Generator) templFChoriaTypeToValOfType(v string) string {
 
 func (g *Generator) templFChoriaRequiredInputsToFuncArgs(act *addl.Action) string {
 	inputs := g.optionalInputSelect(act, false)
-	parts := []string{}
+	var parts []string
 
 	for name, input := range inputs {
 		goType := g.templFChoriaTypeToGo(input.Type)
-		parts = append(parts, fmt.Sprintf("%sI %s", strings.ToLower(name), goType))
+		parts = append(parts, fmt.Sprintf("input%s %s", g.templFSnakeToCamel(name), goType))
 	}
 
 	return strings.Join(parts, ", ")
@@ -98,6 +112,7 @@ func (g *Generator) funcMap() template.FuncMap {
 		"Capitalize":                     strings.Title,
 		"ToLower":                        strings.ToLower,
 		"SnakeToCamel":                   g.templFSnakeToCamel,
+		"SnakeToCamelUnexported":         g.templFSnakeToCamelUnexported,
 		"ChoriaRequiredInputs":           g.templFChoriaRequiredInputs,
 		"ChoriaOptionalInputs":           g.templFChoriaOptionalInputs,
 		"ChoriaRequiredInputsToFuncArgs": g.templFChoriaRequiredInputsToFuncArgs,

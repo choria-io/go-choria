@@ -1,0 +1,74 @@
+{
+  "$schema": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
+  "metadata": {
+    "license": "Apache-2.0",
+    "author": "rip@devco.net \u003crip@devco.net\u003e",
+    "timeout": 2,
+    "name": "choria_registry",
+    "version": "0.23.0",
+    "url": "https://choria.io",
+    "description": "Choria Registry Service",
+    "provider": "golang",
+    "service": true
+  },
+  "actions": [
+    {
+      "action": "ddl",
+      "input": {
+        "format": {
+          "prompt": "Plugin Format",
+          "description": "The result format the plugin should be retrieved in",
+          "type": "list",
+          "default": "json",
+          "optional": true,
+          "list": [
+            "ddl",
+            "json"
+          ]
+        },
+        "name": {
+          "prompt": "Plugin Name",
+          "description": "The name of the plugin",
+          "type": "string",
+          "optional": false,
+          "validation": "shellsafe",
+          "maxlength": 64
+        },
+        "plugin_type": {
+          "prompt": "Plugin Type",
+          "description": "The type of plugin",
+          "type": "list",
+          "default": "agent",
+          "optional": false,
+          "list": [
+            "agent"
+          ]
+        }
+      },
+      "output": {
+        "ddl": {
+          "description": "The plugin DDL in the requested format",
+          "display_as": "DDL",
+          "type": "string"
+        },
+        "name": {
+          "description": "The name of the plugin",
+          "display_as": "Name",
+          "type": "string"
+        },
+        "plugin_type": {
+          "description": "The type of plugin",
+          "display_as": "Type",
+          "type": "string"
+        },
+        "version": {
+          "description": "The version of the plugin",
+          "display_as": "Version",
+          "type": "string"
+        }
+      },
+      "display": "always",
+      "description": "Retrieve the DDL for a specific plugin"
+    }
+  ]
+}

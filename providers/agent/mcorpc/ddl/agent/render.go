@@ -1,6 +1,8 @@
 package agent
 
-import "github.com/choria-io/go-choria/internal/fs"
+import (
+	"github.com/choria-io/go-choria/internal/fs"
+)
 
 // RenderConsole create console appropriate output for agent provider ddls
 func (d *DDL) RenderConsole() ([]byte, error) {

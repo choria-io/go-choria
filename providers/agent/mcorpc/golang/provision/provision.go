@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/plugin"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server"
@@ -25,10 +26,10 @@ var metadata = &agents.Metadata{
 	Name:        "choria_provision",
 	Description: "Choria Provisioner",
 	Author:      "R.I.Pienaar <rip@devco.net>",
-	Version:     "0.3.1",
-	License:     "Apache-2.0",
+	Version:     build.Version,
+	License:     build.License,
 	Timeout:     20,
-	URL:         "http://choria.io",
+	URL:         "https://choria.io",
 }
 
 var restartCb = restart

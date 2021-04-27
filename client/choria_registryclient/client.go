@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT
 
-package {{ .Package }}
+package choria_registryclient
 
 import (
 	"fmt"
@@ -12,10 +12,10 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	coreclient "github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/srvcache"
+	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
-	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
 )
 
@@ -105,9 +105,9 @@ type Log interface {
 	Panicf(format string, args ...interface{})
 }
 
-// {{ .DDL.Metadata.Name | SnakeToCamel }}Client to the {{ .DDL.Metadata.Name }} agent
-type {{ .DDL.Metadata.Name | SnakeToCamel }}Client struct {
-	fw           ChoriaFramework
+// ChoriaRegistryClient to the choria_registry agent
+type ChoriaRegistryClient struct {
+	fw            ChoriaFramework
 	cfg           *config.Config
 	ddl           *agent.DDL
 	ns            NodeSource
@@ -115,7 +115,7 @@ type {{ .DDL.Metadata.Name | SnakeToCamel }}Client struct {
 	clientRPCOpts []rpcclient.RequestOption
 	filters       []FilterFunc
 	targets       []string
-	workers	      int
+	workers       int
 	exprFilter    string
 
 	sync.Mutex
@@ -133,7 +133,7 @@ type Metadata struct {
 }
 
 // Must create a new client and panics on error
-func Must(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) {
+func Must(opts ...InitializationOption) (client *ChoriaRegistryClient) {
 	c, err := New(opts...)
 	if err != nil {
 		panic(err)
@@ -142,13 +142,13 @@ func Must(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeTo
 	return c
 }
 
-// New creates a new client to the {{ .DDL.Metadata.Name }} agent
-func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToCamel }}Client, err error) {
-	c := &{{ .DDL.Metadata.Name | SnakeToCamel }}Client{
+// New creates a new client to the choria_registry agent
+func New(opts ...InitializationOption) (client *ChoriaRegistryClient, err error) {
+	c := &ChoriaRegistryClient{
 		ddl:           &agent.DDL{},
 		clientRPCOpts: []rpcclient.RequestOption{},
-		filters:       []FilterFunc{
-		    FilterFunc(coreclient.AgentFilter("{{ .DDL.Metadata.Name }}")),
+		filters: []FilterFunc{
+			FilterFunc(coreclient.AgentFilter("choria_registry")),
 		},
 		clientOpts: &initOptions{
 			cfgFile: choria.UserConfig(),
@@ -182,7 +182,7 @@ func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToC
 	c.ns = c.clientOpts.ns
 
 	if c.clientOpts.logger == nil {
-		c.clientOpts.logger = c.fw.Logger("{{ .DDL.Metadata.Name }}")
+		c.clientOpts.logger = c.fw.Logger("choria_registry")
 	} else {
 		c.fw.SetLogger(c.clientOpts.logger.Logger)
 	}
@@ -196,7 +196,7 @@ func New(opts ...InitializationOption) (client *{{ .DDL.Metadata.Name | SnakeToC
 }
 
 // AgentMetadata is the agent metadata this client supports
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) AgentMetadata() *Metadata {
+func (p *ChoriaRegistryClient) AgentMetadata() *Metadata {
 	return &Metadata{
 		License:     p.ddl.Metadata.License,
 		Author:      p.ddl.Metadata.Author,
@@ -209,41 +209,32 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) AgentMetadata() *Metadat
 }
 
 // DiscoverNodes performs a discovery using the configured filter and node source
-func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) DiscoverNodes(ctx context.Context) (nodes []string, err error) {
+func (p *ChoriaRegistryClient) DiscoverNodes(ctx context.Context) (nodes []string, err error) {
 	p.Lock()
 	defer p.Unlock()
 
 	return p.ns.Discover(ctx, p.fw, p.filters)
 }
 
-{{ range $i, $action := .DDL.Actions }}
-// {{ $action.Name | SnakeToCamel }} performs the {{ $action.Name | ToLower }} action
+// Ddl performs the ddl action
 //
-// Description: {{ $action.Description }}
-{{- if ChoriaRequiredInputs $action }}
+// Description: Retrieve the DDL for a specific plugin
 //
 // Required Inputs:
-{{- range $name, $input := ChoriaRequiredInputs $action }}
-//    - {{ $name }} ({{ $input.Type | ChoriaTypeToGoType }}) - {{ $input.Description }}
-{{- end }}
-{{- end }}
-{{- if ChoriaOptionalInputs $action }}
+//    - name (string) - The name of the plugin
+//    - plugin_type (string) - The type of plugin
 //
 // Optional Inputs:
-{{- range $name, $input := ChoriaOptionalInputs $action }}
-//    - {{ $name }} ({{ $input.Type | ChoriaTypeToGoType }}) - {{ $input.Description }}
-{{- end }}
-{{- end }}
-func (p *{{ $.DDL.Metadata.Name | SnakeToCamel }}Client) {{ $action.Name | SnakeToCamel }}({{ $action | ChoriaRequiredInputsToFuncArgs }}) *{{ $action.Name | SnakeToCamel }}Requester {
-	d := &{{ $action.Name | SnakeToCamel }}Requester{
+//    - format (string) - The result format the plugin should be retrieved in
+func (p *ChoriaRegistryClient) Ddl(inputName string, inputPluginType string) *DdlRequester {
+	d := &DdlRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{
-{{- range $name, $input := ChoriaRequiredInputs $action }}
-				"{{ $name }}": input{{ $name | SnakeToCamel }},
-{{- end }}
+			args: map[string]interface{}{
+				"name":        inputName,
+				"plugin_type": inputPluginType,
 			},
-			action: "{{ $action.Name | ToLower }}",
+			action: "ddl",
 			client: p,
 		},
 	}
@@ -253,4 +244,3 @@ func (p *{{ $.DDL.Metadata.Name | SnakeToCamel }}Client) {{ $action.Name | Snake
 
 	return d
 }
-{{ end }}

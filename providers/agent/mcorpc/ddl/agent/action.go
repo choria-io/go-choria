@@ -168,6 +168,22 @@ func (a *Action) RequiresInput(input string) bool {
 	return i.Required()
 }
 
+// SetDefaults looks through inputs and sets default values on any values with defaults that's not been set
+func (a *Action) SetDefaults(inputs map[string]interface{}) error {
+	for _, iname := range a.InputNames() {
+		input := a.Input[iname]
+
+		_, ok := inputs[iname]
+		if !ok {
+			if input.Default != nil {
+				inputs[iname] = input.Default
+			}
+		}
+	}
+
+	return nil
+}
+
 // ValidateAndConvertToDDLTypes takes a map of strings like you might receive from the CLI, convert each
 // item to the correct type according to the DDL type hints associated with inputs, validates its valid
 // according to the DDL hints and returns a map of interface{} ready for conversion to JSON that would

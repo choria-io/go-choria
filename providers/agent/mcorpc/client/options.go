@@ -261,7 +261,9 @@ func BroadcastRequest() RequestOption {
 //
 // **Note**: does not support filters or targets
 func ServiceRequest() RequestOption {
-	return func(o *RequestOptions) { o.RequestType = choria.ServiceRequestMessageType }
+	return func(o *RequestOptions) {
+		o.RequestType = choria.ServiceRequestMessageType
+	}
 }
 
 // Workers configures the amount of workers used to process responses

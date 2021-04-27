@@ -31,22 +31,22 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 	filters := r.client.filters
 	fw := r.client.fw
 
-	var discoveryStart time.Time
-	var discoveryEnd time.Time
+	opts := []rpcclient.RequestOption{}
+	discoveryStart := time.Now()
 
-	if len(targets) == 0 {
+	if r.client.ddl.Metadata.Service {
+		opts = append(opts, rpcclient.ServiceRequest(), rpcclient.Workers(1))
+	} else if len(targets) == 0 {
 		if r.client.clientOpts.progress {
 			fmt.Print("Discovering nodes .... ")
 		} else {
 			r.client.infof("Starting discovery")
 		}
 
-		discoveryStart = time.Now()
 		targets, err = discoverer.Discover(ctx, fw, filters)
 		if err != nil {
 			return nil, err
 		}
-		discoveryEnd = time.Now()
 
 		if len(targets) == 0 {
 			return nil, fmt.Errorf("no nodes were discovered")
@@ -57,17 +57,22 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 		} else {
 			r.client.infof("Discovered %d nodes", len(targets))
 		}
+
+		if r.client.workers > 0 {
+			opts = append(opts, rpcclient.Workers(r.client.workers))
+		}
+
+		if r.client.exprFilter != "" {
+			opts = append(opts, rpcclient.ReplyExprFilter(r.client.exprFilter))
+		}
+	}
+	discoveryEnd := time.Now()
+
+	if len(targets) > 0 {
+		opts = append(opts, rpcclient.Targets(targets))
 	}
 
-	opts := []rpcclient.RequestOption{rpcclient.Targets(targets)}
 	opts = append(opts, r.client.clientRPCOpts...)
-	if r.client.workers > 0 {
-		opts = append(opts, rpcclient.Workers(r.client.workers))
-	}
-
-	if r.client.exprFilter != "" {
-		opts = append(opts, rpcclient.ReplyExprFilter(r.client.exprFilter))
-	}
 
 	r.client.Unlock()
 

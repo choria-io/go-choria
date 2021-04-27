@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"testing"
 
 	v1 "github.com/choria-io/go-choria/protocol/v1"
 
@@ -14,14 +15,12 @@ import (
 	"github.com/choria-io/go-choria/server/agents"
 
 	"github.com/choria-io/go-choria/choria"
-	client "github.com/choria-io/go-choria/client/client"
+	"github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/protocol"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"testing"
 )
 
 func TestMcoRPC(t *testing.T) {
@@ -30,7 +29,7 @@ func TestMcoRPC(t *testing.T) {
 	RunSpecs(t, "Providers/Agent/McoRPC/Client")
 }
 
-var _ = Describe("McoRPC/Client", func() {
+var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 	var (
 		fw      *choria.Framework
 		rpc     *RPC
@@ -70,6 +69,7 @@ var _ = Describe("McoRPC/Client", func() {
 
 	Describe("SetOptions", func() {
 		It("Should set the options", func() {
+			Expect(rpc.ResolveDDL(context.Background())).ToNot(HaveOccurred())
 			rpc.setOptions()
 			Expect(rpc.opts.BatchSize).To(Equal(0))
 			rpc.setOptions(InBatches(10, 1))
@@ -104,10 +104,8 @@ var _ = Describe("McoRPC/Client", func() {
 	})
 
 	Describe("New", func() {
-		var ddl *agent.DDL
-
-		BeforeEach(func() {
-			ddl = &agent.DDL{
+		It("Should accept DDLs as an argument", func() {
+			ddl := &agent.DDL{
 				Metadata: &agents.Metadata{
 					Name:        "backplane",
 					Description: "Choria Management Backplane",
@@ -120,22 +118,41 @@ var _ = Describe("McoRPC/Client", func() {
 				Actions: []*agent.Action{},
 				Schema:  "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
 			}
-		})
 
-		It("Should accept DDLs as an argument", func() {
 			rpc, err = New(fw, "backplane", DDL(ddl))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(rpc).ToNot(BeNil())
 		})
-
-		It("Should only accept DDLs for the requested agent", func() {
-			rpc, err = New(fw, "package", DDL(ddl))
-			Expect(err).To(MatchError("the DDL does not describe the package agent"))
-			Expect(rpc).To(BeNil())
-		})
 	})
 
 	Describe("Do", func() {
+		It("Should only accept DDLs for the requested agent", func() {
+			ddl := &agent.DDL{
+				Metadata: &agents.Metadata{
+					Name:        "backplane",
+					Description: "Choria Management Backplane",
+					Author:      "R.I.Pienaar <rip@devco.net>",
+					Version:     "1.0.0",
+					License:     "Apache-2.0",
+					URL:         "https://choria.io",
+					Timeout:     10,
+				},
+				Actions: []*agent.Action{},
+				Schema:  "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
+			}
+
+			rpc, err = New(fw, "package", DDL(ddl))
+			_, err := rpc.Do(
+				ctx,
+				"test_action",
+				request{Testing: true},
+				Targets(strings.Fields("host1 host2")),
+				ReplyTo("custom.reply.to"),
+				InBatches(1, -1),
+			)
+			Expect(err).To(MatchError("the DDL does not describe the package agent"))
+		})
+
 		It("Should perform the request", func() {
 			reqid := ""
 			handled := 0

@@ -12,7 +12,7 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
-	nats "github.com/nats-io/nats.go"
+	"github.com/nats-io/nats.go"
 )
 
 type info struct {
@@ -95,7 +95,7 @@ func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 		Version:     bi.Version(),
 		License:     bi.License(),
 		Timeout:     10,
-		URL:         "http://choria.io",
+		URL:         "https://choria.io",
 	}
 
 	agent := mcorpc.New("choria_util", metadata, mgr.Choria(), mgr.Logger())
