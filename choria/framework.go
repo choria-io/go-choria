@@ -376,8 +376,6 @@ func (fw *Framework) MiddlewareServers() (servers srvcache.Servers, err error) {
 		}
 	})
 
-	fw.log.Warnf("servers: %#v", servers.Strings())
-
 	return servers, nil
 }
 
