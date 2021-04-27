@@ -62,7 +62,7 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 
 // Logger creates a new logger instance
 func (srv *Instance) Logger(component string) *log.Entry {
-	return srv.fw.Logger(component)
+	return srv.log.WithField("subsystem", component)
 }
 
 // Shutdown signals to the server that it should shutdown
@@ -95,6 +95,7 @@ func (srv *Instance) PrepareForShutdown() error {
 	return nil
 }
 
+// RunServiceHost sets up a instance that will only host service agents, for now separate, might combine later with Run
 func (srv *Instance) RunServiceHost(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
@@ -107,6 +108,7 @@ func (srv *Instance) RunServiceHost(ctx context.Context, wg *sync.WaitGroup) err
 	pctx, srv.stopProcess = context.WithCancel(sctx)
 	srv.mu.Unlock()
 
+	srv.log = srv.log.WithField("service_host", true)
 	srv.lifecycleComponent = "service_host"
 
 	err := srv.initialConnect(sctx)

@@ -131,6 +131,9 @@ type ChoriaPluginConfig struct {
 	ScoutAgentDisabled    bool   `confkey:"plugin.scout.agent_disabled"`                                    // Disables the scout agent
 
 	RequireClientFilter bool `confkey:"plugin.choria.require_client_filter" default:"false"` // If a client filter should always be required, only used in Go clients
+
+	RegistryServiceEnabled bool `confkey:"plugin.choria.services.registry.enable" default:"false"` // If the registry service should be enabled on this server
+	RegistryClientEnabled  bool `confkey:"plugin.choria.services.registry.client" default:"false"` // Enable downloading DDLs and other schemas from the registry service
 }
 
 func newChoria() *ChoriaPluginConfig {

@@ -13,6 +13,7 @@ import (
 	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 	"github.com/gosuri/uiprogress"
+	log "github.com/sirupsen/logrus"
 )
 
 type reqCommand struct {
@@ -148,7 +149,26 @@ func (r *reqCommand) responseHandler(results *replyfmt.RPCResults) func(pr proto
 
 func (r *reqCommand) prepareConfiguration() (err error) {
 	r.ddl, err = agentddl.Find(r.agent, cfg.LibDir)
-	if err != nil {
+	if cfg.Choria.RegistryClientEnabled && err != nil {
+		msg := "Retrieving agent schema from the Choria Registry"
+		if r.jsonOnly {
+			log.Infof(msg)
+		} else {
+			fmt.Println(msg)
+		}
+
+		agent, err := rpc.New(c, r.agent)
+		if err != nil {
+			return err
+		}
+
+		err = agent.ResolveDDL(ctx)
+		if err != nil {
+			return err
+		}
+
+		r.ddl = agent.DDL()
+	} else if err != nil {
 		return fmt.Errorf("could not find DDL for agent %s: %s", r.agent, err)
 	}
 

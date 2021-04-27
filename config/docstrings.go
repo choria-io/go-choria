@@ -128,4 +128,6 @@ var docStrings = map[string]string{
 	"plugin.scout.tags":                                        "Path to a file holding tags for a Scout entity",
 	"plugin.scout.agent_disabled":                              "Disables the scout agent",
 	"plugin.choria.require_client_filter":                      "If a client filter should always be required, only used in Go clients",
+	"plugin.choria.services.registry.enable":                   "If the registry service should be enabled on this server",
+	"plugin.choria.services.registry.client":                   "Enable downloading DDLs and other schemas from the registry service",
 }

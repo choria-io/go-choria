@@ -5,12 +5,9 @@ import (
 	"encoding/json"
 	"fmt"
 	"sync"
-	"time"
 
-	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/vm"
-	"github.com/google/go-cmp/cmp"
-	"github.com/tidwall/gjson"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/registry"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/discovery/broadcast"
@@ -64,99 +61,6 @@ type RPCRequest struct {
 	Data   json.RawMessage `json:"data"`
 }
 
-// RPCReply is a basic RPC reply
-type RPCReply struct {
-	Statuscode mcorpc.StatusCode `json:"statuscode"`
-	Statusmsg  string            `json:"statusmsg"`
-	Data       json.RawMessage   `json:"data"`
-	Sender     string            `json:"-"`
-	Time       time.Time         `json:"-"`
-}
-
-// MatchExpr determines if the Reply  matches expression q using the expr format.
-// The query q is expected to return a boolean type else an error will be raised
-func (r *RPCReply) MatchExpr(q string, prog *vm.Program) (bool, *vm.Program, error) {
-	env := map[string]interface{}{
-		"msg":            r.Statusmsg,
-		"code":           int(r.Statuscode),
-		"data":           r.lookup,
-		"ok":             r.isOK,
-		"aborted":        r.isAborted,
-		"invalid_data":   r.isInvalidData,
-		"missing_data":   r.isMissingData,
-		"unknown_action": r.isUnknownAction,
-		"unknown_error":  r.isUnknownError,
-		"include":        r.include,
-		"sender":         func() string { return r.Sender },
-		"time":           func() time.Time { return r.Time },
-	}
-
-	var err error
-	if prog == nil {
-		prog, err = expr.Compile(q, expr.AsBool(), expr.AllowUndefinedVariables(), expr.Env(env))
-		if err != nil {
-			return false, nil, err
-		}
-	}
-
-	out, err := expr.Run(prog, env)
-	if err != nil {
-		return false, prog, err
-	}
-
-	matched, ok := out.(bool)
-	if !ok {
-		return false, prog, fmt.Errorf("match expressions should return boolean")
-	}
-
-	return matched, prog, nil
-}
-
-func (r *RPCReply) isOK() bool {
-	return r.Statuscode == mcorpc.OK
-}
-
-func (r *RPCReply) isAborted() bool {
-	return r.Statuscode == mcorpc.Aborted
-}
-
-func (r *RPCReply) isUnknownAction() bool {
-	return r.Statuscode == mcorpc.UnknownAction
-}
-
-func (r *RPCReply) isMissingData() bool {
-	return r.Statuscode == mcorpc.MissingData
-}
-
-func (r *RPCReply) isInvalidData() bool {
-	return r.Statuscode == mcorpc.InvalidData
-}
-
-func (r *RPCReply) isUnknownError() bool {
-	return r.Statuscode == mcorpc.UnknownError
-}
-
-// https://github.com/tidwall/gjson/blob/master/SYNTAX.md
-func (r *RPCReply) lookup(query string) interface{} {
-	return gjson.GetBytes(r.Data, query).Value()
-}
-
-func (r *RPCReply) include(hay []interface{}, needle interface{}) bool {
-	// gjson always turns numbers into float64
-	i, ok := needle.(int)
-	if ok {
-		needle = float64(i)
-	}
-
-	for _, i := range hay {
-		if cmp.Equal(i, needle) {
-			return true
-		}
-	}
-
-	return false
-}
-
 // RequestResult is the result of a request
 type RequestResult interface {
 	Stats() *Stats
@@ -202,7 +106,7 @@ func New(fw ChoriaFramework, agent string, opts ...Option) (rpc *RPC, err error)
 		fw:    fw,
 		cfg:   fw.Configuration(),
 		mu:    &sync.Mutex{},
-		log:   fw.Logger("mcorpc"),
+		log:   fw.Logger("rpc"),
 		agent: agent,
 		dm:    fw.Configuration().DefaultDiscoveryMethod,
 	}
@@ -211,18 +115,69 @@ func New(fw ChoriaFramework, agent string, opts ...Option) (rpc *RPC, err error)
 		opt(rpc)
 	}
 
-	if rpc.ddl == nil {
-		rpc.ddl, err = addl.Find(agent, rpc.cfg.LibDir)
-		if err != nil {
-			return nil, fmt.Errorf("could not load %s DDL: %s", agent, err)
-		}
-	}
-
-	if rpc.ddl.Metadata.Name != agent {
-		return nil, fmt.Errorf("the DDL does not describe the %s agent", agent)
-	}
-
 	return rpc, nil
+}
+
+func (r *RPC) loadDDLFromRegistry(ctx context.Context) error {
+	if !r.cfg.Choria.RegistryClientEnabled {
+		return fmt.Errorf("accessing Choria Registry is not enabled")
+	}
+
+	r.log.Infof("Attempting to load DDL for agent %s from the Choria Registry", r.agent)
+
+	ddl, err := addl.Find("choria_registry", append(r.cfg.LibDir, r.cfg.Choria.RubyLibdir...))
+	if err != nil {
+		return fmt.Errorf("choria_registry DDL lookup failed while tring to resolve %s DDL: %s", r.agent, err)
+	}
+
+	rc, err := New(r.fw, "choria_registry", DDL(ddl))
+	if err != nil {
+		return err
+	}
+
+	var (
+		resultErr error
+		mu        sync.Mutex
+	)
+
+	_, err = rc.Do(ctx, "ddl", registry.DDLRequest{Name: r.agent, PluginType: "agent", Format: "json"}, ReplyHandler(func(pr protocol.Reply, reply *RPCReply) {
+		mu.Lock()
+		defer mu.Unlock()
+
+		if resultErr != nil {
+			return
+		}
+
+		if reply.Statuscode != mcorpc.OK {
+			resultErr = fmt.Errorf("registry error from %s while resolving agent/%s: %s", pr.SenderID(), r.agent, reply.Statusmsg)
+			return
+		}
+
+		resp := registry.DDLResponse{}
+		err := json.Unmarshal(reply.Data, &resp)
+		if err != nil {
+			resultErr = fmt.Errorf("invalid choria_registry#ddl reply: %s", err)
+			return
+		}
+
+		if resp.Name != r.agent {
+			resultErr = fmt.Errorf("invalid choria_registry#ddl reply: unexpected agent %s", resp.Name)
+		}
+
+		r.ddl = &addl.DDL{}
+		resultErr = json.Unmarshal([]byte(resp.DDL), r.ddl)
+	}))
+	if err != nil {
+		return err
+	}
+	if resultErr != nil {
+		return resultErr
+	}
+
+	if r.ddl == nil {
+		return fmt.Errorf("%s DDL did not resolve via Choria Registry for unknown reason", r.agent)
+	}
+	return nil
 }
 
 func (r *RPC) setOptions(opts ...RequestOption) (err error) {
@@ -235,7 +190,41 @@ func (r *RPC) setOptions(opts ...RequestOption) (err error) {
 		opt(r.opts)
 	}
 
+	if r.ddl.Metadata.Service {
+		r.opts.Workers = 1
+		r.opts.RequestType = choria.ServiceRequestMessageType
+	}
+
 	return nil
+}
+
+func (r *RPC) ResolveDDL(ctx context.Context) error {
+	if r.ddl != nil {
+		return nil
+	}
+
+	var err error
+
+	if r.ddl == nil {
+		r.ddl, err = addl.Find(r.agent, r.cfg.LibDir)
+		if !r.cfg.Choria.RegistryClientEnabled && err != nil {
+			return fmt.Errorf("could not load %s DDL locally: %s", r.agent, err)
+		}
+
+		if r.ddl != nil {
+			return nil
+		}
+	}
+
+	return r.loadDDLFromRegistry(ctx)
+}
+
+// DDL returns the active DDL for this client
+func (r *RPC) DDL() *addl.DDL {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	return r.ddl
 }
 
 // Do performs a RPC request and optionally processes replies
@@ -246,8 +235,17 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
+	err := r.ResolveDDL(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	if r.ddl.Metadata.Name != r.agent {
+		return nil, fmt.Errorf("the DDL does not describe the %s agent", r.agent)
+	}
+
 	// we want to force the passing of options on every request
-	err := r.setOptions(opts...)
+	err = r.setOptions(opts...)
 	if err != nil {
 		return nil, err
 	}
@@ -255,7 +253,7 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 	dctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	if len(r.opts.Targets) == 0 && r.opts.RequestType != choria.ServiceRequestMessageType {
+	if len(r.opts.Targets) == 0 && (r.opts.RequestType != choria.ServiceRequestMessageType || !r.ddl.Metadata.Service) {
 		err = r.discover(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("discovery failed: %s", err)

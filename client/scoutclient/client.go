@@ -229,6 +229,9 @@ func (p *ScoutClient) Checks() *ChecksRequester {
 		},
 	}
 
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
 	return d
 }
 
@@ -247,6 +250,9 @@ func (p *ScoutClient) Resume() *ResumeRequester {
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }
@@ -267,6 +273,9 @@ func (p *ScoutClient) Maintenance() *MaintenanceRequester {
 		},
 	}
 
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
 	return d
 }
 
@@ -279,17 +288,20 @@ func (p *ScoutClient) Maintenance() *MaintenanceRequester {
 //
 // Optional Inputs:
 //    - vars (string) - Path to a file to use as template variables
-func (p *ScoutClient) GossValidate(fileI string) *GossValidateRequester {
+func (p *ScoutClient) GossValidate(inputFile string) *GossValidateRequester {
 	d := &GossValidateRequester{
 		outc: nil,
 		r: &requester{
 			args: map[string]interface{}{
-				"file": fileI,
+				"file": inputFile,
 			},
 			action: "goss_validate",
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }
@@ -309,6 +321,9 @@ func (p *ScoutClient) Trigger() *TriggerRequester {
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }

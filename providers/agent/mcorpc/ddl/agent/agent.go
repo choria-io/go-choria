@@ -81,12 +81,13 @@ func FindAll(libdirs []string, cached bool) ([]*DDL, error) {
 }
 
 // Find looks in the supplied libdirs for a DDL file for a specific agent
-func Find(agent string, libdirs []string) (ddl *DDL, err error) {
-	ddl, err = CachedDDL(agent)
-	if err == nil {
+func Find(agent string, libdirs []string) (*DDL, error) {
+	ddl, _ := CachedDDL(agent)
+	if ddl != nil {
 		return ddl, nil
 	}
 
+	var err error
 	EachFile(libdirs, func(n string, f string) bool {
 		if n == agent {
 			ddl, err = New(f)
@@ -101,7 +102,7 @@ func Find(agent string, libdirs []string) (ddl *DDL, err error) {
 	}
 
 	if ddl == nil {
-		return nil, fmt.Errorf("could not find DDL file for %s", agent)
+		return nil, fmt.Errorf("could not find DDL file for agent %s", agent)
 	}
 
 	return ddl, nil

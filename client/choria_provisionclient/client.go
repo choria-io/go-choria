@@ -228,17 +228,20 @@ func (p *ChoriaProvisionClient) DiscoverNodes(ctx context.Context) (nodes []stri
 //    - certificate (string) - PEM text block for the certificate
 //    - ssldir (string) - Directory for storing the certificate in
 //    - token (string) - Authentication token to pass to the server
-func (p *ChoriaProvisionClient) Configure(configI string) *ConfigureRequester {
+func (p *ChoriaProvisionClient) Configure(inputConfig string) *ConfigureRequester {
 	d := &ConfigureRequester{
 		outc: nil,
 		r: &requester{
 			args: map[string]interface{}{
-				"config": configI,
+				"config": inputConfig,
 			},
 			action: "configure",
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }
@@ -265,6 +268,9 @@ func (p *ChoriaProvisionClient) Gencsr() *GencsrRequester {
 		},
 	}
 
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
 	return d
 }
 
@@ -278,18 +284,21 @@ func (p *ChoriaProvisionClient) Gencsr() *GencsrRequester {
 //
 // Optional Inputs:
 //    - token (string) - Authentication token to pass to the server
-func (p *ChoriaProvisionClient) ReleaseUpdate(versionI string, repositoryI string) *ReleaseUpdateRequester {
+func (p *ChoriaProvisionClient) ReleaseUpdate(inputRepository string, inputVersion string) *ReleaseUpdateRequester {
 	d := &ReleaseUpdateRequester{
 		outc: nil,
 		r: &requester{
 			args: map[string]interface{}{
-				"repository": repositoryI,
-				"version":    versionI,
+				"repository": inputRepository,
+				"version":    inputVersion,
 			},
 			action: "release_update",
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }
@@ -310,6 +319,9 @@ func (p *ChoriaProvisionClient) Jwt() *JwtRequester {
 		},
 	}
 
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
 	return d
 }
 
@@ -328,6 +340,9 @@ func (p *ChoriaProvisionClient) Reprovision() *ReprovisionRequester {
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }
@@ -348,6 +363,9 @@ func (p *ChoriaProvisionClient) Restart() *RestartRequester {
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }

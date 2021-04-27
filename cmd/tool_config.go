@@ -125,7 +125,7 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 			fmt.Printf("║   Deprecated: %s\n", warn("yes"))
 		}
 		if doc.URL() != "" {
-			fmt.Printf("║         URL: %s\n", doc.URL())
+			fmt.Printf("║          URL: %s\n", doc.URL())
 		}
 		fmt.Printf("║    Data Type: %s\n", doc.Type())
 		if doc.Validation() != "" {

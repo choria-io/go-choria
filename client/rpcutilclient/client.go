@@ -229,6 +229,9 @@ func (p *RpcutilClient) AgentInventory() *AgentInventoryRequester {
 		},
 	}
 
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
 	return d
 }
 
@@ -244,6 +247,9 @@ func (p *RpcutilClient) CollectiveInfo() *CollectiveInfoRequester {
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }
@@ -261,6 +267,9 @@ func (p *RpcutilClient) DaemonStats() *DaemonStatsRequester {
 		},
 	}
 
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
 	return d
 }
 
@@ -270,17 +279,20 @@ func (p *RpcutilClient) DaemonStats() *DaemonStatsRequester {
 //
 // Required Inputs:
 //    - item (string) - The item to retrieve from the server
-func (p *RpcutilClient) GetConfigItem(itemI string) *GetConfigItemRequester {
+func (p *RpcutilClient) GetConfigItem(inputItem string) *GetConfigItemRequester {
 	d := &GetConfigItemRequester{
 		outc: nil,
 		r: &requester{
 			args: map[string]interface{}{
-				"item": itemI,
+				"item": inputItem,
 			},
 			action: "get_config_item",
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }
@@ -294,17 +306,20 @@ func (p *RpcutilClient) GetConfigItem(itemI string) *GetConfigItemRequester {
 //
 // Optional Inputs:
 //    - query (string) - The query argument to supply to the data plugin
-func (p *RpcutilClient) GetData(sourceI string) *GetDataRequester {
+func (p *RpcutilClient) GetData(inputSource string) *GetDataRequester {
 	d := &GetDataRequester{
 		outc: nil,
 		r: &requester{
 			args: map[string]interface{}{
-				"source": sourceI,
+				"source": inputSource,
 			},
 			action: "get_data",
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }
@@ -315,17 +330,20 @@ func (p *RpcutilClient) GetData(sourceI string) *GetDataRequester {
 //
 // Required Inputs:
 //    - fact (string) - The fact to retrieve
-func (p *RpcutilClient) GetFact(factI string) *GetFactRequester {
+func (p *RpcutilClient) GetFact(inputFact string) *GetFactRequester {
 	d := &GetFactRequester{
 		outc: nil,
 		r: &requester{
 			args: map[string]interface{}{
-				"fact": factI,
+				"fact": inputFact,
 			},
 			action: "get_fact",
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }
@@ -336,17 +354,20 @@ func (p *RpcutilClient) GetFact(factI string) *GetFactRequester {
 //
 // Required Inputs:
 //    - facts (string) - Facts to retrieve
-func (p *RpcutilClient) GetFacts(factsI string) *GetFactsRequester {
+func (p *RpcutilClient) GetFacts(inputFacts string) *GetFactsRequester {
 	d := &GetFactsRequester{
 		outc: nil,
 		r: &requester{
 			args: map[string]interface{}{
-				"facts": factsI,
+				"facts": inputFacts,
 			},
 			action: "get_facts",
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }
@@ -364,6 +385,9 @@ func (p *RpcutilClient) Inventory() *InventoryRequester {
 		},
 	}
 
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
 	return d
 }
 
@@ -379,6 +403,9 @@ func (p *RpcutilClient) Ping() *PingRequester {
 			client: p,
 		},
 	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
 
 	return d
 }
