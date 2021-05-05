@@ -5,10 +5,10 @@ go 1.16
 require (
 	github.com/AlecAivazis/survey/v2 v2.2.12
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
-	github.com/Netflix/go-expect v0.0.0-20201125194554-85d881c3777e // indirect
+	github.com/Netflix/go-expect v0.0.0-20210429232723-e923ed2d1db5 // indirect
 	github.com/aelsabbahy/goss v0.3.16
 	github.com/antonmedv/expr v1.8.9
-	github.com/awesome-gocui/gocui v0.6.0
+	github.com/awesome-gocui/gocui v1.0.0
 	github.com/brutella/hc v1.2.4
 	github.com/choria-io/go-updater v0.0.3
 	github.com/cloudevents/sdk-go v1.2.0
@@ -27,15 +27,15 @@ require (
 	github.com/looplab/fsm v0.2.0
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/mitchellh/mapstructure v1.4.1
-	github.com/nats-io/jsm.go v0.0.23-0.20210413151721-6e5211771ee9
-	github.com/nats-io/nats-server/v2 v2.2.2
+	github.com/nats-io/jsm.go v0.0.24-0.20210504102750-a4a7b8eebc93
+	github.com/nats-io/nats-server/v2 v2.2.3-0.20210505034341-60dd52fcbaf5
 	github.com/nats-io/nats-streaming-server v0.21.2 // indirect
-	github.com/nats-io/nats.go v1.10.1-0.20210427145106-109f3dd25f10
+	github.com/nats-io/nats.go v1.11.0
 	github.com/nats-io/stan.go v0.8.3
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/onsi/ginkgo v1.16.1
+	github.com/onsi/ginkgo v1.16.2
 	github.com/onsi/gomega v1.11.0
-	github.com/open-policy-agent/opa v0.27.1
+	github.com/open-policy-agent/opa v0.28.0
 	github.com/prometheus/client_golang v1.10.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/robfig/cron v1.2.0
@@ -44,8 +44,8 @@ require (
 	github.com/tidwall/pretty v1.1.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.7.0
-	golang.org/x/sys v0.0.0-20210421221651-33663a62ff08
-	golang.org/x/term v0.0.0-20210422114643-f5beecf764ed
+	golang.org/x/sys v0.0.0-20210503173754-0981d6026fa6
+	golang.org/x/term v0.0.0-20210503060354-a79de5458b56
 	golang.org/x/tools v0.1.0
 	google.golang.org/protobuf v1.24.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
