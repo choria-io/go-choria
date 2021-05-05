@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"strconv"
@@ -356,7 +357,7 @@ func (w *WatchCommand) setupWindows() (gui *gocui.Gui, err error) {
 
 		t, err := g.SetView("Checks", 0, 0, maxX-1, midY+offset, 0)
 		if err != nil {
-			if !gocui.IsUnknownView(err) {
+			if !errors.Is(err, gocui.ErrUnknownView) {
 				panic(err)
 			}
 			t.Autoscroll = true
@@ -367,7 +368,7 @@ func (w *WatchCommand) setupWindows() (gui *gocui.Gui, err error) {
 
 		c, err := g.SetView("Transitions", 0, midY+offset+1, maxX-1, maxY-5, 0)
 		if err != nil {
-			if !gocui.IsUnknownView(err) {
+			if !errors.Is(err, gocui.ErrUnknownView) {
 				panic(err)
 			}
 			c.Autoscroll = true
@@ -378,7 +379,7 @@ func (w *WatchCommand) setupWindows() (gui *gocui.Gui, err error) {
 
 		s, err := g.SetView("Status", 0, maxY-4, maxX-1, maxY-2, 0)
 		if err != nil {
-			if !gocui.IsUnknownView(err) {
+			if !errors.Is(err, gocui.ErrUnknownView) {
 				panic(err)
 			}
 			s.Frame = true
@@ -388,7 +389,7 @@ func (w *WatchCommand) setupWindows() (gui *gocui.Gui, err error) {
 
 		h, err := g.SetView("Help", 0, maxY-2, maxX-1, maxY, 0)
 		if err != nil {
-			if !gocui.IsUnknownView(err) {
+			if !errors.Is(err, gocui.ErrUnknownView) {
 				panic(err)
 			}
 			h.Frame = false
