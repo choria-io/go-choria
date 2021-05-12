@@ -168,6 +168,36 @@ func SliceGroups(input []string, size int, fn func(group []string)) {
 	}
 }
 
+// SliceVerticalGroups takes a slice of words and make new chunks of given size
+// and call the function with the sub slice.  The results are ordered for
+// vertical alignment.  If there are not enough items in the input slice empty
+// strings will pad the last group
+func SliceVerticalGroups(input []string, size int, fn func(group []string)) {
+	// how many to add
+	padding := size - (len(input) % size)
+
+	if padding != size {
+		p := []string{}
+
+		for i := 0; i <= padding; i++ {
+			p = append(p, "")
+		}
+
+		input = append(input, p...)
+	}
+
+	// how many chunks we're making
+	count := len(input) / size
+
+	for i := 0; i < count; i++ {
+		chunk := []string{}
+		for s := 0; s < size; s++ {
+			chunk = append(chunk, input[i+s*count])
+		}
+		fn(chunk)
+	}
+}
+
 // StrToBool converts a typical mcollective boolianish string to bool
 func StrToBool(s string) (bool, error) {
 	clean := strings.TrimSpace(s)

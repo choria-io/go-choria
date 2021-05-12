@@ -117,14 +117,14 @@ func (i *inventoryCommand) inventoryAgent() error {
 	fmt.Printf("               Replies Sent: %d\n", stats.Replies)
 	fmt.Println()
 	fmt.Printf("  Agents:\n\n")
-	util.SliceGroups(inventory.Agents, 3, func(g []string) {
+	util.SliceVerticalGroups(inventory.Agents, 3, func(g []string) {
 		fmt.Printf("    %-15s %-15s %-15s\n", g[0], g[1], g[2])
 	})
 	fmt.Println()
 	fmt.Printf("  Tagged Classes:\n\n")
 	longest := util.LongestString(inventory.Classes, 40)
 	format := fmt.Sprintf("    %%-%ds %%-%ds\n", longest, longest)
-	util.SliceGroups(inventory.Classes, 2, func(g []string) {
+	util.SliceVerticalGroups(inventory.Classes, 2, func(g []string) {
 		fmt.Printf(format, g[0], g[1])
 	})
 	fmt.Println()
