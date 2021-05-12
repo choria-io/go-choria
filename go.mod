@@ -44,10 +44,11 @@ require (
 	github.com/tidwall/pretty v1.1.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.7.0
-	golang.org/x/sys v0.0.0-20210503173754-0981d6026fa6
+	golang.org/x/sys v0.0.0-20210511113859-b0526f3d8744
 	golang.org/x/term v0.0.0-20210503060354-a79de5458b56
-	golang.org/x/tools v0.1.0
+	golang.org/x/tools v0.1.1
 	google.golang.org/protobuf v1.24.0 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
+	honnef.co/go/tools v0.1.4 // indirect
 	rsc.io/goversion v1.2.0
 )
