@@ -14,17 +14,18 @@ jobs:
     steps:
       - checkout
       - setup_remote_docker
-      - run: go mod download github.com/fatih/structtag
-      - run: go generate
+      - run: go get github.com/fatih/structtag
       - run: go get -u github.com/onsi/ginkgo/ginkgo
       - run: go get -u honnef.co/go/tools/cmd/staticcheck
       - run: go get -u github.com/client9/misspell/cmd/misspell
+      - run: go get github.com/fatih/structtag
+      - run: go generate
       - run: echo $PATH
       - run: ls -l /go/bin
       - run: go list ./...|xargs staticcheck
-      - run: find . -type f -name "*.go" | grep -v "/vendor/" | xargs misspell -error -locale US -i flavour
+      - run: find . -type f -name "*.go" | xargs misspell -error -locale US -i flavour
       - run: go vet ./...
-      - run: go test ./...
+      - run: go test -vet=off ./...
       - run: mkdir -p /tmp/workspace
       - run: cd .. ; tar -czf /tmp/workspace/go-choria.tgz go-choria
       - persist_to_workspace:
