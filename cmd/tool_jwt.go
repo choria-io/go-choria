@@ -12,7 +12,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/provtarget/builddefaults"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/form3tech-oss/jwt-go"
 )
 
 type tJWTCommand struct {

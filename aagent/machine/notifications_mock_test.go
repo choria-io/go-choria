@@ -5,9 +5,10 @@
 package machine
 
 import (
-	sdk_go "github.com/cloudevents/sdk-go"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	sdk_go "github.com/cloudevents/sdk-go/v2"
+	gomock "github.com/golang/mock/gomock"
 )
 
 // MockInfoSource is a mock of InfoSource interface

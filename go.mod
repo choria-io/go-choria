@@ -11,9 +11,9 @@ require (
 	github.com/awesome-gocui/gocui v1.0.0
 	github.com/brutella/hc v1.2.4
 	github.com/choria-io/go-updater v0.0.3
-	github.com/cloudevents/sdk-go v1.2.0
-	github.com/dgrijalva/jwt-go v3.2.1-0.20200107013213-dc14462fd587+incompatible
+	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/fatih/color v1.10.0
+	github.com/form3tech-oss/jwt-go v3.2.3+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang/mock v1.5.0

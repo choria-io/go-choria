@@ -96,11 +96,12 @@ var _ = Describe("ExecWatcher", func() {
 			delete(event, "id")
 
 			Expect(event).To(Equal(map[string]interface{}{
-				"time":        "2020-12-02T16:02:33Z",
-				"type":        "io.choria.machine.watcher.exec.v1.state",
-				"subject":     "ginkgo",
-				"specversion": "1.0",
-				"source":      "io.choria.machine",
+				"time":            "2020-12-02T16:02:33Z",
+				"type":            "io.choria.machine.watcher.exec.v1.state",
+				"subject":         "ginkgo",
+				"specversion":     "1.0",
+				"source":          "io.choria.machine",
+				"datacontenttype": "application/json",
 				"data": map[string]interface{}{
 					"command":           "/bin/sh",
 					"previous_outcome":  "success",

@@ -1,10 +1,11 @@
 package lifecycle
 
 import (
-	gomock "github.com/golang/mock/gomock"
 	"io/ioutil"
 	"os"
 	"testing"
+
+	"github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -117,7 +118,7 @@ var _ = Describe("Events", func() {
 			event, err := New(Startup, Component("ginkgo"), Version("1.2.3"), Identity("ginkgo.example.net"))
 			Expect(err).ToNot(HaveOccurred())
 			event.SetFormat(CloudEventV1Format)
-			conn.EXPECT().PublishRaw("choria.lifecycle.event.startup.ginkgo", []byte(`{"data":{"protocol":"io.choria.lifecycle.v1.startup","id":"01e72410-d734-4611-9485-8c6a2dd2579b","identity":"ginkgo.example.net","component":"ginkgo","timestamp":1535106973,"version":"1.2.3"},"id":"01e72410-d734-4611-9485-8c6a2dd2579b","source":"io.choria.lifecycle","specversion":"1.0","subject":"ginkgo.example.net","time":"2018-08-24T10:36:13Z","type":"io.choria.lifecycle.v1.startup"}`))
+			conn.EXPECT().PublishRaw("choria.lifecycle.event.startup.ginkgo", []byte(`{"specversion":"1.0","id":"01e72410-d734-4611-9485-8c6a2dd2579b","source":"io.choria.lifecycle","type":"io.choria.lifecycle.v1.startup","subject":"ginkgo.example.net","datacontenttype":"application/json","time":"2018-08-24T10:36:13Z","data":{"protocol":"io.choria.lifecycle.v1.startup","id":"01e72410-d734-4611-9485-8c6a2dd2579b","identity":"ginkgo.example.net","component":"ginkgo","timestamp":1535106973,"version":"1.2.3"}}`))
 			err = PublishEvent(event, conn)
 			Expect(err).ToNot(HaveOccurred())
 		})

@@ -17,8 +17,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/dgrijalva/jwt-go"
 	"github.com/fatih/color"
+	"github.com/form3tech-oss/jwt-go"
 	"golang.org/x/term"
 
 	"github.com/choria-io/go-choria/internal/util"

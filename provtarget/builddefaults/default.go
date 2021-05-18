@@ -11,7 +11,7 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/srvcache"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/form3tech-oss/jwt-go"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/backoff"

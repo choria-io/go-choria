@@ -6,7 +6,7 @@ import (
 
 	"github.com/choria-io/go-choria/internal/util"
 
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 )
 
 // TransitionNotification is a notification when a transition completes
@@ -38,7 +38,7 @@ func (t *TransitionNotification) CloudEvent() cloudevents.Event {
 	event.SetSubject(t.Identity)
 	event.SetID(util.UniqueID())
 	event.SetTime(time.Unix(t.Timestamp, 0))
-	event.SetData(t)
+	event.SetData(cloudevents.ApplicationJSON, t)
 
 	return event
 }

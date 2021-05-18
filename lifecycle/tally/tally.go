@@ -11,7 +11,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/prometheus/client_golang/prometheus"
 )
 

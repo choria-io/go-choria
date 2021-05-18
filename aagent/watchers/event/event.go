@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	"github.com/choria-io/go-choria/internal/util"
@@ -44,7 +44,7 @@ func (e *Event) CloudEvent(data interface{}) cloudevents.Event {
 	event.SetSubject(e.Identity)
 	event.SetID(util.UniqueID())
 	event.SetTime(time.Unix(e.Timestamp, 0))
-	event.SetData(data)
+	event.SetData(cloudevents.ApplicationJSON, data)
 
 	return event
 }
