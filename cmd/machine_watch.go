@@ -6,7 +6,7 @@ import (
 	"strings"
 	"sync"
 
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent/machine"
@@ -106,12 +106,7 @@ func (w *mWatchCommand) dataFromCloudEventJSON(j []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	data, err := event.DataBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return event.Data(), nil
 }
 
 func (w *mWatchCommand) showState(m *choria.ConnectorMessage) {

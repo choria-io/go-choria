@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 )

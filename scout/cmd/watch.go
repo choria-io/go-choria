@@ -13,7 +13,7 @@ import (
 	"time"
 
 	"github.com/awesome-gocui/gocui"
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/fatih/color"
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/nats.go"
@@ -129,12 +129,7 @@ func (w *WatchCommand) dataFromCloudEventJSON(j []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	data, err := event.DataBytes()
-	if err != nil {
-		return nil, err
-	}
-
-	return data, nil
+	return event.Data(), nil
 }
 
 func (w *WatchCommand) handleTransition(m *nats.Msg, gui *gocui.Gui) {

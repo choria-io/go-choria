@@ -17,7 +17,7 @@ import (
 	"sort"
 	"strings"
 
-	cloudevents "github.com/cloudevents/sdk-go"
+	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/tidwall/gjson"
 )
 
@@ -134,10 +134,7 @@ func cloudeventV1FormatNewFromJSON(j []byte) (Event, error) {
 		return nil, err
 	}
 
-	data, err := event.DataBytes()
-	if err != nil {
-		return nil, err
-	}
+	data := event.Data()
 
 	return NewFromJSON(data)
 }
@@ -194,7 +191,7 @@ func ToCloudEventV1(e Event) cloudevents.Event {
 	event.SetSubject(e.Identity())
 	event.SetID(e.ID())
 	event.SetTime(e.TimeStamp())
-	event.SetData(e)
+	event.SetData(cloudevents.ApplicationJSON, e)
 
 	return event
 }

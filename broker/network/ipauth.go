@@ -8,7 +8,7 @@ import (
 	"net"
 	"strings"
 
-	"github.com/dgrijalva/jwt-go"
+	"github.com/form3tech-oss/jwt-go"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/sirupsen/logrus"
 )
