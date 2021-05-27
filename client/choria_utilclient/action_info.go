@@ -172,6 +172,7 @@ func (d *InfoOutput) ChoriaVersion() string {
 	val := d.reply["choria_version"]
 
 	return val.(string)
+
 }
 
 // ClientFlavour is the value of the client_flavour output
@@ -181,6 +182,7 @@ func (d *InfoOutput) ClientFlavour() string {
 	val := d.reply["client_flavour"]
 
 	return val.(string)
+
 }
 
 // ClientOptions is the value of the client_options output
@@ -190,6 +192,7 @@ func (d *InfoOutput) ClientOptions() map[string]interface{} {
 	val := d.reply["client_options"]
 
 	return val.(map[string]interface{})
+
 }
 
 // ClientStats is the value of the client_stats output
@@ -199,6 +202,7 @@ func (d *InfoOutput) ClientStats() map[string]interface{} {
 	val := d.reply["client_stats"]
 
 	return val.(map[string]interface{})
+
 }
 
 // ClientVersion is the value of the client_version output
@@ -208,6 +212,7 @@ func (d *InfoOutput) ClientVersion() string {
 	val := d.reply["client_version"]
 
 	return val.(string)
+
 }
 
 // ConnectedServer is the value of the connected_server output
@@ -217,6 +222,7 @@ func (d *InfoOutput) ConnectedServer() string {
 	val := d.reply["connected_server"]
 
 	return val.(string)
+
 }
 
 // Connector is the value of the connector output
@@ -226,6 +232,7 @@ func (d *InfoOutput) Connector() string {
 	val := d.reply["connector"]
 
 	return val.(string)
+
 }
 
 // ConnectorTls is the value of the connector_tls output
@@ -235,6 +242,7 @@ func (d *InfoOutput) ConnectorTls() bool {
 	val := d.reply["connector_tls"]
 
 	return val.(bool)
+
 }
 
 // FacterCommand is the value of the facter_command output
@@ -244,6 +252,7 @@ func (d *InfoOutput) FacterCommand() string {
 	val := d.reply["facter_command"]
 
 	return val.(string)
+
 }
 
 // FacterDomain is the value of the facter_domain output
@@ -253,6 +262,7 @@ func (d *InfoOutput) FacterDomain() string {
 	val := d.reply["facter_domain"]
 
 	return val.(string)
+
 }
 
 // MiddlewareServers is the value of the middleware_servers output
@@ -262,6 +272,7 @@ func (d *InfoOutput) MiddlewareServers() []interface{} {
 	val := d.reply["middleware_servers"]
 
 	return val.([]interface{})
+
 }
 
 // Path is the value of the path output
@@ -271,6 +282,7 @@ func (d *InfoOutput) Path() string {
 	val := d.reply["path"]
 
 	return val.(string)
+
 }
 
 // SecureProtocol is the value of the secure_protocol output
@@ -280,6 +292,7 @@ func (d *InfoOutput) SecureProtocol() bool {
 	val := d.reply["secure_protocol"]
 
 	return val.(bool)
+
 }
 
 // Security is the value of the security output
@@ -289,6 +302,7 @@ func (d *InfoOutput) Security() string {
 	val := d.reply["security"]
 
 	return val.(string)
+
 }
 
 // SrvDomain is the value of the srv_domain output
@@ -298,6 +312,7 @@ func (d *InfoOutput) SrvDomain() string {
 	val := d.reply["srv_domain"]
 
 	return val.(string)
+
 }
 
 // UsingSrv is the value of the using_srv output
@@ -307,4 +322,5 @@ func (d *InfoOutput) UsingSrv() bool {
 	val := d.reply["using_srv"]
 
 	return val.(bool)
+
 }

@@ -172,4 +172,5 @@ func (d *AgentInventoryOutput) Agents() []interface{} {
 	val := d.reply["agents"]
 
 	return val.([]interface{})
+
 }

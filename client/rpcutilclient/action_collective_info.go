@@ -172,6 +172,7 @@ func (d *CollectiveInfoOutput) Collectives() []interface{} {
 	val := d.reply["collectives"]
 
 	return val.([]interface{})
+
 }
 
 // MainCollective is the value of the main_collective output
@@ -181,4 +182,5 @@ func (d *CollectiveInfoOutput) MainCollective() string {
 	val := d.reply["main_collective"]
 
 	return val.(string)
+
 }

@@ -238,7 +238,8 @@ func (d *GencsrOutput) Csr() interface{} {
 		return nil
 	}
 
-	return val.(interface{})
+	return val
+
 }
 
 // Ssldir is the value of the ssldir output
@@ -251,5 +252,6 @@ func (d *GencsrOutput) Ssldir() interface{} {
 		return nil
 	}
 
-	return val.(interface{})
+	return val
+
 }

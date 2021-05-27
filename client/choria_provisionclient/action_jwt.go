@@ -184,5 +184,6 @@ func (d *JwtOutput) Jwt() interface{} {
 		return nil
 	}
 
-	return val.(interface{})
+	return val
+
 }

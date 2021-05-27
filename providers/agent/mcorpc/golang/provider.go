@@ -15,15 +15,10 @@ import (
 
 // Provider is a Agent Provider capable of executing compiled mcollective compatible agents written in Go
 type Provider struct {
-	fw  *choria.Framework
-	log *logrus.Entry
 }
 
 // Initialize configures the agent provider
-func (p Provider) Initialize(fw *choria.Framework, _ *logrus.Entry) {
-	p.fw = fw
-	p.log = fw.Logger("agents").WithFields(logrus.Fields{"provider": "golang"})
-}
+func (p Provider) Initialize(fw *choria.Framework, _ *logrus.Entry) {}
 
 // Version reports the version for this provider
 func (p *Provider) Version() string {

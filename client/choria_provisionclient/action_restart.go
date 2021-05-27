@@ -193,5 +193,6 @@ func (d *RestartOutput) Message() interface{} {
 		return nil
 	}
 
-	return val.(interface{})
+	return val
+
 }

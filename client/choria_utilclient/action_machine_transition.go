@@ -208,4 +208,5 @@ func (d *MachineTransitionOutput) Success() bool {
 	val := d.reply["success"]
 
 	return val.(bool)
+
 }

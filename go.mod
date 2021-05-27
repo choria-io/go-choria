@@ -13,6 +13,7 @@ require (
 	github.com/choria-io/go-updater v0.0.3
 	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/fatih/color v1.10.0
+	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/form3tech-oss/jwt-go v3.2.3+incompatible
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.0.0+incompatible
@@ -27,7 +28,7 @@ require (
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/mitchellh/mapstructure v1.4.1
 	github.com/nats-io/jsm.go v0.0.24-0.20210511163230-0fd1baffbd6e
-	github.com/nats-io/nats-server/v2 v2.2.4
+	github.com/nats-io/nats-server/v2 v2.2.7-0.20210526222114-f89d06190c29
 	github.com/nats-io/nats-streaming-server v0.21.2 // indirect
 	github.com/nats-io/nats.go v1.11.0
 	github.com/nats-io/stan.go v0.8.3
