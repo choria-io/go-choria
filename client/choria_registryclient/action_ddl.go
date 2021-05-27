@@ -181,6 +181,7 @@ func (d *DdlOutput) Ddl() string {
 	val := d.reply["ddl"]
 
 	return val.(string)
+
 }
 
 // Name is the value of the name output
@@ -190,6 +191,7 @@ func (d *DdlOutput) Name() string {
 	val := d.reply["name"]
 
 	return val.(string)
+
 }
 
 // PluginType is the value of the plugin_type output
@@ -199,6 +201,7 @@ func (d *DdlOutput) PluginType() string {
 	val := d.reply["plugin_type"]
 
 	return val.(string)
+
 }
 
 // Version is the value of the version output
@@ -208,4 +211,5 @@ func (d *DdlOutput) Version() string {
 	val := d.reply["version"]
 
 	return val.(string)
+
 }

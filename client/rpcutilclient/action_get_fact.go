@@ -172,6 +172,7 @@ func (d *GetFactOutput) Fact() string {
 	val := d.reply["fact"]
 
 	return val.(string)
+
 }
 
 // Value is the value of the value output
@@ -184,5 +185,6 @@ func (d *GetFactOutput) Value() interface{} {
 		return nil
 	}
 
-	return val.(interface{})
+	return val
+
 }

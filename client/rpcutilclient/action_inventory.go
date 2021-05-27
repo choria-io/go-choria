@@ -172,6 +172,7 @@ func (d *InventoryOutput) Agents() []interface{} {
 	val := d.reply["agents"]
 
 	return val.([]interface{})
+
 }
 
 // Classes is the value of the classes output
@@ -181,6 +182,7 @@ func (d *InventoryOutput) Classes() []interface{} {
 	val := d.reply["classes"]
 
 	return val.([]interface{})
+
 }
 
 // Collectives is the value of the collectives output
@@ -190,6 +192,7 @@ func (d *InventoryOutput) Collectives() []interface{} {
 	val := d.reply["collectives"]
 
 	return val.([]interface{})
+
 }
 
 // DataPlugins is the value of the data_plugins output
@@ -199,6 +202,7 @@ func (d *InventoryOutput) DataPlugins() []interface{} {
 	val := d.reply["data_plugins"]
 
 	return val.([]interface{})
+
 }
 
 // Facts is the value of the facts output
@@ -208,6 +212,7 @@ func (d *InventoryOutput) Facts() map[string]interface{} {
 	val := d.reply["facts"]
 
 	return val.(map[string]interface{})
+
 }
 
 // Machines is the value of the machines output
@@ -217,6 +222,7 @@ func (d *InventoryOutput) Machines() map[string]interface{} {
 	val := d.reply["machines"]
 
 	return val.(map[string]interface{})
+
 }
 
 // MainCollective is the value of the main_collective output
@@ -226,6 +232,7 @@ func (d *InventoryOutput) MainCollective() string {
 	val := d.reply["main_collective"]
 
 	return val.(string)
+
 }
 
 // Version is the value of the version output
@@ -235,4 +242,5 @@ func (d *InventoryOutput) Version() string {
 	val := d.reply["version"]
 
 	return val.(string)
+
 }

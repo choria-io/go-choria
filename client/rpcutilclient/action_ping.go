@@ -172,4 +172,5 @@ func (d *PingOutput) Pong() string {
 	val := d.reply["pong"]
 
 	return val.(string)
+
 }

@@ -188,6 +188,10 @@ func (d *{{ $.ActionName | SnakeToCamel }}Output) {{ $name | SnakeToCamel }}() {
 	val := d.reply["{{ $name }}"]
 {{ end }}
 
+{{ if eq "interface{}" $return_type  -}}
+    	return val
+{{ else -}}
 	return {{ ChoriaTypeToValOfType $output.Type }}
+{{ end }}
 }
 {{ end }}

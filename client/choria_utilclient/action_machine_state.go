@@ -199,6 +199,7 @@ func (d *MachineStateOutput) AvailableTransitions() []interface{} {
 	val := d.reply["available_transitions"]
 
 	return val.([]interface{})
+
 }
 
 // CurrentState is the value of the current_state output
@@ -211,7 +212,8 @@ func (d *MachineStateOutput) CurrentState() interface{} {
 		return nil
 	}
 
-	return val.(interface{})
+	return val
+
 }
 
 // Id is the value of the id output
@@ -221,6 +223,7 @@ func (d *MachineStateOutput) Id() string {
 	val := d.reply["id"]
 
 	return val.(string)
+
 }
 
 // Name is the value of the name output
@@ -230,6 +233,7 @@ func (d *MachineStateOutput) Name() string {
 	val := d.reply["name"]
 
 	return val.(string)
+
 }
 
 // Path is the value of the path output
@@ -239,6 +243,7 @@ func (d *MachineStateOutput) Path() string {
 	val := d.reply["path"]
 
 	return val.(string)
+
 }
 
 // Scout is the value of the scout output
@@ -248,6 +253,7 @@ func (d *MachineStateOutput) Scout() bool {
 	val := d.reply["scout"]
 
 	return val.(bool)
+
 }
 
 // StartTime is the value of the start_time output
@@ -257,6 +263,7 @@ func (d *MachineStateOutput) StartTime() string {
 	val := d.reply["start_time"]
 
 	return val.(string)
+
 }
 
 // State is the value of the state output
@@ -266,6 +273,7 @@ func (d *MachineStateOutput) State() string {
 	val := d.reply["state"]
 
 	return val.(string)
+
 }
 
 // Version is the value of the version output
@@ -275,4 +283,5 @@ func (d *MachineStateOutput) Version() string {
 	val := d.reply["version"]
 
 	return val.(string)
+
 }

@@ -181,6 +181,7 @@ func (d *ResumeOutput) Failed() []interface{} {
 	val := d.reply["failed"]
 
 	return val.([]interface{})
+
 }
 
 // Skipped is the value of the skipped output
@@ -190,6 +191,7 @@ func (d *ResumeOutput) Skipped() []interface{} {
 	val := d.reply["skipped"]
 
 	return val.([]interface{})
+
 }
 
 // Transitioned is the value of the transitioned output
@@ -199,4 +201,5 @@ func (d *ResumeOutput) Transitioned() []interface{} {
 	val := d.reply["transitioned"]
 
 	return val.([]interface{})
+
 }

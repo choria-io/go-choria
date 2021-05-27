@@ -184,5 +184,6 @@ func (d *ReprovisionOutput) Message() interface{} {
 		return nil
 	}
 
-	return val.(interface{})
+	return val
+
 }

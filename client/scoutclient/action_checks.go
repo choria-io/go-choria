@@ -172,4 +172,5 @@ func (d *ChecksOutput) Checks() []interface{} {
 	val := d.reply["checks"]
 
 	return val.([]interface{})
+
 }

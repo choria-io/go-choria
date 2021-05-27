@@ -172,6 +172,7 @@ func (d *GetConfigItemOutput) Item() string {
 	val := d.reply["item"]
 
 	return val.(string)
+
 }
 
 // Value is the value of the value output
@@ -184,5 +185,6 @@ func (d *GetConfigItemOutput) Value() interface{} {
 		return nil
 	}
 
-	return val.(interface{})
+	return val
+
 }

@@ -172,6 +172,7 @@ func (d *MachineStatesOutput) MachineIds() []interface{} {
 	val := d.reply["machine_ids"]
 
 	return val.([]interface{})
+
 }
 
 // MachineNames is the value of the machine_names output
@@ -181,6 +182,7 @@ func (d *MachineStatesOutput) MachineNames() []interface{} {
 	val := d.reply["machine_names"]
 
 	return val.([]interface{})
+
 }
 
 // States is the value of the states output
@@ -190,4 +192,5 @@ func (d *MachineStatesOutput) States() map[string]interface{} {
 	val := d.reply["states"]
 
 	return val.(map[string]interface{})
+
 }

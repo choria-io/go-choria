@@ -184,5 +184,6 @@ func (d *ReleaseUpdateOutput) Message() interface{} {
 		return nil
 	}
 
-	return val.(interface{})
+	return val
+
 }

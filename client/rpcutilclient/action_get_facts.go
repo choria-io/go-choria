@@ -172,4 +172,5 @@ func (d *GetFactsOutput) Values() map[string]interface{} {
 	val := d.reply["values"]
 
 	return val.(map[string]interface{})
+
 }

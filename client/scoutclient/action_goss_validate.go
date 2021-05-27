@@ -181,6 +181,7 @@ func (d *GossValidateOutput) Failures() int64 {
 	val := d.reply["failures"]
 
 	return val.(int64)
+
 }
 
 // Results is the value of the results output
@@ -190,6 +191,7 @@ func (d *GossValidateOutput) Results() []interface{} {
 	val := d.reply["results"]
 
 	return val.([]interface{})
+
 }
 
 // Runtime is the value of the runtime output
@@ -199,6 +201,7 @@ func (d *GossValidateOutput) Runtime() int64 {
 	val := d.reply["runtime"]
 
 	return val.(int64)
+
 }
 
 // Success is the value of the success output
@@ -208,6 +211,7 @@ func (d *GossValidateOutput) Success() string {
 	val := d.reply["success"]
 
 	return val.(string)
+
 }
 
 // Summary is the value of the summary output
@@ -217,6 +221,7 @@ func (d *GossValidateOutput) Summary() string {
 	val := d.reply["summary"]
 
 	return val.(string)
+
 }
 
 // Tests is the value of the tests output
@@ -226,4 +231,5 @@ func (d *GossValidateOutput) Tests() int64 {
 	val := d.reply["tests"]
 
 	return val.(int64)
+
 }

@@ -172,6 +172,7 @@ func (d *DaemonStatsOutput) Agents() []interface{} {
 	val := d.reply["agents"]
 
 	return val.([]interface{})
+
 }
 
 // Configfile is the value of the configfile output
@@ -181,6 +182,7 @@ func (d *DaemonStatsOutput) Configfile() string {
 	val := d.reply["configfile"]
 
 	return val.(string)
+
 }
 
 // Filtered is the value of the filtered output
@@ -190,6 +192,7 @@ func (d *DaemonStatsOutput) Filtered() int64 {
 	val := d.reply["filtered"]
 
 	return val.(int64)
+
 }
 
 // Passed is the value of the passed output
@@ -199,6 +202,7 @@ func (d *DaemonStatsOutput) Passed() int64 {
 	val := d.reply["passed"]
 
 	return val.(int64)
+
 }
 
 // Pid is the value of the pid output
@@ -208,6 +212,7 @@ func (d *DaemonStatsOutput) Pid() int64 {
 	val := d.reply["pid"]
 
 	return val.(int64)
+
 }
 
 // Replies is the value of the replies output
@@ -217,6 +222,7 @@ func (d *DaemonStatsOutput) Replies() int64 {
 	val := d.reply["replies"]
 
 	return val.(int64)
+
 }
 
 // Starttime is the value of the starttime output
@@ -226,6 +232,7 @@ func (d *DaemonStatsOutput) Starttime() int64 {
 	val := d.reply["starttime"]
 
 	return val.(int64)
+
 }
 
 // Threads is the value of the threads output
@@ -235,6 +242,7 @@ func (d *DaemonStatsOutput) Threads() []interface{} {
 	val := d.reply["threads"]
 
 	return val.([]interface{})
+
 }
 
 // Times is the value of the times output
@@ -244,6 +252,7 @@ func (d *DaemonStatsOutput) Times() map[string]interface{} {
 	val := d.reply["times"]
 
 	return val.(map[string]interface{})
+
 }
 
 // Total is the value of the total output
@@ -253,6 +262,7 @@ func (d *DaemonStatsOutput) Total() int64 {
 	val := d.reply["total"]
 
 	return val.(int64)
+
 }
 
 // Ttlexpired is the value of the ttlexpired output
@@ -262,6 +272,7 @@ func (d *DaemonStatsOutput) Ttlexpired() int64 {
 	val := d.reply["ttlexpired"]
 
 	return val.(int64)
+
 }
 
 // Unvalidated is the value of the unvalidated output
@@ -271,6 +282,7 @@ func (d *DaemonStatsOutput) Unvalidated() int64 {
 	val := d.reply["unvalidated"]
 
 	return val.(int64)
+
 }
 
 // Validated is the value of the validated output
@@ -280,6 +292,7 @@ func (d *DaemonStatsOutput) Validated() int64 {
 	val := d.reply["validated"]
 
 	return val.(int64)
+
 }
 
 // Version is the value of the version output
@@ -289,4 +302,5 @@ func (d *DaemonStatsOutput) Version() string {
 	val := d.reply["version"]
 
 	return val.(string)
+
 }
