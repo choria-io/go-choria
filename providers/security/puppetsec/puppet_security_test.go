@@ -16,7 +16,7 @@ import (
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
 
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -89,6 +89,17 @@ var _ = Describe("PuppetSSL", func() {
 
 		// TODO: windows
 		if runtime.GOOS != "windows" {
+			It("Should fail when it cannot determine user identity", func() {
+				c := config.NewConfigForTests()
+				c.OverrideCertname = ""
+				v := os.Getenv("USER")
+				defer os.Setenv("USER", v)
+				os.Unsetenv("USER")
+				os.Unsetenv("MCOLLECTIVE_CERTNAME")
+				_, err = New(WithChoriaConfig(c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
+				Expect(err).To(MatchError("could not determine client identity, ensure USER environment variable is set"))
+			})
+
 			It("Should use the user SSL directory when not configured", func() {
 				c, err := config.NewDefaultConfig()
 				Expect(err).ToNot(HaveOccurred())
