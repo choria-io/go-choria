@@ -56,9 +56,11 @@ func WithChoriaConfig(c *config.Config) Option {
 			}
 
 			u, ok := os.LookupEnv(userEnvVar)
-			if ok {
-				cfg.Identity = fmt.Sprintf("%s.mcollective", u)
+			if !ok {
+				return fmt.Errorf("could not determine client identity, ensure %s environment variable is set", userEnvVar)
 			}
+
+			cfg.Identity = fmt.Sprintf("%s.mcollective", u)
 		}
 
 		if cfg.SSLDir == "" {

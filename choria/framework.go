@@ -744,10 +744,10 @@ func (fw *Framework) PQLQueryCertNames(query string) ([]string, error) {
 		return nil, err
 	}
 
-	res := []struct {
+	var res []struct {
 		Certname    string `json:"certname"`
 		Deactivated bool   `json:"deactivated"`
-	}{}
+	}
 
 	err = json.Unmarshal(body, &res)
 	if err != nil {
