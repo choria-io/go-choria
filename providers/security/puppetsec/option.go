@@ -15,7 +15,7 @@ import (
 type Option func(*PuppetSecurity) error
 
 // WithChoriaConfig optionally configures the Puppet Security Provider from settings found in a typical Choria configuration
-func WithChoriaConfig(c *config.Config) Option {
+func WithChoriaConfig(bi BuildInfoProvider, c *config.Config) Option {
 	return func(p *PuppetSecurity) error {
 		cfg := Config{
 			AllowList:                    c.Choria.CertnameWhitelist,
@@ -30,6 +30,11 @@ func WithChoriaConfig(c *config.Config) Option {
 			RemoteSignerTokenFile:        c.Choria.RemoteSignerTokenFile,
 			RemoteSignerTokenEnvironment: c.Choria.RemoteSignerTokenEnvironment,
 			TLSConfig:                    tlssetup.TLSConfig(c),
+			IdentitySuffix:               bi.ClientIdentitySuffix(),
+		}
+
+		if cfg.IdentitySuffix == "" {
+			cfg.IdentitySuffix = "mcollective"
 		}
 
 		if c.Choria.NetworkClientAdvertiseName != "" {
@@ -60,7 +65,7 @@ func WithChoriaConfig(c *config.Config) Option {
 				return fmt.Errorf("could not determine client identity, ensure %s environment variable is set", userEnvVar)
 			}
 
-			cfg.Identity = fmt.Sprintf("%s.mcollective", u)
+			cfg.Identity = fmt.Sprintf("%s.%s", u, cfg.IdentitySuffix)
 		}
 
 		if cfg.SSLDir == "" {

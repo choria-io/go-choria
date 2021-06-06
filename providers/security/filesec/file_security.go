@@ -92,6 +92,9 @@ type Config struct {
 
 	// BackwardCompatVerification enables custom verification that allows legacy certificates without SANs
 	BackwardCompatVerification bool
+
+	// IdentitySuffix is the suffix to append to user names when creating certnames and identities
+	IdentitySuffix string
 }
 
 type signingRequest struct {

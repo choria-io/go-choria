@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"testing"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/tlssetup"
 
@@ -92,7 +93,7 @@ var _ = Describe("FileSSL", func() {
 			c, err := config.NewDefaultConfig()
 			Expect(err).ToNot(HaveOccurred())
 			c.OverrideCertname = "override.choria"
-			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.Identity).To(Equal("override.choria"))
@@ -102,7 +103,7 @@ var _ = Describe("FileSSL", func() {
 			os.Setenv("MCOLLECTIVE_CERTNAME", "bob.mcollective")
 			c, err := config.NewDefaultConfig()
 			Expect(err).ToNot(HaveOccurred())
-			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.Identity).To(Equal("bob.mcollective"))
@@ -120,7 +121,7 @@ var _ = Describe("FileSSL", func() {
 			c.DisableTLSVerify = true
 			c.Identity = "test.identity"
 
-			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.AllowList).To(Equal([]string{"\\.mcollective$", "\\.choria$"}))
@@ -145,7 +146,7 @@ var _ = Describe("FileSSL", func() {
 			c.Identity = "test.identity"
 			c.OverrideCertname = "bob.identity"
 
-			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.Identity).To(Equal("bob.identity"))
@@ -167,7 +168,7 @@ var _ = Describe("FileSSL", func() {
 			fakeOS = "windows"
 			Expect(runtimeOs()).To(Equal("windows"))
 
-			prov, err = New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err = New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.Identity).To(Equal("test.identity"))
@@ -391,7 +392,7 @@ var _ = Describe("FileSSL", func() {
 			c.Choria.FileSecurityCA = filepath.Join("..", "testdata", "intermediate", "certs", "ca.pem")
 			c.Choria.FileSecurityCache = filepath.Join("..", "testdata", "intermediate", "certs")
 
-			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "rip.mcollective.pem"))
@@ -408,7 +409,7 @@ var _ = Describe("FileSSL", func() {
 			c.Choria.FileSecurityCA = filepath.Join("..", "testdata", "intermediate", "certs", "ca_chain_ca.pem")
 			c.Choria.FileSecurityCache = filepath.Join("..", "testdata", "intermediate", "certs")
 
-			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "ca_chain_rip.mcollective.pem"))
@@ -425,7 +426,7 @@ var _ = Describe("FileSSL", func() {
 			c.Choria.FileSecurityCA = filepath.Join("..", "testdata", "intermediate", "certs", "ca_chain_ca.pem")
 			c.Choria.FileSecurityCache = filepath.Join("..", "testdata", "intermediate", "certs")
 
-			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "email-chain-rip.mcollective.pem"))
@@ -442,7 +443,7 @@ var _ = Describe("FileSSL", func() {
 			c.Choria.FileSecurityCA = filepath.Join("..", "testdata", "intermediate", "certs", "ca_chain_ca.pem")
 			c.Choria.FileSecurityCache = filepath.Join("..", "testdata", "intermediate", "certs")
 
-			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "email-chain-rip.mcollective.pem"))
@@ -613,7 +614,7 @@ var _ = Describe("FileSSL", func() {
 			Expect(err).ToNot(HaveOccurred())
 			defer os.RemoveAll(c.Choria.FileSecurityCache)
 
-			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			fpd, err := ioutil.ReadFile(firstcert)
@@ -721,7 +722,7 @@ var _ = Describe("FileSSL", func() {
 
 			c.Choria.CipherSuites = []string{cipher}
 
-			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.TLSConfig.CipherSuites).ToNot(BeNil())
@@ -736,7 +737,7 @@ var _ = Describe("FileSSL", func() {
 
 			c.Choria.ECCCurves = []string{curve}
 
-			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.TLSConfig.CurvePreferences).ToNot(BeNil())
@@ -745,7 +746,7 @@ var _ = Describe("FileSSL", func() {
 		})
 
 		It("Should have a default list cipher and curve list when not overridden", func() {
-			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.TLSConfig.CipherSuites).To(Equal(tlssetup.DefaultCipherSuites()))

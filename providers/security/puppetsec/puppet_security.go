@@ -37,6 +37,11 @@ type Resolver interface {
 	QuerySrvRecords(records []string) (srvcache.Servers, error)
 }
 
+// BuildInfoProvider provides info about the build
+type BuildInfoProvider interface {
+	ClientIdentitySuffix() string
+}
+
 // PuppetSecurity implements SecurityProvider reusing AIO Puppet settings
 // it supports enrollment the same way `puppet agent --waitforcert 10` does
 type PuppetSecurity struct {
@@ -94,6 +99,9 @@ type Config struct {
 
 	// AltNames are additional names to add to the CSR
 	AltNames []string
+
+	// IdentitySuffix is the suffix to append to user names when creating certnames and identities
+	IdentitySuffix string
 }
 
 // New creates a new instance of the Puppet Security Provider
@@ -139,6 +147,7 @@ func (s *PuppetSecurity) reinit() error {
 		RemoteSignerTokenFile:        s.conf.RemoteSignerTokenFile,
 		RemoteSignerTokenEnvironment: s.conf.RemoteSignerTokenEnvironment,
 		TLSConfig:                    s.conf.TLSConfig,
+		IdentitySuffix:               s.conf.IdentitySuffix,
 		BackwardCompatVerification:   true,
 	}
 

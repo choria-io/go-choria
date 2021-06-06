@@ -34,6 +34,13 @@ func (i *Info) License() string {
 	return License
 }
 
+func (i *Info) ClientIdentitySuffix() string {
+	mu.Lock()
+	defer mu.Unlock()
+
+	return ClientIdentitySuffix
+}
+
 func (i *Info) DefaultCollectives() []string {
 	mu.Lock()
 	defer mu.Unlock()
