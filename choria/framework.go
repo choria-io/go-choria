@@ -103,12 +103,12 @@ func (fw *Framework) setupSecurity() error {
 	case "puppet":
 		fw.security, err = puppetsec.New(
 			puppetsec.WithResolver(fw),
-			puppetsec.WithChoriaConfig(fw.Config),
+			puppetsec.WithChoriaConfig(fw.BuildInfo(), fw.Config),
 			puppetsec.WithLog(fw.Logger("security")))
 
 	case "file":
 		fw.security, err = filesec.New(
-			filesec.WithChoriaConfig(fw.Config),
+			filesec.WithChoriaConfig(fw.BuildInfo(), fw.Config),
 			filesec.WithLog(fw.Logger("security")))
 
 	case "pkcs11":

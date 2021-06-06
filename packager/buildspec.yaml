@@ -6,6 +6,7 @@ flags_map:
   SHA: github.com/choria-io/go-choria/build.SHA
   BuildTime: github.com/choria-io/go-choria/build.BuildDate
   DefaultCollectives: github.com/choria-io/go-choria/build.DefaultCollectives
+  ClientIdentitySuffix: github.com/choria-io/go-choria/build.ClientIdentitySuffix
   ProvisionBrokerURLs: github.com/choria-io/go-choria/build.ProvisionBrokerURLs
   ProvisionModeDefault: github.com/choria-io/go-choria/build.ProvisionModeDefault
   ProvisionAgent: github.com/choria-io/go-choria/build.ProvisionAgent
@@ -24,6 +25,7 @@ foss:
       flags:
         ProvisionJWTFile: /etc/choria/provisioning.jwt
         DefaultCollectives: mcollective
+        ClientIdentitySuffix: mcollective
       pre:
         - rm additional_agent_*.go || true
         - rm plugin_*.go || true

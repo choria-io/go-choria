@@ -11,6 +11,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/security"
 	"github.com/choria-io/go-choria/srvcache"
@@ -71,7 +72,7 @@ var _ = Describe("PuppetSSL", func() {
 			c, err := config.NewConfig(filepath.Join("..", "testdata", "puppetca.cfg"))
 			Expect(err).ToNot(HaveOccurred())
 
-			prov, err = New(WithChoriaConfig(c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err = New(WithChoriaConfig(&build.Info{}, c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.DisableSRV).To(BeTrue())
@@ -81,7 +82,7 @@ var _ = Describe("PuppetSSL", func() {
 			c := config.NewConfigForTests()
 
 			c.OverrideCertname = "override.choria"
-			prov, err = New(WithChoriaConfig(c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err = New(WithChoriaConfig(&build.Info{}, c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.Identity).To(Equal("override.choria"))
@@ -96,7 +97,7 @@ var _ = Describe("PuppetSSL", func() {
 				defer os.Setenv("USER", v)
 				os.Unsetenv("USER")
 				os.Unsetenv("MCOLLECTIVE_CERTNAME")
-				_, err = New(WithChoriaConfig(c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
+				_, err = New(WithChoriaConfig(&build.Info{}, c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
 				Expect(err).To(MatchError("could not determine client identity, ensure USER environment variable is set"))
 			})
 
@@ -104,7 +105,7 @@ var _ = Describe("PuppetSSL", func() {
 				c, err := config.NewDefaultConfig()
 				Expect(err).ToNot(HaveOccurred())
 
-				prov, err = New(WithChoriaConfig(c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
+				prov, err = New(WithChoriaConfig(&build.Info{}, c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
 				Expect(err).ToNot(HaveOccurred())
 
 				d, err := userSSlDir()
@@ -123,7 +124,7 @@ var _ = Describe("PuppetSSL", func() {
 			c.Choria.PuppetCAHost = "stubhost"
 			c.Choria.PuppetCAPort = 8080
 
-			prov, err = New(WithChoriaConfig(c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
+			prov, err = New(WithChoriaConfig(&build.Info{}, c), WithResolver(resolver), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.AllowList).To(Equal([]string{"\\.mcollective$", "\\.choria$"}))

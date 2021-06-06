@@ -73,6 +73,9 @@ var DataProviders = []string{}
 // DefaultCollectives is the names of the default list of collectives as comma separated strings
 var DefaultCollectives = "mcollective"
 
+// ClientIdentitySuffix is the string to be suffixed when creating client identities
+var ClientIdentitySuffix = "mcollective"
+
 // HasTLS determines if TLS should be used on the wire
 func HasTLS() bool {
 	return TLS == "true"

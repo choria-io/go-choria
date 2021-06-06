@@ -13,8 +13,13 @@ import (
 // Option is a function that can configure the File Security Provider
 type Option func(*FileSecurity) error
 
+// BuildInfoProvider provides info about the build
+type BuildInfoProvider interface {
+	ClientIdentitySuffix() string
+}
+
 // WithChoriaConfig optionally configures the File Security Provider from settings found in a typical Choria configuration
-func WithChoriaConfig(c *config.Config) Option {
+func WithChoriaConfig(bi BuildInfoProvider, c *config.Config) Option {
 	cfg := Config{
 		AllowList:                    c.Choria.CertnameWhitelist,
 		CA:                           c.Choria.FileSecurityCA,
@@ -30,6 +35,11 @@ func WithChoriaConfig(c *config.Config) Option {
 		RemoteSignerTokenEnvironment: c.Choria.RemoteSignerTokenEnvironment,
 		TLSConfig:                    tlssetup.TLSConfig(c),
 		BackwardCompatVerification:   c.Choria.SecurityAllowLegacyCerts,
+		IdentitySuffix:               bi.ClientIdentitySuffix(),
+	}
+
+	if cfg.IdentitySuffix == "" {
+		cfg.IdentitySuffix = "mcollective"
 	}
 
 	if cn, ok := os.LookupEnv("MCOLLECTIVE_CERTNAME"); ok {
@@ -40,7 +50,7 @@ func WithChoriaConfig(c *config.Config) Option {
 		cfg.Identity = c.OverrideCertname
 	} else if !(runtimeOs() == "windows" || uid() == 0) {
 		if u, ok := os.LookupEnv("USER"); ok {
-			cfg.Identity = fmt.Sprintf("%s.mcollective", u)
+			cfg.Identity = fmt.Sprintf("%s.%s", u, cfg.IdentitySuffix)
 		}
 	}
 
