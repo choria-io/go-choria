@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"strings"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 
@@ -34,8 +35,8 @@ type Config struct {
 	// When true delays initial registration publish by a random period up to registerinterval following registration publishes will be at registerinterval without further splay
 	RegistrationSplay bool `confkey:"registration_splay" default:"true"`
 
-	// The list of known Sub Collectives this node will join or communicate with, Servers will subscribe the node and each agent to each sub collective and Clients will publish to a chosen sub collective
-	Collectives []string `confkey:"collectives" type:"comma_split" default:"mcollective"`
+	// The list of known Sub Collectives this node will join or communicate with, Servers will subscribe the node and each agent to each sub collective and Clients will publish to a chosen sub collective. Defaults to the build settin build.DefaultCollectives
+	Collectives []string `confkey:"collectives" type:"comma_split"`
 
 	// The Sub Collective where a Client will publish to when no specific Sub Collective is configured
 	MainCollective string `confkey:"main_collective"`
@@ -266,6 +267,7 @@ func NewConfig(path string) (*Config, error) {
 func NewConfigForTests() *Config {
 	c := newConfig()
 	c.MainCollective = "ginkgo"
+	c.Collectives = []string{"ginkgo", "mcollective"}
 	c.RegistrationCollective = "ginkgo"
 	c.Identity = "ginkgo.example.net"
 	c.OverrideCertname = "rip.mcollective"
@@ -279,6 +281,17 @@ func NewConfigForTests() *Config {
 }
 
 func (c *Config) normalize() error {
+	if len(c.Collectives) == 0 {
+		c.Collectives = strings.Split(build.DefaultCollectives, ",")
+		if len(c.Collectives) == 0 {
+			c.Collectives = []string{"mcollective"}
+		}
+
+		for i, collective := range c.Collectives {
+			c.Collectives[i] = strings.TrimSpace(collective)
+		}
+	}
+
 	if c.MainCollective == "" {
 		c.MainCollective = c.Collectives[0]
 	}

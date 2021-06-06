@@ -7,6 +7,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/choria-io/go-choria/build"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -19,6 +20,19 @@ func TestChoria(t *testing.T) {
 
 var _ = Describe("Choria/Config", func() {
 	Describe("NewConfig", func() {
+		AfterEach(func() {
+			build.DefaultCollectives = "mcollective"
+		})
+
+		It("Should get collectives from build settings", func() {
+			c := &Config{Choria: &ChoriaPluginConfig{}}
+			build.DefaultCollectives = "g1 , g2"
+			err := c.normalize()
+			Expect(err).To(Not(HaveOccurred()))
+			Expect(c.Collectives).To(Equal([]string{"g1", "g2"}))
+			Expect(c.MainCollective).To(Equal("g1"))
+		})
+
 		It("Should correctly parse config files", func() {
 			var c *Config
 			var err error

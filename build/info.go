@@ -2,6 +2,7 @@ package build
 
 import (
 	"sort"
+	"strings"
 	"sync"
 )
 
@@ -31,6 +32,18 @@ func (i *Info) License() string {
 	mu.Lock()
 	defer mu.Unlock()
 	return License
+}
+
+func (i *Info) DefaultCollectives() []string {
+	mu.Lock()
+	defer mu.Unlock()
+
+	collectives := strings.Split(DefaultCollectives, ",")
+	for i, c := range collectives {
+		collectives[i] = strings.TrimSpace(c)
+	}
+
+	return collectives
 }
 
 func (i *Info) HasTLS() bool {
