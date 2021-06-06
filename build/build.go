@@ -70,6 +70,9 @@ var MachineWatchers = []string{}
 // DataProviders are registered Data plugins
 var DataProviders = []string{}
 
+// DefaultCollectives is the names of the default list of collectives as comma separated strings
+var DefaultCollectives = "mcollective"
+
 // HasTLS determines if TLS should be used on the wire
 func HasTLS() bool {
 	return TLS == "true"
