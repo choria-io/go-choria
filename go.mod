@@ -12,13 +12,12 @@ require (
 	github.com/brutella/hc v1.2.4
 	github.com/choria-io/go-updater v0.0.3
 	github.com/cloudevents/sdk-go/v2 v2.4.1
-	github.com/fatih/color v1.10.0
-	github.com/fatih/structtag v1.2.0 // indirect
+	github.com/fatih/color v1.12.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang-jwt/jwt v3.2.1+incompatible
 	github.com/golang/mock v1.5.0
-	github.com/google/go-cmp v0.5.5
+	github.com/google/go-cmp v0.5.6
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/gosuri/uiprogress v0.0.1
@@ -27,14 +26,14 @@ require (
 	github.com/looplab/fsm v0.2.0
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/mitchellh/mapstructure v1.4.1
-	github.com/nats-io/jsm.go v0.0.24-0.20210511163230-0fd1baffbd6e
-	github.com/nats-io/nats-server/v2 v2.2.7-0.20210526222114-f89d06190c29
-	github.com/nats-io/nats-streaming-server v0.21.2 // indirect
+	github.com/nats-io/jsm.go v0.0.24-0.20210528144848-9e8c0cb91b50
+	github.com/nats-io/nats-server/v2 v2.2.7-0.20210609010737-297b55c9a97a
+	github.com/nats-io/nats-streaming-server v0.22.0 // indirect
 	github.com/nats-io/nats.go v1.11.0
-	github.com/nats-io/stan.go v0.8.3
+	github.com/nats-io/stan.go v0.9.0
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/onsi/ginkgo v1.16.2
-	github.com/onsi/gomega v1.12.0
+	github.com/onsi/ginkgo v1.16.4
+	github.com/onsi/gomega v1.13.0
 	github.com/open-policy-agent/opa v0.28.0
 	github.com/prometheus/client_golang v1.10.0
 	github.com/prometheus/client_model v0.2.0
@@ -44,7 +43,7 @@ require (
 	github.com/tidwall/pretty v1.1.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.7.0
-	golang.org/x/sys v0.0.0-20210511113859-b0526f3d8744
+	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea
 	golang.org/x/term v0.0.0-20210503060354-a79de5458b56
 	golang.org/x/tools v0.1.1
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
