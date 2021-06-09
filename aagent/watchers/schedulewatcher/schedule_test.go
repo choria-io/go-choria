@@ -77,6 +77,22 @@ var _ = Describe("ScheduleWatcher", func() {
 			Expect(watch.items).To(HaveLen(2))
 			Expect(watch.properties.Schedules).To(HaveLen(2))
 		})
+
+		It("Should handle startup splays", func() {
+			err := watch.setProperties(map[string]interface{}{
+				"start_splay": "1m",
+				"duration":    "1m",
+				"schedules":   []string{"* * * * *", "1 * * * *"},
+			})
+			Expect(err).To(MatchError("start splay 1m0s is bigger than half the duration 1m0s"))
+
+			err = watch.setProperties(map[string]interface{}{
+				"start_splay": "10s",
+				"duration":    "1m",
+				"schedules":   []string{"* * * * *", "1 * * * *"},
+			})
+			Expect(err).ToNot(HaveOccurred())
+		})
 	})
 
 	Describe("CurrentState", func() {

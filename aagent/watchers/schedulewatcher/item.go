@@ -2,33 +2,37 @@ package schedulewatcher
 
 import (
 	"context"
+	"math/rand"
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/robfig/cron"
 
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 )
 
 type scheduleItem struct {
-	spec     string
-	sched    cron.Schedule
-	events   chan int
-	on       bool
-	duration time.Duration
-	machine  watcher.Machine
-	watcher  *Watcher
+	spec      string
+	sched     cron.Schedule
+	events    chan int
+	on        bool
+	duration  time.Duration
+	randomize time.Duration
+	machine   watcher.Machine
+	watcher   *Watcher
 
 	sync.Mutex
 }
 
 func newSchedItem(s string, w *Watcher) (item *scheduleItem, err error) {
 	item = &scheduleItem{
-		spec:     s,
-		events:   w.ctrq,
-		machine:  w.machine,
-		watcher:  w,
-		duration: w.properties.Duration,
+		spec:      s,
+		events:    w.ctrq,
+		machine:   w.machine,
+		watcher:   w,
+		duration:  w.properties.Duration,
+		randomize: w.properties.StartSplay,
 	}
 
 	parser := cron.NewParser(cron.Minute | cron.Hour | cron.Dom | cron.Month | cron.Dow)
@@ -57,8 +61,20 @@ func (s *scheduleItem) check(ctx context.Context) {
 }
 
 func (s *scheduleItem) wait(ctx context.Context) {
-	s.watcher.Infof("Scheduling on until %v", time.Now().Add(s.duration))
-	timer := time.NewTimer(s.duration)
+	sleep := time.Duration(0)
+	if s.randomize > 0 {
+		sleep = time.Duration(rand.Int63n(int64(s.randomize)))
+	}
+
+	s.watcher.Infof("Sleeping %v before starting schedule", sleep)
+	err := util.InterruptibleSleep(ctx, sleep)
+	if err != nil {
+		return
+	}
+
+	onTime := s.duration - sleep
+	s.watcher.Infof("Scheduling on until %v after %v splay", time.Now().Add(onTime), sleep)
+	timer := time.NewTimer(onTime)
 	defer timer.Stop()
 
 	select {

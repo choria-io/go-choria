@@ -31,8 +31,9 @@ var stateNames = map[State]string{
 }
 
 type properties struct {
-	Duration  time.Duration
-	Schedules []string
+	Duration   time.Duration
+	StartSplay time.Duration `mapstructure:"start_splay"`
+	Schedules  []string
 }
 
 type Watcher struct {
@@ -217,6 +218,10 @@ func (w *Watcher) setProperties(props map[string]interface{}) error {
 		}
 
 		w.items = append(w.items, item)
+	}
+
+	if w.properties.StartSplay > w.properties.Duration/2 {
+		return fmt.Errorf("start splay %v is bigger than half the duration %v", w.properties.StartSplay, w.properties.Duration)
 	}
 
 	return w.validate()
