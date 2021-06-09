@@ -18,7 +18,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/form3tech-oss/jwt-go"
+	"github.com/golang-jwt/jwt"
 	"golang.org/x/term"
 
 	"github.com/choria-io/go-choria/internal/util"
