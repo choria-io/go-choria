@@ -261,8 +261,10 @@ func (m *Machine) buildFSM() error {
 
 	f := fsm.NewFSM(m.InitialState, events, fsm.Callbacks{
 		"enter_state": func(e *fsm.Event) {
-			for _, notifier := range m.notifiers {
-				m.manager.NotifyStateChance()
+			for i, notifier := range m.notifiers {
+				if i == 0 {
+					m.manager.NotifyStateChance()
+				}
 
 				err := notifier.NotifyPostTransition(&TransitionNotification{
 					Protocol:   "io.choria.machine.v1.transition",

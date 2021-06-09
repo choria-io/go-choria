@@ -36,7 +36,7 @@ func (c *mRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
-	m, err := machine.FromDir(c.sourceDir, watchers.New())
+	m, err := machine.FromDir(c.sourceDir, watchers.New(ctx))
 	if err != nil {
 		return err
 	}

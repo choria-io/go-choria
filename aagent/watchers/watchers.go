@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/backoff"
 	"github.com/tidwall/gjson"
 
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
@@ -50,6 +51,23 @@ type Machine interface {
 type Manager struct {
 	watchers map[string]Watcher
 	machine  Machine
+
+	// we use a 5 second backoff to limit fast transitions
+	// this when this timer fires it will reset the try counter
+	// to 0, but we reset this timer on every transition meaning
+	// it will only fire once there has been no transitions for
+	// its duration.
+	//
+	// so effectively this means a fast transition loop will slow
+	// down to 1 transition every 5 seconds max but reset to fast
+	// once there have not been a storm of transitions for a while
+	backoffTimer      *time.Timer
+	transitionCounter int
+
+	// to cancel the above timer during shutdown
+	ctx    context.Context
+	cancel func()
+
 	sync.Mutex
 }
 
@@ -88,10 +106,14 @@ func RegisterWatcherPlugin(name string, plugin WatcherConstructor) error {
 	return nil
 }
 
-func New() *Manager {
-	return &Manager{
+func New(ctx context.Context) *Manager {
+	m := &Manager{
 		watchers: make(map[string]Watcher),
 	}
+
+	m.ctx, m.cancel = context.WithCancel(ctx)
+
+	return m
 }
 
 func ParseWatcherState(state []byte) (interface{}, error) {
@@ -121,8 +143,15 @@ func ParseWatcherState(state []byte) (interface{}, error) {
 // Delete gets called before a watcher is being deleted after
 // its files were removed from disk
 func (m *Manager) Delete() {
+	m.machine.Infof(m.machine.Name(), "Stopping manager")
+	m.cancel()
+
 	m.Lock()
 	defer m.Unlock()
+
+	if m.backoffTimer != nil {
+		m.backoffTimer.Stop()
+	}
 
 	for _, w := range m.watchers {
 		w.Delete()
@@ -249,10 +278,39 @@ func (m *Manager) announceWatcherState(ctx context.Context, wg *sync.WaitGroup, 
 	}
 }
 
+func (m *Manager) backoffFunc() {
+	m.Lock()
+	defer m.Unlock()
+
+	m.transitionCounter = 0
+
+	if m.backoffTimer == nil {
+		return
+	}
+
+	m.backoffTimer.Reset(time.Minute)
+}
+
 // NotifyStateChance implements machine.WatcherManager
 func (m *Manager) NotifyStateChance() {
 	m.Lock()
 	defer m.Unlock()
+
+	if m.backoffTimer == nil {
+		m.backoffTimer = time.AfterFunc(time.Minute, m.backoffFunc)
+	}
+
+	if m.transitionCounter > 0 {
+		m.machine.Infof("manager", "Rate limiting fast transition %d for %s", m.transitionCounter, backoff.FiveSecStartGrace.Duration(m.transitionCounter))
+		err := backoff.FiveSecStartGrace.TrySleep(m.ctx, m.transitionCounter)
+		if err != nil {
+			return
+		}
+
+		m.backoffTimer.Reset(time.Minute)
+	}
+
+	m.transitionCounter++
 
 	for _, watcher := range m.watchers {
 		watcher.NotifyStateChance()

@@ -89,7 +89,7 @@ func (a *AAgent) Transition(name string, version string, path string, id string,
 }
 
 func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path string) (err error) {
-	aa, err := machine.FromDir(path, watchers.New())
+	aa, err := machine.FromDir(path, watchers.New(ctx))
 	if err != nil {
 		return err
 	}

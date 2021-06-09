@@ -1,6 +1,7 @@
 package watchers
 
 import (
+	"context"
 	"path/filepath"
 	"testing"
 	"time"
@@ -32,7 +33,7 @@ var _ = Describe("Aagent/Watchers", func() {
 		machine = NewMockMachine(mockctl)
 		watcherC = NewMockWatcherConstructor(mockctl)
 		watcher = NewMockWatcher(mockctl)
-		manager = New()
+		manager = New(context.Background())
 		manager.machine = machine
 	})
 
