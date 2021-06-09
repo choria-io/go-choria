@@ -51,30 +51,29 @@ func (s *scheduleItem) check(ctx context.Context) {
 	// using unix time to round it to nearest second
 	if next.Unix()-1 == now.Unix() {
 		s.Lock()
+		defer s.Unlock()
+
+		sleep := time.Duration(0)
+		if s.randomize > 0 {
+			sleep = time.Duration(rand.Int63n(int64(s.randomize)))
+			s.watcher.Infof("Splay sleeping %v before starting schedule", sleep)
+			err := util.InterruptibleSleep(ctx, sleep)
+			if err != nil {
+				return
+			}
+		}
+
 		s.watcher.Infof("Schedule %s starting", s.spec)
 		s.on = true
 		s.events <- 1
-		s.Unlock()
 
-		go s.wait(ctx)
+		go s.wait(ctx, s.duration-sleep)
 	}
 }
 
-func (s *scheduleItem) wait(ctx context.Context) {
-	sleep := time.Duration(0)
-	if s.randomize > 0 {
-		sleep = time.Duration(rand.Int63n(int64(s.randomize)))
-	}
-
-	s.watcher.Infof("Sleeping %v before starting schedule", sleep)
-	err := util.InterruptibleSleep(ctx, sleep)
-	if err != nil {
-		return
-	}
-
-	onTime := s.duration - sleep
-	s.watcher.Infof("Scheduling on until %v after %v splay", time.Now().Add(onTime), sleep)
-	timer := time.NewTimer(onTime)
+func (s *scheduleItem) wait(ctx context.Context, t time.Duration) {
+	s.watcher.Infof("Scheduling on until %v", time.Now().Add(t))
+	timer := time.NewTimer(t)
 	defer timer.Stop()
 
 	select {
