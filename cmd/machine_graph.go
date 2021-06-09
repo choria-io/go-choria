@@ -29,7 +29,7 @@ func (c *mGraphCommand) Configure() error {
 func (c *mGraphCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	m, err := machine.FromDir(c.souceDir, watchers.New())
+	m, err := machine.FromDir(c.souceDir, watchers.New(ctx))
 	if err != nil {
 		return err
 	}

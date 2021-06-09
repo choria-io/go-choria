@@ -14,6 +14,11 @@ type Policy struct {
 	Millis []int
 }
 
+// FiveSecStartGrace Like FiveSec but allows for a few fairly rapid initial tries
+var FiveSecStartGrace = Policy{
+	Millis: []int{0, 50, 100, 200, 250, 500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000},
+}
+
 // FiveSec is a backoff policy ranging up to 5 seconds.
 var FiveSec = Policy{
 	Millis: []int{500, 750, 1000, 1500, 2000, 2500, 3000, 3500, 4000, 4500, 5000},
@@ -59,6 +64,7 @@ func (b Policy) Sleep(ctx context.Context, t time.Duration) error {
 	case <-timer.C:
 		return nil
 	case <-ctx.Done():
+		timer.Stop()
 		return ctx.Err()
 	}
 }
