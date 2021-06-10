@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/backoff"
 	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/ghodss/yaml"
@@ -53,6 +54,18 @@ type Machine struct {
 	fsm         *fsm.FSM
 	notifiers   []NotificationService
 	knownStates map[string]bool
+
+	// we use a 5 second backoff to limit fast transitions
+	// this when this timer fires it will reset the try counter
+	// to 0, but we reset this timer on every transition meaning
+	// it will only fire once there has been no transitions for
+	// its duration.
+	//
+	// so effectively this means a fast transition loop will slow
+	// down to 1 transition every 5 seconds max but reset to fast
+	// once there have not been a storm of transitions for a while
+	backoffTimer      *time.Timer
+	transitionCounter int
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -244,6 +257,19 @@ func (m *Machine) Graph() string {
 	return fsm.Visualize(m.fsm)
 }
 
+func (m *Machine) backoffFunc() {
+	m.Lock()
+	defer m.Unlock()
+
+	m.transitionCounter = 0
+
+	if m.backoffTimer == nil {
+		return
+	}
+
+	m.backoffTimer.Reset(time.Minute)
+}
+
 func (m *Machine) buildFSM() error {
 	events := fsm.Events{}
 
@@ -382,7 +408,14 @@ func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) (started chan s
 // Delete deletes a running machine by canceling its context and giving its manager
 // a change to do clean up before final termination
 func (m *Machine) Delete() {
+	m.Lock()
+	defer m.Unlock()
+
 	m.manager.Delete()
+
+	if m.backoffTimer != nil {
+		m.backoffTimer.Stop()
+	}
 
 	if m.cancel != nil {
 		m.Infof("runner", "Stopping")
@@ -392,10 +425,37 @@ func (m *Machine) Delete() {
 
 // Stop stops a running machine by canceling its context
 func (m *Machine) Stop() {
+	m.Lock()
+	defer m.Unlock()
+
+	if m.backoffTimer != nil {
+		m.backoffTimer.Stop()
+	}
+
 	if m.cancel != nil {
 		m.Infof("runner", "Stopping")
 		m.cancel()
 	}
+}
+
+func (m *Machine) backoffTransition(t string) error {
+	if m.backoffTimer == nil {
+		m.backoffTimer = time.AfterFunc(time.Minute, m.backoffFunc)
+	}
+
+	if m.transitionCounter > 0 {
+		m.Infof("machine", "Rate limiting fast transition %s after %d transitions without a quiet period for %s", t, m.transitionCounter, backoff.FiveSecStartGrace.Duration(m.transitionCounter))
+		err := backoff.FiveSecStartGrace.TrySleep(m.ctx, m.transitionCounter)
+		if err != nil {
+			return err
+		}
+
+		m.backoffTimer.Reset(time.Minute)
+	}
+
+	m.transitionCounter++
+
+	return nil
 }
 
 // Transition performs the machine transition as defined by event t
@@ -408,6 +468,11 @@ func (m *Machine) Transition(t string, args ...interface{}) error {
 	}
 
 	if m.Can(t) {
+		err := m.backoffTransition(t)
+		if err != nil {
+			return err
+		}
+
 		m.fsm.Event(t, args...)
 	} else {
 		m.Warnf("machine", "Could not fire '%s' event while in %s", t, m.fsm.Current())
