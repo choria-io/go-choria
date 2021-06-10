@@ -54,7 +54,7 @@ func (w *Watcher) SuccessTransition() error {
 		return nil
 	}
 
-	w.Infof("success transitioning using %q event", w.succEvent)
+	w.Infof("success transitioning using %s event", w.succEvent)
 	return w.machine.Transition(w.succEvent)
 }
 
@@ -63,7 +63,7 @@ func (w *Watcher) FailureTransition() error {
 		return nil
 	}
 
-	w.Infof("fail transitioning using %q event", w.succEvent)
+	w.Infof("fail transitioning using %s event", w.succEvent)
 	return w.machine.Transition(w.failEvent)
 }
 
