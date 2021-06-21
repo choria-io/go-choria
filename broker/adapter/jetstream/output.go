@@ -39,16 +39,13 @@ func newStream(name string, work chan ingest.Adaptable, logger *log.Entry) ([]*s
 	}
 
 	servers := cfg.Option(prefix+"servers", "")
-	if servers == "" {
-		return nil, fmt.Errorf("no Stream servers configured, please set %s", prefix+"servers")
-	}
 
 	topic := cfg.Option(prefix+"topic", "")
 	if topic == "" {
 		topic = name
 	}
 
-	workers := []*stream{}
+	var workers []*stream
 
 	for i := 0; i < instances; i++ {
 		logger.Infof("Creating NATS JetStream Adapter %s instance %d / %d publishing to message set %s", name, i, instances, topic)
@@ -64,7 +61,12 @@ func newStream(name string, work chan ingest.Adaptable, logger *log.Entry) ([]*s
 			log:         logger.WithFields(log.Fields{"side": "stream", "instance": i}),
 		}
 
-		st.servers = st.resolver(strings.Split(servers, ","))
+		if servers != "" {
+			st.servers = st.resolver(strings.Split(servers, ","))
+		} else {
+			st.log.Warnf("%s not set, using standard client middleware resolution", prefix+"servers")
+			st.servers = fw.MiddlewareServers
+		}
 
 		workers = append(workers, st)
 	}
