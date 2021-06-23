@@ -69,7 +69,8 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.services.registry.enable](#pluginchoriaservicesregistryenable)|[plugin.choria.srv_domain](#pluginchoriasrv_domain)|
 |[plugin.choria.ssldir](#pluginchoriassldir)|[plugin.choria.stats_address](#pluginchoriastats_address)|
 |[plugin.choria.stats_port](#pluginchoriastats_port)|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|
-|[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|[plugin.choria.use_srv](#pluginchoriause_srv)|
+|[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|[plugin.choria.submission.max_spool_size](#pluginchoriasubmissionmax_spool_size)|
+|[plugin.choria.submission.spool](#pluginchoriasubmissionspool)|[plugin.choria.use_srv](#pluginchoriause_srv)|
 |[plugin.nats.credentials](#pluginnatscredentials)|[plugin.nats.ngs](#pluginnatsngs)|
 |[plugin.nats.pass](#pluginnatspass)|[plugin.nats.user](#pluginnatsuser)|
 |[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|[plugin.scout.overrides](#pluginscoutoverrides)|
@@ -109,9 +110,8 @@ Path to a file listing configuration classes applied to a node, used in matches 
 ## collectives
 
  * **Type:** comma_split
- * **Default Value:** mcollective
 
-The list of known Sub Collectives this node will join or communicate with, Servers will subscribe the node and each agent to each sub collective and Clients will publish to a chosen sub collective
+The list of known Sub Collectives this node will join or communicate with, Servers will subscribe the node and each agent to each sub collective and Clients will publish to a chosen sub collective. Defaults to the build settin build.DefaultCollectives
 
 ## color
 
@@ -780,6 +780,19 @@ Path to a JSON file to write server health information to regularly
  * **Default Value:** 30
 
 How frequently to write to the status_file_path
+
+## plugin.choria.submission.max_spool_size
+
+ * **Type:** integer
+ * **Default Value:** 500
+
+Maximum amount of messages allowed into each priority
+
+## plugin.choria.submission.spool
+
+ * **Type:** path_string
+
+Path to a directory holding messages to submit to the middleware
 
 ## plugin.choria.use_srv
 

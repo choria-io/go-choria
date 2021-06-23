@@ -14,9 +14,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/choria-io/go-choria/backoff"
 	"github.com/gofrs/uuid"
 	"github.com/olekukonko/tablewriter"
 )
+
+var ConstantBackOffForTests = backoff.Policy{
+	Millis: []int{25},
+}
 
 // FileExist checks if a file exist on disk
 func FileExist(path string) bool {

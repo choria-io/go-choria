@@ -156,6 +156,11 @@ func (s *stubConnection) Nats() *nats.Conn {
 	return &nats.Conn{}
 }
 
+func (s *stubConnection) PublishRawMsg(msg *nats.Msg) error { return fmt.Errorf("not implemented") }
+func (s *stubConnection) RequestRawMsgWithContext(ctx context.Context, msg *nats.Msg) (*nats.Msg, error) {
+	return nil, fmt.Errorf("not implemented")
+}
+
 func (s *stubConnectionManager) NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn choria.Connector, err error) {
 	if s.connection != nil {
 		return s.connection, nil

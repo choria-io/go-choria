@@ -40,7 +40,7 @@ func (p *Provider) Initialize(fw *choria.Framework, log *logrus.Entry) {
 }
 
 // RegisterAgents registers known ruby agents using a shimm agent
-func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, connector choria.InstanceConnector, log *logrus.Entry) error {
+func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, connector choria.AgentConnector, log *logrus.Entry) error {
 	for _, ddl := range p.Agents() {
 		agent, err := NewRubyAgent(ddl, mgr)
 		if err != nil {

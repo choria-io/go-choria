@@ -13,14 +13,33 @@ import (
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/discovery"
 	"github.com/choria-io/go-choria/server/registration"
+	"github.com/choria-io/go-choria/submission"
+	"github.com/nats-io/nats.go"
 
 	log "github.com/sirupsen/logrus"
 )
 
+type Connector interface {
+	NodeDirectedTarget(collective string, identity string) string
+	IsConnected() bool
+	Close()
+	ConnectedServer() string
+	ConnectionOptions() nats.Options
+	ConnectionStats() nats.Statistics
+	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *choria.ConnectorMessage) error
+	Unsubscribe(name string) error
+	AgentBroadcastTarget(collective string, agent string) string
+	ServiceBroadcastTarget(collective string, agent string) string
+	Publish(msg *choria.Message) error
+	PublishRaw(target string, data []byte) error
+	PublishRawMsg(msg *nats.Msg) error
+	RequestRawMsgWithContext(ctx context.Context, msg *nats.Msg) (*nats.Msg, error)
+}
+
 // Instance is an independent copy of Choria
 type Instance struct {
 	fw                 *choria.Framework
-	connector          choria.InstanceConnector
+	connector          Connector
 	cfg                *config.Config
 	log                *log.Entry
 	registration       *registration.Manager
@@ -149,6 +168,22 @@ func (srv *Instance) RunServiceHost(ctx context.Context, wg *sync.WaitGroup) err
 	return nil
 }
 
+func (srv *Instance) SetupSubmissions(ctx context.Context, wg *sync.WaitGroup) error {
+	if srv.cfg.Choria.SubmissionSpool == "" {
+		srv.log.Infof("Skipping submission startup as no spool is configured")
+	}
+
+	subm, err := submission.New(srv.fw, submission.Directory)
+	if err != nil {
+		return err
+	}
+
+	wg.Add(1)
+	go subm.Run(ctx, wg, srv.connector)
+
+	return nil
+}
+
 func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
@@ -213,6 +248,11 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		srv.connector.Close()
 
 		return fmt.Errorf("could not subscribe node: %s", err)
+	}
+
+	err = srv.SetupSubmissions(ctx, wg)
+	if err != nil {
+		srv.log.Errorf("Submission setup failed: %s", err)
 	}
 
 	srv.publishStartupEvent()

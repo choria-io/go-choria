@@ -26,7 +26,7 @@ func (p *Provider) Version() string {
 }
 
 // RegisterAgents registers known ruby agents using a shimm agent
-func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, connector choria.InstanceConnector, _ *logrus.Entry) error {
+func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, connector choria.AgentConnector, _ *logrus.Entry) error {
 	var agent agents.Agent
 
 	agent, err := discovery.New(mgr)

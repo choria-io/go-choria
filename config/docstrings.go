@@ -7,7 +7,7 @@ var docStrings = map[string]string{
 	"registration_collective":         "The Sub Collective to publish registration data to",
 	"registerinterval":                "How often to publish registration data",
 	"registration_splay":              "When true delays initial registration publish by a random period up to registerinterval following registration publishes will be at registerinterval without further splay",
-	"collectives":                     "The list of known Sub Collectives this node will join or communicate with, Servers will subscribe the node and each agent to each sub collective and Clients will publish to a chosen sub collective",
+	"collectives":                     "The list of known Sub Collectives this node will join or communicate with, Servers will subscribe the node and each agent to each sub collective and Clients will publish to a chosen sub collective. Defaults to the build settin build.DefaultCollectives",
 	"main_collective":                 "The Sub Collective where a Client will publish to when no specific Sub Collective is configured",
 	"logfile":                         "The file to write logs to, when set to an empty string logging will be to the console, when set to 'discard' logging will be disabled",
 	"loglevel":                        "The lowest level log to add to the logfile",
@@ -130,4 +130,6 @@ var docStrings = map[string]string{
 	"plugin.choria.require_client_filter":                      "If a client filter should always be required, only used in Go clients",
 	"plugin.choria.services.registry.enable":                   "If the registry service should be enabled on this server",
 	"plugin.choria.services.registry.client":                   "Enable downloading DDLs and other schemas from the registry service",
+	"plugin.choria.submission.spool":                           "Path to a directory holding messages to submit to the middleware",
+	"plugin.choria.submission.max_spool_size":                  "Maximum amount of messages allowed into each priority",
 }

@@ -112,6 +112,8 @@ github.com/fatih/color v1.7.0/go.mod h1:Zm6kSWBoL9eyXnKyktHP6abPY2pDugNf5Kwzbycv
 github.com/fatih/color v1.10.0/go.mod h1:ELkj/draVOlAH/xkhN6mQ50Qd0MPOk5AAr3maGEBuJM=
 github.com/fatih/color v1.12.0 h1:mRhaKNwANqRgUBGKmnI5ZxEk7QXmjQeCcuYFMX2bfcc=
 github.com/fatih/color v1.12.0/go.mod h1:ELkj/draVOlAH/xkhN6mQ50Qd0MPOk5AAr3maGEBuJM=
+github.com/fatih/structtag v1.2.0 h1:/OdNE99OxoI/PqaW/SuSK9uxxT3f/tcSZgon/ssNSx4=
+github.com/fatih/structtag v1.2.0/go.mod h1:mBJUNpUnHmRKrKlQQlmCrh5PuhftFbNv8Ys4/aAZl94=
 github.com/fortytw2/leaktest v1.3.0 h1:u8491cBMTQ8ft8aeV+adlcytMZylmA5nnwwkRZjI8vw=
 github.com/fortytw2/leaktest v1.3.0/go.mod h1:jDsjWgpAGjm2CA7WthBh/CdZYEPF31XHquHwclZch5g=
 github.com/franela/goblin v0.0.0-20200105215937-c9ffbefa60db/go.mod h1:7dvUGVsVBjqR7JHJk0brhHOZYGmfBYOrK0ZhYMEtBr4=
@@ -347,6 +349,8 @@ github.com/nats-io/nats-server/v2 v2.2.6/go.mod h1:sEnFaxqe09cDmfMgACxZbziXnhQFh
 github.com/nats-io/nats-server/v2 v2.2.7-0.20210612181831-f4e34092c618/go.mod h1:hBgcnXvNESvh65J1nMtxaHHsaUxSmteZXCH1JLTuvfg=
 github.com/nats-io/nats-server/v2 v2.2.7-0.20210620180042-6129562b63df h1:hUjFm53EG2IOf5IMFzCH4jcLRFXKLp0GVgfKZK2UrOE=
 github.com/nats-io/nats-server/v2 v2.2.7-0.20210620180042-6129562b63df/go.mod h1:hBgcnXvNESvh65J1nMtxaHHsaUxSmteZXCH1JLTuvfg=
+github.com/nats-io/nats-server/v2 v2.3.0 h1:2rbRNVhaA40oaWY8XgPtXFl0rRvbYuBPzjMgfYQIQ/I=
+github.com/nats-io/nats-server/v2 v2.3.0/go.mod h1:7v4HvHI2Zu4n1775982gHbvBNXywHeaTj1WGo0S+uFI=
 github.com/nats-io/nats-streaming-server v0.22.0 h1:2egnq86o9roTqUfELlqykf7ZZkNvRsXjVf4EbaLysHo=
 github.com/nats-io/nats-streaming-server v0.22.0/go.mod h1:Jyu3eUQaUAjwd5TiBuLagKdQRofPrHoIXt1kL0U/e5o=
 github.com/nats-io/nats.go v1.9.1/go.mod h1:ZjDU1L/7fJ09jvUSRVBR2e7+RnLiiIQyqyzEE/Zbp4w=

@@ -10,14 +10,14 @@ import (
 
 type tSubCommand struct {
 	command
-	topic string
-	raw   bool
+	subject string
+	raw     bool
 }
 
 func (s *tSubCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		s.cmd = tool.Cmd().Command("sub", "Subscribe to middleware topics")
-		s.cmd.Arg("topic", "The topic to subscribe to").Required().StringVar(&s.topic)
+		s.cmd.Arg("subject", "The subject to subscribe to").Required().StringVar(&s.subject)
 		s.cmd.Flag("raw", "Display raw messages one per line without timestamps").BoolVar(&s.raw)
 	}
 
@@ -38,14 +38,14 @@ func (s *tSubCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	if !s.raw {
-		fmt.Printf("Waiting for messages from topic %s on %s\n", s.topic, conn.ConnectedServer())
+		fmt.Printf("Waiting for messages from topic %s on %s\n", s.subject, conn.ConnectedServer())
 	}
 
 	msgs := make(chan *choria.ConnectorMessage, 100)
 
-	err = conn.QueueSubscribe(ctx, c.UniqueID(), s.topic, "", msgs)
+	err = conn.QueueSubscribe(ctx, c.UniqueID(), s.subject, "", msgs)
 	if err != nil {
-		return fmt.Errorf("could not subscribe to %s: %s", s.topic, err)
+		return fmt.Errorf("could not subscribe to %s: %s", s.subject, err)
 	}
 
 	for {
@@ -56,7 +56,7 @@ func (s *tSubCommand) Run(wg *sync.WaitGroup) (err error) {
 				continue
 			}
 
-			if m.Subject == s.topic {
+			if m.Subject == s.subject {
 				fmt.Printf("---- %s\n%s\n\n", time.Now().Format("15:04:05"), string(m.Data))
 			} else {
 				fmt.Printf("---- %s on topic %s\n%s\n\n", time.Now().Format("15:04:05"), m.Subject, string(m.Data))
