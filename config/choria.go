@@ -134,6 +134,9 @@ type ChoriaPluginConfig struct {
 
 	RegistryServiceEnabled bool `confkey:"plugin.choria.services.registry.enable" default:"false"` // If the registry service should be enabled on this server
 	RegistryClientEnabled  bool `confkey:"plugin.choria.services.registry.client" default:"false"` // Enable downloading DDLs and other schemas from the registry service
+
+	SubmissionSpool        string `confkey:"plugin.choria.submission.spool" type:"path_string"`     // Path to a directory holding messages to submit to the middleware
+	SubmissionSpoolMaxSize int    `confkey:"plugin.choria.submission.max_spool_size" default:"500"` // Maximum amount of messages allowed into each priority
 }
 
 func newChoria() *ChoriaPluginConfig {

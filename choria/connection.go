@@ -28,30 +28,15 @@ type ConnectionManager interface {
 	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn Connector, err error)
 }
 
-// PublishableConnector provides the minimal Connector features to enable publishing of choria.Message instances
-type PublishableConnector interface {
-	Publish(msg *Message) error
-}
-
-type RawPublishableConnector interface {
-	PublishRaw(target string, data []byte) error
-}
-
 // AgentConnector provides the minimal Connector features for subscribing and unsubscribing agents
 type AgentConnector interface {
-	ConnectorInfo
-
+	ConnectedServer() string
+	ConnectionOptions() nats.Options
+	ConnectionStats() nats.Statistics
 	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error
 	Unsubscribe(name string) error
 	AgentBroadcastTarget(collective string, agent string) string
 	ServiceBroadcastTarget(collective string, agent string) string
-}
-
-type ClientConnector interface {
-	PublishableConnector
-
-	ReplyTarget(msg *Message) string
-	ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *ConnectorMessage, error)
 }
 
 type ConnectorInfo interface {
@@ -60,25 +45,26 @@ type ConnectorInfo interface {
 	ConnectionStats() nats.Statistics
 }
 
-type InstanceConnector interface {
-	AgentConnector
-	PublishableConnector
-	RawPublishableConnector
-
-	NodeDirectedTarget(collective string, identity string) string
-
-	IsConnected() bool
-	Close()
-}
-
 // Connector is the interface a connector must implement to be valid be it NATS, Stomp, Testing etc
 type Connector interface {
-	InstanceConnector
-
-	ReplyTarget(msg *Message) (string, error)
+	AgentBroadcastTarget(collective string, agent string) string
 	ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *ConnectorMessage, error)
+	Close()
 	Connect(ctx context.Context) (err error)
+	ConnectedServer() string
+	ConnectionOptions() nats.Options
+	ConnectionStats() nats.Statistics
+	IsConnected() bool
 	Nats() *nats.Conn
+	NodeDirectedTarget(collective string, identity string) string
+	Publish(msg *Message) error
+	PublishRaw(target string, data []byte) error
+	PublishRawMsg(msg *nats.Msg) error
+	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error
+	ReplyTarget(msg *Message) (string, error)
+	RequestRawMsgWithContext(ctx context.Context, msg *nats.Msg) (*nats.Msg, error)
+	ServiceBroadcastTarget(collective string, agent string) string
+	Unsubscribe(name string) error
 }
 
 type ConnectorMessage struct {
@@ -321,6 +307,18 @@ func (conn *Connection) PublishRaw(target string, data []byte) error {
 	log.Debugf("Publishing %d bytes to %s", len(data), target)
 
 	return conn.nats.Publish(target, data)
+}
+
+// PublishRawMsg allows any nats message to be published to any target
+func (conn *Connection) PublishRawMsg(msg *nats.Msg) error {
+	log.Debugf("Publishing %d bytes to %s", len(msg.Data), msg.Subject)
+	return conn.nats.PublishMsg(msg)
+}
+
+// RequestRawMsgWithContext allows any nats message to be published as a request
+func (conn *Connection) RequestRawMsgWithContext(ctx context.Context, msg *nats.Msg) (*nats.Msg, error) {
+	log.Debugf("Performing NATS request of %d bytes to %s", len(msg.Data), msg.Subject)
+	return conn.nats.RequestMsgWithContext(ctx, msg)
 }
 
 // Publish inspects a Message and publish it according to its Type

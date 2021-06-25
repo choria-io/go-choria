@@ -10,7 +10,7 @@ import (
 )
 
 // AgentInitializer is a function signature for a function that can register an agent
-type AgentInitializer func(context.Context, *agents.Manager, choria.InstanceConnector, *logrus.Entry) error
+type AgentInitializer func(context.Context, *agents.Manager, choria.AgentConnector, *logrus.Entry) error
 
 var additionalAgents []AgentInitializer
 var aamu *sync.Mutex

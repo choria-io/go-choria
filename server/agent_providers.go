@@ -12,7 +12,7 @@ import (
 // AgentProvider is capable of adding agents into a running instance
 type AgentProvider interface {
 	Initialize(fw *choria.Framework, log *logrus.Entry)
-	RegisterAgents(ctx context.Context, mgr AgentManager, connector choria.InstanceConnector, log *logrus.Entry) error
+	RegisterAgents(ctx context.Context, mgr AgentManager, connector choria.AgentConnector, log *logrus.Entry) error
 	Version() string
 }
 
