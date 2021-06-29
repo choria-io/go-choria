@@ -300,20 +300,30 @@ func (s *FileSecurity) SignBytes(str []byte) ([]byte, error) {
 	if err != nil {
 		return sig, err
 	}
+	var parsedKey interface{}
 
-	pk, err := x509.ParsePKCS1PrivateKey(pkpem.Bytes)
+	parsedKey, err = x509.ParsePKCS1PrivateKey(pkpem.Bytes)
 	if err != nil {
-		err = fmt.Errorf("could not parse private key PEM data: %s", err)
-		return sig, err
+		parsedKey, err = x509.ParsePKCS8PrivateKey(pkpem.Bytes)
+		if err != nil {
+			err = fmt.Errorf("could not parse private key PEM data: %s", err)
+			return sig, err
+		}
 	}
 
 	rng := rand.Reader
 	hashed := s.ChecksumBytes(str)
-	sig, err = rsa.SignPKCS1v15(rng, pk, crypto.SHA256, hashed[:])
+
+	switch t := parsedKey.(type) {
+	case *rsa.PrivateKey:
+		sig, err = rsa.SignPKCS1v15(rng, t, crypto.SHA256, hashed[:])
+	default:
+		return sig, fmt.Errorf("unhandled key type %T", t)
+	}
+
 	if err != nil {
 		err = fmt.Errorf("could not sign message: %s", err)
 	}
-
 	return sig, err
 }
 
