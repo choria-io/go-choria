@@ -27,11 +27,14 @@ func TestFileSecurity(t *testing.T) {
 	RunSpecs(t, "Providers/Security/File")
 }
 
-func setSSL(c *Config, parent string, id string) {
+func setSSL(c *Config, parent string, id string, private_extension string) {
+	if private_extension == "" {
+		private_extension = "pem"
+	}
 	c.Certificate = filepath.Join(parent, "certs", fmt.Sprintf("%s.pem", id))
 	c.CA = filepath.Join(parent, "certs", "ca.pem")
 	c.Cache = filepath.Join(parent, "choria_security", "public_certs")
-	c.Key = filepath.Join(parent, "private_keys", fmt.Sprintf("%s.pem", id))
+	c.Key = filepath.Join(parent, "private_keys", fmt.Sprintf("%s.%s", id, private_extension))
 	c.AllowList = []string{"\\.mcollective$"}
 	c.PrivilegedUsers = []string{"\\.privileged.mcollective$"}
 	c.DisableTLSVerify = false
@@ -58,7 +61,7 @@ var _ = Describe("FileSSL", func() {
 
 		cfg = &Config{}
 		Expect(err).ToNot(HaveOccurred())
-		setSSL(cfg, goodStub, "rip.mcollective")
+		setSSL(cfg, goodStub, "rip.mcollective", "")
 
 		l = logrus.New()
 
@@ -177,7 +180,7 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("Validate", func() {
 		It("Should handle missing files", func() {
-			setSSL(cfg, nonexistingStub, "test.mcollective")
+			setSSL(cfg, nonexistingStub, "test.mcollective", "")
 			prov, err = New(WithConfig(cfg), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
@@ -191,7 +194,7 @@ var _ = Describe("FileSSL", func() {
 		})
 
 		It("Should accept valid directories", func() {
-			setSSL(cfg, goodStub, "rip.mcollective")
+			setSSL(cfg, goodStub, "rip.mcollective", "")
 
 			errs, ok := prov.Validate()
 			Expect(errs).To(HaveLen(0))
@@ -230,6 +233,13 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("SignBytes", func() {
 		It("Should produce the right signature", func() {
+			sig, err := prov.SignBytes([]byte("too many secrets"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(base64.StdEncoding.EncodeToString(sig)).To(Equal("PXj4RDHHt1oS1zF7r6EKiPyQ9oHlY4qyDP4DemZT26Hcr1A84l1p3nOVNMoksACrCdB1mW47FAwatgCB7cfCaOHsIiGOW/LQsmyE8eRpCYrV2gAHNsU6hA/CeIATwCq0Wtzp7Vc4PWR2VgrlSmihuK7sYGBJHEkillUG7F+P9c+epGJvLleM+nP7pTZVkrPqzwQ1tXFHgCNS2di5wTc5tCoJ0HHU3b31tuLGwROny3g3SsOjirrqdLDxciHYe/WzOGKByzTiqj1jjPZuuvkCzL9myr4anMBkwn1qtuqGtQ8FSwXLfgOKEwlLyf83rQ1OYWQFP+hdPJHaOlBm4iuVGjDEjla6MG081W8wpho6SqwhD1x2U9CUofQj2e0kNLQmjNK0xbIJUGSiStMcNFhIx5qoJYub40uJZkbfTE3hVp6cuOk9+yswGxfRO/RA88DBW679v8QoGeB+3RehggL2qGyRjdiPtxJj4Jt/pUAgBofrbausiIi8SUOnRSgYqpt0CLeYIiVgiNHa2EbYRfLgCsGGdVb+owAQ2Xh2VpMCelakgEBLXxBDBQ5CU8a+K992eUqDCWN6k70hDAsxXqjL+Li1J6yFjg8mAIaPLBUYgbttu47wItFZPpqlJ82cM01mELc2LyS1mChZHlo+h1q4GEbUevt0Q/VMpGNaa/WyeSQ="))
+		})
+
+		It("Should work with PKCS8 files", func() {
+			setSSL(cfg, goodStub, "rip.mcollective", "p8")
 			sig, err := prov.SignBytes([]byte("too many secrets"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(base64.StdEncoding.EncodeToString(sig)).To(Equal("PXj4RDHHt1oS1zF7r6EKiPyQ9oHlY4qyDP4DemZT26Hcr1A84l1p3nOVNMoksACrCdB1mW47FAwatgCB7cfCaOHsIiGOW/LQsmyE8eRpCYrV2gAHNsU6hA/CeIATwCq0Wtzp7Vc4PWR2VgrlSmihuK7sYGBJHEkillUG7F+P9c+epGJvLleM+nP7pTZVkrPqzwQ1tXFHgCNS2di5wTc5tCoJ0HHU3b31tuLGwROny3g3SsOjirrqdLDxciHYe/WzOGKByzTiqj1jjPZuuvkCzL9myr4anMBkwn1qtuqGtQ8FSwXLfgOKEwlLyf83rQ1OYWQFP+hdPJHaOlBm4iuVGjDEjla6MG081W8wpho6SqwhD1x2U9CUofQj2e0kNLQmjNK0xbIJUGSiStMcNFhIx5qoJYub40uJZkbfTE3hVp6cuOk9+yswGxfRO/RA88DBW679v8QoGeB+3RehggL2qGyRjdiPtxJj4Jt/pUAgBofrbausiIi8SUOnRSgYqpt0CLeYIiVgiNHa2EbYRfLgCsGGdVb+owAQ2Xh2VpMCelakgEBLXxBDBQ5CU8a+K992eUqDCWN6k70hDAsxXqjL+Li1J6yFjg8mAIaPLBUYgbttu47wItFZPpqlJ82cM01mELc2LyS1mChZHlo+h1q4GEbUevt0Q/VMpGNaa/WyeSQ="))
@@ -690,13 +700,13 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("privateKeyExists", func() {
 		It("Should detect existing keys", func() {
-			setSSL(cfg, goodStub, "rip.mcollective")
+			setSSL(cfg, goodStub, "rip.mcollective", "")
 
 			Expect(prov.privateKeyExists()).To(BeTrue())
 		})
 
 		It("Should detect absent keys", func() {
-			setSSL(cfg, goodStub, "na.mcollective")
+			setSSL(cfg, goodStub, "na.mcollective", "")
 
 			Expect(prov.privateKeyExists()).To(BeFalse())
 		})
