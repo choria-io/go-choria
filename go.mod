@@ -13,7 +13,6 @@ require (
 	github.com/choria-io/go-updater v0.0.3
 	github.com/cloudevents/sdk-go/v2 v2.4.1
 	github.com/fatih/color v1.12.0
-	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang-jwt/jwt v3.2.1+incompatible
@@ -24,13 +23,14 @@ require (
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.5.2
 	github.com/hinshun/vt10x v0.0.0-20180809195222-d55458df857c // indirect
+	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/looplab/fsm v0.2.0
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/mitchellh/mapstructure v1.4.1
-	github.com/nats-io/jsm.go v0.0.24-0.20210615120801-d992e86f57f6
-	github.com/nats-io/nats-server/v2 v2.3.0
+	github.com/nats-io/jsm.go v0.0.25-0.20210702132916-f421c9817f4f
+	github.com/nats-io/nats-server/v2 v2.3.1
 	github.com/nats-io/nats-streaming-server v0.22.0 // indirect
-	github.com/nats-io/nats.go v1.11.0
+	github.com/nats-io/nats.go v1.11.1-0.20210623165838-4b75fc59ae30
 	github.com/nats-io/stan.go v0.9.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.4
@@ -44,7 +44,7 @@ require (
 	github.com/tidwall/pretty v1.1.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.7.0
-	golang.org/x/sys v0.0.0-20210525143221-35b2ab0089ea
+	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1
 	golang.org/x/term v0.0.0-20210503060354-a79de5458b56
 	golang.org/x/tools v0.1.1
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6

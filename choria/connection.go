@@ -529,6 +529,10 @@ func ReplyTarget(msg *Message, requestid string) string {
 	return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(msg.CallerID))), requestid)
 }
 
+func Inbox(collective string, caller string) string {
+	return fmt.Sprintf("%s.reply.%s.%s", collective, fmt.Sprintf("%x", md5.Sum([]byte(caller))), util.UniqueID())
+}
+
 func (conn *Connection) ReplyTarget(msg *Message) (string, error) {
 	id, err := conn.choria.NewRequestID()
 	if err != nil {
