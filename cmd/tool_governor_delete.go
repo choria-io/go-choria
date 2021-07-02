@@ -55,7 +55,7 @@ func (g *tGovDeleteCommand) Run(wg *sync.WaitGroup) (err error) {
 	if !g.force {
 		ans := false
 		err = survey.AskOne(&survey.Confirm{
-			Message: fmt.Sprintf("Delete %s with %d active entries?", g.name, entries),
+			Message: fmt.Sprintf("Delete %s with %d active lease entries?", g.name, entries),
 			Default: ans,
 		}, &ans)
 		if err != nil {

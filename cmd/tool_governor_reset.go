@@ -53,14 +53,14 @@ func (g *tGovResetCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	if entries == 0 {
-		fmt.Println("No entries to remove")
+		fmt.Println("No lease entries to remove")
 		return nil
 	}
 
 	if !g.force {
 		ans := false
 		err = survey.AskOne(&survey.Confirm{
-			Message: fmt.Sprintf("Reset %s with %d entries?", g.name, entries),
+			Message: fmt.Sprintf("Reset %s with %d lease entries?", g.name, entries),
 			Default: ans,
 		}, &ans)
 		if err != nil {

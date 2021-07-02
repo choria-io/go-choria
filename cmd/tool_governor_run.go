@@ -27,8 +27,8 @@ func (g *tGovRunCommand) Setup() (err error) {
 		g.cmd = gen.Cmd().Command("run", "Runs a command subject to Governor control")
 		g.cmd.Arg("name", "The name for the Governor").Required().StringVar(&g.name)
 		g.cmd.Arg("command", "Command to execute").Required().StringVar(&g.fullCmd)
-		g.cmd.Arg("max-wait", "Maximum amount of time to wait to obtain a lease").Default("5m").DurationVar(&g.maxWait)
-		g.cmd.Arg("interval", "Interval for attempting to get an execution slot").Default("5s").DurationVar(&g.interval)
+		g.cmd.Flag("max-wait", "Maximum amount of time to wait to obtain a lease").Default("5m").DurationVar(&g.maxWait)
+		g.cmd.Flag("interval", "Interval for attempting to get a lease").Default("5s").DurationVar(&g.interval)
 	}
 
 	return nil
