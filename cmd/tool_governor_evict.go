@@ -20,7 +20,7 @@ func (g *tGovEvictCommand) Setup() (err error) {
 	if gen, ok := cmdWithFullCommand("tool governor"); ok {
 		g.cmd = gen.Cmd().Command("evict", "Evicts a specific worker")
 		g.cmd.Arg("name", "The name for the Governor to managed").Required().StringVar(&g.name)
-		g.cmd.Arg("worker", "The worker ID to remove").Required().Uint64Var(&g.seq)
+		g.cmd.Arg("worker", "The lease ID to remove").Required().Uint64Var(&g.seq)
 		g.cmd.Arg("force", "Reset without prompting").BoolVar(&g.force)
 	}
 
@@ -55,14 +55,14 @@ func (g *tGovEvictCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	if entries == 0 {
-		fmt.Println("No entries to remove")
+		fmt.Println("No lease entries to remove")
 		return nil
 	}
 
 	if !g.force {
 		ans := false
 		err = survey.AskOne(&survey.Confirm{
-			Message: fmt.Sprintf("Evict entry %d from %s?", g.seq, g.name),
+			Message: fmt.Sprintf("Evict lease %d from %s?", g.seq, g.name),
 			Default: ans,
 		}, &ans)
 		if err != nil {

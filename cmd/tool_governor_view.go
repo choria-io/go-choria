@@ -51,16 +51,16 @@ func (g *tGovViewCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	fmt.Printf("Configuration for Governor %s\n", gov.Name())
 	fmt.Println()
-	fmt.Printf("         Capacity: %d\n", gov.Limit())
-	fmt.Printf("          Expires: %v\n", gov.MaxAge())
-	fmt.Printf("         Replicas: %d\n", gov.Replicas())
+	fmt.Printf("       Capacity: %d\n", gov.Limit())
+	fmt.Printf("        Expires: %v\n", gov.MaxAge())
+	fmt.Printf("       Replicas: %d\n", gov.Replicas())
 
 	nfo, err := gov.Stream().Information()
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf(" Active Processes: %d\n", nfo.State.Msgs)
+	fmt.Printf("  Active Leases: %d\n", nfo.State.Msgs)
 	fmt.Println()
 
 	if nfo.State.Msgs > 0 {
