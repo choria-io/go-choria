@@ -73,22 +73,32 @@ func ParseCLI() (err error) {
 	return
 }
 
-func commonConfigure() error {
+func systemConfigureIfRoot(actAsServer bool) error {
 	if debug {
 		log.SetOutput(os.Stdout)
 		log.SetLevel(log.DebugLevel)
 		log.Debug("Logging at debug level due to CLI override")
 	}
 
-	if configFile == "" {
-		configFile = choria.UserConfig()
+	if configFile == "" && os.Geteuid() == 0 {
+		return fmt.Errorf("configuration file must be set using --config")
 	}
 
-	cfg, err = config.NewConfig(configFile)
+	if os.Geteuid() == 0 {
+		cfg, err = config.NewSystemConfig(configFile, actAsServer)
+	} else {
+		cfg, err = config.NewConfig(configFile)
+	}
 	if err != nil {
-		return fmt.Errorf("could not parse configuration: %s", err)
+		return err
 	}
 
+	applyBuildAndEnvironmentSettings()
+
+	return nil
+}
+
+func applyBuildAndEnvironmentSettings() {
 	cfg.ApplyBuildSettings(bi)
 
 	if os.Getenv("INSECURE_ANON_TLS") == "true" {
@@ -108,6 +118,25 @@ func commonConfigure() error {
 		cfg.DisableTLS = true
 		log.Warn("Disabling protocol security via environment override")
 	}
+}
+
+func commonConfigure() error {
+	if debug {
+		log.SetOutput(os.Stdout)
+		log.SetLevel(log.DebugLevel)
+		log.Debug("Logging at debug level due to CLI override")
+	}
+
+	if configFile == "" {
+		configFile = choria.UserConfig()
+	}
+
+	cfg, err = config.NewConfig(configFile)
+	if err != nil {
+		return fmt.Errorf("could not parse configuration: %s", err)
+	}
+
+	applyBuildAndEnvironmentSettings()
 
 	return nil
 }
