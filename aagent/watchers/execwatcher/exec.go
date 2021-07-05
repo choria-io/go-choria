@@ -8,12 +8,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/google/shlex"
-
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	iu "github.com/choria-io/go-choria/internal/util"
+	"github.com/google/shlex"
+	"github.com/nats-io/jsm.go/governor"
 )
 
 type State int
@@ -37,6 +37,8 @@ var stateNames = map[State]string{
 
 type Properties struct {
 	Command                 string
+	Governor                string
+	GovernorTimeout         time.Duration
 	Timeout                 time.Duration
 	SuppressSuccessAnnounce bool `mapstructure:"suppress_success_announce"`
 	Environment             []string
@@ -51,6 +53,8 @@ type Watcher struct {
 	interval        time.Duration
 	previousRunTime time.Duration
 	properties      *Properties
+
+	govCancel func()
 
 	mu *sync.Mutex
 }
@@ -100,6 +104,11 @@ func (w *Watcher) validate() error {
 		w.properties.Timeout = time.Second
 	}
 
+	if w.properties.Governor != "" && w.properties.GovernorTimeout == 0 {
+		w.Infof("Setting Governor timeout to 5 minutes while unset")
+		w.properties.GovernorTimeout = 5 * time.Minute
+	}
+
 	return nil
 }
 func (w *Watcher) setProperties(props map[string]interface{}) error {
@@ -132,6 +141,11 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 		case <-ctx.Done():
 			w.Infof("Stopping on context interrupt")
+			w.mu.Lock()
+			if w.govCancel != nil {
+				w.govCancel()
+			}
+			w.mu.Unlock()
 			return
 		}
 	}
@@ -202,6 +216,30 @@ func (w *Watcher) CurrentState() interface{} {
 func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	if !w.ShouldWatch() {
 		return Skipped, nil
+	}
+
+	if w.properties.Governor != "" {
+		mgr, err := w.machine.JetStreamConnection()
+		if err != nil {
+			w.Errorf("Cannot run exec watcher %s, it requires a Governor and no JetStream connection is set")
+			return Error, nil
+		}
+
+		w.Infof("Obtaining a slot in the %s Governor", w.properties.Governor)
+		gov := governor.NewJSGovernor(w.properties.Governor, mgr)
+
+		var gCtx context.Context
+		w.mu.Lock()
+		gCtx, w.govCancel = context.WithTimeout(ctx, w.properties.GovernorTimeout)
+		w.mu.Unlock()
+
+		fin, err := gov.Start(gCtx, fmt.Sprintf("Choria Autonomous Agent  %s#%s @ %s", w.machine.Name(), w.name, w.machine.Identity()))
+		if err != nil {
+			w.Errorf("Could not obtain a slot in the Governor %s: %s", w.properties.Governor, err)
+			return Error, nil
+		}
+		defer w.govCancel()
+		defer fin()
 	}
 
 	start := time.Now()

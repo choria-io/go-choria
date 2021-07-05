@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nats-io/nats.go"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent/machine"
@@ -43,6 +44,7 @@ type ChoriaProvider interface {
 	PrometheusTextFileDir() string
 	ScoutOverridesPath() string
 	ServerStatusFile() (string, int)
+	NatsConnection() *nats.Conn
 }
 
 // New creates a new instance of the choria autonomous agent host
@@ -105,6 +107,7 @@ func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path strin
 	aa.RegisterNotifier(a.notifier)
 	aa.SetTextFileDirectory(a.fw.PrometheusTextFileDir())
 	aa.SetOverridesFile(a.fw.ScoutOverridesPath())
+	aa.SetJetStreamConnection(a.fw.NatsConnection())
 
 	f, freq := a.fw.ServerStatusFile()
 	aa.SetChoriaStatusFile(f, freq)

@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/nats-io/jsm.go"
 	"github.com/tidwall/gjson"
 
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
@@ -40,6 +41,7 @@ type Machine interface {
 	TextFileDirectory() string
 	OverrideData() ([]byte, error)
 	ChoriaStatusFile() (string, int)
+	JetStreamConnection() (*jsm.Manager, error)
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Errorf(name string, format string, args ...interface{})
@@ -138,6 +140,14 @@ func (m *Manager) Delete() {
 	for _, w := range m.watchers {
 		w.Delete()
 	}
+}
+
+// JetStreamConnection is a NATS connection for accessing the JetStream API
+func (m *Manager) JetStreamConnection() (*jsm.Manager, error) {
+	m.Lock()
+	defer m.Unlock()
+
+	return m.machine.JetStreamConnection()
 }
 
 // SetMachine supplies the machine this manager will manage

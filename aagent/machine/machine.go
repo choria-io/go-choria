@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/backoff"
+	"github.com/nats-io/jsm.go"
+	"github.com/nats-io/nats.go"
 	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/ghodss/yaml"
@@ -50,6 +52,7 @@ type Machine struct {
 	choriaStatusFreq int
 	startTime        time.Time
 
+	jsm         *jsm.Manager
 	manager     WatcherManager
 	fsm         *fsm.FSM
 	notifiers   []NotificationService
@@ -225,6 +228,31 @@ func (m *Machine) TextFileDirectory() string {
 	defer m.Unlock()
 
 	return m.txtfileDir
+}
+
+func (m *Machine) SetJetStreamConnection(nc *nats.Conn) error {
+	m.Lock()
+	defer m.Unlock()
+
+	mgr, err := jsm.New(nc)
+	if err != nil {
+		return err
+	}
+
+	m.jsm = mgr
+
+	return nil
+}
+
+func (m *Machine) JetStreamConnection() (*jsm.Manager, error) {
+	m.Lock()
+	defer m.Unlock()
+
+	if m.jsm == nil {
+		return nil, fmt.Errorf("not supplied")
+	}
+
+	return m.jsm, nil
 }
 
 func (m *Machine) SetOverridesFile(f string) {
