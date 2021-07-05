@@ -46,7 +46,8 @@ func (g *tGovRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("interval should be >=1s")
 	}
 
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("governor manager: %s", g.name), c.Logger("governor"))
+	log := c.Logger("governor").WithField("name", g.name)
+	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("governor manager: %s", g.name), log)
 	if err != nil {
 		return err
 	}
@@ -56,8 +57,7 @@ func (g *tGovRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		return err
 	}
 
-	subj := fmt.Sprintf("%s.governor.%s", cfg.MainCollective, g.name)
-	gov := governor.NewJSGovernor(g.name, mgr, governor.WithSubject(subj), governor.WithInterval(g.interval))
+	gov := governor.NewJSGovernor(g.name, mgr, governor.WithSubject(c.GovernorSubject(g.name)), governor.WithInterval(g.interval), governor.WithLogger(log))
 
 	parts, err := shellquote.Split(g.fullCmd)
 	if err != nil {

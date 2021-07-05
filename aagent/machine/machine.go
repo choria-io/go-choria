@@ -49,6 +49,7 @@ type Machine struct {
 	txtfileDir       string
 	overridesFile    string
 	choriaStatusFile string
+	mainCollective   string
 	choriaStatusFreq int
 	startTime        time.Time
 
@@ -189,6 +190,22 @@ func ValidateDir(dir string) (validationErrors []string, err error) {
 	}
 
 	return validationErrors, nil
+}
+
+// MainCollective is the main collective this choria belongs to
+func (m *Machine) MainCollective() string {
+	m.Lock()
+	defer m.Unlock()
+
+	return m.mainCollective
+}
+
+// SetMainCollective sets the collective name this machine lives in
+func (m *Machine) SetMainCollective(collective string) {
+	m.Lock()
+	defer m.Unlock()
+
+	m.mainCollective = collective
 }
 
 // SetChoriaStatusFile sets the path and write frequency of the choria status file

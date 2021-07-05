@@ -11,6 +11,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/choria-io/go-choria/choria"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/google/shlex"
 	"github.com/nats-io/jsm.go/governor"
@@ -226,7 +227,8 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 		}
 
 		w.Infof("Obtaining a slot in the %s Governor", w.properties.Governor)
-		gov := governor.NewJSGovernor(w.properties.Governor, mgr)
+		subj := choria.GovernorSubject(w.properties.Governor, w.machine.MainCollective())
+		gov := governor.NewJSGovernor(w.properties.Governor, mgr, governor.WithLogger(w), governor.WithSubject(subj))
 
 		var gCtx context.Context
 		w.mu.Lock()
