@@ -64,6 +64,11 @@ func (srv *Instance) NatsConnection() *nats.Conn {
 	return srv.connector.Nats()
 }
 
+// MainCollective the subject to use for choria managed Governors
+func (srv *Instance) MainCollective() string {
+	return srv.fw.Config.MainCollective
+}
+
 // ConnectedServer returns the URL of the broker this instance is connected to, "unknown" when not connected
 func (srv *Instance) ConnectedServer() string {
 	return srv.connector.ConnectedServer()

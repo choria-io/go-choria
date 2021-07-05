@@ -801,3 +801,13 @@ func (fw *Framework) ProgressWidth() int {
 
 	return width
 }
+
+// GovernorSubject the subject to use for choria managed Governors within a collective
+func GovernorSubject(name string, collective string) string {
+	return fmt.Sprintf("%s.governor.%s", collective, name)
+}
+
+// GovernorSubject the subject to use for choria managed Governors
+func (fw *Framework) GovernorSubject(name string) string {
+	return GovernorSubject(name, fw.Config.MainCollective)
+}

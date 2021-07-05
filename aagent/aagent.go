@@ -45,6 +45,7 @@ type ChoriaProvider interface {
 	ScoutOverridesPath() string
 	ServerStatusFile() (string, int)
 	NatsConnection() *nats.Conn
+	MainCollective() string
 }
 
 // New creates a new instance of the choria autonomous agent host
@@ -104,6 +105,7 @@ func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path strin
 	a.logger.Infof("Loaded Autonomous Agent %s version %s from %s (%s)", aa.Name(), aa.Version(), path, sum)
 
 	aa.SetIdentity(a.fw.Identity())
+	aa.SetMainCollective(a.fw.MainCollective())
 	aa.RegisterNotifier(a.notifier)
 	aa.SetTextFileDirectory(a.fw.PrometheusTextFileDir())
 	aa.SetOverridesFile(a.fw.ScoutOverridesPath())

@@ -161,6 +161,10 @@ func (w *Watcher) Infof(format string, args ...interface{}) {
 	w.machine.Infof(w.name, format, args...)
 }
 
+func (w *Watcher) Warnf(format string, args ...interface{}) {
+	w.machine.Warnf(w.name, format, args...)
+}
+
 func (w *Watcher) Errorf(format string, args ...interface{}) {
 	w.machine.Errorf(w.name, format, args...)
 }

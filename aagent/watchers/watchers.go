@@ -42,8 +42,10 @@ type Machine interface {
 	OverrideData() ([]byte, error)
 	ChoriaStatusFile() (string, int)
 	JetStreamConnection() (*jsm.Manager, error)
+	MainCollective() string
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
+	Warnf(name string, format string, args ...interface{})
 	Errorf(name string, format string, args ...interface{})
 }
 

@@ -47,7 +47,7 @@ func (g *tGovAddCommand) Run(wg *sync.WaitGroup) (err error) {
 		return err
 	}
 
-	gov, err := governor.NewJSGovernorManager(g.name, uint64(g.limit), g.expire, uint(g.replicas), mgr, false, governor.WithSubject(fmt.Sprintf("%s.governor.%s", cfg.MainCollective, g.name)))
+	gov, err := governor.NewJSGovernorManager(g.name, uint64(g.limit), g.expire, uint(g.replicas), mgr, false, governor.WithSubject(c.GovernorSubject(g.name)))
 	if err != nil {
 		return err
 	}
