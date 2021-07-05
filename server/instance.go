@@ -34,6 +34,7 @@ type Connector interface {
 	PublishRaw(target string, data []byte) error
 	PublishRawMsg(msg *nats.Msg) error
 	RequestRawMsgWithContext(ctx context.Context, msg *nats.Msg) (*nats.Msg, error)
+	Nats() *nats.Conn
 }
 
 // Instance is an independent copy of Choria

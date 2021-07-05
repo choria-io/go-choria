@@ -13,6 +13,7 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/statistics"
+	"github.com/nats-io/nats.go"
 
 	"github.com/choria-io/go-choria/lifecycle"
 
@@ -56,6 +57,11 @@ func (srv *Instance) Identity() string {
 // PublishRaw allows publishing to the connected middleware
 func (srv *Instance) PublishRaw(target string, data []byte) error {
 	return srv.connector.PublishRaw(target, data)
+}
+
+// NatsConnection is the raw NATS connection, use with care, major vendor lock here - but needed for JetStream
+func (srv *Instance) NatsConnection() *nats.Conn {
+	return srv.connector.Nats()
 }
 
 // ConnectedServer returns the URL of the broker this instance is connected to, "unknown" when not connected
