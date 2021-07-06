@@ -43,6 +43,9 @@ const (
 
 	// Alive is an event components can publish to indicate they are still alive
 	Alive
+
+	// Governor is an event components can publish while interacting with a Governor
+	Governor
 )
 
 // Format is the event format used for transporting events

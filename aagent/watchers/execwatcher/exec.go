@@ -235,7 +235,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 		gCtx, w.govCancel = context.WithTimeout(ctx, w.properties.GovernorTimeout)
 		w.mu.Unlock()
 
-		fin, err := gov.Start(gCtx, fmt.Sprintf("Choria Autonomous Agent  %s#%s @ %s", w.machine.Name(), w.name, w.machine.Identity()))
+		fin, _, err := gov.Start(gCtx, fmt.Sprintf("Choria Autonomous Agent  %s#%s @ %s", w.machine.Name(), w.name, w.machine.Identity()))
 		if err != nil {
 			w.Errorf("Could not obtain a slot in the Governor %s: %s", w.properties.Governor, err)
 			return Error, nil

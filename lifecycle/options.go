@@ -17,6 +17,13 @@ type ComponentEvent interface {
 	SetComponent(string)
 }
 
+// GovernedEvent is an event that relates to Governors
+type GovernedEvent interface {
+	SetGovernor(name string)
+	SetSequence(seq uint64)
+	SetEventType(stage GovernorEventType) error
+}
+
 // Component set the component for events
 func Component(component string) Option {
 	return func(e interface{}) error {
@@ -55,6 +62,45 @@ func Identity(identity string) Option {
 
 		event.SetIdentity(identity)
 
+		return nil
+	}
+}
+
+// GovernorName sets the name of the Governor being interacted with
+func GovernorName(name string) Option {
+	return func(e interface{}) error {
+		event, ok := e.(GovernedEvent)
+		if !ok {
+			return errors.New("cannot set governor, event is not a Governor event")
+		}
+
+		event.SetGovernor(name)
+
+		return nil
+	}
+}
+
+// GovernorType sets the stage this event relates to
+func GovernorType(stage GovernorEventType) Option {
+	return func(e interface{}) error {
+		event, ok := e.(GovernedEvent)
+		if !ok {
+			return errors.New("cannot set governor, event is not a Governor event")
+		}
+
+		return event.SetEventType(stage)
+	}
+}
+
+// GovernorSequence sets the sequence of the event when applicable
+func GovernorSequence(seq uint64) Option {
+	return func(e interface{}) error {
+		event, ok := e.(GovernedEvent)
+		if !ok {
+			return errors.New("cannot set governor, event is not a Governor event")
+		}
+
+		event.SetSequence(seq)
 		return nil
 	}
 }

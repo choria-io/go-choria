@@ -81,7 +81,7 @@ func (e *basicEvent) TypeString() string {
 	return e.etype
 }
 
-// Time retrieves the event time
+// TimeStamp retrieves the event time
 func (e *basicEvent) TimeStamp() time.Time {
 	return time.Unix(e.Timestamp, 0)
 }

@@ -44,7 +44,7 @@ var _ = Describe("Events", func() {
 
 	Describe("EventTypeNames", func() {
 		It("Should list all known types", func() {
-			Expect(EventTypeNames()).To(Equal([]string{"alive", "provisioned", "shutdown", "startup"}))
+			Expect(EventTypeNames()).To(Equal([]string{"alive", "governor", "provisioned", "shutdown", "startup"}))
 		})
 	})
 

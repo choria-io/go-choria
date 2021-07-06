@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/kballard/go-shellquote"
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/jsm.go/governor"
@@ -39,6 +40,18 @@ func (g *tGovRunCommand) Configure() (err error) {
 	return systemConfigureIfRoot(true)
 }
 
+func (g *tGovRunCommand) trySendEvent(et lifecycle.GovernorEventType, seq uint64, conn lifecycle.PublishConnector) {
+	event, err := lifecycle.New(lifecycle.Governor, lifecycle.Component("CLI"), lifecycle.Identity(c.Config.Identity), lifecycle.GovernorType(et), lifecycle.GovernorName(g.name), lifecycle.GovernorSequence(seq))
+	if err == nil {
+		err = lifecycle.PublishEvent(event, conn)
+		if err != nil {
+			c.Logger("governor").Errorf("failed: %s", err)
+		}
+	} else {
+		c.Logger("governor").Errorf("failed: %s", err)
+	}
+}
+
 func (g *tGovRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
@@ -56,8 +69,6 @@ func (g *tGovRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	if err != nil {
 		return err
 	}
-
-	gov := governor.NewJSGovernor(g.name, mgr, governor.WithSubject(c.GovernorSubject(g.name)), governor.WithInterval(g.interval), governor.WithLogger(log))
 
 	parts, err := shellquote.Split(g.fullCmd)
 	if err != nil {
@@ -79,20 +90,34 @@ func (g *tGovRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	ctx, cancel := context.WithTimeout(ctx, g.maxWait)
 	defer cancel()
 
-	finisher, err := gov.Start(ctx, cfg.Identity)
+	gov := governor.NewJSGovernor(g.name, mgr, governor.WithSubject(c.GovernorSubject(g.name)), governor.WithInterval(g.interval), governor.WithLogger(log))
+	finisher, seq, err := gov.Start(ctx, cfg.Identity)
 	if err != nil {
+		g.trySendEvent(lifecycle.GovernorTimeoutEvent, 0, conn)
 		return fmt.Errorf("could not get a execution slot: %s", err)
+	}
+
+	g.trySendEvent(lifecycle.GovernorEnterEvent, seq, conn)
+
+	finish := func(wg *sync.WaitGroup) {
+		defer wg.Done()
+
+		finisher()
+		g.trySendEvent(lifecycle.GovernorExitEvent, seq, conn)
+		conn.Close()
 	}
 
 	sigs := make(chan os.Signal, 1)
 	signal.Notify(sigs, os.Interrupt)
 	go func() {
 		<-sigs
-		finisher()
+		wg.Add(1)
+		finish(wg)
 	}()
 
 	osExit := func(c int, format string, a ...interface{}) {
-		finisher()
+		wg.Add(1)
+		finish(wg)
 
 		if format != "" {
 			fmt.Println(fmt.Sprintf(format, a...))
