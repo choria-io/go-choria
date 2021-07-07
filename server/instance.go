@@ -15,7 +15,6 @@ import (
 	"github.com/choria-io/go-choria/server/registration"
 	"github.com/choria-io/go-choria/submission"
 	"github.com/nats-io/nats.go"
-
 	log "github.com/sirupsen/logrus"
 )
 
@@ -40,7 +39,7 @@ type Connector interface {
 // Instance is an independent copy of Choria
 type Instance struct {
 	fw                 *choria.Framework
-	connector          Connector
+	connector          choria.Connector
 	cfg                *config.Config
 	log                *log.Entry
 	registration       *registration.Manager
@@ -67,7 +66,7 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	i = &Instance{
 		fw:               fw,
 		cfg:              fw.Configuration(),
-		requests:         make(chan *choria.ConnectorMessage),
+		requests:         make(chan *choria.ConnectorMessage, 10),
 		mu:               &sync.Mutex{},
 		startTime:        time.Now(),
 		lastMsgProcessed: time.Unix(0, 0),
@@ -82,7 +81,7 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 
 // Logger creates a new logger instance
 func (srv *Instance) Logger(component string) *log.Entry {
-	return srv.log.WithField("subsystem", component)
+	return srv.fw.Logger(component)
 }
 
 // Shutdown signals to the server that it should shutdown

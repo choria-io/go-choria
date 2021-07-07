@@ -9,6 +9,7 @@ package watcher
 import (
 	reflect "reflect"
 
+	lifecycle "github.com/choria-io/go-choria/lifecycle"
 	gomock "github.com/golang/mock/gomock"
 	jsm "github.com/nats-io/jsm.go"
 )
@@ -212,6 +213,23 @@ func (m *MockMachine) OverrideData() ([]byte, error) {
 func (mr *MockMachineMockRecorder) OverrideData() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "OverrideData", reflect.TypeOf((*MockMachine)(nil).OverrideData))
+}
+
+// PublishLifecycleEvent mocks base method.
+func (m *MockMachine) PublishLifecycleEvent(arg0 lifecycle.Type, arg1 ...lifecycle.Option) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	m.ctrl.Call(m, "PublishLifecycleEvent", varargs...)
+}
+
+// PublishLifecycleEvent indicates an expected call of PublishLifecycleEvent.
+func (mr *MockMachineMockRecorder) PublishLifecycleEvent(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishLifecycleEvent", reflect.TypeOf((*MockMachine)(nil).PublishLifecycleEvent), varargs...)
 }
 
 // State mocks base method.

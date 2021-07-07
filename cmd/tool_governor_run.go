@@ -43,12 +43,7 @@ func (g *tGovRunCommand) Configure() (err error) {
 func (g *tGovRunCommand) trySendEvent(et lifecycle.GovernorEventType, seq uint64, conn lifecycle.PublishConnector) {
 	event, err := lifecycle.New(lifecycle.Governor, lifecycle.Component("CLI"), lifecycle.Identity(c.Config.Identity), lifecycle.GovernorType(et), lifecycle.GovernorName(g.name), lifecycle.GovernorSequence(seq))
 	if err == nil {
-		err = lifecycle.PublishEvent(event, conn)
-		if err != nil {
-			c.Logger("governor").Errorf("failed: %s", err)
-		}
-	} else {
-		c.Logger("governor").Errorf("failed: %s", err)
+		lifecycle.PublishEvent(event, conn)
 	}
 }
 
@@ -116,12 +111,12 @@ func (g *tGovRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	}()
 
 	osExit := func(c int, format string, a ...interface{}) {
-		wg.Add(1)
-		finish(wg)
-
 		if format != "" {
 			fmt.Println(fmt.Sprintf(format, a...))
 		}
+
+		wg.Add(1)
+		finish(wg)
 
 		os.Exit(c)
 	}

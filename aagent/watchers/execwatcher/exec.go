@@ -13,6 +13,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	"github.com/choria-io/go-choria/choria"
 	iu "github.com/choria-io/go-choria/internal/util"
+	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/google/shlex"
 	"github.com/nats-io/jsm.go/governor"
 )
@@ -214,6 +215,15 @@ func (w *Watcher) CurrentState() interface{} {
 	return s
 }
 
+func (w *Watcher) sendLC(t lifecycle.GovernorEventType, seq uint64) {
+	w.machine.PublishLifecycleEvent(lifecycle.Governor,
+		lifecycle.GovernorType(lifecycle.GovernorTimeoutEvent),
+		lifecycle.Identity(w.machine.Identity()),
+		lifecycle.Component(w.machine.Name()),
+		lifecycle.GovernorSequence(seq),
+		lifecycle.GovernorName(w.properties.Governor))
+}
+
 func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	if !w.ShouldWatch() {
 		return Skipped, nil
@@ -235,13 +245,19 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 		gCtx, w.govCancel = context.WithTimeout(ctx, w.properties.GovernorTimeout)
 		w.mu.Unlock()
 
-		fin, _, err := gov.Start(gCtx, fmt.Sprintf("Choria Autonomous Agent  %s#%s @ %s", w.machine.Name(), w.name, w.machine.Identity()))
+		fin, seq, err := gov.Start(gCtx, fmt.Sprintf("Choria Autonomous Agent  %s#%s @ %s", w.machine.Name(), w.name, w.machine.Identity()))
 		if err != nil {
 			w.Errorf("Could not obtain a slot in the Governor %s: %s", w.properties.Governor, err)
+			w.sendLC(lifecycle.GovernorTimeoutEvent, 0)
 			return Error, nil
 		}
 		defer w.govCancel()
-		defer fin()
+		defer func() {
+			w.sendLC(lifecycle.GovernorTimeoutEvent, seq)
+			fin()
+		}()
+
+		w.sendLC(lifecycle.GovernorTimeoutEvent, seq)
 	}
 
 	start := time.Now()

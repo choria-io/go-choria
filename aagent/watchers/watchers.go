@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/nats-io/jsm.go"
 	"github.com/tidwall/gjson"
 
@@ -43,6 +44,7 @@ type Machine interface {
 	ChoriaStatusFile() (string, int)
 	JetStreamConnection() (*jsm.Manager, error)
 	MainCollective() string
+	PublishLifecycleEvent(t lifecycle.Type, opts ...lifecycle.Option)
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Warnf(name string, format string, args ...interface{})
