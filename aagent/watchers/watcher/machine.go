@@ -1,6 +1,7 @@
 package watcher
 
 import (
+	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/nats-io/jsm.go"
 )
 
@@ -18,6 +19,7 @@ type Machine interface {
 	OverrideData() ([]byte, error)
 	ChoriaStatusFile() (string, int)
 	JetStreamConnection() (*jsm.Manager, error)
+	PublishLifecycleEvent(t lifecycle.Type, opts ...lifecycle.Option)
 	MainCollective() string
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})

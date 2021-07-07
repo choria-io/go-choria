@@ -24,6 +24,8 @@ const (
 	GovernorExitEvent GovernorEventType = "exit"
 	// GovernorTimeoutEvent is when a slot could not be obtained after some time
 	GovernorTimeoutEvent GovernorEventType = "timeouts"
+	// GovernorEvictEvent is when a slot is evicted using a admin API
+	GovernorEvictEvent GovernorEventType = "eviction"
 )
 
 func init() {
@@ -50,7 +52,7 @@ func newGovernorEvent(opts ...Option) *GovernorEvent {
 
 func (g *GovernorEvent) SetEventType(stage GovernorEventType) error {
 	switch stage {
-	case GovernorEnterEvent, GovernorExitEvent, GovernorTimeoutEvent:
+	case GovernorEnterEvent, GovernorExitEvent, GovernorTimeoutEvent, GovernorEvictEvent:
 		g.EventType = stage
 	default:
 		return fmt.Errorf("invalid stage")
@@ -85,6 +87,13 @@ func (g *GovernorEvent) String() string {
 
 	case GovernorTimeoutEvent:
 		return fmt.Sprintf("[governor] %s: failed to obtain a slot on %s", g.Ident, g.Governor)
+
+	case GovernorEvictEvent:
+		if g.Sequence > 0 {
+			return fmt.Sprintf("[governor] %s: evicted from slot %d on %s", g.Ident, g.Sequence, g.Governor)
+		} else {
+			return fmt.Sprintf("[governor] %s: evicted from %s", g.Ident, g.Governor)
+		}
 
 	default:
 		return fmt.Sprintf("[governor] %s: unknown stage on Governor %s", g.Ident, g.Governor)

@@ -5,6 +5,7 @@ import (
 	"sync"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/jsm.go/governor"
 )
@@ -73,7 +74,20 @@ func (g *tGovEvictCommand) Run(wg *sync.WaitGroup) (err error) {
 		}
 	}
 
-	return gov.Evict(g.seq)
+	name, err := gov.Evict(g.seq)
+	if err != nil {
+		return err
+	}
+
+	event, err := lifecycle.New(lifecycle.Governor, lifecycle.Identity(name), lifecycle.Component("CLI"), lifecycle.GovernorSequence(g.seq), lifecycle.GovernorName(g.name), lifecycle.GovernorType(lifecycle.GovernorEvictEvent))
+	if err == nil {
+		lifecycle.PublishEvent(event, conn)
+		conn.Close()
+	}
+
+	fmt.Printf("Evicted %q from slot %d\n", name, g.seq)
+
+	return nil
 }
 
 func init() {

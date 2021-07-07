@@ -10,8 +10,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/backoff"
+	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/nats-io/jsm.go"
-	"github.com/nats-io/nats.go"
 	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/ghodss/yaml"
@@ -54,6 +55,7 @@ type Machine struct {
 	startTime        time.Time
 
 	jsm         *jsm.Manager
+	conn        choria.Connector
 	manager     WatcherManager
 	fsm         *fsm.FSM
 	notifiers   []NotificationService
@@ -247,18 +249,38 @@ func (m *Machine) TextFileDirectory() string {
 	return m.txtfileDir
 }
 
-func (m *Machine) SetJetStreamConnection(nc *nats.Conn) error {
+func (m *Machine) SetConnection(conn choria.Connector) error {
 	m.Lock()
 	defer m.Unlock()
 
-	mgr, err := jsm.New(nc)
+	mgr, err := jsm.New(conn.Nats())
 	if err != nil {
 		return err
 	}
 
+	m.conn = conn
 	m.jsm = mgr
 
 	return nil
+}
+
+func (m *Machine) PublishLifecycleEvent(t lifecycle.Type, opts ...lifecycle.Option) {
+	m.Lock()
+	conn := m.conn
+	m.Unlock()
+
+	if conn == nil {
+		m.Warnf("machine", "Lifecycle event not published without network connection")
+		return
+	}
+
+	event, err := lifecycle.New(t, opts...)
+	if err != nil {
+		m.Warnf("machine", "Lifecycle event not published: %v", err)
+		return
+	}
+
+	lifecycle.PublishEvent(event, conn)
 }
 
 func (m *Machine) JetStreamConnection() (*jsm.Manager, error) {
