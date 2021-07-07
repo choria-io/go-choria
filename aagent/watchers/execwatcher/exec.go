@@ -40,7 +40,7 @@ var stateNames = map[State]string{
 type Properties struct {
 	Command                 string
 	Governor                string
-	GovernorTimeout         time.Duration
+	GovernorTimeout         time.Duration `mapstructure:"governor_timeout"`
 	Timeout                 time.Duration
 	SuppressSuccessAnnounce bool `mapstructure:"suppress_success_announce"`
 	Environment             []string
