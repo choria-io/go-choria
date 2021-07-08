@@ -45,7 +45,9 @@ type Watcher struct {
 	previousRunTime time.Duration
 	previousResult  *Metric
 	properties      *properties
-	mu              *sync.Mutex
+
+	watching bool
+	mu       *sync.Mutex
 }
 
 func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprops map[string]interface{}) (interface{}, error) {
@@ -112,10 +114,32 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
+func (w *Watcher) startWatching() {
+	w.mu.Lock()
+	w.watching = true
+	w.mu.Unlock()
+}
+
+func (w *Watcher) isWatching() bool {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	return w.watching
+}
+
+func (w *Watcher) stopWatching() {
+	w.mu.Lock()
+	w.watching = false
+	w.mu.Unlock()
+}
+
 func (w *Watcher) watch(ctx context.Context) (state []byte, err error) {
 	if !w.ShouldWatch() {
 		return nil, nil
 	}
+
+	w.startWatching()
+	defer w.stopWatching()
 
 	start := time.Now()
 	defer func() {
@@ -153,6 +177,10 @@ func (w *Watcher) watch(ctx context.Context) (state []byte, err error) {
 }
 
 func (w *Watcher) performWatch(ctx context.Context) {
+	if w.isWatching() {
+		return
+	}
+
 	metric, err := w.watch(ctx)
 	err = w.handleCheck(metric, err)
 	if err != nil {

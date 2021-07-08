@@ -57,6 +57,7 @@ type Watcher struct {
 	previousRunTime time.Duration
 	properties      *Properties
 
+	watching  bool
 	govCancel func()
 
 	mu *sync.Mutex
@@ -172,6 +173,10 @@ func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (w *Watcher) performWatch(ctx context.Context) {
+	if w.isWatching() {
+		return
+	}
+
 	state, err := w.watch(ctx)
 	err = w.handleCheck(state, err)
 	if err != nil {
@@ -225,10 +230,38 @@ func (w *Watcher) sendLC(t lifecycle.GovernorEventType, seq uint64) {
 		lifecycle.GovernorName(w.properties.Governor))
 }
 
+func (w *Watcher) startWatching() {
+	w.mu.Lock()
+	w.watching = true
+	w.mu.Unlock()
+}
+
+func (w *Watcher) isWatching() bool {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	return w.watching
+}
+
+func (w *Watcher) stopWatching() {
+	w.mu.Lock()
+	w.watching = false
+	w.mu.Unlock()
+}
+
 func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	if !w.ShouldWatch() {
 		return Skipped, nil
 	}
+
+	w.startWatching()
+	defer w.stopWatching()
+
+	defer func() {
+		w.mu.Lock()
+		w.watching = false
+		w.mu.Unlock()
+	}()
 
 	if w.properties.Governor != "" {
 		mgr, err := w.machine.JetStreamConnection()
