@@ -100,7 +100,9 @@ type Watcher struct {
 	history          []*Execution
 	machineName      string
 	textFileDir      string
-	mu               *sync.Mutex
+
+	watching bool
+	mu       *sync.Mutex
 }
 
 func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error) {
@@ -297,6 +299,10 @@ func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 }
 
 func (w *Watcher) performWatch(ctx context.Context) {
+	if w.isWatching() {
+		return
+	}
+
 	start := time.Now().UTC()
 	state, err := w.watch(ctx)
 	err = w.handleCheck(start, state, false, err)
@@ -445,10 +451,32 @@ func (w *Watcher) watchUsingBuiltin(_ context.Context) (state State, output stri
 	}
 }
 
+func (w *Watcher) startWatching() {
+	w.mu.Lock()
+	w.watching = true
+	w.mu.Unlock()
+}
+
+func (w *Watcher) isWatching() bool {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	return w.watching
+}
+
+func (w *Watcher) stopWatching() {
+	w.mu.Lock()
+	w.watching = false
+	w.mu.Unlock()
+}
+
 func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	if !w.ShouldWatch() {
 		return SKIPPED, nil
 	}
+
+	w.startWatching()
+	defer w.stopWatching()
 
 	start := time.Now()
 	w.previousCheck = start
