@@ -9,27 +9,27 @@ import (
 	"github.com/nats-io/jsm.go/governor"
 )
 
-type tGovResetCommand struct {
+type tGovDeleteCommand struct {
 	command
 	name  string
 	force bool
 }
 
-func (g *tGovResetCommand) Setup() (err error) {
-	if gen, ok := cmdWithFullCommand("tool governor"); ok {
-		g.cmd = gen.Cmd().Command("reset", "Evicts all workers")
+func (g *tGovDeleteCommand) Setup() (err error) {
+	if gov, ok := cmdWithFullCommand("governor"); ok {
+		g.cmd = gov.Cmd().Command("delete", "Deletes a Governor").Alias("rm")
 		g.cmd.Arg("name", "The name for the Governor to managed").Required().StringVar(&g.name)
-		g.cmd.Arg("force", "Reset without prompting").BoolVar(&g.force)
+		g.cmd.Flag("force", "Reset without prompting").Short('f').BoolVar(&g.force)
 	}
 
 	return nil
 }
 
-func (g *tGovResetCommand) Configure() (err error) {
+func (g *tGovDeleteCommand) Configure() (err error) {
 	return commonConfigure()
 }
 
-func (g *tGovResetCommand) Run(wg *sync.WaitGroup) (err error) {
+func (g *tGovDeleteCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("governor manager: %s", g.name), c.Logger("governor"))
@@ -52,15 +52,10 @@ func (g *tGovResetCommand) Run(wg *sync.WaitGroup) (err error) {
 		return err
 	}
 
-	if entries == 0 {
-		fmt.Println("No lease entries to remove")
-		return nil
-	}
-
 	if !g.force {
 		ans := false
 		err = survey.AskOne(&survey.Confirm{
-			Message: fmt.Sprintf("Reset %s with %d lease entries?", g.name, entries),
+			Message: fmt.Sprintf("Delete %s with %d active lease entries?", g.name, entries),
 			Default: ans,
 		}, &ans)
 		if err != nil {
@@ -71,9 +66,9 @@ func (g *tGovResetCommand) Run(wg *sync.WaitGroup) (err error) {
 		}
 	}
 
-	return gov.Reset()
+	return gov.Stream().Delete()
 }
 
 func init() {
-	cli.commands = append(cli.commands, &tGovResetCommand{})
+	cli.commands = append(cli.commands, &tGovDeleteCommand{})
 }

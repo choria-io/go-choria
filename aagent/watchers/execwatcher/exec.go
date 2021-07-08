@@ -11,6 +11,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/choria"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
@@ -217,9 +218,9 @@ func (w *Watcher) CurrentState() interface{} {
 
 func (w *Watcher) sendLC(t lifecycle.GovernorEventType, seq uint64) {
 	w.machine.PublishLifecycleEvent(lifecycle.Governor,
-		lifecycle.GovernorType(lifecycle.GovernorTimeoutEvent),
 		lifecycle.Identity(w.machine.Identity()),
 		lifecycle.Component(w.machine.Name()),
+		lifecycle.GovernorType(t),
 		lifecycle.GovernorSequence(seq),
 		lifecycle.GovernorName(w.properties.Governor))
 }
@@ -236,14 +237,15 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 			return Error, nil
 		}
 
-		w.Infof("Obtaining a slot in the %s Governor", w.properties.Governor)
+		w.Infof("Obtaining a slot in the %s Governor with %v timeout", w.properties.Governor, w.properties.GovernorTimeout)
 		subj := choria.GovernorSubject(w.properties.Governor, w.machine.MainCollective())
-		gov := governor.NewJSGovernor(w.properties.Governor, mgr, governor.WithLogger(w), governor.WithSubject(subj))
+		gov := governor.NewJSGovernor(w.properties.Governor, mgr, governor.WithLogger(w), governor.WithSubject(subj), governor.WithBackoff(backoff.FiveSec))
 
 		var gCtx context.Context
 		w.mu.Lock()
 		gCtx, w.govCancel = context.WithTimeout(ctx, w.properties.GovernorTimeout)
 		w.mu.Unlock()
+		defer w.govCancel()
 
 		fin, seq, err := gov.Start(gCtx, fmt.Sprintf("Choria Autonomous Agent  %s#%s @ %s", w.machine.Name(), w.name, w.machine.Identity()))
 		if err != nil {
@@ -251,13 +253,12 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 			w.sendLC(lifecycle.GovernorTimeoutEvent, 0)
 			return Error, nil
 		}
-		defer w.govCancel()
 		defer func() {
-			w.sendLC(lifecycle.GovernorTimeoutEvent, seq)
+			w.sendLC(lifecycle.GovernorExitEvent, seq)
 			fin()
 		}()
 
-		w.sendLC(lifecycle.GovernorTimeoutEvent, seq)
+		w.sendLC(lifecycle.GovernorEnterEvent, seq)
 	}
 
 	start := time.Now()

@@ -7,9 +7,7 @@ type tGovCommand struct {
 }
 
 func (g *tGovCommand) Setup() (err error) {
-	if tool, ok := cmdWithFullCommand("tool"); ok {
-		g.cmd = tool.Cmd().Command("governor", "Distributed concurrency control system for Choria Streams").Alias("gov")
-	}
+	g.cmd = cli.app.Command("governor", "Distributed concurrency control system for Choria Streams").Alias("gov")
 
 	return nil
 }
