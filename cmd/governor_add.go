@@ -19,8 +19,8 @@ type tGovAddCommand struct {
 }
 
 func (g *tGovAddCommand) Setup() (err error) {
-	if gen, ok := cmdWithFullCommand("tool governor"); ok {
-		g.cmd = gen.Cmd().Command("add", "Adds or update a Governor")
+	if gov, ok := cmdWithFullCommand("governor"); ok {
+		g.cmd = gov.Cmd().Command("add", "Adds or update a Governor")
 		g.cmd.Arg("name", "The name for the Governor to managed").Required().StringVar(&g.name)
 		g.cmd.Arg("capacity", "How many concurrent lease entries to allow").Required().Int64Var(&g.limit)
 		g.cmd.Arg("expire", "Expire entries from the Governor after a period").Required().DurationVar(&g.expire)

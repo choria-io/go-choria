@@ -19,8 +19,8 @@ type tGovViewCommand struct {
 }
 
 func (g *tGovViewCommand) Setup() (err error) {
-	if gen, ok := cmdWithFullCommand("tool governor"); ok {
-		g.cmd = gen.Cmd().Command("view", "View the status of a Governor").Alias("show").Alias("v").Alias("s")
+	if gov, ok := cmdWithFullCommand("governor"); ok {
+		g.cmd = gov.Cmd().Command("view", "View the status of a Governor").Alias("show").Alias("v").Alias("s")
 		g.cmd.Arg("name", "The name for the Governor to managed").Required().StringVar(&g.name)
 	}
 

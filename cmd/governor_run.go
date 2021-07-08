@@ -24,8 +24,8 @@ type tGovRunCommand struct {
 }
 
 func (g *tGovRunCommand) Setup() (err error) {
-	if gen, ok := cmdWithFullCommand("tool governor"); ok {
-		g.cmd = gen.Cmd().Command("run", "Runs a command subject to Governor control")
+	if gov, ok := cmdWithFullCommand("governor"); ok {
+		g.cmd = gov.Cmd().Command("run", "Runs a command subject to Governor control")
 		g.cmd.Arg("name", "The name for the Governor").Required().StringVar(&g.name)
 		g.cmd.Arg("command", "Command to execute").Required().StringVar(&g.fullCmd)
 		g.cmd.Flag("max-wait", "Maximum amount of time to wait to obtain a lease").Default("5m").DurationVar(&g.maxWait)

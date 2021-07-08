@@ -18,11 +18,11 @@ type tGovEvictCommand struct {
 }
 
 func (g *tGovEvictCommand) Setup() (err error) {
-	if gen, ok := cmdWithFullCommand("tool governor"); ok {
-		g.cmd = gen.Cmd().Command("evict", "Evicts a specific worker")
+	if gov, ok := cmdWithFullCommand("governor"); ok {
+		g.cmd = gov.Cmd().Command("evict", "Evicts a specific worker")
 		g.cmd.Arg("name", "The name for the Governor to managed").Required().StringVar(&g.name)
 		g.cmd.Arg("worker", "The lease ID to remove").Required().Uint64Var(&g.seq)
-		g.cmd.Arg("force", "Reset without prompting").BoolVar(&g.force)
+		g.cmd.Flag("force", "Reset without prompting").Short('f').BoolVar(&g.force)
 	}
 
 	return nil
