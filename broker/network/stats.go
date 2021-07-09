@@ -96,6 +96,46 @@ var (
 		Name: "choria_network_leafnode_subscriptions",
 		Help: "Number of active subscriptions to subjects on this leafnode",
 	}, []string{"identity", "host", "port", "account"})
+
+	streamMemoryMaxGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_stream_memorystore_max",
+		Help: "Maximum amount of Memory Storage allocated to Choria Streams",
+	}, []string{"identity"})
+
+	streamFileMaxGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_stream_filestore_max",
+		Help: "Maximum amount of File Storage allocated to Choria Streams",
+	}, []string{"identity"})
+
+	streamMemoryUsedGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_stream_memorystore_used",
+		Help: "Memory in use by Choria Streams",
+	}, []string{"identity"})
+
+	streamFileUsedGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_stream_filestore_used",
+		Help: "Memory in use by Choria Streams",
+	}, []string{"identity"})
+
+	streamStreamsGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_stream_streams",
+		Help: "Number of active streams",
+	}, []string{"identity"})
+
+	streamConsumersGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_stream_consumers",
+		Help: "Number of active consumers",
+	}, []string{"identity"})
+
+	streamMessagesGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_stream_messages",
+		Help: "Number of messages stored",
+	}, []string{"identity"})
+
+	streamMessageBytesGauge = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+		Name: "choria_network_stream_message_bytes",
+		Help: "Size in bytes of messages stored",
+	}, []string{"identity"})
 )
 
 func init() {
@@ -110,12 +150,24 @@ func init() {
 	prometheus.MustRegister(outBytesGauge)
 	prometheus.MustRegister(slowConsumerGauge)
 	prometheus.MustRegister(subscriptionsGauge)
+
+	// leafnodes
 	prometheus.MustRegister(leafTTGauge)
 	prometheus.MustRegister(leafMsgsInGauge)
 	prometheus.MustRegister(leafMsgsOutGauge)
 	prometheus.MustRegister(leafBytesInGauge)
 	prometheus.MustRegister(leafBytesOutGauge)
 	prometheus.MustRegister(leafSubscriptionsGauge)
+
+	// streams
+	prometheus.MustRegister(streamMemoryMaxGauge)
+	prometheus.MustRegister(streamFileMaxGauge)
+	prometheus.MustRegister(streamMemoryUsedGauge)
+	prometheus.MustRegister(streamFileUsedGauge)
+	prometheus.MustRegister(streamStreamsGauge)
+	prometheus.MustRegister(streamConsumersGauge)
+	prometheus.MustRegister(streamMessagesGauge)
+	prometheus.MustRegister(streamMessageBytesGauge)
 }
 
 func (s *Server) getVarz() (*gnatsd.Varz, error) {
@@ -124,6 +176,12 @@ func (s *Server) getVarz() (*gnatsd.Varz, error) {
 
 func (s *Server) getLeafz() (*gnatsd.Leafz, error) {
 	return s.gnatsd.Leafz(&gnatsd.LeafzOptions{Subscriptions: false})
+}
+
+func (s *Server) getJSZ() (*gnatsd.JSInfo, error) {
+	return s.gnatsd.Jsz(&gnatsd.JSzOptions{
+		Config: true,
+	})
 }
 
 func (s *Server) publishStats(ctx context.Context, interval time.Duration) {
@@ -167,21 +225,30 @@ func (s *Server) updatePrometheus() {
 	leafsGauge.WithLabelValues(i).Set(float64(varz.Leafs))
 
 	leafz, err := s.getLeafz()
-	if err != nil {
-		log.Errorf("Could not publish network broker stats: %s", err)
-		return
+	if err == nil {
+		for _, leaf := range leafz.Leafs {
+			leafMsgsInGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.InMsgs))
+			leafMsgsOutGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.OutMsgs))
+			leafBytesInGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.InBytes))
+			leafBytesOutGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.OutBytes))
+			leafSubscriptionsGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.NumSubs))
+
+			rtt, err := strconv.Atoi(strings.TrimSuffix(leaf.RTT, "ms"))
+			if err == nil {
+				leafTTGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(rtt))
+			}
+		}
 	}
 
-	for _, leaf := range leafz.Leafs {
-		leafMsgsInGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.InMsgs))
-		leafMsgsOutGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.OutMsgs))
-		leafBytesInGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.InBytes))
-		leafBytesOutGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.OutBytes))
-		leafSubscriptionsGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(leaf.NumSubs))
-
-		rtt, err := strconv.Atoi(strings.TrimSuffix(leaf.RTT, "ms"))
-		if err == nil {
-			leafTTGauge.WithLabelValues(i, leaf.IP, strconv.Itoa(leaf.Port), leaf.Account).Set(float64(rtt))
-		}
+	jsz, err := s.getJSZ()
+	if err == nil {
+		streamMemoryMaxGauge.WithLabelValues(i).Set(float64(jsz.Config.MaxMemory))
+		streamFileMaxGauge.WithLabelValues(i).Set(float64(jsz.Config.MaxStore))
+		streamMemoryUsedGauge.WithLabelValues(i).Set(float64(jsz.Memory))
+		streamFileUsedGauge.WithLabelValues(i).Set(float64(jsz.Store))
+		streamStreamsGauge.WithLabelValues(i).Set(float64(jsz.Streams))
+		streamConsumersGauge.WithLabelValues(i).Set(float64(jsz.Consumers))
+		streamMessagesGauge.WithLabelValues(i).Set(float64(jsz.Messages))
+		streamMessageBytesGauge.WithLabelValues(i).Set(float64(jsz.Bytes))
 	}
 }
