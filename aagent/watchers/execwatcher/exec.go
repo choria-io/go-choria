@@ -295,8 +295,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machine.Name()))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s%s%s", os.Getenv("PATH"), string(os.PathListSeparator), w.machine.Directory()))
 	cmd.Env = append(cmd.Env, w.properties.Environment...)
-	cmd.Env = append(cmd.Env, w.DataEnvironment()...)
-	cmd.Env = append(cmd.Env, fmt.Sprintf("WATCHER_DATA_FILE=%s", df))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("WATCHER_DATA=%s", df))
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
