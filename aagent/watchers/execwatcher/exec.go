@@ -2,6 +2,7 @@ package execwatcher
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
@@ -11,12 +12,8 @@ import (
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
-	"github.com/choria-io/go-choria/backoff"
-	"github.com/choria-io/go-choria/choria"
 	iu "github.com/choria-io/go-choria/internal/util"
-	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/google/shlex"
-	"github.com/nats-io/jsm.go/governor"
 )
 
 type State int
@@ -40,11 +37,12 @@ var stateNames = map[State]string{
 
 type Properties struct {
 	Command                 string
+	Environment             []string
 	Governor                string
 	GovernorTimeout         time.Duration `mapstructure:"governor_timeout"`
+	OutputAsData            bool          `mapstructure:"parse_as_data"`
+	SuppressSuccessAnnounce bool          `mapstructure:"suppress_success_announce"`
 	Timeout                 time.Duration
-	SuppressSuccessAnnounce bool `mapstructure:"suppress_success_announce"`
-	Environment             []string
 }
 
 type Watcher struct {
@@ -57,8 +55,7 @@ type Watcher struct {
 	previousRunTime time.Duration
 	properties      *Properties
 
-	watching  bool
-	govCancel func()
+	watching bool
 
 	mu *sync.Mutex
 }
@@ -145,11 +142,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 		case <-ctx.Done():
 			w.Infof("Stopping on context interrupt")
-			w.mu.Lock()
-			if w.govCancel != nil {
-				w.govCancel()
-			}
-			w.mu.Unlock()
+			w.CancelGovernor()
 			return
 		}
 	}
@@ -221,15 +214,6 @@ func (w *Watcher) CurrentState() interface{} {
 	return s
 }
 
-func (w *Watcher) sendLC(t lifecycle.GovernorEventType, seq uint64) {
-	w.machine.PublishLifecycleEvent(lifecycle.Governor,
-		lifecycle.Identity(w.machine.Identity()),
-		lifecycle.Component(w.machine.Name()),
-		lifecycle.GovernorType(t),
-		lifecycle.GovernorSequence(seq),
-		lifecycle.GovernorName(w.properties.Governor))
-}
-
 func (w *Watcher) startWatching() {
 	w.mu.Lock()
 	w.watching = true
@@ -257,41 +241,13 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	w.startWatching()
 	defer w.stopWatching()
 
-	defer func() {
-		w.mu.Lock()
-		w.watching = false
-		w.mu.Unlock()
-	}()
-
 	if w.properties.Governor != "" {
-		mgr, err := w.machine.JetStreamConnection()
+		fin, err := w.EnterGovernor(ctx, w.properties.Governor, w.properties.GovernorTimeout)
 		if err != nil {
-			w.Errorf("Cannot run exec watcher %s, it requires a Governor and no JetStream connection is set")
-			return Error, nil
+			w.Errorf("Cannot enter Governor %s: %s", w.properties.Governor, err)
+			return Error, err
 		}
-
-		w.Infof("Obtaining a slot in the %s Governor with %v timeout", w.properties.Governor, w.properties.GovernorTimeout)
-		subj := choria.GovernorSubject(w.properties.Governor, w.machine.MainCollective())
-		gov := governor.NewJSGovernor(w.properties.Governor, mgr, governor.WithLogger(w), governor.WithSubject(subj), governor.WithBackoff(backoff.FiveSec))
-
-		var gCtx context.Context
-		w.mu.Lock()
-		gCtx, w.govCancel = context.WithTimeout(ctx, w.properties.GovernorTimeout)
-		w.mu.Unlock()
-		defer w.govCancel()
-
-		fin, seq, err := gov.Start(gCtx, fmt.Sprintf("Choria Autonomous Agent  %s#%s @ %s", w.machine.Name(), w.name, w.machine.Identity()))
-		if err != nil {
-			w.Errorf("Could not obtain a slot in the Governor %s: %s", w.properties.Governor, err)
-			w.sendLC(lifecycle.GovernorTimeoutEvent, 0)
-			return Error, nil
-		}
-		defer func() {
-			w.sendLC(lifecycle.GovernorExitEvent, seq)
-			fin()
-		}()
-
-		w.sendLC(lifecycle.GovernorEnterEvent, seq)
+		defer fin()
 	}
 
 	start := time.Now()
@@ -308,7 +264,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 
 	splitcmd, err := shlex.Split(w.properties.Command)
 	if err != nil {
-		w.Errorf("Metric watcher %s failed: %s", w.properties.Command, err)
+		w.Errorf("Exec watcher %s failed: %s", w.properties.Command, err)
 		return Error, err
 	}
 
@@ -322,12 +278,25 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 		args = splitcmd[1:]
 	}
 
+	df, err := w.DataCopyFile()
+	if err != nil {
+		if df != "" {
+			os.Remove(df)
+		}
+		w.Errorf("Could not get a copy of the data into a temporary file, skipping execution: %s", err)
+		return Error, err
+	}
+	defer os.Remove(df)
+
 	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], args...)
+	cmd.Dir = w.machine.Directory()
+
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machine.Name()))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s%s%s", os.Getenv("PATH"), string(os.PathListSeparator), w.machine.Directory()))
 	cmd.Env = append(cmd.Env, w.properties.Environment...)
-	cmd.Dir = w.machine.Directory()
+	cmd.Env = append(cmd.Env, w.DataEnvironment()...)
+	cmd.Env = append(cmd.Env, fmt.Sprintf("WATCHER_DATA_FILE=%s", df))
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
@@ -337,5 +306,27 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 
 	w.Debugf("Output from %s: %s", w.properties.Command, output)
 
+	if w.properties.OutputAsData {
+		err = w.setOutputAsData(output)
+		if err != nil {
+			w.Errorf("Could not save output data: %s", err)
+			return Error, err
+		}
+	}
+
 	return Success, nil
+}
+
+func (w *Watcher) setOutputAsData(output []byte) error {
+	dat := map[string]string{}
+	err := json.Unmarshal(output, &dat)
+	if err != nil {
+		return err
+	}
+
+	for k, v := range dat {
+		w.DataPut(k, v)
+	}
+
+	return nil
 }

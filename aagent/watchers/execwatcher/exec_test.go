@@ -2,6 +2,7 @@ package execwatcher
 
 import (
 	"encoding/json"
+	"os"
 	"testing"
 	"time"
 
@@ -34,6 +35,7 @@ var _ = Describe("ExecWatcher", func() {
 		mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
 		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
+		mockMachine.EXPECT().Directory().Return(os.TempDir())
 
 		now = time.Unix(1606924953, 0)
 

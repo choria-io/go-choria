@@ -2,6 +2,7 @@ package timerwatcher
 
 import (
 	"encoding/json"
+	"os"
 	"testing"
 	"time"
 
@@ -35,6 +36,7 @@ var _ = Describe("TimerWatcher", func() {
 		mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
 		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
+		mockMachine.EXPECT().Directory().Return(os.TempDir())
 
 		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "", "2m", time.Second, map[string]interface{}{})
 		Expect(err).ToNot(HaveOccurred())

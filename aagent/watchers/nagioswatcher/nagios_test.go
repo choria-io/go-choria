@@ -47,6 +47,7 @@ var _ = Describe("NagiosWatcher", func() {
 		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
 		mockMachine.EXPECT().TextFileDirectory().Return(td).AnyTimes()
+		mockMachine.EXPECT().Directory().Return(os.TempDir())
 
 		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "1s", time.Second, map[string]interface{}{
 			"plugin": "/bin/sh",
