@@ -59,6 +59,7 @@ func NewWatcher(name string, wtype string, announceInterval time.Duration, activ
 		succEvent:        success,
 		machine:          machine,
 		activeStates:     activeStates,
+		data:             map[string]string{},
 	}
 
 	err := w.loadData()
@@ -144,20 +145,6 @@ func (w *Watcher) EnterGovernor(ctx context.Context, name string, timeout time.D
 	}
 
 	return finisher, nil
-}
-
-func (w *Watcher) DataEnvironment() []string {
-	w.dataMu.Lock()
-	defer w.dataMu.Unlock()
-
-	env := make([]string, len(w.data))
-	i := 0
-	for k, v := range w.data {
-		env[i] = fmt.Sprintf("WATCHER_DATA_%s=%s", k, v)
-		i++
-	}
-
-	return env
 }
 
 func (w *Watcher) dataCopy() map[string]string {
