@@ -57,7 +57,7 @@ func (p *loginCommand) login() error {
 		return err
 	}
 
-	err = survey.AskOne(&survey.Password{Message: "Password"}, &pass, survey.WithValidator(survey.Required))
+	err = survey.AskOne(&survey.Password{Message: "Password: "}, &pass, survey.WithValidator(survey.Required))
 	if err != nil {
 		return err
 	}

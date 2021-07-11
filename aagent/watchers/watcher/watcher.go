@@ -1,9 +1,19 @@
 package watcher
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
+	"os"
+	"path/filepath"
 	"sync"
 	"time"
+
+	"github.com/choria-io/go-choria/backoff"
+	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
+	"github.com/choria-io/go-choria/lifecycle"
+	"github.com/nats-io/jsm.go/governor"
 )
 
 type Watcher struct {
@@ -15,11 +25,215 @@ type Watcher struct {
 	machine          Machine
 	succEvent        string
 	failEvent        string
+	data             map[string]string
 
 	deleteCb       func()
 	currentStateCb func() interface{}
+	govCancel      func()
 
-	mu sync.Mutex
+	dataMu sync.Mutex
+	mu     sync.Mutex
+}
+
+const dataFileName = "machine_data.json"
+
+func NewWatcher(name string, wtype string, announceInterval time.Duration, activeStates []string, machine Machine, fail string, success string) (*Watcher, error) {
+	if name == "" {
+		return nil, fmt.Errorf("name is required")
+	}
+
+	if wtype == "" {
+		return nil, fmt.Errorf("watcher type is required")
+	}
+
+	if machine == nil {
+		return nil, fmt.Errorf("machine is required")
+	}
+
+	w := &Watcher{
+		name:             name,
+		wtype:            wtype,
+		announceInterval: announceInterval,
+		statechg:         make(chan struct{}, 1),
+		failEvent:        fail,
+		succEvent:        success,
+		machine:          machine,
+		activeStates:     activeStates,
+	}
+
+	err := w.loadData()
+	if err != nil {
+		w.Errorf("Could not load data, continuing: %s", err)
+	}
+
+	return w, nil
+}
+
+func (w *Watcher) DataCopyFile() (string, error) {
+	dat := w.dataCopy()
+	if len(dat) == 0 {
+		return "", nil
+	}
+
+	j, err := json.Marshal(dat)
+	if err != nil {
+		return "", err
+	}
+
+	tf, err := os.CreateTemp("", "")
+	if err != nil {
+		return "", err
+	}
+
+	_, err = tf.Write(j)
+	if err != nil {
+		tf.Close()
+		return tf.Name(), err
+	}
+	tf.Close()
+
+	return tf.Name(), nil
+}
+
+func (w *Watcher) CancelGovernor() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	if w.govCancel != nil {
+		w.govCancel()
+	}
+}
+
+func (w *Watcher) sendGovernorLC(t lifecycle.GovernorEventType, name string, seq uint64) {
+	w.machine.PublishLifecycleEvent(lifecycle.Governor,
+		lifecycle.Identity(w.machine.Identity()),
+		lifecycle.Component(w.machine.Name()),
+		lifecycle.GovernorType(t),
+		lifecycle.GovernorSequence(seq),
+		lifecycle.GovernorName(name))
+}
+
+func (w *Watcher) EnterGovernor(ctx context.Context, name string, timeout time.Duration) (governor.Finisher, error) {
+	mgr, err := w.machine.JetStreamConnection()
+	if err != nil {
+		return nil, fmt.Errorf("JetStream connection not set")
+	}
+
+	w.Infof("Obtaining a slot in the %s Governor with %v timeout", name, timeout)
+	subj := choria.GovernorSubject(name, w.machine.MainCollective())
+	gov := governor.NewJSGovernor(name, mgr, governor.WithLogger(w), governor.WithSubject(subj), governor.WithBackoff(backoff.FiveSec))
+
+	var gCtx context.Context
+	w.mu.Lock()
+	gCtx, w.govCancel = context.WithTimeout(ctx, timeout)
+	w.mu.Unlock()
+	defer w.govCancel()
+
+	fin, seq, err := gov.Start(gCtx, fmt.Sprintf("Auto Agent  %s#%s @ %s", w.machine.Name(), w.name, w.machine.Identity()))
+	if err != nil {
+		w.Errorf("Could not obtain a slot in the Governor %s: %s", name, err)
+		w.sendGovernorLC(lifecycle.GovernorTimeoutEvent, name, 0)
+		return nil, err
+	}
+
+	w.sendGovernorLC(lifecycle.GovernorEnterEvent, name, seq)
+
+	finisher := func() error {
+		w.sendGovernorLC(lifecycle.GovernorExitEvent, name, seq)
+		return fin()
+	}
+
+	return finisher, nil
+}
+
+func (w *Watcher) DataEnvironment() []string {
+	w.dataMu.Lock()
+	defer w.dataMu.Unlock()
+
+	env := make([]string, len(w.data))
+	i := 0
+	for k, v := range w.data {
+		env[i] = fmt.Sprintf("WATCHER_DATA_%s=%s", k, v)
+		i++
+	}
+
+	return env
+}
+
+func (w *Watcher) dataCopy() map[string]string {
+	w.dataMu.Lock()
+	defer w.dataMu.Unlock()
+
+	res := make(map[string]string, len(w.data))
+	for k, v := range w.data {
+		res[k] = v
+	}
+
+	return res
+}
+
+func (w *Watcher) DataGet(key string) (string, bool) {
+	w.dataMu.Lock()
+	defer w.dataMu.Unlock()
+
+	v, ok := w.data[key]
+
+	return v, ok
+}
+
+func (w *Watcher) DataPut(key string, val string) {
+	w.dataMu.Lock()
+	defer w.dataMu.Unlock()
+
+	w.data[key] = val
+
+	err := w.saveData()
+	if err != nil {
+		w.Errorf("Could not save data to %s: %s", dataFileName, err)
+	}
+}
+
+func (w *Watcher) loadData() error {
+	path := filepath.Join(w.machine.Directory(), dataFileName)
+	if !util.FileExist(path) {
+		return nil
+	}
+
+	j, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	w.dataMu.Lock()
+	defer w.dataMu.Unlock()
+
+	return json.Unmarshal(j, &w.data)
+}
+
+// lock should be held by caller
+func (w *Watcher) saveData() error {
+	if len(w.data) == 0 {
+		return nil
+	}
+
+	j, err := json.Marshal(w.data)
+	if err != nil {
+		return err
+	}
+
+	tf, err := os.CreateTemp("", "")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tf.Name())
+
+	_, err = tf.Write(j)
+	tf.Close()
+	if err != nil {
+		return err
+	}
+
+	return os.Rename(tf.Name(), filepath.Join(w.machine.Directory(), dataFileName))
 }
 
 func (w *Watcher) Machine() Machine {
@@ -73,31 +287,6 @@ func (w *Watcher) Transition(event string) error {
 	}
 
 	return w.machine.Transition(event)
-}
-
-func NewWatcher(name string, wtype string, announceInterval time.Duration, activeStates []string, machine Machine, fail string, success string) (*Watcher, error) {
-	if name == "" {
-		return nil, fmt.Errorf("name is required")
-	}
-
-	if wtype == "" {
-		return nil, fmt.Errorf("watcher type is required")
-	}
-
-	if machine == nil {
-		return nil, fmt.Errorf("machine is required")
-	}
-
-	return &Watcher{
-		name:             name,
-		wtype:            wtype,
-		announceInterval: announceInterval,
-		statechg:         make(chan struct{}, 1),
-		failEvent:        fail,
-		succEvent:        success,
-		machine:          machine,
-		activeStates:     activeStates,
-	}, nil
 }
 
 func (w *Watcher) NotifyStateChance() {
