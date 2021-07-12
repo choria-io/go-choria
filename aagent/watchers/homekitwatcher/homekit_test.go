@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,14 +20,14 @@ func Test(t *testing.T) {
 var _ = Describe("HomekitWatcher", func() {
 	var (
 		mockctl     *gomock.Controller
-		mockMachine *watcher.MockMachine
+		mockMachine *model.MockMachine
 		watch       *Watcher
 		now         time.Time
 	)
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		mockMachine = watcher.NewMockMachine(mockctl)
+		mockMachine = model.NewMockMachine(mockctl)
 
 		now = time.Unix(1606924953, 0)
 		mockMachine.EXPECT().Name().Return("homekit").AnyTimes()

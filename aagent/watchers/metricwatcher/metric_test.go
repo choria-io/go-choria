@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -24,7 +24,7 @@ func Test(t *testing.T) {
 var _ = Describe("MetricWatcher", func() {
 	var (
 		mockctl     *gomock.Controller
-		mockMachine *watcher.MockMachine
+		mockMachine *model.MockMachine
 		watch       *Watcher
 		now         time.Time
 		td          string
@@ -33,7 +33,7 @@ var _ = Describe("MetricWatcher", func() {
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		mockMachine = watcher.NewMockMachine(mockctl)
+		mockMachine = model.NewMockMachine(mockctl)
 
 		td, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())

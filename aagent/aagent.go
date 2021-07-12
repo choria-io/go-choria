@@ -2,7 +2,6 @@ package aagent
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -10,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent/machine"
@@ -20,7 +19,7 @@ import (
 )
 
 type AAgent struct {
-	fw       ChoriaProvider
+	fw       model.ChoriaProvider
 	logger   *logrus.Entry
 	machines []*managedMachine
 	notifier *notifier.Notifier
@@ -37,21 +36,8 @@ type managedMachine struct {
 	loadedHash string
 }
 
-// ChoriaProvider provides access to the choria framework
-type ChoriaProvider interface {
-	PublishRaw(string, []byte) error
-	Logger(string) *logrus.Entry
-	Identity() string
-	PrometheusTextFileDir() string
-	ScoutOverridesPath() string
-	ServerStatusFile() (string, int)
-	MainCollective() string
-	Connector() choria.Connector
-	Facts() json.RawMessage
-}
-
 // New creates a new instance of the choria autonomous agent host
-func New(dir string, fw ChoriaProvider) (aa *AAgent, err error) {
+func New(dir string, fw model.ChoriaProvider) (aa *AAgent, err error) {
 	n, err := notifier.New(fw)
 	if err != nil {
 		return nil, fmt.Errorf("could not create notifier: %s", err)

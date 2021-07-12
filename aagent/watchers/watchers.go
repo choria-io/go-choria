@@ -2,13 +2,11 @@ package watchers
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/watchers/watcher"
-	"github.com/choria-io/go-choria/lifecycle"
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/nats-io/jsm.go"
 	"github.com/tidwall/gjson"
 
@@ -17,46 +15,16 @@ import (
 
 type State int
 
-// Watcher is anything that can be used to watch the system for events
-type Watcher interface {
-	Name() string
-	Type() string
-	Run(context.Context, *sync.WaitGroup)
-	NotifyStateChance()
-	CurrentState() interface{}
-	AnnounceInterval() time.Duration
-	Delete()
-}
-
 // Machine is a Choria Machine
 type Machine interface {
-	Name() string
-	State() string
-	Directory() string
-	Transition(t string, args ...interface{}) error
-	NotifyWatcherState(string, interface{})
+	model.Machine
 	Watchers() []*WatcherDef
-	Identity() string
-	InstanceID() string
-	Version() string
-	TimeStampSeconds() int64
-	TextFileDirectory() string
-	OverrideData() ([]byte, error)
-	ChoriaStatusFile() (string, int)
-	JetStreamConnection() (*jsm.Manager, error)
-	MainCollective() string
-	PublishLifecycleEvent(t lifecycle.Type, opts ...lifecycle.Option)
-	Facts() json.RawMessage
-	Debugf(name string, format string, args ...interface{})
-	Infof(name string, format string, args ...interface{})
-	Warnf(name string, format string, args ...interface{})
-	Errorf(name string, format string, args ...interface{})
 }
 
 // Manager manages all the defined watchers in a specific machine
 // implements machine.WatcherManager
 type Manager struct {
-	watchers map[string]Watcher
+	watchers map[string]model.Watcher
 	machine  Machine
 
 	ctx    context.Context
@@ -67,7 +35,7 @@ type Manager struct {
 
 // WatcherConstructor creates a new watcher plugin
 type WatcherConstructor interface {
-	New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error)
+	New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error)
 	Type() string
 	EventType() string
 	UnmarshalNotification(n []byte) (interface{}, error)
@@ -102,7 +70,7 @@ func RegisterWatcherPlugin(name string, plugin WatcherConstructor) error {
 
 func New(ctx context.Context) *Manager {
 	m := &Manager{
-		watchers: make(map[string]Watcher),
+		watchers: make(map[string]model.Watcher),
 	}
 
 	m.ctx, m.cancel = context.WithCancel(ctx)
@@ -169,7 +137,7 @@ func (m *Manager) SetMachine(t interface{}) (err error) {
 }
 
 // AddWatcher adds a watcher to a managed machine
-func (m *Manager) AddWatcher(w Watcher) error {
+func (m *Manager) AddWatcher(w model.Watcher) error {
 	m.Lock()
 	defer m.Unlock()
 
@@ -205,7 +173,7 @@ func (m *Manager) configureWatchers() (err error) {
 
 		m.machine.Infof("manager", "Starting %s watcher %s", w.Type, w.Name)
 
-		var watcher Watcher
+		var watcher model.Watcher
 		var err error
 		var ok bool
 
@@ -221,7 +189,7 @@ func (m *Manager) configureWatchers() (err error) {
 			return fmt.Errorf("could not create %s watcher '%s': %s", w.Type, w.Name, err)
 		}
 
-		watcher, ok = wi.(Watcher)
+		watcher, ok = wi.(model.Watcher)
 		if !ok {
 			return fmt.Errorf("%q watcher is not a valid watcher", w.Type)
 		}
@@ -260,7 +228,7 @@ func (m *Manager) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	return nil
 }
 
-func (m *Manager) announceWatcherState(ctx context.Context, wg *sync.WaitGroup, w Watcher) {
+func (m *Manager) announceWatcherState(ctx context.Context, wg *sync.WaitGroup, w model.Watcher) {
 	defer wg.Done()
 
 	announceTick := time.NewTicker(w.AnnounceInterval())

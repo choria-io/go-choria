@@ -2,11 +2,10 @@ package execwatcher
 
 import (
 	"encoding/json"
-	"os"
 	"testing"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -20,21 +19,20 @@ func Test(t *testing.T) {
 var _ = Describe("ExecWatcher", func() {
 	var (
 		mockctl     *gomock.Controller
-		mockMachine *watcher.MockMachine
+		mockMachine *model.MockMachine
 		watch       *Watcher
 		now         time.Time
 	)
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		mockMachine = watcher.NewMockMachine(mockctl)
+		mockMachine = model.NewMockMachine(mockctl)
 
 		mockMachine.EXPECT().Name().Return("exec").AnyTimes()
 		mockMachine.EXPECT().Identity().Return("ginkgo").AnyTimes()
 		mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
 		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
-		mockMachine.EXPECT().Directory().Return(os.TempDir())
 
 		now = time.Unix(1606924953, 0)
 

@@ -9,7 +9,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -26,7 +26,7 @@ func Test(t *testing.T) {
 var _ = Describe("NagiosWatcher", func() {
 	var (
 		mockctl     *gomock.Controller
-		mockMachine *watcher.MockMachine
+		mockMachine *model.MockMachine
 		watch       *Watcher
 		now         time.Time
 		err         error
@@ -35,7 +35,7 @@ var _ = Describe("NagiosWatcher", func() {
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		mockMachine = watcher.NewMockMachine(mockctl)
+		mockMachine = model.NewMockMachine(mockctl)
 
 		td, err = ioutil.TempDir("", "")
 		Expect(err).ToNot(HaveOccurred())
@@ -47,7 +47,6 @@ var _ = Describe("NagiosWatcher", func() {
 		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
 		mockMachine.EXPECT().TextFileDirectory().Return(td).AnyTimes()
-		mockMachine.EXPECT().Directory().Return(os.TempDir())
 
 		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "1s", time.Second, map[string]interface{}{
 			"plugin": "/bin/sh",

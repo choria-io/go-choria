@@ -1,4 +1,4 @@
-package watcher
+package model
 
 import (
 	"encoding/json"
@@ -24,6 +24,9 @@ type Machine interface {
 	PublishLifecycleEvent(t lifecycle.Type, opts ...lifecycle.Option)
 	MainCollective() string
 	Facts() json.RawMessage
+	Data() map[string]string
+	DataPut(key string, val string) error
+	DataGet(key string) (string, bool)
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Warnf(name string, format string, args ...interface{})

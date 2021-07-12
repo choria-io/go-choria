@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"math/rand"
+	"os"
 	"path/filepath"
 	"sync"
 	"time"
@@ -23,6 +24,8 @@ import (
 
 	"github.com/looplab/fsm"
 )
+
+const dataFileName = "machine_data.json"
 
 // Machine is a autonomous agent implemented as a Finite State Machine and hosted within Choria Server
 type Machine struct {
@@ -55,6 +58,7 @@ type Machine struct {
 	choriaStatusFreq int
 	startTime        time.Time
 
+	data        map[string]string
 	facts       func() json.RawMessage
 	jsm         *jsm.Manager
 	conn        choria.Connector
@@ -77,6 +81,7 @@ type Machine struct {
 
 	ctx    context.Context
 	cancel context.CancelFunc
+	dataMu sync.Mutex
 	sync.Mutex
 }
 
@@ -149,6 +154,15 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 	m.manifest = afile
 	m.instanceID = m.UniqueID()
 	m.knownStates = make(map[string]bool)
+	m.data = map[string]string{}
+
+	err = m.loadData()
+	if err != nil {
+		// warning only, we dont want a corrupt data file from stopping the whole world, generally data should
+		// be ephemeral and recreate from other sources like kv or exec watchers, new computers need to be able to
+		// survive without data so should a machine recovering from a bad state
+		m.Warnf("machine", "Could not load data file, discarding: %s", err)
+	}
 
 	err = m.manager.SetMachine(m)
 	if err != nil {
@@ -619,4 +633,86 @@ func (m *Machine) KnownStates() []string {
 	}
 
 	return lister()
+}
+
+// DataGet gets the value for a key, empty string and false when no value is stored
+func (m *Machine) DataGet(key string) (string, bool) {
+	m.dataMu.Lock()
+	defer m.dataMu.Unlock()
+
+	v, ok := m.data[key]
+
+	return v, ok
+}
+
+// DataPut stores a value in a key
+func (m *Machine) DataPut(key string, val string) error {
+	m.dataMu.Lock()
+	defer m.dataMu.Unlock()
+
+	m.data[key] = val
+
+	err := m.saveData()
+	if err != nil {
+		m.Errorf("machine", "Could not save data to %s: %s", dataFileName, err)
+		return err
+	}
+
+	return nil
+}
+
+func (m *Machine) loadData() error {
+	path := filepath.Join(m.Directory(), dataFileName)
+	if !util.FileExist(path) {
+		return nil
+	}
+
+	j, err := os.ReadFile(path)
+	if err != nil {
+		return err
+	}
+
+	m.dataMu.Lock()
+	defer m.dataMu.Unlock()
+
+	return json.Unmarshal(j, &m.data)
+}
+
+// lock should be held by caller
+func (m *Machine) saveData() error {
+	if len(m.data) == 0 {
+		return nil
+	}
+
+	j, err := json.Marshal(m.data)
+	if err != nil {
+		return err
+	}
+
+	tf, err := os.CreateTemp("", "")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(tf.Name())
+
+	_, err = tf.Write(j)
+	tf.Close()
+	if err != nil {
+		return err
+	}
+
+	return os.Rename(tf.Name(), filepath.Join(m.Directory(), dataFileName))
+}
+
+// Data retrieves a copy of the current data stored by the machine, changes will not be reflected in the machine
+func (m *Machine) Data() map[string]string {
+	m.dataMu.Lock()
+	defer m.dataMu.Unlock()
+
+	res := make(map[string]string, len(m.data))
+	for k, v := range m.data {
+		res[k] = v
+	}
+
+	return res
 }

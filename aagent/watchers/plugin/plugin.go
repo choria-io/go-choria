@@ -6,12 +6,12 @@ import (
 	"strings"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/plugin"
 )
 
-func NewWatcherPlugin(wtype string, version string, notification func() interface{}, new func(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error)) *WatcherPlugin {
+func NewWatcherPlugin(wtype string, version string, notification func() interface{}, new func(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error)) *WatcherPlugin {
 	return &WatcherPlugin{
 		Name: wtype,
 		Creator: &creator{
@@ -27,7 +27,7 @@ type creator struct {
 	wtype        string
 	version      string
 	notification func() interface{}
-	new          func(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error)
+	new          func(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error)
 }
 
 func (c *creator) Type() string {
@@ -45,7 +45,7 @@ func (c *creator) UnmarshalNotification(n []byte) (interface{}, error) {
 	return state, err
 }
 
-func (c *creator) New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error) {
+func (c *creator) New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error) {
 	return c.new(machine, name, states, failEvent, successEvent, interval, ai, properties)
 }
 
