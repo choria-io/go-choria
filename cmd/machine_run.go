@@ -20,29 +20,29 @@ type mRunCommand struct {
 	dataFile  string
 }
 
-func (c *mRunCommand) Setup() (err error) {
+func (r *mRunCommand) Setup() (err error) {
 	if machine, ok := cmdWithFullCommand("machine"); ok {
-		c.cmd = machine.Cmd().Command("run", "Runs an autonomous agent locally")
-		c.cmd.Arg("source", "Directory containing the machine definition").Required().ExistingDirVar(&c.sourceDir)
-		c.cmd.Flag("facts", "JSON format facts file to supply to the machine as run time facts").ExistingFileVar(&c.factsFile)
-		c.cmd.Flag("data", "JSON format data file to supply to the machine as run time data").ExistingFileVar(&c.dataFile)
+		r.cmd = machine.Cmd().Command("run", "Runs an autonomous agent locally")
+		r.cmd.Arg("source", "Directory containing the machine definition").Required().ExistingDirVar(&r.sourceDir)
+		r.cmd.Flag("facts", "JSON format facts file to supply to the machine as run time facts").ExistingFileVar(&r.factsFile)
+		r.cmd.Flag("data", "JSON format data file to supply to the machine as run time data").ExistingFileVar(&r.dataFile)
 	}
 
 	return nil
 }
 
-func (c *mRunCommand) Configure() error {
+func (r *mRunCommand) Configure() error {
 	return commonConfigure()
 }
 
-func (c *mRunCommand) Run(wg *sync.WaitGroup) (err error) {
+func (r *mRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	if debug {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
-	m, err := machine.FromDir(c.sourceDir, watchers.New(ctx))
+	m, err := machine.FromDir(r.sourceDir, watchers.New(ctx))
 	if err != nil {
 		return err
 	}
@@ -50,17 +50,17 @@ func (c *mRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	m.SetIdentity("cli")
 	m.RegisterNotifier(&console.Notifier{})
 	m.SetMainCollective(cfg.MainCollective)
-	if c.factsFile != "" {
-		facts, err := os.ReadFile(c.factsFile)
+	if r.factsFile != "" {
+		facts, err := os.ReadFile(r.factsFile)
 		if err != nil {
 			return err
 		}
 		m.SetFactSource(func() json.RawMessage { return facts })
 	}
 
-	if c.dataFile != "" {
+	if r.dataFile != "" {
 		dat := make(map[string]string)
-		df, err := os.ReadFile(c.dataFile)
+		df, err := os.ReadFile(r.dataFile)
 		if err != nil {
 			return err
 		}
@@ -75,6 +75,12 @@ func (c *mRunCommand) Run(wg *sync.WaitGroup) (err error) {
 			}
 		}
 	}
+
+	conn, err := c.NewConnector(ctx, c.MiddlewareServers, "machine run", c.Logger("machine"))
+	if err != nil {
+		return err
+	}
+	m.SetConnection(conn)
 
 	<-m.Start(ctx, wg)
 

@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -22,8 +23,8 @@ var _ = Describe("Aagent/Watchers", func() {
 	var (
 		mockctl  *gomock.Controller
 		machine  *MockMachine
-		watcherC *MockWatcherConstructor
-		watcher  *MockWatcher
+		watcherC *model.MockWatcherConstructor
+		watcher  *model.MockWatcher
 		manager  *Manager
 		err      error
 	)
@@ -31,8 +32,8 @@ var _ = Describe("Aagent/Watchers", func() {
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 		machine = NewMockMachine(mockctl)
-		watcherC = NewMockWatcherConstructor(mockctl)
-		watcher = NewMockWatcher(mockctl)
+		watcherC = model.NewMockWatcherConstructor(mockctl)
+		watcher = model.NewMockWatcher(mockctl)
 		manager = New(context.Background())
 		manager.machine = machine
 	})
@@ -60,7 +61,7 @@ var _ = Describe("Aagent/Watchers", func() {
 		It("Should register watchers", func() {
 			err = RegisterWatcherPlugin("mock watcher version 1", watcherC)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(plugins).To(Equal(map[string]WatcherConstructor{
+			Expect(plugins).To(Equal(map[string]model.WatcherConstructor{
 				"mock": watcherC,
 			}))
 			Expect(build.MachineWatchers).To(Equal([]string{"mock watcher version 1"}))

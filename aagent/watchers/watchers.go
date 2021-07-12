@@ -33,27 +33,19 @@ type Manager struct {
 	sync.Mutex
 }
 
-// WatcherConstructor creates a new watcher plugin
-type WatcherConstructor interface {
-	New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error)
-	Type() string
-	EventType() string
-	UnmarshalNotification(n []byte) (interface{}, error)
-}
-
 var (
-	plugins map[string]WatcherConstructor
+	plugins map[string]model.WatcherConstructor
 
 	mu sync.Mutex
 )
 
 // RegisterWatcherPlugin registers a new type of watcher
-func RegisterWatcherPlugin(name string, plugin WatcherConstructor) error {
+func RegisterWatcherPlugin(name string, plugin model.WatcherConstructor) error {
 	mu.Lock()
 	defer mu.Unlock()
 
 	if plugins == nil {
-		plugins = map[string]WatcherConstructor{}
+		plugins = map[string]model.WatcherConstructor{}
 	}
 
 	_, exit := plugins[plugin.Type()]
@@ -85,7 +77,7 @@ func ParseWatcherState(state []byte) (interface{}, error) {
 	}
 
 	proto := r.String()
-	var plugin WatcherConstructor
+	var plugin model.WatcherConstructor
 
 	mu.Lock()
 	for _, w := range plugins {
