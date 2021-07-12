@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/google/shlex"
 
 	"github.com/choria-io/go-choria/aagent/util"
@@ -41,7 +42,7 @@ type Watcher struct {
 	*watcher.Watcher
 
 	name            string
-	machine         watcher.Machine
+	machine         model.Machine
 	previousRunTime time.Duration
 	previousResult  *Metric
 	properties      *properties
@@ -50,7 +51,7 @@ type Watcher struct {
 	mu       *sync.Mutex
 }
 
-func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprops map[string]interface{}) (interface{}, error) {
+func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprops map[string]interface{}) (interface{}, error) {
 	var err error
 
 	mw := &Watcher{

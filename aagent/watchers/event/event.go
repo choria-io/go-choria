@@ -4,14 +4,14 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/choria-io/go-choria/aagent/model"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 
 	"github.com/choria-io/go-choria/internal/util"
 )
 
 // New creates a new event
-func New(name string, mtype string, version string, machine watcher.Machine) Event {
+func New(name string, mtype string, version string, machine model.Machine) Event {
 	return Event{
 		Name:      name,
 		Protocol:  fmt.Sprintf("io.choria.machine.watcher.%s.%s.state", mtype, version),

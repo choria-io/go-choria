@@ -5,13 +5,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"path/filepath"
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/nats-io/jsm.go/governor"
 )
@@ -22,22 +21,18 @@ type Watcher struct {
 	announceInterval time.Duration
 	statechg         chan struct{}
 	activeStates     []string
-	machine          Machine
+	machine          model.Machine
 	succEvent        string
 	failEvent        string
-	data             map[string]string
 
 	deleteCb       func()
 	currentStateCb func() interface{}
 	govCancel      func()
 
-	dataMu sync.Mutex
-	mu     sync.Mutex
+	mu sync.Mutex
 }
 
-const dataFileName = "machine_data.json"
-
-func NewWatcher(name string, wtype string, announceInterval time.Duration, activeStates []string, machine Machine, fail string, success string) (*Watcher, error) {
+func NewWatcher(name string, wtype string, announceInterval time.Duration, activeStates []string, machine model.Machine, fail string, success string) (*Watcher, error) {
 	if name == "" {
 		return nil, fmt.Errorf("name is required")
 	}
@@ -59,12 +54,6 @@ func NewWatcher(name string, wtype string, announceInterval time.Duration, activ
 		succEvent:        success,
 		machine:          machine,
 		activeStates:     activeStates,
-		data:             map[string]string{},
-	}
-
-	err := w.loadData()
-	if err != nil {
-		w.Errorf("Could not load data, continuing: %s", err)
 	}
 
 	return w, nil
@@ -88,7 +77,7 @@ func (w *Watcher) FactsFile() (string, error) {
 }
 
 func (w *Watcher) DataCopyFile() (string, error) {
-	dat := w.dataCopy()
+	dat := w.machine.Data()
 	if len(dat) == 0 {
 		return "", nil
 	}
@@ -165,83 +154,7 @@ func (w *Watcher) EnterGovernor(ctx context.Context, name string, timeout time.D
 	return finisher, nil
 }
 
-func (w *Watcher) dataCopy() map[string]string {
-	w.dataMu.Lock()
-	defer w.dataMu.Unlock()
-
-	res := make(map[string]string, len(w.data))
-	for k, v := range w.data {
-		res[k] = v
-	}
-
-	return res
-}
-
-func (w *Watcher) DataGet(key string) (string, bool) {
-	w.dataMu.Lock()
-	defer w.dataMu.Unlock()
-
-	v, ok := w.data[key]
-
-	return v, ok
-}
-
-func (w *Watcher) DataPut(key string, val string) {
-	w.dataMu.Lock()
-	defer w.dataMu.Unlock()
-
-	w.data[key] = val
-
-	err := w.saveData()
-	if err != nil {
-		w.Errorf("Could not save data to %s: %s", dataFileName, err)
-	}
-}
-
-func (w *Watcher) loadData() error {
-	path := filepath.Join(w.machine.Directory(), dataFileName)
-	if !util.FileExist(path) {
-		return nil
-	}
-
-	j, err := os.ReadFile(path)
-	if err != nil {
-		return err
-	}
-
-	w.dataMu.Lock()
-	defer w.dataMu.Unlock()
-
-	return json.Unmarshal(j, &w.data)
-}
-
-// lock should be held by caller
-func (w *Watcher) saveData() error {
-	if len(w.data) == 0 {
-		return nil
-	}
-
-	j, err := json.Marshal(w.data)
-	if err != nil {
-		return err
-	}
-
-	tf, err := os.CreateTemp("", "")
-	if err != nil {
-		return err
-	}
-	defer os.Remove(tf.Name())
-
-	_, err = tf.Write(j)
-	tf.Close()
-	if err != nil {
-		return err
-	}
-
-	return os.Rename(tf.Name(), filepath.Join(w.machine.Directory(), dataFileName))
-}
-
-func (w *Watcher) Machine() Machine {
+func (w *Watcher) Machine() model.Machine {
 	return w.machine
 }
 

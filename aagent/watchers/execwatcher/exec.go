@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
@@ -49,7 +50,7 @@ type Watcher struct {
 	*watcher.Watcher
 
 	name            string
-	machine         watcher.Machine
+	machine         model.Machine
 	previous        State
 	interval        time.Duration
 	previousRunTime time.Duration
@@ -60,7 +61,7 @@ type Watcher struct {
 	mu *sync.Mutex
 }
 
-func New(machine watcher.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]interface{}) (interface{}, error) {
+func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]interface{}) (interface{}, error) {
 	var err error
 
 	exec := &Watcher{
@@ -329,7 +330,10 @@ func (w *Watcher) setOutputAsData(output []byte) error {
 	}
 
 	for k, v := range dat {
-		w.DataPut(k, v)
+		err = w.machine.DataPut(k, v)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	watcher2 "github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/robfig/cron"
 )
@@ -18,7 +18,7 @@ type scheduleItem struct {
 	on        bool
 	duration  time.Duration
 	randomize time.Duration
-	machine   watcher2.Machine
+	machine   model.Machine
 	watcher   *Watcher
 
 	sync.Mutex

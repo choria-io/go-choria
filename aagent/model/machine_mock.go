@@ -4,7 +4,7 @@
 // mockgen -package watcher -destination machine_mock.go github.com/choria-io/go-choria/aagent/watchers/watcher Machine
 
 // Package watcher is a generated GoMock package.
-package watcher
+package model
 
 import (
 	"encoding/json"
@@ -51,6 +51,49 @@ func (m *MockMachine) ChoriaStatusFile() (string, int) {
 func (mr *MockMachineMockRecorder) ChoriaStatusFile() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChoriaStatusFile", reflect.TypeOf((*MockMachine)(nil).ChoriaStatusFile))
+}
+
+// Data mocks base method.
+func (m *MockMachine) Data() map[string]string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Data")
+	ret0, _ := ret[0].(map[string]string)
+	return ret0
+}
+
+// Data indicates an expected call of Data.
+func (mr *MockMachineMockRecorder) Data() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Data", reflect.TypeOf((*MockMachine)(nil).Data))
+}
+
+// DataGet mocks base method.
+func (m *MockMachine) DataGet(arg0 string) (string, bool) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DataGet", arg0)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(bool)
+	return ret0, ret1
+}
+
+// DataGet indicates an expected call of DataGet.
+func (mr *MockMachineMockRecorder) DataGet(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DataGet", reflect.TypeOf((*MockMachine)(nil).DataGet), arg0)
+}
+
+// DataPut mocks base method.
+func (m *MockMachine) DataPut(arg0, arg1 string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DataPut", arg0, arg1)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DataPut indicates an expected call of DataPut.
+func (mr *MockMachineMockRecorder) DataPut(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DataPut", reflect.TypeOf((*MockMachine)(nil).DataPut), arg0, arg1)
 }
 
 // Debugf mocks base method.
