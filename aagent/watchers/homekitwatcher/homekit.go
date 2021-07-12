@@ -11,7 +11,6 @@ import (
 
 	"github.com/brutella/hc"
 	"github.com/brutella/hc/accessory"
-
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"

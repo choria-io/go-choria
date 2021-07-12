@@ -2,6 +2,7 @@ package machine
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"math/rand"
@@ -54,6 +55,7 @@ type Machine struct {
 	choriaStatusFreq int
 	startTime        time.Time
 
+	facts       func() json.RawMessage
 	jsm         *jsm.Manager
 	conn        choria.Connector
 	manager     WatcherManager
@@ -192,6 +194,27 @@ func ValidateDir(dir string) (validationErrors []string, err error) {
 	}
 
 	return validationErrors, nil
+}
+
+// Facts is the active facts for the node
+func (m *Machine) Facts() json.RawMessage {
+	m.Lock()
+	fs := m.facts
+	m.Unlock()
+
+	if fs != nil {
+		return fs()
+	}
+
+	return json.RawMessage("{}")
+}
+
+// SetFactSource sets a function that return current machine facts
+func (m *Machine) SetFactSource(facts func() json.RawMessage) {
+	m.Lock()
+	defer m.Unlock()
+
+	m.facts = facts
 }
 
 // MainCollective is the main collective this choria belongs to

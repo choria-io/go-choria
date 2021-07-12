@@ -2,15 +2,16 @@ package watchers
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/nats-io/jsm.go"
 	"github.com/tidwall/gjson"
 
-	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	"github.com/choria-io/go-choria/choria"
 )
 
@@ -45,6 +46,7 @@ type Machine interface {
 	JetStreamConnection() (*jsm.Manager, error)
 	MainCollective() string
 	PublishLifecycleEvent(t lifecycle.Type, opts ...lifecycle.Option)
+	Facts() json.RawMessage
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Warnf(name string, format string, args ...interface{})

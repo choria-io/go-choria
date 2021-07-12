@@ -2,6 +2,7 @@ package aagent
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
@@ -46,6 +47,7 @@ type ChoriaProvider interface {
 	ServerStatusFile() (string, int)
 	MainCollective() string
 	Connector() choria.Connector
+	Facts() json.RawMessage
 }
 
 // New creates a new instance of the choria autonomous agent host
@@ -104,6 +106,7 @@ func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path strin
 
 	a.logger.Infof("Loaded Autonomous Agent %s version %s from %s (%s)", aa.Name(), aa.Version(), path, sum)
 
+	aa.SetFactSource(a.fw.Facts)
 	aa.SetIdentity(a.fw.Identity())
 	aa.SetMainCollective(a.fw.MainCollective())
 	aa.RegisterNotifier(a.notifier)

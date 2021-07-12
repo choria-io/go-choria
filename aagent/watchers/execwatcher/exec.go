@@ -280,13 +280,17 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 
 	df, err := w.DataCopyFile()
 	if err != nil {
-		if df != "" {
-			os.Remove(df)
-		}
 		w.Errorf("Could not get a copy of the data into a temporary file, skipping execution: %s", err)
 		return Error, err
 	}
 	defer os.Remove(df)
+
+	ff, err := w.FactsFile()
+	if err != nil {
+		w.Errorf("Could not expose machine facts, skipping execution: %s", err)
+		return Error, err
+	}
+	defer os.Remove(ff)
 
 	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], args...)
 	cmd.Dir = w.machine.Directory()
@@ -294,8 +298,9 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_NAME=%s", w.machine.Name()))
 	cmd.Env = append(cmd.Env, fmt.Sprintf("PATH=%s%s%s", os.Getenv("PATH"), string(os.PathListSeparator), w.machine.Directory()))
-	cmd.Env = append(cmd.Env, w.properties.Environment...)
 	cmd.Env = append(cmd.Env, fmt.Sprintf("WATCHER_DATA=%s", df))
+	cmd.Env = append(cmd.Env, fmt.Sprintf("WATCHER_FACTS=%s", ff))
+	cmd.Env = append(cmd.Env, w.properties.Environment...)
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {

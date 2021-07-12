@@ -7,14 +7,15 @@
 package watchers
 
 import (
-	context "context"
-	reflect "reflect"
-	sync "sync"
-	time "time"
+	"context"
+	"encoding/json"
+	"reflect"
+	"sync"
+	"time"
 
-	watcher "github.com/choria-io/go-choria/aagent/watchers/watcher"
-	lifecycle "github.com/choria-io/go-choria/lifecycle"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/choria-io/go-choria/lifecycle"
+	"github.com/golang/mock/gomock"
 	jsm_go "github.com/nats-io/jsm.go"
 )
 
@@ -102,6 +103,20 @@ func (mr *MockMachineMockRecorder) Errorf(arg0, arg1 interface{}, arg2 ...interf
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Errorf", reflect.TypeOf((*MockMachine)(nil).Errorf), varargs...)
+}
+
+// Facts mocks base method.
+func (m *MockMachine) Facts() json.RawMessage {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "Facts")
+	ret0, _ := ret[0].(json.RawMessage)
+	return ret0
+}
+
+// Facts indicates an expected call of Facts.
+func (mr *MockMachineMockRecorder) Facts() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Facts", reflect.TypeOf((*MockMachine)(nil).Facts))
 }
 
 // Identity mocks base method.

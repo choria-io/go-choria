@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
-
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"

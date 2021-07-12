@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 
-	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	"github.com/choria-io/go-choria/internal/util"
 )
 
