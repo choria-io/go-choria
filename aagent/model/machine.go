@@ -27,6 +27,7 @@ type Machine interface {
 	Data() map[string]string
 	DataPut(key string, val string) error
 	DataGet(key string) (string, bool)
+	DataDelete(key string) error
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Warnf(name string, format string, args ...interface{})

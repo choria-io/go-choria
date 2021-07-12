@@ -324,8 +324,16 @@ func (m *Machine) JetStreamConnection() (*jsm.Manager, error) {
 	m.Lock()
 	defer m.Unlock()
 
+	var err error
 	if m.jsm == nil {
-		return nil, fmt.Errorf("not supplied")
+		if m.conn != nil {
+			m.jsm, err = jsm.New(m.conn.Nats())
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			return nil, fmt.Errorf("not supplied")
+		}
 	}
 
 	return m.jsm, nil
@@ -651,6 +659,27 @@ func (m *Machine) DataPut(key string, val string) error {
 	defer m.dataMu.Unlock()
 
 	m.data[key] = val
+
+	err := m.saveData()
+	if err != nil {
+		m.Errorf("machine", "Could not save data to %s: %s", dataFileName, err)
+		return err
+	}
+
+	return nil
+}
+
+// DataDelete deletes a value from the store
+func (m *Machine) DataDelete(key string) error {
+	m.dataMu.Lock()
+	defer m.dataMu.Unlock()
+
+	_, ok := m.data[key]
+	if !ok {
+		return nil
+	}
+
+	delete(m.data, key)
 
 	err := m.saveData()
 	if err != nil {

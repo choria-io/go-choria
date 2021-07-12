@@ -56,9 +56,10 @@ type Watcher struct {
 	previousRunTime time.Duration
 	properties      *Properties
 
-	watching bool
+	lastWatch time.Time
 
-	mu *sync.Mutex
+	wmu *sync.Mutex
+	mu  *sync.Mutex
 }
 
 func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]interface{}) (interface{}, error) {
@@ -68,6 +69,7 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		machine: machine,
 		name:    name,
 		mu:      &sync.Mutex{},
+		wmu:     &sync.Mutex{},
 		properties: &Properties{
 			Environment: []string{},
 		},
@@ -139,7 +141,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	for {
 		select {
 		case <-w.Watcher.StateChangeC():
-			w.performWatch(ctx)
+			w.performWatch(ctx, true)
 
 		case <-ctx.Done():
 			w.Infof("Stopping on context interrupt")
@@ -157,7 +159,7 @@ func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 	for {
 		select {
 		case <-tick.C:
-			w.performWatch(ctx)
+			w.performWatch(ctx, false)
 
 		case <-ctx.Done():
 			tick.Stop()
@@ -166,13 +168,15 @@ func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (w *Watcher) performWatch(ctx context.Context) {
-	if w.isWatching() {
+func (w *Watcher) performWatch(ctx context.Context, force bool) {
+	w.wmu.Lock()
+	defer w.wmu.Unlock()
+
+	if !force && time.Since(w.lastWatch) < w.interval {
 		return
 	}
 
-	state, err := w.watch(ctx)
-	err = w.handleCheck(state, err)
+	err := w.handleCheck(w.watch(ctx))
 	if err != nil {
 		w.Errorf("could not handle watcher event: %s", err)
 	}
@@ -215,32 +219,10 @@ func (w *Watcher) CurrentState() interface{} {
 	return s
 }
 
-func (w *Watcher) startWatching() {
-	w.mu.Lock()
-	w.watching = true
-	w.mu.Unlock()
-}
-
-func (w *Watcher) isWatching() bool {
-	w.mu.Lock()
-	defer w.mu.Unlock()
-
-	return w.watching
-}
-
-func (w *Watcher) stopWatching() {
-	w.mu.Lock()
-	w.watching = false
-	w.mu.Unlock()
-}
-
 func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	if !w.ShouldWatch() {
 		return Skipped, nil
 	}
-
-	w.startWatching()
-	defer w.stopWatching()
 
 	if w.properties.Governor != "" {
 		fin, err := w.EnterGovernor(ctx, w.properties.Governor, w.properties.GovernorTimeout)

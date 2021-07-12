@@ -226,7 +226,7 @@ func (p *ChoriaRegistryClient) DiscoverNodes(ctx context.Context) (nodes []strin
 //
 // Optional Inputs:
 //    - format (string) - The result format the plugin should be retrieved in
-func (p *ChoriaRegistryClient) Ddl(inputName string, inputPluginType string) *DdlRequester {
+func (p *ChoriaRegistryClient) Ddl(inputPluginType string, inputName string) *DdlRequester {
 	d := &DdlRequester{
 		outc: nil,
 		r: &requester{
