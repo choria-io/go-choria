@@ -70,6 +70,23 @@ func NewWatcher(name string, wtype string, announceInterval time.Duration, activ
 	return w, nil
 }
 
+func (w *Watcher) FactsFile() (string, error) {
+	tf, err := os.CreateTemp("", "")
+	if err != nil {
+		return "", err
+	}
+
+	_, err = tf.Write(w.machine.Facts())
+	if err != nil {
+		tf.Close()
+		os.Remove(tf.Name())
+		return "", err
+	}
+	tf.Close()
+
+	return tf.Name(), nil
+}
+
 func (w *Watcher) DataCopyFile() (string, error) {
 	dat := w.dataCopy()
 	if len(dat) == 0 {
@@ -89,7 +106,8 @@ func (w *Watcher) DataCopyFile() (string, error) {
 	_, err = tf.Write(j)
 	if err != nil {
 		tf.Close()
-		return tf.Name(), err
+		os.Remove(tf.Name())
+		return "", err
 	}
 	tf.Close()
 

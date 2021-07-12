@@ -1,6 +1,8 @@
 package watcher
 
 import (
+	"encoding/json"
+
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/nats-io/jsm.go"
 )
@@ -21,6 +23,7 @@ type Machine interface {
 	JetStreamConnection() (*jsm.Manager, error)
 	PublishLifecycleEvent(t lifecycle.Type, opts ...lifecycle.Option)
 	MainCollective() string
+	Facts() json.RawMessage
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
 	Warnf(name string, format string, args ...interface{})
