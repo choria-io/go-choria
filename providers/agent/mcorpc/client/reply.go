@@ -41,7 +41,7 @@ func (r *RPCReply) MatchExpr(q string, prog *vm.Program) (bool, *vm.Program, err
 
 	var err error
 	if prog == nil {
-		prog, err = expr.Compile(q, expr.AsBool(), expr.AllowUndefinedVariables(), expr.Env(env))
+		prog, err = expr.Compile(q, expr.AllowUndefinedVariables(), expr.Env(env))
 		if err != nil {
 			return false, nil, err
 		}
