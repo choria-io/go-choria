@@ -36,9 +36,10 @@ var stateNames = map[State]string{
 }
 
 type properties struct {
-	Bucket string
-	Key    string
-	Mode   string
+	Bucket       string
+	Key          string
+	Mode         string
+	BucketPrefix bool `mapstructure:"bucket_prefix"`
 }
 
 type Watcher struct {
@@ -50,7 +51,7 @@ type Watcher struct {
 	kv       kv.RoKV
 	interval time.Duration
 
-	previousVal   string
+	previousVal   interface{}
 	previousState State
 	polling       bool
 	lastPoll      time.Time
@@ -99,7 +100,9 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 
 func (w *Watcher) setProperties(props map[string]interface{}) error {
 	if w.properties == nil {
-		w.properties = &properties{}
+		w.properties = &properties{
+			BucketPrefix: true,
+		}
 	}
 
 	err := util.ParseMapStructure(props, w.properties)
@@ -223,7 +226,11 @@ func (w *Watcher) handleState(s State, err error) error {
 }
 
 func (w *Watcher) dataKey() string {
-	return fmt.Sprintf("%s.%s", w.properties.Bucket, w.properties.Key)
+	if w.properties.BucketPrefix {
+		return fmt.Sprintf("%s_%s", w.properties.Bucket, w.properties.Key)
+	}
+
+	return w.properties.Key
 }
 
 func (w *Watcher) pollKey(ctx context.Context, wg *sync.WaitGroup) {

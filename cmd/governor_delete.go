@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/AlecAivazis/survey/v2"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/jsm.go/governor"
 )
@@ -53,11 +53,7 @@ func (g *tGovDeleteCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	if !g.force {
-		ans := false
-		err = survey.AskOne(&survey.Confirm{
-			Message: fmt.Sprintf("Delete %s with %d active lease entries?", g.name, entries),
-			Default: ans,
-		}, &ans)
+		ans, err := util.PromptForConfirmation("Delete %s with %d active lease entries?", g.name, entries)
 		if err != nil {
 			return err
 		}

@@ -2,6 +2,7 @@ package util
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"math/rand"
@@ -13,7 +14,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	"unicode"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/gofrs/uuid"
 	"github.com/olekukonko/tablewriter"
@@ -382,4 +385,34 @@ func ParseDuration(dstr string) (dur time.Duration, err error) {
 	}
 
 	return dur, nil
+}
+
+// PromptForConfirmation asks for confirmation on the CLI
+func PromptForConfirmation(format string, a ...interface{}) (bool, error) {
+	ans := false
+	err := survey.AskOne(&survey.Confirm{
+		Message: fmt.Sprintf(format, a...),
+		Default: ans,
+	}, &ans)
+
+	return ans, err
+}
+
+// IsPrintable determines if a string is printable
+func IsPrintable(s string) bool {
+	for _, r := range s {
+		if r > unicode.MaxASCII || !unicode.IsPrint(r) {
+			return false
+		}
+	}
+	return true
+}
+
+// Base64IfNotPrintable returns a string value that's either the given value or base64 encoded if not IsPrintable()
+func Base64IfNotPrintable(val []byte) string {
+	if IsPrintable(string(val)) {
+		return string(val)
+	}
+
+	return base64.StdEncoding.EncodeToString(val)
 }

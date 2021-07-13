@@ -99,6 +99,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 			Expect(check("include(data('ints'), 1)")).To(BeTrue())
 			Expect(check("include(data('ints'), 5)")).To(BeFalse())
 			Expect(check("data('bool')")).To(BeTrue())
+			Expect(check("!data('bool')")).To(BeFalse())
 			Expect(check("data('fbool')")).To(BeFalse())
 
 			res, _, err := r.MatchExpr("ok() && data('hello')", nil)

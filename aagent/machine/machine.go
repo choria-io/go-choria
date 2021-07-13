@@ -58,7 +58,7 @@ type Machine struct {
 	choriaStatusFreq int
 	startTime        time.Time
 
-	data        map[string]string
+	data        map[string]interface{}
 	facts       func() json.RawMessage
 	jsm         *jsm.Manager
 	conn        choria.Connector
@@ -154,7 +154,7 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 	m.manifest = afile
 	m.instanceID = m.UniqueID()
 	m.knownStates = make(map[string]bool)
-	m.data = map[string]string{}
+	m.data = make(map[string]interface{})
 
 	err = m.loadData()
 	if err != nil {
@@ -644,7 +644,7 @@ func (m *Machine) KnownStates() []string {
 }
 
 // DataGet gets the value for a key, empty string and false when no value is stored
-func (m *Machine) DataGet(key string) (string, bool) {
+func (m *Machine) DataGet(key string) (interface{}, bool) {
 	m.dataMu.Lock()
 	defer m.dataMu.Unlock()
 
@@ -654,7 +654,7 @@ func (m *Machine) DataGet(key string) (string, bool) {
 }
 
 // DataPut stores a value in a key
-func (m *Machine) DataPut(key string, val string) error {
+func (m *Machine) DataPut(key string, val interface{}) error {
 	m.dataMu.Lock()
 	defer m.dataMu.Unlock()
 
@@ -734,11 +734,11 @@ func (m *Machine) saveData() error {
 }
 
 // Data retrieves a copy of the current data stored by the machine, changes will not be reflected in the machine
-func (m *Machine) Data() map[string]string {
+func (m *Machine) Data() map[string]interface{} {
 	m.dataMu.Lock()
 	defer m.dataMu.Unlock()
 
-	res := make(map[string]string, len(m.data))
+	res := make(map[string]interface{}, len(m.data))
 	for k, v := range m.data {
 		res[k] = v
 	}

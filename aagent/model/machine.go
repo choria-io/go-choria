@@ -24,9 +24,9 @@ type Machine interface {
 	PublishLifecycleEvent(t lifecycle.Type, opts ...lifecycle.Option)
 	MainCollective() string
 	Facts() json.RawMessage
-	Data() map[string]string
-	DataPut(key string, val string) error
-	DataGet(key string) (string, bool)
+	Data() map[string]interface{}
+	DataPut(key string, val interface{}) error
+	DataGet(key string) (interface{}, bool)
 	DataDelete(key string) error
 	Debugf(name string, format string, args ...interface{})
 	Infof(name string, format string, args ...interface{})
