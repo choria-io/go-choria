@@ -82,7 +82,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 			r := RPCReply{
 				Statuscode: 0,
 				Statusmsg:  "OK",
-				Data:       json.RawMessage(`{"hello":"world", "ints": [1,2,3], "strings": ["1","2","3"]}`),
+				Data:       json.RawMessage(`{"hello":"world", "ints": [1,2,3], "strings": ["1","2","3"], "bool":true, "fbool":false}`),
 			}
 
 			check := func(f string) (bool, error) {
@@ -94,8 +94,12 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 			Expect(check("!ok() && data('hello') == 'world'")).To(BeFalse())
 			Expect(check("ok() && data('hello') == 'other'")).To(BeFalse())
 			Expect(check("ok() && include(data('strings'), '1')")).To(BeTrue())
+			Expect(check("ok() && include(data('strings'), '5')")).To(BeFalse())
 			Expect(check("ok() && include(data('ints'), 1)")).To(BeTrue())
 			Expect(check("include(data('ints'), 1)")).To(BeTrue())
+			Expect(check("include(data('ints'), 5)")).To(BeFalse())
+			Expect(check("data('bool')")).To(BeTrue())
+			Expect(check("data('fbool')")).To(BeFalse())
 
 			res, _, err := r.MatchExpr("ok() && data('hello')", nil)
 			Expect(err).To(MatchError("match expressions should return boolean"))
