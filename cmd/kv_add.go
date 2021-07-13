@@ -40,17 +40,12 @@ func (k *kvAddCommand) Configure() error {
 func (k *kvAddCommand) Run(wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("kv manager: %s", k.name), c.Logger("kv"))
-	if err != nil {
-		return err
-	}
-
-	store, err := kv.NewBucket(conn.Nats(), k.name,
-		kv.WithTTL(k.ttl),
+	_, store, err := c.KV(ctx, k.name, kv.WithTTL(k.ttl),
 		kv.WithHistory(k.history),
 		kv.WithReplicas(k.replicas),
 		kv.WithMaxBucketSize(k.maxBucketSize),
-		kv.WithMaxValueSize(k.maxValueSize))
+		kv.WithMaxValueSize(k.maxValueSize),
+		kv.WithLogger(c.Logger("kv")))
 	if err != nil {
 		return err
 	}

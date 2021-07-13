@@ -5,8 +5,6 @@ import (
 	"io/ioutil"
 	"os"
 	"sync"
-
-	"github.com/nats-io/jsm.go/kv"
 )
 
 type kvPutCommand struct {
@@ -34,12 +32,7 @@ func (k *kvPutCommand) Configure() error {
 func (k *kvPutCommand) Run(wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("kv manager %s", k.name), c.Logger("kv"))
-	if err != nil {
-		return err
-	}
-
-	store, err := kv.NewClient(conn.Nats(), k.name)
+	_, store, err := c.KV(ctx, k.name)
 	if err != nil {
 		return err
 	}

@@ -19,6 +19,7 @@ import (
 
 	"github.com/fatih/color"
 	"github.com/golang-jwt/jwt"
+	"github.com/nats-io/jsm.go/kv"
 	"golang.org/x/term"
 
 	"github.com/choria-io/go-choria/internal/util"
@@ -810,4 +811,21 @@ func GovernorSubject(name string, collective string) string {
 // GovernorSubject the subject to use for choria managed Governors
 func (fw *Framework) GovernorSubject(name string) string {
 	return GovernorSubject(name, fw.Config.MainCollective)
+}
+
+// KV creates a connection to a key-value store
+func (fw *Framework) KV(ctx context.Context, bucket string, opts ...kv.Option) (Connector, kv.KV, error) {
+	logger := fw.Logger("kv")
+	conn, err := fw.NewConnector(ctx, fw.MiddlewareServers, fmt.Sprintf("kv %s", fw.CallerID()), logger)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	opts = append(opts, kv.WithLogger(logger))
+	store, err := kv.NewClient(conn.Nats(), bucket, opts...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return conn, store, nil
 }

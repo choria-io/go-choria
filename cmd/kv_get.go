@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/internal/util"
-	"github.com/nats-io/jsm.go/kv"
 	"golang.org/x/term"
 )
 
@@ -36,12 +35,7 @@ func (k *kvGetCommand) Configure() error {
 func (k *kvGetCommand) Run(wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("kv manager %s", k.name), c.Logger("kv"))
-	if err != nil {
-		return err
-	}
-
-	store, err := kv.NewClient(conn.Nats(), k.name)
+	_, store, err := c.KV(ctx, k.name)
 	if err != nil {
 		return err
 	}
