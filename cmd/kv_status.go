@@ -3,8 +3,6 @@ package cmd
 import (
 	"fmt"
 	"sync"
-
-	"github.com/nats-io/jsm.go/kv"
 )
 
 type kvStatusCommand struct {
@@ -28,12 +26,7 @@ func (k *kvStatusCommand) Configure() error {
 func (k *kvStatusCommand) Run(wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("kv manager %s", k.name), c.Logger("kv"))
-	if err != nil {
-		return err
-	}
-
-	store, err := kv.NewBucket(conn.Nats(), k.name)
+	_, store, err := c.KV(ctx, k.name)
 	if err != nil {
 		return err
 	}

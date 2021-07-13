@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/internal/util"
-	"github.com/nats-io/jsm.go/kv"
 )
 
 type kvDelCommand struct {
@@ -33,12 +32,7 @@ func (k *kvDelCommand) Configure() error {
 func (k *kvDelCommand) Run(wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("kv manager %s", k.name), c.Logger("kv"))
-	if err != nil {
-		return err
-	}
-
-	store, err := kv.NewBucket(conn.Nats(), k.name)
+	_, store, err := c.KV(ctx, k.name)
 	if err != nil {
 		return err
 	}

@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/internal/util"
-	"github.com/nats-io/jsm.go/kv"
 )
 
 type kvPurgeCommand struct {
@@ -31,12 +30,7 @@ func (k *kvPurgeCommand) Configure() error {
 func (k *kvPurgeCommand) Run(wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, "kv manager", c.Logger("kv"))
-	if err != nil {
-		return err
-	}
-
-	store, err := kv.NewBucket(conn.Nats(), k.name)
+	_, store, err := c.KV(ctx, k.name)
 	if err != nil {
 		return err
 	}
