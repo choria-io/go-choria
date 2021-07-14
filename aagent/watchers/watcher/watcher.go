@@ -78,9 +78,6 @@ func (w *Watcher) FactsFile() (string, error) {
 
 func (w *Watcher) DataCopyFile() (string, error) {
 	dat := w.machine.Data()
-	if len(dat) == 0 {
-		return "", nil
-	}
 
 	j, err := json.Marshal(dat)
 	if err != nil {

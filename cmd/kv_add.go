@@ -40,7 +40,7 @@ func (k *kvAddCommand) Configure() error {
 func (k *kvAddCommand) Run(wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	_, store, err := c.KV(ctx, k.name, kv.WithTTL(k.ttl),
+	store, err := c.KV(ctx, nil, k.name, true, kv.WithTTL(k.ttl),
 		kv.WithHistory(k.history),
 		kv.WithReplicas(k.replicas),
 		kv.WithMaxBucketSize(k.maxBucketSize),

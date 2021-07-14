@@ -814,18 +814,29 @@ func (fw *Framework) GovernorSubject(name string) string {
 }
 
 // KV creates a connection to a key-value store
-func (fw *Framework) KV(ctx context.Context, bucket string, opts ...kv.Option) (Connector, kv.KV, error) {
+func (fw *Framework) KV(ctx context.Context, conn Connector, bucket string, create bool, opts ...kv.Option) (kv.KV, error) {
 	logger := fw.Logger("kv")
-	conn, err := fw.NewConnector(ctx, fw.MiddlewareServers, fmt.Sprintf("kv %s", fw.CallerID()), logger)
-	if err != nil {
-		return nil, nil, err
+
+	var err error
+	if conn == nil {
+		conn, err = fw.NewConnector(ctx, fw.MiddlewareServers, fmt.Sprintf("kv %s", fw.CallerID()), logger)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	opts = append(opts, kv.WithLogger(logger))
-	store, err := kv.NewClient(conn.Nats(), bucket, opts...)
+
+	var store kv.KV
+
+	if create {
+		store, err = kv.NewBucket(conn.Nats(), bucket, opts...)
+	} else {
+		store, err = kv.NewClient(conn.Nats(), bucket, opts...)
+	}
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	return conn, store, nil
+	return store, nil
 }
