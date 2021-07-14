@@ -26,7 +26,7 @@ func (k *kvStatusCommand) Configure() error {
 func (k *kvStatusCommand) Run(wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	_, store, err := c.KV(ctx, k.name)
+	store, err := c.KV(ctx, nil, k.name, false)
 	if err != nil {
 		return err
 	}

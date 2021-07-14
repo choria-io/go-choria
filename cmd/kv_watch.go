@@ -45,7 +45,7 @@ func (k *kvWatchCommand) Run(wg *sync.WaitGroup) error {
 		defer cancel()
 	}
 
-	_, store, err := c.KV(ctx, k.name)
+	store, err := c.KV(ctx, nil, k.name, false)
 	if err != nil {
 		return err
 	}
