@@ -9,7 +9,7 @@ type toolCommand struct {
 }
 
 func (t *toolCommand) Setup() (err error) {
-	t.cmd = cli.app.Command("tool", "Various utilities for debugging and verification of Choria Networks")
+	t.cmd = cli.app.Command("tool", "Various utilities for debugging and verification of Choria Networks").Alias("t")
 
 	return nil
 }

@@ -36,10 +36,11 @@ var stateNames = map[State]string{
 }
 
 type properties struct {
-	Bucket       string
-	Key          string
-	Mode         string
-	BucketPrefix bool `mapstructure:"bucket_prefix"`
+	Bucket            string
+	Key               string
+	Mode              string
+	TransitionOnMatch bool `mapstructure:"on_matching_update"`
+	BucketPrefix      bool `mapstructure:"bucket_prefix"`
 }
 
 type Watcher struct {
@@ -52,6 +53,7 @@ type Watcher struct {
 	interval time.Duration
 
 	previousVal   interface{}
+	previousSeq   uint64
 	previousState State
 	polling       bool
 	lastPoll      time.Time
@@ -176,33 +178,46 @@ func (w *Watcher) poll() (State, error) {
 	val, err := w.kv.Get(w.properties.Key)
 
 	switch {
-	case err == kv.ErrUnknownKey && w.previousVal == "": // key isn't there, nothing was previously found its unchanged
+	// key isn't there, nothing was previously found its unchanged
+	case err == kv.ErrUnknownKey && w.previousVal == "":
 		return Unchanged, nil
 
-	case err == kv.ErrUnknownKey && w.previousVal != "": // key isn't there, we had a value before its a change due to delete
+	// key isn't there, we had a value before its a change due to delete
+	case err == kv.ErrUnknownKey && w.previousVal != "":
 		err = w.machine.DataDelete(dk)
 		if err != nil {
 			w.Errorf("Could not delete key %s from machine: %s", dk, err)
 			return Error, err
 		}
 
+		w.previousSeq = val.Sequence()
 		w.previousVal = ""
 		return Changed, err
 
-	case err != nil: // get failed in an unknown way
+	// get failed in an unknown way
+	case err != nil:
 		w.Errorf("Could not get %s.%s: %s", w.properties.Bucket, w.properties.Key, err)
 		return Error, err
 
-	case w.previousVal != string(val.Value()): // a change
+	// a change
+	case w.previousVal != string(val.Value()):
 		err = w.machine.DataPut(dk, string(val.Value()))
 		if err != nil {
 			return Error, err
 		}
 
+		w.previousSeq = val.Sequence()
 		w.previousVal = string(val.Value())
 		return Changed, nil
 
+	// a put that didnt update, but we are asked to transition anyway
+	// we do not trigger this on first start of the machine only once its running (previousSeq is 0)
+	case w.previousVal == string(val.Value()) && w.properties.TransitionOnMatch && w.previousSeq > 0 && val.Sequence() > w.previousSeq:
+		w.previousSeq = val.Sequence()
+		return Changed, nil
+
 	default:
+		w.previousSeq = val.Sequence()
 		return Unchanged, nil
 	}
 }
