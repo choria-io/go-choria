@@ -190,7 +190,6 @@ func (w *Watcher) poll() (State, error) {
 			return Error, err
 		}
 
-		w.previousSeq = val.Sequence()
 		w.previousVal = ""
 		return Changed, err
 
