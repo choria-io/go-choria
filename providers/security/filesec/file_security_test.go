@@ -6,7 +6,7 @@ import (
 	"encoding/base64"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"path/filepath"
 	"testing"
@@ -65,7 +65,7 @@ var _ = Describe("FileSSL", func() {
 
 		l = logrus.New()
 
-		l.Out = ioutil.Discard
+		l.Out = io.Discard
 
 		prov, err = New(WithConfig(cfg), WithLog(l.WithFields(logrus.Fields{})))
 		Expect(err).ToNot(HaveOccurred())
@@ -373,12 +373,12 @@ var _ = Describe("FileSSL", func() {
 
 		BeforeEach(func() {
 			pub := prov.publicCertPath()
-			pem, err = ioutil.ReadFile(pub)
+			pem, err = os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("Should fail for foreign certs", func() {
-			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
+			pem, err = os.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			err := prov.VerifyCertificate(pem, "rip.mcollective")
 			Expect(err).To(MatchError("x509: certificate signed by unknown authority"))
@@ -405,7 +405,7 @@ var _ = Describe("FileSSL", func() {
 			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
-			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "rip.mcollective.pem"))
+			pem, err = os.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "rip.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.VerifyCertificate(pem, "rip.mcollective")
@@ -422,7 +422,7 @@ var _ = Describe("FileSSL", func() {
 			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
-			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "ca_chain_rip.mcollective.pem"))
+			pem, err = os.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "ca_chain_rip.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.VerifyCertificate(pem, "rip.mcollective")
@@ -439,7 +439,7 @@ var _ = Describe("FileSSL", func() {
 			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
-			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "email-chain-rip.mcollective.pem"))
+			pem, err = os.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "email-chain-rip.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.VerifyCertificate(pem, "email:test@choria-io.com")
@@ -456,7 +456,7 @@ var _ = Describe("FileSSL", func() {
 			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
-			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "email-chain-rip.mcollective.pem"))
+			pem, err = os.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "email-chain-rip.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.VerifyCertificate(pem, "email:bad@choria-io.com")
@@ -466,7 +466,7 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("PublicCertPem", func() {
 		It("Should return the correct pem data", func() {
-			dat, err := ioutil.ReadFile(cfg.Certificate)
+			dat, err := os.ReadFile(cfg.Certificate)
 			Expect(err).ToNot(HaveOccurred())
 			pb, _ := pem.Decode(dat)
 			Expect(err).ToNot(HaveOccurred())
@@ -479,7 +479,7 @@ var _ = Describe("FileSSL", func() {
 
 	Describe("shouldCacheClientCert", func() {
 		It("Should only accept valid certs signed by our ca", func() {
-			pd, err := ioutil.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
+			pd, err := os.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
 			should, priv, name := prov.shouldCacheClientCert(pd, "foo")
@@ -488,7 +488,7 @@ var _ = Describe("FileSSL", func() {
 			Expect(name).To(Equal("foo"))
 
 			pub := prov.publicCertPath()
-			pd, err = ioutil.ReadFile(pub)
+			pd, err = os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
 			should, priv, name = prov.shouldCacheClientCert(pd, "rip.mcollective")
@@ -498,7 +498,7 @@ var _ = Describe("FileSSL", func() {
 		})
 
 		It("Should cache privileged certs", func() {
-			pd, err := ioutil.ReadFile(filepath.Join("..", "testdata", "good", "certs", "1.privileged.mcollective.pem"))
+			pd, err := os.ReadFile(filepath.Join("..", "testdata", "good", "certs", "1.privileged.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
 			should, priv, name := prov.shouldCacheClientCert(pd, "bob")
@@ -510,7 +510,7 @@ var _ = Describe("FileSSL", func() {
 		It("Should not cache certs with wrong names", func() {
 			pub := prov.publicCertPath()
 
-			pd, err := ioutil.ReadFile(pub)
+			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
 			should, priv, name := prov.shouldCacheClientCert(pd, "bob")
@@ -523,7 +523,7 @@ var _ = Describe("FileSSL", func() {
 			cfg.AllowList = []string{"bob"}
 			pub := prov.publicCertPath()
 
-			pd, err := ioutil.ReadFile(pub)
+			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
 			should, priv, name := prov.shouldCacheClientCert(pd, "rip.mcollective")
@@ -535,7 +535,7 @@ var _ = Describe("FileSSL", func() {
 		It("Should cache valid certs", func() {
 			pub := prov.publicCertPath()
 
-			pd, err := ioutil.ReadFile(pub)
+			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
 			should, priv, name := prov.shouldCacheClientCert(pd, "rip.mcollective")
@@ -548,7 +548,7 @@ var _ = Describe("FileSSL", func() {
 	Describe("CachePublicData", func() {
 		It("Should not write untrusted files to disk", func() {
 			cfg.Cache = os.TempDir()
-			pd, err := ioutil.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
+			pd, err := os.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			err = prov.CachePublicData(pd, "foreign")
 			Expect(err).To(MatchError("certificate 'foreign' did not pass validation"))
@@ -564,7 +564,7 @@ var _ = Describe("FileSSL", func() {
 			cfg.Cache = os.TempDir()
 			pub := prov.publicCertPath()
 
-			pd, err := ioutil.ReadFile(pub)
+			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.CachePublicData(pd, "rip.mcollective")
@@ -581,7 +581,7 @@ var _ = Describe("FileSSL", func() {
 			cfg.Cache = os.TempDir()
 			pub := prov.publicCertPath()
 
-			pd, err := ioutil.ReadFile(pub)
+			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.CachePublicData(pd, "rip.mcollective")
@@ -593,7 +593,7 @@ var _ = Describe("FileSSL", func() {
 
 			// deliberately change the file so that we can figure out if its being changed
 			// I'd check time stamps but they are per second so not much use
-			err = ioutil.WriteFile(cpath, []byte("too many secrets"), os.FileMode(int(0644)))
+			err = os.WriteFile(cpath, []byte("too many secrets"), os.FileMode(int(0644)))
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.CachePublicData(pd, "rip.mcollective")
@@ -620,20 +620,20 @@ var _ = Describe("FileSSL", func() {
 			c.Choria.FileSecurityCache = filepath.Join("..", "testdata", "intermediate", "certs")
 			c.Choria.SecurityAlwaysOverwriteCache = true
 
-			c.Choria.FileSecurityCache, err = ioutil.TempDir("", "cache-always")
+			c.Choria.FileSecurityCache, err = os.MkdirTemp("", "cache-always")
 			Expect(err).ToNot(HaveOccurred())
 			defer os.RemoveAll(c.Choria.FileSecurityCache)
 
 			prov, err := New(WithChoriaConfig(&build.Info{}, c), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
-			fpd, err := ioutil.ReadFile(firstcert)
+			fpd, err := os.ReadFile(firstcert)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.CachePublicData(fpd, identity)
 			Expect(err).ToNot(HaveOccurred())
 
-			spd, err := ioutil.ReadFile(secondcert)
+			spd, err := os.ReadFile(secondcert)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.CachePublicData(spd, identity)
@@ -651,7 +651,7 @@ var _ = Describe("FileSSL", func() {
 			cfg.Cache = os.TempDir()
 			pub := prov.publicCertPath()
 
-			pd, err := ioutil.ReadFile(pub)
+			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.CachePublicData(pd, "rip.mcollective")
@@ -670,7 +670,7 @@ var _ = Describe("FileSSL", func() {
 
 			pub := prov.publicCertPath()
 
-			pd, err := ioutil.ReadFile(pub)
+			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.CachePublicData(pd, "rip.mcollective")

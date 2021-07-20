@@ -2,7 +2,7 @@ package plugin
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sort"
 	"time"
 
@@ -96,7 +96,7 @@ func Register(name string, plugin Pluggable) error {
 // Load loads a plugin list from file
 func Load(file string) (*List, error) {
 	rawdat := make(map[string]string)
-	input, err := ioutil.ReadFile(file)
+	input, err := os.ReadFile(file)
 	if err != nil {
 		return nil, err
 	}

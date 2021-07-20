@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/fs"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sort"
@@ -108,7 +107,7 @@ func (d *DirectorySpool) IncrementTries(m *Message) error {
 		return err
 	}
 
-	err = ioutil.WriteFile(m.sm.(string), jm, 0600)
+	err = os.WriteFile(m.sm.(string), jm, 0600)
 	if err != nil {
 		d.log.Errorf("Could not increment tries in message %s, discarding: %s", m.sm, err)
 		d.removeCompletedWithSkip(m.sm.(string), d.skipList[m.Priority])
@@ -204,7 +203,7 @@ func (d *DirectorySpool) processDir(priority uint, dir string, handler func([]*M
 }
 
 func (d *DirectorySpool) readMessage(path string) (*Message, error) {
-	jmsg, err := ioutil.ReadFile(path)
+	jmsg, err := os.ReadFile(path)
 	if err != nil {
 		return nil, err
 	}
@@ -221,7 +220,7 @@ func (d *DirectorySpool) readMessage(path string) (*Message, error) {
 }
 
 func (d *DirectorySpool) entries(priority uint) ([]fs.FileInfo, error) {
-	found, err := ioutil.ReadDir(filepath.Join(d.directory, fmt.Sprintf("P%d", priority)))
+	found, err := os.ReadDir(filepath.Join(d.directory, fmt.Sprintf("P%d", priority)))
 	if err != nil {
 		return nil, err
 	}
@@ -233,7 +232,10 @@ func (d *DirectorySpool) entries(priority uint) ([]fs.FileInfo, error) {
 	var entries []fs.FileInfo
 	for _, f := range found {
 		if strings.HasSuffix(f.Name(), ".msg") {
-			entries = append(entries, f)
+			nfo, err := f.Info()
+			if err == nil {
+				entries = append(entries, nfo)
+			}
 		}
 	}
 
@@ -326,14 +328,14 @@ func (d *DirectorySpool) Submit(msg *Message) error {
 		return err
 	}
 
-	f, err := ioutil.TempFile(d.directory, "")
+	f, err := os.CreateTemp(d.directory, "")
 	if err != nil {
 		return err
 	}
 	f.Close()
 	defer os.Remove(f.Name())
 
-	err = ioutil.WriteFile(f.Name(), j, 0600)
+	err = os.WriteFile(f.Name(), j, 0600)
 	if err != nil {
 		return err
 	}

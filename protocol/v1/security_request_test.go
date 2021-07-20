@@ -3,7 +3,7 @@ package v1
 import (
 	"encoding/base64"
 	"errors"
-	"io/ioutil"
+	"os"
 
 	"github.com/choria-io/go-choria/protocol"
 	gomock "github.com/golang/mock/gomock"
@@ -24,7 +24,7 @@ var _ = Describe("SecureRequest", func() {
 
 		protocol.Secure = "true"
 
-		pub, _ = ioutil.ReadFile("testdata/ssl/certs/rip.mcollective.pem")
+		pub, _ = os.ReadFile("testdata/ssl/certs/rip.mcollective.pem")
 	})
 
 	AfterEach(func() {

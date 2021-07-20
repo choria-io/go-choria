@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -254,7 +253,7 @@ func dumpGoRoutines() {
 	buf := make([]byte, 1<<20)
 	stacklen := runtime.Stack(buf, true)
 
-	err := ioutil.WriteFile(tdoutname, buf[:stacklen], 0644)
+	err := os.WriteFile(tdoutname, buf[:stacklen], 0644)
 	if err != nil {
 		log.Errorf("Could not produce thread dump: %s", err)
 		return

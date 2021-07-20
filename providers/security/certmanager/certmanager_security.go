@@ -14,7 +14,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -184,7 +183,7 @@ func (cm *CertManagerSecurity) fetchCertAndCA() error {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("could not load CSR for %q: %s", cm.Identity(), err)
 	}
@@ -203,7 +202,7 @@ func (cm *CertManagerSecurity) fetchCertAndCA() error {
 		return err
 	}
 
-	err = ioutil.WriteFile(cm.conf.ca, capem, 0644)
+	err = os.WriteFile(cm.conf.ca, capem, 0644)
 	if err != nil {
 		return fmt.Errorf("could not write ca %s: %s", cm.conf.ca, err)
 	}
@@ -218,7 +217,7 @@ func (cm *CertManagerSecurity) fetchCertAndCA() error {
 		return err
 	}
 
-	err = ioutil.WriteFile(cm.conf.cert, certpem, 0644)
+	err = os.WriteFile(cm.conf.cert, certpem, 0644)
 	if err != nil {
 		return fmt.Errorf("could not write certificate %s: %s", cm.conf.ca, err)
 	}
@@ -311,12 +310,12 @@ func (cm *CertManagerSecurity) submitCSR() (code int, body []byte, err error) {
 	}
 	defer resp.Body.Close()
 
-	body, err = ioutil.ReadAll(resp.Body)
+	body, err = io.ReadAll(resp.Body)
 	return resp.StatusCode, body, err
 }
 
 func (cm *CertManagerSecurity) k8sRequest(method string, url string, body io.Reader) (*http.Response, error) {
-	token, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/token")
+	token, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/token")
 	if err != nil {
 		return nil, err
 	}
@@ -348,7 +347,7 @@ func (cm *CertManagerSecurity) k8sTLSConfig() (*tls.Config, error) {
 		PreferServerCipherSuites: true,
 	}
 
-	ca, err := ioutil.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
+	ca, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/ca.crt")
 	if err != nil {
 		return nil, err
 	}
@@ -365,7 +364,7 @@ func (cm *CertManagerSecurity) k8sTLSConfig() (*tls.Config, error) {
 }
 
 func (cm *CertManagerSecurity) csrTXT() ([]byte, error) {
-	return ioutil.ReadFile(cm.conf.csr)
+	return os.ReadFile(cm.conf.csr)
 }
 
 func (cm *CertManagerSecurity) shouldEnroll() bool {
@@ -390,7 +389,7 @@ func (cm *CertManagerSecurity) writePrivateKey() (*rsa.PrivateKey, error) {
 		},
 	)
 
-	err = ioutil.WriteFile(cm.conf.key, pemdata, 0640)
+	err = os.WriteFile(cm.conf.key, pemdata, 0640)
 	if err != nil {
 		return nil, fmt.Errorf("could not write private key: %cm", err)
 	}

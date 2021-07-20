@@ -7,9 +7,10 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"io/ioutil"
+	"io"
 	"math/big"
 	"net"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -29,7 +30,7 @@ var _ = Describe("Network Broker/IPAuth", func() {
 
 	BeforeEach(func() {
 		logger := logrus.New()
-		logger.Out = ioutil.Discard
+		logger.Out = io.Discard
 		log = logrus.NewEntry(logger)
 		auth = &IPAuth{
 			allowList: []string{},
@@ -118,7 +119,7 @@ var _ = Describe("Network Broker/IPAuth", func() {
 		)
 
 		BeforeEach(func() {
-			td, err = ioutil.TempDir("", "")
+			td, err = os.MkdirTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			privateKey, err = rsa.GenerateKey(rand.Reader, 2048)
@@ -143,7 +144,7 @@ var _ = Describe("Network Broker/IPAuth", func() {
 			out := &bytes.Buffer{}
 
 			pem.Encode(out, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
-			err = ioutil.WriteFile(filepath.Join(td, "public.pem"), out.Bytes(), 0600)
+			err = os.WriteFile(filepath.Join(td, "public.pem"), out.Bytes(), 0600)
 			Expect(err).ToNot(HaveOccurred())
 
 			out.Reset()
@@ -151,7 +152,7 @@ var _ = Describe("Network Broker/IPAuth", func() {
 			blk := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}
 			pem.Encode(out, blk)
 
-			err = ioutil.WriteFile(filepath.Join(td, "private.pem"), out.Bytes(), 0600)
+			err = os.WriteFile(filepath.Join(td, "private.pem"), out.Bytes(), 0600)
 			Expect(err).ToNot(HaveOccurred())
 		})
 

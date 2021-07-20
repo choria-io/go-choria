@@ -3,7 +3,6 @@ package facts
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -68,7 +67,7 @@ func JSON(file string, log Logger) (json.RawMessage, error) {
 			continue
 		}
 
-		j, err := ioutil.ReadFile(f)
+		j, err := os.ReadFile(f)
 		if err != nil {
 			log.Errorf("Could not read fact file %s: %s", f, err)
 			continue

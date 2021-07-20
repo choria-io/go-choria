@@ -1,11 +1,12 @@
 package protocol
 
 import (
-	"io/ioutil"
+	"io"
+	"os"
 	"testing"
 
 	"github.com/ghodss/yaml"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -29,7 +30,7 @@ var _ = Describe("Filter", func() {
 		mockctl = gomock.NewController(GinkgoT())
 
 		log = logrus.NewEntry(logrus.New())
-		log.Logger.Out = ioutil.Discard
+		log.Logger.Out = io.Discard
 
 		filter = NewFilter()
 
@@ -37,7 +38,7 @@ var _ = Describe("Filter", func() {
 		request.EXPECT().Filter().Return(filter, false).AnyTimes()
 		request.EXPECT().RequestID().Return("mock.request.id").AnyTimes()
 
-		yd, _ := ioutil.ReadFile("testdata/facts.yaml")
+		yd, _ := os.ReadFile("testdata/facts.yaml")
 		jd, _ := yaml.YAMLToJSON(yd)
 
 		si = NewMockServerInfoSource(mockctl)

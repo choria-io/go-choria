@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"sync"
 )
@@ -39,7 +39,7 @@ func (k *kvPutCommand) Run(wg *sync.WaitGroup) error {
 
 	val := []byte(k.val)
 	if k.val == "-" {
-		val, err = ioutil.ReadAll(os.Stdin)
+		val, err = io.ReadAll(os.Stdin)
 		if err != nil {
 			return err
 		}

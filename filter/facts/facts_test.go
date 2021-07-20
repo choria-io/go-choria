@@ -1,7 +1,7 @@
 package facts
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"strings"
 	"testing"
@@ -27,7 +27,7 @@ var _ = Describe("Server/Discovery/Facts", func() {
 
 	BeforeSuite(func() {
 		l = logrus.WithFields(logrus.Fields{"test": true})
-		l.Logger.Out = ioutil.Discard
+		l.Logger.Out = io.Discard
 
 		t = func(fact, op, val string) (bool, error) {
 			return HasFact(fact, op, val, "testdata/fact.yaml", l)

@@ -4,8 +4,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math"
+	"os"
 	"reflect"
 	"sort"
 	"strings"
@@ -32,7 +32,7 @@ func New(file string) (*DDL, error) {
 		SourceLocation: file,
 	}
 
-	dat, err := ioutil.ReadFile(file)
+	dat, err := os.ReadFile(file)
 	if err != nil {
 		return nil, fmt.Errorf("could not load DDL data: %s", err)
 	}

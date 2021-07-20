@@ -3,8 +3,8 @@ package builddefaults
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net"
+	"os"
 	"strings"
 	"time"
 
@@ -132,7 +132,7 @@ func (b *Resolver) setBuildBasedOnJWT() (*ProvClaims, error) {
 		return &ProvClaims{}, nil
 	}
 
-	j, err := ioutil.ReadFile(jwtf)
+	j, err := os.ReadFile(jwtf)
 	if err != nil {
 		return nil, err
 	}

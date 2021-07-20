@@ -4,7 +4,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"fmt"
-	"io/ioutil"
+	"os"
 )
 
 func (s *Server) extractKeyedConfigString(prefix string, key string, property string, dflt string) (result string) {
@@ -72,7 +72,7 @@ func (s *Server) genTLSc(pri string, pub string, ca string, verify bool) (tlsc *
 	}
 
 	if ca != "" {
-		caCert, err := ioutil.ReadFile(ca)
+		caCert, err := os.ReadFile(ca)
 		if err != nil {
 			return nil, err
 		}

@@ -8,7 +8,6 @@ import (
 	"crypto/x509/pkix"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -51,7 +50,7 @@ var _ = Describe("Choria", func() {
 		)
 
 		BeforeEach(func() {
-			td, err = ioutil.TempDir("", "")
+			td, err = os.MkdirTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
 
 			cfg = config.NewConfigForTests()
@@ -83,7 +82,7 @@ var _ = Describe("Choria", func() {
 			out := &bytes.Buffer{}
 
 			pem.Encode(out, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
-			err = ioutil.WriteFile(filepath.Join(td, "public.pem"), out.Bytes(), 0600)
+			err = os.WriteFile(filepath.Join(td, "public.pem"), out.Bytes(), 0600)
 			Expect(err).ToNot(HaveOccurred())
 
 			out.Reset()
@@ -91,7 +90,7 @@ var _ = Describe("Choria", func() {
 			blk := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}
 			pem.Encode(out, blk)
 
-			err = ioutil.WriteFile(filepath.Join(td, "private.pem"), out.Bytes(), 0600)
+			err = os.WriteFile(filepath.Join(td, "private.pem"), out.Bytes(), 0600)
 			Expect(err).ToNot(HaveOccurred())
 
 			jwtpath := filepath.Join(td, "good.jwt")
@@ -109,7 +108,7 @@ var _ = Describe("Choria", func() {
 			signed, err := t.SignedString(privateKey)
 			Expect(err).ToNot(HaveOccurred())
 
-			err = ioutil.WriteFile(jwtpath, []byte(signed), 0600)
+			err = os.WriteFile(jwtpath, []byte(signed), 0600)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -123,7 +122,7 @@ var _ = Describe("Choria", func() {
 				caller, id, token, err := fw.UniqueIDFromUnverifiedToken()
 				Expect(err).ToNot(HaveOccurred())
 
-				expectedT, err := ioutil.ReadFile(cfg.Choria.RemoteSignerTokenFile)
+				expectedT, err := os.ReadFile(cfg.Choria.RemoteSignerTokenFile)
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(token).To(Equal(strings.TrimSpace(string(expectedT))))
@@ -138,7 +137,7 @@ var _ = Describe("Choria", func() {
 				token, claims, err := fw.ParseSignerTokenUnverified()
 				Expect(err).ToNot(HaveOccurred())
 
-				expectedT, err := ioutil.ReadFile(cfg.Choria.RemoteSignerTokenFile)
+				expectedT, err := os.ReadFile(cfg.Choria.RemoteSignerTokenFile)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(strings.TrimSpace(token.Raw)).To(Equal(strings.TrimSpace(string(expectedT))))
 
@@ -168,7 +167,7 @@ var _ = Describe("Choria", func() {
 			})
 
 			It("Should support file tokens", func() {
-				tf, err := ioutil.TempFile("", "")
+				tf, err := os.CreateTemp("", "")
 				Expect(err).ToNot(HaveOccurred())
 				defer os.Remove(tf.Name())
 

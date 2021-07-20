@@ -18,7 +18,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -166,7 +166,7 @@ func (s *FileSecurity) signerToken() (token string, err error) {
 	}
 
 	if s.conf.RemoteSignerTokenFile != "" {
-		tb, err := ioutil.ReadFile(s.conf.RemoteSignerTokenFile)
+		tb, err := os.ReadFile(s.conf.RemoteSignerTokenFile)
 		if err != nil {
 			return "", fmt.Errorf("could not read token file: %v", err)
 		}
@@ -231,7 +231,7 @@ func (s *FileSecurity) RemoteSignRequest(str []byte) (signed []byte, err error) 
 		return nil, fmt.Errorf("could not perform remote signing request: %s", resp.Status)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("could not read signing response: %s", err)
 	}
@@ -462,7 +462,7 @@ func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
 		}
 	}
 
-	err = ioutil.WriteFile(certfile, data, os.FileMode(0644))
+	err = os.WriteFile(certfile, data, os.FileMode(0644))
 	if err != nil {
 		return fmt.Errorf("could not cache client public certificate: %s", err.Error())
 	}
@@ -490,7 +490,7 @@ func (s *FileSecurity) CachedPublicData(identity string) ([]byte, error) {
 		return []byte{}, fmt.Errorf("unknown public data: %s", identity)
 	}
 
-	return ioutil.ReadFile(certfile)
+	return os.ReadFile(certfile)
 }
 
 // Identity determines the choria certname
@@ -530,7 +530,7 @@ func (s *FileSecurity) isPrivilegedCert(cert []byte) bool {
 // name is not "" that it matches the name given
 func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) error {
 	ca := s.caPath()
-	capem, err := ioutil.ReadFile(ca)
+	capem, err := os.ReadFile(ca)
 	if err != nil {
 		s.log.Errorf("Could not read CA '%s': %s", ca, err)
 		return err
@@ -668,7 +668,7 @@ func (s *FileSecurity) TLSConfig() (*tls.Config, error) {
 	}
 
 	if s.caExists() {
-		caCert, err := ioutil.ReadFile(ca)
+		caCert, err := os.ReadFile(ca)
 		if err != nil {
 			return nil, err
 		}
@@ -731,7 +731,7 @@ func (s *FileSecurity) PublicCertPem() (*pem.Block, error) {
 func (s *FileSecurity) PublicCertTXT() ([]byte, error) {
 	path := s.publicCertPath()
 
-	return ioutil.ReadFile(path)
+	return os.ReadFile(path)
 }
 
 // SSLContext creates a SSL context loaded with our certs and ca
@@ -764,7 +764,7 @@ func (s *FileSecurity) decodePEM(certpath string) (*pem.Block, error) {
 		return nil, errors.New("invalid certpath '' provided")
 	}
 
-	keydat, err := ioutil.ReadFile(certpath)
+	keydat, err := os.ReadFile(certpath)
 	if err != nil {
 		return nil, fmt.Errorf("could not read PEM data from %s: %s", certpath, err)
 	}
@@ -813,7 +813,7 @@ func (s *FileSecurity) cachedCertExists(identity string) bool {
 func (s *FileSecurity) privateKeyPEM() (pb *pem.Block, err error) {
 	key := s.privateKeyPath()
 
-	keydat, err := ioutil.ReadFile(key)
+	keydat, err := os.ReadFile(key)
 	if err != nil {
 		return pb, fmt.Errorf("could not read Private Key %s: %s", key, err)
 	}

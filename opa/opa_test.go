@@ -2,7 +2,7 @@ package opa
 
 import (
 	"context"
-	"io/ioutil"
+	"os"
 	"testing"
 
 	. "github.com/onsi/ginkgo"
@@ -60,7 +60,7 @@ var _ = Describe("Opa", func() {
 
 		It("Should support supplied policies", func() {
 			inputs := map[string]interface{}{"hello": "world"}
-			policy, err := ioutil.ReadFile("testdata/test1.rego")
+			policy, err := os.ReadFile("testdata/test1.rego")
 			Expect(err).ToNot(HaveOccurred())
 
 			e, err := New("io.choria.ginkgo", "data.io.choria.ginkgo.allow", Logger(log), Policy(policy), Trace())

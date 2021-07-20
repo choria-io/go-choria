@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
@@ -148,7 +147,7 @@ func (g *Generator) writeBasics() error {
 }
 
 func FormatGoSource(f string) error {
-	bs, err := ioutil.ReadFile(f)
+	bs, err := os.ReadFile(f)
 	if err != nil {
 		return err
 	}
@@ -160,7 +159,7 @@ func FormatGoSource(f string) error {
 	if err != nil {
 		return err
 	}
-	return ioutil.WriteFile(f, bs, os.ModePerm)
+	return os.WriteFile(f, bs, os.ModePerm)
 }
 
 func (g *Generator) GenerateClient() error {
@@ -176,7 +175,7 @@ func (g *Generator) GenerateClient() error {
 		return fmt.Errorf("could not find any DDL")
 	}
 
-	raw, err := ioutil.ReadFile(g.DDLFile)
+	raw, err := os.ReadFile(g.DDLFile)
 	if err != nil {
 		return err
 	}

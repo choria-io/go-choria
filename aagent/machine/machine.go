@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -137,7 +136,7 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 		return nil, fmt.Errorf("could not determine absolute path for %s: %s", file, err)
 	}
 
-	f, err := ioutil.ReadFile(afile)
+	f, err := os.ReadFile(afile)
 	if err != nil {
 		return nil, err
 	}
@@ -180,7 +179,7 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 // ValidateDir validates a machine.yaml against the v1 schema
 func ValidateDir(dir string) (validationErrors []string, err error) {
 	mpath := yamlPath(dir)
-	yml, err := ioutil.ReadFile(mpath)
+	yml, err := os.ReadFile(mpath)
 	if err != nil {
 		return nil, err
 	}
@@ -356,7 +355,7 @@ func (m *Machine) OverrideData() ([]byte, error) {
 	}
 
 	// todo: maybe some caching here
-	return ioutil.ReadFile(source)
+	return os.ReadFile(source)
 }
 
 // Watchers retrieves the watcher definitions

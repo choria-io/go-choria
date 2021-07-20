@@ -5,7 +5,6 @@ package main
 import (
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"os"
 
 	"github.com/choria-io/go-choria/generators/client"
@@ -43,7 +42,7 @@ func generate(agent string, ddl string, pkg string) error {
 		return err
 	}
 
-	rawddl, err := ioutil.ReadFile(ddl)
+	rawddl, err := os.ReadFile(ddl)
 	if err != nil {
 		return err
 	}

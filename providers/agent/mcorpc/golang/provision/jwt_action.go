@@ -3,7 +3,7 @@ package provision
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
@@ -38,7 +38,7 @@ func jwtAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 		return
 	}
 
-	j, err := ioutil.ReadFile(build.ProvisionJWTFile)
+	j, err := os.ReadFile(build.ProvisionJWTFile)
 	if err != nil {
 		abort(fmt.Sprintf("Could not read Provisioning JWT: %s", err), reply)
 		return

@@ -1,7 +1,7 @@
 package tally
 
 import (
-	"io/ioutil"
+	"io"
 	"time"
 
 	"github.com/choria-io/go-choria/lifecycle"
@@ -27,7 +27,7 @@ var _ = Describe("Tally", func() {
 	)
 
 	BeforeEach(func() {
-		logger.Logger.SetOutput(ioutil.Discard)
+		logger.Logger.SetOutput(io.Discard)
 		registerStats = false
 		recorder = &Recorder{
 			observed: make(map[string]*observation),

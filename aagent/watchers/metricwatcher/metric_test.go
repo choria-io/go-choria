@@ -3,7 +3,6 @@ package metricwatcher
 import (
 	"context"
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -35,7 +34,7 @@ var _ = Describe("MetricWatcher", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		mockMachine = model.NewMockMachine(mockctl)
 
-		td, err = ioutil.TempDir("", "")
+		td, err = os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
 		now = time.Unix(1606924953, 0)

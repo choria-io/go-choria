@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"regexp"
 	"strings"
@@ -139,7 +138,7 @@ func (f *FlatFile) validateNodes(nodes []string) error {
 }
 
 func (f *FlatFile) choriaDiscover(file io.Reader) ([]string, error) {
-	raw, err := ioutil.ReadAll(file)
+	raw, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
@@ -168,7 +167,7 @@ func (f *FlatFile) choriaDiscover(file io.Reader) ([]string, error) {
 }
 
 func (f *FlatFile) yamlDiscover(file io.Reader, do map[string]string) ([]string, error) {
-	data, err := ioutil.ReadAll(file)
+	data, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}
@@ -182,7 +181,7 @@ func (f *FlatFile) yamlDiscover(file io.Reader, do map[string]string) ([]string,
 }
 
 func (f *FlatFile) jsonDiscover(file io.Reader, do map[string]string) ([]string, error) {
-	data, err := ioutil.ReadAll(file)
+	data, err := io.ReadAll(file)
 	if err != nil {
 		return nil, err
 	}

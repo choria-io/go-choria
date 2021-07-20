@@ -3,7 +3,7 @@ package opa
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/topdown"
@@ -110,7 +110,7 @@ func (e *Evaluator) policy() (p []byte, err error) {
 		return nil, fmt.Errorf("neither Code nor File has been set, no policy to evaluate")
 	}
 
-	p, err = ioutil.ReadFile(e.opts.policyFile)
+	p, err = os.ReadFile(e.opts.policyFile)
 	if err != nil {
 		return nil, err
 	}

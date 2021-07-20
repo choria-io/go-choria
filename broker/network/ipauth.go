@@ -4,8 +4,8 @@ import (
 	"crypto/md5"
 	"crypto/rsa"
 	"fmt"
-	"io/ioutil"
 	"net"
+	"os"
 	"strings"
 
 	"github.com/golang-jwt/jwt"
@@ -119,7 +119,7 @@ func (a *IPAuth) parseAnonTLSJWTUser(jwts string) (string, error) {
 }
 
 func (a *IPAuth) jwtSignerKey() (*rsa.PublicKey, error) {
-	certBytes, err := ioutil.ReadFile(a.jwtSigner)
+	certBytes, err := os.ReadFile(a.jwtSigner)
 	if err != nil {
 		return nil, err
 	}

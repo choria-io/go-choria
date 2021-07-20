@@ -3,7 +3,6 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -180,7 +179,7 @@ func (e *tInventoryCommand) saveData(dat *inventory.DataFile) error {
 		return err
 	}
 
-	tf, err := ioutil.TempFile(filepath.Dir(e.file), "")
+	tf, err := os.CreateTemp(filepath.Dir(e.file), "")
 	if err != nil {
 		return err
 	}
@@ -199,7 +198,7 @@ func (e *tInventoryCommand) validateFile() error {
 		return fmt.Errorf("%s does not exist", e.file)
 	}
 
-	dat, err := ioutil.ReadFile(e.file)
+	dat, err := os.ReadFile(e.file)
 	if err != nil {
 		return err
 	}

@@ -7,7 +7,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"net"
 	"net/http"
@@ -389,7 +388,7 @@ func (fw *Framework) SetLogWriter(out io.Writer) {
 func (fw *Framework) commonLogOpener() error {
 	switch {
 	case fw.Config.LogFile == "discard":
-		fw.log.SetOutput(ioutil.Discard)
+		fw.log.SetOutput(io.Discard)
 
 	case fw.Config.LogFile != "":
 		fw.log.Formatter = &log.JSONFormatter{}
@@ -678,7 +677,7 @@ func (fw *Framework) SignerToken() (token string, err error) {
 	}
 
 	if fw.Config.Choria.RemoteSignerTokenFile != "" {
-		tb, err := ioutil.ReadFile(fw.Config.Choria.RemoteSignerTokenFile)
+		tb, err := os.ReadFile(fw.Config.Choria.RemoteSignerTokenFile)
 		if err != nil {
 			return "", fmt.Errorf("could not read token file: %v", err)
 		}
@@ -731,7 +730,7 @@ func (fw *Framework) PQLQuery(query string) ([]byte, error) {
 		return nil, fmt.Errorf("invalid PuppetDB response: %s", resp.Status)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, err
 	}

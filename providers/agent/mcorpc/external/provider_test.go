@@ -1,7 +1,7 @@
 package external
 
 import (
-	"io/ioutil"
+	"io"
 	"path/filepath"
 
 	"github.com/choria-io/go-choria/build"
@@ -27,7 +27,7 @@ var _ = Describe("McoRPC/External", func() {
 	BeforeEach(func() {
 		build.TLS = "false"
 		logger = logrus.NewEntry(logrus.New())
-		logger.Logger.Out = ioutil.Discard
+		logger.Logger.Out = io.Discard
 
 		mockctl = gomock.NewController(GinkgoT())
 		fw = NewMockChoriaFramework(mockctl)

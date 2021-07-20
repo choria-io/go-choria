@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -216,20 +215,20 @@ func (p *Provider) setReplyDefaults(ddl *agentddl.DDL, action string, reply *mco
 }
 
 func (p *Provider) executeRequest(ctx context.Context, command string, protocol string, req []byte, reply interface{}, agentName string, log *logrus.Entry, si agents.ServerInfoSource) error {
-	reqfile, err := ioutil.TempFile("", "request")
+	reqfile, err := os.CreateTemp("", "request")
 	if err != nil {
 		return fmt.Errorf("could not create request temp file: %s", err)
 	}
 	defer os.Remove(reqfile.Name())
 
-	repfile, err := ioutil.TempFile("", "reply")
+	repfile, err := os.CreateTemp("", "reply")
 	if err != nil {
 		return fmt.Errorf("could not create reply temp file: %s", err)
 	}
 	defer os.Remove(repfile.Name())
 	repfile.Close()
 
-	factsfile, err := ioutil.TempFile("", "facts")
+	factsfile, err := os.CreateTemp("", "facts")
 	if err != nil {
 		return fmt.Errorf("could not create facts temp file: %s", err)
 	}
@@ -297,7 +296,7 @@ func (p *Provider) executeRequest(ctx context.Context, command string, protocol 
 		return fmt.Errorf("executing %s failed: exit status %d", filepath.Base(command), execution.ProcessState.ExitCode())
 	}
 
-	repjson, err := ioutil.ReadFile(repfile.Name())
+	repjson, err := os.ReadFile(repfile.Name())
 	if err != nil {
 		return fmt.Errorf("failed to read reply json: %s", err)
 	}

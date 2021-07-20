@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -29,7 +28,7 @@ var _ = Describe("Directory Spool", func() {
 	)
 
 	BeforeEach(func() {
-		td, err := ioutil.TempDir("", "")
+		td, err := os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
 		cfg = config.NewConfigForTests()
@@ -200,7 +199,7 @@ var _ = Describe("Directory Spool", func() {
 			Expect(dir).To(HaveLen(1))
 
 			msg = &Message{}
-			jmsg, err := ioutil.ReadFile(filepath.Join(spool.directory, "P0", dir[0].Name()))
+			jmsg, err := os.ReadFile(filepath.Join(spool.directory, "P0", dir[0].Name()))
 			Expect(err).ToNot(HaveOccurred())
 
 			err = json.Unmarshal(jmsg, msg)

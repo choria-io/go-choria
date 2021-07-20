@@ -2,7 +2,7 @@ package agent
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"os"
 	"path"
 	"path/filepath"
 	"testing"
@@ -126,7 +126,7 @@ var _ = Describe("Providers/McoRPC/DDL/Agent", func() {
 
 		It("Should aggregate the JSON data", func() {
 			var replies []reply
-			dat, err := ioutil.ReadFile("testdata/package_replies.json")
+			dat, err := os.ReadFile("testdata/package_replies.json")
 			Expect(err).ToNot(HaveOccurred())
 
 			err = json.Unmarshal(dat, &replies)

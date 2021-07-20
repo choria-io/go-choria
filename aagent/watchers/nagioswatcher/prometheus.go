@@ -2,7 +2,6 @@ package nagioswatcher
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"sync"
@@ -70,7 +69,7 @@ func savePromState(td string, log logger) error {
 		return nil
 	}
 
-	tfile, err := ioutil.TempFile(td, "")
+	tfile, err := os.CreateTemp(td, "")
 	if err != nil {
 		return fmt.Errorf("failed to create prometheus metric in %q: %s", td, err)
 	}

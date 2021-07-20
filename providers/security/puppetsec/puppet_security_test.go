@@ -5,7 +5,6 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -224,7 +223,7 @@ var _ = Describe("PuppetSSL", func() {
 			_, err = prov.writeCSR(key, "na.mcollective", "choria.io")
 			Expect(err).ToNot(HaveOccurred())
 
-			csrpem, err := ioutil.ReadFile(csrpath)
+			csrpem, err := os.ReadFile(csrpath)
 			Expect(err).ToNot(HaveOccurred())
 
 			pb, _ := pem.Decode(csrpem)
