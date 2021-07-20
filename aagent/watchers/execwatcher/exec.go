@@ -244,19 +244,16 @@ func (w *Watcher) funcMap() (template.FuncMap, error) {
 		return nil, err
 	}
 
-	find := func(dat []byte) func(q string, dflt interface{}) interface{} {
-		return func(q string, dflt interface{}) interface{} {
-			r := gjson.GetBytes(dat, q)
+	return iu.FuncMap(map[string]interface{}{
+		"lookup": func(q string, dflt interface{}) interface{} {
+			w.Debugf("Looking up %q in %s", q, string(jinput))
+			r := gjson.GetBytes(jinput, q)
 			if !r.Exists() {
 				return dflt
 			}
 
 			return r.Value()
-		}
-	}
-
-	return iu.FuncMap(map[string]interface{}{
-		"lookup": find(jinput),
+		},
 	}), nil
 }
 
