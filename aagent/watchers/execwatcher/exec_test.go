@@ -47,6 +47,26 @@ var _ = Describe("ExecWatcher", func() {
 		mockctl.Finish()
 	})
 
+	Describe("processTemplate", func() {
+		It("Should handle absent data correctly", func() {
+			mockMachine.EXPECT().Facts().Return([]byte(`{"location":"lon"}`)).AnyTimes()
+			mockMachine.EXPECT().Data().Return(map[string]interface{}{"x": 1}).AnyTimes()
+
+			res, err := watch.processTemplate(`{{lookup "facts.foo" "default"}}`)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(res).To(Equal("default"))
+		})
+
+		It("Should handle present data correctly", func() {
+			mockMachine.EXPECT().Facts().Return([]byte(`{"location":"lon", "i":1}`))
+			mockMachine.EXPECT().Data().Return(map[string]interface{}{"x": 1})
+
+			res, err := watch.processTemplate(`{{lookup "facts.location" "default"| ToUpper }}: {{ lookup "i" 1 }} ({{ lookup "data.x" 2 }})`)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(res).To(Equal("LON: 1 (1)"))
+		})
+	})
+
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
 			prop := map[string]interface{}{

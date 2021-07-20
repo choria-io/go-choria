@@ -234,21 +234,30 @@ func (w *Watcher) funcMap() (template.FuncMap, error) {
 		return nil, err
 	}
 
-	find := func(dat []byte) func(q string) (interface{}, error) {
-		return func(q string) (interface{}, error) {
+	input := map[string]json.RawMessage{
+		"facts": facts,
+		"data":  jdata,
+	}
+
+	jinput, err := json.Marshal(input)
+	if err != nil {
+		return nil, err
+	}
+
+	find := func(dat []byte) func(q string, dflt interface{}) interface{} {
+		return func(q string, dflt interface{}) interface{} {
 			r := gjson.GetBytes(dat, q)
 			if !r.Exists() {
-				return nil, fmt.Errorf("no match found for: %s", q)
+				return dflt
 			}
 
-			return r.Value(), nil
+			return r.Value()
 		}
 	}
 
-	return map[string]interface{}{
-		"facts": find(facts),
-		"data":  find(jdata),
-	}, nil
+	return iu.FuncMap(map[string]interface{}{
+		"lookup": find(jinput),
+	}), nil
 }
 
 func (w *Watcher) processTemplate(s string) (string, error) {

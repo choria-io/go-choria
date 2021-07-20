@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"text/template"
 	"time"
 	"unicode"
 
@@ -415,4 +416,39 @@ func Base64IfNotPrintable(val []byte) string {
 	}
 
 	return base64.StdEncoding.EncodeToString(val)
+}
+
+func tStringsJoin(s []string) string {
+	return strings.Join(s, ", ")
+}
+
+func tBase64Encode(v string) string {
+	return base64.StdEncoding.EncodeToString([]byte(v))
+}
+
+func tBase64Decode(v string) (string, error) {
+	r, err := base64.StdEncoding.DecodeString(v)
+	if err != nil {
+		return "", err
+	}
+
+	return string(r), nil
+}
+
+func FuncMap(f map[string]interface{}) template.FuncMap {
+	fm := map[string]interface{}{
+		"Title":        strings.Title,
+		"Capitalize":   strings.Title,
+		"ToLower":      strings.ToLower,
+		"ToUpper":      strings.ToUpper,
+		"StringsJoin":  tStringsJoin,
+		"Base64Encode": tBase64Encode,
+		"Base64Decode": tBase64Decode,
+	}
+
+	for k, v := range f {
+		fm[k] = v
+	}
+
+	return fm
 }
