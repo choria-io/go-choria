@@ -3,7 +3,7 @@ package cmd
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -81,7 +81,7 @@ func (j *tJWTCommand) Run(wg *sync.WaitGroup) (err error) {
 }
 
 func (j *tJWTCommand) validateJWT() error {
-	certdat, err := ioutil.ReadFile(j.validateCert)
+	certdat, err := os.ReadFile(j.validateCert)
 	if err != nil {
 		return fmt.Errorf("could not read validation certificate: %s", err)
 	}
@@ -91,7 +91,7 @@ func (j *tJWTCommand) validateJWT() error {
 		return fmt.Errorf("could not parse validation certificate: %s", err)
 	}
 
-	token, err := ioutil.ReadFile(j.file)
+	token, err := os.ReadFile(j.file)
 	if err != nil {
 		return fmt.Errorf("could not read token: %s", err)
 	}
@@ -194,7 +194,7 @@ func (j *tJWTCommand) createJWT() error {
 		claims.ProvFacts = j.facts
 	}
 
-	keydat, err := ioutil.ReadFile(j.validateCert)
+	keydat, err := os.ReadFile(j.validateCert)
 	if err != nil {
 		return fmt.Errorf("could not read signing key: %s", err)
 	}
@@ -210,7 +210,7 @@ func (j *tJWTCommand) createJWT() error {
 		return fmt.Errorf("could not sign token using key: %s", err)
 	}
 
-	err = ioutil.WriteFile(j.file, []byte(stoken), 0644)
+	err = os.WriteFile(j.file, []byte(stoken), 0644)
 	if err != nil {
 		return fmt.Errorf("could not write token: %s", err)
 	}

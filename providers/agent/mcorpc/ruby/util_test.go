@@ -1,7 +1,7 @@
 package ruby
 
 import (
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
@@ -21,7 +21,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 
 	BeforeEach(func() {
 		l := logrus.New()
-		l.Out = ioutil.Discard
+		l.Out = io.Discard
 		logger = l.WithFields(logrus.Fields{})
 	})
 

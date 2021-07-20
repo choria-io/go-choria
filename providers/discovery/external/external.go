@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -110,13 +109,13 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 		return nil, fmt.Errorf("could not encode the filter: %s", err)
 	}
 
-	reqfile, err := ioutil.TempFile("", "request")
+	reqfile, err := os.CreateTemp("", "request")
 	if err != nil {
 		return nil, fmt.Errorf("could not create request temp file: %s", err)
 	}
 	defer os.Remove(reqfile.Name())
 
-	repfile, err := ioutil.TempFile("", "reply")
+	repfile, err := os.CreateTemp("", "reply")
 	if err != nil {
 		return nil, fmt.Errorf("could not create reply temp file: %s", err)
 	}
@@ -186,7 +185,7 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 		return nil, fmt.Errorf("executing %s failed: exit status %d", filepath.Base(command), cmd.ProcessState.ExitCode())
 	}
 
-	repjson, err := ioutil.ReadFile(repfile.Name())
+	repjson, err := os.ReadFile(repfile.Name())
 	if err != nil {
 		return nil, fmt.Errorf("failed to read reply json: %s", err)
 	}

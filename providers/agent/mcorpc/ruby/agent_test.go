@@ -2,7 +2,7 @@ package ruby
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"path/filepath"
 	"runtime"
 
@@ -32,7 +32,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 		build.TLS = "false"
 
 		l := logrus.New()
-		l.Out = ioutil.Discard
+		l.Out = io.Discard
 		logger = l.WithFields(logrus.Fields{})
 
 		mockctl = gomock.NewController(GinkgoT())

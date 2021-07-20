@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -80,7 +79,7 @@ var _ = Describe("Provision/Agent", func() {
 
 		ctx = context.Background()
 
-		targetdir, err = ioutil.TempDir("", "provision_test")
+		targetdir, err = os.MkdirTemp("", "provision_test")
 		Expect(err).ToNot(HaveOccurred())
 
 		targetcfg = filepath.Join(targetdir, "choria_test.cfg")
@@ -549,11 +548,11 @@ var _ = Describe("Provision/Agent", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(cfg.Choria.SRVDomain).To(Equal("another.com"))
 
-			cert, err := ioutil.ReadFile(filepath.Join(targetdir, "certificate.pem"))
+			cert, err := os.ReadFile(filepath.Join(targetdir, "certificate.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(string(cert)).To(Equal("stub_cert"))
 
-			ca, err := ioutil.ReadFile(filepath.Join(targetdir, "ca.pem"))
+			ca, err := os.ReadFile(filepath.Join(targetdir, "ca.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(string(ca)).To(Equal("stub_ca"))
 		})

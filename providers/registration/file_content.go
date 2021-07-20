@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"sync"
@@ -103,7 +102,7 @@ func (fc *FileContent) publish(output chan *data.RegistrationItem) error {
 		return fmt.Errorf("could not obtain file times: %s", err)
 	}
 
-	dat, err := ioutil.ReadFile(fc.dataFile)
+	dat, err := os.ReadFile(fc.dataFile)
 	if err != nil {
 		return fmt.Errorf("could not read file registration source %s: %s", fc.dataFile, err)
 	}

@@ -3,7 +3,6 @@ package nagioswatcher
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -37,7 +36,7 @@ var _ = Describe("NagiosWatcher", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		mockMachine = model.NewMockMachine(mockctl)
 
-		td, err = ioutil.TempDir("", "")
+		td, err = os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
 		now = time.Unix(1606924953, 0)
@@ -161,7 +160,7 @@ var _ = Describe("NagiosWatcher", func() {
 				ModTime:  now,
 			}
 			sj, _ := json.Marshal(status)
-			ioutil.WriteFile(sf, sj, 0644)
+			os.WriteFile(sf, sj, 0644)
 
 			state, output, err := watch.watchUsingChoria()
 			Expect(output).To(Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;;", sf, now.Unix())))
@@ -171,7 +170,7 @@ var _ = Describe("NagiosWatcher", func() {
 			lm := now.Add(-1 * 70 * 70 * time.Second)
 			status.LastMessage = lm.Unix()
 			sj, _ = json.Marshal(status)
-			ioutil.WriteFile(sf, sj, 0644)
+			os.WriteFile(sf, sj, 0644)
 			state, output, err = watch.watchUsingChoria()
 			Expect(state).To(Equal(CRITICAL))
 			Expect(output).To(Equal(fmt.Sprintf("CRITICAL: last message at %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;;", time.Unix(status.LastMessage, 0).UTC(), status.LastMessage)))

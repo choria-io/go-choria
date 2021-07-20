@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"sync"
 )
@@ -46,7 +46,7 @@ func (p *tPubCommand) Run(wg *sync.WaitGroup) (err error) {
 		defer input.Close()
 	}
 
-	body, err := ioutil.ReadAll(input)
+	body, err := io.ReadAll(input)
 	if err != nil {
 		return fmt.Errorf("could not read from input: %s", err)
 	}

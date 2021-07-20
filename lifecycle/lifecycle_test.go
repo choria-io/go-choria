@@ -1,7 +1,6 @@
 package lifecycle
 
 import (
-	"io/ioutil"
 	"os"
 	"testing"
 
@@ -77,7 +76,7 @@ var _ = Describe("Events", func() {
 			})
 
 			It("Should handle correctly formatted events", func() {
-				j, err := ioutil.ReadFile("testdata/choriaFormatShutdown.json")
+				j, err := os.ReadFile("testdata/choriaFormatShutdown.json")
 				Expect(err).ToNot(HaveOccurred())
 				event, err := NewFromJSON(j)
 				Expect(err).ToNot(HaveOccurred())
@@ -88,7 +87,7 @@ var _ = Describe("Events", func() {
 
 		Context("CloudEvents Format", func() {
 			It("Should handle correctly formatted events", func() {
-				j, err := ioutil.ReadFile("testdata/cloudEventFormatShutdown.json")
+				j, err := os.ReadFile("testdata/cloudEventFormatShutdown.json")
 				Expect(err).ToNot(HaveOccurred())
 				event, err := NewFromJSON(j)
 				Expect(err).ToNot(HaveOccurred())

@@ -1,7 +1,7 @@
 package config
 
 import (
-	"io/ioutil"
+	"io"
 
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -18,7 +18,7 @@ var _ = Describe("Choria/Config/Mutator", func() {
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 		logger := logrus.New()
-		logger.SetOutput(ioutil.Discard)
+		logger.SetOutput(io.Discard)
 		log = logrus.NewEntry(logger)
 	})
 

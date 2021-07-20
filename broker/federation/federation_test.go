@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"sync"
 	"testing"
@@ -26,7 +26,7 @@ func init() {
 }
 
 func TestFederation(t *testing.T) {
-	log.SetOutput(ioutil.Discard)
+	log.SetOutput(io.Discard)
 	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 
 	RegisterFailHandler(Fail)
@@ -191,7 +191,7 @@ func (s *stubConnectionManager) Init() *stubConnectionManager {
 
 var _ = Describe("Federation Broker", func() {
 	It("Should initialize correctly", func() {
-		log.SetOutput(ioutil.Discard)
+		log.SetOutput(io.Discard)
 
 		c, err := choria.New("testdata/federation.cfg")
 		Expect(err).ToNot(HaveOccurred())

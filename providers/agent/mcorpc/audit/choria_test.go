@@ -2,16 +2,14 @@ package audit
 
 import (
 	"encoding/json"
-	"io/ioutil"
 	"os"
 	"runtime"
+	"testing"
 
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/protocol/v1"
+	v1 "github.com/choria-io/go-choria/protocol/v1"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-
-	"testing"
 )
 
 func Test(t *testing.T) {
@@ -44,7 +42,7 @@ var _ = Describe("McoRPC/Audit", func() {
 		Expect(ok).To(BeTrue())
 		Expect(cfg.Option("plugin.rpcaudit.logfile", "")).To(BeAnExistingFile())
 
-		j, err := ioutil.ReadFile(cfg.Option("plugin.rpcaudit.logfile", ""))
+		j, err := os.ReadFile(cfg.Option("plugin.rpcaudit.logfile", ""))
 		Expect(err).ToNot(HaveOccurred())
 
 		am := Message{}

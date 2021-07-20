@@ -10,7 +10,6 @@ import (
 	"bufio"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"regexp"
@@ -20,7 +19,7 @@ import (
 func writeSchema(schema string, variable string, outfile *os.File) {
 	fname := fmt.Sprintf("schema/%s.json", schema)
 
-	infile, err := ioutil.ReadFile(fname)
+	infile, err := os.ReadFile(fname)
 	if err != nil {
 		log.Fatalf("Could not open %s: %s", fname, err)
 	}
@@ -45,7 +44,7 @@ func main() {
 	}
 	defer infile.Close()
 
-	tmpfile, err := ioutil.TempFile("", "generate")
+	tmpfile, err := os.TempFile("", "generate")
 	if err != nil {
 		log.Fatalf("Could not open tempfile: %s", err)
 	}

@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"sync"
@@ -91,7 +90,7 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	log.Infof("Choria Broker version %s starting with config %s", bi.Version(), c.Config.ConfigFile)
 
 	if r.pidFile != "" {
-		err := ioutil.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)
+		err := os.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)
 		if err != nil {
 			return fmt.Errorf("could not write PID: %s", err)
 		}

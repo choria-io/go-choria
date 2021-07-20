@@ -2,7 +2,7 @@ package federation
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -13,7 +13,7 @@ var _ = Describe("Pooled Worker", func() {
 	var s, l, r *pooledWorker
 
 	BeforeEach(func() {
-		log.SetOutput(ioutil.Discard)
+		log.SetOutput(io.Discard)
 		logger := log.WithFields(log.Fields{"test": "true"})
 		broker := &FederationBroker{}
 

@@ -4,14 +4,13 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
-	lifecycle "github.com/choria-io/go-choria/lifecycle"
+	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/sirupsen/logrus"
 )
@@ -67,14 +66,14 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 
 	if args.Certificate != "" && args.SSLDir != "" && args.CA != "" {
 		target := filepath.Join(args.SSLDir, "certificate.pem")
-		err = ioutil.WriteFile(target, []byte(args.Certificate), 0644)
+		err = os.WriteFile(target, []byte(args.Certificate), 0644)
 		if err != nil {
 			abort(fmt.Sprintf("Could not write Certificate to %s: %s", target, err), reply)
 			return
 		}
 
 		target = filepath.Join(args.SSLDir, "ca.pem")
-		err = ioutil.WriteFile(target, []byte(args.CA), 0644)
+		err = os.WriteFile(target, []byte(args.CA), 0644)
 		if err != nil {
 			abort(fmt.Sprintf("Could not write CA to %s: %s", target, err), reply)
 			return
@@ -105,7 +104,7 @@ func writeConfig(settings map[string]string, req *mcorpc.Request, cfg *config.Co
 
 	cdir := filepath.Dir(cfile)
 
-	tmpfile, err := ioutil.TempFile(cdir, "provision")
+	tmpfile, err := os.CreateTemp(cdir, "provision")
 	if err != nil {
 		return 0, fmt.Errorf("cannot create a temp file in %s: %s", cdir, err)
 	}

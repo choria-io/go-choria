@@ -10,7 +10,6 @@ import (
 	"encoding/pem"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -489,7 +488,7 @@ func (p *Pkcs11Security) ClientTLSConfig() (*tls.Config, error) {
 
 // TLSConfig creates a TLS configuration for use by NATS, HTTPS etc
 func (p *Pkcs11Security) TLSConfig() (*tls.Config, error) {
-	caCert, err := ioutil.ReadFile(p.conf.CAFile)
+	caCert, err := os.ReadFile(p.conf.CAFile)
 	if err != nil {
 		return nil, err
 	}
@@ -548,7 +547,7 @@ func (p *Pkcs11Security) decodePEM(certpath string) (*pem.Block, error) {
 		return nil, fmt.Errorf("invalid certpath '' provided")
 	}
 
-	keydat, err := ioutil.ReadFile(certpath)
+	keydat, err := os.ReadFile(certpath)
 	if err != nil {
 		return nil, fmt.Errorf("could not read PEM data from %s: %s", certpath, err)
 	}

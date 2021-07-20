@@ -2,7 +2,6 @@ package metricwatcher
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -105,7 +104,7 @@ func savePromState(td string, log logger) error {
 		}
 	}
 
-	tfile, err := ioutil.TempFile(td, "")
+	tfile, err := os.CreateTemp(td, "")
 	if err != nil {
 		return fmt.Errorf("failed to create prometheus metric in %q: %s", td, err)
 	}

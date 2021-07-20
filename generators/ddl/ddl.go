@@ -3,7 +3,6 @@ package ddl
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"net/url"
 	"os"
 	"regexp"
@@ -70,7 +69,7 @@ func (c *Generator) ConvertToRuby() error {
 		return err
 	}
 
-	return ioutil.WriteFile(c.RubyOut, []byte(rddl), 0644)
+	return os.WriteFile(c.RubyOut, []byte(rddl), 0644)
 }
 
 func (c *Generator) GenerateDDL() error {

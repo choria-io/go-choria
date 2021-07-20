@@ -18,7 +18,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -549,12 +549,12 @@ func (s *PuppetSecurity) fetchCert() error {
 		return fmt.Errorf("could not fetch certificate: %d", resp.StatusCode)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("could not read response body: %s", err)
 	}
 
-	err = ioutil.WriteFile(s.publicCertPath(), body, 0644)
+	err = os.WriteFile(s.publicCertPath(), body, 0644)
 	if err != nil {
 		return err
 	}
@@ -585,7 +585,7 @@ func (s *PuppetSecurity) fetchCA() error {
 	}
 	defer resp.Body.Close()
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("could not read response body: %s", err)
 	}
@@ -594,7 +594,7 @@ func (s *PuppetSecurity) fetchCA() error {
 		return errors.New(string(body))
 	}
 
-	err = ioutil.WriteFile(s.caPath(), body, 0644)
+	err = os.WriteFile(s.caPath(), body, 0644)
 	if err != nil {
 		return err
 	}
@@ -637,7 +637,7 @@ func (s *PuppetSecurity) submitCSR() error {
 		return nil
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return fmt.Errorf("could not read response body: %s", err)
 	}
@@ -657,7 +657,7 @@ func (s *PuppetSecurity) HTTPClient(secure bool) (*http.Client, error) {
 }
 
 func (s *PuppetSecurity) csrTXT() ([]byte, error) {
-	return ioutil.ReadFile(s.csrPath())
+	return os.ReadFile(s.csrPath())
 }
 
 func (s *PuppetSecurity) readPrivateKey() (*rsa.PrivateKey, error) {
@@ -665,7 +665,7 @@ func (s *PuppetSecurity) readPrivateKey() (*rsa.PrivateKey, error) {
 		return nil, fmt.Errorf("key not found in %s", s.privateKeyPath())
 	}
 
-	pd, err := ioutil.ReadFile(s.privateKeyPath())
+	pd, err := os.ReadFile(s.privateKeyPath())
 	if err != nil {
 		return nil, err
 	}
@@ -700,7 +700,7 @@ func (s *PuppetSecurity) writePrivateKey() (*rsa.PrivateKey, error) {
 		},
 	)
 
-	err = ioutil.WriteFile(s.privateKeyPath(), pemdata, 0640)
+	err = os.WriteFile(s.privateKeyPath(), pemdata, 0640)
 	if err != nil {
 		return nil, fmt.Errorf("could not write private key: %s", err)
 	}

@@ -9,7 +9,6 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 
@@ -121,7 +120,7 @@ func csrAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 		},
 	)
 
-	err = ioutil.WriteFile(keyfile, keyPem, 0640)
+	err = os.WriteFile(keyfile, keyPem, 0640)
 	if err != nil {
 		abort(fmt.Sprintf("Could not store private key: %s", err), reply)
 		return
@@ -135,7 +134,7 @@ func csrAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 
 	pb := pem.EncodeToMemory(&pem.Block{Type: "CERTIFICATE REQUEST", Bytes: csrBytes})
 
-	err = ioutil.WriteFile(csrfile, pb, 0644)
+	err = os.WriteFile(csrfile, pb, 0644)
 	if err != nil {
 		abort(fmt.Sprintf("Could not store CSR: %s", err), reply)
 		return

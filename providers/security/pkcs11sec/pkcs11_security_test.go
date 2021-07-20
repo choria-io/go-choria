@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"encoding/base64"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"testing"
@@ -325,7 +324,7 @@ var _ = Describe("Pkcs11SSL", func() {
 		})
 
 		It("Should fail for foreign certs", func() {
-			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
+			pem, err = os.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			err := prov.VerifyCertificate(pem, "rip.mcollective")
 			Expect(err).To(MatchError("x509: certificate signed by unknown authority"))
@@ -369,7 +368,7 @@ var _ = Describe("Pkcs11SSL", func() {
 			prov, err := New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})), WithPin("1234"))
 			Expect(err).ToNot(HaveOccurred())
 
-			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "rip.mcollective.pem"))
+			pem, err = os.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "rip.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.VerifyCertificate(pem, "rip.mcollective")
@@ -380,7 +379,7 @@ var _ = Describe("Pkcs11SSL", func() {
 			prov, err := New(WithChoriaConfig(inter), WithLog(l.WithFields(logrus.Fields{})), WithPin("1234"))
 			Expect(err).ToNot(HaveOccurred())
 
-			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "ca_chain_rip.mcollective.pem"))
+			pem, err = os.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "ca_chain_rip.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.VerifyCertificate(pem, "rip.mcollective")
@@ -391,7 +390,7 @@ var _ = Describe("Pkcs11SSL", func() {
 			prov, err := New(WithChoriaConfig(inter), WithLog(l.WithFields(logrus.Fields{})), WithPin(pin))
 			Expect(err).ToNot(HaveOccurred())
 
-			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "email-chain-rip.mcollective.pem"))
+			pem, err = os.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "email-chain-rip.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.VerifyCertificate(pem, "email:test@choria-io.com")
@@ -402,7 +401,7 @@ var _ = Describe("Pkcs11SSL", func() {
 			prov, err := New(WithChoriaConfig(inter), WithLog(l.WithFields(logrus.Fields{})), WithPin(pin))
 			Expect(err).ToNot(HaveOccurred())
 
-			pem, err = ioutil.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "email-chain-rip.mcollective.pem"))
+			pem, err = os.ReadFile(filepath.Join("..", "testdata", "intermediate", "certs", "email-chain-rip.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.VerifyCertificate(pem, "email:bad@choria-io.com")
@@ -430,7 +429,7 @@ var _ = Describe("Pkcs11SSL", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 		It("Should not write untrusted files to disk", func() {
-			pd, err := ioutil.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
+			pd, err := os.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			err = prov.CachePublicData(pd, "foreign")
 			Expect(err).To(MatchError("certificate 'foreign' did not pass validation"))
@@ -463,7 +462,7 @@ var _ = Describe("Pkcs11SSL", func() {
 
 			// deliberately change the file so that we can figure out if its being changed
 			// I'd check time stamps but they are per second so not much use
-			err = ioutil.WriteFile(cpath, []byte("too many secrets"), os.FileMode(int(0644)))
+			err = os.WriteFile(cpath, []byte("too many secrets"), os.FileMode(int(0644)))
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.CachePublicData(pem, "joeuser")
@@ -492,20 +491,20 @@ var _ = Describe("Pkcs11SSL", func() {
 			c.Choria.PKCS11Slot = testSlot
 			c.Choria.PKCS11DriverFile = lib
 
-			c.Choria.FileSecurityCache, err = ioutil.TempDir("", "cache-always")
+			c.Choria.FileSecurityCache, err = os.MkdirTemp("", "cache-always")
 			Expect(err).ToNot(HaveOccurred())
 			defer os.RemoveAll(c.Choria.FileSecurityCache)
 
 			prov, err = New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})), WithPin(pin))
 			Expect(err).ToNot(HaveOccurred())
 
-			fpd, err := ioutil.ReadFile(firstcert)
+			fpd, err := os.ReadFile(firstcert)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.CachePublicData(fpd, identity)
 			Expect(err).ToNot(HaveOccurred())
 
-			spd, err := ioutil.ReadFile(secondcert)
+			spd, err := os.ReadFile(secondcert)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.CachePublicData(spd, identity)

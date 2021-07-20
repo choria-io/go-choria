@@ -2,13 +2,13 @@ package provtarget
 
 import (
 	"context"
-	"io/ioutil"
+	"io"
 	"os"
 	"testing"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/provtarget/builddefaults"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -36,7 +36,7 @@ var _ = Describe("Provision", func() {
 		RegisterTargetResolver(builddefaults.Provider())
 		ctx, cancel = context.WithCancel(context.Background())
 		log = logrus.NewEntry(logrus.New())
-		log.Logger.Out = ioutil.Discard
+		log.Logger.Out = io.Discard
 	})
 
 	AfterEach(func() {

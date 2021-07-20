@@ -2,7 +2,6 @@ package registration
 
 import (
 	"fmt"
-	"io/ioutil"
 	"os"
 	"testing"
 	"time"
@@ -51,7 +50,7 @@ var _ = Describe("RegistrationData", func() {
 	})
 
 	It("Should return err when the data file is empty", func() {
-		tmpfile, err := ioutil.TempFile("", "file_content_registration")
+		tmpfile, err := os.CreateTemp("", "file_content_registration")
 		Expect(err).ToNot(HaveOccurred())
 		tmpfile.Close()
 		defer os.Remove(tmpfile.Name())

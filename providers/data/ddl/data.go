@@ -3,7 +3,7 @@ package ddl
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"sync"
 	"time"
 
@@ -39,7 +39,7 @@ func New(file string) (*DDL, error) {
 		SourceLocation: file,
 	}
 
-	dat, err := ioutil.ReadFile(file)
+	dat, err := os.ReadFile(file)
 	if err != nil {
 		return nil, fmt.Errorf("could not load DDL data: %s", err)
 	}

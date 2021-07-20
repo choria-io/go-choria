@@ -3,7 +3,6 @@ package statistics
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"time"
 )
@@ -32,7 +31,7 @@ type InstanceStatus struct {
 }
 
 func LoadInstanceStatus(f string) (*InstanceStatus, error) {
-	raw, err := ioutil.ReadFile(f)
+	raw, err := os.ReadFile(f)
 	if err != nil {
 		return nil, err
 	}

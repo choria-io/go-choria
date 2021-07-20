@@ -3,7 +3,7 @@ package aagent
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -120,7 +120,7 @@ func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path strin
 }
 
 func (a *AAgent) loadFromSource(ctx context.Context, wg *sync.WaitGroup) error {
-	files, err := ioutil.ReadDir(a.source)
+	files, err := os.ReadDir(a.source)
 	if err != nil {
 		return fmt.Errorf("could not read machine source: %s", err)
 	}

@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
 	"strconv"
 	"sync"
@@ -72,13 +72,13 @@ func (s *tSubmitCommand) Run(wg *sync.WaitGroup) (err error) {
 	msg.Sender = s.sender
 
 	if s.payloadFile == "-" {
-		msg.Payload, err = ioutil.ReadAll(os.Stdin)
+		msg.Payload, err = io.ReadAll(os.Stdin)
 	} else {
 		if !util.FileExist(s.payloadFile) {
 			return fmt.Errorf("payload %s does not exist", s.payloadFile)
 		}
 
-		msg.Payload, err = ioutil.ReadFile(s.payloadFile)
+		msg.Payload, err = os.ReadFile(s.payloadFile)
 		if err != nil {
 			return err
 		}
