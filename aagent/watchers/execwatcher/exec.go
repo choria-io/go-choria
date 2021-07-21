@@ -246,9 +246,10 @@ func (w *Watcher) funcMap() (template.FuncMap, error) {
 
 	return iu.FuncMap(map[string]interface{}{
 		"lookup": func(q string, dflt interface{}) interface{} {
-			w.Debugf("Looking up %q in %s", q, string(jinput))
 			r := gjson.GetBytes(jinput, q)
 			if !r.Exists() {
+				w.Infof("Query did not match any data, returning default: %s", q)
+
 				return dflt
 			}
 

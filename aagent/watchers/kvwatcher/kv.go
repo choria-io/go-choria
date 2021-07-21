@@ -179,18 +179,19 @@ func (w *Watcher) poll() (State, error) {
 
 	switch {
 	// key isn't there, nothing was previously found its unchanged
-	case err == kv.ErrUnknownKey && w.previousVal == "":
+	case err == kv.ErrUnknownKey && w.previousVal == nil:
 		return Unchanged, nil
 
 	// key isn't there, we had a value before its a change due to delete
-	case err == kv.ErrUnknownKey && w.previousVal != "":
+	case err == kv.ErrUnknownKey && w.previousVal != nil:
 		err = w.machine.DataDelete(dk)
 		if err != nil {
 			w.Errorf("Could not delete key %s from machine: %s", dk, err)
 			return Error, err
 		}
 
-		w.previousVal = ""
+		w.previousVal = nil
+
 		return Changed, err
 
 	// get failed in an unknown way
