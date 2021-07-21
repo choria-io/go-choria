@@ -812,15 +812,20 @@ func (fw *Framework) GovernorSubject(name string) string {
 	return GovernorSubject(name, fw.Config.MainCollective)
 }
 
-// KV creates a connection to a key-value store
 func (fw *Framework) KV(ctx context.Context, conn Connector, bucket string, create bool, opts ...kv.Option) (kv.KV, error) {
+	kv, _, err := fw.KVWithConn(ctx, conn, bucket, create, opts...)
+	return kv, err
+}
+
+// KVWithConn creates a connection to a key-value store and gives access to the connector
+func (fw *Framework) KVWithConn(ctx context.Context, conn Connector, bucket string, create bool, opts ...kv.Option) (kv.KV, Connector, error) {
 	logger := fw.Logger("kv")
 
 	var err error
 	if conn == nil {
 		conn, err = fw.NewConnector(ctx, fw.MiddlewareServers, fmt.Sprintf("kv %s", fw.CallerID()), logger)
 		if err != nil {
-			return nil, err
+			return nil, nil, err
 		}
 	}
 
@@ -834,8 +839,8 @@ func (fw *Framework) KV(ctx context.Context, conn Connector, bucket string, crea
 		store, err = kv.NewClient(conn.Nats(), bucket, opts...)
 	}
 	if err != nil {
-		return nil, err
+		return nil, conn, err
 	}
 
-	return store, nil
+	return store, conn, nil
 }
