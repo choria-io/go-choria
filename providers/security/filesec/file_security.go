@@ -734,6 +734,21 @@ func (s *FileSecurity) PublicCertTXT() ([]byte, error) {
 	return os.ReadFile(path)
 }
 
+// PublicCert is the parsed public certificate
+func (s *FileSecurity) PublicCert() (*x509.Certificate, error) {
+	block, err := s.PublicCertPem()
+	if err != nil {
+		return nil, err
+	}
+
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return nil, err
+	}
+
+	return cert, nil
+}
+
 // SSLContext creates a SSL context loaded with our certs and ca
 func (s *FileSecurity) SSLContext() (*http.Transport, error) {
 	tlsConfig, err := s.ClientTLSConfig()

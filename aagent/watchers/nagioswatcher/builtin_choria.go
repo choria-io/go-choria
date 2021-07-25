@@ -18,9 +18,14 @@ func (w *Watcher) watchUsingChoria() (state State, output string, err error) {
 		return CRITICAL, fmt.Sprintf("Status file error: %s", err), nil
 	}
 
-	perfData := fmt.Sprintf("uptime=%d;; filtered_msgs=%d;; invalid_msgs=%d;; passed_msgs=%d;; replies_msgs=%d;; total_msgs=%d;; ttlexpired_msgs=%d;; last_msg=%d;;", status.Uptime, int(status.Stats.Filtered), int(status.Stats.Invalid), int(status.Stats.Passed), int(status.Stats.Replies), int(status.Stats.Total), int(status.Stats.TTLExpired), status.LastMessage)
+	perfData := fmt.Sprintf("uptime=%d;; filtered_msgs=%d;; invalid_msgs=%d;; passed_msgs=%d;; replies_msgs=%d;; total_msgs=%d;; ttlexpired_msgs=%d;; last_msg=%d;; cert_expire_seconds=%d;;", status.Uptime, int(status.Stats.Filtered), int(status.Stats.Invalid), int(status.Stats.Passed), int(status.Stats.Replies), int(status.Stats.Total), int(status.Stats.TTLExpired), status.LastMessage, int(time.Until(status.CertificateExpires).Seconds()))
 
 	err = status.CheckFileAge(time.Duration(3*freq) * time.Second)
+	if err != nil {
+		return CRITICAL, fmt.Sprintf("CRITICAL: %s|%s", err, perfData), nil
+	}
+
+	err = status.CheckCertValidity(w.properties.CertExpiry)
 	if err != nil {
 		return CRITICAL, fmt.Sprintf("CRITICAL: %s|%s", err, perfData), nil
 	}

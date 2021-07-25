@@ -374,6 +374,11 @@ func (s *PuppetSecurity) PublicCertTXT() ([]byte, error) {
 	return s.fsec.PublicCertTXT()
 }
 
+// PublicCert is the parsed public certificate
+func (s *PuppetSecurity) PublicCert() (*x509.Certificate, error) {
+	return s.fsec.PublicCert()
+}
+
 // Identity determines the choria certname
 func (s *PuppetSecurity) Identity() string {
 	return s.conf.Identity

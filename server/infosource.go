@@ -193,7 +193,7 @@ func (srv *Instance) Stats() statistics.ServerStats {
 func (srv *Instance) Status() *statistics.InstanceStatus {
 	stats := srv.Stats()
 
-	return &statistics.InstanceStatus{
+	s := &statistics.InstanceStatus{
 		Identity:        srv.cfg.Identity,
 		Uptime:          srv.UpTime(),
 		ConnectedServer: srv.ConnectedServer(),
@@ -201,6 +201,13 @@ func (srv *Instance) Status() *statistics.InstanceStatus {
 		Provisioning:    srv.Provisioning(),
 		Stats:           &stats,
 	}
+
+	cert, _ := srv.fw.PublicCert()
+	if cert != nil {
+		s.CertificateExpires = cert.NotAfter
+	}
+
+	return s
 }
 
 // ServerStatusFile is the path where the server writes it's status file regularly and how frequently
