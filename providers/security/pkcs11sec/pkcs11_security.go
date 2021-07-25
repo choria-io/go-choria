@@ -62,7 +62,7 @@ func (k *PrivateKey) Public() crypto.PublicKey {
 
 // Sign signs any compatible hash that is sent to it (see hashPrefixes for supported hashes)
 // need to handle as many hash types as possible, since this is being used by http/tls driver
-func (k *PrivateKey) Sign(rand io.Reader, msg []byte, opts crypto.SignerOpts) (signature []byte, err error) {
+func (k *PrivateKey) Sign(_ io.Reader, msg []byte, opts crypto.SignerOpts) (signature []byte, err error) {
 	prefix, ok := hashPrefixes[opts.HashFunc()]
 	if !ok {
 		return nil, fmt.Errorf("unknown hash function")
@@ -148,8 +148,8 @@ func (p *Pkcs11Security) promptForPin() (*string, error) {
 }
 
 func (p *Pkcs11Security) loginToToken() error {
-
 	var err error
+
 	if p.pin == nil {
 		p.pin, err = p.promptForPin()
 		if err != nil {
@@ -253,6 +253,15 @@ func (p *Pkcs11Security) loginToToken() error {
 	return nil
 }
 
+// PublicCert is the parsed public certificate
+func (p *Pkcs11Security) PublicCert() (*x509.Certificate, error) {
+	if p.cert == nil {
+		return nil, fmt.Errorf("not logged in")
+	}
+
+	return p.cert.Leaf, nil
+}
+
 func (p *Pkcs11Security) reinit() error {
 	var err error
 
@@ -334,7 +343,6 @@ func (p *Pkcs11Security) ChecksumString(data string) []byte {
 
 // SignBytes signs a message using a SHA256 PKCS1v15 protocol
 func (p *Pkcs11Security) SignBytes(str []byte) ([]byte, error) {
-
 	hashed := p.ChecksumBytes(str)
 	mechanism := pkcs11.NewMechanism(pkcs11.CKM_RSA_PKCS, nil)
 	input := append(hashPrefixes[crypto.SHA256], hashed...)

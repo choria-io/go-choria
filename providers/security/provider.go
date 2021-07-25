@@ -1,8 +1,9 @@
 package security
 
 import (
-	context "context"
+	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"encoding/pem"
 	"net/http"
 	"time"
@@ -71,6 +72,9 @@ type Provider interface {
 
 	// VerifyCertificate validates that a certificate is signed by a known CA
 	VerifyCertificate(certpem []byte, identity string) error
+
+	// PublicCert is the parsed public certificate
+	PublicCert() (*x509.Certificate, error)
 
 	// PublicCertPem retrieves pem data for the public certificate of the current identity
 	PublicCertPem() (*pem.Block, error)

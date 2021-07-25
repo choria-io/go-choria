@@ -550,6 +550,10 @@ func (cm *CertManagerSecurity) VerifyCertificate(certpem []byte, identity string
 	return cm.fsec.VerifyCertificate(certpem, identity)
 }
 
+func (cm *CertManagerSecurity) PublicCert() (*x509.Certificate, error) {
+	return cm.fsec.PublicCert()
+}
+
 func (cm *CertManagerSecurity) PublicCertPem() (*pem.Block, error) {
 	return cm.fsec.PublicCertPem()
 }

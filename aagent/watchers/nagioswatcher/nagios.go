@@ -76,6 +76,7 @@ type properties struct {
 	Builtin     string
 	Timeout     time.Duration
 	LastMessage time.Duration `mapstructure:"last_message"`
+	CertExpiry  time.Duration `mapstructure:"pubcert_expire"`
 }
 
 type Execution struct {

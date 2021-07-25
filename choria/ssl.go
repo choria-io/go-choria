@@ -1,10 +1,16 @@
 package choria
 
 import (
-	context "context"
+	"context"
 	"crypto/tls"
+	"crypto/x509"
 	"time"
 )
+
+// PublicCert is the parsed public certificate
+func (fw *Framework) PublicCert() (*x509.Certificate, error) {
+	return fw.security.PublicCert()
+}
 
 // Certname determines the choria certname
 func (fw *Framework) Certname() string {

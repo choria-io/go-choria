@@ -20,14 +20,15 @@ type ServerStats struct {
 
 // InstanceStatus describes the current instance status
 type InstanceStatus struct {
-	Identity        string       `json:"identity"`
-	Uptime          int64        `json:"uptime"`
-	ConnectedServer string       `json:"connected_server"`
-	LastMessage     int64        `json:"last_message"`
-	Provisioning    bool         `json:"provisioning_mode"`
-	Stats           *ServerStats `json:"stats"`
-	FileName        string       `json:"-"`
-	ModTime         time.Time    `json:"-"`
+	Identity           string       `json:"identity"`
+	Uptime             int64        `json:"uptime"`
+	ConnectedServer    string       `json:"connected_server"`
+	LastMessage        int64        `json:"last_message"`
+	Provisioning       bool         `json:"provisioning_mode"`
+	Stats              *ServerStats `json:"stats"`
+	CertificateExpires time.Time    `json:"certificate_expires"`
+	FileName           string       `json:"-"`
+	ModTime            time.Time    `json:"-"`
 }
 
 func LoadInstanceStatus(f string) (*InstanceStatus, error) {
@@ -51,6 +52,14 @@ func LoadInstanceStatus(f string) (*InstanceStatus, error) {
 	status.ModTime = stat.ModTime()
 
 	return status, nil
+}
+
+func (i *InstanceStatus) CheckCertValidity(tillExpire time.Duration) error {
+	if time.Until(i.CertificateExpires) < tillExpire {
+		return fmt.Errorf("certificate expires %v (%v)", i.CertificateExpires, time.Until(i.CertificateExpires).Round(time.Second))
+	}
+
+	return nil
 }
 
 func (i *InstanceStatus) CheckFileAge(maxAge time.Duration) error {

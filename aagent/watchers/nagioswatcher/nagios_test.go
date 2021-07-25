@@ -156,14 +156,15 @@ var _ = Describe("NagiosWatcher", func() {
 					Replies:    2,
 					TTLExpired: 1,
 				},
-				FileName: sf,
-				ModTime:  now,
+				CertificateExpires: now.Add(365 * 24 * time.Hour),
+				FileName:           sf,
+				ModTime:            now,
 			}
 			sj, _ := json.Marshal(status)
 			os.WriteFile(sf, sj, 0644)
 
 			state, output, err := watch.watchUsingChoria()
-			Expect(output).To(Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;;", sf, now.Unix())))
+			Expect(output).To(Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;;", sf, now.Unix())))
 			Expect(state).To(Equal(OK))
 			Expect(err).ToNot(HaveOccurred())
 
@@ -173,7 +174,13 @@ var _ = Describe("NagiosWatcher", func() {
 			os.WriteFile(sf, sj, 0644)
 			state, output, err = watch.watchUsingChoria()
 			Expect(state).To(Equal(CRITICAL))
-			Expect(output).To(Equal(fmt.Sprintf("CRITICAL: last message at %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;;", time.Unix(status.LastMessage, 0).UTC(), status.LastMessage)))
+			Expect(output).To(Equal(fmt.Sprintf("CRITICAL: last message at %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;;", time.Unix(status.LastMessage, 0).UTC(), status.LastMessage)))
+			Expect(err).ToNot(HaveOccurred())
+
+			watch.properties.CertExpiry = 366 * 24 * time.Hour
+			state, output, err = watch.watchUsingChoria()
+			Expect(state).To(Equal(CRITICAL))
+			Expect(output).To(Equal(fmt.Sprintf("CRITICAL: certificate expires %s (8760h0m0s)|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;;", status.CertificateExpires, status.LastMessage)))
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})

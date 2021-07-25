@@ -15,6 +15,7 @@ type tStatusCommand struct {
 	checkConnected bool
 	lastMessage    time.Duration
 	maxAge         time.Duration
+	certExpire     time.Duration
 }
 
 func (s *tStatusCommand) Setup() (err error) {
@@ -24,6 +25,7 @@ func (s *tStatusCommand) Setup() (err error) {
 		s.cmd.Flag("disconnected", "Checks if the server is connected to a broker").Default("true").BoolVar(&s.checkConnected)
 		s.cmd.Flag("message-since", "Maximum time to allow no messages to pass (0 disables)").Default("1h").DurationVar(&s.lastMessage)
 		s.cmd.Flag("max-age", "Maximum age for the status file (0 disables)").Default("30m").DurationVar(&s.maxAge)
+		s.cmd.Flag("certificate-age", "Check if the certificate expires sooner than this duration (0 disabled").Default("24h").DurationVar(&s.certExpire)
 	}
 
 	return nil
@@ -31,6 +33,14 @@ func (s *tStatusCommand) Setup() (err error) {
 
 func (s *tStatusCommand) Configure() error {
 	return nil
+}
+
+func (s *tStatusCommand) checkCertificate(status *statistics.InstanceStatus) error {
+	if s.certExpire == 0 {
+		return nil
+	}
+
+	return status.CheckCertValidity(s.certExpire)
 }
 
 func (s *tStatusCommand) checkConnection(status *statistics.InstanceStatus) (err error) {
@@ -66,6 +76,11 @@ func (s *tStatusCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	err = s.checkFileAge(status)
+	if err != nil {
+		s.exit(err)
+	}
+
+	err = s.checkCertificate(status)
 	if err != nil {
 		s.exit(err)
 	}
