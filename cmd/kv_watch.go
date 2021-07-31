@@ -50,12 +50,7 @@ func (k *kvWatchCommand) Run(wg *sync.WaitGroup) error {
 		return err
 	}
 
-	var watch kv.Watch
-	if k.key == "" {
-		watch, err = store.WatchBucket(wctx)
-	} else {
-		watch, err = store.Watch(wctx, k.key)
-	}
+	watch, err := store.Watch(wctx, k.key)
 	if err != nil {
 		return err
 	}

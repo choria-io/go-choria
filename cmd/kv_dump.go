@@ -35,7 +35,7 @@ func (k *kvDumpCommand) Run(wg *sync.WaitGroup) error {
 	}
 
 	vals := make(map[string]kv.Entry)
-	watch, err := store.WatchBucket(ctx)
+	watch, err := store.Watch(ctx, ">")
 	if err != nil {
 		return err
 	}
