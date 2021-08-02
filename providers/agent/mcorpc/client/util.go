@@ -7,7 +7,22 @@ import (
 	"fmt"
 	"math"
 	"time"
+
+	"github.com/choria-io/go-choria/protocol"
 )
+
+// ParseReply parses a protocol reply into a RPC Reply
+func ParseReply(reply protocol.Reply) (*RPCReply, error) {
+	r, err := ParseReplyData([]byte(reply.Message()))
+	if err != nil {
+		return nil, err
+	}
+
+	r.Time = reply.Time()
+	r.Sender = reply.SenderID()
+
+	return r, nil
+}
 
 // ParseReplyData parses reply data and populates a Reply and custom Data
 func ParseReplyData(source []byte) (*RPCReply, error) {
