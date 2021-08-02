@@ -212,3 +212,15 @@ func (p *RpcutilClient) OptionExprFilter(f string) *RpcutilClient {
 	p.exprFilter = f
 	return p
 }
+
+// OptionReplyTo sets a custom reply target
+func (p *RpcutilClient) OptionReplyTo(t string) *RpcutilClient {
+	p.Lock()
+	defer p.Unlock()
+
+	p.clientRPCOpts = append(p.clientRPCOpts, rpcclient.ReplyTo(t))
+	p.noReplies = true
+	p.clientOpts.progress = false
+
+	return p
+}

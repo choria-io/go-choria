@@ -35,6 +35,7 @@ type Stats interface {
 	RequestDuration() (time.Duration, error)
 	DiscoveryDuration() (time.Duration, error)
 	OverrideDiscoveryTime(start time.Time, end time.Time)
+	UniqueRequestID() string
 }
 
 // NodeSource discovers nodes
@@ -117,6 +118,7 @@ type ChoriaUtilClient struct {
 	targets       []string
 	workers       int
 	exprFilter    string
+	noReplies     bool
 
 	sync.Mutex
 }

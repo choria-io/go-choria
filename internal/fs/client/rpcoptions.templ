@@ -212,3 +212,15 @@ func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionExprFilter(f strin
 	p.exprFilter = f
 	return p
 }
+
+// OptionReplyTo sets a custom reply target
+func (p *{{ .DDL.Metadata.Name | SnakeToCamel }}Client) OptionReplyTo(t string) *{{ .DDL.Metadata.Name | SnakeToCamel }}Client {
+	p.Lock()
+	defer p.Unlock()
+
+	p.clientRPCOpts = append(p.clientRPCOpts, rpcclient.ReplyTo(t))
+	p.noReplies = true
+	p.clientOpts.progress = false
+
+	return p
+}

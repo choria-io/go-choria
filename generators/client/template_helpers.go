@@ -3,6 +3,7 @@ package client
 import (
 	"encoding/base64"
 	"fmt"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -59,7 +60,14 @@ func (g *Generator) templFChoriaRequiredInputsToFuncArgs(act *addl.Action) strin
 	inputs := g.optionalInputSelect(act, false)
 	var parts []string
 
-	for name, input := range inputs {
+	names := []string{}
+	for name := range inputs {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+
+	for _, name := range names {
+		input := inputs[name]
 		goType := g.templFChoriaTypeToGo(input.Type)
 		parts = append(parts, fmt.Sprintf("input%s %s", g.templFSnakeToCamel(name), goType))
 	}
