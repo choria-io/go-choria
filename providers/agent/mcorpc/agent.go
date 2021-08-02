@@ -103,6 +103,8 @@ func (a *Agent) HandleMessage(ctx context.Context, msg *choria.Message, request 
 		return
 	}
 
+	reply.Action = rpcrequest.Action
+
 	action, found := a.actions[rpcrequest.Action]
 	if !found {
 		reply.Statuscode = UnknownAction

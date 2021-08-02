@@ -14,6 +14,7 @@ import (
 
 // RPCReply is a basic RPC reply
 type RPCReply struct {
+	Ation      string            `json:"action"`
 	Statuscode mcorpc.StatusCode `json:"statuscode"`
 	Statusmsg  string            `json:"statusmsg"`
 	Data       json.RawMessage   `json:"data"`
