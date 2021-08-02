@@ -63,6 +63,7 @@ const (
 // Reply is the reply data as stipulated by MCollective RPC system.  The Data
 // has to be something that can be turned into JSON using the normal Marshal system
 type Reply struct {
+	Action          string      `json:"action"`
 	Statuscode      StatusCode  `json:"statuscode"`
 	Statusmsg       string      `json:"statusmsg"`
 	Data            interface{} `json:"data"`
@@ -120,4 +121,16 @@ func ParseRequestData(target interface{}, request *Request, reply *Reply) bool {
 	}
 
 	return true
+}
+
+// ParseReply parses a protocol reply message into a RPC Reply
+func ParseReply(reply protocol.Reply) (*Reply, error) {
+	res := &Reply{}
+
+	err := json.Unmarshal([]byte(reply.Message()), res)
+	if err != nil {
+		return nil, fmt.Errorf("could not decode reply data: %s", err)
+	}
+
+	return res, nil
 }
