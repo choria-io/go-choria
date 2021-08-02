@@ -122,15 +122,3 @@ func ParseRequestData(target interface{}, request *Request, reply *Reply) bool {
 
 	return true
 }
-
-// ParseReply parses a protocol reply message into a RPC Reply
-func ParseReply(reply protocol.Reply) (*Reply, error) {
-	res := &Reply{}
-
-	err := json.Unmarshal([]byte(reply.Message()), res)
-	if err != nil {
-		return nil, fmt.Errorf("could not decode reply data: %s", err)
-	}
-
-	return res, nil
-}
