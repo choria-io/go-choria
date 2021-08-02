@@ -1,7 +1,9 @@
 package cmd
 
 import (
+	"crypto/md5"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -17,7 +19,7 @@ type tSubCommand struct {
 func (s *tSubCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		s.cmd = tool.Cmd().Command("sub", "Subscribe to middleware topics")
-		s.cmd.Arg("subject", "The subject to subscribe to").Required().StringVar(&s.subject)
+		s.cmd.Arg("subject", "The subject to subscribe to").StringVar(&s.subject)
 		s.cmd.Flag("raw", "Display raw messages one per line without timestamps").BoolVar(&s.raw)
 	}
 
@@ -30,6 +32,10 @@ func (s *tSubCommand) Configure() error {
 
 func (s *tSubCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
+
+	if s.subject == "" {
+		s.subject = fmt.Sprintf("%s.reply.%s.%s", c.Config.MainCollective, fmt.Sprintf("%x", md5.Sum([]byte(c.CallerID()))), strings.Replace(c.UniqueID(), "-", "", -1))
+	}
 
 	log := c.Logger("sub")
 	conn, err := c.NewConnector(ctx, c.MiddlewareServers, c.Certname(), log)

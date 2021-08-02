@@ -304,20 +304,20 @@ func (conn *Connection) Unsubscribe(name string) error {
 
 // PublishRaw allows any data to be published to any target
 func (conn *Connection) PublishRaw(target string, data []byte) error {
-	log.Debugf("Publishing %d bytes to %s", len(data), target)
+	conn.logger.Debugf("Publishing %d bytes to %s", len(data), target)
 
 	return conn.nats.Publish(target, data)
 }
 
 // PublishRawMsg allows any nats message to be published to any target
 func (conn *Connection) PublishRawMsg(msg *nats.Msg) error {
-	log.Debugf("Publishing %d bytes to %s", len(msg.Data), msg.Subject)
+	conn.logger.Debugf("Publishing %d bytes to %s", len(msg.Data), msg.Subject)
 	return conn.nats.PublishMsg(msg)
 }
 
 // RequestRawMsgWithContext allows any nats message to be published as a request
 func (conn *Connection) RequestRawMsgWithContext(ctx context.Context, msg *nats.Msg) (*nats.Msg, error) {
-	log.Debugf("Performing NATS request of %d bytes to %s", len(msg.Data), msg.Subject)
+	conn.logger.Debugf("Performing NATS request of %d bytes to %s", len(msg.Data), msg.Subject)
 	return conn.nats.RequestMsgWithContext(ctx, msg)
 }
 
@@ -375,7 +375,7 @@ func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.
 		for _, federation := range conn.choria.FederationCollectives() {
 			target := conn.federationTarget(federation, "federation")
 
-			log.Debugf("Sending a federated direct message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
+			conn.logger.Debugf("Sending a federated direct message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
 
 			err = conn.PublishRaw(target, []byte(j))
 			if err != nil {
@@ -404,7 +404,7 @@ func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protoc
 	for _, federation := range conn.choria.FederationCollectives() {
 		target := conn.federationTarget(federation, "federation")
 
-		log.Debugf("Sending a federated broadcast message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
+		conn.logger.Debugf("Sending a federated broadcast message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
 
 		msg.NotifyPublish()
 
@@ -436,11 +436,18 @@ func (conn *Connection) publishConnectedBroadcast(msg *Message, transport protoc
 		return err
 	}
 
-	log.Debugf("Sending a broadcast message to NATS target '%s' for message %s type %s", target, msg.RequestID, msg.Type())
+	conn.logger.Debugf("Sending a broadcast message to NATS target '%s' for message %s type %s", target, msg.RequestID, msg.Type())
 
 	msg.NotifyPublish()
 
-	return conn.PublishRaw(target, []byte(j))
+	err = conn.PublishRaw(target, []byte(j))
+	if err != nil {
+		return err
+	}
+
+	conn.Flush()
+
+	return nil
 }
 
 func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.TransportMessage) error {
@@ -457,7 +464,7 @@ func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.
 			return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 		}
 
-		log.Debugf("Sending a direct message to %s via NATS target '%s' for message %s type %s", host, target, msg.RequestID, msg.Type())
+		conn.logger.Debugf("Sending a direct message to %s via NATS target '%s' for message %s type %s", host, target, msg.RequestID, msg.Type())
 
 		msg.NotifyPublish()
 
@@ -466,6 +473,8 @@ func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.
 			return fmt.Errorf("could not publish directed message %s to %s: %s", msg.RequestID, host, err)
 		}
 	}
+
+	conn.Flush()
 
 	return nil
 }

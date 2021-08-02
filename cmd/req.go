@@ -40,6 +40,7 @@ type reqCommand struct {
 	tableOnly       bool
 	silent          bool
 	workers         int
+	reply           string
 
 	fo *discovery.StandardOptions
 
@@ -95,6 +96,7 @@ that match the filter.
 	r.cmd.Flag("display", "Display only a subset of results (ok, failed, all, none)").EnumVar(&r.displayOverride, "ok", "failed", "all", "none")
 	r.cmd.Flag("output-file", "Filename to write output to").PlaceHolder("FILENAME").Short('o').StringVar(&r.outputFile)
 	r.cmd.Flag("filter-replies", "Filter replies using a expr filter").PlaceHolder("EXPR").StringVar(&r.exprFilter)
+	r.cmd.Flag("reply-to", "Set a custom reply subject").PlaceHolder("TARGET").Short('r').StringVar(&r.reply)
 
 	return
 }
@@ -219,15 +221,21 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer r.outputWriter.Flush()
 
 	expected := 0
+	publishOnly := false
 	dstart := time.Now()
 	var nodes []string
 
-	if r.ddl.Metadata.Service {
+	switch {
+	case r.reply != "":
+		publishOnly = true
+		r.noProgress = true
+
+	case r.ddl.Metadata.Service:
 		expected = 1
 		nodes = []string{"service"}
 		r.configureProgressBar(1, 1)
 
-	} else {
+	default:
 		nodes, err = r.discover()
 		if err != nil {
 			return fmt.Errorf("could not discover nodes: %s", err)
@@ -260,6 +268,10 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		}),
 	}
 
+	if publishOnly {
+		opts = append(opts, rpc.ReplyTo(r.reply))
+	}
+
 	if r.batch > 0 {
 		if r.batchSleep == 0 {
 			r.batchSleep = 1
@@ -290,6 +302,11 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	rpcres, err := agent.Do(ctx, r.action, r.input, opts...)
 	if err != nil {
 		return fmt.Errorf("could not perform request: %s", err)
+	}
+
+	if publishOnly {
+		fmt.Println(rpcres.Stats().RequestID)
+		return nil
 	}
 
 	results.Stats = rpcres.Stats()

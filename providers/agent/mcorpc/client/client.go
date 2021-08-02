@@ -406,8 +406,6 @@ func (r *RPC) setupMessage(ctx context.Context, action string, payload interface
 		r.opts.Workers = 1
 	}
 
-	r.log.Debugf("%s: %s", msgType, string(rpcp))
-
 	msg, err = r.fw.NewMessage(string(rpcp), r.agent, r.cfg.MainCollective, msgType, nil)
 	if err != nil {
 		return nil, nil, err

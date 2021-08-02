@@ -91,7 +91,7 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 			r.progress.Incr()
 			handler(pr, rpcr)
 		}))
-	} else {
+	} else if !r.client.noReplies {
 		opts = append(opts, rpcclient.ReplyHandler(handler))
 	}
 
@@ -101,7 +101,7 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 
 	res, err := agent.Do(ctx, r.action, r.args, opts...)
 	if err != nil {
-		return nil, fmt.Errorf("could not perform disable request: %s", err)
+		return nil, fmt.Errorf("could not perform request: %s", err)
 	}
 
 	if r.client.clientOpts.progress {

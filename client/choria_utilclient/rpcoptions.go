@@ -212,3 +212,15 @@ func (p *ChoriaUtilClient) OptionExprFilter(f string) *ChoriaUtilClient {
 	p.exprFilter = f
 	return p
 }
+
+// OptionReplyTo sets a custom reply target
+func (p *ChoriaUtilClient) OptionReplyTo(t string) *ChoriaUtilClient {
+	p.Lock()
+	defer p.Unlock()
+
+	p.clientRPCOpts = append(p.clientRPCOpts, rpcclient.ReplyTo(t))
+	p.noReplies = true
+	p.clientOpts.progress = false
+
+	return p
+}

@@ -124,6 +124,7 @@ func (c *Client) Request(ctx context.Context, msg *choria.Message, handler Handl
 		c.receiverReady <- struct{}{}
 	}
 
+	c.log.Debugf("Publishing message with reply to %s", msg.ReplyTo())
 	err = c.publish(msg)
 	if err != nil {
 		return err

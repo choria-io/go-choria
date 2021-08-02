@@ -35,6 +35,7 @@ type Stats interface {
 	RequestDuration() (time.Duration, error)
 	DiscoveryDuration() (time.Duration, error)
 	OverrideDiscoveryTime(start time.Time, end time.Time)
+	UniqueRequestID() string
 }
 
 // NodeSource discovers nodes
@@ -117,6 +118,7 @@ type ChoriaRegistryClient struct {
 	targets       []string
 	workers       int
 	exprFilter    string
+	noReplies     bool
 
 	sync.Mutex
 }
@@ -226,7 +228,7 @@ func (p *ChoriaRegistryClient) DiscoverNodes(ctx context.Context) (nodes []strin
 //
 // Optional Inputs:
 //    - format (string) - The result format the plugin should be retrieved in
-func (p *ChoriaRegistryClient) Ddl(inputPluginType string, inputName string) *DdlRequester {
+func (p *ChoriaRegistryClient) Ddl(inputName string, inputPluginType string) *DdlRequester {
 	d := &DdlRequester{
 		outc: nil,
 		r: &requester{

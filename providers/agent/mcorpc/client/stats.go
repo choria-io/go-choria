@@ -301,3 +301,11 @@ func (s *Stats) DiscoveryDuration() (time.Duration, error) {
 
 	return s.discoveryEnd.Sub(s.discoveryStart), nil
 }
+
+// UniqueRequestID is a unique identifier for the request, can be empty
+func (s *Stats) UniqueRequestID() string {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+
+	return s.RequestID
+}
