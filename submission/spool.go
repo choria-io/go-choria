@@ -21,7 +21,8 @@ const (
 type StoreType int
 
 const (
-	Directory StoreType = 0
+	Unknown   StoreType = 0
+	Directory StoreType = 1
 )
 
 type Store interface {
@@ -30,6 +31,10 @@ type Store interface {
 	Complete(*Message) error
 	Discard(*Message) error
 	IncrementTries(*Message) error
+	Submit(msg *Message) error
+}
+
+type Submitter interface {
 	Submit(msg *Message) error
 }
 

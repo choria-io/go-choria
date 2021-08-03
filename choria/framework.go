@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/submission"
 	"github.com/fatih/color"
 	"github.com/golang-jwt/jwt"
 	"github.com/nats-io/jsm.go/kv"
@@ -843,4 +844,13 @@ func (fw *Framework) KVWithConn(ctx context.Context, conn Connector, bucket stri
 	}
 
 	return store, conn, nil
+}
+
+// DirectorySubmitter gives access to submit data into the Choria Submission system if enabled
+func (fw *Framework) DirectorySubmitter() (submission.Submitter, error) {
+	if fw.Config.Choria.SubmissionSpool == "" {
+		return nil, fmt.Errorf("submission not enabled")
+	}
+
+	return submission.New(fw, submission.Directory)
 }
