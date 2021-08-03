@@ -566,12 +566,12 @@ func (conn *Connection) ConnectedServer() string {
 		return "unknown"
 	}
 
-	url, err := url.Parse(conn.nats.ConnectedUrl())
+	uri, err := url.Parse(conn.nats.ConnectedUrl())
 	if err != nil {
 		return "unknown"
 	}
 
-	return url.String()
+	return uri.String()
 }
 
 // Connect creates a new connection to NATS.
@@ -624,6 +624,12 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 			conn.logger.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrl(), err)
 			connErrorCtr.Inc()
 		}),
+	}
+
+	if conn.uniqueId != "" {
+		options = append(options, nats.CustomInboxPrefix(fmt.Sprintf("%s.reply.%s", conn.config.MainCollective, conn.uniqueId)))
+	} else {
+		options = append(options, nats.CustomInboxPrefix(fmt.Sprintf("%s.reply", conn.config.MainCollective)))
 	}
 
 	if !conn.choria.Config.InitiatedByServer {

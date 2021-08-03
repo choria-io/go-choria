@@ -30,7 +30,7 @@ require (
 	github.com/nats-io/jsm.go v0.0.26-0.20210801070709-a0059d8d6da0
 	github.com/nats-io/nats-server/v2 v2.3.3-0.20210730223723-19bfef59ed76
 	github.com/nats-io/nats-streaming-server v0.22.0 // indirect
-	github.com/nats-io/nats.go v1.11.1-0.20210714175522-2b2bb8f326df
+	github.com/nats-io/nats.go v1.11.1-0.20210803085400-ceb31472e2c0
 	github.com/nats-io/stan.go v0.9.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.4
