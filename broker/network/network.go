@@ -175,7 +175,12 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	<-ctx.Done()
 
 	s.log.Warn("Choria Network Broker shutting down")
+	if s.gnatsd.JetStreamEnabled() {
+		s.log.Warnf("Disabling Choria Streams")
+		s.gnatsd.DisableJetStream()
+	}
 	s.gnatsd.Shutdown()
+	s.gnatsd.WaitForShutdown()
 	s.log.Warn("Choria Network Broker shut down")
 }
 
