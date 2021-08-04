@@ -1,4 +1,4 @@
-package jetstream
+package streams
 
 import (
 	"context"
@@ -16,8 +16,8 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// JetStream is an adapter that connects a NATS topic with messages
-// sent from Choria in its usual transport protocol to a NATS JetStream Message Set.
+// Streams is an adapter that connects a NATS topic with messages sent from Choria
+// in its usual transport protocol to a Choria Streams stream.
 //
 // On the stream the messages will be JSON format with keys
 // body, sender and time.  Body is a base64 encoded string
@@ -25,7 +25,7 @@ import (
 // Configure the adapters:
 //   # required
 //   plugin.choria.adapters = discovery
-//   plugin.choria.adapter.discovery.type = jetstream
+//   plugin.choria.adapter.discovery.type = choria_streams
 //   plugin.choria.adapter.discovery.queue_len = 1000 # default
 //
 // Configure the stream output:
@@ -39,7 +39,7 @@ import (
 //    plugin.choria.adapter.discovery.ingest.topic = mcollective.broadcast.agent.discovery
 //    plugin.choria.adapter.discovery.ingest.protocol = request # or reply
 //    plugin.choria.adapter.discovery.ingest.workers = 10 # default
-type JetStream struct {
+type Streams struct {
 	streams []*stream
 	ingests []*ingest.NatsIngest
 	work    chan ingest.Adaptable
@@ -57,7 +57,7 @@ type Framework interface {
 var fw Framework
 var cfg *config.Config
 
-func Create(name string, choria Framework) (adapter *JetStream, err error) {
+func Create(name string, choria Framework) (adapter *Streams, err error) {
 	fw = choria
 	cfg = fw.Configuration()
 
@@ -69,8 +69,8 @@ func Create(name string, choria Framework) (adapter *JetStream, err error) {
 
 	stats.WorkQueueCapacityGauge.WithLabelValues(name, cfg.Identity).Set(float64(worklen))
 
-	adapter = &JetStream{
-		log:  log.WithFields(log.Fields{"component": "jetstream_adapter", "name": name}),
+	adapter = &Streams{
+		log:  log.WithFields(log.Fields{"component": "streams_adapter", "name": name}),
 		work: make(chan ingest.Adaptable, worklen),
 	}
 
@@ -87,7 +87,7 @@ func Create(name string, choria Framework) (adapter *JetStream, err error) {
 	return adapter, nil
 }
 
-func (sa *JetStream) Init(ctx context.Context, cm choria.ConnectionManager) (err error) {
+func (sa *Streams) Init(ctx context.Context, cm choria.ConnectionManager) (err error) {
 	for _, worker := range sa.streams {
 		if ctx.Err() != nil {
 			return fmt.Errorf("shutdown called")
@@ -95,7 +95,7 @@ func (sa *JetStream) Init(ctx context.Context, cm choria.ConnectionManager) (err
 
 		err = worker.connect(ctx, cm)
 		if err != nil {
-			return fmt.Errorf("failure during initial JetStream connections: %s", err)
+			return fmt.Errorf("failure during initial Choria Streams connections: %s", err)
 		}
 	}
 
@@ -106,14 +106,14 @@ func (sa *JetStream) Init(ctx context.Context, cm choria.ConnectionManager) (err
 
 		err = worker.Connect(ctx, cm)
 		if err != nil {
-			return fmt.Errorf("failure during JetStream initial connections: %s", err)
+			return fmt.Errorf("failure during Choria Streams initial connections: %s", err)
 		}
 	}
 
 	return nil
 }
 
-func (sa *JetStream) Process(ctx context.Context, wg *sync.WaitGroup) {
+func (sa *Streams) Process(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	for _, worker := range sa.streams {

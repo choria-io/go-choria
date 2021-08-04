@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/choria-io/go-choria/broker/adapter/jetstream"
 	"github.com/choria-io/go-choria/broker/adapter/natsstream"
+	"github.com/choria-io/go-choria/broker/adapter/streams"
 	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
 )
@@ -36,16 +36,16 @@ func RunAdapters(ctx context.Context, c *choria.Framework, wg *sync.WaitGroup) e
 		}
 
 		switch atype {
-		case "jetstream":
-			n, err := jetstream.Create(a, c)
+		case "jetstream", "choria_streams":
+			n, err := streams.Create(a, c)
 			if err != nil {
-				return fmt.Errorf("could not start jetstream adapter: %s", err)
+				return fmt.Errorf("could not start choria_streams adapter: %s", err)
 			}
 
 			log.Infof("Starting %s Protocol Adapter %s", atype, a)
 			err = startAdapter(ctx, n, c, wg)
 			if err != nil {
-				return fmt.Errorf("could not start jetstream adapter: %s", err)
+				return fmt.Errorf("could not start choria_streams adapter: %s", err)
 			}
 
 		case "nats_stream":

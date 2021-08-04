@@ -74,7 +74,7 @@ func New(name string, work chan Adaptable, fw Framework, logger *log.Entry) ([]*
 
 	for i := 0; i < instances; i++ {
 		iname := fmt.Sprintf("%s.%d", name, i)
-		logger.Infof("Creating NATS JetStream Adapter %s %s Ingest instance %d / %d", name, topic, i, instances)
+		logger.Infof("Creating NATS Adapter %s %s Ingest instance %d / %d", name, topic, i, instances)
 
 		n := &NatsIngest{
 			name:        iname,

@@ -1,5 +1,34 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/08/04|1326  |Rename the `jetstream` adapter to `choria_streams`                                                       |
+|2021/08/03|1324  |Allow compiled-in Go agents to access the Submission system                                              |
+|2021/08/03|1321  |Improve the broker shutdown process to cleanly shut down Choria Streams                                  |
+|2021/08/03|1319  |Use correct Choria reply subjects when interacting with the Streams API                                  |
+|2021/08/02|1316  |Extend the RPC Reply structure to include what action produced the data                                  |
+|2021/08/02|1314  |Support Asynchronous Request mode in generated Go clients                                                |
+|2021/07/25|1310  |Export certificate expiry time in Choria status files, support checking from CLI and Scout               |
+|2021/07/19|1291  |Support templates in Exec Watcher `cmd`, `env` and `governor`                                            |
+|2021/07/12|1291  |Expose `kv` data to the Autonomous Agent data system                                                     |
+|2021/07/12|1291  |Add a Choria Key-Value Store accessible using `choria kv` and a new `kv` Autonomous Agent Watcher        |
+|2021/07/12|1291  |Allow Exec Watchers to access node facts                                                                 |
+|2021/07/12|1291  |Add a Autonomous Agent level data store, allow Exec Watchers to gather and store data in a Auto Agent    |
+|2021/07/09|1289  |Additional Prometheus statistics for Choria Streams                                                      |
+|2021/07/05|1276  |Support Governors in the Exec Autonomous Agent watcher                                                   |
+|2021/07/02|1276  |Introduce `choria governor` for network wide concurrency control                                         |
+|2021/06/30|1277  |Support PKCS8 containers                                                                                 | 
+|2021/06/23|1273  |Introduce Choria Submission to allow messages to be placed into Streams via Choria Server                |
+|2021/06/21|1272  |Use default client-like resolution to find brokers in the JetStream adapter when no urls are given       |
+|2021/06/09|1042  |Rate limit fast transitions in autonomous agents                                                         |
+|2021/06/09|1264  |Allow a random sleep at the start of schedules for the Schedule watcher                                  |
+|2021/06/06|1259  |Allow the default client suffix to be set at compile time (eg. rip.mcollective user id)                  |
+|2021/06/06|1258  |Allow the default collective to be set at compile time                                                   |
+|2021/06/03|1256  |Fail when a client cannot determine its identity                                                         |
+|2021/05/11|1250  |Improve sorting of `choria inventory` columns                                                            |
+|2021/04/28|1246  |Adds a `choria login` command that supports delegating to `choria-login` in `PATH`                       |
+|2021/04/27|1241  |Initial implementation of the `choria_registry` service agent                                            |
+|2021/04/27|1243  |Support Websockets for connectivity from Leafnodes and Choria Server to Choria Broker, also Go clients   |
+|2021/04/23|1234  |Allow the Choria Server to run in an Services-Only mode                                                  |
+|2021/04/23|1238  |Improve some core DDLs with better type hints                                                            |
 |2021/04/22|      |Release 0.22.0                                                                                           |
 |2021/04/22|1234  |Initial support for Service Agents                                                                       |
 |2021/04/21|1232  |Autonomous Agent transitions now support a human friendly description                                    |
