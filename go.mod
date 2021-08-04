@@ -3,7 +3,7 @@ module github.com/choria-io/go-choria
 go 1.16
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.2.15
+	github.com/AlecAivazis/survey/v2 v2.2.16
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/Netflix/go-expect v0.0.0-20210722184520-ef0bf57d82b3 // indirect
 	github.com/aelsabbahy/goss v0.3.16
@@ -30,7 +30,7 @@ require (
 	github.com/nats-io/jsm.go v0.0.26-0.20210802133716-bfd45db20d9b
 	github.com/nats-io/nats-server/v2 v2.3.3
 	github.com/nats-io/nats-streaming-server v0.22.1 // indirect
-	github.com/nats-io/nats.go v1.11.1-0.20210803085400-ceb31472e2c0
+	github.com/nats-io/nats.go v1.11.1-0.20210803204434-91bdffe39f41
 	github.com/nats-io/stan.go v0.10.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.4

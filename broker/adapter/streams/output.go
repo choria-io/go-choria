@@ -1,4 +1,4 @@
-package jetstream
+package streams
 
 import (
 	"context"
@@ -48,7 +48,7 @@ func newStream(name string, work chan ingest.Adaptable, logger *log.Entry) ([]*s
 	var workers []*stream
 
 	for i := 0; i < instances; i++ {
-		logger.Infof("Creating NATS JetStream Adapter %s instance %d / %d publishing to message set %s", name, i, instances, topic)
+		logger.Infof("Creating Choria Streams Adapter %s instance %d / %d publishing to message set %s", name, i, instances, topic)
 
 		iname := fmt.Sprintf("%s_%d-%s", name, i, strings.Replace(util.UniqueID(), "-", "", -1))
 
@@ -88,19 +88,19 @@ func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) erro
 
 	nc, err := fw.NewConnector(ctx, sc.servers, sc.clientID, sc.log)
 	if err != nil {
-		return fmt.Errorf("could not start JetStream connection: %s", err)
+		return fmt.Errorf("could not start Choria Streams connection: %s", err)
 	}
 
 	sc.conn = nc
 
-	sc.log.Infof("%s connected to JetStream", sc.clientID)
+	sc.log.Infof("%s connected to Choria Streams", sc.clientID)
 
 	return nil
 }
 
 func (sc *stream) disconnect() {
 	if sc.conn != nil {
-		sc.log.Info("Disconnecting from JetStream")
+		sc.log.Info("Disconnecting from Choria Streams")
 		sc.conn.Close()
 	}
 }
@@ -119,9 +119,9 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 		defer obs.ObserveDuration()
 		defer func() { workqlen.Set(float64(len(sc.work))) }()
 
-		j, err := json.Marshal(transformer.TransformToOutput(r, "jetstream"))
+		j, err := json.Marshal(transformer.TransformToOutput(r, "choria_streams"))
 		if err != nil {
-			sc.log.Warnf("Cannot JSON encode message for publishing to JetStream, discarding: %s", err)
+			sc.log.Warnf("Cannot JSON encode message for publishing to Choria Streams, discarding: %s", err)
 			ectr.Inc()
 			return
 		}
@@ -132,7 +132,7 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 
 		err = sc.conn.PublishRaw(strings.ReplaceAll(sc.topic, "%s", r.SenderID()), j)
 		if err != nil {
-			sc.log.Warnf("Could not publish message to JetStream %s, discarding: %s", sc.topic, err)
+			sc.log.Warnf("Could not publish message to Choria Streams %s, discarding: %s", sc.topic, err)
 			ectr.Inc()
 			return
 		}
