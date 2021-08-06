@@ -45,8 +45,9 @@ var _ = Describe("Directory Spool", func() {
 		fw.EXPECT().Configuration().Return(cfg)
 		fw.EXPECT().Logger(gomock.Any()).Return(log)
 
-		spool, err = NewDirectorySpool(fw)
+		subm, err := NewFromChoria(fw, Directory)
 		Expect(err).ToNot(HaveOccurred())
+		spool = subm.store.(*DirectorySpool)
 	})
 
 	AfterEach(func() {

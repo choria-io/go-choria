@@ -57,7 +57,7 @@ func (s *tSubmitCommand) Configure() (err error) {
 func (s *tSubmitCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	subm, err := submission.New(c, submission.Directory)
+	subm, err := submission.NewFromChoria(c, submission.Directory)
 	if err != nil {
 		return err
 	}

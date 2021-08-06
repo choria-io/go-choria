@@ -13,7 +13,6 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/backoff"
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/sirupsen/logrus"
 )
@@ -32,34 +31,23 @@ type DirectorySpool struct {
 	skipList     map[uint]map[string]struct{} // per priority list of files to skip
 }
 
-type Framework interface {
-	Configuration() *config.Config
-	Logger(component string) *logrus.Entry
-}
-
-func NewDirectorySpool(fw Framework) (*DirectorySpool, error) {
-	cfg := fw.Configuration()
-	d := cfg.Choria.SubmissionSpool
-	if d == "" {
+func NewDirectorySpool(dir string, maxSize int, identity string, log *logrus.Entry) (*DirectorySpool, error) {
+	if dir == "" {
 		return nil, fmt.Errorf("spool is not configured")
 	}
 
-	if cfg.Choria.SubmissionSpoolMaxSize < 1 {
+	if maxSize < 1 {
 		return nil, fmt.Errorf("spool size is too small")
 	}
 
-	if cfg.Identity == "" {
-		return nil, fmt.Errorf("identity is unknown")
-	}
-
 	spool := &DirectorySpool{
-		directory:    d,
-		log:          fw.Logger("directory_spool").WithField("directory", d),
+		directory:    dir,
+		log:          log.WithField("directory", dir).WithField("component", "directory_spool"),
 		pollInterval: time.Second,
 		skipList:     map[uint]map[string]struct{}{},
 		bo:           backoff.Default,
-		spoolMax:     cfg.Choria.SubmissionSpoolMaxSize,
-		identity:     cfg.Identity,
+		spoolMax:     maxSize,
+		identity:     identity,
 	}
 
 	err := spool.createSpool()

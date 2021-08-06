@@ -7,15 +7,17 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/config"
 	"github.com/nats-io/jsm.go/api"
 	"github.com/nats-io/nats.go"
 	"github.com/sirupsen/logrus"
 )
 
 const (
-	defaultTTL     = 7 * 24 * time.Hour
-	maxTTL         = 31 * 24 * time.Hour
-	defaultTimeout = 2 * time.Second
+	defaultTTL             = 7 * 24 * time.Hour
+	maxTTL                 = 31 * 24 * time.Hour
+	defaultTimeout         = 2 * time.Second
+	defaultMaxSpoolEntries = 1000
 )
 
 type StoreType int
@@ -45,15 +47,33 @@ type Spool struct {
 	log    *logrus.Entry
 }
 
-func New(fw Framework, store StoreType) (*Spool, error) {
+type Framework interface {
+	Configuration() *config.Config
+	Logger(component string) *logrus.Entry
+}
+
+func New(collective string, identity string, store StoreType, log *logrus.Entry, opts ...Option) (*Spool, error) {
+	if collective == "" {
+		return nil, fmt.Errorf("collective is required")
+	}
+
+	if identity == "" {
+		return nil, fmt.Errorf("identity is unknown")
+	}
+
+	sopts := &spoolOpts{maxSize: defaultMaxSpoolEntries}
+	for _, opt := range opts {
+		opt(sopts)
+	}
+
 	spool := &Spool{
-		log:    fw.Logger("submission"),
-		prefix: fmt.Sprintf("%s.submission.in.", fw.Configuration().MainCollective),
+		log:    log.WithField("component", "submission"),
+		prefix: fmt.Sprintf("%s.submission.in.", collective),
 	}
 
 	switch store {
 	case Directory:
-		st, err := NewDirectorySpool(fw)
+		st, err := NewDirectorySpool(sopts.spoolDir, sopts.maxSize, identity, spool.log)
 		if err != nil {
 			return nil, err
 		}
@@ -65,6 +85,12 @@ func New(fw Framework, store StoreType) (*Spool, error) {
 	}
 
 	return spool, nil
+}
+
+func NewFromChoria(fw Framework, store StoreType) (*Spool, error) {
+	cfg := fw.Configuration()
+
+	return New(cfg.MainCollective, cfg.Identity, store, fw.Logger("submission"), WithSpoolDirectory(cfg.Choria.SubmissionSpool), WithMaxSpoolEntries(cfg.Choria.SubmissionSpoolMaxSize))
 }
 
 func (s *Spool) Submit(msg *Message) error {

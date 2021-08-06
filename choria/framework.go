@@ -852,5 +852,5 @@ func (fw *Framework) DirectorySubmitter() (submission.Submitter, error) {
 		return nil, fmt.Errorf("submission not enabled")
 	}
 
-	return submission.New(fw, submission.Directory)
+	return submission.NewFromChoria(fw, submission.Directory)
 }
