@@ -173,7 +173,7 @@ func (srv *Instance) SetupSubmissions(ctx context.Context, wg *sync.WaitGroup) e
 		srv.log.Infof("Skipping submission startup as no spool is configured")
 	}
 
-	subm, err := submission.New(srv.fw, submission.Directory)
+	subm, err := submission.NewFromChoria(srv.fw, submission.Directory)
 	if err != nil {
 		return err
 	}
