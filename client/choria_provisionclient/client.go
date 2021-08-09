@@ -162,9 +162,13 @@ func New(opts ...InitializationOption) (client *ChoriaProvisionClient, err error
 		opt(c.clientOpts)
 	}
 
-	c.fw, err = choria.New(c.clientOpts.cfgFile)
-	if err != nil {
-		return nil, fmt.Errorf("could not initialize Choria: %s", err)
+	if c.clientOpts.fw != nil {
+		c.fw = c.clientOpts.fw
+	} else {
+		c.fw, err = choria.New(c.clientOpts.cfgFile)
+		if err != nil {
+			return nil, fmt.Errorf("could not initialize Choria: %s", err)
+		}
 	}
 
 	c.cfg = c.fw.Configuration()

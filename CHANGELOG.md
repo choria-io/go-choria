@@ -1,5 +1,6 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/08/09|1337  |Generated clients can accept a Choria Framework, avoiding config loading etc                             |
 |2021/08/09|1335  |Support entering provisioning mode when the supplied `server.conf` does not exist                        | 
 |2021/08/09|1333  |Disable RPC Auth during provisioning mode                                                                |
 |2021/08/04|1326  |Rename the `jetstream` adapter to `choria_streams`                                                       |
