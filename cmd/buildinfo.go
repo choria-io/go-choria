@@ -11,10 +11,9 @@ import (
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/providers/provtarget"
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 	"rsc.io/goversion/version"
-
-	"github.com/choria-io/go-choria/provtarget"
 )
 
 type buildinfoCommand struct {

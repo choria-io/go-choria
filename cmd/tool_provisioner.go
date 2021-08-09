@@ -6,8 +6,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/config"
-
-	"github.com/choria-io/go-choria/provtarget"
+	"github.com/choria-io/go-choria/providers/provtarget"
 )
 
 type tProvisionerCommand struct {

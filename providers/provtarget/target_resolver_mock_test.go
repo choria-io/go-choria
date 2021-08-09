@@ -5,11 +5,12 @@
 package provtarget
 
 import (
-	context "context"
+	"context"
+	"reflect"
+
 	go_config "github.com/choria-io/go-choria/config"
-	gomock "github.com/golang/mock/gomock"
-	logrus "github.com/sirupsen/logrus"
-	reflect "reflect"
+	"github.com/golang/mock/gomock"
+	"github.com/sirupsen/logrus"
 )
 
 // MockTargetResolver is a mock of TargetResolver interface
