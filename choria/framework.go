@@ -169,6 +169,7 @@ func (fw *Framework) ConfigureProvisioning() {
 		return
 	}
 
+	fw.Config.RPCAuthorization = false
 	fw.Config.Choria.FederationCollectives = []string{}
 	fw.Config.Collectives = []string{"provisioning"}
 	fw.Config.MainCollective = "provisioning"

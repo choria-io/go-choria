@@ -2,6 +2,7 @@ package server
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/choria-io/go-choria/providers/data"
 	"github.com/choria-io/go-choria/providers/data/ddl"
@@ -22,5 +23,9 @@ func (srv *Instance) StartDataProviders(ctx context.Context) (err error) {
 
 // DataFuncMap returns the list of known data plugins
 func (srv *Instance) DataFuncMap() (ddl.FuncMap, error) {
+	if srv.fw.ProvisionMode() {
+		return nil, fmt.Errorf("data providers not available in provisioning mode")
+	}
+
 	return srv.data.FuncMap(srv)
 }

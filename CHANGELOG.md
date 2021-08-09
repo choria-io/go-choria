@@ -1,5 +1,6 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/08/09|1333  |Disable RPC Auth during provisioning mode                                                                |
 |2021/08/04|1326  |Rename the `jetstream` adapter to `choria_streams`                                                       |
 |2021/08/03|1324  |Allow compiled-in Go agents to access the Submission system                                              |
 |2021/08/03|1321  |Improve the broker shutdown process to cleanly shut down Choria Streams                                  |

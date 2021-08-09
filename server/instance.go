@@ -171,6 +171,7 @@ func (srv *Instance) RunServiceHost(ctx context.Context, wg *sync.WaitGroup) err
 func (srv *Instance) SetupSubmissions(ctx context.Context, wg *sync.WaitGroup) error {
 	if srv.cfg.Choria.SubmissionSpool == "" {
 		srv.log.Infof("Skipping submission startup as no spool is configured")
+		return nil
 	}
 
 	subm, err := submission.NewFromChoria(srv.fw, submission.Directory)
