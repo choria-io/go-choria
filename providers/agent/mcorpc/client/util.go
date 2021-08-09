@@ -18,7 +18,7 @@ func ParseReply(reply protocol.Reply) (*RPCReply, error) {
 		return nil, err
 	}
 
-	r.Time = reply.Time()
+	r.Time = reply.Time().UTC()
 	r.Sender = reply.SenderID()
 
 	return r, nil

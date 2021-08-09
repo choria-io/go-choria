@@ -18,8 +18,8 @@ type RPCReply struct {
 	Statuscode mcorpc.StatusCode `json:"statuscode"`
 	Statusmsg  string            `json:"statusmsg"`
 	Data       json.RawMessage   `json:"data"`
-	Sender     string            `json:"-"`
-	Time       time.Time         `json:"-"`
+	Sender     string            `json:"sender"`
+	Time       time.Time         `json:"time_utc"`
 }
 
 // MatchExpr determines if the Reply  matches expression q using the expr format.
