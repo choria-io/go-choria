@@ -514,15 +514,12 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 			r.opts.stats.RecordReceived(reply.SenderID())
 		}
 
-		rpcreply, err := ParseReplyData([]byte(reply.Message()))
+		rpcreply, err := ParseReply(reply)
 		if err != nil {
 			r.opts.stats.FailedRequestInc()
 			r.log.Errorf("Could not process reply from %s: %s", reply.SenderID(), err)
 			return
 		}
-
-		rpcreply.Sender = reply.SenderID()
-		rpcreply.Time = reply.Time()
 
 		if rpcreply.Statuscode == mcorpc.OK {
 			r.opts.stats.PassedRequestInc()
