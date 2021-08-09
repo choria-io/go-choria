@@ -11,7 +11,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/provtarget/builddefaults"
+	"github.com/choria-io/go-choria/providers/provtarget/builddefaults"
 	"github.com/golang-jwt/jwt"
 )
 

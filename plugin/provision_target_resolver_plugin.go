@@ -3,7 +3,7 @@ package plugin
 import (
 	"fmt"
 
-	"github.com/choria-io/go-choria/provtarget"
+	"github.com/choria-io/go-choria/providers/provtarget"
 )
 
 var provTargetResolverHost func(provtarget.TargetResolver) error

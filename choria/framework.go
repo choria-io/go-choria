@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/submission"
 	"github.com/fatih/color"
 	"github.com/golang-jwt/jwt"
@@ -31,7 +32,6 @@ import (
 	"github.com/choria-io/go-choria/providers/security"
 	"github.com/choria-io/go-choria/providers/security/filesec"
 	"github.com/choria-io/go-choria/providers/security/puppetsec"
-	"github.com/choria-io/go-choria/provtarget"
 	"github.com/choria-io/go-choria/puppet"
 	"github.com/choria-io/go-choria/srvcache"
 	log "github.com/sirupsen/logrus"
