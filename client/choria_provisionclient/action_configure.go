@@ -204,13 +204,9 @@ func (d *ConfigureRequester) Token(v string) *ConfigureRequester {
 // Message is the value of the message output
 //
 // Description: Status message from the Provisioner
-func (d *ConfigureOutput) Message() interface{} {
-	val, ok := d.reply["message"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *ConfigureOutput) Message() string {
+	val := d.reply["message"]
 
-	return val
+	return val.(string)
 
 }

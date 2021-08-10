@@ -27,8 +27,9 @@ type CSRRequest struct {
 }
 
 type CSRReply struct {
-	CSR    string `json:"csr"`
-	SSLDir string `json:"ssldir"`
+	CSR       string `json:"csr"`
+	PublicKey string `json:"public_key"`
+	SSLDir    string `json:"ssldir"`
 }
 
 func csrAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
@@ -107,16 +108,15 @@ func csrAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 		SignatureAlgorithm: x509.SHA256WithRSA,
 	}
 
-	keyBytes, err := rsa.GenerateKey(rand.Reader, 2048)
+	privKey, err := rsa.GenerateKey(rand.Reader, 2048)
 	if err != nil {
 		abort(fmt.Sprintf("Could not create private key: %s", err), reply)
 		return
 	}
-
 	keyPem := pem.EncodeToMemory(
 		&pem.Block{
 			Type:  "RSA PRIVATE KEY",
-			Bytes: x509.MarshalPKCS1PrivateKey(keyBytes),
+			Bytes: x509.MarshalPKCS1PrivateKey(privKey),
 		},
 	)
 
@@ -126,7 +126,7 @@ func csrAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 		return
 	}
 
-	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, keyBytes)
+	csrBytes, err := x509.CreateCertificateRequest(rand.Reader, &template, privKey)
 	if err != nil {
 		abort(fmt.Sprintf("Could not create CSR bytes: %s", err), reply)
 		return
@@ -140,8 +140,17 @@ func csrAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 		return
 	}
 
+	publicKeyDer := x509.MarshalPKCS1PublicKey(&privKey.PublicKey)
+	pubKeyBlock := pem.Block{
+		Type:    "PUBLIC KEY",
+		Headers: nil,
+		Bytes:   publicKeyDer,
+	}
+	pubKeyPem := string(pem.EncodeToMemory(&pubKeyBlock))
+
 	reply.Data = &CSRReply{
-		CSR:    string(pb),
-		SSLDir: ssldir,
+		CSR:       string(pb),
+		PublicKey: pubKeyPem,
+		SSLDir:    ssldir,
 	}
 }

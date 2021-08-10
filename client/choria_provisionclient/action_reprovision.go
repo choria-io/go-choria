@@ -177,13 +177,9 @@ func (d *ReprovisionRequester) Token(v string) *ReprovisionRequester {
 // Message is the value of the message output
 //
 // Description: Status message from the Provisioner
-func (d *ReprovisionOutput) Message() interface{} {
-	val, ok := d.reply["message"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *ReprovisionOutput) Message() string {
+	val := d.reply["message"]
 
-	return val
+	return val.(string)
 
 }

@@ -63,6 +63,7 @@
         "message": {
           "description": "Status message from the Provisioner",
           "display_as": "Message",
+          "type": "string",
           "default": null
         }
       },
@@ -140,11 +141,19 @@
         "csr": {
           "description": "PEM text block for the CSR",
           "display_as": "CSR",
+          "type": "string",
+          "default": null
+        },
+        "public_key": {
+          "description": "PEM text block of the public key that made the CSR",
+          "display_as": "Public Key",
+          "type": "string",
           "default": null
         },
         "ssldir": {
           "description": "SSL directory as determined by the server",
           "display_as": "SSL Dir",
+          "type": "string",
           "default": null
         }
       },
@@ -186,6 +195,7 @@
         "message": {
           "description": "Status message from the Provisioner",
           "display_as": "Message",
+          "type": "string",
           "default": null
         }
       },
@@ -209,6 +219,7 @@
         "jwt": {
           "description": "The contents of the JWT token",
           "display_as": "JWT Token",
+          "type": "string",
           "default": ""
         }
       },
@@ -232,6 +243,7 @@
         "message": {
           "description": "Status message from the Provisioner",
           "display_as": "Message",
+          "type": "string",
           "default": null
         }
       },
@@ -262,6 +274,7 @@
         "message": {
           "description": "Status message from the Provisioner",
           "display_as": "Message",
+          "type": "string",
           "default": null
         }
       },
