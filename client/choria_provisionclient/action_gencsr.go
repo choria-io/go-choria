@@ -231,27 +231,29 @@ func (d *GencsrRequester) Token(v string) *GencsrRequester {
 // Csr is the value of the csr output
 //
 // Description: PEM text block for the CSR
-func (d *GencsrOutput) Csr() interface{} {
-	val, ok := d.reply["csr"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *GencsrOutput) Csr() string {
+	val := d.reply["csr"]
 
-	return val
+	return val.(string)
+
+}
+
+// PublicKey is the value of the public_key output
+//
+// Description: PEM text block of the public key that made the CSR
+func (d *GencsrOutput) PublicKey() string {
+	val := d.reply["public_key"]
+
+	return val.(string)
 
 }
 
 // Ssldir is the value of the ssldir output
 //
 // Description: SSL directory as determined by the server
-func (d *GencsrOutput) Ssldir() interface{} {
-	val, ok := d.reply["ssldir"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *GencsrOutput) Ssldir() string {
+	val := d.reply["ssldir"]
 
-	return val
+	return val.(string)
 
 }

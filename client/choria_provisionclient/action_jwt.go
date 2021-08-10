@@ -177,13 +177,9 @@ func (d *JwtRequester) Token(v string) *JwtRequester {
 // Jwt is the value of the jwt output
 //
 // Description: The contents of the JWT token
-func (d *JwtOutput) Jwt() interface{} {
-	val, ok := d.reply["jwt"]
-	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
-		return nil
-	}
+func (d *JwtOutput) Jwt() string {
+	val := d.reply["jwt"]
 
-	return val
+	return val.(string)
 
 }
