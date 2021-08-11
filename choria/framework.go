@@ -204,7 +204,7 @@ func (fw *Framework) ConfigureProvisioning() {
 	}
 }
 
-// IsFederated determiens if the configuration is setting up any Federation collectives
+// IsFederated determines if the configuration is setting up any Federation collectives
 func (fw *Framework) IsFederated() (result bool) {
 	return len(fw.FederationCollectives()) != 0
 }
