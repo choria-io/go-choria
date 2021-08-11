@@ -341,7 +341,7 @@ func (c *Config) normalize() error {
 	}
 
 	if c.Choria.ClientAnonTLS {
-		if c.Choria.RemoteSignerURL == "" && c.Choria.RemoteSignerSigningCert == "" {
+		if c.Choria.RemoteSignerURL == "" && c.Choria.RemoteSignerSigningCertFile == "" {
 			return fmt.Errorf("anonymous TLS can only be enabled when a remote signer is configured")
 		}
 
