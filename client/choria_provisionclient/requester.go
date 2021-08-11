@@ -57,16 +57,16 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 		} else {
 			r.client.infof("Discovered %d nodes", len(targets))
 		}
-
-		if r.client.workers > 0 {
-			opts = append(opts, rpcclient.Workers(r.client.workers))
-		}
-
-		if r.client.exprFilter != "" {
-			opts = append(opts, rpcclient.ReplyExprFilter(r.client.exprFilter))
-		}
 	}
 	discoveryEnd := time.Now()
+
+	if r.client.workers > 0 {
+		opts = append(opts, rpcclient.Workers(r.client.workers))
+	}
+
+	if r.client.exprFilter != "" {
+		opts = append(opts, rpcclient.ReplyExprFilter(r.client.exprFilter))
+	}
 
 	if len(targets) > 0 {
 		opts = append(opts, rpcclient.Targets(targets))

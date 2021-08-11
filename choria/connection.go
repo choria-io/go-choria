@@ -86,8 +86,8 @@ type Connection struct {
 	servers           func() (srvcache.Servers, error)
 	name              string
 	nats              *nats.Conn
-	logger            *log.Entry
-	choria            *Framework
+	log               *log.Entry
+	fw                *Framework
 	config            *config.Config
 	subscriptions     map[string]*nats.Subscription
 	chanSubscriptions map[string]*channelSubscription
@@ -149,8 +149,8 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 	conn := &Connection{
 		name:              name,
 		servers:           servers,
-		logger:            logger.WithField("connection", name),
-		choria:            fw,
+		log:               logger.WithField("connection", name),
+		fw:                fw,
 		config:            fw.Config,
 		subscriptions:     make(map[string]*nats.Subscription),
 		chanSubscriptions: make(map[string]*channelSubscription),
@@ -163,7 +163,7 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 			return nil, fmt.Errorf("could not parse JWT: %s", err)
 		}
 
-		conn.logger.Infof("Setting JWT token and unique reply queues based on JWT for %q", caller)
+		conn.log.Infof("Setting JWT token and unique reply queues based on JWT for %q", caller)
 
 		conn.token = token
 		conn.uniqueId = id
@@ -215,7 +215,7 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 
 	go copier(s)
 
-	conn.logger.Debugf("Subscribing to %s in group '%s' on server %s", subject, group, conn.ConnectedServer())
+	conn.log.Debugf("Subscribing to %s in group '%s' on server %s", subject, group, conn.ConnectedServer())
 
 	s.subscription, err = conn.nats.ChanQueueSubscribe(subject, group, s.in)
 	if err != nil {
@@ -262,7 +262,7 @@ func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject
 
 	go copier(ctx, s)
 
-	conn.logger.Debugf("Subscribing to %s in group '%s' on server %s", subject, group, conn.ConnectedServer())
+	conn.log.Debugf("Subscribing to %s in group '%s' on server %s", subject, group, conn.ConnectedServer())
 
 	s.subscription, err = conn.nats.ChanQueueSubscribe(subject, group, s.in)
 	if err != nil {
@@ -304,20 +304,20 @@ func (conn *Connection) Unsubscribe(name string) error {
 
 // PublishRaw allows any data to be published to any target
 func (conn *Connection) PublishRaw(target string, data []byte) error {
-	conn.logger.Debugf("Publishing %d bytes to %s", len(data), target)
+	conn.log.Debugf("Publishing %d bytes to %s", len(data), target)
 
 	return conn.nats.Publish(target, data)
 }
 
 // PublishRawMsg allows any nats message to be published to any target
 func (conn *Connection) PublishRawMsg(msg *nats.Msg) error {
-	conn.logger.Debugf("Publishing %d bytes to %s", len(msg.Data), msg.Subject)
+	conn.log.Debugf("Publishing %d bytes to %s", len(msg.Data), msg.Subject)
 	return conn.nats.PublishMsg(msg)
 }
 
 // RequestRawMsgWithContext allows any nats message to be published as a request
 func (conn *Connection) RequestRawMsgWithContext(ctx context.Context, msg *nats.Msg) (*nats.Msg, error) {
-	conn.logger.Debugf("Performing NATS request of %d bytes to %s", len(msg.Data), msg.Subject)
+	conn.log.Debugf("Performing NATS request of %d bytes to %s", len(msg.Data), msg.Subject)
 	return conn.nats.RequestMsgWithContext(ctx, msg)
 }
 
@@ -334,7 +334,7 @@ func (conn *Connection) Publish(msg *Message) error {
 		return conn.publishConnectedBroadcast(msg, transport)
 	}
 
-	if conn.choria.IsFederated() {
+	if conn.fw.IsFederated() {
 		return conn.publishFederated(msg, transport)
 	}
 
@@ -372,10 +372,10 @@ func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.
 			return
 		}
 
-		for _, federation := range conn.choria.FederationCollectives() {
+		for _, federation := range conn.fw.FederationCollectives() {
 			target := conn.federationTarget(federation, "federation")
 
-			conn.logger.Debugf("Sending a federated direct message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
+			conn.log.Debugf("Sending a federated direct message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
 
 			err = conn.PublishRaw(target, []byte(j))
 			if err != nil {
@@ -401,10 +401,10 @@ func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protoc
 		return err
 	}
 
-	for _, federation := range conn.choria.FederationCollectives() {
+	for _, federation := range conn.fw.FederationCollectives() {
 		target := conn.federationTarget(federation, "federation")
 
-		conn.logger.Debugf("Sending a federated broadcast message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
+		conn.log.Debugf("Sending a federated broadcast message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
 
 		msg.NotifyPublish()
 
@@ -436,7 +436,7 @@ func (conn *Connection) publishConnectedBroadcast(msg *Message, transport protoc
 		return err
 	}
 
-	conn.logger.Debugf("Sending a broadcast message to NATS target '%s' for message %s type %s", target, msg.RequestID, msg.Type())
+	conn.log.Debugf("Sending a broadcast message to NATS target '%s' for message %s type %s", target, msg.RequestID, msg.Type())
 
 	msg.NotifyPublish()
 
@@ -464,7 +464,7 @@ func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.
 			return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
 		}
 
-		conn.logger.Debugf("Sending a direct message to %s via NATS target '%s' for message %s type %s", host, target, msg.RequestID, msg.Type())
+		conn.log.Debugf("Sending a direct message to %s via NATS target '%s' for message %s type %s", host, target, msg.RequestID, msg.Type())
 
 		msg.NotifyPublish()
 
@@ -543,7 +543,7 @@ func Inbox(collective string, caller string) string {
 }
 
 func (conn *Connection) ReplyTarget(msg *Message) (string, error) {
-	id, err := conn.choria.NewRequestID()
+	id, err := conn.fw.NewRequestID()
 	if err != nil {
 		return "", err
 	}
@@ -596,32 +596,32 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 		nats.CustomReconnectDelay(func(n int) time.Duration {
 			d := backoff.TwentySec.Duration(n)
-			conn.logger.Infof("Sleeping %v till the next reconnection attempt", d)
+			conn.log.Infof("Sleeping %v till the next reconnection attempt", d)
 
 			return d
 		}),
 
 		nats.DisconnectErrHandler(func(nc *nats.Conn, err error) {
 			if err != nil {
-				conn.logger.Warnf("NATS client connection got disconnected: %v", nc.LastError())
+				conn.log.Warnf("NATS client connection got disconnected: %v", nc.LastError())
 			}
 		}),
 
 		nats.ReconnectHandler(func(nc *nats.Conn) {
-			conn.logger.Warnf("NATS client reconnected after a previous disconnection, connected to %s", nc.ConnectedUrl())
+			conn.log.Warnf("NATS client reconnected after a previous disconnection, connected to %s", nc.ConnectedUrl())
 			connReconnectCtr.Inc()
 		}),
 
 		nats.ClosedHandler(func(nc *nats.Conn) {
 			err = nc.LastError()
 			if err != nil {
-				conn.logger.Warnf("NATS client connection closed: %v", nc.LastError())
+				conn.log.Warnf("NATS client connection closed: %v", nc.LastError())
 			}
 			connClosedCtr.Inc()
 		}),
 
 		nats.ErrorHandler(func(nc *nats.Conn, sub *nats.Subscription, err error) {
-			conn.logger.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrl(), err)
+			conn.log.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrl(), err)
 			connErrorCtr.Inc()
 		}),
 	}
@@ -632,13 +632,13 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		options = append(options, nats.CustomInboxPrefix(fmt.Sprintf("%s.reply", conn.config.MainCollective)))
 	}
 
-	if !conn.choria.Config.InitiatedByServer {
+	if !conn.fw.Config.InitiatedByServer {
 		options = append(options, nats.PingInterval(30*time.Second))
 	}
 
 	switch {
 	case conn.config.Choria.ClientAnonTLS && !conn.config.InitiatedByServer:
-		conn.logger.Debug("Setting anonymous TLS for NATS connection")
+		conn.log.Debug("Setting anonymous TLS for NATS connection")
 
 		cfg := tlssetup.TLSConfig(conn.config)
 		tlsc := &tls.Config{
@@ -651,15 +651,15 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 		options = append(options, nats.Secure(tlsc))
 
-		token, err := conn.choria.SignerToken()
+		token, err := conn.fw.SignerToken()
 		if err != nil {
 			return fmt.Errorf("no signer token found while connecting to an anonymous TLS server: %s", err)
 		}
 
 		options = append(options, nats.Token(token))
 
-	case !(conn.config.DisableTLS || conn.choria.ShouldUseNGS()):
-		tlsc, err := conn.choria.ClientTLSConfig()
+	case !(conn.config.DisableTLS || conn.fw.ShouldUseNGS()):
+		tlsc, err := conn.fw.ClientTLSConfig()
 		if err != nil {
 			err = fmt.Errorf("could not create TLS Config: %s", err)
 			return err
@@ -668,7 +668,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		options = append(options, nats.Secure(tlsc))
 
 	default:
-		conn.logger.Debugf("Not specifying TLS options on NATS connection: tls: %v ngs: %v creds: %v", conn.config.DisableTLS, conn.config.Choria.NatsNGS, conn.config.Choria.NatsCredentials)
+		conn.log.Debugf("Not specifying TLS options on NATS connection: tls: %v ngs: %v creds: %v", conn.config.DisableTLS, conn.config.Choria.NatsNGS, conn.config.Choria.NatsCredentials)
 	}
 
 	if !conn.config.Choria.RandomizeMiddlewareHosts {
@@ -689,13 +689,13 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 			return fmt.Errorf("could not determine servers to connect to: %s", err)
 		}
 		urls := strings.Join(servers.Strings(), ", ")
-		conn.logger.Infof("Attempting to connect to: %s", urls)
+		conn.log.Infof("Attempting to connect to: %s", urls)
 		conn.nats, err = nats.Connect(urls, options...)
 		if err == nil {
 			return nil
 		}
 
-		conn.logger.Warnf("Initial connection to the Broker failed on try %d: %s", try, err)
+		conn.log.Warnf("Initial connection to the Broker failed on try %d: %s", try, err)
 		connInitialConnectCtr.Inc()
 
 		return err
@@ -704,7 +704,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 // Flush sends any unpublished data to the network
 func (conn *Connection) Flush() {
-	conn.logger.Debug("Flushing pending NATS messages")
+	conn.log.Debug("Flushing pending NATS messages")
 	conn.nats.Flush()
 }
 
@@ -727,7 +727,7 @@ func (conn *Connection) Close() {
 	for _, s := range subs {
 		err := conn.Unsubscribe(s)
 		if err != nil {
-			conn.logger.Warnf("Could not unsubscribe from %s: %s", s, err)
+			conn.log.Warnf("Could not unsubscribe from %s: %s", s, err)
 		}
 	}
 
@@ -736,6 +736,6 @@ func (conn *Connection) Close() {
 	conn.conMu.Lock()
 	defer conn.conMu.Unlock()
 
-	conn.logger.Debug("Closing NATS connection")
+	conn.log.Debug("Closing NATS connection")
 	conn.nats.Close()
 }

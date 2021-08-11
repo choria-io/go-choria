@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/08/11|1344  |Fix setting workers and expr filter on generated clients                                                 |
+|2021/08/10|1342  |Include the Public Key in the CSR reply, add data type hints to the provisioner DDL and update client    |
 |2021/08/09|1331  |Include the time a RPC Reply was generated in the reply                                                  |
 |2021/08/09|1337  |Generated clients can accept a Choria Framework, avoiding config loading etc                             |
 |2021/08/09|1335  |Support entering provisioning mode when the supplied `server.conf` does not exist                        | 
