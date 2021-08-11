@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"net/url"
+	"os"
 	"strings"
 	"sync"
 	"time"
@@ -669,6 +670,13 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 	default:
 		conn.log.Debugf("Not specifying TLS options on NATS connection: tls: %v ngs: %v creds: %v", conn.config.DisableTLS, conn.config.Choria.NatsNGS, conn.config.Choria.NatsCredentials)
+	}
+
+	if conn.fw.ProvisionMode() && util.FileExist(conn.fw.bi.ProvisionJWTFile()) {
+		t, err := os.ReadFile(conn.fw.bi.ProvisionJWTFile())
+		if err == nil {
+			options = append(options, nats.Token(string(t)))
+		}
 	}
 
 	if !conn.config.Choria.RandomizeMiddlewareHosts {

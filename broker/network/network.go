@@ -39,8 +39,9 @@ type Server struct {
 	config *config.Config
 	log    *logrus.Entry
 
-	choriaAccount *gnatsd.Account
-	systemAccount *gnatsd.Account
+	choriaAccount       *gnatsd.Account
+	systemAccount       *gnatsd.Account
+	provisioningAccount *gnatsd.Account
 
 	started bool
 
@@ -123,18 +124,27 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		s.log.Errorf("Could not setup leafnodes: %s", err)
 	}
 
-	ipauth := &IPAuth{
+	choriaAuth := &ChoriaAuth{
 		allowList:     s.config.Choria.NetworkAllowedClientHosts,
-		log:           s.choria.Logger("ipauth"),
-		denyServers:   s.config.Choria.NetworkDenyServers,
 		anonTLS:       s.config.Choria.NetworkClientTLSAnon,
-		jwtSigner:     s.config.Choria.RemoteSignerSigningCert,
-		systemAccount: s.systemAccount,
 		choriaAccount: s.choriaAccount,
-		systemUser:    s.config.Choria.NetworkSystemUsername,
+		denyServers:   s.config.Choria.NetworkDenyServers,
+		isTLS:         s.isClientTlSBroker(),
+		jwtSigner:     s.config.Choria.RemoteSignerSigningCertFile,
+		log:           s.choria.Logger("authentication"),
+		systemAccount: s.systemAccount,
 		systemPass:    s.config.Choria.NetworkSystemPassword,
+		systemUser:    s.config.Choria.NetworkSystemUsername,
 	}
-	s.opts.CustomClientAuthentication = ipauth
+
+	// provisioning happens over clear so we cant have clear clients and clear provisioning
+	if s.isClientTlSBroker() {
+		choriaAuth.provPass = s.config.Choria.NetworkProvisioningClientPassword
+		choriaAuth.provisioningAccount = s.provisioningAccount
+		choriaAuth.provisioningTokenSigner = s.config.Choria.NetworkProvisioningTokenSignerFile
+	}
+
+	s.opts.CustomClientAuthentication = choriaAuth
 
 	return
 }
@@ -184,8 +194,12 @@ func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	s.log.Warn("Choria Network Broker shut down")
 }
 
+func (s *Server) isClientTlSBroker() bool {
+	return s.config.Choria.NetworkClientTLSForce || s.IsTLS()
+}
+
 func (s *Server) setupTLS() (err error) {
-	if !s.config.Choria.NetworkClientTLSForce && !s.IsTLS() {
+	if !s.isClientTlSBroker() {
 		s.log.WithField("client_tls_force_required", s.config.Choria.NetworkClientTLSForce).WithField("disable_tls", s.config.DisableTLS).Warn("Skipping broker TLS set up")
 		return nil
 	}
@@ -201,7 +215,7 @@ func (s *Server) setupTLS() (err error) {
 
 	s.opts.TLS = true
 	s.opts.AllowNonTLS = false
-
+	s.opts.TLSVerify = true
 	s.opts.TLSTimeout = float64(s.config.Choria.NetworkTLSTimeout)
 
 	tlsc, err := s.choria.TLSConfig()
@@ -209,8 +223,12 @@ func (s *Server) setupTLS() (err error) {
 		return err
 	}
 
-	s.opts.TLSVerify = true
-	tlsc.ClientAuth = tls.RequireAndVerifyClientCert
+	// if provisioning is allowed we allow non tls connections
+	// but the auth system will funnel all of those into the provisioning account
+	if s.config.Choria.NetworkProvisioningTokenSignerFile != "" {
+		s.log.Warnf("Allowing non TLS connections for provisioning purposes")
+		s.opts.AllowNonTLS = true
+	}
 
 	if s.config.DisableTLSVerify {
 		s.opts.TLSVerify = false

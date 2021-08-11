@@ -26,13 +26,19 @@ func (s *Server) setupStreaming() error {
 
 	s.gnatsd.EnableJetStream(&server.JetStreamConfig{StoreDir: s.config.Choria.NetworkStreamStore})
 
-	err := s.choriaAccount.EnableJetStream(&server.JetStreamAccountLimits{})
-	if err != nil {
-		s.log.Errorf("Could not enable Choria Streams for the %s account: %s", s.choriaAccount.Name, err)
-	}
+	for _, acct := range []*server.Account{s.choriaAccount, s.provisioningAccount} {
+		if acct == nil {
+			continue
+		}
 
-	if !s.choriaAccount.JetStreamEnabled() {
-		s.log.Errorf("Choria Streams enabled for account %q but it's not reporting as enabled", s.choriaAccount.Name)
+		err := acct.EnableJetStream(&server.JetStreamAccountLimits{})
+		if err != nil {
+			s.log.Errorf("Could not enable Choria Streams for the %s account: %s", acct.Name, err)
+		}
+
+		if !acct.JetStreamEnabled() {
+			s.log.Errorf("Choria Streams enabled for account %q but it's not reporting as enabled", acct.Name)
+		}
 	}
 
 	return nil

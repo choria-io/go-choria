@@ -87,8 +87,6 @@ func NewWithConfig(cfg *config.Config) (*Framework, error) {
 		return &c, fmt.Errorf("could not set up security framework: %s", err)
 	}
 
-	c.ConfigureProvisioning()
-
 	return &c, nil
 }
 

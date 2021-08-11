@@ -6,6 +6,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/server"
 	log "github.com/sirupsen/logrus"
@@ -35,7 +36,7 @@ func (r *serverRunCommand) Configure() error {
 	}
 
 	switch {
-	case choria.FileExist(configFile):
+	case util.FileExist(configFile):
 		cfg, err = config.NewSystemConfig(configFile, true)
 		if err != nil {
 			return fmt.Errorf("could not parse configuration: %s", err)
@@ -74,6 +75,8 @@ func (r *serverRunCommand) prepareInstance() (i *server.Instance, err error) {
 		c.Config.DisableTLSVerify = true
 		log.Warn("Running with TLS Verification disabled, not compatible with production use.")
 	}
+
+	c.ConfigureProvisioning()
 
 	instance, err := server.NewInstance(c)
 	if err != nil {

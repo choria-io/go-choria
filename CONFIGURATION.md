@@ -47,7 +47,8 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.network.leafnode_remotes](#pluginchorianetworkleafnode_remotes)|[plugin.choria.network.listen_address](#pluginchorianetworklisten_address)|
 |[plugin.choria.network.peer_password](#pluginchorianetworkpeer_password)|[plugin.choria.network.peer_port](#pluginchorianetworkpeer_port)|
 |[plugin.choria.network.peer_user](#pluginchorianetworkpeer_user)|[plugin.choria.network.peers](#pluginchorianetworkpeers)|
-|[plugin.choria.network.pprof_port](#pluginchorianetworkpprof_port)|[plugin.choria.network.public_url](#pluginchorianetworkpublic_url)|
+|[plugin.choria.network.pprof_port](#pluginchorianetworkpprof_port)|[plugin.choria.network.provisioning.client_password](#pluginchorianetworkprovisioningclient_password)|
+|[plugin.choria.network.provisioning.signer_cert](#pluginchorianetworkprovisioningsigner_cert)|[plugin.choria.network.public_url](#pluginchorianetworkpublic_url)|
 |[plugin.choria.network.stream.advisory_replicas](#pluginchorianetworkstreamadvisory_replicas)|[plugin.choria.network.stream.advisory_retention](#pluginchorianetworkstreamadvisory_retention)|
 |[plugin.choria.network.stream.event_replicas](#pluginchorianetworkstreamevent_replicas)|[plugin.choria.network.stream.event_retention](#pluginchorianetworkstreamevent_retention)|
 |[plugin.choria.network.stream.machine_replicas](#pluginchorianetworkstreammachine_replicas)|[plugin.choria.network.stream.machine_retention](#pluginchorianetworkstreammachine_retention)|
@@ -482,6 +483,18 @@ List of cluster peers in host:port format
 
 The port the network broker will listen on for pprof requests
 
+## plugin.choria.network.provisioning.client_password
+
+ * **Type:** string
+
+Password the provisioned clients should use to connect
+
+## plugin.choria.network.provisioning.signer_cert
+
+ * **Type:** path_string
+
+Path to the public cert that signs provisioning tokens, enables accepting provisioning connections into the provisioning account
+
 ## plugin.choria.network.public_url
 
  * **Type:** string
@@ -707,9 +720,9 @@ URL to the Signing Service
 
 ## plugin.choria.security.request_signing_certificate
 
- * **Type:** string
+ * **Type:** path_string
 
-The public certificate of the key used to sign the JWTs in the Signing Service
+Path to the public certificate of the key used to sign the JWTs in the Signing Service
 
 ## plugin.choria.security.serializer
 
