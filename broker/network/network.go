@@ -226,6 +226,7 @@ func (s *Server) setupTLS() (err error) {
 	if err != nil {
 		return err
 	}
+	tlsc.ClientAuth = tls.RequireAndVerifyClientCert
 
 	switch {
 	case s.config.DisableTLSVerify:
@@ -260,7 +261,6 @@ func (s *Server) setupTLS() (err error) {
 		s.opts.TLS = true
 		tlsc.InsecureSkipVerify = true
 		tlsc.ClientAuth = tls.NoClientCert
-
 	}
 
 	s.opts.TLSConfig = tlsc
