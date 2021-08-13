@@ -9,7 +9,7 @@ import (
 )
 
 func (s *Server) setupGateways() (err error) {
-	if s.config.Choria.NetworkGatewayPort == 0 {
+	if s.config.Choria.NetworkGatewayPort == 0 || len(s.config.Choria.NetworkGatewayRemotes) == 0 {
 		return nil
 	}
 

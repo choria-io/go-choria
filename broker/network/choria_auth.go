@@ -52,18 +52,34 @@ const (
 // Check checks and registers the incoming connection
 func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 	var (
-		verified bool
-		err      error
+		verified    bool
+		tlsVerified bool
+		err         error
 	)
 
+	tlsc := c.GetTLSConnectionState()
+	if tlsc != nil {
+		tlsVerified = len(tlsc.VerifiedChains) > 0
+	}
+
+	if a.isTLS && tlsc == nil {
+		a.log.Warnf("Did not receive TLS Connection State for connection %s, rejecting", c.RemoteAddress())
+		return false
+	}
+
 	switch {
-	case a.isTLS && c.GetTLSConnectionState() == nil:
-		verified, err = a.handlePlainProvisioningConnection(c)
+	case a.isTLS && !tlsVerified:
+		verified, err = a.handleUnverifiedProvisioningConnection(c)
 		if err != nil {
-			a.log.Warnf("Handling plain connection failed, denying %s: %s", c.RemoteAddress().String(), err)
+			a.log.Warnf("Handling unverified connection failed, denying %s: %s", c.RemoteAddress().String(), err)
 		}
 
 	case a.isProvisionUser(c):
+		if !tlsVerified {
+			a.log.Warnf("Provision user is only allowed over verified TLS connections")
+			return false
+		}
+
 		verified, err = a.handleProvisioningUserConnection(c)
 		if err != nil {
 			a.log.Warnf("Handling provisioning user connection failed, denying %s: %s", c.RemoteAddress().String(), err)
@@ -76,6 +92,11 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 		}
 
 	default:
+		if a.isTLS && !tlsVerified {
+			a.log.Warnf("Rejecting non TLS client while in TLS mode")
+			break
+		}
+
 		verified, err = a.handleDefaultConnection(c)
 		if err != nil {
 			a.log.Warnf("Handling normal connection failed, denying %s: %s", c.RemoteAddress().String(), err)
@@ -179,7 +200,7 @@ func (a *ChoriaAuth) handleProvisioningUserConnection(c server.ClientAuthenticat
 	return true, nil
 }
 
-func (a *ChoriaAuth) handlePlainProvisioningConnection(c server.ClientAuthentication) (bool, error) {
+func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthentication) (bool, error) {
 	if a.provisioningTokenSigner == emptyString {
 		return false, fmt.Errorf("provisioning is not enabled")
 	}
@@ -197,7 +218,7 @@ func (a *ChoriaAuth) handlePlainProvisioningConnection(c server.ClientAuthentica
 	opts := c.GetOpts()
 
 	if opts.Username == provisioningUser {
-		return false, fmt.Errorf("provisioning user requires TLS")
+		return false, fmt.Errorf("provisioning user requires verified TLS")
 	}
 
 	switch {
@@ -219,11 +240,11 @@ func (a *ChoriaAuth) handlePlainProvisioningConnection(c server.ClientAuthentica
 			return false, fmt.Errorf("could not parse provisioner token: %s", err)
 		}
 
-		if claims.Secure {
-			return false, fmt.Errorf("secure provisioning client on non TLS connection")
+		if !claims.Secure {
+			return false, fmt.Errorf("insecure provisioning client on TLS connection")
 		}
 
-		a.log.Debugf("Allowing a provisioning server from %s using non TLS connection", c.RemoteAddress().String())
+		a.log.Debugf("Allowing a provisioning server from %s using unverified TLS connection", c.RemoteAddress().String())
 
 	default:
 		return false, fmt.Errorf("provisioning requires a token")

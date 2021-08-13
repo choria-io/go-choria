@@ -186,7 +186,7 @@ func (fw *Framework) ConfigureProvisioning() {
 		fw.Config.Registration = []string{"file_content"}
 		fw.Config.RegisterInterval = 120
 		fw.Config.RegistrationSplay = false
-		fw.Config.Choria.FileContentRegistrationTarget = "choria.provisioning_data"
+		fw.Config.Choria.FileContentRegistrationTarget = "provisioning.registration.data"
 		fw.Config.Choria.FileContentRegistrationData = fw.bi.ProvisionRegistrationData()
 	}
 
