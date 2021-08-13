@@ -735,7 +735,7 @@ Path to the public certificate of the key used to sign the JWTs in the Signing S
 ## plugin.choria.server.provision
 
  * **Type:** boolean
- * **Additional Information:** https://github.com/choria-io/provisioning-agent
+ * **Additional Information:** https://github.com/choria-io/provisioner
  * **Default Value:** false
 
 Specifically enable or disable provisioning

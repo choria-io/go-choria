@@ -11,15 +11,15 @@ import (
 //
 // NOTE: When adding or updating doc strings please run `go generate` in the root of the repository
 type ChoriaPluginConfig struct {
-	PuppetServerHost string `confkey:"plugin.choria.puppetserver_host" default:"puppet"`                                                     // The hostname where your Puppet Server can be found
-	PuppetServerPort int    `confkey:"plugin.choria.puppetserver_port" default:"8140"`                                                       // The port your Puppet Server listens on
-	PuppetCAHost     string `confkey:"plugin.choria.puppetca_host" default:"puppet"`                                                         // The hostname where your Puppet Certificate Authority can be found
-	PuppetCAPort     int    `confkey:"plugin.choria.puppetca_port" default:"8140"`                                                           // The port your Puppet Certificate Authority listens on
-	PuppetDBHost     string `confkey:"plugin.choria.puppetdb_host" default:""`                                                               // The host hosting your PuppetDB, used by the "choria" discovery plugin
-	PuppetDBPort     int    `confkey:"plugin.choria.puppetdb_port" default:"8081"`                                                           // The port your PuppetDB listens on
-	UseSRVRecords    bool   `confkey:"plugin.choria.use_srv" default:"true" url:"https://choria.io/docs/deployment/dns/"`                    // If SRV record lookups should be attempted to find Puppet, PuppetDB, Brokers etc
-	SRVDomain        string `confkey:"plugin.choria.srv_domain" url:"https://choria.io/docs/deployment/dns/"`                                // The domain to use for SRV records, defaults to the domain the server FQDN is in
-	Provision        bool   `confkey:"plugin.choria.server.provision" default:"false" url:"https://github.com/choria-io/provisioning-agent"` // Specifically enable or disable provisioning
+	PuppetServerHost string `confkey:"plugin.choria.puppetserver_host" default:"puppet"`                                              // The hostname where your Puppet Server can be found
+	PuppetServerPort int    `confkey:"plugin.choria.puppetserver_port" default:"8140"`                                                // The port your Puppet Server listens on
+	PuppetCAHost     string `confkey:"plugin.choria.puppetca_host" default:"puppet"`                                                  // The hostname where your Puppet Certificate Authority can be found
+	PuppetCAPort     int    `confkey:"plugin.choria.puppetca_port" default:"8140"`                                                    // The port your Puppet Certificate Authority listens on
+	PuppetDBHost     string `confkey:"plugin.choria.puppetdb_host" default:""`                                                        // The host hosting your PuppetDB, used by the "choria" discovery plugin
+	PuppetDBPort     int    `confkey:"plugin.choria.puppetdb_port" default:"8081"`                                                    // The port your PuppetDB listens on
+	UseSRVRecords    bool   `confkey:"plugin.choria.use_srv" default:"true" url:"https://choria.io/docs/deployment/dns/"`             // If SRV record lookups should be attempted to find Puppet, PuppetDB, Brokers etc
+	SRVDomain        string `confkey:"plugin.choria.srv_domain" url:"https://choria.io/docs/deployment/dns/"`                         // The domain to use for SRV records, defaults to the domain the server FQDN is in
+	Provision        bool   `confkey:"plugin.choria.server.provision" default:"false" url:"https://github.com/choria-io/provisioner"` // Specifically enable or disable provisioning
 
 	ExternalDiscoveryCommand string `confkey:"plugin.choria.discovery.external.command" type:"path_string"` // The command to use for external discovery
 	InventoryDiscoverySource string `confkey:"plugin.choria.discovery.inventory.source" type:"path_string"` // The file to read for inventory discovery
