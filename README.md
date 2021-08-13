@@ -336,7 +336,7 @@ Choria supports an auto provisioning flow where should it start with a configura
 
 Provisioning is supported but by disabled in the shipped binaries and can be enabled using a provisioning JWT file.
 
-Please see the documentation in the [provisioning-agent](https://github.com/choria-io/provisioning-agent) repository for how to enable and use this feature.
+Please see the documentation in the [provisioner](https://github.com/choria-io/provisioner) repository for how to enable and use this feature.
 
 ### Compiling in custom agent providers
 
