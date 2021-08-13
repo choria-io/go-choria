@@ -575,6 +575,17 @@ func (conn *Connection) ConnectedServer() string {
 	return uri.String()
 }
 
+func (conn *Connection) anonTLSc() *tls.Config {
+	cfg := tlssetup.TLSConfig(conn.config)
+	return &tls.Config{
+		MinVersion:               tls.VersionTLS12,
+		PreferServerCipherSuites: true,
+		CipherSuites:             cfg.CipherSuites,
+		CurvePreferences:         cfg.CurvePreferences,
+		InsecureSkipVerify:       true,
+	}
+}
+
 // Connect creates a new connection to NATS.
 //
 // This will block until connected - basically forever should it never work.  Due to short comings
@@ -641,15 +652,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 	case conn.config.Choria.ClientAnonTLS && !conn.config.InitiatedByServer:
 		conn.log.Debug("Setting anonymous TLS for NATS connection")
 
-		cfg := tlssetup.TLSConfig(conn.config)
-		tlsc := &tls.Config{
-			MinVersion:               tls.VersionTLS12,
-			PreferServerCipherSuites: true,
-			CipherSuites:             cfg.CipherSuites,
-			CurvePreferences:         cfg.CurvePreferences,
-			InsecureSkipVerify:       true,
-		}
-
+		tlsc := conn.anonTLSc()
 		options = append(options, nats.Secure(tlsc))
 
 		token, err := conn.fw.SignerToken()
@@ -672,11 +675,17 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		conn.log.Debugf("Not specifying TLS options on NATS connection: tls: %v ngs: %v creds: %v", conn.config.DisableTLS, conn.config.Choria.NatsNGS, conn.config.Choria.NatsCredentials)
 	}
 
-	if conn.fw.ProvisionMode() && util.FileExist(conn.fw.bi.ProvisionJWTFile()) {
-		t, err := os.ReadFile(conn.fw.bi.ProvisionJWTFile())
-		if err == nil {
-			options = append(options, nats.Token(string(t)))
+	if conn.fw.ProvisionMode() {
+		if util.FileExist(conn.fw.bi.ProvisionJWTFile()) {
+			t, err := os.ReadFile(conn.fw.bi.ProvisionJWTFile())
+			if err == nil {
+				options = append(options, nats.Token(string(t)))
+			}
 		}
+
+		conn.log.Warnf("Setting anonymous TLS mode during provisioning")
+		tlsc := conn.anonTLSc()
+		options = append(options, nats.Secure(tlsc))
 	}
 
 	if !conn.config.Choria.RandomizeMiddlewareHosts {

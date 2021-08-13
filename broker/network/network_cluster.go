@@ -12,6 +12,11 @@ func (s *Server) setupCluster() (err error) {
 		return fmt.Errorf("could not determine network broker peers: %s", err)
 	}
 
+	if peers.Count() == 0 {
+		s.log.Infof("Skipping clustering configuration without any peers")
+		return nil
+	}
+
 	if s.config.Choria.NetworkClientTLSAnon && (s.config.Choria.NetworkPeerPort > 0 || peers.Count() > 0) {
 		return fmt.Errorf("clustering is disabled when anonymous TLS is configured")
 	}

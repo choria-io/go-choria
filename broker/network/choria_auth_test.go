@@ -56,19 +56,20 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 	})
 
 	Describe("Check", func() {
-		Describe("Plain connections", func() {
+		Describe("Unverified connections", func() {
 			It("Should only prov auth when tls is enabled", func() {
 				auth.isTLS = false
 				auth.provPass = "s3cret"
 				auth.provisioningAccount = &server.Account{Name: provisioningUser}
 				copts := &server.ClientOpts{Username: provisioningUser, Password: "s3cret"}
 				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
+				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{})
 				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}).AnyTimes()
 
 				Expect(auth.Check(mockClient)).To(BeFalse())
 
 				auth.isTLS = true
-				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
+				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{nil}}).AnyTimes()
 				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
 					Expect(user.Account).To(Equal(auth.provisioningAccount))
 				})
@@ -90,7 +91,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(auth.Check(mockClient)).To(BeFalse())
 			})
 
-			It("Should do provision auth for plain connections in TLS mode", func() {
+			It("Should not do provision auth for unverified connections", func() {
 				auth.isTLS = true
 				auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
 				auth.provPass = "s3cret"
@@ -98,10 +99,23 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 				copts := &server.ClientOpts{Username: "provisioner", Password: "s3cret"}
 				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
-				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
 				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}).AnyTimes()
+				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{})
+				Expect(auth.Check(mockClient)).To(BeFalse())
+			})
+
+			It("Should do provision auth for verified connections", func() {
+				auth.isTLS = true
+				auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
+				auth.provPass = "s3cret"
+				auth.provisioningAccount = &server.Account{Name: "provision"}
+
+				copts := &server.ClientOpts{Username: "provisioner", Password: "s3cret"}
+				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
+				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}).AnyTimes()
+				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{nil}}).AnyTimes()
 				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
-					Expect(user.Account).To(Equal(auth.provisioningAccount)) // implies default flow was done not prov flow
+					Expect(user.Account).To(Equal(auth.provisioningAccount))
 				})
 
 				Expect(auth.Check(mockClient)).To(BeTrue())
@@ -169,14 +183,14 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		})
 	})
 
-	Describe("handlePlainProvisioningConnection", func() {
+	Describe("handleUnverifiedProvisioningConnection", func() {
 		It("Should fail without a signer cert set or present", func() {
-			validated, err := auth.handlePlainProvisioningConnection(mockClient)
+			validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
 			Expect(validated).To(BeFalse())
 			Expect(err).To(MatchError("provisioning is not enabled"))
 
 			auth.provisioningTokenSigner = "/nonexisting"
-			validated, err = auth.handlePlainProvisioningConnection(mockClient)
+			validated, err = auth.handleUnverifiedProvisioningConnection(mockClient)
 			Expect(validated).To(BeFalse())
 			Expect(err).To(MatchError("provisioning signer certificate /nonexisting does not exist"))
 		})
@@ -184,7 +198,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		It("Should fail without a provisioner account", func() {
 			auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
 
-			validated, err := auth.handlePlainProvisioningConnection(mockClient)
+			validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
 			Expect(validated).To(BeFalse())
 			Expect(err).To(MatchError("provisioning account is not set"))
 		})
@@ -201,24 +215,24 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: string(t)}).AnyTimes()
 
-				validated, err := auth.handlePlainProvisioningConnection(mockClient)
+				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
 				Expect(validated).To(BeFalse())
 				Expect(err).To(MatchError("could not parse provisioner token: crypto/rsa: verification error"))
 			})
 
-			It("Should reject servers with claims requiring security", func() {
-				t, err := os.ReadFile("testdata/provisioning/secure.jwt")
+			It("Should reject servers with claims not requiring security", func() {
+				t, err := os.ReadFile("testdata/provisioning/insecure.jwt")
 				Expect(err).ToNot(HaveOccurred())
 
 				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: string(t)}).AnyTimes()
 
-				validated, err := auth.handlePlainProvisioningConnection(mockClient)
+				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
 				Expect(validated).To(BeFalse())
-				Expect(err).To(MatchError("secure provisioning client on non TLS connection"))
+				Expect(err).To(MatchError("insecure provisioning client on TLS connection"))
 			})
 
 			It("Should set server permissions and register", func() {
-				t, err := os.ReadFile("testdata/provisioning/insecure.jwt")
+				t, err := os.ReadFile("testdata/provisioning/secure.jwt")
 				Expect(err).ToNot(HaveOccurred())
 
 				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: string(t)}).AnyTimes()
@@ -242,14 +256,14 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					}))
 				})
 
-				validated, err := auth.handlePlainProvisioningConnection(mockClient)
+				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
 				Expect(validated).To(BeTrue())
 				Expect(err).To(BeNil())
 			})
 		})
 
 		Describe("Provisioner Client", func() {
-			It("Should not accept connections from the provisioning user without TLS", func() {
+			It("Should not accept connections from the provisioning user without verified TLS", func() {
 				auth.isTLS = true
 				auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
 				auth.provisioningAccount = &server.Account{Name: "provisioning"}
@@ -257,8 +271,8 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				copts := &server.ClientOpts{Username: "provisioner", Password: "s3cret"}
 				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
 
-				validated, err := auth.handlePlainProvisioningConnection(mockClient)
-				Expect(err).To(MatchError("provisioning user requires TLS"))
+				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
+				Expect(err).To(MatchError("provisioning user requires verified TLS"))
 				Expect(validated).To(BeFalse())
 			})
 		})

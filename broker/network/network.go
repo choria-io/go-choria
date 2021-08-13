@@ -80,6 +80,9 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 
 	if debug || s.config.LogLevel == "debug" {
 		s.opts.Debug = true
+		// s.opts.Trace = true
+		// s.opts.TraceVerbose = true
+		// s.opts.Logtime = true
 	}
 
 	err = s.setupTLS()
@@ -107,6 +110,7 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		return s, fmt.Errorf("could not setup server: %s", err)
 	}
 	s.gnatsd.SetLogger(newLogger(), s.opts.Debug, false)
+	s.gnatsd.ConfigureLogger()
 
 	err = s.setupAccounts()
 	if err != nil {
@@ -223,19 +227,20 @@ func (s *Server) setupTLS() (err error) {
 		return err
 	}
 
-	// if provisioning is allowed we allow non tls connections
-	// but the auth system will funnel all of those into the provisioning account
-	if s.config.Choria.NetworkProvisioningTokenSignerFile != "" {
-		s.log.Warnf("Allowing non TLS connections for provisioning purposes")
-		s.opts.AllowNonTLS = true
-	}
-
-	if s.config.DisableTLSVerify {
+	switch {
+	case s.config.DisableTLSVerify:
+		s.log.Warnf("Disabling client certificate verification due to configuration or CLI override")
 		s.opts.TLSVerify = false
 		tlsc.ClientAuth = tls.NoClientCert
-	}
 
-	if s.config.Choria.NetworkClientTLSAnon {
+	case s.config.Choria.NetworkProvisioningTokenSignerFile != "":
+		// if provisioning is allowed we allow unverified tls connections
+		// but the auth system will funnel all of those into the provisioning account
+
+		s.log.Warnf("Allowing unverified TLS connections for provisioning purposes")
+		tlsc.ClientAuth = tls.VerifyClientCertIfGiven
+
+	case s.config.Choria.NetworkClientTLSAnon:
 		if len(s.config.Choria.NetworkLeafRemotes) == 0 {
 			return fmt.Errorf("can only configure anonymous TLS for client connections when leafnodes are defined using plugin.choria.network.leafnode_remotes")
 		}
@@ -255,6 +260,7 @@ func (s *Server) setupTLS() (err error) {
 		s.opts.TLS = true
 		tlsc.InsecureSkipVerify = true
 		tlsc.ClientAuth = tls.NoClientCert
+
 	}
 
 	s.opts.TLSConfig = tlsc
