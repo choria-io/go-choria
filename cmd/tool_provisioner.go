@@ -27,7 +27,7 @@ func (p *tProvisionerCommand) Configure() error {
 		return err
 	}
 
-	cfg, err = config.NewDefaultConfig()
+	cfg, err = config.NewDefaultSystemConfig(true)
 	if err != nil {
 		return err
 	}
@@ -43,6 +43,8 @@ func (p *tProvisionerCommand) Configure() error {
 
 func (p *tProvisionerCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
+
+	c.ConfigureProvisioning()
 
 	if !c.ProvisionMode() {
 		return fmt.Errorf("not a server compiled for auto provisioning or no JWT token found to enable it")
