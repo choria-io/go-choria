@@ -193,7 +193,6 @@ func (fw *Framework) ConfigureProvisioning() {
 	if !fw.bi.ProvisionSecurity() {
 		protocol.Secure = "false"
 		fw.Config.Choria.SecurityProvider = "file"
-		fw.Config.DisableTLS = true
 	}
 
 	if fw.bi.ProvisionBrokerSRVDomain() != "" {

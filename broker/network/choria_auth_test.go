@@ -220,17 +220,6 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(err).To(MatchError("could not parse provisioner token: crypto/rsa: verification error"))
 			})
 
-			It("Should reject servers with claims not requiring security", func() {
-				t, err := os.ReadFile("testdata/provisioning/insecure.jwt")
-				Expect(err).ToNot(HaveOccurred())
-
-				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: string(t)}).AnyTimes()
-
-				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
-				Expect(validated).To(BeFalse())
-				Expect(err).To(MatchError("insecure provisioning client on TLS connection"))
-			})
-
 			It("Should set server permissions and register", func() {
 				t, err := os.ReadFile("testdata/provisioning/secure.jwt")
 				Expect(err).ToNot(HaveOccurred())

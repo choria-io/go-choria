@@ -240,10 +240,6 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 			return false, fmt.Errorf("could not parse provisioner token: %s", err)
 		}
 
-		if !claims.Secure {
-			return false, fmt.Errorf("insecure provisioning client on TLS connection")
-		}
-
 		a.log.Debugf("Allowing a provisioning server from %s using unverified TLS connection", c.RemoteAddress().String())
 
 	default:
