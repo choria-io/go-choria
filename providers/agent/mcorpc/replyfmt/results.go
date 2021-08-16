@@ -110,16 +110,21 @@ func (r *RPCResults) RenderTXTFooter(w io.Writer, verbose bool) {
 		if len(nodes) > 0 {
 			sort.Strings(nodes)
 
-			fmt.Fprintf(w, "\n%s: %d\n\n", message, len(nodes))
+			if !verbose && len(nodes) > 200 {
+				fmt.Fprintf(w, "\n%s (showing first 200): %d\n\n", message, len(nodes))
+				nodes = nodes[0:200]
+			} else {
+				fmt.Fprintf(w, "\n%s: %d\n\n", message, len(nodes))
+			}
 
 			out := bytes.NewBuffer([]byte{})
 
-			w := new(tabwriter.Writer)
-			w.Init(out, 0, 0, 4, ' ', 0)
+			wr := new(tabwriter.Writer)
+			wr.Init(out, 0, 0, 4, ' ', 0)
 			util.SliceGroups(nodes, 3, func(g []string) {
-				fmt.Fprintln(w, "    "+strings.Join(g, "\t")+"\t")
+				fmt.Fprintf(w, "    %s\t\n", strings.Join(g, "\t"))
 			})
-			w.Flush()
+			wr.Flush()
 
 			fmt.Fprint(w, out.String())
 		}

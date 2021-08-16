@@ -164,7 +164,10 @@ var _ = Describe("NagiosWatcher", func() {
 			os.WriteFile(sf, sj, 0644)
 
 			state, output, err := watch.watchUsingChoria()
-			Expect(output).To(Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;;", sf, now.Unix())))
+			Expect(output).To(Or(
+				Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31536000;;", sf, now.Unix())),
+				Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;;", sf, now.Unix())),
+			))
 			Expect(state).To(Equal(OK))
 			Expect(err).ToNot(HaveOccurred())
 
