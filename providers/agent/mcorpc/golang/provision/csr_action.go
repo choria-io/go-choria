@@ -120,7 +120,7 @@ func csrAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 		},
 	)
 
-	err = os.WriteFile(keyfile, keyPem, 0640)
+	err = os.WriteFile(keyfile, keyPem, 0600)
 	if err != nil {
 		abort(fmt.Sprintf("Could not store private key: %s", err), reply)
 		return

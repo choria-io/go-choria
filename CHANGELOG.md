@@ -1,5 +1,6 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/08/17|1355  |Support receiving private keys from the provisioner                                                      |
 |2021/08/16|1353  |Ensure no responses list and unexpected responses list always prints, capped to 200 nodes                |
 |2021/08/11|1344  |Fix setting workers and expr filter on generated clients                                                 |
 |2021/08/10|1342  |Include the Public Key in the CSR reply, add data type hints to the provisioner DDL and update client    |

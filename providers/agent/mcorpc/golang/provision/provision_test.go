@@ -206,12 +206,7 @@ var _ = Describe("Provision/Agent", func() {
 			Expect(csrr.SSLDir).To(Equal(filepath.Join(targetdir, "ssl")))
 			stat, err := os.Stat(filepath.Join(prov.Config.Choria.SSLDir, "private.pem"))
 			Expect(err).ToNot(HaveOccurred())
-
-			// TODO: windows
-			if runtime.GOOS != "windows" {
-				Expect(stat.Mode()).To(Equal(os.FileMode(0640)))
-			}
-
+			Expect(stat.Mode()).To(Equal(os.FileMode(0600)))
 			stat, err = os.Stat(filepath.Join(prov.Config.Choria.SSLDir, "csr.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stat.Mode()).To(Equal(os.FileMode(0644)))
@@ -529,7 +524,7 @@ var _ = Describe("Provision/Agent", func() {
 			cfg.ConfigFile = targetcfg
 
 			req := &mcorpc.Request{
-				Data:      json.RawMessage(fmt.Sprintf(`{"certificate": "stub_cert", "ca":"stub_ca", "ssldir":"%s", "config":"{\"plugin.choria.server.provision\":\"0\", \"plugin.choria.srv_domain\":\"another.com\"}"}`, targetdir)),
+				Data:      json.RawMessage(fmt.Sprintf(`{"certificate": "stub_cert", "ca":"stub_ca", "key":"stub_key","ssldir":"%s", "config":"{\"plugin.choria.server.provision\":\"0\", \"plugin.choria.srv_domain\":\"another.com\"}"}`, targetdir)),
 				RequestID: "uniq_req_id",
 				CallerID:  "choria=rip.mcollective",
 				SenderID:  "go.test",
@@ -555,6 +550,12 @@ var _ = Describe("Provision/Agent", func() {
 			ca, err := os.ReadFile(filepath.Join(targetdir, "ca.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(string(ca)).To(Equal("stub_ca"))
+
+			key, err := os.ReadFile(filepath.Join(targetdir, "private.pem"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(string(key)).To(Equal("stub_key"))
+
+			Expect(filepath.Join(targetdir, "csr.pem")).ToNot(BeAnExistingFile())
 		})
 	})
 })

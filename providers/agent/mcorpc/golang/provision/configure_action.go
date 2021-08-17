@@ -10,6 +10,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/sirupsen/logrus"
@@ -18,6 +19,7 @@ import (
 type ConfigureRequest struct {
 	Token         string `json:"token"`
 	Configuration string `json:"config"`
+	Key           string `json:"key"`
 	Certificate   string `json:"certificate"`
 	CA            string `json:"ca"`
 	SSLDir        string `json:"ssldir"`
@@ -79,6 +81,24 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 			return
 		}
 
+		if args.Key != "" {
+			agent.Log.Warnf("Received a PRIVATE KEY over the network")
+			target = filepath.Join(args.SSLDir, "private.pem")
+			err = os.WriteFile(target, []byte(args.Key), 0600)
+			if err != nil {
+				abort(fmt.Sprintf("Could not write KEY to %s: %s", target, err), reply)
+				return
+			}
+
+			csrFile := filepath.Join(args.SSLDir, "csr.pem")
+			if util.FileExist(csrFile) {
+				agent.Log.Warnf("A PRIVATE KEY was received from the provisioner, removing CSR %s", csrFile)
+				err = os.Remove(csrFile)
+				if err != nil {
+					agent.Log.Errorf("A PRIVATE KEY was received from the provisioner, could not remove CSR %s: %s", csrFile, err)
+				}
+			}
+		}
 	}
 
 	err = agent.ServerInfoSource.NewEvent(lifecycle.Provisioned)
