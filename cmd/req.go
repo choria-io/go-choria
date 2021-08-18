@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"sort"
 	"sync"
 	"time"
 
@@ -41,6 +42,7 @@ type reqCommand struct {
 	silent          bool
 	workers         int
 	reply           string
+	sort            bool
 
 	fo *discovery.StandardOptions
 
@@ -97,6 +99,7 @@ that match the filter.
 	r.cmd.Flag("output-file", "Filename to write output to").PlaceHolder("FILENAME").Short('o').StringVar(&r.outputFile)
 	r.cmd.Flag("filter-replies", "Filter replies using a expr filter").PlaceHolder("EXPR").StringVar(&r.exprFilter)
 	r.cmd.Flag("reply-to", "Set a custom reply subject").PlaceHolder("TARGET").Short('r').StringVar(&r.reply)
+	r.cmd.Flag("sort", "Sort replies by responder identity").BoolVar(&r.sort)
 
 	return
 }
@@ -315,6 +318,12 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	if !r.noProgress {
 		uiprogress.Stop()
 		fmt.Println()
+	}
+
+	if r.sort {
+		sort.Slice(results.Replies, func(i, j int) bool {
+			return results.Replies[i].Sender < results.Replies[j].Sender
+		})
 	}
 
 	err = r.displayResults(results)
