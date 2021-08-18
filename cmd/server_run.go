@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/server"
 	log "github.com/sirupsen/logrus"
 )
@@ -42,12 +42,22 @@ func (r *serverRunCommand) Configure() error {
 			return fmt.Errorf("could not parse configuration: %s", err)
 		}
 
-	case bi.ProvisionBrokerURLs() != "" || choria.FileExist(bi.ProvisionJWTFile()):
-		cfg, err = config.NewDefaultSystemConfig(true)
-		if err != nil {
-			return fmt.Errorf("could not create default configuration for provisioning: %s", err)
+		provtarget.Configure(cfg, log.WithField("component", "provtarget"))
+
+		// if a config file existed and prov is disable even after reading it, discard it and start fresh
+		if r.shouldProvision(cfg) {
+			log.Warnf("Switching to provisioning configuration due to build defaults and server.provision configuration setting")
+			cfg, err = r.provisionConfig(configFile)
+			if err != nil {
+				return err
+			}
 		}
-		cfg.ConfigFile = configFile
+
+	case bi.ProvisionBrokerURLs() != "" || util.FileExist(bi.ProvisionJWTFile()):
+		cfg, err = r.provisionConfig(configFile)
+		if err != nil {
+			return err
+		}
 
 	default:
 		return fmt.Errorf("configuration file %s was not found and provisioning is disabled", configFile)
@@ -63,6 +73,29 @@ func (r *serverRunCommand) Configure() error {
 	}
 
 	return nil
+}
+
+func (r *serverRunCommand) shouldProvision(cfg *config.Config) bool {
+	prov := bi.ProvisionDefault()
+	hasOpt := cfg.HasOption("plugin.choria.server.provision")
+	if hasOpt {
+		prov = cfg.Choria.Provision
+	}
+	return prov
+}
+
+func (r *serverRunCommand) provisionConfig(f string) (*config.Config, error) {
+	cfg, err = config.NewDefaultSystemConfig(true)
+	if err != nil {
+		return nil, fmt.Errorf("could not create default configuration for provisioning: %s", err)
+	}
+	cfg.ConfigFile = f
+
+	// set this to avoid calling into puppet on non puppet machines
+	// later ConfigureProvisioning() will do all the right things
+	cfg.Choria.SecurityProvider = "file"
+
+	return cfg, nil
 }
 
 func (r *serverRunCommand) prepareInstance() (i *server.Instance, err error) {

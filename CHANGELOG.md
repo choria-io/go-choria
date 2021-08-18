@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/08/18|1358  |Ensure SSL Cache is ignored during provisioning                                                          |
+|2021/08/18|1357  |Correctly enter provisioning without a configuration file and without a Puppet installation              |
 |2021/08/17|1355  |Support receiving private keys from the provisioner                                                      |
 |2021/08/16|1353  |Ensure no responses list and unexpected responses list always prints, capped to 200 nodes                |
 |2021/08/11|1344  |Fix setting workers and expr filter on generated clients                                                 |

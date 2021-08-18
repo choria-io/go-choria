@@ -12,6 +12,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"path/filepath"
 	"strings"
 	"sync"
 	"time"
@@ -175,6 +176,9 @@ func (fw *Framework) ConfigureProvisioning() {
 	fw.Config.FactSourceFile = fw.bi.ProvisionFacts()
 	fw.Config.Choria.NatsUser = fw.bi.ProvisioningBrokerUsername()
 	fw.Config.Choria.NatsPass = fw.bi.ProvisioningBrokerPassword()
+	fw.Config.Choria.SecurityAlwaysOverwriteCache = true
+	fw.Config.Choria.SSLDir = filepath.Join(filepath.Dir(fw.Config.ConfigFile), "ssl")
+	fw.Config.Choria.SecurityProvider = "file"
 
 	if fw.bi.ProvisionStatusFile() != "" {
 		fw.Config.Choria.StatusFilePath = fw.bi.ProvisionStatusFile()
@@ -192,7 +196,6 @@ func (fw *Framework) ConfigureProvisioning() {
 
 	if !fw.bi.ProvisionSecurity() {
 		protocol.Secure = "false"
-		fw.Config.Choria.SecurityProvider = "file"
 	}
 
 	if fw.bi.ProvisionBrokerSRVDomain() != "" {
