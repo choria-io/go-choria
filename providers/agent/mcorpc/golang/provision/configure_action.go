@@ -67,6 +67,12 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 	}
 
 	if args.Certificate != "" && args.SSLDir != "" && args.CA != "" {
+		err = os.MkdirAll(args.SSLDir, 0700)
+		if err != nil {
+			abort(fmt.Sprintf("Could not create ssl directory %s: %s", args.SSLDir, err), reply)
+			return
+		}
+
 		target := filepath.Join(args.SSLDir, "certificate.pem")
 		err = os.WriteFile(target, []byte(args.Certificate), 0644)
 		if err != nil {
