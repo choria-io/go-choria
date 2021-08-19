@@ -15,7 +15,7 @@ action "configure", :description => "Configure the Choria Server" do
         :description => "PEM text block for the CA",
         :type        => :string,
         :validation  => '^-----BEGIN CERTIFICATE-----',
-        :maxlength   => 10240,
+        :maxlength   => 20480,
         :optional    => true
 
 
@@ -35,6 +35,15 @@ action "configure", :description => "Configure the Choria Server" do
         :validation  => '^{.+}$',
         :maxlength   => 2048,
         :optional    => false
+
+
+  input :key,
+        :prompt      => "PEM text block for the private key",
+        :description => "",
+        :type        => :string,
+        :validation  => '-----BEGIN RSA PRIVATE KEY-----',
+        :maxlength   => 10240,
+        :optional    => true
 
 
   input :ssldir,
