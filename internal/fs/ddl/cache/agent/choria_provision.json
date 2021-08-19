@@ -47,7 +47,7 @@
           "default": null,
           "optional": true,
           "validation": "^-----BEGIN CERTIFICATE-----",
-          "maxlength": 10240
+          "maxlength": 20480
         },
         "ssldir": {
           "prompt": "SSL Dir",
@@ -57,6 +57,14 @@
           "optional": true,
           "validation": ".",
           "maxlength": 500
+        },
+        "key": {
+          "prompt": "PEM text block for the private key",
+          "type": "string",
+          "default": null,
+          "optional": true,
+          "validation": "-----BEGIN RSA PRIVATE KEY-----",
+          "maxlength": 10240
         }
       },
       "output": {

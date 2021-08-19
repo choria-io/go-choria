@@ -183,6 +183,15 @@ func (d *ConfigureRequester) Certificate(v string) *ConfigureRequester {
 	return d
 }
 
+// Key is an optional input to the configure action
+//
+// Description:
+func (d *ConfigureRequester) Key(v string) *ConfigureRequester {
+	d.r.args["key"] = v
+
+	return d
+}
+
 // Ssldir is an optional input to the configure action
 //
 // Description: Directory for storing the certificate in
