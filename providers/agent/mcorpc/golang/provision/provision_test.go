@@ -566,14 +566,20 @@ var _ = Describe("Provision/Agent", func() {
 			build.ProvisionModeDefault = "true"
 			cfg.ConfigFile = targetcfg
 
+			var err error
+
 			// provisioner pub: dbf02405b51e8b600f53b96737db5dfec50677872c361304e41ac07625151401
 			// provisioner pri: e635819fcab98cfc6d44e0bad5ae5c08c5b09a752af7575ead6dbb7df774d6f9
-			// shared: 80e58cb657e093332c7354860e0919cd16dc424e00c3416875feec45f79f2c6b
-			pri, err := hex.DecodeString("e635819fcab98cfc6d44e0bad5ae5c08c5b09a752af7575ead6dbb7df774d6f9")
+			// server pub: 97ba5b5a83e6bbeb5b0de18bd87553f583c4b960b212d9435b70ff49749bd91c
+			// server pri: e635819fcab98cfc6d44e0bad5ae5c08c5b09a752af7575ead6dbb7df774d6f9
+			// shared: ab7eedbee43bfd668e1f294a734eed286dad7f99a971b0263b0fbbf3e5605344
+			edchPrivate, err = hex.DecodeString("e635819fcab98cfc6d44e0bad5ae5c08c5b09a752af7575ead6dbb7df774d6f9")
 			Expect(err).ToNot(HaveOccurred())
-			pub, err := hex.DecodeString("97ba5b5a83e6bbeb5b0de18bd87553f583c4b960b212d9435b70ff49749bd91c")
+
+			edchPublic, err = hex.DecodeString("97ba5b5a83e6bbeb5b0de18bd87553f583c4b960b212d9435b70ff49749bd91c")
 			Expect(err).ToNot(HaveOccurred())
-			shared, err := hex.DecodeString("80e58cb657e093332c7354860e0919cd16dc424e00c3416875feec45f79f2c6b")
+
+			shared, err := edchSharedSecretLocked("dbf02405b51e8b600f53b96737db5dfec50677872c361304e41ac07625151401")
 			Expect(err).ToNot(HaveOccurred())
 
 			pk, err := rsa.GenerateKey(rand.Reader, 1024)
@@ -583,25 +589,19 @@ var _ = Describe("Provision/Agent", func() {
 			err = pem.Encode(pkPem, &pem.Block{Bytes: pkBytes, Type: "RSA PRIVATE KEY"})
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(err).ToNot(HaveOccurred())
 			epb, err := x509.EncryptPEMBlock(rand.Reader, "RSA PRIVATE KEY", x509.MarshalPKCS1PrivateKey(pk), shared, x509.PEMCipherAES256) //lint:ignore SA1019 there is no alternative
 			Expect(err).ToNot(HaveOccurred())
 			epbPem := &bytes.Buffer{}
 			err = pem.Encode(epbPem, epb)
 			Expect(err).ToNot(HaveOccurred())
 
-			edchPublic = &[32]byte{}
-			edchPrivate = &[32]byte{}
-			copy(edchPrivate[:], pri)
-			copy(edchPublic[:], pub)
-
 			data := ConfigureRequest{
 				Certificate:   "stub_cert",
 				CA:            "stub_ca",
 				SSLDir:        targetdir,
 				Configuration: "{\"plugin.choria.server.provision\":\"0\", \"plugin.choria.srv_domain\":\"another.com\"}",
-				EDCHPublic:    "dbf02405b51e8b600f53b96737db5dfec50677872c361304e41ac07625151401",
-				Key:           epbPem.String(), // encrypted using shared of the EDCH
+				EDCHPublic:    "dbf02405b51e8b600f53b96737db5dfec50677872c361304e41ac07625151401", // provisioner sends this, so this is its public key
+				Key:           epbPem.String(),                                                    // encrypted using shared of the EDCH
 			}
 
 			jdat, _ := json.Marshal(data)
@@ -617,6 +617,7 @@ var _ = Describe("Provision/Agent", func() {
 			Expect(targetcfg).ToNot(BeAnExistingFile())
 			configureAction(ctx, req, reply, prov, nil)
 
+			Expect(reply.Statusmsg).To(Equal(""))
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 			Expect(reply.Data.(Reply).Message).To(Equal(fmt.Sprintf("Wrote 3 lines to %s", targetcfg)))
 			Expect(targetcfg).To(BeAnExistingFile())
