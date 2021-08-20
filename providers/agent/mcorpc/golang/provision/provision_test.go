@@ -568,19 +568,21 @@ var _ = Describe("Provision/Agent", func() {
 
 			var err error
 
-			// provisioner pub: dbf02405b51e8b600f53b96737db5dfec50677872c361304e41ac07625151401
-			// provisioner pri: e635819fcab98cfc6d44e0bad5ae5c08c5b09a752af7575ead6dbb7df774d6f9
-			// server pub: 97ba5b5a83e6bbeb5b0de18bd87553f583c4b960b212d9435b70ff49749bd91c
-			// server pri: e635819fcab98cfc6d44e0bad5ae5c08c5b09a752af7575ead6dbb7df774d6f9
-			// shared: ab7eedbee43bfd668e1f294a734eed286dad7f99a971b0263b0fbbf3e5605344
-			edchPrivate, err = hex.DecodeString("e635819fcab98cfc6d44e0bad5ae5c08c5b09a752af7575ead6dbb7df774d6f9")
+			// provisioner pub: c25fab933b16b2a4589e2c2d297669b818c82881f2f9bfd08cb8fd298924a41b
+			// provisioner pri: 3e150feab1f2c709af9afa28e626f258dbf1b683d3bc35225a9b0489de485870
+			// server pub: 88a9a0ed27dc93c29466ea2bef99e078342b27e7a1d789fc35a9131f86c3a022
+			// server pri: 67e4a9b3934a3030470ed7a30f89eeaf7dab7b492aa9ee02fb864d690b7e6eeb
+			// shared: 53a4887b448755a3f0a0618b289eb2369ec4b2461d44890abdfa3084ef080c55
+			edchPrivate, err = hex.DecodeString("67e4a9b3934a3030470ed7a30f89eeaf7dab7b492aa9ee02fb864d690b7e6eeb")
 			Expect(err).ToNot(HaveOccurred())
 
-			edchPublic, err = hex.DecodeString("97ba5b5a83e6bbeb5b0de18bd87553f583c4b960b212d9435b70ff49749bd91c")
+			edchPublic, err = hex.DecodeString("88a9a0ed27dc93c29466ea2bef99e078342b27e7a1d789fc35a9131f86c3a022")
 			Expect(err).ToNot(HaveOccurred())
 
-			shared, err := edchSharedSecretLocked("dbf02405b51e8b600f53b96737db5dfec50677872c361304e41ac07625151401")
+			shared, err := edchSharedSecretLocked("c25fab933b16b2a4589e2c2d297669b818c82881f2f9bfd08cb8fd298924a41b")
 			Expect(err).ToNot(HaveOccurred())
+
+			Expect(fmt.Sprintf("%x", shared)).To(Equal("53a4887b448755a3f0a0618b289eb2369ec4b2461d44890abdfa3084ef080c55"))
 
 			pk, err := rsa.GenerateKey(rand.Reader, 1024)
 			Expect(err).ToNot(HaveOccurred())
@@ -600,7 +602,7 @@ var _ = Describe("Provision/Agent", func() {
 				CA:            "stub_ca",
 				SSLDir:        targetdir,
 				Configuration: "{\"plugin.choria.server.provision\":\"0\", \"plugin.choria.srv_domain\":\"another.com\"}",
-				EDCHPublic:    "dbf02405b51e8b600f53b96737db5dfec50677872c361304e41ac07625151401", // provisioner sends this, so this is its public key
+				EDCHPublic:    "c25fab933b16b2a4589e2c2d297669b818c82881f2f9bfd08cb8fd298924a41b", // provisioner sends this, so this is its public key
 				Key:           epbPem.String(),                                                    // encrypted using shared of the EDCH
 			}
 

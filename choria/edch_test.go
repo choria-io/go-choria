@@ -37,6 +37,13 @@ var _ = Describe("EDCH", func() {
 			Expect(aliceShared).To(Equal(bobShared))
 			Expect(aliceShared).To(HaveLen(32))
 
+			// fmt.Println()
+			// fmt.Printf("Alice Public: %x\n", alicePub)
+			// fmt.Printf("Alice Private: %x\n", alicePri)
+			// fmt.Printf("Bob Public: %x\n", bobPub)
+			// fmt.Printf("Bob Private: %x\n", bobPri)
+			// fmt.Printf("Shared: %x\n", bobShared)
+
 			aliceSharedS, err := EDCHSharedSecretString(fmt.Sprintf("%x", alicePri), fmt.Sprintf("%x", bobPub))
 			Expect(err).ToNot(HaveOccurred())
 			bobSharedS, err := EDCHSharedSecretString(fmt.Sprintf("%x", bobPri), fmt.Sprintf("%x", alicePub))
