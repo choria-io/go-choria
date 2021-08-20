@@ -65,7 +65,17 @@
           "optional": true,
           "validation": "-----BEGIN RSA PRIVATE KEY-----",
           "maxlength": 10240
+        },
+        "edch_public": {
+          "prompt":  "EDCH Public Key",
+          "description": "Required when sending a private key",
+          "type": "string",
+          "default": "",
+          "optional": true,
+          "maxlength": 64,
+          "validation": "."
         }
+
       },
       "output": {
         "message": {
@@ -227,6 +237,12 @@
         "jwt": {
           "description": "The contents of the JWT token",
           "display_as": "JWT Token",
+          "type": "string",
+          "default": ""
+        },
+        "edch_public": {
+          "description": "The EDCH public key for calculating shared secrets",
+          "display_as": "EDCH Public Key",
           "type": "string",
           "default": ""
         }

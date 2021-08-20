@@ -177,7 +177,10 @@ var _ = Describe("NagiosWatcher", func() {
 			os.WriteFile(sf, sj, 0644)
 			state, output, err = watch.watchUsingChoria()
 			Expect(state).To(Equal(CRITICAL))
-			Expect(output).To(Equal(fmt.Sprintf("CRITICAL: last message at %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;;", time.Unix(status.LastMessage, 0).UTC(), status.LastMessage)))
+			Expect(output).To(Or(
+				Equal(fmt.Sprintf("CRITICAL: last message at %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;;", time.Unix(status.LastMessage, 0).UTC(), status.LastMessage)),
+				Equal(fmt.Sprintf("CRITICAL: last message at %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31536000;;", time.Unix(status.LastMessage, 0).UTC(), status.LastMessage)),
+			))
 			Expect(err).ToNot(HaveOccurred())
 
 			watch.properties.CertExpiry = 366 * 24 * time.Hour

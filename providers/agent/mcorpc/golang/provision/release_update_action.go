@@ -6,9 +6,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
-	lifecycle "github.com/choria-io/go-choria/lifecycle"
+	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
-	updater "github.com/choria-io/go-updater"
+	"github.com/choria-io/go-updater"
 )
 
 type ReleaseUpdateRequest struct {
@@ -20,6 +20,11 @@ type ReleaseUpdateRequest struct {
 var updaterf func(...updater.Option) error
 
 func releaseUpdateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+	if !agent.Choria.ProvisionMode() {
+		abort("Cannot reconfigure a server that is not in provisioning mode", reply)
+		return
+	}
+
 	mu.Lock()
 	defer mu.Unlock()
 

@@ -232,6 +232,7 @@ func (p *ChoriaProvisionClient) DiscoverNodes(ctx context.Context) (nodes []stri
 // Optional Inputs:
 //    - ca (string) - PEM text block for the CA
 //    - certificate (string) - PEM text block for the certificate
+//    - edch_public (string) - Required when sending a private key
 //    - key (string) -
 //    - ssldir (string) - Directory for storing the certificate in
 //    - token (string) - Authentication token to pass to the server

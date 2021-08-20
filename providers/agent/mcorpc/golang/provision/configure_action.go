@@ -23,6 +23,7 @@ type ConfigureRequest struct {
 	Certificate   string `json:"certificate"`
 	CA            string `json:"ca"`
 	SSLDir        string `json:"ssldir"`
+	EDCHPublic    string `json:"edch_public"`
 }
 
 func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
@@ -50,6 +51,11 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 
 	if len(args.Configuration) == 0 {
 		abort("Did not receive any configuration to write, cannot write a empty configuration file", reply)
+		return
+	}
+
+	if len(args.Key) != 0 && len(args.EDCHPublic) == 0 {
+		abort("EDCH Public Key not supplied while providing a private key", reply)
 		return
 	}
 
@@ -89,8 +95,15 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 
 		if args.Key != "" {
 			agent.Log.Warnf("Received a PRIVATE KEY over the network")
+
+			priKey, err := decryptPrivateKey(args.Key, args.EDCHPublic)
+			if err != nil {
+				abort(fmt.Sprintf("could not decrypt private key: %s", err), reply)
+				return
+			}
+
 			target = filepath.Join(args.SSLDir, "private.pem")
-			err = os.WriteFile(target, []byte(args.Key), 0600)
+			err = os.WriteFile(target, priKey, 0600)
 			if err != nil {
 				abort(fmt.Sprintf("Could not write KEY to %s: %s", target, err), reply)
 				return
