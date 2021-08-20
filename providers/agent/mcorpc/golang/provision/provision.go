@@ -20,6 +20,8 @@ type Reply struct {
 
 var mu = &sync.Mutex{}
 var allowRestart = true
+var edchPublic *[32]byte
+var edchPrivate *[32]byte
 var log *logrus.Entry
 
 var metadata = &agents.Metadata{

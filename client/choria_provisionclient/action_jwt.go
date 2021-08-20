@@ -174,6 +174,16 @@ func (d *JwtRequester) Token(v string) *JwtRequester {
 	return d
 }
 
+// EdchPublic is the value of the edch_public output
+//
+// Description: The EDCH public key for calculating shared secrets
+func (d *JwtOutput) EdchPublic() string {
+	val := d.reply["edch_public"]
+
+	return val.(string)
+
+}
+
 // Jwt is the value of the jwt output
 //
 // Description: The contents of the JWT token

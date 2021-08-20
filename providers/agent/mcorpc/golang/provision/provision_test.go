@@ -1,8 +1,14 @@
 package provision
 
 import (
+	"bytes"
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"crypto/x509"
+	"encoding/hex"
 	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"fmt"
 	"os"
@@ -111,8 +117,11 @@ var _ = Describe("Provision/Agent", func() {
 		})
 
 		It("Should handle update errors", func() {
+			build.ProvisionModeDefault = "true"
+			cfg.ConfigFile = "testdata/provisioning.cfg"
+
 			updaterf = func(_ ...updater.Option) error {
-				return errors.New("simulated eror")
+				return errors.New("simulated error")
 			}
 
 			req := &mcorpc.Request{
@@ -122,12 +131,17 @@ var _ = Describe("Provision/Agent", func() {
 				SenderID:  "go.test",
 			}
 			build.ProvisionToken = "toomanysecrets"
+
 			releaseUpdateAction(ctx, req, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
-			Expect(reply.Statusmsg).To(Equal("Update to version 0.7.0 failed, release rolled back: simulated eror"))
+			Expect(reply.Statusmsg).To(Equal("Update to version 0.7.0 failed, release rolled back: simulated error"))
 		})
 
 		It("Should update and publish an event", func() {
+			build.ProvisionToken = "testdata/provisioning.cfg"
+			build.ProvisionModeDefault = "true"
+			build.ProvisionToken = "toomanysecrets"
+
 			updaterf = func(_ ...updater.Option) error {
 				return nil
 			}
@@ -138,7 +152,6 @@ var _ = Describe("Provision/Agent", func() {
 				CallerID:  "choria=rip.mcollective",
 				SenderID:  "go.test",
 			}
-			build.ProvisionToken = "toomanysecrets"
 
 			si.EXPECT().NewEvent(lifecycle.Shutdown).Times(1)
 			releaseUpdateAction(ctx, req, reply, prov, nil)
@@ -393,6 +406,8 @@ var _ = Describe("Provision/Agent", func() {
 				SenderID:  "go.test",
 			}
 
+			build.ProvisionToken = "testdata/provisioning.cfg"
+			build.ProvisionModeDefault = "true"
 			build.ProvisionToken = "fail"
 			build.ProvisionJWTFile = "testdata/provision.jwt"
 
@@ -409,8 +424,10 @@ var _ = Describe("Provision/Agent", func() {
 		})
 
 		It("Should handle unset JWT files", func() {
-			build.ProvisionToken = ""
+			build.ProvisionToken = "testdata/provisioning.cfg"
 			build.ProvisionJWTFile = ""
+			build.ProvisionModeDefault = "true"
+			build.ProvisionToken = ""
 
 			req := &mcorpc.Request{
 				Data:      json.RawMessage(`{}`),
@@ -424,8 +441,10 @@ var _ = Describe("Provision/Agent", func() {
 		})
 
 		It("Should handle missing JWT files", func() {
-			build.ProvisionToken = ""
+			build.ProvisionToken = "testdata/provisioning.cfg"
 			build.ProvisionJWTFile = "/nonexisting"
+			build.ProvisionModeDefault = "true"
+			build.ProvisionToken = ""
 
 			req := &mcorpc.Request{
 				Data:      json.RawMessage(`{}`),
@@ -439,6 +458,8 @@ var _ = Describe("Provision/Agent", func() {
 		})
 
 		It("Should read the JWT file", func() {
+			cfg.ConfigFile = "testdata/provisioning.cfg"
+			build.ProvisionModeDefault = "true"
 			build.ProvisionToken = ""
 			build.ProvisionJWTFile = "testdata/provision.jwt"
 
@@ -449,6 +470,7 @@ var _ = Describe("Provision/Agent", func() {
 				SenderID:  "go.test",
 			}
 			jwtAction(ctx, req, reply, prov, nil)
+			Expect(reply.Statusmsg).To(Equal(""))
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 			Expect(reply.Data.(JWTReply).JWT).To(Equal("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJjaHMiOnRydWUsImNodSI6InByb3YuZXhhbXBsZS5uZXQ6NDIyMiIsImNodCI6InNlY3JldCIsImNocGQiOnRydWV9.lLc9DAdjkdA-YAbhwHg3FVR9BklGFSZ7FxyzSbh9vCc"))
 			build.ProvisionJWTFile = ""
@@ -514,8 +536,7 @@ var _ = Describe("Provision/Agent", func() {
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 		})
 
-		It("Should write the configuration", func() {
-			// TODO: windows support
+		It("Should require a EDCH key when a private key is provided", func() {
 			if runtime.GOOS == "windows" {
 				Skip("TODO: windows support")
 			}
@@ -525,6 +546,67 @@ var _ = Describe("Provision/Agent", func() {
 
 			req := &mcorpc.Request{
 				Data:      json.RawMessage(fmt.Sprintf(`{"certificate": "stub_cert", "ca":"stub_ca", "key":"stub_key","ssldir":"%s", "config":"{\"plugin.choria.server.provision\":\"0\", \"plugin.choria.srv_domain\":\"another.com\"}"}`, targetdir)),
+				RequestID: "uniq_req_id",
+				CallerID:  "choria=rip.mcollective",
+				SenderID:  "go.test",
+			}
+
+			configureAction(ctx, req, reply, prov, nil)
+
+			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
+			Expect(reply.Statusmsg).To(Equal("EDCH Public Key not supplied while providing a private key"))
+		})
+
+		It("Should write the configuration", func() {
+			// TODO: windows support
+			if runtime.GOOS == "windows" {
+				Skip("TODO: windows support")
+			}
+
+			build.ProvisionModeDefault = "true"
+			cfg.ConfigFile = targetcfg
+
+			// provisioner pub: dbf02405b51e8b600f53b96737db5dfec50677872c361304e41ac07625151401
+			// provisioner pri: e635819fcab98cfc6d44e0bad5ae5c08c5b09a752af7575ead6dbb7df774d6f9
+			// shared: 80e58cb657e093332c7354860e0919cd16dc424e00c3416875feec45f79f2c6b
+			pri, err := hex.DecodeString("e635819fcab98cfc6d44e0bad5ae5c08c5b09a752af7575ead6dbb7df774d6f9")
+			Expect(err).ToNot(HaveOccurred())
+			pub, err := hex.DecodeString("97ba5b5a83e6bbeb5b0de18bd87553f583c4b960b212d9435b70ff49749bd91c")
+			Expect(err).ToNot(HaveOccurred())
+			shared, err := hex.DecodeString("80e58cb657e093332c7354860e0919cd16dc424e00c3416875feec45f79f2c6b")
+			Expect(err).ToNot(HaveOccurred())
+
+			pk, err := rsa.GenerateKey(rand.Reader, 1024)
+			Expect(err).ToNot(HaveOccurred())
+			pkBytes := x509.MarshalPKCS1PrivateKey(pk)
+			pkPem := &bytes.Buffer{}
+			err = pem.Encode(pkPem, &pem.Block{Bytes: pkBytes, Type: "RSA PRIVATE KEY"})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(err).ToNot(HaveOccurred())
+			epb, err := x509.EncryptPEMBlock(rand.Reader, "RSA PRIVATE KEY", x509.MarshalPKCS1PrivateKey(pk), shared, x509.PEMCipherAES256) //lint:ignore SA1019 there is no alternative
+			Expect(err).ToNot(HaveOccurred())
+			epbPem := &bytes.Buffer{}
+			err = pem.Encode(epbPem, epb)
+			Expect(err).ToNot(HaveOccurred())
+
+			edchPublic = &[32]byte{}
+			edchPrivate = &[32]byte{}
+			copy(edchPrivate[:], pri)
+			copy(edchPublic[:], pub)
+
+			data := ConfigureRequest{
+				Certificate:   "stub_cert",
+				CA:            "stub_ca",
+				SSLDir:        targetdir,
+				Configuration: "{\"plugin.choria.server.provision\":\"0\", \"plugin.choria.srv_domain\":\"another.com\"}",
+				EDCHPublic:    "dbf02405b51e8b600f53b96737db5dfec50677872c361304e41ac07625151401",
+				Key:           epbPem.String(), // encrypted using shared of the EDCH
+			}
+
+			jdat, _ := json.Marshal(data)
+			req := &mcorpc.Request{
+				Data:      jdat,
 				RequestID: "uniq_req_id",
 				CallerID:  "choria=rip.mcollective",
 				SenderID:  "go.test",
@@ -553,7 +635,7 @@ var _ = Describe("Provision/Agent", func() {
 
 			key, err := os.ReadFile(filepath.Join(targetdir, "private.pem"))
 			Expect(err).ToNot(HaveOccurred())
-			Expect(string(key)).To(Equal("stub_key"))
+			Expect(key).To(Equal(pkPem.Bytes()))
 
 			Expect(filepath.Join(targetdir, "csr.pem")).ToNot(BeAnExistingFile())
 		})

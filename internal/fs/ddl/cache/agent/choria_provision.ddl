@@ -37,6 +37,15 @@ action "configure", :description => "Configure the Choria Server" do
         :optional    => false
 
 
+  input :edch_public,
+        :prompt      => "EDCH Public Key",
+        :description => "Required when sending a private key",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 64,
+        :optional    => true
+
+
   input :key,
         :prompt      => "PEM text block for the private key",
         :description => "",
@@ -210,6 +219,11 @@ action "jwt", :description => "Reenable provision mode in a running Choria Serve
 
 
 
+
+  output :edch_public,
+         :description => "The EDCH public key for calculating shared secrets",
+         :type        => "string",
+         :display_as  => "EDCH Public Key"
 
   output :jwt,
          :description => "The contents of the JWT token",
