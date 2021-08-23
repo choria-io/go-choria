@@ -143,7 +143,7 @@ func (fw *Framework) setupSecurity() error {
 // the value of that is returned, else it the build time property
 // ProvisionDefault is consulted
 func (fw *Framework) ProvisionMode() bool {
-	if !fw.Config.InitiatedByServer || (fw.bi.ProvisionBrokerURLs() == "" && fw.bi.ProvisionJWTFile() == "") {
+	if !fw.Config.InitiatedByServer || (fw.bi.ProvisionBrokerURLs() == "" && fw.bi.ProvisionJWTFile() == "" && fw.bi.ProvisionToken() == "") {
 		return false
 	}
 
@@ -157,6 +157,15 @@ func (fw *Framework) ProvisionMode() bool {
 // PrometheusTextFileDir is the configured directory where to write prometheus text file stats
 func (fw *Framework) PrometheusTextFileDir() string {
 	return fw.Config.Choria.PrometheusTextFileDir
+}
+
+// SupportsProvisioning determines if a node can auto provision
+func (fw *Framework) SupportsProvisioning() bool {
+	if fw.ProvisionMode() {
+		return true
+	}
+
+	return fw.bi.SupportsProvisioning()
 }
 
 // ConfigureProvisioning adjusts the active configuration to match the

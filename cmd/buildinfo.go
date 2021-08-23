@@ -50,6 +50,7 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Println("Choria build settings:")
 	fmt.Println()
 	fmt.Println("Build Data:")
+	fmt.Println()
 	fmt.Printf("     Version: %s\n", bi.Version())
 	fmt.Printf("     Git SHA: %s\n", bi.SHA())
 	fmt.Printf("  Build Date: %s\n", bi.BuildDate())
@@ -57,16 +58,19 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Printf("  Go Version: %s\n", runtime.Version())
 	fmt.Println()
 	fmt.Println("Protocol Defaults and Settings:")
+	fmt.Println()
 	fmt.Printf("     Default Collectives: %v\n", strings.Join(bi.DefaultCollectives(), ", "))
 	fmt.Printf("  Client Identity Suffix: %s\n", bi.ClientIdentitySuffix())
 	fmt.Println()
 	fmt.Println("Network Broker Settings:")
+	fmt.Println()
 	fmt.Printf("       Maximum Network Clients: %d\n", bi.MaxBrokerClients())
 	fmt.Printf("  Embedded NATS Server Version: %s\n", gnatsd.VERSION)
 
 	mutators := config.MutatorNames()
 	fmt.Println()
 	fmt.Println("Configuration Mutators:")
+	fmt.Println()
 	if len(mutators) > 0 {
 		for _, m := range mutators {
 			fmt.Printf("\t%s\n", m)
@@ -77,41 +81,45 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	fmt.Println()
 	fmt.Println("Server Settings:")
-	fmt.Printf("            Provisioning Default: %t\n", bi.ProvisionDefault())
-	fmt.Printf("                Provisioning TLS: %t\n", bi.ProvisionSecurity())
-	fmt.Printf("    Provisioning Target Resolver: %s\n", provtarget.Name())
-	fmt.Printf("      Default Provisioning Agent: %t\n", bi.ProvisionAgent())
-	if bi.ProvisionToken() != "" {
-		fmt.Printf("              Provisioning Token: *****\n")
-	} else {
-		fmt.Printf("              Provisioning Token: not set\n")
-	}
-	if bi.ProvisionBrokerURLs() != "" {
-		fmt.Printf("            Provisioning Brokers: %s\n", bi.ProvisionBrokerURLs())
-	}
-	if bi.ProvisionBrokerSRVDomain() != "" {
-		fmt.Printf("         Provisioning SRV Domain: %s\n", bi.ProvisionBrokerSRVDomain())
-	}
+	fmt.Println()
+	fmt.Printf("           Supports Provisioning: %t\n", bi.SupportsProvisioning())
 	if bi.ProvisionJWTFile() != "" {
 		fmt.Printf("           Provisioning JWT file: %s\n", bi.ProvisionJWTFile())
 	}
-	if bi.ProvisionRegistrationData() != "" {
-		fmt.Printf("  Provisioning Registration Data: %s\n", bi.ProvisionRegistrationData())
-	}
-	if bi.ProvisionFacts() != "" {
-		fmt.Printf("              Provisioning Facts: %s\n", bi.ProvisionFacts())
-	}
-	if bi.ProvisioningBrokerUsername() != "" {
-		fmt.Printf("    Provisioning Broker Username: %s\n", bi.ProvisioningBrokerUsername())
-
-	}
-	if bi.ProvisioningBrokerUsername() != "" {
-		fmt.Println("    Provisioning Broker Password: ******")
+	if bi.SupportsProvisioning() {
+		if bi.ProvisionToken() != "" {
+			fmt.Printf("              Provisioning Token: *****\n")
+		} else {
+			fmt.Printf("              Provisioning Token: not set\n")
+		}
+		fmt.Printf("            Provisioning Default: %t\n", bi.ProvisionDefault())
+		fmt.Printf("                Provisioning TLS: %t\n", bi.ProvisionSecurity())
+		fmt.Printf("    Provisioning Target Resolver: %s\n", provtarget.Name())
+		fmt.Printf("      Default Provisioning Agent: %t\n", bi.ProvisionAgent())
+		if bi.ProvisionBrokerURLs() != "" {
+			fmt.Printf("            Provisioning Brokers: %s\n", bi.ProvisionBrokerURLs())
+		}
+		if bi.ProvisionBrokerSRVDomain() != "" {
+			fmt.Printf("         Provisioning SRV Domain: %s\n", bi.ProvisionBrokerSRVDomain())
+		}
+		if bi.ProvisionRegistrationData() != "" {
+			fmt.Printf("  Provisioning Registration Data: %s\n", bi.ProvisionRegistrationData())
+		}
+		if bi.ProvisionFacts() != "" {
+			fmt.Printf("              Provisioning Facts: %s\n", bi.ProvisionFacts())
+		}
+		if bi.ProvisioningBrokerUsername() != "" {
+			fmt.Printf("    Provisioning Broker Username: %s\n", bi.ProvisioningBrokerUsername())
+		}
+		if bi.ProvisioningBrokerUsername() != "" {
+			fmt.Println("    Provisioning Broker Password: ******")
+		}
 
 	}
 
 	fmt.Println()
 	fmt.Println("Security Defaults:")
+	fmt.Println()
 	fmt.Printf("            TLS: %t\n", bi.HasTLS())
 	fmt.Printf("  x509 Security: %t\n", protocol.IsSecure())
 
@@ -122,6 +130,7 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	fmt.Println()
 	fmt.Println("Agent Providers:")
+	fmt.Println()
 
 	for _, p := range bi.AgentProviders() {
 		fmt.Printf("  %s\n", p)
@@ -129,6 +138,7 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	fmt.Println()
 	fmt.Println("Data Providers:")
+	fmt.Println()
 
 	for _, p := range bi.DataProviders() {
 		fmt.Printf("  %s\n", p)
@@ -136,6 +146,7 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	fmt.Println()
 	fmt.Println("Autonomous Agent Watchers:")
+	fmt.Println()
 
 	for _, p := range bi.MachineWatchers() {
 		fmt.Printf("  %s\n", p)

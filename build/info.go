@@ -13,24 +13,28 @@ var mu = &sync.Mutex{}
 func (i *Info) Version() string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return Version
 }
 
 func (i *Info) SHA() string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return SHA
 }
 
 func (i *Info) BuildDate() string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return BuildDate
 }
 
 func (i *Info) License() string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return License
 }
 
@@ -56,78 +60,96 @@ func (i *Info) DefaultCollectives() []string {
 func (i *Info) HasTLS() bool {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return HasTLS()
 }
 
 func (i *Info) MaxBrokerClients() int {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return MaxBrokerClients()
 }
 
 func (i *Info) ProvisionSecurity() bool {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return ProvisionSecurity()
+}
+
+// SupportsProvisioning determines if the build supports provisioning, typically that comes down to if a Provisioning Token is set either at build time or through the JWT
+func (i *Info) SupportsProvisioning() bool {
+	return i.ProvisionToken() != ""
 }
 
 func (i *Info) ProvisionDefault() bool {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return ProvisionDefault()
 }
 
 func (i *Info) ProvisionBrokerURLs() string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return ProvisionBrokerURLs
 }
 
 func (i *Info) ProvisionBrokerSRVDomain() string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return ProvisionBrokerSRVDomain
 }
 
 func (i *Info) ProvisionAgent() bool {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return ProvisionAgent == "true"
 }
 
 func (i *Info) ProvisionRegistrationData() string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return ProvisionRegistrationData
 }
 
 func (i *Info) ProvisionFacts() string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return ProvisionFacts
 }
 
 func (i *Info) ProvisionToken() string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return ProvisionToken
 }
 
 func (i *Info) ProvisionJWTFile() string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return ProvisionJWTFile
 }
 
 func (i *Info) ProvisionStatusFile() string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return ProvisionStatusFile
 }
 
 func (i *Info) AgentProviders() []string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return AgentProviders
 }
 
@@ -142,6 +164,7 @@ func (i *Info) RegisterAgentProvider(p string) {
 func (i *Info) MachineWatchers() []string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return MachineWatchers
 }
 
@@ -164,6 +187,7 @@ func (i *Info) RegisterDataProvider(p string) {
 func (i *Info) DataProviders() []string {
 	mu.Lock()
 	defer mu.Unlock()
+
 	return DataProviders
 }
 
