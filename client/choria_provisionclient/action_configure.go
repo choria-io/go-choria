@@ -183,11 +183,11 @@ func (d *ConfigureRequester) Certificate(v string) *ConfigureRequester {
 	return d
 }
 
-// EdchPublic is an optional input to the configure action
+// EcdhPublic is an optional input to the configure action
 //
 // Description: Required when sending a private key
-func (d *ConfigureRequester) EdchPublic(v string) *ConfigureRequester {
-	d.r.args["edch_public"] = v
+func (d *ConfigureRequester) EcdhPublic(v string) *ConfigureRequester {
+	d.r.args["ecdh_public"] = v
 
 	return d
 }

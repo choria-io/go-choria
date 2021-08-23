@@ -13,6 +13,7 @@ require (
 	github.com/choria-io/go-updater v0.0.3
 	github.com/cloudevents/sdk-go/v2 v2.5.0
 	github.com/fatih/color v1.12.0
+	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible

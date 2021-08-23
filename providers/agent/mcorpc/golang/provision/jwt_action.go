@@ -16,7 +16,7 @@ type JWTRequest struct {
 
 type JWTReply struct {
 	JWT        string `json:"jwt"`
-	EDCHPublic string `json:"edch_public"`
+	ECDHPublic string `json:"ecdh_public"`
 }
 
 func jwtAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
@@ -53,7 +53,7 @@ func jwtAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 	mu.Lock()
 	defer mu.Unlock()
 
-	err = updateEDCHLocked()
+	err = updateECDHLocked()
 	if err != nil {
 		abort(fmt.Sprintf("Could not calculate EDCH keys: %s", err), reply)
 		return
@@ -61,6 +61,6 @@ func jwtAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 
 	reply.Data = JWTReply{
 		JWT:        string(j),
-		EDCHPublic: fmt.Sprintf("%x", edchPublic),
+		ECDHPublic: fmt.Sprintf("%x", ecdhPublic),
 	}
 }

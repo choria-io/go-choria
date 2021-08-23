@@ -8,9 +8,9 @@ import (
 )
 
 var _ = Describe("EDCH", func() {
-	Describe("EDCHKeyPair", func() {
+	Describe("ECDHKeyPair", func() {
 		It("Should create key pairs", func() {
-			pub, pri, err := EDCHKeyPair()
+			pub, pri, err := ECDHKeyPair()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(pub).To(HaveLen(32))
 			Expect(pri).To(HaveLen(32))
@@ -18,21 +18,21 @@ var _ = Describe("EDCH", func() {
 		})
 	})
 
-	Describe("EDCHSharedSecret", func() {
+	Describe("ECDHSharedSecret", func() {
 		It("Should correctly calculate secrets", func() {
-			alicePri, alicePub, err := EDCHKeyPair()
+			alicePri, alicePub, err := ECDHKeyPair()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(alicePri).ToNot(Equal(alicePub))
 
-			bobPri, bobPub, err := EDCHKeyPair()
+			bobPri, bobPub, err := ECDHKeyPair()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(bobPri).ToNot(Equal(bobPub))
 			Expect(bobPri).ToNot(Equal(alicePri))
 			Expect(bobPub).ToNot(Equal(alicePub))
 
-			aliceShared, err := EDCHSharedSecret(alicePri, bobPub)
+			aliceShared, err := ECDHSharedSecret(alicePri, bobPub)
 			Expect(err).ToNot(HaveOccurred())
-			bobShared, err := EDCHSharedSecret(bobPri, alicePub)
+			bobShared, err := ECDHSharedSecret(bobPri, alicePub)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(aliceShared).To(Equal(bobShared))
 			Expect(aliceShared).To(HaveLen(32))
@@ -44,9 +44,9 @@ var _ = Describe("EDCH", func() {
 			// fmt.Printf("Bob Private: %x\n", bobPri)
 			// fmt.Printf("Shared: %x\n", bobShared)
 
-			aliceSharedS, err := EDCHSharedSecretString(fmt.Sprintf("%x", alicePri), fmt.Sprintf("%x", bobPub))
+			aliceSharedS, err := ECDHSharedSecretString(fmt.Sprintf("%x", alicePri), fmt.Sprintf("%x", bobPub))
 			Expect(err).ToNot(HaveOccurred())
-			bobSharedS, err := EDCHSharedSecretString(fmt.Sprintf("%x", bobPri), fmt.Sprintf("%x", alicePub))
+			bobSharedS, err := ECDHSharedSecretString(fmt.Sprintf("%x", bobPri), fmt.Sprintf("%x", alicePub))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(aliceSharedS).To(Equal(bobSharedS))
 			Expect(aliceShared).To(HaveLen(32))
