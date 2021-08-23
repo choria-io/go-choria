@@ -23,7 +23,7 @@ type ConfigureRequest struct {
 	Certificate   string `json:"certificate"`
 	CA            string `json:"ca"`
 	SSLDir        string `json:"ssldir"`
-	EDCHPublic    string `json:"edch_public"`
+	EDCHPublic    string `json:"ecdh_public"`
 }
 
 func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
