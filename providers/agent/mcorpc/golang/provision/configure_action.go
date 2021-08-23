@@ -66,12 +66,6 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		return
 	}
 
-	lines, err := writeConfig(settings, req, agent.Config, agent.Log)
-	if err != nil {
-		abort(fmt.Sprintf("Could not write config: %s", err), reply)
-		return
-	}
-
 	if args.Certificate != "" && args.SSLDir != "" && args.CA != "" {
 		err = os.MkdirAll(args.SSLDir, 0700)
 		if err != nil {
@@ -118,6 +112,12 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 				}
 			}
 		}
+	}
+
+	lines, err := writeConfig(settings, req, agent.Config, agent.Log)
+	if err != nil {
+		abort(fmt.Sprintf("Could not write config: %s", err), reply)
+		return
 	}
 
 	err = agent.ServerInfoSource.NewEvent(lifecycle.Provisioned)
