@@ -573,10 +573,10 @@ var _ = Describe("Provision/Agent", func() {
 			// server pub: 88a9a0ed27dc93c29466ea2bef99e078342b27e7a1d789fc35a9131f86c3a022
 			// server pri: 67e4a9b3934a3030470ed7a30f89eeaf7dab7b492aa9ee02fb864d690b7e6eeb
 			// shared: 53a4887b448755a3f0a0618b289eb2369ec4b2461d44890abdfa3084ef080c55
-			edchPrivate, err = hex.DecodeString("67e4a9b3934a3030470ed7a30f89eeaf7dab7b492aa9ee02fb864d690b7e6eeb")
+			ecdhPrivate, err = hex.DecodeString("67e4a9b3934a3030470ed7a30f89eeaf7dab7b492aa9ee02fb864d690b7e6eeb")
 			Expect(err).ToNot(HaveOccurred())
 
-			edchPublic, err = hex.DecodeString("88a9a0ed27dc93c29466ea2bef99e078342b27e7a1d789fc35a9131f86c3a022")
+			ecdhPublic, err = hex.DecodeString("88a9a0ed27dc93c29466ea2bef99e078342b27e7a1d789fc35a9131f86c3a022")
 			Expect(err).ToNot(HaveOccurred())
 
 			shared, err := edchSharedSecretLocked("c25fab933b16b2a4589e2c2d297669b818c82881f2f9bfd08cb8fd298924a41b")

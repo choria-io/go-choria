@@ -31,10 +31,10 @@ func checkToken(token string, reply *mcorpc.Reply) bool {
 	return true
 }
 
-func updateEDCHLocked() error {
+func updateECDHLocked() error {
 	var err error
 
-	edchPrivate, edchPublic, err = choria.EDCHKeyPair()
+	ecdhPrivate, ecdhPublic, err = choria.ECDHKeyPair()
 
 	return err
 }
@@ -45,11 +45,11 @@ func edchSharedSecretLocked(provisionerPub string) ([]byte, error) {
 		return nil, err
 	}
 
-	if len(edchPrivate) == 0 {
+	if len(ecdhPrivate) == 0 {
 		return nil, fmt.Errorf("private key not set")
 	}
 
-	return choria.EDCHSharedSecret(edchPrivate, pb)
+	return choria.ECDHSharedSecret(ecdhPrivate, pb)
 }
 
 func decryptPrivateKey(privateKey string, edchPublic string) ([]byte, error) {

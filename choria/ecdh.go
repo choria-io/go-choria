@@ -9,30 +9,30 @@ import (
 	"golang.org/x/crypto/curve25519"
 )
 
-// EDCHKeyPair create a keypair for key exchange using curve 25519
+// ECDHKeyPair create a keypair for key exchange using curve 25519
 //
 // This can be used to do Diffie-Hellman key exchange using Curve 25519 keys
 //
-// 		leftPri, leftPub, _ := EDCHKeyPair()
+// 		leftPri, leftPub, _ := ECDHKeyPair()
 //
 // Here we send leftPub to the remote end
 //
-// 		rightPri, rightPub, _ := EDCHKeyPair()
+// 		rightPri, rightPub, _ := ECDHKeyPair()
 //
 // Right can now figure out a shared secret:
 //
-// 		secret, err := EDCHSharedSecret(rightPri, leftPub)
+// 		secret, err := ECDHSharedSecret(rightPri, leftPub)
 //
 // Right now does whatever needs doing with the shared
 // secret and sends back rightPub to the left hand
 //
 // Left can now figure out the same shared secret:
 //
-// 		secret, err := EDCHSharedSecret(leftPri, rightPub)
+// 		secret, err := ECDHSharedSecret(leftPri, rightPub)
 //
 // And decode any data encrypted using the shared secret,
 // no shared keys ever traverse the network
-func EDCHKeyPair() (pri []byte, pub []byte, err error) {
+func ECDHKeyPair() (pri []byte, pub []byte, err error) {
 	private := [32]byte{}
 	_, err = io.ReadFull(rand.Reader, private[:])
 	if err != nil {
@@ -45,13 +45,13 @@ func EDCHKeyPair() (pri []byte, pub []byte, err error) {
 	return private[:], public[:], nil
 }
 
-// EDCHSharedSecret calculates a shared secret based on a local private key and a remote public key
-func EDCHSharedSecret(localPrivate []byte, remotePub []byte) ([]byte, error) {
+// ECDHSharedSecret calculates a shared secret based on a local private key and a remote public key
+func ECDHSharedSecret(localPrivate []byte, remotePub []byte) ([]byte, error) {
 	return curve25519.X25519(localPrivate, remotePub)
 }
 
-// EDCHSharedSecretString creates a shared secret in string form that can be decoded using hex.DecodeString
-func EDCHSharedSecretString(localPrivate string, remotePub string) (string, error) {
+// ECDHSharedSecretString creates a shared secret in string form that can be decoded using hex.DecodeString
+func ECDHSharedSecretString(localPrivate string, remotePub string) (string, error) {
 	priv, err := hex.DecodeString(localPrivate)
 	if err != nil {
 		return "", err

@@ -1,9 +1,10 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/08/23|1367  |Enable the `choria_provision` agent when provisioning is supported                                       |
 |2021/08/18|1359  |Support sorting `choria req` output by identity using `--sort`                                           |
-|2021/08/18|1358  |Ensure SSL Cache is ignored during provisioning                                                          |
+|2021/08/18|1358  |Ensure SSL Cache is created if needed during provisioning                                                |
 |2021/08/18|1357  |Correctly enter provisioning with a configuration file and without a Puppet installation                 |
-|2021/08/17|1355  |Support receiving private keys from the provisioner                                                      |
+|2021/08/17|1355  |Support receiving private keys from the provisioner, protected using Curve 25519 ECDH shared secrets     |
 |2021/08/16|1353  |Ensure no responses list and unexpected responses list always prints, capped to 200 nodes                |
 |2021/08/11|1344  |Fix setting workers and expr filter on generated clients                                                 |
 |2021/08/10|1342  |Include the Public Key in the CSR reply, add data type hints to the provisioner DDL and update client    |

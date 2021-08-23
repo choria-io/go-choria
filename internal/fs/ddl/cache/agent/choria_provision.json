@@ -66,8 +66,8 @@
           "validation": "-----BEGIN RSA PRIVATE KEY-----",
           "maxlength": 10240
         },
-        "edch_public": {
-          "prompt":  "EDCH Public Key",
+        "ecdh_public": {
+          "prompt":  "ECDH Public Key",
           "description": "Required when sending a private key",
           "type": "string",
           "default": "",
@@ -240,15 +240,15 @@
           "type": "string",
           "default": ""
         },
-        "edch_public": {
-          "description": "The EDCH public key for calculating shared secrets",
-          "display_as": "EDCH Public Key",
+        "ecdh_public": {
+          "description": "The ECDH public key for calculating shared secrets",
+          "display_as": "ECDH Public Key",
           "type": "string",
           "default": ""
         }
       },
       "display": "always",
-      "description": "Reenable provision mode in a running Choria Server"
+      "description": "Re-enable provision mode in a running Choria Server"
     },
     {
       "action": "reprovision",

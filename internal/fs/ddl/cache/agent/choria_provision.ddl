@@ -37,8 +37,8 @@ action "configure", :description => "Configure the Choria Server" do
         :optional    => false
 
 
-  input :edch_public,
-        :prompt      => "EDCH Public Key",
+  input :ecdh_public,
+        :prompt      => "ECDH Public Key",
         :description => "Required when sending a private key",
         :type        => :string,
         :validation  => '.',
@@ -206,7 +206,7 @@ action "release_update", :description => "Performs an in-place binary update and
 
 end
 
-action "jwt", :description => "Reenable provision mode in a running Choria Server" do
+action "jwt", :description => "Re-enable provision mode in a running Choria Server" do
   display :always
 
   input :token,
@@ -220,10 +220,10 @@ action "jwt", :description => "Reenable provision mode in a running Choria Serve
 
 
 
-  output :edch_public,
-         :description => "The EDCH public key for calculating shared secrets",
+  output :ecdh_public,
+         :description => "The ECDH public key for calculating shared secrets",
          :type        => "string",
-         :display_as  => "EDCH Public Key"
+         :display_as  => "ECDH Public Key"
 
   output :jwt,
          :description => "The contents of the JWT token",
