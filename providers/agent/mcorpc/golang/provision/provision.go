@@ -53,7 +53,7 @@ func New(mgr server.AgentManager) (agents.Agent, error) {
 	agent := mcorpc.New("choria_provision", metadata, mgr.Choria(), log)
 
 	agent.SetActivationChecker(func() bool {
-		return mgr.Choria().ProvisionMode() && mgr.Choria().BuildInfo().ProvisionAgent()
+		return mgr.Choria().SupportsProvisioning()
 	})
 
 	agent.MustRegisterAction("gencsr", csrAction)
