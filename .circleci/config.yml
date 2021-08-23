@@ -211,6 +211,19 @@ jobs:
 
     steps: *std_build_steps
 
+  build_bullseye_64bit_debs:
+    docker:
+      - image: circleci/golang:1.16
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      PACKAGE: bullseye_64
+      BUILD: foss
+      BUILDER: choria/packager:bullseye-go1.16
+
+    steps: *std_build_steps
+
   build_focal_64bit_debs:
     docker:
       - image: circleci/golang:1.16
