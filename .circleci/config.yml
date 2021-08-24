@@ -308,7 +308,7 @@ jobs:
             done
           done
 
-          for d in stretch_64 buster_64 buster_armhf
+          for d in stretch_64 buster_64 buster_armhf bullseye_64
           do
             for i in $(find /tmp/workspace/artifacts/foss/${d} -name \*.deb)
             do
@@ -461,6 +461,7 @@ workflows:
             - build_stretch_64bit_debs
             - build_buster_armhf_debs
             - build_buster_64bit_debs
+            - build_bullseye_64bit_debs
             - build_bionic_64bit_debs
             - build_focal_64bit_debs
 
