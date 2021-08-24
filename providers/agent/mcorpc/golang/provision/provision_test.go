@@ -579,7 +579,7 @@ var _ = Describe("Provision/Agent", func() {
 			ecdhPublic, err = hex.DecodeString("88a9a0ed27dc93c29466ea2bef99e078342b27e7a1d789fc35a9131f86c3a022")
 			Expect(err).ToNot(HaveOccurred())
 
-			shared, err := edchSharedSecretLocked("c25fab933b16b2a4589e2c2d297669b818c82881f2f9bfd08cb8fd298924a41b")
+			shared, err := ecdhSharedSecretLocked("c25fab933b16b2a4589e2c2d297669b818c82881f2f9bfd08cb8fd298924a41b")
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(fmt.Sprintf("%x", shared)).To(Equal("53a4887b448755a3f0a0618b289eb2369ec4b2461d44890abdfa3084ef080c55"))
@@ -602,7 +602,7 @@ var _ = Describe("Provision/Agent", func() {
 				CA:            "stub_ca",
 				SSLDir:        targetdir,
 				Configuration: "{\"plugin.choria.server.provision\":\"0\", \"plugin.choria.srv_domain\":\"another.com\"}",
-				EDCHPublic:    "c25fab933b16b2a4589e2c2d297669b818c82881f2f9bfd08cb8fd298924a41b", // provisioner sends this, so this is its public key
+				ECDHPublic:    "c25fab933b16b2a4589e2c2d297669b818c82881f2f9bfd08cb8fd298924a41b", // provisioner sends this, so this is its public key
 				Key:           epbPem.String(),                                                    // encrypted using shared of the EDCH
 			}
 

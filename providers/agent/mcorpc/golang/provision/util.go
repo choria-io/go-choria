@@ -39,7 +39,7 @@ func updateECDHLocked() error {
 	return err
 }
 
-func edchSharedSecretLocked(provisionerPub string) ([]byte, error) {
+func ecdhSharedSecretLocked(provisionerPub string) ([]byte, error) {
 	pb, err := hex.DecodeString(provisionerPub)
 	if err != nil {
 		return nil, err
@@ -52,16 +52,16 @@ func edchSharedSecretLocked(provisionerPub string) ([]byte, error) {
 	return choria.ECDHSharedSecret(ecdhPrivate, pb)
 }
 
-func decryptPrivateKey(privateKey string, edchPublic string) ([]byte, error) {
-	if len(edchPublic) == 0 {
-		return nil, fmt.Errorf("no EDCH Public Key")
+func decryptPrivateKey(privateKey string, ecdhPublic string) ([]byte, error) {
+	if len(ecdhPublic) == 0 {
+		return nil, fmt.Errorf("no ECDH Public Key")
 	}
 
 	if len(privateKey) == 0 {
 		return nil, fmt.Errorf("no Private Key")
 	}
 
-	secret, err := edchSharedSecretLocked(edchPublic)
+	secret, err := ecdhSharedSecretLocked(ecdhPublic)
 	if err != nil {
 		return nil, err
 	}
