@@ -23,7 +23,7 @@ type ConfigureRequest struct {
 	Certificate   string `json:"certificate"`
 	CA            string `json:"ca"`
 	SSLDir        string `json:"ssldir"`
-	EDCHPublic    string `json:"ecdh_public"`
+	ECDHPublic    string `json:"ecdh_public"`
 }
 
 func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
@@ -54,7 +54,7 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		return
 	}
 
-	if len(args.Key) != 0 && len(args.EDCHPublic) == 0 {
+	if len(args.Key) != 0 && len(args.ECDHPublic) == 0 {
 		abort("EDCH Public Key not supplied while providing a private key", reply)
 		return
 	}
@@ -90,7 +90,7 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		if args.Key != "" {
 			agent.Log.Warnf("Received a PRIVATE KEY over the network")
 
-			priKey, err := decryptPrivateKey(args.Key, args.EDCHPublic)
+			priKey, err := decryptPrivateKey(args.Key, args.ECDHPublic)
 			if err != nil {
 				abort(fmt.Sprintf("could not decrypt private key: %s", err), reply)
 				return
