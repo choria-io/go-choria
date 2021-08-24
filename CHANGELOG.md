@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/08/24|      |Release 0.23.0                                                                                           |
+|2021/08/24|      |Support Debian 11                                                                                        |
 |2021/08/23|1367  |Enable the `choria_provision` agent when provisioning is supported                                       |
 |2021/08/18|1359  |Support sorting `choria req` output by identity using `--sort`                                           |
 |2021/08/18|1358  |Ensure SSL Cache is created if needed during provisioning                                                |

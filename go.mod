@@ -3,7 +3,7 @@ module github.com/choria-io/go-choria
 go 1.16
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.2.16
+	github.com/AlecAivazis/survey/v2 v2.3.1
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/Netflix/go-expect v0.0.0-20210722184520-ef0bf57d82b3 // indirect
 	github.com/aelsabbahy/goss v0.3.16
@@ -13,7 +13,6 @@ require (
 	github.com/choria-io/go-updater v0.0.3
 	github.com/cloudevents/sdk-go/v2 v2.5.0
 	github.com/fatih/color v1.12.0
-	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.0.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
@@ -28,14 +27,14 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/mitchellh/mapstructure v1.4.1
-	github.com/nats-io/jsm.go v0.0.26-0.20210817170503-e4962a5e1452
-	github.com/nats-io/nats-server/v2 v2.3.5-0.20210820234538-059aa5e23a91
+	github.com/nats-io/jsm.go v0.0.26-0.20210823125634-aec587a14205
+	github.com/nats-io/nats-server/v2 v2.3.5-0.20210824151719-104e2168106f
 	github.com/nats-io/nats-streaming-server v0.22.1 // indirect
-	github.com/nats-io/nats.go v1.11.1-0.20210819195927-9053aa4200f0
+	github.com/nats-io/nats.go v1.11.1-0.20210823195900-fc13b0b1218c
 	github.com/nats-io/stan.go v0.10.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.4
-	github.com/onsi/gomega v1.15.0
+	github.com/onsi/gomega v1.16.0
 	github.com/open-policy-agent/opa v0.31.0
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/client_model v0.2.0
@@ -47,7 +46,7 @@ require (
 	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20210817164053-32db794688a5
 	golang.org/x/mod v0.5.0 // indirect
-	golang.org/x/sys v0.0.0-20210819135213-f52c844e1c1c
+	golang.org/x/sys v0.0.0-20210823070655-63515b42dcdf
 	golang.org/x/term v0.0.0-20210615171337-6886f2dfbf5b
 	golang.org/x/tools v0.1.5
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
