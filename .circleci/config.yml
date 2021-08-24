@@ -211,6 +211,19 @@ jobs:
 
     steps: *std_build_steps
 
+  build_bullseye_64bit_debs:
+    docker:
+      - image: circleci/golang:1.16
+
+    working_directory: /go/src/github.com/choria-io/go-choria
+
+    environment:
+      PACKAGE: bullseye_64
+      BUILD: foss
+      BUILDER: choria/packager:bullseye-go1.16
+
+    steps: *std_build_steps
+
   build_focal_64bit_debs:
     docker:
       - image: circleci/golang:1.16
@@ -295,7 +308,7 @@ jobs:
             done
           done
 
-          for d in stretch_64 buster_64 buster_armhf
+          for d in stretch_64 buster_64 buster_armhf bullseye_64
           do
             for i in $(find /tmp/workspace/artifacts/foss/${d} -name \*.deb)
             do
@@ -423,6 +436,11 @@ workflows:
           requires:
             - hold
 
+      - build_bullseye_64bit_debs:
+          filters: *semver_only
+          requires:
+            - hold
+
       - build_bionic_64bit_debs:
           filters: *semver_only
           requires:
@@ -443,6 +461,7 @@ workflows:
             - build_stretch_64bit_debs
             - build_buster_armhf_debs
             - build_buster_64bit_debs
+            - build_bullseye_64bit_debs
             - build_bionic_64bit_debs
             - build_focal_64bit_debs
 
