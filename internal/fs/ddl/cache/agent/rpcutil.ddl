@@ -2,7 +2,7 @@ metadata :name        => "rpcutil",
          :description => "Utility actions that expose information about the state of the running Server",
          :author      => "R.I.Pienaar <rip@devco.net>",
          :license     => "Apache-2.0",
-         :version     => "0.22.0",
+         :version     => "0.23.0",
          :url         => "https://choria.io/",
          :timeout     => 2
 

@@ -5,7 +5,7 @@ import (
 )
 
 // Version the application version
-var Version = "0.22.0"
+var Version = "0.23.0"
 
 // SHA is the git reference used to build this package
 var SHA = "unknown"
@@ -36,7 +36,7 @@ var ProvisionBrokerSRVDomain = ""
 var ProvisionModeDefault = "false"
 
 // ProvisionAgent determines if the supplied provisioning agent should be started
-// this lets you programatically or via the additional agents system supply your own
+// this lets you programmatically or via the additional agents system supply your own
 // agent to perform the provisioning duties
 var ProvisionAgent = "true"
 
