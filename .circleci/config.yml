@@ -436,6 +436,11 @@ workflows:
           requires:
             - hold
 
+      - build_bullseye_64bit_debs:
+          filters: *semver_only
+          requires:
+            - hold
+
       - build_bionic_64bit_debs:
           filters: *semver_only
           requires:
