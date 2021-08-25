@@ -184,7 +184,7 @@ foss:
       binary: armv7_linux
 
     bullseye_64:
-      template: debian/generic
+      template: debian/bullseye
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
 

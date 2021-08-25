@@ -1,0 +1,14 @@
+[Unit]
+Description=The Choria Orchestrator Network Broker
+After=network.target
+
+[Service]
+StandardOutput=syslog
+StandardError=syslog
+LimitNOFILE=51200
+User=root
+Group=root
+ExecStart={{cpkg_bindir}}/{{cpkg_name}} broker --config={{cpkg_etcdir}}/broker.conf
+
+[Install]
+WantedBy=multi-user.target
