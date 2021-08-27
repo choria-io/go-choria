@@ -6,6 +6,7 @@ import (
 	"context"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -19,7 +20,7 @@ var _ = Describe("Choria NATS Ingest", func() {
 		transport protocol.TransportMessage
 		connector *pooledWorker
 		manager   *stubConnectionManager
-		in        *choria.ConnectorMessage
+		in        inter.ConnectorMessage
 		logtxt    *bufio.Writer
 		logbuf    *bytes.Buffer
 		logger    *log.Entry
@@ -49,10 +50,7 @@ var _ = Describe("Choria NATS Ingest", func() {
 		j, err := transport.JSON()
 		Expect(err).ToNot(HaveOccurred())
 
-		in = &choria.ConnectorMessage{
-			Data:    []byte(j),
-			Subject: "test",
-		}
+		in = choria.NewConnectorMessage("test", "", []byte(j), nil)
 
 		broker, _ = NewFederationBroker("test", c)
 		connector, err = NewChoriaNatsIngest(1, Federation, 10, broker, logger)
@@ -73,7 +71,7 @@ var _ = Describe("Choria NATS Ingest", func() {
 	}, 1)
 
 	It("Should fail for invalid JSON", func() {
-		in.Data = []byte("{}")
+		in = choria.NewConnectorMessage(in.Subject(), in.Reply(), []byte("{}"), nil)
 		manager.connection.PublishToQueueSub("ingest", in)
 		waitForLogLines(logtxt, logbuf)
 		Expect(logbuf.String()).To(MatchRegexp("Could not parse received message into a TransportMessage: do not know how to create a TransportMessage from an expected JSON format message with content: {}"))
@@ -82,7 +80,7 @@ var _ = Describe("Choria NATS Ingest", func() {
 	It("Should fail for unfederated messages", func() {
 		transport.SetUnfederated()
 		j, _ := transport.JSON()
-		in.Data = []byte(j)
+		in = choria.NewConnectorMessage(in.Subject(), in.Reply(), []byte(j), nil)
 		manager.connection.PublishToQueueSub("ingest", in)
 		waitForLogLines(logtxt, logbuf)
 		Expect(logbuf.String()).To(MatchRegexp("Received a message on test that was not federated"))

@@ -7,6 +7,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 )
 
@@ -19,7 +20,7 @@ type JWTReply struct {
 	ECDHPublic string `json:"ecdh_public"`
 }
 
-func jwtAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func jwtAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	if !agent.Choria.ProvisionMode() {
 		abort("Cannot reconfigure a server that is not in provisioning mode", reply)
 		return

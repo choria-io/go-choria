@@ -11,6 +11,8 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/golang/mock/gomock"
 
@@ -30,13 +32,13 @@ var _ = Describe("Server/Agents", func() {
 	var (
 		mockctl  *gomock.Controller
 		mgr      *Manager
-		conn     *MockAgentConnector
+		conn     *imock.MockConnector
 		agent    *MockAgent
-		requests chan *choria.ConnectorMessage
+		requests chan inter.ConnectorMessage
 		ctx      context.Context
 		cancel   func()
 		fw       *choria.Framework
-		handler  func(ctx context.Context, msg *choria.Message, request protocol.Request, ci choria.ConnectorInfo, result chan *AgentReply)
+		handler  func(ctx context.Context, msg *choria.Message, request protocol.Request, ci inter.ConnectorInfo, result chan *AgentReply)
 		err      error
 	)
 
@@ -51,7 +53,7 @@ var _ = Describe("Server/Agents", func() {
 		fw.Config.Collectives = []string{"cone", "ctwo"}
 		fw.SetLogWriter(GinkgoWriter)
 
-		requests = make(chan *choria.ConnectorMessage)
+		requests = make(chan inter.ConnectorMessage)
 		ctx, cancel = context.WithCancel(context.Background())
 
 		metadata := Metadata{
@@ -64,13 +66,13 @@ var _ = Describe("Server/Agents", func() {
 			Version:     "1.0.0",
 		}
 
-		handler = func(ctx context.Context, msg *choria.Message, request protocol.Request, ci choria.ConnectorInfo, result chan *AgentReply) {
-			if msg.Payload == "sleep" {
+		handler = func(ctx context.Context, msg *choria.Message, request protocol.Request, ci inter.ConnectorInfo, result chan *AgentReply) {
+			if msg.Payload() == "sleep" {
 				time.Sleep(10 * time.Second)
 			}
 
 			reply := &AgentReply{
-				Body:    []byte(fmt.Sprintf("pong %s", msg.Payload)),
+				Body:    []byte(fmt.Sprintf("pong %s", msg.Payload())),
 				Message: msg,
 				Request: request,
 			}
@@ -85,7 +87,7 @@ var _ = Describe("Server/Agents", func() {
 		is.EXPECT().AgentMetadata("stub_agent").Return(metadata, true).AnyTimes()
 
 		mgr = New(requests, fw, conn, is, logrus.WithFields(logrus.Fields{"testing": true}))
-		conn = NewMockAgentConnector(mockctl)
+		conn = imock.NewMockConnector(mockctl)
 
 		agent = NewMockAgent(mockctl)
 		agent.EXPECT().Metadata().Return(&metadata).AnyTimes()
@@ -230,7 +232,7 @@ var _ = Describe("Server/Agents", func() {
 
 	Describe("Dispatch", func() {
 		var request protocol.Request
-		var msg *choria.Message
+		var msg inter.Message
 		var err error
 		wg := &sync.WaitGroup{}
 
@@ -288,7 +290,7 @@ var _ = Describe("Server/Agents", func() {
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
 
-			msg.Payload = "sleep"
+			msg.SetPayload("sleep")
 			replyc := make(chan *AgentReply, 1)
 			go func() {
 				defer GinkgoRecover()
@@ -310,7 +312,7 @@ var _ = Describe("Server/Agents", func() {
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
 
-			msg.Payload = "sleep"
+			msg.SetPayload("sleep")
 			replyc := make(chan *AgentReply, 1)
 			go func() {
 				defer GinkgoRecover()

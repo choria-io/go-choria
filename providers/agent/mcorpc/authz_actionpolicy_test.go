@@ -484,7 +484,6 @@ var _ = Describe("ActionPolicy", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal("Denying based on default policy in example17"))
 				Expect(matched).To(BeFalse())
-
 			})
 		})
 	})
@@ -495,8 +494,7 @@ var _ = Describe("Policy", func() {
 		pol       *actionPolicyPolicy
 		logger    *logrus.Entry
 		logbuffer *bytes.Buffer
-		fw        *choria.Framework
-		err       error
+		cfg       *config.Config
 	)
 
 	BeforeEach(func() {
@@ -505,49 +503,47 @@ var _ = Describe("Policy", func() {
 		logger.Logger.Out = logbuffer
 		pol = &actionPolicyPolicy{log: logger, file: "/nonexisting"}
 
-		cfg := config.NewConfigForTests()
+		cfg = config.NewConfigForTests()
 		cfg.DisableSecurityProviderVerify = true
-		fw, err = choria.NewWithConfig(cfg)
-		Expect(err).ToNot(HaveOccurred())
 	})
 
 	Describe("matchesFacts", func() {
 		It("Should correctly match empty policy", func() {
-			matched, err := pol.MatchesFacts(fw, logger)
+			matched, err := pol.MatchesFacts(cfg, logger)
 			Expect(err).To(MatchError("empty fact policy found"))
 			Expect(matched).To(BeFalse())
 		})
 
 		It("Should correctly match *", func() {
 			pol.facts = "*"
-			matched, err := pol.MatchesFacts(fw, logger)
+			matched, err := pol.MatchesFacts(cfg, logger)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(matched).To(BeTrue())
 		})
 
 		It("Should correctly match compound filters", func() {
 			pol.facts = "this and that"
-			matched, err := pol.MatchesFacts(fw, logger)
+			matched, err := pol.MatchesFacts(cfg, logger)
 			Expect(err).To(MatchError("compound statements are not supported"))
 			Expect(matched).To(BeFalse())
 		})
 
 		It("Should correctly catch invalid fact filters", func() {
 			pol.facts = "foo bar"
-			matched, err := pol.MatchesFacts(fw, logger)
+			matched, err := pol.MatchesFacts(cfg, logger)
 			Expect(err).To(MatchError("invalid fact matcher: could not parse fact foo it does not appear to be in a valid format"))
 			Expect(matched).To(BeFalse())
 		})
 
 		It("Should correctly match facts", func() {
-			fw.Config.FactSourceFile = "testdata/facts.json"
+			cfg.FactSourceFile = "testdata/facts.json"
 			pol.facts = "one=one"
-			matched, err := pol.MatchesFacts(fw, logger)
+			matched, err := pol.MatchesFacts(cfg, logger)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(matched).To(BeTrue())
 
 			pol.facts = "one=~/n/"
-			matched, err = pol.MatchesFacts(fw, logger)
+			matched, err = pol.MatchesFacts(cfg, logger)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(matched).To(BeTrue())
 		})

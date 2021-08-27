@@ -7,9 +7,9 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/audit"
@@ -17,7 +17,7 @@ import (
 )
 
 // Action is a function that implements a RPC Action
-type Action func(context.Context, *Request, *Reply, *Agent, choria.ConnectorInfo)
+type Action func(context.Context, *Request, *Reply, *Agent, inter.ConnectorInfo)
 
 // ActivationChecker is a function that can determine if an agent should be activated
 type ActivationChecker func() bool
@@ -90,13 +90,13 @@ func (a *Agent) MustRegisterAction(name string, f Action) {
 
 // HandleMessage attempts to parse a choria.Message as a MCollective SimpleRPC request and calls
 // the agents and actions associated with it
-func (a *Agent) HandleMessage(ctx context.Context, msg *choria.Message, request protocol.Request, conn choria.ConnectorInfo, outbox chan *agents.AgentReply) {
+func (a *Agent) HandleMessage(ctx context.Context, msg inter.Message, request protocol.Request, conn inter.ConnectorInfo, outbox chan *agents.AgentReply) {
 	var err error
 
 	reply := a.newReply()
 	defer a.publish(reply, msg, request, outbox)
 
-	rpcrequest, err := a.parseIncomingMessage(msg.Payload, request)
+	rpcrequest, err := a.parseIncomingMessage(msg.Payload(), request)
 	if err != nil {
 		reply.Statuscode = InvalidData
 		reply.Statusmsg = fmt.Sprintf("Could not process request: %s", err)
@@ -125,7 +125,7 @@ func (a *Agent) HandleMessage(ctx context.Context, msg *choria.Message, request 
 		audit.Request(request, rpcrequest.Agent, rpcrequest.Action, rpcrequest.Data, a.Config)
 	}
 
-	a.Log.Infof("Handling message %s for %s#%s from %s", msg.RequestID, a.Name(), rpcrequest.Action, request.CallerID())
+	a.Log.Infof("Handling message %s for %s#%s from %s", msg.RequestID(), a.Name(), rpcrequest.Action, request.CallerID())
 
 	action(ctx, rpcrequest, reply, a, conn)
 }
@@ -153,7 +153,7 @@ func (a *Agent) Metadata() *agents.Metadata {
 	return a.meta
 }
 
-func (a *Agent) publish(rpcreply *Reply, msg *choria.Message, request protocol.Request, outbox chan *agents.AgentReply) {
+func (a *Agent) publish(rpcreply *Reply, msg inter.Message, request protocol.Request, outbox chan *agents.AgentReply) {
 	if rpcreply.DisableResponse {
 		return
 	}

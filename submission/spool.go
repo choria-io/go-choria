@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/nats-io/jsm.go/api"
 	"github.com/nats-io/nats.go"
 	"github.com/sirupsen/logrus"
@@ -42,7 +43,7 @@ type Submitter interface {
 
 type Spool struct {
 	store  Store
-	conn   Connector
+	conn   inter.RawNATSConnector
 	prefix string
 	log    *logrus.Entry
 }
@@ -125,7 +126,7 @@ func (s *Spool) publishReliable(ctx context.Context, msg *nats.Msg, m *Message) 
 	return &ack, nil
 }
 
-func (s *Spool) Run(ctx context.Context, wg *sync.WaitGroup, conn Connector) {
+func (s *Spool) Run(ctx context.Context, wg *sync.WaitGroup, conn inter.RawNATSConnector) {
 	defer wg.Done()
 
 	s.conn = conn

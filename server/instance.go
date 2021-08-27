@@ -9,32 +9,14 @@ import (
 	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/data"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/server/discovery"
 	"github.com/choria-io/go-choria/server/registration"
 	"github.com/choria-io/go-choria/submission"
-	"github.com/nats-io/nats.go"
 	log "github.com/sirupsen/logrus"
 )
-
-type Connector interface {
-	NodeDirectedTarget(collective string, identity string) string
-	IsConnected() bool
-	Close()
-	ConnectedServer() string
-	ConnectionOptions() nats.Options
-	ConnectionStats() nats.Statistics
-	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *choria.ConnectorMessage) error
-	Unsubscribe(name string) error
-	AgentBroadcastTarget(collective string, agent string) string
-	ServiceBroadcastTarget(collective string, agent string) string
-	Publish(msg *choria.Message) error
-	PublishRaw(target string, data []byte) error
-	PublishRawMsg(msg *nats.Msg) error
-	RequestRawMsgWithContext(ctx context.Context, msg *nats.Msg) (*nats.Msg, error)
-	Nats() *nats.Conn
-}
 
 // Instance is an independent copy of Choria
 type Instance struct {
@@ -53,7 +35,7 @@ type Instance struct {
 	machines           *aagent.AAgent
 	data               *data.Manager
 
-	requests chan *choria.ConnectorMessage
+	requests chan inter.ConnectorMessage
 
 	shutdown    func()
 	stopProcess func()
@@ -66,7 +48,7 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	i = &Instance{
 		fw:               fw,
 		cfg:              fw.Configuration(),
-		requests:         make(chan *choria.ConnectorMessage, 10),
+		requests:         make(chan inter.ConnectorMessage, 10),
 		mu:               &sync.Mutex{},
 		startTime:        time.Now(),
 		lastMsgProcessed: time.Unix(0, 0),

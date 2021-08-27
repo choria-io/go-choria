@@ -3,6 +3,7 @@ package choria
 import (
 	"fmt"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/sirupsen/logrus"
@@ -10,12 +11,12 @@ import (
 )
 
 // NewMessage creates a new Message associated with this Choria instance
-func (fw *Framework) NewMessage(payload string, agent string, collective string, msgType string, request *Message) (msg *Message, err error) {
+func (fw *Framework) NewMessage(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
 	return NewMessage(payload, agent, collective, msgType, request, fw)
 }
 
 // NewRequestMessageFromTransportJSON creates a Message from a Transport JSON that holds a Request
-func (fw *Framework) NewRequestMessageFromTransportJSON(payload []byte) (msg *Message, err error) {
+func (fw *Framework) NewRequestMessageFromTransportJSON(payload []byte) (inter.Message, error) {
 	transport, err := fw.NewTransportFromJSON(string(payload))
 	if err != nil {
 		return nil, err
@@ -33,7 +34,7 @@ func (fw *Framework) NewRequestMessageFromTransportJSON(payload []byte) (msg *Me
 
 	protocol.CopyFederationData(transport, request)
 
-	msg, err = NewMessageFromRequest(request, transport.ReplyTo(), fw)
+	msg, err := NewMessageFromRequest(request, transport.ReplyTo(), fw)
 	if err != nil {
 		return nil, err
 	}
@@ -98,23 +99,23 @@ func (fw *Framework) NewRequest(version string, agent string, senderid string, c
 }
 
 // NewRequestFromMessage creates a new Request with the Message settings preloaded complying with a specific protocol version like protocol.RequestV1
-func (fw *Framework) NewRequestFromMessage(version string, msg *Message) (req protocol.Request, err error) {
+func (fw *Framework) NewRequestFromMessage(version string, msg inter.Message) (req protocol.Request, err error) {
 	if !(msg.Type() == RequestMessageType || msg.Type() == DirectRequestMessageType || msg.Type() == ServiceRequestMessageType) {
 		err = fmt.Errorf("cannot use '%s' message to construct a Request", msg.Type())
 		return nil, err
 	}
 
-	req, err = fw.NewRequest(version, msg.Agent, msg.SenderID, msg.CallerID, msg.TTL, msg.RequestID, msg.Collective())
+	req, err = fw.NewRequest(version, msg.Agent(), msg.SenderID(), msg.CallerID(), msg.TTL(), msg.RequestID(), msg.Collective())
 	if err != nil {
 		return nil, fmt.Errorf("could not create a Request from a Message: %s", err)
 	}
 
-	req.SetMessage(msg.Payload)
+	req.SetMessage(msg.Payload())
 
-	if msg.Filter == nil || msg.Filter.Empty() {
+	if msg.Filter() == nil || msg.Filter().Empty() {
 		req.NewFilter()
 	} else {
-		req.SetFilter(msg.Filter)
+		req.SetFilter(msg.Filter())
 	}
 
 	return req, nil
@@ -131,22 +132,22 @@ func (fw *Framework) NewReply(request protocol.Request) (reply protocol.Reply, e
 }
 
 // NewReplyFromMessage creates a new Reply with the Message settings preloaded complying with a specific protocol version like protocol.ReplyV1
-func (fw *Framework) NewReplyFromMessage(version string, msg *Message) (rep protocol.Reply, err error) {
+func (fw *Framework) NewReplyFromMessage(version string, msg inter.Message) (rep protocol.Reply, err error) {
 	if msg.Type() != "reply" {
 		return nil, fmt.Errorf("cannot use '%s' message to construct a Reply", msg.Type())
 	}
 
-	if msg.Request == nil {
+	if msg.Request() == nil {
 		return nil, fmt.Errorf("cannot create a Reply from Messages without Requests")
 	}
 
-	req, err := fw.NewRequestFromMessage(version, msg.Request)
+	req, err := fw.NewRequestFromMessage(version, msg.Request())
 	if err != nil {
 		return nil, err
 	}
 
 	rep, err = fw.NewReply(req)
-	rep.SetMessage(msg.Payload)
+	rep.SetMessage(msg.Payload())
 
 	return rep, err
 }
@@ -260,13 +261,13 @@ func (fw *Framework) NewTransportForSecureReply(reply protocol.SecureReply) (mes
 // NewReplyTransportForMessage creates a new Transport message based on a Message and the request its a reply to
 //
 // The new transport message will have the same version as the request its based on
-func (fw *Framework) NewReplyTransportForMessage(msg *Message, request protocol.Request) (protocol.TransportMessage, error) {
+func (fw *Framework) NewReplyTransportForMessage(msg inter.Message, request protocol.Request) (protocol.TransportMessage, error) {
 	reply, err := fw.NewReply(request)
 	if err != nil {
 		return nil, fmt.Errorf("could not create Reply: %s", err)
 	}
 
-	reply.SetMessage(msg.Payload)
+	reply.SetMessage(msg.Payload())
 
 	sreply, err := fw.NewSecureReply(reply)
 	if err != nil {
@@ -284,7 +285,7 @@ func (fw *Framework) NewReplyTransportForMessage(msg *Message, request protocol.
 }
 
 // NewRequestTransportForMessage creates a new versioned Transport message based on a Message
-func (fw *Framework) NewRequestTransportForMessage(msg *Message, version string) (protocol.TransportMessage, error) {
+func (fw *Framework) NewRequestTransportForMessage(msg inter.Message, version string) (protocol.TransportMessage, error) {
 	req, err := fw.NewRequestFromMessage(version, msg)
 	if err != nil {
 		return nil, fmt.Errorf("could not create Request: %s", err)

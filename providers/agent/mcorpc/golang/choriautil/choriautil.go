@@ -7,7 +7,7 @@ import (
 	"runtime"
 
 	"github.com/choria-io/go-choria/aagent"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server"
@@ -108,7 +108,7 @@ func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 	return agent, nil
 }
 
-func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	i := machineStateRequest{}
 	if !mcorpc.ParseRequestData(&i, req, reply) {
 		return
@@ -176,7 +176,7 @@ func machineStateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.
 	output.MachineState = found[0]
 }
 
-func machineTransitionAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func machineTransitionAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	i := machineTransitionRequest{}
 	if !mcorpc.ParseRequestData(&i, req, reply) {
 		return
@@ -191,7 +191,7 @@ func machineTransitionAction(ctx context.Context, req *mcorpc.Request, reply *mc
 	reply.Data = machineTransitionReply{Success: err == nil}
 }
 
-func machineStatesAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func machineStatesAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	states, err := agent.ServerInfoSource.MachinesStatus()
 	if err != nil {
 		reply.Statuscode = mcorpc.Aborted
@@ -215,7 +215,7 @@ func machineStatesAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc
 	reply.Data = r
 }
 
-func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	c := agent.Config
 
 	domain, err := agent.Choria.FacterDomain()

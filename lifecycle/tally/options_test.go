@@ -1,6 +1,7 @@
 package tally
 
 import (
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,7 +22,7 @@ var _ = Describe("Options", func() {
 
 			opt := options{
 				Component: "ginkgo",
-				Connector: NewMockConnector(ctrl),
+				Connector: imock.NewMockConnector(ctrl),
 			}
 			Expect(opt.Validate()).To(BeNil())
 			Expect(opt.StatPrefix).To(Equal("lifecycle_tally"))

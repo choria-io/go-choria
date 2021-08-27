@@ -4,13 +4,13 @@ import (
 	"context"
 	"sync"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/sirupsen/logrus"
 )
 
 // AgentInitializer is a function signature for a function that can register an agent
-type AgentInitializer func(context.Context, *agents.Manager, choria.AgentConnector, *logrus.Entry) error
+type AgentInitializer func(context.Context, *agents.Manager, inter.AgentConnector, *logrus.Entry) error
 
 var additionalAgents []AgentInitializer
 var aamu *sync.Mutex

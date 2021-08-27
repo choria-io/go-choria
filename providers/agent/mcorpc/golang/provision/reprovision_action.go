@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 )
 
@@ -15,7 +15,7 @@ type ReprovisionRequest struct {
 	Token string `json:"token"`
 }
 
-func reprovisionAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func reprovisionAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	mu.Lock()
 	defer mu.Unlock()
 

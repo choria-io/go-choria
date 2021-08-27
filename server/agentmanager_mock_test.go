@@ -6,11 +6,13 @@ package server
 
 import (
 	context "context"
+	reflect "reflect"
+
 	choria "github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	agents "github.com/choria-io/go-choria/server/agents"
 	gomock "github.com/golang/mock/gomock"
 	logrus "github.com/sirupsen/logrus"
-	reflect "reflect"
 )
 
 // MockAgentManager is a mock of AgentManager interface
@@ -37,7 +39,7 @@ func (m *MockAgentManager) EXPECT() *MockAgentManagerMockRecorder {
 }
 
 // RegisterAgent mocks base method
-func (m *MockAgentManager) RegisterAgent(ctx context.Context, name string, agent agents.Agent, conn choria.AgentConnector) error {
+func (m *MockAgentManager) RegisterAgent(ctx context.Context, name string, agent agents.Agent, conn inter.AgentConnector) error {
 	ret := m.ctrl.Call(m, "RegisterAgent", ctx, name, agent, conn)
 	ret0, _ := ret[0].(error)
 	return ret0

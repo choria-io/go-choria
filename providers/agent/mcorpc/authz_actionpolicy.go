@@ -8,7 +8,6 @@ import (
 	"regexp"
 	"strings"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/filter"
 	"github.com/choria-io/go-choria/filter/classes"
@@ -20,7 +19,7 @@ import (
 
 type policyMatcher interface {
 	Set(caller string, actions string, facts string, classes string, groups map[string][]string)
-	MatchesFacts(fw *choria.Framework, log *logrus.Entry) (bool, error)
+	MatchesFacts(cfg *config.Config, log *logrus.Entry) (bool, error)
 	MatchesClasses(classesFile string, log *logrus.Entry) (bool, error)
 	MatchesAction(act string) bool
 	MatchesCallerID(id string) bool
@@ -175,12 +174,7 @@ func (a *actionPolicy) checkRequestAgainstPolicy() (bool, error) {
 		return false, nil
 	}
 
-	fw, ok := a.agent.Choria.(*choria.Framework)
-	if !ok {
-		return false, fmt.Errorf("could not obtain a choria framework instance")
-	}
-
-	factsMatched, err := pol.MatchesFacts(fw, a.log)
+	factsMatched, err := pol.MatchesFacts(a.agent.Config, a.log)
 	if err != nil {
 		return false, err
 	}
@@ -299,7 +293,7 @@ func (p *actionPolicyPolicy) Set(caller string, actions string, facts string, cl
 	p.groups = groups
 }
 
-func (p *actionPolicyPolicy) MatchesFacts(fw *choria.Framework, log *logrus.Entry) (bool, error) {
+func (p *actionPolicyPolicy) MatchesFacts(cfg *config.Config, log *logrus.Entry) (bool, error) {
 	if p.facts == "" {
 		return false, fmt.Errorf("empty fact policy found")
 	}
@@ -323,7 +317,7 @@ func (p *actionPolicyPolicy) MatchesFacts(fw *choria.Framework, log *logrus.Entr
 		matches = append(matches, [3]string{filter.Fact, filter.Operator, filter.Value})
 	}
 
-	if facts.MatchFile(matches, fw.Configuration().FactSourceFile, log) {
+	if facts.MatchFile(matches, cfg.FactSourceFile, log) {
 		return true, nil
 	}
 

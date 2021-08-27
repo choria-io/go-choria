@@ -13,7 +13,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
@@ -118,7 +118,7 @@ func (p *Provider) externalActivationCheck(ddl *agentddl.DDL) (mcorpc.Activation
 	return func() bool { return rep.ShouldActivate }, nil
 }
 
-func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	action := fmt.Sprintf("%s#%s", req.Agent, req.Action)
 
 	ddlpath, ok := p.paths[agent.Name()]

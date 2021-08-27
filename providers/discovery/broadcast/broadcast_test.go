@@ -67,7 +67,7 @@ var _ = Describe("Broadcast", func() {
 
 			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
 				Expect(msg.Collective()).To(Equal("test"))
-				Expect(msg.Payload).To(Equal("cGluZw=="))
+				Expect(msg.Payload()).To(Equal("cGluZw=="))
 
 				req, err := fw.NewRequestFromMessage(protocol.RequestV1, msg)
 				Expect(err).ToNot(HaveOccurred())
@@ -84,9 +84,7 @@ var _ = Describe("Broadcast", func() {
 					j, err := t.JSON()
 					Expect(err).ToNot(HaveOccurred())
 
-					cm := &choria.ConnectorMessage{
-						Data: []byte(j),
-					}
+					cm := choria.NewConnectorMessage("", "", []byte(j), nil)
 
 					handler(ctx, cm)
 				}

@@ -1,8 +1,8 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'choria_provision' Version 0.22.0 generated using Choria version 0.22.0
+// Client for Choria RPC Agent 'choria_provision' Version 0.23.0 generated using Choria version 0.23.0
 
-// Package choria_provisionclient is an API client to the Choria Choria_provision agent Version 0.22.0.
+// Package choria_provisionclient is an API client to the Choria Choria_provision agent Version 0.23.0.
 //
 // Actions:
 //   * Configure - Configure the Choria Server

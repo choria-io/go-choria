@@ -6,7 +6,7 @@ import (
 	"fmt"
 
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	agentDDL "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server"
@@ -52,7 +52,7 @@ func New(mgr server.AgentManager) (agents.Agent, error) {
 	return agent, nil
 }
 
-func ddlAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func ddlAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	i := DDLRequest{}
 	if !mcorpc.ParseRequestData(&i, req, reply) {
 		return

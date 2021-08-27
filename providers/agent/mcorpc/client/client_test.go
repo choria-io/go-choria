@@ -172,9 +172,9 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 
 			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
 				Expect(msg.Collective()).To(Equal("mcollective"))
-				Expect(msg.Payload).To(Equal("{\"agent\":\"package\",\"action\":\"test_action\",\"data\":{\"testing\":true}}"))
+				Expect(msg.Payload()).To(Equal("{\"agent\":\"package\",\"action\":\"test_action\",\"data\":{\"testing\":true}}"))
 
-				reqid = msg.RequestID
+				reqid = msg.RequestID()
 
 				rpcreply := RPCReply{
 					Statusmsg:  "OK",
@@ -210,7 +210,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 					tj, err := transport.JSON()
 					Expect(err).ToNot(HaveOccurred())
 
-					rpchandler(ctx, &choria.ConnectorMessage{Data: []byte(tj), Reply: "x", Subject: "x"})
+					rpchandler(ctx, choria.NewConnectorMessage("x", "x", []byte(tj), nil))
 				}
 			})
 
@@ -255,7 +255,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 
 		It("Should support discovery callbacks and limits", func() {
 			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
-				Expect(msg.DiscoveredHosts).To(Equal([]string{"host1"}))
+				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1"}))
 			})
 
 			discoveredCnt := 0
@@ -292,11 +292,11 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 
 		It("Should support batched mode", func() {
 			batch1 := cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
-				Expect(msg.DiscoveredHosts).To(Equal([]string{"host1", "host2"}))
+				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1", "host2"}))
 			})
 
 			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).After(batch1).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
-				Expect(msg.DiscoveredHosts).To(Equal([]string{"host3", "host4"}))
+				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host3", "host4"}))
 			})
 
 			rpc.Do(ctx, "test_action", request{Testing: true}, Targets([]string{"host1", "host2", "host3", "host4"}), InBatches(2, -1))
@@ -304,7 +304,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 
 		It("Should support making requests without processing replies unbatched", func() {
 			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
-				Expect(msg.DiscoveredHosts).To(Equal([]string{"host1", "host2"}))
+				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1", "host2"}))
 				Expect(msg.ReplyTo()).To(Equal("custom.reply.to"))
 				Expect(handler).To(BeNil())
 			})
@@ -321,13 +321,13 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 
 		It("Should support making requests without processing replies batched", func() {
 			batch1 := cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
-				Expect(msg.DiscoveredHosts).To(Equal([]string{"host1"}))
+				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1"}))
 				Expect(msg.ReplyTo()).To(Equal("custom.reply.to"))
 				Expect(handler).To(BeNil())
 			})
 
 			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).After(batch1).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
-				Expect(msg.DiscoveredHosts).To(Equal([]string{"host2"}))
+				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host2"}))
 				Expect(msg.ReplyTo()).To(Equal("custom.reply.to"))
 				Expect(handler).To(BeNil())
 			})

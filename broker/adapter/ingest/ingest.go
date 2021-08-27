@@ -9,6 +9,7 @@ import (
 
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/prometheus/client_golang/prometheus"
@@ -32,7 +33,7 @@ type NatsIngest struct {
 	adapterName string
 	group       string
 
-	input chan *choria.ConnectorMessage
+	input chan inter.ConnectorMessage
 	work  chan Adaptable
 
 	fw   Framework
@@ -130,12 +131,12 @@ func (na *NatsIngest) Receiver(ctx context.Context, wg *sync.WaitGroup) {
 	timer := stats.ProcessTime.WithLabelValues(na.name, "input", na.cfg.Identity)
 	workqlen := stats.WorkQueueLengthGauge.WithLabelValues(na.adapterName, na.cfg.Identity)
 
-	receiverf := func(cm *choria.ConnectorMessage) {
+	receiverf := func(cm inter.ConnectorMessage) {
 		obs := prometheus.NewTimer(timer)
 		defer obs.ObserveDuration()
 		defer func() { workqlen.Set(float64(len(na.work))) }()
 
-		rawmsg := cm.Data
+		rawmsg := cm.Data()
 		var msg Adaptable
 		var err error
 

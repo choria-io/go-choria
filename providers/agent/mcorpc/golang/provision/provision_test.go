@@ -20,6 +20,7 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
@@ -40,7 +41,7 @@ func Test(t *testing.T) {
 var _ = Describe("Provision/Agent", func() {
 	var (
 		mockctl   *gomock.Controller
-		requests  chan *choria.ConnectorMessage
+		requests  chan inter.ConnectorMessage
 		cfg       *config.Config
 		fw        *choria.Framework
 		am        *agents.Manager
@@ -57,7 +58,7 @@ var _ = Describe("Provision/Agent", func() {
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 
-		requests = make(chan *choria.ConnectorMessage)
+		requests = make(chan inter.ConnectorMessage)
 		reply = &mcorpc.Reply{}
 
 		cfg = config.NewConfigForTests()

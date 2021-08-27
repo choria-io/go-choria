@@ -7,6 +7,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/testutil"
@@ -19,7 +20,7 @@ var _ = Describe("RegoPolicy", func() {
 	Describe(" tests", func() {
 
 		var (
-			requests = make(chan *choria.ConnectorMessage)
+			requests = make(chan inter.ConnectorMessage)
 			authz    *regoPolicy
 			logger   *logrus.Entry
 			fw       *choria.Framework
@@ -70,7 +71,7 @@ var _ = Describe("RegoPolicy", func() {
 				}
 
 				agent := New(metadata.Name, metadata, am.Choria(), fw.Logger("test"))
-				action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
+				action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {}
 
 				agent.MustRegisterAction("boop", action)
 				Expect(err).ToNot(HaveOccurred())
@@ -89,7 +90,7 @@ var _ = Describe("RegoPolicy", func() {
 			}
 
 			ginkgoAgent := New(metadata.Name, metadata, am.Choria(), fw.Logger("test"))
-			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
+			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {}
 			ginkgoAgent.MustRegisterAction("boop", action)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -210,7 +211,7 @@ var _ = Describe("RegoPolicy", func() {
 
 	Describe("Auth deny tests", func() {
 		var (
-			requests = make(chan *choria.ConnectorMessage)
+			requests = make(chan inter.ConnectorMessage)
 			authz    *regoPolicy
 			logger   *logrus.Entry
 			fw       *choria.Framework
@@ -258,7 +259,7 @@ var _ = Describe("RegoPolicy", func() {
 			}
 
 			ginkgoAgent := New(metadata.Name, metadata, am.Choria(), fw.Logger("test"))
-			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
+			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {}
 			ginkgoAgent.MustRegisterAction("boop", action)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -356,7 +357,7 @@ var _ = Describe("RegoPolicy", func() {
 
 	Describe("Multiple allow statement tests", func() {
 		var (
-			requests = make(chan *choria.ConnectorMessage)
+			requests = make(chan inter.ConnectorMessage)
 			authz    *regoPolicy
 			logger   *logrus.Entry
 			fw       *choria.Framework
@@ -414,7 +415,7 @@ var _ = Describe("RegoPolicy", func() {
 				}
 
 				ginkgoAgent := New(metadata.Name, metadata, am.Choria(), fw.Logger("test"))
-				action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
+				action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {}
 				ginkgoAgent.MustRegisterAction("boop", action)
 				Expect(err).ToNot(HaveOccurred())
 
@@ -469,7 +470,7 @@ var _ = Describe("RegoPolicy", func() {
 				}
 
 				ginkgoAgent := New(metadata.Name, metadata, am.Choria(), fw.Logger("test"))
-				action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
+				action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {}
 				ginkgoAgent.MustRegisterAction("boop", action)
 				Expect(err).ToNot(HaveOccurred())
 
@@ -524,7 +525,7 @@ var _ = Describe("RegoPolicy", func() {
 				}
 
 				ginkgoAgent := New(metadata.Name, metadata, am.Choria(), fw.Logger("test"))
-				action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
+				action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {}
 				ginkgoAgent.MustRegisterAction("boop", action)
 				Expect(err).ToNot(HaveOccurred())
 

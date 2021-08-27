@@ -4,6 +4,7 @@ import (
 	"context"
 	"sync"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/choria"
@@ -12,7 +13,7 @@ import (
 // AgentProvider is capable of adding agents into a running instance
 type AgentProvider interface {
 	Initialize(fw *choria.Framework, log *logrus.Entry)
-	RegisterAgents(ctx context.Context, mgr AgentManager, connector choria.AgentConnector, log *logrus.Entry) error
+	RegisterAgents(ctx context.Context, mgr AgentManager, connector inter.AgentConnector, log *logrus.Entry) error
 	Version() string
 }
 

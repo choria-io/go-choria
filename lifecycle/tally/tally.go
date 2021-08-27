@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/machine"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -17,7 +17,7 @@ import (
 
 // Connector is a connection to the middleware
 type Connector interface {
-	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *choria.ConnectorMessage) error
+	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan inter.ConnectorMessage) error
 }
 
 // Recorder listens for alive events and records the versions
@@ -199,11 +199,11 @@ func (r *Recorder) maintenance() {
 	}
 }
 
-func (r *Recorder) processStateTransition(m *choria.ConnectorMessage) (err error) {
+func (r *Recorder) processStateTransition(m inter.ConnectorMessage) (err error) {
 	ce := cloudevents.NewEvent("1.0")
 	event := &machine.TransitionNotification{}
 
-	err = json.Unmarshal(m.Bytes(), &ce)
+	err = json.Unmarshal(m.Data(), &ce)
 	if err != nil {
 		return fmt.Errorf("could not parse cloudevent: %s", err)
 	}
@@ -224,8 +224,8 @@ func (r *Recorder) processStateTransition(m *choria.ConnectorMessage) (err error
 
 // Run starts listening for events and record statistics about it in prometheus
 func (r *Recorder) Run(ctx context.Context) (err error) {
-	lifeEvents := make(chan *choria.ConnectorMessage, 100)
-	machineTransitions := make(chan *choria.ConnectorMessage, 100)
+	lifeEvents := make(chan inter.ConnectorMessage, 100)
+	machineTransitions := make(chan inter.ConnectorMessage, 100)
 
 	maintSched := time.NewTicker(time.Minute)
 	subid := util.UniqueID()
@@ -247,7 +247,7 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 	for {
 		select {
 		case e := <-lifeEvents:
-			event, err := lifecycle.NewFromJSON(e.Data)
+			event, err := lifecycle.NewFromJSON(e.Data())
 			if err != nil {
 				r.options.Log.Errorf("could not process event: %s", err)
 				r.badEvents.WithLabelValues(r.options.Component).Inc()
