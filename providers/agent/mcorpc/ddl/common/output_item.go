@@ -1,6 +1,8 @@
 package common
 
-import "github.com/choria-io/go-choria/internal/fs"
+import (
+	"github.com/choria-io/go-choria/internal/fs"
+)
 
 var (
 	OutputTypeArray   = "Array"

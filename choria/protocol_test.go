@@ -2,6 +2,7 @@ package choria
 
 import (
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -19,13 +20,13 @@ var _ = Describe("Protocol", func() {
 			c, err = NewWithConfig(cfg)
 			Expect(err).ToNot(HaveOccurred())
 
-			rm, err := NewMessage("ping", "discovery", "mcollective", RequestMessageType, nil, c)
+			rm, err := NewMessage("ping", "discovery", "mcollective", inter.RequestMessageType, nil, c)
 			Expect(err).ToNot(HaveOccurred())
 
 			req, err := c.NewRequestFromMessage(protocol.RequestV1, rm)
 			Expect(err).ToNot(HaveOccurred())
 
-			reply, err := NewMessage("pong", "discovery", "mcollective", ReplyMessageType, rm, c)
+			reply, err := NewMessage("pong", "discovery", "mcollective", inter.ReplyMessageType, rm, c)
 			Expect(err).ToNot(HaveOccurred())
 
 			replyT, err := c.NewReplyTransportForMessage(reply, req)

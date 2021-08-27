@@ -14,7 +14,6 @@ import (
 	"github.com/choria-io/go-choria/providers/discovery/broadcast"
 	"github.com/choria-io/go-choria/providers/discovery/puppetdb"
 
-	"github.com/choria-io/go-choria/choria"
 	cclient "github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
@@ -193,7 +192,7 @@ func (r *RPC) setOptions(opts ...RequestOption) (err error) {
 
 	if r.ddl.Metadata.Service {
 		r.opts.Workers = 1
-		r.opts.RequestType = choria.ServiceRequestMessageType
+		r.opts.RequestType = inter.ServiceRequestMessageType
 	}
 
 	return nil
@@ -254,7 +253,7 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 	dctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	if len(r.opts.Targets) == 0 && (r.opts.RequestType != choria.ServiceRequestMessageType || !r.ddl.Metadata.Service) {
+	if len(r.opts.Targets) == 0 && (r.opts.RequestType != inter.ServiceRequestMessageType || !r.ddl.Metadata.Service) {
 		err = r.discover(ctx)
 		if err != nil {
 			return nil, fmt.Errorf("discovery failed: %s", err)
@@ -283,7 +282,7 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 	r.opts.totalStats.SetAgent(r.agent)
 
 	switch {
-	case r.opts.RequestType == choria.ServiceRequestMessageType:
+	case r.opts.RequestType == inter.ServiceRequestMessageType:
 		r.opts.stats = NewStats()
 
 		var responded []string
@@ -401,9 +400,9 @@ func (r *RPC) setupMessage(ctx context.Context, action string, payload interface
 		return nil, nil, fmt.Errorf("could not encode request: %s", err)
 	}
 
-	msgType := choria.RequestMessageType
+	msgType := inter.RequestMessageType
 	if r.ddl.Metadata.Service {
-		msgType = choria.ServiceRequestMessageType
+		msgType = inter.ServiceRequestMessageType
 		r.opts.Workers = 1
 	}
 
@@ -511,7 +510,7 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 		}
 
 		// defer because we do not do any discovery so recording the response here would mark it as unknown
-		if r.opts.RequestType != choria.ServiceRequestMessageType {
+		if r.opts.RequestType != inter.ServiceRequestMessageType {
 			r.opts.stats.RecordReceived(reply.SenderID())
 		}
 

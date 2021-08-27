@@ -6,6 +6,14 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 )
 
+const (
+	MessageMessageType        string = "message"
+	RequestMessageType        string = "request"
+	DirectRequestMessageType  string = "direct_request"
+	ServiceRequestMessageType string = "service_request"
+	ReplyMessageType          string = "reply"
+)
+
 // Message is a message that is transportable over the Choria Protocol
 type Message interface {
 	Agent() string
@@ -44,4 +52,5 @@ type Message interface {
 	Type() string
 	Validate() (bool, error)
 	ValidateTTL() bool
+	ReplyTarget() string
 }
