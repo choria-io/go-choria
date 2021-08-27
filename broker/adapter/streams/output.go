@@ -12,6 +12,7 @@ import (
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/broker/adapter/transformer"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/prometheus/client_golang/prometheus"
@@ -22,7 +23,7 @@ type stream struct {
 	servers     func() (srvcache.Servers, error)
 	clientID    string
 	topic       string
-	conn        choria.Connector
+	conn        inter.Connector
 	log         *log.Entry
 	name        string
 	adapterName string

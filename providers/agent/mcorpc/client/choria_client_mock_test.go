@@ -8,7 +8,6 @@ import (
 	context "context"
 	reflect "reflect"
 
-	choria "github.com/choria-io/go-choria/choria"
 	client "github.com/choria-io/go-choria/client/client"
 	config "github.com/choria-io/go-choria/config"
 	inter "github.com/choria-io/go-choria/inter"
@@ -99,10 +98,10 @@ func (mr *MockChoriaFrameworkMockRecorder) MiddlewareServers() *gomock.Call {
 }
 
 // NewConnector mocks base method.
-func (m *MockChoriaFramework) NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (choria.Connector, error) {
+func (m *MockChoriaFramework) NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (inter.Connector, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "NewConnector", ctx, servers, name, logger)
-	ret0, _ := ret[0].(choria.Connector)
+	ret0, _ := ret[0].(inter.Connector)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

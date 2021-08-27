@@ -11,7 +11,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/backoff"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/nats-io/jsm.go"
 	"github.com/xeipuuv/gojsonschema"
@@ -60,7 +60,7 @@ type Machine struct {
 	data        map[string]interface{}
 	facts       func() json.RawMessage
 	jsm         *jsm.Manager
-	conn        choria.Connector
+	conn        inter.Connector
 	manager     WatcherManager
 	fsm         *fsm.FSM
 	notifiers   []NotificationService
@@ -285,7 +285,7 @@ func (m *Machine) TextFileDirectory() string {
 	return m.txtfileDir
 }
 
-func (m *Machine) SetConnection(conn choria.Connector) error {
+func (m *Machine) SetConnection(conn inter.Connector) error {
 	m.Lock()
 	defer m.Unlock()
 

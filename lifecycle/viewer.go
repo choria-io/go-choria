@@ -7,7 +7,6 @@ import (
 	"os"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
@@ -20,7 +19,7 @@ type SubscribeConnector interface {
 }
 
 type Framework interface {
-	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn choria.Connector, err error)
+	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn inter.Connector, err error)
 	Certname() string
 	Logger(name string) *logrus.Entry
 	NewRequestID() (string, error)

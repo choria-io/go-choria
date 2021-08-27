@@ -54,7 +54,7 @@ type ChoriaFramework interface {
 	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
 	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
 	MiddlewareServers() (servers srvcache.Servers, err error)
-	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn choria.Connector, err error)
+	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn inter.Connector, err error)
 	NewRequestID() (string, error)
 	Certname() string
 	PQLQueryCertNames(query string) ([]string, error)

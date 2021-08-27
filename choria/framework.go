@@ -17,6 +17,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/submission"
 	"github.com/fatih/color"
@@ -823,13 +824,13 @@ func (fw *Framework) GovernorSubject(name string) string {
 	return GovernorSubject(name, fw.Config.MainCollective)
 }
 
-func (fw *Framework) KV(ctx context.Context, conn Connector, bucket string, create bool, opts ...kv.Option) (kv.KV, error) {
+func (fw *Framework) KV(ctx context.Context, conn inter.Connector, bucket string, create bool, opts ...kv.Option) (kv.KV, error) {
 	kv, _, err := fw.KVWithConn(ctx, conn, bucket, create, opts...)
 	return kv, err
 }
 
 // KVWithConn creates a connection to a key-value store and gives access to the connector
-func (fw *Framework) KVWithConn(ctx context.Context, conn Connector, bucket string, create bool, opts ...kv.Option) (kv.KV, Connector, error) {
+func (fw *Framework) KVWithConn(ctx context.Context, conn inter.Connector, bucket string, create bool, opts ...kv.Option) (kv.KV, inter.Connector, error) {
 	logger := fw.Logger("kv")
 
 	var err error

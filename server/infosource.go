@@ -11,6 +11,7 @@ import (
 	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/statistics"
 
 	"github.com/choria-io/go-choria/lifecycle"
@@ -58,7 +59,7 @@ func (srv *Instance) PublishRaw(target string, data []byte) error {
 }
 
 // Connector is the raw NATS connection, use with care, major vendor lock here - but needed for JetStream
-func (srv *Instance) Connector() choria.Connector {
+func (srv *Instance) Connector() inter.Connector {
 	return srv.connector
 }
 
