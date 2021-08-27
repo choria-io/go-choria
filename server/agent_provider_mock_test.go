@@ -9,6 +9,7 @@ import (
 	reflect "reflect"
 
 	choria "github.com/choria-io/go-choria/choria"
+	inter "github.com/choria-io/go-choria/inter"
 	gomock "github.com/golang/mock/gomock"
 	logrus "github.com/sirupsen/logrus"
 )
@@ -49,7 +50,7 @@ func (mr *MockAgentProviderMockRecorder) Initialize(arg0, arg1 interface{}) *gom
 }
 
 // RegisterAgents mocks base method.
-func (m *MockAgentProvider) RegisterAgents(arg0 context.Context, arg1 AgentManager, arg2 choria.AgentConnector, arg3 *logrus.Entry) error {
+func (m *MockAgentProvider) RegisterAgents(arg0 context.Context, arg1 AgentManager, arg2 inter.AgentConnector, arg3 *logrus.Entry) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RegisterAgents", arg0, arg1, arg2, arg3)
 	ret0, _ := ret[0].(error)

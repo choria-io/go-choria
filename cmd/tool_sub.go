@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 )
 
 type tSubCommand struct {
@@ -47,7 +47,7 @@ func (s *tSubCommand) Run(wg *sync.WaitGroup) (err error) {
 		fmt.Printf("Waiting for messages from topic %s on %s\n", s.subject, conn.ConnectedServer())
 	}
 
-	msgs := make(chan *choria.ConnectorMessage, 100)
+	msgs := make(chan inter.ConnectorMessage, 100)
 
 	err = conn.QueueSubscribe(ctx, c.UniqueID(), s.subject, "", msgs)
 	if err != nil {
@@ -58,14 +58,14 @@ func (s *tSubCommand) Run(wg *sync.WaitGroup) (err error) {
 		select {
 		case m := <-msgs:
 			if s.raw {
-				fmt.Println(string(m.Data))
+				fmt.Println(string(m.Data()))
 				continue
 			}
 
-			if m.Subject == s.subject {
-				fmt.Printf("---- %s\n%s\n\n", time.Now().Format("15:04:05"), string(m.Data))
+			if m.Subject() == s.subject {
+				fmt.Printf("---- %s\n%s\n\n", time.Now().Format("15:04:05"), string(m.Data()))
 			} else {
-				fmt.Printf("---- %s on topic %s\n%s\n\n", time.Now().Format("15:04:05"), m.Subject, string(m.Data))
+				fmt.Printf("---- %s on topic %s\n%s\n\n", time.Now().Format("15:04:05"), m.Subject(), string(m.Data()))
 			}
 
 		case <-ctx.Done():

@@ -5,18 +5,19 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server/agents"
 )
 
-func (srv *Instance) handleRawMessage(ctx context.Context, wg *sync.WaitGroup, replies chan *agents.AgentReply, rawmsg *choria.ConnectorMessage) {
-	var msg *choria.Message
+func (srv *Instance) handleRawMessage(ctx context.Context, wg *sync.WaitGroup, replies chan *agents.AgentReply, rawmsg inter.ConnectorMessage) {
+	var msg inter.Message
 
 	totalCtr.WithLabelValues(srv.cfg.Identity).Inc()
 
-	transport, err := srv.fw.NewTransportFromJSON(string(rawmsg.Data))
+	transport, err := srv.fw.NewTransportFromJSON(string(rawmsg.Data()))
 	if err != nil {
 		srv.log.Errorf("Could not deceode message into transport: %s", err)
 		unvalidatedCtr.WithLabelValues(srv.cfg.Identity).Inc()
@@ -56,7 +57,7 @@ func (srv *Instance) handleRawMessage(ctx context.Context, wg *sync.WaitGroup, r
 
 	if !msg.ValidateTTL() {
 		ttlExpiredCtr.WithLabelValues(srv.cfg.Identity).Inc()
-		srv.log.Errorf("Message %s created at %s is too old, TTL is %d", msg.String(), msg.TimeStamp, msg.TTL)
+		srv.log.Errorf("Message %s created at %s is too old, TTL is %d", msg.String(), msg.TimeStamp(), msg.TTL())
 		return
 	}
 
@@ -70,21 +71,21 @@ func (srv *Instance) handleRawMessage(ctx context.Context, wg *sync.WaitGroup, r
 
 func (srv *Instance) handleReply(reply *agents.AgentReply) {
 	if reply.Error != nil {
-		srv.log.Errorf("Request %s failed, discarding: %s", reply.Message.RequestID, reply.Error.Error())
+		srv.log.Errorf("Request %s failed, discarding: %s", reply.Message.RequestID(), reply.Error.Error())
 		return
 	}
 
 	msg, err := choria.NewMessageFromRequest(reply.Request, reply.Message.ReplyTo(), srv.fw)
 	if err != nil {
-		srv.log.Errorf("Cannot create reply Message for %s: %s", reply.Message.RequestID, err)
+		srv.log.Errorf("Cannot create reply Message for %s: %s", reply.Message.RequestID(), err)
 		return
 	}
 
-	msg.Payload = string(reply.Body)
+	msg.SetPayload(string(reply.Body))
 
 	err = srv.connector.Publish(msg)
 	if err != nil {
-		srv.log.Errorf("Publishing reply Message for %s failed: %s", reply.Message.RequestID, err)
+		srv.log.Errorf("Publishing reply Message for %s failed: %s", reply.Message.RequestID(), err)
 	}
 
 	repliesCtr.WithLabelValues(srv.cfg.Identity).Inc()

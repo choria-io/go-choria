@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/server"
 	"github.com/sirupsen/logrus"
@@ -49,18 +49,18 @@ func (da *Agent) Metadata() *agents.Metadata {
 	return da.meta
 }
 
-func (da *Agent) HandleMessage(ctx context.Context, msg *choria.Message, request protocol.Request, conn choria.ConnectorInfo, result chan *agents.AgentReply) {
+func (da *Agent) HandleMessage(_ context.Context, msg inter.Message, request protocol.Request, _ inter.ConnectorInfo, result chan *agents.AgentReply) {
 	reply := &agents.AgentReply{
 		Message: msg,
 		Request: request,
 	}
 
-	if strings.Contains(msg.Payload, "ping") {
-		da.log.Infof("Handling message %s for discovery#ping from %s", msg.RequestID, request.CallerID())
+	if strings.Contains(msg.Payload(), "ping") {
+		da.log.Infof("Handling message %s for discovery#ping from %s", msg.RequestID(), request.CallerID())
 		reply.Body = []byte("pong")
 	} else {
-		da.log.Errorf("Received unknown discovery message %s from %s", msg.RequestID, request.CallerID())
-		reply.Error = fmt.Errorf("unknown request: %s", msg.Payload)
+		da.log.Errorf("Received unknown discovery message %s from %s", msg.RequestID(), request.CallerID())
+		reply.Error = fmt.Errorf("unknown request: %s", msg.Payload())
 	}
 
 	result <- reply

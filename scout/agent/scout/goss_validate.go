@@ -10,8 +10,8 @@ import (
 	"github.com/aelsabbahy/goss"
 	gossoutputs "github.com/aelsabbahy/goss/outputs"
 	gossutil "github.com/aelsabbahy/goss/util"
+	"github.com/choria-io/go-choria/inter"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 )
 
@@ -29,7 +29,7 @@ type GossValidateResponse struct {
 	Tests    int                                `json:"tests"`
 }
 
-func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, _ choria.ConnectorInfo) {
+func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, _ inter.ConnectorInfo) {
 	resp := &GossValidateResponse{Results: []gossoutputs.StructuredTestResult{}}
 	reply.Data = resp
 

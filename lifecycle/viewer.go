@@ -8,13 +8,14 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
 )
 
 // SubscribeConnector is a connection to the middleware
 type SubscribeConnector interface {
-	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *choria.ConnectorMessage) error
+	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan inter.ConnectorMessage) error
 	ConnectedServer() string
 }
 
@@ -57,7 +58,7 @@ func View(ctx context.Context, opt *ViewOptions) error {
 
 // WriteEvents views the event stream to the output
 func WriteEvents(ctx context.Context, opt *ViewOptions) error {
-	events := make(chan *choria.ConnectorMessage, 100)
+	events := make(chan inter.ConnectorMessage, 100)
 
 	rid, err := opt.Choria.NewRequestID()
 	if err != nil {
@@ -72,7 +73,7 @@ func WriteEvents(ctx context.Context, opt *ViewOptions) error {
 	for {
 		select {
 		case e := <-events:
-			event, err := NewFromJSON(e.Data)
+			event, err := NewFromJSON(e.Data())
 			if err != nil {
 				continue
 			}
@@ -90,7 +91,7 @@ func WriteEvents(ctx context.Context, opt *ViewOptions) error {
 			}
 
 			if opt.Debug {
-				fmt.Fprintf(opt.Output, "%s\n", string(e.Data))
+				fmt.Fprintf(opt.Output, "%s\n", string(e.Data()))
 				continue
 			}
 

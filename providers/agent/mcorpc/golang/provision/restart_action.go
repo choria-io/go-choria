@@ -10,8 +10,8 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
@@ -23,7 +23,7 @@ type RestartRequest struct {
 	Splay int    `json:"splay"`
 }
 
-func restartAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func restartAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	mu.Lock()
 	defer mu.Unlock()
 

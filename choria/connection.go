@@ -11,6 +11,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/choria-io/go-choria/backoff"
@@ -29,27 +30,10 @@ type ConnectionManager interface {
 	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn Connector, err error)
 }
 
-// AgentConnector provides the minimal Connector features for subscribing and unsubscribing agents
-type AgentConnector interface {
-	ConnectedServer() string
-	ConnectionOptions() nats.Options
-	ConnectionStats() nats.Statistics
-	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error
-	Unsubscribe(name string) error
-	AgentBroadcastTarget(collective string, agent string) string
-	ServiceBroadcastTarget(collective string, agent string) string
-}
-
-type ConnectorInfo interface {
-	ConnectedServer() string
-	ConnectionOptions() nats.Options
-	ConnectionStats() nats.Statistics
-}
-
 // Connector is the interface a connector must implement to be valid be it NATS, Stomp, Testing etc
 type Connector interface {
 	AgentBroadcastTarget(collective string, agent string) string
-	ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *ConnectorMessage, error)
+	ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan inter.ConnectorMessage, error)
 	Close()
 	Connect(ctx context.Context) (err error)
 	ConnectedServer() string
@@ -58,27 +42,52 @@ type Connector interface {
 	IsConnected() bool
 	Nats() *nats.Conn
 	NodeDirectedTarget(collective string, identity string) string
-	Publish(msg *Message) error
+	Publish(msg inter.Message) error
 	PublishRaw(target string, data []byte) error
 	PublishRawMsg(msg *nats.Msg) error
-	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error
-	ReplyTarget(msg *Message) (string, error)
+	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan inter.ConnectorMessage) error
+	ReplyTarget(msg inter.Message) (string, error)
 	RequestRawMsgWithContext(ctx context.Context, msg *nats.Msg) (*nats.Msg, error)
 	ServiceBroadcastTarget(collective string, agent string) string
 	Unsubscribe(name string) error
 }
 
+func NewConnectorMessage(subject string, reply string, data []byte, msg interface{}) *ConnectorMessage {
+	return &ConnectorMessage{
+		subject: subject,
+		reply:   reply,
+		data:    data,
+		msg:     msg,
+	}
+}
+
 type ConnectorMessage struct {
-	Subject string
-	Reply   string
-	Data    []byte
-	Msg     interface{}
+	subject string
+	reply   string
+	data    []byte
+	msg     interface{}
+}
+
+func (m *ConnectorMessage) Subject() string {
+	return m.subject
+}
+
+func (m *ConnectorMessage) Reply() string {
+	return m.reply
+}
+
+func (m *ConnectorMessage) Data() []byte {
+	return m.data
+}
+
+func (m *ConnectorMessage) Msg() interface{} {
+	return m.msg
 }
 
 type channelSubscription struct {
 	subscription *nats.Subscription
 	in           chan *nats.Msg
-	out          chan *ConnectorMessage
+	out          chan inter.ConnectorMessage
 	quit         chan interface{}
 }
 
@@ -134,11 +143,6 @@ func init() {
 	prometheus.MustRegister(connInitialConnectTime)
 }
 
-// Bytes return the data in the message
-func (m *ConnectorMessage) Bytes() []byte {
-	return m.Data
-}
-
 // NewConnector creates a new NATS connector
 //
 // It will attempt to connect to the given servers and will keep trying till it manages to do so
@@ -190,12 +194,12 @@ func (conn *Connection) Nats() *nats.Conn {
 // ChanQueueSubscribe creates a channel of a certain size and subscribes to a queue group.
 //
 // The given name would later be used should a unsubscribe be needed
-func (conn *Connection) ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *ConnectorMessage, error) {
+func (conn *Connection) ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan inter.ConnectorMessage, error) {
 	var err error
 
 	s := &channelSubscription{
 		in:   make(chan *nats.Msg, capacity),
-		out:  make(chan *ConnectorMessage, capacity),
+		out:  make(chan inter.ConnectorMessage, capacity),
 		quit: make(chan interface{}, 1),
 	}
 
@@ -207,7 +211,7 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 		for {
 			select {
 			case m := <-subs.in:
-				subs.out <- &ConnectorMessage{Data: m.Data, Reply: m.Reply, Subject: m.Subject, Msg: m}
+				subs.out <- &ConnectorMessage{data: m.Data, reply: m.Reply, subject: m.Subject, msg: m}
 			case <-subs.quit:
 				return
 			}
@@ -233,7 +237,7 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 
 // QueueSubscribe is a lot like ChanQueueSubscribe but you provide it the queue to dump messages in,
 // it also takes a context and will unsubscribe when the context is canceled
-func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *ConnectorMessage) error {
+func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan inter.ConnectorMessage) error {
 	var err error
 
 	s := &channelSubscription{
@@ -250,7 +254,7 @@ func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject
 		for {
 			select {
 			case m := <-s.in:
-				s.out <- &ConnectorMessage{Data: m.Data, Reply: m.Reply, Subject: m.Subject, Msg: m}
+				s.out <- &ConnectorMessage{data: m.Data, reply: m.Reply, subject: m.Subject, msg: m}
 			case <-ctx.Done():
 				conn.Unsubscribe(name)
 				return
@@ -323,7 +327,7 @@ func (conn *Connection) RequestRawMsgWithContext(ctx context.Context, msg *nats.
 }
 
 // Publish inspects a Message and publish it according to its Type
-func (conn *Connection) Publish(msg *Message) error {
+func (conn *Connection) Publish(msg inter.Message) error {
 	transport, err := msg.Transport()
 	if err != nil {
 		return err
@@ -331,7 +335,7 @@ func (conn *Connection) Publish(msg *Message) error {
 
 	transport.RecordNetworkHop(conn.ConnectedServer(), conn.config.Identity, conn.ConnectedServer())
 
-	if msg.CustomTarget != "" {
+	if msg.CustomTarget() != "" {
 		return conn.publishConnectedBroadcast(msg, transport)
 	}
 
@@ -342,7 +346,7 @@ func (conn *Connection) Publish(msg *Message) error {
 	return conn.publishConnected(msg, transport)
 }
 
-func (conn *Connection) publishFederated(msg *Message, transport protocol.TransportMessage) error {
+func (conn *Connection) publishFederated(msg inter.Message, transport protocol.TransportMessage) error {
 	if msg.Type() == DirectRequestMessageType {
 		return conn.publishFederatedDirect(msg, transport)
 	}
@@ -350,10 +354,10 @@ func (conn *Connection) publishFederated(msg *Message, transport protocol.Transp
 	return conn.publishFederatedBroadcast(msg, transport)
 }
 
-func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.TransportMessage) error {
+func (conn *Connection) publishFederatedDirect(msg inter.Message, transport protocol.TransportMessage) error {
 	var err error
 
-	util.SliceGroups(msg.DiscoveredHosts, 200, func(nodes []string) {
+	util.SliceGroups(msg.DiscoveredHosts(), 200, func(nodes []string) {
 		targets := []string{}
 		var j string
 
@@ -362,10 +366,10 @@ func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.
 				break
 			}
 
-			targets = append(targets, conn.NodeDirectedTarget(msg.collective, nodes[i]))
+			targets = append(targets, conn.NodeDirectedTarget(msg.Collective(), nodes[i]))
 		}
 
-		transport.SetFederationRequestID(msg.RequestID)
+		transport.SetFederationRequestID(msg.RequestID())
 		transport.SetFederationTargets(targets)
 
 		j, err = transport.JSON()
@@ -376,7 +380,7 @@ func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.
 		for _, federation := range conn.fw.FederationCollectives() {
 			target := conn.federationTarget(federation, "federation")
 
-			conn.log.Debugf("Sending a federated direct message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
+			conn.log.Debugf("Sending a federated direct message to NATS target '%s' for message %s with type %s", target, msg.RequestID(), msg.Type())
 
 			err = conn.PublishRaw(target, []byte(j))
 			if err != nil {
@@ -388,13 +392,13 @@ func (conn *Connection) publishFederatedDirect(msg *Message, transport protocol.
 	return err
 }
 
-func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protocol.TransportMessage) error {
+func (conn *Connection) publishFederatedBroadcast(msg inter.Message, transport protocol.TransportMessage) error {
 	target, err := conn.TargetForMessage(msg, "")
 	if err != nil {
 		return err
 	}
 
-	transport.SetFederationRequestID(msg.RequestID)
+	transport.SetFederationRequestID(msg.RequestID())
 	transport.SetFederationTargets([]string{target})
 
 	j, err := transport.JSON()
@@ -405,7 +409,7 @@ func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protoc
 	for _, federation := range conn.fw.FederationCollectives() {
 		target := conn.federationTarget(federation, "federation")
 
-		conn.log.Debugf("Sending a federated broadcast message to NATS target '%s' for message %s with type %s", target, msg.RequestID, msg.Type())
+		conn.log.Debugf("Sending a federated broadcast message to NATS target '%s' for message %s with type %s", target, msg.RequestID(), msg.Type())
 
 		msg.NotifyPublish()
 
@@ -418,7 +422,7 @@ func (conn *Connection) publishFederatedBroadcast(msg *Message, transport protoc
 	return nil
 }
 
-func (conn *Connection) publishConnected(msg *Message, transport protocol.TransportMessage) error {
+func (conn *Connection) publishConnected(msg inter.Message, transport protocol.TransportMessage) error {
 	if msg.Type() == DirectRequestMessageType {
 		return conn.publishConnectedDirect(msg, transport)
 	}
@@ -426,7 +430,7 @@ func (conn *Connection) publishConnected(msg *Message, transport protocol.Transp
 	return conn.publishConnectedBroadcast(msg, transport)
 }
 
-func (conn *Connection) publishConnectedBroadcast(msg *Message, transport protocol.TransportMessage) error {
+func (conn *Connection) publishConnectedBroadcast(msg inter.Message, transport protocol.TransportMessage) error {
 	j, err := transport.JSON()
 	if err != nil {
 		return err
@@ -437,7 +441,7 @@ func (conn *Connection) publishConnectedBroadcast(msg *Message, transport protoc
 		return err
 	}
 
-	conn.log.Debugf("Sending a broadcast message to NATS target '%s' for message %s type %s", target, msg.RequestID, msg.Type())
+	conn.log.Debugf("Sending a broadcast message to NATS target '%s' for message %s type %s", target, msg.RequestID(), msg.Type())
 
 	msg.NotifyPublish()
 
@@ -451,7 +455,7 @@ func (conn *Connection) publishConnectedBroadcast(msg *Message, transport protoc
 	return nil
 }
 
-func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.TransportMessage) error {
+func (conn *Connection) publishConnectedDirect(msg inter.Message, transport protocol.TransportMessage) error {
 	j, err := transport.JSON()
 	if err != nil {
 		return err
@@ -459,19 +463,19 @@ func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.
 
 	rawmsg := []byte(j)
 
-	for _, host := range msg.DiscoveredHosts {
+	for _, host := range msg.DiscoveredHosts() {
 		target, err := conn.TargetForMessage(msg, host)
 		if err != nil {
-			return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID, err)
+			return fmt.Errorf("cannot publish Message %s: %s", msg.RequestID(), err)
 		}
 
-		conn.log.Debugf("Sending a direct message to %s via NATS target '%s' for message %s type %s", host, target, msg.RequestID, msg.Type())
+		conn.log.Debugf("Sending a direct message to %s via NATS target '%s' for message %s type %s", host, target, msg.RequestID(), msg.Type())
 
 		msg.NotifyPublish()
 
 		err = conn.PublishRaw(target, rawmsg)
 		if err != nil {
-			return fmt.Errorf("could not publish directed message %s to %s: %s", msg.RequestID, host, err)
+			return fmt.Errorf("could not publish directed message %s to %s: %s", msg.RequestID(), host, err)
 		}
 	}
 
@@ -480,34 +484,34 @@ func (conn *Connection) publishConnectedDirect(msg *Message, transport protocol.
 	return nil
 }
 
-func TargetForMessage(msg *Message, identity string) (string, error) {
-	if msg.CustomTarget != "" {
-		return msg.CustomTarget, nil
+func TargetForMessage(msg inter.Message, identity string) (string, error) {
+	if msg.CustomTarget() != "" {
+		return msg.CustomTarget(), nil
 	}
 
 	switch msg.Type() {
 	case ReplyMessageType:
 		if msg.ReplyTo() == "" {
-			return "", fmt.Errorf("do not know how to reply, no reply-to header has been set on message %s", msg.RequestID)
+			return "", fmt.Errorf("do not know how to reply, no reply-to header has been set on message %s", msg.RequestID())
 		}
 
 		return msg.ReplyTo(), nil
 
 	case RequestMessageType:
-		return AgentBroadcastTarget(msg.Collective(), msg.Agent), nil
+		return AgentBroadcastTarget(msg.Collective(), msg.Agent()), nil
 
 	case ServiceRequestMessageType:
-		return ServiceBroadcastTarget(msg.Collective(), msg.Agent), nil
+		return ServiceBroadcastTarget(msg.Collective(), msg.Agent()), nil
 
 	case DirectRequestMessageType:
 		return NodeDirectedTarget(msg.Collective(), identity), nil
 
 	default:
-		return "", fmt.Errorf("do not know how to determine the target for Message %s with type %s", msg.RequestID, msg.Type())
+		return "", fmt.Errorf("do not know how to determine the target for Message %s with type %s", msg.RequestID(), msg.Type())
 	}
 }
 
-func (conn *Connection) TargetForMessage(msg *Message, identity string) (string, error) {
+func (conn *Connection) TargetForMessage(msg inter.Message, identity string) (string, error) {
 	return TargetForMessage(msg, identity)
 }
 
@@ -535,15 +539,15 @@ func (conn *Connection) AgentBroadcastTarget(collective string, agent string) st
 	return AgentBroadcastTarget(collective, agent)
 }
 
-func ReplyTarget(msg *Message, requestid string) string {
-	return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(msg.CallerID))), requestid)
+func ReplyTarget(msg inter.Message, requestid string) string {
+	return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(msg.CallerID()))), requestid)
 }
 
 func Inbox(collective string, caller string) string {
 	return fmt.Sprintf("%s.reply.%s.%s", collective, fmt.Sprintf("%x", md5.Sum([]byte(caller))), util.UniqueID())
 }
 
-func (conn *Connection) ReplyTarget(msg *Message) (string, error) {
+func (conn *Connection) ReplyTarget(msg inter.Message) (string, error) {
 	id, err := conn.fw.NewRequestID()
 	if err != nil {
 		return "", err

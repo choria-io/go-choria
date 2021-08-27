@@ -1,4 +1,4 @@
-package submission
+package inter
 
 import (
 	"context"
@@ -6,7 +6,9 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-type Connector interface {
+// RawNATSConnector sends NATS messages directly
+type RawNATSConnector interface {
+	PublishRaw(target string, data []byte) error
 	PublishRawMsg(msg *nats.Msg) error
 	RequestRawMsgWithContext(ctx context.Context, msg *nats.Msg) (*nats.Msg, error)
 }

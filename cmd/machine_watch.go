@@ -6,12 +6,12 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/inter"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/aagent/watchers"
-	"github.com/choria-io/go-choria/choria"
 )
 
 type mWatchCommand struct {
@@ -56,8 +56,8 @@ func (w *mWatchCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("cannot connect: %s", err)
 	}
 
-	transitions := make(chan *choria.ConnectorMessage, 100)
-	states := make(chan *choria.ConnectorMessage, 100)
+	transitions := make(chan inter.ConnectorMessage, 100)
+	states := make(chan inter.ConnectorMessage, 100)
 
 	if w.shouldViewTransitions() {
 		topic := "choria.machine.transition"
@@ -85,7 +85,7 @@ func (w *mWatchCommand) Run(wg *sync.WaitGroup) (err error) {
 		}
 	}
 
-	var m *choria.ConnectorMessage
+	var m inter.ConnectorMessage
 
 	for {
 		select {
@@ -109,10 +109,10 @@ func (w *mWatchCommand) dataFromCloudEventJSON(j []byte) ([]byte, error) {
 	return event.Data(), nil
 }
 
-func (w *mWatchCommand) showState(m *choria.ConnectorMessage) {
-	w.log.Debugf("watcher: topic: %s body: %s", m.Subject, string(m.Data))
+func (w *mWatchCommand) showState(m inter.ConnectorMessage) {
+	w.log.Debugf("watcher: topic: %s body: %s", m.Subject(), string(m.Data()))
 
-	data, err := w.dataFromCloudEventJSON(m.Bytes())
+	data, err := w.dataFromCloudEventJSON(m.Data())
 	if err != nil {
 		w.log.Errorf("could not parse cloud event: %s", err)
 		return
@@ -138,10 +138,10 @@ func (w *mWatchCommand) showState(m *choria.ConnectorMessage) {
 	w.Unlock()
 }
 
-func (w *mWatchCommand) showTransition(m *choria.ConnectorMessage) {
-	w.log.Debugf("transition: topic: %s body: %s", m.Subject, string(m.Data))
+func (w *mWatchCommand) showTransition(m inter.ConnectorMessage) {
+	w.log.Debugf("transition: topic: %s body: %s", m.Subject(), string(m.Data()))
 
-	data, err := w.dataFromCloudEventJSON(m.Bytes())
+	data, err := w.dataFromCloudEventJSON(m.Data())
 	if err != nil {
 		w.log.Errorf("could not parse cloud event: %s", err)
 		return

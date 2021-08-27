@@ -4,19 +4,19 @@ import (
 	"context"
 	"encoding/json"
 	"os"
+	"testing"
 	"time"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/testutil"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
-
-	"testing"
 )
 
 func Test(t *testing.T) {
@@ -27,7 +27,7 @@ func Test(t *testing.T) {
 
 var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 	var (
-		requests chan *choria.ConnectorMessage
+		requests chan inter.ConnectorMessage
 		cfg      *config.Config
 		fw       *choria.Framework
 		am       *agents.Manager
@@ -39,7 +39,7 @@ var _ = Describe("McoRPC/Golang/RPCUtil", func() {
 	)
 
 	BeforeEach(func() {
-		requests = make(chan *choria.ConnectorMessage)
+		requests = make(chan inter.ConnectorMessage)
 		reply = &mcorpc.Reply{}
 
 		cfg = config.NewConfigForTests()

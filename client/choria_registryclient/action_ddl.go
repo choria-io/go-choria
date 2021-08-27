@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'choria_registry' Version 0.23.0 generated using Choria version 0.22.0
+// Client for Choria RPC Agent 'choria_registry' Version 0.23.0 generated using Choria version 0.23.0
 
 package choria_registryclient
 

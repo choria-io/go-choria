@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/sirupsen/logrus"
@@ -22,7 +22,7 @@ func registerAgentPlugin(name string, plugin Pluggable) error {
 		return fmt.Errorf("%s is not a valid agent plugin", plugin.PluginName())
 	}
 
-	initializer := func(ctx context.Context, mgr *agents.Manager, connector choria.AgentConnector, log *logrus.Entry) error {
+	initializer := func(ctx context.Context, mgr *agents.Manager, connector inter.AgentConnector, log *logrus.Entry) error {
 		log.Infof("Registering additional agent %s version %s", name, plugin.PluginVersion())
 
 		a, err := instance(mgr)

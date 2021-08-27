@@ -12,6 +12,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	coreclient "github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
@@ -49,7 +50,7 @@ type ChoriaFramework interface {
 	Logger(string) *logrus.Entry
 	SetLogger(*logrus.Logger)
 	Configuration() *config.Config
-	NewMessage(payload string, agent string, collective string, msgType string, request *choria.Message) (msg *choria.Message, err error)
+	NewMessage(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error)
 	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
 	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
 	MiddlewareServers() (servers srvcache.Servers, err error)

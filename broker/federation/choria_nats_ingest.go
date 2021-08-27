@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/choria-io/go-choria/broker/federation/stats"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
@@ -43,11 +43,11 @@ func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *Federation
 		ectr := stats.ErrorCtr.WithLabelValues("nats_ingest", workeri, mname, self.broker.Name, self.broker.identity)
 		timer := stats.ProcessTime.WithLabelValues("nats_ingest", workeri, mname, self.broker.Name, self.broker.identity)
 
-		handler := func(msg *choria.ConnectorMessage) {
+		handler := func(msg inter.ConnectorMessage) {
 			obs := prometheus.NewTimer(timer)
 			defer obs.ObserveDuration()
 
-			message, err := self.choria.NewTransportFromJSON(string(msg.Data))
+			message, err := self.choria.NewTransportFromJSON(string(msg.Data()))
 			if err != nil {
 				logger.Warnf("Could not parse received message into a TransportMessage: %s", err)
 				ectr.Inc()
@@ -56,7 +56,7 @@ func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *Federation
 
 			reqid, federated := message.FederationRequestID()
 			if !federated {
-				logger.Warnf("Received a message on %s that was not federated", msg.Subject)
+				logger.Warnf("Received a message on %s that was not federated", msg.Subject())
 				ectr.Inc()
 				return
 			}
@@ -74,7 +74,7 @@ func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *Federation
 		}
 
 		for {
-			var msg *choria.ConnectorMessage
+			var msg inter.ConnectorMessage
 
 			select {
 			case msg = <-natsch:

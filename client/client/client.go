@@ -17,6 +17,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
@@ -29,7 +30,7 @@ type ChoriaFramework interface {
 	Certname() string
 	MiddlewareServers() (srvcache.Servers, error)
 	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn choria.Connector, err error)
-	NewMessage(payload string, agent string, collective string, msgType string, request *choria.Message) (msg *choria.Message, err error)
+	NewMessage(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error)
 	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
 }
 
@@ -41,7 +42,7 @@ type Client struct {
 	cfg           *config.Config
 	wg            *sync.WaitGroup
 	receiverReady chan struct{}
-	replies       chan *choria.ConnectorMessage
+	replies       chan inter.ConnectorMessage
 	timeout       time.Duration
 	conn          Connector
 	receivers     int
@@ -53,12 +54,12 @@ type Client struct {
 }
 
 // Handler handles individual messages
-type Handler func(ctx context.Context, m *choria.ConnectorMessage)
+type Handler func(ctx context.Context, m inter.ConnectorMessage)
 
 // Connector is a connection to the choria network
 type Connector interface {
-	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *choria.ConnectorMessage) error
-	Publish(msg *choria.Message) error
+	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan inter.ConnectorMessage) error
+	Publish(msg inter.Message) error
 }
 
 // New creates a Choria client
@@ -69,7 +70,7 @@ func New(fw ChoriaFramework, opts ...Option) (*Client, error) {
 		wg:        &sync.WaitGroup{},
 		receivers: 1,
 		log:       fw.Logger("client"),
-		replies:   make(chan *choria.ConnectorMessage, 100000),
+		replies:   make(chan inter.ConnectorMessage, 100000),
 	}
 
 	for _, opt := range opts {
@@ -107,7 +108,7 @@ func New(fw ChoriaFramework, opts ...Option) (*Client, error) {
 // This fire and forget approach is useful when one do not care for the replies
 // or when the reply to target in the message is set to a custom reply target
 // meaning the client will anyway never receive the replies
-func (c *Client) Request(ctx context.Context, msg *choria.Message, handler Handler) (err error) {
+func (c *Client) Request(ctx context.Context, msg inter.Message, handler Handler) (err error) {
 	// will be used later to handle shutting everything down when a maximum wait for messages
 	// was processed
 	c.ctx, c.cancel = context.WithCancel(ctx)
@@ -135,7 +136,7 @@ func (c *Client) Request(ctx context.Context, msg *choria.Message, handler Handl
 	return err
 }
 
-func (c *Client) publish(msg *choria.Message) error {
+func (c *Client) publish(msg inter.Message) error {
 	conn := c.conn
 	var err error
 

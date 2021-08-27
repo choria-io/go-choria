@@ -55,15 +55,15 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessageFromRequest(request, "reply.to", fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(m.Payload).To(Equal("hello world"))
-			Expect(m.replyTo).To(Equal("reply.to"))
-			Expect(m.RequestID).To(Equal("stub.request.id"))
-			Expect(m.TimeStamp).To(Equal(now))
-			Expect(m.TTL).To(Equal(60))
-			Expect(m.Filter).To(Equal(protocol.NewFilter()))
-			Expect(m.SenderID).To(Equal("test.identity"))
+			Expect(m.Payload()).To(Equal("hello world"))
+			Expect(m.ReplyTo()).To(Equal("reply.to"))
+			Expect(m.RequestID()).To(Equal("stub.request.id"))
+			Expect(m.TimeStamp()).To(Equal(now))
+			Expect(m.TTL()).To(Equal(60))
+			Expect(m.Filter()).To(Equal(protocol.NewFilter()))
+			Expect(m.SenderID()).To(Equal("test.identity"))
 			Expect(m.Base64Payload()).To(Equal("aGVsbG8gd29ybGQ="))
-			Expect(m.shouldCacheTransport).To(BeFalse())
+			Expect(m.IsCachedTransport()).To(BeFalse())
 
 			Expect(m.Request).ToNot(BeNil())
 
@@ -73,7 +73,7 @@ var _ = Describe("Choria/Message", func() {
 			fw.Config.CacheBatchedTransports = true
 			m, err := NewMessageFromRequest(request, "reply.to", fw)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(m.shouldCacheTransport).To(BeTrue())
+			Expect(m.IsCachedTransport()).To(BeTrue())
 		})
 	})
 
@@ -85,21 +85,21 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", ReplyMessageType, r, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(m.Request).To(Equal(r))
-			Expect(m.Agent).To(Equal("test"))
-			Expect(m.replyTo).To(Equal("reply.to"))
+			Expect(m.Request()).To(Equal(r))
+			Expect(m.Agent()).To(Equal("test"))
+			Expect(m.ReplyTo()).To(Equal("reply.to"))
 			Expect(m.Type()).To(Equal(ReplyMessageType))
 			Expect(m.Collective()).To(Equal("test_collective"))
-			Expect(m.shouldCacheTransport).To(BeFalse())
+			Expect(m.IsCachedTransport()).To(BeFalse())
 		})
 
 		It("Should handle requests", func() {
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(m.Request).To(BeNil())
-			Expect(m.Agent).To(Equal("ginkgo"))
-			Expect(m.replyTo).To(Equal(""))
+			Expect(m.Request()).To(BeNil())
+			Expect(m.Agent()).To(Equal("ginkgo"))
+			Expect(m.ReplyTo()).To(Equal(""))
 			Expect(m.Type()).To(Equal(RequestMessageType))
 			Expect(m.Collective()).To(Equal("test_collective"))
 		})
@@ -116,7 +116,7 @@ var _ = Describe("Choria/Message", func() {
 			fw.Config.CacheBatchedTransports = true
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(m.shouldCacheTransport).To(BeTrue())
+			Expect(m.IsCachedTransport()).To(BeTrue())
 		})
 	})
 
@@ -124,11 +124,11 @@ var _ = Describe("Choria/Message", func() {
 		It("Should support setting and unsetting caching", func() {
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(m.shouldCacheTransport).To(BeFalse())
+			Expect(m.IsCachedTransport()).To(BeFalse())
 			Expect(m.IsCachedTransport()).To(BeFalse())
 			m.CacheTransport()
 			Expect(m.IsCachedTransport()).To(BeTrue())
-			m.UniqueTransport()
+			m.(*Message).UniqueTransport()
 			Expect(m.IsCachedTransport()).To(BeFalse())
 		})
 	})
@@ -185,7 +185,7 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			m.DiscoveredHosts = []string{"node1", "node2"}
+			m.SetDiscoveredHosts([]string{"node1", "node2"})
 			err = m.SetType(DirectRequestMessageType)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -200,7 +200,7 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", ServiceRequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			m.DiscoveredHosts = []string{"node1", "node2"}
+			m.SetDiscoveredHosts([]string{"node1", "node2"})
 			err = m.SetType(DirectRequestMessageType)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -233,7 +233,7 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			_, err = m.requestTransport()
+			_, err = m.(*Message).UncachedRequestTransport()
 			Expect(err).To(MatchError("cannot create a Request Transport without a version, please set it using SetProtocolVersion()"))
 		})
 
@@ -243,7 +243,7 @@ var _ = Describe("Choria/Message", func() {
 
 			m.SetProtocolVersion(protocol.RequestV1)
 
-			_, err = m.requestTransport()
+			_, err = m.(*Message).UncachedRequestTransport()
 			Expect(err).To(MatchError("cannot create a Transport, no reply-to was set, please use SetReplyTo()"))
 
 		})
@@ -255,16 +255,16 @@ var _ = Describe("Choria/Message", func() {
 			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
 
-			_, err = m.requestTransport()
+			_, err = m.(*Message).UncachedRequestTransport()
 			Expect(err).To(MatchError("cannot create a Request Transport, requests without filters have been disabled"))
 
 			fw.Config.Choria.RequireClientFilter = false
-			_, err = m.requestTransport()
+			_, err = m.(*Message).UncachedRequestTransport()
 			Expect(err).ToNot(HaveOccurred())
 
 			fw.Config.Choria.RequireClientFilter = true
-			m.Filter.AddClassFilter("foo")
-			_, err = m.requestTransport()
+			m.Filter().AddClassFilter("foo")
+			_, err = m.(*Message).UncachedRequestTransport()
 			Expect(err).ToNot(HaveOccurred())
 
 			// discovery has m.Agent==discovery but the filter agent will be what the next request will target so special case tests
@@ -273,8 +273,8 @@ var _ = Describe("Choria/Message", func() {
 			Expect(err).ToNot(HaveOccurred())
 			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
-			m.Filter.AddAgentFilter("rpcutil")
-			_, err = m.requestTransport()
+			m.Filter().AddAgentFilter("rpcutil")
+			_, err = m.(*Message).UncachedRequestTransport()
 			Expect(err).To(MatchError("cannot create a Request Transport, requests without filters have been disabled"))
 
 		})
@@ -286,7 +286,7 @@ var _ = Describe("Choria/Message", func() {
 			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
 
-			t, err := m.requestTransport()
+			t, err := m.(*Message).UncachedRequestTransport()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(t.ReplyTo()).To(Equal("reply.to"))
 			Expect(t.SenderID()).To(Equal("test.identity"))
@@ -297,7 +297,7 @@ var _ = Describe("Choria/Message", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(r.Agent()).To(Equal("ginkgo"))
-			Expect(r.RequestID()).To(Equal(m.RequestID))
+			Expect(r.RequestID()).To(Equal(m.RequestID()))
 		})
 	})
 
@@ -306,7 +306,7 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", ReplyMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			_, err = m.replyTransport()
+			_, err = m.(*Message).UncachedReplyTransport()
 			Expect(err).To(MatchError("cannot create a Transport, no request were stored in the message"))
 		})
 
@@ -321,7 +321,7 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessageFromRequest(req, "reply.to", fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			t, err := m.replyTransport()
+			t, err := m.(*Message).UncachedReplyTransport()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(t).ToNot(BeNil())
 		})
@@ -332,9 +332,9 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", ReplyMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(m.protoVersion).To(Equal(""))
+			Expect(m.ProtocolVersion()).To(Equal(""))
 			m.SetProtocolVersion(protocol.ReplyV1)
-			Expect(m.protoVersion).To(Equal(protocol.ReplyV1))
+			Expect(m.ProtocolVersion()).To(Equal(protocol.ReplyV1))
 		})
 	})
 
@@ -343,17 +343,17 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", ReplyMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			m.collective = "foo"
+			m.(*Message).collective = "foo"
 			ok, err := m.Validate()
 			Expect(ok).To(BeFalse())
 			Expect(err).To(MatchError("'foo' is not on the list of known collectives"))
 
-			m.collective = ""
+			m.(*Message).collective = ""
 			ok, err = m.Validate()
 			Expect(ok).To(BeFalse())
 			Expect(err).To(MatchError("collective has not been set"))
 
-			m.Agent = ""
+			m.(*Message).agent = ""
 			ok, err = m.Validate()
 			Expect(ok).To(BeFalse())
 			Expect(err).To(MatchError("agent has not been set"))
@@ -368,7 +368,7 @@ var _ = Describe("Choria/Message", func() {
 			err = m.SetBase64Payload("aGVsbG8gd29ybGQ=")
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(m.Payload).To(Equal("hello world"))
+			Expect(m.Payload()).To(Equal("hello world"))
 		})
 
 		It("Should handle invalid base64", func() {
@@ -435,7 +435,7 @@ var _ = Describe("Choria/Message", func() {
 			err = m.SetType(DirectRequestMessageType)
 			Expect(err).To(MatchError("direct_request message type can only be set if DiscoveredHosts have been set"))
 
-			m.DiscoveredHosts = []string{"node1"}
+			m.SetDiscoveredHosts([]string{"node1"})
 			err = m.SetType(DirectRequestMessageType)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(m.Type()).To(Equal(DirectRequestMessageType))
@@ -460,10 +460,10 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessageFromRequest(request, "reply.to", fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			m.TimeStamp = now.Add(30 * time.Second)
+			m.(*Message).timeStamp = now.Add(30 * time.Second)
 			Expect(m.ValidateTTL()).To(BeTrue())
 
-			m.TimeStamp = now.Add(-30 * time.Second)
+			m.(*Message).timeStamp = now.Add(-30 * time.Second)
 			Expect(m.ValidateTTL()).To(BeTrue())
 		})
 
@@ -471,9 +471,9 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessageFromRequest(request, "reply.to", fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			m.TimeStamp = now.Add(90 * time.Second)
+			m.(*Message).timeStamp = now.Add(90 * time.Second)
 			Expect(m.ValidateTTL()).To(BeFalse())
-			m.TimeStamp = now.Add(-90 * time.Second)
+			m.(*Message).timeStamp = now.Add(-90 * time.Second)
 			Expect(m.ValidateTTL()).To(BeFalse())
 		})
 	})

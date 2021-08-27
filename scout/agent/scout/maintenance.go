@@ -3,7 +3,7 @@ package agent
 import (
 	"context"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 )
 
@@ -17,7 +17,7 @@ type MaintenanceReply struct {
 	SkippedChecks      []string `json:"skipped"`
 }
 
-func maintenanceAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, _ choria.ConnectorInfo) {
+func maintenanceAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, _ inter.ConnectorInfo) {
 	resp := &MaintenanceReply{[]string{}, []string{}, []string{}}
 	reply.Data = resp
 

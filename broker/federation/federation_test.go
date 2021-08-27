@@ -10,6 +10,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/nats-io/nats.go"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -61,17 +62,17 @@ type stubConnectionManager struct {
 type stubConnection struct {
 	Outq        chan [2]string
 	Subs        map[string][3]string
-	SubChannels map[string]chan *choria.ConnectorMessage
+	SubChannels map[string]chan inter.ConnectorMessage
 	mu          *sync.Mutex
 }
 
-func (s *stubConnection) PublishToQueueSub(name string, msg *choria.ConnectorMessage) {
+func (s *stubConnection) PublishToQueueSub(name string, msg inter.ConnectorMessage) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
 	c, ok := s.SubChannels[name]
 	if !ok {
-		s.SubChannels[name] = make(chan *choria.ConnectorMessage, 1000)
+		s.SubChannels[name] = make(chan inter.ConnectorMessage, 1000)
 		c = s.SubChannels[name]
 	}
 
@@ -114,7 +115,7 @@ func (s *stubConnection) Unsubscribe(name string) error {
 	return nil
 }
 
-func (s *stubConnection) ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan *choria.ConnectorMessage, error) {
+func (s *stubConnection) ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan inter.ConnectorMessage, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
@@ -122,13 +123,13 @@ func (s *stubConnection) ChanQueueSubscribe(name string, subject string, group s
 
 	_, ok := s.SubChannels[name]
 	if !ok {
-		s.SubChannels[name] = make(chan *choria.ConnectorMessage, 1000)
+		s.SubChannels[name] = make(chan inter.ConnectorMessage, 1000)
 	}
 
 	return s.SubChannels[name], nil
 }
 
-func (s *stubConnection) QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *choria.ConnectorMessage) error {
+func (s *stubConnection) QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan inter.ConnectorMessage) error {
 	return nil
 }
 
@@ -138,7 +139,7 @@ func (s *stubConnection) PublishRaw(target string, data []byte) error {
 	return nil
 }
 
-func (s *stubConnection) Publish(msg *choria.Message) error {
+func (s *stubConnection) Publish(msg inter.Message) error {
 	return nil
 }
 
@@ -148,7 +149,7 @@ func (s *stubConnection) Connect(ctx context.Context) error {
 
 func (s *stubConnection) Close() {}
 
-func (s *stubConnection) ReplyTarget(msg *choria.Message) (string, error) {
+func (s *stubConnection) ReplyTarget(msg inter.Message) (string, error) {
 	return "stubreplytarget", nil
 }
 
@@ -168,7 +169,7 @@ func (s *stubConnectionManager) NewConnector(ctx context.Context, servers func()
 
 	conn = &stubConnection{
 		Outq:        make(chan [2]string, 64),
-		SubChannels: make(map[string]chan *choria.ConnectorMessage),
+		SubChannels: make(map[string]chan inter.ConnectorMessage),
 		Subs:        make(map[string][3]string),
 		mu:          &sync.Mutex{},
 	}
@@ -181,7 +182,7 @@ func (s *stubConnectionManager) NewConnector(ctx context.Context, servers func()
 func (s *stubConnectionManager) Init() *stubConnectionManager {
 	s.connection = &stubConnection{
 		Outq:        make(chan [2]string, 64),
-		SubChannels: make(map[string]chan *choria.ConnectorMessage),
+		SubChannels: make(map[string]chan inter.ConnectorMessage),
 		Subs:        make(map[string][3]string),
 		mu:          &sync.Mutex{},
 	}

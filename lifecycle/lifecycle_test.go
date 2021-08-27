@@ -4,6 +4,7 @@ import (
 	"os"
 	"testing"
 
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo"
@@ -19,12 +20,12 @@ func TestChoria(t *testing.T) {
 var _ = Describe("Events", func() {
 	var (
 		mockctl *gomock.Controller
-		conn    *MockPublishConnector
+		conn    *imock.MockConnector
 	)
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		conn = NewMockPublishConnector(mockctl)
+		conn = imock.NewMockConnector(mockctl)
 		mockTime = 1535106973
 	})
 

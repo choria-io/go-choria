@@ -13,6 +13,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/client/discovery"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/guptarohit/asciigraph"
 	log "github.com/sirupsen/logrus"
@@ -80,7 +81,7 @@ func (p *pingCommand) Run(wg *sync.WaitGroup) (err error) {
 	if err != nil {
 		return fmt.Errorf("could not create message: %s", err)
 	}
-	msg.Filter = filter
+	msg.SetFilter(filter)
 	msg.OnPublish(func() {
 		if p.published.IsZero() {
 			p.published = time.Now()
@@ -143,8 +144,8 @@ func (p *pingCommand) summarize() error {
 	return errors.New("no responses received")
 }
 
-func (p *pingCommand) handler(_ context.Context, m *choria.ConnectorMessage) {
-	reply, err := c.NewTransportFromJSON(string(m.Data))
+func (p *pingCommand) handler(_ context.Context, m inter.ConnectorMessage) {
+	reply, err := c.NewTransportFromJSON(string(m.Data()))
 	if err != nil {
 		log.Errorf("Could not process a reply: %s", err)
 		return
@@ -172,16 +173,16 @@ func (p *pingCommand) handler(_ context.Context, m *choria.ConnectorMessage) {
 	}
 }
 
-func (p *pingCommand) createMessage(filter *protocol.Filter) (*choria.Message, error) {
+func (p *pingCommand) createMessage(filter *protocol.Filter) (inter.Message, error) {
 	msg, err := c.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", p.fo.Collective, "request", nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create message: %s", err)
 	}
 
 	msg.SetProtocolVersion(protocol.RequestV1)
-	msg.SetReplyTo(choria.ReplyTarget(msg, msg.RequestID))
+	msg.SetReplyTo(choria.ReplyTarget(msg, msg.RequestID()))
 
-	msg.Filter = filter
+	msg.SetFilter(filter)
 
 	return msg, err
 }

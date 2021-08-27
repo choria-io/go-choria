@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/data/ddl"
@@ -23,7 +24,7 @@ import (
 type Agent interface {
 	Metadata() *Metadata
 	Name() string
-	HandleMessage(context.Context, *choria.Message, protocol.Request, choria.ConnectorInfo, chan *AgentReply)
+	HandleMessage(context.Context, inter.Message, protocol.Request, inter.ConnectorInfo, chan *AgentReply)
 	SetServerInfo(ServerInfoSource)
 	ServerInfo() ServerInfoSource
 	ShouldActivate() bool
@@ -55,7 +56,7 @@ type ServerInfoSource interface {
 type AgentReply struct {
 	Body    []byte
 	Request protocol.Request
-	Message *choria.Message
+	Message inter.Message
 	Error   error
 }
 
@@ -79,15 +80,15 @@ type Manager struct {
 	fw           *choria.Framework
 	log          *logrus.Entry
 	mu           *sync.Mutex
-	conn         choria.ConnectorInfo
+	conn         inter.ConnectorInfo
 	serverInfo   ServerInfoSource
 	denylist     []string
-	requests     chan *choria.ConnectorMessage
+	requests     chan inter.ConnectorMessage
 	servicesOnly bool
 }
 
 // NewServices creates an agent manager restricted to service agents
-func NewServices(requests chan *choria.ConnectorMessage, fw *choria.Framework, conn choria.ConnectorInfo, srv ServerInfoSource, log *logrus.Entry) *Manager {
+func NewServices(requests chan inter.ConnectorMessage, fw *choria.Framework, conn inter.ConnectorInfo, srv ServerInfoSource, log *logrus.Entry) *Manager {
 	m := New(requests, fw, conn, srv, log)
 	m.servicesOnly = true
 	m.log = m.log.WithField("service_host", true)
@@ -96,7 +97,7 @@ func NewServices(requests chan *choria.ConnectorMessage, fw *choria.Framework, c
 }
 
 // New creates a new Agent Manager
-func New(requests chan *choria.ConnectorMessage, fw *choria.Framework, conn choria.ConnectorInfo, srv ServerInfoSource, log *logrus.Entry) *Manager {
+func New(requests chan inter.ConnectorMessage, fw *choria.Framework, conn inter.ConnectorInfo, srv ServerInfoSource, log *logrus.Entry) *Manager {
 	return &Manager{
 		agents:     make(map[string]Agent),
 		subs:       make(map[string][]string),
@@ -115,7 +116,7 @@ func (a *Manager) DenyAgent(agent string) {
 }
 
 // RegisterAgent connects a new agent to the server instance, subscribe to all its targets etc
-func (a *Manager) RegisterAgent(ctx context.Context, name string, agent Agent, conn choria.AgentConnector) error {
+func (a *Manager) RegisterAgent(ctx context.Context, name string, agent Agent, conn inter.AgentConnector) error {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
@@ -185,7 +186,7 @@ func (a *Manager) agentDenied(name string) bool {
 //
 // In practice though this is something done during bootstrap and failure here should exit
 // the whole instance, so it's probably not needed
-func (a *Manager) subscribeAgent(ctx context.Context, name string, agent Agent, conn choria.AgentConnector) error {
+func (a *Manager) subscribeAgent(ctx context.Context, name string, agent Agent, conn inter.AgentConnector) error {
 	if _, found := a.subs[name]; found {
 		return fmt.Errorf("could not subscribe agent %s, it's already subscribed", name)
 	}
@@ -234,19 +235,19 @@ func (a *Manager) Get(name string) (Agent, bool) {
 }
 
 // Dispatch sends a request to a agent and wait for a reply
-func (a *Manager) Dispatch(ctx context.Context, wg *sync.WaitGroup, replies chan *AgentReply, msg *choria.Message, request protocol.Request) {
+func (a *Manager) Dispatch(ctx context.Context, wg *sync.WaitGroup, replies chan *AgentReply, msg inter.Message, request protocol.Request) {
 	defer wg.Done()
 
-	agent, found := a.Get(msg.Agent)
+	agent, found := a.Get(msg.Agent())
 	if !found {
-		a.log.Errorf("Received a message for agent %s that does not exist, discarding", msg.Agent)
+		a.log.Errorf("Received a message for agent %s that does not exist, discarding", msg.Agent())
 		return
 	}
 
 	result := make(chan *AgentReply)
 
 	td := time.Duration(agent.Metadata().Timeout) * time.Second
-	a.log.Debugf("Handling message %s with timeout %#v", msg.RequestID, td)
+	a.log.Debugf("Handling message %s with timeout %#v", msg.RequestID(), td)
 
 	timeout, cancel := context.WithTimeout(context.Background(), td)
 	defer cancel()
@@ -260,13 +261,13 @@ func (a *Manager) Dispatch(ctx context.Context, wg *sync.WaitGroup, replies chan
 		replies <- &AgentReply{
 			Message: msg,
 			Request: request,
-			Error:   fmt.Errorf("agent dispatcher for request %s exiting on interrupt", msg.RequestID),
+			Error:   fmt.Errorf("agent dispatcher for request %s exiting on interrupt", msg.RequestID()),
 		}
 	case <-timeout.Done():
 		replies <- &AgentReply{
 			Message: msg,
 			Request: request,
-			Error:   fmt.Errorf("agent dispatcher for request %s exiting on %ds timeout", msg.RequestID, agent.Metadata().Timeout),
+			Error:   fmt.Errorf("agent dispatcher for request %s exiting on %ds timeout", msg.RequestID(), agent.Metadata().Timeout),
 		}
 	}
 }

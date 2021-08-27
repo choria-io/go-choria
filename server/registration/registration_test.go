@@ -7,8 +7,9 @@ import (
 
 	framework "github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/server/data"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -23,7 +24,7 @@ func TestRegistration(t *testing.T) {
 var _ = Describe("Server/Registration", func() {
 	var _ = Describe("publish", func() {
 		var (
-			conn    *MockConnection
+			conn    *imock.MockConnector
 			si      *MockServerInfoSource
 			err     error
 			choria  *framework.Framework
@@ -53,7 +54,7 @@ var _ = Describe("Server/Registration", func() {
 
 		BeforeEach(func() {
 			mockctl = gomock.NewController(GinkgoT())
-			conn = NewMockConnection(mockctl)
+			conn = imock.NewMockConnector(mockctl)
 			si = NewMockServerInfoSource(mockctl)
 			manager = New(choria, si, conn, log)
 		})
@@ -81,7 +82,7 @@ var _ = Describe("Server/Registration", func() {
 			msg := &framework.Message{}
 			conn.EXPECT().IsConnected().Return(true)
 			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).DoAndReturn(func(m *framework.Message) {
-				Expect(m.Agent).To(Equal("registration"))
+				Expect(m.Agent()).To(Equal("registration"))
 			}).Return(nil).AnyTimes()
 
 			manager.publish(&data.RegistrationItem{Data: dat})
@@ -92,7 +93,7 @@ var _ = Describe("Server/Registration", func() {
 			msg := &framework.Message{}
 			conn.EXPECT().IsConnected().Return(true)
 			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).DoAndReturn(func(m *framework.Message) {
-				Expect(m.Agent).To(Equal("ginkgo"))
+				Expect(m.Agent()).To(Equal("ginkgo"))
 			}).Return(nil).AnyTimes()
 
 			manager.publish(&data.RegistrationItem{Data: dat, TargetAgent: "ginkgo"})

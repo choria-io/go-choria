@@ -1,7 +1,7 @@
 package client
 
 import (
-	context "context"
+	"context"
 	"encoding/base64"
 	"fmt"
 	"os"
@@ -10,10 +10,12 @@ import (
 	"testing"
 	"time"
 
-	choria "github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -28,7 +30,7 @@ var _ = Describe("Client", func() {
 	var (
 		fw      *choria.Framework
 		mockctl *gomock.Controller
-		conn    *MockConnector
+		conn    *imock.MockConnector
 		err     error
 		client  *Client
 		mu      = &sync.Mutex{}
@@ -36,7 +38,7 @@ var _ = Describe("Client", func() {
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		conn = NewMockConnector(mockctl)
+		conn = imock.NewMockConnector(mockctl)
 
 		cfg := config.NewConfigForTests()
 		cfg.Collectives = []string{"mcollective", "test"}
@@ -86,11 +88,11 @@ var _ = Describe("Client", func() {
 			pubStarted := false
 			pubEnded := false
 
-			handler := func(ctx context.Context, m *choria.ConnectorMessage) {
+			handler := func(ctx context.Context, m inter.ConnectorMessage) {
 				mu.Lock()
 				defer mu.Unlock()
 
-				reply, err := fw.NewTransportFromJSON(string(m.Data))
+				reply, err := fw.NewTransportFromJSON(string(m.Data()))
 				Expect(err).ToNot(HaveOccurred())
 
 				seen = append(seen, reply.SenderID())
@@ -106,14 +108,14 @@ var _ = Describe("Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			msg.SetProtocolVersion(protocol.RequestV1)
-			msg.SetReplyTo(choria.ReplyTarget(msg, msg.RequestID))
+			msg.SetReplyTo(choria.ReplyTarget(msg, msg.RequestID()))
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
 
 			conn.EXPECT().QueueSubscribe(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), client.replies).
 				AnyTimes().
-				Do(func(ctx context.Context, name string, subject string, group string, output chan *choria.ConnectorMessage) {
+				Do(func(ctx context.Context, name string, subject string, group string, output chan inter.ConnectorMessage) {
 					defer GinkgoRecover()
 
 					Expect(name).To(Equal("replies"))
@@ -134,10 +136,7 @@ var _ = Describe("Client", func() {
 						j, err := t.JSON()
 						Expect(err).ToNot(HaveOccurred())
 
-						cm := &choria.ConnectorMessage{
-							Subject: group,
-							Data:    []byte(j),
-						}
+						cm := choria.NewConnectorMessage(group, "", []byte(j), nil)
 
 						output <- cm
 					}

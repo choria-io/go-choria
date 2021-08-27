@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
@@ -24,7 +25,7 @@ type RequestOptions struct {
 	Handler          Handler
 	ProcessReplies   bool
 	ProtocolVersion  string
-	Replies          chan *choria.ConnectorMessage
+	Replies          chan inter.ConnectorMessage
 	ReplyTo          string
 	RequestID        string
 	RequestType      string
@@ -90,9 +91,9 @@ func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, err
 }
 
 // ConfigureMessage configures a pre-made message object based on the settings contained
-func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
-	o.totalStats.RequestID = msg.RequestID
-	o.RequestID = msg.RequestID
+func (o *RequestOptions) ConfigureMessage(msg inter.Message) (err error) {
+	o.totalStats.RequestID = msg.RequestID()
+	o.RequestID = msg.RequestID()
 
 	switch o.RequestType {
 	case choria.RequestMessageType, choria.DirectRequestMessageType:
@@ -104,7 +105,7 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
 			o.BatchSize = len(o.Targets)
 		}
 
-		msg.Filter = o.Filter
+		msg.SetFilter(o.Filter)
 
 		if len(o.Targets) > 0 {
 			limited, err := o.limitTargets(o.Targets)
@@ -113,9 +114,9 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
 			}
 
 			o.Targets = limited
-			msg.DiscoveredHosts = limited
+			msg.SetDiscoveredHosts(limited)
 		} else {
-			limited, err := o.limitTargets(msg.DiscoveredHosts)
+			limited, err := o.limitTargets(msg.DiscoveredHosts())
 			if err != nil {
 				return fmt.Errorf("could not limit targets: %s", err)
 			}
@@ -134,8 +135,8 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
 			return fmt.Errorf("service requests does not support filters")
 		}
 
-		msg.Filter = protocol.NewFilter()
-		msg.DiscoveredHosts = []string{}
+		msg.SetFilter(protocol.NewFilter())
+		msg.SetDiscoveredHosts([]string{})
 	}
 
 	err = msg.SetType(o.RequestType)
@@ -145,7 +146,7 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
 
 	msg.SetProtocolVersion(o.ProtocolVersion)
 
-	stdtarget := choria.ReplyTarget(msg, msg.RequestID)
+	stdtarget := choria.ReplyTarget(msg, msg.RequestID())
 	if o.ReplyTo == "" {
 		o.ReplyTo = stdtarget
 	}
@@ -175,8 +176,8 @@ func (o *RequestOptions) ConfigureMessage(msg *choria.Message) (err error) {
 	if msg.IsCachedTransport() && o.BatchSize != len(o.Targets) {
 		batches := int(math.Ceil(float64(len(o.Targets)) / float64(o.BatchSize)))
 
-		msg.TTL = batches * (msg.TTL + int(o.DiscoveryTimeout.Seconds()) + int(o.Timeout.Seconds()))
-		if msg.TTL > int((5 * time.Hour).Seconds()) {
+		msg.SetTTL(batches * (msg.TTL() + int(o.DiscoveryTimeout.Seconds()) + int(o.Timeout.Seconds())))
+		if msg.TTL() > int((5 * time.Hour).Seconds()) {
 			return fmt.Errorf("cached transport TTL is unreasonably long")
 		}
 	}
@@ -300,7 +301,7 @@ func InBatches(size int, sleep int) RequestOption {
 }
 
 // Replies creates a custom channel for replies and will avoid processing them
-func Replies(r chan *choria.ConnectorMessage) RequestOption {
+func Replies(r chan inter.ConnectorMessage) RequestOption {
 	return func(o *RequestOptions) {
 		o.Replies = r
 		o.ProcessReplies = false

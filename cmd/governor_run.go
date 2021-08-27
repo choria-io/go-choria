@@ -9,6 +9,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/kballard/go-shellquote"
 	"github.com/nats-io/jsm.go"
@@ -40,7 +41,7 @@ func (g *tGovRunCommand) Configure() (err error) {
 	return systemConfigureIfRoot(true)
 }
 
-func (g *tGovRunCommand) trySendEvent(et lifecycle.GovernorEventType, seq uint64, conn lifecycle.PublishConnector) {
+func (g *tGovRunCommand) trySendEvent(et lifecycle.GovernorEventType, seq uint64, conn inter.RawNATSConnector) {
 	event, err := lifecycle.New(lifecycle.Governor, lifecycle.Component("CLI"), lifecycle.Identity(c.Config.Identity), lifecycle.GovernorType(et), lifecycle.GovernorName(g.name), lifecycle.GovernorSequence(seq))
 	if err == nil {
 		lifecycle.PublishEvent(event, conn)

@@ -10,10 +10,10 @@ import (
 	"strings"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/confkey"
 	"github.com/choria-io/go-choria/filter/facts"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/providers/data"
 	"github.com/choria-io/go-choria/server"
@@ -141,7 +141,7 @@ func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 	return agent, nil
 }
 
-func getConfigItem(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func getConfigItem(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	i := GetConfigItemRequest{}
 	if !mcorpc.ParseRequestData(&i, req, reply) {
 		return
@@ -161,7 +161,7 @@ func getConfigItem(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply
 	reply.Data = r
 }
 
-func getData(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func getData(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	dfm, err := agent.ServerInfoSource.DataFuncMap()
 	if err != nil {
 		reply.Statuscode = mcorpc.Aborted
@@ -206,7 +206,7 @@ func getData(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agen
 	reply.Data = output
 }
 
-func daemonStatsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func daemonStatsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	stats := agent.ServerInfoSource.Stats()
 
 	bi := agent.Choria.BuildInfo()
@@ -231,7 +231,7 @@ func daemonStatsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.R
 	reply.Data = output
 }
 
-func inventoryAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func inventoryAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	output := &InventoryReply{
 		Agents:         agent.ServerInfoSource.KnownAgents(),
 		Classes:        agent.ServerInfoSource.Classes(),
@@ -268,7 +268,7 @@ func inventoryAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 	reply.Data = output
 }
 
-func agentInventoryAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func agentInventoryAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	o := AgentInventoryReply{}
 	reply.Data = &o
 
@@ -281,7 +281,7 @@ func agentInventoryAction(ctx context.Context, req *mcorpc.Request, reply *mcorp
 	}
 }
 
-func getFactsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func getFactsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	type input struct {
 		Facts string `json:"facts"`
 	}
@@ -303,7 +303,7 @@ func getFactsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Repl
 	}
 }
 
-func getFactAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func getFactAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	type input struct {
 		Fact string `json:"fact"`
 	}
@@ -325,11 +325,11 @@ func getFactAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply
 	o.Value = v
 }
 
-func pingAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func pingAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	reply.Data = PingReply{time.Now().Unix()}
 }
 
-func collectiveInfoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn choria.ConnectorInfo) {
+func collectiveInfoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	reply.Data = CollectiveInfoReply{
 		MainCollective: agent.Config.MainCollective,
 		Collectives:    agent.Config.Collectives,

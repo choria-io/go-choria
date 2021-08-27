@@ -9,6 +9,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/registration"
 	"github.com/choria-io/go-choria/server/data"
@@ -30,7 +31,7 @@ type RegistrationDataProvider interface {
 
 // Connection provides the connection to the middleware
 type Connection interface {
-	Publish(msg *choria.Message) error
+	Publish(msg inter.Message) error
 	IsConnected() bool
 }
 
@@ -159,7 +160,7 @@ func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 
 	msg.SetProtocolVersion(protocol.RequestV1)
 	msg.SetReplyTo("dev.null")
-	msg.CustomTarget = rmsg.Destination
+	msg.SetCustomTarget(rmsg.Destination)
 
 	if reg.connector.IsConnected() {
 		err = reg.connector.Publish(msg)

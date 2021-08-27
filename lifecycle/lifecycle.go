@@ -17,14 +17,10 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/choria-io/go-choria/inter"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/tidwall/gjson"
 )
-
-// PublishConnector is a connection to the middleware
-type PublishConnector interface {
-	PublishRaw(target string, data []byte) error
-}
 
 // Type is a type of event this system supports
 type Type int
@@ -200,7 +196,7 @@ func ToCloudEventV1(e Event) cloudevents.Event {
 }
 
 // PublishEvent publishes an event
-func PublishEvent(e Event, conn PublishConnector) error {
+func PublishEvent(e Event, conn inter.RawNATSConnector) error {
 	var j []byte
 	var err error
 

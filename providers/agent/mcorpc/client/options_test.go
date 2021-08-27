@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
@@ -39,25 +40,25 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			err = o.ConfigureMessage(msg)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(msg.DiscoveredHosts).To(Equal([]string{"host1", "host2"}))
+			Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1", "host2"}))
 			Expect(o.Targets).To(Equal([]string{"host1", "host2"}))
 			Expect(msg.Type()).To(Equal("request"))
 			Expect(o.ReplyTo).To(Equal(msg.ReplyTo()))
 			Expect(o.ProcessReplies).To(BeTrue())
 			Expect(o.totalStats.discoveredNodes).To(Equal([]string{"host1", "host2"}))
-			Expect(o.totalStats.RequestID).To(Equal(msg.RequestID))
-			Expect(o.RequestID).To(Equal(msg.RequestID))
+			Expect(o.totalStats.RequestID).To(Equal(msg.RequestID()))
+			Expect(o.RequestID).To(Equal(msg.RequestID()))
 		})
 
 		It("Should support the message supplying targets", func() {
 			msg, err := fw.NewMessage("", "test", "mcollective", "request", nil)
 			Expect(err).ToNot(HaveOccurred())
 
-			msg.DiscoveredHosts = []string{"host1", "host2"}
+			msg.SetDiscoveredHosts([]string{"host1", "host2"})
 
 			o.ConfigureMessage(msg)
 
-			Expect(msg.DiscoveredHosts).To(Equal([]string{"host1", "host2"}))
+			Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1", "host2"}))
 			Expect(o.Targets).To(Equal([]string{"host1", "host2"}))
 		})
 
@@ -106,13 +107,13 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			InBatches(10, 30)(o)
 			DiscoveryTimeout(2 * time.Second)(o)
 			Timeout(20 * time.Second)(o)
-			msg.TTL = 10
+			msg.SetTTL(10)
 
 			err = o.ConfigureMessage(msg)
 			Expect(err).ToNot(HaveOccurred())
 
 			expected := 10 * (10 + 2 + 20)
-			Expect(msg.TTL).To(Equal(expected))
+			Expect(msg.TTL()).To(Equal(expected))
 		})
 
 		It("Should limit cached TTL to 5 hours", func() {
@@ -129,7 +130,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			InBatches(10, 30)(o)
 			DiscoveryTimeout(2 * time.Second)(o)
 			Timeout(20 * time.Second)(o)
-			msg.TTL = int(6 * time.Hour.Seconds())
+			msg.SetTTL(int(6 * time.Hour.Seconds()))
 
 			err = o.ConfigureMessage(msg)
 			Expect(err).To(MatchError("cached transport TTL is unreasonably long"))
@@ -145,8 +146,8 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(msg.Type()).To(Equal(choria.ServiceRequestMessageType))
-			Expect(msg.Filter.Empty()).To(BeTrue())
-			Expect(msg.DiscoveredHosts).To(HaveLen(0))
+			Expect(msg.Filter().Empty()).To(BeTrue())
+			Expect(msg.DiscoveredHosts()).To(HaveLen(0))
 		})
 	})
 
@@ -229,7 +230,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 
 	Describe("Replies", func() {
 		It("Should set the channel and disable the handlers", func() {
-			Replies(make(chan *choria.ConnectorMessage, 123))(o)
+			Replies(make(chan inter.ConnectorMessage, 123))(o)
 			Expect(o.Replies).To(HaveCap(123))
 		})
 	})

@@ -9,6 +9,7 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	ddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/golang/mock/gomock"
@@ -57,7 +58,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 		var rep *mcorpc.Reply
 		var ctx context.Context
 		var agent *mcorpc.Agent
-		var ci choria.ConnectorInfo
+		var ci inter.ConnectorInfo
 
 		BeforeEach(func() {
 			req = &mcorpc.Request{

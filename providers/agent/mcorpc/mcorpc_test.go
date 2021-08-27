@@ -3,17 +3,17 @@ package mcorpc
 import (
 	"context"
 	"encoding/json"
+	"testing"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/server/agents"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"
-
-	"testing"
 )
 
 func TestMcoRPC(t *testing.T) {
@@ -25,7 +25,7 @@ var _ = Describe("McoRPC", func() {
 	var (
 		agent  *Agent
 		fw     *choria.Framework
-		msg    *choria.Message
+		msg    inter.Message
 		req    protocol.Request
 		outbox = make(chan *agents.AgentReply, 1)
 		err    error
@@ -57,7 +57,7 @@ var _ = Describe("McoRPC", func() {
 
 	Describe("RegisterAction", func() {
 		It("Should fail if the action already exist", func() {
-			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {}
+			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {}
 			err := agent.RegisterAction("test", action)
 			Expect(err).ToNot(HaveOccurred())
 			err = agent.RegisterAction("test", action)
@@ -74,7 +74,7 @@ var _ = Describe("McoRPC", func() {
 		})
 
 		It("Should handle bad incoming data", func() {
-			msg.Payload = ""
+			msg.SetPayload("")
 			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
@@ -83,7 +83,7 @@ var _ = Describe("McoRPC", func() {
 		})
 
 		It("Should handle unknown actions", func() {
-			msg.Payload = `{"agent":"test", "action":"nonexisting"}`
+			msg.SetPayload(`{"agent":"test", "action":"nonexisting"}`)
 			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
@@ -92,14 +92,14 @@ var _ = Describe("McoRPC", func() {
 		})
 
 		It("Should call the action", func() {
-			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {
+			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {
 				d := make(map[string]string)
 				d["test"] = "hello world"
 				reply.Data = &d
 			}
 
 			agent.RegisterAction("test", action)
-			msg.Payload = `{"agent":"test", "action":"test"}`
+			msg.SetPayload(`{"agent":"test", "action":"test"}`)
 			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
@@ -111,8 +111,8 @@ var _ = Describe("McoRPC", func() {
 		It("Should detect unsupported authorization systems", func() {
 			fw.Config.RPCAuthorization = true
 			fw.Config.RPCAuditProvider = "unsupported"
-			msg.Payload = `{"agent":"test", "action":"test"}`
-			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {
+			msg.SetPayload(`{"agent":"test", "action":"test"}`)
+			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {
 				d := map[string]string{"test": "hello world"}
 				reply.Data = &d
 			}
@@ -129,9 +129,9 @@ var _ = Describe("McoRPC", func() {
 			fw.Config.ConfigFile = "testdata/config.cfg"
 			fw.Config.RPCAuthorization = true
 			fw.Config.RPCAuditProvider = "action_policy"
-			msg.Payload = `{"agent":"test", "action":"test"}`
+			msg.SetPayload(`{"agent":"test", "action":"test"}`)
 
-			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {
+			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {
 				d := map[string]string{"test": "hello world"}
 				reply.Data = &d
 			}
@@ -148,9 +148,9 @@ var _ = Describe("McoRPC", func() {
 			fw.Config.ConfigFile = "testdata/config.cfg"
 			fw.Config.RPCAuthorization = true
 			fw.Config.RPCAuditProvider = "rego_policy"
-			msg.Payload = `{"agent":"test", "action":"test"}`
+			msg.SetPayload(`{"agent":"test", "action":"test"}`)
 
-			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn choria.ConnectorInfo) {
+			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {
 				d := map[string]string{"test": "hello world"}
 				reply.Data = &d
 			}

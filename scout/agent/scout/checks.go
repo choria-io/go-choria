@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 )
 
@@ -23,7 +23,7 @@ type CheckState struct {
 	Status  *nagioswatcher.StateNotification `json:"status"`
 }
 
-func checksAction(_ context.Context, _ *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, _ choria.ConnectorInfo) {
+func checksAction(_ context.Context, _ *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, _ inter.ConnectorInfo) {
 	resp := &ChecksResponse{Checks: []*CheckState{}}
 	reply.Data = resp
 

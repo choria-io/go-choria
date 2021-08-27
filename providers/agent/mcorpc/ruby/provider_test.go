@@ -6,6 +6,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 
 	"github.com/choria-io/go-choria/choria"
@@ -20,7 +21,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 	var (
 		mockctl   *gomock.Controller
 		agentMgr  *MockAgentManager
-		connector *MockInstanceConnector
+		connector *imock.MockConnector
 		cfg       *config.Config
 		fw        *choria.Framework
 		err       error
@@ -37,7 +38,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 
 		mockctl = gomock.NewController(GinkgoT())
 		agentMgr = NewMockAgentManager(mockctl)
-		connector = NewMockInstanceConnector(mockctl)
+		connector = imock.NewMockConnector(mockctl)
 
 		cfg = config.NewConfigForTests()
 		cfg.DisableSecurityProviderVerify = true

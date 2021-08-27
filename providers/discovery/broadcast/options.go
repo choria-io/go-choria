@@ -4,14 +4,14 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 )
 
 type dOpts struct {
 	filter     *protocol.Filter
 	collective string
-	msg        *choria.Message
+	msg        inter.Message
 	discovered []string
 	cl         ChoriaClient
 	mu         *sync.Mutex

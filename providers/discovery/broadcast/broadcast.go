@@ -19,6 +19,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/client"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/sirupsen/logrus"
 )
@@ -32,7 +33,7 @@ type Broadcast struct {
 
 // ChoriaClient implements the connection to the Choria network
 type ChoriaClient interface {
-	Request(ctx context.Context, msg *choria.Message, handler client.Handler) (err error)
+	Request(ctx context.Context, msg inter.Message, handler client.Handler) (err error)
 }
 
 var (
@@ -119,23 +120,22 @@ func (b *Broadcast) identityOptimize(filter *protocol.Filter) bool {
 	return true
 }
 
-func (b *Broadcast) createMessage(filter *protocol.Filter, collective string) (*choria.Message, error) {
+func (b *Broadcast) createMessage(filter *protocol.Filter, collective string) (inter.Message, error) {
 	msg, err := b.fw.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", collective, "request", nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create message: %s", err)
 	}
 
 	msg.SetProtocolVersion(protocol.RequestV1)
-	msg.SetReplyTo(choria.ReplyTarget(msg, msg.RequestID))
-
-	msg.Filter = filter
+	msg.SetReplyTo(choria.ReplyTarget(msg, msg.RequestID()))
+	msg.SetFilter(filter)
 
 	return msg, err
 }
 
 func (b *Broadcast) handler(dopts *dOpts) client.Handler {
-	return func(ctx context.Context, m *choria.ConnectorMessage) {
-		reply, err := b.fw.NewTransportFromJSON(string(m.Data))
+	return func(ctx context.Context, m inter.ConnectorMessage) {
+		reply, err := b.fw.NewTransportFromJSON(string(m.Data()))
 		if err != nil {
 			b.log.Errorf("Could not process a reply: %s", err)
 			return

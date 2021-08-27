@@ -7,6 +7,7 @@ import (
 	"sync"
 
 	"github.com/antonmedv/expr/vm"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/registry"
 
 	"github.com/choria-io/go-choria/config"
@@ -26,7 +27,7 @@ import (
 type ChoriaFramework interface {
 	Logger(string) *logrus.Entry
 	Configuration() *config.Config
-	NewMessage(payload string, agent string, collective string, msgType string, request *choria.Message) (msg *choria.Message, err error)
+	NewMessage(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error)
 	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
 	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
 	MiddlewareServers() (servers srvcache.Servers, err error)
@@ -71,13 +72,13 @@ type Handler func(protocol.Reply, *RPCReply)
 
 // ChoriaClient implements the connection to the Choria network
 type ChoriaClient interface {
-	Request(ctx context.Context, msg *choria.Message, handler cclient.Handler) (err error)
+	Request(ctx context.Context, msg inter.Message, handler cclient.Handler) (err error)
 }
 
 // Connector is a connection to the choria network
 type Connector interface {
-	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan *choria.ConnectorMessage) error
-	Publish(msg *choria.Message) error
+	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan inter.ConnectorMessage) error
+	Publish(msg inter.Message) error
 }
 
 // Option configures the RPC client
@@ -311,7 +312,7 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 		err = InGroups(r.opts.Targets, r.opts.BatchSize, func(nodes []string) error {
 			r.opts.stats = NewStats()
 			r.opts.stats.SetDiscoveredNodes(nodes)
-			msg.DiscoveredHosts = nodes
+			msg.SetDiscoveredHosts(nodes)
 
 			r.opts.stats.Start()
 			defer r.opts.totalStats.Merge(r.opts.stats)
@@ -383,7 +384,7 @@ func (r *RPC) discover(ctx context.Context) error {
 	return nil
 }
 
-func (r *RPC) setupMessage(ctx context.Context, action string, payload interface{}, opts ...RequestOption) (msg *choria.Message, cl ChoriaClient, err error) {
+func (r *RPC) setupMessage(ctx context.Context, action string, payload interface{}, opts ...RequestOption) (msg inter.Message, cl ChoriaClient, err error) {
 	pj, err := json.Marshal(payload)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not encode payload: %s", err)
@@ -425,7 +426,7 @@ func (r *RPC) setupMessage(ctx context.Context, action string, payload interface
 				return nil, nil, err
 			}
 		} else {
-			cl, err = r.batchedClient(ctx, msg.RequestID)
+			cl, err = r.batchedClient(ctx, msg.RequestID())
 			if err != nil {
 				return nil, nil, err
 			}
@@ -482,7 +483,7 @@ func (r *RPC) Reset() {
 	r.cl = nil
 }
 
-func (r *RPC) request(ctx context.Context, msg *choria.Message, cl ChoriaClient) error {
+func (r *RPC) request(ctx context.Context, msg inter.Message, cl ChoriaClient) error {
 	rctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
@@ -501,8 +502,8 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 
 	var prog *vm.Program
 
-	handler := func(ctx context.Context, rawmsg *choria.ConnectorMessage) {
-		reply, err := r.fw.NewReplyFromTransportJSON(rawmsg.Data, false)
+	handler := func(ctx context.Context, rawmsg inter.ConnectorMessage) {
+		reply, err := r.fw.NewReplyFromTransportJSON(rawmsg.Data(), false)
 		if err != nil {
 			r.opts.stats.FailedRequestInc()
 			r.log.Errorf("Could not process a reply: %s", err)
