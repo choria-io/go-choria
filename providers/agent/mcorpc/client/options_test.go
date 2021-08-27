@@ -122,7 +122,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 				targets[i] = fmt.Sprintf("target%d", i)
 			}
 
-			msg, err := fw.NewMessage("", "test", "mcollective", choria.RequestMessageType, nil)
+			msg, err := fw.NewMessage("", "test", "mcollective", inter.RequestMessageType, nil)
 			Expect(err).ToNot(HaveOccurred())
 
 			msg.CacheTransport()
@@ -137,7 +137,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 		})
 
 		It("Should support service requests", func() {
-			msg, err := fw.NewMessage("", "test", "mcollective", choria.RequestMessageType, nil)
+			msg, err := fw.NewMessage("", "test", "mcollective", inter.RequestMessageType, nil)
 			Expect(err).ToNot(HaveOccurred())
 
 			msg.CacheTransport()
@@ -145,7 +145,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			err = o.ConfigureMessage(msg)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(msg.Type()).To(Equal(choria.ServiceRequestMessageType))
+			Expect(msg.Type()).To(Equal(inter.ServiceRequestMessageType))
 			Expect(msg.Filter().Empty()).To(BeTrue())
 			Expect(msg.DiscoveredHosts()).To(HaveLen(0))
 		})

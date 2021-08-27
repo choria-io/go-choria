@@ -8,7 +8,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
@@ -71,7 +70,7 @@ func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, err
 	return &RequestOptions{
 		fw:              fw,
 		ProtocolVersion: protocol.RequestV1,
-		RequestType:     choria.DirectRequestMessageType,
+		RequestType:     inter.DirectRequestMessageType,
 		Collective:      cfg.MainCollective,
 		ProcessReplies:  true,
 		Workers:         3,
@@ -96,9 +95,9 @@ func (o *RequestOptions) ConfigureMessage(msg inter.Message) (err error) {
 	o.RequestID = msg.RequestID()
 
 	switch o.RequestType {
-	case choria.RequestMessageType, choria.DirectRequestMessageType:
-		if o.RequestType == choria.RequestMessageType && o.BatchSize > 0 {
-			return fmt.Errorf("batched mode requires %s mode", choria.DirectRequestMessageType)
+	case inter.RequestMessageType, inter.DirectRequestMessageType:
+		if o.RequestType == inter.RequestMessageType && o.BatchSize > 0 {
+			return fmt.Errorf("batched mode requires %s mode", inter.DirectRequestMessageType)
 		}
 
 		if o.BatchSize == 0 {
@@ -126,7 +125,7 @@ func (o *RequestOptions) ConfigureMessage(msg inter.Message) (err error) {
 
 		o.totalStats.SetDiscoveredNodes(o.Targets)
 
-	case choria.ServiceRequestMessageType:
+	case inter.ServiceRequestMessageType:
 		if len(o.Targets) > 0 {
 			return fmt.Errorf("service requests does not support custom targets")
 		}
@@ -146,7 +145,7 @@ func (o *RequestOptions) ConfigureMessage(msg inter.Message) (err error) {
 
 	msg.SetProtocolVersion(o.ProtocolVersion)
 
-	stdtarget := choria.ReplyTarget(msg, msg.RequestID())
+	stdtarget := msg.ReplyTarget()
 	if o.ReplyTo == "" {
 		o.ReplyTo = stdtarget
 	}
@@ -245,7 +244,7 @@ func Protocol(v string) RequestOption {
 // DirectRequest force the request to be a direct request
 func DirectRequest() RequestOption {
 	return func(o *RequestOptions) {
-		o.RequestType = choria.DirectRequestMessageType
+		o.RequestType = inter.DirectRequestMessageType
 	}
 }
 
@@ -254,7 +253,7 @@ func DirectRequest() RequestOption {
 // **NOTE:** You need to ensure you have filters etc done
 func BroadcastRequest() RequestOption {
 	return func(o *RequestOptions) {
-		o.RequestType = choria.RequestMessageType
+		o.RequestType = inter.RequestMessageType
 	}
 }
 
@@ -263,7 +262,7 @@ func BroadcastRequest() RequestOption {
 // **Note**: does not support filters or targets
 func ServiceRequest() RequestOption {
 	return func(o *RequestOptions) {
-		o.RequestType = choria.ServiceRequestMessageType
+		o.RequestType = inter.ServiceRequestMessageType
 	}
 }
 

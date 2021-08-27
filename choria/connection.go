@@ -325,7 +325,7 @@ func (conn *Connection) Publish(msg inter.Message) error {
 }
 
 func (conn *Connection) publishFederated(msg inter.Message, transport protocol.TransportMessage) error {
-	if msg.Type() == DirectRequestMessageType {
+	if msg.Type() == inter.DirectRequestMessageType {
 		return conn.publishFederatedDirect(msg, transport)
 	}
 
@@ -401,7 +401,7 @@ func (conn *Connection) publishFederatedBroadcast(msg inter.Message, transport p
 }
 
 func (conn *Connection) publishConnected(msg inter.Message, transport protocol.TransportMessage) error {
-	if msg.Type() == DirectRequestMessageType {
+	if msg.Type() == inter.DirectRequestMessageType {
 		return conn.publishConnectedDirect(msg, transport)
 	}
 
@@ -468,20 +468,20 @@ func TargetForMessage(msg inter.Message, identity string) (string, error) {
 	}
 
 	switch msg.Type() {
-	case ReplyMessageType:
+	case inter.ReplyMessageType:
 		if msg.ReplyTo() == "" {
 			return "", fmt.Errorf("do not know how to reply, no reply-to header has been set on message %s", msg.RequestID())
 		}
 
 		return msg.ReplyTo(), nil
 
-	case RequestMessageType:
+	case inter.RequestMessageType:
 		return AgentBroadcastTarget(msg.Collective(), msg.Agent()), nil
 
-	case ServiceRequestMessageType:
+	case inter.ServiceRequestMessageType:
 		return ServiceBroadcastTarget(msg.Collective(), msg.Agent()), nil
 
-	case DirectRequestMessageType:
+	case inter.DirectRequestMessageType:
 		return NodeDirectedTarget(msg.Collective(), identity), nil
 
 	default:
@@ -518,6 +518,7 @@ func (conn *Connection) AgentBroadcastTarget(collective string, agent string) st
 }
 
 func ReplyTarget(msg inter.Message, requestid string) string {
+	// NOTE: also update util.ReplyTarget
 	return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(msg.CallerID()))), requestid)
 }
 

@@ -43,17 +43,9 @@ type Message struct {
 	choria *Framework
 }
 
-const (
-	MessageMessageType        string = "message"
-	RequestMessageType        string = "request"
-	DirectRequestMessageType  string = "direct_request"
-	ServiceRequestMessageType string = "service_request"
-	ReplyMessageType          string = "reply"
-)
-
 // NewMessageFromRequest constructs a Message based on a Request
 func NewMessageFromRequest(req protocol.Request, replyto string, choria *Framework) (inter.Message, error) {
-	reqm, err := newMessage(req.Message(), req.Agent(), req.Collective(), RequestMessageType, nil, choria)
+	reqm, err := newMessage(req.Message(), req.Agent(), req.Collective(), inter.RequestMessageType, nil, choria)
 	if err != nil {
 		return nil, err
 	}
@@ -62,7 +54,7 @@ func NewMessageFromRequest(req protocol.Request, replyto string, choria *Framewo
 		reqm.replyTo = replyto
 	}
 
-	msg, err := newMessage(req.Message(), req.Agent(), req.Collective(), ReplyMessageType, reqm, choria)
+	msg, err := newMessage(req.Message(), req.Agent(), req.Collective(), inter.ReplyMessageType, reqm, choria)
 	if err != nil {
 		return nil, err
 	}
@@ -127,7 +119,7 @@ func newMessage(payload string, agent string, collective string, msgType string,
 		msg.request = request
 		msg.agent = request.Agent()
 		msg.replyTo = request.ReplyTo()
-		msg.SetType(ReplyMessageType)
+		msg.SetType(inter.ReplyMessageType)
 		err = msg.SetCollective(request.Collective())
 		if err != nil {
 			return nil, err
@@ -201,7 +193,7 @@ func (m *Message) Transport() (protocol.TransportMessage, error) {
 	}
 
 	switch {
-	case m.msgType == RequestMessageType || m.msgType == DirectRequestMessageType || m.msgType == ServiceRequestMessageType:
+	case m.msgType == inter.RequestMessageType || m.msgType == inter.DirectRequestMessageType || m.msgType == inter.ServiceRequestMessageType:
 		t, err := m.UncachedRequestTransport()
 		if err != nil {
 			return nil, err
@@ -213,7 +205,7 @@ func (m *Message) Transport() (protocol.TransportMessage, error) {
 
 		return t, nil
 
-	case m.msgType == ReplyMessageType:
+	case m.msgType == inter.ReplyMessageType:
 		return m.UncachedReplyTransport()
 
 	default:
@@ -327,7 +319,7 @@ func (m *Message) Base64Payload() string {
 
 // SetExpectedMsgID sets the Request ID that is expected from the reply data
 func (m *Message) SetExpectedMsgID(id string) error {
-	if m.Type() != ReplyMessageType {
+	if m.Type() != inter.ReplyMessageType {
 		return fmt.Errorf("can only store expected message ID for reply messages")
 	}
 
@@ -343,7 +335,7 @@ func (m *Message) ExpectedMessageID() string {
 
 // SetReplyTo sets the NATS target where replies to this message should go
 func (m *Message) SetReplyTo(replyTo string) error {
-	if !(m.Type() == RequestMessageType || m.Type() == DirectRequestMessageType || m.Type() == ServiceRequestMessageType) {
+	if !(m.Type() == inter.RequestMessageType || m.Type() == inter.DirectRequestMessageType || m.Type() == inter.ServiceRequestMessageType) {
 		return fmt.Errorf("custom reply to targets can only be set for requests")
 	}
 
@@ -375,20 +367,20 @@ func (m *Message) Collective() string {
 
 // SetType sets the message type. One message, request, direct_request, service_request or reply
 func (m *Message) SetType(msgType string) (err error) {
-	if !(msgType == MessageMessageType || msgType == RequestMessageType || msgType == DirectRequestMessageType || msgType == ReplyMessageType || msgType == ServiceRequestMessageType) {
+	if !(msgType == inter.MessageMessageType || msgType == inter.RequestMessageType || msgType == inter.DirectRequestMessageType || msgType == inter.ReplyMessageType || msgType == inter.ServiceRequestMessageType) {
 		return fmt.Errorf("%s is not a valid message type", msgType)
 	}
 
-	if msgType == DirectRequestMessageType {
+	if msgType == inter.DirectRequestMessageType {
 		if len(m.discoveredHosts) == 0 {
-			return fmt.Errorf("%s message type can only be set if DiscoveredHosts have been set", DirectRequestMessageType)
+			return fmt.Errorf("%s message type can only be set if DiscoveredHosts have been set", inter.DirectRequestMessageType)
 		}
 
 		m.filter.AddAgentFilter(m.agent)
 	}
 
-	if msgType == ServiceRequestMessageType && len(m.discoveredHosts) != 0 {
-		return fmt.Errorf("%s message type does not support discoveredHosts", ServiceRequestMessageType)
+	if msgType == inter.ServiceRequestMessageType && len(m.discoveredHosts) != 0 {
+		return fmt.Errorf("%s message type does not support discoveredHosts", inter.ServiceRequestMessageType)
 	}
 
 	m.msgType = msgType
@@ -423,3 +415,6 @@ func (m *Message) DiscoveredHosts() []string         { return m.discoveredHosts 
 func (m *Message) SetDiscoveredHosts(hosts []string) { m.discoveredHosts = hosts }
 func (m *Message) Request() inter.Message            { return m.request }
 func (m *Message) SetTTL(ttl int)                    { m.ttl = ttl }
+func (m *Message) ReplyTarget() string {
+	return ReplyTarget(m, m.requestID)
+}
