@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/awesome-gocui/gocui"
+	"github.com/choria-io/go-choria/inter"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
 	"github.com/fatih/color"
 	"github.com/nats-io/jsm.go"
@@ -21,7 +22,6 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/logger"
 	"github.com/choria-io/go-choria/scout/stream"
 )
@@ -34,7 +34,7 @@ type WatchCommand struct {
 	longestId    int
 	statePattern string
 	history      time.Duration
-	nc           choria.Connector
+	nc           inter.Connector
 
 	transEph *stream.Ephemeral
 	stateEph *stream.Ephemeral
@@ -46,7 +46,7 @@ type WatchCommand struct {
 	sync.Mutex
 }
 
-func NewWatchCommand(idf string, checkf string, perf bool, history time.Duration, nc choria.Connector, log *logrus.Entry) (*WatchCommand, error) {
+func NewWatchCommand(idf string, checkf string, perf bool, history time.Duration, nc inter.Connector, log *logrus.Entry) (*WatchCommand, error) {
 	w := &WatchCommand{
 		identity:  idf,
 		check:     checkf,

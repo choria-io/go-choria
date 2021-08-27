@@ -3,7 +3,7 @@ package model
 import (
 	"encoding/json"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/sirupsen/logrus"
 )
 
@@ -16,6 +16,6 @@ type ChoriaProvider interface {
 	ScoutOverridesPath() string
 	ServerStatusFile() (string, int)
 	MainCollective() string
-	Connector() choria.Connector
+	Connector() inter.Connector
 	Facts() json.RawMessage
 }

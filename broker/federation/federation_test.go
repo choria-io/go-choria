@@ -162,7 +162,7 @@ func (s *stubConnection) RequestRawMsgWithContext(ctx context.Context, msg *nats
 	return nil, fmt.Errorf("not implemented")
 }
 
-func (s *stubConnectionManager) NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn choria.Connector, err error) {
+func (s *stubConnectionManager) NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn inter.Connector, err error) {
 	if s.connection != nil {
 		return s.connection, nil
 	}

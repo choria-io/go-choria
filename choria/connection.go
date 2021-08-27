@@ -27,29 +27,7 @@ import (
 
 // ConnectionManager is capable of being a factory for connection, mcollective.Choria is one
 type ConnectionManager interface {
-	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn Connector, err error)
-}
-
-// Connector is the interface a connector must implement to be valid be it NATS, Stomp, Testing etc
-type Connector interface {
-	AgentBroadcastTarget(collective string, agent string) string
-	ChanQueueSubscribe(name string, subject string, group string, capacity int) (chan inter.ConnectorMessage, error)
-	Close()
-	Connect(ctx context.Context) (err error)
-	ConnectedServer() string
-	ConnectionOptions() nats.Options
-	ConnectionStats() nats.Statistics
-	IsConnected() bool
-	Nats() *nats.Conn
-	NodeDirectedTarget(collective string, identity string) string
-	Publish(msg inter.Message) error
-	PublishRaw(target string, data []byte) error
-	PublishRawMsg(msg *nats.Msg) error
-	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan inter.ConnectorMessage) error
-	ReplyTarget(msg inter.Message) (string, error)
-	RequestRawMsgWithContext(ctx context.Context, msg *nats.Msg) (*nats.Msg, error)
-	ServiceBroadcastTarget(collective string, agent string) string
-	Unsubscribe(name string) error
+	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn inter.Connector, err error)
 }
 
 func NewConnectorMessage(subject string, reply string, data []byte, msg interface{}) *ConnectorMessage {
@@ -146,7 +124,7 @@ func init() {
 // NewConnector creates a new NATS connector
 //
 // It will attempt to connect to the given servers and will keep trying till it manages to do so
-func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (Connector, error) {
+func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (inter.Connector, error) {
 	if name == "" {
 		name = fw.Config.Identity
 	}

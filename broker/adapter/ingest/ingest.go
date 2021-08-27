@@ -39,7 +39,7 @@ type NatsIngest struct {
 	fw   Framework
 	cfg  *config.Config
 	log  *log.Entry
-	conn choria.Connector
+	conn inter.Connector
 }
 
 type Framework interface {

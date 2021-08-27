@@ -15,7 +15,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
@@ -29,7 +28,7 @@ type ChoriaFramework interface {
 	NewRequestID() (string, error)
 	Certname() string
 	MiddlewareServers() (srvcache.Servers, error)
-	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn choria.Connector, err error)
+	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn inter.Connector, err error)
 	NewMessage(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error)
 	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
 }

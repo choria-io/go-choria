@@ -13,7 +13,7 @@ import (
 	sync "sync"
 	time "time"
 
-	choria "github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	lifecycle "github.com/choria-io/go-choria/lifecycle"
 	gomock "github.com/golang/mock/gomock"
 	jsm_go "github.com/nats-io/jsm.go"
@@ -240,10 +240,10 @@ func (m *MockChoriaProvider) EXPECT() *MockChoriaProviderMockRecorder {
 }
 
 // Connector mocks base method.
-func (m *MockChoriaProvider) Connector() choria.Connector {
+func (m *MockChoriaProvider) Connector() inter.Connector {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Connector")
-	ret0, _ := ret[0].(choria.Connector)
+	ret0, _ := ret[0].(inter.Connector)
 	return ret0
 }
 

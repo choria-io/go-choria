@@ -21,7 +21,7 @@ import (
 // Instance is an independent copy of Choria
 type Instance struct {
 	fw                 *choria.Framework
-	connector          choria.Connector
+	connector          inter.Connector
 	cfg                *config.Config
 	log                *log.Entry
 	registration       *registration.Manager

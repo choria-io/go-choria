@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/choria-io/go-choria/broker/federation/stats"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/prometheus/client_golang/prometheus"
 	log "github.com/sirupsen/logrus"
 )
@@ -15,7 +15,7 @@ func NewChoriaNatsEgest(workers int, mode int, capacity int, broker *FederationB
 	worker, err := PooledWorkerFactory("choria_nats_egest", workers, mode, capacity, broker, logger, func(ctx context.Context, self *pooledWorker, i int, logger *log.Entry) {
 		defer self.wg.Done()
 
-		var nc choria.Connector
+		var nc inter.Connector
 		var err error
 
 		nc, err = self.connection.NewConnector(ctx, self.servers, self.Name(), logger)
