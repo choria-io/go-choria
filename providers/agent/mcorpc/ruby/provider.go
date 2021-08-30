@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
@@ -17,27 +16,17 @@ var denylist = []string{"rpcutil", "choria_util", "discovery"}
 
 // Provider is a Agent Provider capable of executing old mcollective ruby agents
 type Provider struct {
-	fw     *choria.Framework
 	cfg    *config.Config
 	log    *logrus.Entry
 	agents []*agent.DDL
 }
 
-// New creates a new provider that will find ruby agents in the configured libdirs
-func New(fw *choria.Framework) *Provider {
-	p := &Provider{}
-	p.Initialize(fw, fw.Logger("agents").WithFields(logrus.Fields{"provider": "ruby"}))
-
-	return p
-}
-
 // Initialize configures the agent provider
-func (p *Provider) Initialize(fw *choria.Framework, log *logrus.Entry) {
-	p.fw = fw
-	p.cfg = fw.Configuration()
+func (p *Provider) Initialize(cfg *config.Config, log *logrus.Entry) {
+	p.cfg = cfg
 	p.log = log.WithFields(logrus.Fields{"provider": "ruby"})
 
-	p.loadAgents(fw.Config.Choria.RubyLibdir)
+	p.loadAgents(p.cfg.Choria.RubyLibdir)
 }
 
 // RegisterAgents registers known ruby agents using a shimm agent

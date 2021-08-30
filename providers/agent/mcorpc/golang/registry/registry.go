@@ -46,7 +46,7 @@ func New(mgr server.AgentManager) (agents.Agent, error) {
 	agent.MustRegisterAction("ddl", ddlAction)
 
 	agent.SetActivationChecker(func() bool {
-		return mgr.Choria().Config.Choria.RegistryServiceEnabled
+		return mgr.Choria().Configuration().Choria.RegistryServiceEnabled
 	})
 
 	return agent, nil

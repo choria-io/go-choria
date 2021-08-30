@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/choriautil"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/discovery"
@@ -19,7 +19,7 @@ type Provider struct {
 }
 
 // Initialize configures the agent provider
-func (p Provider) Initialize(fw *choria.Framework, _ *logrus.Entry) {}
+func (p Provider) Initialize(_ *config.Config, _ *logrus.Entry) {}
 
 // Version reports the version for this provider
 func (p *Provider) Version() string {

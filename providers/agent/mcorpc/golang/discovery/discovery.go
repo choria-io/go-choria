@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/server"
 	"github.com/sirupsen/logrus"
@@ -19,7 +20,7 @@ type Agent struct {
 }
 
 func New(mgr server.AgentManager) (*Agent, error) {
-	bi := mgr.Choria().BuildInfo()
+	bi := util.BuildInfo()
 
 	a := &Agent{
 		log: mgr.Logger().WithFields(logrus.Fields{"agent": "discovery"}),

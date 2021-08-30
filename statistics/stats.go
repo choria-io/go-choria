@@ -7,12 +7,13 @@ import (
 	"runtime"
 	"sync"
 
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/nats-server/v2/server/pse"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 	log "github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/protocol"
 )
 
@@ -40,10 +41,14 @@ type SysInfo struct {
 	Cores int     `json:"cpu_cores"`
 }
 
+type ChoriaFramework interface {
+	Configuration() *config.Config
+}
+
 var (
 	running = false
 	mu      = &sync.Mutex{}
-	fw      *choria.Framework
+	fw      ChoriaFramework
 
 	buildInfo = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "choria_build_info",
@@ -52,7 +57,7 @@ var (
 )
 
 // Start starts serving exp stats and metrics on the configured statistics port
-func Start(cfw *choria.Framework, handler http.Handler) {
+func Start(cfw ChoriaFramework, handler http.Handler) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -65,9 +70,9 @@ func Start(cfw *choria.Framework, handler http.Handler) {
 		return
 	}
 
-	bi := fw.BuildInfo()
+	bi := util.BuildInfo()
 	prometheus.MustRegister(buildInfo)
-	buildInfo.WithLabelValues(bi.Version(), bi.SHA(), fw.Config.Identity).Inc()
+	buildInfo.WithLabelValues(bi.Version(), bi.SHA(), fw.Configuration().Identity).Inc()
 
 	if !running {
 		log.Infof("Starting statistic reporting Prometheus statistics on http://%s:%d/choria/", cfg.Choria.StatsListenAddress, port)
@@ -95,7 +100,7 @@ func SystemInfo() ChoriaInfo {
 
 	pse.ProcUsage(&pcpu, &rss, &vss)
 
-	bi := fw.BuildInfo()
+	bi := util.BuildInfo()
 
 	return ChoriaInfo{
 		ConfigFile: fw.Configuration().ConfigFile,

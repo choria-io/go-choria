@@ -1,7 +1,7 @@
 package mcorpc
 
 import (
-	"github.com/choria-io/go-choria/plugin"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
 )
@@ -13,7 +13,7 @@ type AgentPlugin struct {
 }
 
 // NewChoriaAgentPlugin creates a new plugin for an agent that allows it to plug into the Choria Plugin system
-func NewChoriaAgentPlugin(metadata *agents.Metadata, creator func(mgr server.AgentManager) (agents.Agent, error)) plugin.Pluggable {
+func NewChoriaAgentPlugin(metadata *agents.Metadata, creator func(mgr server.AgentManager) (agents.Agent, error)) inter.Pluggable {
 	plugin := &AgentPlugin{
 		metadata: metadata,
 		creator:  creator,
@@ -38,6 +38,6 @@ func (p *AgentPlugin) PluginName() string {
 }
 
 // PluginType implements plugin.Pluggable
-func (p *AgentPlugin) PluginType() plugin.Type {
-	return plugin.AgentPlugin
+func (p *AgentPlugin) PluginType() inter.PluginType {
+	return inter.AgentPlugin
 }

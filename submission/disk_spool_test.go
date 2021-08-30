@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/config"
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -21,7 +22,7 @@ var _ = Describe("Directory Spool", func() {
 	var (
 		spool   *DirectorySpool
 		mockctl *gomock.Controller
-		fw      *MockFramework
+		fw      *imock.MockFramework
 		cfg     *config.Config
 		td      string
 		log     *logrus.Entry
@@ -41,7 +42,7 @@ var _ = Describe("Directory Spool", func() {
 
 		mockctl = gomock.NewController(GinkgoT())
 
-		fw = NewMockFramework(mockctl)
+		fw = imock.NewMockFramework(mockctl)
 		fw.EXPECT().Configuration().Return(cfg)
 		fw.EXPECT().Logger(gomock.Any()).Return(log)
 

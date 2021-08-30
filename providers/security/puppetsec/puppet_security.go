@@ -24,6 +24,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/tlssetup"
 
@@ -102,6 +103,9 @@ type Config struct {
 
 	// IdentitySuffix is the suffix to append to user names when creating certnames and identities
 	IdentitySuffix string
+
+	// RemoteSigner is the signer used to sign requests using a remote like AAA Service
+	RemoteSigner inter.RequestSigner
 }
 
 // New creates a new instance of the Puppet Security Provider
@@ -149,6 +153,7 @@ func (s *PuppetSecurity) reinit() error {
 		TLSConfig:                    s.conf.TLSConfig,
 		IdentitySuffix:               s.conf.IdentitySuffix,
 		BackwardCompatVerification:   true,
+		RemoteSigner:                 s.conf.RemoteSigner,
 	}
 
 	s.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(s.log))
@@ -279,8 +284,12 @@ func (s *PuppetSecurity) Validate() ([]string, bool) {
 }
 
 // RemoteSignRequest signs a choria request using a remote signer and returns a secure request
-func (s *PuppetSecurity) RemoteSignRequest(str []byte) (signed []byte, err error) {
-	return s.fsec.RemoteSignRequest(str)
+func (s *PuppetSecurity) RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error) {
+	return s.fsec.RemoteSignRequest(ctx, str)
+}
+
+func (s *PuppetSecurity) IsRemoteSigning() bool {
+	return s.fsec.IsRemoteSigning()
 }
 
 // ChecksumBytes calculates a sha256 checksum for data

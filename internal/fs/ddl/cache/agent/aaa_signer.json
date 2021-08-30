@@ -1,0 +1,46 @@
+{
+  "$schema": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
+  "metadata": {
+    "license": "Apache-2.0",
+    "author": "R.I.Pienaar \u003crip@devco.net\u003e",
+    "timeout": 10,
+    "name": "aaa_signer",
+    "version": "0.23.0",
+    "url": "https://github.com/choria-io/aaasvc",
+    "description": "Request Signer for Choria AAA Service",
+    "provider": "golang",
+    "service": true
+  },
+  "actions": [
+    {
+      "action": "sign",
+      "input": {
+        "request": {
+          "prompt": "RPC Request",
+          "description": "The request to sign",
+          "type": "string",
+          "optional": false,
+          "validation": "shellsafe",
+          "maxlength": 100240
+        },
+        "token": {
+          "prompt": "JWT Token",
+          "description": "The JWT token authenticating the user",
+          "type": "string",
+          "optional": false,
+          "validation": ".",
+          "maxlength": 10024
+        }
+      },
+      "output": {
+        "secure_request": {
+          "description": "The signed Secure Request",
+          "display_as": "Secure Request",
+          "type": "string"
+        }
+      },
+      "display": "always",
+      "description": "Signs a RPC Request on behalf of a user"
+    }
+  ]
+}

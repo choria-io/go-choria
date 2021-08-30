@@ -8,10 +8,11 @@ import (
 	"testing"
 	"time"
 
+	imock "github.com/choria-io/go-choria/inter/imocks"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
 )
@@ -23,23 +24,28 @@ func TestExternal(t *testing.T) {
 
 var _ = Describe("External", func() {
 	var (
-		fw *choria.Framework
-		e  *External
+		mockctl *gomock.Controller
+		fw      *imock.MockFramework
+		cfg     *config.Config
+		e       *External
 	)
 
 	BeforeEach(func() {
-		cfg := config.NewConfigForTests()
+		mockctl = gomock.NewController(GinkgoT())
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
 		cfg.Collectives = []string{"mcollective", "test"}
 
-		fw, _ = choria.NewWithConfig(cfg)
-
 		e = New(fw)
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
 	})
 
 	Describe("New", func() {
 		It("Should initialize timeout to default", func() {
 			Expect(e.timeout).To(Equal(2 * time.Second))
-			fw.Config.DiscoveryTimeout = 100
+			cfg.DiscoveryTimeout = 100
 			e = New(fw)
 			Expect(e.timeout).To(Equal(100 * time.Second))
 		})
@@ -56,12 +62,12 @@ var _ = Describe("External", func() {
 			f.AddFactFilter("country", "==", "mt")
 
 			wd, _ := os.Getwd()
-			fw.Config.Choria.ExternalDiscoveryCommand = filepath.Join(wd, "testdata/good.rb")
+			cfg.Choria.ExternalDiscoveryCommand = filepath.Join(wd, "testdata/good.rb")
 			nodes, err := e.Discover(context.Background(), Filter(f), DiscoveryOptions(map[string]string{"foo": "bar"}))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(nodes).To(Equal([]string{"one", "two"}))
 
-			fw.Config.Choria.ExternalDiscoveryCommand = filepath.Join(wd, "testdata/good_with_argument.rb") + " discover --test"
+			cfg.Choria.ExternalDiscoveryCommand = filepath.Join(wd, "testdata/good_with_argument.rb") + " discover --test"
 			nodes, err = e.Discover(context.Background(), Filter(f), DiscoveryOptions(map[string]string{"foo": "bar"}))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(nodes).To(Equal([]string{"one", "two"}))
@@ -77,12 +83,11 @@ var _ = Describe("External", func() {
 			f.AddFactFilter("country", "==", "mt")
 
 			wd, _ := os.Getwd()
-			fw.Config.Choria.ExternalDiscoveryCommand = filepath.Join(wd, "testdata/missing.rb")
+			cfg.Choria.ExternalDiscoveryCommand = filepath.Join(wd, "testdata/missing.rb")
 			cmd := filepath.Join(wd, "testdata/good_with_argument.rb") + " discover --test"
 			nodes, err := e.Discover(context.Background(), Filter(f), DiscoveryOptions(map[string]string{"command": cmd, "foo": "bar"}))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(nodes).To(Equal([]string{"one", "two"}))
-
 		})
 	})
 })

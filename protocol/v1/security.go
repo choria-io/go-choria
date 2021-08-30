@@ -1,5 +1,9 @@
 package v1
 
+import (
+	"context"
+)
+
 type SecurityProvider interface {
 	CallerIdentity(caller string) (string, error)
 	SignString(s string) (signature []byte, err error)
@@ -7,5 +11,5 @@ type SecurityProvider interface {
 	PublicCertTXT() ([]byte, error)
 	ChecksumString(data string) []byte
 	CachePublicData(data []byte, identity string) error
-	RemoteSignRequest(str []byte) (signed []byte, err error)
+	RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error)
 }

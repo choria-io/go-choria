@@ -5,9 +5,10 @@ import (
 	"os"
 	"testing"
 
-	framework "github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	imock "github.com/choria-io/go-choria/inter/imocks"
+	"github.com/choria-io/go-choria/message"
 	"github.com/choria-io/go-choria/server/data"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
@@ -26,22 +27,23 @@ var _ = Describe("Server/Registration", func() {
 		var (
 			conn    *imock.MockConnector
 			si      *MockServerInfoSource
-			err     error
-			choria  *framework.Framework
+			fw      *imock.MockFramework
 			cfg     *config.Config
 			log     *logrus.Entry
 			manager *Manager
 			mockctl *gomock.Controller
 		)
 
-		BeforeSuite(func() {
-			cfg = config.NewConfigForTests()
-			cfg.DisableTLS = true
+		BeforeEach(func() {
+			mockctl = gomock.NewController(GinkgoT())
+			fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
 
-			choria, err = framework.NewWithConfig(cfg)
-			Expect(err).ToNot(HaveOccurred())
+			fw.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
+			fw.EXPECT().HasCollective("test_collective").Return(true).AnyTimes()
+			fw.EXPECT().NewMessage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
+				return message.NewMessage(payload, agent, collective, msgType, request, fw)
+			}).AnyTimes()
 
-			cfg = choria.Config
 			cfg.DisableTLS = true
 			cfg.OverrideCertname = "test.example.net"
 			cfg.Collectives = []string{"test_collective"}
@@ -50,13 +52,10 @@ var _ = Describe("Server/Registration", func() {
 
 			log = logrus.WithFields(logrus.Fields{"test": true})
 			logrus.SetLevel(logrus.FatalLevel)
-		})
 
-		BeforeEach(func() {
-			mockctl = gomock.NewController(GinkgoT())
 			conn = imock.NewMockConnector(mockctl)
 			si = NewMockServerInfoSource(mockctl)
-			manager = New(choria, si, conn, log)
+			manager = New(fw, si, conn, log)
 		})
 
 		AfterEach(func() {
@@ -79,9 +78,9 @@ var _ = Describe("Server/Registration", func() {
 		It("Should publish to registration agent when not set", func() {
 			dat := []byte("hello world")
 
-			msg := &framework.Message{}
+			msg := &message.Message{}
 			conn.EXPECT().IsConnected().Return(true)
-			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).DoAndReturn(func(m *framework.Message) {
+			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).DoAndReturn(func(m *message.Message) {
 				Expect(m.Agent()).To(Equal("registration"))
 			}).Return(nil).AnyTimes()
 
@@ -90,9 +89,9 @@ var _ = Describe("Server/Registration", func() {
 
 		It("Should publish to the configured agent when set", func() {
 			dat := []byte("hello world")
-			msg := &framework.Message{}
+			msg := &message.Message{}
 			conn.EXPECT().IsConnected().Return(true)
-			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).DoAndReturn(func(m *framework.Message) {
+			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).DoAndReturn(func(m *message.Message) {
 				Expect(m.Agent()).To(Equal("ginkgo"))
 			}).Return(nil).AnyTimes()
 
@@ -101,7 +100,7 @@ var _ = Describe("Server/Registration", func() {
 
 		It("Should handle publish failures gracefully", func() {
 			dat := []byte("hello world")
-			msg := &framework.Message{}
+			msg := &message.Message{}
 			conn.EXPECT().IsConnected().Return(true)
 			conn.EXPECT().Publish(gomock.AssignableToTypeOf(msg)).Return(errors.New("simulated failure")).AnyTimes()
 			manager.publish(&data.RegistrationItem{Data: dat, TargetAgent: "ginkgo"})

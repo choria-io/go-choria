@@ -6,9 +6,9 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/data/ddl"
 	"github.com/choria-io/go-choria/server/agents"
@@ -91,7 +91,7 @@ func RegisterPlugin(name string, plugin *Creator) error {
 	}
 
 	plugins[plugin.Name] = plugin
-	choria.BuildInfo().RegisterDataProvider(name)
+	util.BuildInfo().RegisterDataProvider(name)
 
 	return nil
 }

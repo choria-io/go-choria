@@ -49,7 +49,7 @@ func NewChoriaNatsEgest(workers int, mode int, capacity int, broker *FederationB
 			cm.Seen = append(cm.Seen, nc.ConnectedServer())
 
 			if len(cm.Seen) >= 3 {
-				mid := fmt.Sprintf("%s (%s)", self.choria.Config.Identity, strings.Join(cm.Seen[1:len(cm.Seen)-1], ", "))
+				mid := fmt.Sprintf("%s (%s)", self.choria.Configuration().Identity, strings.Join(cm.Seen[1:len(cm.Seen)-1], ", "))
 				cm.Message.RecordNetworkHop(cm.Seen[0], mid, cm.Seen[len(cm.Seen)-1])
 			}
 

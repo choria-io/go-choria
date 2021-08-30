@@ -7,16 +7,27 @@ import (
 
 	"github.com/choria-io/go-choria/broker/adapter/natsstream"
 	"github.com/choria-io/go-choria/broker/adapter/streams"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/srvcache"
 	log "github.com/sirupsen/logrus"
 )
 
+type ChoriaFramework interface {
+	Configuration() *config.Config
+	MiddlewareServers() (servers srvcache.Servers, err error)
+	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn inter.Connector, err error)
+	NewRequestFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Request, err error)
+	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
+}
+
 type adapter interface {
-	Init(ctx context.Context, cm choria.ConnectionManager) (err error)
+	Init(ctx context.Context, cm inter.ConnectionManager) (err error)
 	Process(ctx context.Context, wg *sync.WaitGroup)
 }
 
-func startAdapter(ctx context.Context, a adapter, c *choria.Framework, wg *sync.WaitGroup) error {
+func startAdapter(ctx context.Context, a adapter, c inter.ConnectionManager, wg *sync.WaitGroup) error {
 	err := a.Init(ctx, c)
 	if err != nil {
 		return fmt.Errorf("could not initialize adapter %s: %s", a, err)
@@ -28,9 +39,9 @@ func startAdapter(ctx context.Context, a adapter, c *choria.Framework, wg *sync.
 	return nil
 }
 
-func RunAdapters(ctx context.Context, c *choria.Framework, wg *sync.WaitGroup) error {
-	for _, a := range c.Config.Choria.Adapters {
-		atype := c.Config.Option(fmt.Sprintf("plugin.choria.adapter.%s.type", a), "")
+func RunAdapters(ctx context.Context, c ChoriaFramework, wg *sync.WaitGroup) error {
+	for _, a := range c.Configuration().Choria.Adapters {
+		atype := c.Configuration().Option(fmt.Sprintf("plugin.choria.adapter.%s.type", a), "")
 		if atype == "" {
 			return fmt.Errorf("could not determine type for adapter %s, set plugin.choria.adapter.%s.type", a, a)
 		}

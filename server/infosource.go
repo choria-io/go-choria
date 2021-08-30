@@ -10,7 +10,6 @@ import (
 
 	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/statistics"
 
@@ -39,7 +38,7 @@ func (srv *Instance) NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error 
 }
 
 // Choria returns the choria framework
-func (srv *Instance) Choria() *choria.Framework {
+func (srv *Instance) Choria() inter.Framework {
 	return srv.fw
 }
 
@@ -65,7 +64,7 @@ func (srv *Instance) Connector() inter.Connector {
 
 // MainCollective the subject to use for choria managed Governors
 func (srv *Instance) MainCollective() string {
-	return srv.fw.Config.MainCollective
+	return srv.fw.Configuration().MainCollective
 }
 
 // ConnectedServer returns the URL of the broker this instance is connected to, "unknown" when not connected

@@ -25,11 +25,6 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-// ConnectionManager is capable of being a factory for connection, mcollective.Choria is one
-type ConnectionManager interface {
-	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn inter.Connector, err error)
-}
-
 func NewConnectorMessage(subject string, reply string, data []byte, msg interface{}) *ConnectorMessage {
 	return &ConnectorMessage{
 		subject: subject,
@@ -518,7 +513,7 @@ func (conn *Connection) AgentBroadcastTarget(collective string, agent string) st
 }
 
 func ReplyTarget(msg inter.Message, requestid string) string {
-	// NOTE: also update util.ReplyTarget
+	// NOTE: also update msg.ReplyTarget
 	return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(msg.CallerID()))), requestid)
 }
 

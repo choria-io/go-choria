@@ -13,10 +13,11 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	imock "github.com/choria-io/go-choria/inter/imocks"
+	"github.com/choria-io/go-choria/message"
 	"github.com/choria-io/go-choria/protocol"
+	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/golang/mock/gomock"
 
-	"github.com/choria-io/go-choria/choria"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -37,21 +38,19 @@ var _ = Describe("Server/Agents", func() {
 		requests chan inter.ConnectorMessage
 		ctx      context.Context
 		cancel   func()
-		fw       *choria.Framework
-		handler  func(ctx context.Context, msg *choria.Message, request protocol.Request, ci inter.ConnectorInfo, result chan *AgentReply)
-		err      error
+		fw       *imock.MockFramework
+		cfg      *config.Config
+		handler  func(ctx context.Context, msg *message.Message, request protocol.Request, ci inter.ConnectorInfo, result chan *AgentReply)
 	)
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-
-		cfg := config.NewConfigForTests()
-		cfg.DisableTLS = true
-
-		fw, err = choria.NewWithConfig(cfg)
-		Expect(err).ToNot(HaveOccurred())
-		fw.Config.Collectives = []string{"cone", "ctwo"}
-		fw.SetLogWriter(GinkgoWriter)
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
+		fw.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
+		fw.EXPECT().HasCollective(gomock.Eq("cone")).Return(true).AnyTimes()
+		fw.EXPECT().HasCollective(gomock.Eq("ctwo")).Return(true).AnyTimes()
+		fw.EXPECT().HasCollective(gomock.Eq("mcollective")).Return(false).AnyTimes()
+		cfg.Collectives = []string{"cone", "ctwo"}
 
 		requests = make(chan inter.ConnectorMessage)
 		ctx, cancel = context.WithCancel(context.Background())
@@ -66,7 +65,7 @@ var _ = Describe("Server/Agents", func() {
 			Version:     "1.0.0",
 		}
 
-		handler = func(ctx context.Context, msg *choria.Message, request protocol.Request, ci inter.ConnectorInfo, result chan *AgentReply) {
+		handler = func(ctx context.Context, msg *message.Message, request protocol.Request, ci inter.ConnectorInfo, result chan *AgentReply) {
 			if msg.Payload() == "sleep" {
 				time.Sleep(10 * time.Second)
 			}
@@ -237,16 +236,17 @@ var _ = Describe("Server/Agents", func() {
 		wg := &sync.WaitGroup{}
 
 		BeforeEach(func() {
-			fw.Config.Collectives = []string{"mcollective"}
-			request, err = mgr.fw.NewRequest(protocol.RequestV1, "stub", "example.net", "choria=rip.mcollecitve", 60, "123", "mcollective")
+			fw.EXPECT().HasCollective(gomock.Eq("cone")).Return(true).AnyTimes()
+			cfg.Collectives = []string{"cone"}
+			request, err = v1.NewRequest("stub", "example.net", "choria=rip.mcollective", 60, "123", "cone")
 			Expect(err).ToNot(HaveOccurred())
 			request.SetMessage("hello world")
 
-			msg, err = choria.NewMessageFromRequest(request, "choria.reply.to", mgr.fw)
+			msg, err = message.NewMessageFromRequest(request, "choria.reply.to", mgr.fw)
 			Expect(err).ToNot(HaveOccurred())
 			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
-			conn.EXPECT().AgentBroadcastTarget("mcollective", "stub").Return("mcollective.stub").AnyTimes()
-			conn.EXPECT().QueueSubscribe(gomock.Any(), "mcollective.stub", "mcollective.stub", "", gomock.Any()).Return(nil).AnyTimes()
+			conn.EXPECT().AgentBroadcastTarget("cone", "stub").Return("cone.stub").AnyTimes()
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "cone.stub", "cone.stub", "", gomock.Any()).Return(nil).AnyTimes()
 		})
 
 		It("Should handle unknown agents", func() {

@@ -2,6 +2,7 @@ package pkcs11sec
 
 import (
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/sirupsen/logrus"
 )
 
@@ -21,6 +22,15 @@ func WithChoriaConfig(c *config.Config) Option {
 		}
 
 		p.conf = &cfg
+
+		return nil
+	}
+}
+
+// WithSigner configures a remote request signer
+func WithSigner(signer inter.RequestSigner) Option {
+	return func(p *Pkcs11Security) error {
+		p.conf.RemoteSigner = signer
 
 		return nil
 	}

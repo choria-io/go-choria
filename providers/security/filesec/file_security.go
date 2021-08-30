@@ -14,11 +14,9 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/json"
 	"encoding/pem"
 	"errors"
 	"fmt"
-	"io"
 	"net/http"
 	"net/url"
 	"os"
@@ -29,6 +27,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/tlssetup"
 
@@ -95,16 +94,9 @@ type Config struct {
 
 	// IdentitySuffix is the suffix to append to user names when creating certnames and identities
 	IdentitySuffix string
-}
 
-type signingRequest struct {
-	Token   string `json:"token"`
-	Request []byte `json:"request"`
-}
-
-type signingReply struct {
-	Signed []byte `json:"secure_request"`
-	Error  string `json:"error"`
+	// RemoteSigner is the signer used to sign requests using a remote like AAA Service
+	RemoteSigner inter.RequestSigner
 }
 
 // New creates a new instance of the File Security provider
@@ -144,109 +136,44 @@ func (s *FileSecurity) Provider() string {
 	return "file"
 }
 
-func (s *FileSecurity) isRemoteSigner() bool {
-	return s.conf.RemoteSignerURL != ""
-}
-
-func (s *FileSecurity) remoteSignerURL() (*url.URL, error) {
-	if s.conf.RemoteSignerURL == "" {
-		return nil, fmt.Errorf("no remote url configured")
-	}
-
-	return url.Parse(s.conf.RemoteSignerURL)
-}
-
-func (s *FileSecurity) signerToken() (token string, err error) {
-	if !s.isRemoteSigner() {
-		return "", fmt.Errorf("remote signing is disabled")
-	}
-
+func (s *FileSecurity) RemoteSignerToken() ([]byte, error) {
 	if s.conf.RemoteSignerTokenFile == "" && s.conf.RemoteSignerTokenEnvironment == "" {
-		return "", fmt.Errorf("no token file or environment variable is defined")
+		return nil, fmt.Errorf("no token file or environment variable is defined")
 	}
 
 	if s.conf.RemoteSignerTokenFile != "" {
 		tb, err := os.ReadFile(s.conf.RemoteSignerTokenFile)
 		if err != nil {
-			return "", fmt.Errorf("could not read token file: %v", err)
+			return bytes.TrimSpace(tb), fmt.Errorf("could not read token file: %v", err)
 		}
 
-		return strings.TrimSpace(string(tb)), err
+		return tb, err
 	}
 
-	token = os.Getenv(s.conf.RemoteSignerTokenEnvironment)
+	token := os.Getenv(s.conf.RemoteSignerTokenEnvironment)
 	if token == "" {
-		return "", fmt.Errorf("did not find a token in environment variable %s", s.conf.RemoteSignerTokenEnvironment)
+		return nil, fmt.Errorf("did not find a token in environment variable %s", s.conf.RemoteSignerTokenEnvironment)
 	}
 
-	return strings.TrimSpace(token), nil
+	return bytes.TrimSpace([]byte(token)), nil
+}
+
+func (s *FileSecurity) RemoteSignerURL() (*url.URL, error) {
+	if s.conf.RemoteSignerURL == "" {
+		return nil, fmt.Errorf("no remote url configured")
+	}
+
+	return url.Parse(s.conf.RemoteSignerURL)
+
 }
 
 // RemoteSignRequest signs a choria request using a remote signer and returns a secure request
-func (s *FileSecurity) RemoteSignRequest(str []byte) (signed []byte, err error) {
-	if !s.isRemoteSigner() {
-		return nil, fmt.Errorf("not configured for remote signing")
+func (s *FileSecurity) RemoteSignRequest(ctx context.Context, request []byte) (signed []byte, err error) {
+	if s.conf.RemoteSigner == nil {
+		return nil, fmt.Errorf("remote signing not configured")
 	}
 
-	signer, err := s.remoteSignerURL()
-	if err != nil {
-		return nil, err
-	}
-
-	req := &signingRequest{Request: str}
-	req.Token, err = s.signerToken()
-	if err != nil {
-		return nil, err
-	}
-
-	client := &http.Client{}
-	if signer.Scheme == "https" {
-		client.Transport = &http.Transport{TLSClientConfig: &tls.Config{
-			MinVersion: tls.VersionTLS12,
-			// While this might appear alarming it's expected that the clients
-			// in this situation will not have any Choria CA issued certificates
-			// and so wish to use a remote signer - the certificate management woes
-			// being one of the main reasons for centralized AAA.
-			//
-			// So there is no realistic way to verify these requests especially in the
-			// event that these signers run on private IPs and such as would be typical
-			// so while we do this big No No of disabling verify here it really is the
-			// only thing that make sense.
-			InsecureSkipVerify: true,
-		}}
-	}
-
-	jreq, err := json.Marshal(req)
-	if err != nil {
-		return nil, fmt.Errorf("could not encode request: %s", err)
-	}
-
-	resp, err := client.Post(signer.String(), "application/json", bytes.NewBuffer(jreq))
-	if err != nil {
-		return nil, fmt.Errorf("could not perform signing request: %s", err)
-	}
-	defer resp.Body.Close()
-
-	if resp.StatusCode != 200 {
-		return nil, fmt.Errorf("could not perform remote signing request: %s", resp.Status)
-	}
-
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return nil, fmt.Errorf("could not read signing response: %s", err)
-	}
-
-	signerResp := &signingReply{}
-	err = json.Unmarshal(body, signerResp)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse signer response: %s", err)
-	}
-
-	if signerResp.Error != "" {
-		return nil, fmt.Errorf("error from remote signer: %s", signerResp.Error)
-	}
-
-	return signerResp.Signed, nil
+	return s.conf.RemoteSigner.Sign(ctx, request, s)
 }
 
 // Validate determines if the node represents a valid SSL configuration
@@ -420,6 +347,11 @@ func (s *FileSecurity) CallerIdentity(caller string) (string, error) {
 	}
 
 	return match[1], nil
+}
+
+// IsRemoteSigning determines if remote signer is set
+func (s *FileSecurity) IsRemoteSigning() bool {
+	return s.conf.RemoteSigner != nil
 }
 
 // CachePublicData caches the public key for a identity

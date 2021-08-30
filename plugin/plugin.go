@@ -6,12 +6,10 @@ import (
 	"sort"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/ghodss/yaml"
 )
-
-// Type are types of choria plugin
-type Type int
 
 // List is a list of plugins to load
 type List struct {
@@ -24,30 +22,6 @@ type Plugin struct {
 	Repo string
 }
 
-const (
-	// UnknownPlugin is a unknown plugin type
-	UnknownPlugin Type = iota
-
-	// AgentProviderPlugin is a plugin that provide types of agents to Choria
-	AgentProviderPlugin
-
-	// AgentPlugin is a type of agent
-	AgentPlugin
-
-	// ProvisionTargetResolverPlugin is a plugin that helps provisioning mode Choria find its broker
-	ProvisionTargetResolverPlugin
-
-	// ConfigMutatorPlugin is a plugin that can dynamically adjust
-	// configuration based on local site conditions
-	ConfigMutatorPlugin
-
-	// MachineWatcherPlugin is a plugin that adds a Autonomous Agent Watcher
-	MachineWatcherPlugin
-
-	// DataPlugin is a plugin that provides data to choria
-	DataPlugin
-)
-
 // Pluggable is a Choria Plugin
 type Pluggable interface {
 	// PluginInstance is any structure that implements the plugin, should be right type for the kind of plugin
@@ -56,8 +30,8 @@ type Pluggable interface {
 	// PluginName is a human friendly name for the plugin
 	PluginName() string
 
-	// PluginType is the type of the plugin, to match plugin.Type
-	PluginType() Type
+	// PluginType is the type of the plugin, to match inter.PluginType
+	PluginType() inter.PluginType
 
 	// PluginVersion is the version of the plugin
 	PluginVersion() string
@@ -67,23 +41,23 @@ type Pluggable interface {
 func Register(name string, plugin Pluggable) error {
 	var err error
 
-	switch Type(plugin.PluginType()) {
-	case AgentProviderPlugin:
+	switch inter.PluginType(plugin.PluginType()) {
+	case inter.AgentProviderPlugin:
 		err = registerAgentProviderPlugin(name, plugin)
 
-	case AgentPlugin:
+	case inter.AgentPlugin:
 		err = registerAgentPlugin(name, plugin)
 
-	case ProvisionTargetResolverPlugin:
+	case inter.ProvisionTargetResolverPlugin:
 		err = registerProvisionTargetResolverPlugin(name, plugin)
 
-	case ConfigMutatorPlugin:
+	case inter.ConfigMutatorPlugin:
 		err = registerConfigMutator(name, plugin)
 
-	case MachineWatcherPlugin:
+	case inter.MachineWatcherPlugin:
 		err = registerWatcherPlugin(name, plugin)
 
-	case DataPlugin:
+	case inter.DataPlugin:
 		err = registerDataPlugin(name, plugin)
 
 	default:

@@ -10,7 +10,6 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	"github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server"
@@ -29,8 +28,8 @@ type Provider struct {
 }
 
 // Initialize configures the agent provider
-func (p *Provider) Initialize(fw *choria.Framework, log *logrus.Entry) {
-	p.cfg = fw.Configuration()
+func (p *Provider) Initialize(cfg *config.Config, log *logrus.Entry) {
+	p.cfg = cfg
 	p.log = log.WithFields(logrus.Fields{"provider": "external"})
 	p.paths = map[string]string{}
 

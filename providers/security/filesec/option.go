@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/tlssetup"
 
 	"github.com/choria-io/go-choria/config"
@@ -55,6 +56,15 @@ func WithChoriaConfig(bi BuildInfoProvider, c *config.Config) Option {
 	}
 
 	return WithConfig(&cfg)
+}
+
+// WithSigner configures a remote request signer
+func WithSigner(signer inter.RequestSigner) Option {
+	return func(fs *FileSecurity) error {
+		fs.conf.RemoteSigner = signer
+
+		return nil
+	}
 }
 
 // WithConfig optionally configures the File Security Provider using its native configuration format

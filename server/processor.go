@@ -8,7 +8,6 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/server/agents"
 )
 
@@ -48,7 +47,7 @@ func (srv *Instance) handleRawMessage(ctx context.Context, wg *sync.WaitGroup, r
 
 	passedCtr.WithLabelValues(srv.cfg.Identity).Inc()
 
-	msg, err = choria.NewMessageFromRequest(req, transport.ReplyTo(), srv.fw)
+	msg, err = srv.fw.NewMessageFromRequest(req, transport.ReplyTo())
 	if err != nil {
 		unvalidatedCtr.WithLabelValues(srv.cfg.Identity).Inc()
 		srv.log.Errorf("Could not create Message: %s", err)
@@ -75,7 +74,7 @@ func (srv *Instance) handleReply(reply *agents.AgentReply) {
 		return
 	}
 
-	msg, err := choria.NewMessageFromRequest(reply.Request, reply.Message.ReplyTo(), srv.fw)
+	msg, err := srv.fw.NewMessageFromRequest(reply.Request, reply.Message.ReplyTo())
 	if err != nil {
 		srv.log.Errorf("Cannot create reply Message for %s: %s", reply.Message.RequestID(), err)
 		return

@@ -19,7 +19,7 @@ import (
 
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/provtarget"
-	"github.com/choria-io/go-choria/submission"
+	"github.com/choria-io/go-choria/providers/signers"
 	"github.com/fatih/color"
 	"github.com/golang-jwt/jwt"
 	"github.com/nats-io/jsm.go/kv"
@@ -98,22 +98,34 @@ func (fw *Framework) BuildInfo() *build.Info {
 }
 
 func (fw *Framework) setupSecurity() error {
-	var err error
+	var (
+		err    error
+		signer inter.RequestSigner
+	)
+
+	switch {
+	case fw.Config.Choria.RemoteSignerService:
+		signer = signers.NewAAAServiceRPCSigner(fw)
+	case fw.Config.Choria.RemoteSignerURL != "":
+		signer = signers.NewAAAServiceHTTPSigner()
+	}
 
 	switch fw.Config.Choria.SecurityProvider {
 	case "puppet":
 		fw.security, err = puppetsec.New(
 			puppetsec.WithResolver(fw),
 			puppetsec.WithChoriaConfig(fw.BuildInfo(), fw.Config),
-			puppetsec.WithLog(fw.Logger("security")))
+			puppetsec.WithLog(fw.Logger("security")),
+			puppetsec.WithSigner(signer))
 
 	case "file":
 		fw.security, err = filesec.New(
 			filesec.WithChoriaConfig(fw.BuildInfo(), fw.Config),
-			filesec.WithLog(fw.Logger("security")))
+			filesec.WithLog(fw.Logger("security")),
+			filesec.WithSigner(signer))
 
 	case "pkcs11":
-		err = fw.setupPKCS11()
+		err = fw.setupPKCS11(signer)
 
 	case "certmanager":
 		fw.security, err = certmanagersec.New(
@@ -814,14 +826,9 @@ func (fw *Framework) ProgressWidth() int {
 	return width
 }
 
-// GovernorSubject the subject to use for choria managed Governors within a collective
-func GovernorSubject(name string, collective string) string {
-	return fmt.Sprintf("%s.governor.%s", collective, name)
-}
-
 // GovernorSubject the subject to use for choria managed Governors
 func (fw *Framework) GovernorSubject(name string) string {
-	return GovernorSubject(name, fw.Config.MainCollective)
+	return util.GovernorSubject(name, fw.Config.MainCollective)
 }
 
 func (fw *Framework) KV(ctx context.Context, conn inter.Connector, bucket string, create bool, opts ...kv.Option) (kv.KV, error) {
@@ -855,13 +862,4 @@ func (fw *Framework) KVWithConn(ctx context.Context, conn inter.Connector, bucke
 	}
 
 	return store, conn, nil
-}
-
-// DirectorySubmitter gives access to submit data into the Choria Submission system if enabled
-func (fw *Framework) DirectorySubmitter() (submission.Submitter, error) {
-	if fw.Config.Choria.SubmissionSpool == "" {
-		return nil, fmt.Errorf("submission not enabled")
-	}
-
-	return submission.NewFromChoria(fw, submission.Directory)
 }

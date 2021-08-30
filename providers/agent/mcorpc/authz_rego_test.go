@@ -3,60 +3,77 @@ package mcorpc
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"os"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/filter/classes"
 	"github.com/choria-io/go-choria/inter"
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/go-choria/testutil"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
 )
 
 var _ = Describe("RegoPolicy", func() {
+	var (
+		mockctl  *gomock.Controller
+		fw       *imock.MockFramework
+		cfg      *config.Config
+		requests = make(chan inter.ConnectorMessage)
+		authz    *regoPolicy
+		conn     *imock.MockConnector
+		connInfo *imock.MockConnectorInfo
+		srvInfo  *MockServerInfoSource
+		ctx      context.Context
+		am       *agents.Manager
+		facts    json.RawMessage
+		err      error
+	)
+
+	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
+		fw.EXPECT().ProvisionMode().Return(false).AnyTimes()
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
+	})
+
 	Describe(" tests", func() {
-
-		var (
-			requests = make(chan inter.ConnectorMessage)
-			authz    *regoPolicy
-			logger   *logrus.Entry
-			fw       *choria.Framework
-			cn       *testutil.ChoriaNetwork
-			err      error
-			ctx      context.Context
-			am       *agents.Manager
-		)
-
 		BeforeEach(func() {
-			logger = logrus.NewEntry(logrus.New())
-			logger.Logger.SetLevel(logrus.DebugLevel)
-			logger.Logger.Out = GinkgoWriter
-
-			cfg := config.NewConfigForTests()
 			cfg.ClassesFile = "testdata/policies/rego/classes.txt"
 			cfg.FactSourceFile = "testdata/policies/rego/facts.json"
 			cfg.ConfigFile = "testdata/server.conf"
-
 			cfg.DisableSecurityProviderVerify = true
 
-			fw, err = choria.NewWithConfig(cfg)
+			conn = imock.NewMockConnector(mockctl)
+			conn.EXPECT().QueueSubscribe(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			conn.EXPECT().AgentBroadcastTarget(gomock.AssignableToTypeOf("collective"), gomock.AssignableToTypeOf("agent")).DoAndReturn(func(c, a string) string {
+				return fmt.Sprintf("broadcast.%s.%s", c, a)
+			}).AnyTimes()
+
+			connInfo = imock.NewMockConnectorInfo(mockctl)
+
+			facts, err = os.ReadFile(cfg.FactSourceFile)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(facts).ToNot(HaveLen(0))
+
+			klasses, err := classes.ReadClasses(cfg.ClassesFile)
 			Expect(err).ToNot(HaveOccurred())
 
-			cn, err = testutil.StartChoriaNetwork(cfg)
-			Expect(err).ToNot(HaveOccurred())
+			srvInfo = NewMockServerInfoSource(mockctl)
+			srvInfo.EXPECT().Classes().Return(klasses).AnyTimes()
+			srvInfo.EXPECT().KnownAgents().Return([]string{"ginkgo", "stub_agent", "buts_agent"}).AnyTimes()
+			srvInfo.EXPECT().Facts().DoAndReturn(func() json.RawMessage { return facts })
 
 			ctx = context.Background()
 
-			am = agents.New(requests,
-				fw,
-				nil,
-				cn.ServerInstance(),
-				fw.Logger("test"),
-			)
-
+			am = agents.New(requests, fw, connInfo, srvInfo, fw.Logger("test"))
 			testAgents := []string{"stub_agent", "buts_agent"}
 
 			// Additional agents for testing comparisons in rego files
@@ -72,11 +89,13 @@ var _ = Describe("RegoPolicy", func() {
 
 				agent := New(metadata.Name, metadata, am.Choria(), fw.Logger("test"))
 				action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {}
-
 				agent.MustRegisterAction("boop", action)
 				Expect(err).ToNot(HaveOccurred())
 
-				err = cn.ServerInstance().RegisterAgent(ctx, agent.Name(), agent)
+				agent.SetServerInfo(srvInfo)
+
+				err = am.RegisterAgent(ctx, metadata.Name, agent, conn)
+				// err = cn.ServerInstance().RegisterAgent(ctx, agent.Name(), agent)
 				Expect(err).ToNot(HaveOccurred())
 			}
 
@@ -92,15 +111,12 @@ var _ = Describe("RegoPolicy", func() {
 			ginkgoAgent := New(metadata.Name, metadata, am.Choria(), fw.Logger("test"))
 			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {}
 			ginkgoAgent.MustRegisterAction("boop", action)
+			ginkgoAgent.SetServerInfo(srvInfo)
 			Expect(err).ToNot(HaveOccurred())
-
-			err = cn.ServerInstance().RegisterAgent(ctx, ginkgoAgent.Name(), ginkgoAgent)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(ginkgoAgent.ServerInfoSource.Facts()).ToNot(BeNil())
 
 			authz = &regoPolicy{
 				cfg: cfg,
-				log: logger,
+				log: fw.Logger("x"),
 				req: &Request{
 					Agent:    ginkgoAgent.meta.Name,
 					Action:   "boop",
@@ -112,11 +128,11 @@ var _ = Describe("RegoPolicy", func() {
 				},
 				agent: ginkgoAgent,
 			}
-
 		})
 
 		AfterEach(func() {
-			cn.Stop()
+			mockctl.Finish()
+			// cn.Stop()
 			ctx.Done()
 		})
 
@@ -140,7 +156,6 @@ var _ = Describe("RegoPolicy", func() {
 
 			Context("When facts are correct", func() {
 				It("Should succeed", func() {
-
 					authz.agent.meta.Name = "facts"
 					auth, err := authz.authorize()
 					Expect(err).ToNot(HaveOccurred())
@@ -210,44 +225,35 @@ var _ = Describe("RegoPolicy", func() {
 	})
 
 	Describe("Auth deny tests", func() {
-		var (
-			requests = make(chan inter.ConnectorMessage)
-			authz    *regoPolicy
-			logger   *logrus.Entry
-			fw       *choria.Framework
-			cn       *testutil.ChoriaNetwork
-			err      error
-			ctx      context.Context
-			am       *agents.Manager
-		)
-
 		BeforeEach(func() {
-
-			logger = logrus.NewEntry(logrus.New())
-			logger.Logger.SetLevel(logrus.DebugLevel)
-			logger.Logger.Out = GinkgoWriter
-
-			cfg := config.NewConfigForTests()
 			cfg.ClassesFile = "testdata/policies/rego/classes_fail.txt"
 			cfg.FactSourceFile = "testdata/policies/rego/facts_fail.json"
 			cfg.ConfigFile = "testdata/server.conf"
-
 			cfg.DisableSecurityProviderVerify = true
 
-			fw, err = choria.NewWithConfig(cfg)
+			conn = imock.NewMockConnector(mockctl)
+			conn.EXPECT().QueueSubscribe(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			conn.EXPECT().AgentBroadcastTarget(gomock.AssignableToTypeOf("collective"), gomock.AssignableToTypeOf("agent")).DoAndReturn(func(c, a string) string {
+				return fmt.Sprintf("broadcast.%s.%s", c, a)
+			}).AnyTimes()
+
+			connInfo = imock.NewMockConnectorInfo(mockctl)
+
+			facts, err = os.ReadFile(cfg.FactSourceFile)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(facts).ToNot(HaveLen(0))
+
+			klasses, err := classes.ReadClasses(cfg.ClassesFile)
 			Expect(err).ToNot(HaveOccurred())
 
-			cn, err = testutil.StartChoriaNetwork(cfg)
-			Expect(err).ToNot(HaveOccurred())
+			srvInfo = NewMockServerInfoSource(mockctl)
+			srvInfo.EXPECT().Classes().Return(klasses).AnyTimes()
+			srvInfo.EXPECT().KnownAgents().Return([]string{"ginkgo"}).AnyTimes()
+			srvInfo.EXPECT().Facts().DoAndReturn(func() json.RawMessage { return facts }).AnyTimes()
 
 			ctx = context.Background()
 
-			am = agents.New(requests,
-				fw,
-				nil,
-				cn.ServerInstance(),
-				fw.Logger("test"),
-			)
+			am = agents.New(requests, fw, conn, srvInfo, fw.Logger("test"))
 
 			metadata := &agents.Metadata{
 				Name:    "ginkgo",
@@ -263,13 +269,13 @@ var _ = Describe("RegoPolicy", func() {
 			ginkgoAgent.MustRegisterAction("boop", action)
 			Expect(err).ToNot(HaveOccurred())
 
-			err = cn.ServerInstance().RegisterAgent(ctx, ginkgoAgent.Name(), ginkgoAgent)
+			err = am.RegisterAgent(ctx, ginkgoAgent.Name(), ginkgoAgent, conn)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(ginkgoAgent.ServerInfoSource.Facts()).ToNot(BeNil())
 
 			authz = &regoPolicy{
 				cfg: cfg,
-				log: logger,
+				log: fw.Logger(""),
 				req: &Request{
 					Agent:    ginkgoAgent.meta.Name,
 					Action:   "boop",
@@ -286,7 +292,6 @@ var _ = Describe("RegoPolicy", func() {
 		})
 
 		AfterEach(func() {
-			cn.Stop()
 			ctx.Done()
 		})
 
@@ -356,55 +361,44 @@ var _ = Describe("RegoPolicy", func() {
 	})
 
 	Describe("Multiple allow statement tests", func() {
-		var (
-			requests = make(chan inter.ConnectorMessage)
-			authz    *regoPolicy
-			logger   *logrus.Entry
-			fw       *choria.Framework
-			cn       *testutil.ChoriaNetwork
-			err      error
-			ctx      context.Context
-			am       *agents.Manager
-			cfg      *config.Config
-		)
-
 		BeforeEach(func() {
-
-			logger = logrus.NewEntry(logrus.New())
-			logger.Logger.SetLevel(logrus.DebugLevel)
-			logger.Logger.Out = GinkgoWriter
-
-			cfg = config.NewConfigForTests()
 			cfg.ClassesFile = "testdata/policies/rego/classes_fail.txt"
 			cfg.FactSourceFile = "testdata/policies/rego/facts_fail.json"
 			cfg.ConfigFile = "testdata/server.conf"
-
 			cfg.DisableSecurityProviderVerify = true
 
-			fw, err = choria.NewWithConfig(cfg)
+			conn = imock.NewMockConnector(mockctl)
+			conn.EXPECT().QueueSubscribe(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
+			conn.EXPECT().AgentBroadcastTarget(gomock.AssignableToTypeOf("collective"), gomock.AssignableToTypeOf("agent")).DoAndReturn(func(c, a string) string {
+				return fmt.Sprintf("broadcast.%s.%s", c, a)
+			}).AnyTimes()
+
+			connInfo = imock.NewMockConnectorInfo(mockctl)
+
+			facts, err = os.ReadFile(cfg.FactSourceFile)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(facts).ToNot(HaveLen(0))
+
+			klasses, err := classes.ReadClasses(cfg.ClassesFile)
 			Expect(err).ToNot(HaveOccurred())
 
-			cn, err = testutil.StartChoriaNetwork(cfg)
-			Expect(err).ToNot(HaveOccurred())
+			srvInfo = NewMockServerInfoSource(mockctl)
+			srvInfo.EXPECT().Classes().Return(klasses).AnyTimes()
+			srvInfo.EXPECT().KnownAgents().Return([]string{"ginkgo"}).AnyTimes()
+			srvInfo.EXPECT().Facts().DoAndReturn(func() json.RawMessage { return facts }).AnyTimes()
 
 			ctx = context.Background()
+
+			am = agents.New(requests, fw, conn, srvInfo, fw.Logger("test"))
 
 		})
 
 		AfterEach(func() {
-			cn.Stop()
 			ctx.Done()
 		})
 
 		Describe("With the agent set to gingko", func() {
 			BeforeEach(func() {
-				am = agents.New(requests,
-					fw,
-					nil,
-					cn.ServerInstance(),
-					fw.Logger("test"),
-				)
-
 				metadata := &agents.Metadata{
 					Name:    "ginkgo",
 					Author:  "stub@example.com",
@@ -419,13 +413,13 @@ var _ = Describe("RegoPolicy", func() {
 				ginkgoAgent.MustRegisterAction("boop", action)
 				Expect(err).ToNot(HaveOccurred())
 
-				err = cn.ServerInstance().RegisterAgent(ctx, ginkgoAgent.Name(), ginkgoAgent)
+				err = am.RegisterAgent(ctx, ginkgoAgent.Name(), ginkgoAgent, conn)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(ginkgoAgent.ServerInfoSource.Facts()).ToNot(BeNil())
 
 				authz = &regoPolicy{
 					cfg: cfg,
-					log: logger,
+					log: fw.Logger(""),
 					req: &Request{
 						Agent:    ginkgoAgent.meta.Name,
 						Action:   "boop",
@@ -453,13 +447,6 @@ var _ = Describe("RegoPolicy", func() {
 
 		Describe("With the agent set to other", func() {
 			BeforeEach(func() {
-				am = agents.New(requests,
-					fw,
-					nil,
-					cn.ServerInstance(),
-					fw.Logger("test"),
-				)
-
 				metadata := &agents.Metadata{
 					Name:    "other",
 					Author:  "stub@example.com",
@@ -474,13 +461,13 @@ var _ = Describe("RegoPolicy", func() {
 				ginkgoAgent.MustRegisterAction("boop", action)
 				Expect(err).ToNot(HaveOccurred())
 
-				err = cn.ServerInstance().RegisterAgent(ctx, ginkgoAgent.Name(), ginkgoAgent)
+				err = am.RegisterAgent(ctx, ginkgoAgent.Name(), ginkgoAgent, conn)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(ginkgoAgent.ServerInfoSource.Facts()).ToNot(BeNil())
 
 				authz = &regoPolicy{
 					cfg: cfg,
-					log: logger,
+					log: fw.Logger(""),
 					req: &Request{
 						Agent:    ginkgoAgent.meta.Name,
 						Action:   "poob",
@@ -508,13 +495,6 @@ var _ = Describe("RegoPolicy", func() {
 
 		Describe("With the agent set to somethingelse", func() {
 			BeforeEach(func() {
-				am = agents.New(requests,
-					fw,
-					nil,
-					cn.ServerInstance(),
-					fw.Logger("test"),
-				)
-
 				metadata := &agents.Metadata{
 					Name:    "somethingelse",
 					Author:  "stub@example.com",
@@ -529,13 +509,13 @@ var _ = Describe("RegoPolicy", func() {
 				ginkgoAgent.MustRegisterAction("boop", action)
 				Expect(err).ToNot(HaveOccurred())
 
-				err = cn.ServerInstance().RegisterAgent(ctx, ginkgoAgent.Name(), ginkgoAgent)
+				err = am.RegisterAgent(ctx, ginkgoAgent.Name(), ginkgoAgent, conn)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(ginkgoAgent.ServerInfoSource.Facts()).ToNot(BeNil())
 
 				authz = &regoPolicy{
 					cfg: cfg,
-					log: logger,
+					log: fw.Logger(""),
 					req: &Request{
 						Agent:    ginkgoAgent.meta.Name,
 						Action:   "poob",

@@ -1,0 +1,33 @@
+// generated code; DO NOT EDIT
+
+package aaa_signerclient
+
+import (
+	"encoding/base64"
+	"encoding/json"
+
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
+)
+
+var rawDDL = "ewogICIkc2NoZW1hIjogImh0dHBzOi8vY2hvcmlhLmlvL3NjaGVtYXMvbWNvcnBjL2RkbC92MS9hZ2VudC5qc29uIiwKICAibWV0YWRhdGEiOiB7CiAgICAibGljZW5zZSI6ICJBcGFjaGUtMi4wIiwKICAgICJhdXRob3IiOiAiUi5JLlBpZW5hYXIgXHUwMDNjcmlwQGRldmNvLm5ldFx1MDAzZSIsCiAgICAidGltZW91dCI6IDEwLAogICAgIm5hbWUiOiAiYWFhX3NpZ25lciIsCiAgICAidmVyc2lvbiI6ICIwLjIzLjAiLAogICAgInVybCI6ICJodHRwczovL2dpdGh1Yi5jb20vY2hvcmlhLWlvL2FhYXN2YyIsCiAgICAiZGVzY3JpcHRpb24iOiAiUmVxdWVzdCBTaWduZXIgZm9yIENob3JpYSBBQUEgU2VydmljZSIsCiAgICAicHJvdmlkZXIiOiAiZ29sYW5nIiwKICAgICJzZXJ2aWNlIjogdHJ1ZQogIH0sCiAgImFjdGlvbnMiOiBbCiAgICB7CiAgICAgICJhY3Rpb24iOiAic2lnbiIsCiAgICAgICJpbnB1dCI6IHsKICAgICAgICAicmVxdWVzdCI6IHsKICAgICAgICAgICJwcm9tcHQiOiAiUlBDIFJlcXVlc3QiLAogICAgICAgICAgImRlc2NyaXB0aW9uIjogIlRoZSByZXF1ZXN0IHRvIHNpZ24iLAogICAgICAgICAgInR5cGUiOiAic3RyaW5nIiwKICAgICAgICAgICJvcHRpb25hbCI6IGZhbHNlLAogICAgICAgICAgInZhbGlkYXRpb24iOiAic2hlbGxzYWZlIiwKICAgICAgICAgICJtYXhsZW5ndGgiOiAxMDAyNDAKICAgICAgICB9LAogICAgICAgICJ0b2tlbiI6IHsKICAgICAgICAgICJwcm9tcHQiOiAiSldUIFRva2VuIiwKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgSldUIHRva2VuIGF1dGhlbnRpY2F0aW5nIHRoZSB1c2VyIiwKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIsCiAgICAgICAgICAib3B0aW9uYWwiOiBmYWxzZSwKICAgICAgICAgICJ2YWxpZGF0aW9uIjogIi4iLAogICAgICAgICAgIm1heGxlbmd0aCI6IDEwMDI0CiAgICAgICAgfQogICAgICB9LAogICAgICAib3V0cHV0IjogewogICAgICAgICJzZWN1cmVfcmVxdWVzdCI6IHsKICAgICAgICAgICJkZXNjcmlwdGlvbiI6ICJUaGUgc2lnbmVkIFNlY3VyZSBSZXF1ZXN0IiwKICAgICAgICAgICJkaXNwbGF5X2FzIjogIlNlY3VyZSBSZXF1ZXN0IiwKICAgICAgICAgICJ0eXBlIjogInN0cmluZyIKICAgICAgICB9CiAgICAgIH0sCiAgICAgICJkaXNwbGF5IjogImFsd2F5cyIsCiAgICAgICJkZXNjcmlwdGlvbiI6ICJTaWducyBhIFJQQyBSZXF1ZXN0IG9uIGJlaGFsZiBvZiBhIHVzZXIiCiAgICB9CiAgXQp9Cg=="
+
+// DDLBytes is the raw JSON encoded DDL file for the agent
+func DDLBytes() ([]byte, error) {
+	return base64.StdEncoding.DecodeString(rawDDL)
+}
+
+// DDL is a parsed and loaded DDL for the agent
+func DDL() (*agent.DDL, error) {
+	ddlj, err := DDLBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	ddl := &agent.DDL{}
+	err = json.Unmarshal(ddlj, ddl)
+	if err != nil {
+		return nil, err
+	}
+
+	return ddl, nil
+}

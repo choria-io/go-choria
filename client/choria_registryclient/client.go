@@ -9,7 +9,6 @@ import (
 
 	"context"
 
-	"github.com/choria-io/go-choria/choria"
 	coreclient "github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
@@ -136,8 +135,8 @@ type Metadata struct {
 }
 
 // Must create a new client and panics on error
-func Must(opts ...InitializationOption) (client *ChoriaRegistryClient) {
-	c, err := New(opts...)
+func Must(fw ChoriaFramework, opts ...InitializationOption) (client *ChoriaRegistryClient) {
+	c, err := New(fw, opts...)
 	if err != nil {
 		panic(err)
 	}
@@ -146,30 +145,22 @@ func Must(opts ...InitializationOption) (client *ChoriaRegistryClient) {
 }
 
 // New creates a new client to the choria_registry agent
-func New(opts ...InitializationOption) (client *ChoriaRegistryClient, err error) {
+func New(fw ChoriaFramework, opts ...InitializationOption) (client *ChoriaRegistryClient, err error) {
 	c := &ChoriaRegistryClient{
+		fw:            fw,
 		ddl:           &agent.DDL{},
 		clientRPCOpts: []rpcclient.RequestOption{},
 		filters: []FilterFunc{
 			FilterFunc(coreclient.AgentFilter("choria_registry")),
 		},
 		clientOpts: &initOptions{
-			cfgFile: choria.UserConfig(),
+			cfgFile: coreclient.UserConfig(),
 		},
 		targets: []string{},
 	}
 
 	for _, opt := range opts {
 		opt(c.clientOpts)
-	}
-
-	if c.clientOpts.fw != nil {
-		c.fw = c.clientOpts.fw
-	} else {
-		c.fw, err = choria.New(c.clientOpts.cfgFile)
-		if err != nil {
-			return nil, fmt.Errorf("could not initialize Choria: %s", err)
-		}
 	}
 
 	c.cfg = c.fw.Configuration()

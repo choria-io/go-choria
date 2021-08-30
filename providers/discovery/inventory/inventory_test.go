@@ -4,6 +4,7 @@ import (
 	"context"
 	"testing"
 
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -21,7 +22,7 @@ func TestExternal(t *testing.T) {
 var _ = Describe("Inventory", func() {
 	var (
 		mockctl *gomock.Controller
-		fw      *MockChoriaFramework
+		fw      *imock.MockFramework
 		inv     *Inventory
 	)
 
@@ -30,7 +31,7 @@ var _ = Describe("Inventory", func() {
 		logger.SetOutput(GinkgoWriter)
 
 		mockctl = gomock.NewController(GinkgoT())
-		fw = NewMockChoriaFramework(mockctl)
+		fw = imock.NewMockFramework(mockctl)
 		fw.EXPECT().Logger(gomock.Any()).Return(logrus.NewEntry(logger)).AnyTimes()
 		fw.EXPECT().Configuration().Return(config.NewConfigForTests()).AnyTimes()
 		inv = New(fw)

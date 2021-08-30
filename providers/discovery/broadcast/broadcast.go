@@ -17,7 +17,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
@@ -127,7 +126,7 @@ func (b *Broadcast) createMessage(filter *protocol.Filter, collective string) (i
 	}
 
 	msg.SetProtocolVersion(protocol.RequestV1)
-	msg.SetReplyTo(choria.ReplyTarget(msg, msg.RequestID()))
+	msg.SetReplyTo(msg.ReplyTarget())
 	msg.SetFilter(filter)
 
 	return msg, err

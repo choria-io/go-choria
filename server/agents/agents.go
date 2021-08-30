@@ -17,7 +17,6 @@ import (
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent"
-	"github.com/choria-io/go-choria/choria"
 )
 
 // Agent is a generic choria agent
@@ -77,7 +76,7 @@ type Metadata struct {
 type Manager struct {
 	agents       map[string]Agent
 	subs         map[string][]string
-	fw           *choria.Framework
+	fw           inter.Framework
 	log          *logrus.Entry
 	mu           *sync.Mutex
 	conn         inter.ConnectorInfo
@@ -88,7 +87,7 @@ type Manager struct {
 }
 
 // NewServices creates an agent manager restricted to service agents
-func NewServices(requests chan inter.ConnectorMessage, fw *choria.Framework, conn inter.ConnectorInfo, srv ServerInfoSource, log *logrus.Entry) *Manager {
+func NewServices(requests chan inter.ConnectorMessage, fw inter.Framework, conn inter.ConnectorInfo, srv ServerInfoSource, log *logrus.Entry) *Manager {
 	m := New(requests, fw, conn, srv, log)
 	m.servicesOnly = true
 	m.log = m.log.WithField("service_host", true)
@@ -97,7 +96,7 @@ func NewServices(requests chan inter.ConnectorMessage, fw *choria.Framework, con
 }
 
 // New creates a new Agent Manager
-func New(requests chan inter.ConnectorMessage, fw *choria.Framework, conn inter.ConnectorInfo, srv ServerInfoSource, log *logrus.Entry) *Manager {
+func New(requests chan inter.ConnectorMessage, fw inter.Framework, conn inter.ConnectorInfo, srv ServerInfoSource, log *logrus.Entry) *Manager {
 	return &Manager{
 		agents:     make(map[string]Agent),
 		subs:       make(map[string][]string),
@@ -193,7 +192,7 @@ func (a *Manager) subscribeAgent(ctx context.Context, name string, agent Agent, 
 
 	a.subs[name] = []string{}
 
-	for _, collective := range a.fw.Config.Collectives {
+	for _, collective := range a.fw.Configuration().Collectives {
 		var target string
 		group := ""
 
@@ -278,6 +277,6 @@ func (a *Manager) Logger() *logrus.Entry {
 }
 
 // Choria provides an instance of the choria framework
-func (a *Manager) Choria() *choria.Framework {
+func (a *Manager) Choria() inter.Framework {
 	return a.fw
 }

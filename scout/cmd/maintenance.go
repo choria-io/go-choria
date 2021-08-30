@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/discovery"
@@ -15,22 +16,22 @@ import (
 )
 
 type MaintenanceCommand struct {
+	fw       inter.Framework
 	sopt     *discovery.StandardOptions
 	checks   []string
 	json     bool
-	cfile    string
 	verbose  bool
 	colorize bool
 	log      *logrus.Entry
 }
 
-func NewMaintenanceCommand(sopt *discovery.StandardOptions, checks []string, json bool, cfile string, verbose bool, colorize bool, log *logrus.Entry) (*MaintenanceCommand, error) {
+func NewMaintenanceCommand(sopt *discovery.StandardOptions, fw inter.Framework, checks []string, json bool, verbose bool, colorize bool, log *logrus.Entry) (*MaintenanceCommand, error) {
 	return &MaintenanceCommand{
+		fw:       fw,
 		sopt:     sopt,
 		checks:   checks,
 		json:     json,
 		log:      log,
-		cfile:    cfile,
 		verbose:  verbose,
 		colorize: colorize,
 	}, nil
@@ -39,7 +40,7 @@ func NewMaintenanceCommand(sopt *discovery.StandardOptions, checks []string, jso
 func (t *MaintenanceCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	sc, err := scoutClient(t.cfile, t.sopt, t.log)
+	sc, err := scoutClient(t.fw, t.sopt, t.log)
 	if err != nil {
 		return err
 	}

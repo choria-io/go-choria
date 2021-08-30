@@ -4,15 +4,15 @@ import (
 	"context"
 	"sync"
 
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/sirupsen/logrus"
-
-	"github.com/choria-io/go-choria/choria"
 )
 
 // AgentProvider is capable of adding agents into a running instance
 type AgentProvider interface {
-	Initialize(fw *choria.Framework, log *logrus.Entry)
+	Initialize(cfg *config.Config, log *logrus.Entry)
 	RegisterAgents(ctx context.Context, mgr AgentManager, connector inter.AgentConnector, log *logrus.Entry) error
 	Version() string
 }
@@ -35,7 +35,7 @@ func RegisterAdditionalAgentProvider(p AgentProvider) {
 	defer aapmu.Unlock()
 
 	additionalAgentProviders = append(additionalAgentProviders, p)
-	choria.BuildInfo().RegisterAgentProvider(p.Version())
+	util.BuildInfo().RegisterAgentProvider(p.Version())
 }
 
 func (srv *Instance) setupAdditionalAgentProviders(ctx context.Context) error {
@@ -45,7 +45,7 @@ func (srv *Instance) setupAdditionalAgentProviders(ctx context.Context) error {
 	aapmu.Unlock()
 
 	for _, provider := range providers {
-		provider.Initialize(srv.fw, srv.log)
+		provider.Initialize(srv.fw.Configuration(), srv.log)
 
 		srv.log.Infof("Activating Agent Provider: %s", provider.Version())
 		err := provider.RegisterAgents(ctx, srv.agents, srv.connector, srv.log)

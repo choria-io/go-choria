@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"os"
 	"sort"
@@ -10,11 +9,10 @@ import (
 	"testing"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
+	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -28,7 +26,7 @@ func TestClient(t *testing.T) {
 
 var _ = Describe("Client", func() {
 	var (
-		fw      *choria.Framework
+		fw      *imock.MockFramework
 		mockctl *gomock.Controller
 		conn    *imock.MockConnector
 		err     error
@@ -40,10 +38,8 @@ var _ = Describe("Client", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		conn = imock.NewMockConnector(mockctl)
 
-		cfg := config.NewConfigForTests()
-		cfg.Collectives = []string{"mcollective", "test"}
-
-		fw, _ = choria.NewWithConfig(cfg)
+		fw, _ = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
+		fw.Configuration().Collectives = []string{"mcollective", "test"}
 
 		client, err = New(fw, Connection(conn), Timeout(100*time.Millisecond), Name("test"))
 		Expect(err).ToNot(HaveOccurred())
@@ -65,11 +61,9 @@ var _ = Describe("Client", func() {
 			OnPublishStart(pubStartCB)(client)
 			OnPublishFinish(pubEndCB)(client)
 
-			msg, err := fw.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", "mcollective", "request", nil)
-			Expect(err).ToNot(HaveOccurred())
-
-			msg.SetProtocolVersion(protocol.RequestV1)
-			msg.SetReplyTo("custom")
+			msg := imock.NewMockMessage(mockctl)
+			msg.EXPECT().ProtocolVersion().Return(protocol.RequestV1).AnyTimes()
+			msg.EXPECT().ReplyTo().Return("custom").AnyTimes()
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -92,7 +86,7 @@ var _ = Describe("Client", func() {
 				mu.Lock()
 				defer mu.Unlock()
 
-				reply, err := fw.NewTransportFromJSON(string(m.Data()))
+				reply, err := v1.NewTransportFromJSON(string(m.Data()))
 				Expect(err).ToNot(HaveOccurred())
 
 				seen = append(seen, reply.SenderID())
@@ -104,11 +98,8 @@ var _ = Describe("Client", func() {
 			OnPublishStart(pubStartCB)(client)
 			OnPublishFinish(pubEndCB)(client)
 
-			msg, err := fw.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", "mcollective", "request", nil)
-			Expect(err).ToNot(HaveOccurred())
-
-			msg.SetProtocolVersion(protocol.RequestV1)
-			msg.SetReplyTo(choria.ReplyTarget(msg, msg.RequestID()))
+			msg := imock.NewMockMessage(mockctl)
+			msg.EXPECT().ReplyTo().Return("reply.to").AnyTimes()
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -120,28 +111,20 @@ var _ = Describe("Client", func() {
 
 					Expect(name).To(Equal("replies"))
 					Expect(subject).To(Equal(msg.ReplyTo()))
-
-					req, err := fw.NewRequestFromMessage(protocol.RequestV1, msg)
-					Expect(err).ToNot(HaveOccurred())
-
-					reply, err := choria.NewMessageFromRequest(req, msg.ReplyTo(), fw)
-					Expect(err).ToNot(HaveOccurred())
-
-					t, err := reply.Transport()
-					Expect(err).ToNot(HaveOccurred())
-
 					for i := 0; i < 10; i++ {
-						t.SetSender(fmt.Sprintf("test.sender.%d", i))
+						t, err := v1.NewTransportMessage(fmt.Sprintf("test.sender.%d", i))
+						Expect(err).ToNot(HaveOccurred())
 
 						j, err := t.JSON()
 						Expect(err).ToNot(HaveOccurred())
 
-						cm := choria.NewConnectorMessage(group, "", []byte(j), nil)
+						cm := imock.NewMockConnectorMessage(mockctl)
+						cm.EXPECT().Data().Return([]byte(j)).AnyTimes()
 
 						output <- cm
 					}
 				})
-
+				//
 			conn.EXPECT().Publish(gomock.Any()).AnyTimes()
 
 			err = client.Request(ctx, msg, handler)

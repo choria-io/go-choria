@@ -1,6 +1,7 @@
 package v1
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -192,8 +193,12 @@ func NewSecureRequest(request protocol.Request, security SecurityProvider) (secu
 
 // NewRemoteSignedSecureRequest is a NewSecureRequest that delegates the signing to a remote signer like aaasvc
 func NewRemoteSignedSecureRequest(request protocol.Request, security SecurityProvider) (secure protocol.SecureRequest, err error) {
-	if !protocol.IsSecure() {
-		// no need for remote stuff, we don't do any signing or certs
+	// no need for remote stuff, we don't do any signing or certs,
+	// additionally the service hosting the remote signing service isnt
+	// secured by choria protocol since at calling time the client does
+	// not have a cert etc, but the request expects a signed JWT so that
+	// provides the security of that request
+	if !protocol.IsSecure() || protocol.IsRemoteSignerAgent(request.Agent()) {
 		return NewSecureRequest(request, security)
 	}
 
@@ -202,7 +207,7 @@ func NewRemoteSignedSecureRequest(request protocol.Request, security SecurityPro
 		return nil, err
 	}
 
-	secj, err := security.RemoteSignRequest([]byte(reqj))
+	secj, err := security.RemoteSignRequest(context.Background(), []byte(reqj))
 	if err != nil {
 		return nil, err
 	}
