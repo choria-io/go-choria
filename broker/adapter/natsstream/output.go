@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/nats-io/stan.go"
@@ -19,7 +20,6 @@ import (
 	"github.com/choria-io/go-choria/broker/adapter/ingest"
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/broker/adapter/transformer"
-	"github.com/choria-io/go-choria/choria"
 )
 
 type stream struct {
@@ -91,7 +91,7 @@ func (sc *stream) resolver(parts []string) func() (srvcache.Servers, error) {
 	}
 }
 
-func (sc *stream) connect(ctx context.Context, cm choria.ConnectionManager) error {
+func (sc *stream) connect(ctx context.Context, cm inter.ConnectionManager) error {
 	if ctx.Err() != nil {
 		return fmt.Errorf("shutdown called")
 	}

@@ -5,33 +5,44 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/inter"
+	imock "github.com/choria-io/go-choria/inter/imocks"
+	"github.com/choria-io/go-choria/message"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 
-	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
 
 var _ = Describe("McoRPC/Client/Options", func() {
 	var (
-		o   *RequestOptions
-		fw  *choria.Framework
-		err error
+		mockctl *gomock.Controller
+		o       *RequestOptions
+		fw      *imock.MockFramework
+		err     error
 	)
 
 	BeforeEach(func() {
-		cfg, _ := config.NewConfig("testdata/default.cfg")
-		fw, _ = choria.NewWithConfig(cfg)
+		mockctl = gomock.NewController(GinkgoT())
+		fw, _ = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
+		fw.EXPECT().Certname().Return("rip.mcollective").AnyTimes()
+		fw.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
+		fw.EXPECT().HasCollective(gomock.Eq("mcollective")).Return(true).AnyTimes()
+		fw.EXPECT().HasCollective(gomock.Eq("ginkgo")).Return(true).AnyTimes()
+
 		ddl, _ := agent.Find("package", []string{"testdata"})
 		o, err = NewRequestOptions(fw, ddl)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
+	AfterEach(func() {
+		mockctl.Finish()
+	})
+
 	Describe("ConfigureMessage", func() {
 		It("Should configure the message", func() {
-			msg, err := fw.NewMessage("", "test", "mcollective", "request", nil)
+			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			Targets([]string{"host1", "host2"})(o)
@@ -51,19 +62,17 @@ var _ = Describe("McoRPC/Client/Options", func() {
 		})
 
 		It("Should support the message supplying targets", func() {
-			msg, err := fw.NewMessage("", "test", "mcollective", "request", nil)
+			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
-
 			msg.SetDiscoveredHosts([]string{"host1", "host2"})
 
 			o.ConfigureMessage(msg)
 
-			Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1", "host2"}))
 			Expect(o.Targets).To(Equal([]string{"host1", "host2"}))
 		})
 
 		It("Should support custom reply targets", func() {
-			msg, err := fw.NewMessage("", "test", "mcollective", "request", nil)
+			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			Targets([]string{"host1", "host2"})(o)
@@ -82,7 +91,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 				targets[i] = fmt.Sprintf("target%d", i)
 			}
 
-			msg, err := fw.NewMessage("", "test", "mcollective", "request", nil)
+			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			Targets(targets)(o)
@@ -99,7 +108,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 				targets[i] = fmt.Sprintf("target%d", i)
 			}
 
-			msg, err := fw.NewMessage("", "test", "mcollective", "request", nil)
+			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			msg.CacheTransport()
@@ -122,7 +131,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 				targets[i] = fmt.Sprintf("target%d", i)
 			}
 
-			msg, err := fw.NewMessage("", "test", "mcollective", inter.RequestMessageType, nil)
+			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			msg.CacheTransport()
@@ -137,7 +146,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 		})
 
 		It("Should support service requests", func() {
-			msg, err := fw.NewMessage("", "test", "mcollective", inter.RequestMessageType, nil)
+			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			msg.CacheTransport()
@@ -155,7 +164,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 		It("Should create correct new options", func() {
 			Expect(o.ProtocolVersion).To(Equal(protocol.RequestV1))
 			Expect(o.RequestType).To(Equal("direct_request"))
-			Expect(o.Collective).To(Equal("mcollective"))
+			Expect(o.Collective).To(Equal("ginkgo"))
 			Expect(o.ProcessReplies).To(BeTrue())
 			Expect(o.Timeout).To(Equal(time.Duration(182) * time.Second))
 			Expect(o.stats).ToNot(BeNil())

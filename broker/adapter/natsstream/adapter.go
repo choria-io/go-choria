@@ -8,8 +8,10 @@ import (
 
 	"github.com/choria-io/go-choria/broker/adapter/ingest"
 	"github.com/choria-io/go-choria/broker/adapter/stats"
+	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/srvcache"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	log "github.com/sirupsen/logrus"
 )
@@ -50,7 +52,14 @@ type NatStream struct {
 
 var cfg *config.Config
 
-func Create(name string, choria *choria.Framework) (adapter *NatStream, err error) {
+type ChoriaFramework interface {
+	Configuration() *config.Config
+	MiddlewareServers() (servers srvcache.Servers, err error)
+	NewRequestFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Request, err error)
+	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
+}
+
+func Create(name string, choria ChoriaFramework) (adapter *NatStream, err error) {
 	cfg = choria.Configuration()
 
 	s := fmt.Sprintf("plugin.choria.adapter.%s.queue_len", name)
@@ -79,7 +88,7 @@ func Create(name string, choria *choria.Framework) (adapter *NatStream, err erro
 	return adapter, err
 }
 
-func (sa *NatStream) Init(ctx context.Context, cm choria.ConnectionManager) (err error) {
+func (sa *NatStream) Init(ctx context.Context, cm inter.ConnectionManager) (err error) {
 	for _, worker := range sa.streams {
 		if ctx.Err() != nil {
 			return fmt.Errorf("shutdown called")

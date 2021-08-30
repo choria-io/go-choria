@@ -103,7 +103,8 @@ func (r *regoPolicy) lookupPolicyFile() (string, error) {
 func (r *regoPolicy) regoInputs() map[string]interface{} {
 	facts := map[string]interface{}{}
 
-	err := json.Unmarshal(r.agent.ServerInfoSource.Facts(), &facts)
+	sif := r.agent.ServerInfoSource.Facts()
+	err := json.Unmarshal(sif, &facts)
 	if err != nil {
 		r.log.Errorf("could not marshal facts for rego policy: %v", err)
 	}

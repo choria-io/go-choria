@@ -3,6 +3,9 @@ package discovery
 import (
 	"testing"
 
+	"github.com/choria-io/go-choria/inter"
+	imock "github.com/choria-io/go-choria/inter/imocks"
+	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/golang/mock/gomock"
 
 	"github.com/choria-io/go-choria/filter/classes"
@@ -10,9 +13,6 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/data/ddl"
 
-	"github.com/sirupsen/logrus"
-
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 
 	. "github.com/onsi/ginkgo"
@@ -26,9 +26,8 @@ func Test(t *testing.T) {
 
 var _ = Describe("Server/Discovery", func() {
 	var (
-		fw     *choria.Framework
-		log    *logrus.Entry
-		err    error
+		fw     inter.Framework
+		cfg    *config.Config
 		mgr    *Manager
 		req    protocol.Request
 		filter *protocol.Filter
@@ -36,25 +35,16 @@ var _ = Describe("Server/Discovery", func() {
 		ctrl   *gomock.Controller
 	)
 
-	BeforeSuite(func() {
-		log = logrus.WithFields(logrus.Fields{"test": true})
-		cfg := config.NewConfigForTests()
-		cfg.DisableTLS = true
-
-		fw, err = choria.NewWithConfig(cfg)
-		Expect(err).ToNot(HaveOccurred())
-
-		fw.Config.Identity = "test.example.net"
-	})
-
 	BeforeEach(func() {
 		ctrl = gomock.NewController(GinkgoT())
+		fw, cfg = imock.NewFrameworkForTests(ctrl, GinkgoWriter)
 		si = NewMockServerInfoSource(ctrl)
-		mgr = New(fw, si, log)
+
+		mgr = New(cfg, si, fw.Logger(""))
 		rid, err := fw.NewRequestID()
 		Expect(err).ToNot(HaveOccurred())
 
-		req, err = fw.NewRequest(protocol.RequestV1, "test", "testid", "callerid", 60, rid, "mcollective")
+		req, err = v1.NewRequest("test", "testid", "callerid", 60, rid, "mcollective")
 		Expect(err).ToNot(HaveOccurred())
 
 		filter = req.NewFilter()
@@ -62,7 +52,7 @@ var _ = Describe("Server/Discovery", func() {
 
 		klasses, err := classes.ReadClasses("testdata/classes.txt")
 		Expect(err).ToNot(HaveOccurred())
-		factsj, err := facts.JSON("testdata/facts.yaml", log)
+		factsj, err := facts.JSON("testdata/facts.yaml", fw.Logger(""))
 		Expect(err).ToNot(HaveOccurred())
 
 		si.EXPECT().Identity().Return("test.example.net").AnyTimes()

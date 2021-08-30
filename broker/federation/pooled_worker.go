@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/srvcache"
 	log "github.com/sirupsen/logrus"
@@ -46,8 +46,8 @@ type pooledWorker struct {
 	log         *log.Entry
 	wg          *sync.WaitGroup
 
-	choria     *choria.Framework
-	connection choria.ConnectionManager
+	choria     ChoriaFramework
+	connection inter.ConnectionManager
 	servers    func() (srvcache.Servers, error)
 
 	worker func(ctx context.Context, w *pooledWorker, instance int, logger *log.Entry)

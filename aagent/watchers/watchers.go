@@ -7,10 +7,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/jsm.go"
 	"github.com/tidwall/gjson"
-
-	"github.com/choria-io/go-choria/choria"
 )
 
 type State int
@@ -55,7 +54,7 @@ func RegisterWatcherPlugin(name string, plugin model.WatcherConstructor) error {
 
 	plugins[plugin.Type()] = plugin
 
-	choria.BuildInfo().RegisterMachineWatcher(name)
+	util.BuildInfo().RegisterMachineWatcher(name)
 
 	return nil
 }

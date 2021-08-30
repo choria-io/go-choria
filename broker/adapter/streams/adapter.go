@@ -8,7 +8,6 @@ import (
 
 	"github.com/choria-io/go-choria/broker/adapter/ingest"
 	"github.com/choria-io/go-choria/broker/adapter/stats"
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/srvcache"
@@ -88,7 +87,7 @@ func Create(name string, choria Framework) (adapter *Streams, err error) {
 	return adapter, nil
 }
 
-func (sa *Streams) Init(ctx context.Context, cm choria.ConnectionManager) (err error) {
+func (sa *Streams) Init(ctx context.Context, cm inter.ConnectionManager) (err error) {
 	for _, worker := range sa.streams {
 		if ctx.Err() != nil {
 			return fmt.Errorf("shutdown called")

@@ -2,7 +2,7 @@ package server
 
 import (
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
 
 	"github.com/golang/mock/gomock"
 
@@ -28,7 +28,7 @@ var _ = Describe("Server/AgentProviders", func() {
 	})
 
 	It("Should add the provider to the list of providers", func() {
-		bi := choria.BuildInfo()
+		bi := util.BuildInfo()
 
 		Expect(additionalAgentProviders).To(HaveLen(0))
 		Expect(bi.AgentProviders()).To(BeEmpty())

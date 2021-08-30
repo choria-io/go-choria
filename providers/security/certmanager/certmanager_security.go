@@ -506,8 +506,12 @@ func (cm *CertManagerSecurity) SignString(s string) (signature []byte, err error
 	return cm.fsec.SignString(s)
 }
 
-func (cm *CertManagerSecurity) RemoteSignRequest(str []byte) (signed []byte, err error) {
-	return cm.fsec.RemoteSignRequest(str)
+func (cm *CertManagerSecurity) RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error) {
+	return cm.fsec.RemoteSignRequest(ctx, str)
+}
+
+func (cm *CertManagerSecurity) IsRemoteSigning() bool {
+	return cm.fsec.IsRemoteSigning()
 }
 
 func (cm *CertManagerSecurity) VerifyStringSignature(str string, signature []byte, identity string) bool {

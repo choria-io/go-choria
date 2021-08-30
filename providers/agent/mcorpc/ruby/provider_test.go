@@ -60,7 +60,6 @@ var _ = Describe("McoRPC/Ruby", func() {
 
 		BeforeEach(func() {
 			p = Provider{
-				fw:  fw,
 				cfg: fw.Config,
 				log: logger,
 			}

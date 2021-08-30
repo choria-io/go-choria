@@ -8,7 +8,7 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/plugin"
+	"github.com/choria-io/go-choria/inter"
 )
 
 func NewWatcherPlugin(wtype string, version string, notification func() interface{}, new func(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error)) *WatcherPlugin {
@@ -70,6 +70,6 @@ func (p *WatcherPlugin) PluginName() string {
 }
 
 // PluginType implements plugin.Pluggable
-func (p *WatcherPlugin) PluginType() plugin.Type {
-	return plugin.MachineWatcherPlugin
+func (p *WatcherPlugin) PluginType() inter.PluginType {
+	return inter.MachineWatcherPlugin
 }

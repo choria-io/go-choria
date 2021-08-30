@@ -169,7 +169,7 @@ func (a *Agent) publish(rpcreply *Reply, msg inter.Message, request protocol.Req
 
 	j, err := json.Marshal(rpcreply)
 	if err != nil {
-		logrus.Errorf("Could not JSON encode reply: %s", err)
+		a.Log.Errorf("Could not JSON encode reply: %s", err)
 		reply.Error = err
 	}
 

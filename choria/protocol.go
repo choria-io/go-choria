@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/message"
 	"github.com/choria-io/go-choria/protocol"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/sirupsen/logrus"
@@ -12,7 +13,7 @@ import (
 
 // NewMessage creates a new Message associated with this Choria instance
 func (fw *Framework) NewMessage(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
-	return NewMessage(payload, agent, collective, msgType, request, fw)
+	return message.NewMessage(payload, agent, collective, msgType, request, fw)
 }
 
 // NewRequestMessageFromTransportJSON creates a Message from a Transport JSON that holds a Request
@@ -34,12 +35,16 @@ func (fw *Framework) NewRequestMessageFromTransportJSON(payload []byte) (inter.M
 
 	protocol.CopyFederationData(transport, request)
 
-	msg, err := NewMessageFromRequest(request, transport.ReplyTo(), fw)
+	msg, err := message.NewMessageFromRequest(request, transport.ReplyTo(), fw)
 	if err != nil {
 		return nil, err
 	}
 
 	return msg, nil
+}
+
+func (fw *Framework) NewMessageFromRequest(req protocol.Request, replyto string) (inter.Message, error) {
+	return message.NewMessageFromRequest(req, replyto, fw)
 }
 
 // NewReplyFromTransportJSON creates a new Reply from a transport JSON
@@ -198,12 +203,12 @@ func (fw *Framework) NewSecureReplyFromTransport(message protocol.TransportMessa
 func (fw *Framework) NewSecureRequest(request protocol.Request) (secure protocol.SecureRequest, err error) {
 	switch request.Version() {
 	case protocol.RequestV1:
-		if fw.Config.Choria.RemoteSignerURL == "" {
-			return v1.NewSecureRequest(request, fw.security)
-		} else {
-			fw.log.Info("Signing request using remote signer")
+		if fw.security.IsRemoteSigning() {
 			return v1.NewRemoteSignedSecureRequest(request, fw.security)
 		}
+
+		return v1.NewSecureRequest(request, fw.security)
+
 	default:
 		return nil, fmt.Errorf("do not know how to create a SecureReply from a Request with version %s", request.Version())
 	}

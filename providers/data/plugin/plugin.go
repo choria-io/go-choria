@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/plugin"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/data"
 )
 
@@ -34,6 +34,6 @@ func (p *DataPlugin) PluginName() string {
 }
 
 // PluginType implements plugin.Pluggable
-func (p *DataPlugin) PluginType() plugin.Type {
-	return plugin.DataPlugin
+func (p *DataPlugin) PluginType() inter.PluginType {
+	return inter.DataPlugin
 }

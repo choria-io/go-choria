@@ -14,6 +14,7 @@ import (
 	"github.com/choria-io/go-choria/confkey"
 	"github.com/choria-io/go-choria/filter/facts"
 	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/providers/data"
 	"github.com/choria-io/go-choria/server"
@@ -111,7 +112,7 @@ type GetConfigItemResponse struct {
 
 // New creates a new rpcutil agent
 func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
-	bi := mgr.Choria().BuildInfo()
+	bi := util.BuildInfo()
 	metadata := &agents.Metadata{
 		Name:        "rpcutil",
 		Description: "Choria RPC Utilities",
@@ -209,7 +210,7 @@ func getData(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agen
 func daemonStatsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	stats := agent.ServerInfoSource.Stats()
 
-	bi := agent.Choria.BuildInfo()
+	bi := util.BuildInfo()
 
 	output := &DaemonStatsReply{
 		Agents:      agent.ServerInfoSource.KnownAgents(),
@@ -240,7 +241,7 @@ func inventoryAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		Facts:          agent.ServerInfoSource.Facts(),
 		Machines:       []MachineState{},
 		MainCollective: agent.Config.MainCollective,
-		Version:        agent.Choria.BuildInfo().Version(),
+		Version:        util.BuildInfo().Version(),
 	}
 
 	dfm, err := agent.ServerInfoSource.DataFuncMap()

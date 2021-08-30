@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent"
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/data"
@@ -20,7 +19,7 @@ import (
 
 // Instance is an independent copy of Choria
 type Instance struct {
-	fw                 *choria.Framework
+	fw                 inter.Framework
 	connector          inter.Connector
 	cfg                *config.Config
 	log                *log.Entry
@@ -44,7 +43,7 @@ type Instance struct {
 }
 
 // NewInstance creates a new choria server instance
-func NewInstance(fw *choria.Framework) (i *Instance, err error) {
+func NewInstance(fw inter.Framework) (i *Instance, err error) {
 	i = &Instance{
 		fw:               fw,
 		cfg:              fw.Configuration(),
@@ -56,7 +55,7 @@ func NewInstance(fw *choria.Framework) (i *Instance, err error) {
 	}
 
 	i.log = fw.Logger("server").WithFields(log.Fields{"identity": i.cfg.Identity})
-	i.discovery = discovery.New(fw, i, fw.Logger("discovery"))
+	i.discovery = discovery.New(fw.Configuration(), i, fw.Logger("discovery"))
 
 	return i, nil
 }

@@ -1,6 +1,7 @@
 package scoutcmd
 
 import (
+	"github.com/choria-io/go-choria/inter"
 	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 
@@ -9,9 +10,8 @@ import (
 	"github.com/choria-io/go-choria/internal/util"
 )
 
-func scoutClient(cfile string, opt *discovery.StandardOptions, log *logrus.Entry) (*scoutclient.ScoutClient, error) {
+func scoutClient(fw inter.Framework, opt *discovery.StandardOptions, log *logrus.Entry) (*scoutclient.ScoutClient, error) {
 	co := []scoutclient.InitializationOption{
-		scoutclient.ConfigFile(cfile),
 		scoutclient.Logger(log),
 		scoutclient.Progress(),
 		scoutclient.Discovery(&scoutclient.MetaNS{
@@ -21,7 +21,7 @@ func scoutClient(cfile string, opt *discovery.StandardOptions, log *logrus.Entry
 		}),
 	}
 
-	sc, err := scoutclient.New(co...)
+	sc, err := scoutclient.New(fw, co...)
 	if err != nil {
 		return nil, err
 	}

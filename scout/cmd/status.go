@@ -8,6 +8,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/scoutclient"
@@ -17,17 +18,17 @@ import (
 type StatusCommand struct {
 	identity string
 	json     bool
-	cfile    string
+	fw       inter.Framework
 	verbose  bool
 	colorize bool
 	log      *logrus.Entry
 }
 
-func NewStatusCommand(id string, jsonf bool, verbose bool, cfile string, colorize bool, log *logrus.Entry) (*StatusCommand, error) {
+func NewStatusCommand(fw inter.Framework, id string, jsonf bool, verbose bool, colorize bool, log *logrus.Entry) (*StatusCommand, error) {
 	return &StatusCommand{
 		identity: id,
 		json:     jsonf,
-		cfile:    cfile,
+		fw:       fw,
 		log:      log,
 		verbose:  verbose,
 		colorize: colorize,
@@ -37,7 +38,7 @@ func NewStatusCommand(id string, jsonf bool, verbose bool, cfile string, coloriz
 func (s *StatusCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	sc, err := scoutclient.New(scoutclient.ConfigFile(s.cfile), scoutclient.Logger(s.log), scoutclient.Progress())
+	sc, err := scoutclient.New(s.fw, scoutclient.Logger(s.log), scoutclient.Progress())
 	if err != nil {
 		return err
 	}

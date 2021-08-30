@@ -7,12 +7,17 @@ import (
 	"testing"
 	"time"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/client/client"
+	"github.com/choria-io/go-choria/inter"
+	imock "github.com/choria-io/go-choria/inter/imocks"
+	"github.com/choria-io/go-choria/message"
 	"github.com/choria-io/go-choria/protocol"
+	v1 "github.com/choria-io/go-choria/protocol/v1"
+	"github.com/choria-io/go-choria/providers/security/filesec"
 
 	"github.com/golang/mock/gomock"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 
 	. "github.com/onsi/ginkgo"
@@ -26,7 +31,8 @@ func TestBroadcast(t *testing.T) {
 
 var _ = Describe("Broadcast", func() {
 	var (
-		fw      *choria.Framework
+		fw      *imock.MockFramework
+		cfg     *config.Config
 		mockctl *gomock.Controller
 		cl      *MockChoriaClient
 		b       *Broadcast
@@ -35,11 +41,37 @@ var _ = Describe("Broadcast", func() {
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 		cl = NewMockChoriaClient(mockctl)
-
-		cfg := config.NewConfigForTests()
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
 		cfg.Collectives = []string{"mcollective", "test"}
 
-		fw, _ = choria.NewWithConfig(cfg)
+		fw.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
+		fw.EXPECT().HasCollective(gomock.Eq("test")).Return(true).AnyTimes()
+		fw.EXPECT().NewMessage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
+			return message.NewMessage(payload, agent, collective, msgType, request, fw)
+		}).AnyTimes()
+
+		sec, err := filesec.New(filesec.WithChoriaConfig(&build.Info{}, cfg), filesec.WithLog(fw.Logger("")))
+		Expect(err).ToNot(HaveOccurred())
+
+		fw.EXPECT().NewTransportFromJSON(gomock.Any()).DoAndReturn(func(data string) (message protocol.TransportMessage, err error) {
+			return v1.NewTransportFromJSON(data)
+		}).AnyTimes()
+		fw.EXPECT().NewReplyTransportForMessage(gomock.Any(), gomock.Any()).DoAndReturn(func(msg inter.Message, request protocol.Request) (protocol.TransportMessage, error) {
+			reply, err := v1.NewReply(request, cfg.Identity)
+			Expect(err).ToNot(HaveOccurred())
+			reply.SetMessage(msg.Payload())
+
+			sreply, err := v1.NewSecureReply(reply, sec)
+			Expect(err).ToNot(HaveOccurred())
+
+			transport, err := v1.NewTransportMessage(cfg.Identity)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = transport.SetReplyData(sreply)
+			Expect(err).ToNot(HaveOccurred())
+
+			return transport, nil
+		}).AnyTimes()
 
 		b = New(fw)
 	})
@@ -51,7 +83,7 @@ var _ = Describe("Broadcast", func() {
 	Describe("New", func() {
 		It("Should initialize timeout to default", func() {
 			Expect(b.timeout).To(Equal(2 * time.Second))
-			fw.Config.DiscoveryTimeout = 100
+			cfg.DiscoveryTimeout = 100
 			b = New(fw)
 			Expect(b.timeout).To(Equal(100 * time.Second))
 		})
@@ -65,14 +97,15 @@ var _ = Describe("Broadcast", func() {
 			f := protocol.NewFilter()
 			f.AddAgentFilter("choria")
 
-			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
+			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *message.Message, handler client.Handler) {
 				Expect(msg.Collective()).To(Equal("test"))
 				Expect(msg.Payload()).To(Equal("cGluZw=="))
 
-				req, err := fw.NewRequestFromMessage(protocol.RequestV1, msg)
+				req, err := v1.NewRequest(msg.Agent(), msg.SenderID(), msg.CallerID(), msg.TTL(), msg.RequestID(), msg.Collective())
 				Expect(err).ToNot(HaveOccurred())
+				req.SetMessage(msg.Payload())
 
-				reply, err := choria.NewMessageFromRequest(req, msg.ReplyTo(), fw)
+				reply, err := message.NewMessageFromRequest(req, msg.ReplyTo(), fw)
 				Expect(err).ToNot(HaveOccurred())
 
 				t, err := reply.Transport()
@@ -84,7 +117,8 @@ var _ = Describe("Broadcast", func() {
 					j, err := t.JSON()
 					Expect(err).ToNot(HaveOccurred())
 
-					cm := choria.NewConnectorMessage("", "", []byte(j), nil)
+					cm := imock.NewMockConnectorMessage(mockctl)
+					cm.EXPECT().Data().Return([]byte(j))
 
 					handler(ctx, cm)
 				}

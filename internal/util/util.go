@@ -19,12 +19,53 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/backoff"
+	"github.com/choria-io/go-choria/build"
 	"github.com/gofrs/uuid"
 	"github.com/olekukonko/tablewriter"
 )
 
 var ConstantBackOffForTests = backoff.Policy{
 	Millis: []int{25},
+}
+
+// BuildInfo retrieves build information
+func BuildInfo() *build.Info {
+	return &build.Info{}
+}
+
+// GovernorSubject the subject to use for choria managed Governors within a collective
+func GovernorSubject(name string, collective string) string {
+	return fmt.Sprintf("%s.governor.%s", collective, name)
+}
+
+// UserConfig determines what is the active config file for a user
+func UserConfig() string {
+	home, _ := HomeDir()
+
+	if home != "" {
+		// TODO: .choria must go
+		for _, n := range []string{".choriarc", ".mcollective"} {
+			homeCfg := filepath.Join(home, n)
+
+			if FileExist(homeCfg) {
+				return homeCfg
+			}
+		}
+	}
+
+	if runtime.GOOS == "windows" {
+		return filepath.Join("C:\\", "ProgramData", "choria", "etc", "client.conf")
+	}
+
+	if FileExist("/etc/choria/client.conf") {
+		return "/etc/choria/client.conf"
+	}
+
+	if FileExist("/usr/local/etc/choria/client.conf") {
+		return "/usr/local/etc/choria/client.conf"
+	}
+
+	return "/etc/puppetlabs/mcollective/client.cfg"
 }
 
 // FileExist checks if a file exist on disk

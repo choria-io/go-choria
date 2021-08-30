@@ -55,7 +55,7 @@ func generate(agent string, ddl string, pkg string) error {
 func main() {
 	ddls = make(map[string]string)
 
-	for _, agent := range []string{"rpcutil", "choria_util", "scout", "choria_provision", "choria_registry"} {
+	for _, agent := range []string{"rpcutil", "choria_util", "scout", "choria_provision", "choria_registry", "aaa_signer"} {
 		err := generate(agent, "", "")
 		if err != nil {
 			panic(err)

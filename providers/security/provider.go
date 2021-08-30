@@ -37,7 +37,10 @@ type Provider interface {
 	SignString(s string) (signature []byte, err error)
 
 	// RemoteSignRequest signs a choria request using a remote signer and returns a secure request
-	RemoteSignRequest(str []byte) (signed []byte, err error)
+	RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error)
+
+	// IsRemoteSigning reports if the security provider is signing using a remote
+	IsRemoteSigning() bool
 
 	// VerifyStringSignature verifies that str when signed by identity would match signature.
 	// The certificate for identity should previously have been saved into the cache

@@ -1,9 +1,14 @@
-package choria
+package message
 
 import (
+	"testing"
 	"time"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/inter"
+	imock "github.com/choria-io/go-choria/inter/imocks"
+	v1 "github.com/choria-io/go-choria/protocol/v1"
+	"github.com/choria-io/go-choria/providers/security/filesec"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
@@ -12,20 +17,26 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 )
 
+func TestChoria(t *testing.T) {
+	RegisterFailHandler(Fail)
+	RunSpecs(t, "Message")
+}
+
 var _ = Describe("Choria/Message", func() {
 	var (
 		mockctl *gomock.Controller
 		request *MockRequest
-		fw      *Framework
+		fw      *imock.MockFramework
+		cfg     *config.Config
 		now     time.Time
-		err     error
 	)
 
 	BeforeEach(func() {
-		mockctl = gomock.NewController(GinkgoT())
-		request = NewMockRequest(mockctl)
 		now = time.Now()
 
+		mockctl = gomock.NewController(GinkgoT())
+
+		request = NewMockRequest(mockctl)
 		request.EXPECT().Message().Return("hello world").AnyTimes()
 		request.EXPECT().Agent().Return("test").AnyTimes()
 		request.EXPECT().Collective().Return("test_collective").AnyTimes()
@@ -37,14 +48,59 @@ var _ = Describe("Choria/Message", func() {
 		request.EXPECT().IsFederated().Return(false).AnyTimes()
 		request.EXPECT().JSON().Return("{\"mock_request\": true}", nil).AnyTimes()
 
-		cfg := config.NewConfigForTests()
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
+		cfg.Collectives = []string{"test_collective"}
 		cfg.Choria.SSLDir = "/nonexisting"
 		cfg.Identity = "test.identity"
-		protocol.Secure = "false"
-		cfg.Collectives = []string{"test_collective"}
 
-		fw, err = NewWithConfig(cfg)
+		sec, err := filesec.New(filesec.WithChoriaConfig(&build.Info{}, cfg), filesec.WithLog(fw.Logger("")))
 		Expect(err).ToNot(HaveOccurred())
+
+		fw.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
+		fw.EXPECT().HasCollective(gomock.Eq("test_collective")).Return(true).AnyTimes()
+		fw.EXPECT().HasCollective(gomock.Any()).Return(false).AnyTimes()
+		fw.EXPECT().NewRequest(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(version string, agent string, senderid string, callerid string, ttl int, requestid string, collective string) (request protocol.Request, err error) {
+			return v1.NewRequest(agent, senderid, callerid, ttl, requestid, collective)
+		}).AnyTimes()
+		fw.EXPECT().NewReplyTransportForMessage(gomock.Any(), gomock.Any()).DoAndReturn(func(msg inter.Message, request protocol.Request) (protocol.TransportMessage, error) {
+			reply, err := v1.NewReply(request, cfg.Identity)
+			Expect(err).ToNot(HaveOccurred())
+			reply.SetMessage(msg.Payload())
+
+			sreply, err := v1.NewSecureReply(reply, sec)
+			Expect(err).ToNot(HaveOccurred())
+
+			transport, err := v1.NewTransportMessage(cfg.Identity)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = transport.SetReplyData(sreply)
+			Expect(err).ToNot(HaveOccurred())
+
+			return transport, nil
+		}).AnyTimes()
+		fw.EXPECT().NewRequestFromTransportJSON(gomock.Any(), gomock.Any()).DoAndReturn(func(payload []byte, skipvalidate bool) (msg protocol.Request, err error) {
+			t, err := v1.NewTransportFromJSON(string(payload))
+			Expect(err).ToNot(HaveOccurred())
+			sreq, err := v1.NewSecureRequestFromTransport(t, sec, true)
+			Expect(err).ToNot(HaveOccurred())
+			return v1.NewRequestFromSecureRequest(sreq)
+		}).AnyTimes()
+		fw.EXPECT().NewRequestTransportForMessage(gomock.Any(), gomock.Any()).DoAndReturn(func(msg inter.Message, version string) (protocol.TransportMessage, error) {
+			req, err := v1.NewRequest(msg.Agent(), msg.SenderID(), msg.CallerID(), msg.TTL(), msg.RequestID(), msg.Collective())
+			Expect(err).ToNot(HaveOccurred())
+			req.SetMessage(msg.Payload())
+
+			sreq, err := v1.NewSecureRequest(req, sec)
+			Expect(err).ToNot(HaveOccurred())
+
+			sm, err := v1.NewTransportMessage(cfg.Identity)
+			Expect(err).ToNot(HaveOccurred())
+			err = sm.SetRequestData(sreq)
+			Expect(err).ToNot(HaveOccurred())
+
+			return sm, nil
+		}).AnyTimes()
+		protocol.Secure = "false"
 	})
 
 	AfterEach(func() {
@@ -71,7 +127,7 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should cache transports when configured to do so", func() {
-			fw.Config.CacheBatchedTransports = true
+			cfg.CacheBatchedTransports = true
 			m, err := NewMessageFromRequest(request, "reply.to", fw)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(m.IsCachedTransport()).To(BeTrue())
@@ -114,7 +170,7 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should cache transports when configured to do so", func() {
-			fw.Config.CacheBatchedTransports = true
+			cfg.CacheBatchedTransports = true
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(m.IsCachedTransport()).To(BeTrue())
@@ -250,7 +306,7 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should prevent empty filters when configured to do so", func() {
-			fw.Config.Choria.RequireClientFilter = true
+			cfg.Choria.RequireClientFilter = true
 			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 			m.SetProtocolVersion(protocol.RequestV1)
@@ -259,17 +315,17 @@ var _ = Describe("Choria/Message", func() {
 			_, err = m.(*Message).UncachedRequestTransport()
 			Expect(err).To(MatchError("cannot create a Request Transport, requests without filters have been disabled"))
 
-			fw.Config.Choria.RequireClientFilter = false
+			cfg.Choria.RequireClientFilter = false
 			_, err = m.(*Message).UncachedRequestTransport()
 			Expect(err).ToNot(HaveOccurred())
 
-			fw.Config.Choria.RequireClientFilter = true
+			cfg.Choria.RequireClientFilter = true
 			m.Filter().AddClassFilter("foo")
 			_, err = m.(*Message).UncachedRequestTransport()
 			Expect(err).ToNot(HaveOccurred())
 
 			// discovery has m.Agent==discovery but the filter agent will be what the next request will target so special case tests
-			fw.Config.Choria.RequireClientFilter = true
+			cfg.Choria.RequireClientFilter = true
 			m, err = NewMessage("hello world", "discovery", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 			m.SetProtocolVersion(protocol.RequestV1)
@@ -315,7 +371,7 @@ var _ = Describe("Choria/Message", func() {
 			rid, err := fw.NewRequestID()
 			Expect(err).ToNot(HaveOccurred())
 
-			req, err := fw.NewRequest(protocol.RequestV1, "test_agent", "sender.example.net", "test=sender", 60, rid, "test_collective")
+			req, err := v1.NewRequest("test_agent", "sender.example.net", "test=sender", 60, rid, "test_collective")
 			Expect(err).ToNot(HaveOccurred())
 			req.SetMessage("hello world")
 

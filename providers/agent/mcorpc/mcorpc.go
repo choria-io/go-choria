@@ -14,11 +14,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/srvcache"
-	"github.com/choria-io/go-choria/submission"
 	"github.com/choria-io/go-choria/validator"
 )
 
@@ -28,12 +26,10 @@ type ChoriaFramework interface {
 	FacterDomain() (string, error)
 	FacterCmd() string
 	MiddlewareServers() (srvcache.Servers, error)
-	BuildInfo() *build.Info
 	NewTransportFromJSON(data string) (protocol.TransportMessage, error)
 	ProvisionMode() bool
 	UniqueID() string
 	Certname() string
-	DirectorySubmitter() (submission.Submitter, error)
 }
 
 // StatusCode is a reply status as defined by MCollective SimpleRPC - integers 0 to 5

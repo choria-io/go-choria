@@ -6,18 +6,19 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	logrus "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var _ = Describe("McoRPC/External", func() {
 	var (
 		mockctl *gomock.Controller
-		fw      *MockChoriaFramework
+		fw      *imock.MockFramework
 		cfg     *config.Config
 		logger  *logrus.Entry
 		prov    *Provider
@@ -30,7 +31,7 @@ var _ = Describe("McoRPC/External", func() {
 		logger.Logger.Out = io.Discard
 
 		mockctl = gomock.NewController(GinkgoT())
-		fw = NewMockChoriaFramework(mockctl)
+		fw = imock.NewMockFramework(mockctl)
 
 		cfg = config.NewConfigForTests()
 		cfg.DisableSecurityProviderVerify = true

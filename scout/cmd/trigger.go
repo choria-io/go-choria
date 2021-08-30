@@ -7,6 +7,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/discovery"
@@ -18,19 +19,19 @@ type TriggerCommand struct {
 	sopt     *discovery.StandardOptions
 	checks   []string
 	json     bool
-	cfile    string
+	fw       inter.Framework
 	verbose  bool
 	colorize bool
 	log      *logrus.Entry
 }
 
-func NewTriggerCommand(sopt *discovery.StandardOptions, checks []string, json bool, cfile string, verbose bool, colorize bool, log *logrus.Entry) (*TriggerCommand, error) {
+func NewTriggerCommand(sopt *discovery.StandardOptions, fw inter.Framework, checks []string, json bool, verbose bool, colorize bool, log *logrus.Entry) (*TriggerCommand, error) {
 	return &TriggerCommand{
 		sopt:     sopt,
 		checks:   checks,
 		json:     json,
 		log:      log,
-		cfile:    cfile,
+		fw:       fw,
 		verbose:  verbose,
 		colorize: colorize,
 	}, nil
@@ -39,7 +40,7 @@ func NewTriggerCommand(sopt *discovery.StandardOptions, checks []string, json bo
 func (t *TriggerCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	sc, err := scoutClient(t.cfile, t.sopt, t.log)
+	sc, err := scoutClient(t.fw, t.sopt, t.log)
 	if err != nil {
 		return err
 	}

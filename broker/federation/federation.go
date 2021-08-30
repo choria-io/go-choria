@@ -4,7 +4,10 @@ import (
 	"context"
 	"sync"
 
-	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/srvcache"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -24,8 +27,18 @@ type connector interface {
 	runable
 }
 
+type ChoriaFramework interface {
+	Configuration() *config.Config
+	MiddlewareServers() (servers srvcache.Servers, err error)
+	FederationMiddlewareServers() (servers srvcache.Servers, err error)
+	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn inter.Connector, err error)
+	NewRequestFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Request, err error)
+	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
+	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
+}
+
 type FederationBroker struct {
-	choria *choria.Framework
+	choria ChoriaFramework
 
 	Name string
 
@@ -41,11 +54,11 @@ type FederationBroker struct {
 	logger   *log.Entry
 }
 
-func NewFederationBroker(clusterName string, choria *choria.Framework) (broker *FederationBroker, err error) {
+func NewFederationBroker(clusterName string, choria ChoriaFramework) (broker *FederationBroker, err error) {
 	broker = &FederationBroker{
 		Name:     clusterName,
 		choria:   choria,
-		identity: choria.Config.Identity,
+		identity: choria.Configuration().Identity,
 		logger:   log.WithFields(log.Fields{"cluster": clusterName, "component": "federation"}),
 	}
 

@@ -102,7 +102,7 @@ func (e *tInventoryCommand) updateFile() error {
 }
 
 func (e *tInventoryCommand) updateInventory(dat *inventory.DataFile) error {
-	rpcc, err := rpcutilclient.New(rpcutilclient.Progress(), rpcutilclient.Logger(c.Logger("inventory")), rpcutilclient.Discovery(rpcutilclient.NewMetaNS(e.fo, false)))
+	rpcc, err := rpcutilclient.New(c, rpcutilclient.Progress(), rpcutilclient.Logger(c.Logger("inventory")), rpcutilclient.Discovery(rpcutilclient.NewMetaNS(e.fo, false)))
 	if err != nil {
 		return err
 	}

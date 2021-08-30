@@ -7,7 +7,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
@@ -16,6 +15,11 @@ import (
 
 	"github.com/sirupsen/logrus"
 )
+
+type ChoriaFramework interface {
+	NewMessage(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error)
+	Configuration() *config.Config
+}
 
 // Registrator is a full managed registration plugin
 type Registrator interface {
@@ -38,7 +42,7 @@ type Connection interface {
 // Manager of registration plugins
 type Manager struct {
 	log       *logrus.Entry
-	choria    *choria.Framework
+	choria    ChoriaFramework
 	cfg       *config.Config
 	connector Connection
 	datac     chan *data.RegistrationItem
@@ -46,7 +50,7 @@ type Manager struct {
 }
 
 // New creates a new instance of the registration subsystem manager
-func New(c *choria.Framework, si registration.ServerInfoSource, conn Connection, logger *logrus.Entry) *Manager {
+func New(c ChoriaFramework, si registration.ServerInfoSource, conn Connection, logger *logrus.Entry) *Manager {
 	r := &Manager{
 		log:       logger.WithFields(logrus.Fields{"subsystem": "registration"}),
 		choria:    c,
@@ -152,7 +156,7 @@ func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 		rmsg.TargetAgent = "registration"
 	}
 
-	msg, err := choria.NewMessage(string(rmsg.Data), rmsg.TargetAgent, reg.cfg.RegistrationCollective, "request", nil, reg.choria)
+	msg, err := reg.choria.NewMessage(string(rmsg.Data), rmsg.TargetAgent, reg.cfg.RegistrationCollective, "request", nil)
 	if err != nil {
 		reg.log.Warnf("Could not create Message for registration data: %s", err)
 		return

@@ -1,6 +1,7 @@
-package choria
+package message
 
 import (
+	"crypto/md5"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -40,11 +41,11 @@ type Message struct {
 
 	sync.Mutex
 
-	choria *Framework
+	choria inter.Framework
 }
 
 // NewMessageFromRequest constructs a Message based on a Request
-func NewMessageFromRequest(req protocol.Request, replyto string, choria *Framework) (inter.Message, error) {
+func NewMessageFromRequest(req protocol.Request, replyto string, choria inter.Framework) (inter.Message, error) {
 	reqm, err := newMessage(req.Message(), req.Agent(), req.Collective(), inter.RequestMessageType, nil, choria)
 	if err != nil {
 		return nil, err
@@ -63,7 +64,7 @@ func NewMessageFromRequest(req protocol.Request, replyto string, choria *Framewo
 	msg.ttl = req.TTL()
 	msg.timeStamp = req.Time()
 	msg.filter, _ = req.Filter()
-	msg.senderID = choria.Config.Identity
+	msg.senderID = choria.Configuration().Identity
 	msg.SetBase64Payload(req.Message())
 	msg.req = req
 
@@ -75,7 +76,7 @@ func NewMessageFromRequest(req protocol.Request, replyto string, choria *Framewo
 }
 
 // NewMessage constructs a basic Message instance
-func NewMessage(payload string, agent string, collective string, msgType string, request inter.Message, choria *Framework) (inter.Message, error) {
+func NewMessage(payload string, agent string, collective string, msgType string, request inter.Message, choria inter.Framework) (inter.Message, error) {
 	m, err := newMessage(payload, agent, collective, msgType, request, choria)
 	if err != nil {
 		return nil, err
@@ -84,7 +85,7 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 	return m, nil
 }
 
-func newMessage(payload string, agent string, collective string, msgType string, request inter.Message, choria *Framework) (*Message, error) {
+func newMessage(payload string, agent string, collective string, msgType string, request inter.Message, choria inter.Framework) (*Message, error) {
 	id, err := choria.NewRequestID()
 	if err != nil {
 		return nil, err
@@ -416,5 +417,5 @@ func (m *Message) SetDiscoveredHosts(hosts []string) { m.discoveredHosts = hosts
 func (m *Message) Request() inter.Message            { return m.request }
 func (m *Message) SetTTL(ttl int)                    { m.ttl = ttl }
 func (m *Message) ReplyTarget() string {
-	return ReplyTarget(m, m.requestID)
+	return fmt.Sprintf("%s.reply.%s.%s", m.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(m.CallerID()))), m.requestID)
 }

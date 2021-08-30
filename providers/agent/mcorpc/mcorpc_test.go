@@ -5,12 +5,15 @@ import (
 	"encoding/json"
 	"testing"
 
+	"github.com/brutella/hc/util"
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
+	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/choria-io/go-choria/server/agents"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"
@@ -23,27 +26,33 @@ func TestMcoRPC(t *testing.T) {
 
 var _ = Describe("McoRPC", func() {
 	var (
-		agent  *Agent
-		fw     *choria.Framework
-		msg    inter.Message
-		req    protocol.Request
-		outbox = make(chan *agents.AgentReply, 1)
-		err    error
-		ctx    context.Context
+		agent   *Agent
+		mockctl *gomock.Controller
+		fw      *imock.MockFramework
+		cfg     *config.Config
+		msg     *imock.MockMessage
+		req     protocol.Request
+		outbox  = make(chan *agents.AgentReply, 1)
+		err     error
+		ctx     context.Context
 	)
 
 	BeforeEach(func() {
+		mockctl = gomock.NewController(GinkgoT())
+
 		protocol.Secure = "false"
 		build.TLS = "false"
 
-		cfg := config.NewConfigForTests()
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
 		cfg.LogLevel = "fatal"
-		fw, err = choria.NewWithConfig(cfg)
-		Expect(err).ToNot(HaveOccurred())
 
 		metadata := &agents.Metadata{Name: "test"}
 		agent = New("testing", metadata, fw, fw.Logger("test"))
 		ctx = context.Background()
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
 	})
 
 	It("Should have correct constants", func() {
@@ -66,15 +75,21 @@ var _ = Describe("McoRPC", func() {
 	})
 
 	Describe("HandleMessage", func() {
+		var (
+			payload string
+		)
+
 		BeforeEach(func() {
-			req, err = fw.NewRequest(protocol.RequestV1, "test", "test.example.net", "choria=rip.mcollective", 60, "testrequest", "mcollective")
+			payload = ""
+			req, err = v1.NewRequest("test", "test.example.net", "choria=rip.mcollective", 60, "testrequest", "mcollective")
 			Expect(err).ToNot(HaveOccurred())
-			msg, err = choria.NewMessageFromRequest(req, "dev.null", fw)
-			Expect(err).ToNot(HaveOccurred())
+			msg = imock.NewMockMessage(mockctl)
+			msg.EXPECT().RequestID().Return(util.RandomHexString()).AnyTimes()
+			msg.EXPECT().SetPayload(gomock.Any()).Do(func(p string) { payload = p }).AnyTimes()
+			msg.EXPECT().Payload().DoAndReturn(func() string { return payload }).AnyTimes()
 		})
 
 		It("Should handle bad incoming data", func() {
-			msg.SetPayload("")
 			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
@@ -83,7 +98,7 @@ var _ = Describe("McoRPC", func() {
 		})
 
 		It("Should handle unknown actions", func() {
-			msg.SetPayload(`{"agent":"test", "action":"nonexisting"}`)
+			payload = `{"agent":"test", "action":"nonexisting"}`
 			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
@@ -99,7 +114,7 @@ var _ = Describe("McoRPC", func() {
 			}
 
 			agent.RegisterAction("test", action)
-			msg.SetPayload(`{"agent":"test", "action":"test"}`)
+			payload = `{"agent":"test", "action":"test"}`
 			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
@@ -109,8 +124,8 @@ var _ = Describe("McoRPC", func() {
 		})
 
 		It("Should detect unsupported authorization systems", func() {
-			fw.Config.RPCAuthorization = true
-			fw.Config.RPCAuditProvider = "unsupported"
+			cfg.RPCAuthorization = true
+			cfg.RPCAuditProvider = "unsupported"
 			msg.SetPayload(`{"agent":"test", "action":"test"}`)
 			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {
 				d := map[string]string{"test": "hello world"}
@@ -126,9 +141,9 @@ var _ = Describe("McoRPC", func() {
 		})
 
 		It("Should support action_policy authorization", func() {
-			fw.Config.ConfigFile = "testdata/config.cfg"
-			fw.Config.RPCAuthorization = true
-			fw.Config.RPCAuditProvider = "action_policy"
+			cfg.ConfigFile = "testdata/config.cfg"
+			cfg.RPCAuthorization = true
+			cfg.RPCAuditProvider = "action_policy"
 			msg.SetPayload(`{"agent":"test", "action":"test"}`)
 
 			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {
@@ -145,9 +160,9 @@ var _ = Describe("McoRPC", func() {
 		})
 
 		It("Should support rego_policy authorization", func() {
-			fw.Config.ConfigFile = "testdata/config.cfg"
-			fw.Config.RPCAuthorization = true
-			fw.Config.RPCAuditProvider = "rego_policy"
+			cfg.ConfigFile = "testdata/config.cfg"
+			cfg.RPCAuthorization = true
+			cfg.RPCAuditProvider = "rego_policy"
 			msg.SetPayload(`{"agent":"test", "action":"test"}`)
 
 			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {

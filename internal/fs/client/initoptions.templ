@@ -13,25 +13,10 @@ type initOptions struct {
 	ns NodeSource
 	dt time.Duration
 	progress bool
-	fw ChoriaFramework
 }
 
 // InitializationOption is an optional setting used to initialize the client
 type InitializationOption func(opts *initOptions)
-
-// Choria supplies a configured Choria Framework that will be used to retrieve configuration and more
-func Choria(fw ChoriaFramework) InitializationOption{
-	return func(o *initOptions){
-		o.fw=fw
-	}
-}
-
-// ConfigFile sets the config file to use, when not set will use the user default
-func ConfigFile(f string) InitializationOption {
-	return func(o *initOptions) {
-		o.cfgFile = f
-	}
-}
 
 // Logger sets the logger to use else one is made via the Choria framework
 func Logger(l *logrus.Entry) InitializationOption {

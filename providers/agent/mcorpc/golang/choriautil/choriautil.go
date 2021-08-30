@@ -8,6 +8,7 @@ import (
 
 	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server"
@@ -86,7 +87,7 @@ type machineStateResponse struct {
 
 // New creates a new choria_util agent
 func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
-	bi := mgr.Choria().BuildInfo()
+	bi := util.BuildInfo()
 
 	metadata := &agents.Metadata{
 		Name:        "choria_util",
@@ -232,7 +233,7 @@ func infoAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 	mservers := servers.HostPorts()
 	options := conn.ConnectionOptions()
 	stats := conn.ConnectionStats()
-	bi := agent.Choria.BuildInfo()
+	bi := util.BuildInfo()
 
 	reply.Data = &info{
 		Security:          "choria",

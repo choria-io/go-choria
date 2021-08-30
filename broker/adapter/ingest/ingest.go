@@ -14,7 +14,6 @@ import (
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/prometheus/client_golang/prometheus"
 
-	"github.com/choria-io/go-choria/choria"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -95,7 +94,7 @@ func New(name string, work chan Adaptable, fw Framework, logger *log.Entry) ([]*
 	return workers, nil
 }
 
-func (na *NatsIngest) Connect(ctx context.Context, cm choria.ConnectionManager) error {
+func (na *NatsIngest) Connect(ctx context.Context, cm inter.ConnectionManager) error {
 	if ctx.Err() != nil {
 		return fmt.Errorf("shutdown called")
 	}

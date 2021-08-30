@@ -19,6 +19,7 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/miekg/pkcs11"
 	"github.com/miekg/pkcs11/p11"
 	"github.com/sirupsen/logrus"
@@ -101,6 +102,9 @@ type Config struct {
 
 	// PKCS11Slot specifies which slot of the pkcs11 device to use
 	PKCS11Slot uint
+
+	// RemoteSigner is the signer used to sign requests using a remote like AAA Service
+	RemoteSigner inter.RequestSigner
 }
 
 func New(opts ...Option) (*Pkcs11Security, error) {
@@ -274,6 +278,7 @@ func (p *Pkcs11Security) reinit() error {
 		Cache:                p.conf.CertCacheDir,
 		Identity:             "unused",
 		AlwaysOverwriteCache: p.conf.AlwaysOverwriteCache,
+		RemoteSigner:         p.conf.RemoteSigner,
 	}
 
 	p.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(p.log))
@@ -297,9 +302,11 @@ func (p *Pkcs11Security) Enroll(ctx context.Context, wait time.Duration, cb func
 }
 
 // RemoteSignRequest signs a choria request against using a remote signer and returns a secure request
-func (s *Pkcs11Security) RemoteSignRequest(str []byte) (signed []byte, err error) {
+func (s *Pkcs11Security) RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error) {
 	return nil, fmt.Errorf("pkcs11 security provider does not support remote signing requests")
 }
+
+func (s *Pkcs11Security) IsRemoteSigning() bool { return false }
 
 // Validate determines if the node represents a valid SSL configuration
 func (p *Pkcs11Security) Validate() ([]string, bool) {

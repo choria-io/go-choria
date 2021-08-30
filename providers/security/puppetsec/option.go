@@ -5,6 +5,7 @@ import (
 	"os"
 	"runtime"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/tlssetup"
 
 	"github.com/choria-io/go-choria/config"
@@ -78,6 +79,15 @@ func WithChoriaConfig(bi BuildInfoProvider, c *config.Config) Option {
 		}
 
 		p.conf = &cfg
+
+		return nil
+	}
+}
+
+// WithSigner configures a remote request signer
+func WithSigner(signer inter.RequestSigner) Option {
+	return func(p *PuppetSecurity) error {
+		p.conf.RemoteSigner = signer
 
 		return nil
 	}

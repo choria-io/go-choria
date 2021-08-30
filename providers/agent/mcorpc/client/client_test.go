@@ -4,17 +4,22 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"testing"
 
+	"github.com/brutella/hc/util"
+	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
+	imock "github.com/choria-io/go-choria/inter/imocks"
+	"github.com/choria-io/go-choria/message"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
+	"github.com/choria-io/go-choria/providers/security/filesec"
 
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server/agents"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/golang/mock/gomock"
@@ -24,14 +29,14 @@ import (
 )
 
 func TestMcoRPC(t *testing.T) {
-	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Providers/Agent/McoRPC/Client")
 }
 
 var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 	var (
-		fw      *choria.Framework
+		fw      *imock.MockFramework
+		cfg     *config.Config
 		rpc     *RPC
 		mockctl *gomock.Controller
 		cl      *MockChoriaClient
@@ -52,7 +57,17 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		cl = NewMockChoriaClient(mockctl)
 
-		fw, _ = choria.New("testdata/default.cfg")
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
+		fw.EXPECT().Certname().Return("rip.mcollective").AnyTimes()
+		fw.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
+		fw.EXPECT().HasCollective("ginkgo").Return(true).AnyTimes()
+		fw.EXPECT().HasCollective("mcollective").Return(true).AnyTimes()
+		fw.EXPECT().NewMessage(gomock.Any(), gomock.Eq("package"), gomock.Eq("ginkgo"), gomock.Eq(inter.RequestMessageType), gomock.Eq(nil)).DoAndReturn(func(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
+			return message.NewMessage(payload, agent, collective, msgType, request, fw)
+		}).AnyTimes()
+
+		fw.Configuration().LibDir = []string{"testdata"}
+
 		protocol.Secure = "false"
 		rpc, err = New(fw, "package")
 		Expect(err).ToNot(HaveOccurred())
@@ -162,6 +177,51 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 			reqid := ""
 			handled := 0
 
+			msg := imock.NewMockMessage(mockctl)
+			msg.EXPECT().RequestID().Return(util.RandomHexString()).AnyTimes()
+			msg.EXPECT().SetFilter(gomock.Any()).AnyTimes()
+
+			sec, err := filesec.New(filesec.WithChoriaConfig(&build.Info{}, cfg), filesec.WithLog(fw.Logger("")))
+			Expect(err).ToNot(HaveOccurred())
+
+			fw.EXPECT().NewSecureRequestFromTransport(gomock.Any(), gomock.Any()).DoAndReturn(func(message protocol.TransportMessage, skipvalidate bool) (secure protocol.SecureRequest, err error) {
+				return v1.NewSecureRequestFromTransport(message, sec, skipvalidate)
+			}).AnyTimes()
+			fw.EXPECT().NewRequestFromSecureRequest(gomock.Any()).DoAndReturn(func(sr protocol.SecureRequest) (request protocol.Request, err error) {
+				return v1.NewRequestFromSecureRequest(sr)
+			}).AnyTimes()
+			fw.EXPECT().NewSecureReply(gomock.Any()).DoAndReturn(func(reply protocol.Reply) (secure protocol.SecureReply, err error) {
+				return v1.NewSecureReply(reply, sec)
+			}).AnyTimes()
+			fw.EXPECT().NewTransportForSecureReply(gomock.Any()).DoAndReturn(func(reply protocol.SecureReply) (message protocol.TransportMessage, err error) {
+				t, err := v1.NewTransportMessage(cfg.Identity)
+				Expect(err).ToNot(HaveOccurred())
+				t.SetReplyData(reply)
+				return t, nil
+			}).AnyTimes()
+			fw.EXPECT().NewReplyFromTransportJSON(gomock.Any(), gomock.Any()).DoAndReturn(func(payload []byte, skipvalidate bool) (msg protocol.Reply, err error) {
+				t, err := v1.NewTransportFromJSON(string(payload))
+				Expect(err).ToNot(HaveOccurred())
+				sreply, err := v1.NewSecureReplyFromTransport(t, sec, skipvalidate)
+				Expect(err).ToNot(HaveOccurred())
+				return v1.NewReplyFromSecureReply(sreply)
+			}).AnyTimes()
+			fw.EXPECT().NewRequestTransportForMessage(gomock.Any(), gomock.Any()).DoAndReturn(func(msg inter.Message, version string) (protocol.TransportMessage, error) {
+				req, err := v1.NewRequest(msg.Agent(), msg.SenderID(), msg.CallerID(), msg.TTL(), msg.RequestID(), msg.Collective())
+				Expect(err).ToNot(HaveOccurred())
+				req.SetMessage(msg.Payload())
+
+				sreq, err := v1.NewSecureRequest(req, sec)
+				Expect(err).ToNot(HaveOccurred())
+
+				sm, err := v1.NewTransportMessage(fw.Configuration().Identity)
+				Expect(err).ToNot(HaveOccurred())
+				err = sm.SetRequestData(sreq)
+				Expect(err).ToNot(HaveOccurred())
+
+				return sm, nil
+			}).AnyTimes()
+
 			handler := func(r protocol.Reply, rpcr *RPCReply) {
 				res := reply{}
 				err := json.Unmarshal(rpcr.Data, &res)
@@ -170,8 +230,8 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 				handled++
 			}
 
-			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
-				Expect(msg.Collective()).To(Equal("mcollective"))
+			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg inter.Message, handler client.Handler) {
+				Expect(msg.Collective()).To(Equal("ginkgo"))
 				Expect(msg.Payload()).To(Equal("{\"agent\":\"package\",\"action\":\"test_action\",\"data\":{\"testing\":true}}"))
 
 				reqid = msg.RequestID()
@@ -210,7 +270,9 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 					tj, err := transport.JSON()
 					Expect(err).ToNot(HaveOccurred())
 
-					rpchandler(ctx, choria.NewConnectorMessage("x", "x", []byte(tj), nil))
+					cm := imock.NewMockConnectorMessage(mockctl)
+					cm.EXPECT().Data().Return([]byte(tj))
+					rpchandler(ctx, cm)
 				}
 			})
 
@@ -254,7 +316,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 		})
 
 		It("Should support discovery callbacks and limits", func() {
-			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
+			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg inter.Message, handler client.Handler) {
 				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1"}))
 			})
 
@@ -291,11 +353,11 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 		})
 
 		It("Should support batched mode", func() {
-			batch1 := cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
+			batch1 := cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg inter.Message, handler client.Handler) {
 				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1", "host2"}))
 			})
 
-			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).After(batch1).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
+			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).After(batch1).Do(func(ctx context.Context, msg inter.Message, handler client.Handler) {
 				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host3", "host4"}))
 			})
 
@@ -303,43 +365,30 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 		})
 
 		It("Should support making requests without processing replies unbatched", func() {
-			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
+			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg inter.Message, handler client.Handler) {
 				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1", "host2"}))
 				Expect(msg.ReplyTo()).To(Equal("custom.reply.to"))
 				Expect(handler).To(BeNil())
 			})
 
-			_, err := rpc.Do(
-				ctx,
-				"test_action",
-				request{Testing: true},
-				Targets(strings.Fields("host1 host2")),
-				ReplyTo("custom.reply.to"),
-			)
+			_, err := rpc.Do(ctx, "test_action", request{Testing: true}, Targets(strings.Fields("host1 host2")), ReplyTo("custom.reply.to"))
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("Should support making requests without processing replies batched", func() {
-			batch1 := cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
+			batch1 := cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg inter.Message, handler client.Handler) {
 				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1"}))
 				Expect(msg.ReplyTo()).To(Equal("custom.reply.to"))
 				Expect(handler).To(BeNil())
 			})
 
-			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).After(batch1).Do(func(ctx context.Context, msg *choria.Message, handler client.Handler) {
+			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).After(batch1).Do(func(ctx context.Context, msg inter.Message, handler client.Handler) {
 				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host2"}))
 				Expect(msg.ReplyTo()).To(Equal("custom.reply.to"))
 				Expect(handler).To(BeNil())
 			})
 
-			_, err := rpc.Do(
-				ctx,
-				"test_action",
-				request{Testing: true},
-				Targets(strings.Fields("host1 host2")),
-				ReplyTo("custom.reply.to"),
-				InBatches(1, -1),
-			)
+			_, err := rpc.Do(ctx, "test_action", request{Testing: true}, Targets(strings.Fields("host1 host2")), ReplyTo("custom.reply.to"), InBatches(1, -1))
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})

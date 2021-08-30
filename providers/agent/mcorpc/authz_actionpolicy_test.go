@@ -3,8 +3,9 @@ package mcorpc
 import (
 	"bytes"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	imock "github.com/choria-io/go-choria/inter/imocks"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -15,9 +16,10 @@ var _ = Describe("ActionPolicy", func() {
 		authz     *actionPolicy
 		pol       *actionPolicyPolicy
 		logger    *logrus.Entry
-		fw        *choria.Framework
+		mockctl   *gomock.Controller
+		fw        *imock.MockFramework
+		cfg       *config.Config
 		logbuffer *bytes.Buffer
-		err       error
 	)
 
 	BeforeEach(func() {
@@ -26,13 +28,11 @@ var _ = Describe("ActionPolicy", func() {
 		logger.Logger.Out = logbuffer
 		pol = &actionPolicyPolicy{log: logger}
 
-		cfg := config.NewConfigForTests()
+		mockctl = gomock.NewController(GinkgoT())
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
 		cfg.ClassesFile = "testdata/classes.txt"
 		cfg.FactSourceFile = "testdata/facts.json"
 		cfg.DisableSecurityProviderVerify = true
-
-		fw, err = choria.NewWithConfig(cfg)
-		Expect(err).ToNot(HaveOccurred())
 
 		authz = &actionPolicy{
 			cfg:     cfg,
@@ -50,6 +50,10 @@ var _ = Describe("ActionPolicy", func() {
 				Choria: fw,
 			},
 		}
+	})
+
+	AfterEach(func() {
+		mockctl.Finish()
 	})
 
 	Describe("parseGroupFile", func() {
@@ -132,7 +136,7 @@ var _ = Describe("ActionPolicy", func() {
 
 		Describe("example4", func() {
 			It("Should match correctly", func() {
-				fw.Config.FactSourceFile = "testdata/foo_bar_facts.json"
+				cfg.FactSourceFile = "testdata/foo_bar_facts.json"
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example4")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal(""))
@@ -140,7 +144,7 @@ var _ = Describe("ActionPolicy", func() {
 			})
 
 			It("Should deny correctly", func() {
-				fw.Config.FactSourceFile = "testdata/foo_baz_facts.json"
+				cfg.FactSourceFile = "testdata/foo_baz_facts.json"
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example4")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal("Denying based on default policy in example4"))
@@ -157,7 +161,7 @@ var _ = Describe("ActionPolicy", func() {
 			})
 
 			It("Should deny correctly", func() {
-				fw.Config.ClassesFile = "testdata/classes_2.txt"
+				cfg.ClassesFile = "testdata/classes_2.txt"
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example5")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal("Denying based on default policy in example5"))
@@ -190,7 +194,7 @@ var _ = Describe("ActionPolicy", func() {
 
 		Describe("example7", func() {
 			It("Should match correctly", func() {
-				fw.Config.FactSourceFile = "testdata/foo_bar_facts.json"
+				cfg.FactSourceFile = "testdata/foo_bar_facts.json"
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example7")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal(""))
@@ -198,13 +202,13 @@ var _ = Describe("ActionPolicy", func() {
 			})
 
 			It("Should deny correctly", func() {
-				fw.Config.FactSourceFile = "testdata/foo_baz_facts.json"
+				cfg.FactSourceFile = "testdata/foo_baz_facts.json"
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example7")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal("Denying based on default policy in example7"))
 				Expect(matched).To(BeFalse())
 
-				fw.Config.FactSourceFile = "testdata/foo_bar_facts.json"
+				cfg.FactSourceFile = "testdata/foo_bar_facts.json"
 				authz.req.CallerID = "other"
 				matched, reason, err = authz.evaluatePolicy("testdata/policies/example7")
 				Expect(err).ToNot(HaveOccurred())
@@ -222,19 +226,19 @@ var _ = Describe("ActionPolicy", func() {
 			})
 
 			It("Should deny correctly", func() {
-				fw.Config.ClassesFile = "testdata/classes_2.txt"
+				cfg.ClassesFile = "testdata/classes_2.txt"
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example8")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal("Denying based on default policy in example8"))
 				Expect(matched).To(BeFalse())
 
-				fw.Config.ClassesFile = "testdata/missing"
+				cfg.ClassesFile = "testdata/missing"
 				matched, reason, err = authz.evaluatePolicy("testdata/policies/example8")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal("Denying based on default policy in example8"))
 				Expect(matched).To(BeFalse())
 
-				fw.Config.ClassesFile = "testdata/classes.txt"
+				cfg.ClassesFile = "testdata/classes.txt"
 				authz.req.CallerID = "other"
 				matched, reason, err = authz.evaluatePolicy("testdata/policies/example8")
 				Expect(err).ToNot(HaveOccurred())
@@ -245,7 +249,7 @@ var _ = Describe("ActionPolicy", func() {
 
 		Describe("example9", func() {
 			It("Should match correctly", func() {
-				fw.Config.FactSourceFile = "testdata/foo_bar_facts.json"
+				cfg.FactSourceFile = "testdata/foo_bar_facts.json"
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example9")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal(""))
@@ -254,21 +258,21 @@ var _ = Describe("ActionPolicy", func() {
 
 			It("Should deny correctly", func() {
 				authz.req.CallerID = "other"
-				fw.Config.FactSourceFile = "testdata/foo_bar_facts.json"
+				cfg.FactSourceFile = "testdata/foo_bar_facts.json"
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example9")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal("Denying based on default policy in example9"))
 				Expect(matched).To(BeFalse())
 
 				authz.req.CallerID = "choria=ginkgo.mcollective"
-				fw.Config.FactSourceFile = "testdata/foo_baz_facts.json"
+				cfg.FactSourceFile = "testdata/foo_baz_facts.json"
 				matched, reason, err = authz.evaluatePolicy("testdata/policies/example9")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal("Denying based on default policy in example9"))
 				Expect(matched).To(BeFalse())
 
 				authz.req.CallerID = "choria=ginkgo.mcollective"
-				fw.Config.FactSourceFile = "testdata/foo_bar_facts.json"
+				cfg.FactSourceFile = "testdata/foo_bar_facts.json"
 				authz.req.Action = "other"
 				matched, reason, err = authz.evaluatePolicy("testdata/policies/example9")
 				Expect(err).ToNot(HaveOccurred())
@@ -301,7 +305,7 @@ var _ = Describe("ActionPolicy", func() {
 				Expect(matched).To(BeFalse())
 
 				authz.req.Action = "test"
-				fw.Config.ClassesFile = "testdata/classes_2.txt"
+				cfg.ClassesFile = "testdata/classes_2.txt"
 				matched, reason, err = authz.evaluatePolicy("testdata/policies/example10")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal("Denying based on default policy in example10"))
@@ -311,7 +315,7 @@ var _ = Describe("ActionPolicy", func() {
 
 		Describe("example11", func() {
 			It("Should match correctly", func() {
-				fw.Config.FactSourceFile = "testdata/foo_bar_facts.json"
+				cfg.FactSourceFile = "testdata/foo_bar_facts.json"
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example11")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal(""))
@@ -333,14 +337,14 @@ var _ = Describe("ActionPolicy", func() {
 				Expect(matched).To(BeFalse())
 
 				authz.req.Action = "test"
-				fw.Config.FactSourceFile = "testdata/foo_baz_facts.json"
+				cfg.FactSourceFile = "testdata/foo_baz_facts.json"
 				matched, reason, err = authz.evaluatePolicy("testdata/policies/example11")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal("Denying based on default policy in example11"))
 				Expect(matched).To(BeFalse())
 
-				fw.Config.FactSourceFile = "testdata/foo_bar_facts.json"
-				fw.Config.ClassesFile = "testdata/classes_2.txt"
+				cfg.FactSourceFile = "testdata/foo_bar_facts.json"
+				cfg.ClassesFile = "testdata/classes_2.txt"
 				matched, reason, err = authz.evaluatePolicy("testdata/policies/example11")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal("Denying based on default policy in example11"))
@@ -394,13 +398,13 @@ var _ = Describe("ActionPolicy", func() {
 
 			It("Should match policy 2", func() {
 				authz.req.CallerID = "choria=two.mcollective"
-				fw.Config.FactSourceFile = "testdata/foo_bar_facts.json"
+				cfg.FactSourceFile = "testdata/foo_bar_facts.json"
 				matched, reason, err := authz.evaluatePolicy("testdata/policies/example15")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal(""))
 				Expect(matched).To(BeTrue())
 
-				fw.Config.FactSourceFile = "testdata/foo_baz_facts.json"
+				cfg.FactSourceFile = "testdata/foo_baz_facts.json"
 				matched, reason, err = authz.evaluatePolicy("testdata/policies/example15")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(matched).To(BeFalse())
@@ -409,7 +413,7 @@ var _ = Describe("ActionPolicy", func() {
 
 			It("Should match policy 3", func() {
 				authz.req.CallerID = "choria=three.mcollective"
-				fw.Config.FactSourceFile = "testdata/foo_bar_facts.json"
+				cfg.FactSourceFile = "testdata/foo_bar_facts.json"
 
 				for _, act := range []string{"enable", "disable", "status"} {
 					authz.req.Action = act
@@ -426,7 +430,7 @@ var _ = Describe("ActionPolicy", func() {
 				Expect(matched).To(BeFalse())
 
 				authz.req.Action = "status"
-				fw.Config.FactSourceFile = "testdata/foo_baz_facts.json"
+				cfg.FactSourceFile = "testdata/foo_baz_facts.json"
 				matched, reason, err = authz.evaluatePolicy("testdata/policies/example15")
 				Expect(err).ToNot(HaveOccurred())
 				Expect(reason).To(Equal("Denying based on default policy in example15"))

@@ -7,6 +7,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/data"
 	"github.com/choria-io/go-choria/providers/data/golang/choriadata"
 	"github.com/choria-io/go-choria/scout/data/scoutdata"
@@ -15,7 +16,7 @@ import (
 
 type ChoriaServer struct {
 	Instance *server.Instance
-	fw       *choria.Framework
+	fw       inter.Framework
 	broker   *Broker
 	cfg      *config.Config
 	wg       *sync.WaitGroup

@@ -51,7 +51,7 @@ func (i *inventoryCommand) inventoryAgent() error {
 		return fmt.Errorf("identity is required")
 	}
 
-	rpcu, err := rpcutilclient.New(rpcutilclient.Logger(c.Logger("inventory")))
+	rpcu, err := rpcutilclient.New(c, rpcutilclient.Logger(c.Logger("inventory")))
 	if err != nil {
 		return err
 	}
@@ -155,7 +155,7 @@ func (i *inventoryCommand) inventoryAgent() error {
 }
 
 func (i *inventoryCommand) inventoryCollectives() error {
-	rpcu, err := rpcutilclient.New(rpcutilclient.Logger(c.Logger("inventory")))
+	rpcu, err := rpcutilclient.New(c, rpcutilclient.Logger(c.Logger("inventory")))
 	if err != nil {
 		return err
 	}

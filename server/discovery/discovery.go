@@ -5,7 +5,6 @@ import (
 
 	"github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/data/ddl"
@@ -21,17 +20,15 @@ type ServerInfoSource interface {
 
 // Manager manages the full discovery life cycle
 type Manager struct {
-	fw  *choria.Framework
 	cfg *config.Config
 	si  ServerInfoSource
 	log *logrus.Entry
 }
 
 // New creates a new discovery Manager
-func New(framework *choria.Framework, si ServerInfoSource, logger *logrus.Entry) *Manager {
+func New(cfg *config.Config, si ServerInfoSource, logger *logrus.Entry) *Manager {
 	return &Manager{
-		fw:  framework,
-		cfg: framework.Configuration(),
+		cfg: cfg,
 		si:  si,
 		log: logger.WithFields(logrus.Fields{"subsystem": "discovery"}),
 	}

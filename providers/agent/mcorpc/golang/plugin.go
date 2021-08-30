@@ -2,6 +2,7 @@ package agents
 
 import (
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/plugin"
 )
 
@@ -25,7 +26,7 @@ func (p *Provider) PluginName() string {
 	return "Golang MCollective Agent Compatibility"
 }
 
-// PluginType implements plugin.Pluggable
-func (p *Provider) PluginType() plugin.Type {
-	return plugin.AgentProviderPlugin
+// PluginType implements inter.Pluggable
+func (p *Provider) PluginType() inter.PluginType {
+	return inter.AgentProviderPlugin
 }
