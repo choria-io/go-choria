@@ -20,7 +20,6 @@ import (
 
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
 )
 
 func Test(t *testing.T) {
@@ -45,7 +44,7 @@ var _ = Describe("Server/Agents", func() {
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID(), imock.LogDiscard())
 		cfg.Collectives = []string{"cone", "ctwo"}
 
 		requests = make(chan inter.ConnectorMessage)
@@ -81,7 +80,7 @@ var _ = Describe("Server/Agents", func() {
 		is.EXPECT().Facts().Return(json.RawMessage(`{"stub":true}`)).AnyTimes()
 		is.EXPECT().AgentMetadata("stub_agent").Return(metadata, true).AnyTimes()
 
-		mgr = New(requests, fw, conn, is, logrus.WithFields(logrus.Fields{"testing": true}))
+		mgr = New(requests, fw, conn, is, fw.Logger("x"))
 		conn = imock.NewMockConnector(mockctl)
 
 		agent = NewMockAgent(mockctl)

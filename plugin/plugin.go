@@ -41,7 +41,7 @@ type Pluggable interface {
 func Register(name string, plugin Pluggable) error {
 	var err error
 
-	switch inter.PluginType(plugin.PluginType()) {
+	switch plugin.PluginType() {
 	case inter.AgentProviderPlugin:
 		err = registerAgentProviderPlugin(name, plugin)
 
@@ -59,6 +59,9 @@ func Register(name string, plugin Pluggable) error {
 
 	case inter.DataPlugin:
 		err = registerDataPlugin(name, plugin)
+
+	case inter.MachinePlugin:
+		err = registerMachinePlugin(plugin)
 
 	default:
 		err = fmt.Errorf("unknown plugin type %d from %s", plugin.PluginType(), name)

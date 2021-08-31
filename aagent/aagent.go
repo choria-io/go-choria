@@ -34,6 +34,7 @@ type managedMachine struct {
 	loaded     time.Time
 	machine    *machine.Machine
 	loadedHash string
+	plugin     bool
 }
 
 // New creates a new instance of the choria autonomous agent host
@@ -79,7 +80,18 @@ func (a *AAgent) Transition(name string, version string, path string, id string,
 	return nil
 }
 
-func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path string) (err error) {
+func (a *AAgent) configureMachine(aa *machine.Machine) {
+	aa.SetFactSource(a.fw.Facts)
+	aa.SetIdentity(a.fw.Identity())
+	aa.SetMainCollective(a.fw.MainCollective())
+	aa.RegisterNotifier(a.notifier)
+	aa.SetTextFileDirectory(a.fw.PrometheusTextFileDir())
+	aa.SetOverridesFile(a.fw.ScoutOverridesPath())
+	aa.SetConnection(a.fw.Connector())
+	aa.SetChoriaStatusFile(a.fw.ServerStatusFile())
+}
+
+func (a *AAgent) loadMachine(ctx context.Context, path string) (err error) {
 	aa, err := machine.FromDir(path, watchers.New(ctx))
 	if err != nil {
 		return err
@@ -91,17 +103,7 @@ func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path strin
 	}
 
 	a.logger.Infof("Loaded Autonomous Agent %s version %s from %s (%s)", aa.Name(), aa.Version(), path, sum)
-
-	aa.SetFactSource(a.fw.Facts)
-	aa.SetIdentity(a.fw.Identity())
-	aa.SetMainCollective(a.fw.MainCollective())
-	aa.RegisterNotifier(a.notifier)
-	aa.SetTextFileDirectory(a.fw.PrometheusTextFileDir())
-	aa.SetOverridesFile(a.fw.ScoutOverridesPath())
-	aa.SetConnection(a.fw.Connector())
-
-	f, freq := a.fw.ServerStatusFile()
-	aa.SetChoriaStatusFile(f, freq)
+	a.configureMachine(aa)
 
 	managed := &managedMachine{
 		loaded:     time.Now(),
@@ -114,12 +116,65 @@ func (a *AAgent) loadMachine(ctx context.Context, wg *sync.WaitGroup, path strin
 	a.machines = append(a.machines, managed)
 	a.Unlock()
 
-	aa.Start(ctx, wg)
+	return nil
+}
+
+func (aa *AAgent) startMachines(ctx context.Context, wg *sync.WaitGroup) error {
+	aa.Lock()
+	machines := make([]*managedMachine, len(aa.machines))
+	for i, m := range aa.machines {
+		machines[i] = m
+	}
+	aa.Unlock()
+
+	for _, m := range machines {
+		if m.machine.IsStarted() {
+			continue
+		}
+
+		m.machine.Start(ctx, wg)
+	}
 
 	return nil
 }
 
-func (a *AAgent) loadFromSource(ctx context.Context, wg *sync.WaitGroup) error {
+func (a *AAgent) loadPlugins(ctx context.Context) error {
+	mu.Lock()
+	compiledPlugins := plugins
+	mu.Unlock()
+
+	for _, p := range compiledPlugins {
+		machine, err := machine.FromPlugin(p, watchers.New(ctx), a.logger.WithField("plugin", p.PluginName()))
+		if err != nil {
+			a.logger.Errorf("Could not load machine plugin from %s: %s", p.PluginName(), err)
+			continue
+		}
+
+		managed := &managedMachine{
+			loaded:  time.Now(),
+			machine: machine,
+			path:    filepath.Join(a.source, machine.MachineName),
+			plugin:  true,
+		}
+
+		if !util.FileIsDir(managed.path) {
+			err = os.MkdirAll(managed.path, 0700)
+			if err != nil {
+				return err
+			}
+		}
+
+		a.configureMachine(machine)
+
+		a.Lock()
+		a.machines = append(a.machines, managed)
+		a.Unlock()
+	}
+
+	return nil
+}
+
+func (a *AAgent) loadFromSource(ctx context.Context) error {
 	files, err := os.ReadDir(a.source)
 	if err != nil {
 		return fmt.Errorf("could not read machine source: %s", err)
@@ -156,7 +211,7 @@ func (a *AAgent) loadFromSource(ctx context.Context, wg *sync.WaitGroup) error {
 
 		a.logger.Infof("Attempting to load Choria Machine from %s", path)
 
-		err = a.loadMachine(ctx, wg, path)
+		err = a.loadMachine(ctx, path)
 		if err != nil {
 			a.logger.Errorf("Could not load machine from %s: %s", path, err)
 		}
@@ -167,8 +222,6 @@ func (a *AAgent) loadFromSource(ctx context.Context, wg *sync.WaitGroup) error {
 
 func (a *AAgent) watchSource(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-
-	tick := time.NewTicker(10 * time.Second)
 
 	// loads what is found on disk
 	loadf := func() {
@@ -181,9 +234,9 @@ func (a *AAgent) watchSource(ctx context.Context, wg *sync.WaitGroup) {
 			return
 		}
 
-		err := a.loadFromSource(ctx, wg)
+		err := a.loadFromSource(ctx)
 		if err != nil {
-			a.logger.Errorf("Could not load Autonomous Agents: %s", err)
+			a.logger.Errorf("Could not load Autonomous Agents from %s: %s", a.source, err)
 		}
 	}
 
@@ -193,6 +246,11 @@ func (a *AAgent) watchSource(ctx context.Context, wg *sync.WaitGroup) {
 
 		a.Lock()
 		for _, m := range a.machines {
+			// these are compiled in, cannot be removed
+			if m.plugin {
+				continue
+			}
+
 			if !util.FileExist(m.path) {
 				a.logger.Infof("Machine %s does not exist anymore in %s, terminating", m.machine.Name(), m.path)
 				targets = append(targets, m.path)
@@ -209,14 +267,29 @@ func (a *AAgent) watchSource(ctx context.Context, wg *sync.WaitGroup) {
 		}
 	}
 
+	startf := func() {
+		err := a.startMachines(ctx, wg)
+		if err != nil {
+			a.logger.Errorf("Could not start Autonomous Agents: %s", err)
+		}
+	}
+
+	err := a.loadPlugins(ctx)
+	if err != nil {
+		a.logger.Errorf("Could not load Autonomous Agents plugins: %s", err)
+	}
+
 	loadf()
+	startf()
+
+	tick := time.NewTicker(10 * time.Second)
 
 	for {
 		select {
 		case <-tick.C:
 			cleanf()
 			loadf()
-
+			startf()
 		case <-ctx.Done():
 			return
 		}

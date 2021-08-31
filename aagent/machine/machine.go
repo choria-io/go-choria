@@ -10,10 +10,12 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/nats-io/jsm.go"
+	"github.com/sirupsen/logrus"
 	"github.com/xeipuuv/gojsonschema"
 
 	"github.com/ghodss/yaml"
@@ -25,6 +27,9 @@ import (
 )
 
 const dataFileName = "machine_data.json"
+
+// ActivationChecker allows embedded machines to determine if they should activate or not
+type ActivationChecker func(*logrus.Entry) bool
 
 // Machine is a autonomous agent implemented as a Finite State Machine and hosted within Choria Server
 type Machine struct {
@@ -45,6 +50,10 @@ type Machine struct {
 
 	// SplayStart causes a random sleep of maximum this many seconds before the machine starts
 	SplayStart int `json:"splay_start" yaml:"splay_start"`
+
+	// ActivationCheck when set this can be called to avoid activating a plugin
+	// typically this would be used when compiling machines into the binary
+	ActivationCheck ActivationChecker `json:"-" yaml:"-"`
 
 	instanceID       string
 	identity         string
@@ -112,6 +121,26 @@ func yamlPath(dir string) string {
 	return dir + "/" + "machine.yaml"
 }
 
+func FromPlugin(p model.MachineConstructor, manager WatcherManager, log *logrus.Entry) (*Machine, error) {
+	m, ok := p.Machine().(*Machine)
+	if !ok {
+		return nil, fmt.Errorf("%s is not a valid machine plugin", p.PluginName())
+	}
+
+	if m.ActivationCheck != nil {
+		if !m.ActivationCheck(log) {
+			return nil, fmt.Errorf("%s activation skipped by plugin activation checks", p.PluginName())
+		}
+	}
+
+	err := initializeMachine(m, "", manager)
+	if err != nil {
+		return nil, err
+	}
+
+	return m, nil
+}
+
 func FromDir(dir string, manager WatcherManager) (m *Machine, err error) {
 	mpath := yamlPath(dir)
 
@@ -127,6 +156,36 @@ func FromDir(dir string, manager WatcherManager) (m *Machine, err error) {
 	m.directory, err = filepath.Abs(dir)
 
 	return m, err
+}
+
+func initializeMachine(m *Machine, afile string, manager WatcherManager) (err error) {
+	m.notifiers = []NotificationService{}
+	m.manager = manager
+	m.directory = filepath.Dir(afile)
+	m.manifest = afile
+	m.instanceID = m.UniqueID()
+	m.knownStates = make(map[string]bool)
+	m.data = make(map[string]interface{})
+
+	err = m.loadData()
+	if err != nil {
+		// warning only, we dont want a corrupt data file from stopping the whole world, generally data should
+		// be ephemeral and recreate from other sources like kv or exec watchers, new computers need to be able to
+		// survive without data so should a machine recovering from a bad state
+		m.Warnf("machine", "Could not load data file, discarding: %s", err)
+	}
+
+	err = manager.SetMachine(m)
+	if err != nil {
+		return fmt.Errorf("could not register with manager: %s", err)
+	}
+
+	err = m.Setup()
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // FromYAML loads a machine from a YAML definition
@@ -147,28 +206,7 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 		return nil, err
 	}
 
-	m.notifiers = []NotificationService{}
-	m.manager = manager
-	m.directory = filepath.Dir(afile)
-	m.manifest = afile
-	m.instanceID = m.UniqueID()
-	m.knownStates = make(map[string]bool)
-	m.data = make(map[string]interface{})
-
-	err = m.loadData()
-	if err != nil {
-		// warning only, we dont want a corrupt data file from stopping the whole world, generally data should
-		// be ephemeral and recreate from other sources like kv or exec watchers, new computers need to be able to
-		// survive without data so should a machine recovering from a bad state
-		m.Warnf("machine", "Could not load data file, discarding: %s", err)
-	}
-
-	err = m.manager.SetMachine(m)
-	if err != nil {
-		return nil, fmt.Errorf("could not register with manager: %s", err)
-	}
-
-	err = m.Setup()
+	err = initializeMachine(m, afile, manager)
 	if err != nil {
 		return nil, err
 	}
@@ -495,17 +533,20 @@ func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) (started chan s
 			select {
 			case <-t.C:
 			case <-m.ctx.Done():
+				m.startTime = time.Time{}
 				m.Infof(m.MachineName, "Exiting on context interrupt")
+				started <- struct{}{}
 				return
 			}
 		}
 
 		m.Infof(m.MachineName, "Starting Choria Machine %s version %s from %s", m.MachineName, m.MachineVersion, m.directory)
-		m.startTime = time.Now().UTC()
 
 		err := m.manager.Run(m.ctx, wg)
 		if err != nil {
 			m.Errorf(m.MachineName, "Could not start manager: %s", err)
+		} else {
+			m.startTime = time.Now().UTC()
 		}
 
 		started <- struct{}{}
@@ -514,6 +555,14 @@ func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) (started chan s
 	go runf()
 
 	return started
+}
+
+// IsStarted determines if the machine is currently running
+func (m *Machine) IsStarted() bool {
+	m.Lock()
+	defer m.Unlock()
+
+	return !m.startTime.IsZero()
 }
 
 // Delete deletes a running machine by canceling its context and giving its manager
@@ -532,6 +581,8 @@ func (m *Machine) Delete() {
 		m.Infof("runner", "Stopping")
 		m.cancel()
 	}
+
+	m.startTime = time.Time{}
 }
 
 // Stop stops a running machine by canceling its context
@@ -547,6 +598,8 @@ func (m *Machine) Stop() {
 		m.Infof("runner", "Stopping")
 		m.cancel()
 	}
+
+	m.startTime = time.Time{}
 }
 
 func (m *Machine) backoffTransition(t string) error {

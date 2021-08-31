@@ -3,12 +3,17 @@ package machine
 import (
 	"context"
 	"fmt"
-	sync "sync"
+	"os"
+	"sync"
 	"testing"
+	"time"
 
+	"github.com/choria-io/go-choria/aagent/plugin"
 	"github.com/choria-io/go-choria/aagent/watchers"
+	"github.com/ghodss/yaml"
+	"github.com/sirupsen/logrus"
 
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -24,10 +29,15 @@ var _ = Describe("Aagent/Machine", func() {
 		service *MockNotificationService
 		manager *MockWatcherManager
 		machine *Machine
+		log     *logrus.Entry
 		err     error
 	)
 
 	BeforeEach(func() {
+		logger := logrus.New()
+		logger.SetOutput(GinkgoWriter)
+		log = logrus.NewEntry(logger)
+
 		mockctl = gomock.NewController(GinkgoT())
 		service = NewMockNotificationService(mockctl)
 		manager = NewMockWatcherManager(mockctl)
@@ -60,6 +70,46 @@ var _ = Describe("Aagent/Machine", func() {
 			machine, err = FromYAML("testdata/machine.yaml", manager)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(machine.Name()).To(Equal("TestMachine"))
+		})
+	})
+
+	Describe("FromPlugin", func() {
+		var (
+			mplug *plugin.MachinePlugin
+		)
+		BeforeEach(func() {
+			myaml, err := os.ReadFile("testdata/machine.yaml")
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(yaml.Unmarshal(myaml, machine)).ToNot(HaveOccurred())
+			mplug = plugin.NewMachinePlugin("TestMachine", machine)
+		})
+
+		It("Should configure the manager and handle errors", func() {
+			manager.EXPECT().SetMachine(gomock.Any()).DoAndReturn(func(m *Machine) error {
+				Expect(m.MachineName).To(Equal("TestMachine"))
+				Expect(m.manager).To(Equal(manager))
+
+				return fmt.Errorf("set machine error")
+			})
+
+			machine, err = FromPlugin(mplug, manager, log)
+			Expect(err).To(MatchError("could not register with manager: set machine error"))
+		})
+
+		It("Should setup the machine", func() {
+			manager.EXPECT().SetMachine(gomock.AssignableToTypeOf(machine))
+			machine.MachineName = ""
+			machine, err = FromPlugin(mplug, manager, log)
+			Expect(err).To(MatchError("validation failed: a machine name is required"))
+		})
+
+		It("Should load good machines", func() {
+			manager.EXPECT().SetMachine(gomock.AssignableToTypeOf(machine))
+			machine, err = FromPlugin(mplug, manager, log)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(machine.Name()).To(Equal("TestMachine"))
+			Expect(machine.manager).To(Equal(manager))
 		})
 	})
 
@@ -121,6 +171,7 @@ var _ = Describe("Aagent/Machine", func() {
 			machine.SplayStart = 0
 
 			<-machine.Start(ctx, wg)
+			Expect(machine.startTime.IsZero()).To(BeFalse())
 		})
 	})
 
@@ -131,7 +182,10 @@ var _ = Describe("Aagent/Machine", func() {
 
 		It("Should stop a running machine", func() {
 			machine.ctx, machine.cancel = context.WithCancel(context.Background())
+			machine.startTime = time.Now()
+
 			machine.Stop()
+			Expect(machine.startTime.IsZero()).To(BeTrue())
 			Expect(machine.ctx.Err()).To(HaveOccurred())
 		})
 	})

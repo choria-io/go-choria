@@ -7,6 +7,12 @@ import (
 	"github.com/nats-io/jsm.go"
 )
 
+type MachineConstructor interface {
+	Name() string
+	Machine() interface{}
+	PluginName() string
+}
+
 type Machine interface {
 	State() string
 	Transition(t string, args ...interface{}) error

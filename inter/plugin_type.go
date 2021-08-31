@@ -25,6 +25,9 @@ const (
 
 	// DataPlugin is a plugin that provides data to choria
 	DataPlugin
+
+	// MachinePlugin is an autonomous agent
+	MachinePlugin
 )
 
 // Pluggable is a Choria Plugin

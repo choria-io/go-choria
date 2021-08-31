@@ -161,6 +161,13 @@ func (i *Info) RegisterAgentProvider(p string) {
 	sort.Strings(AgentProviders)
 }
 
+func (i *Info) Machines() []string {
+	mu.Lock()
+	defer mu.Unlock()
+
+	return Machines
+}
+
 func (i *Info) MachineWatchers() []string {
 	mu.Lock()
 	defer mu.Unlock()
@@ -174,6 +181,14 @@ func (i *Info) RegisterMachineWatcher(p string) {
 
 	MachineWatchers = append(MachineWatchers, p)
 	sort.Strings(MachineWatchers)
+}
+
+func (i *Info) RegisterMachine(p string) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	Machines = append(Machines, p)
+	sort.Strings(Machines)
 }
 
 func (i *Info) RegisterDataProvider(p string) {

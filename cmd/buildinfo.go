@@ -68,15 +68,14 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Printf("  Embedded NATS Server Version: %s\n", gnatsd.VERSION)
 
 	mutators := config.MutatorNames()
-	fmt.Println()
-	fmt.Println("Configuration Mutators:")
-	fmt.Println()
 	if len(mutators) > 0 {
+		fmt.Println()
+		fmt.Println("Configuration Mutators:")
+		fmt.Println()
+
 		for _, m := range mutators {
 			fmt.Printf("\t%s\n", m)
 		}
-	} else {
-		fmt.Printf("\tnone\n")
 	}
 
 	fmt.Println()
@@ -136,20 +135,37 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 		fmt.Printf("  %s\n", p)
 	}
 
-	fmt.Println()
-	fmt.Println("Data Providers:")
-	fmt.Println()
+	data := bi.DataProviders()
+	if len(data) > 0 {
+		fmt.Println()
+		fmt.Println("Data Providers:")
+		fmt.Println()
 
-	for _, p := range bi.DataProviders() {
-		fmt.Printf("  %s\n", p)
+		for _, p := range data {
+			fmt.Printf("  %s\n", p)
+		}
 	}
 
-	fmt.Println()
-	fmt.Println("Autonomous Agent Watchers:")
-	fmt.Println()
+	machines := bi.Machines()
+	if len(machines) > 0 {
+		fmt.Println()
+		fmt.Println("Autonomous Agents:")
+		fmt.Println()
 
-	for _, p := range bi.MachineWatchers() {
-		fmt.Printf("  %s\n", p)
+		for _, p := range machines {
+			fmt.Printf("  %s\n", p)
+		}
+	}
+
+	watchers := bi.MachineWatchers()
+	if len(watchers) > 0 {
+		fmt.Println()
+		fmt.Println("Autonomous Agent Watchers:")
+		fmt.Println()
+
+		for _, p := range watchers {
+			fmt.Printf("  %s\n", p)
+		}
 	}
 
 	if b.dependencies {
