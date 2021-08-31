@@ -67,6 +67,9 @@ var AgentProviders = []string{}
 // MachineWatchers are registered Autonomous Agent watchers
 var MachineWatchers = []string{}
 
+// Machines are registered Autonomous Agents
+var Machines = []string{}
+
 // DataProviders are registered Data plugins
 var DataProviders = []string{}
 

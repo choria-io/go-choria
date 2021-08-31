@@ -47,8 +47,8 @@ func RegisterWatcherPlugin(name string, plugin model.WatcherConstructor) error {
 		plugins = map[string]model.WatcherConstructor{}
 	}
 
-	_, exit := plugins[plugin.Type()]
-	if exit {
+	_, exist := plugins[plugin.Type()]
+	if exist {
 		return fmt.Errorf("plugin %q already exist", plugin.Type())
 	}
 
