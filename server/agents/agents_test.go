@@ -45,11 +45,7 @@ var _ = Describe("Server/Agents", func() {
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
-		fw.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
-		fw.EXPECT().HasCollective(gomock.Eq("cone")).Return(true).AnyTimes()
-		fw.EXPECT().HasCollective(gomock.Eq("ctwo")).Return(true).AnyTimes()
-		fw.EXPECT().HasCollective(gomock.Eq("mcollective")).Return(false).AnyTimes()
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
 		cfg.Collectives = []string{"cone", "ctwo"}
 
 		requests = make(chan inter.ConnectorMessage)
@@ -236,7 +232,6 @@ var _ = Describe("Server/Agents", func() {
 		wg := &sync.WaitGroup{}
 
 		BeforeEach(func() {
-			fw.EXPECT().HasCollective(gomock.Eq("cone")).Return(true).AnyTimes()
 			cfg.Collectives = []string{"cone"}
 			request, err = v1.NewRequest("stub", "example.net", "choria=rip.mcollective", 60, "123", "cone")
 			Expect(err).ToNot(HaveOccurred())

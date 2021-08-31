@@ -48,7 +48,7 @@ var _ = Describe("Choria/Message", func() {
 		request.EXPECT().IsFederated().Return(false).AnyTimes()
 		request.EXPECT().JSON().Return("{\"mock_request\": true}", nil).AnyTimes()
 
-		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
 		cfg.Collectives = []string{"test_collective"}
 		cfg.Choria.SSLDir = "/nonexisting"
 		cfg.Identity = "test.identity"
@@ -56,9 +56,6 @@ var _ = Describe("Choria/Message", func() {
 		sec, err := filesec.New(filesec.WithChoriaConfig(&build.Info{}, cfg), filesec.WithLog(fw.Logger("")))
 		Expect(err).ToNot(HaveOccurred())
 
-		fw.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
-		fw.EXPECT().HasCollective(gomock.Eq("test_collective")).Return(true).AnyTimes()
-		fw.EXPECT().HasCollective(gomock.Any()).Return(false).AnyTimes()
 		fw.EXPECT().NewRequest(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(version string, agent string, senderid string, callerid string, ttl int, requestid string, collective string) (request protocol.Request, err error) {
 			return v1.NewRequest(agent, senderid, callerid, ttl, requestid, collective)
 		}).AnyTimes()

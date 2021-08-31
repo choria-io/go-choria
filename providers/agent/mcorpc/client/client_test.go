@@ -7,7 +7,6 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/brutella/hc/util"
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
@@ -57,11 +56,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		cl = NewMockChoriaClient(mockctl)
 
-		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
-		fw.EXPECT().Certname().Return("rip.mcollective").AnyTimes()
-		fw.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
-		fw.EXPECT().HasCollective("ginkgo").Return(true).AnyTimes()
-		fw.EXPECT().HasCollective("mcollective").Return(true).AnyTimes()
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
 		fw.EXPECT().NewMessage(gomock.Any(), gomock.Eq("package"), gomock.Eq("ginkgo"), gomock.Eq(inter.RequestMessageType), gomock.Eq(nil)).DoAndReturn(func(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
 			return message.NewMessage(payload, agent, collective, msgType, request, fw)
 		}).AnyTimes()
@@ -176,10 +171,6 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 		It("Should perform the request", func() {
 			reqid := ""
 			handled := 0
-
-			msg := imock.NewMockMessage(mockctl)
-			msg.EXPECT().RequestID().Return(util.RandomHexString()).AnyTimes()
-			msg.EXPECT().SetFilter(gomock.Any()).AnyTimes()
 
 			sec, err := filesec.New(filesec.WithChoriaConfig(&build.Info{}, cfg), filesec.WithLog(fw.Logger("")))
 			Expect(err).ToNot(HaveOccurred())

@@ -23,6 +23,7 @@ var _ = Describe("Inventory", func() {
 	var (
 		mockctl *gomock.Controller
 		fw      *imock.MockFramework
+		cfg     *config.Config
 		inv     *Inventory
 	)
 
@@ -31,11 +32,9 @@ var _ = Describe("Inventory", func() {
 		logger.SetOutput(GinkgoWriter)
 
 		mockctl = gomock.NewController(GinkgoT())
-		fw = imock.NewMockFramework(mockctl)
-		fw.EXPECT().Logger(gomock.Any()).Return(logrus.NewEntry(logger)).AnyTimes()
-		fw.EXPECT().Configuration().Return(config.NewConfigForTests()).AnyTimes()
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
+		cfg.Choria.InventoryDiscoverySource = "testdata/good-inventory.yaml"
 		inv = New(fw)
-		fw.Configuration().Choria.InventoryDiscoverySource = "testdata/good-inventory.yaml"
 	})
 
 	AfterEach(func() {

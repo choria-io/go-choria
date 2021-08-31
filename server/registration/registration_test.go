@@ -36,19 +36,16 @@ var _ = Describe("Server/Registration", func() {
 
 		BeforeEach(func() {
 			mockctl = gomock.NewController(GinkgoT())
-			fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
-
-			fw.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
-			fw.EXPECT().HasCollective("test_collective").Return(true).AnyTimes()
-			fw.EXPECT().NewMessage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
-				return message.NewMessage(payload, agent, collective, msgType, request, fw)
-			}).AnyTimes()
-
+			fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
 			cfg.DisableTLS = true
 			cfg.OverrideCertname = "test.example.net"
 			cfg.Collectives = []string{"test_collective"}
 			cfg.MainCollective = "test_collective"
 			cfg.RegistrationCollective = "test_collective"
+
+			fw.EXPECT().NewMessage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
+				return message.NewMessage(payload, agent, collective, msgType, request, fw)
+			}).AnyTimes()
 
 			log = logrus.WithFields(logrus.Fields{"test": true})
 			logrus.SetLevel(logrus.FatalLevel)

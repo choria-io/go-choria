@@ -41,11 +41,9 @@ var _ = Describe("Broadcast", func() {
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 		cl = NewMockChoriaClient(mockctl)
-		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
 		cfg.Collectives = []string{"mcollective", "test"}
 
-		fw.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
-		fw.EXPECT().HasCollective(gomock.Eq("test")).Return(true).AnyTimes()
 		fw.EXPECT().NewMessage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
 			return message.NewMessage(payload, agent, collective, msgType, request, fw)
 		}).AnyTimes()

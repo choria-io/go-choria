@@ -15,7 +15,6 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
 )
 
 var _ = Describe("Directory Spool", func() {
@@ -25,26 +24,16 @@ var _ = Describe("Directory Spool", func() {
 		fw      *imock.MockFramework
 		cfg     *config.Config
 		td      string
-		log     *logrus.Entry
 	)
 
 	BeforeEach(func() {
 		td, err := os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
-		cfg = config.NewConfigForTests()
+		mockctl = gomock.NewController(GinkgoT())
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.LogDiscard())
 		cfg.Choria.SubmissionSpool = td
 		cfg.Choria.SubmissionSpoolMaxSize = 50
-
-		log = logrus.NewEntry(logrus.New())
-		log.Logger.SetLevel(logrus.DebugLevel)
-		log.Logger.Out = GinkgoWriter
-
-		mockctl = gomock.NewController(GinkgoT())
-
-		fw = imock.NewMockFramework(mockctl)
-		fw.EXPECT().Configuration().Return(cfg)
-		fw.EXPECT().Logger(gomock.Any()).Return(log)
 
 		subm, err := NewFromChoria(fw, Directory)
 		Expect(err).ToNot(HaveOccurred())
@@ -124,6 +113,8 @@ var _ = Describe("Directory Spool", func() {
 					Fail("Received no messages")
 				}
 
+				log := fw.Logger("x")
+
 				for _, msg := range msgs {
 					if msg.Reliable {
 						reliables[msg.ID]++
@@ -132,10 +123,10 @@ var _ = Describe("Directory Spool", func() {
 					}
 
 					priority := msg.Priority
-					log.Printf("%s priority %d message (try: %d/%d, reliable: %v): %s\n", msg.ID, priority, msg.Tries, msg.MaxTries, msg.Reliable, string(msg.Payload))
+					log.Infof("%s priority %d message (try: %d/%d, reliable: %v): %s\n", msg.ID, priority, msg.Tries, msg.MaxTries, msg.Reliable, string(msg.Payload))
 
 					if (msg.Reliable && tries > 0 && msg.Tries%10 == 7) || !msg.Reliable {
-						log.Printf("completing message %s on try %d\n", msg.ID, msg.Tries)
+						log.Infof("completing message %s on try %d\n", msg.ID, msg.Tries)
 						spool.Complete(msg)
 						completed++
 					} else {
