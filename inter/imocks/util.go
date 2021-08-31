@@ -2,6 +2,7 @@ package imock
 
 import (
 	"io"
+	"strings"
 
 	"github.com/brutella/hc/util"
 	"github.com/choria-io/go-choria/config"
@@ -9,15 +10,64 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func NewFrameworkForTests(ctrl *gomock.Controller, logWriter io.Writer) (*MockFramework, *config.Config) {
+type fwMockOpts struct {
+	callerID   string
+	logDiscard bool
+}
+type fwMockOption func(*fwMockOpts)
+
+func WithCallerID(c ...string) fwMockOption {
+	return func(o *fwMockOpts) {
+		if len(c) == 0 {
+			o.callerID = "choria=rip.mcollective"
+		} else {
+			o.callerID = c[0]
+		}
+	}
+}
+
+func LogDiscard() fwMockOption {
+	return func(o *fwMockOpts) {
+		o.logDiscard = true
+	}
+}
+func NewFrameworkForTests(ctrl *gomock.Controller, logWriter io.Writer, opts ...fwMockOption) (*MockFramework, *config.Config) {
+	mopts := &fwMockOpts{}
+	for _, o := range opts {
+		o(mopts)
+	}
+
 	logger := logrus.New()
-	logger.SetOutput(logWriter)
+	if mopts.logDiscard {
+		logger.SetOutput(io.Discard)
+	} else {
+		logger.SetOutput(logWriter)
+	}
 
 	fw := NewMockFramework(ctrl)
 	fw.EXPECT().Configuration().Return(config.NewConfigForTests()).AnyTimes()
 	fw.EXPECT().Logger(gomock.AssignableToTypeOf("")).Return(logrus.NewEntry(logger)).AnyTimes()
-	// fw.EXPECT().ProvisionMode().Return(false).AnyTimes()
 	fw.EXPECT().NewRequestID().Return(util.RandomHexString(), nil).AnyTimes()
+	fw.EXPECT().HasCollective(gomock.AssignableToTypeOf("")).DoAndReturn(func(c string) bool {
+		for _, collective := range fw.Configuration().Collectives {
+			if c == collective {
+				return true
+			}
+		}
+		return false
+	}).AnyTimes()
+
+	if mopts.callerID != "" {
+		fw.EXPECT().CallerID().Return(mopts.callerID).AnyTimes()
+		fw.EXPECT().Certname().DoAndReturn(func() string {
+			if fw.Configuration().OverrideCertname != "" {
+				return fw.Configuration().OverrideCertname
+			}
+
+			parts := strings.SplitN(mopts.callerID, "=", 2)
+			return parts[1]
+		}).AnyTimes()
+	}
 
 	return fw, fw.Configuration()
 }

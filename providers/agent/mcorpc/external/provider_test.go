@@ -1,7 +1,6 @@
 package external
 
 import (
-	"io"
 	"path/filepath"
 
 	"github.com/choria-io/go-choria/build"
@@ -12,7 +11,6 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
-	"github.com/sirupsen/logrus"
 )
 
 var _ = Describe("McoRPC/External", func() {
@@ -20,21 +18,14 @@ var _ = Describe("McoRPC/External", func() {
 		mockctl *gomock.Controller
 		fw      *imock.MockFramework
 		cfg     *config.Config
-		logger  *logrus.Entry
 		prov    *Provider
-		// err     error
 	)
 
 	BeforeEach(func() {
 		build.TLS = "false"
-		logger = logrus.NewEntry(logrus.New())
-		logger.Logger.Out = io.Discard
 
 		mockctl = gomock.NewController(GinkgoT())
-		fw = imock.NewMockFramework(mockctl)
-
-		cfg = config.NewConfigForTests()
-		cfg.DisableSecurityProviderVerify = true
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
 
 		lib, err := filepath.Abs("testdata")
 		Expect(err).ToNot(HaveOccurred())
@@ -44,7 +35,7 @@ var _ = Describe("McoRPC/External", func() {
 
 		prov = &Provider{
 			cfg:    cfg,
-			log:    logger,
+			log:    fw.Logger("x"),
 			agents: []*addl.DDL{},
 			paths:  make(map[string]string),
 		}

@@ -25,11 +25,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		fw, _ = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
-		fw.EXPECT().Certname().Return("rip.mcollective").AnyTimes()
-		fw.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
-		fw.EXPECT().HasCollective(gomock.Eq("mcollective")).Return(true).AnyTimes()
-		fw.EXPECT().HasCollective(gomock.Eq("ginkgo")).Return(true).AnyTimes()
+		fw, _ = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
 
 		ddl, _ := agent.Find("package", []string{"testdata"})
 		o, err = NewRequestOptions(fw, ddl)

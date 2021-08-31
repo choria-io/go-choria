@@ -2,8 +2,9 @@ package client
 
 import (
 	"context"
+	"crypto/md5"
+	"encoding/base64"
 	"fmt"
-	"os"
 	"sort"
 	"sync"
 	"testing"
@@ -11,6 +12,7 @@ import (
 
 	"github.com/choria-io/go-choria/inter"
 	imock "github.com/choria-io/go-choria/inter/imocks"
+	"github.com/choria-io/go-choria/message"
 	"github.com/choria-io/go-choria/protocol"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/golang/mock/gomock"
@@ -19,7 +21,6 @@ import (
 )
 
 func TestClient(t *testing.T) {
-	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Client/Client")
 }
@@ -38,7 +39,7 @@ var _ = Describe("Client", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		conn = imock.NewMockConnector(mockctl)
 
-		fw, _ = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
+		fw, _ = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
 		fw.Configuration().Collectives = []string{"mcollective", "test"}
 
 		client, err = New(fw, Connection(conn), Timeout(100*time.Millisecond), Name("test"))
@@ -61,9 +62,10 @@ var _ = Describe("Client", func() {
 			OnPublishStart(pubStartCB)(client)
 			OnPublishFinish(pubEndCB)(client)
 
-			msg := imock.NewMockMessage(mockctl)
-			msg.EXPECT().ProtocolVersion().Return(protocol.RequestV1).AnyTimes()
-			msg.EXPECT().ReplyTo().Return("custom").AnyTimes()
+			msg, err := message.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", "mcollective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+			msg.SetProtocolVersion(protocol.RequestV1)
+			msg.SetReplyTo("custom")
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()
@@ -98,8 +100,11 @@ var _ = Describe("Client", func() {
 			OnPublishStart(pubStartCB)(client)
 			OnPublishFinish(pubEndCB)(client)
 
-			msg := imock.NewMockMessage(mockctl)
-			msg.EXPECT().ReplyTo().Return("reply.to").AnyTimes()
+			msg, err := message.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", "mcollective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			msg.SetProtocolVersion(protocol.RequestV1)
+			msg.SetReplyTo(fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(msg.CallerID()))), msg.RequestID()))
 
 			ctx, cancel := context.WithCancel(context.Background())
 			defer cancel()

@@ -5,11 +5,11 @@ import (
 	"encoding/json"
 	"testing"
 
-	"github.com/brutella/hc/util"
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	imock "github.com/choria-io/go-choria/inter/imocks"
+	"github.com/choria-io/go-choria/message"
 	"github.com/choria-io/go-choria/protocol"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/choria-io/go-choria/server/agents"
@@ -30,7 +30,7 @@ var _ = Describe("McoRPC", func() {
 		mockctl *gomock.Controller
 		fw      *imock.MockFramework
 		cfg     *config.Config
-		msg     *imock.MockMessage
+		msg     inter.Message
 		req     protocol.Request
 		outbox  = make(chan *agents.AgentReply, 1)
 		err     error
@@ -43,7 +43,7 @@ var _ = Describe("McoRPC", func() {
 		protocol.Secure = "false"
 		build.TLS = "false"
 
-		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
 		cfg.LogLevel = "fatal"
 
 		metadata := &agents.Metadata{Name: "test"}
@@ -75,18 +75,11 @@ var _ = Describe("McoRPC", func() {
 	})
 
 	Describe("HandleMessage", func() {
-		var (
-			payload string
-		)
-
 		BeforeEach(func() {
-			payload = ""
 			req, err = v1.NewRequest("test", "test.example.net", "choria=rip.mcollective", 60, "testrequest", "mcollective")
 			Expect(err).ToNot(HaveOccurred())
-			msg = imock.NewMockMessage(mockctl)
-			msg.EXPECT().RequestID().Return(util.RandomHexString()).AnyTimes()
-			msg.EXPECT().SetPayload(gomock.Any()).Do(func(p string) { payload = p }).AnyTimes()
-			msg.EXPECT().Payload().DoAndReturn(func() string { return payload }).AnyTimes()
+			msg, err = message.NewMessageFromRequest(req, "dev.null", fw)
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("Should handle bad incoming data", func() {
@@ -98,7 +91,7 @@ var _ = Describe("McoRPC", func() {
 		})
 
 		It("Should handle unknown actions", func() {
-			payload = `{"agent":"test", "action":"nonexisting"}`
+			msg.SetPayload(`{"agent":"test", "action":"nonexisting"}`)
 			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
@@ -114,7 +107,7 @@ var _ = Describe("McoRPC", func() {
 			}
 
 			agent.RegisterAction("test", action)
-			payload = `{"agent":"test", "action":"test"}`
+			msg.SetPayload(`{"agent":"test", "action":"test"}`)
 			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
