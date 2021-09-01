@@ -53,11 +53,12 @@ func New(fw client.ChoriaFramework) *Broadcast {
 // Discover performs a broadcast discovery using the supplied filter
 func (b *Broadcast) Discover(ctx context.Context, opts ...DiscoverOption) (n []string, err error) {
 	dopts := &dOpts{
-		collective: b.fw.Configuration().MainCollective,
-		discovered: []string{},
-		filter:     protocol.NewFilter(),
-		mu:         &sync.Mutex{},
-		timeout:    b.timeout,
+		collective:     b.fw.Configuration().MainCollective,
+		discovered:     []string{},
+		filter:         protocol.NewFilter(),
+		mu:             &sync.Mutex{},
+		timeout:        b.timeout,
+		dynamicTimeout: b.fw.Configuration().Choria.BroadcastDiscoveryDynamicTimeout,
 	}
 
 	for _, opt := range opts {
@@ -97,7 +98,7 @@ func (b *Broadcast) Discover(ctx context.Context, opts ...DiscoverOption) (n []s
 	rctx, cancel := context.WithTimeout(ctx, dopts.timeout+2)
 	defer cancel()
 
-	err = dopts.cl.Request(rctx, dopts.msg, b.handler(dopts))
+	err = dopts.cl.Request(rctx, dopts.msg, b.handler(ctx, cancel, dopts))
 	if err != nil {
 		return n, fmt.Errorf("could not perform request: %s", err)
 	}
@@ -132,8 +133,24 @@ func (b *Broadcast) createMessage(filter *protocol.Filter, collective string) (i
 	return msg, err
 }
 
-func (b *Broadcast) handler(dopts *dOpts) client.Handler {
-	return func(ctx context.Context, m inter.ConnectorMessage) {
+func (b *Broadcast) handler(ctx context.Context, cancel func(), dopts *dOpts) client.Handler {
+	var timer *time.Timer
+	dynamicTimeout := 300 * time.Millisecond
+	if dopts.dynamicTimeout {
+		b.log.Debugf("Configuring dynamic discovery timeout")
+		timer = time.NewTimer(b.timeout)
+		go func() {
+			select {
+			case <-timer.C:
+				cancel()
+			case <-ctx.Done():
+			}
+
+			timer.Stop()
+		}()
+	}
+
+	return func(_ context.Context, m inter.ConnectorMessage) {
 		reply, err := b.fw.NewTransportFromJSON(string(m.Data()))
 		if err != nil {
 			b.log.Errorf("Could not process a reply: %s", err)
@@ -144,5 +161,8 @@ func (b *Broadcast) handler(dopts *dOpts) client.Handler {
 		defer dopts.mu.Unlock()
 
 		dopts.discovered = append(dopts.discovered, reply.SenderID())
+		if dopts.dynamicTimeout {
+			timer.Reset(dynamicTimeout)
+		}
 	}
 }

@@ -591,21 +591,6 @@ func (mr *MockFrameworkMockRecorder) DisableTLSVerify() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DisableTLSVerify", reflect.TypeOf((*MockFramework)(nil).DisableTLSVerify))
 }
 
-// DiscoveryServer mocks base method.
-func (m *MockFramework) DiscoveryServer() (srvcache.Server, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "DiscoveryServer")
-	ret0, _ := ret[0].(srvcache.Server)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// DiscoveryServer indicates an expected call of DiscoveryServer.
-func (mr *MockFrameworkMockRecorder) DiscoveryServer() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DiscoveryServer", reflect.TypeOf((*MockFramework)(nil).DiscoveryServer))
-}
-
 // Enroll mocks base method.
 func (m *MockFramework) Enroll(arg0 context.Context, arg1 time.Duration, arg2 func(string, int)) error {
 	m.ctrl.T.Helper()

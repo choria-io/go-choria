@@ -34,8 +34,6 @@ var _ = Describe("Choria", func() {
 			cfg.Choria.SSLDir = "/nonexisting"
 
 			c := cfg.Choria
-			Expect(c.DiscoveryHost).To(Equal("puppet"))
-			Expect(c.DiscoveryPort).To(Equal(8085))
 			Expect(c.UseSRVRecords).To(BeTrue())
 		})
 	})

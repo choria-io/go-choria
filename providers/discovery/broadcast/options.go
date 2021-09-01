@@ -9,14 +9,15 @@ import (
 )
 
 type dOpts struct {
-	filter     *protocol.Filter
-	collective string
-	msg        inter.Message
-	discovered []string
-	cl         ChoriaClient
-	mu         *sync.Mutex
-	timeout    time.Duration
-	name       string
+	filter         *protocol.Filter
+	collective     string
+	msg            inter.Message
+	discovered     []string
+	cl             ChoriaClient
+	mu             *sync.Mutex
+	timeout        time.Duration
+	dynamicTimeout bool
+	name           string
 }
 
 // DiscoverOption configures the broadcast discovery method
@@ -54,6 +55,13 @@ func Timeout(t time.Duration) DiscoverOption {
 	}
 }
 
+// SlidingWindow enables a sliding window for discovery timeout that
+// terminates discovery after 300ms of no responses
+func SlidingWindow() DiscoverOption {
+	return func(o *dOpts) {
+		o.dynamicTimeout = true
+	}
+}
 func choriaClient(c ChoriaClient) DiscoverOption {
 	return func(o *dOpts) {
 		o.cl = c
