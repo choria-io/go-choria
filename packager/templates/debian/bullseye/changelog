@@ -1,6 +1,0 @@
-{{cpkg_name}} ({{cpkg_version}}) stable; urgency=medium
-
-  * Version bump to {{cpkg_version}}.
-
- -- {{cpkg_contact}}  {{cpkg_date}}
-
