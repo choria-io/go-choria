@@ -347,22 +347,7 @@ workflows:
           requires:
             - test
 
-      - build_el8_ppc64le_rpms:
-          context: org-global
-          requires:
-            - test
-
       - build_el7_64bit_rpms:
-          context: org-global
-          requires:
-            - test
-
-      - build_el7_ppc64le_rpms:
-          context: org-global
-          requires:
-            - test
-
-      - build_windows_64bit_msi:
           context: org-global
           requires:
             - test
@@ -370,10 +355,7 @@ workflows:
       - gather_artifacts:
           requires:
             - build_el7_64bit_rpms
-            - build_el7_ppc64le_rpms
             - build_el8_64bit_rpms
-            - build_el8_ppc64le_rpms
-            - build_windows_64bit_msi
 
       - nightly_packagecloud:
           requires:
