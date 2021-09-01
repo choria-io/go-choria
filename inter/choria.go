@@ -53,7 +53,6 @@ type Framework interface {
 	Colorize(c string, format string, a ...interface{}) string
 	ConfigureProvisioning()
 	DisableTLSVerify() bool
-	DiscoveryServer() (srvcache.Server, error)
 	Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error
 	FacterCmd() string
 	FacterDomain() (string, error)

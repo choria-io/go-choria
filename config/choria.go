@@ -21,13 +21,9 @@ type ChoriaPluginConfig struct {
 	SRVDomain        string `confkey:"plugin.choria.srv_domain" url:"https://choria.io/docs/deployment/dns/"`                         // The domain to use for SRV records, defaults to the domain the server FQDN is in
 	Provision        bool   `confkey:"plugin.choria.server.provision" default:"false" url:"https://github.com/choria-io/provisioner"` // Specifically enable or disable provisioning
 
-	ExternalDiscoveryCommand string `confkey:"plugin.choria.discovery.external.command" type:"path_string"` // The command to use for external discovery
-	InventoryDiscoverySource string `confkey:"plugin.choria.discovery.inventory.source" type:"path_string"` // The file to read for inventory discovery
-
-	// discovery proxy
-	DiscoveryHost  string `confkey:"plugin.choria.discovery_host" default:"puppet" deprecated:"1"`
-	DiscoveryPort  int    `confkey:"plugin.choria.discovery_port" default:"8085" deprecated:"1"`
-	DiscoveryProxy bool   `confkey:"plugin.choria.discovery_proxy" default:"false" deprecated:"1"`
+	ExternalDiscoveryCommand         string `confkey:"plugin.choria.discovery.external.command" type:"path_string"` // The command to use for external discovery
+	InventoryDiscoverySource         string `confkey:"plugin.choria.discovery.inventory.source" type:"path_string"` // The file to read for inventory discovery
+	BroadcastDiscoveryDynamicTimeout bool   `confkey:"plugin.choria.discovery.broadcast.dynamic_timeout"`           // Enables the experimental dynamic timeout for choria/mc discovery
 
 	FederationCollectives     []string `confkey:"plugin.choria.federation.collectives" type:"comma_split" environment:"CHORIA_FED_COLLECTIVE" url:"https://choria.io/docs/federation/"` // List of known remote collectives accessible via Federation Brokers
 	FederationMiddlewareHosts []string `confkey:"plugin.choria.federation_middleware_hosts" type:"comma_split" url:"https://choria.io/docs/federation/"`                                // Middleware brokers used by the Federation Broker, if unset uses SRV

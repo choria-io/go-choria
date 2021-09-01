@@ -24,17 +24,18 @@ import (
 )
 
 type StandardOptions struct {
-	Collective       string
-	FactFilter       []string
-	AgentFilter      []string
-	ClassFilter      []string
-	IdentityFilter   []string
-	CombinedFilter   []string
-	CompoundFilter   string
-	DiscoveryMethod  string
-	DiscoveryTimeout int
-	NodesFile        string
-	DiscoveryOptions map[string]string
+	Collective              string
+	FactFilter              []string
+	AgentFilter             []string
+	ClassFilter             []string
+	IdentityFilter          []string
+	CombinedFilter          []string
+	CompoundFilter          string
+	DiscoveryMethod         string
+	DiscoveryTimeout        int
+	DynamicDiscoveryTimeout bool
+	NodesFile               string
+	DiscoveryOptions        map[string]string
 
 	unsetMethod bool
 }
@@ -59,6 +60,7 @@ type FlagApp interface {
 func (o *StandardOptions) AddSelectionFlags(app FlagApp) {
 	app.Flag("dm", "Sets a discovery method (mc, choria, file, external, inventory)").EnumVar(&o.DiscoveryMethod, "broadcast", "choria", "mc", "file", "flatfile", "external", "inventory")
 	app.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&o.DiscoveryTimeout)
+	app.Flag("discovery-window", "Enables a sliding window based dynamic discovery timeout (experimental)").BoolVar(&o.DynamicDiscoveryTimeout)
 }
 
 // AddFilterFlags adds the various flags like -W, -S, -T etc
@@ -134,7 +136,12 @@ func (o *StandardOptions) Discover(ctx context.Context, fw client.ChoriaFramewor
 	start := time.Now()
 	switch o.DiscoveryMethod {
 	case "mc", "broadcast":
-		nodes, err = broadcast.New(fw).Discover(ctx, broadcast.Filter(filter), broadcast.Collective(o.Collective), broadcast.Timeout(to))
+		opts := []broadcast.DiscoverOption{broadcast.Filter(filter), broadcast.Collective(o.Collective), broadcast.Timeout(to)}
+		if o.DynamicDiscoveryTimeout {
+			opts = append(opts, broadcast.SlidingWindow())
+		}
+
+		nodes, err = broadcast.New(fw).Discover(ctx, opts...)
 	case "choria", "puppetdb":
 		nodes, err = puppetdb.New(fw).Discover(ctx, puppetdb.Filter(filter), puppetdb.Collective(o.Collective), puppetdb.Timeout(to))
 	case "external":

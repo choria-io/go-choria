@@ -558,26 +558,6 @@ func (fw *Framework) NetworkBrokerPeers() (servers srvcache.Servers, err error) 
 	return servers, nil
 }
 
-// DiscoveryServer is the server configured as a discovery proxy
-func (fw *Framework) DiscoveryServer() (srvcache.Server, error) {
-	dflt := srvcache.NewServer(fw.Config.Choria.DiscoveryHost, fw.Config.Choria.DiscoveryPort, "")
-
-	if !fw.ProxiedDiscovery() {
-		return dflt, errors.New("proxy discovery is not enabled")
-	}
-
-	return fw.TrySrvLookup([]string{"_mcollective-discovery._tcp"}, dflt)
-}
-
-// ProxiedDiscovery determines if a client is configured for proxied discover
-func (fw *Framework) ProxiedDiscovery() bool {
-	if fw.Config.HasOption("plugin.choria.discovery_host") || fw.Config.HasOption("plugin.choria.discovery_port") {
-		return true
-	}
-
-	return fw.Config.Choria.DiscoveryProxy
-}
-
 // Getuid returns the numeric user id of the caller
 func (fw *Framework) Getuid() int {
 	return os.Getuid()
