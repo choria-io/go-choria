@@ -23,7 +23,7 @@ type ChoriaPluginConfig struct {
 
 	ExternalDiscoveryCommand         string `confkey:"plugin.choria.discovery.external.command" type:"path_string"` // The command to use for external discovery
 	InventoryDiscoverySource         string `confkey:"plugin.choria.discovery.inventory.source" type:"path_string"` // The file to read for inventory discovery
-	BroadcastDiscoveryDynamicTimeout bool   `confkey:"plugin.choria.discovery.broadcast.dynamic_timeout"`           // Enables the experimental dynamic timeout for choria/mc discovery
+	BroadcastDiscoveryDynamicTimeout bool   `confkey:"plugin.choria.discovery.broadcast.windowed_timeout"`          // Enables the experimental dynamic timeout for choria/mc discovery
 
 	FederationCollectives     []string `confkey:"plugin.choria.federation.collectives" type:"comma_split" environment:"CHORIA_FED_COLLECTIVE" url:"https://choria.io/docs/federation/"` // List of known remote collectives accessible via Federation Brokers
 	FederationMiddlewareHosts []string `confkey:"plugin.choria.federation_middleware_hosts" type:"comma_split" url:"https://choria.io/docs/federation/"`                                // Middleware brokers used by the Federation Broker, if unset uses SRV

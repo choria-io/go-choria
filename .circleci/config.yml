@@ -278,11 +278,20 @@ jobs:
       - run: gem install package_cloud
 
       - run: |
-          for d in 6 7 8
+          for d in 7 8
           do
             for i in $(find /tmp/workspace -name \*.el${d}.\*.rpm | grep -v src.rpm)
             do
               package_cloud push choria/${REPO}/el/${d} ${i}
+            done
+          done
+
+          for d in bullseye_64
+          do
+            for i in $(find /tmp/workspace/artifacts/foss/${d} -name \*.deb)
+            do
+              distro=$(echo $d|cut -d "_" -f 1)
+              package_cloud push choria/${REPO}/debian/${distro} $i
             done
           done
 
@@ -300,7 +309,7 @@ jobs:
       - run: gem install package_cloud
 
       - run: |
-          for d in 6 7 8
+          for d in 7 8
           do
             for i in $(find /tmp/workspace -name \*.el${d}.\*.rpm | grep -v src.rpm)
             do
@@ -352,10 +361,16 @@ workflows:
           requires:
             - test
 
+      - build_bullseye_64bit_debs:
+          context: org-global
+          requires:
+            - test
+
       - gather_artifacts:
           requires:
             - build_el7_64bit_rpms
             - build_el8_64bit_rpms
+            - build_bullseye_64bit_debs
 
       - nightly_packagecloud:
           requires:

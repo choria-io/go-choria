@@ -22,7 +22,6 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/aagent/watchers/nagioswatcher"
-	"github.com/choria-io/go-choria/logger"
 	"github.com/choria-io/go-choria/scout/stream"
 )
 
@@ -42,7 +41,7 @@ type WatchCommand struct {
 	status    map[string]map[string]string
 	vwBuffers map[string][]string
 
-	logger.Logrus
+	log *logrus.Entry
 	sync.Mutex
 }
 
@@ -53,7 +52,7 @@ func NewWatchCommand(idf string, checkf string, perf bool, history time.Duration
 		perf:      perf,
 		history:   history,
 		nc:        nc,
-		Logrus:    log,
+		log:       log,
 		status:    make(map[string]map[string]string),
 		vwBuffers: make(map[string][]string),
 	}
@@ -139,14 +138,14 @@ func (w *WatchCommand) handleTransition(m *nats.Msg, gui *gocui.Gui) {
 
 	data, err := w.dataFromCloudEventJSON(m.Data)
 	if err != nil {
-		w.Errorf("could not parse cloud event: %s", err)
+		w.log.Errorf("could not parse cloud event: %s", err)
 		return
 	}
 
 	transition := &machine.TransitionNotification{}
 	err = json.Unmarshal(data, transition)
 	if err != nil {
-		w.Errorf("Could not decode received transition message: %s: %s", string(data), err)
+		w.log.Errorf("Could not decode received transition message: %s: %s", string(data), err)
 		return
 	}
 
@@ -194,14 +193,14 @@ func (w *WatchCommand) handleState(m *nats.Msg, gui *gocui.Gui) {
 
 	data, err := w.dataFromCloudEventJSON(m.Data)
 	if err != nil {
-		w.Errorf("could not parse cloud event: %s", err)
+		w.log.Errorf("could not parse cloud event: %s", err)
 		return
 	}
 
 	var state nagioswatcher.StateNotification
 	err = json.Unmarshal(data, &state)
 	if err != nil {
-		w.Errorf("%s", err)
+		w.log.Error(err)
 		return
 	}
 
@@ -479,14 +478,12 @@ func (w *WatchCommand) subscribeJetStream(ctx context.Context, transitions chan 
 		return err
 	}
 
-	le := w.Logrus.(*logrus.Entry)
-
-	w.transEph, err = stream.NewEphemeral(ctx, w.nc.Nats(), str, time.Minute, transitions, le, jsm.FilterStreamBySubject("choria.machine.transition"), jsm.StartAtTimeDelta(w.history), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(1))
+	w.transEph, err = stream.NewEphemeral(ctx, w.nc.Nats(), str, time.Minute, transitions, w.log, jsm.FilterStreamBySubject("choria.machine.transition"), jsm.StartAtTimeDelta(w.history), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(1))
 	if err != nil {
 		return fmt.Errorf("could not subscribe to Choria Streaming stream CHORIA_MACHINE: %s", err)
 	}
 
-	w.stateEph, err = stream.NewEphemeral(ctx, w.nc.Nats(), str, time.Minute, states, le, jsm.FilterStreamBySubject("choria.machine.watcher.nagios.state"), jsm.StartAtTimeDelta(w.history), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(1))
+	w.stateEph, err = stream.NewEphemeral(ctx, w.nc.Nats(), str, time.Minute, states, w.log, jsm.FilterStreamBySubject("choria.machine.watcher.nagios.state"), jsm.StartAtTimeDelta(w.history), jsm.AcknowledgeExplicit(), jsm.MaxAckPending(50), jsm.MaxDeliveryAttempts(1))
 	if err != nil {
 		return fmt.Errorf("could not subscribe to Choria Streaming stream CHORIA_MACHINE: %s", err)
 	}

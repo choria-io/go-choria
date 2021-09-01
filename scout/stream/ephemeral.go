@@ -36,7 +36,7 @@ func NewEphemeral(ctx context.Context, nc *nats.Conn, stream *jsm.Stream, interv
 		stream: stream,
 		conn:   nc,
 		q:      q,
-		log:    log.WithFields(logrus.Fields{"component": "ephemeral", "stream": stream.Name()}),
+		log:    log,
 	}
 
 	var err error
@@ -54,6 +54,7 @@ func NewEphemeral(ctx context.Context, nc *nats.Conn, stream *jsm.Stream, interv
 	}
 
 	eph.cfg.Heartbeat = interval
+	eph.cfg.FlowControl = true
 
 	eph.ctx, eph.cancel = context.WithCancel(ctx)
 
@@ -89,7 +90,15 @@ func (e *Ephemeral) manage() error {
 			e.markLastSeen()
 
 			// handle and discard the keep alive messages
-			if msg.Header.Get("Status") == "100" {
+			if len(msg.Data) == 0 && msg.Header.Get("Status") == "100" {
+				stalled := msg.Header.Get("Nats-Consumer-Stalled")
+				switch {
+				case stalled != "":
+					e.conn.Publish(stalled, nil)
+				case msg.Reply != "":
+					msg.Respond(nil)
+				}
+
 				continue
 			}
 
