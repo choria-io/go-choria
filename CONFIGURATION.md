@@ -34,9 +34,8 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.agent_provider.mcorpc.agent_shim](#pluginchoriaagent_providermcorpcagent_shim)|[plugin.choria.agent_provider.mcorpc.config](#pluginchoriaagent_providermcorpcconfig)|
 |[plugin.choria.agent_provider.mcorpc.libdir](#pluginchoriaagent_providermcorpclibdir)|[plugin.choria.broker_discovery](#pluginchoriabroker_discovery)|
 |[plugin.choria.broker_federation](#pluginchoriabroker_federation)|[plugin.choria.broker_network](#pluginchoriabroker_network)|
-|[plugin.choria.discovery.external.command](#pluginchoriadiscoveryexternalcommand)|[plugin.choria.discovery.inventory.source](#pluginchoriadiscoveryinventorysource)|
-|[plugin.choria.discovery_host](#pluginchoriadiscovery_host)|[plugin.choria.discovery_port](#pluginchoriadiscovery_port)|
-|[plugin.choria.discovery_proxy](#pluginchoriadiscovery_proxy)|[plugin.choria.federation.cluster](#pluginchoriafederationcluster)|
+|[plugin.choria.discovery.broadcast.windowed_timeout](#pluginchoriadiscoverybroadcastwindowed_timeout)|[plugin.choria.discovery.external.command](#pluginchoriadiscoveryexternalcommand)|
+|[plugin.choria.discovery.inventory.source](#pluginchoriadiscoveryinventorysource)|[plugin.choria.federation.cluster](#pluginchoriafederationcluster)|
 |[plugin.choria.federation.collectives](#pluginchoriafederationcollectives)|[plugin.choria.federation_middleware_hosts](#pluginchoriafederation_middleware_hosts)|
 |[plugin.choria.legacy_lifecycle_format](#pluginchorialegacy_lifecycle_format)|[plugin.choria.machine.store](#pluginchoriamachinestore)|
 |[plugin.choria.middleware_hosts](#pluginchoriamiddleware_hosts)|[plugin.choria.network.client_anon_tls](#pluginchorianetworkclient_anon_tls)|
@@ -299,6 +298,12 @@ Enables the Federation Broker
 
 Enables the Network Broker
 
+## plugin.choria.discovery.broadcast.windowed_timeout
+
+ * **Type:** boolean
+
+Enables the experimental dynamic timeout for choria/mc discovery
+
 ## plugin.choria.discovery.external.command
 
  * **Type:** path_string
@@ -310,29 +315,6 @@ The command to use for external discovery
  * **Type:** path_string
 
 The file to read for inventory discovery
-
-## plugin.choria.discovery_host
-
- * **Type:** string
- * **Default Value:** puppet
-
-discovery proxy
-
-**This setting is deprecated or already unused**
-
-## plugin.choria.discovery_port
-
- * **Type:** integer
- * **Default Value:** 8085
-
-**This setting is deprecated or already unused**
-
-## plugin.choria.discovery_proxy
-
- * **Type:** boolean
- * **Default Value:** false
-
-**This setting is deprecated or already unused**
 
 ## plugin.choria.federation.cluster
 

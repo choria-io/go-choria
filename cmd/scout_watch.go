@@ -5,8 +5,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/sirupsen/logrus"
-
 	scoutcmd "github.com/choria-io/go-choria/scout/cmd"
 )
 
@@ -15,7 +13,6 @@ type sWatchCommand struct {
 	check    string
 	perf     bool
 	history  time.Duration
-	log      *logrus.Entry
 	watch    *scoutcmd.WatchCommand
 
 	command
@@ -40,14 +37,12 @@ func (w *sWatchCommand) Configure() error {
 func (w *sWatchCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	w.log = logrus.NewEntry(c.Logger("scout").Logger)
-
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, c.Certname(), w.log)
+	conn, err := c.NewConnector(ctx, c.MiddlewareServers, c.Certname(), c.Logger("scout"))
 	if err != nil {
 		return fmt.Errorf("cannot connect: %s", err)
 	}
 
-	w.watch, err = scoutcmd.NewWatchCommand(w.identity, w.check, w.perf, w.history, conn, w.log)
+	w.watch, err = scoutcmd.NewWatchCommand(w.identity, w.check, w.perf, w.history, conn, c.Logger("scout"))
 	if err != nil {
 		return err
 	}

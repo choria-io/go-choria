@@ -43,7 +43,7 @@ var docStrings = map[string]string{
 	"plugin.choria.server.provision":  "Specifically enable or disable provisioning",
 	"plugin.choria.discovery.external.command":                 "The command to use for external discovery",
 	"plugin.choria.discovery.inventory.source":                 "The file to read for inventory discovery",
-	"plugin.choria.discovery_host":                             "discovery proxy",
+	"plugin.choria.discovery.broadcast.windowed_timeout":       "Enables the experimental dynamic timeout for choria/mc discovery",
 	"plugin.choria.federation.collectives":                     "List of known remote collectives accessible via Federation Brokers",
 	"plugin.choria.federation_middleware_hosts":                "Middleware brokers used by the Federation Broker, if unset uses SRV",
 	"plugin.choria.federation.cluster":                         "The cluster name a Federation Broker serves",
