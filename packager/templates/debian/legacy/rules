@@ -1,0 +1,34 @@
+#!/usr/bin/make -f
+
+%:
+	dh $@ --with systemd
+
+override_dh_strip:
+
+override_dh_auto_clean:
+
+override_dh_auto_test:
+
+override_dh_auto_build:
+
+override_dh_systemd_start:
+
+override_dh_systemd_enable:
+
+override_dh_auto_install:
+
+	install -Dm755 {{cpkg_binary}} debian/{{cpkg_name}}/usr/bin/{{cpkg_name}}
+
+ifeq ({{cpkg_manage_conf}},1)
+	install -Dm640 debian/broker.conf -t debian/{{cpkg_name}}/etc/{{cpkg_name}}
+	install -Dm640 debian/server.conf -t debian/{{cpkg_name}}/etc/{{cpkg_name}}
+endif
+	install -Dm644 debian/choria-logrotate debian/{{cpkg_name}}/etc/logrotate.d/{{cpkg_name}}
+
+  # do this here due to xenial bugs, post xenial this can be done in override_dh_systemd_enable
+	# and override_dh_systemd_enable
+	dh_systemd_enable -p{{cpkg_name}} --no-enable --name={{cpkg_name}}-broker
+	dh_systemd_enable -p{{cpkg_name}} --name={{cpkg_name}}-server
+
+	dh_installinit -p{{cpkg_name}} --name={{cpkg_name}}-broker --no-start {{cpkg_name}}.{{cpkg_name}}-broker.service
+	dh_installinit -p{{cpkg_name}} --name={{cpkg_name}}-server {{cpkg_name}}.{{cpkg_name}}-server.service

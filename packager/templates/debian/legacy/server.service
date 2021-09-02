@@ -1,0 +1,14 @@
+[Unit]
+Description=The Choria Orchestrator Server
+After=network.target
+
+[Service]
+StandardOutput=syslog
+StandardError=syslog
+User=root
+Group=root
+ExecStart={{cpkg_bindir}}/{{cpkg_name}} server --config={{cpkg_etcdir}}/server.conf
+KillMode=process
+
+[Install]
+WantedBy=multi-user.target

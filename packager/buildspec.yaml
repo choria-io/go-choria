@@ -149,7 +149,7 @@ foss:
       binary: ppc64le_linux
 
     xenial_64:
-      template: debian/generic
+      template: debian/legacy
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
 

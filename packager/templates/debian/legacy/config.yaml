@@ -1,0 +1,10 @@
+required_properties:
+  - name
+  - bindir
+  - etcdir
+  - manage_conf
+  - contact
+
+artifacts:
+ - "*.deb"
+ - "*.dsc"
