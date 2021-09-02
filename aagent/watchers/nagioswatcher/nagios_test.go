@@ -186,7 +186,10 @@ var _ = Describe("NagiosWatcher", func() {
 			watch.properties.CertExpiry = 366 * 24 * time.Hour
 			state, output, err = watch.watchUsingChoria()
 			Expect(state).To(Equal(CRITICAL))
-			Expect(output).To(Equal(fmt.Sprintf("CRITICAL: certificate expires %s (8760h0m0s)|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;;", status.CertificateExpires, status.LastMessage)))
+			Expect(output).To(Or(
+				Equal(fmt.Sprintf("CRITICAL: certificate expires %s (8760h0m0s)|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;;", status.CertificateExpires, status.LastMessage)),
+				Equal(fmt.Sprintf("CRITICAL: certificate expires %s (8760h0m0s)|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31536000;;", status.CertificateExpires, status.LastMessage)),
+			))
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
