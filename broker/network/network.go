@@ -109,8 +109,7 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	if err != nil {
 		return s, fmt.Errorf("could not setup server: %s", err)
 	}
-	s.gnatsd.SetLogger(newLogger(), s.opts.Debug, false)
-	s.gnatsd.ConfigureLogger()
+	s.gnatsd.SetLogger(NewLogger(s.choria.Logger("network_broker")), s.opts.Debug, false)
 
 	err = s.setupAccounts()
 	if err != nil {

@@ -39,12 +39,6 @@ func (l Logger) Tracef(format string, v ...interface{}) {
 	l.log.Debugf(format, v...)
 }
 
-func newLogger() Logger {
-	return Logger{
-		log: log.WithFields(log.Fields{"component": "network_broker"}),
-	}
-}
-
 // NewLogger creates a new NATS compliant logger instance that uses logrus for actual logging
 func NewLogger(l *log.Entry) Logger {
 	return Logger{
