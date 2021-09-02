@@ -11,10 +11,6 @@ override_dh_auto_test:
 
 override_dh_auto_build:
 
-override_dh_systemd_start:
-
-override_dh_systemd_enable:
-
 override_dh_auto_install:
 
 	install -Dm755 {{cpkg_binary}} debian/{{cpkg_name}}/usr/bin/{{cpkg_name}}
