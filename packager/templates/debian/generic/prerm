@@ -1,0 +1,8 @@
+#!/bin/sh
+
+action="$1"
+
+if [ "$action" = remove ]; then
+	systemctl --no-reload disable choria-server.service choria-broker.service
+	systemctl stop choria-server.service choria-broker.service
+fi
