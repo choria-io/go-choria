@@ -89,14 +89,12 @@ func (e *Ephemeral) manage() error {
 		case msg := <-msgq:
 			e.markLastSeen()
 
-			// handle and discard the keep alive messages
+			// handle and discard the keep alive messages, process flow control and unstuck stalled consumers
 			if len(msg.Data) == 0 && msg.Header.Get("Status") == "100" {
-				stalled := msg.Header.Get("Nats-Consumer-Stalled")
-				switch {
-				case stalled != "":
-					e.conn.Publish(stalled, nil)
-				case msg.Reply != "":
+				if msg.Reply != "" {
 					msg.Respond(nil)
+				} else if stalled := msg.Header.Get("Nats-Consumer-Stalled"); stalled != "" {
+					e.conn.Publish(stalled, nil)
 				}
 
 				continue
