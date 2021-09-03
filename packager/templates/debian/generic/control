@@ -4,7 +4,7 @@ Priority: optional
 Maintainer: {{cpkg_contact}}
 Standards-Version: {{cpkg_version}}
 Homepage: https://choria.io/
-Build-Depends: debhelper (>=9), dh-systemd
+Build-Depends: debhelper (>=9)
 
 Package: {{cpkg_name}}
 Architecture: any
