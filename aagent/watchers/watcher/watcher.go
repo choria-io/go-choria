@@ -1,11 +1,13 @@
 package watcher
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"sync"
+	"text/template"
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
@@ -13,6 +15,7 @@ import (
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/nats-io/jsm.go/governor"
+	"github.com/tidwall/gjson"
 )
 
 type Watcher struct {
@@ -119,6 +122,15 @@ func (w *Watcher) sendGovernorLC(t lifecycle.GovernorEventType, name string, seq
 }
 
 func (w *Watcher) EnterGovernor(ctx context.Context, name string, timeout time.Duration) (governor.Finisher, error) {
+	var err error
+
+	name, err = w.ProcessTemplate(name)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse governor name template: %s", err)
+	}
+
+	w.Infof("Using governor %s", name)
+
 	mgr, err := w.machine.JetStreamConnection()
 	if err != nil {
 		return nil, fmt.Errorf("JetStream connection not set")
@@ -149,6 +161,59 @@ func (w *Watcher) EnterGovernor(ctx context.Context, name string, timeout time.D
 	}
 
 	return finisher, nil
+}
+
+func (w *Watcher) ProcessTemplate(s string) (string, error) {
+	funcs, err := w.templateFuncMap()
+	if err != nil {
+		return "", err
+	}
+
+	t, err := template.New("machine").Funcs(funcs).Parse(s)
+	if err != nil {
+		return "", err
+	}
+
+	buf := bytes.NewBuffer([]byte{})
+
+	err = t.Execute(buf, nil)
+	if err != nil {
+		return "", err
+	}
+
+	return buf.String(), nil
+}
+
+func (w *Watcher) templateFuncMap() (template.FuncMap, error) {
+	facts := w.machine.Facts()
+	data := w.machine.Data()
+	jdata, err := json.Marshal(data)
+	if err != nil {
+		return nil, err
+	}
+
+	input := map[string]json.RawMessage{
+		"facts": facts,
+		"data":  jdata,
+	}
+
+	jinput, err := json.Marshal(input)
+	if err != nil {
+		return nil, err
+	}
+
+	return util.FuncMap(map[string]interface{}{
+		"lookup": func(q string, dflt interface{}) interface{} {
+			r := gjson.GetBytes(jinput, q)
+			if !r.Exists() {
+				w.Infof("Query did not match any data, returning default: %s", q)
+
+				return dflt
+			}
+
+			return r.Value()
+		},
+	}), nil
 }
 
 func (w *Watcher) Machine() model.Machine {

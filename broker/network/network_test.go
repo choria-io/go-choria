@@ -5,9 +5,9 @@ import (
 	"testing"
 	"time"
 
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/golang/mock/gomock"
-	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/config"
 	. "github.com/onsi/ginkgo"
@@ -23,29 +23,16 @@ var _ = Describe("Network Broker", func() {
 	var (
 		mockctl *gomock.Controller
 		cfg     *config.Config
-		fw      *MockChoriaFramework
+		fw      *imock.MockFramework
 		bi      *MockBuildInfoProvider
 		srv     *Server
 		err     error
-		logger  *logrus.Entry
 	)
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 		bi = NewMockBuildInfoProvider(mockctl)
-		fw = NewMockChoriaFramework(mockctl)
-
-		cfg, err = config.NewDefaultConfig()
-		Expect(err).ToNot(HaveOccurred())
-
-		cfg.Choria.SSLDir = "testdata/ssl"
-
-		logger = logrus.NewEntry(logrus.New())
-		logger.Logger.SetLevel(logrus.DebugLevel)
-		logger.Logger.Out = GinkgoWriter
-
-		fw.EXPECT().Configuration().Return(cfg).AnyTimes()
-		fw.EXPECT().Logger(gomock.Any()).Return(logger).AnyTimes()
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
 		bi.EXPECT().MaxBrokerClients().Return(50000).AnyTimes()
 	})
 
@@ -70,7 +57,7 @@ var _ = Describe("Network Broker", func() {
 				srvcache.NewServer("localhost", 9000, "nats"),
 				srvcache.NewServer("localhost", 9001, "nats"),
 				srvcache.NewServer("localhost", 8082, "nats"),
-			), nil)
+			), nil).AnyTimes()
 
 			fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil)
 
@@ -125,12 +112,8 @@ var _ = Describe("Network Broker", func() {
 
 		Describe("WebSocket", func() {
 			BeforeEach(func() {
-				fw = NewMockChoriaFramework(mockctl)
-
-				fw.EXPECT().Configuration().Return(cfg).AnyTimes()
 				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
 				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
-				fw.EXPECT().Logger(gomock.Any()).Return(logger).AnyTimes()
 			})
 
 			It("Should fail in anon tls mode", func() {
@@ -155,19 +138,13 @@ var _ = Describe("Network Broker", func() {
 		})
 
 		Describe("Gateways", func() {
-			BeforeEach(func() {
-				fw = NewMockChoriaFramework(mockctl)
-
-				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil)
-				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
-				fw.EXPECT().Logger(gomock.Any()).Return(logger).AnyTimes()
-			})
-
 			It("Should require a name and remotes", func() {
 				config, err := config.NewConfig("testdata/gateways/noremotes.cfg")
 				Expect(err).ToNot(HaveOccurred())
 
-				fw.EXPECT().Configuration().Return(config).AnyTimes()
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfig(config))
+				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
 
 				srv, err = NewServer(fw, bi, false)
 				Expect(err).ToNot(HaveOccurred())
@@ -179,10 +156,11 @@ var _ = Describe("Network Broker", func() {
 
 			It("Should support remote gateways", func() {
 				config, err := config.NewConfig("testdata/gateways/remotes.cfg")
-				config.DisableTLSVerify = false
 				Expect(err).ToNot(HaveOccurred())
 
-				fw.EXPECT().Configuration().Return(config).AnyTimes()
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfig(config))
+				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
 
 				srv, err = NewServer(fw, bi, false)
 				Expect(err).ToNot(HaveOccurred())
@@ -207,10 +185,11 @@ var _ = Describe("Network Broker", func() {
 
 			It("Should handle missing custom TLS", func() {
 				config, err := config.NewConfig("testdata/gateways/missingtls.cfg")
-				config.DisableTLSVerify = false
 				Expect(err).ToNot(HaveOccurred())
 
-				fw.EXPECT().Configuration().Return(config).AnyTimes()
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfig(config))
+				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
 
 				srv, err = NewServer(fw, bi, false)
 				Expect(err).ToNot(HaveOccurred())
@@ -221,10 +200,11 @@ var _ = Describe("Network Broker", func() {
 
 			It("Should support custom TLS", func() {
 				config, err := config.NewConfig("testdata/gateways/customtls.cfg")
-				config.DisableTLSVerify = false
 				Expect(err).ToNot(HaveOccurred())
 
-				fw.EXPECT().Configuration().Return(config).AnyTimes()
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfig(config))
+				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
 
 				srv, err = NewServer(fw, bi, false)
 				Expect(err).ToNot(HaveOccurred())
@@ -235,19 +215,10 @@ var _ = Describe("Network Broker", func() {
 		})
 
 		Describe("Leafnodes", func() {
-			BeforeEach(func() {
-				fw = NewMockChoriaFramework(mockctl)
-
-				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil)
-				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
-				fw.EXPECT().Logger(gomock.Any()).Return(logger).AnyTimes()
-			})
-
 			It("Should support basic listening only leafnodes mode", func() {
-				config, err := config.NewConfig("testdata/leafnodes/listening.cfg")
-				Expect(err).ToNot(HaveOccurred())
-
-				fw.EXPECT().Configuration().Return(config).AnyTimes()
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfigFile("testdata/leafnodes/listening.cfg"))
+				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
 
 				srv, err = NewServer(fw, bi, false)
 				Expect(err).ToNot(HaveOccurred())
@@ -256,10 +227,10 @@ var _ = Describe("Network Broker", func() {
 			})
 
 			It("Should support connecting to leafnodes", func() {
-				config, err := config.NewConfig("testdata/leafnodes/remotes.cfg")
-				Expect(err).ToNot(HaveOccurred())
-				Expect(config.Choria.NetworkLeafRemotes).To(Equal([]string{"ln1", "ln2"}))
-				fw.EXPECT().Configuration().Return(config).AnyTimes()
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfigFile("testdata/leafnodes/remotes.cfg"))
+				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
+				Expect(cfg.Choria.NetworkLeafRemotes).To(Equal([]string{"ln1", "ln2"}))
 
 				srv, err = NewServer(fw, bi, false)
 				Expect(err).ToNot(HaveOccurred())
@@ -272,10 +243,10 @@ var _ = Describe("Network Broker", func() {
 			})
 
 			It("Should handle missing custom TLS", func() {
-				config, err := config.NewConfig("testdata/leafnodes/missingtls.cfg")
-				Expect(err).ToNot(HaveOccurred())
-				Expect(config.Choria.NetworkLeafRemotes).To(Equal([]string{"ln1", "ln2"}))
-				fw.EXPECT().Configuration().Return(config).AnyTimes()
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfigFile("testdata/leafnodes/missingtls.cfg"))
+				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
+				Expect(cfg.Choria.NetworkLeafRemotes).To(Equal([]string{"ln1", "ln2"}))
 
 				srv, err = NewServer(fw, bi, false)
 				Expect(err).ToNot(HaveOccurred())
@@ -287,7 +258,10 @@ var _ = Describe("Network Broker", func() {
 			It("Should handle custom TLS", func() {
 				config, err := config.NewConfig("testdata/leafnodes/customtls.cfg")
 				Expect(err).ToNot(HaveOccurred())
-				fw.EXPECT().Configuration().Return(config).AnyTimes()
+
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfig(config))
+				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
+				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
 
 				srv, err = NewServer(fw, bi, false)
 				Expect(err).ToNot(HaveOccurred())

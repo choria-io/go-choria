@@ -1,7 +1,9 @@
 package kvwatcher
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"sync"
 	"time"
@@ -11,6 +13,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	iu "github.com/choria-io/go-choria/internal/util"
+	"github.com/google/go-cmp/cmp"
 	"github.com/nats-io/jsm.go/kv"
 )
 
@@ -174,8 +177,29 @@ func (w *Watcher) poll() (State, error) {
 
 	w.Infof("Polling for %s.%s", w.properties.Bucket, w.properties.Key)
 
+	var parsedValue interface{}
+
 	dk := w.dataKey()
+	if w.previousVal == nil {
+		w.previousVal, _ = w.machine.DataGet(dk)
+	}
+
 	val, err := w.kv.Get(w.properties.Key)
+	if err == nil {
+		// we try to handle json files into a map[string]interface this means nested lookups can be done
+		// in other machines using the lookup template func and it works just fine, deep compares are done
+		// on the entire structure later
+		if bytes.HasPrefix(val.Value(), []byte("{")) && bytes.HasSuffix(val.Value(), []byte("}")) {
+			parsedValue = map[string]interface{}{}
+			err := json.Unmarshal(val.Value(), &parsedValue)
+			if err != nil {
+				w.Warnf("unmarshal failed: %s", err)
+			}
+		}
+		if parsedValue == nil {
+			parsedValue = val.Value()
+		}
+	}
 
 	switch {
 	// key isn't there, nothing was previously found its unchanged
@@ -184,6 +208,7 @@ func (w *Watcher) poll() (State, error) {
 
 	// key isn't there, we had a value before its a change due to delete
 	case err == kv.ErrUnknownKey && w.previousVal != nil:
+		w.Debugf("Removing data from %s", dk)
 		err = w.machine.DataDelete(dk)
 		if err != nil {
 			w.Errorf("Could not delete key %s from machine: %s", dk, err)
@@ -200,19 +225,19 @@ func (w *Watcher) poll() (State, error) {
 		return Error, err
 
 	// a change
-	case w.previousVal != string(val.Value()):
-		err = w.machine.DataPut(dk, string(val.Value()))
+	case !cmp.Equal(w.previousVal, parsedValue):
+		err = w.machine.DataPut(dk, parsedValue)
 		if err != nil {
 			return Error, err
 		}
 
 		w.previousSeq = val.Sequence()
-		w.previousVal = string(val.Value())
+		w.previousVal = parsedValue
 		return Changed, nil
 
 	// a put that didnt update, but we are asked to transition anyway
 	// we do not trigger this on first start of the machine only once its running (previousSeq is 0)
-	case w.previousVal == string(val.Value()) && w.properties.TransitionOnMatch && w.previousSeq > 0 && val.Sequence() > w.previousSeq:
+	case cmp.Equal(w.previousVal, parsedValue) && w.properties.TransitionOnMatch && w.previousSeq > 0 && val.Sequence() > w.previousSeq:
 		w.previousSeq = val.Sequence()
 		return Changed, nil
 

@@ -1,14 +1,12 @@
 package execwatcher
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"os"
 	"os/exec"
 	"sync"
-	"text/template"
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
@@ -17,7 +15,6 @@ import (
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/google/shlex"
-	"github.com/tidwall/gjson"
 )
 
 type State int
@@ -118,6 +115,7 @@ func (w *Watcher) validate() error {
 
 	return nil
 }
+
 func (w *Watcher) setProperties(props map[string]interface{}) error {
 	if w.properties == nil {
 		w.properties = &Properties{Environment: []string{}}
@@ -226,73 +224,13 @@ func (w *Watcher) CurrentState() interface{} {
 	return s
 }
 
-func (w *Watcher) funcMap() (template.FuncMap, error) {
-	facts := w.machine.Facts()
-	data := w.machine.Data()
-	jdata, err := json.Marshal(data)
-	if err != nil {
-		return nil, err
-	}
-
-	input := map[string]json.RawMessage{
-		"facts": facts,
-		"data":  jdata,
-	}
-
-	jinput, err := json.Marshal(input)
-	if err != nil {
-		return nil, err
-	}
-
-	return iu.FuncMap(map[string]interface{}{
-		"lookup": func(q string, dflt interface{}) interface{} {
-			r := gjson.GetBytes(jinput, q)
-			if !r.Exists() {
-				w.Infof("Query did not match any data, returning default: %s", q)
-
-				return dflt
-			}
-
-			return r.Value()
-		},
-	}), nil
-}
-
-func (w *Watcher) processTemplate(s string) (string, error) {
-	funcs, err := w.funcMap()
-	if err != nil {
-		return "", err
-	}
-
-	t, err := template.New("machine").Funcs(funcs).Parse(s)
-	if err != nil {
-		return "", err
-	}
-
-	buf := bytes.NewBuffer([]byte{})
-
-	err = t.Execute(buf, nil)
-	if err != nil {
-		return "", err
-	}
-
-	return buf.String(), nil
-}
-
 func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	if !w.ShouldWatch() {
 		return Skipped, nil
 	}
 
 	if w.properties.Governor != "" {
-		gov, err := w.processTemplate(w.properties.Governor)
-		if err != nil {
-			return Error, fmt.Errorf("could not parse governor name template: %s", err)
-		}
-
-		w.Infof("Using governor %s", gov)
-
-		fin, err := w.EnterGovernor(ctx, gov, w.properties.GovernorTimeout)
+		fin, err := w.EnterGovernor(ctx, w.properties.Governor, w.properties.GovernorTimeout)
 		if err != nil {
 			w.Errorf("Cannot enter Governor %s: %s", w.properties.Governor, err)
 			return Error, err
@@ -312,7 +250,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	timeoutCtx, cancel := context.WithTimeout(ctx, w.properties.Timeout)
 	defer cancel()
 
-	parsedCommand, err := w.processTemplate(w.properties.Command)
+	parsedCommand, err := w.ProcessTemplate(w.properties.Command)
 	if err != nil {
 		return Error, fmt.Errorf("could not process command template: %s", err)
 	}
@@ -357,7 +295,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	cmd.Env = append(cmd.Env, fmt.Sprintf("WATCHER_FACTS=%s", ff))
 
 	for _, e := range w.properties.Environment {
-		es, err := w.processTemplate(e)
+		es, err := w.ProcessTemplate(e)
 		if err != nil {
 			return Error, fmt.Errorf("could not process environment template: %s", err)
 		}
