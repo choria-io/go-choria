@@ -302,17 +302,17 @@ var _ = Describe("Provision/Agent", func() {
 				SenderID:  "go.test",
 			}
 
-			didRestart := false
+			done := make(chan bool)
 			SetRestartAction(func(_ time.Duration, _ agents.ServerInfoSource, _ *logrus.Entry) {
-				didRestart = true
+				close(done)
 			})
 
 			restartAction(ctx, req, reply, prov, nil)
 			runtime.Gosched()
+			<-done
 
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 			Expect(reply.Data.(Reply).Message).To(MatchRegexp("Restarting Choria Server after \\d+s"))
-			Expect(didRestart).To(BeTrue())
 		})
 	})
 
