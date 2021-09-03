@@ -200,7 +200,7 @@ func Run() (err error) {
 }
 
 func forcequit() {
-	grace := 2 * time.Second
+	grace := 10 * time.Second
 
 	if cfg != nil {
 		if cfg.SoftShutdownTimeout > 0 {

@@ -761,10 +761,6 @@ func (m *Machine) loadData() error {
 
 // lock should be held by caller
 func (m *Machine) saveData() error {
-	if len(m.data) == 0 {
-		return nil
-	}
-
 	j, err := json.Marshal(m.data)
 	if err != nil {
 		return err

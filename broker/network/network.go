@@ -9,11 +9,11 @@ import (
 	"sync"
 	"time"
 
-	gnatsd "github.com/nats-io/nats-server/v2/server"
+	"github.com/choria-io/go-choria/inter"
+	natsd "github.com/nats-io/nats-server/v2/server"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/srvcache"
 )
 
 // BuildInfoProvider provider build time flag information, example go-choria/build
@@ -21,27 +21,17 @@ type BuildInfoProvider interface {
 	MaxBrokerClients() int
 }
 
-// ChoriaFramework provider access to choria
-type ChoriaFramework interface {
-	Logger(string) *logrus.Entry
-	NetworkBrokerPeers() (srvcache.Servers, error)
-	TLSConfig() (*tls.Config, error)
-	ClientTLSConfig() (*tls.Config, error)
-	Configuration() *config.Config
-	ValidateSecurity() (errors []string, ok bool)
-}
-
 // Server represents the Choria network broker server
 type Server struct {
-	gnatsd *gnatsd.Server
-	opts   *gnatsd.Options
-	choria ChoriaFramework
+	gnatsd *natsd.Server
+	opts   *natsd.Options
+	choria inter.Framework
 	config *config.Config
 	log    *logrus.Entry
 
-	choriaAccount       *gnatsd.Account
-	systemAccount       *gnatsd.Account
-	provisioningAccount *gnatsd.Account
+	choriaAccount       *natsd.Account
+	systemAccount       *natsd.Account
+	provisioningAccount *natsd.Account
 
 	started bool
 
@@ -49,11 +39,11 @@ type Server struct {
 }
 
 // NewServer creates a new instance of the Server struct with a fully configured NATS embedded
-func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, err error) {
+func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, err error) {
 	s = &Server{
 		choria:  c,
 		config:  c.Configuration(),
-		opts:    &gnatsd.Options{},
+		opts:    &natsd.Options{},
 		log:     c.Logger("network"),
 		started: false,
 		mu:      &sync.Mutex{},
@@ -105,7 +95,7 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 		s.log.Errorf("Could not setup gateways: %s", err)
 	}
 
-	s.gnatsd, err = gnatsd.NewServer(s.opts)
+	s.gnatsd, err = natsd.NewServer(s.opts)
 	if err != nil {
 		return s, fmt.Errorf("could not setup server: %s", err)
 	}
@@ -152,7 +142,7 @@ func NewServer(c ChoriaFramework, bi BuildInfoProvider, debug bool) (s *Server, 
 	return
 }
 
-// HTTPHandler Exposes the gnatsd HTTP Handler
+// HTTPHandler Exposes the natsd HTTP Handler
 func (s *Server) HTTPHandler() http.Handler {
 	return s.gnatsd.HTTPHandler()
 }
@@ -160,7 +150,7 @@ func (s *Server) HTTPHandler() http.Handler {
 // Start the embedded NATS instance, this is a blocking call until it exits
 func (s *Server) Start(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
-	s.log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", gnatsd.VERSION, s.opts.Host, s.opts.Port, s.config.ConfigFile)
+	s.log.Infof("Starting new Network Broker with NATS version %s on %s:%d using config file %s", natsd.VERSION, s.opts.Host, s.opts.Port, s.config.ConfigFile)
 
 	go s.gnatsd.Start()
 

@@ -13,6 +13,7 @@ import (
 type fwMockOpts struct {
 	callerID   string
 	logDiscard bool
+	cfg        *config.Config
 }
 type fwMockOption func(*fwMockOpts)
 
@@ -31,8 +32,23 @@ func LogDiscard() fwMockOption {
 		o.logDiscard = true
 	}
 }
+
+func WithConfig(c *config.Config) fwMockOption {
+	return func(o *fwMockOpts) { o.cfg = c }
+}
+
+func WithConfigFile(f string) fwMockOption {
+	return func(o *fwMockOpts) {
+		cfg, err := config.NewConfig(f)
+		if err != nil {
+			panic(err)
+		}
+		o.cfg = cfg
+	}
+}
+
 func NewFrameworkForTests(ctrl *gomock.Controller, logWriter io.Writer, opts ...fwMockOption) (*MockFramework, *config.Config) {
-	mopts := &fwMockOpts{}
+	mopts := &fwMockOpts{cfg: config.NewConfigForTests()}
 	for _, o := range opts {
 		o(mopts)
 	}
@@ -45,7 +61,7 @@ func NewFrameworkForTests(ctrl *gomock.Controller, logWriter io.Writer, opts ...
 	}
 
 	fw := NewMockFramework(ctrl)
-	fw.EXPECT().Configuration().Return(config.NewConfigForTests()).AnyTimes()
+	fw.EXPECT().Configuration().Return(mopts.cfg).AnyTimes()
 	fw.EXPECT().Logger(gomock.AssignableToTypeOf("")).Return(logrus.NewEntry(logger)).AnyTimes()
 	fw.EXPECT().NewRequestID().Return(util.RandomHexString(), nil).AnyTimes()
 	fw.EXPECT().HasCollective(gomock.AssignableToTypeOf("")).DoAndReturn(func(c string) bool {
