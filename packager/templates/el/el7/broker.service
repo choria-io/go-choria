@@ -3,8 +3,6 @@ Description=The Choria Orchestrator Network Broker
 After=network.target
 
 [Service]
-StandardOutput=syslog
-StandardError=syslog
 LimitNOFILE=51200
 User=root
 Group=root
