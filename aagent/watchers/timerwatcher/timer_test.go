@@ -34,6 +34,7 @@ var _ = Describe("TimerWatcher", func() {
 		mockMachine.EXPECT().InstanceID().Return("1234567890").AnyTimes()
 		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
+		mockMachine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
 		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "", "2m", time.Second, map[string]interface{}{})
 		Expect(err).ToNot(HaveOccurred())
@@ -57,6 +58,18 @@ var _ = Describe("TimerWatcher", func() {
 			err := watch.setProperties(map[string]interface{}{})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(watch.properties.Timer).To(Equal(time.Second))
+		})
+
+		It("Should handle splay", func() {
+			err := watch.setProperties(map[string]interface{}{
+				"timer": "1h",
+				"splay": true,
+			})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(watch.properties.Timer).To(And(
+				BeNumerically("<", time.Hour),
+				BeNumerically(">", 0),
+			))
 		})
 	})
 

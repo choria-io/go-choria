@@ -3,6 +3,7 @@ package timerwatcher
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -29,6 +30,7 @@ var stateNames = map[State]string{
 
 type properties struct {
 	Timer time.Duration
+	Splay bool
 }
 
 type Watcher struct {
@@ -93,7 +95,7 @@ func (w *Watcher) timeStart() {
 	w.mu.Unlock()
 
 	if cancel != nil {
-		w.Infof(w.name, "Timer was running, resetting to %v", w.properties.Timer)
+		w.Infof("Timer was running, resetting to %v", w.properties.Timer)
 		cancel()
 	}
 
@@ -112,7 +114,9 @@ func (w *Watcher) timeStart() {
 		case <-timer.C:
 			w.mu.Lock()
 			w.state = Stopped
-			w.cancelTimer()
+			if w.cancelTimer != nil {
+				w.cancelTimer()
+			}
 			w.cancelTimer = nil
 			w.mu.Unlock()
 
@@ -173,6 +177,11 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 func (w *Watcher) validate() error {
 	if w.properties.Timer < time.Second {
 		w.properties.Timer = time.Second
+	}
+
+	if w.properties.Splay {
+		w.properties.Timer = time.Duration(rand.Int63n(int64(w.properties.Timer)))
+		w.Infof("Adjusting timer to %v due to splay setting", w.properties.Timer)
 	}
 
 	return nil
