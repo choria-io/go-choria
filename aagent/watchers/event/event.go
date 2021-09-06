@@ -58,3 +58,8 @@ func (e *Event) WatcherType() string {
 func (e *Event) SenderID() string {
 	return e.Identity
 }
+
+// MachineName is the name of the autonomous agent
+func (e *Event) MachineName() string {
+	return e.Machine
+}

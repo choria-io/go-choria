@@ -257,7 +257,7 @@ func (w *Watcher) FailureTransition() error {
 		return nil
 	}
 
-	w.Infof("fail transitioning using %s event", w.succEvent)
+	w.Infof("fail transitioning using %s event", w.failEvent)
 	return w.machine.Transition(w.failEvent)
 }
 

@@ -20,6 +20,7 @@ type mWatchCommand struct {
 	onlyWatchers      bool
 	filterWatcherType []string
 	filterIdentity    string
+	filterMachine     string
 	log               *logrus.Entry
 
 	sync.Mutex
@@ -28,6 +29,7 @@ type mWatchCommand struct {
 type mWatchableState interface {
 	String() string
 	SenderID() string
+	MachineName() string
 }
 
 func (w *mWatchCommand) Setup() (err error) {
@@ -37,6 +39,7 @@ func (w *mWatchCommand) Setup() (err error) {
 		w.cmd.Flag("watchers", "View only watcher states").BoolVar(&w.onlyWatchers)
 		w.cmd.Flag("type", "Limit watcher events to certain types").StringsVar(&w.filterWatcherType)
 		w.cmd.Flag("identity", "Filters identity").StringVar(&w.filterIdentity)
+		w.cmd.Flag("machine", "Filters based on machine name").StringVar(&w.filterMachine)
 	}
 
 	return nil
@@ -132,6 +135,9 @@ func (w *mWatchCommand) showState(m inter.ConnectorMessage) {
 	if w.filterIdentity != "" && !strings.Contains(event.SenderID(), w.filterIdentity) {
 		return
 	}
+	if w.filterMachine != "" && !strings.Contains(event.MachineName(), w.filterMachine) {
+		return
+	}
 
 	w.Lock()
 	fmt.Println(event.String())
@@ -155,6 +161,9 @@ func (w *mWatchCommand) showTransition(m inter.ConnectorMessage) {
 	}
 
 	if w.filterIdentity != "" && !strings.Contains(transition.Identity, w.filterIdentity) {
+		return
+	}
+	if w.filterMachine != "" && !strings.Contains(transition.Machine, w.filterMachine) {
 		return
 	}
 
