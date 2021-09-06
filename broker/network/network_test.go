@@ -139,10 +139,7 @@ var _ = Describe("Network Broker", func() {
 
 		Describe("Gateways", func() {
 			It("Should require a name and remotes", func() {
-				config, err := config.NewConfig("testdata/gateways/noremotes.cfg")
-				Expect(err).ToNot(HaveOccurred())
-
-				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfig(config))
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfigFile("testdata/gateways/noremotes.cfg"))
 				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
 				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
 
@@ -155,10 +152,7 @@ var _ = Describe("Network Broker", func() {
 			})
 
 			It("Should support remote gateways", func() {
-				config, err := config.NewConfig("testdata/gateways/remotes.cfg")
-				Expect(err).ToNot(HaveOccurred())
-
-				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfig(config))
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfigFile("testdata/gateways/remotes.cfg"))
 				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
 				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
 
@@ -184,10 +178,7 @@ var _ = Describe("Network Broker", func() {
 			})
 
 			It("Should handle missing custom TLS", func() {
-				config, err := config.NewConfig("testdata/gateways/missingtls.cfg")
-				Expect(err).ToNot(HaveOccurred())
-
-				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfig(config))
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfigFile("testdata/gateways/missingtls.cfg"))
 				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
 				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
 
@@ -199,10 +190,7 @@ var _ = Describe("Network Broker", func() {
 			})
 
 			It("Should support custom TLS", func() {
-				config, err := config.NewConfig("testdata/gateways/customtls.cfg")
-				Expect(err).ToNot(HaveOccurred())
-
-				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfig(config))
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfigFile("testdata/gateways/customtls.cfg"))
 				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
 				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
 
@@ -256,10 +244,7 @@ var _ = Describe("Network Broker", func() {
 			})
 
 			It("Should handle custom TLS", func() {
-				config, err := config.NewConfig("testdata/leafnodes/customtls.cfg")
-				Expect(err).ToNot(HaveOccurred())
-
-				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfig(config))
+				fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithConfigFile("testdata/leafnodes/customtls.cfg"))
 				fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
 				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil).AnyTimes()
 
