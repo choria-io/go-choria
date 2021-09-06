@@ -11,10 +11,6 @@ override_dh_auto_test:
 
 override_dh_auto_build:
 
-override_dh_systemd_start:
-
-override_dh_systemd_enable:
-
 override_dh_auto_install:
 
 	install -Dm755 {{cpkg_binary}} debian/{{cpkg_name}}/usr/bin/{{cpkg_name}}
@@ -31,4 +27,4 @@ endif
 	dh_systemd_enable -p{{cpkg_name}} --name={{cpkg_name}}-server
 
 	dh_installinit -p{{cpkg_name}} --name={{cpkg_name}}-broker --no-start {{cpkg_name}}.{{cpkg_name}}-broker.service
-	dh_installinit -p{{cpkg_name}} --name={{cpkg_name}}-server {{cpkg_name}}.{{cpkg_name}}-server.service
+	dh_installinit -p{{cpkg_name}} --name={{cpkg_name}}-server --no-start {{cpkg_name}}.{{cpkg_name}}-server.service
