@@ -165,17 +165,14 @@ func (w *Watcher) handleCheck(s State, err error) error {
 		return w.SuccessTransition()
 
 	case Unchanged:
-		// not notifying, regular announces happen
+	// not notifying, regular announces happen
 
-	case Skipped, Unknown:
-		// clear the time so that next time after once being skipped or unknown
-		// it will treat the file as not seen before and detect changes, but if
-		// its set to do initial check it specifically will not do that because
-		// the behavior of the first run in that case would be to only wait for
-		// future changes, this retains that behavior on becoming valid again
-		if !w.properties.Initial {
-			w.mtime = time.Time{}
-		}
+	case Skipped:
+	// nothing really to do, we keep old mtime next time round
+	// we'll correctly notify of changes
+
+	case Unknown:
+		w.mtime = time.Time{}
 	}
 
 	return nil
@@ -189,7 +186,6 @@ func (w *Watcher) watch() (state State, err error) {
 	stat, err := os.Stat(w.properties.Path)
 	if err != nil {
 		w.mtime = time.Time{}
-
 		return Error, fmt.Errorf("does not exist")
 	}
 
