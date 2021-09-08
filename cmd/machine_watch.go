@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/choria-io/go-choria/inter"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -140,7 +141,7 @@ func (w *mWatchCommand) showState(m inter.ConnectorMessage) {
 	}
 
 	w.Lock()
-	fmt.Println(event.String())
+	fmt.Printf("[%s] %s\n", time.Now().Format("15:04:05"), event.String())
 	w.Unlock()
 }
 
@@ -168,7 +169,7 @@ func (w *mWatchCommand) showTransition(m inter.ConnectorMessage) {
 	}
 
 	w.Lock()
-	fmt.Println(transition.String())
+	fmt.Printf("[%s] %s\n", time.Now().Format("15:04:05"), transition.String())
 	w.Unlock()
 }
 
