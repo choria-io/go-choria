@@ -1,4 +1,8 @@
-version: 2
+version: 2.1
+
+orbs:
+  aws-s3: circleci/aws-s3@3.0.0
+
 jobs:
   test:
     docker:
@@ -294,6 +298,11 @@ jobs:
               package_cloud push choria/${REPO}/debian/${distro} $i
             done
           done
+
+      - aws-s3/sync:
+          arguments: --endpoint=https://ams3.digitaloceanspaces.com --acl authenticated-read
+          from: /tmp/workspace/artifacts/foss
+          to: s3://choria-packages-ams/nightly
 
   release_packagecloud:
     environment:
