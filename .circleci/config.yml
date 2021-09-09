@@ -37,16 +37,16 @@ jobs:
           paths:
             - go-choria.tgz
 
-  build_el6_64bit_rpms:
+  build_el7_64bit_rpms:
     docker:
       - image: circleci/golang:1.17
 
     working_directory: /go/src/github.com/choria-io/go-choria
 
     environment:
-      PACKAGE: el6_64
+      PACKAGE: el7_64
       BUILD: foss
-      BUILDER: choria/packager:el6-go1.16
+      BUILDER: choria/packager:el7-go1.16
 
     steps: &std_build_steps
       - setup_remote_docker
@@ -84,32 +84,6 @@ jobs:
           root: /tmp/workspace
           paths:
             - artifacts
-
-  build_el6_32bit_rpms:
-    docker:
-      - image: circleci/golang:1.17
-
-    working_directory: /go/src/github.com/choria-io/go-choria
-
-    environment:
-      PACKAGE: el6_32
-      BUILD: foss
-      BUILDER: choria/packager:el6-go1.16
-
-    steps: *std_build_steps
-
-  build_el7_64bit_rpms:
-    docker:
-      - image: circleci/golang:1.17
-
-    working_directory: /go/src/github.com/choria-io/go-choria
-
-    environment:
-      PACKAGE: el7_64
-      BUILD: foss
-      BUILDER: choria/packager:el7-go1.16
-
-    steps: *std_build_steps
 
   build_el7_ppc64le_rpms:
     docker:
@@ -268,6 +242,25 @@ jobs:
       - store_artifacts:
           path: /tmp/workspace
 
+  nightly_do_spaces: &spaces_push
+    environment:
+      REPO: nightly
+
+    docker:
+      - image: circleci/ruby:2.7
+
+    steps:
+      - attach_workspace:
+          at: /tmp/workspace
+
+      - run: find /tmp/workspace -name \*.src.rpm -delete
+
+      - aws-s3/sync:
+          arguments: --endpoint=https://ams3.digitaloceanspaces.com --acl authenticated-read
+          from: /tmp/workspace/artifacts/foss
+          to: s3://choria-packages-ams/${REPO}
+
+
   nightly_packagecloud: &packagecloud_push
     environment:
       REPO: nightly
@@ -298,11 +291,6 @@ jobs:
               package_cloud push choria/${REPO}/debian/${distro} $i
             done
           done
-
-      - aws-s3/sync:
-          arguments: --endpoint=https://ams3.digitaloceanspaces.com --acl authenticated-read
-          from: /tmp/workspace/artifacts/foss
-          to: s3://choria-packages-ams/nightly
 
   release_packagecloud:
     environment:
@@ -382,6 +370,10 @@ workflows:
             - build_bullseye_64bit_debs
 
       - nightly_packagecloud:
+          requires:
+            - gather_artifacts
+
+      - nightly_do_spaces:
           requires:
             - gather_artifacts
 
