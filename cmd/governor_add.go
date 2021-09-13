@@ -16,6 +16,7 @@ type tGovAddCommand struct {
 	limit    int64
 	expire   time.Duration
 	replicas int
+	force    bool
 }
 
 func (g *tGovAddCommand) Setup() (err error) {
@@ -25,6 +26,7 @@ func (g *tGovAddCommand) Setup() (err error) {
 		g.cmd.Arg("capacity", "How many concurrent lease entries to allow").Required().Int64Var(&g.limit)
 		g.cmd.Arg("expire", "Expire entries from the Governor after a period").Required().DurationVar(&g.expire)
 		g.cmd.Arg("replicas", "Create a replicated Governor with this many replicas").Default("1").IntVar(&g.replicas)
+		g.cmd.Flag("force", "Force operations requiring confirmation").Short('f').BoolVar(&g.force)
 	}
 
 	return nil
@@ -65,13 +67,16 @@ func (g *tGovAddCommand) Run(wg *sync.WaitGroup) (err error) {
 			fmt.Println()
 		}
 
-		ans := false
-		err := survey.AskOne(&survey.Confirm{
-			Message: fmt.Sprintf("Update configuration for %s?", g.name),
-			Default: ans,
-		}, &ans)
-		if err != nil {
-			return err
+		ans := g.force
+		if !g.force {
+			fmt.Println()
+			err := survey.AskOne(&survey.Confirm{
+				Message: fmt.Sprintf("Update configuration for %s?", g.name),
+				Default: ans,
+			}, &ans)
+			if err != nil {
+				return err
+			}
 		}
 
 		if ans {
