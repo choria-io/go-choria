@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/choria-io/go-choria/config"
@@ -17,13 +18,15 @@ import (
 )
 
 type ConfigureRequest struct {
-	Token         string `json:"token"`
-	Configuration string `json:"config"`
-	Key           string `json:"key"`
-	Certificate   string `json:"certificate"`
-	CA            string `json:"ca"`
-	SSLDir        string `json:"ssldir"`
-	ECDHPublic    string `json:"ecdh_public"`
+	Token          string            `json:"token"`
+	Configuration  string            `json:"config"`
+	Key            string            `json:"key"`
+	Certificate    string            `json:"certificate"`
+	CA             string            `json:"ca"`
+	SSLDir         string            `json:"ssldir"`
+	ECDHPublic     string            `json:"ecdh_public"`
+	ActionPolicies map[string]string `json:"action_policies"`
+	OPAPolicies    map[string]string `json:"opa_policies"`
 }
 
 func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
@@ -66,25 +69,120 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		return
 	}
 
-	if args.Certificate != "" && args.SSLDir != "" && args.CA != "" {
-		err = os.MkdirAll(args.SSLDir, 0700)
+	err = writeTLS(args, agent)
+	if err != nil {
+		abort(fmt.Sprintf("TLS Setup Failed: %s", err), reply)
+		return
+	}
+
+	lines, err := writeConfig(settings, req, agent.Config, agent.Log)
+	if err != nil {
+		abort(fmt.Sprintf("Could not write config: %s", err), reply)
+		return
+	}
+
+	err = writeActionPolicies(agent.Config, args, agent)
+	if err != nil {
+		abort(fmt.Sprintf("Could not save Action Policies: %s", err), reply)
+		return
+	}
+
+	err = writeOPAPolicies(agent.Config, args, agent)
+	if err != nil {
+		abort(fmt.Sprintf("Could not save Open Policy Agent Policies: %s", err), reply)
+		return
+	}
+
+	err = agent.ServerInfoSource.NewEvent(lifecycle.Provisioned)
+	if err != nil {
+		agent.Log.Errorf("Could not publish provisioned event: %s", err)
+	}
+
+	reply.Data = Reply{fmt.Sprintf("Wrote %d lines to %s", lines, agent.Config.ConfigFile)}
+}
+
+func writePolicies(targetDir string, policies map[string]string, log *logrus.Entry) error {
+	if util.FileIsDir(targetDir) {
+		err := os.RemoveAll(targetDir)
 		if err != nil {
-			abort(fmt.Sprintf("Could not create ssl directory %s: %s", args.SSLDir, err), reply)
-			return
+			return fmt.Errorf("could not remove existing policies")
+		}
+	}
+
+	err := os.MkdirAll(targetDir, 0700)
+	if err != nil {
+		return err
+	}
+
+	for f, p := range policies {
+		if f == "" || p == "" {
+			continue
+		}
+
+		target := filepath.Join(targetDir, f)
+		err = os.WriteFile(target, []byte(p), 0400)
+		if err != nil {
+			return fmt.Errorf("saving policy %v failed: %v", f, err)
+		}
+		log.Infof("Wrote policy to %s", target)
+	}
+
+	return nil
+}
+
+func writeOPAPolicies(cfg *config.Config, args *ConfigureRequest, agent *mcorpc.Agent) error {
+	if len(args.OPAPolicies) == 0 {
+		return nil
+	}
+
+	if cfg.ConfigFile == "" {
+		return fmt.Errorf("no configuration path configured")
+	}
+
+	for k := range args.OPAPolicies {
+		if !strings.HasSuffix(k, ".rego") {
+			return fmt.Errorf("expected %q to have .rego extension", k)
+		}
+	}
+
+	return writePolicies(filepath.Join(filepath.Dir(cfg.ConfigFile), "policies", "rego"), args.OPAPolicies, agent.Log)
+}
+
+func writeActionPolicies(cfg *config.Config, args *ConfigureRequest, agent *mcorpc.Agent) error {
+	if len(args.ActionPolicies) == 0 {
+		return nil
+	}
+
+	if cfg.ConfigFile == "" {
+		return fmt.Errorf("no configuration path configured")
+	}
+
+	for k := range args.ActionPolicies {
+		if !strings.HasSuffix(k, ".policy") {
+			return fmt.Errorf("expected %q to have .policy extension", k)
+		}
+	}
+
+	return writePolicies(filepath.Join(filepath.Dir(cfg.ConfigFile), "policies"), args.ActionPolicies, agent.Log)
+}
+
+func writeTLS(args *ConfigureRequest, agent *mcorpc.Agent) error {
+	if args.Certificate != "" && args.SSLDir != "" && args.CA != "" {
+		err := os.MkdirAll(args.SSLDir, 0700)
+		if err != nil {
+			return fmt.Errorf("could not create ssl directory %s: %s", args.SSLDir, err)
 		}
 
 		target := filepath.Join(args.SSLDir, "certificate.pem")
 		err = os.WriteFile(target, []byte(args.Certificate), 0644)
 		if err != nil {
-			abort(fmt.Sprintf("Could not write Certificate to %s: %s", target, err), reply)
-			return
+			return fmt.Errorf("could not write Certificate to %s: %s", target, err)
 		}
 
 		target = filepath.Join(args.SSLDir, "ca.pem")
 		err = os.WriteFile(target, []byte(args.CA), 0644)
 		if err != nil {
-			abort(fmt.Sprintf("Could not write CA to %s: %s", target, err), reply)
-			return
+			return fmt.Errorf("could not write CA to %s: %s", target, err)
 		}
 
 		if args.Key != "" {
@@ -92,15 +190,13 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 
 			priKey, err := decryptPrivateKey(args.Key, args.ECDHPublic)
 			if err != nil {
-				abort(fmt.Sprintf("could not decrypt private key: %s", err), reply)
-				return
+				return fmt.Errorf("could not decrypt private key: %s", err)
 			}
 
 			target = filepath.Join(args.SSLDir, "private.pem")
 			err = os.WriteFile(target, priKey, 0600)
 			if err != nil {
-				abort(fmt.Sprintf("Could not write KEY to %s: %s", target, err), reply)
-				return
+				return fmt.Errorf("could not write KEY to %s: %s", target, err)
 			}
 
 			csrFile := filepath.Join(args.SSLDir, "csr.pem")
@@ -114,18 +210,7 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		}
 	}
 
-	lines, err := writeConfig(settings, req, agent.Config, agent.Log)
-	if err != nil {
-		abort(fmt.Sprintf("Could not write config: %s", err), reply)
-		return
-	}
-
-	err = agent.ServerInfoSource.NewEvent(lifecycle.Provisioned)
-	if err != nil {
-		agent.Log.Errorf("Could not publish provisioned event: %s", err)
-	}
-
-	reply.Data = Reply{fmt.Sprintf("Wrote %d lines to %s", lines, agent.Config.ConfigFile)}
+	return nil
 }
 
 func writeConfig(settings map[string]string, req *mcorpc.Request, cfg *config.Config, log *logrus.Entry) (int, error) {
