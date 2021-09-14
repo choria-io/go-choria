@@ -33,7 +33,6 @@ import (
 )
 
 func Test(t *testing.T) {
-	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Provision/Agent")
 }
@@ -567,7 +566,16 @@ var _ = Describe("Provision/Agent", func() {
 			build.ProvisionModeDefault = "true"
 			cfg.ConfigFile = targetcfg
 
-			var err error
+			roguePolicy := filepath.Join(targetdir, "policies", "rogue.policy")
+			rogueRego := filepath.Join(targetdir, "policies", "rego", "rogue.rego")
+
+			err = os.MkdirAll(filepath.Join(targetdir, "policies"), 0700)
+			Expect(err).ToNot(HaveOccurred())
+			err = os.MkdirAll(filepath.Join(targetdir, "policies", "rego"), 0700)
+			Expect(err).ToNot(HaveOccurred())
+			err = os.WriteFile(roguePolicy, []byte("policy default allow"), 0400)
+			Expect(err).ToNot(HaveOccurred())
+			err = os.WriteFile(rogueRego, []byte("package io.choria.mcorpc.authpolicy"), 0400)
 
 			// provisioner pub: c25fab933b16b2a4589e2c2d297669b818c82881f2f9bfd08cb8fd298924a41b
 			// provisioner pri: 3e150feab1f2c709af9afa28e626f258dbf1b683d3bc35225a9b0489de485870
@@ -605,6 +613,13 @@ var _ = Describe("Provision/Agent", func() {
 				Configuration: "{\"plugin.choria.server.provision\":\"0\", \"plugin.choria.srv_domain\":\"another.com\"}",
 				ECDHPublic:    "c25fab933b16b2a4589e2c2d297669b818c82881f2f9bfd08cb8fd298924a41b", // provisioner sends this, so this is its public key
 				Key:           epbPem.String(),                                                    // encrypted using shared of the EDCH
+				ActionPolicies: map[string]string{
+					"choria_util.policy": "policy default deny",
+					"rpcutil.policy":     "policy default allow",
+				},
+				OPAPolicies: map[string]string{
+					"default.rego": "package io.choria.mcorpc.authpolicy",
+				},
 			}
 
 			jdat, _ := json.Marshal(data)
@@ -642,6 +657,21 @@ var _ = Describe("Provision/Agent", func() {
 			Expect(key).To(Equal(pkPem.Bytes()))
 
 			Expect(filepath.Join(targetdir, "csr.pem")).ToNot(BeAnExistingFile())
+
+			policy, err := os.ReadFile(filepath.Join(targetdir, "policies", "choria_util.policy"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(policy).To(Equal([]byte("policy default deny")))
+
+			policy, err = os.ReadFile(filepath.Join(targetdir, "policies", "rpcutil.policy"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(policy).To(Equal([]byte("policy default allow")))
+
+			policy, err = os.ReadFile(filepath.Join(targetdir, "policies", "rego", "default.rego"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(policy).To(Equal([]byte("package io.choria.mcorpc.authpolicy")))
+
+			Expect(roguePolicy).ToNot(BeAnExistingFile())
+			Expect(rogueRego).ToNot(BeAnExistingFile())
 		})
 	})
 })
