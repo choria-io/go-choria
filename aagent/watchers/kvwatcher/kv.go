@@ -195,7 +195,14 @@ func (w *Watcher) poll() (State, error) {
 			if err != nil {
 				w.Warnf("unmarshal failed: %s", err)
 			}
+		} else if bytes.HasPrefix(val.Value(), []byte("[")) && bytes.HasSuffix(val.Value(), []byte("]")) {
+			parsedValue = []interface{}{}
+			err := json.Unmarshal(val.Value(), &parsedValue)
+			if err != nil {
+				w.Warnf("unmarshal failed: %s", err)
+			}
 		}
+
 		if parsedValue == nil {
 			parsedValue = val.Value()
 		}
