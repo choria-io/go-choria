@@ -17,7 +17,8 @@ jobs:
       GOFLAGS: "-p=1"
     steps:
       - checkout
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 20.10.7
       - run: go get github.com/fatih/structtag
       - run: go get -u github.com/onsi/ginkgo/ginkgo
       - run: go get -u honnef.co/go/tools/cmd/staticcheck
@@ -49,7 +50,8 @@ jobs:
       BUILDER: choria/packager:el7-go1.16
 
     steps: &std_build_steps
-      - setup_remote_docker
+      - setup_remote_docker:
+          version: 20.10.7
 
       - attach_workspace:
           at: /tmp/workspace
