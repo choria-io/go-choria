@@ -165,6 +165,15 @@ func (d *ConfigureResult) EachOutput(h func(r *ConfigureOutput)) {
 	}
 }
 
+// ActionPolicies is an optional input to the configure action
+//
+// Description: Map of Action Policy documents indexed by file name
+func (d *ConfigureRequester) ActionPolicies(v map[string]interface{}) *ConfigureRequester {
+	d.r.args["action_policies"] = v
+
+	return d
+}
+
 // Ca is an optional input to the configure action
 //
 // Description: PEM text block for the CA
@@ -197,6 +206,15 @@ func (d *ConfigureRequester) EcdhPublic(v string) *ConfigureRequester {
 // Description:
 func (d *ConfigureRequester) Key(v string) *ConfigureRequester {
 	d.r.args["key"] = v
+
+	return d
+}
+
+// OpaPolicies is an optional input to the configure action
+//
+// Description: Map of Open Policy Agent Policy documents indexed by file name
+func (d *ConfigureRequester) OpaPolicies(v map[string]interface{}) *ConfigureRequester {
+	d.r.args["opa_policies"] = v
 
 	return d
 }

@@ -74,6 +74,20 @@
           "optional": true,
           "maxlength": 64,
           "validation": "."
+        },
+        "action_policies": {
+          "prompt": "Action Policy Documents",
+          "description": "Map of Action Policy documents indexed by file name",
+          "type": "hash",
+          "default": {},
+          "optional": true
+        },
+        "opa_policies": {
+          "prompt": "Open Policy Agent Policy Documents",
+          "description": "Map of Open Policy Agent Policy documents indexed by file name",
+          "type": "hash",
+          "default": {},
+          "optional": true
         }
 
       },
