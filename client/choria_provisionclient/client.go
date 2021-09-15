@@ -222,10 +222,12 @@ func (p *ChoriaProvisionClient) DiscoverNodes(ctx context.Context) (nodes []stri
 //    - config (string) - The configuration to apply to this node
 //
 // Optional Inputs:
+//    - action_policies (map[string]interface{}) - Map of Action Policy documents indexed by file name
 //    - ca (string) - PEM text block for the CA
 //    - certificate (string) - PEM text block for the certificate
 //    - ecdh_public (string) - Required when sending a private key
 //    - key (string) -
+//    - opa_policies (map[string]interface{}) - Map of Open Policy Agent Policy documents indexed by file name
 //    - ssldir (string) - Directory for storing the certificate in
 //    - token (string) - Authentication token to pass to the server
 func (p *ChoriaProvisionClient) Configure(inputConfig string) *ConfigureRequester {
