@@ -244,14 +244,14 @@ jobs:
       - store_artifacts:
           path: /tmp/workspace
 
-  nightly_do_spaces: &spaces_push
+  release_do_spaces:
     environment:
-      REPO: nightly
+      REPO: release
 
     docker:
       - image: circleci/ruby:2.7
 
-    steps:
+    steps: &spaces_push
       - attach_workspace:
           at: /tmp/workspace
 
@@ -261,6 +261,15 @@ jobs:
           arguments: --endpoint=https://ams3.digitaloceanspaces.com --acl authenticated-read
           from: /tmp/workspace/artifacts/foss
           to: s3://choria-packages-ams/${REPO}
+
+  nightly_do_spaces:
+    environment:
+      REPO: nightly
+
+    docker:
+      - image: circleci/ruby:2.7
+
+    steps: *spaces_push
 
   release_packagecloud:
     environment:
@@ -432,6 +441,11 @@ workflows:
           filters: *semver_only
 
       - release_packagecloud:
+          filters: *semver_only
+          requires:
+            - gather_artifacts
+
+      - release_do_spaces:
           filters: *semver_only
           requires:
             - gather_artifacts
