@@ -66,6 +66,7 @@ type Machine struct {
 	choriaStatusFreq int
 	startTime        time.Time
 
+	embedded    bool
 	data        map[string]interface{}
 	facts       func() json.RawMessage
 	jsm         *jsm.Manager
@@ -133,7 +134,9 @@ func FromPlugin(p model.MachineConstructor, manager WatcherManager, log *logrus.
 		}
 	}
 
-	err := initializeMachine(m, "", manager)
+	m.embedded = true
+
+	err := initializeMachine(m, "", "", manager)
 	if err != nil {
 		return nil, err
 	}
@@ -158,21 +161,15 @@ func FromDir(dir string, manager WatcherManager) (m *Machine, err error) {
 	return m, err
 }
 
-func initializeMachine(m *Machine, afile string, manager WatcherManager) (err error) {
+func initializeMachine(m *Machine, dir string, afile string, manager WatcherManager) (err error) {
 	m.notifiers = []NotificationService{}
 	m.manager = manager
-	m.directory = filepath.Dir(afile)
-	m.manifest = afile
 	m.instanceID = m.UniqueID()
 	m.knownStates = make(map[string]bool)
 	m.data = make(map[string]interface{})
 
-	err = m.loadData()
-	if err != nil {
-		// warning only, we dont want a corrupt data file from stopping the whole world, generally data should
-		// be ephemeral and recreate from other sources like kv or exec watchers, new computers need to be able to
-		// survive without data so should a machine recovering from a bad state
-		m.Warnf("machine", "Could not load data file, discarding: %s", err)
+	if dir != "" {
+		m.SetDirectory(dir, afile)
 	}
 
 	err = manager.SetMachine(m)
@@ -206,7 +203,7 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 		return nil, err
 	}
 
-	err = initializeMachine(m, afile, manager)
+	err = initializeMachine(m, filepath.Dir(afile), afile, manager)
 	if err != nil {
 		return nil, err
 	}
@@ -245,6 +242,27 @@ func ValidateDir(dir string) (validationErrors []string, err error) {
 	}
 
 	return validationErrors, nil
+}
+
+func (m *Machine) SetDirectory(dir string, manifest string) error {
+	m.directory = dir
+	if manifest != "" {
+		m.manifest = manifest
+	}
+
+	err := m.loadData()
+	if err != nil {
+		// warning only, we dont want a corrupt data file from stopping the whole world, generally data should
+		// be ephemeral and recreate from other sources like kv or exec watchers, new computers need to be able to
+		// survive without data so should a machine recovering from a bad state
+		m.Warnf("machine", "Could not load data file, discarding: %s", err)
+	}
+
+	return nil
+}
+
+func (m *Machine) IsEmbedded() bool {
+	return m.embedded
 }
 
 // Facts is the active facts for the node

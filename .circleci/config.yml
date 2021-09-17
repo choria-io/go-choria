@@ -337,16 +337,10 @@ workflows:
           requires:
             - test
 
-      - build_bullseye_64bit_debs:
-          context: org-global
-          requires:
-            - test
-
       - gather_artifacts:
           requires:
             - build_el7_64bit_rpms
             - build_el8_64bit_rpms
-            - build_bullseye_64bit_debs
 
       - nightly_do_spaces:
           requires:
