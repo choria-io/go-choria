@@ -150,6 +150,8 @@ func (a *AAgent) loadPlugins(ctx context.Context) error {
 			continue
 		}
 
+		machine.SetDirectory(filepath.Join(a.source, machine.MachineName), a.source)
+
 		managed := &managedMachine{
 			loaded:  time.Now(),
 			machine: machine,
@@ -189,7 +191,7 @@ func (a *AAgent) loadFromSource(ctx context.Context) error {
 
 		current := a.findMachine("", "", path, "")
 
-		if current != nil {
+		if current != nil && !current.machine.IsEmbedded() {
 			hash, err := current.machine.Hash()
 			if err != nil {
 				a.logger.Errorf("could not determine hash for %s manifest in %v", current.machine.Name(), err)
@@ -207,6 +209,10 @@ func (a *AAgent) loadFromSource(ctx context.Context) error {
 			}
 			a.logger.Debugf("Sleeping 1 second to allow old machine to exit")
 			util.InterruptibleSleep(ctx, time.Second)
+		}
+
+		if current != nil && current.machine.IsEmbedded() {
+			continue
 		}
 
 		a.logger.Infof("Attempting to load Choria Machine from %s", path)
