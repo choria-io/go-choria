@@ -49,11 +49,14 @@ func (g *tGovAPICommand) Configure() error {
 	if os.Getuid() == 0 {
 		cfg, err = config.NewSystemConfig(configFile, true)
 		if err != nil {
-			return err
+			g.fail("config failed: %s", err)
 		}
 		cfg.LogLevel = "error"
 	} else {
-		return commonConfigure()
+		err = commonConfigure()
+		if err != nil {
+			g.fail("config failed: %s", err)
+		}
 	}
 
 	return nil
@@ -107,7 +110,7 @@ func (g *tGovAPICommand) updateCmd() {
 
 	if gov.Replicas() != g.replicas {
 		if !g.force {
-			g.fail("replica update required force")
+			g.fail("replica update requires force")
 		}
 
 		err = gov.Stream().Delete()
@@ -115,7 +118,7 @@ func (g *tGovAPICommand) updateCmd() {
 			g.fail("deleting existing stream failed: %s", err)
 		}
 
-		gov, err = governor.NewJSGovernorManager(g.name, uint64(g.limit), time.Duration(g.expire)*time.Second, uint(g.replicas), mgr, true)
+		gov, err = governor.NewJSGovernorManager(g.name, uint64(g.limit), time.Duration(g.expire)*time.Second, uint(g.replicas), mgr, true, governor.WithSubject(c.GovernorSubject(g.name)))
 		if err != nil {
 			g.fail("update failed: %s", err)
 		}
