@@ -10,7 +10,6 @@ require (
 	github.com/awesome-gocui/gocui v1.0.1
 	github.com/brutella/hc v1.2.4
 	github.com/bytecodealliance/wasmtime-go v0.30.0 // indirect
-	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/choria-io/go-updater v0.0.3
 	github.com/cloudevents/sdk-go/v2 v2.5.0
 	github.com/fatih/color v1.12.0
@@ -36,7 +35,7 @@ require (
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.16.0
-	github.com/open-policy-agent/opa v0.31.0
+	github.com/open-policy-agent/opa v0.32.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/robfig/cron v1.2.0
@@ -50,7 +49,6 @@ require (
 	golang.org/x/sys v0.0.0-20210917161153-d61c044b1678
 	golang.org/x/term v0.0.0-20210916214954-140adaaadfaf
 	golang.org/x/tools v0.1.6
-	google.golang.org/protobuf v1.27.1 // indirect
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	rsc.io/goversion v1.2.0
 )

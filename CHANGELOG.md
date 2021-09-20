@@ -1,5 +1,20 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/09/19|1428  |Adds a helper to assist in creation of Governors from automation tools                                   |
+|2021/09/17|1426  |Do not attempt to also load embedded Autonomous Agents from disk                                         | 
+|2021/09/14|1418  |Allow provisioning of Action Policies and Open Policy Agent Policies via Choria Provisioner              |
+|2021/09/13|1415  |Support listing known Governors                                                                          |
+|2021/09/13|1413  |Do not create unconfigured Governors when viewing a non existing Governor                                |
+|2021/09/13|1411  |Add `--force` / `-f` to `choria governor add`                                                            |
+|2021/09/09|1407  |Create the `plugin.choria.machine.store` directory if it does not exist                                  | 
+|2021/09/06|140   |Do not update file mtime on skipped checks in the File watcher                                           |
+|2021/09/06|1401  |Add a `splay` option to the Timer Watcher                                                                |
+|2021/09/03|1397  |Handle JSON data in data better in Autonomous Agent data layer allowing for nested lookups               |
+|2021/09/02|1388  |Various refactors of Debian packages to behave more consistently with RedHat startup/restart flows       |
+|2021/09/02|1393  |Fix logging of embedded NATS Server to Choria logs                                                       |
+|2021/09/01|1386  |Introduce a faster broadcast discovery timeout using sliding windows, behind a opt-in setting            |
+|2021/08/31|1384  |Allow Autonomous Agents to be compiled into the server as plugins                                        |
+|2021/08/27|1377  |Internal refactoring to improve cross/cyclic package import problems                                     |
 |2021/08/24|      |Release 0.23.0                                                                                           |
 |2021/08/24|      |Support Debian 11                                                                                        |
 |2021/08/23|1367  |Enable the `choria_provision` agent when provisioning is supported                                       |
