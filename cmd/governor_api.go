@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/jsm.go/governor"
 )
@@ -20,11 +21,12 @@ type tGovAPICommand struct {
 	delete bool
 	check  bool
 
-	name     string
-	limit    int64
-	expire   int
-	replicas int
-	force    bool
+	collective string
+	name       string
+	limit      int64
+	expire     int
+	replicas   int
+	force      bool
 }
 
 func (g *tGovAPICommand) Setup() (err error) {
@@ -39,6 +41,7 @@ func (g *tGovAPICommand) Setup() (err error) {
 		g.cmd.Flag("capacity", "Governor capacity").PlaceHolder("CAPACITY").Int64Var(&g.limit)
 		g.cmd.Flag("expire", "How long before entries expire from the governor").PlaceHolder("SECONDS").IntVar(&g.expire)
 		g.cmd.Flag("replicas", "How many replicas to store on the server").PlaceHolder("REPLICAS").IntVar(&g.replicas)
+		g.cmd.Flag("collective", "The sub-collective to install the Governor in").PlaceHolder("COLLECTIVE").StringVar(&g.collective)
 		g.cmd.Flag("force", "Force changes that require the governor to be recreated").BoolVar(&g.force)
 	}
 
@@ -91,6 +94,8 @@ func (g *tGovAPICommand) updateCmd() {
 		g.fail("expire can not be 0")
 	case g.replicas < 1 || g.replicas > 5:
 		g.fail("replicas should be 1-5")
+	case g.collective == "":
+		g.fail("collective is required")
 	}
 
 	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("governor manager: %s", "governor_list"), c.Logger("governor"))
@@ -103,7 +108,7 @@ func (g *tGovAPICommand) updateCmd() {
 		g.fail("connection failed: %s", err)
 	}
 
-	gov, err := governor.NewJSGovernorManager(g.name, uint64(g.limit), time.Duration(g.expire)*time.Second, uint(g.replicas), mgr, true, governor.WithSubject(c.GovernorSubject(g.name)))
+	gov, err := governor.NewJSGovernorManager(g.name, uint64(g.limit), time.Duration(g.expire)*time.Second, uint(g.replicas), mgr, true, governor.WithSubject(util.GovernorSubject(g.name, g.collective)))
 	if err != nil {
 		g.fail("update failed: %s", err)
 	}
@@ -118,17 +123,20 @@ func (g *tGovAPICommand) updateCmd() {
 			g.fail("deleting existing stream failed: %s", err)
 		}
 
-		gov, err = governor.NewJSGovernorManager(g.name, uint64(g.limit), time.Duration(g.expire)*time.Second, uint(g.replicas), mgr, true, governor.WithSubject(c.GovernorSubject(g.name)))
+		gov, err = governor.NewJSGovernorManager(g.name, uint64(g.limit), time.Duration(g.expire)*time.Second, uint(g.replicas), mgr, true, governor.WithSubject(util.GovernorSubject(g.name, g.collective)))
 		if err != nil {
 			g.fail("update failed: %s", err)
 		}
 	}
 
+	parts := strings.Split(gov.Subject(), ".")
+
 	g.jsonDump(map[string]interface{}{
-		"name":     gov.Name(),
-		"capacity": gov.Limit(),
-		"expire":   gov.MaxAge().Seconds(),
-		"replicas": gov.Replicas(),
+		"name":       gov.Name(),
+		"capacity":   gov.Limit(),
+		"expire":     gov.MaxAge().Seconds(),
+		"replicas":   gov.Replicas(),
+		"collective": parts[0],
 	})
 }
 
@@ -163,10 +171,11 @@ func (g *tGovAPICommand) deleteCmd() {
 
 func (g *tGovAPICommand) listCmd() {
 	type gov struct {
-		Name     string `json:"name"`
-		Capacity int64  `json:"capacity"`
-		Expire   int    `json:"expire"`
-		Replicas int    `json:"replicas"`
+		Name       string `json:"name"`
+		Capacity   int64  `json:"capacity"`
+		Expire     int    `json:"expire"`
+		Replicas   int    `json:"replicas"`
+		Collective string `json:"collective"`
 	}
 
 	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("governor manager: %s", "governor_list"), c.Logger("governor"))
@@ -180,7 +189,7 @@ func (g *tGovAPICommand) listCmd() {
 	}
 
 	known, err := mgr.StreamNames(&jsm.StreamNamesFilter{
-		Subject: c.GovernorSubject("*"),
+		Subject: util.GovernorSubject("*", "*"),
 	})
 	if err != nil {
 		g.fail("connection failed: %s", err)
@@ -195,11 +204,13 @@ func (g *tGovAPICommand) listCmd() {
 			g.fail("loading failed: %s", err)
 		}
 
+		parts := strings.Split(mgr.Subject(), ".")
 		govs[i] = gov{
-			Name:     name,
-			Capacity: mgr.Limit(),
-			Expire:   int(mgr.MaxAge().Seconds()),
-			Replicas: mgr.Replicas(),
+			Name:       name,
+			Capacity:   mgr.Limit(),
+			Expire:     int(mgr.MaxAge().Seconds()),
+			Replicas:   mgr.Replicas(),
+			Collective: parts[0],
 		}
 	}
 
