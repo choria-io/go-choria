@@ -204,7 +204,7 @@ func (w *Watcher) poll() (State, error) {
 		}
 
 		if parsedValue == nil {
-			parsedValue = val.Value()
+			parsedValue = string(val.Value())
 		}
 	}
 
