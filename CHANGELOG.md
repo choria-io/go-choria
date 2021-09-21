@@ -1,5 +1,6 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/09/20|      |Release 0.24.0                                                                                           |
 |2021/09/19|1428  |Adds a helper to assist in creation of Governors from automation tools                                   |
 |2021/09/17|1426  |Do not attempt to also load embedded Autonomous Agents from disk                                         | 
 |2021/09/14|1418  |Allow provisioning of Action Policies and Open Policy Agent Policies via Choria Provisioner              |
@@ -14,6 +15,7 @@
 |2021/09/02|1393  |Fix logging of embedded NATS Server to Choria logs                                                       |
 |2021/09/01|1386  |Introduce a faster broadcast discovery timeout using sliding windows, behind a opt-in setting            |
 |2021/08/31|1384  |Allow Autonomous Agents to be compiled into the server as plugins                                        |
+|2021/08/31|1377  |Initial support for performing AAA Server signing requests via Choria Services rather than HTTPS         |
 |2021/08/27|1377  |Internal refactoring to improve cross/cyclic package import problems                                     |
 |2021/08/24|      |Release 0.23.0                                                                                           |
 |2021/08/24|      |Support Debian 11                                                                                        |

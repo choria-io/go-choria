@@ -5,7 +5,7 @@
     "author": "R.I.Pienaar <rip@devco.net>",
     "timeout": 5,
     "name": "scout",
-    "version": "0.23.0",
+    "version": "0.24.0",
     "url": "https://choria.io",
     "description": "Choria Scout Agent Management API",
     "provider": "golang"

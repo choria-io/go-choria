@@ -2,7 +2,7 @@ metadata :name        => "scout",
          :description => "Choria Scout Agent Management API",
          :author      => "R.I.Pienaar <rip@devco.net>",
          :license     => "Apache-2.0",
-         :version     => "0.23.0",
+         :version     => "0.24.0",
          :url         => "https://choria.io",
          :provider    => "golang",
          :timeout     => 5
@@ -132,9 +132,9 @@ action "goss_validate", :description => "Performs a Goss validation using a spec
          :display_as  => "Tests"
 
   summarize do
-    aggregate summary(:tests, :format => "%s Test Cases on %d node(s)")
-    aggregate summary(:failures, :format => "%s Failed Cases on %d node(s)")
-    aggregate summary(:success, :format => "%s Passed Cases on %d node(s)")
+    aggregate summary(:tests, :format => "%s Tests on %d node(s)")
+    aggregate summary(:failures, :format => "%s Failed test on %d node(s)")
+    aggregate summary(:success, :format => "%s Passed tests on %d node(s)")
   end
 end
 
