@@ -171,7 +171,7 @@ func (g *kvAPICommand) updateCmd() {
 	g.jsonDump(map[string]interface{}{
 		"name":            status.Bucket(),
 		"history":         status.History(),
-		"ttl":             status.TTL().Seconds(),
+		"expire":          status.TTL().Seconds(),
 		"replicas":        ok + failed,
 		"max_value_size":  status.MaxValueSize(),
 		"max_bucket_size": status.MaxBucketSize(),
@@ -198,7 +198,7 @@ func (g *kvAPICommand) listCmd() {
 	type bucket struct {
 		Name          string `json:"name"`
 		History       int    `json:"history"`
-		TTL           int    `json:"ttl"`
+		TTL           int    `json:"expire"`
 		Replicas      int    `json:"replicas"`
 		MaxValueSize  int    `json:"max_value_size"`
 		MaxBucketSize int    `json:"max_bucket_size"`
