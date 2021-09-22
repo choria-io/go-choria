@@ -19,17 +19,19 @@ jobs:
       - checkout
       - setup_remote_docker:
           version: 20.10.7
-      - run: go get github.com/fatih/structtag
       - run: go get -u github.com/onsi/ginkgo/ginkgo
-      - run: go get -u honnef.co/go/tools/cmd/staticcheck
-      - run: go get -u github.com/client9/misspell/cmd/misspell
-      - run: go get github.com/fatih/structtag
-      - run: go generate
-      - run: echo $PATH
-      - run: ls -l /go/bin
-      - run: go list ./...|xargs staticcheck
-      - run: find . -type f -name "*.go" | xargs misspell -error -locale US -i flavour
-      - run: go vet ./...
+
+      - run: |
+          if [ $CIRCLE_BRANCH != "main" ]
+          then
+            go get -u honnef.co/go/tools/cmd/staticcheck
+            go get -u github.com/client9/misspell/cmd/misspell
+            go generate -run plugin
+            go list ./...|xargs staticcheck
+            find . -type f -name "*.go" | xargs misspell -error -locale US -i flavour
+            go vet ./...
+          fi
+
       - run: go test -vet=off ./...
       - run: mkdir -p /tmp/workspace
       - run: cd .. ; tar -czf /tmp/workspace/go-choria.tgz go-choria
@@ -271,47 +273,6 @@ jobs:
 
     steps: *spaces_push
 
-  release_packagecloud:
-    environment:
-      REPO: release
-
-    docker:
-      - image: circleci/ruby:2.7
-
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-
-      - run: gem install package_cloud
-
-      - run: |
-          for d in 7 8
-          do
-            for i in $(find /tmp/workspace -name \*.el${d}.\*.rpm | grep -v src.rpm)
-            do
-              package_cloud push choria/${REPO}/el/${d} ${i}
-            done
-          done
-
-          for d in stretch_64 buster_64 buster_armhf bullseye_64
-          do
-            for i in $(find /tmp/workspace/artifacts/foss/${d} -name \*.deb)
-            do
-              distro=$(echo $d|cut -d "_" -f 1)
-              package_cloud push choria/${REPO}/debian/${distro} $i
-            done
-          done
-
-          for d in focal_64 bionic_64 xenial_64
-          do
-            for i in $(find /tmp/workspace/artifacts/foss/${d} -name \*.deb)
-            do
-              distro=$(echo $d|cut -d "_" -f 1)
-              package_cloud push choria/${REPO}/ubuntu/${distro} $i
-            done
-          done
-
-
 workflows:
   version: 2
   nightly:
@@ -433,11 +394,6 @@ workflows:
             - build_focal_64bit_debs
 
           filters: *semver_only
-
-      - release_packagecloud:
-          filters: *semver_only
-          requires:
-            - gather_artifacts
 
       - release_do_spaces:
           filters: *semver_only
