@@ -40,6 +40,7 @@ type WatchCommand struct {
 	stateEph *stream.Ephemeral
 
 	status    map[string]map[string]string
+	seen      map[string]time.Time
 	vwBuffers map[string][]string
 
 	log *logrus.Entry
@@ -56,6 +57,7 @@ func NewWatchCommand(idf string, checkf string, perf bool, noOK bool, history ti
 		nc:        nc,
 		log:       log,
 		status:    make(map[string]map[string]string),
+		seen:      make(map[string]time.Time),
 		vwBuffers: make(map[string][]string),
 	}
 
@@ -262,9 +264,18 @@ func (w *WatchCommand) updateStatus(gui *gocui.Gui, state *nagioswatcher.StateNo
 
 	previous := w.status[state.Identity][state.Machine]
 	w.status[state.Identity][state.Machine] = state.Status
+	w.seen[state.Identity] = time.Now()
 
+	cnt := 0
 	ok, warn, crit, unknown := 0, 0, 0, 0
-	for _, node := range w.status {
+	for id, node := range w.status {
+		if time.Since(w.seen[id]) > 10*time.Minute {
+			delete(w.seen, id)
+			delete(w.status, id)
+			continue
+		}
+
+		cnt++
 		for _, val := range node {
 			switch val {
 			case "OK":
@@ -292,7 +303,7 @@ func (w *WatchCommand) updateStatus(gui *gocui.Gui, state *nagioswatcher.StateNo
 			vw.FgColor = gocui.ColorGreen
 		}
 
-		fmt.Fprintf(o, "\tOK: %d WARNING: %d CRITICAL: %d UNKNOWN: %d", ok, warn, crit, unknown)
+		fmt.Fprintf(o, "\t%s: IDENTITIES: %d OK: %d WARNING: %d CRITICAL: %d UNKNOWN: %d", time.Unix(state.Timestamp, 0).Format("15:04:05"), cnt, ok, warn, crit, unknown)
 	})
 
 	return previous != state.Status
