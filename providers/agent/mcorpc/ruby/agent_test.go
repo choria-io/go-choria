@@ -118,7 +118,14 @@ var _ = Describe("McoRPC/Ruby", func() {
 
 			fw.Config.Choria.RubyAgentConfig = filepath.Join("testdata", "shim.cfg")
 
-			rubyAction(ctx, req, rep, agent, ci)
+			try := 0
+			for try < 5 {
+				rubyAction(ctx, req, rep, agent, ci)
+				if rep.Statuscode == mcorpc.OK {
+					break
+				}
+				try++
+			}
 
 			Expect(rep.Statusmsg).To(Equal("OK"))
 			Expect(rep.Statuscode).To(Equal(mcorpc.OK))
