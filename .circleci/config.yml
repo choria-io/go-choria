@@ -26,7 +26,6 @@ jobs:
           then
             go get -u honnef.co/go/tools/cmd/staticcheck
             go get -u github.com/client9/misspell/cmd/misspell
-            go generate -run plugin
             go list ./...|xargs staticcheck
             find . -type f -name "*.go" | xargs misspell -error -locale US -i flavour
             go vet ./...

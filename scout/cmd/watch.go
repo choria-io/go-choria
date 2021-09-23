@@ -29,6 +29,7 @@ type WatchCommand struct {
 	identity     string
 	check        string
 	perf         bool
+	noOK         bool
 	longestCheck int
 	longestId    int
 	statePattern string
@@ -45,11 +46,12 @@ type WatchCommand struct {
 	sync.Mutex
 }
 
-func NewWatchCommand(idf string, checkf string, perf bool, history time.Duration, nc inter.Connector, log *logrus.Entry) (*WatchCommand, error) {
+func NewWatchCommand(idf string, checkf string, perf bool, noOK bool, history time.Duration, nc inter.Connector, log *logrus.Entry) (*WatchCommand, error) {
 	w := &WatchCommand{
 		identity:  idf,
 		check:     checkf,
 		perf:      perf,
+		noOK:      noOK,
 		history:   history,
 		nc:        nc,
 		log:       log,
@@ -210,14 +212,17 @@ func (w *WatchCommand) handleState(m *nats.Msg, gui *gocui.Gui) {
 	if w.check != "" && !strings.Contains(state.Machine, w.check) {
 		return
 	}
-
 	output := strings.Split(state.Output, "|")
 	w.stateEph.SetResumeSequence(m)
 
 	w.Lock()
 	defer w.Unlock()
 
-	w.updateStatus(gui, &state)
+	changed := w.updateStatus(gui, &state)
+
+	if !changed && w.noOK && state.StatusCode == 0 {
+		return
+	}
 
 	update := false
 	if w.longestCheck < len(state.Machine) {
@@ -247,11 +252,15 @@ func (w *WatchCommand) handleState(m *nats.Msg, gui *gocui.Gui) {
 	})
 }
 
-func (w *WatchCommand) updateStatus(gui *gocui.Gui, state *nagioswatcher.StateNotification) {
+func (w *WatchCommand) updateStatus(gui *gocui.Gui, state *nagioswatcher.StateNotification) bool {
 	_, has := w.status[state.Identity]
 	if !has {
-		w.status[state.Identity] = map[string]string{}
+		w.status[state.Identity] = map[string]string{
+			state.Identity: "UNKNOWN",
+		}
 	}
+
+	previous := w.status[state.Identity][state.Machine]
 	w.status[state.Identity][state.Machine] = state.Status
 
 	ok, warn, crit, unknown := 0, 0, 0, 0
@@ -269,6 +278,7 @@ func (w *WatchCommand) updateStatus(gui *gocui.Gui, state *nagioswatcher.StateNo
 			}
 		}
 	}
+
 	w.updateView(gui, "Status", false, func(o io.Writer, vw *gocui.View) {
 		vw.Clear()
 
@@ -284,6 +294,8 @@ func (w *WatchCommand) updateStatus(gui *gocui.Gui, state *nagioswatcher.StateNo
 
 		fmt.Fprintf(o, "\tOK: %d WARNING: %d CRITICAL: %d UNKNOWN: %d", ok, warn, crit, unknown)
 	})
+
+	return previous != state.Status
 }
 
 func (w *WatchCommand) updateView(gui *gocui.Gui, view string, buffered bool, t func(io.Writer, *gocui.View)) {

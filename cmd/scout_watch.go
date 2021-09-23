@@ -12,6 +12,7 @@ type sWatchCommand struct {
 	identity string
 	check    string
 	perf     bool
+	ok       bool
 	history  time.Duration
 	watch    *scoutcmd.WatchCommand
 
@@ -25,6 +26,7 @@ func (w *sWatchCommand) Setup() (err error) {
 		w.cmd.Flag("check", "Filters events by check").StringVar(&w.check)
 		w.cmd.Flag("perf", "Show performance data").BoolVar(&w.perf)
 		w.cmd.Flag("history", "Retrieve a certain period of history from Choria Streaming Server").DurationVar(&w.history)
+		w.cmd.Flag("ok", "Include OK status updates (--no-ok only new and status changes)").Default("true").BoolVar(&w.ok)
 	}
 
 	return nil
@@ -42,7 +44,7 @@ func (w *sWatchCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("cannot connect: %s", err)
 	}
 
-	w.watch, err = scoutcmd.NewWatchCommand(w.identity, w.check, w.perf, w.history, conn, c.Logger("scout"))
+	w.watch, err = scoutcmd.NewWatchCommand(w.identity, w.check, w.perf, !w.ok, w.history, conn, c.Logger("scout"))
 	if err != nil {
 		return err
 	}
