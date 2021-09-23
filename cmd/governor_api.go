@@ -90,8 +90,8 @@ func (g *tGovAPICommand) updateCmd() {
 		g.fail("name required")
 	case g.limit == 0:
 		g.fail("capacity can not be 0")
-	case g.expire == 0:
-		g.fail("expire can not be 0")
+	case g.expire < 0:
+		g.fail("expire must be >= 0")
 	case g.replicas < 1 || g.replicas > 5:
 		g.fail("replicas should be 1-5")
 	case g.collective == "":
