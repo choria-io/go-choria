@@ -256,7 +256,7 @@ func (w *WatchCommand) updateStatus(gui *gocui.Gui, state *nagioswatcher.StateNo
 	_, has := w.status[state.Identity]
 	if !has {
 		w.status[state.Identity] = map[string]string{
-			state.Identity: "UNKNOWN",
+			state.Machine: "UNKNOWN",
 		}
 	}
 
