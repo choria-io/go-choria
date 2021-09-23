@@ -39,7 +39,7 @@ func (g *kvAPICommand) Setup() (err error) {
 
 		g.cmd.Flag("name", "KV Bucket name").PlaceHolder("NAME").StringVar(&g.name)
 		g.cmd.Flag("history", "How many historic values to keep for each key").PlaceHolder("CAPACITY").Uint64Var(&g.history)
-		g.cmd.Flag("ttl", "Expire values from the bucket after this duration").PlaceHolder("SECONDS").IntVar(&g.ttl)
+		g.cmd.Flag("expire", "Expire values from the bucket after this duration").PlaceHolder("SECONDS").IntVar(&g.ttl)
 		g.cmd.Flag("replicas", "How many replicas to store on the server").PlaceHolder("REPLICAS").IntVar(&g.replicas)
 		g.cmd.Flag("max-value-size", "Maximum size of any value in the bucket").PlaceHolder("BYTES").Int32Var(&g.maxValueSize)
 		g.cmd.Flag("max-bucket-size", "Maximum size for the entire bucket").PlaceHolder("BYTES").Int64Var(&g.maxBucketSize)
