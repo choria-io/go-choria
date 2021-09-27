@@ -31,7 +31,7 @@ func (s *Server) setupStreaming() error {
 			continue
 		}
 
-		err := acct.EnableJetStream(&server.JetStreamAccountLimits{})
+		err := acct.EnableJetStream(nil)
 		if err != nil {
 			s.log.Errorf("Could not enable Choria Streams for the %s account: %s", acct.Name, err)
 		}
