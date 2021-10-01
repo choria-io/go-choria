@@ -15,11 +15,10 @@ import (
 //
 // 		leftPri, leftPub, _ := ECDHKeyPair()
 //
-// Here we send leftPub to the remote end
-//
 // 		rightPri, rightPub, _ := ECDHKeyPair()
 //
-// Right can now figure out a shared secret:
+// If left sends his pub to the remote end a shared secret
+// can be calculated by the right side:
 //
 // 		secret, err := ECDHSharedSecret(rightPri, leftPub)
 //
