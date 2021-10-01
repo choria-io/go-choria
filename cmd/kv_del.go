@@ -16,7 +16,7 @@ type kvDelCommand struct {
 
 func (k *kvDelCommand) Setup() error {
 	if kv, ok := cmdWithFullCommand("kv"); ok {
-		k.cmd = kv.Cmd().Command("del", "Deletes a key")
+		k.cmd = kv.Cmd().Command("del", "Deletes a key, preserving historical values")
 		k.cmd.Arg("bucket", "The bucket name").Required().StringVar(&k.name)
 		k.cmd.Arg("key", "The key to delete").Required().StringVar(&k.key)
 		k.cmd.Flag("force", "Force delete without prompting").Short('f').BoolVar(&k.force)
