@@ -1,0 +1,46 @@
+name: Choria Nightly
+on:
+  pull_request: {}
+  workflow_dispatch: {}
+  schedule:
+    - cron: "40 4 * * *"
+
+jobs:
+  test:
+    env:
+      GOPATH: /home/runner/work/go-choria/go-choria
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          path: src/github.com/choria-io/go-choria
+
+      - name: Build el8
+        env:
+          PACKAGE: el8_64
+          BUILD: foss
+          BUILDER: choria/packager:el8-go1.17
+
+        shell: bash --noprofile --norc -x -e -o pipefail {0}
+        run: |
+          docker run \
+            --rm \
+            -v `pwd`/src/github.com/choria-io/go-choria:/go/src/github.com/choria-io/go-choria \
+            -v `pwd`/artifacts:/artifacts \
+            -e SOURCE_DIR=/go/src/github.com/choria-io/go-choria \
+            -e SHA1=${GITHUB_SHA} \
+            -e BUILD=${BUILD} \
+            -e VERSION="0.99.0.$(date +'%Y%m%d')" \
+            -e ARTIFACTS=/artifacts \
+            -e PACKAGE=${PACKAGE} \
+            ${BUILDER}
+
+          ls -l artifacts
+
+      - name: Archive build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: el8_64
+          path: artifacts
