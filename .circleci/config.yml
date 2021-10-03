@@ -274,38 +274,6 @@ jobs:
 
 workflows:
   version: 2
-  nightly:
-    triggers:
-      - schedule:
-          cron: "0 0 * * *"
-          filters:
-            branches:
-              only:
-                - master
-                - main
-
-    jobs:
-      - test
-
-      - build_el8_64bit_rpms:
-          context: org-global
-          requires:
-            - test
-
-      - build_el7_64bit_rpms:
-          context: org-global
-          requires:
-            - test
-
-      - gather_artifacts:
-          requires:
-            - build_el7_64bit_rpms
-            - build_el8_64bit_rpms
-
-      - nightly_do_spaces:
-          requires:
-            - gather_artifacts
-
   test_and_ship:
     jobs:
       - test:
