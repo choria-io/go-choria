@@ -36,14 +36,17 @@ func (k *kvStatusCommand) Run(wg *sync.WaitGroup) error {
 		return err
 	}
 
+	ok, failed := status.Replicas()
+
 	fmt.Printf("%s Key-Value Store\n", status.Bucket())
 	fmt.Println()
-	fmt.Printf("     Bucket Name: %s\n", status.Bucket())
-	fmt.Printf("   Values Stored: %d\n", status.Values())
-	fmt.Printf("         History: %d\n", status.History())
-	fmt.Printf("             TTL: %v\n", status.TTL())
-	fmt.Printf(" Max Bucket Size: %d\n", status.MaxBucketSize())
-	fmt.Printf("  Max Value Size: %d\n", status.MaxValueSize())
+	fmt.Printf("      Bucket Name: %s\n", status.Bucket())
+	fmt.Printf("    Values Stored: %d\n", status.Values())
+	fmt.Printf("          History: %d\n", status.History())
+	fmt.Printf("              TTL: %v\n", status.TTL())
+	fmt.Printf("  Max Bucket Size: %d\n", status.MaxBucketSize())
+	fmt.Printf("   Max Value Size: %d\n", status.MaxValueSize())
+	fmt.Printf(" Storage Replicas: OK %d Failed: %d\n", ok, failed)
 
 	return nil
 }

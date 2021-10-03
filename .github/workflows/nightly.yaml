@@ -1,0 +1,59 @@
+name: Choria Nightly
+on:
+  workflow_dispatch: {}
+  schedule:
+    - cron: "40 4 * * *"
+
+jobs:
+  el7_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          path: src/github.com/choria-io/go-choria
+
+      - name: Build
+        uses: choria-io/packager/action@master
+        with:
+          build_package: el7_64
+          packager_tag: el7-go1.17
+          version: nightly
+
+  el8_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          path: src/github.com/choria-io/go-choria
+
+      - name: Build
+        uses: choria-io/packager/action@master
+        with:
+          build_package: el8_64
+          packager_tag: el8-go1.17
+          version: nightly
+
+  upload:
+    needs:
+      - el7_64
+      - el8_64
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+
+      - name: Upload artifacts to Spaces
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --endpoint=https://ams3.digitaloceanspaces.com --acl authenticated-read
+        env:
+          AWS_S3_BUCKET: choria-packages-ams
+          AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SPACES_SECRET_ACCESS_KEY }}
+          SOURCE_DIR: artifacts/foss
+          DEST_DIR: nightly
