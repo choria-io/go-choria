@@ -1,0 +1,43 @@
+name: Unit Tests
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        go: [1.16, 1.17]
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{matrix.go}}
+
+      - name: Install dependencies
+        shell: bash --noprofile --norc -x -eo pipefail {0}
+        run: |
+          go get -u honnef.co/go/tools/cmd/staticcheck
+          go get -u github.com/client9/misspell/cmd/misspell
+          go get -u github.com/onsi/ginkgo/ginkgo
+
+      - name: Lint
+        shell: bash --noprofile --norc -x -eo pipefail {0}
+        run: |
+          GO_LIST=$(go list ./...)
+          $(exit $(go fmt $GO_LIST | wc -l))
+          go vet $GO_LIST
+          find . -type f -name "*.go" | xargs misspell -error -locale US -i flavour
+          staticcheck $GO_LIST
+
+      - name: Test
+        env:
+          MCOLLECTIVE_CERTNAME: rip.mcollective
+        shell: bash --noprofile --norc -x -eo pipefail {0}
+        run: |
+          pwd
+          ls -l
+          ginkgo -r -vet=off

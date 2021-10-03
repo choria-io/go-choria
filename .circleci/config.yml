@@ -277,19 +277,17 @@ workflows:
   test_and_ship:
     jobs:
       - test:
-          filters:
-            tags:
-              only: /.+/
-
-      - hold:
-          type: approval
-          requires:
-            - test
           filters: &semver_only
             tags:
               only: /^v\d+\.\d+\.\d+$/
             branches:
               ignore: /.*/
+
+      - hold:
+          type: approval
+          requires:
+            - test
+          filters: *semver_only
 
       - build_el7_64bit_rpms:
           filters: *semver_only
