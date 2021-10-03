@@ -12,7 +12,7 @@ environment:
 init:
   - git config --global core.autocrlf input
 
-stack: go 1.16
+stack: go 1.17
 
 install:
   # Install the specific Go version.
