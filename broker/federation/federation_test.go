@@ -10,6 +10,7 @@ import (
 	"sync"
 	"testing"
 
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/nats-io/nats.go"
 	. "github.com/onsi/ginkgo"
@@ -23,12 +24,14 @@ import (
 var c *choria.Framework
 
 func init() {
-	c, _ = choria.New("testdata/federation.cfg")
+	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
+	cfg, _ := config.NewConfig("testdata/federation.cfg")
+	cfg.OverrideCertname = "rip.mcollective"
+	c, _ = choria.NewWithConfig(cfg)
 }
 
 func TestFederation(t *testing.T) {
 	log.SetOutput(io.Discard)
-	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Broker/Federation")

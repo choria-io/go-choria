@@ -404,8 +404,11 @@ var _ = Describe("McoRPC/Client/Options", func() {
 		It("Should shuffle random method targets", func() {
 			o.LimitMethod = "random"
 			o.shuffleLimitedTargets(targets)
-			Expect(targets).To(HaveLen(100))
 			// small chance of failure here if random shuffling leaves these 2 in place
+			if targets[0] != "target0" || targets[99] != "target99" {
+				o.shuffleLimitedTargets(targets)
+			}
+			Expect(targets).To(HaveLen(100))
 			Expect(targets[0]).ToNot(Equal("target0"))
 			Expect(targets[99]).ToNot(Equal("target99"))
 			Expect(targets).To(HaveLen(100))

@@ -33,6 +33,8 @@ var _ = Describe("Choria NATS Ingest", func() {
 		ctx, cancel = context.WithCancel(context.Background())
 		logger, logtxt, logbuf = newDiscardLogger()
 
+		c.Config.OverrideCertname = "rip.mcollective"
+
 		rid, err := c.NewRequestID()
 		Expect(err).ToNot(HaveOccurred())
 
