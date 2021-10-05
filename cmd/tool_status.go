@@ -16,6 +16,8 @@ type tStatusCommand struct {
 	lastMessage    time.Duration
 	maxAge         time.Duration
 	certExpire     time.Duration
+	provisioning   bool
+	provisioned    bool
 }
 
 func (s *tStatusCommand) Setup() (err error) {
@@ -26,6 +28,8 @@ func (s *tStatusCommand) Setup() (err error) {
 		s.cmd.Flag("message-since", "Maximum time to allow no messages to pass (0 disables)").Default("1h").DurationVar(&s.lastMessage)
 		s.cmd.Flag("max-age", "Maximum age for the status file (0 disables)").Default("30m").DurationVar(&s.maxAge)
 		s.cmd.Flag("certificate-age", "Check if the certificate expires sooner than this duration (0 disabled").Default("24h").DurationVar(&s.certExpire)
+		s.cmd.Flag("unprovisioned", "Checks that the server is in provisioning mode").Default("false").BoolVar(&s.provisioning)
+		s.cmd.Flag("provisioned", "Checks that the server is not being provisioned").Default("false").BoolVar(&s.provisioned)
 	}
 
 	return nil
@@ -67,6 +71,18 @@ func (s *tStatusCommand) checkFileAge(status *statistics.InstanceStatus) (err er
 	return status.CheckFileAge(s.maxAge)
 }
 
+func (s *tStatusCommand) checkProvisioning(status *statistics.InstanceStatus) error {
+	if s.provisioning && !status.Provisioning {
+		return fmt.Errorf("not in provisioning mode")
+	}
+
+	if s.provisioned && status.Provisioning {
+		return fmt.Errorf("in provisioning mode")
+	}
+
+	return nil
+}
+
 func (s *tStatusCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
@@ -93,6 +109,11 @@ func (s *tStatusCommand) Run(wg *sync.WaitGroup) (err error) {
 	err = s.checkLastMessage(status)
 	if err != nil {
 		s.exit(fmt.Errorf("no recent messages: %s", err))
+	}
+
+	err = s.checkProvisioning(status)
+	if err != nil {
+		s.exit(err)
 	}
 
 	s.exit(nil)
