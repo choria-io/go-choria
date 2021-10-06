@@ -316,6 +316,7 @@ A number of things are customizable see the section at the top of the `buildspec
 In general you should only do this if you know what you are doing, have special needs, want custom agents etc
 
 ### Compiling in custom agents
+
 Agents can be written in Go and if you're building a custom binary you can include your agents
 in your binary.
 
@@ -338,58 +339,22 @@ Provisioning is supported but by disabled in the shipped binaries and can be ena
 
 Please see the documentation in the [provisioner](https://github.com/choria-io/provisioner) repository for how to enable and use this feature.
 
-### Compiling in custom agent providers
-
-Agent Providers allow entirely new ways of writing agents to be created.  An example is the one that runs old mcollective ruby agents
-within a choria instance.
-
-During your CI or whatever you have to `go get` the repo with your agent, so it's available during compile, then create a file `packager/user_plugins.yaml`:
-
-```yaml
----
-rubymco: github.com/choria-io/go-choria/mcorpc/ruby
-```
-
-When you run `go generate` (done during the building phase for you) this will create the shim you need to compile your agent into the binary.
-
-Your agent must implement the `plugin.Pluggable` interface.
-
 ## Packages
 
-RPMs are hosted in the Choria yum repository for el6 and 7 64bit systems, the official choria Puppet module can configure these for you:
+RPMs and DEBs are hosted in the Choria packages repository, the official [choria Puppet module](https://forge.puppet.com/modules/choria/choria) can configure these for you.
 
-```ini
-[choria_release]
-name=choria_release
-baseurl=https://packagecloud.io/choria/release/el/$releasever/$basearch
-repo_gpgcheck=1
-gpgcheck=0
-enabled=1
-gpgkey=https://packagecloud.io/choria/release/gpgkey
-sslverify=1
-sslcacert=/etc/pki/tls/certs/ca-bundle.crt
-metadata_expire=300
-```
+Packages and repositories are signed uing our [RELEASE-GPG-KEY](https://choria.io/RELEASE-GPG-KEY).
 
 ## Nightly Builds
 
-Nightly RPMs are published for EL7 64bit in the following repo:
+Nightly packages are published for RedHat systems and are versioned `0.99.0` with a date portion added:  `choria-0.99.0.20180126-1.el7.x86_64.rpm`, the official [choria Puppet module](https://forge.puppet.com/modules/choria/choria) can configure these for you.
 
-```ini
-[choria_nightly]
-name=choria_nightly
-baseurl=https://packagecloud.io/choria/nightly/el/$releasever/$basearch
-repo_gpgcheck=1
-gpgcheck=0
-enabled=1
-gpgkey=https://packagecloud.io/choria/nightly/gpgkey
-sslverify=1
-sslcacert=/etc/pki/tls/certs/ca-bundle.crt
-metadata_expire=300
+Setting the setting below will enable the nightly repository and install a specific version from it:
+
+```yaml
+choria::nightly_repo: true
+choria::version: 0.99.0.20211005
 ```
+Setting the version to latest and enabling the nightly repo should also work since nightly has a newer version than releases.
 
-Nightly packages are versioned `0.99.0` with a date portion added:  `choria-0.99.0.20180126-1.el7.x86_64.rpm`
-
-## Thanks
-
-<img src="https://packagecloud.io/images/packagecloud-badge.png" width="158">
+Packages and repositories are signed uing our [NIGHTLY-GPG-KEY](https://choria.io/NIGHTLY-GPG-KEY).

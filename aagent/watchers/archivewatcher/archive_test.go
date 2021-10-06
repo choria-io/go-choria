@@ -7,6 +7,7 @@ package archive
 import (
 	"encoding/json"
 	"os"
+	"path/filepath"
 	"runtime"
 	"testing"
 	"time"
@@ -60,6 +61,21 @@ var _ = Describe("Watcher", func() {
 	AfterEach(func() {
 		mockctl.Finish()
 		os.RemoveAll(td)
+	})
+
+	Describe("mkTempDir", func() {
+		It("Should create a temp dir above the creates dir in tmp", func() {
+			creates, err := os.MkdirTemp("", "")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(creates).ToNot(BeEmpty())
+			defer os.RemoveAll(creates)
+
+			w.properties.Creates = creates
+			td, err := w.mkTempDir()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(td).ToNot(BeEmpty())
+			Expect(filepath.Dir(td)).To(Equal(filepath.Join(filepath.Dir(creates), "tmp")))
+		})
 	})
 
 	Describe("verify", func() {
