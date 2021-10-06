@@ -61,7 +61,13 @@ var _ = Describe("InputItem", func() {
 		It("Should validate float", func() {
 			input.Type = InputTypeFloat
 			warnings, err := input.ValidateValue(10.2)
-			Expect(err).To(BeNil())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(warnings).To(HaveLen(0))
+
+			v, err := input.ConvertStringValue("200.0")
+			Expect(err).ToNot(HaveOccurred())
+			warnings, err = input.ValidateValue(v)
+			Expect(err).ToNot(HaveOccurred())
 			Expect(warnings).To(HaveLen(0))
 
 			warnings, err = input.ValidateValue("a")
