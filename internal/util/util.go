@@ -2,9 +2,12 @@ package util
 
 import (
 	"context"
+	"crypto/sha256"
 	"encoding/base64"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
+	"io"
 	"math/rand"
 	"os"
 	"path/filepath"
@@ -496,4 +499,29 @@ func FuncMap(f map[string]interface{}) template.FuncMap {
 	}
 
 	return fm
+}
+
+func FileHasSha256Sum(path string, sum string) (bool, string, error) {
+	s, err := Sha256HashFile(path)
+	if err != nil {
+		return false, "", err
+	}
+
+	return s == sum, s, nil
+}
+
+func Sha256HashFile(path string) (string, error) {
+	hasher := sha256.New()
+	f, err := os.Open(path)
+	if err != nil {
+		return "", err
+	}
+	defer f.Close()
+
+	_, err = io.Copy(hasher, f)
+	if err != nil {
+		return "", err
+	}
+
+	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
