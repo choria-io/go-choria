@@ -185,7 +185,7 @@ func (a *AAgent) loadFromSource(ctx context.Context) error {
 	for _, file := range files {
 		path := filepath.Join(a.source, file.Name())
 
-		if !file.IsDir() || strings.HasPrefix(path, ".") || strings.HasSuffix(path, "-temp") {
+		if !file.IsDir() || path == "tmp" || strings.HasPrefix(path, ".") || strings.HasSuffix(path, "-temp") {
 			continue
 		}
 
