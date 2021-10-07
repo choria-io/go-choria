@@ -17,6 +17,12 @@ func TestGinkgo(t *testing.T) {
 }
 
 var _ = Describe("Internal/Util", func() {
+	Describe("Sha256Bytes", func() {
+		It("Should correctly calculate the checksum", func() {
+			Expect(Sha256HashBytes([]byte("sample file"))).To(Equal("9f28ca60126cb0c438bc90f6d323efb4abf699f976c18a7a88cdb166e45e22ec"))
+		})
+	})
+
 	Describe("Sha256HashFile", func() {
 		It("Should handle errors", func() {
 			s, err := Sha256HashFile("/nonexisting")

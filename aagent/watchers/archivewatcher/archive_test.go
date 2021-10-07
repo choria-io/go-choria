@@ -20,10 +20,10 @@ import (
 
 func TestMachine(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Archive")
+	RunSpecs(t, "AAgent/Watchers/MachinesWatcher")
 }
 
-var _ = Describe("Watcher", func() {
+var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 	var (
 		w       *Watcher
 		machine *model.MockMachine

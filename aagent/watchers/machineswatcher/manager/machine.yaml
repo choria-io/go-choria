@@ -1,0 +1,37 @@
+name: machine_manager
+version: 0.0.1
+initial_state: MANAGE
+
+# States
+#
+#   MANAGE      - Manages machines, poll data
+#   MAINTENANCE - Nothing happens
+
+transitions:
+  - name: enter_maintenance
+    from: [MANAGE]
+    destination: MAINTENANCE
+
+  - name: resume
+    from: [MAINTENANCE]
+    destination: MANAGE
+
+watchers:
+  - name: specification
+    type: kv
+    interval: 10m
+    state_match: [MANAGE]
+    properties:
+      bucket: MACHINES
+      key: spec
+      mode: poll
+      bucket_prefix: false
+
+  - name: manage_machines
+    state_match: [MANAGE]
+    type: machines
+    interval: 5m
+    properties:
+      data_item: spec
+      purge_unknown: true
+      machine_manage_interval: 10m

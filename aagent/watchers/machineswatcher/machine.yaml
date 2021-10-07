@@ -1,0 +1,28 @@
+name: "mm_{{ .Name }}"
+version: 1.0.0
+initial_state: MANAGE
+
+transitions:
+  - name: enter_maintenance
+    from: [MANAGE]
+    destination: MAINTENANCE
+
+  - name: resume
+    from: [MAINTENANCE]
+    destination: MANAGE
+
+watchers:
+  - name: download
+    type: archive
+    interval: "{{.Interval}}"
+    state_match:
+      - MANAGE
+    properties:
+      source: "{{.Source}}"
+      checksum: "{{ .ArchiveChecksum }}"
+      verify: "SHA256SUMS"
+      verify_checksum: "{{ .ContentChecksumsChecksum }}"
+      creates: "{{ .Name }}"
+      target: "{{ .Target }}"
+      username: "{{ .Username }}"
+      password: "{{ .Password }}"
