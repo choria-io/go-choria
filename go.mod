@@ -29,26 +29,26 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/mitchellh/mapstructure v1.4.2
-	github.com/nats-io/jsm.go v0.0.27-0.20210930130538-fc08f13aebd3
-	github.com/nats-io/nats-server/v2 v2.6.2-0.20210930194813-74988e68f08f
+	github.com/nats-io/jsm.go v0.0.27-0.20211006163108-9aae04fb57e9
+	github.com/nats-io/nats-server/v2 v2.6.2-0.20211006191255-208146aade89
 	github.com/nats-io/nats-streaming-server v0.22.1 // indirect
 	github.com/nats-io/nats.go v1.12.3
 	github.com/nats-io/stan.go v0.10.0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.16.0
-	github.com/open-policy-agent/opa v0.33.0
+	github.com/open-policy-agent/opa v0.33.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/tidwall/gjson v1.9.1
+	github.com/tidwall/gjson v1.9.2
 	github.com/tidwall/pretty v1.2.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
-	golang.org/x/net v0.0.0-20210929193557-e81a3d93ecf6 // indirect
-	golang.org/x/sys v0.0.0-20211001092434-39dca1131b70
+	golang.org/x/net v0.0.0-20211006190231-62292e806868 // indirect
+	golang.org/x/sys v0.0.0-20211007075335-d3039528d8ac
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/tools v0.1.7
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
