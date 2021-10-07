@@ -1,12 +1,12 @@
 ## Archive Watcher for Choria Autonomous Agents
 
-This repository contains an [Autonomous Agent](https://choria.io/docs/autoagents/) Watcher plugin capable of
-downloading `tar.gz` archives from an HTTP(S) repository, verify them continuously and repair them on unexpected
-changes.
+This is an [Autonomous Agent](https://choria.io/docs/autoagents/) Watcher plugin capable of downloading `tar.gz` 
+archives from an HTTP(S) repository, verify them continuously and repair them on unexpected changes.
 
-## Archive Watcher
+It's primarily designed to work with the `machines` watcher also in this repository, neither are enabled by 
+default in standard released Choria.
 
-### Goals
+## Goals
 
 This is built in a way that would allow the initial Autonomous Agent to be compiled into the Choria binary, meaning no-one
 can modify its behaviour or requirements for checksum verification etc.
@@ -26,7 +26,7 @@ Every event such as verification failing, new files downloaded etc publish [Clou
 Today it's focussed on small single directory archives - like Choria Autonomous Agents - and the verification is restricted
 to a single directory.
 
-### Preparing an archive
+## Preparing an archive
 
 This supports GZipped Tar files only, we have a typical Choria Autonomous Agent here:
 
@@ -53,7 +53,7 @@ f11ea2005de97bf309bafac46e77c01925307a26675f44f388d4502d2b9d00bf  metadata-machi
 
 Place this file on any webserver of your choice. Note these checksums for later.
 
-### Configuration
+## Configuration
 
 First we'll create a Key-Value store to configure this Autonomous Agent, since we're creating one that introspect the machine
 for some metadata we call it `METADATA`:

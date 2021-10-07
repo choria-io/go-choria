@@ -1,6 +1,7 @@
 package util
 
 import (
+	"bytes"
 	"context"
 	"crypto/sha256"
 	"encoding/base64"
@@ -10,6 +11,7 @@ import (
 	"io"
 	"math/rand"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"regexp"
 	"runtime"
@@ -508,6 +510,25 @@ func FileHasSha256Sum(path string, sum string) (bool, string, error) {
 	}
 
 	return s == sum, s, nil
+}
+
+func Sha256HashBytes(c []byte) (string, error) {
+	hasher := sha256.New()
+	r := bytes.NewReader(c)
+	_, err := io.Copy(hasher, r)
+	if err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(hasher.Sum(nil)), nil
+}
+
+func IsExecutableInPath(c string) bool {
+	p, err := exec.LookPath(c)
+	if err != nil {
+		return false
+	}
+
+	return p != ""
 }
 
 func Sha256HashFile(path string) (string, error) {
