@@ -784,7 +784,7 @@ func (m *Machine) saveData() error {
 		return err
 	}
 
-	tf, err := os.CreateTemp("", "")
+	tf, err := os.CreateTemp(m.Directory(), "")
 	if err != nil {
 		return err
 	}
