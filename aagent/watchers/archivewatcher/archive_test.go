@@ -65,22 +65,23 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 
 	Describe("mkTempDir", func() {
 		It("Should create a temp dir above the creates dir in tmp", func() {
-			creates, err := os.MkdirTemp("", "")
+			md, err := os.MkdirTemp("", "")
 			Expect(err).ToNot(HaveOccurred())
-			Expect(creates).ToNot(BeEmpty())
-			defer os.RemoveAll(creates)
+			Expect(md).ToNot(BeEmpty())
+			defer os.RemoveAll(md)
 
-			w.properties.Creates = creates
+			w.properties.TargetDirectory = filepath.Join(md, "machines")
+			w.properties.Creates = "machine-name"
+
 			td, err := w.mkTempDir()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(td).ToNot(BeEmpty())
-			Expect(filepath.Dir(td)).To(Equal(filepath.Join(filepath.Dir(creates), "tmp")))
+			Expect(filepath.Dir(td)).To(Equal(filepath.Join(w.properties.TargetDirectory, "tmp")))
 		})
 	})
 
 	Describe("verify", func() {
 		BeforeEach(func() {
-			w.properties.TargetDirectory = "testdata"
 			w.properties.ContentChecksums = "SHA256SUMS"
 			w.properties.ContentChecksumsChecksum = "40cb790b7199be45f3116354f87b2bdc3aa520a1eb056aa3608911cf40d1f821"
 		})

@@ -257,9 +257,8 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 }
 
 func (w *Watcher) extractAndVerifyToTemp(path string) (string, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return "", err
+	if path == "" {
+		return "", fmt.Errorf("empty archive path")
 	}
 
 	parent := filepath.Dir(path)
@@ -268,6 +267,11 @@ func (w *Watcher) extractAndVerifyToTemp(path string) (string, error) {
 	}
 
 	td, err := os.MkdirTemp(parent, "choria-archive")
+	if err != nil {
+		return "", err
+	}
+
+	f, err := os.Open(path)
 	if err != nil {
 		return "", err
 	}
@@ -377,7 +381,7 @@ func (w *Watcher) untar(s io.Reader, t string) error {
 
 func (w *Watcher) mkTempDir() (string, error) {
 	// aagent loader will ignore tmp directory
-	parent := filepath.Join(filepath.Dir(w.properties.Creates), "tmp")
+	parent := filepath.Join(w.properties.TargetDirectory, "tmp")
 	if !iu.FileIsDir(parent) {
 		err := os.MkdirAll(parent, 0700)
 		if err != nil {
@@ -413,11 +417,12 @@ func (w *Watcher) downloadSourceToTemp(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("invalid url: %s", err)
 	}
 
-	w.Infof("Attempting to download %s", uri.String())
-
 	td, err := w.mkTempDir()
 	if err != nil {
 		return "", fmt.Errorf("could not create temp directory: %s", err)
+	}
+	if td == "" {
+		return "", fmt.Errorf("could not create temp directory for unknown reason")
 	}
 	defer os.RemoveAll(td)
 
@@ -426,6 +431,8 @@ func (w *Watcher) downloadSourceToTemp(ctx context.Context) (string, error) {
 		return "", fmt.Errorf("could not create temp file: %s", err)
 	}
 	defer tf.Close()
+
+	w.Infof("Attempting to download %s to %s", uri.String(), tf)
 
 	err = func() error {
 		client := http.Client{}
