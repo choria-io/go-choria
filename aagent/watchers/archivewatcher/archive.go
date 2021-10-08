@@ -261,6 +261,10 @@ func (w *Watcher) extractAndVerifyToTemp(path string) (string, error) {
 		return "", fmt.Errorf("empty archive path")
 	}
 
+	if !iu.FileExist(path) {
+		return "", fmt.Errorf("archive file %s does not exist", path)
+	}
+
 	parent := filepath.Dir(path)
 	if parent == "" {
 		return "", fmt.Errorf("invalid temp path")
@@ -424,15 +428,14 @@ func (w *Watcher) downloadSourceToTemp(ctx context.Context) (string, error) {
 	if td == "" {
 		return "", fmt.Errorf("could not create temp directory for unknown reason")
 	}
-	defer os.RemoveAll(td)
 
-	tf, err := os.CreateTemp(td, "")
+	tf, err := os.CreateTemp(td, "*-archive.tgz")
 	if err != nil {
 		return "", fmt.Errorf("could not create temp file: %s", err)
 	}
 	defer tf.Close()
 
-	w.Infof("Attempting to download %s to %s", uri.String(), tf)
+	w.Infof("Attempting to download %s to %s", uri.String(), tf.Name())
 
 	err = func() error {
 		client := http.Client{}
@@ -481,6 +484,10 @@ func (w *Watcher) downloadSourceToTemp(ctx context.Context) (string, error) {
 	if err != nil {
 		os.Remove(tf.Name())
 		return "", err
+	}
+
+	if !iu.FileExist(tf.Name()) {
+		return "", fmt.Errorf("downloaded file %s does not exist", tf.Name())
 	}
 
 	return tf.Name(), nil
