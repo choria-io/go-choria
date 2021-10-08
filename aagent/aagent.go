@@ -183,9 +183,10 @@ func (a *AAgent) loadFromSource(ctx context.Context) error {
 	}
 
 	for _, file := range files {
-		path := filepath.Join(a.source, file.Name())
+		name := file.Name()
+		path := filepath.Join(a.source, name)
 
-		if !file.IsDir() || path == "tmp" || strings.HasPrefix(path, ".") || strings.HasSuffix(path, "-temp") {
+		if !file.IsDir() || name == "tmp" || strings.HasPrefix(name, ".") || strings.HasSuffix(name, "-temp") {
 			continue
 		}
 
@@ -215,11 +216,11 @@ func (a *AAgent) loadFromSource(ctx context.Context) error {
 			continue
 		}
 
-		a.logger.Infof("Attempting to load Choria Machine from %s", path)
+		a.logger.Infof("Attempting to load Autonomous Agent from %s", path)
 
 		err = a.loadMachine(ctx, path)
 		if err != nil {
-			a.logger.Errorf("Could not load machine from %s: %s", path, err)
+			a.logger.Errorf("Could not load Autonomous Agent from %s: %s", path, err)
 		}
 	}
 

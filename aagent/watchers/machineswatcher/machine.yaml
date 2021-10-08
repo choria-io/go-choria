@@ -4,11 +4,11 @@ initial_state: MANAGE
 
 transitions:
   - name: enter_maintenance
-    from: [MANAGE]
+    from: [ MANAGE ]
     destination: MAINTENANCE
 
   - name: resume
-    from: [MAINTENANCE]
+    from: [ MAINTENANCE ]
     destination: MANAGE
 
 watchers:
@@ -26,3 +26,4 @@ watchers:
       target: "{{ .Target }}"
       username: "{{ .Username }}"
       password: "{{ .Password }}"
+      governor: "{{ .Governor }}"

@@ -67,6 +67,7 @@ type ManagedMachine struct {
 	ContentChecksumsChecksum string `json:"verify_checksum" yaml:"verify_checksum" mapstructure:"verify_checksum"`
 	ArchiveChecksum          string `json:"checksum" yaml:"checksum" mapstructure:"checksum"`
 	Matcher                  string `json:"match" yaml:"match" mapstructure:"match"`
+	Governor                 string `json:"governor" yaml:"governor" mapstructure:"governor"`
 
 	Interval string `json:"-"`
 	Target   string `json:"-"`
