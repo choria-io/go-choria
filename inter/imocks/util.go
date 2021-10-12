@@ -1,19 +1,24 @@
 package imock
 
 import (
+	"fmt"
 	"io"
+	"os"
 	"strings"
 
 	"github.com/brutella/hc/util"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/golang/mock/gomock"
 	"github.com/sirupsen/logrus"
 )
 
 type fwMockOpts struct {
-	callerID   string
-	logDiscard bool
-	cfg        *config.Config
+	callerID    string
+	logDiscard  bool
+	cfg         *config.Config
+	ddlResolver inter.DDLResolver
+	ddls        [][3]string
 }
 type fwMockOption func(*fwMockOpts)
 
@@ -44,6 +49,18 @@ func WithConfigFile(f string) fwMockOption {
 			panic(err)
 		}
 		o.cfg = cfg
+	}
+}
+
+func WithDDLResolver(r inter.DDLResolver) fwMockOption {
+	return func(o *fwMockOpts) {
+		o.ddlResolver = r
+	}
+}
+
+func WithDDLFiles(kind string, plugin string, path string) fwMockOption {
+	return func(o *fwMockOpts) {
+		o.ddls = append(o.ddls, [3]string{kind, plugin, path})
 	}
 }
 
@@ -84,6 +101,20 @@ func NewFrameworkForTests(ctrl *gomock.Controller, logWriter io.Writer, opts ...
 			return parts[1]
 		}).AnyTimes()
 	}
+
+	if mopts.ddlResolver == nil {
+		resolver := NewMockDDLResolver(ctrl)
+		mopts.ddlResolver = resolver
+		for _, ddl := range mopts.ddls {
+			f, err := os.ReadFile(ddl[2])
+			if err != nil {
+				panic(fmt.Sprintf("ddl file %s: %s", ddl[2], err))
+			}
+			resolver.EXPECT().DDLBytes(gomock.Any(), gomock.Eq("agent"), gomock.Eq("package"), gomock.Any()).Return(f, nil).AnyTimes()
+		}
+	}
+
+	fw.EXPECT().DDLResolvers().Return([]inter.DDLResolver{mopts.ddlResolver}, nil).AnyTimes()
 
 	return fw, fw.Configuration()
 }

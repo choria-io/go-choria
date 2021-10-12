@@ -1,3 +1,7 @@
+// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package config
 
 import (
@@ -164,6 +168,9 @@ type Config struct {
 	// setting will hint to choria.Message to return the same transport message
 	// repeatedly
 	CacheBatchedTransports bool
+
+	// Allow things like completion to put the DDL Registry in cache-only mode
+	RegistryCacheOnly bool
 }
 
 // NewDefaultSystemConfig creates a new configuration for system services

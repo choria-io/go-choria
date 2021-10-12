@@ -15,8 +15,6 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	rpcclient "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
-	"github.com/choria-io/go-choria/srvcache"
-	"github.com/sirupsen/logrus"
 )
 
 // Stats are the statistics for a request
@@ -41,24 +39,7 @@ type Stats interface {
 // NodeSource discovers nodes
 type NodeSource interface {
 	Reset()
-	Discover(ctx context.Context, fw ChoriaFramework, filters []FilterFunc) ([]string, error)
-}
-
-// ChoriaFramework is the Choria framework
-type ChoriaFramework interface {
-	Logger(string) *logrus.Entry
-	SetLogger(*logrus.Logger)
-	Configuration() *config.Config
-	NewMessage(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error)
-	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
-	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
-	MiddlewareServers() (servers srvcache.Servers, err error)
-	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn inter.Connector, err error)
-	NewRequestID() (string, error)
-	Certname() string
-	PQLQueryCertNames(query string) ([]string, error)
-	Colorize(c string, format string, a ...interface{}) string
-	ProgressWidth() int
+	Discover(ctx context.Context, fw inter.Framework, filters []FilterFunc) ([]string, error)
 }
 
 // FilterFunc can generate a Choria filter
@@ -108,7 +89,7 @@ type Log interface {
 
 // ChoriaUtilClient to the choria_util agent
 type ChoriaUtilClient struct {
-	fw            ChoriaFramework
+	fw            inter.Framework
 	cfg           *config.Config
 	ddl           *agent.DDL
 	ns            NodeSource
@@ -135,7 +116,7 @@ type Metadata struct {
 }
 
 // Must create a new client and panics on error
-func Must(fw ChoriaFramework, opts ...InitializationOption) (client *ChoriaUtilClient) {
+func Must(fw inter.Framework, opts ...InitializationOption) (client *ChoriaUtilClient) {
 	c, err := New(fw, opts...)
 	if err != nil {
 		panic(err)
@@ -145,7 +126,7 @@ func Must(fw ChoriaFramework, opts ...InitializationOption) (client *ChoriaUtilC
 }
 
 // New creates a new client to the choria_util agent
-func New(fw ChoriaFramework, opts ...InitializationOption) (client *ChoriaUtilClient, err error) {
+func New(fw inter.Framework, opts ...InitializationOption) (client *ChoriaUtilClient, err error) {
 	c := &ChoriaUtilClient{
 		fw:            fw,
 		ddl:           &agent.DDL{},

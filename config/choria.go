@@ -1,3 +1,7 @@
+// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package config
 
 import (
@@ -131,8 +135,8 @@ type ChoriaPluginConfig struct {
 
 	RequireClientFilter bool `confkey:"plugin.choria.require_client_filter" default:"false"` // If a client filter should always be required, only used in Go clients
 
-	RegistryServiceEnabled bool `confkey:"plugin.choria.services.registry.enable" default:"false"` // If the registry service should be enabled on this server
-	RegistryClientEnabled  bool `confkey:"plugin.choria.services.registry.client" default:"false"` // Enable downloading DDLs and other schemas from the registry service
+	RegistryServiceStore string `confkey:"plugin.choria.services.registry.store" type:"path_string"` // Directory where the Registry service finds DDLs to read
+	RegistryClientCache  string `confkey:"plugin.choria.services.registry.cache" type:"path_string"` // Directory where the Registry client stores DDLs found in the registry
 
 	SubmissionSpool        string `confkey:"plugin.choria.submission.spool" type:"path_string"`     // Path to a directory holding messages to submit to the middleware
 	SubmissionSpoolMaxSize int    `confkey:"plugin.choria.submission.max_spool_size" default:"500"` // Maximum amount of messages allowed into each priority

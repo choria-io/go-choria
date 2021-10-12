@@ -56,7 +56,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		cl = NewMockChoriaClient(mockctl)
 
-		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
+		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID(), imock.WithDDLFiles("agent", "package", "testdata/mcollective/agent/package.json"))
 		fw.EXPECT().NewMessage(gomock.Any(), gomock.Eq("package"), gomock.Eq("ginkgo"), gomock.Eq(inter.RequestMessageType), gomock.Eq(nil)).DoAndReturn(func(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
 			return message.NewMessage(payload, agent, collective, msgType, request, fw)
 		}).AnyTimes()
@@ -68,7 +68,6 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		rpc.cl = cl
-
 		ctx, cancel = context.WithCancel(context.Background())
 	})
 

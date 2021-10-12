@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/client/discovery"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/discovery/broadcast"
 	"github.com/choria-io/go-choria/providers/discovery/external"
@@ -32,7 +33,7 @@ func (b *BroadcastNS) Reset() {
 }
 
 // Discover performs the discovery of nodes against the Choria Network
-func (b *BroadcastNS) Discover(ctx context.Context, fw ChoriaFramework, filters []FilterFunc) ([]string, error) {
+func (b *BroadcastNS) Discover(ctx context.Context, fw inter.Framework, filters []FilterFunc) ([]string, error) {
 	b.Lock()
 	defer b.Unlock()
 
@@ -85,7 +86,7 @@ func (p *ExternalNS) Reset() {
 	p.nodeCache = []string{}
 }
 
-func (p *ExternalNS) Discover(ctx context.Context, fw ChoriaFramework, filters []FilterFunc) ([]string, error) {
+func (p *ExternalNS) Discover(ctx context.Context, fw inter.Framework, filters []FilterFunc) ([]string, error) {
 	p.Lock()
 	defer p.Unlock()
 
@@ -138,7 +139,7 @@ func (p *PuppetDBNS) Reset() {
 }
 
 // Discover performs the discovery of nodes against the Choria Network
-func (p *PuppetDBNS) Discover(ctx context.Context, fw ChoriaFramework, filters []FilterFunc) ([]string, error) {
+func (p *PuppetDBNS) Discover(ctx context.Context, fw inter.Framework, filters []FilterFunc) ([]string, error) {
 	p.Lock()
 	defer p.Unlock()
 
@@ -212,7 +213,7 @@ func (p *MetaNS) Reset() {
 }
 
 // Discover performs the discovery of nodes against the Choria Network.
-func (p *MetaNS) Discover(ctx context.Context, fw ChoriaFramework, _ []FilterFunc) ([]string, error) {
+func (p *MetaNS) Discover(ctx context.Context, fw inter.Framework, _ []FilterFunc) ([]string, error) {
 	p.Lock()
 	defer p.Unlock()
 

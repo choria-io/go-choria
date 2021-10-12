@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'rpcutil' Version 0.23.0 generated using Choria version 0.23.0
+// Client for Choria RPC Agent 'rpcutil' Version 0.24.0 generated using Choria version 0.24.1
 
 package rpcutilclient
 

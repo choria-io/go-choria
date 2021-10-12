@@ -1,3 +1,7 @@
+// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package cmd
 
 import (
@@ -7,7 +11,8 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
+	"github.com/choria-io/go-choria/internal/fs"
+	agents "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
 
 type completionCommand struct {
@@ -43,121 +48,23 @@ func (e *completionCommand) Configure() error {
 		cfg.Choria.SecurityProvider = "file"
 	}
 
+	// we dont want to invoke names against the network constantly
+	// so we disable the registry network features and just take
+	// whats in the cache
+	cfg.RegistryCacheOnly = true
 	cfg.DisableSecurityProviderVerify = true
 
-	e.zshScript = `#compdef _choria choria
+	s, err := fs.FS.ReadFile("completion/zsh.template")
+	if err != nil {
+		return err
+	}
+	e.zshScript = string(s)
 
-zstyle ':completion::complete:choria-*' menu select=2
-
-_choria() {
-  local command=${words[2]}
-
-  if [ "$command" = "req" ] || [ "$command" = "rpc" ]; then
-    curcontext="${curcontext%:*:*}:choria-${command}"
-
-    local -a clist
-
-    if (( CURRENT == 3 )); then
-      _call_program choria-list-agents choria completion --zsh --list agents | while read -A hline; do
-        clist=($clist "${hline}")
-      done
-
-      _describe -t choria-agents "Choria Agents" clist
-    elif (( CURRENT == 4 )); then
-      _call_program choria-list-actions choria completion --zsh --list actions --agent=${words[3]} | while read -A hline; do
-        clist=($clist "${hline}")
-      done
-
-      _describe -t choria-actions "${words[3]} Actions" clist
-
-    elif (( CURRENT > 4 )); then
-      _call_program choria-list-inputs choria completion --zsh --list inputs --action=${words[4]} --agent=${words[3]} | while read hline; do
-        clist=($clist $hline)
-      done
-
-      _describe -t choria-inputs "${words[4]} Inputs" clist -S =
-    fi
-
-  else
-    local -a cmdlist
-
-    _call_program choria-list-commands choria --completion-bash "${words[@]:1:$CURRENT}" | xargs -n 1 echo | while read -A hline; do
-      cmdlist=($cmdlist "${hline}")
-    done
-
-    curcontext="${curcontext%:*:*}:choria-commands"
-
-    _describe -t choria-commands 'Choria Commands' cmdlist
-  fi
-}
-`
-	e.bashScript = `_choria_bash_autocomplete() {
-    local cur prev opts base
-    COMPREPLY=()
-    cur="${COMP_WORDS[COMP_CWORD]}"
-
-    if ( _array_contains COMP_WORDS "req" || _array_contains COMP_WORDS "rpc" ) && [[ ${COMP_WORDS[$COMP_CWORD]} != "-"* ]] ; then
-        _choria_req_bash_autocomplete
-    else
-        opts=$( ${COMP_WORDS[0]} --completion-bash ${COMP_WORDS[@]:1:$COMP_CWORD} )
-        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
-    fi
-    return 0
-}
-
-# https://stackoverflow.com/a/14367368
-_array_contains() {
-    local array="$1[@]"
-    local seeking=$2
-    local in=1
-    for element in "${!array}"; do
-        if [[ $element == "$seeking" ]]; then
-            in=0
-            break
-        fi
-    done
-    return $in
-}
-
-_choria_req_bash_autocomplete() {
-    # Assume for completion to work, the command line must match
-    # choria [options] <req|rpc> [agent [action]]
-    # Options are not alloed to appear between req and the action
-
-    # Find the index of req/rpc in the input to serve as the anchor point for where the agent/action appear
-    for index in "${!COMP_WORDS[@]}"; do
-        if [[ "${COMP_WORDS[$index]}" = "req" ]] || [[ "${COMP_WORDS[$index]}" = "rpc" ]] ; then
-            BASE_INDEX=$index
-            break
-        fi
-    done
-
-    AGENT_INDEX=$(expr $BASE_INDEX + 1)
-    ACTION_INDEX=$(expr $BASE_INDEX + 2)
-
-    # If the agent/action are already selected, present the inputs and long-options as further completions
-    if [[ "${#COMP_WORDS[@]}" -gt $(expr $ACTION_INDEX + 1) ]] ; then
-        local INPUTS=$(choria completion --list inputs --agent ${COMP_WORDS[$AGENT_INDEX]} --action ${COMP_WORDS[$ACTION_INDEX]} 2>/dev/null | sed -e 's/$/=/')
-
-        # Prevent inputs from having a space added to them, since they need to be in KEY=VALUE format
-        compopt -o nospace
-
-        COMPREPLY=($(compgen -W "${INPUTS}" -- ${COMP_WORDS[$COMP_CWORD]}))
-
-    # If the agent is selected, present the available actions on the selected agent as completions
-    elif [[ "${#COMP_WORDS[@]}" -gt $(expr $AGENT_INDEX + 1) ]]; then
-        local ACTIONS=$(choria completion --list actions --agent ${COMP_WORDS[$AGENT_INDEX]} 2>/dev/null)
-        COMPREPLY=($(compgen -W "${ACTIONS}" -- ${COMP_WORDS[$COMP_CWORD]}))
-
-    # If nothing is selected, present the available agents as completions
-    elif [[ "${#COMP_WORDS[@]}" -gt $(expr $BASE_INDEX + 1) ]] ; then
-        local AGENTS=$(choria completion --list agents 2>/dev/null)
-        COMPREPLY=($(compgen -W "${AGENTS}" -- ${COMP_WORDS[$COMP_CWORD]}))
-    fi
-}
-
-complete -F _choria_bash_autocomplete choria
-`
+	s, err = fs.FS.ReadFile("completion/bash.template")
+	if err != nil {
+		return err
+	}
+	e.bashScript = string(s)
 	return err
 }
 
@@ -200,7 +107,7 @@ func (e *completionCommand) Run(wg *sync.WaitGroup) error {
 }
 
 func (e *completionCommand) listInputs() {
-	ddl, err := agent.Find(e.agent, cfg.LibDir)
+	ddl, err := e.loadAgent(e.agent)
 	if err != nil {
 		return
 	}
@@ -230,7 +137,7 @@ func (e *completionCommand) listInputs() {
 func (e *completionCommand) listActions() {
 	found := []string{}
 
-	ddl, err := agent.Find(e.agent, cfg.LibDir)
+	ddl, err := e.loadAgent(e.agent)
 	if err != nil {
 		return
 	}
@@ -248,13 +155,47 @@ func (e *completionCommand) listActions() {
 	fmt.Println(strings.Join(found, "\n"))
 }
 
+func (e *completionCommand) loadAgent(name string) (*agents.DDL, error) {
+	resolvers, err := c.DDLResolvers()
+	if err != nil {
+		return nil, err
+	}
+
+	log := c.Logger("ddl")
+	for _, resolver := range resolvers {
+		log.Infof("Resolving DDL agent/%s via %s", name, resolver)
+		data, err := resolver.DDLBytes(ctx, "agent", name, c)
+		if err == nil {
+			return agents.NewFromBytes(data)
+		}
+	}
+
+	return nil, fmt.Errorf("agent/%s ddl not found", name)
+}
+
 func (e *completionCommand) listAgents() {
 	found := []string{}
+	known := map[string]struct{}{}
 
-	agent.EachFile(cfg.LibDir, func(name string, path string) bool {
-		ddl, err := agent.New(path)
+	resolvers, err := c.DDLResolvers()
+	if err != nil {
+		return
+	}
+	for _, resolver := range resolvers {
+		names, err := resolver.DDLNames(ctx, "agent", c)
 		if err != nil {
-			return false
+			return
+		}
+
+		for _, name := range names {
+			known[name] = struct{}{}
+		}
+	}
+
+	for name := range known {
+		ddl, err := e.loadAgent(name)
+		if err != nil {
+			return
 		}
 
 		switch {
@@ -263,9 +204,7 @@ func (e *completionCommand) listAgents() {
 		case e.showBash:
 			found = append(found, ddl.Metadata.Name)
 		}
-
-		return false
-	})
+	}
 
 	sort.Strings(found)
 	fmt.Println(strings.Join(found, "\n"))

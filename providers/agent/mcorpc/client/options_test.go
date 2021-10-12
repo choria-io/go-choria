@@ -27,7 +27,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 		mockctl = gomock.NewController(GinkgoT())
 		fw, _ = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
 
-		ddl, _ := agent.Find("package", []string{"testdata"})
+		ddl, _ := agent.FindLocally("package", []string{"testdata"})
 		o, err = NewRequestOptions(fw, ddl)
 		Expect(err).ToNot(HaveOccurred())
 	})

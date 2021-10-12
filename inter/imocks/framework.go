@@ -577,6 +577,21 @@ func (mr *MockFrameworkMockRecorder) ConfigureProvisioning() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureProvisioning", reflect.TypeOf((*MockFramework)(nil).ConfigureProvisioning))
 }
 
+// DDLResolvers mocks base method.
+func (m *MockFramework) DDLResolvers() ([]inter.DDLResolver, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DDLResolvers")
+	ret0, _ := ret[0].([]inter.DDLResolver)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// DDLResolvers indicates an expected call of DDLResolvers.
+func (mr *MockFrameworkMockRecorder) DDLResolvers() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DDLResolvers", reflect.TypeOf((*MockFramework)(nil).DDLResolvers))
+}
+
 // DisableTLSVerify mocks base method.
 func (m *MockFramework) DisableTLSVerify() bool {
 	m.ctrl.T.Helper()

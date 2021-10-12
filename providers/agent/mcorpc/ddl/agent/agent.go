@@ -1,3 +1,7 @@
+// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package agent
 
 import (
@@ -26,20 +30,12 @@ type DDL struct {
 	SourceLocation string           `json:"-"`
 }
 
-// New creates a new DDL from a JSON file
-func New(file string) (*DDL, error) {
-	ddl := &DDL{
-		SourceLocation: file,
-	}
+func NewFromBytes(dat []byte) (*DDL, error) {
+	ddl := &DDL{}
 
-	dat, err := os.ReadFile(file)
+	err := json.Unmarshal(dat, ddl)
 	if err != nil {
-		return nil, fmt.Errorf("could not load DDL data: %s", err)
-	}
-
-	err = json.Unmarshal(dat, ddl)
-	if err != nil {
-		return nil, fmt.Errorf("could not parse JSON data in %s: %s", file, err)
+		return nil, fmt.Errorf("could not parse DDL JSON data: %s", err)
 	}
 
 	ddl.normalize()
@@ -47,48 +43,33 @@ func New(file string) (*DDL, error) {
 	return ddl, nil
 }
 
-// FindAll loads all plugins from the libdirs and optionally the cache
-func FindAll(libdirs []string, cached bool) ([]*DDL, error) {
-	var found []*DDL
-	var err error
-	var ddl *DDL
+// New creates a new DDL from a JSON file
+func New(file string) (*DDL, error) {
+	dat, err := os.ReadFile(file)
+	if err != nil {
+		return nil, fmt.Errorf("could not load DDL data: %s", err)
+	}
 
-	EachFile(libdirs, func(n string, f string) bool {
-		ddl, err = New(f)
-		if err != nil {
-			return false
-		}
-
-		found = append(found, ddl)
-
-		return true
-	})
+	ddl, err := NewFromBytes(dat)
 	if err != nil {
 		return nil, err
 	}
 
-	if cached {
-		for _, name := range CachedDDLs() {
-			ddl, err = CachedDDL(name)
-			if err != nil {
-				return nil, err
-			}
-			found = append(found, ddl)
-		}
-	}
+	ddl.SourceLocation = file
 
-	return found, nil
+	return ddl, nil
 }
 
-// Find looks in the supplied libdirs for a DDL file for a specific agent
-func Find(agent string, libdirs []string) (*DDL, error) {
+// FindLocally looks in the supplied libdirs for a DDL file for a specific agent
+// TODO: remove
+func FindLocally(agent string, libdirs []string) (*DDL, error) {
 	ddl, _ := CachedDDL(agent)
 	if ddl != nil {
 		return ddl, nil
 	}
 
 	var err error
-	EachFile(libdirs, func(n string, f string) bool {
+	common.EachFile("agent", libdirs, func(n string, f string) bool {
 		if n == agent {
 			ddl, err = New(f)
 			return true
@@ -106,11 +87,6 @@ func Find(agent string, libdirs []string) (*DDL, error) {
 	}
 
 	return ddl, nil
-}
-
-// EachFile calls cb with a path to every found agent DDL, stops looking when br is true
-func EachFile(libdirs []string, cb func(name string, path string) (br bool)) {
-	common.EachFile("agent", libdirs, cb)
 }
 
 func (d *DDL) normalize() {

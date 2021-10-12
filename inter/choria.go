@@ -52,6 +52,7 @@ type Framework interface {
 	ClientTLSConfig() (*tls.Config, error)
 	Colorize(c string, format string, a ...interface{}) string
 	ConfigureProvisioning()
+	DDLResolvers() ([]DDLResolver, error)
 	DisableTLSVerify() bool
 	Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error
 	FacterCmd() string

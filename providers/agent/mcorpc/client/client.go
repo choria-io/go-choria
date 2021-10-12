@@ -1,3 +1,7 @@
+// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package client
 
 import (
@@ -8,7 +12,6 @@ import (
 
 	"github.com/antonmedv/expr/vm"
 	"github.com/choria-io/go-choria/inter"
-	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/registry"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/discovery/broadcast"
@@ -18,27 +21,13 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
-	"github.com/choria-io/go-choria/srvcache"
 
 	"github.com/sirupsen/logrus"
 )
 
-type ChoriaFramework interface {
-	Logger(string) *logrus.Entry
-	Configuration() *config.Config
-	NewMessage(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error)
-	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
-	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
-	MiddlewareServers() (servers srvcache.Servers, err error)
-	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn inter.Connector, err error)
-	NewRequestID() (string, error)
-	Certname() string
-	PQLQueryCertNames(query string) ([]string, error)
-}
-
 // RPC is a MCollective compatible RPC client
 type RPC struct {
-	fw   ChoriaFramework
+	fw   inter.Framework
 	opts *RequestOptions
 	log  *logrus.Entry
 	cfg  *config.Config
@@ -101,7 +90,7 @@ func DiscoveryMethod(dm string) Option {
 //
 // A DDL is required when one is not given using the DDL() option as argument
 // attempts will be made to find it on the file system should this fail an error will be returned
-func New(fw ChoriaFramework, agent string, opts ...Option) (rpc *RPC, err error) {
+func New(fw inter.Framework, agent string, opts ...Option) (rpc *RPC, err error) {
 	rpc = &RPC{
 		fw:    fw,
 		cfg:   fw.Configuration(),
@@ -116,68 +105,6 @@ func New(fw ChoriaFramework, agent string, opts ...Option) (rpc *RPC, err error)
 	}
 
 	return rpc, nil
-}
-
-func (r *RPC) loadDDLFromRegistry(ctx context.Context) error {
-	if !r.cfg.Choria.RegistryClientEnabled {
-		return fmt.Errorf("accessing Choria Registry is not enabled")
-	}
-
-	r.log.Infof("Attempting to load DDL for agent %s from the Choria Registry", r.agent)
-
-	ddl, err := addl.Find("choria_registry", append(r.cfg.LibDir, r.cfg.Choria.RubyLibdir...))
-	if err != nil {
-		return fmt.Errorf("choria_registry DDL lookup failed while tring to resolve %s DDL: %s", r.agent, err)
-	}
-
-	rc, err := New(r.fw, "choria_registry", DDL(ddl))
-	if err != nil {
-		return err
-	}
-
-	var (
-		resultErr error
-		mu        sync.Mutex
-	)
-
-	_, err = rc.Do(ctx, "ddl", registry.DDLRequest{Name: r.agent, PluginType: "agent", Format: "json"}, ReplyHandler(func(pr protocol.Reply, reply *RPCReply) {
-		mu.Lock()
-		defer mu.Unlock()
-
-		if resultErr != nil {
-			return
-		}
-
-		if reply.Statuscode != mcorpc.OK {
-			resultErr = fmt.Errorf("registry error from %s while resolving agent/%s: %s", pr.SenderID(), r.agent, reply.Statusmsg)
-			return
-		}
-
-		resp := registry.DDLResponse{}
-		err := json.Unmarshal(reply.Data, &resp)
-		if err != nil {
-			resultErr = fmt.Errorf("invalid choria_registry#ddl reply: %s", err)
-			return
-		}
-
-		if resp.Name != r.agent {
-			resultErr = fmt.Errorf("invalid choria_registry#ddl reply: unexpected agent %s", resp.Name)
-		}
-
-		r.ddl = &addl.DDL{}
-		resultErr = json.Unmarshal([]byte(resp.DDL), r.ddl)
-	}))
-	if err != nil {
-		return err
-	}
-	if resultErr != nil {
-		return resultErr
-	}
-
-	if r.ddl == nil {
-		return fmt.Errorf("%s DDL did not resolve via Choria Registry for unknown reason", r.agent)
-	}
-	return nil
 }
 
 func (r *RPC) setOptions(opts ...RequestOption) (err error) {
@@ -199,24 +126,51 @@ func (r *RPC) setOptions(opts ...RequestOption) (err error) {
 }
 
 func (r *RPC) ResolveDDL(ctx context.Context) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	if r.ddl != nil {
 		return nil
 	}
 
-	var err error
+	ddl, err := r.resolveDDL(ctx)
+	if err != nil {
+		return err
+	}
 
-	if r.ddl == nil {
-		r.ddl, err = addl.Find(r.agent, r.cfg.LibDir)
-		if !r.cfg.Choria.RegistryClientEnabled && err != nil {
-			return fmt.Errorf("could not load %s DDL locally: %s", r.agent, err)
-		}
+	r.ddl = ddl
 
-		if r.ddl != nil {
-			return nil
+	return nil
+}
+
+func (r *RPC) resolveDDL(ctx context.Context) (*addl.DDL, error) {
+	if r.ddl != nil {
+		return r.ddl, nil
+	}
+
+	resolvers, err := r.fw.DDLResolvers()
+	if err != nil {
+		return nil, err
+	}
+
+	for _, resolver := range resolvers {
+		r.log.Debugf("Attempting to resolve agent DDL using %s", resolver)
+
+		data, err := resolver.DDLBytes(ctx, "agent", r.agent, r.fw)
+		if err == nil {
+			ddl, err := addl.NewFromBytes(data)
+			if err != nil {
+				return nil, err
+			}
+			r.ddl = ddl
+
+			return ddl, nil
+		} else {
+			r.log.Debugf("DDL Resolution failed: %s", err)
 		}
 	}
 
-	return r.loadDDLFromRegistry(ctx)
+	return nil, fmt.Errorf("could not resolve %s DDL in any resolver: %s", r.agent, err)
 }
 
 // DDL returns the active DDL for this client
@@ -227,7 +181,7 @@ func (r *RPC) DDL() *addl.DDL {
 	return r.ddl
 }
 
-// Do performs a RPC request and optionally processes replies
+// Do perform a RPC request and optionally processes replies
 //
 // If a filter is supplied using the Filter() option and Targets() are not then discovery will be done for you
 // using the broadcast method, should no nodes be discovered an error will be returned
@@ -235,7 +189,7 @@ func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts .
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	err := r.ResolveDDL(ctx)
+	_, err := r.resolveDDL(ctx)
 	if err != nil {
 		return nil, err
 	}

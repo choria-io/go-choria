@@ -1,6 +1,8 @@
 package client
 
 import (
+	"bytes"
+	"encoding/json"
 	"fmt"
 	"os"
 	"path"
@@ -69,7 +71,7 @@ func (g *Generator) writeActions() error {
 			return err
 		}
 
-		outfile := path.Join(g.OutDir, fmt.Sprintf("action_%s.go", actint.Name))
+		outfile := filepath.Join(g.OutDir, fmt.Sprintf("action_%s.go", actint.Name))
 		logrus.Infof("Writing %s for action %s", outfile, actint.Name)
 
 		out, err := os.Create(outfile)
@@ -101,6 +103,15 @@ func (g *Generator) writeActions() error {
 		if err != nil {
 			return err
 		}
+	}
+
+	ddlPath := filepath.Join(g.OutDir, "ddl.json")
+	cDDL := bytes.NewBuffer([]byte{})
+	json.Compact(cDDL, []byte(g.agent.RawDDL))
+	logrus.Infof("Writing %s", ddlPath)
+	err = os.WriteFile(filepath.Join(g.OutDir, "ddl.json"), cDDL.Bytes(), 0644)
+	if err != nil {
+		return err
 	}
 
 	return nil

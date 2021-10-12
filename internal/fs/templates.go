@@ -15,6 +15,7 @@ import (
 //go:embed client
 //go:embed plugin
 //go:embed misc
+//go:embed completion
 var FS embed.FS
 
 type consoleRender interface {
