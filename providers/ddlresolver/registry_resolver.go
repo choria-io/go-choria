@@ -57,7 +57,7 @@ func (r *RegistryDDLResolver) storeInCache(kind string, name string, data []byte
 		}
 	}
 
-	return os.WriteFile(filepath.Join(targetDir, name+".json"), data, 0500)
+	return os.WriteFile(filepath.Join(targetDir, name+".json"), data, 0644)
 }
 
 func (r *RegistryDDLResolver) DDLBytes(ctx context.Context, kind string, name string, fw inter.Framework) ([]byte, error) {
