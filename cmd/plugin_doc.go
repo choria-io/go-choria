@@ -1,3 +1,7 @@
+// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package cmd
 
 import (
@@ -17,6 +21,7 @@ type pDocCommand struct {
 	name     string
 	jsonOnly bool
 	markdown bool
+
 	command
 }
 
@@ -45,15 +50,53 @@ func (d *pDocCommand) Run(wg *sync.WaitGroup) (err error) {
 	return d.showPlugin()
 }
 
-func (d *pDocCommand) agents() (map[string]*agents.DDL, error) {
-	found, err := agents.FindAll(cfg.LibDir, true)
+func (d *pDocCommand) findAgent(name string) (*agents.DDL, error) {
+	resolvers, err := c.DDLResolvers()
 	if err != nil {
 		return nil, err
 	}
 
+	log := c.Logger("ddl")
+
+	for _, resolver := range resolvers {
+		log.Infof("Resolving DDL agent/%s via %s", name, resolver)
+		data, err := resolver.DDLBytes(ctx, "agent", name, c)
+		if err == nil {
+			return agents.NewFromBytes(data)
+		}
+	}
+
+	return nil, fmt.Errorf("agent/%s ddl not found", name)
+}
+
+func (d *pDocCommand) agents() (map[string]*agents.DDL, error) {
+	resolvers, err := c.DDLResolvers()
+	if err != nil {
+		return nil, err
+	}
+
+	found := map[string]struct{}{}
 	res := make(map[string]*agents.DDL, len(found))
-	for _, a := range found {
-		res[a.Metadata.Name] = a
+	log := c.Logger("ddl")
+
+	for _, resolver := range resolvers {
+		log.Infof("Resolving DDL names via %s", resolver)
+		names, err := resolver.DDLNames(ctx, "agent", c)
+		if err != nil {
+			return nil, err
+		}
+
+		for _, name := range names {
+			found[name] = struct{}{}
+		}
+	}
+
+	for name := range found {
+		ddl, err := d.findAgent(name)
+		if err != nil {
+			return nil, err
+		}
+		res[ddl.Metadata.Name] = ddl
 	}
 
 	return res, nil
@@ -81,6 +124,11 @@ func (d *pDocCommand) showList() error {
 	}
 
 	var err error
+
+	if !d.jsonOnly && cfg.Choria.RegistryClientCache != "" {
+		fmt.Println("Accessing Choria Registry for service definitions")
+		fmt.Println()
+	}
 
 	addls, err := d.agents()
 	if err != nil {
@@ -149,14 +197,9 @@ func (d *pDocCommand) showPlugin() error {
 }
 
 func (d *pDocCommand) renderAgent(agent string) error {
-	agents, err := d.agents()
+	ddl, err := d.findAgent(agent)
 	if err != nil {
 		return err
-	}
-
-	ddl, ok := agents[agent]
-	if !ok {
-		return fmt.Errorf("unknown agent %s", agent)
 	}
 
 	switch {

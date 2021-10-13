@@ -9,12 +9,12 @@ import (
 )
 
 // NewAAAServiceRPCSigner creates an AAA Signer that uses Choria RPC requests to the AAA Service
-func NewAAAServiceRPCSigner(fw aaac.ChoriaFramework) *aaaServiceRPC {
+func NewAAAServiceRPCSigner(fw inter.Framework) *aaaServiceRPC {
 	return &aaaServiceRPC{fw: fw}
 }
 
 type aaaServiceRPC struct {
-	fw aaac.ChoriaFramework
+	fw inter.Framework
 }
 
 func (s *aaaServiceRPC) Kind() string { return "AAA Service RPC" }

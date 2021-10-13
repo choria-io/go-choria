@@ -13,6 +13,34 @@
   },
   "actions": [
     {
+      "action": "names",
+      "description": "List of all known DDLs for a specific plugin type",
+      "input": {
+        "plugin_type": {
+          "prompt": "Plugin Type",
+          "description": "The type of plugin",
+          "type": "list",
+          "default": "agent",
+          "optional": false,
+          "list": [
+            "agent"
+          ]
+        }
+      },
+      "output": {
+        "names": {
+          "description": "The names of all known DDL files",
+          "type": "array",
+          "display_as": "Names"
+        },
+        "plugin_type": {
+          "description": "The type of plugin",
+          "display_as": "Type",
+          "type": "string"
+        }
+      }
+    },
+    {
       "action": "ddl",
       "input": {
         "format": {

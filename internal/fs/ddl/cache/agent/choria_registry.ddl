@@ -9,6 +9,32 @@ metadata :name        => "choria_registry",
          :timeout     => 2
 
 
+action "names", :description => "List of all known DDLs for a specific plugin type" do
+  display :failed
+
+  input :plugin_type,
+        :prompt      => "Plugin Type",
+        :description => "The type of plugin",
+        :type        => :list,
+        :default     => "agent",
+        :list        => ["agent"],
+        :optional    => false
+
+
+
+
+  output :names,
+         :description => "The names of all known DDL files",
+         :type        => "array",
+         :display_as  => "Names"
+
+  output :plugin_type,
+         :description => "The type of plugin",
+         :type        => "string",
+         :display_as  => "Type"
+
+end
+
 action "ddl", :description => "Retrieve the DDL for a specific plugin" do
   display :always
 

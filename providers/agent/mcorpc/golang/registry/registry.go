@@ -1,3 +1,7 @@
+// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package registry
 
 import (
@@ -9,6 +13,7 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	agentDDL "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/sirupsen/logrus"
@@ -29,6 +34,15 @@ type DDLResponse struct {
 	DDL        string `json:"ddl"`
 }
 
+type NamesRequest struct {
+	PluginType string `json:"plugin_type" validate:"enum=agent"`
+}
+
+type NamesResponse struct {
+	Names      []string `json:"names"`
+	PluginType string   `json:"plugin_type"`
+}
+
 var metadata = &agents.Metadata{
 	Name:        "choria_registry",
 	Description: "Choria Registry Service",
@@ -44,12 +58,39 @@ var metadata = &agents.Metadata{
 func New(mgr server.AgentManager) (agents.Agent, error) {
 	agent := mcorpc.New("choria_registry", metadata, mgr.Choria(), mgr.Logger())
 	agent.MustRegisterAction("ddl", ddlAction)
+	agent.MustRegisterAction("names", namesAction)
 
 	agent.SetActivationChecker(func() bool {
-		return mgr.Choria().Configuration().Choria.RegistryServiceEnabled
+		return mgr.Choria().Configuration().Choria.RegistryServiceStore != ""
 	})
 
 	return agent, nil
+}
+
+func namesAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
+	i := NamesRequest{}
+	if !mcorpc.ParseRequestData(&i, req, reply) {
+		return
+	}
+
+	output := &NamesResponse{
+		PluginType: i.PluginType,
+	}
+	reply.Data = output
+
+	store := agent.Choria.Configuration().Choria.RegistryServiceStore
+
+	switch i.PluginType {
+	case "agent":
+		common.EachFile("agent", []string{store}, func(n, _ string) bool {
+			output.Names = append(output.Names, n)
+			return false
+		})
+
+	default:
+		reply.Statuscode = mcorpc.Aborted
+		reply.Statusmsg = fmt.Sprintf("Unsupported plugin type %s", i.PluginType)
+	}
 }
 
 func ddlAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
@@ -61,9 +102,11 @@ func ddlAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 	output := &DDLResponse{}
 	reply.Data = output
 
+	store := agent.Choria.Configuration().Choria.RegistryServiceStore
+
 	switch i.PluginType {
 	case "agent":
-		addl, err := agentDDL.Find(i.Name, append(agent.Choria.Configuration().LibDir, agent.Choria.Configuration().Choria.RubyLibdir...))
+		addl, err := agentDDL.FindLocally(i.Name, []string{store})
 		if abortIfErr(reply, agent.Log, "Could not load DDL", err) {
 			return
 		}
@@ -80,7 +123,7 @@ func ddlAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 			return
 		}
 
-		jddl, err := json.MarshalIndent(addl, "", "  ")
+		jddl, err := json.Marshal(addl)
 		if abortIfErr(reply, agent.Log, "Could not encode DDL", err) {
 			return
 		}
@@ -88,7 +131,7 @@ func ddlAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 
 	default:
 		reply.Statuscode = mcorpc.Aborted
-		reply.Statusmsg = fmt.Sprintf("Unknown plugin type %s", i.PluginType)
+		reply.Statusmsg = fmt.Sprintf("Unsupported plugin type %s", i.PluginType)
 	}
 }
 

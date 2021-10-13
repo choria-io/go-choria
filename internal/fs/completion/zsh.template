@@ -1,0 +1,45 @@
+#compdef _choria choria
+
+zstyle ':completion::complete:choria-*' menu select=2
+
+_choria() {
+  local command=${words[2]}
+
+  if [ "$command" = "req" ] || [ "$command" = "rpc" ]; then
+    curcontext="${curcontext%:*:*}:choria-${command}"
+
+    local -a clist
+
+    if (( CURRENT == 3 )); then
+      _call_program choria-list-agents choria completion --zsh --list agents | while read -A hline; do
+        clist=($clist "${hline}")
+      done
+
+      _describe -t choria-agents "Choria Agents" clist
+    elif (( CURRENT == 4 )); then
+      _call_program choria-list-actions choria completion --zsh --list actions --agent=${words[3]} | while read -A hline; do
+        clist=($clist "${hline}")
+      done
+
+      _describe -t choria-actions "${words[3]} Actions" clist
+
+    elif (( CURRENT > 4 )); then
+      _call_program choria-list-inputs choria completion --zsh --list inputs --action=${words[4]} --agent=${words[3]} | while read hline; do
+        clist=($clist $hline)
+      done
+
+      _describe -t choria-inputs "${words[4]} Inputs" clist -S =
+    fi
+
+  else
+    local -a cmdlist
+
+    _call_program choria-list-commands choria --completion-bash "${words[@]:1:$CURRENT}" | xargs -n 1 echo | while read -A hline; do
+      cmdlist=($cmdlist "${hline}")
+    done
+
+    curcontext="${curcontext%:*:*}:choria-commands"
+
+    _describe -t choria-commands 'Choria Commands' cmdlist
+  fi
+}

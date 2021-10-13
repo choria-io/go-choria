@@ -131,8 +131,8 @@ var docStrings = map[string]string{
 	"plugin.scout.tags":                                        "Path to a file holding tags for a Scout entity",
 	"plugin.scout.agent_disabled":                              "Disables the scout agent",
 	"plugin.choria.require_client_filter":                      "If a client filter should always be required, only used in Go clients",
-	"plugin.choria.services.registry.enable":                   "If the registry service should be enabled on this server",
-	"plugin.choria.services.registry.client":                   "Enable downloading DDLs and other schemas from the registry service",
+	"plugin.choria.services.registry.store":                    "Directory where the Registry service finds DDLs to read",
+	"plugin.choria.services.registry.cache":                    "Directory where the Registry client stores DDLs found in the registry",
 	"plugin.choria.submission.spool":                           "Path to a directory holding messages to submit to the middleware",
 	"plugin.choria.submission.max_spool_size":                  "Maximum amount of messages allowed into each priority",
 }

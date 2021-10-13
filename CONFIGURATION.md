@@ -66,7 +66,7 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.security.request_signer.token_environment](#pluginchoriasecurityrequest_signertoken_environment)|[plugin.choria.security.request_signer.token_file](#pluginchoriasecurityrequest_signertoken_file)|
 |[plugin.choria.security.request_signer.url](#pluginchoriasecurityrequest_signerurl)|[plugin.choria.security.request_signing_certificate](#pluginchoriasecurityrequest_signing_certificate)|
 |[plugin.choria.security.serializer](#pluginchoriasecurityserializer)|[plugin.choria.server.provision](#pluginchoriaserverprovision)|
-|[plugin.choria.services.registry.client](#pluginchoriaservicesregistryclient)|[plugin.choria.services.registry.enable](#pluginchoriaservicesregistryenable)|
+|[plugin.choria.services.registry.cache](#pluginchoriaservicesregistrycache)|[plugin.choria.services.registry.store](#pluginchoriaservicesregistrystore)|
 |[plugin.choria.srv_domain](#pluginchoriasrv_domain)|[plugin.choria.ssldir](#pluginchoriassldir)|
 |[plugin.choria.stats_address](#pluginchoriastats_address)|[plugin.choria.stats_port](#pluginchoriastats_port)|
 |[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|
@@ -729,19 +729,17 @@ Path to the public certificate of the key used to sign the JWTs in the Signing S
 
 Specifically enable or disable provisioning
 
-## plugin.choria.services.registry.client
+## plugin.choria.services.registry.cache
 
- * **Type:** boolean
- * **Default Value:** false
+ * **Type:** path_string
 
-Enable downloading DDLs and other schemas from the registry service
+Directory where the Registry client stores DDLs found in the registry
 
-## plugin.choria.services.registry.enable
+## plugin.choria.services.registry.store
 
- * **Type:** boolean
- * **Default Value:** false
+ * **Type:** path_string
 
-If the registry service should be enabled on this server
+Directory where the Registry service finds DDLs to read
 
 ## plugin.choria.srv_domain
 

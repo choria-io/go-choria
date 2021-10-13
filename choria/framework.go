@@ -18,6 +18,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/providers/ddlresolver"
 	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/providers/signers"
 	"github.com/fatih/color"
@@ -842,4 +843,17 @@ func (fw *Framework) KVWithConn(ctx context.Context, conn inter.Connector, bucke
 	}
 
 	return store, conn, nil
+}
+
+func (fw *Framework) DDLResolvers() ([]inter.DDLResolver, error) {
+	resolvers := []inter.DDLResolver{
+		&ddlresolver.InternalCachedDDLResolver{},
+		&ddlresolver.FileSystemDDLResolver{},
+	}
+
+	if fw.Config.Choria.RegistryClientCache != "" {
+		resolvers = append(resolvers, &ddlresolver.RegistryDDLResolver{})
+	}
+
+	return resolvers, nil
 }

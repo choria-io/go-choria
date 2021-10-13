@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"os"
 	"path"
-	"path/filepath"
 	"testing"
 	"time"
 
@@ -36,7 +35,7 @@ var _ = Describe("Providers/McoRPC/DDL/Agent", func() {
 
 		It("Should fail for invalid json files", func() {
 			d, err := New(path.Join("testdata", "invalid.json"))
-			Expect(err).To(MatchError("could not parse JSON data in testdata/invalid.json: unexpected end of JSON input"))
+			Expect(err).To(MatchError("could not parse DDL JSON data: unexpected end of JSON input"))
 			Expect(d).To(BeNil())
 		})
 
@@ -49,19 +48,6 @@ var _ = Describe("Providers/McoRPC/DDL/Agent", func() {
 			Expect(pkg.Metadata.URL).To(Equal("https://github.com/choria-plugins/package-agent"))
 			Expect(pkg.Metadata.Version).To(Equal("5.0.0"))
 			Expect(pkg.Actions[3].Aggregation[0].Function).To(Equal("summary"))
-		})
-	})
-
-	Describe("EachFile", func() {
-		It("Should call the cb with the right files", func() {
-			files := make(map[string]string)
-
-			EachFile([]string{"nonexisting", "testdata"}, func(n, p string) bool {
-				files[n] = p
-				return false
-			})
-
-			Expect(files["package"]).To(Equal(filepath.Join("testdata", "mcollective", "agent", "package.json")))
 		})
 	})
 

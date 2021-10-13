@@ -1,0 +1,66 @@
+_choria_bash_autocomplete() {
+    local cur prev opts base
+    COMPREPLY=()
+    cur="${COMP_WORDS[COMP_CWORD]}"
+
+    if ( _array_contains COMP_WORDS "req" || _array_contains COMP_WORDS "rpc" ) && [[ ${COMP_WORDS[$COMP_CWORD]} != "-"* ]] ; then
+        _choria_req_bash_autocomplete
+    else
+        opts=$( ${COMP_WORDS[0]} --completion-bash ${COMP_WORDS[@]:1:$COMP_CWORD} )
+        COMPREPLY=( $(compgen -W "${opts}" -- ${cur}) )
+    fi
+    return 0
+}
+
+# https://stackoverflow.com/a/14367368
+_array_contains() {
+    local array="$1[@]"
+    local seeking=$2
+    local in=1
+    for element in "${!array}"; do
+        if [[ $element == "$seeking" ]]; then
+            in=0
+            break
+        fi
+    done
+    return $in
+}
+
+_choria_req_bash_autocomplete() {
+    # Assume for completion to work, the command line must match
+    # choria [options] <req|rpc> [agent [action]]
+    # Options are not alloed to appear between req and the action
+
+    # Find the index of req/rpc in the input to serve as the anchor point for where the agent/action appear
+    for index in "${!COMP_WORDS[@]}"; do
+        if [[ "${COMP_WORDS[$index]}" = "req" ]] || [[ "${COMP_WORDS[$index]}" = "rpc" ]] ; then
+            BASE_INDEX=$index
+            break
+        fi
+    done
+
+    AGENT_INDEX=$(expr $BASE_INDEX + 1)
+    ACTION_INDEX=$(expr $BASE_INDEX + 2)
+
+    # If the agent/action are already selected, present the inputs and long-options as further completions
+    if [[ "${#COMP_WORDS[@]}" -gt $(expr $ACTION_INDEX + 1) ]] ; then
+        local INPUTS=$(choria completion --list inputs --agent ${COMP_WORDS[$AGENT_INDEX]} --action ${COMP_WORDS[$ACTION_INDEX]} 2>/dev/null | sed -e 's/$/=/')
+
+        # Prevent inputs from having a space added to them, since they need to be in KEY=VALUE format
+        compopt -o nospace
+
+        COMPREPLY=($(compgen -W "${INPUTS}" -- ${COMP_WORDS[$COMP_CWORD]}))
+
+    # If the agent is selected, present the available actions on the selected agent as completions
+    elif [[ "${#COMP_WORDS[@]}" -gt $(expr $AGENT_INDEX + 1) ]]; then
+        local ACTIONS=$(choria completion --list actions --agent ${COMP_WORDS[$AGENT_INDEX]} 2>/dev/null)
+        COMPREPLY=($(compgen -W "${ACTIONS}" -- ${COMP_WORDS[$COMP_CWORD]}))
+
+    # If nothing is selected, present the available agents as completions
+    elif [[ "${#COMP_WORDS[@]}" -gt $(expr $BASE_INDEX + 1) ]] ; then
+        local AGENTS=$(choria completion --list agents 2>/dev/null)
+        COMPREPLY=($(compgen -W "${AGENTS}" -- ${COMP_WORDS[$COMP_CWORD]}))
+    fi
+}
+
+complete -F _choria_bash_autocomplete choria

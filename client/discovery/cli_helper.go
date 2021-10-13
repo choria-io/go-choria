@@ -9,13 +9,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/filter"
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/choria-io/go-choria/providers/discovery/broadcast"
 	"github.com/choria-io/go-choria/providers/discovery/external"
 	"github.com/choria-io/go-choria/providers/discovery/flatfile"
@@ -80,7 +80,7 @@ func (o *StandardOptions) AddFlatFileFlags(app FlagApp) {
 	app.Flag("nodes", "List of nodes to interact with in JSON, YAML or TEXT formats").ExistingFileVar(&o.NodesFile)
 }
 
-func (o *StandardOptions) Discover(ctx context.Context, fw client.ChoriaFramework, agent string, supportStdin bool, progress bool, logger *log.Entry) ([]string, time.Duration, error) {
+func (o *StandardOptions) Discover(ctx context.Context, fw inter.Framework, agent string, supportStdin bool, progress bool, logger *log.Entry) ([]string, time.Duration, error) {
 	var (
 		fformat    flatfile.SourceFormat
 		sourceFile io.Reader
@@ -171,7 +171,7 @@ func (o *StandardOptions) isPiped() bool {
 }
 
 // SetDefaultsFromChoria sets the defaults based on cfg
-func (o *StandardOptions) SetDefaultsFromChoria(fw client.ChoriaFramework) {
+func (o *StandardOptions) SetDefaultsFromChoria(fw inter.Framework) {
 	o.SetDefaultsFromConfig(fw.Configuration())
 }
 

@@ -44,7 +44,7 @@ type RequestOptions struct {
 	// per batch
 	stats *Stats
 
-	fw ChoriaFramework
+	fw inter.Framework
 }
 
 // DiscoveryStartFunc gets called before discovery starts
@@ -59,7 +59,7 @@ type DiscoveryEndFunc func(discovered int, limited int) error
 type RequestOption func(*RequestOptions)
 
 // NewRequestOptions creates a initialized request options
-func NewRequestOptions(fw ChoriaFramework, ddl *agent.DDL) (*RequestOptions, error) {
+func NewRequestOptions(fw inter.Framework, ddl *agent.DDL) (*RequestOptions, error) {
 	rid, err := fw.NewRequestID()
 	if err != nil {
 		return nil, err
