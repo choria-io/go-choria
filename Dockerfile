@@ -1,10 +1,15 @@
-FROM centos:8
+FROM almalinux:8
+
+ARG REPO="https://yum.eu.choria.io/release/el/release.repo"
 
 WORKDIR /
 
-RUN curl -s https://packagecloud.io/install/repositories/choria/release/script.rpm.sh | bash && \
+RUN yum -y update && \
+    yum -y clean all
+
+RUN curl -s "${REPO}" > /etc/yum.repos.d/choria.repo && \
     yum -y update && \
-    yum -y install choria nc && \
+    yum -y install choria nc procps-ng && \
     yum -y clean all
 
 RUN groupadd --gid 2048 choria && \
