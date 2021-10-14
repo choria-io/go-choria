@@ -48,7 +48,6 @@ func UserConfig() string {
 	home, _ := HomeDir()
 
 	if home != "" {
-		// TODO: .choria must go
 		for _, n := range []string{".choriarc", ".mcollective"} {
 			homeCfg := filepath.Join(home, n)
 

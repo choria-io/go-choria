@@ -9,9 +9,11 @@ import (
 	"net/url"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"sync"
 
 	"github.com/AlecAivazis/survey/v2"
+	iu "github.com/choria-io/go-choria/internal/util"
 )
 
 type loginCommand struct {
@@ -114,7 +116,19 @@ func (p *loginCommand) login() error {
 
 	switch {
 	case cfg.Choria.RemoteSignerTokenFile != "":
-		err = os.WriteFile(cfg.Choria.RemoteSignerTokenFile, []byte(login["token"]), 0600)
+		abs, err := filepath.Abs(cfg.Choria.RemoteSignerTokenFile)
+		if err != nil {
+			return fmt.Errorf("cannot determine parent directory for token file: %s", err)
+		}
+		parent := filepath.Dir(abs)
+		if !iu.FileIsDir(parent) {
+			err = os.MkdirAll(parent, 0700)
+			if err != nil {
+				return err
+			}
+		}
+
+		err = os.WriteFile(abs, []byte(login["token"]), 0600)
 		if err != nil {
 			return err
 		}

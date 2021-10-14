@@ -38,3 +38,8 @@ func (fw *Framework) Enroll(ctx context.Context, wait time.Duration, cb func(dig
 func (fw *Framework) ValidateSecurity() (errors []string, ok bool) {
 	return fw.security.Validate()
 }
+
+// SecurityProvider is the name of the active security provider
+func (fw *Framework) SecurityProvider() string {
+	return fw.security.Provider()
+}
