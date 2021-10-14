@@ -9,7 +9,7 @@ RUN yum -y update && \
 
 RUN curl -s "${REPO}" > /etc/yum.repos.d/choria.repo && \
     yum -y update && \
-    yum -y install choria nc && \
+    yum -y install choria nc procps-ng && \
     yum -y clean all
 
 RUN groupadd --gid 2048 choria && \
