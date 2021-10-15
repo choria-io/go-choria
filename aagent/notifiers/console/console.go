@@ -1,3 +1,7 @@
+// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // Package console is a NotificationService that logs to the console
 package console
 

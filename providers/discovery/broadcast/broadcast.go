@@ -1,3 +1,7 @@
+// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // Package broadcast implements a MCollective like broadcast discovery system for nodes running choria
 //
 // It is not thread safe and a single instance of the discoverer shouldn't be shared by go routines etc, you can reuse them but should

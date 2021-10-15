@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // Package srvcache provides a caching SRV lookup service that creates a short term
 // cache of SRV answers - it does not comply with DNS protocols like the timings
 // set by DNS servers, its more a short term - think 5 seconds - buffer to avoid

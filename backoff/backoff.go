@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package backoff
 
 // https://blog.gopheracademy.com/advent-2014/backoff/

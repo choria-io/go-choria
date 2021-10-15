@@ -1,3 +1,7 @@
+// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // Package mcorpc provides a compatibility layer between Choria and
 // legacy MCollective SimpleRPC Agents
 //

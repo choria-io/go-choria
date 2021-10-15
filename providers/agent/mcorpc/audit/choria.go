@@ -1,3 +1,7 @@
+// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // Package audit is a auditing system that's compatible with the
 // one found in the mcollective-choria Ruby project, log lines will
 // be identical and can be put in the same file as the ruby one
