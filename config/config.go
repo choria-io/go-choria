@@ -45,8 +45,8 @@ type Config struct {
 	// The Sub Collective where a Client will publish to when no specific Sub Collective is configured
 	MainCollective string `confkey:"main_collective"`
 
-	// The file to write logs to, when set to an empty string logging will be to the console, when set to 'discard' logging will be disabled
-	LogFile string `confkey:"logfile" type:"path_string"`
+	// The file to write logs to, when set to 'discard' logging will be disabled. Also supports 'stdout' and 'stderr' as special log destinations.
+	LogFile string `confkey:"logfile" type:"path_string" default:"stdout"`
 
 	// The lowest level log to add to the logfile
 	LogLevel string `confkey:"loglevel" default:"info" validate:"enum=debug,info,warn,error,fatal"`
