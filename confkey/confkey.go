@@ -1,3 +1,7 @@
+// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // Package confkey looks for tags on a structure and set values
 // based on the tag rather than the struct item names
 //

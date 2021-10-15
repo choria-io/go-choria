@@ -1,3 +1,7 @@
+// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // Package puppetsec provides a Puppet compatable Security Provider
 //
 // The provider supports enrolling into a Puppet CA by creating a

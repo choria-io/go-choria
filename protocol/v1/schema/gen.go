@@ -1,3 +1,7 @@
+// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // +build ignore
 
 // go generate utility to encode the json schemas and embed them

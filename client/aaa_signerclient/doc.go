@@ -1,3 +1,7 @@
+// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // generated code; DO NOT EDIT"
 //
 // Client for Choria RPC Agent 'aaa_signer' Version 0.24.0 generated using Choria version 0.24.1

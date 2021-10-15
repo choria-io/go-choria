@@ -1,3 +1,7 @@
+// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 /*
 Package validator provides common validation helpers commonly used
 in operations tools.  Additionally structures can be marked up with

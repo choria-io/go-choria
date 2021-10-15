@@ -1,3 +1,7 @@
+// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // Package filesec provides a manually configurable security Provider
 // it allows you set every parameter like key paths etc manually without
 // making any assumptions about your system
