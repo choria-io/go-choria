@@ -218,8 +218,9 @@ The directory where Agents, DDLs and other plugins are found
 ## logfile
 
  * **Type:** path_string
+ * **Default Value:** stdout
 
-The file to write logs to, when set to an empty string logging will be to the console, when set to 'discard' logging will be disabled
+The file to write logs to, when set to 'discard' logging will be disabled. Also supports 'stdout' and 'stderr' as special log destinations.
 
 ## logger_type
 

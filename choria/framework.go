@@ -412,8 +412,14 @@ func (fw *Framework) SetLogWriter(out io.Writer) {
 
 func (fw *Framework) commonLogOpener() error {
 	switch {
-	case fw.Config.LogFile == "discard":
+	case strings.ToLower(fw.Config.LogFile) == "discard":
 		fw.log.SetOutput(io.Discard)
+
+	case strings.ToLower(fw.Config.LogFile) == "stdout":
+		fw.log.SetOutput(os.Stdout)
+
+	case strings.ToLower(fw.Config.LogFile) == "stderr":
+		fw.log.SetOutput(os.Stderr)
 
 	case fw.Config.LogFile != "":
 		fw.log.Formatter = &log.JSONFormatter{}
