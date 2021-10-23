@@ -1,0 +1,6 @@
+required_properties:
+  - name
+  - target_arch
+
+artifacts:
+  - /tmp/choria/*.tgz

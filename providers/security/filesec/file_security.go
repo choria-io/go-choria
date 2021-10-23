@@ -177,6 +177,7 @@ func (s *FileSecurity) RemoteSignRequest(ctx context.Context, request []byte) (s
 		return nil, fmt.Errorf("remote signing not configured")
 	}
 
+	s.log.Infof("Signing request using %s", s.conf.RemoteSigner.Kind())
 	return s.conf.RemoteSigner.Sign(ctx, request, s)
 }
 

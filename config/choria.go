@@ -135,8 +135,8 @@ type ChoriaPluginConfig struct {
 
 	RequireClientFilter bool `confkey:"plugin.choria.require_client_filter" default:"false"` // If a client filter should always be required, only used in Go clients
 
-	RegistryServiceStore string `confkey:"plugin.choria.services.registry.store" type:"path_string"` // Directory where the Registry service finds DDLs to read
-	RegistryClientCache  string `confkey:"plugin.choria.services.registry.cache" type:"path_string"` // Directory where the Registry client stores DDLs found in the registry
+	RegistryServiceStore string `confkey:"plugin.choria.services.registry.store" type:"path_string"`                                // Directory where the Registry service finds DDLs to read
+	RegistryClientCache  string `confkey:"plugin.choria.services.registry.cache" type:"path_string"  environment:"CHORIA_REGISTRY"` // Directory where the Registry client stores DDLs found in the registry
 
 	SubmissionSpool        string `confkey:"plugin.choria.submission.spool" type:"path_string"`     // Path to a directory holding messages to submit to the middleware
 	SubmissionSpoolMaxSize int    `confkey:"plugin.choria.submission.max_spool_size" default:"500"` // Maximum amount of messages allowed into each priority

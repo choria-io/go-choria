@@ -733,6 +733,7 @@ Specifically enable or disable provisioning
 ## plugin.choria.services.registry.cache
 
  * **Type:** path_string
+ * **Environment Variable:** CHORIA_REGISTRY
 
 Directory where the Registry client stores DDLs found in the registry
 
