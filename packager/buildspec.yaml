@@ -94,15 +94,8 @@ foss:
       broker_start_runlevels: "-"
       broker_start_order: 50
 
-    el5_32:
-      template: el/el6
-      dist: el5
-      target_arch: i386
-      binary: 32bit_linux
-
-    el5_64:
-      template: el/el6
-      dist: el5
+    linux_64_tarball:
+      template: tarball/basic
       target_arch: x86_64
       binary: 64bit_linux
 

@@ -35,10 +35,27 @@ jobs:
           packager_tag: el8-go1.17
           version: nightly
 
+  linux_tarball:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          path: src/github.com/choria-io/go-choria
+
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: linux_64_tarball
+          packager_tag: el8-go1.17
+          version: nightly
+
+
   upload:
     needs:
       - el7_64
       - el8_64
+      - linux_tarball
 
     runs-on: ubuntu-latest
     steps:
