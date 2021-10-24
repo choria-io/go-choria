@@ -1,6 +1,9 @@
 required_properties:
   - name
   - target_arch
+  - os
+  - format
 
 artifacts:
   - /tmp/choria/*.tgz
+  - /tmp/choria/*.zip

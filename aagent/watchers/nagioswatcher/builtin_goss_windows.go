@@ -2,6 +2,9 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build windows
+// +build windows
+
 package nagioswatcher
 
 func (w *Watcher) watchUsingGoss() (state State, output string, err error) {
