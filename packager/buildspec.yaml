@@ -95,9 +95,18 @@ foss:
       broker_start_order: 50
 
     linux_64_tarball:
-      template: tarball/basic
+      template: archive/basic
       target_arch: x86_64
       binary: 64bit_linux
+      os: linux
+      format: tgz
+
+    windows_64_zip:
+      template: archive/basic
+      target_arch: x86_64
+      binary: 64bit_windows
+      os: windows
+      format: zip
 
     el6_32:
       template: el/el6
