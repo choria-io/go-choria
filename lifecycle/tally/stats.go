@@ -48,6 +48,11 @@ func (r *Recorder) createStats() {
 		Help: "The number of nodes that were expired after not receiving alive events",
 	}, []string{"component"})
 
+	r.governorEvents = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: fmt.Sprintf("%s_governor", r.options.StatPrefix),
+		Help: "Choria Governor events",
+	}, []string{"component", "governor", "event"})
+
 	if registerStats {
 		prometheus.MustRegister(r.okEvents)
 		prometheus.MustRegister(r.badEvents)
@@ -56,5 +61,6 @@ func (r *Recorder) createStats() {
 		prometheus.MustRegister(r.processTime)
 		prometheus.MustRegister(r.transitionEvent)
 		prometheus.MustRegister(r.nodesExpired)
+		prometheus.MustRegister(r.governorEvents)
 	}
 }

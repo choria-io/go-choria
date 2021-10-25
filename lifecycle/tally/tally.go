@@ -33,12 +33,13 @@ type Recorder struct {
 	observed map[string]*observations
 
 	// lifecycle
-	okEvents      *prometheus.CounterVec
-	badEvents     *prometheus.CounterVec
-	versionsTally *prometheus.GaugeVec
-	processTime   *prometheus.SummaryVec
-	eventTypes    *prometheus.CounterVec
-	nodesExpired  *prometheus.CounterVec
+	okEvents       *prometheus.CounterVec
+	badEvents      *prometheus.CounterVec
+	versionsTally  *prometheus.GaugeVec
+	processTime    *prometheus.SummaryVec
+	eventTypes     *prometheus.CounterVec
+	nodesExpired   *prometheus.CounterVec
+	governorEvents *prometheus.CounterVec
 
 	// transitions
 	transitionEvent *prometheus.CounterVec
@@ -98,7 +99,7 @@ func (r *Recorder) processAlive(e lifecycle.Event) error {
 		cobs.hosts[hname] = &observation{
 			version:   alive.Version,
 			component: alive.Component(),
-			ts:        alive.TimeStamp(),
+			ts:        time.Now(),
 		}
 
 		r.versionsTally.WithLabelValues(alive.Component(), alive.Version).Inc()
@@ -106,7 +107,7 @@ func (r *Recorder) processAlive(e lifecycle.Event) error {
 		return nil
 	}
 
-	cobs.hosts[hname].ts = alive.TimeStamp()
+	cobs.hosts[hname].ts = time.Now()
 
 	if obs.version != alive.Version {
 		r.versionsTally.WithLabelValues(alive.Component(), obs.version).Dec()
@@ -172,6 +173,14 @@ func (r *Recorder) processShutdown(e lifecycle.Event) error {
 	return nil
 }
 
+func (r *Recorder) processGovernor(e lifecycle.Event) error {
+	governor := e.(*lifecycle.GovernorEvent)
+
+	r.governorEvents.WithLabelValues(governor.Component(), governor.Governor, string(governor.EventType)).Inc()
+
+	return nil
+}
+
 func (r *Recorder) process(e lifecycle.Event) (err error) {
 	r.options.Log.Debugf("Processing %s event from %s %s", e.TypeString(), e.Component(), e.Identity())
 
@@ -190,6 +199,9 @@ func (r *Recorder) process(e lifecycle.Event) (err error) {
 
 	case lifecycle.Shutdown:
 		err = r.processShutdown(e)
+
+	case lifecycle.Governor:
+		err = r.processGovernor(e)
 	}
 
 	if err == nil {
