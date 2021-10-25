@@ -25,7 +25,7 @@ type Option func(*options)
 // Validate validates options meet minimal requirements, also assigns defaults
 // for optional settings
 func (o *options) Validate() error {
-	if o.Component == "*" || o.Component == ">" {
+	if o.Component == ">" {
 		return fmt.Errorf("invalid component %s", o.Component)
 	}
 

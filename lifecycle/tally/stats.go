@@ -28,15 +28,10 @@ func (r *Recorder) createStats() {
 		Help: "The number events received by type",
 	}, []string{"component", "type"})
 
-	r.eventsTally = prometheus.NewGaugeVec(prometheus.GaugeOpts{
+	r.versionsTally = prometheus.NewGaugeVec(prometheus.GaugeOpts{
 		Name: fmt.Sprintf("%s_versions", r.options.StatPrefix),
-		Help: "The number of observations for a specific version",
+		Help: "The number of observations for a specific version and component",
 	}, []string{"component", "version"})
-
-	r.maintTime = prometheus.NewSummaryVec(prometheus.SummaryOpts{
-		Name: fmt.Sprintf("%s_maintenance_time", r.options.StatPrefix),
-		Help: "The time taken to perform maintenance",
-	}, []string{"component"})
 
 	r.processTime = prometheus.NewSummaryVec(prometheus.SummaryOpts{
 		Name: fmt.Sprintf("%s_processing_time", r.options.StatPrefix),
@@ -57,8 +52,7 @@ func (r *Recorder) createStats() {
 		prometheus.MustRegister(r.okEvents)
 		prometheus.MustRegister(r.badEvents)
 		prometheus.MustRegister(r.eventTypes)
-		prometheus.MustRegister(r.eventsTally)
-		prometheus.MustRegister(r.maintTime)
+		prometheus.MustRegister(r.versionsTally)
 		prometheus.MustRegister(r.processTime)
 		prometheus.MustRegister(r.transitionEvent)
 		prometheus.MustRegister(r.nodesExpired)
