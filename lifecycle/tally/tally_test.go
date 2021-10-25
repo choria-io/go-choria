@@ -77,26 +77,26 @@ var _ = Describe("Tally", func() {
 				event, err := lifecycle.New(lifecycle.Startup, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
 				Expect(err).ToNot(HaveOccurred())
 
-				recorder.processStartup(event)
+				recorder.process(event)
 				Expect(recorder.observed["ginkgo"].hosts).To(HaveLen(1))
 
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
 
 				event, err = lifecycle.New(lifecycle.Shutdown, lifecycle.Component("ginkgo"), lifecycle.Identity("ginkgo.example.net"))
 				Expect(err).ToNot(HaveOccurred())
-				recorder.processShutdown(event)
+				recorder.process(event)
 
 				Expect(recorder.observed["ginkgo"].hosts).To(HaveLen(0))
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(0.0))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(0.0))
 			})
 
 			It("Should handle new nodes", func() {
 				event, err := lifecycle.New(lifecycle.Shutdown, lifecycle.Component("ginkgo"), lifecycle.Identity("ginkgo.example.net"))
 				Expect(err).ToNot(HaveOccurred())
-				recorder.processShutdown(event)
+				recorder.process(event)
 
 				Expect(recorder.observed).To(HaveLen(0))
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(0.0))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(0.0))
 			})
 		})
 
@@ -106,11 +106,11 @@ var _ = Describe("Tally", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(recorder.observed).To(HaveLen(0))
-				recorder.processStartup(event)
+				recorder.process(event)
 				Expect(recorder.observed["ginkgo"].hosts).To(HaveLen(1))
 
 				Expect(recorder.observed["ginkgo"].hosts["ginkgo.example.net"].version).To(Equal("1.2.3"))
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
 			})
 
 			It("Should handle existing nodes", func() {
@@ -118,19 +118,35 @@ var _ = Describe("Tally", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(recorder.observed).To(HaveLen(0))
-				recorder.processStartup(event)
+				recorder.process(event)
 				Expect(recorder.observed["ginkgo"].hosts).To(HaveLen(1))
 
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
 
 				event, err = lifecycle.New(lifecycle.Startup, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.4"), lifecycle.Identity("ginkgo.example.net"))
 				Expect(err).ToNot(HaveOccurred())
 
-				recorder.processStartup(event)
+				recorder.process(event)
 
 				Expect(recorder.observed["ginkgo"].hosts["ginkgo.example.net"].version).To(Equal("1.2.4"))
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(0.0))
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.4")).To(Equal(1.0))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(0.0))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.4")).To(Equal(1.0))
+			})
+		})
+
+		Describe("Governor Events", func() {
+			It("Should handle governor events", func() {
+				event, err := lifecycle.New(lifecycle.Governor, lifecycle.Component("ginkgo"), lifecycle.GovernorName("GINKGO"), lifecycle.GovernorType(lifecycle.GovernorEnterEvent))
+				Expect(err).ToNot(HaveOccurred())
+				recorder.process(event)
+				Expect(getPromCountValue(recorder.governorEvents, "ginkgo", "GINKGO", "enter")).To(Equal(1.0))
+				Expect(getPromCountValue(recorder.governorEvents, "ginkgo", "GINKGO", "exit")).To(Equal(0.0))
+
+				event, err = lifecycle.New(lifecycle.Governor, lifecycle.Component("ginkgo"), lifecycle.GovernorName("GINKGO"), lifecycle.GovernorType(lifecycle.GovernorExitEvent))
+				Expect(err).ToNot(HaveOccurred())
+				recorder.process(event)
+				Expect(getPromCountValue(recorder.governorEvents, "ginkgo", "GINKGO", "enter")).To(Equal(1.0))
+				Expect(getPromCountValue(recorder.governorEvents, "ginkgo", "GINKGO", "exit")).To(Equal(1.0))
 			})
 		})
 
@@ -140,53 +156,67 @@ var _ = Describe("Tally", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(recorder.observed).To(HaveLen(0))
-				recorder.processAlive(event)
+				recorder.process(event)
 				Expect(recorder.observed["ginkgo"].hosts).To(HaveLen(1))
 
 				Expect(recorder.observed["ginkgo"].hosts["ginkgo.example.net"].version).To(Equal("1.2.3"))
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
 			})
 
 			It("Should handle old hosts", func() {
 				event, err := lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
 				Expect(err).ToNot(HaveOccurred())
 
-				recorder.processAlive(event)
+				recorder.process(event)
 				Expect(recorder.observed["ginkgo"].hosts).To(HaveLen(1))
 				Expect(recorder.observed["ginkgo"].hosts["ginkgo.example.net"].version).To(Equal("1.2.3"))
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
 
 				recorder.observed["ginkgo"].hosts["ginkgo.example.net"].ts = time.Now().Add(-120 * time.Minute)
 
-				recorder.processAlive(event)
+				recorder.process(event)
 
 				Expect(recorder.observed["ginkgo"].hosts).To(HaveLen(1))
 				Expect(recorder.observed["ginkgo"].hosts["ginkgo.example.net"].version).To(Equal("1.2.3"))
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
-				Expect(recorder.observed["ginkgo"].hosts["ginkgo.example.net"].ts).To((BeTemporally("~", time.Now(), time.Second)))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+				Expect(recorder.observed["ginkgo"].hosts["ginkgo.example.net"].ts).To(BeTemporally("~", time.Now(), time.Second))
 			})
 
 			It("Should handle updated hosts", func() {
 				event, err := lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
 				Expect(err).ToNot(HaveOccurred())
 
-				recorder.processAlive(event)
+				recorder.process(event)
 				Expect(recorder.observed["ginkgo"].hosts["ginkgo.example.net"].version).To(Equal("1.2.3"))
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(1.0))
 
 				event, err = lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.4"), lifecycle.Identity("ginkgo.example.net"))
 				Expect(err).ToNot(HaveOccurred())
 
-				recorder.processAlive(event)
+				recorder.process(event)
 				Expect(recorder.observed["ginkgo"].hosts["ginkgo.example.net"].version).To(Equal("1.2.4"))
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.2")).To(Equal(0.0))
-				Expect(getPromValue(recorder.versionsTally, "ginkgo", "1.2.4")).To(Equal(1.0))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.2")).To(Equal(0.0))
+				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.4")).To(Equal(1.0))
 			})
 		})
 	})
 })
 
-func getPromValue(ctr *prometheus.GaugeVec, labels ...string) float64 {
+func getPromCountValue(ctr *prometheus.CounterVec, labels ...string) float64 {
+	pb := &dto.Metric{}
+	m, err := ctr.GetMetricWithLabelValues(labels...)
+	if err != nil {
+		return 0
+	}
+
+	if m.Write(pb) != nil {
+		return 0
+	}
+
+	return pb.GetCounter().GetValue()
+}
+
+func getPromGaugeValue(ctr *prometheus.GaugeVec, labels ...string) float64 {
 	pb := &dto.Metric{}
 	m, err := ctr.GetMetricWithLabelValues(labels...)
 	if err != nil {
