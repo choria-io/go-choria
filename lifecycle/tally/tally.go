@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -24,37 +25,41 @@ type Connector interface {
 	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan inter.ConnectorMessage) error
 }
 
-// Recorder listens for alive events and records the versions
-// and expose the results to Prometheus
+// Recorder listens for alive events and records the versions and expose the results to Prometheus
 type Recorder struct {
 	sync.Mutex
 
 	options  *options
-	observed map[string]*observation
+	observed map[string]*observations
 
 	// lifecycle
-	okEvents     *prometheus.CounterVec
-	badEvents    *prometheus.CounterVec
-	eventsTally  *prometheus.GaugeVec
-	maintTime    *prometheus.SummaryVec
-	processTime  *prometheus.SummaryVec
-	eventTypes   *prometheus.CounterVec
-	nodesExpired *prometheus.CounterVec
+	okEvents      *prometheus.CounterVec
+	badEvents     *prometheus.CounterVec
+	versionsTally *prometheus.GaugeVec
+	processTime   *prometheus.SummaryVec
+	eventTypes    *prometheus.CounterVec
+	nodesExpired  *prometheus.CounterVec
 
 	// transitions
 	transitionEvent *prometheus.CounterVec
 }
 
+type observations struct {
+	component string
+	hosts     map[string]*observation
+}
+
 type observation struct {
-	ts      time.Time
-	version string
+	ts        time.Time
+	component string
+	version   string
 }
 
 // New creates a new Recorder
 func New(opts ...Option) (recorder *Recorder, err error) {
 	recorder = &Recorder{
 		options:  &options{},
-		observed: make(map[string]*observation),
+		observed: make(map[string]*observations),
 	}
 
 	for _, opt := range opts {
@@ -79,24 +84,34 @@ func (r *Recorder) processAlive(e lifecycle.Event) error {
 
 	hname := alive.Identity()
 
-	obs, ok := r.observed[hname]
+	cobs, ok := r.observed[alive.Component()]
 	if !ok {
-		r.observed[hname] = &observation{
-			ts:      time.Now(),
-			version: alive.Version,
+		cobs = &observations{
+			component: alive.Component(),
+			hosts:     make(map[string]*observation),
+		}
+		r.observed[alive.Component()] = cobs
+	}
+
+	obs, ok := cobs.hosts[hname]
+	if !ok {
+		cobs.hosts[hname] = &observation{
+			version:   alive.Version,
+			component: alive.Component(),
+			ts:        alive.TimeStamp(),
 		}
 
-		r.eventsTally.WithLabelValues(alive.Component(), alive.Version).Inc()
+		r.versionsTally.WithLabelValues(alive.Component(), alive.Version).Inc()
 
 		return nil
 	}
 
-	r.observed[hname].ts = time.Now()
+	cobs.hosts[hname].ts = alive.TimeStamp()
 
 	if obs.version != alive.Version {
-		r.eventsTally.WithLabelValues(alive.Component(), obs.version).Dec()
+		r.versionsTally.WithLabelValues(alive.Component(), obs.version).Dec()
 		obs.version = alive.Version
-		r.eventsTally.WithLabelValues(alive.Component(), obs.version).Inc()
+		r.versionsTally.WithLabelValues(alive.Component(), obs.version).Inc()
 	}
 
 	return nil
@@ -109,17 +124,27 @@ func (r *Recorder) processStartup(e lifecycle.Event) error {
 	defer r.Unlock()
 
 	hname := startup.Identity()
-	obs, ok := r.observed[hname]
+	cobs, ok := r.observed[startup.Component()]
+	if !ok {
+		cobs = &observations{
+			component: startup.Component(),
+			hosts:     make(map[string]*observation),
+		}
+		r.observed[startup.Component()] = cobs
+	}
+
+	obs, ok := cobs.hosts[hname]
 	if ok {
-		r.eventsTally.WithLabelValues(startup.Component(), obs.version).Dec()
+		r.versionsTally.WithLabelValues(startup.Component(), obs.version).Dec()
 	}
 
-	r.observed[hname] = &observation{
-		ts:      time.Now(),
-		version: startup.Version,
+	cobs.hosts[hname] = &observation{
+		ts:        time.Now(),
+		version:   startup.Version,
+		component: startup.Component(),
 	}
 
-	r.eventsTally.WithLabelValues(startup.Component(), startup.Version).Inc()
+	r.versionsTally.WithLabelValues(startup.Component(), startup.Version).Inc()
 
 	return nil
 }
@@ -130,12 +155,19 @@ func (r *Recorder) processShutdown(e lifecycle.Event) error {
 	r.Lock()
 	defer r.Unlock()
 
-	hname := shutdown.Identity()
-	obs, ok := r.observed[hname]
-	if ok {
-		r.eventsTally.WithLabelValues(shutdown.Component(), obs.version).Dec()
-		delete(r.observed, hname)
+	cobs, ok := r.observed[shutdown.Component()]
+	if !ok {
+		return nil
 	}
+
+	hname := shutdown.Identity()
+	obs, ok := cobs.hosts[hname]
+	if !ok {
+		return nil
+	}
+
+	delete(cobs.hosts, hname)
+	r.versionsTally.WithLabelValues(shutdown.Component(), obs.version).Dec()
 
 	return nil
 }
@@ -143,7 +175,7 @@ func (r *Recorder) processShutdown(e lifecycle.Event) error {
 func (r *Recorder) process(e lifecycle.Event) (err error) {
 	r.options.Log.Debugf("Processing %s event from %s %s", e.TypeString(), e.Component(), e.Identity())
 
-	timer := r.processTime.WithLabelValues(r.options.Component)
+	timer := r.processTime.WithLabelValues(e.Component())
 	obs := prometheus.NewTimer(timer)
 	defer obs.ObserveDuration()
 
@@ -161,45 +193,44 @@ func (r *Recorder) process(e lifecycle.Event) (err error) {
 	}
 
 	if err == nil {
-		r.okEvents.WithLabelValues(r.options.Component).Inc()
+		r.okEvents.WithLabelValues(e.Component()).Inc()
 	} else {
-		r.badEvents.WithLabelValues(r.options.Component).Inc()
+		r.badEvents.WithLabelValues(e.Component()).Inc()
 	}
 
 	return err
 }
 
 func (r *Recorder) maintenance() {
-	if r.options.Component == "" {
-		return
-	}
-
 	r.Lock()
 	defer r.Unlock()
 
-	timer := r.maintTime.WithLabelValues(r.options.Component)
-	obs := prometheus.NewTimer(timer)
-	defer obs.ObserveDuration()
+	if len(r.observed) == 0 {
+		return
+	}
 
 	oldest := time.Now().Add(-80 * time.Minute)
-	older := []string{}
 
-	for host, obs := range r.observed {
-		if obs.ts.Before(oldest) {
-			r.eventsTally.WithLabelValues(r.options.Component, obs.version).Dec()
-			older = append(older, host)
+	for component := range r.observed {
+		older := map[string]*observation{}
+
+		for host, obs := range r.observed[component].hosts {
+			if obs.ts.Before(oldest) {
+				r.versionsTally.WithLabelValues(obs.component, obs.version).Dec()
+				older[host] = obs
+			}
 		}
-	}
 
-	for _, host := range older {
-		r.options.Log.Debugf("Removing node %s, last seen %v", host, r.observed[host].ts)
+		for host, obs := range older {
+			r.options.Log.Debugf("Removing node %s, last seen %v", host, obs.ts)
 
-		delete(r.observed, host)
-		r.nodesExpired.WithLabelValues(r.options.Component).Inc()
-	}
+			delete(r.observed[component].hosts, host)
+			r.nodesExpired.WithLabelValues(obs.component).Inc()
+		}
 
-	if len(older) > 0 {
-		r.options.Log.Infof("Removed %d hosts that have not been seen in over an hour", len(older))
+		if len(older) > 0 {
+			r.options.Log.Infof("Removed %d '%s' hosts that have not been seen in over an hour", len(older), component)
+		}
 	}
 }
 
@@ -224,6 +255,15 @@ func (r *Recorder) processStateTransition(m inter.ConnectorMessage) (err error) 
 	r.transitionEvent.WithLabelValues(event.Machine, event.Version, event.Transition, event.FromState, event.ToState).Inc()
 
 	return nil
+}
+
+func (r *Recorder) componentFromSubject(s string) string {
+	parts := strings.Split(s, ".")
+	if len(parts) == 0 {
+		return "unknown"
+	}
+
+	return parts[len(parts)-1]
 }
 
 // Run starts listening for events and record statistics about it in prometheus
@@ -254,7 +294,7 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 			event, err := lifecycle.NewFromJSON(e.Data())
 			if err != nil {
 				r.options.Log.Errorf("could not process event: %s", err)
-				r.badEvents.WithLabelValues(r.options.Component).Inc()
+				r.badEvents.WithLabelValues(r.componentFromSubject(e.Subject())).Inc()
 				continue
 			}
 
@@ -267,7 +307,7 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 			err = r.processStateTransition(t)
 			if err != nil {
 				r.options.Log.Errorf("could not process transition event: %s", err)
-				r.badEvents.WithLabelValues(r.options.Component).Inc()
+				r.badEvents.WithLabelValues("transition").Inc()
 			}
 
 		case <-maintSched.C:
