@@ -447,6 +447,11 @@ func (fw *Framework) SetLogger(logger *log.Logger) {
 // SetupLogging configures logging based on choria config directives
 // currently only file and console behaviors are supported
 func (fw *Framework) SetupLogging(debug bool) (err error) {
+	if fw.Config.CustomLogger != nil {
+		fw.log = fw.Config.CustomLogger
+		return
+	}
+
 	fw.log = log.New()
 	fw.log.SetOutput(os.Stdout)
 

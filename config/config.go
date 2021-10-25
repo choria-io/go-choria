@@ -171,6 +171,12 @@ type Config struct {
 
 	// Allow things like completion to put the DDL Registry in cache-only mode
 	RegistryCacheOnly bool
+
+	// CustomLogger sets a logger instance that Choria framework will use and
+	// not change any configuration, if you do this you should take care of
+	// configuring the Logrus standard logger as some places Choria will log
+	// via that
+	CustomLogger *log.Logger
 }
 
 // NewDefaultSystemConfig creates a new configuration for system services
