@@ -297,7 +297,8 @@ func (cm *CertManagerSecurity) submitCSR() (code int, body []byte, err error) {
 			"issuerRef": map[string]interface{}{
 				"name": cm.conf.issuer,
 			},
-			"csr": csr,
+			"csr":     csr,
+			"request": csr,
 		},
 	}
 
