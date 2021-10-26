@@ -21,4 +21,6 @@ RUN groupadd --gid 2048 choria && \
 USER choria
 VOLUME /data
 
+COPY go-choria /bin/choria
+
 ENTRYPOINT ["/bin/choria"]
