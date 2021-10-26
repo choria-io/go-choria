@@ -8,8 +8,7 @@ RUN yum -y update && \
     yum -y clean all
 
 RUN curl -s "${REPO}" > /etc/yum.repos.d/choria.repo && \
-    yum -y update && \
-    yum -y install choria nc procps-ng && \
+    yum -y install choria nc procps-ng openssl && \
     yum -y clean all
 
 RUN groupadd --gid 2048 choria && \
@@ -20,7 +19,5 @@ RUN groupadd --gid 2048 choria && \
 
 USER choria
 VOLUME /data
-
-COPY go-choria /bin/choria
 
 ENTRYPOINT ["/bin/choria"]
