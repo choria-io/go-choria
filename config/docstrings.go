@@ -118,6 +118,7 @@ var docStrings = map[string]string{
 	"plugin.security.certmanager.issuer":                       "When using Cert Manager security provider, the name of the issuer",
 	"plugin.security.certmanager.replace":                      "when using Cert Manager security provider, replace existing CSRs with new ones",
 	"plugin.security.certmanager.alt_names":                    "when using Cert Manager security provider, add these additional names to the CSR",
+	"plugin.security.certmanager.api_version":                  "the API version to call in cert manager",
 	"plugin.security.cipher_suites":                            "List of allowed cipher suites",
 	"plugin.security.ecc_curves":                               "List of allowed ECC curves",
 	"plugin.security.pkcs11.driver_file":                       "When using the pkcs11 security provider, the path to the PCS11 driver file",
