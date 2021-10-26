@@ -13,10 +13,10 @@ require (
 	github.com/awesome-gocui/gocui v1.0.1
 	github.com/brutella/hc v1.2.4
 	github.com/choria-io/go-updater v0.0.3
-	github.com/cloudevents/sdk-go/v2 v2.5.0
+	github.com/cloudevents/sdk-go/v2 v2.6.1
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/gofrs/uuid v4.0.0+incompatible
+	github.com/gofrs/uuid v4.1.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.6
@@ -31,25 +31,25 @@ require (
 	github.com/mitchellh/mapstructure v1.4.2
 	github.com/nats-io/jsm.go v0.0.27-0.20211006163108-9aae04fb57e9
 	github.com/nats-io/nats-server/v2 v2.6.2
-	github.com/nats-io/nats-streaming-server v0.22.1 // indirect
+	github.com/nats-io/nats-streaming-server v0.23.0 // indirect
 	github.com/nats-io/nats.go v1.13.0
 	github.com/nats-io/stan.go v0.10.0
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/onsi/ginkgo v1.16.4
+	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.16.0
 	github.com/open-policy-agent/opa v0.33.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/tidwall/gjson v1.9.2
+	github.com/tidwall/gjson v1.10.2
 	github.com/tidwall/pretty v1.2.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/mod v0.5.1 // indirect
-	golang.org/x/net v0.0.0-20211006190231-62292e806868 // indirect
-	golang.org/x/sys v0.0.0-20211007075335-d3039528d8ac
+	golang.org/x/net v0.0.0-20211020060615-d418f374d309 // indirect
+	golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/tools v0.1.7
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
