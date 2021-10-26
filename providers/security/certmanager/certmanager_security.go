@@ -43,6 +43,7 @@ type CertManagerSecurity struct {
 }
 
 type Config struct {
+	apiVersion           string
 	altnames             []string
 	namespace            string
 	issuer               string
@@ -180,7 +181,7 @@ func (cm *CertManagerSecurity) Provider() string {
 }
 
 func (cm *CertManagerSecurity) fetchCertAndCA() error {
-	url := fmt.Sprintf("https://kubernetes.default.svc/apis/cert-manager.io/v1alpha3/namespaces/%s/certificaterequests/%s", cm.conf.namespace, cm.Identity())
+	url := fmt.Sprintf("https://kubernetes.default.svc/apis/cert-manager.io/%s/namespaces/%s/certificaterequests/%s", cm.conf.apiVersion, cm.conf.namespace, cm.Identity())
 	resp, err := cm.k8sRequest("GET", url, nil)
 	if err != nil {
 		return fmt.Errorf("could not load CSR for %q: %s", cm.Identity(), err)
@@ -270,7 +271,7 @@ func (cm *CertManagerSecurity) processCSR() error {
 }
 
 func (cm *CertManagerSecurity) deleteCSR() (code int, err error) {
-	url := fmt.Sprintf("https://kubernetes.default.svc/apis/cert-manager.io/v1alpha3/namespaces/%s/certificaterequests/%s", cm.conf.namespace, cm.Identity())
+	url := fmt.Sprintf("https://kubernetes.default.svc/apis/cert-manager.io/%s/namespaces/%s/certificaterequests/%s", cm.conf.apiVersion, cm.conf.namespace, cm.Identity())
 	resp, err := cm.k8sRequest("DELETE", url, nil)
 	if err != nil {
 		return 500, err
@@ -286,7 +287,7 @@ func (cm *CertManagerSecurity) submitCSR() (code int, body []byte, err error) {
 	}
 
 	csrReq := map[string]interface{}{
-		"apiVersion": "cert-manager.io/v1alpha3",
+		"apiVersion": fmt.Sprintf("cert-manager.io/%s", cm.conf.apiVersion),
 		"kind":       "CertificateRequest",
 		"metadata": map[string]interface{}{
 			"name":      cm.Identity(),
@@ -307,7 +308,7 @@ func (cm *CertManagerSecurity) submitCSR() (code int, body []byte, err error) {
 
 	cm.log.Infof("Submitting CSR for %q to Cert Manager", cm.Identity())
 
-	url := fmt.Sprintf("https://kubernetes.default.svc/apis/cert-manager.io/v1alpha3/namespaces/%s/certificaterequests", cm.conf.namespace)
+	url := fmt.Sprintf("https://kubernetes.default.svc/apis/cert-manager.io/%s/namespaces/%s/certificaterequests", cm.conf.apiVersion, cm.conf.namespace)
 	resp, err := cm.k8sRequest("POST", url, bytes.NewReader(jreq))
 	if err != nil {
 		return 500, nil, err

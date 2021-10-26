@@ -1,5 +1,18 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/10/25|1480  |Support tallying wildcard components rather than just a single component                                 |
+|2021/10/15|      |Add SPDX License Identifier and Copyright to source files                                                |
+|2021/10/15|1475  |Support `stdout` and `stderr` as logging destinations in addition to `discard` and a file name           |
+|2021/10/14|1472  |Show additional `mco choria show_config` style information in `choria tool config`                       |
+|2021/10/14|      |Change docker base to AlmaLinux                                                                          |
+|2021/10/12|1241  |Refactor DDL resolution, support querying Choria Registry for unknown DDLs                               |
+|2021/10/07|1462  |Adds a new `machines` watcher to manage Choria Autonomous Agents, not enabled by default                 |
+|2021/10/06|1459  |Adds a new `archive` watcher to manage `tgz` files, not enabled by default                               |
+|2021/10/05|1454  |Support asserting provisioning state in the health check plugin                                          |
+|2021/10/05|1455  |Ignore machines with `-temp` name suffix and the `tmp` directory                                         |
+|2021/09/27|1446  |Compatibility fix for latest NATS Server code regarding dynamic limits                                   |
+|2021/09/22|1438  |Allow `choria scout watch` to show only state changes                                                    |
+|2021/09/22|1438  |Add a CLI API for managing KV buckets                                                                    |
 |2021/09/20|      |Release 0.24.0                                                                                           |
 |2021/09/19|1428  |Adds a helper to assist in creation of Governors from automation tools                                   |
 |2021/09/17|1426  |Do not attempt to also load embedded Autonomous Agents from disk                                         | 

@@ -114,6 +114,7 @@ type ChoriaPluginConfig struct {
 	CertManagerSecurityIssuer     string   `confkey:"plugin.security.certmanager.issuer"`                       // When using Cert Manager security provider, the name of the issuer
 	CertManagerSecurityReplaceCSR bool     `confkey:"plugin.security.certmanager.replace" default:"true"`       // when using Cert Manager security provider, replace existing CSRs with new ones
 	CertManagerSecurityAltNames   []string `confkey:"plugin.security.certmanager.alt_names" type:"comma_split"` // when using Cert Manager security provider, add these additional names to the CSR
+	CertManagerAPIVersion         string   `confkey:"plugin.security.certmanager.api_version" default:"v1"`     // the API version to call in cert manager
 
 	CipherSuites []string `confkey:"plugin.security.cipher_suites" type:"comma_split"` // List of allowed cipher suites
 	ECCCurves    []string `confkey:"plugin.security.ecc_curves" type:"comma_split"`    // List of allowed ECC curves

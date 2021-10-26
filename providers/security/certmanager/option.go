@@ -19,6 +19,7 @@ type Option func(*CertManagerSecurity) error
 func WithChoriaConfig(c *config.Config) Option {
 	return func(p *CertManagerSecurity) error {
 		cfg := Config{
+			apiVersion:           c.Choria.CertManagerAPIVersion,
 			sslDir:               c.Choria.SSLDir,
 			privilegedUsers:      c.Choria.PrivilegedUsers,
 			alwaysOverwriteCache: c.Choria.SecurityAlwaysOverwriteCache,
@@ -46,6 +47,10 @@ func WithChoriaConfig(c *config.Config) Option {
 
 		if cfg.identity == "" {
 			return fmt.Errorf("identity could not be established")
+		}
+
+		if cfg.apiVersion == "" {
+			cfg.apiVersion = "v1"
 		}
 
 		p.conf = &cfg
