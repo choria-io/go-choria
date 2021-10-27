@@ -47,7 +47,7 @@ const (
 // Option configures a formatter
 type Option func(f Formatter) error
 
-// verbose sets verbose output mode
+// Verbose sets verbose output mode
 func Verbose() Option {
 	return func(f Formatter) error {
 		f.SetVerbose()
@@ -56,7 +56,7 @@ func Verbose() Option {
 	}
 }
 
-// silent sets verbose output mode
+// Silent sets verbose output mode
 func Silent() Option {
 	return func(f Formatter) error {
 		f.SetSilent()
