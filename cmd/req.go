@@ -42,6 +42,7 @@ type reqCommand struct {
 	verbose         bool
 	jsonOnly        bool
 	tableOnly       bool
+	senderNamesOnly bool
 	silent          bool
 	workers         int
 	reply           string
@@ -85,6 +86,7 @@ that match the filter.
 	r.cmd.Arg("args", "Arguments to pass to the action in key=val format").StringMapVar(&r.args)
 	r.cmd.Flag("json", "Produce JSON output only").Short('j').BoolVar(&r.jsonOnly)
 	r.cmd.Flag("table", "Produce a Table output of successful responses").BoolVar(&r.tableOnly)
+	r.cmd.Flag("senders", "Produce a list of sender identities of successful responses").BoolVar(&r.senderNamesOnly)
 
 	r.fo = discovery.NewStandardOptions()
 	r.fo.AddFilterFlags(r.cmd)
@@ -193,7 +195,7 @@ func (r *reqCommand) prepareConfiguration() (err error) {
 	}
 	r.outputWriter = bufio.NewWriter(r.outputFileHandle)
 
-	if r.jsonOnly {
+	if r.jsonOnly || r.senderNamesOnly {
 		r.silent = true
 		r.noProgress = true
 	}
@@ -327,6 +329,10 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 
 func (r *reqCommand) displayResults(res *replyfmt.RPCResults) error {
 	defer r.outputWriter.Flush()
+
+	if r.senderNamesOnly {
+		return res.RenderNames(r.outputWriter, r.jsonOnly, r.sort)
+	}
 
 	if r.jsonOnly {
 		return res.RenderJSON(r.outputWriter, r.actionInterface)

@@ -185,6 +185,39 @@ func (r *RPCResults) RenderTXT(w io.Writer, action ActionDDL, verbose bool, sile
 	return nil
 }
 
+// RenderNames renders a list of names of successful senders
+// TODO: should become a reply format formatter maybe
+func (r *RPCResults) RenderNames(w io.Writer, jsonFormat bool, sortNames bool) error {
+	var names []string
+
+	for _, reply := range r.Replies {
+		if reply.Statuscode == mcorpc.OK {
+			names = append(names, reply.Sender)
+		}
+	}
+
+	if sortNames {
+		sort.Strings(names)
+	}
+
+	if jsonFormat {
+		j, err := json.MarshalIndent(names, "", "  ")
+		if err != nil {
+			return err
+		}
+
+		fmt.Fprintln(w, string(j))
+
+		return nil
+	}
+
+	for _, name := range names {
+		fmt.Fprintln(w, name)
+	}
+
+	return nil
+}
+
 // RenderTable renders a table of outputs
 // TODO: should become a reply format formatter, but those lack a prepare phase to print headers etc
 func (r *RPCResults) RenderTable(w io.Writer, action ActionDDL) (err error) {
