@@ -26,6 +26,10 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+const validIdentity = `^(([a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$`
+
+var validIdentityRe = regexp.MustCompile(validIdentity)
+
 type FlatFile struct {
 	fw      client.ChoriaFramework
 	timeout time.Duration
@@ -127,13 +131,8 @@ func (f *FlatFile) Discover(_ context.Context, opts ...DiscoverOption) (n []stri
 }
 
 func (f *FlatFile) validateNodes(nodes []string) error {
-	matcher, err := regexp.Compile(`^(([a-zA-Z]|[a-zA-Z][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z]|[A-Za-z][A-Za-z0-9\-]*[A-Za-z0-9])$`)
-	if err != nil {
-		return err
-	}
-
 	for _, n := range nodes {
-		if !matcher.MatchString(n) {
+		if !validIdentityRe.MatchString(n) {
 			return fmt.Errorf("invalid identity string %q", n)
 		}
 	}

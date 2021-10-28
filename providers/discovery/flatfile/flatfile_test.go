@@ -39,7 +39,7 @@ var _ = Describe("Flatfile", func() {
 	It("Should support flat files", func() {
 		ff := &FlatFile{}
 		n, err := ff.Discover(context.Background(), File("testdata/nodes.txt"), Format(TextFormat))
-		Expect(n).To(Equal([]string{"one", "two", "three"}))
+		Expect(n).To(Equal([]string{"one", "two", "three", "123-abc.example.net"}))
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -98,6 +98,6 @@ var _ = Describe("Flatfile", func() {
 			"file":   "testdata/nodes.txt",
 		}))
 		Expect(err).ToNot(HaveOccurred())
-		Expect(n).To(Equal([]string{"one", "two", "three"}))
+		Expect(n).To(Equal([]string{"one", "two", "three", "123-abc.example.net"}))
 	})
 })
