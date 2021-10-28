@@ -223,16 +223,20 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	defer cancel()
 
 	tf, err := w.downloadSourceToTemp(timeout)
+	if tf != "" {
+		defer os.RemoveAll(filepath.Dir(tf))
+	}
 	if err != nil {
 		return Error, fmt.Errorf("download failed: %s", err)
 	}
-	defer os.Remove(tf)
+	if tf == "" {
+		return Error, fmt.Errorf("unknown error downloading to temporary file")
+	}
 
 	td, err := w.extractAndVerifyToTemp(tf)
 	if err != nil {
 		return Error, fmt.Errorf("archive extraction failed: %s", err)
 	}
-	defer os.RemoveAll(td)
 
 	if iu.FileExist(creates) {
 		err = os.RemoveAll(creates)
@@ -256,6 +260,8 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	return Downloaded, nil
 }
 
+// extracts path into a new temporary directory in the same directory as path, returns
+// the path to the new extracted temp directory
 func (w *Watcher) extractAndVerifyToTemp(path string) (string, error) {
 	if path == "" {
 		return "", fmt.Errorf("empty archive path")
@@ -272,27 +278,25 @@ func (w *Watcher) extractAndVerifyToTemp(path string) (string, error) {
 
 	td, err := os.MkdirTemp(parent, "choria-archive")
 	if err != nil {
-		return "", err
+		return td, err
 	}
 
 	f, err := os.Open(path)
 	if err != nil {
-		return "", err
+		return td, err
 	}
 
 	err = w.untar(f, td)
 	if err != nil {
-		os.RemoveAll(td)
-		return "", fmt.Errorf("untar failed: %s", err)
+		return td, fmt.Errorf("untar failed: %s", err)
 	}
 
 	_, output, err := w.verify(filepath.Join(td, w.properties.Creates))
 	if err != nil {
-		os.RemoveAll(td)
 		if len(output) > 0 {
 			w.Errorf("sha256 verify failed: %s", string(output))
 		}
-		return "", err
+		return td, err
 	}
 
 	return td, nil
@@ -396,6 +400,8 @@ func (w *Watcher) mkTempDir() (string, error) {
 	return os.MkdirTemp(parent, "")
 }
 
+// creates a temp directory, creates a file in that directory and returns the path to the file
+// removes the temp directory on any failure, but leaves it on success - the temp file is in there
 func (w *Watcher) downloadSourceToTemp(ctx context.Context) (string, error) {
 	source, err := w.ProcessTemplate(w.properties.Source)
 	if err != nil {
@@ -431,6 +437,7 @@ func (w *Watcher) downloadSourceToTemp(ctx context.Context) (string, error) {
 
 	tf, err := os.CreateTemp(td, "*-archive.tgz")
 	if err != nil {
+		os.RemoveAll(td)
 		return "", fmt.Errorf("could not create temp file: %s", err)
 	}
 	defer tf.Close()
@@ -482,7 +489,7 @@ func (w *Watcher) downloadSourceToTemp(ctx context.Context) (string, error) {
 		return nil
 	}()
 	if err != nil {
-		os.Remove(tf.Name())
+		os.RemoveAll(td)
 		return "", err
 	}
 
