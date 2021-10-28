@@ -43,11 +43,12 @@ var stateNames = map[State]string{
 }
 
 type properties struct {
-	Bucket            string
-	Key               string
-	Mode              string
-	TransitionOnMatch bool `mapstructure:"on_matching_update"`
-	BucketPrefix      bool `mapstructure:"bucket_prefix"`
+	Bucket                    string
+	Key                       string
+	Mode                      string
+	TransitionOnSuccessfulGet bool `mapstructure:"on_successful_get"`
+	TransitionOnMatch         bool `mapstructure:"on_matching_update"`
+	BucketPrefix              bool `mapstructure:"bucket_prefix"`
 }
 
 type Watcher struct {
@@ -254,6 +255,10 @@ func (w *Watcher) poll() (State, error) {
 
 	default:
 		w.previousSeq = val.Sequence()
+		if w.properties.TransitionOnSuccessfulGet {
+			return Changed, nil
+		}
+
 		return Unchanged, nil
 	}
 }

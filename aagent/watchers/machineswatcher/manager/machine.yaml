@@ -32,6 +32,7 @@ watchers:
       key: spec
       mode: poll
       bucket_prefix: false
+      on_successful_get: true
 
   - name: specification
     type: kv
