@@ -13,8 +13,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/providers/kv"
 	"github.com/nats-io/jsm.go"
-	"github.com/nats-io/jsm.go/kv"
+	"github.com/nats-io/nats.go"
 )
 
 type kvAPICommand struct {
@@ -25,7 +26,7 @@ type kvAPICommand struct {
 	check  bool
 
 	name          string
-	history       uint64
+	history       uint8
 	ttl           int
 	replicas      int
 	maxValueSize  int32
@@ -42,7 +43,7 @@ func (g *kvAPICommand) Setup() (err error) {
 		g.cmd.Flag("check", "Checks if the API is available").BoolVar(&g.check)
 
 		g.cmd.Flag("name", "KV Bucket name").PlaceHolder("NAME").StringVar(&g.name)
-		g.cmd.Flag("history", "How many historic values to keep for each key").PlaceHolder("CAPACITY").Uint64Var(&g.history)
+		g.cmd.Flag("history", "How many historic values to keep for each key").PlaceHolder("CAPACITY").Uint8Var(&g.history)
 		g.cmd.Flag("expire", "Expire values from the bucket after this duration").PlaceHolder("SECONDS").IntVar(&g.ttl)
 		g.cmd.Flag("replicas", "How many replicas to store on the server").PlaceHolder("REPLICAS").IntVar(&g.replicas)
 		g.cmd.Flag("max-value-size", "Maximum size of any value in the bucket").PlaceHolder("BYTES").Int32Var(&g.maxValueSize)
@@ -103,7 +104,7 @@ func (g *kvAPICommand) updateCmd() {
 	opts := []kv.Option{
 		kv.WithHistory(g.history),
 		kv.WithTTL(ttl),
-		kv.WithReplicas(uint(g.replicas)),
+		kv.WithReplicas(g.replicas),
 		kv.WithMaxBucketSize(g.maxBucketSize),
 		kv.WithMaxValueSize(g.maxValueSize)}
 
@@ -116,16 +117,16 @@ func (g *kvAPICommand) updateCmd() {
 	if err != nil {
 		g.fail("update failed: %s", err)
 	}
+	nfo := status.(*nats.KeyValueBucketStatus).StreamInfo()
 
-	ok, failed := status.Replicas()
-	needsRecreate := ok+failed != g.replicas
-	needUpdate := status.TTL() != ttl || status.History() != int64(g.history) || status.MaxValueSize() != g.maxValueSize || status.MaxBucketSize() != g.maxBucketSize
+	needsRecreate := nfo.Config.Replicas != g.replicas
+	needUpdate := status.TTL() != ttl || status.History() != int64(g.history) || nfo.Config.MaxMsgSize != g.maxValueSize || nfo.Config.MaxBytes != g.maxBucketSize || !nfo.Config.AllowRollup
 
 	if needsRecreate {
 		if !g.force {
 			g.fail("changing replicas requires force option")
 		}
-		err = bucket.Destroy()
+		err = kv.DeleteKV(conn.Nats(), bucket)
 		if err != nil {
 			g.fail("could not remove bucket to update replicas: %s", err)
 		}
@@ -144,7 +145,7 @@ func (g *kvAPICommand) updateCmd() {
 			g.fail("update failed: %s", err)
 		}
 
-		str, err := mgr.LoadStream(status.BackingStore())
+		str, err := mgr.LoadStream(nfo.Config.Name)
 		if err != nil {
 			g.fail("update failed: %s", err)
 		}
@@ -154,6 +155,7 @@ func (g *kvAPICommand) updateCmd() {
 		cfg.MaxMsgsPer = int64(g.history)
 		cfg.MaxMsgSize = g.maxValueSize
 		cfg.MaxBytes = g.maxBucketSize
+		cfg.RollupAllowed = true
 
 		err = str.UpdateConfiguration(cfg)
 		if err != nil {
@@ -170,15 +172,15 @@ func (g *kvAPICommand) updateCmd() {
 	if err != nil {
 		g.fail("update failed: %s", err)
 	}
-	ok, failed = status.Replicas()
+	nfo = status.(*nats.KeyValueBucketStatus).StreamInfo()
 
 	g.jsonDump(map[string]interface{}{
 		"name":            status.Bucket(),
 		"history":         status.History(),
 		"expire":          status.TTL().Seconds(),
-		"replicas":        ok + failed,
-		"max_value_size":  status.MaxValueSize(),
-		"max_bucket_size": status.MaxBucketSize(),
+		"replicas":        nfo.Config.Replicas,
+		"max_value_size":  nfo.Config.MaxMsgSize,
+		"max_bucket_size": nfo.Config.MaxBytes,
 	})
 }
 
@@ -187,12 +189,12 @@ func (g *kvAPICommand) deleteCmd() {
 		g.fail("no name given")
 	}
 
-	bucket, err := c.KV(ctx, nil, g.name, false)
+	bucket, conn, err := c.KVWithConn(ctx, nil, g.name, false)
 	if err != nil {
 		g.fail("loading bucket failed: %s", err)
 	}
 
-	err = bucket.Destroy()
+	err = kv.DeleteKV(conn.Nats(), bucket)
 	if err != nil {
 		g.fail("delete failed: %s", err)
 	}
@@ -231,7 +233,8 @@ func (g *kvAPICommand) listCmd() {
 			continue
 		}
 
-		kv, err := c.KV(ctx, nil, strings.TrimPrefix(known[i], "KV_"), false)
+		name := strings.TrimPrefix(known[i], "KV_")
+		kv, conn, err := c.KVWithConn(ctx, nil, name, false)
 		if err != nil {
 			g.fail("loading buckets failed: %s", err)
 		}
@@ -240,15 +243,33 @@ func (g *kvAPICommand) listCmd() {
 		if err != nil {
 			g.fail("loading buckets failed: %s", err)
 		}
+		nfo := status.(*nats.KeyValueBucketStatus).StreamInfo()
 
-		ok, failed := status.Replicas()
+		// attempt to upgrade silently in place
+		if !nfo.Config.AllowRollup {
+			mgr, err := jsm.New(conn.Nats())
+			if err != nil {
+				g.fail("upgrading %s failed: %s", name, err)
+			}
+
+			stream, err := mgr.LoadStream(nfo.Config.Name)
+			if err != nil {
+				g.fail("upgrading %s failed: %s", name, err)
+			}
+
+			err = stream.UpdateConfiguration(stream.Configuration(), jsm.AllowRollup())
+			if err != nil {
+				g.fail("upgrading %s failed: %s", name, err)
+			}
+		}
+
 		buckets = append(buckets, bucket{
 			Name:          status.Bucket(),
 			History:       int(status.History()),
 			TTL:           int(status.TTL().Seconds()),
-			Replicas:      ok + failed,
-			MaxValueSize:  int(status.MaxValueSize()),
-			MaxBucketSize: int(status.MaxBucketSize()),
+			Replicas:      nfo.Config.Replicas,
+			MaxValueSize:  int(nfo.Config.MaxMsgSize),
+			MaxBucketSize: int(nfo.Config.MaxBytes),
 		})
 	}
 
@@ -271,6 +292,7 @@ func (g *kvAPICommand) jsonDump(d interface{}) {
 
 	fmt.Println(string(j))
 }
+
 func init() {
 	cli.commands = append(cli.commands, &kvAPICommand{})
 }

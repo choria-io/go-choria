@@ -17,10 +17,12 @@ import (
 	config "github.com/choria-io/go-choria/config"
 	inter "github.com/choria-io/go-choria/inter"
 	protocol "github.com/choria-io/go-choria/protocol"
+	election "github.com/choria-io/go-choria/providers/election/streams"
+	kv "github.com/choria-io/go-choria/providers/kv"
 	srvcache "github.com/choria-io/go-choria/srvcache"
 	jwt "github.com/golang-jwt/jwt"
 	gomock "github.com/golang/mock/gomock"
-	kv "github.com/nats-io/jsm.go/kv"
+	nats "github.com/nats-io/nats.go"
 	logrus "github.com/sirupsen/logrus"
 )
 
@@ -780,14 +782,14 @@ func (mr *MockFrameworkMockRecorder) IsFederated() *gomock.Call {
 }
 
 // KV mocks base method.
-func (m *MockFramework) KV(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 bool, arg4 ...kv.Option) (kv.KV, error) {
+func (m *MockFramework) KV(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 bool, arg4 ...kv.Option) (nats.KeyValue, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2, arg3}
 	for _, a := range arg4 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "KV", varargs...)
-	ret0, _ := ret[0].(kv.KV)
+	ret0, _ := ret[0].(nats.KeyValue)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -800,14 +802,14 @@ func (mr *MockFrameworkMockRecorder) KV(arg0, arg1, arg2, arg3 interface{}, arg4
 }
 
 // KVWithConn mocks base method.
-func (m *MockFramework) KVWithConn(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 bool, arg4 ...kv.Option) (kv.KV, inter.Connector, error) {
+func (m *MockFramework) KVWithConn(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 bool, arg4 ...kv.Option) (nats.KeyValue, inter.Connector, error) {
 	m.ctrl.T.Helper()
 	varargs := []interface{}{arg0, arg1, arg2, arg3}
 	for _, a := range arg4 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "KVWithConn", varargs...)
-	ret0, _ := ret[0].(kv.KV)
+	ret0, _ := ret[0].(nats.KeyValue)
 	ret1, _ := ret[1].(inter.Connector)
 	ret2, _ := ret[2].(error)
 	return ret0, ret1, ret2
@@ -877,6 +879,47 @@ func (m *MockFramework) NewConnector(arg0 context.Context, arg1 func() (srvcache
 func (mr *MockFrameworkMockRecorder) NewConnector(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewConnector", reflect.TypeOf((*MockFramework)(nil).NewConnector), arg0, arg1, arg2, arg3)
+}
+
+// NewElection mocks base method.
+func (m *MockFramework) NewElection(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 ...election.Option) (inter.Election, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2}
+	for _, a := range arg3 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "NewElection", varargs...)
+	ret0, _ := ret[0].(inter.Election)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// NewElection indicates an expected call of NewElection.
+func (mr *MockFrameworkMockRecorder) NewElection(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewElection", reflect.TypeOf((*MockFramework)(nil).NewElection), varargs...)
+}
+
+// NewElectionWithConn mocks base method.
+func (m *MockFramework) NewElectionWithConn(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 ...election.Option) (inter.Election, inter.Connector, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2}
+	for _, a := range arg3 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "NewElectionWithConn", varargs...)
+	ret0, _ := ret[0].(inter.Election)
+	ret1, _ := ret[1].(inter.Connector)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// NewElectionWithConn indicates an expected call of NewElectionWithConn.
+func (mr *MockFrameworkMockRecorder) NewElectionWithConn(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewElectionWithConn", reflect.TypeOf((*MockFramework)(nil).NewElectionWithConn), varargs...)
 }
 
 // NewMessage mocks base method.

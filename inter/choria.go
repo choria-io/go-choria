@@ -14,9 +14,11 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/protocol"
+	election "github.com/choria-io/go-choria/providers/election/streams"
+	"github.com/choria-io/go-choria/providers/kv"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/golang-jwt/jwt"
-	"github.com/nats-io/jsm.go/kv"
+	"github.com/nats-io/nats.go"
 	"github.com/sirupsen/logrus"
 )
 
@@ -70,11 +72,13 @@ type Framework interface {
 	HTTPClient(secure bool) (*http.Client, error)
 	HasCollective(collective string) bool
 	IsFederated() (result bool)
-	KV(ctx context.Context, conn Connector, bucket string, create bool, opts ...kv.Option) (kv.KV, error)
-	KVWithConn(ctx context.Context, conn Connector, bucket string, create bool, opts ...kv.Option) (kv.KV, Connector, error)
+	KV(ctx context.Context, conn Connector, bucket string, create bool, opts ...kv.Option) (nats.KeyValue, error)
+	KVWithConn(ctx context.Context, conn Connector, bucket string, create bool, opts ...kv.Option) (nats.KeyValue, Connector, error)
 	Logger(component string) *logrus.Entry
 	MiddlewareServers() (servers srvcache.Servers, err error)
 	NetworkBrokerPeers() (servers srvcache.Servers, err error)
+	NewElection(ctx context.Context, conn Connector, name string, opts ...election.Option) (Election, error)
+	NewElectionWithConn(ctx context.Context, conn Connector, name string, opts ...election.Option) (Election, Connector, error)
 	OverrideCertname() string
 	PQLQuery(query string) ([]byte, error)
 	PQLQueryCertNames(query string) ([]string, error)

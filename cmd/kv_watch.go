@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/nats-io/jsm.go/kv"
+	"github.com/nats-io/nats.go"
 )
 
 type kvWatchCommand struct {
@@ -42,31 +42,36 @@ func (k *kvWatchCommand) Configure() error {
 func (k *kvWatchCommand) Run(wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	wctx := ctx
-	var cancel func()
+	wctx, cancel := context.WithCancel(ctx)
+	defer cancel()
+
+	store, err := c.KV(wctx, nil, k.name, false)
+	if err != nil {
+		return err
+	}
+
+	watch, err := store.Watch(k.key)
+	if err != nil {
+		return err
+	}
+	defer watch.Stop()
+
 	if k.timeout > 0 {
-		wctx, cancel = context.WithTimeout(ctx, k.timeout)
-		defer cancel()
+		go func() {
+			wctx, cancel = context.WithTimeout(ctx, k.timeout)
+			defer cancel()
+			<-wctx.Done()
+			watch.Stop()
+		}()
 	}
 
-	store, err := c.KV(ctx, nil, k.name, false)
-	if err != nil {
-		return err
-	}
-
-	watch, err := store.Watch(wctx, k.key)
-	if err != nil {
-		return err
-	}
-	defer watch.Close()
-
-	for entry := range watch.Channel() {
+	for entry := range watch.Updates() {
 		if entry == nil {
 			continue
 		}
 
 		if k.once {
-			if entry.Operation() == kv.DeleteOperation {
+			if entry.Operation() == nats.KeyValueDelete {
 				continue
 			}
 
@@ -74,7 +79,7 @@ func (k *kvWatchCommand) Run(wg *sync.WaitGroup) error {
 			return nil
 		}
 
-		if entry.Operation() == kv.DeleteOperation {
+		if entry.Operation() == nats.KeyValueDelete {
 			fmt.Printf("[%s] %s %s.%s\n", entry.Created().Format("2006-01-02 15:04:05"), color.RedString("DEL"), entry.Bucket(), entry.Key())
 		} else {
 			fmt.Printf("[%s] %s %s.%s: %s\n", entry.Created().Format("2006-01-02 15:04:05"), color.GreenString("PUT"), entry.Bucket(), entry.Key(), entry.Value())

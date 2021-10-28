@@ -50,6 +50,7 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.network.provisioning.signer_cert](#pluginchorianetworkprovisioningsigner_cert)|[plugin.choria.network.public_url](#pluginchorianetworkpublic_url)|
 |[plugin.choria.network.stream.advisory_replicas](#pluginchorianetworkstreamadvisory_replicas)|[plugin.choria.network.stream.advisory_retention](#pluginchorianetworkstreamadvisory_retention)|
 |[plugin.choria.network.stream.event_replicas](#pluginchorianetworkstreamevent_replicas)|[plugin.choria.network.stream.event_retention](#pluginchorianetworkstreamevent_retention)|
+|[plugin.choria.network.stream.leader_election_replicas](#pluginchorianetworkstreamleader_election_replicas)|[plugin.choria.network.stream.leader_election_ttl](#pluginchorianetworkstreamleader_election_ttl)|
 |[plugin.choria.network.stream.machine_replicas](#pluginchorianetworkstreammachine_replicas)|[plugin.choria.network.stream.machine_retention](#pluginchorianetworkstreammachine_retention)|
 |[plugin.choria.network.stream.store](#pluginchorianetworkstreamstore)|[plugin.choria.network.system.password](#pluginchorianetworksystempassword)|
 |[plugin.choria.network.system.user](#pluginchorianetworksystemuser)|[plugin.choria.network.tls_timeout](#pluginchorianetworktls_timeout)|
@@ -488,9 +489,9 @@ Name:Port to advertise to clients, useful when fronted by a proxy
 ## plugin.choria.network.stream.advisory_replicas
 
  * **Type:** integer
- * **Default Value:** 1
+ * **Default Value:** -1
 
-When configuring Stream advisories storage ensure data is replicated in the cluster over this many servers
+When configuring Stream advisories storage ensure data is replicated in the cluster over this many servers, -1 means count of peers
 
 ## plugin.choria.network.stream.advisory_retention
 
@@ -502,9 +503,9 @@ When not zero enables retaining Stream advisories in the Stream Store
 ## plugin.choria.network.stream.event_replicas
 
  * **Type:** integer
- * **Default Value:** 1
+ * **Default Value:** -1
 
-When configuring LifeCycle events ensure data is replicated in the cluster over this many servers
+When configuring LifeCycle events ensure data is replicated in the cluster over this many servers, -1 means count of peers
 
 ## plugin.choria.network.stream.event_retention
 
@@ -513,12 +514,26 @@ When configuring LifeCycle events ensure data is replicated in the cluster over 
 
 When not zero enables retaining Lifecycle events in the Stream Store
 
+## plugin.choria.network.stream.leader_election_replicas
+
+ * **Type:** integer
+ * **Default Value:** -1
+
+When configuring Stream based Leader Election storage ensure data is replicated in the cluster over this many servers, -1 means count of peers
+
+## plugin.choria.network.stream.leader_election_ttl
+
+ * **Type:** duration
+ * **Default Value:** 1m
+
+The TTL for leader election, leaders must vote at least this frequently to remain leader
+
 ## plugin.choria.network.stream.machine_replicas
 
  * **Type:** integer
- * **Default Value:** 1
+ * **Default Value:** -1
 
-When configuring Autonomous Agent event storage ensure data is replicated in the cluster over this many servers
+When configuring Autonomous Agent event storage ensure data is replicated in the cluster over this many servers, -1 means count of peers
 
 ## plugin.choria.network.stream.machine_retention
 

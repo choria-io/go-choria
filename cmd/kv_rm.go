@@ -9,6 +9,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/internal/util"
+	"github.com/choria-io/go-choria/providers/kv"
 )
 
 type kvRMCommand struct {
@@ -35,7 +36,7 @@ func (k *kvRMCommand) Configure() error {
 func (k *kvRMCommand) Run(wg *sync.WaitGroup) error {
 	defer wg.Done()
 
-	store, err := c.KV(ctx, nil, k.name, false)
+	store, conn, err := c.KVWithConn(ctx, nil, k.name, false)
 	if err != nil {
 		return err
 	}
@@ -51,7 +52,7 @@ func (k *kvRMCommand) Run(wg *sync.WaitGroup) error {
 		}
 	}
 
-	return store.Destroy()
+	return kv.DeleteKV(conn.Nats(), store)
 }
 
 func init() {
