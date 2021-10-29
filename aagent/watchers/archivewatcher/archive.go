@@ -17,6 +17,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"sync"
 	"time"
 
@@ -360,6 +361,10 @@ func (w *Watcher) untar(s io.Reader, t string) error {
 			break
 		} else if err != nil {
 			return err
+		}
+
+		if strings.HasPrefix(header.Name, "..") {
+			continue
 		}
 
 		path := filepath.Join(t, header.Name)
