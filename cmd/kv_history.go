@@ -41,7 +41,7 @@ func (k *kvHistoryCommand) Run(wg *sync.WaitGroup) error {
 		return err
 	}
 
-	history, err := store.History(ctx, k.key)
+	history, err := store.History(k.key)
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func (k *kvHistoryCommand) Run(wg *sync.WaitGroup) error {
 		}
 
 		table.Append([]string{
-			strconv.Itoa(int(r.Sequence())),
+			strconv.Itoa(int(r.Revision())),
 			string(r.Operation()),
 			r.Created().Format(time.RFC822),
 			strconv.Itoa(len(r.Value())),

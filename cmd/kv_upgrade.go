@@ -12,28 +12,26 @@ import (
 	"github.com/nats-io/nats.go"
 )
 
-type kvBackupCommand struct {
+type kvUpgradeCommand struct {
 	command
 
-	name   string
-	target string
+	name string
 }
 
-func (k *kvBackupCommand) Setup() error {
+func (k *kvUpgradeCommand) Setup() error {
 	if kv, ok := cmdWithFullCommand("kv"); ok {
-		k.cmd = kv.Cmd().Command("backup", "Backs up a bucket to a directory")
+		k.cmd = kv.Cmd().Command("upgrade", "Upgrades a bucket configuration for >= Choria 0.25")
 		k.cmd.Arg("bucket", "The bucket name").Required().StringVar(&k.name)
-		k.cmd.Arg("target", "Directory to create the backup in").Required().StringVar(&k.target)
 	}
 
 	return nil
 }
 
-func (k *kvBackupCommand) Configure() error {
+func (k *kvUpgradeCommand) Configure() error {
 	return commonConfigure()
 }
 
-func (k *kvBackupCommand) Run(wg *sync.WaitGroup) error {
+func (k *kvUpgradeCommand) Run(wg *sync.WaitGroup) error {
 	defer wg.Done()
 
 	store, conn, err := c.KVWithConn(ctx, nil, k.name, false)
@@ -46,27 +44,32 @@ func (k *kvBackupCommand) Run(wg *sync.WaitGroup) error {
 		return err
 	}
 
+	nfo := status.(*nats.KeyValueBucketStatus).StreamInfo()
+	if nfo.Config.AllowRollup {
+		fmt.Printf("Configuration for %s is already up to date\n", k.name)
+		return nil
+	}
+
 	mgr, err := jsm.New(conn.Nats())
 	if err != nil {
 		return err
 	}
-	nfo := status.(*nats.KeyValueBucketStatus).StreamInfo()
 
 	stream, err := mgr.LoadStream(nfo.Config.Name)
 	if err != nil {
 		return err
 	}
 
-	fp, err := stream.SnapshotToDirectory(ctx, k.target, jsm.SnapshotHealthCheck())
+	err = stream.UpdateConfiguration(stream.Configuration(), jsm.AllowRollup())
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Created %d bytes backup of bucket %s in %s\n", fp.BytesReceived(), k.name, k.target)
+	fmt.Printf("Configuration for %s has been updated\n", k.name)
 
 	return nil
 }
 
 func init() {
-	cli.commands = append(cli.commands, &kvBackupCommand{})
+	cli.commands = append(cli.commands, &kvUpgradeCommand{})
 }

@@ -38,6 +38,32 @@ func (s *Server) setupAccounts() (err error) {
 		if err != nil {
 			s.log.Warnf("Could not import lifecycle events from Provisioning account")
 		}
+
+		// ensure leader election KV bucket functions in the provisioner account
+		// the only key thats accessible by the provisioner account is `provisioner`
+		// and he can only do info on the bucket, this way a rogue entity in there
+		// cannot disrupt other leader elections.  This is a 2nd layer of protection
+		// since nodes in there also lacks access to the `choria.streams.>` and `$KV.>`
+		// prefixes for access to anything
+		err = s.choriaAccount.AddServiceExportWithResponse("$JS.API.STREAM.INFO.KV_CHORIA_LEADER_ELECTION", server.Singleton, []*server.Account{s.provisioningAccount})
+		if err == nil {
+			err = s.provisioningAccount.AddServiceImport(s.choriaAccount, "choria.streams.STREAM.INFO.KV_CHORIA_LEADER_ELECTION", "$JS.API.STREAM.INFO.KV_CHORIA_LEADER_ELECTION")
+			if err != nil {
+				s.log.Warnf("Could not import KV_CHORIA_LEADER_ELECTION stream info API: %s", err)
+			}
+		} else {
+			s.log.Warnf("Could not export KV_CHORIA_LEADER_ELECTION Info API to Provisioning: %s", err)
+		}
+
+		err = s.choriaAccount.AddServiceExportWithResponse("$KV.CHORIA_LEADER_ELECTION.provisioner", server.Singleton, []*server.Account{s.provisioningAccount})
+		if err == nil {
+			err = s.provisioningAccount.AddServiceImport(s.choriaAccount, "$KV.CHORIA_LEADER_ELECTION.provisioner", "$KV.CHORIA_LEADER_ELECTION.provisioner")
+			if err != nil {
+				s.log.Warnf("Could not import CHORIA_LEADER_ELECTION message subjects: %s", err)
+			}
+		} else {
+			s.log.Warnf("Could not export CHORIA_LEADER_ELECTION message subjects to Provisioning: %s", err)
+		}
 	}
 
 	return nil

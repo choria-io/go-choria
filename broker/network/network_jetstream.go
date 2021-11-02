@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/nats-io/jsm.go"
+	"github.com/nats-io/jsm.go/api"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/nats-io/nats.go"
 
@@ -26,23 +27,22 @@ func (s *Server) setupStreaming() error {
 		return fmt.Errorf("system Account is required for Choria Streams")
 	}
 
-	s.log.Infof("Configuring Choria Stream Processing in %v", s.config.Choria.NetworkStreamStore)
+	s.log.Infof("Configuring Choria Streams in %v", s.config.Choria.NetworkStreamStore)
 
-	s.gnatsd.EnableJetStream(&server.JetStreamConfig{StoreDir: s.config.Choria.NetworkStreamStore})
+	err := s.gnatsd.EnableJetStream(&server.JetStreamConfig{StoreDir: s.config.Choria.NetworkStreamStore})
+	if err != nil {
+		return err
+	}
 
-	for _, acct := range []*server.Account{s.choriaAccount, s.provisioningAccount} {
-		if acct == nil {
-			continue
-		}
+	s.log.Infof("Enabling Choria Streams for account %s", s.choriaAccount)
 
-		err := acct.EnableJetStream(nil)
-		if err != nil {
-			s.log.Errorf("Could not enable Choria Streams for the %s account: %s", acct.Name, err)
-		}
+	err = s.choriaAccount.EnableJetStream(nil)
+	if err != nil {
+		s.log.Errorf("Could not enable Choria Streams for the %s account: %s", s.choriaAccount.Name, err)
+	}
 
-		if !acct.JetStreamEnabled() {
-			s.log.Errorf("Choria Streams enabled for account %q but it's not reporting as enabled", acct.Name)
-		}
+	if !s.choriaAccount.JetStreamEnabled() {
+		s.log.Errorf("Choria Streams enabled for account %q but it's not reporting as enabled", s.choriaAccount.Name)
 	}
 
 	return nil
@@ -88,22 +88,72 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 		return err
 	}
 
-	err = s.createOrUpdateStream("CHORIA_EVENTS", []string{"choria.lifecycle.>"}, s.config.Choria.NetworkEventStoreDuration, s.config.Choria.NetworkEventStoreReplicas, mgr)
+	cfg := s.config.Choria
+	if cfg.NetworkEventStoreReplicas == -1 || cfg.NetworkMachineStoreReplicas == -1 || cfg.NetworkStreamAdvisoryReplicas == -1 || cfg.NetworkLeaderElectionReplicas == -1 {
+		peers, err := s.choria.NetworkBrokerPeers()
+		if err != nil {
+			s.log.Warnf("Cannot determine network peers to calculate dynamic replica sizes: %s", err)
+		}
+
+		count := peers.Count()
+		if count == 0 {
+			count = 1 // avoid replica=0
+		}
+
+		if cfg.NetworkEventStoreReplicas == -1 {
+			s.log.Infof("Setting Lifecycle Event Store Replicas to %d", count)
+			cfg.NetworkEventStoreReplicas = count
+		}
+
+		if cfg.NetworkMachineStoreReplicas == -1 {
+			s.log.Infof("Setting Autonomous Agent Event Store Replicas to %d", count)
+			cfg.NetworkMachineStoreReplicas = count
+		}
+
+		if cfg.NetworkStreamAdvisoryReplicas == -1 {
+			s.log.Infof("Setting Choria Streams Advisory Store Replicas to %d", count)
+			cfg.NetworkStreamAdvisoryReplicas = count
+		}
+
+		if cfg.NetworkLeaderElectionReplicas == -1 {
+			s.log.Infof("Setting Choria Streams Leader election Replicas to %d", count)
+			cfg.NetworkLeaderElectionReplicas = count
+		}
+	}
+
+	err = s.createOrUpdateStream("CHORIA_EVENTS", []string{"choria.lifecycle.>"}, cfg.NetworkEventStoreDuration, cfg.NetworkEventStoreReplicas, mgr)
 	if err != nil {
 		return err
 	}
 
-	err = s.createOrUpdateStream("CHORIA_MACHINE", []string{"choria.machine.>"}, s.config.Choria.NetworkMachineStoreDuration, s.config.Choria.NetworkMachineStoreReplicas, mgr)
+	err = s.createOrUpdateStream("CHORIA_MACHINE", []string{"choria.machine.>"}, cfg.NetworkMachineStoreDuration, cfg.NetworkMachineStoreReplicas, mgr)
 	if err != nil {
 		return err
 	}
 
-	err = s.createOrUpdateStream("CHORIA_STREAM_ADVISORIES", []string{"$JS.EVENT.ADVISORY.>"}, s.config.Choria.NetworkStreamAdvisoryDuration, s.config.Choria.NetworkStreamAdvisoryReplicas, mgr)
+	err = s.createOrUpdateStream("CHORIA_STREAM_ADVISORIES", []string{"$JS.EVENT.ADVISORY.>"}, cfg.NetworkStreamAdvisoryDuration, cfg.NetworkStreamAdvisoryReplicas, mgr)
 	if err != nil {
 		return err
 	}
 
 	err = scout.ConfigureStreams(nc, s.log.WithField("component", "scout"))
+	if err != nil {
+		return err
+	}
+
+	eCfg, err := jsm.NewStreamConfiguration(jsm.DefaultStream,
+		jsm.Replicas(cfg.NetworkLeaderElectionReplicas),
+		jsm.MaxAge(cfg.NetworkLeaderElectionTTL),
+		jsm.AllowRollup(),
+		jsm.Subjects("$KV.CHORIA_LEADER_ELECTION.>"),
+		jsm.StreamDescription("Choria Leader Election Bucket"),
+		jsm.MaxMessageSize(1024),
+		jsm.FileStorage(),
+		jsm.MaxMessagesPerSubject(1))
+	if err != nil {
+		return err
+	}
+	err = s.createOrUpdateStreamWithConfig("KV_CHORIA_LEADER_ELECTION", *eCfg, mgr)
 	if err != nil {
 		return err
 	}
@@ -116,22 +166,36 @@ func (s *Server) createOrUpdateStream(name string, subjects []string, maxAge tim
 		return nil
 	}
 
-	str, err := mgr.LoadOrNewStream(name, jsm.FileStorage(), jsm.Subjects(subjects...), jsm.MaxAge(maxAge), jsm.Replicas(replicas))
+	cfg, err := jsm.NewStreamConfiguration(jsm.DefaultStream, jsm.FileStorage(), jsm.Subjects(subjects...), jsm.MaxAge(maxAge), jsm.Replicas(replicas))
 	if err != nil {
-		return fmt.Errorf("could not load or create %s: %s", name, err)
+		return fmt.Errorf("could not create configuration: %s", err)
 	}
 
-	cfg := str.Configuration()
-	if cfg.MaxAge != maxAge {
-		s.log.Infof("Updating %s retention from %s to %s", str.Name(), cfg.MaxAge, maxAge)
-		cfg.MaxAge = maxAge
-		err = str.UpdateConfiguration(cfg)
-		if err != nil {
-			return fmt.Errorf("could not update retention period for %s Stream: %s", name, err)
+	err = s.createOrUpdateStreamWithConfig(name, *cfg, mgr)
+	if err != nil {
+		return fmt.Errorf("could not create stream %s: %s", name, err)
+	}
+
+	return nil
+}
+
+func (s *Server) createOrUpdateStreamWithConfig(name string, cfg api.StreamConfig, mgr *jsm.Manager) error {
+	cfg.Name = name
+	str, err := mgr.LoadStream(name)
+	if err != nil {
+		_, err := mgr.NewStreamFromDefault(name, cfg)
+		if err == nil {
+			s.log.Infof("Created stream %s with %d replicas and %s retention", cfg.Name, cfg.Replicas, cfg.MaxAge)
 		}
+		return err
 	}
 
-	s.log.Infof("Configured stream %q with %d replicas and %s retention", name, replicas, maxAge)
+	err = str.UpdateConfiguration(cfg)
+	if err != nil {
+		return err
+	}
+
+	s.log.Infof("Configured stream %s with %d replicas and %s retention", cfg.Name, cfg.Replicas, cfg.MaxAge)
 
 	return nil
 }

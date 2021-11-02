@@ -54,7 +54,7 @@ func (k *kvGetCommand) Run(wg *sync.WaitGroup) error {
 		return nil
 	}
 
-	fmt.Printf("%s > %s created @ %s\n\n", entry.Bucket(), entry.Key(), entry.Created().Format(time.RFC822))
+	fmt.Printf("%s > %s sequence %d created @ %s\n\n", entry.Bucket(), entry.Key(), entry.Revision(), entry.Created().Format(time.RFC822))
 
 	width, _, err := term.GetSize(0)
 	if err != nil {

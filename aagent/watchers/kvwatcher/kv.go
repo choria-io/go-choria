@@ -17,8 +17,9 @@ import (
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	iu "github.com/choria-io/go-choria/internal/util"
+	"github.com/choria-io/go-choria/providers/kv"
 	"github.com/google/go-cmp/cmp"
-	"github.com/nats-io/jsm.go/kv"
+	"github.com/nats-io/nats.go"
 )
 
 type State int
@@ -57,7 +58,7 @@ type Watcher struct {
 
 	name     string
 	machine  model.Machine
-	kv       kv.RoKV
+	kv       nats.KeyValue
 	interval time.Duration
 
 	previousVal   interface{}
@@ -93,16 +94,6 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 	err = tw.setProperties(properties)
 	if err != nil {
 		return nil, fmt.Errorf("could not set properties: %s", err)
-	}
-
-	mgr, err := machine.JetStreamConnection()
-	if err != nil {
-		return nil, err
-	}
-
-	tw.kv, err = kv.NewRoClient(mgr.NatsConn(), tw.properties.Bucket)
-	if err != nil {
-		return nil, err
 	}
 
 	return tw, nil
@@ -157,6 +148,24 @@ func (w *Watcher) stopPolling() {
 	w.mu.Unlock()
 }
 
+func (w *Watcher) connectKV() error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	var err error
+	mgr, err := w.machine.JetStreamConnection()
+	if err != nil {
+		return err
+	}
+
+	w.kv, err = kv.NewKV(mgr.NatsConn(), w.properties.Bucket, false)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
 func (w *Watcher) poll() (State, error) {
 	if !w.ShouldWatch() {
 		return Skipped, nil
@@ -168,9 +177,19 @@ func (w *Watcher) poll() (State, error) {
 		return Skipped, nil
 	}
 	w.polling = true
+	store := w.kv
 	w.mu.Unlock()
 
 	defer w.stopPolling()
+
+	// we try to bind to the store here on every poll so that if the store does not yet exist
+	// at startup we will keep trying until it does
+	if store == nil {
+		err := w.connectKV()
+		if err != nil {
+			return Error, err
+		}
+	}
 
 	lp := w.lastPoll
 	since := time.Since(lp).Round(time.Second)
@@ -215,11 +234,11 @@ func (w *Watcher) poll() (State, error) {
 
 	switch {
 	// key isn't there, nothing was previously found its unchanged
-	case err == kv.ErrUnknownKey && w.previousVal == nil:
+	case err == nats.ErrKeyNotFound && w.previousVal == nil:
 		return Unchanged, nil
 
 	// key isn't there, we had a value before its a change due to delete
-	case err == kv.ErrUnknownKey && w.previousVal != nil:
+	case err == nats.ErrKeyNotFound && w.previousVal != nil:
 		w.Debugf("Removing data from %s", dk)
 		err = w.machine.DataDelete(dk)
 		if err != nil {
@@ -243,18 +262,18 @@ func (w *Watcher) poll() (State, error) {
 			return Error, err
 		}
 
-		w.previousSeq = val.Sequence()
+		w.previousSeq = val.Revision()
 		w.previousVal = parsedValue
 		return Changed, nil
 
 	// a put that didnt update, but we are asked to transition anyway
 	// we do not trigger this on first start of the machine only once its running (previousSeq is 0)
-	case cmp.Equal(w.previousVal, parsedValue) && w.properties.TransitionOnMatch && w.previousSeq > 0 && val.Sequence() > w.previousSeq:
-		w.previousSeq = val.Sequence()
+	case cmp.Equal(w.previousVal, parsedValue) && w.properties.TransitionOnMatch && w.previousSeq > 0 && val.Revision() > w.previousSeq:
+		w.previousSeq = val.Revision()
 		return Changed, nil
 
 	default:
-		w.previousSeq = val.Sequence()
+		w.previousSeq = val.Revision()
 		if w.properties.TransitionOnSuccessfulGet {
 			return Changed, nil
 		}

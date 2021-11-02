@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
 	"sync"
 
 	"github.com/choria-io/go-choria/internal/util"
@@ -42,7 +43,7 @@ func (k *kvPurgeCommand) Run(wg *sync.WaitGroup) error {
 	}
 
 	if !k.force {
-		ok, err := util.PromptForConfirmation("Really remove the %s bucket", k.name)
+		ok, err := util.PromptForConfirmation("Really remove the %s > %s", k.name, k.key)
 		if err != nil {
 			return err
 		}
@@ -52,7 +53,15 @@ func (k *kvPurgeCommand) Run(wg *sync.WaitGroup) error {
 		}
 	}
 
-	return store.Purge(k.key)
+	err = store.Purge(k.key)
+	if err != nil {
+		if strings.Contains(err.Error(), "rollup not permitted") {
+			return fmt.Errorf("purge failed, upgrade bucket using 'choria kv upgrade %s'", k.name)
+		}
+		return err
+	}
+
+	return nil
 }
 
 func init() {

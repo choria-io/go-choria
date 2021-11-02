@@ -23,11 +23,13 @@ import (
 
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/ddlresolver"
+	election "github.com/choria-io/go-choria/providers/election/streams"
+	"github.com/choria-io/go-choria/providers/kv"
 	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/providers/signers"
 	"github.com/fatih/color"
 	"github.com/golang-jwt/jwt"
-	"github.com/nats-io/jsm.go/kv"
+	"github.com/nats-io/nats.go"
 	"golang.org/x/term"
 
 	"github.com/choria-io/go-choria/internal/util"
@@ -827,16 +829,55 @@ func (fw *Framework) GovernorSubject(name string) string {
 	return util.GovernorSubject(name, fw.Config.MainCollective)
 }
 
-func (fw *Framework) KV(ctx context.Context, conn inter.Connector, bucket string, create bool, opts ...kv.Option) (kv.KV, error) {
+// NewElection establishes a new, named, leader election requiring a Choria Streams bucket called CHORIA_LEADER_ELECTION.
+// This will create a new network connection per election, see NewElectionWithConn() to re-use an existing connection
+func (fw *Framework) NewElection(ctx context.Context, conn inter.Connector, name string, opts ...election.Option) (inter.Election, error) {
+	e, _, err := fw.NewElectionWithConn(ctx, conn, name, opts...)
+
+	return e, err
+}
+
+// NewElectionWithConn establish a new, named, leader election requiring a Choria Streams bucket called CHORIA_LEADER_ELECTION
+func (fw *Framework) NewElectionWithConn(ctx context.Context, conn inter.Connector, name string, opts ...election.Option) (inter.Election, inter.Connector, error) {
+	var err error
+
+	if conn == nil {
+		conn, err = fw.NewConnector(ctx, fw.MiddlewareServers, fmt.Sprintf("election %s %s", name, fw.Config.Identity), fw.Logger("election"))
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	js, err := conn.Nats().JetStream()
+	if err != nil {
+		return nil, nil, fmt.Errorf("cannot connect to Choria Streams: %s", err)
+	}
+
+	kv, err := js.KeyValue("CHORIA_LEADER_ELECTION")
+	if err != nil {
+		return nil, nil, fmt.Errorf("cannot access KV Bucket CHORIA_LEADER_ELECTION")
+	}
+
+	e, err := election.NewElection(fw.Config.Identity, name, kv, opts...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return e, conn, nil
+}
+
+// KV creates a connection to a key-value store and gives access to the connector
+func (fw *Framework) KV(ctx context.Context, conn inter.Connector, bucket string, create bool, opts ...kv.Option) (nats.KeyValue, error) {
 	kv, _, err := fw.KVWithConn(ctx, conn, bucket, create, opts...)
 	return kv, err
 }
 
 // KVWithConn creates a connection to a key-value store and gives access to the connector
-func (fw *Framework) KVWithConn(ctx context.Context, conn inter.Connector, bucket string, create bool, opts ...kv.Option) (kv.KV, inter.Connector, error) {
+func (fw *Framework) KVWithConn(ctx context.Context, conn inter.Connector, bucket string, create bool, opts ...kv.Option) (nats.KeyValue, inter.Connector, error) {
 	logger := fw.Logger("kv")
 
 	var err error
+
 	if conn == nil {
 		conn, err = fw.NewConnector(ctx, fw.MiddlewareServers, fmt.Sprintf("kv %s", fw.CallerID()), logger)
 		if err != nil {
@@ -844,20 +885,12 @@ func (fw *Framework) KVWithConn(ctx context.Context, conn inter.Connector, bucke
 		}
 	}
 
-	opts = append(opts, kv.WithLogger(logger))
-
-	var store kv.KV
-
-	if create {
-		store, err = kv.NewBucket(conn.Nats(), bucket, opts...)
-	} else {
-		store, err = kv.NewClient(conn.Nats(), bucket, opts...)
-	}
+	b, err := kv.NewKV(conn.Nats(), bucket, create, opts...)
 	if err != nil {
-		return nil, conn, err
+		return nil, nil, err
 	}
 
-	return store, conn, nil
+	return b, conn, err
 }
 
 func (fw *Framework) DDLResolvers() ([]inter.DDLResolver, error) {

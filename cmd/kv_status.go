@@ -7,6 +7,8 @@ package cmd
 import (
 	"fmt"
 	"sync"
+
+	"github.com/nats-io/nats.go"
 )
 
 type kvStatusCommand struct {
@@ -39,8 +41,7 @@ func (k *kvStatusCommand) Run(wg *sync.WaitGroup) error {
 	if err != nil {
 		return err
 	}
-
-	ok, failed := status.Replicas()
+	nfo := status.(*nats.KeyValueBucketStatus).StreamInfo()
 
 	fmt.Printf("%s Key-Value Store\n", status.Bucket())
 	fmt.Println()
@@ -48,9 +49,9 @@ func (k *kvStatusCommand) Run(wg *sync.WaitGroup) error {
 	fmt.Printf("    Values Stored: %d\n", status.Values())
 	fmt.Printf("          History: %d\n", status.History())
 	fmt.Printf("              TTL: %v\n", status.TTL())
-	fmt.Printf("  Max Bucket Size: %d\n", status.MaxBucketSize())
-	fmt.Printf("   Max Value Size: %d\n", status.MaxValueSize())
-	fmt.Printf(" Storage Replicas: OK %d Failed: %d\n", ok, failed)
+	fmt.Printf("  Max Bucket Size: %d\n", nfo.Config.MaxBytes)
+	fmt.Printf("   Max Value Size: %d\n", nfo.Config.MaxMsgSize)
+	fmt.Printf(" Storage Replicas: %d\n", nfo.Config.Replicas)
 
 	return nil
 }
