@@ -38,17 +38,14 @@ type election struct {
 	opts  *options
 	state State
 
-	ctx     context.Context
-	cancel  context.CancelFunc
-	started bool
-	lastSeq uint64
-	tries   int
+	ctx        context.Context
+	cancel     context.CancelFunc
+	started    bool
+	lastSeq    uint64
+	tries      int
+	notifyNext bool
 
-	graceCtx    context.Context
-	graceCancel context.CancelFunc
-
-	mu            sync.Mutex
-	cancelGraceMu sync.Mutex
+	mu sync.Mutex
 }
 
 var skipValidate bool
@@ -116,35 +113,7 @@ func (e *election) campaignForLeadership() error {
 	e.lastSeq = seq
 	e.state = LeaderState
 	e.tries = 0
-
-	// we notify the caller after ~interval so that the past leader has a chance
-	// to detect the leadership loss, else if the key got just deleted right
-	// before the previous leader did a campaign he will think he is leader
-	// for one more round of cInterval
-	//
-	// cancelGrace interrupts us if a campaign is lost while we were waiting to notify
-	// about winning, so we make sure to call lost just in case and only calling win
-	// if at the time we're still leader
-	go func() {
-		e.cancelGraceMu.Lock()
-		e.graceCtx, e.graceCancel = context.WithCancel(e.ctx)
-		e.cancelGraceMu.Unlock()
-
-		if ctxSleep(e.graceCtx, e.opts.cInterval+50*time.Millisecond) == nil {
-			e.mu.Lock()
-			defer e.mu.Unlock()
-
-			if e.state == LeaderState {
-				if e.opts.wonCb != nil {
-					e.opts.wonCb()
-				}
-			} else {
-				if e.opts.lostCb != nil {
-					e.opts.lostCb()
-				}
-			}
-		}
-	}()
+	e.notifyNext = true // sets state that would notify about win on next campaign
 
 	return nil
 }
@@ -156,13 +125,6 @@ func (e *election) maintainLeadership() error {
 		e.state = CandidateState
 		e.lastSeq = math.MaxUint64
 
-		// stop our grace period notifications
-		e.cancelGraceMu.Lock()
-		if e.graceCancel != nil {
-			e.graceCancel()
-		}
-		e.cancelGraceMu.Unlock()
-
 		if e.opts.lostCb != nil {
 			e.opts.lostCb()
 		}
@@ -170,6 +132,15 @@ func (e *election) maintainLeadership() error {
 		return err
 	}
 	e.lastSeq = seq
+
+	// we wait till the next campaign to notify that we are leader to give others a chance to stand down
+	if e.notifyNext {
+		e.notifyNext = false
+		if e.opts.wonCb != nil {
+			ctxSleep(e.ctx, 200*time.Millisecond)
+			e.opts.wonCb()
+		}
+	}
 
 	return nil
 }
@@ -202,7 +173,7 @@ func (e *election) campaign(wg *sync.WaitGroup) error {
 	e.mu.Unlock()
 
 	// spread out startups a bit
-	splay := time.Duration(rand.Intn(int(e.opts.cInterval.Milliseconds())))
+	splay := time.Duration(rand.Intn(int(5 * time.Second)))
 	ctxSleep(e.ctx, splay)
 
 	var ticker *time.Ticker
@@ -298,7 +269,8 @@ func (e *election) IsLeader() bool {
 	e.mu.Lock()
 	defer e.mu.Unlock()
 
-	return e.state == LeaderState
+	// it's only leader after the next successful campaign
+	return e.state == LeaderState && !e.notifyNext
 }
 
 func (e *election) State() State {
