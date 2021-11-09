@@ -122,23 +122,31 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 	}
 
 	choriaAuth := &ChoriaAuth{
-		allowList:     s.config.Choria.NetworkAllowedClientHosts,
-		anonTLS:       s.config.Choria.NetworkClientTLSAnon,
-		choriaAccount: s.choriaAccount,
-		denyServers:   s.config.Choria.NetworkDenyServers,
-		isTLS:         s.isClientTlSBroker(),
-		jwtSigner:     s.config.Choria.RemoteSignerSigningCertFile,
-		log:           s.choria.Logger("authentication"),
-		systemAccount: s.systemAccount,
-		systemPass:    s.config.Choria.NetworkSystemPassword,
-		systemUser:    s.config.Choria.NetworkSystemUsername,
+		clientAllowList: s.config.Choria.NetworkAllowedClientHosts,
+		anonTLS:         s.config.Choria.NetworkClientTLSAnon,
+		choriaAccount:   s.choriaAccount,
+		denyServers:     s.config.Choria.NetworkDenyServers,
+		isTLS:           s.isClientTlSBroker(),
+		log:             s.choria.Logger("authentication"),
+		systemAccount:   s.systemAccount,
+		systemPass:      s.config.Choria.NetworkSystemPassword,
+		systemUser:      s.config.Choria.NetworkSystemUsername,
 	}
 
-	// provisioning happens over clear so we cant have clear clients and clear provisioning
-	if s.isClientTlSBroker() {
+	if choriaAuth.isTLS {
+		// provisioning happens over clear so we cant have clear clients and clear provisioning
 		choriaAuth.provPass = s.config.Choria.NetworkProvisioningClientPassword
 		choriaAuth.provisioningAccount = s.provisioningAccount
 		choriaAuth.provisioningTokenSigner = s.config.Choria.NetworkProvisioningTokenSignerFile
+		choriaAuth.jwtSigner = s.config.Choria.NetworkClientTokenSignerFile
+
+		// we also allow clients to connect with their jwt token, but also only over tls
+		// we keep backwards compatibility with the config described here
+		// https://choria.io/blog/post/2020/09/13/aaa_improvements/
+		if s.config.Choria.RemoteSignerSigningCertFile != "" && s.config.Choria.NetworkClientTokenSignerFile == "" {
+			s.log.Warnf("Deprecated: configure client signing certificate for Choria Broker using plugin.choria.security.request_signing_certificate using plugin.choria.network.client_signer_cert")
+			choriaAuth.jwtSigner = s.config.Choria.NetworkClientTokenSignerFile
+		}
 	}
 
 	s.opts.CustomClientAuthentication = choriaAuth
@@ -227,12 +235,22 @@ func (s *Server) setupTLS() (err error) {
 		s.opts.TLSVerify = false
 		tlsc.ClientAuth = tls.NoClientCert
 
-	case s.config.Choria.NetworkProvisioningTokenSignerFile != "":
+	case s.config.Choria.NetworkProvisioningTokenSignerFile != "", s.config.Choria.NetworkClientTokenSignerFile != "":
 		// if provisioning is allowed we allow unverified tls connections
 		// but the auth system will funnel all of those into the provisioning account
-
-		s.log.Warnf("Allowing unverified TLS connections for provisioning purposes")
+		//
+		// if the AAA is enabled and we have the public cert we allow unverified TLS
+		// but will extract the caller id from a fully verified JWT and set strict
+		// client only permissions
 		tlsc.ClientAuth = tls.VerifyClientCertIfGiven
+
+		if s.config.Choria.NetworkProvisioningTokenSignerFile != "" {
+			s.log.Warnf("Allowing unverified TLS connections for provisioning purposes")
+		}
+
+		if s.config.Choria.NetworkClientTokenSignerFile != "" {
+			s.log.Warnf("Allowing unverified TLS connections for AAA signed clients")
+		}
 
 	case s.config.Choria.NetworkClientTLSAnon:
 		if len(s.config.Choria.NetworkLeafRemotes) == 0 {
