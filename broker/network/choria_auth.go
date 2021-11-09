@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,7 @@ package network
 import (
 	"crypto/md5"
 	"crypto/rsa"
+	"crypto/tls"
 	"fmt"
 	"net"
 	"os"
@@ -27,13 +28,22 @@ import (
 // Additionally when the server is running in a mode where anonymous
 // TLS connections is accepted then servers are entirely denied and
 // clients are allowed but restricted based on the JWT issued by the
-// AAA Service.
+// AAA Service. This is activated using the plugin.choria.network.client_anon_tls
+// setting, however this should be avoided atm.
 //
-// Additionally when provisioning support is enabled any non TLS connection
+// Clients can present a JWT token signed by the AAA service if that
+// token has a purpose field matching choria_client_id and if the
+// AAA signer is configured in the broker using plugin.choria.security.request_signing_certificate
+// those with valid tokens and that are fully verified can connect but
+// will be restricted to client only functions. These clients will not
+// be able to access any Choria Streams features, KV buckets etc
+//
+// Additionally when provisioning support is enabled any non mTLS connection
 // will be placed in the provisioning account and unable to connect to the
-// fleet or provisioned nodes
+// fleet or provisioned nodes. This is only enabled if plugin.choria.network.provisioning.signer_cert
+// is set
 type ChoriaAuth struct {
-	allowList               []string
+	clientAllowList         []string
 	anonTLS                 bool
 	isTLS                   bool
 	denyServers             bool
@@ -72,12 +82,6 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 	}
 
 	switch {
-	case a.isTLS && !tlsVerified:
-		verified, err = a.handleUnverifiedProvisioningConnection(c)
-		if err != nil {
-			a.log.Warnf("Handling unverified connection failed, denying %s: %s", c.RemoteAddress().String(), err)
-		}
-
 	case a.isProvisionUser(c):
 		if !tlsVerified {
 			a.log.Warnf("Provision user is only allowed over verified TLS connections")
@@ -90,20 +94,27 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 		}
 
 	case a.isSystemUser(c):
+		if !tlsVerified {
+			a.log.Warnf("System user is only allowed over verified TLS connections")
+			return false
+		}
+
 		verified, err = a.handleSystemAccount(c)
 		if err != nil {
 			a.log.Warnf("Handling system user failed, denying %s: %s", c.RemoteAddress().String(), err)
 		}
 
 	default:
-		if a.isTLS && !tlsVerified {
-			a.log.Warnf("Rejecting non TLS client while in TLS mode")
-			break
-		}
-
-		verified, err = a.handleDefaultConnection(c)
+		verified, err = a.handleDefaultConnection(c, tlsc, tlsVerified)
 		if err != nil {
 			a.log.Warnf("Handling normal connection failed, denying %s: %s", c.RemoteAddress().String(), err)
+		}
+
+		if !verified && a.isTLS && !tlsVerified {
+			verified, err = a.handleUnverifiedProvisioningConnection(c)
+			if err != nil {
+				a.log.Warnf("Handling unverified connection failed, denying %s: %s", c.RemoteAddress().String(), err)
+			}
 		}
 	}
 
@@ -115,7 +126,7 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 	return verified
 }
 
-func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication) (bool, error) {
+func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn *tls.ConnectionState, tlsVerified bool) (bool, error) {
 	user := a.createUser(c)
 	remote := c.RemoteAddress()
 	opts := c.GetOpts()
@@ -123,30 +134,50 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication) (boo
 	caller := ""
 	var err error
 
-	if a.anonTLS {
+	log := a.log.WithField("mTLS", tlsVerified)
+	if tlsVerified && len(conn.PeerCertificates) > 0 {
+		log = log.WithField("subject", conn.PeerCertificates[0].Subject.CommonName)
+	}
+	if remote != nil {
+		log = log.WithField("remote", remote.String())
+	}
+
+	// we only do JWT based auth in TLS mode
+	if (a.anonTLS || jwts != "") && conn != nil {
 		if remote == nil {
-			return false, fmt.Errorf("unknown remote client while in AnonTLS mode")
+			return false, fmt.Errorf("remote client information is required in anonymous TLS or JWT signing modes")
 		}
 
-		caller, err = a.parseAnonTLSJWTUser(jwts)
+		caller, err = a.parseClientIDJWT(jwts)
 		if err != nil {
 			return false, fmt.Errorf("could not parse JWT from %s: %s", remote.String(), err)
 		}
+		user.Username = caller
+
+		log = log.WithField("jwt_client", true)
+
+		log.Debugf("Extracted caller id %s from JWT token", caller)
 	}
 
-	// only if allow lists are set else its a noop and all traffic is passed
 	switch {
-	case a.remoteInClientAllowList(remote):
+	// if a caller is set from the Client ID JWT we want to restrict it to just client stuff
+	// if a client allow list is set and the client is in the ip range we restrict it also
+	// else its default open like users with certs
+	case (a.anonTLS || caller != "") && a.remoteInClientAllowList(remote):
+		log = log.WithField("caller", caller)
+		log.Debugf("Setting strict client permissions for %s", remote)
 		a.setClientPermissions(user, caller)
 
-	case len(a.allowList) > 0:
+	// Else in the case where an allow list is configured we set server permissions on other conns
+	case len(a.clientAllowList) > 0:
+		log.Debugf("Setting strict server permissions for %s", remote)
 		a.setServerPermissions(user)
 	}
 
 	if user.Account != nil {
-		a.log.Debugf("Registering user %q in account %q", user.Username, user.Account.Name)
+		log.Debugf("Registering user %q in account %q", user.Username, user.Account.Name)
 	} else {
-		a.log.Debugf("Registering user %q in default account", user.Username)
+		log.Debugf("Registering user %q in default account", user.Username)
 	}
 
 	c.RegisterUser(user)
@@ -155,8 +186,22 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication) (boo
 }
 
 func (a *ChoriaAuth) handleSystemAccount(c server.ClientAuthentication) (bool, error) {
+	if a.systemUser == "" {
+		return false, fmt.Errorf("system user is required")
+	}
+
+	if a.systemPass == "" {
+		return false, fmt.Errorf("system password is required")
+	}
+
 	if a.systemAccount == nil {
 		return false, fmt.Errorf("system account is not set")
+	}
+
+	opts := c.GetOpts()
+
+	if !(opts.Username == a.systemUser && opts.Password == a.systemPass) {
+		return false, fmt.Errorf("invalid system credentials")
 	}
 
 	user := a.createUser(c)
@@ -244,6 +289,11 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 			return false, fmt.Errorf("could not parse provisioner token: %s", err)
 		}
 
+		// TODO: older tokens do not have a Purpose field so we handle "" in addition to Subject()
+		if !(claims.Subject == "choria_provisioning" && (claims.Purpose == "choria_provisioning" || claims.Purpose == "")) {
+			return false, fmt.Errorf("expceted choria_provisioning purpose in token")
+		}
+
 		a.log.Debugf("Allowing a provisioning server from %s using unverified TLS connection", c.RemoteAddress().String())
 
 	default:
@@ -280,9 +330,9 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 	return true, nil
 }
 
-func (a *ChoriaAuth) parseAnonTLSJWTUser(jwts string) (string, error) {
+func (a *ChoriaAuth) parseClientIDJWT(jwts string) (string, error) {
 	if a.jwtSigner == emptyString {
-		return "", fmt.Errorf("anonymous TLS JWT Signer not set in plugin.choria.security.request_signing_certificate, denying all clients")
+		return "", fmt.Errorf("JWT Signer not set in plugin.choria.network.client_signer_cert, denying all clients")
 	}
 
 	if jwts == emptyString {
@@ -311,19 +361,29 @@ func (a *ChoriaAuth) parseAnonTLSJWTUser(jwts string) (string, error) {
 		return "", fmt.Errorf("invalid claims")
 	}
 
-	caller, ok := claims["callerid"].(string)
-	if !ok {
-		return "", fmt.Errorf("no callerid in claims")
+	// Generally now we want to accept all mix mode clients who have a valid JWT, ie. one with the
+	// correct purpose flag in addition to being valid, but to keep backwards compatibility with the
+	// mode documented in https://choria.io/blog/post/2020/09/13/aaa_improvements/ we accept them in
+	// the specific scenario where AnonTLS is configured without checking the purpose field
+	if !a.anonTLS {
+		purpose, ok := claims["purpose"].(string)
+		if !ok {
+			return "", fmt.Errorf("mix TLS mode clients require a purpose field in their JWT")
+		}
+		if purpose != "choria_client_id" {
+			return "", fmt.Errorf("expected choria_client_id purpose in unverified TLS connection")
+		}
 	}
 
-	if caller == emptyString {
-		return "", fmt.Errorf("empty callerid in claims")
+	caller, ok := claims["callerid"].(string)
+	if !ok || caller == emptyString {
+		return "", fmt.Errorf("no callerid in claims")
 	}
 
 	return caller, nil
 }
 
-// reads plugin.choria.security.request_signing_certificate
+// reads plugin.choria.network.client_signer_cert
 func (a *ChoriaAuth) clientJWTSignerKey() (*rsa.PublicKey, error) {
 	certBytes, err := os.ReadFile(a.jwtSigner)
 	if err != nil {
@@ -354,10 +414,6 @@ func (a *ChoriaAuth) provisionerJWTSignerKey() (*rsa.PublicKey, error) {
 }
 
 func (a *ChoriaAuth) setClientPermissions(user *server.User, caller string) {
-	if !a.anonTLS {
-		return
-	}
-
 	replys := "*.reply.>"
 	if caller != emptyString {
 		replys = fmt.Sprintf("*.reply.%x.>", md5.Sum([]byte(caller)))
@@ -416,7 +472,7 @@ func (a *ChoriaAuth) setServerPermissions(user *server.User) {
 }
 
 func (a *ChoriaAuth) remoteInClientAllowList(remote net.Addr) bool {
-	if len(a.allowList) == 0 {
+	if len(a.clientAllowList) == 0 {
 		return true
 	}
 
@@ -431,7 +487,7 @@ func (a *ChoriaAuth) remoteInClientAllowList(remote net.Addr) bool {
 		return false
 	}
 
-	for _, allowed := range a.allowList {
+	for _, allowed := range a.clientAllowList {
 		if host == allowed {
 			return true
 		}
@@ -458,8 +514,12 @@ func (o *ChoriaAuth) isProvisionUser(c server.ClientAuthentication) bool {
 }
 
 func (a *ChoriaAuth) isSystemUser(c server.ClientAuthentication) bool {
+	if a.systemUser == "" {
+		return false
+	}
+
 	opts := c.GetOpts()
-	return opts.Username != emptyString && opts.Password != emptyString && opts.Username == a.systemUser && opts.Password == a.systemPass
+	return opts.Username == a.systemUser
 }
 
 func (a *ChoriaAuth) createUser(c server.ClientAuthentication) *server.User {

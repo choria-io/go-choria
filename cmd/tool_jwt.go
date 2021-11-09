@@ -165,6 +165,7 @@ func (j *tJWTCommand) createJWT() error {
 		Token:        j.token,
 		ProvNatsUser: j.uname,
 		ProvNatsPass: j.password,
+		Purpose:      "choria_provisioning",
 		StandardClaims: jwt.StandardClaims{
 			IssuedAt:  time.Now().UTC().Unix(),
 			Issuer:    "choria cli",

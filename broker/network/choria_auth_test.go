@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -41,9 +41,9 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		logger.Out = io.Discard
 		log = logrus.NewEntry(logger)
 		auth = &ChoriaAuth{
-			allowList:     []string{},
-			log:           log,
-			choriaAccount: &server.Account{Name: "choria"},
+			clientAllowList: []string{},
+			log:             log,
+			choriaAccount:   &server.Account{Name: "choria"},
 		}
 		user = &server.User{
 			Username:    "bob",
@@ -59,14 +59,79 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		mockctl.Finish()
 	})
 
+	createKeyPair := func() (td string, pri *rsa.PrivateKey) {
+		td, err := os.MkdirTemp("", "")
+		Expect(err).ToNot(HaveOccurred())
+
+		privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+		Expect(err).ToNot(HaveOccurred())
+
+		template := x509.Certificate{
+			SerialNumber: big.NewInt(1),
+			Subject: pkix.Name{
+				Organization: []string{"Choria.IO"},
+			},
+			NotBefore: time.Now(),
+			NotAfter:  time.Now().Add(time.Hour * 24 * 180),
+
+			KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
+			ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
+			BasicConstraintsValid: true,
+		}
+
+		derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
+		Expect(err).ToNot(HaveOccurred())
+
+		out := &bytes.Buffer{}
+
+		pem.Encode(out, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
+		err = os.WriteFile(filepath.Join(td, "public.pem"), out.Bytes(), 0600)
+		Expect(err).ToNot(HaveOccurred())
+
+		out.Reset()
+
+		blk := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}
+		pem.Encode(out, blk)
+
+		err = os.WriteFile(filepath.Join(td, "private.pem"), out.Bytes(), 0600)
+		Expect(err).ToNot(HaveOccurred())
+
+		return td, privateKey
+	}
+
+	createSignedJWT := func(pk *rsa.PrivateKey, claims map[string]interface{}) string {
+		c := map[string]interface{}{
+			"exp":      time.Now().UTC().Add(time.Hour).Unix(),
+			"nbf":      time.Now().UTC().Add(-1 * time.Minute).Unix(),
+			"iat":      time.Now().UTC().Unix(),
+			"iss":      "Ginkgo",
+			"callerid": "up=ginkgo",
+			"sub":      "up=ginkgo",
+		}
+
+		for k, v := range claims {
+			c[k] = v
+		}
+
+		token := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(c))
+		signed, err := token.SignedString(pk)
+		Expect(err).ToNot(HaveOccurred())
+
+		return signed
+	}
+
 	Describe("Check", func() {
-		Describe("Unverified connections", func() {
-			It("Should only prov auth when tls is enabled", func() {
-				auth.isTLS = false
+		Describe("Provisioning user", func() {
+			BeforeEach(func() {
+				auth.isTLS = true
 				auth.provPass = "s3cret"
 				auth.provisioningAccount = &server.Account{Name: provisioningUser}
-				copts := &server.ClientOpts{Username: provisioningUser, Password: "s3cret"}
+				copts := &server.ClientOpts{Username: "provisioner", Password: "s3cret"}
 				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
+			})
+
+			It("Should only prov auth when tls is enabled", func() {
+				auth.isTLS = false
 				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{})
 				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}).AnyTimes()
 
@@ -82,13 +147,8 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			})
 
 			It("Should reject provision user on a plain connection", func() {
-				auth.isTLS = true
 				auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
-				auth.provPass = "s3cret"
-				auth.provisioningAccount = &server.Account{Name: "provision"}
 
-				copts := &server.ClientOpts{Username: "provisioner", Password: "s3cret"}
-				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
 				mockClient.EXPECT().GetTLSConnectionState().Return(nil)
 				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
 
@@ -96,26 +156,25 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			})
 
 			It("Should not do provision auth for unverified connections", func() {
-				auth.isTLS = true
 				auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
-				auth.provPass = "s3cret"
-				auth.provisioningAccount = &server.Account{Name: "provision"}
 
-				copts := &server.ClientOpts{Username: "provisioner", Password: "s3cret"}
-				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
 				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}).AnyTimes()
 				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{})
 				Expect(auth.Check(mockClient)).To(BeFalse())
 			})
 
-			It("Should do provision auth for verified connections", func() {
-				auth.isTLS = true
+			It("Should verify the password correctly", func() {
 				auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
-				auth.provPass = "s3cret"
-				auth.provisioningAccount = &server.Account{Name: "provision"}
+				auth.provPass = "other"
+				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}).AnyTimes()
+				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{nil}}).AnyTimes()
 
-				copts := &server.ClientOpts{Username: "provisioner", Password: "s3cret"}
-				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
+				Expect(auth.Check(mockClient)).To(BeFalse())
+			})
+
+			It("Should do provision auth for verified connections", func() {
+				auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
+
 				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}).AnyTimes()
 				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{nil}}).AnyTimes()
 				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
@@ -124,6 +183,205 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 				Expect(auth.Check(mockClient)).To(BeTrue())
 			})
+		})
+
+		Describe("system user", func() {
+			BeforeEach(func() {
+				auth.isTLS = true
+				auth.systemAccount = &server.Account{Name: "system"}
+				auth.systemUser = "system"
+				auth.systemPass = "sysTem"
+
+				copts := &server.ClientOpts{Username: "system", Password: "sysTem"}
+				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
+				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}).AnyTimes()
+			})
+
+			It("Should reject non mTLS system users", func() {
+				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
+				Expect(auth.Check(mockClient)).To(BeFalse())
+			})
+
+			It("Should verify the password correctly", func() {
+				auth.systemPass = "other"
+				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{nil}}).AnyTimes()
+
+				Expect(auth.Check(mockClient)).To(BeFalse())
+			})
+
+			It("Should register mTLS system users", func() {
+				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{nil}}).AnyTimes()
+				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+					Expect(user.Account).To(Equal(auth.systemAccount))
+				})
+
+				Expect(auth.Check(mockClient)).To(BeTrue())
+			})
+		})
+	})
+
+	Describe("handleDefaultConnection", func() {
+		var (
+			td           string
+			privateKey   *rsa.PrivateKey
+			copts        *server.ClientOpts
+			verifiedConn *tls.ConnectionState
+		)
+
+		BeforeEach(func() {
+			td, privateKey = createKeyPair()
+			auth.jwtSigner = filepath.Join(td, "public.pem")
+			copts = &server.ClientOpts{
+				Token: createSignedJWT(privateKey, map[string]interface{}{
+					"purpose": "choria_client_id",
+				}),
+			}
+			verifiedConn = &tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{nil}}
+			mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
+		})
+
+		AfterEach(func() {
+			os.RemoveAll(td)
+		})
+
+		It("Should require remote info in anon TLS or JWT modes", func() {
+			auth.anonTLS = true
+			mockClient.EXPECT().RemoteAddress().Return(nil)
+			verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+			Expect(verified).To(BeFalse())
+			Expect(err).To(MatchError("remote client information is required in anonymous TLS or JWT signing modes"))
+		})
+
+		It("Should not access a JWT in non TLS mode", func() {
+			auth.jwtSigner = ""
+			auth.anonTLS = false
+			mockClient.GetOpts().Token = ""
+
+			mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
+			mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+				Expect(user.Username).To(Equal("")) // caller would be set from the jwt
+				Expect(user.Account).To(Equal(auth.choriaAccount))
+			})
+
+			verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+			Expect(verified).To(BeTrue())
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should set strict permissions for a client JWT user", func() {
+			mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
+			mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+				Expect(user.Username).To(Equal("up=ginkgo"))
+				Expect(user.Account).To(Equal(auth.choriaAccount))
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: []string{"*.reply.e33bf0376d4accbb4a8fd24b2f840b2e.>"},
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: []string{
+						"*.broadcast.agent.>",
+						"*.broadcast.service.>",
+						"*.node.>",
+						"choria.federation.*.federation",
+					},
+				}))
+			})
+
+			verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(verified).To(BeTrue())
+		})
+
+		It("Should deny servers when allow list is set and servers are not allowed", func() {
+			auth.clientAllowList = []string{"10.0.0.0/24"}
+			auth.denyServers = true
+			mockClient.GetOpts().Token = ""
+			mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
+			mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+				Expect(user.Username).To(Equal(""))
+				Expect(user.Account).To(Equal(auth.choriaAccount))
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Deny: []string{">"},
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Deny: []string{">"}},
+				))
+			})
+
+			verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(verified).To(BeTrue())
+		})
+
+		It("Should register other clients without restriction", func() {
+			mockClient.GetOpts().Token = ""
+			mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
+			mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+				Expect(user.Username).To(Equal(""))
+				Expect(user.Account).To(Equal(auth.choriaAccount))
+				Expect(user.Permissions.Subscribe).To(BeNil())
+				Expect(user.Permissions.Publish).To(BeNil())
+			})
+
+			verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(verified).To(BeTrue())
+		})
+	})
+
+	Describe("handleSystemAccount", func() {
+		It("Should fail without a password", func() {
+			auth.systemUser = ""
+			auth.systemPass = ""
+
+			verified, err := auth.handleSystemAccount(mockClient)
+			Expect(err).To(MatchError("system user is required"))
+			Expect(verified).To(BeFalse())
+
+			auth.systemUser = "system"
+			verified, err = auth.handleSystemAccount(mockClient)
+			Expect(err).To(MatchError("system password is required"))
+			Expect(verified).To(BeFalse())
+		})
+
+		It("Should fail without an account", func() {
+			auth.systemUser = "system"
+			auth.systemPass = "s3cret"
+
+			verified, err := auth.handleSystemAccount(mockClient)
+			Expect(err).To(MatchError("system account is not set"))
+			Expect(verified).To(BeFalse())
+		})
+
+		It("Should verify the password", func() {
+			auth.systemUser = "system"
+			auth.systemPass = "other"
+			auth.systemAccount = &server.Account{Name: "system"}
+
+			mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: "system", Password: "s3cret"}).AnyTimes()
+			verified, err := auth.handleSystemAccount(mockClient)
+			Expect(err).To(MatchError("invalid system credentials"))
+			Expect(verified).To(BeFalse())
+		})
+
+		It("Should correctly verify the password and register the user", func() {
+			auth.systemUser = "system"
+			auth.systemPass = "s3cret"
+			auth.systemAccount = &server.Account{Name: "system"}
+
+			mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: "system", Password: "s3cret"}).AnyTimes()
+			mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+				Expect(user.Username).To(Equal("system"))
+				Expect(user.Password).To(Equal("s3cret"))
+				Expect(user.Account).To(Equal(auth.systemAccount))
+				Expect(user.Permissions).To(Not(BeNil()))
+				Expect(user.Permissions.Publish).To(BeNil())
+				Expect(user.Permissions.Subscribe).To(BeNil())
+				Expect(user.Permissions.Response).To(BeNil())
+			})
+
+			verified, err := auth.handleSystemAccount(mockClient)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(verified).To(BeTrue())
 		})
 	})
 
@@ -257,7 +515,6 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 		Describe("Provisioner Client", func() {
 			It("Should not accept connections from the provisioning user without verified TLS", func() {
-				auth.isTLS = true
 				auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
 				auth.provisioningAccount = &server.Account{Name: "provisioning"}
 
@@ -287,7 +544,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			ipv4Addr, _, err := net.ParseCIDR("192.0.2.1/24")
 			Expect(err).ToNot(HaveOccurred())
 
-			auth.allowList = []string{"192.0.2.1/24"}
+			auth.clientAllowList = []string{"192.0.2.1/24"}
 			Expect(auth.remoteInClientAllowList(&net.IPAddr{IP: ipv4Addr})).To(BeFalse())
 		})
 
@@ -295,7 +552,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			ipv4Addr, _, err := net.ParseCIDR("192.0.2.1/24")
 			Expect(err).ToNot(HaveOccurred())
 
-			auth.allowList = []string{"192.0.2.1"}
+			auth.clientAllowList = []string{"192.0.2.1"}
 			Expect(auth.remoteInClientAllowList(&net.TCPAddr{IP: ipv4Addr, Port: 1232})).To(BeTrue())
 		})
 
@@ -303,12 +560,12 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			ipv4Addr, _, err := net.ParseCIDR("192.0.2.1/24")
 			Expect(err).ToNot(HaveOccurred())
 
-			auth.allowList = []string{"192.0.0.0/8"}
+			auth.clientAllowList = []string{"192.0.0.0/8"}
 			Expect(auth.remoteInClientAllowList(&net.TCPAddr{IP: ipv4Addr, Port: 1232})).To(BeTrue())
 		})
 
 		It("Should support IPv6", func() {
-			auth.allowList = []string{
+			auth.clientAllowList = []string{
 				"2a00:1450::/32",
 				"2a01:1450:4002:801::200e",
 			}
@@ -330,7 +587,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			ipv4Addr, _, err := net.ParseCIDR("192.0.2.1/24")
 			Expect(err).ToNot(HaveOccurred())
 
-			auth.allowList = []string{"127.0.0.0/8"}
+			auth.clientAllowList = []string{"127.0.0.0/8"}
 			Expect(auth.remoteInClientAllowList(&net.TCPAddr{IP: ipv4Addr, Port: 1232})).To(BeFalse())
 
 			ipv4Addr, _, err = net.ParseCIDR("127.0.2.1/24")
@@ -339,127 +596,80 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		})
 	})
 
-	Describe("parseAnonTLSJWTUser", func() {
+	Describe("parseClientIDJWT", func() {
 		var (
 			td         string
-			err        error
 			privateKey *rsa.PrivateKey
 		)
 
 		BeforeEach(func() {
-			td, err = os.MkdirTemp("", "")
-			Expect(err).ToNot(HaveOccurred())
+			td, privateKey = createKeyPair()
+		})
 
-			privateKey, err = rsa.GenerateKey(rand.Reader, 2048)
-			Expect(err).ToNot(HaveOccurred())
-
-			template := x509.Certificate{
-				SerialNumber: big.NewInt(1),
-				Subject: pkix.Name{
-					Organization: []string{"Acme Co"},
-				},
-				NotBefore: time.Now(),
-				NotAfter:  time.Now().Add(time.Hour * 24 * 180),
-
-				KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-				ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-				BasicConstraintsValid: true,
-			}
-
-			derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
-			Expect(err).ToNot(HaveOccurred())
-
-			out := &bytes.Buffer{}
-
-			pem.Encode(out, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
-			err = os.WriteFile(filepath.Join(td, "public.pem"), out.Bytes(), 0600)
-			Expect(err).ToNot(HaveOccurred())
-
-			out.Reset()
-
-			blk := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}
-			pem.Encode(out, blk)
-
-			err = os.WriteFile(filepath.Join(td, "private.pem"), out.Bytes(), 0600)
-			Expect(err).ToNot(HaveOccurred())
+		AfterEach(func() {
+			os.RemoveAll(td)
 		})
 
 		It("Should fail without a cert", func() {
-			_, err := auth.parseAnonTLSJWTUser("")
-			Expect(err).To(MatchError("anonymous TLS JWT Signer not set in plugin.choria.security.request_signing_certificate, denying all clients"))
+			_, err := auth.parseClientIDJWT("")
+			Expect(err).To(MatchError("JWT Signer not set in plugin.choria.network.client_signer_cert, denying all clients"))
 		})
 
 		It("Should fail for empty JWTs", func() {
 			auth.jwtSigner = "testdata/public.pem"
-			_, err := auth.parseAnonTLSJWTUser("")
+			_, err := auth.parseClientIDJWT("")
 			Expect(err).To(MatchError("no JWT received"))
 		})
 
 		It("Should verify JWTs", func() {
 			auth.jwtSigner = filepath.Join(td, "public.pem")
-			claims := map[string]interface{}{
-				"exp":      time.Now().UTC().Add(-time.Hour).Unix(),
-				"nbf":      time.Now().UTC().Add(-1 * time.Minute).Unix(),
-				"iat":      time.Now().UTC().Unix(),
-				"iss":      "Ginkgo",
-				"callerid": "up=ginkgo",
-				"sub":      "up=ginkgo",
-			}
+			signed := createSignedJWT(privateKey, map[string]interface{}{
+				"exp": time.Now().UTC().Add(-time.Hour).Unix(),
+			})
 
-			token := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(claims))
-			signed, err := token.SignedString(privateKey)
-			Expect(err).ToNot(HaveOccurred())
-			caller, err := auth.parseAnonTLSJWTUser(signed)
+			caller, err := auth.parseClientIDJWT(signed)
 			Expect(err).To(MatchError("invalid JWT: Token is expired"))
 			Expect(caller).To(Equal(""))
 		})
 
 		It("Should detect missing callers", func() {
 			auth.jwtSigner = filepath.Join(td, "public.pem")
-			claims := map[string]interface{}{
-				"exp": time.Now().UTC().Add(time.Hour).Unix(),
-				"nbf": time.Now().UTC().Add(-1 * time.Minute).Unix(),
-				"iat": time.Now().UTC().Unix(),
-				"iss": "Ginkgo",
-				"sub": "up=ginkgo",
-			}
+			signed := createSignedJWT(privateKey, map[string]interface{}{
+				"callerid": "",
+				"purpose":  "choria_client_id",
+			})
 
-			token := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(claims))
-			signed, err := token.SignedString(privateKey)
-			Expect(err).ToNot(HaveOccurred())
-			caller, err := auth.parseAnonTLSJWTUser(signed)
+			caller, err := auth.parseClientIDJWT(signed)
 			Expect(err).To(MatchError("no callerid in claims"))
 			Expect(caller).To(Equal(""))
 		})
 
+		It("Should expect a purpose field", func() {
+			auth.jwtSigner = filepath.Join(td, "public.pem")
+			signed := createSignedJWT(privateKey, nil)
+			_, err := auth.parseClientIDJWT(signed)
+			Expect(err).To(MatchError("mix TLS mode clients require a purpose field in their JWT"))
+
+			signed = createSignedJWT(privateKey, map[string]interface{}{
+				"purpose": "wrong",
+			})
+			_, err = auth.parseClientIDJWT(signed)
+			Expect(err).To(MatchError("expected choria_client_id purpose in unverified TLS connection"))
+		})
+
 		It("Should extract the caller", func() {
 			auth.jwtSigner = filepath.Join(td, "public.pem")
-			claims := map[string]interface{}{
-				"exp":      time.Now().UTC().Add(time.Hour).Unix(),
-				"nbf":      time.Now().UTC().Add(-1 * time.Minute).Unix(),
-				"iat":      time.Now().UTC().Unix(),
-				"iss":      "Ginkgo",
-				"callerid": "up=ginkgo",
-				"sub":      "up=ginkgo",
-			}
+			signed := createSignedJWT(privateKey, map[string]interface{}{
+				"purpose": "choria_client_id",
+			})
 
-			token := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(claims))
-			signed, err := token.SignedString(privateKey)
-			Expect(err).ToNot(HaveOccurred())
-			caller, err := auth.parseAnonTLSJWTUser(signed)
+			caller, err := auth.parseClientIDJWT(signed)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(caller).To(Equal("up=ginkgo"))
 		})
 	})
 
 	Describe("setClientPermissions", func() {
-		It("Should do nothing when not in anonymous tls mode", func() {
-			auth.anonTLS = false
-			auth.setClientPermissions(user, "")
-			Expect(user.Permissions.Subscribe).To(BeNil())
-			Expect(user.Permissions.Publish).To(BeNil())
-		})
-
 		It("Should support caller private reply subjects", func() {
 			auth.anonTLS = true
 			auth.setClientPermissions(user, "u=ginkgo")
