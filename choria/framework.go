@@ -831,14 +831,14 @@ func (fw *Framework) GovernorSubject(name string) string {
 
 // NewElection establishes a new, named, leader election requiring a Choria Streams bucket called CHORIA_LEADER_ELECTION.
 // This will create a new network connection per election, see NewElectionWithConn() to re-use an existing connection
-func (fw *Framework) NewElection(ctx context.Context, conn inter.Connector, name string, opts ...election.Option) (inter.Election, error) {
-	e, _, err := fw.NewElectionWithConn(ctx, conn, name, opts...)
+func (fw *Framework) NewElection(ctx context.Context, conn inter.Connector, name string, imported bool, opts ...election.Option) (inter.Election, error) {
+	e, _, err := fw.NewElectionWithConn(ctx, conn, name, imported, opts...)
 
 	return e, err
 }
 
-// NewElectionWithConn establish a new, named, leader election requiring a Choria Streams bucket called CHORIA_LEADER_ELECTION
-func (fw *Framework) NewElectionWithConn(ctx context.Context, conn inter.Connector, name string, opts ...election.Option) (inter.Election, inter.Connector, error) {
+// NewElectionWithConn establish a new, named, leader election requiring a Choria Streams bucket called CHORIA_LEADER_ELECTION.
+func (fw *Framework) NewElectionWithConn(ctx context.Context, conn inter.Connector, name string, imported bool, opts ...election.Option) (inter.Election, inter.Connector, error) {
 	var err error
 
 	if conn == nil {
@@ -848,7 +848,12 @@ func (fw *Framework) NewElectionWithConn(ctx context.Context, conn inter.Connect
 		}
 	}
 
-	js, err := conn.Nats().JetStream()
+	var jsopt []nats.JSOpt
+	if imported {
+		jsopt = append(jsopt, nats.APIPrefix("choria.streams"))
+	}
+
+	js, err := conn.Nats().JetStream(jsopt...)
 	if err != nil {
 		return nil, nil, fmt.Errorf("cannot connect to Choria Streams: %s", err)
 	}
