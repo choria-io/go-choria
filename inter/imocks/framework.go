@@ -882,10 +882,10 @@ func (mr *MockFrameworkMockRecorder) NewConnector(arg0, arg1, arg2, arg3 interfa
 }
 
 // NewElection mocks base method.
-func (m *MockFramework) NewElection(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 ...election.Option) (inter.Election, error) {
+func (m *MockFramework) NewElection(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 bool, arg4 ...election.Option) (inter.Election, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1, arg2}
-	for _, a := range arg3 {
+	varargs := []interface{}{arg0, arg1, arg2, arg3}
+	for _, a := range arg4 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "NewElection", varargs...)
@@ -895,17 +895,17 @@ func (m *MockFramework) NewElection(arg0 context.Context, arg1 inter.Connector, 
 }
 
 // NewElection indicates an expected call of NewElection.
-func (mr *MockFrameworkMockRecorder) NewElection(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewElection(arg0, arg1, arg2, arg3 interface{}, arg4 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	varargs := append([]interface{}{arg0, arg1, arg2, arg3}, arg4...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewElection", reflect.TypeOf((*MockFramework)(nil).NewElection), varargs...)
 }
 
 // NewElectionWithConn mocks base method.
-func (m *MockFramework) NewElectionWithConn(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 ...election.Option) (inter.Election, inter.Connector, error) {
+func (m *MockFramework) NewElectionWithConn(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 bool, arg4 ...election.Option) (inter.Election, inter.Connector, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1, arg2}
-	for _, a := range arg3 {
+	varargs := []interface{}{arg0, arg1, arg2, arg3}
+	for _, a := range arg4 {
 		varargs = append(varargs, a)
 	}
 	ret := m.ctrl.Call(m, "NewElectionWithConn", varargs...)
@@ -916,9 +916,9 @@ func (m *MockFramework) NewElectionWithConn(arg0 context.Context, arg1 inter.Con
 }
 
 // NewElectionWithConn indicates an expected call of NewElectionWithConn.
-func (mr *MockFrameworkMockRecorder) NewElectionWithConn(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewElectionWithConn(arg0, arg1, arg2, arg3 interface{}, arg4 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	varargs := append([]interface{}{arg0, arg1, arg2, arg3}, arg4...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewElectionWithConn", reflect.TypeOf((*MockFramework)(nil).NewElectionWithConn), varargs...)
 }
 

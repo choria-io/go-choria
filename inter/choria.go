@@ -77,8 +77,8 @@ type Framework interface {
 	Logger(component string) *logrus.Entry
 	MiddlewareServers() (servers srvcache.Servers, err error)
 	NetworkBrokerPeers() (servers srvcache.Servers, err error)
-	NewElection(ctx context.Context, conn Connector, name string, opts ...election.Option) (Election, error)
-	NewElectionWithConn(ctx context.Context, conn Connector, name string, opts ...election.Option) (Election, Connector, error)
+	NewElection(ctx context.Context, conn Connector, name string, imported bool, opts ...election.Option) (Election, error)
+	NewElectionWithConn(ctx context.Context, conn Connector, name string, imported bool, opts ...election.Option) (Election, Connector, error)
 	OverrideCertname() string
 	PQLQuery(query string) ([]byte, error)
 	PQLQueryCertNames(query string) ([]string, error)
