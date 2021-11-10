@@ -33,6 +33,18 @@ const (
 	LeaderState State = 2
 )
 
+var (
+	stateNames = map[State]string{
+		UnknownState:   "unknown",
+		CandidateState: "candidate",
+		LeaderState:    "leader",
+	}
+)
+
+func (s State) String() string {
+	return stateNames[s]
+}
+
 // implements inter.Election
 type election struct {
 	opts  *options
@@ -104,6 +116,8 @@ func (e *election) debugf(format string, a ...interface{}) {
 }
 
 func (e *election) campaignForLeadership() error {
+	campaignsCounter.WithLabelValues(e.opts.key, e.opts.name, stateNames[CandidateState]).Inc()
+
 	seq, err := e.opts.bucket.Create(e.opts.key, []byte(e.opts.name))
 	if err != nil {
 		e.tries++
@@ -114,16 +128,21 @@ func (e *election) campaignForLeadership() error {
 	e.state = LeaderState
 	e.tries = 0
 	e.notifyNext = true // sets state that would notify about win on next campaign
+	leaderGauge.WithLabelValues(e.opts.key, e.opts.name).Set(1)
 
 	return nil
 }
 
 func (e *election) maintainLeadership() error {
+	campaignsCounter.WithLabelValues(e.opts.key, e.opts.name, stateNames[LeaderState]).Inc()
+
 	seq, err := e.opts.bucket.Update(e.opts.key, []byte(e.opts.name), e.lastSeq)
 	if err != nil {
 		e.debugf("key update failed, moving to candidate state: %v", err)
 		e.state = CandidateState
 		e.lastSeq = math.MaxUint64
+
+		leaderGauge.WithLabelValues(e.opts.key, e.opts.name).Set(0)
 
 		if e.opts.lostCb != nil {
 			e.opts.lostCb()
@@ -178,8 +197,11 @@ func (e *election) campaign(wg *sync.WaitGroup) error {
 
 	var ticker *time.Ticker
 	if e.opts.bo != nil {
-		ticker = time.NewTicker(e.opts.bo.Duration(0))
+		d := e.opts.bo.Duration(0)
+		campaignIntervalGauge.WithLabelValues(e.opts.key, e.opts.name).Set(d.Seconds())
+		ticker = time.NewTicker(d)
 	} else {
+		campaignIntervalGauge.WithLabelValues(e.opts.key, e.opts.name).Set(e.opts.cInterval.Seconds())
 		ticker = time.NewTicker(e.opts.cInterval)
 	}
 
@@ -190,7 +212,9 @@ func (e *election) campaign(wg *sync.WaitGroup) error {
 		}
 
 		if e.opts.bo != nil {
-			ticker.Reset(e.opts.bo.Duration(e.tries))
+			d := e.opts.bo.Duration(e.tries)
+			campaignIntervalGauge.WithLabelValues(e.opts.key, e.opts.name).Set(d.Seconds())
+			ticker.Reset(d)
 		}
 	}
 
