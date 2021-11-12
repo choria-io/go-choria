@@ -19,6 +19,7 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/choria-io/go-choria/tokens"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang/mock/gomock"
 	"github.com/nats-io/nats-server/v2/server"
@@ -611,13 +612,13 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		})
 
 		It("Should fail without a cert", func() {
-			_, err := auth.parseClientIDJWT("")
+			_, _, err := auth.parseClientIDJWT("")
 			Expect(err).To(MatchError("JWT Signer not set in plugin.choria.network.client_signer_cert, denying all clients"))
 		})
 
 		It("Should fail for empty JWTs", func() {
 			auth.jwtSigner = "testdata/public.pem"
-			_, err := auth.parseClientIDJWT("")
+			_, _, err := auth.parseClientIDJWT("")
 			Expect(err).To(MatchError("no JWT received"))
 		})
 
@@ -627,8 +628,9 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				"exp": time.Now().UTC().Add(-time.Hour).Unix(),
 			})
 
-			caller, err := auth.parseClientIDJWT(signed)
+			caller, perms, err := auth.parseClientIDJWT(signed)
 			Expect(err.Error()).To(MatchRegexp("token is expired by"))
+			Expect(perms).To(BeNil())
 			Expect(caller).To(Equal(""))
 		})
 
@@ -639,21 +641,22 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				"purpose":  "choria_client_id",
 			})
 
-			caller, err := auth.parseClientIDJWT(signed)
+			caller, perms, err := auth.parseClientIDJWT(signed)
 			Expect(err).To(MatchError("no callerid in claims"))
+			Expect(perms).To(BeNil())
 			Expect(caller).To(Equal(""))
 		})
 
 		It("Should expect a purpose field", func() {
 			auth.jwtSigner = filepath.Join(td, "public.pem")
 			signed := createSignedJWT(privateKey, nil)
-			_, err := auth.parseClientIDJWT(signed)
+			_, _, err := auth.parseClientIDJWT(signed)
 			Expect(err).To(MatchError("not a client id token"))
 
 			signed = createSignedJWT(privateKey, map[string]interface{}{
 				"purpose": "wrong",
 			})
-			_, err = auth.parseClientIDJWT(signed)
+			_, _, err = auth.parseClientIDJWT(signed)
 			Expect(err).To(MatchError("not a client id token"))
 		})
 
@@ -663,43 +666,185 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				"purpose": "choria_client_id",
 			})
 
-			caller, err := auth.parseClientIDJWT(signed)
+			caller, perms, err := auth.parseClientIDJWT(signed)
 			Expect(err).ToNot(HaveOccurred())
+			Expect(perms).To(BeNil())
 			Expect(caller).To(Equal("up=ginkgo"))
 		})
 	})
 
 	Describe("setClientPermissions", func() {
-		It("Should support caller private reply subjects", func() {
-			auth.anonTLS = true
-			auth.setClientPermissions(user, "u=ginkgo")
-			Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-				Allow: []string{"*.reply.0f47cbbd2accc01a51e57261d6e64b8b.>"},
-			}))
-			Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
-				Allow: []string{
-					"*.broadcast.agent.>",
-					"*.broadcast.service.>",
-					"*.node.>",
-					"choria.federation.*.federation",
-				},
-			}))
+		var (
+			log    *logrus.Entry
+			minSub []string
+			minPub []string
+		)
+
+		BeforeEach(func() {
+			log = logrus.NewEntry(logrus.New())
+			log.Logger.SetOutput(GinkgoWriter)
+
+			minSub = []string{"*.reply.>"}
+			minPub = []string{
+				"*.broadcast.agent.>",
+				"*.broadcast.service.>",
+				"*.node.>",
+				"choria.federation.*.federation"}
 		})
 
-		It("Should support standard reply subjects", func() {
-			auth.anonTLS = true
-			auth.setClientPermissions(user, "")
-			Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-				Allow: []string{"*.reply.>"},
-			}))
-			Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
-				Allow: []string{
-					"*.broadcast.agent.>",
-					"*.broadcast.service.>",
-					"*.node.>",
-					"choria.federation.*.federation",
-				},
-			}))
+		Describe("System User", func() {
+			It("Should should set correct permissions", func() {
+				auth.anonTLS = true
+				auth.setClientPermissions(user, "", &tokens.ClientPermissions{SystemUser: true}, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: []string{">"},
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: []string{">"},
+				}))
+			})
+		})
+
+		Describe("Stream Users", func() {
+			It("Should set no permissions for non choria users", func() {
+				user.Account = auth.provisioningAccount
+				auth.setClientPermissions(user, "", &tokens.ClientPermissions{StreamsUser: true}, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: minSub,
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: minPub,
+				}))
+			})
+
+			It("Should set correct permissions for the choria user", func() {
+				user.Account = auth.choriaAccount
+				auth.setClientPermissions(user, "", &tokens.ClientPermissions{StreamsUser: true}, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: minSub,
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: append(minPub,
+						"$JS.API.STREAM.NAMES",
+						"$JS.API.STREAM.LIST",
+						"$JS.API.STREAM.INFO.*",
+						"$JS.API.STREAM.MSG.GET.*",
+						"$JS.API.CONSUMER.CREATE.*",
+						"$JS.API.CONSUMER.DURABLE.CREATE.*.*",
+						"$JS.API.CONSUMER.NAMES.*",
+						"$JS.API.CONSUMER.LIST.*",
+						"$JS.API.CONSUMER.INFO.*.*",
+						"$JS.API.CONSUMER.MSG.NEXT.*.*",
+						"$JS.ACK.>",
+						"$JS.FC."),
+				}))
+			})
+		})
+
+		Describe("Event Viewers", func() {
+			It("Should set provisioning permissions", func() {
+				user.Account = auth.provisioningAccount
+				auth.setClientPermissions(user, "", &tokens.ClientPermissions{EventsViewer: true}, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: append(minSub, "choria.lifecycle.event.*.provision_mode_server"),
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: minPub,
+				}))
+			})
+
+			It("Should set choria permissions", func() {
+				user.Account = auth.choriaAccount
+				auth.setClientPermissions(user, "", &tokens.ClientPermissions{EventsViewer: true}, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: append(minSub, "choria.lifecycle.event.>",
+						"choria.machine.watcher.>",
+						"choria.machine.transition"),
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: minPub,
+				}))
+			})
+		})
+
+		Describe("Election Users", func() {
+			It("Should set provisioning permissions", func() {
+				user.Account = auth.provisioningAccount
+				auth.setClientPermissions(user, "", &tokens.ClientPermissions{ElectionUser: true}, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: minSub,
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: append(minPub,
+						"choria.streams.STREAM.INFO.KV_CHORIA_LEADER_ELECTION",
+						"$KV.CHORIA_LEADER_ELECTION.provisioner"),
+				}))
+			})
+
+			It("Should set choria permissions", func() {
+				user.Account = auth.choriaAccount
+				auth.setClientPermissions(user, "", &tokens.ClientPermissions{ElectionUser: true}, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: minSub,
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: append(minPub,
+						"$JS.API.STREAM.INFO.KV_CHORIA_LEADER_ELECTION",
+						"$KV.CHORIA_LEADER_ELECTION.>"),
+				}))
+			})
+		})
+		Describe("Streams Admin", func() {
+			It("Should set no permissions for non choria users", func() {
+				user.Account = auth.provisioningAccount
+				auth.setClientPermissions(user, "", &tokens.ClientPermissions{StreamsAdmin: true}, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: minSub,
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: minPub,
+				}))
+			})
+
+			It("Should set correct permissions for choria user", func() {
+				user.Account = auth.choriaAccount
+				auth.setClientPermissions(user, "", &tokens.ClientPermissions{StreamsAdmin: true}, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: append(minSub, "$JS.EVENT.>"),
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: append(minPub, "$JS.>"),
+				}))
+			})
+		})
+
+		Describe("Minimal Permissions", func() {
+			It("Should support caller private reply subjects", func() {
+				auth.anonTLS = true
+				auth.setClientPermissions(user, "u=ginkgo", nil, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: []string{"*.reply.0f47cbbd2accc01a51e57261d6e64b8b.>"},
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: minPub,
+				}))
+			})
+
+			It("Should support standard reply subjects", func() {
+				auth.anonTLS = true
+				auth.setClientPermissions(user, "", nil, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: []string{"*.reply.>"},
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: []string{
+						"*.broadcast.agent.>",
+						"*.broadcast.service.>",
+						"*.node.>",
+						"choria.federation.*.federation",
+					},
+				}))
+			})
 		})
 	})
 

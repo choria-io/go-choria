@@ -70,6 +70,7 @@ var _ = Describe("ClientIDClaims", func() {
 			Expect(claims.IssuedAt.Time).To(BeTemporally("~", time.Now(), time.Second))
 			Expect(claims.ExpiresAt.Time).To(BeTemporally("~", time.Now().Add(time.Hour), time.Second))
 			Expect(claims.Permissions).To(Equal(perms))
+			Expect(claims.Permissions.SystemUser).To(BeTrue())
 		})
 	})
 
