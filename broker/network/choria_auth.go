@@ -60,6 +60,8 @@ const (
 	emptyString      = ""
 )
 
+var allSubjects = []string{">"}
+
 // Check checks and registers the incoming connection
 func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 	var (
@@ -138,6 +140,11 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	if remote != nil {
 		log = log.WithField("remote", remote.String())
 	}
+	if user.Account != nil {
+		log = log.WithField("account", user.Account.Name)
+	}
+
+	var perms *tokens.ClientPermissions
 
 	// we only do JWT based auth in TLS mode
 	if (a.anonTLS || jwts != "") && conn != nil {
@@ -145,7 +152,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 			return false, fmt.Errorf("remote client information is required in anonymous TLS or JWT signing modes")
 		}
 
-		caller, err = a.parseClientIDJWT(jwts)
+		caller, perms, err = a.parseClientIDJWT(jwts)
 		if err != nil {
 			return false, fmt.Errorf("could not parse JWT from %s: %s", remote.String(), err)
 		}
@@ -162,12 +169,12 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	// else its default open like users with certs
 	case (a.anonTLS || caller != "") && a.remoteInClientAllowList(remote):
 		log = log.WithField("caller", caller)
-		log.Debugf("Setting strict client permissions for %s", remote)
-		a.setClientPermissions(user, caller)
+		log.Debugf("Setting client client permissions")
+		a.setClientPermissions(user, caller, perms, log)
 
 	// Else in the case where an allow list is configured we set server permissions on other conns
 	case len(a.clientAllowList) > 0:
-		log.Debugf("Setting strict server permissions for %s", remote)
+		log.Debugf("Setting strict server permissions")
 		a.setServerPermissions(user)
 	}
 
@@ -310,13 +317,13 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 	return true, nil
 }
 
-func (a *ChoriaAuth) parseClientIDJWT(jwts string) (string, error) {
+func (a *ChoriaAuth) parseClientIDJWT(jwts string) (string, *tokens.ClientPermissions, error) {
 	if a.jwtSigner == emptyString {
-		return "", fmt.Errorf("JWT Signer not set in plugin.choria.network.client_signer_cert, denying all clients")
+		return "", nil, fmt.Errorf("JWT Signer not set in plugin.choria.network.client_signer_cert, denying all clients")
 	}
 
 	if jwts == emptyString {
-		return "", fmt.Errorf("no JWT received")
+		return "", nil, fmt.Errorf("no JWT received")
 	}
 
 	// Generally now we want to accept all mix mode clients who have a valid JWT, ie. one with the
@@ -325,50 +332,163 @@ func (a *ChoriaAuth) parseClientIDJWT(jwts string) (string, error) {
 	// the specific scenario where AnonTLS is configured without checking the purpose field
 	claims, err := tokens.ParseClientIDTokenWithKeyfile(jwts, a.jwtSigner, !a.anonTLS)
 	if err != nil {
-		return "", err
+		return "", nil, err
 	}
 
 	if claims.CallerID == emptyString {
-		return "", fmt.Errorf("no callerid in claims")
+		return "", nil, fmt.Errorf("no callerid in claims")
 	}
 
-	return claims.CallerID, nil
+	return claims.CallerID, claims.Permissions, nil
 }
 
-func (a *ChoriaAuth) setClientPermissions(user *server.User, caller string) {
+func (a *ChoriaAuth) setMinimalClientPermissions(_ *server.User, caller string, subs []string, pubs []string) ([]string, []string) {
 	replys := "*.reply.>"
 	if caller != emptyString {
 		replys = fmt.Sprintf("*.reply.%x.>", md5.Sum([]byte(caller)))
 		a.log.Debugf("Creating ACLs for a private reply subject on %s", replys)
 	}
 
-	user.Permissions.Subscribe = &server.SubjectPermission{
-		Allow: []string{
-			replys,
-		},
+	subs = append(subs, replys)
+	pubs = append(pubs,
+		"*.broadcast.agent.>",
+		"*.broadcast.service.>",
+		"*.node.>",
+		"choria.federation.*.federation",
+	)
+
+	return subs, pubs
+}
+
+func (a *ChoriaAuth) setStreamsAdminPermissions(user *server.User, subs []string, pubs []string) ([]string, []string) {
+	if user.Account != a.choriaAccount {
+		return subs, pubs
 	}
 
-	user.Permissions.Publish = &server.SubjectPermission{
-		Allow: []string{
-			"*.broadcast.agent.>",
-			"*.broadcast.service.>",
-			"*.node.>",
-			"choria.federation.*.federation",
-		},
+	subs = append(subs, "$JS.EVENT.>")
+	pubs = append(pubs, "$JS.>")
+
+	return subs, pubs
+}
+
+func (a *ChoriaAuth) setStreamsUserPermissions(user *server.User, subs []string, pubs []string) ([]string, []string) {
+	if user.Account != a.choriaAccount {
+		return subs, pubs
 	}
+
+	pubs = append(pubs,
+		"$JS.API.STREAM.NAMES",
+		"$JS.API.STREAM.LIST",
+		"$JS.API.STREAM.INFO.*",
+		"$JS.API.STREAM.MSG.GET.*",
+		"$JS.API.CONSUMER.CREATE.*",
+		"$JS.API.CONSUMER.DURABLE.CREATE.*.*",
+		"$JS.API.CONSUMER.NAMES.*",
+		"$JS.API.CONSUMER.LIST.*",
+		"$JS.API.CONSUMER.INFO.*.*",
+		"$JS.API.CONSUMER.MSG.NEXT.*.*",
+		"$JS.ACK.>",
+		"$JS.FC.")
+
+	return subs, pubs
+}
+
+func (a *ChoriaAuth) setEventsViewerPermissions(user *server.User, subs []string, pubs []string) ([]string, []string) {
+	switch user.Account {
+	case a.choriaAccount:
+		subs = append(subs,
+			"choria.lifecycle.event.>",
+			"choria.machine.watcher.>",
+			"choria.machine.transition")
+	case a.provisioningAccount:
+		// provisioner should only listen to one specific kind of event, not strictly needed but its what it is
+		subs = append(subs, "choria.lifecycle.event.*.provision_mode_server")
+	}
+
+	return subs, pubs
+}
+
+func (a *ChoriaAuth) setElectionPermissions(user *server.User, subs []string, pubs []string) ([]string, []string) {
+	switch user.Account {
+	case a.choriaAccount:
+		pubs = append(pubs,
+			"$JS.API.STREAM.INFO.KV_CHORIA_LEADER_ELECTION",
+			"$KV.CHORIA_LEADER_ELECTION.>")
+	case a.provisioningAccount:
+		// provisioner account is special and can only access one very specific election
+		pubs = append(pubs,
+			"choria.streams.STREAM.INFO.KV_CHORIA_LEADER_ELECTION",
+			"$KV.CHORIA_LEADER_ELECTION.provisioner")
+	}
+
+	return subs, pubs
+}
+
+func (a *ChoriaAuth) setPermissions(user *server.User, caller string, perms *tokens.ClientPermissions, log *logrus.Entry) (pubs []string, subs []string, err error) {
+	if perms != nil && perms.SystemUser {
+		log.Warnf("Granting user access to all subjects (SystemUser)")
+		return allSubjects, allSubjects, nil
+	}
+
+	subs, pubs = a.setMinimalClientPermissions(user, caller, subs, pubs)
+
+	if perms == nil {
+		return pubs, subs, nil
+	}
+
+	// Can access full Streams Features
+	if perms.StreamsAdmin {
+		log.Infof("Granting user Streams Admin access")
+		subs, pubs = a.setStreamsAdminPermissions(user, subs, pubs)
+	}
+
+	// Can use streams but not make new ones etc
+	if perms.StreamsUser {
+		log.Infof("Granting user Streams User access")
+		subs, pubs = a.setStreamsUserPermissions(user, subs, pubs)
+	}
+
+	// Lifecycle and auto agent events
+	if perms.EventsViewer {
+		log.Infof("Granting user Events Viewer access")
+		subs, pubs = a.setEventsViewerPermissions(user, subs, pubs)
+	}
+
+	// KV based elections
+	if perms.ElectionUser {
+		log.Infof("Granting user Leader Election access")
+		subs, pubs = a.setElectionPermissions(user, subs, pubs)
+	}
+
+	return pubs, subs, nil
+}
+
+func (a *ChoriaAuth) setClientPermissions(user *server.User, caller string, perms *tokens.ClientPermissions, log *logrus.Entry) {
+	user.Permissions.Subscribe = &server.SubjectPermission{}
+	user.Permissions.Publish = &server.SubjectPermission{}
+
+	pubs, subs, err := a.setPermissions(user, caller, perms, log)
+	if err != nil {
+		log.Warnf("Could not determine permissions for user, denying all: %s", err)
+		user.Permissions.Subscribe.Deny = allSubjects
+		user.Permissions.Publish.Deny = allSubjects
+	} else {
+		user.Permissions.Subscribe.Allow = subs
+		user.Permissions.Publish.Allow = pubs
+	}
+
+	log.Debugf("Setting permissions: %#v", user.Permissions)
 }
 
 func (a *ChoriaAuth) setServerPermissions(user *server.User) {
-	matchAll := []string{">"}
-
 	switch {
 	case a.denyServers:
 		user.Permissions.Subscribe = &server.SubjectPermission{
-			Deny: matchAll,
+			Deny: allSubjects,
 		}
 
 		user.Permissions.Publish = &server.SubjectPermission{
-			Deny: matchAll,
+			Deny: allSubjects,
 		}
 
 	default:
@@ -381,7 +501,7 @@ func (a *ChoriaAuth) setServerPermissions(user *server.User) {
 		}
 
 		user.Permissions.Publish = &server.SubjectPermission{
-			Allow: matchAll,
+			Allow: allSubjects,
 
 			Deny: []string{
 				"*.broadcast.agent.>",
@@ -430,7 +550,7 @@ func (a *ChoriaAuth) remoteInClientAllowList(remote net.Addr) bool {
 	return false
 }
 
-func (o *ChoriaAuth) isProvisionUser(c server.ClientAuthentication) bool {
+func (a *ChoriaAuth) isProvisionUser(c server.ClientAuthentication) bool {
 	opts := c.GetOpts()
 	return opts.Username == provisioningUser
 }
