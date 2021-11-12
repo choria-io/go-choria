@@ -97,7 +97,7 @@ var _ = Describe("Choria", func() {
 
 			jwtpath := filepath.Join(td, "good.jwt")
 
-			claims, err := tokens.NewClientIDClaims("up=ginkgo", nil, "choria", nil, "", "Ginkgo", time.Hour)
+			claims, err := tokens.NewClientIDClaims("up=ginkgo", nil, "choria", nil, "", "Ginkgo", time.Hour, nil)
 			Expect(err).ToNot(HaveOccurred())
 
 			signed, err := tokens.SignToken(claims, privateKey)

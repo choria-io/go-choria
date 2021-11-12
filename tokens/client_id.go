@@ -13,6 +13,23 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 )
 
+type ClientPermissions struct {
+	// StreamsAdmin enables full access to Choria Streams for all APIs
+	StreamsAdmin bool `json:"streams_admin,omitempty"`
+
+	// StreamsUser enables user level access to Choria Streams, no stream admin features
+	StreamsUser bool `json:"streams_user,omitempty"`
+
+	// EventsViewer allows viewing lifecycle and auto agent events
+	EventsViewer bool `json:"events_viewer,omitempty"`
+
+	// ElectionUser allows using leader elections
+	ElectionUser bool `json:"election_user,omitempty"`
+
+	// SystemUser has access to all subjects
+	SystemUser bool `json:"system_user,omitempty"`
+}
+
 // ClientIDClaims represents a user and all AAA Authenticators should create a JWT using this format
 //
 // The "purpose" claim should be set to ClientIDPurpose
@@ -32,11 +49,14 @@ type ClientIDClaims struct {
 	// OPAPolicy is a Open Policy Agent document to be used by the signer to limit the users actions
 	OPAPolicy string `json:"opa_policy,omitempty"`
 
+	// Permissions sets additional permissions for a client
+	Permissions *ClientPermissions `json:"permissions,omitempty"`
+
 	StandardClaims
 }
 
 // NewClientIDClaims generates new ClientIDClaims
-func NewClientIDClaims(callerID string, allowedAgents []string, org string, properties map[string]string, opaPolicy string, issuer string, validity time.Duration) (*ClientIDClaims, error) {
+func NewClientIDClaims(callerID string, allowedAgents []string, org string, properties map[string]string, opaPolicy string, issuer string, validity time.Duration, perms *ClientPermissions) (*ClientIDClaims, error) {
 	if issuer == "" {
 		issuer = "Choria"
 	}
@@ -56,6 +76,7 @@ func NewClientIDClaims(callerID string, allowedAgents []string, org string, prop
 		OrganizationUnit: org,
 		UserProperties:   properties,
 		OPAPolicy:        opaPolicy,
+		Permissions:      perms,
 		StandardClaims:   *stdClaims,
 	}, nil
 }

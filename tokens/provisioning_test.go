@@ -20,7 +20,7 @@ var _ = Describe("ProvisioningClaims", func() {
 	)
 
 	BeforeEach(func() {
-		claims, err := NewClientIDClaims("up=ginkgo", []string{"rpcutil"}, "choria", map[string]string{"group": "admins"}, "// opa policy", "Ginkgo", time.Hour)
+		claims, err := NewClientIDClaims("up=ginkgo", []string{"rpcutil"}, "choria", map[string]string{"group": "admins"}, "// opa policy", "Ginkgo", time.Hour, nil)
 		Expect(err).ToNot(HaveOccurred())
 		clientToken, err = SignToken(claims, loadPriKey("testdata/signer-key.pem"))
 		Expect(err).ToNot(HaveOccurred())
