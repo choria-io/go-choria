@@ -17,7 +17,6 @@ import (
 	election "github.com/choria-io/go-choria/providers/election/streams"
 	"github.com/choria-io/go-choria/providers/kv"
 	"github.com/choria-io/go-choria/srvcache"
-	"github.com/golang-jwt/jwt"
 	"github.com/nats-io/nats.go"
 	"github.com/sirupsen/logrus"
 )
@@ -82,7 +81,6 @@ type Framework interface {
 	OverrideCertname() string
 	PQLQuery(query string) ([]byte, error)
 	PQLQueryCertNames(query string) ([]string, error)
-	ParseSignerTokenUnverified() (token *jwt.Token, claims jwt.MapClaims, err error)
 	ProgressWidth() int
 	PrometheusTextFileDir() string
 	ProvisionMode() bool

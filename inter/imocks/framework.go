@@ -20,7 +20,6 @@ import (
 	election "github.com/choria-io/go-choria/providers/election/streams"
 	kv "github.com/choria-io/go-choria/providers/kv"
 	srvcache "github.com/choria-io/go-choria/srvcache"
-	jwt "github.com/golang-jwt/jwt"
 	gomock "github.com/golang/mock/gomock"
 	nats "github.com/nats-io/nats.go"
 	logrus "github.com/sirupsen/logrus"
@@ -1294,22 +1293,6 @@ func (m *MockFramework) PQLQueryCertNames(arg0 string) ([]string, error) {
 func (mr *MockFrameworkMockRecorder) PQLQueryCertNames(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PQLQueryCertNames", reflect.TypeOf((*MockFramework)(nil).PQLQueryCertNames), arg0)
-}
-
-// ParseSignerTokenUnverified mocks base method.
-func (m *MockFramework) ParseSignerTokenUnverified() (*jwt.Token, jwt.MapClaims, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ParseSignerTokenUnverified")
-	ret0, _ := ret[0].(*jwt.Token)
-	ret1, _ := ret[1].(jwt.MapClaims)
-	ret2, _ := ret[2].(error)
-	return ret0, ret1, ret2
-}
-
-// ParseSignerTokenUnverified indicates an expected call of ParseSignerTokenUnverified.
-func (mr *MockFrameworkMockRecorder) ParseSignerTokenUnverified() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ParseSignerTokenUnverified", reflect.TypeOf((*MockFramework)(nil).ParseSignerTokenUnverified))
 }
 
 // ProgressWidth mocks base method.

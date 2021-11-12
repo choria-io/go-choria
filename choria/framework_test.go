@@ -21,7 +21,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
-	"github.com/golang-jwt/jwt"
+	"github.com/choria-io/go-choria/tokens"
 	. "github.com/onsi/ginkgo"
 	. "github.com/onsi/gomega"
 )
@@ -68,7 +68,7 @@ var _ = Describe("Choria", func() {
 			template := x509.Certificate{
 				SerialNumber: big.NewInt(1),
 				Subject: pkix.Name{
-					Organization: []string{"Acme Co"},
+					Organization: []string{"Choria.IO"},
 				},
 				NotBefore: time.Now(),
 				NotAfter:  time.Now().Add(time.Hour * 24 * 180),
@@ -97,17 +97,10 @@ var _ = Describe("Choria", func() {
 
 			jwtpath := filepath.Join(td, "good.jwt")
 
-			claims := map[string]interface{}{
-				"exp":      time.Now().UTC().Add(time.Hour).Unix(),
-				"nbf":      time.Now().UTC().Add(-1 * time.Minute).Unix(),
-				"iat":      time.Now().UTC().Unix(),
-				"iss":      "Ginkgo",
-				"callerid": "up=ginkgo",
-				"sub":      "up=ginkgo",
-			}
+			claims, err := tokens.NewClientIDClaims("up=ginkgo", nil, "choria", nil, "", "Ginkgo", time.Hour)
+			Expect(err).ToNot(HaveOccurred())
 
-			t := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(claims))
-			signed, err := t.SignedString(privateKey)
+			signed, err := tokens.SignToken(claims, privateKey)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = os.WriteFile(jwtpath, []byte(signed), 0600)
@@ -130,26 +123,6 @@ var _ = Describe("Choria", func() {
 				Expect(token).To(Equal(strings.TrimSpace(string(expectedT))))
 				Expect(id).To(Equal("e33bf0376d4accbb4a8fd24b2f840b2e"))
 				Expect(caller).To(Equal("up=ginkgo"))
-			})
-		})
-
-		Describe("ParseSignerTokenUnverified", func() {
-			It("Should extract the correct token", func() {
-				cfg.Choria.RemoteSignerTokenFile = filepath.Join(td, "good.jwt")
-				token, claims, err := fw.ParseSignerTokenUnverified()
-				Expect(err).ToNot(HaveOccurred())
-
-				expectedT, err := os.ReadFile(cfg.Choria.RemoteSignerTokenFile)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(strings.TrimSpace(token.Raw)).To(Equal(strings.TrimSpace(string(expectedT))))
-
-				Expect(claims["callerid"]).To(Equal("up=ginkgo"))
-			})
-
-			It("Should handle missing files", func() {
-				cfg.Choria.RemoteSignerTokenFile = "testdata/missing.jwt"
-				_, _, err := fw.ParseSignerTokenUnverified()
-				Expect(err.Error()).To(MatchRegexp("could not read token file"))
 			})
 		})
 

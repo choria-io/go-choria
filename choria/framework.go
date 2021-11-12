@@ -27,8 +27,8 @@ import (
 	"github.com/choria-io/go-choria/providers/kv"
 	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/providers/signers"
+	"github.com/choria-io/go-choria/tokens"
 	"github.com/fatih/color"
-	"github.com/golang-jwt/jwt"
 	"github.com/nats-io/nats.go"
 	"golang.org/x/term"
 
@@ -658,41 +658,22 @@ func (fw *Framework) Configuration() *config.Config {
 	return fw.Config
 }
 
+// UniqueIDFromUnverifiedToken extracts the caller id from the client token, the token is not verified as we do not have the certificate
 func (fw *Framework) UniqueIDFromUnverifiedToken() (caller string, id string, token string, err error) {
-	t, claims, err := fw.ParseSignerTokenUnverified()
+	ts, err := fw.SignerToken()
 	if err != nil {
 		return "", "", "", err
 	}
 
-	caller, ok := claims["callerid"].(string)
-	if !ok {
-		return "", "", "", fmt.Errorf("invalid callerid in token claims")
+	t, caller, err := tokens.UnverifiedCallerFromClientIDToken(ts)
+	if err != nil {
+		return "", "", "", err
 	}
 
 	return caller, fmt.Sprintf("%x", md5.Sum([]byte(caller))), t.Raw, nil
 }
 
-func (fw *Framework) ParseSignerTokenUnverified() (token *jwt.Token, claims jwt.MapClaims, err error) {
-	ts, err := fw.SignerToken()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	claims = jwt.MapClaims{}
-	token, _, err = new(jwt.Parser).ParseUnverified(ts, &claims)
-	if err != nil {
-		return nil, nil, err
-	}
-
-	err = claims.Valid()
-	if err != nil {
-		return nil, nil, err
-	}
-
-	return token, claims, nil
-}
-
-// Retrieves the AAA token used for signing requests
+// SignerToken retrieves the AAA token used for signing requests
 func (fw *Framework) SignerToken() (token string, err error) {
 	if fw.Config.Choria.RemoteSignerTokenFile == "" && fw.Config.Choria.RemoteSignerTokenEnvironment == "" {
 		return "", fmt.Errorf("no token file or environment variable is defined")

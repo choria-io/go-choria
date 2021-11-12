@@ -8,15 +8,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 	"sync"
-	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/providers/provtarget/builddefaults"
-	"github.com/golang-jwt/jwt"
+	"github.com/choria-io/go-choria/tokens"
 )
 
 type tJWTCommand struct {
@@ -85,29 +82,12 @@ func (j *tJWTCommand) Run(wg *sync.WaitGroup) (err error) {
 }
 
 func (j *tJWTCommand) validateJWT() error {
-	certdat, err := os.ReadFile(j.validateCert)
-	if err != nil {
-		return fmt.Errorf("could not read validation certificate: %s", err)
-	}
-
-	cert, err := jwt.ParseRSAPublicKeyFromPEM(certdat)
-	if err != nil {
-		return fmt.Errorf("could not parse validation certificate: %s", err)
-	}
-
 	token, err := os.ReadFile(j.file)
 	if err != nil {
 		return fmt.Errorf("could not read token: %s", err)
 	}
 
-	claims := &builddefaults.ProvClaims{}
-	_, err = jwt.ParseWithClaims(string(token), claims, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unsupported signing method in token")
-		}
-
-		return cert, nil
-	})
+	claims, err := tokens.ParseProvisioningTokenWithKeyfile(string(token), j.validateCert)
 	if err != nil {
 		return fmt.Errorf("could not parse token: %s", err)
 	}
@@ -144,7 +124,7 @@ func (j *tJWTCommand) validateJWT() error {
 		return nil
 	}
 
-	fmt.Printf("              Standard Claims: %s\n", string(stdc))
+	fmt.Printf("               Standard Claims: %s\n", string(stdc))
 
 	return nil
 }
@@ -158,66 +138,14 @@ func (j *tJWTCommand) createJWT() error {
 	if j.srvDomain == "" && len(j.urls) == 0 {
 		return fmt.Errorf("URLs or a SRV Domain is required")
 	}
-
-	claims := &builddefaults.ProvClaims{
-		Secure:       true,
-		ProvDefault:  false,
-		Token:        j.token,
-		ProvNatsUser: j.uname,
-		ProvNatsPass: j.password,
-		Purpose:      "choria_provisioning",
-		StandardClaims: jwt.StandardClaims{
-			IssuedAt:  time.Now().UTC().Unix(),
-			Issuer:    "choria cli",
-			NotBefore: time.Now().UTC().Unix(),
-			Subject:   "choria_provisioning",
-		},
-	}
-
-	if j.insecure {
-		claims.Secure = false
-
-	}
-
-	if len(j.urls) > 0 {
-		claims.URLs = strings.Join(j.urls, ",")
-	}
-
-	if j.srvDomain != "" {
-		claims.SRVDomain = j.srvDomain
-	}
-
-	if j.provDefault {
-		claims.ProvDefault = true
-	}
-
-	if j.regData != "" {
-		claims.ProvRegData = j.regData
-	}
-
-	if j.facts != "" {
-		claims.ProvFacts = j.facts
-	}
-
-	keydat, err := os.ReadFile(j.validateCert)
+	claims, err := tokens.NewProvisioningClaims(!j.insecure, j.provDefault, j.token, j.uname, j.password, j.urls, j.srvDomain, j.regData, j.facts, "choria cli", 0)
 	if err != nil {
-		return fmt.Errorf("could not read signing key: %s", err)
+		return err
 	}
 
-	key, err := jwt.ParseRSAPrivateKeyFromPEM(keydat)
+	err = tokens.SaveAndSignTokenWithKeyFile(claims, j.validateCert, j.file, 0600)
 	if err != nil {
-		return fmt.Errorf("could not parse signing key: %s", err)
-	}
-
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	stoken, err := token.SignedString(key)
-	if err != nil {
-		return fmt.Errorf("could not sign token using key: %s", err)
-	}
-
-	err = os.WriteFile(j.file, []byte(stoken), 0644)
-	if err != nil {
-		return fmt.Errorf("could not write token: %s", err)
+		return err
 	}
 
 	return nil

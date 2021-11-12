@@ -15,27 +15,12 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/srvcache"
-	"github.com/golang-jwt/jwt"
+	"github.com/choria-io/go-choria/tokens"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/build"
 )
-
-type ProvClaims struct {
-	Token        string `json:"cht"`
-	Secure       bool   `json:"chs"`
-	URLs         string `json:"chu,omitempty"`
-	SRVDomain    string `json:"chsrv,omitempty"`
-	ProvDefault  bool   `json:"chpd"`
-	ProvRegData  string `json:"chrd,omitempty"`
-	ProvFacts    string `json:"chf,omitempty"`
-	ProvNatsUser string `json:"chusr,omitempty"`
-	ProvNatsPass string `json:"chpwd,omitempty"`
-	Purpose      string `json:"purpose"`
-
-	jwt.StandardClaims
-}
 
 // Provider creates an instance of the provider
 func Provider() *Resolver {
@@ -129,23 +114,17 @@ func (b *Resolver) Targets(ctx context.Context, log *logrus.Entry) []string {
 }
 
 // setBuildBasedOnJWT sets build settings based on contents of a JWT file
-func (b *Resolver) setBuildBasedOnJWT() (*ProvClaims, error) {
+func (b *Resolver) setBuildBasedOnJWT() (*tokens.ProvisioningClaims, error) {
 	bi := b.bi
-	jwtf := bi.ProvisionJWTFile()
 
-	if !util.FileExist(jwtf) {
-		return &ProvClaims{}, nil
-	}
-
-	j, err := os.ReadFile(jwtf)
+	d, err := os.ReadFile(bi.ProvisionJWTFile())
 	if err != nil {
 		return nil, err
 	}
 
-	claims := &ProvClaims{}
-	_, _, err = new(jwt.Parser).ParseUnverified(string(j), claims)
+	claims, err := tokens.ParseProvisionTokenUnverified(string(d))
 	if err != nil {
-		return nil, fmt.Errorf("jwt parse error: %s", err)
+		return nil, err
 	}
 
 	if claims.Token == "" {

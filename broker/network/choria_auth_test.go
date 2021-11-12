@@ -19,7 +19,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang/mock/gomock"
 	"github.com/nats-io/nats-server/v2/server"
 	. "github.com/onsi/ginkgo"
@@ -628,7 +628,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			})
 
 			caller, err := auth.parseClientIDJWT(signed)
-			Expect(err).To(MatchError("invalid JWT: Token is expired"))
+			Expect(err.Error()).To(MatchRegexp("token is expired by"))
 			Expect(caller).To(Equal(""))
 		})
 
@@ -648,13 +648,13 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			auth.jwtSigner = filepath.Join(td, "public.pem")
 			signed := createSignedJWT(privateKey, nil)
 			_, err := auth.parseClientIDJWT(signed)
-			Expect(err).To(MatchError("mix TLS mode clients require a purpose field in their JWT"))
+			Expect(err).To(MatchError("not a client id token"))
 
 			signed = createSignedJWT(privateKey, map[string]interface{}{
 				"purpose": "wrong",
 			})
 			_, err = auth.parseClientIDJWT(signed)
-			Expect(err).To(MatchError("expected choria_client_id purpose in unverified TLS connection"))
+			Expect(err).To(MatchError("not a client id token"))
 		})
 
 		It("Should extract the caller", func() {

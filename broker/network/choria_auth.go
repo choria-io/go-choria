@@ -6,16 +6,13 @@ package network
 
 import (
 	"crypto/md5"
-	"crypto/rsa"
 	"crypto/tls"
 	"fmt"
 	"net"
-	"os"
 	"strings"
 
 	"github.com/choria-io/go-choria/internal/util"
-	"github.com/choria-io/go-choria/providers/provtarget/builddefaults"
-	"github.com/golang-jwt/jwt"
+	"github.com/choria-io/go-choria/tokens"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/sirupsen/logrus"
 )
@@ -272,26 +269,9 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 
 	switch {
 	case opts.Token != emptyString:
-		cert, err := a.provisionerJWTSignerKey()
+		_, err := tokens.ParseProvisioningTokenWithKeyfile(opts.Token, a.provisioningTokenSigner)
 		if err != nil {
 			return false, err
-		}
-
-		claims := &builddefaults.ProvClaims{}
-		_, err = jwt.ParseWithClaims(opts.Token, claims, func(t *jwt.Token) (interface{}, error) {
-			if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
-				return nil, fmt.Errorf("unsupported signing method in token")
-			}
-
-			return cert, nil
-		})
-		if err != nil {
-			return false, fmt.Errorf("could not parse provisioner token: %s", err)
-		}
-
-		// TODO: older tokens do not have a Purpose field so we handle "" in addition to Subject()
-		if !(claims.Subject == "choria_provisioning" && (claims.Purpose == "choria_provisioning" || claims.Purpose == "")) {
-			return false, fmt.Errorf("expceted choria_provisioning purpose in token")
 		}
 
 		a.log.Debugf("Allowing a provisioning server from %s using unverified TLS connection", c.RemoteAddress().String())
@@ -339,78 +319,20 @@ func (a *ChoriaAuth) parseClientIDJWT(jwts string) (string, error) {
 		return "", fmt.Errorf("no JWT received")
 	}
 
-	signKey, err := a.clientJWTSignerKey()
-	if err != nil {
-		return "", fmt.Errorf("signing key error: %s", err)
-	}
-
-	token, err := jwt.Parse(jwts, func(token *jwt.Token) (interface{}, error) {
-		return signKey, nil
-	})
-	if err != nil {
-		return "", fmt.Errorf("invalid JWT: %s", err)
-	}
-
-	claims, ok := token.Claims.(jwt.MapClaims)
-	if !ok {
-		return "", fmt.Errorf("invalid claims")
-	}
-
-	err = claims.Valid()
-	if err != nil {
-		return "", fmt.Errorf("invalid claims")
-	}
-
 	// Generally now we want to accept all mix mode clients who have a valid JWT, ie. one with the
 	// correct purpose flag in addition to being valid, but to keep backwards compatibility with the
 	// mode documented in https://choria.io/blog/post/2020/09/13/aaa_improvements/ we accept them in
 	// the specific scenario where AnonTLS is configured without checking the purpose field
-	if !a.anonTLS {
-		purpose, ok := claims["purpose"].(string)
-		if !ok {
-			return "", fmt.Errorf("mix TLS mode clients require a purpose field in their JWT")
-		}
-		if purpose != "choria_client_id" {
-			return "", fmt.Errorf("expected choria_client_id purpose in unverified TLS connection")
-		}
+	claims, err := tokens.ParseClientIDTokenWithKeyfile(jwts, a.jwtSigner, !a.anonTLS)
+	if err != nil {
+		return "", err
 	}
 
-	caller, ok := claims["callerid"].(string)
-	if !ok || caller == emptyString {
+	if claims.CallerID == emptyString {
 		return "", fmt.Errorf("no callerid in claims")
 	}
 
-	return caller, nil
-}
-
-// reads plugin.choria.network.client_signer_cert
-func (a *ChoriaAuth) clientJWTSignerKey() (*rsa.PublicKey, error) {
-	certBytes, err := os.ReadFile(a.jwtSigner)
-	if err != nil {
-		return nil, err
-	}
-
-	signKey, err := jwt.ParseRSAPublicKeyFromPEM(certBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return signKey, nil
-}
-
-// reads plugin.choria.network.provisioning.signer_cert
-func (a *ChoriaAuth) provisionerJWTSignerKey() (*rsa.PublicKey, error) {
-	certBytes, err := os.ReadFile(a.provisioningTokenSigner)
-	if err != nil {
-		return nil, err
-	}
-
-	signKey, err := jwt.ParseRSAPublicKeyFromPEM(certBytes)
-	if err != nil {
-		return nil, err
-	}
-
-	return signKey, nil
+	return claims.CallerID, nil
 }
 
 func (a *ChoriaAuth) setClientPermissions(user *server.User, caller string) {
