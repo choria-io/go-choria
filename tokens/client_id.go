@@ -26,8 +26,8 @@ type ClientPermissions struct {
 	// ElectionUser allows using leader elections
 	ElectionUser bool `json:"election_user,omitempty"`
 
-	// SystemUser has access to all subjects
-	SystemUser bool `json:"system_user,omitempty"`
+	// OrgAdmin has access to all subjects
+	OrgAdmin bool `json:"org_admin,omitempty"`
 }
 
 // ClientIDClaims represents a user and all AAA Authenticators should create a JWT using this format

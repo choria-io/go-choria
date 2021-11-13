@@ -28,7 +28,7 @@ var _ = Describe("ClientIDClaims", func() {
 	)
 
 	BeforeEach(func() {
-		perms = &ClientPermissions{SystemUser: true}
+		perms = &ClientPermissions{OrgAdmin: true}
 		claims, err := NewClientIDClaims("up=ginkgo", []string{"rpcutil"}, "choria", map[string]string{"group": "admins"}, "// opa policy", "Ginkgo", time.Hour, perms)
 		Expect(err).ToNot(HaveOccurred())
 		validToken, err = SignToken(claims, loadPriKey("testdata/signer-key.pem"))
@@ -70,7 +70,7 @@ var _ = Describe("ClientIDClaims", func() {
 			Expect(claims.IssuedAt.Time).To(BeTemporally("~", time.Now(), time.Second))
 			Expect(claims.ExpiresAt.Time).To(BeTemporally("~", time.Now().Add(time.Hour), time.Second))
 			Expect(claims.Permissions).To(Equal(perms))
-			Expect(claims.Permissions.SystemUser).To(BeTrue())
+			Expect(claims.Permissions.OrgAdmin).To(BeTrue())
 		})
 	})
 

@@ -695,7 +695,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		Describe("System User", func() {
 			It("Should should set correct permissions", func() {
 				auth.anonTLS = true
-				auth.setClientPermissions(user, "", &tokens.ClientPermissions{SystemUser: true}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientPermissions{OrgAdmin: true}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: []string{">"},
 				}))

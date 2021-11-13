@@ -425,8 +425,8 @@ func (a *ChoriaAuth) setElectionPermissions(user *server.User, subs []string, pu
 }
 
 func (a *ChoriaAuth) setPermissions(user *server.User, caller string, perms *tokens.ClientPermissions, log *logrus.Entry) (pubs []string, subs []string, err error) {
-	if perms != nil && perms.SystemUser {
-		log.Warnf("Granting user access to all subjects (SystemUser)")
+	if perms != nil && perms.OrgAdmin {
+		log.Warnf("Granting user access to all subjects (OrgAdmin)")
 		return allSubjects, allSubjects, nil
 	}
 
