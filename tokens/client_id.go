@@ -43,8 +43,8 @@ type ClientIDClaims struct {
 	// OrganizationUnit is currently unused but will indicate the server account a user should belong to, set to 'choria' now
 	OrganizationUnit string `json:"ou,omitempty"`
 
-	// UserProperties is a list of arbitrary properties that can be set for a user, custom signers can use this to perform additional AAA
-	UserProperties map[string]string `json:"properties,omitempty"`
+	// UserProperties is a list of arbitrary properties that can be set for a user, OPA Policies in the token can access these
+	UserProperties map[string]string `json:"user_properties,omitempty"`
 
 	// OPAPolicy is a Open Policy Agent document to be used by the signer to limit the users actions
 	OPAPolicy string `json:"opa_policy,omitempty"`
