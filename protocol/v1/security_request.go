@@ -39,7 +39,7 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 
 	r.Signature = "insecure"
 
-	if protocol.IsSecure() {
+	if protocol.IsSecure() && !protocol.IsRemoteSignerAgent(request.Agent()) {
 		var signature []byte
 
 		signature, err = r.security.SignString(j)
@@ -50,7 +50,7 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 		r.Signature = base64.StdEncoding.EncodeToString(signature)
 	}
 
-	r.MessageBody = string(j)
+	r.MessageBody = j
 
 	return
 }

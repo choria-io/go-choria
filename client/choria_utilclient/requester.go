@@ -96,7 +96,7 @@ func (r *requester) do(ctx context.Context, handler func(pr protocol.Reply, r *r
 	}
 
 	if !r.client.clientOpts.progress {
-		r.client.infof("Invoking %s#%s action with %#v", r.client.ddl.Metadata.Name, r.action, r.args)
+		r.client.debugf("Invoking %s#%s action with %#v", r.client.ddl.Metadata.Name, r.action, r.args)
 	}
 
 	res, err := agent.Do(ctx, r.action, r.args, opts...)

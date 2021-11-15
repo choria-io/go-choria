@@ -34,7 +34,7 @@ func (s *aaaServiceRPC) Sign(ctx context.Context, request []byte, cfg inter.Requ
 		return nil, err
 	}
 
-	res, err := signer.Sign(string(request), string(token)).Do(ctx)
+	res, err := signer.OptionWorkers(1).Sign(string(request), string(token)).Do(ctx)
 	if err != nil {
 		return nil, err
 	}
