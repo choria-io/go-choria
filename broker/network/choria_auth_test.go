@@ -736,7 +736,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						"$JS.API.CONSUMER.INFO.*.*",
 						"$JS.API.CONSUMER.MSG.NEXT.*.*",
 						"$JS.ACK.>",
-						"$JS.FC."),
+						"$JS.FC.>"),
 				}))
 			})
 		})

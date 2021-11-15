@@ -788,7 +788,8 @@ func (s *FileSecurity) certCacheDir() string {
 // use that to determine the cache path
 func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) (should bool, privileged bool, savename string) {
 	// Checks if it was signed by the CA but without any name validation
-	if err := s.VerifyCertificate(data, ""); err != nil {
+	err := s.VerifyCertificate(data, "")
+	if err != nil {
 		s.log.Warnf("Received certificate '%s' certificate did not pass verification: %s", name, err)
 		return false, false, name
 	}
@@ -814,7 +815,8 @@ func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) (should b
 
 	// At this point we know ifs not privileged so we verify again but this time also check the name matches what
 	// is in the cert since at this point it must match the caller id name
-	if err := s.VerifyCertificate(data, name); err != nil {
+	err = s.VerifyCertificate(data, name)
+	if err != nil {
 		s.log.Warnf("Received certificate '%s' did not pass verification: %s", name, err)
 		return false, false, name
 	}
@@ -825,6 +827,7 @@ func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) (should b
 	}
 
 	s.log.Warnf("Received certificate '%s' does not match the allowed list '%s'", name, s.conf.AllowList)
+
 	return false, false, name
 }
 
