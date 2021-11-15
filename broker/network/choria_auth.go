@@ -169,7 +169,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	// else its default open like users with certs
 	case (a.anonTLS || caller != "") && a.remoteInClientAllowList(remote):
 		log = log.WithField("caller", caller)
-		log.Debugf("Setting client client permissions")
+		log.Debugf("Setting client permissions")
 		a.setClientPermissions(user, caller, perms, log)
 
 	// Else in the case where an allow list is configured we set server permissions on other conns
@@ -388,7 +388,7 @@ func (a *ChoriaAuth) setStreamsUserPermissions(user *server.User, subs []string,
 		"$JS.API.CONSUMER.INFO.*.*",
 		"$JS.API.CONSUMER.MSG.NEXT.*.*",
 		"$JS.ACK.>",
-		"$JS.FC.")
+		"$JS.FC.>")
 
 	return subs, pubs
 }
@@ -477,7 +477,11 @@ func (a *ChoriaAuth) setClientPermissions(user *server.User, caller string, perm
 		user.Permissions.Publish.Allow = pubs
 	}
 
-	log.Debugf("Setting permissions: %#v", user.Permissions)
+	log.Debugf("Setting sub permissions: %#v", user.Permissions.Subscribe)
+	log.Debugf("Setting pub permissions: %#v", user.Permissions.Publish)
+	if user.Permissions.Response != nil {
+		log.Debugf("Setting resp permissions: %#v", user.Permissions.Response)
+	}
 }
 
 func (a *ChoriaAuth) setServerPermissions(user *server.User) {

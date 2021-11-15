@@ -27,7 +27,7 @@ func (srv *Instance) handleRawMessage(ctx context.Context, wg *sync.WaitGroup, r
 		return
 	}
 
-	sreq, err := srv.fw.NewSecureRequestFromTransport(transport, false)
+	sreq, err := srv.fw.NewSecureRequestFromTransport(transport, srv.cfg.DisableSecurityProviderVerify)
 	if err != nil {
 		unvalidatedCtr.WithLabelValues(srv.cfg.Identity).Inc()
 		srv.log.Errorf("Could not decode incoming request: %s", err)
