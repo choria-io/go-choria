@@ -2,6 +2,10 @@
 
 package choria_registryclient
 
+func (c *ChoriaRegistryClient) debugf(msg string, a ...interface{}) {
+	c.clientOpts.logger.Debugf(msg, a...)
+}
+
 func (c *ChoriaRegistryClient) infof(msg string, a ...interface{}) {
 	c.clientOpts.logger.Infof(msg, a...)
 }

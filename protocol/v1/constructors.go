@@ -173,7 +173,7 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage, security Sec
 func NewSecureRequest(request protocol.Request, security SecurityProvider) (secure protocol.SecureRequest, err error) {
 	pub := []byte("insecure")
 
-	if protocol.IsSecure() {
+	if protocol.IsSecure() && !protocol.IsRemoteSignerAgent(request.Agent()) {
 		pub, err = security.PublicCertTXT()
 		if err != nil {
 			err = fmt.Errorf("could not retrieve Public Certificate from the security subsystem: %s", err)

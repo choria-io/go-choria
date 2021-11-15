@@ -96,36 +96,44 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 
 		fmt.Println()
 		fmt.Printf("Security Configuration: \n\n")
-		errs, _ := c.ValidateSecurity()
-		fmt.Printf("     Security Provider: %s\n", strings.Title(c.SecurityProvider()))
-		if len(errs) == 0 {
-			fmt.Printf("        Valid Security: %s\n", c.Colorize("green", "yes"))
+		if cfg.Choria.ClientAnonTLS {
+			fmt.Printf("     Security Provider: Using Anonymous TLS\n")
 		} else {
-			fmt.Printf("        Valid Security: %s\n", c.Colorize("red", "no"))
-			for i, err := range errs {
-				if i == 0 {
-					fmt.Printf("       Security Errors: %s\n", err)
-					continue
+			errs, _ := c.ValidateSecurity()
+			fmt.Printf("     Security Provider: %s\n", strings.Title(c.SecurityProvider()))
+			if len(errs) == 0 {
+				fmt.Printf("        Valid Security: %s\n", c.Colorize("green", "yes"))
+			} else {
+				fmt.Printf("        Valid Security: %s\n", c.Colorize("red", "no"))
+				for i, err := range errs {
+					if i == 0 {
+						fmt.Printf("       Security Errors: %s\n", err)
+						continue
+					}
+					fmt.Printf("                        %s\n", err)
 				}
-				fmt.Printf("                        %s\n", err)
 			}
 		}
+
+		fmt.Printf("             Caller ID: %s\n", c.CallerID())
 		if c.OverrideCertname() != "" {
 			fmt.Printf("              Certname: %s\n", c.OverrideCertname())
 		} else {
 			fmt.Printf("              Certname: %s\n", c.Certname())
 		}
-		fmt.Printf("             Caller ID: %s\n", c.CallerID())
+
 		if c.Config.Choria.PKCS11DriverFile != "" {
 			fmt.Printf("          PKC11 Driver: %s (%s)\n", c.Config.Choria.PKCS11DriverFile, cc.checkFileExist(c.Config.Choria.PKCS11DriverFile))
 			fmt.Printf("           PKCS11 Slot: %d\n", c.Config.Choria.PKCS11Slot)
 		}
+
 		if c.Config.Choria.FileSecurityKey != "" {
 			fmt.Printf("           Certificate: %s (%s)\n", c.Config.Choria.FileSecurityCertificate, cc.checkFileExist(c.Config.Choria.FileSecurityCertificate))
 			fmt.Printf("                   Key: %s (%s)\n", c.Config.Choria.FileSecurityKey, cc.checkFileExist(c.Config.Choria.FileSecurityKey))
 			fmt.Printf("                    CA: %s (%s)\n", c.Config.Choria.FileSecurityCA, cc.checkFileExist(c.Config.Choria.FileSecurityCA))
 			fmt.Printf("                 Cache: %s (%s)\n", c.Config.Choria.FileSecurityCache, cc.checkFileExist(c.Config.Choria.FileSecurityCache))
 		}
+
 		if c.Config.Choria.RemoteSignerService {
 			fmt.Printf("        Request Signer: Choria AAA Service\n")
 		} else if c.Config.Choria.RemoteSignerURL != "" {
