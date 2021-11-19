@@ -8,6 +8,7 @@ import (
 	"crypto/ed25519"
 	"crypto/md5"
 	"crypto/tls"
+	"encoding/base64"
 	"encoding/hex"
 	"fmt"
 	"net"
@@ -145,7 +146,12 @@ func (a *ChoriaAuth) verifyNonceSignature(nonce []byte, sig string, pks string) 
 		return false, fmt.Errorf("invalid nonce signature")
 	}
 
-	if !ed25519.Verify(pubK, nonce, []byte(sig)) {
+	sigBytes, err := base64.RawURLEncoding.DecodeString(sig)
+	if err != nil {
+		return false, fmt.Errorf("invalid url encoded signature: %s", err)
+	}
+
+	if !ed25519.Verify(pubK, nonce, sigBytes) {
 		return false, fmt.Errorf("nonce signature did not verify using pub key in the jwt")
 	}
 
@@ -217,7 +223,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 		}
 		user.Username = caller
 
-		log = log.WithFields(logrus.Fields{"jwt_client": true, "caller": caller})
+		log = log.WithField("caller", caller)
 		log.Debugf("Extracted caller id %s from JWT token", caller)
 	}
 
@@ -395,6 +401,10 @@ func (a *ChoriaAuth) parseClientIDJWT(jwts string) (caller string, pubK string, 
 
 	if claims.CallerID == emptyString {
 		return "", "", nil, fmt.Errorf("no callerid in claims")
+	}
+
+	if claims.PublicKey == emptyString {
+		return "", "", nil, fmt.Errorf("no public key in claims")
 	}
 
 	return claims.CallerID, claims.PublicKey, claims.Permissions, nil

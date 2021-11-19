@@ -12,6 +12,7 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"crypto/x509/pkix"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/pem"
 	"io"
@@ -298,7 +299,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			It("Should fail for invalid nonce signatures", func() {
 				ok, err := auth.verifyNonceSignature([]byte("toomanysecrets"), "x", hex.EncodeToString(edPublicKey))
 				Expect(ok).To(BeFalse())
-				Expect(err).To(MatchError("nonce signature did not verify using pub key in the jwt"))
+				Expect(err).To(MatchError("invalid url encoded signature: illegal base64 data at input byte 0"))
 			})
 
 			It("Should pass correct signatures", func() {
@@ -308,7 +309,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(sig).To(HaveLen(64))
 
-				ok, err := auth.verifyNonceSignature(nonce, string(sig), hex.EncodeToString(edPublicKey))
+				ok, err := auth.verifyNonceSignature(nonce, base64.RawURLEncoding.EncodeToString(sig), hex.EncodeToString(edPublicKey))
 				Expect(err).ToNot(HaveOccurred())
 				Expect(ok).To(BeTrue())
 			})
@@ -344,7 +345,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		It("Should set strict permissions for a client JWT user", func() {
 			sig, err := choria.Ed25519Sign(edPrivateKey, []byte("toomanysecrets"))
 			Expect(err).ToNot(HaveOccurred())
-			copts.Sig = string(sig)
+			copts.Sig = base64.RawURLEncoding.EncodeToString(sig)
 
 			mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
 			mockClient.EXPECT().GetNonce().Return([]byte("toomanysecrets"))
@@ -741,9 +742,13 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		})
 
 		It("Should extract the caller", func() {
+			edPublicKey, _, err := choria.Ed25519KeyPair()
+			Expect(err).ToNot(HaveOccurred())
+
 			auth.jwtSigner = filepath.Join(td, "public.pem")
 			signed := createSignedJWT(privateKey, map[string]interface{}{
-				"purpose": "choria_client_id",
+				"purpose":    "choria_client_id",
+				"public_key": hex.EncodeToString(edPublicKey),
 			})
 
 			caller, _, perms, err := auth.parseClientIDJWT(signed)
