@@ -641,8 +641,16 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		if err != nil {
 			return fmt.Errorf("no signer token found while connecting to an anonymous TLS server: %s", err)
 		}
-
 		options = append(options, nats.Token(token))
+
+		seedFile, err := conn.fw.SignerSeedFile()
+		if err == nil && seedFile != "" {
+			options = append(options, nats.UserJWT(func() (string, error) {
+				return token, nil
+			}, func(n []byte) ([]byte, error) {
+				return Ed25519SignWithSeedFile(seedFile, n)
+			}))
+		}
 
 	case !(conn.config.DisableTLS || conn.fw.ShouldUseNGS()):
 		tlsc, err := conn.fw.ClientTLSConfig()

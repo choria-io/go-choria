@@ -44,11 +44,26 @@ func ParseToken(token string, claims jwt.Claims, pk *rsa.PublicKey) error {
 	return err
 }
 
+// ParseTokenUnverified parses token into claims and DOES not verify the token validity in any way
+func ParseTokenUnverified(token string) (jwt.MapClaims, error) {
+	parser := new(jwt.Parser)
+	claims := new(jwt.MapClaims)
+	_, _, err := parser.ParseUnverified(token, claims)
+	return *claims, err
+}
+
 // TokenPurpose parses, without validating, token and checks for a Purpose field in it
 func TokenPurpose(token string) Purpose {
 	parser := new(jwt.Parser)
 	claims := StandardClaims{}
 	parser.ParseUnverified(token, &claims)
+
+	if claims.Purpose == UnknownPurpose {
+		if claims.RegisteredClaims.Subject == string(ProvisioningPurpose) {
+			return ProvisioningPurpose
+		}
+	}
+
 	return claims.Purpose
 }
 

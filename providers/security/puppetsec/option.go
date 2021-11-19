@@ -23,19 +23,18 @@ type Option func(*PuppetSecurity) error
 func WithChoriaConfig(bi BuildInfoProvider, c *config.Config) Option {
 	return func(p *PuppetSecurity) error {
 		cfg := Config{
-			AllowList:                    c.Choria.CertnameWhitelist,
-			DisableTLSVerify:             c.DisableTLSVerify,
-			PrivilegedUsers:              c.Choria.PrivilegedUsers,
-			SSLDir:                       c.Choria.SSLDir,
-			PuppetCAHost:                 c.Choria.PuppetCAHost,
-			PuppetCAPort:                 c.Choria.PuppetCAPort,
-			Identity:                     c.Identity,
-			AlwaysOverwriteCache:         c.Choria.SecurityAlwaysOverwriteCache,
-			RemoteSignerURL:              c.Choria.RemoteSignerURL,
-			RemoteSignerTokenFile:        c.Choria.RemoteSignerTokenFile,
-			RemoteSignerTokenEnvironment: c.Choria.RemoteSignerTokenEnvironment,
-			TLSConfig:                    tlssetup.TLSConfig(c),
-			IdentitySuffix:               bi.ClientIdentitySuffix(),
+			AllowList:             c.Choria.CertnameWhitelist,
+			DisableTLSVerify:      c.DisableTLSVerify,
+			PrivilegedUsers:       c.Choria.PrivilegedUsers,
+			SSLDir:                c.Choria.SSLDir,
+			PuppetCAHost:          c.Choria.PuppetCAHost,
+			PuppetCAPort:          c.Choria.PuppetCAPort,
+			Identity:              c.Identity,
+			AlwaysOverwriteCache:  c.Choria.SecurityAlwaysOverwriteCache,
+			RemoteSignerURL:       c.Choria.RemoteSignerURL,
+			RemoteSignerTokenFile: c.Choria.RemoteSignerTokenFile,
+			TLSConfig:             tlssetup.TLSConfig(c),
+			IdentitySuffix:        bi.ClientIdentitySuffix(),
 		}
 
 		if cfg.IdentitySuffix == "" {

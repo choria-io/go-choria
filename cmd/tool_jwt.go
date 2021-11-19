@@ -8,11 +8,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/tokens"
 )
 
@@ -36,7 +38,7 @@ func (j *tJWTCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		j.cmd = tool.Cmd().Command("jwt", "Create or validate JWT files")
 		j.cmd.Arg("file", "The JWT file to act on").Required().StringVar(&j.file)
-		j.cmd.Arg("certificate", "Path to a certificate used to validate or sign the JWT").Required().ExistingFileVar(&j.validateCert)
+		j.cmd.Arg("certificate", "Path to a certificate used to validate or sign the JWT").ExistingFileVar(&j.validateCert)
 		j.cmd.Flag("insecure", "Disable TLS security during provisioning").BoolVar(&j.insecure)
 		j.cmd.Flag("token", "Token used to secure access to the provisioning agent").StringVar(&j.token)
 		j.cmd.Flag("urls", "URLs to connect to for provisioning").StringsVar(&j.urls)
@@ -81,13 +83,17 @@ func (j *tJWTCommand) Run(wg *sync.WaitGroup) (err error) {
 	return nil
 }
 
-func (j *tJWTCommand) validateJWT() error {
-	token, err := os.ReadFile(j.file)
-	if err != nil {
-		return fmt.Errorf("could not read token: %s", err)
-	}
+func (j *tJWTCommand) validateProvisionToken(token string) error {
+	var claims *tokens.ProvisioningClaims
+	var err error
+	var validated bool
 
-	claims, err := tokens.ParseProvisioningTokenWithKeyfile(string(token), j.validateCert)
+	if j.validateCert == "" {
+		claims, err = tokens.ParseProvisionTokenUnverified(token)
+	} else {
+		claims, err = tokens.ParseProvisioningTokenWithKeyfile(token, j.validateCert)
+		validated = true
+	}
 	if err != nil {
 		return fmt.Errorf("could not parse token: %s", err)
 	}
@@ -96,7 +102,12 @@ func (j *tJWTCommand) validateJWT() error {
 		claims.Token = "*****"
 	}
 
-	fmt.Printf("JWT Token %s\n\n", j.file)
+	if validated {
+		fmt.Printf("Validated Provisioning Token %s\n\n", j.file)
+	} else {
+		fmt.Printf("Provisioning Token %s\n\n", j.file)
+	}
+
 	fmt.Printf("                         Token: %s\n", claims.Token)
 	fmt.Printf("                        Secure: %t\n", claims.Secure)
 	if claims.SRVDomain != "" {
@@ -129,10 +140,111 @@ func (j *tJWTCommand) validateJWT() error {
 	return nil
 }
 
+func (j *tJWTCommand) validateClientToken(token string) error {
+	var claims *tokens.ClientIDClaims
+	var err error
+	var validated bool
+
+	if j.validateCert == "" {
+		claims, err = tokens.ParseClientIDTokenUnverified(token)
+	} else {
+		claims, err = tokens.ParseClientIDTokenWithKeyfile(token, j.validateCert, true)
+		validated = true
+	}
+	if err != nil {
+		return fmt.Errorf("could not parse token: %s", err)
+	}
+
+	if validated {
+		fmt.Printf("Validated Client Identification Token %s\n\n", j.file)
+	} else {
+		fmt.Printf("Client Identification Token %s\n\n", j.file)
+	}
+
+	fmt.Printf("          Caller ID: %s\n", claims.CallerID)
+	if claims.OrganizationUnit != "" {
+		fmt.Printf("  Organization Unit: %s\n", claims.OrganizationUnit)
+	}
+	if len(claims.AllowedAgents) > 0 {
+		fmt.Printf("     Allowed Agents: %s\n", strings.Join(claims.AllowedAgents, ", "))
+	}
+	if claims.Permissions != nil {
+		fmt.Println(" Broker Permissions:")
+		if claims.Permissions.ElectionUser {
+			fmt.Println("      Can use Leader Elections")
+		}
+		if claims.Permissions.EventsViewer {
+			fmt.Println("      Can view Lifecycle and Autonomous Agent events")
+		}
+		if claims.Permissions.StreamsUser {
+			fmt.Println("      Can use Choria Streams")
+		}
+		if claims.Permissions.StreamsAdmin {
+			fmt.Println("      Can administer Choria Streams")
+		}
+		if claims.Permissions.OrgAdmin {
+			fmt.Println("      Can observe all traffic on all subjects")
+		}
+	}
+
+	if len(claims.UserProperties) > 0 {
+		jc, err := json.MarshalIndent(claims.UserProperties, strings.Repeat(" ", 21), "  ")
+		if err != nil {
+			return nil
+		}
+		fmt.Printf("    User Properties: %s\n", string(jc))
+	}
+
+	jc, err := json.MarshalIndent(claims.StandardClaims, strings.Repeat(" ", 21), "  ")
+	if err != nil {
+		return nil
+	}
+	fmt.Printf("    Standard Claims: %s\n", string(jc))
+
+	if len(claims.OPAPolicy) > 0 {
+		padding := strings.Repeat(" ", 21)
+		lines := strings.Split(claims.OPAPolicy, "\n")
+		fmt.Printf("         OPA Policy: %s\n", lines[0])
+		for _, line := range lines[1:] {
+			fmt.Printf("%s%s\n", padding, line)
+		}
+	}
+
+	return nil
+}
+
+func (j *tJWTCommand) validateAnyToken(token string) error {
+	claims, err := tokens.ParseTokenUnverified(token)
+	if err != nil {
+		return err
+	}
+
+	return iu.DumpJSONIndent(claims)
+}
+
+func (j *tJWTCommand) validateJWT() error {
+	token, err := os.ReadFile(j.file)
+	if err != nil {
+		return fmt.Errorf("could not read token: %s", err)
+	}
+
+	ts := string(token)
+
+	switch tokens.TokenPurpose(ts) {
+	case tokens.ProvisioningPurpose:
+		return j.validateProvisionToken(ts)
+
+	case tokens.ClientIDPurpose:
+		return j.validateClientToken(ts)
+
+	default:
+		return j.validateAnyToken(ts)
+	}
+}
+
 func (j *tJWTCommand) createJWT() error {
 	if j.token == "" {
 		survey.AskOne(&survey.Password{Message: "Provisioning Token"}, &j.token, survey.WithValidator(survey.Required))
-
 	}
 
 	if j.srvDomain == "" && len(j.urls) == 0 {

@@ -145,9 +145,6 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 		if c.Config.Choria.RemoteSignerTokenFile != "" {
 			fmt.Printf("            Token File: %s\n", c.Config.Choria.RemoteSignerTokenFile)
 		}
-		if c.Config.Choria.RemoteSignerTokenEnvironment != "" {
-			fmt.Printf("     Token Environment: %s\n", c.Config.Choria.RemoteSignerTokenEnvironment)
-		}
 
 		fmt.Println()
 		fmt.Println("Connectivity:")

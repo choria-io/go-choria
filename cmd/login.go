@@ -6,17 +6,23 @@ package cmd
 
 import (
 	"bytes"
+	"crypto/ed25519"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"sync"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/choria-io/go-choria/choria"
 	iu "github.com/choria-io/go-choria/internal/util"
 )
 
@@ -45,20 +51,49 @@ func (p *loginCommand) Run(wg *sync.WaitGroup) error {
 	return p.login()
 }
 
+func (p *loginCommand) sign(user string, pass string, timeStamp string) (signature string, pub string, err error) {
+	seed, err := c.SignerSeedFile()
+	if err != nil {
+		return "", "", err
+	}
+
+	var pubK ed25519.PublicKey
+	var priK ed25519.PrivateKey
+
+	if iu.FileIsRegular(seed) {
+		pubK, priK, err = choria.Ed25519KeyPairFromSeedFile(seed)
+		if err != nil {
+			return "", "", fmt.Errorf("could not load keypair: %s", err)
+		}
+	} else {
+		pubK, priK, err = choria.Ed25519KeyPairToFile(seed)
+		if err != nil {
+			return "", "", fmt.Errorf("could not generate keypair: %s", err)
+		}
+	}
+
+	sig, err := choria.Ed25519Sign(priK, []byte(fmt.Sprintf("%s:%s:%s", timeStamp, user, pass)))
+	if err != nil {
+		return "", "", fmt.Errorf("could not sign request: %s", err)
+	}
+
+	return hex.EncodeToString(sig), hex.EncodeToString(pubK), nil
+}
+
 func (p *loginCommand) login() error {
-	loginURL := cfg.Option("plugin.login.aaasvc.login.url", "")
-	if loginURL == "" {
+	loginURLs := cfg.Choria.AAAServiceLoginURLs
+	if len(loginURLs) == 0 {
 		return fmt.Errorf("please configure a login server URL using plugin.login.aaasvc.login.url")
 	}
 
-	if cfg.Choria.RemoteSignerTokenFile == "" && cfg.Choria.RemoteSignerTokenEnvironment == "" {
+	if cfg.Choria.RemoteSignerTokenFile == "" {
 		return fmt.Errorf("no token configuration set")
 	}
 
 	user := ""
 	pass := ""
 
-	err := survey.AskOne(&survey.Input{Message: "Username: ", Default: os.Getenv("USER")}, &user, survey.WithValidator(survey.Required))
+	err = survey.AskOne(&survey.Input{Message: "Username: ", Default: os.Getenv("USER")}, &user, survey.WithValidator(survey.Required))
 	if err != nil {
 		return err
 	}
@@ -68,13 +103,27 @@ func (p *loginCommand) login() error {
 		return err
 	}
 
-	request := map[string]string{"username": user, "password": pass}
+	nowString := strconv.Itoa(int(time.Now().Unix()))
+	sig, pub, err := p.sign(user, pass, nowString)
+	if err != nil {
+		return err
+	}
+
+	request := map[string]interface{}{
+		"username":   user,
+		"password":   pass,
+		"signature":  sig,
+		"public_key": pub,
+		"timestamp":  nowString,
+	}
 	jr, err := json.Marshal(&request)
 	if err != nil {
 		return err
 	}
 
-	uri, err := url.Parse(loginURL)
+	rand.Shuffle(len(loginURLs), func(i, j int) { loginURLs[i], loginURLs[j] = loginURLs[j], loginURLs[i] })
+
+	uri, err := url.Parse(loginURLs[0])
 	if err != nil {
 		return err
 	}
@@ -118,41 +167,23 @@ func (p *loginCommand) login() error {
 		return fmt.Errorf("no token received")
 	}
 
-	switch {
-	case cfg.Choria.RemoteSignerTokenFile != "":
-		abs, err := filepath.Abs(cfg.Choria.RemoteSignerTokenFile)
-		if err != nil {
-			return fmt.Errorf("cannot determine parent directory for token file: %s", err)
-		}
-		parent := filepath.Dir(abs)
-		if !iu.FileIsDir(parent) {
-			err = os.MkdirAll(parent, 0700)
-			if err != nil {
-				return err
-			}
-		}
-
-		err = os.WriteFile(abs, []byte(login["token"]), 0600)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("Token saved to %s\n", cfg.Choria.RemoteSignerTokenFile)
-	case cfg.Choria.RemoteSignerTokenEnvironment != "":
-		if os.Getenv("SHELL") == "" {
-			return fmt.Errorf("cannot start new shell, please set SHELL environment")
-		}
-
-		err = os.Setenv(cfg.Choria.RemoteSignerTokenEnvironment, login["token"])
-		if err != nil {
-			return err
-		}
-
-		cmd := exec.Command(os.Getenv("SHELL"))
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		cmd.Stdin = os.Stdin
-		return cmd.Run()
+	abs, err := filepath.Abs(cfg.Choria.RemoteSignerTokenFile)
+	if err != nil {
+		return fmt.Errorf("cannot determine parent directory for token file: %s", err)
 	}
+	parent := filepath.Dir(abs)
+	if !iu.FileIsDir(parent) {
+		err = os.MkdirAll(parent, 0700)
+		if err != nil {
+			return err
+		}
+	}
+
+	err = os.WriteFile(abs, []byte(login["token"]), 0600)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Token saved to %s\n", cfg.Choria.RemoteSignerTokenFile)
 
 	return nil
 }

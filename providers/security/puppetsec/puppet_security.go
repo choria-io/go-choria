@@ -142,22 +142,21 @@ func (s *PuppetSecurity) reinit() error {
 	var err error
 
 	fc := filesec.Config{
-		AllowList:                    s.conf.AllowList,
-		DisableTLSVerify:             s.conf.DisableTLSVerify,
-		PrivilegedUsers:              s.conf.PrivilegedUsers,
-		CA:                           s.caPath(),
-		Cache:                        s.certCacheDir(),
-		Certificate:                  s.publicCertPath(),
-		Key:                          s.privateKeyPath(),
-		Identity:                     s.conf.Identity,
-		AlwaysOverwriteCache:         s.conf.AlwaysOverwriteCache,
-		RemoteSignerURL:              s.conf.RemoteSignerURL,
-		RemoteSignerTokenFile:        s.conf.RemoteSignerTokenFile,
-		RemoteSignerTokenEnvironment: s.conf.RemoteSignerTokenEnvironment,
-		TLSConfig:                    s.conf.TLSConfig,
-		IdentitySuffix:               s.conf.IdentitySuffix,
-		BackwardCompatVerification:   true,
-		RemoteSigner:                 s.conf.RemoteSigner,
+		AllowList:                  s.conf.AllowList,
+		DisableTLSVerify:           s.conf.DisableTLSVerify,
+		PrivilegedUsers:            s.conf.PrivilegedUsers,
+		CA:                         s.caPath(),
+		Cache:                      s.certCacheDir(),
+		Certificate:                s.publicCertPath(),
+		Key:                        s.privateKeyPath(),
+		Identity:                   s.conf.Identity,
+		AlwaysOverwriteCache:       s.conf.AlwaysOverwriteCache,
+		RemoteSignerURL:            s.conf.RemoteSignerURL,
+		RemoteSignerTokenFile:      s.conf.RemoteSignerTokenFile,
+		TLSConfig:                  s.conf.TLSConfig,
+		IdentitySuffix:             s.conf.IdentitySuffix,
+		BackwardCompatVerification: true,
+		RemoteSigner:               s.conf.RemoteSigner,
 	}
 
 	s.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(s.log))

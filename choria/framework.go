@@ -673,27 +673,31 @@ func (fw *Framework) UniqueIDFromUnverifiedToken() (caller string, id string, to
 	return caller, fmt.Sprintf("%x", md5.Sum([]byte(caller))), t.Raw, nil
 }
 
+// SignerSeedFile is the path to the seed file for JWT auth
+func (fw *Framework) SignerSeedFile() (f string, err error) {
+	if fw.Config.Choria.RemoteSignerTokenSeedFile != "" {
+		return fw.Config.Choria.RemoteSignerTokenSeedFile, nil
+	}
+
+	if fw.Config.Choria.RemoteSignerTokenFile == "" {
+		return "", fmt.Errorf("no seed file or token path configured")
+	}
+
+	return fmt.Sprintf("%s.key", strings.TrimSuffix(fw.Config.Choria.RemoteSignerTokenFile, filepath.Ext(fw.Config.Choria.RemoteSignerTokenFile))), nil
+}
+
 // SignerToken retrieves the AAA token used for signing requests
 func (fw *Framework) SignerToken() (token string, err error) {
-	if fw.Config.Choria.RemoteSignerTokenFile == "" && fw.Config.Choria.RemoteSignerTokenEnvironment == "" {
-		return "", fmt.Errorf("no token file or environment variable is defined")
+	if fw.Config.Choria.RemoteSignerTokenFile == "" {
+		return "", fmt.Errorf("no token file defined")
 	}
 
-	if fw.Config.Choria.RemoteSignerTokenFile != "" {
-		tb, err := os.ReadFile(fw.Config.Choria.RemoteSignerTokenFile)
-		if err != nil {
-			return "", fmt.Errorf("could not read token file: %v", err)
-		}
-
-		return strings.TrimSpace(string(tb)), err
+	tb, err := os.ReadFile(fw.Config.Choria.RemoteSignerTokenFile)
+	if err != nil {
+		return "", fmt.Errorf("could not read token file: %v", err)
 	}
 
-	token = os.Getenv(fw.Config.Choria.RemoteSignerTokenEnvironment)
-	if token == "" {
-		return "", fmt.Errorf("did not find a token in environment variable %s", fw.Config.Choria.RemoteSignerTokenEnvironment)
-	}
-
-	return strings.TrimSpace(token), nil
+	return strings.TrimSpace(string(tb)), err
 }
 
 // HTTPClient creates a *http.Client prepared by the security provider with certificates and more set

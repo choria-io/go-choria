@@ -149,6 +149,9 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 		}
 	}
 
+	if choriaAuth.jwtSigner != "" {
+		s.opts.AlwaysEnableNonce = true
+	}
 	s.opts.CustomClientAuthentication = choriaAuth
 
 	return

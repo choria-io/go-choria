@@ -95,6 +95,7 @@ type Framework interface {
 	SetupLogging(debug bool) (err error)
 	ShouldUseNGS() bool
 	SignerToken() (token string, err error)
+	SignerSeedFile() (f string, err error)
 	SupportsProvisioning() bool
 	TLSConfig() (*tls.Config, error)
 	TrySrvLookup(names []string, defaultSrv srvcache.Server) (srvcache.Server, error)
