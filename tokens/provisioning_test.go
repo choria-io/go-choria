@@ -5,6 +5,8 @@
 package tokens
 
 import (
+	"crypto/ed25519"
+	"crypto/rand"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -17,10 +19,15 @@ var _ = Describe("ProvisioningClaims", func() {
 		validToken   string
 		expiredToken string
 		clientToken  string
+		pubK         ed25519.PublicKey
+		err          error
 	)
 
 	BeforeEach(func() {
-		claims, err := NewClientIDClaims("up=ginkgo", []string{"rpcutil"}, "choria", map[string]string{"group": "admins"}, "// opa policy", "Ginkgo", time.Hour, nil)
+		pubK, _, err = ed25519.GenerateKey(rand.Reader)
+		Expect(err).ToNot(HaveOccurred())
+
+		claims, err := NewClientIDClaims("up=ginkgo", []string{"rpcutil"}, "choria", map[string]string{"group": "admins"}, "// opa policy", "Ginkgo", time.Hour, nil, pubK)
 		Expect(err).ToNot(HaveOccurred())
 		clientToken, err = SignToken(claims, loadPriKey("testdata/signer-key.pem"))
 		Expect(err).ToNot(HaveOccurred())

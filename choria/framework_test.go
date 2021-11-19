@@ -97,7 +97,9 @@ var _ = Describe("Choria", func() {
 
 			jwtpath := filepath.Join(td, "good.jwt")
 
-			claims, err := tokens.NewClientIDClaims("up=ginkgo", nil, "choria", nil, "", "Ginkgo", time.Hour, nil)
+			edPub, _, err := Ed25519KeyPair()
+			Expect(err).ToNot(HaveOccurred())
+			claims, err := tokens.NewClientIDClaims("up=ginkgo", nil, "choria", nil, "", "Ginkgo", time.Hour, nil, edPub)
 			Expect(err).ToNot(HaveOccurred())
 
 			signed, err := tokens.SignToken(claims, privateKey)
@@ -130,15 +132,7 @@ var _ = Describe("Choria", func() {
 			It("Should error when there is no way to find a token", func() {
 				t, err := fw.SignerToken()
 				Expect(t).To(BeEmpty())
-				Expect(err).To(MatchError("no token file or environment variable is defined"))
-			})
-
-			It("Should support environment tokens", func() {
-				cfg.Choria.RemoteSignerTokenEnvironment = "GINKGO_TOKEN"
-				os.Setenv("GINKGO_TOKEN", "FOOFOO")
-				t, err := fw.SignerToken()
-				Expect(err).ToNot(HaveOccurred())
-				Expect(t).To(Equal("FOOFOO"))
+				Expect(err).To(MatchError("no token file defined"))
 			})
 
 			It("Should support file tokens", func() {

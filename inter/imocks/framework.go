@@ -1478,6 +1478,21 @@ func (mr *MockFrameworkMockRecorder) ShouldUseNGS() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShouldUseNGS", reflect.TypeOf((*MockFramework)(nil).ShouldUseNGS))
 }
 
+// SignerSeedFile mocks base method.
+func (m *MockFramework) SignerSeedFile() (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SignerSeedFile")
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SignerSeedFile indicates an expected call of SignerSeedFile.
+func (mr *MockFrameworkMockRecorder) SignerSeedFile() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignerSeedFile", reflect.TypeOf((*MockFramework)(nil).SignerSeedFile))
+}
+
 // SignerToken mocks base method.
 func (m *MockFramework) SignerToken() (string, error) {
 	m.ctrl.T.Helper()

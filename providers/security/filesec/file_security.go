@@ -87,9 +87,6 @@ type Config struct {
 	// RemoteSignerTokenFile is a file with a token for access to the remote signer
 	RemoteSignerTokenFile string
 
-	// RemoteSignerTokenEnvironment is an environment variable that will hold the signer token
-	RemoteSignerTokenEnvironment string
-
 	// TLSSetup is the shared TLS configuration state between security providers
 	TLSConfig *tlssetup.Config
 
@@ -141,25 +138,16 @@ func (s *FileSecurity) Provider() string {
 }
 
 func (s *FileSecurity) RemoteSignerToken() ([]byte, error) {
-	if s.conf.RemoteSignerTokenFile == "" && s.conf.RemoteSignerTokenEnvironment == "" {
-		return nil, fmt.Errorf("no token file or environment variable is defined")
+	if s.conf.RemoteSignerTokenFile == "" {
+		return nil, fmt.Errorf("no token file  defined")
 	}
 
-	if s.conf.RemoteSignerTokenFile != "" {
-		tb, err := os.ReadFile(s.conf.RemoteSignerTokenFile)
-		if err != nil {
-			return bytes.TrimSpace(tb), fmt.Errorf("could not read token file: %v", err)
-		}
-
-		return tb, err
+	tb, err := os.ReadFile(s.conf.RemoteSignerTokenFile)
+	if err != nil {
+		return bytes.TrimSpace(tb), fmt.Errorf("could not read token file: %v", err)
 	}
 
-	token := os.Getenv(s.conf.RemoteSignerTokenEnvironment)
-	if token == "" {
-		return nil, fmt.Errorf("did not find a token in environment variable %s", s.conf.RemoteSignerTokenEnvironment)
-	}
-
-	return bytes.TrimSpace([]byte(token)), nil
+	return tb, err
 }
 
 func (s *FileSecurity) RemoteSignerURL() (*url.URL, error) {

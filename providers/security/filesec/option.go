@@ -26,21 +26,20 @@ type BuildInfoProvider interface {
 // WithChoriaConfig optionally configures the File Security Provider from settings found in a typical Choria configuration
 func WithChoriaConfig(bi BuildInfoProvider, c *config.Config) Option {
 	cfg := Config{
-		AllowList:                    c.Choria.CertnameWhitelist,
-		CA:                           c.Choria.FileSecurityCA,
-		Cache:                        c.Choria.FileSecurityCache,
-		Certificate:                  c.Choria.FileSecurityCertificate,
-		DisableTLSVerify:             c.DisableTLSVerify,
-		Key:                          c.Choria.FileSecurityKey,
-		PrivilegedUsers:              c.Choria.PrivilegedUsers,
-		Identity:                     c.Identity,
-		AlwaysOverwriteCache:         c.Choria.SecurityAlwaysOverwriteCache,
-		RemoteSignerURL:              c.Choria.RemoteSignerURL,
-		RemoteSignerTokenFile:        c.Choria.RemoteSignerTokenFile,
-		RemoteSignerTokenEnvironment: c.Choria.RemoteSignerTokenEnvironment,
-		TLSConfig:                    tlssetup.TLSConfig(c),
-		BackwardCompatVerification:   c.Choria.SecurityAllowLegacyCerts,
-		IdentitySuffix:               bi.ClientIdentitySuffix(),
+		AllowList:                  c.Choria.CertnameWhitelist,
+		CA:                         c.Choria.FileSecurityCA,
+		Cache:                      c.Choria.FileSecurityCache,
+		Certificate:                c.Choria.FileSecurityCertificate,
+		DisableTLSVerify:           c.DisableTLSVerify,
+		Key:                        c.Choria.FileSecurityKey,
+		PrivilegedUsers:            c.Choria.PrivilegedUsers,
+		Identity:                   c.Identity,
+		AlwaysOverwriteCache:       c.Choria.SecurityAlwaysOverwriteCache,
+		RemoteSignerURL:            c.Choria.RemoteSignerURL,
+		RemoteSignerTokenFile:      c.Choria.RemoteSignerTokenFile,
+		TLSConfig:                  tlssetup.TLSConfig(c),
+		BackwardCompatVerification: c.Choria.SecurityAllowLegacyCerts,
+		IdentitySuffix:             bi.ClientIdentitySuffix(),
 	}
 
 	if cfg.IdentitySuffix == "" {

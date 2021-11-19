@@ -5,7 +5,9 @@
 package tokens
 
 import (
+	"crypto/ed25519"
 	"crypto/rsa"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"time"
@@ -28,6 +30,9 @@ type ClientPermissions struct {
 
 	// OrgAdmin has access to all subjects
 	OrgAdmin bool `json:"org_admin,omitempty"`
+
+	// ExtendedServiceLifetime allows a token to have a longer than common life time, suitable for services users
+	ExtendedServiceLifetime bool `json:"service,omitempty"`
 }
 
 // ClientIDClaims represents a user and all AAA Authenticators should create a JWT using this format
@@ -52,11 +57,14 @@ type ClientIDClaims struct {
 	// Permissions sets additional permissions for a client
 	Permissions *ClientPermissions `json:"permissions,omitempty"`
 
+	// PublicKey is a ED25519 public key that will be used to sign requests and the server nonce
+	PublicKey string `json:"public_key,omitempty"`
+
 	StandardClaims
 }
 
 // NewClientIDClaims generates new ClientIDClaims
-func NewClientIDClaims(callerID string, allowedAgents []string, org string, properties map[string]string, opaPolicy string, issuer string, validity time.Duration, perms *ClientPermissions) (*ClientIDClaims, error) {
+func NewClientIDClaims(callerID string, allowedAgents []string, org string, properties map[string]string, opaPolicy string, issuer string, validity time.Duration, perms *ClientPermissions, pk ed25519.PublicKey) (*ClientIDClaims, error) {
 	if issuer == "" {
 		issuer = "Choria"
 	}
@@ -70,6 +78,11 @@ func NewClientIDClaims(callerID string, allowedAgents []string, org string, prop
 		return nil, err
 	}
 
+	pubKey := ""
+	if pk != nil {
+		pubKey = hex.EncodeToString(pk)
+	}
+
 	return &ClientIDClaims{
 		CallerID:         callerID,
 		AllowedAgents:    allowedAgents,
@@ -77,6 +90,7 @@ func NewClientIDClaims(callerID string, allowedAgents []string, org string, prop
 		UserProperties:   properties,
 		OPAPolicy:        opaPolicy,
 		Permissions:      perms,
+		PublicKey:        pubKey,
 		StandardClaims:   *stdClaims,
 	}, nil
 }
@@ -122,6 +136,21 @@ func IsClientIDTokenString(token string) (bool, error) {
 // IsClientIDToken determines if this is a client identifying token
 func IsClientIDToken(claims StandardClaims) bool {
 	return claims.Purpose == ClientIDPurpose
+}
+
+// ParseClientIDTokenUnverified parses the client token in an unverified manner.
+func ParseClientIDTokenUnverified(token string) (*ClientIDClaims, error) {
+	claims := &ClientIDClaims{}
+	_, _, err := new(jwt.Parser).ParseUnverified(token, claims)
+	if err != nil {
+		return nil, err
+	}
+
+	if !IsClientIDToken(claims.StandardClaims) {
+		return nil, fmt.Errorf("token is not a client id token")
+	}
+
+	return claims, nil
 }
 
 // ParseClientIDToken parses token and verifies it with pk

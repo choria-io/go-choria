@@ -101,11 +101,12 @@ type ChoriaPluginConfig struct {
 	SecurityProvider             string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11,certmanager"`                      // The Security Provider to use
 	SecurityAlwaysOverwriteCache bool     `confkey:"plugin.security.always_overwrite_cache" default:"false"`                                                        // Always store new Public Keys to the cache overwriting existing ones
 	SecurityAllowLegacyCerts     bool     `confkey:"plugin.security.support_legacy_certificates" default:"false"`                                                   // Allow certificates without SANs to be used
+	RemoteSignerTokenSeedFile    string   `confkey:"plugin.choria.security.request_signer.seed_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"`  // Path to the seed file used to access a Central Authenticator
 	RemoteSignerTokenFile        string   `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"` // Path to the token used to access a Central Authenticator
-	RemoteSignerTokenEnvironment string   `confkey:"plugin.choria.security.request_signer.token_environment" url:"https://github.com/choria-io/aaasvc"`             // Environment variable to store Central Authenticator tokens
 	RemoteSignerSigningCertFile  string   `confkey:"plugin.choria.security.request_signing_certificate" type:"path_string"`                                         // Path to the public certificate of the key used to sign the JWTs in the Signing Service
 	RemoteSignerURL              string   `confkey:"plugin.choria.security.request_signer.url" url:"https://github.com/choria-io/aaasvc"`                           // URL to the Signing Service
 	RemoteSignerService          bool     `confkey:"plugin.choria.security.request_signer.service" url:"https://github.com/choria-io/aaasvc"`                       // Enables signing requests via Choria RPC requests
+	AAAServiceLoginURLs          []string `confkey:"plugin.login.aaasvc.login.url" url:"https://github.com/choria-io/aaasvc"`                                       // List of URLs to attempt to login against when the remote signer is enabled
 	ClientAnonTLS                bool     `confkey:"plugin.security.client_anon_tls" default:"false"`                                                               // Use anonymous TLS to the Choria brokers from a client, also disables security provider verification - only when a remote signer is set
 
 	FileSecurityCertificate string `confkey:"plugin.security.file.certificate" type:"path_string"` // When using file security provider, the path to the public certificate
