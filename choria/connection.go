@@ -648,6 +648,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 			options = append(options, nats.UserJWT(func() (string, error) {
 				return token, nil
 			}, func(n []byte) ([]byte, error) {
+				conn.log.Debugf("Signing nonce using seed file %s", seedFile)
 				return Ed25519SignWithSeedFile(seedFile, n)
 			}))
 		}
