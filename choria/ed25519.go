@@ -54,7 +54,7 @@ func Ed25519KeyPairToFile(f string) (ed25519.PublicKey, ed25519.PrivateKey, erro
 		return nil, nil, err
 	}
 
-	err = os.WriteFile(f, []byte(hex.EncodeToString(priK.Seed())), 0400)
+	err = os.WriteFile(f, []byte(hex.EncodeToString(priK.Seed())), 0600)
 	if err != nil {
 		return nil, nil, err
 	}
