@@ -6,7 +6,6 @@ package cmd
 
 import (
 	"bytes"
-	"crypto/ed25519"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -23,7 +22,6 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/choria"
-	iu "github.com/choria-io/go-choria/internal/util"
 )
 
 type loginCommand struct {
@@ -57,19 +55,9 @@ func (p *loginCommand) sign(user string, pass string, timeStamp string) (signatu
 		return "", "", err
 	}
 
-	var pubK ed25519.PublicKey
-	var priK ed25519.PrivateKey
-
-	if iu.FileIsRegular(seed) {
-		pubK, priK, err = choria.Ed25519KeyPairFromSeedFile(seed)
-		if err != nil {
-			return "", "", fmt.Errorf("could not load keypair: %s", err)
-		}
-	} else {
-		pubK, priK, err = choria.Ed25519KeyPairToFile(seed)
-		if err != nil {
-			return "", "", fmt.Errorf("could not generate keypair: %s", err)
-		}
+	pubK, priK, err := choria.Ed25519KeyPairToFile(seed)
+	if err != nil {
+		return "", "", fmt.Errorf("could not generate keypair: %s", err)
 	}
 
 	sig, err := choria.Ed25519Sign(priK, []byte(fmt.Sprintf("%s:%s:%s", timeStamp, user, pass)))
@@ -99,6 +87,16 @@ func (p *loginCommand) login() error {
 	}
 
 	err = survey.AskOne(&survey.Password{Message: "Password: "}, &pass, survey.WithValidator(survey.Required))
+	if err != nil {
+		return err
+	}
+
+	abs, err := filepath.Abs(cfg.Choria.RemoteSignerTokenFile)
+	if err != nil {
+		return fmt.Errorf("cannot determine parent directory for token file: %s", err)
+	}
+
+	err = os.MkdirAll(filepath.Dir(abs), 0700)
 	if err != nil {
 		return err
 	}
@@ -165,18 +163,6 @@ func (p *loginCommand) login() error {
 
 	if login["token"] == "" {
 		return fmt.Errorf("no token received")
-	}
-
-	abs, err := filepath.Abs(cfg.Choria.RemoteSignerTokenFile)
-	if err != nil {
-		return fmt.Errorf("cannot determine parent directory for token file: %s", err)
-	}
-	parent := filepath.Dir(abs)
-	if !iu.FileIsDir(parent) {
-		err = os.MkdirAll(parent, 0700)
-		if err != nil {
-			return err
-		}
 	}
 
 	err = os.WriteFile(abs, []byte(login["token"]), 0600)
