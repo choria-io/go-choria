@@ -78,8 +78,8 @@ that match the filter.
 
 `
 
-	r.cmd = cli.app.Command("req", help)
-	r.cmd.Alias("rpc")
+	r.cmd = cli.app.Command("req", help).Alias("rpc")
+	r.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 
 	r.cmd.Arg("agent", "The agent to invoke").Required().StringVar(&r.agent)
 	r.cmd.Arg("action", "The action to invoke").Required().StringVar(&r.action)

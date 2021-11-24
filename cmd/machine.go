@@ -12,6 +12,7 @@ type machineCommand struct {
 
 func (m *machineCommand) Setup() (err error) {
 	m.cmd = cli.app.Command("machine", "Manages autonomous agents")
+	m.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 
 	return nil
 }

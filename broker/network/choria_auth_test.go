@@ -810,6 +810,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 					Allow: append(minPub,
+						"$JS.API.INFO",
 						"$JS.API.STREAM.NAMES",
 						"$JS.API.STREAM.LIST",
 						"$JS.API.STREAM.INFO.*",

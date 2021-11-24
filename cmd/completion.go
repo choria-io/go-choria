@@ -29,6 +29,7 @@ type completionCommand struct {
 
 func (e *completionCommand) Setup() error {
 	e.cmd = cli.app.Command("completion", "Shell completion support").Hidden()
+	e.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 	e.cmd.Flag("zsh", "ZSH completion script").BoolVar(&e.showZsh)
 	e.cmd.Flag("bash", "Bash completion script").Default("true").BoolVar(&e.showBash)
 	e.cmd.Flag("list", "List various discovered items").EnumVar(&e.list, "agents", "actions", "inputs")

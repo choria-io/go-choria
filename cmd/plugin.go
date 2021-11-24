@@ -14,6 +14,7 @@ type pluginCommand struct {
 
 func (t *pluginCommand) Setup() (err error) {
 	t.cmd = cli.app.Command("plugin", "Plugin inspection and generation")
+	t.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 
 	return nil
 }

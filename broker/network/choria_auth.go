@@ -445,6 +445,7 @@ func (a *ChoriaAuth) setStreamsUserPermissions(user *server.User, subs []string,
 	}
 
 	pubs = append(pubs,
+		"$JS.API.INFO",
 		"$JS.API.STREAM.NAMES",
 		"$JS.API.STREAM.LIST",
 		"$JS.API.STREAM.INFO.*",

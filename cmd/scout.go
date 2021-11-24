@@ -12,6 +12,7 @@ type scoutCommand struct {
 
 func (m *scoutCommand) Setup() (err error) {
 	m.cmd = cli.app.Command("scout", "Manages Choria Scout")
+	m.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 
 	return nil
 }
