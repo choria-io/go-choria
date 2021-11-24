@@ -138,18 +138,19 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 		choriaAuth.provPass = s.config.Choria.NetworkProvisioningClientPassword
 		choriaAuth.provisioningAccount = s.provisioningAccount
 		choriaAuth.provisioningTokenSigner = s.config.Choria.NetworkProvisioningTokenSignerFile
-		choriaAuth.jwtSigner = s.config.Choria.NetworkClientTokenSignerFile
+		choriaAuth.clientJwtSigner = s.config.Choria.NetworkClientTokenSignerFile
+		choriaAuth.serverJwtSigner = s.config.Choria.NetworkServerTokenSignerFile
 
 		// we also allow clients to connect with their jwt token, but also only over tls
 		// we keep backwards compatibility with the config described here
 		// https://choria.io/blog/post/2020/09/13/aaa_improvements/
 		if s.config.Choria.RemoteSignerSigningCertFile != "" && s.config.Choria.NetworkClientTokenSignerFile == "" {
 			s.log.Warnf("Deprecated: configure client signing certificate for Choria Broker using plugin.choria.security.request_signing_certificate using plugin.choria.network.client_signer_cert")
-			choriaAuth.jwtSigner = s.config.Choria.NetworkClientTokenSignerFile
+			choriaAuth.clientJwtSigner = s.config.Choria.NetworkClientTokenSignerFile
 		}
 	}
 
-	if choriaAuth.jwtSigner != "" {
+	if choriaAuth.clientJwtSigner != "" {
 		s.opts.AlwaysEnableNonce = true
 	}
 	s.opts.CustomClientAuthentication = choriaAuth

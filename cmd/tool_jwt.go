@@ -30,6 +30,7 @@ type tJWTCommand struct {
 	password     string
 	provDefault  bool
 	urls         []string
+	json         bool
 
 	command
 }
@@ -48,6 +49,7 @@ func (j *tJWTCommand) Setup() (err error) {
 		j.cmd.Flag("facts", "File to use for facts during registration").StringVar(&j.facts)
 		j.cmd.Flag("username", "Username to connect to the provisioning broker with").StringVar(&j.uname)
 		j.cmd.Flag("password", "Password to connect to the provisioning broker with").StringVar(&j.password)
+		j.cmd.Flag("json", "Render the token as JSON").BoolVar(&j.json)
 	}
 
 	return nil
@@ -83,6 +85,56 @@ func (j *tJWTCommand) Run(wg *sync.WaitGroup) (err error) {
 	return nil
 }
 
+func (j *tJWTCommand) validateServerToken(token string) error {
+	var claims *tokens.ServerClaims
+	var err error
+	var validated bool
+
+	if j.validateCert == "" {
+		claims, err = tokens.ParseServerTokenUnverified(token)
+	} else {
+		claims, err = tokens.ParseServerTokenWithKeyfile(token, j.validateCert)
+		validated = true
+	}
+	if err != nil {
+		return fmt.Errorf("could not parse token: %s", err)
+	}
+
+	if validated {
+		fmt.Printf("Validated Server Token %s\n\n", j.file)
+	} else {
+		fmt.Printf("Unvalidated Server Token %s\n\n", j.file)
+	}
+
+	fmt.Printf("             Identity: %s\n", claims.ChoriaIdentity)
+	fmt.Printf("          Collectives: %s\n", strings.Join(claims.Collectives, ", "))
+	fmt.Printf("           Public Key: %s\n", claims.PublicKey)
+	fmt.Printf("    Organization Unit: %s\n", claims.OrganizationUnit)
+	if len(claims.AdditionalPublishSubjects) > 0 {
+		fmt.Printf("  Additional Subjects: %s\n", strings.Join(claims.AdditionalPublishSubjects, ", "))
+	}
+	if claims.Permissions != nil {
+		fmt.Println("   Broker Permissions:")
+		if claims.Permissions.ServiceHost {
+			fmt.Println("          Can host services")
+		}
+		if claims.Permissions.Submission {
+			fmt.Println("          Can publish Choria Submission messages")
+		}
+		if claims.Permissions.Streams {
+			fmt.Println("          Can access Choria Streams")
+		}
+	}
+
+	stdc, err := json.MarshalIndent(claims.StandardClaims, strings.Repeat(" ", 23), "  ")
+	if err != nil {
+		return nil
+	}
+	fmt.Printf("      Standard Claims: %s\n", string(stdc))
+
+	return nil
+}
+
 func (j *tJWTCommand) validateProvisionToken(token string) error {
 	var claims *tokens.ProvisioningClaims
 	var err error
@@ -105,7 +157,7 @@ func (j *tJWTCommand) validateProvisionToken(token string) error {
 	if validated {
 		fmt.Printf("Validated Provisioning Token %s\n\n", j.file)
 	} else {
-		fmt.Printf("Provisioning Token %s\n\n", j.file)
+		fmt.Printf("Unvalidated Provisioning Token %s\n\n", j.file)
 	}
 
 	fmt.Printf("                         Token: %s\n", claims.Token)
@@ -134,7 +186,6 @@ func (j *tJWTCommand) validateProvisionToken(token string) error {
 	if err != nil {
 		return nil
 	}
-
 	fmt.Printf("               Standard Claims: %s\n", string(stdc))
 
 	return nil
@@ -158,7 +209,7 @@ func (j *tJWTCommand) validateClientToken(token string) error {
 	if validated {
 		fmt.Printf("Validated Client Identification Token %s\n\n", j.file)
 	} else {
-		fmt.Printf("Client Identification Token %s\n\n", j.file)
+		fmt.Printf("Unvalidated Client Identification Token %s\n\n", j.file)
 	}
 
 	fmt.Printf("          Caller ID: %s\n", claims.CallerID)
@@ -168,6 +219,7 @@ func (j *tJWTCommand) validateClientToken(token string) error {
 	if len(claims.AllowedAgents) > 0 {
 		fmt.Printf("     Allowed Agents: %s\n", strings.Join(claims.AllowedAgents, ", "))
 	}
+	fmt.Printf("         Public Key: %s\n", claims.PublicKey)
 	if claims.Permissions != nil {
 		fmt.Println(" Broker Permissions:")
 		if claims.Permissions.ElectionUser {
@@ -229,13 +281,17 @@ func (j *tJWTCommand) validateJWT() error {
 	}
 
 	ts := string(token)
+	purpose := tokens.TokenPurpose(ts)
 
-	switch tokens.TokenPurpose(ts) {
-	case tokens.ProvisioningPurpose:
+	switch {
+	case !j.json && purpose == tokens.ProvisioningPurpose:
 		return j.validateProvisionToken(ts)
 
-	case tokens.ClientIDPurpose:
+	case !j.json && purpose == tokens.ClientIDPurpose:
 		return j.validateClientToken(ts)
+
+	case !j.json && purpose == tokens.ServerPurpose:
+		return j.validateServerToken(ts)
 
 	default:
 		return j.validateAnyToken(ts)

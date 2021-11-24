@@ -362,6 +362,25 @@ func (c *Config) normalize() error {
 		c.DisableSecurityProviderVerify = true
 	}
 
+	if c.Choria.ServerAnonTLS {
+		c.DisableTLSVerify = true
+		c.DisableSecurityProviderVerify = true
+
+		if c.Choria.ServerTokenFile == "" {
+			if c.ConfigFile == "" {
+				return fmt.Errorf("cannot determine path to server token file")
+			}
+			c.Choria.ServerTokenFile = filepath.Join(filepath.Dir(c.ConfigFile), "choria.token")
+		}
+
+		if c.Choria.ServerTokenSeedFile == "" {
+			if c.ConfigFile == "" {
+				return fmt.Errorf("cannot determine path to server token file")
+			}
+			c.Choria.ServerTokenSeedFile = filepath.Join(filepath.Dir(c.ConfigFile), "choria.key")
+		}
+	}
+
 	if runtime.GOOS == "windows" {
 		c.Color = false
 	}

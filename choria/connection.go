@@ -139,7 +139,7 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 		outbox:            make(chan *nats.Msg, 1000),
 	}
 
-	if fw.Config.Choria.ClientAnonTLS && !fw.Config.InitiatedByServer {
+	if fw.Config.Choria.ClientAnonTLS {
 		caller, id, token, err := fw.UniqueIDFromUnverifiedToken()
 		if err != nil {
 			return nil, fmt.Errorf("could not parse JWT: %s", err)
@@ -631,7 +631,19 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 	}
 
 	switch {
-	case conn.config.Choria.ClientAnonTLS && !conn.config.InitiatedByServer:
+	case conn.fw.ProvisionMode():
+		if util.FileExist(conn.fw.bi.ProvisionJWTFile()) {
+			t, err := os.ReadFile(conn.fw.bi.ProvisionJWTFile())
+			if err == nil {
+				options = append(options, nats.Token(string(t)))
+			}
+		}
+
+		conn.log.Warnf("Setting anonymous TLS mode during provisioning")
+		tlsc := conn.anonTLSc()
+		options = append(options, nats.Secure(tlsc))
+
+	case conn.config.Choria.ServerAnonTLS || conn.config.Choria.ClientAnonTLS:
 		conn.log.Debug("Setting anonymous TLS for NATS connection")
 
 		tlsc := conn.anonTLSc()
@@ -664,19 +676,6 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 	default:
 		conn.log.Debugf("Not specifying TLS options on NATS connection: tls: %v ngs: %v creds: %v", conn.config.DisableTLS, conn.config.Choria.NatsNGS, conn.config.Choria.NatsCredentials)
-	}
-
-	if conn.fw.ProvisionMode() {
-		if util.FileExist(conn.fw.bi.ProvisionJWTFile()) {
-			t, err := os.ReadFile(conn.fw.bi.ProvisionJWTFile())
-			if err == nil {
-				options = append(options, nats.Token(string(t)))
-			}
-		}
-
-		conn.log.Warnf("Setting anonymous TLS mode during provisioning")
-		tlsc := conn.anonTLSc()
-		options = append(options, nats.Secure(tlsc))
 	}
 
 	if !conn.config.Choria.RandomizeMiddlewareHosts {

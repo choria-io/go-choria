@@ -28,7 +28,7 @@ require (
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/mitchellh/mapstructure v1.4.2
 	github.com/nats-io/jsm.go v0.0.27-0.20211104110847-190fe12fb667
-	github.com/nats-io/nats-server/v2 v2.6.5-0.20211118231059-60c48356e9b7
+	github.com/nats-io/nats-server/v2 v2.6.6-0.20211122213926-f094918f35b8
 	github.com/nats-io/nats-streaming-server v0.23.1 // indirect
 	github.com/nats-io/nats.go v1.13.1-0.20211110062357-84e8b4dda7cc
 	github.com/nats-io/natscli v0.0.27-0.20211124120915-6f3203375637

@@ -11,7 +11,6 @@ import (
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
-	"fmt"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -95,17 +94,23 @@ var _ = Describe("Choria", func() {
 			err = os.WriteFile(filepath.Join(td, "private.pem"), out.Bytes(), 0600)
 			Expect(err).ToNot(HaveOccurred())
 
-			jwtpath := filepath.Join(td, "good.jwt")
-
 			edPub, _, err := Ed25519KeyPair()
 			Expect(err).ToNot(HaveOccurred())
+
+			clientJwtPath := filepath.Join(td, "good-client.jwt")
 			claims, err := tokens.NewClientIDClaims("up=ginkgo", nil, "choria", nil, "", "Ginkgo", time.Hour, nil, edPub)
 			Expect(err).ToNot(HaveOccurred())
-
 			signed, err := tokens.SignToken(claims, privateKey)
 			Expect(err).ToNot(HaveOccurred())
+			err = os.WriteFile(clientJwtPath, []byte(signed), 0600)
+			Expect(err).ToNot(HaveOccurred())
 
-			err = os.WriteFile(jwtpath, []byte(signed), 0600)
+			serverJwtPath := filepath.Join(td, "good-server.jwt")
+			sclaims, err := tokens.NewServerClaims("ginkgo.example.net", []string{"c"}, "choria", nil, nil, edPub, "Ginkgo", time.Hour)
+			Expect(err).ToNot(HaveOccurred())
+			signed, err = tokens.SignToken(sclaims, privateKey)
+			Expect(err).ToNot(HaveOccurred())
+			err = os.WriteFile(serverJwtPath, []byte(signed), 0600)
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -114,8 +119,24 @@ var _ = Describe("Choria", func() {
 		})
 
 		Describe("UniqueIDFromUnverifiedToken", func() {
-			It("Should extract the correct items", func() {
-				cfg.Choria.RemoteSignerTokenFile = filepath.Join(td, "good.jwt")
+			It("Should extract the correct items for servers", func() {
+				cfg.Choria.ServerAnonTLS = true
+				fw.Config.InitiatedByServer = true
+				cfg.Choria.ServerTokenFile = filepath.Join(td, "good-server.jwt")
+				caller, id, token, err := fw.UniqueIDFromUnverifiedToken()
+				Expect(err).ToNot(HaveOccurred())
+
+				expectedT, err := os.ReadFile(cfg.Choria.ServerTokenFile)
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(token).To(Equal(strings.TrimSpace(string(expectedT))))
+				Expect(id).To(Equal("3f7c3a791b0eb10da51dca4cdedb9418"))
+				Expect(caller).To(Equal("ginkgo.example.net"))
+			})
+
+			It("Should extract the correct items for clients", func() {
+				cfg.Choria.ClientAnonTLS = true
+				cfg.Choria.RemoteSignerTokenFile = filepath.Join(td, "good-client.jwt")
 				caller, id, token, err := fw.UniqueIDFromUnverifiedToken()
 				Expect(err).ToNot(HaveOccurred())
 
@@ -135,16 +156,24 @@ var _ = Describe("Choria", func() {
 				Expect(err).To(MatchError("no token file defined"))
 			})
 
-			It("Should support file tokens", func() {
-				tf, err := os.CreateTemp("", "")
-				Expect(err).ToNot(HaveOccurred())
-				defer os.Remove(tf.Name())
-
-				fmt.Fprintf(tf, "FOOFOO")
-				cfg.Choria.RemoteSignerTokenFile = tf.Name()
+			It("Should support server file tokens", func() {
+				cfg.Choria.ServerAnonTLS = true
+				cfg.Choria.ServerTokenFile = filepath.Join(td, "good-server.jwt")
 				t, err := fw.SignerToken()
 				Expect(err).ToNot(HaveOccurred())
-				Expect(t).To(Equal("FOOFOO"))
+				dt, err := os.ReadFile(cfg.Choria.ServerTokenFile)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(t).To(Equal(string(dt)))
+			})
+
+			It("Should support client file tokens", func() {
+				cfg.Choria.ClientAnonTLS = true
+				cfg.Choria.RemoteSignerTokenFile = filepath.Join(td, "good-client.jwt")
+				t, err := fw.SignerToken()
+				Expect(err).ToNot(HaveOccurred())
+				dt, err := os.ReadFile(cfg.Choria.RemoteSignerTokenFile)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(t).To(Equal(string(dt)))
 			})
 		})
 	})
