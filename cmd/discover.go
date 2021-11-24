@@ -26,6 +26,7 @@ type discoverCommand struct {
 
 func (d *discoverCommand) Setup() error {
 	d.cmd = cli.app.Command("discover", "Discover nodes using the discovery system matching filter criteria").Alias("find")
+	d.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 
 	d.fo = discovery.NewStandardOptions()
 	d.fo.AddFilterFlags(d.cmd)

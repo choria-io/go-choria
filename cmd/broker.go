@@ -9,10 +9,15 @@ import (
 	"fmt"
 	"net/http"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/choria"
+	"github.com/nats-io/jsm.go"
+	natscli "github.com/nats-io/natscli/cli"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/alecthomas/kingpin.v2"
 
 	"github.com/choria-io/go-choria/broker/adapter"
 	"github.com/choria-io/go-choria/broker/federation"
@@ -40,6 +45,72 @@ type brokerRunCommand struct {
 func (b *brokerCommand) Setup() (err error) {
 	b.cmd = cli.app.Command("broker", "Choria Network Broker")
 
+	opts, err := natscli.ConfigureInCommand(b.cmd, nil, false, "cheat", "rtt", "backup", "latency", "restore", "bench", "schema", "errors", "kv", "object", "governor", "context")
+	if err != nil {
+		return err
+	}
+
+	b.cmd.PreAction(func(pc *kingpin.ParseContext) error {
+		cmd := pc.String()
+		if cmd == "broker run" {
+			return nil
+		}
+
+		for _, e := range pc.Elements {
+			f, ok := e.Clause.(*kingpin.FlagClause)
+			if ok {
+				if strings.HasPrefix(f.Model().Name, "help") {
+					return nil
+				}
+			}
+		}
+
+		err = commonConfigure()
+		if err != nil {
+			return err
+		}
+
+		if strings.HasPrefix(cmd, "broker server") && !strings.HasPrefix(cmd, "broker server check stream") {
+			if cfg.Choria.NetworkSystemUsername == "" || cfg.Choria.NetworkSystemPassword == "" {
+				return fmt.Errorf("the %q command needs system username and password set using plugin.choria.network.system.*", cmd)
+			}
+
+			cfg.Choria.NatsUser = cfg.Choria.NetworkSystemUsername
+			cfg.Choria.NatsPass = cfg.Choria.NetworkSystemPassword
+		}
+
+		c, err = choria.NewWithConfig(cfg)
+		if err != nil {
+			return err
+		}
+
+		conn, err := c.NewConnector(ctx, c.MiddlewareServers, "cli", c.Logger("connection"))
+		if err != nil {
+			return err
+		}
+
+		opts.Conn = conn.Nats()
+		opts.JSc, err = opts.Conn.JetStream()
+		if err != nil {
+			return err
+		}
+
+		opts.Mgr, err = jsm.New(opts.Conn)
+		if err != nil {
+			return err
+		}
+
+		logger := c.Logger("choria")
+		// cli does a lot of Printf which is info
+		logger.Logger.SetLevel(log.InfoLevel)
+		natscli.SetContext(ctx)
+		natscli.SetLogger(logger)
+
+		ran = true
+
+		return nil
+	})
+
 	return
 }
 
@@ -56,7 +127,8 @@ func (b *brokerCommand) Configure() error {
 // broker run
 func (r *brokerRunCommand) Setup() (err error) {
 	if broker, ok := cmdWithFullCommand("broker"); ok {
-		r.cmd = broker.Cmd().Command("run", "Runs a Choria Network Broker instance").Default()
+		r.cmd = broker.Cmd().Command("run", "Runs a Choria Network Broker instance")
+		r.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 		r.cmd.Flag("disable-tls", "Disables TLS").Hidden().Default("false").BoolVar(&r.disableTLS)
 		r.cmd.Flag("disable-ssl-verification", "Disables SSL Verification").Hidden().Default("false").BoolVar(&r.disableTLSVerify)
 		r.cmd.Flag("pid", "Write running PID to a file").StringVar(&r.pidFile)

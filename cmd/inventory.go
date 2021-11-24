@@ -38,6 +38,7 @@ type inventoryCommand struct {
 
 func (i *inventoryCommand) Setup() (err error) {
 	i.cmd = cli.app.Command("inventory", "General reporting tool for nodes, collectives and subcollectives")
+	i.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 	i.cmd.Arg("identity", "Identity of a Choria Server to retrieve inventory from").StringVar(&i.ident)
 	i.cmd.Flag("collectives", "List all known collectives").BoolVar(&i.listCollective)
 	i.cmd.Flag("facts", "Enable or disable displaying of facts").Default("true").BoolVar(&i.showFacts)

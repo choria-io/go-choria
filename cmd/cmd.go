@@ -45,17 +45,20 @@ var (
 	cpuProfile string
 	bi         *build.Info
 	err        error
+	ran        bool
 )
 
 func ParseCLI() (err error) {
+	ctx, cancel = context.WithCancel(context.Background())
+
+	go interruptWatcher()
+
 	bi = &build.Info{}
 
 	cli.app = kingpin.New("choria", "Choria Orchestration System")
 	cli.app.Version(bi.Version())
-	cli.app.Author("R.I.Pienaar <rip@devco.net>")
 
-	cli.app.Flag("debug", "Enable debug logging").Short('d').BoolVar(&debug)
-	cli.app.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
+	cli.app.Flag("debug", "Enable debug logging").BoolVar(&debug)
 	cli.app.Flag("profile", "Enable CPU profiling and write to the supplied file").Hidden().StringVar(&cpuProfile)
 
 	for _, cmd := range cli.commands {
@@ -146,12 +149,6 @@ func commonConfigure() error {
 
 func Run() (err error) {
 	wg = &sync.WaitGroup{}
-	ran := false
-
-	ctx, cancel = context.WithCancel(context.Background())
-	defer cancel()
-
-	go interruptWatcher()
 
 	if cpuProfile != "" {
 		cpf, err := os.Create(cpuProfile)
@@ -168,7 +165,7 @@ func Run() (err error) {
 		defer pprof.StopCPUProfile()
 	}
 
-	if cfg != nil {
+	if cfg != nil && c == nil {
 		if debug {
 			cfg.LogLevel = "debug"
 		}

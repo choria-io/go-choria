@@ -43,6 +43,7 @@ type factCommandValue struct {
 
 func (f *factsCommand) Setup() error {
 	f.cmd = cli.app.Command("facts", "Reports on usage for a specific fact")
+	f.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 	f.cmd.Arg("fact", "The fact to report on").Required().StringVar(&f.fact)
 	f.cmd.Flag("table", "Produce tabular output").Short('t').BoolVar(&f.table)
 	f.cmd.Flag("json", "Produce JSON output").Default("false").Short('j').BoolVar(&f.json)

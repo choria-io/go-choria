@@ -21,7 +21,6 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.6
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.5.2
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
@@ -32,6 +31,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.6.5-0.20211118231059-60c48356e9b7
 	github.com/nats-io/nats-streaming-server v0.23.1 // indirect
 	github.com/nats-io/nats.go v1.13.1-0.20211110062357-84e8b4dda7cc
+	github.com/nats-io/natscli v0.0.27-0.20211124120915-6f3203375637
 	github.com/nats-io/stan.go v0.10.2
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.5

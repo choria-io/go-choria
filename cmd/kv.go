@@ -12,6 +12,7 @@ type kvCommand struct {
 
 func (k *kvCommand) Setup() (err error) {
 	k.cmd = cli.app.Command("kv", "Key-Value store for Choria Streams")
+	k.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 
 	return nil
 }
