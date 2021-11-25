@@ -89,8 +89,16 @@
           "type": "hash",
           "default": {},
           "optional": true
+        },
+        "server_jwt": {
+          "description": "JWT file used to identify the server to the broker for ed25519 based authentication",
+          "prompt": "Server JWT",
+          "type": "string",
+          "default": "",
+          "optional": true,
+          "maxlength": 2048,
+          "validation": "."
         }
-
       },
       "output": {
         "message": {

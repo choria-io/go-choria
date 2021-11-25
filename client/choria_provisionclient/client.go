@@ -209,6 +209,7 @@ func (p *ChoriaProvisionClient) DiscoverNodes(ctx context.Context) (nodes []stri
 //    - ecdh_public (string) - Required when sending a private key
 //    - key (string) - A RSA private key
 //    - opa_policies (map[string]interface{}) - Map of Open Policy Agent Policy documents indexed by file name
+//    - server_jwt (string) - JWT file used to identify the server to the broker for ed25519 based authentication
 //    - ssldir (string) - Directory for storing the certificate in
 //    - token (string) - Authentication token to pass to the server
 func (p *ChoriaProvisionClient) Configure(inputConfig string) *ConfigureRequester {
