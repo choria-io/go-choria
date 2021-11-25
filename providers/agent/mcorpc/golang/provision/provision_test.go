@@ -7,6 +7,7 @@ package provision
 import (
 	"bytes"
 	"context"
+	"crypto/ed25519"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/x509"
@@ -103,7 +104,62 @@ var _ = Describe("Provision/Agent", func() {
 
 	Describe("New", func() {
 		It("Should create all the actions", func() {
-			Expect(prov.ActionNames()).To(Equal([]string{"configure", "gencsr", "jwt", "release_update", "reprovision", "restart"}))
+			Expect(prov.ActionNames()).To(Equal([]string{"configure", "gen25519", "gencsr", "jwt", "release_update", "reprovision", "restart"}))
+		})
+	})
+
+	Describe("ed25519Action", func() {
+		var td string
+
+		BeforeEach(func() {
+			td, err = os.MkdirTemp("", "")
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		AfterEach(func() {
+			os.RemoveAll(td)
+		})
+
+		It("should require a token", func() {
+			req := &mcorpc.Request{
+				Data:      json.RawMessage(`{"token":"toomanysecrets"}`),
+				RequestID: "uniq_req_id",
+				CallerID:  "choria=rip.mcollective",
+				SenderID:  "go.test",
+			}
+			build.ProvisionToken = "xx"
+			ed25519Action(ctx, req, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
+		})
+
+		It("Should create the token in the right location and sign the nonce", func() {
+			j, err := json.Marshal(&ED25519Request{Nonce: "nonce", Token: "toomanysecrets"})
+			Expect(err).ToNot(HaveOccurred())
+
+			req := &mcorpc.Request{
+				Data:      j,
+				RequestID: "uid",
+				CallerID:  "choria=rip.mcollective",
+				SenderID:  "go.test",
+			}
+
+			build.ProvisionModeDefault = "true"
+			build.ProvisionToken = "toomanysecrets"
+
+			cfg.ConfigFile = filepath.Join(td, "server.conf")
+			ed25519Action(ctx, req, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
+
+			resp := reply.Data.(*ED25519Reply)
+			Expect(resp.PublicKey).To(HaveLen(64))
+			pubKBytes, err := hex.DecodeString(resp.PublicKey)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(ed25519.Verify(pubKBytes, []byte("nonce"), []byte(resp.Signature))).To(BeTrue())
+			Expect(resp.Directory).To(Equal(filepath.Join(td, "secure")))
+
+			_, priK, err := choria.Ed25519KeyPairFromSeedFile(filepath.Join(td, "secure", "server.key"))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(priK.Public()).To(Equal(ed25519.PublicKey(pubKBytes)))
 		})
 	})
 
@@ -116,6 +172,7 @@ var _ = Describe("Provision/Agent", func() {
 				SenderID:  "go.test",
 			}
 			build.ProvisionToken = "xx"
+
 			releaseUpdateAction(ctx, req, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
 		})
@@ -134,6 +191,7 @@ var _ = Describe("Provision/Agent", func() {
 				CallerID:  "choria=rip.mcollective",
 				SenderID:  "go.test",
 			}
+
 			build.ProvisionToken = "toomanysecrets"
 
 			releaseUpdateAction(ctx, req, reply, prov, nil)

@@ -55,7 +55,7 @@ action "configure", :description => "Configure the Choria Server" do
 
   input :key,
         :prompt      => "PEM text block for the private key",
-        :description => "",
+        :description => "A RSA private key",
         :type        => :string,
         :validation  => '-----BEGIN RSA PRIVATE KEY-----',
         :maxlength   => 10240,
@@ -93,6 +93,46 @@ action "configure", :description => "Configure the Choria Server" do
          :description => "Status message from the Provisioner",
          :type        => "string",
          :display_as  => "Message"
+
+end
+
+action "gen25519", :description => "Generates a new ED25519 keypair" do
+  display :always
+
+  input :nonce,
+        :prompt      => "Nonce",
+        :description => "Single use token to be signed by the private key being generated",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 64,
+        :optional    => false
+
+
+  input :token,
+        :prompt      => "Token",
+        :description => "Authentication token to pass to the server",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 128,
+        :optional    => false
+
+
+
+
+  output :directory,
+         :description => "The directory where server.key and server.pub is written to",
+         :type        => "string",
+         :display_as  => "Directory"
+
+  output :public_key,
+         :description => "The ED255519 public key hex encoded",
+         :type        => "string",
+         :display_as  => "Public Key"
+
+  output :signature,
+         :description => "The signature of the nonce made using the new private key, hex encoded",
+         :type        => "string",
+         :display_as  => "Signature"
 
 end
 
@@ -159,7 +199,7 @@ action "gencsr", :description => "Request a CSR from the Choria Server" do
         :type        => :string,
         :validation  => '.',
         :maxlength   => 128,
-        :optional    => true
+        :optional    => false
 
 
 
@@ -199,7 +239,7 @@ action "release_update", :description => "Performs an in-place binary update and
         :type        => :string,
         :validation  => '.',
         :maxlength   => 128,
-        :optional    => true
+        :optional    => false
 
 
   input :version,
@@ -229,7 +269,7 @@ action "jwt", :description => "Re-enable provision mode in a running Choria Serv
         :type        => :string,
         :validation  => '.',
         :maxlength   => 128,
-        :optional    => true
+        :optional    => false
 
 
 
@@ -255,7 +295,7 @@ action "reprovision", :description => "Reenable provision mode in a running Chor
         :type        => :string,
         :validation  => '.',
         :maxlength   => 128,
-        :optional    => true
+        :optional    => false
 
 
 
@@ -283,7 +323,7 @@ action "restart", :description => "Restart the Choria Server" do
         :type        => :string,
         :validation  => '.',
         :maxlength   => 128,
-        :optional    => true
+        :optional    => false
 
 
 

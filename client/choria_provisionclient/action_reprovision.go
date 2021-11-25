@@ -165,15 +165,6 @@ func (d *ReprovisionResult) EachOutput(h func(r *ReprovisionOutput)) {
 	}
 }
 
-// Token is an optional input to the reprovision action
-//
-// Description: Authentication token to pass to the server
-func (d *ReprovisionRequester) Token(v string) *ReprovisionRequester {
-	d.r.args["token"] = v
-
-	return d
-}
-
 // Message is the value of the message output
 //
 // Description: Status message from the Provisioner

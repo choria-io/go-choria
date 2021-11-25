@@ -165,15 +165,6 @@ func (d *JwtResult) EachOutput(h func(r *JwtOutput)) {
 	}
 }
 
-// Token is an optional input to the jwt action
-//
-// Description: Authentication token to pass to the server
-func (d *JwtRequester) Token(v string) *JwtRequester {
-	d.r.args["token"] = v
-
-	return d
-}
-
 // EcdhPublic is the value of the ecdh_public output
 //
 // Description: The ECDH public key for calculating shared secrets

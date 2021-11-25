@@ -219,15 +219,6 @@ func (d *GencsrRequester) Cn(v string) *GencsrRequester {
 	return d
 }
 
-// Token is an optional input to the gencsr action
-//
-// Description: Authentication token to pass to the server
-func (d *GencsrRequester) Token(v string) *GencsrRequester {
-	d.r.args["token"] = v
-
-	return d
-}
-
 // Csr is the value of the csr output
 //
 // Description: PEM text block for the CSR

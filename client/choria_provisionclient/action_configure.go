@@ -203,7 +203,7 @@ func (d *ConfigureRequester) EcdhPublic(v string) *ConfigureRequester {
 
 // Key is an optional input to the configure action
 //
-// Description:
+// Description: A RSA private key
 func (d *ConfigureRequester) Key(v string) *ConfigureRequester {
 	d.r.args["key"] = v
 

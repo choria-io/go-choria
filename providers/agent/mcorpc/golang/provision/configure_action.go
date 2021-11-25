@@ -29,6 +29,7 @@ type ConfigureRequest struct {
 	CA             string            `json:"ca"`
 	SSLDir         string            `json:"ssldir"`
 	ECDHPublic     string            `json:"ecdh_public"`
+	ServerJWT      string            `json:"server_jwt"`
 	ActionPolicies map[string]string `json:"action_policies"`
 	OPAPolicies    map[string]string `json:"opa_policies"`
 }
@@ -79,6 +80,12 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		return
 	}
 
+	err = writeJWT(filepath.Join(filepath.Dir(agent.Config.ConfigFile), "server.jwt"), args.ServerJWT, agent.Log)
+	if err != nil {
+		abort(fmt.Sprintf("JWT Setup Failed: %s", err), reply)
+		return
+	}
+
 	lines, err := writeConfig(settings, req, agent.Config, agent.Log)
 	if err != nil {
 		abort(fmt.Sprintf("Could not write config: %s", err), reply)
@@ -103,6 +110,14 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 	}
 
 	reply.Data = Reply{fmt.Sprintf("Wrote %d lines to %s", lines, agent.Config.ConfigFile)}
+}
+
+func writeJWT(target string, token string, log *logrus.Entry) error {
+	if token == "" {
+		return nil
+	}
+
+	return os.WriteFile(target, []byte(token), 0600)
 }
 
 func writePolicies(targetDir string, policies map[string]string, log *logrus.Entry) error {
