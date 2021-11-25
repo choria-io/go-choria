@@ -207,7 +207,7 @@ func (p *ChoriaProvisionClient) DiscoverNodes(ctx context.Context) (nodes []stri
 //    - ca (string) - PEM text block for the CA
 //    - certificate (string) - PEM text block for the certificate
 //    - ecdh_public (string) - Required when sending a private key
-//    - key (string) -
+//    - key (string) - A RSA private key
 //    - opa_policies (map[string]interface{}) - Map of Open Policy Agent Policy documents indexed by file name
 //    - ssldir (string) - Directory for storing the certificate in
 //    - token (string) - Authentication token to pass to the server
@@ -229,9 +229,38 @@ func (p *ChoriaProvisionClient) Configure(inputConfig string) *ConfigureRequeste
 	return d
 }
 
+// Gen25519 performs the gen25519 action
+//
+// Description: Generates a new ED25519 keypair
+//
+// Required Inputs:
+//    - nonce (string) - Single use token to be signed by the private key being generated
+//    - token (string) - Authentication token to pass to the server
+func (p *ChoriaProvisionClient) Gen25519(inputNonce string, inputToken string) *Gen25519Requester {
+	d := &Gen25519Requester{
+		outc: nil,
+		r: &requester{
+			args: map[string]interface{}{
+				"nonce": inputNonce,
+				"token": inputToken,
+			},
+			action: "gen25519",
+			client: p,
+		},
+	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
+	return d
+}
+
 // Gencsr performs the gencsr action
 //
 // Description: Request a CSR from the Choria Server
+//
+// Required Inputs:
+//    - token (string) - Authentication token to pass to the server
 //
 // Optional Inputs:
 //    - C (string) - Country Code
@@ -240,12 +269,13 @@ func (p *ChoriaProvisionClient) Configure(inputConfig string) *ConfigureRequeste
 //    - OU (string) - Organizational Unit
 //    - ST (string) - State
 //    - cn (string) - The certificate Common Name to place in the CSR
-//    - token (string) - Authentication token to pass to the server
-func (p *ChoriaProvisionClient) Gencsr() *GencsrRequester {
+func (p *ChoriaProvisionClient) Gencsr(inputToken string) *GencsrRequester {
 	d := &GencsrRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args: map[string]interface{}{
+				"token": inputToken,
+			},
 			action: "gencsr",
 			client: p,
 		},
@@ -263,16 +293,15 @@ func (p *ChoriaProvisionClient) Gencsr() *GencsrRequester {
 //
 // Required Inputs:
 //    - repository (string) - HTTP(S) server hosting the update repository
-//    - version (string) - Package version to update to
-//
-// Optional Inputs:
 //    - token (string) - Authentication token to pass to the server
-func (p *ChoriaProvisionClient) ReleaseUpdate(inputRepository string, inputVersion string) *ReleaseUpdateRequester {
+//    - version (string) - Package version to update to
+func (p *ChoriaProvisionClient) ReleaseUpdate(inputRepository string, inputToken string, inputVersion string) *ReleaseUpdateRequester {
 	d := &ReleaseUpdateRequester{
 		outc: nil,
 		r: &requester{
 			args: map[string]interface{}{
 				"repository": inputRepository,
+				"token":      inputToken,
 				"version":    inputVersion,
 			},
 			action: "release_update",
@@ -290,13 +319,15 @@ func (p *ChoriaProvisionClient) ReleaseUpdate(inputRepository string, inputVersi
 //
 // Description: Re-enable provision mode in a running Choria Server
 //
-// Optional Inputs:
+// Required Inputs:
 //    - token (string) - Authentication token to pass to the server
-func (p *ChoriaProvisionClient) Jwt() *JwtRequester {
+func (p *ChoriaProvisionClient) Jwt(inputToken string) *JwtRequester {
 	d := &JwtRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args: map[string]interface{}{
+				"token": inputToken,
+			},
 			action: "jwt",
 			client: p,
 		},
@@ -312,13 +343,15 @@ func (p *ChoriaProvisionClient) Jwt() *JwtRequester {
 //
 // Description: Reenable provision mode in a running Choria Server
 //
-// Optional Inputs:
+// Required Inputs:
 //    - token (string) - Authentication token to pass to the server
-func (p *ChoriaProvisionClient) Reprovision() *ReprovisionRequester {
+func (p *ChoriaProvisionClient) Reprovision(inputToken string) *ReprovisionRequester {
 	d := &ReprovisionRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args: map[string]interface{}{
+				"token": inputToken,
+			},
 			action: "reprovision",
 			client: p,
 		},
@@ -334,14 +367,18 @@ func (p *ChoriaProvisionClient) Reprovision() *ReprovisionRequester {
 //
 // Description: Restart the Choria Server
 //
+// Required Inputs:
+//    - token (string) - Authentication token to pass to the server
+//
 // Optional Inputs:
 //    - splay (float64) - The configuration to apply to this node
-//    - token (string) - Authentication token to pass to the server
-func (p *ChoriaProvisionClient) Restart() *RestartRequester {
+func (p *ChoriaProvisionClient) Restart(inputToken string) *RestartRequester {
 	d := &RestartRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args: map[string]interface{}{
+				"token": inputToken,
+			},
 			action: "restart",
 			client: p,
 		},

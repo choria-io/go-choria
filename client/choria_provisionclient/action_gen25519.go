@@ -17,28 +17,28 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 )
 
-// RestartRequester performs a RPC request to choria_provision#restart
-type RestartRequester struct {
+// Gen25519Requester performs a RPC request to choria_provision#gen25519
+type Gen25519Requester struct {
 	r    *requester
-	outc chan *RestartOutput
+	outc chan *Gen25519Output
 }
 
-// RestartOutput is the output from the restart action
-type RestartOutput struct {
+// Gen25519Output is the output from the gen25519 action
+type Gen25519Output struct {
 	details *ResultDetails
 	reply   map[string]interface{}
 }
 
-// RestartResult is the result from a restart action
-type RestartResult struct {
+// Gen25519Result is the result from a gen25519 action
+type Gen25519Result struct {
 	ddl        *agent.DDL
 	stats      *rpcclient.Stats
-	outputs    []*RestartOutput
+	outputs    []*Gen25519Output
 	rpcreplies []*replyfmt.RPCReply
 	mu         sync.Mutex
 }
 
-func (d *RestartResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, colorize bool, log Log) error {
+func (d *Gen25519Result) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, colorize bool, log Log) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -72,27 +72,27 @@ func (d *RestartResult) RenderResults(w io.Writer, format RenderFormat, displayM
 }
 
 // Stats is the rpc request stats
-func (d *RestartResult) Stats() Stats {
+func (d *Gen25519Result) Stats() Stats {
 	return d.stats
 }
 
 // ResultDetails is the details about the request
-func (d *RestartOutput) ResultDetails() *ResultDetails {
+func (d *Gen25519Output) ResultDetails() *ResultDetails {
 	return d.details
 }
 
 // HashMap is the raw output data
-func (d *RestartOutput) HashMap() map[string]interface{} {
+func (d *Gen25519Output) HashMap() map[string]interface{} {
 	return d.reply
 }
 
 // JSON is the JSON representation of the output data
-func (d *RestartOutput) JSON() ([]byte, error) {
+func (d *Gen25519Output) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseRestartOutput parses the result value from the Restart action into target
-func (d *RestartOutput) ParseRestartOutput(target interface{}) error {
+// ParseGen25519Output parses the result value from the Gen25519 action into target
+func (d *Gen25519Output) ParseGen25519Output(target interface{}) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -107,8 +107,8 @@ func (d *RestartOutput) ParseRestartOutput(target interface{}) error {
 }
 
 // Do performs the request
-func (d *RestartRequester) Do(ctx context.Context) (*RestartResult, error) {
-	dres := &RestartResult{ddl: d.r.client.ddl}
+func (d *Gen25519Requester) Do(ctx context.Context) (*Gen25519Result, error) {
+	dres := &Gen25519Result{ddl: d.r.client.ddl}
 
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
 		// filtered by expr filter
@@ -116,7 +116,7 @@ func (d *RestartRequester) Do(ctx context.Context) (*RestartResult, error) {
 			return
 		}
 
-		output := &RestartOutput{
+		output := &Gen25519Output{
 			reply: make(map[string]interface{}),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
@@ -159,26 +159,37 @@ func (d *RestartRequester) Do(ctx context.Context) (*RestartResult, error) {
 }
 
 // EachOutput iterates over all results received
-func (d *RestartResult) EachOutput(h func(r *RestartOutput)) {
+func (d *Gen25519Result) EachOutput(h func(r *Gen25519Output)) {
 	for _, resp := range d.outputs {
 		h(resp)
 	}
 }
 
-// Splay is an optional input to the restart action
+// Directory is the value of the directory output
 //
-// Description: The configuration to apply to this node
-func (d *RestartRequester) Splay(v float64) *RestartRequester {
-	d.r.args["splay"] = v
+// Description: The directory where server.key and server.pub is written to
+func (d *Gen25519Output) Directory() string {
+	val := d.reply["directory"]
 
-	return d
+	return val.(string)
+
 }
 
-// Message is the value of the message output
+// PublicKey is the value of the public_key output
 //
-// Description: Status message from the Provisioner
-func (d *RestartOutput) Message() string {
-	val := d.reply["message"]
+// Description: The ED255519 public key hex encoded
+func (d *Gen25519Output) PublicKey() string {
+	val := d.reply["public_key"]
+
+	return val.(string)
+
+}
+
+// Signature is the value of the signature output
+//
+// Description: The signature of the nonce made using the new private key, hex encoded
+func (d *Gen25519Output) Signature() string {
+	val := d.reply["signature"]
 
 	return val.(string)
 

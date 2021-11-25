@@ -165,15 +165,6 @@ func (d *ReleaseUpdateResult) EachOutput(h func(r *ReleaseUpdateOutput)) {
 	}
 }
 
-// Token is an optional input to the release_update action
-//
-// Description: Authentication token to pass to the server
-func (d *ReleaseUpdateRequester) Token(v string) *ReleaseUpdateRequester {
-	d.r.args["token"] = v
-
-	return d
-}
-
 // Message is the value of the message output
 //
 // Description: Status message from the Provisioner

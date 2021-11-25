@@ -61,6 +61,7 @@ func New(mgr server.AgentManager) (agents.Agent, error) {
 	})
 
 	agent.MustRegisterAction("gencsr", csrAction)
+	agent.MustRegisterAction("gen25519", ed25519Action)
 	agent.MustRegisterAction("configure", configureAction)
 	agent.MustRegisterAction("restart", restartAction)
 	agent.MustRegisterAction("reprovision", reprovisionAction)
