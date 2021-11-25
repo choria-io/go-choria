@@ -658,41 +658,70 @@ func (fw *Framework) Configuration() *config.Config {
 	return fw.Config
 }
 
-// UniqueIDFromUnverifiedToken extracts the caller id from the client token, the token is not verified as we do not have the certificate
-func (fw *Framework) UniqueIDFromUnverifiedToken() (caller string, id string, token string, err error) {
+// UniqueIDFromUnverifiedToken extracts the caller id or identity from a token, the token is not verified as we do not have the certificate
+func (fw *Framework) UniqueIDFromUnverifiedToken() (id string, uid string, token string, err error) {
 	ts, err := fw.SignerToken()
 	if err != nil {
 		return "", "", "", err
 	}
 
-	t, caller, err := tokens.UnverifiedCallerFromClientIDToken(ts)
-	if err != nil {
-		return "", "", "", err
-	}
+	if fw.Config.InitiatedByServer {
+		t, id, err := tokens.UnverifiedIdentityFromServerToken(ts)
+		if err != nil {
+			return "", "", "", err
+		}
 
-	return caller, fmt.Sprintf("%x", md5.Sum([]byte(caller))), t.Raw, nil
+		return id, fmt.Sprintf("%x", md5.Sum([]byte(id))), t.Raw, nil
+	} else {
+		t, caller, err := tokens.UnverifiedCallerFromClientIDToken(ts)
+		if err != nil {
+			return "", "", "", err
+		}
+
+		return caller, fmt.Sprintf("%x", md5.Sum([]byte(caller))), t.Raw, nil
+	}
 }
 
 // SignerSeedFile is the path to the seed file for JWT auth
 func (fw *Framework) SignerSeedFile() (f string, err error) {
-	if fw.Config.Choria.RemoteSignerTokenSeedFile != "" {
-		return fw.Config.Choria.RemoteSignerTokenSeedFile, nil
+	switch {
+	case fw.Config.Choria.ClientAnonTLS:
+		if fw.Config.Choria.RemoteSignerTokenSeedFile != "" {
+			return fw.Config.Choria.RemoteSignerTokenSeedFile, nil
+		}
+
+	case fw.Config.Choria.ServerAnonTLS:
+		if fw.Config.Choria.ServerTokenSeedFile != "" {
+			return fw.Config.Choria.ServerTokenSeedFile, nil
+		}
 	}
 
-	if fw.Config.Choria.RemoteSignerTokenFile == "" {
-		return "", fmt.Errorf("no seed file or token path configured")
+	t, err := fw.SignerToken()
+	if err != nil {
+		return "", err
 	}
 
-	return fmt.Sprintf("%s.key", strings.TrimSuffix(fw.Config.Choria.RemoteSignerTokenFile, filepath.Ext(fw.Config.Choria.RemoteSignerTokenFile))), nil
+	return fmt.Sprintf("%s.key", strings.TrimSuffix(t, filepath.Ext(t))), nil
 }
 
-// SignerToken retrieves the AAA token used for signing requests
+// SignerToken retrieves the token used for signing requests or connecting to the broker
 func (fw *Framework) SignerToken() (token string, err error) {
-	if fw.Config.Choria.RemoteSignerTokenFile == "" {
+	var tf string
+
+	switch {
+	case fw.Config.Choria.ClientAnonTLS:
+		tf = fw.Config.Choria.RemoteSignerTokenFile
+	case fw.Config.Choria.ServerAnonTLS:
+		tf = fw.Config.Choria.ServerTokenFile
+	default:
 		return "", fmt.Errorf("no token file defined")
 	}
 
-	tb, err := os.ReadFile(fw.Config.Choria.RemoteSignerTokenFile)
+	if tf == "" {
+		return "", fmt.Errorf("no token file defined")
+	}
+
+	tb, err := os.ReadFile(tf)
 	if err != nil {
 		return "", fmt.Errorf("could not read token file: %v", err)
 	}

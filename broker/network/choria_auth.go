@@ -48,7 +48,8 @@ type ChoriaAuth struct {
 	isTLS                   bool
 	denyServers             bool
 	provisioningTokenSigner string
-	jwtSigner               string
+	clientJwtSigner         string
+	serverJwtSigner         string
 	choriaAccount           *server.Account
 	systemAccount           *server.Account
 	provisioningAccount     *server.Account
@@ -120,7 +121,7 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 		}
 	}
 
-	// should be already but lets make sure
+	// should be already but let's make sure
 	if err != nil {
 		verified = false
 	}
@@ -128,7 +129,7 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 	return verified
 }
 
-func (a *ChoriaAuth) verifyNonceSignature(nonce []byte, sig string, pks string) (bool, error) {
+func (a *ChoriaAuth) verifyNonceSignature(nonce []byte, sig string, pks string, log *logrus.Entry) (bool, error) {
 	if sig == "" {
 		return false, fmt.Errorf("connection nonce was not signed")
 	}
@@ -155,36 +156,51 @@ func (a *ChoriaAuth) verifyNonceSignature(nonce []byte, sig string, pks string) 
 		return false, fmt.Errorf("nonce signature did not verify using pub key in the jwt")
 	}
 
+	log.Debugf("Successfully verified nonce signature")
+
 	return true, nil
 }
 
-func (a *ChoriaAuth) verifyClientJWTBasedAuth(remote net.Addr, jwts string, nonce []byte, sig string, log *logrus.Entry) (caller string, perms *tokens.ClientPermissions, err error) {
+func (a *ChoriaAuth) verifyServerJWTBasedAuth(remote net.Addr, jwts string, nonce []byte, sig string, log *logrus.Entry) (claims *tokens.ServerClaims, err error) {
 	if remote == nil {
-		return "", nil, fmt.Errorf("remote client information is required in anonymous TLS or JWT signing modes")
+		log.Errorf("no remote client information received")
+		return nil, fmt.Errorf("remote client information is required in anonymous TLS or JWT signing modes")
 	}
 
-	var pks string
-
-	caller, pks, perms, err = a.parseClientIDJWT(jwts)
+	claims, err = a.parseServerJWT(jwts)
 	if err != nil {
 		log.Errorf("could not parse JWT from %s: %s", remote.String(), err)
-		return "", nil, fmt.Errorf("invalid JWT token")
+		return nil, fmt.Errorf("invalid JWT token")
 	}
 
-	log.Debugf("Extracted caller id %s from JWT token", caller)
-
-	nonceOK, err := a.verifyNonceSignature(nonce, sig, pks)
+	_, err = a.verifyNonceSignature(nonce, sig, claims.PublicKey, log)
 	if err != nil {
 		log.Errorf("nonce signature verification failed: %s", err)
-		return "", nil, fmt.Errorf("invalid nonce signature")
-	}
-	if !nonceOK {
-		return "", nil, fmt.Errorf("invalid nonce signature")
+		return nil, fmt.Errorf("invalid nonce signature")
 	}
 
-	log.Debugf("Successfully verified nonce signature")
+	return claims, nil
+}
 
-	return caller, perms, nil
+func (a *ChoriaAuth) verifyClientJWTBasedAuth(remote net.Addr, jwts string, nonce []byte, sig string, log *logrus.Entry) (claims *tokens.ClientIDClaims, err error) {
+	if remote == nil {
+		log.Errorf("no remote connection details received")
+		return nil, fmt.Errorf("remote client information is required in anonymous TLS or JWT signing modes")
+	}
+
+	claims, err = a.parseClientIDJWT(jwts)
+	if err != nil {
+		log.Errorf("could not parse JWT from %s: %s", remote.String(), err)
+		return nil, fmt.Errorf("invalid JWT token")
+	}
+
+	_, err = a.verifyNonceSignature(nonce, sig, claims.PublicKey, log)
+	if err != nil {
+		log.Errorf("nonce signature verification failed: %s", err)
+		return nil, fmt.Errorf("invalid nonce signature")
+	}
+
+	return claims, nil
 }
 
 func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn *tls.ConnectionState, tlsVerified bool) (bool, error) {
@@ -208,38 +224,71 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 		log = log.WithField("account", user.Account.Name)
 	}
 
-	var perms *tokens.ClientPermissions
+	var (
+		serverClaims   *tokens.ServerClaims
+		clientClaims   *tokens.ClientIDClaims
+		setClientPerms bool
+		setServerPerms bool
+	)
+
 	shouldPerformJWTBasedAuth := (a.anonTLS || jwts != "") && conn != nil
-	log = log.WithField("jwt_auth", shouldPerformJWTBasedAuth)
 
 	// we only do JWT based auth in TLS mode
 	if shouldPerformJWTBasedAuth {
+		purpose := tokens.TokenPurpose(jwts)
+		log = log.WithFields(logrus.Fields{"jwt_auth": shouldPerformJWTBasedAuth, "purpose": purpose})
 		log.Debugf("Performing JWT based authentication verification")
 
-		caller, perms, err = a.verifyClientJWTBasedAuth(remote, jwts, nonce, opts.Sig, log)
-		if err != nil {
-			log.Errorf("JWT based auth verification failed: %s", err)
-			return false, fmt.Errorf("invalid nonce signature or jwt token")
-		}
-		user.Username = caller
+		switch purpose {
+		case tokens.ClientIDPurpose:
+			if c.Kind() != server.CLIENT {
+				return false, fmt.Errorf("a client JWT was presented by a %d connection", c.Kind())
+			}
 
-		log = log.WithField("caller", caller)
-		log.Debugf("Extracted caller id %s from JWT token", caller)
+			clientClaims, err = a.verifyClientJWTBasedAuth(remote, jwts, nonce, opts.Sig, log)
+			if err != nil {
+				return false, fmt.Errorf("invalid nonce signature or jwt token")
+			}
+			log = log.WithField("caller", caller)
+			log.Debugf("Extracted caller id %s from JWT token", caller)
+
+			caller = clientClaims.CallerID
+
+			setClientPerms = true
+			user.Username = caller
+
+		case tokens.ServerPurpose:
+			if c.Kind() != server.CLIENT {
+				return false, fmt.Errorf("a client JWT was presented by a %d connection", c.Kind())
+			}
+
+			serverClaims, err = a.verifyServerJWTBasedAuth(remote, jwts, nonce, opts.Sig, log)
+			if err != nil {
+				return false, fmt.Errorf("invalid nonce signature or jwt token")
+			}
+			log = log.WithField("identity", serverClaims.ChoriaIdentity)
+			log.Debugf("Extracted remote identity %s from JWT token", user.Username)
+
+			setServerPerms = true
+			user.Username = serverClaims.ChoriaIdentity
+
+		default:
+			return false, fmt.Errorf("do not know how to handle %v purpose token", purpose)
+		}
 	}
 
 	switch {
 	// if a caller is set from the Client ID JWT we want to restrict it to just client stuff
 	// if a client allow list is set and the client is in the ip range we restrict it also
 	// else its default open like users with certs
-	case (a.anonTLS || caller != "") && a.remoteInClientAllowList(remote):
-		log = log.WithField("caller", caller)
+	case setClientPerms || ((a.anonTLS || caller != "") && a.remoteInClientAllowList(remote)):
 		log.Debugf("Setting client permissions")
-		a.setClientPermissions(user, caller, perms, log)
+		a.setClientPermissions(user, caller, clientClaims.Permissions, log)
 
 	// Else in the case where an allow list is configured we set server permissions on other conns
-	case len(a.clientAllowList) > 0:
-		log.Debugf("Setting strict server permissions")
-		a.setServerPermissions(user)
+	case setServerPerms || len(a.clientAllowList) > 0:
+		log.Debugf("Setting server permissions")
+		a.setServerPermissions(user, serverClaims, log)
 	}
 
 	if user.Account != nil {
@@ -381,33 +430,58 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 	return true, nil
 }
 
-func (a *ChoriaAuth) parseClientIDJWT(jwts string) (caller string, pubK string, perms *tokens.ClientPermissions, err error) {
-	if a.jwtSigner == emptyString {
-		return "", "", nil, fmt.Errorf("JWT Signer not set in plugin.choria.network.client_signer_cert, denying all clients")
+func (a *ChoriaAuth) parseServerJWT(jwts string) (claims *tokens.ServerClaims, err error) {
+	if a.serverJwtSigner == emptyString {
+		return nil, fmt.Errorf("JWT Signer not set in plugin.choria.network.server_signer_cert, denying all clients")
 	}
 
 	if jwts == emptyString {
-		return "", "", nil, fmt.Errorf("no JWT received")
+		return nil, fmt.Errorf("no JWT received")
+	}
+
+	claims, err = tokens.ParseServerTokenWithKeyfile(jwts, a.serverJwtSigner)
+	if err != nil {
+		return nil, err
+	}
+
+	if claims.ChoriaIdentity == emptyString {
+		return nil, fmt.Errorf("identity not in claims")
+	}
+
+	if claims.PublicKey == emptyString {
+		return nil, fmt.Errorf("no public key in claims")
+	}
+
+	return claims, nil
+}
+
+func (a *ChoriaAuth) parseClientIDJWT(jwts string) (claims *tokens.ClientIDClaims, err error) {
+	if a.clientJwtSigner == emptyString {
+		return nil, fmt.Errorf("JWT Signer not set in plugin.choria.network.client_signer_cert, denying all clients")
+	}
+
+	if jwts == emptyString {
+		return nil, fmt.Errorf("no JWT received")
 	}
 
 	// Generally now we want to accept all mix mode clients who have a valid JWT, ie. one with the
 	// correct purpose flag in addition to being valid, but to keep backwards compatibility with the
 	// mode documented in https://choria.io/blog/post/2020/09/13/aaa_improvements/ we accept them in
 	// the specific scenario where AnonTLS is configured without checking the purpose field
-	claims, err := tokens.ParseClientIDTokenWithKeyfile(jwts, a.jwtSigner, !a.anonTLS)
+	claims, err = tokens.ParseClientIDTokenWithKeyfile(jwts, a.clientJwtSigner, !a.anonTLS)
 	if err != nil {
-		return "", "", nil, err
+		return nil, err
 	}
 
 	if claims.CallerID == emptyString {
-		return "", "", nil, fmt.Errorf("no callerid in claims")
+		return nil, fmt.Errorf("no callerid in claims")
 	}
 
 	if claims.PublicKey == emptyString {
-		return "", "", nil, fmt.Errorf("no public key in claims")
+		return nil, fmt.Errorf("no public key in claims")
 	}
 
-	return claims.CallerID, claims.PublicKey, claims.Permissions, nil
+	return claims, nil
 }
 
 func (a *ChoriaAuth) setMinimalClientPermissions(_ *server.User, caller string, subs []string, pubs []string) ([]string, []string) {
@@ -493,7 +567,7 @@ func (a *ChoriaAuth) setElectionPermissions(user *server.User, subs []string, pu
 	return subs, pubs
 }
 
-func (a *ChoriaAuth) setPermissions(user *server.User, caller string, perms *tokens.ClientPermissions, log *logrus.Entry) (pubs []string, subs []string, err error) {
+func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string, perms *tokens.ClientPermissions, log *logrus.Entry) (pubs []string, subs []string, err error) {
 	if perms != nil && perms.OrgAdmin {
 		log.Infof("Granting user access to all subjects (OrgAdmin)")
 		return allSubjects, allSubjects, nil
@@ -536,7 +610,7 @@ func (a *ChoriaAuth) setClientPermissions(user *server.User, caller string, perm
 	user.Permissions.Subscribe = &server.SubjectPermission{}
 	user.Permissions.Publish = &server.SubjectPermission{}
 
-	pubs, subs, err := a.setPermissions(user, caller, perms, log)
+	pubs, subs, err := a.setClientTokenPermissions(user, caller, perms, log)
 	if err != nil {
 		log.Warnf("Could not determine permissions for user, denying all: %s", err)
 		user.Permissions.Subscribe.Deny = allSubjects
@@ -553,36 +627,108 @@ func (a *ChoriaAuth) setClientPermissions(user *server.User, caller string, perm
 	}
 }
 
-func (a *ChoriaAuth) setServerPermissions(user *server.User) {
+func (a *ChoriaAuth) setDenyServersPermissions(user *server.User) {
+	user.Permissions.Subscribe = &server.SubjectPermission{
+		Deny: allSubjects,
+	}
+
+	user.Permissions.Publish = &server.SubjectPermission{
+		Deny: allSubjects,
+	}
+}
+
+func (a *ChoriaAuth) setClaimsBasedServerPermissions(user *server.User, claims *tokens.ServerClaims, log *logrus.Entry) {
+	if len(claims.Collectives) == 0 {
+		log.Warnf("no collectives in server token, denying access")
+		a.setDenyServersPermissions(user)
+		return
+	}
+
+	user.Permissions.Subscribe = &server.SubjectPermission{}
+	user.Permissions.Publish = &server.SubjectPermission{
+		Allow: []string{"choria.lifecycle.>"},
+	}
+
+	user.Permissions.Publish.Allow = append(user.Permissions.Publish.Allow, claims.AdditionalPublishSubjects...)
+
+	for _, c := range claims.Collectives {
+		user.Permissions.Publish.Allow = append(user.Permissions.Publish.Allow,
+			fmt.Sprintf("%s.reply.>", c),
+			fmt.Sprintf("%s.broadcast.agent.registration", c),
+			fmt.Sprintf("choria.federation.%s.collective", c),
+		)
+
+		user.Permissions.Subscribe.Allow = append(user.Permissions.Subscribe.Allow,
+			fmt.Sprintf("%s.broadcast.agent.>", c),
+			fmt.Sprintf("%s.node.%s", c, claims.ChoriaIdentity),
+			fmt.Sprintf("%s.reply.%x.>", c, md5.Sum([]byte(claims.ChoriaIdentity))),
+		)
+
+		if claims.Permissions != nil {
+			if claims.Permissions.ServiceHost {
+				user.Permissions.Subscribe.Allow = append(user.Permissions.Subscribe.Allow,
+					fmt.Sprintf("%s.broadcast.service.>", c),
+				)
+			}
+
+			if claims.Permissions.Submission {
+				user.Permissions.Publish.Allow = append(user.Permissions.Publish.Allow,
+					fmt.Sprintf("%s.submission.in.>", c),
+				)
+			}
+		}
+	}
+
+	if claims.Permissions != nil && claims.Permissions.Streams {
+		prefix := "$JS.API"
+		if claims.OrganizationUnit != "choria" {
+			prefix = "choria.streams"
+		}
+
+		user.Permissions.Publish.Allow = append(user.Permissions.Publish.Allow,
+			fmt.Sprintf("%s.STREAM.INFO.*", prefix),
+			fmt.Sprintf("%s.STREAM.MSG.GET.*", prefix),
+			fmt.Sprintf("%s.CONSUMER.CREATE.*", prefix),
+			fmt.Sprintf("%s.CONSUMER.DURABLE.CREATE.*.*", prefix),
+			fmt.Sprintf("%s.CONSUMER.INFO.*.*", prefix),
+			fmt.Sprintf("%s.CONSUMER.MSG.NEXT.*.*", prefix),
+			"$JS.ACK.>",
+			"$JS.FC.>",
+		)
+	}
+}
+
+func (a *ChoriaAuth) setDefaultServerPermissions(user *server.User) {
+	user.Permissions.Subscribe = &server.SubjectPermission{
+		Deny: []string{
+			"*.reply.>",
+			"choria.federation.>",
+			"choria.lifecycle.>",
+		},
+	}
+
+	user.Permissions.Publish = &server.SubjectPermission{
+		Allow: allSubjects,
+
+		Deny: []string{
+			"*.broadcast.agent.>",
+			"*.broadcast.service.>",
+			"*.node.>",
+			"choria.federation.*.federation",
+		},
+	}
+}
+
+func (a *ChoriaAuth) setServerPermissions(user *server.User, claims *tokens.ServerClaims, log *logrus.Entry) {
 	switch {
 	case a.denyServers:
-		user.Permissions.Subscribe = &server.SubjectPermission{
-			Deny: allSubjects,
-		}
+		a.setDenyServersPermissions(user)
 
-		user.Permissions.Publish = &server.SubjectPermission{
-			Deny: allSubjects,
-		}
+	case claims != nil:
+		a.setClaimsBasedServerPermissions(user, claims, log)
 
 	default:
-		user.Permissions.Subscribe = &server.SubjectPermission{
-			Deny: []string{
-				"*.reply.>",
-				"choria.federation.>",
-				"choria.lifecycle.>",
-			},
-		}
-
-		user.Permissions.Publish = &server.SubjectPermission{
-			Allow: allSubjects,
-
-			Deny: []string{
-				"*.broadcast.agent.>",
-				"*.broadcast.service.>",
-				"*.node.>",
-				"choria.federation.*.federation",
-			},
-		}
+		a.setDefaultServerPermissions(user)
 	}
 }
 

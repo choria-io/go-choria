@@ -104,7 +104,28 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		return td, privateKey
 	}
 
-	createSignedJWT := func(pk *rsa.PrivateKey, claims map[string]interface{}) string {
+	createSignedServerJWT := func(pk *rsa.PrivateKey, pubK ed25519.PublicKey, claims map[string]interface{}) string {
+		c := map[string]interface{}{
+			"exp":        time.Now().UTC().Add(time.Hour).Unix(),
+			"nbf":        time.Now().UTC().Add(-1 * time.Minute).Unix(),
+			"iat":        time.Now().UTC().Unix(),
+			"iss":        "Ginkgo",
+			"public_key": hex.EncodeToString(pubK),
+			"identity":   "ginkgo.example.net",
+			"ou":         "choria",
+		}
+		for k, v := range claims {
+			c[k] = v
+		}
+
+		token := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(c))
+		signed, err := token.SignedString(pk)
+		Expect(err).ToNot(HaveOccurred())
+
+		return signed
+	}
+
+	createSignedClientJWT := func(pk *rsa.PrivateKey, claims map[string]interface{}) string {
 		c := map[string]interface{}{
 			"exp":      time.Now().UTC().Add(time.Hour).Unix(),
 			"nbf":      time.Now().UTC().Add(-1 * time.Minute).Unix(),
@@ -237,32 +258,41 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		)
 
 		BeforeEach(func() {
+			auth.serverJwtSigner = filepath.Join(td, "public.pem")
 			td, privateKey = createKeyPair()
 			edPublicKey, edPrivateKey, err = choria.Ed25519KeyPair()
 			Expect(err).ToNot(HaveOccurred())
-			auth.jwtSigner = filepath.Join(td, "public.pem")
-			copts = &server.ClientOpts{
-				Token: createSignedJWT(privateKey, map[string]interface{}{
-					"purpose":    "choria_client_id",
-					"public_key": hex.EncodeToString(edPublicKey),
-				}),
-			}
-			verifiedConn = &tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{nil}}
-			mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
 		})
 
 		AfterEach(func() {
 			os.RemoveAll(td)
 		})
 
-		Describe("verifyClientJWTBasedAuth", func() {
+		Describe("Servers", func() {
+			BeforeEach(func() {
+				auth.serverJwtSigner = filepath.Join(td, "public.pem")
+				auth.clientAllowList = nil
+				auth.denyServers = false
+
+				copts = &server.ClientOpts{
+					Token: createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+						"purpose":     tokens.ServerPurpose,
+						"public_key":  hex.EncodeToString(edPublicKey),
+						"collectives": []string{"c1", "c2"},
+					}),
+				}
+				verifiedConn = &tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{nil}}
+				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
+				mockClient.EXPECT().Kind().Return(server.CLIENT).AnyTimes()
+			})
+
 			It("Should require a remote", func() {
-				_, _, err := auth.verifyClientJWTBasedAuth(nil, "", nil, "", log)
+				_, err := auth.verifyServerJWTBasedAuth(nil, "", nil, "", log)
 				Expect(err).To(MatchError("remote client information is required in anonymous TLS or JWT signing modes"))
 			})
 
 			It("Should fail on invalid jwt", func() {
-				_, _, err := auth.verifyClientJWTBasedAuth(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}, "x", nil, "", log)
+				_, err := auth.verifyServerJWTBasedAuth(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}, "x", nil, "", log)
 				Expect(err).To(MatchError("invalid JWT token"))
 			})
 
@@ -275,29 +305,400 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(err).To(MatchError("invalid nonce signature or jwt token"))
 				Expect(verified).To(BeFalse())
 			})
+
+			It("Should deny servers when allow list is set and servers are not allowed", func() {
+				auth.clientAllowList = []string{"10.0.0.0/24"}
+				auth.denyServers = true
+				mockClient.GetOpts().Token = ""
+				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
+				mockClient.EXPECT().GetNonce().Return(nil)
+				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+					Expect(user.Username).To(BeEmpty())
+					Expect(user.Account).To(Equal(auth.choriaAccount))
+					Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+						Deny: []string{">"},
+					}))
+					Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+						Deny: []string{">"}},
+					))
+				})
+
+				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(verified).To(BeTrue())
+			})
+
+			Describe("Server Permissions", func() {
+				BeforeEach(func() {
+					auth.denyServers = false
+					sig, err := choria.Ed25519Sign(edPrivateKey, []byte("toomanysecrets"))
+					Expect(err).ToNot(HaveOccurred())
+					copts.Sig = base64.RawURLEncoding.EncodeToString(sig)
+
+					mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
+					mockClient.EXPECT().GetNonce().Return([]byte("toomanysecrets"))
+				})
+
+				It("Should set strict permissions for a server JWT user", func() {
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+						Expect(user.Username).To(Equal("ginkgo.example.net"))
+						Expect(user.Account).To(Equal(auth.choriaAccount))
+						Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+							Allow: []string{
+								"c1.broadcast.agent.>",
+								"c1.node.ginkgo.example.net",
+								"c1.reply.3f7c3a791b0eb10da51dca4cdedb9418.>",
+								"c2.broadcast.agent.>",
+								"c2.node.ginkgo.example.net",
+								"c2.reply.3f7c3a791b0eb10da51dca4cdedb9418.>",
+							},
+						}))
+						Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+							Allow: []string{
+								"choria.lifecycle.>",
+								"c1.reply.>",
+								"c1.broadcast.agent.registration",
+								"choria.federation.c1.collective",
+								"c2.reply.>",
+								"c2.broadcast.agent.registration",
+								"choria.federation.c2.collective",
+							},
+						}))
+					})
+
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(verified).To(BeTrue())
+				})
+
+				It("Should support denying servers", func() {
+					auth.denyServers = true
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+						Expect(user.Username).To(Equal("ginkgo.example.net"))
+						Expect(user.Account).To(Equal(auth.choriaAccount))
+						Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+							Deny: []string{">"},
+						}))
+						Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+							Deny: []string{">"},
+						}))
+					})
+
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(verified).To(BeTrue())
+				})
+
+				It("Should handle no collectives being set", func() {
+					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+						"purpose":    tokens.ServerPurpose,
+						"public_key": hex.EncodeToString(edPublicKey),
+					})
+
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+						Expect(user.Username).To(Equal("ginkgo.example.net"))
+						Expect(user.Account).To(Equal(auth.choriaAccount))
+						Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+							Deny: []string{">"},
+						}))
+						Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+							Deny: []string{">"},
+						}))
+					})
+
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(verified).To(BeTrue())
+				})
+
+				It("Should support service hosts", func() {
+					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+						"purpose":     tokens.ServerPurpose,
+						"public_key":  hex.EncodeToString(edPublicKey),
+						"collectives": []string{"c1", "c2"},
+						"permissions": &tokens.ServerPermissions{ServiceHost: true},
+					})
+
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+						Expect(user.Username).To(Equal("ginkgo.example.net"))
+						Expect(user.Account).To(Equal(auth.choriaAccount))
+						Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+							Allow: []string{
+								"c1.broadcast.agent.>",
+								"c1.node.ginkgo.example.net",
+								"c1.reply.3f7c3a791b0eb10da51dca4cdedb9418.>",
+								"c1.broadcast.service.>",
+								"c2.broadcast.agent.>",
+								"c2.node.ginkgo.example.net",
+								"c2.reply.3f7c3a791b0eb10da51dca4cdedb9418.>",
+								"c2.broadcast.service.>",
+							},
+						}))
+					})
+
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(verified).To(BeTrue())
+				})
+
+				It("Should support Submission", func() {
+					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+						"purpose":     tokens.ServerPurpose,
+						"public_key":  hex.EncodeToString(edPublicKey),
+						"collectives": []string{"c1", "c2"},
+						"permissions": &tokens.ServerPermissions{Submission: true},
+					})
+
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+						Expect(user.Username).To(Equal("ginkgo.example.net"))
+						Expect(user.Account).To(Equal(auth.choriaAccount))
+						Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+							Allow: []string{
+								"choria.lifecycle.>",
+								"c1.reply.>",
+								"c1.broadcast.agent.registration",
+								"choria.federation.c1.collective",
+								"c1.submission.in.>",
+								"c2.reply.>",
+								"c2.broadcast.agent.registration",
+								"choria.federation.c2.collective",
+								"c2.submission.in.>",
+							},
+						}))
+					})
+
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(verified).To(BeTrue())
+				})
+
+				Describe("Should support Streams", func() {
+					It("Should support Streams in the choria org", func() {
+						copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+							"purpose":     tokens.ServerPurpose,
+							"public_key":  hex.EncodeToString(edPublicKey),
+							"collectives": []string{"c1", "c2"},
+							"permissions": &tokens.ServerPermissions{Streams: true},
+						})
+
+						mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+							Expect(user.Username).To(Equal("ginkgo.example.net"))
+							Expect(user.Account).To(Equal(auth.choriaAccount))
+							Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+								Allow: []string{
+									"choria.lifecycle.>",
+									"c1.reply.>",
+									"c1.broadcast.agent.registration",
+									"choria.federation.c1.collective",
+									"c2.reply.>",
+									"c2.broadcast.agent.registration",
+									"choria.federation.c2.collective",
+									"$JS.API.STREAM.INFO.*",
+									"$JS.API.STREAM.MSG.GET.*",
+									"$JS.API.CONSUMER.CREATE.*",
+									"$JS.API.CONSUMER.DURABLE.CREATE.*.*",
+									"$JS.API.CONSUMER.INFO.*.*",
+									"$JS.API.CONSUMER.MSG.NEXT.*.*",
+									"$JS.ACK.>",
+									"$JS.FC.>",
+								},
+							}))
+						})
+
+						verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+						Expect(err).ToNot(HaveOccurred())
+						Expect(verified).To(BeTrue())
+					})
+					It("Should support Streams in other orgs", func() {
+						copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+							"purpose":     tokens.ServerPurpose,
+							"public_key":  hex.EncodeToString(edPublicKey),
+							"collectives": []string{"c1", "c2"},
+							"ou":          "other",
+							"permissions": &tokens.ServerPermissions{Streams: true},
+						})
+
+						mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+							Expect(user.Username).To(Equal("ginkgo.example.net"))
+							Expect(user.Account).To(Equal(auth.choriaAccount))
+							Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+								Allow: []string{
+									"choria.lifecycle.>",
+									"c1.reply.>",
+									"c1.broadcast.agent.registration",
+									"choria.federation.c1.collective",
+									"c2.reply.>",
+									"c2.broadcast.agent.registration",
+									"choria.federation.c2.collective",
+									"choria.streams.STREAM.INFO.*",
+									"choria.streams.STREAM.MSG.GET.*",
+									"choria.streams.CONSUMER.CREATE.*",
+									"choria.streams.CONSUMER.DURABLE.CREATE.*.*",
+									"choria.streams.CONSUMER.INFO.*.*",
+									"choria.streams.CONSUMER.MSG.NEXT.*.*",
+									"$JS.ACK.>",
+									"$JS.FC.>",
+								},
+							}))
+						})
+
+						verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+						Expect(err).ToNot(HaveOccurred())
+						Expect(verified).To(BeTrue())
+					})
+				})
+
+				It("Should support additional subjects", func() {
+					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+						"purpose":      tokens.ServerPurpose,
+						"public_key":   hex.EncodeToString(edPublicKey),
+						"collectives":  []string{"c1", "c2"},
+						"pub_subjects": []string{"other", "subject"},
+					})
+
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+						Expect(user.Username).To(Equal("ginkgo.example.net"))
+						Expect(user.Account).To(Equal(auth.choriaAccount))
+						Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+							Allow: []string{
+								"choria.lifecycle.>",
+								"other",
+								"subject",
+								"c1.reply.>",
+								"c1.broadcast.agent.registration",
+								"choria.federation.c1.collective",
+								"c2.reply.>",
+								"c2.broadcast.agent.registration",
+								"choria.federation.c2.collective",
+							},
+						}))
+					})
+
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(verified).To(BeTrue())
+
+				})
+			})
+		})
+
+		Describe("Clients", func() {
+			BeforeEach(func() {
+				auth.clientJwtSigner = filepath.Join(td, "public.pem")
+				copts = &server.ClientOpts{
+					Token: createSignedClientJWT(privateKey, map[string]interface{}{
+						"purpose":    tokens.ClientIDPurpose,
+						"public_key": hex.EncodeToString(edPublicKey),
+					}),
+				}
+				verifiedConn = &tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{nil}}
+				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
+				mockClient.EXPECT().Kind().Return(server.CLIENT).AnyTimes()
+			})
+
+			It("Should require a remote", func() {
+				_, err := auth.verifyClientJWTBasedAuth(nil, "", nil, "", log)
+				Expect(err).To(MatchError("remote client information is required in anonymous TLS or JWT signing modes"))
+			})
+
+			It("Should fail on invalid jwt", func() {
+				_, err := auth.verifyClientJWTBasedAuth(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}, "x", nil, "", log)
+				Expect(err).To(MatchError("invalid JWT token"))
+			})
+
+			It("Should fail for invalid nonce", func() {
+				copts.Sig = "wrong"
+				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
+				mockClient.EXPECT().GetNonce().Return([]byte("toomanysecrets"))
+
+				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+				Expect(err).To(MatchError("invalid nonce signature or jwt token"))
+				Expect(verified).To(BeFalse())
+			})
+
+			It("Should set strict permissions for a client JWT user", func() {
+				sig, err := choria.Ed25519Sign(edPrivateKey, []byte("toomanysecrets"))
+				Expect(err).ToNot(HaveOccurred())
+				copts.Sig = base64.RawURLEncoding.EncodeToString(sig)
+
+				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
+				mockClient.EXPECT().GetNonce().Return([]byte("toomanysecrets"))
+				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+					Expect(user.Username).To(Equal("up=ginkgo"))
+					Expect(user.Account).To(Equal(auth.choriaAccount))
+					Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+						Allow: []string{"*.reply.e33bf0376d4accbb4a8fd24b2f840b2e.>"},
+					}))
+					Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+						Allow: []string{
+							"*.broadcast.agent.>",
+							"*.broadcast.service.>",
+							"*.node.>",
+							"choria.federation.*.federation",
+						},
+					}))
+				})
+
+				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(verified).To(BeTrue())
+			})
+
+			It("Should register other clients without restriction", func() {
+				mockClient.GetOpts().Token = ""
+				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
+				mockClient.EXPECT().GetNonce().Return(nil)
+				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+					Expect(user.Username).To(BeEmpty())
+					Expect(user.Account).To(Equal(auth.choriaAccount))
+					Expect(user.Permissions.Subscribe).To(BeNil())
+					Expect(user.Permissions.Publish).To(BeNil())
+				})
+
+				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(verified).To(BeTrue())
+			})
+
+			It("Should not access a JWT in non TLS mode", func() {
+				auth.clientJwtSigner = ""
+				auth.anonTLS = false
+				mockClient.GetOpts().Token = ""
+
+				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
+				mockClient.EXPECT().GetNonce().Return(nil)
+				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+					Expect(user.Username).To(BeEmpty()) // caller would be set from the jwt
+					Expect(user.Account).To(Equal(auth.choriaAccount))
+				})
+
+				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+				Expect(verified).To(BeTrue())
+				Expect(err).ToNot(HaveOccurred())
+			})
 		})
 
 		Describe("verifyNonceSignature", func() {
 			It("Should fail when no signature is given", func() {
-				ok, err := auth.verifyNonceSignature(nil, "", "")
+				ok, err := auth.verifyNonceSignature(nil, "", "", log)
 				Expect(ok).To(BeFalse())
 				Expect(err).To(MatchError("connection nonce was not signed"))
 			})
 
 			It("Should fail when no public key is in the jwt", func() {
-				ok, err := auth.verifyNonceSignature(nil, "x", "")
+				ok, err := auth.verifyNonceSignature(nil, "x", "", log)
 				Expect(ok).To(BeFalse())
 				Expect(err).To(MatchError("no public key found in the JWT to verify nonce signature"))
 			})
 
 			It("Should fail when the server did not set a nonce", func() {
-				ok, err := auth.verifyNonceSignature(nil, "x", "x")
+				ok, err := auth.verifyNonceSignature(nil, "x", "x", log)
 				Expect(ok).To(BeFalse())
 				Expect(err).To(MatchError("server did not generate a nonce to verify"))
 			})
 
 			It("Should fail for invalid nonce signatures", func() {
-				ok, err := auth.verifyNonceSignature([]byte("toomanysecrets"), "x", hex.EncodeToString(edPublicKey))
+				ok, err := auth.verifyNonceSignature([]byte("toomanysecrets"), "x", hex.EncodeToString(edPublicKey), log)
 				Expect(ok).To(BeFalse())
 				Expect(err).To(MatchError("invalid url encoded signature: illegal base64 data at input byte 0"))
 			})
@@ -309,103 +710,10 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(sig).To(HaveLen(64))
 
-				ok, err := auth.verifyNonceSignature(nonce, base64.RawURLEncoding.EncodeToString(sig), hex.EncodeToString(edPublicKey))
+				ok, err := auth.verifyNonceSignature(nonce, base64.RawURLEncoding.EncodeToString(sig), hex.EncodeToString(edPublicKey), log)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(ok).To(BeTrue())
 			})
-		})
-
-		It("Should not access a JWT in non TLS mode", func() {
-			auth.jwtSigner = ""
-			auth.anonTLS = false
-			mockClient.GetOpts().Token = ""
-
-			mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
-			mockClient.EXPECT().GetNonce().Return(nil)
-			mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
-				Expect(user.Username).To(BeEmpty()) // caller would be set from the jwt
-				Expect(user.Account).To(Equal(auth.choriaAccount))
-			})
-
-			verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
-			Expect(verified).To(BeTrue())
-			Expect(err).ToNot(HaveOccurred())
-		})
-
-		It("Should fail for invalid nonce signatures", func() {
-			copts.Sig = "wrong"
-			mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
-			mockClient.EXPECT().GetNonce().Return([]byte("toomanysecrets"))
-
-			verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
-			Expect(err).To(MatchError("invalid nonce signature or jwt token"))
-			Expect(verified).To(BeFalse())
-		})
-
-		It("Should set strict permissions for a client JWT user", func() {
-			sig, err := choria.Ed25519Sign(edPrivateKey, []byte("toomanysecrets"))
-			Expect(err).ToNot(HaveOccurred())
-			copts.Sig = base64.RawURLEncoding.EncodeToString(sig)
-
-			mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
-			mockClient.EXPECT().GetNonce().Return([]byte("toomanysecrets"))
-			mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
-				Expect(user.Username).To(Equal("up=ginkgo"))
-				Expect(user.Account).To(Equal(auth.choriaAccount))
-				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-					Allow: []string{"*.reply.e33bf0376d4accbb4a8fd24b2f840b2e.>"},
-				}))
-				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
-					Allow: []string{
-						"*.broadcast.agent.>",
-						"*.broadcast.service.>",
-						"*.node.>",
-						"choria.federation.*.federation",
-					},
-				}))
-			})
-
-			verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(verified).To(BeTrue())
-		})
-
-		It("Should deny servers when allow list is set and servers are not allowed", func() {
-			auth.clientAllowList = []string{"10.0.0.0/24"}
-			auth.denyServers = true
-			mockClient.GetOpts().Token = ""
-			mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
-			mockClient.EXPECT().GetNonce().Return(nil)
-			mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
-				Expect(user.Username).To(BeEmpty())
-				Expect(user.Account).To(Equal(auth.choriaAccount))
-				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-					Deny: []string{">"},
-				}))
-				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
-					Deny: []string{">"}},
-				))
-			})
-
-			verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(verified).To(BeTrue())
-		})
-
-		It("Should register other clients without restriction", func() {
-			mockClient.GetOpts().Token = ""
-			mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
-			mockClient.EXPECT().GetNonce().Return(nil)
-			mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
-				Expect(user.Username).To(BeEmpty())
-				Expect(user.Account).To(Equal(auth.choriaAccount))
-				Expect(user.Permissions.Subscribe).To(BeNil())
-				Expect(user.Permissions.Publish).To(BeNil())
-			})
-
-			verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(verified).To(BeTrue())
 		})
 	})
 
@@ -692,52 +1000,47 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		})
 
 		It("Should fail without a cert", func() {
-			_, _, _, err := auth.parseClientIDJWT("")
+			_, err := auth.parseClientIDJWT("")
 			Expect(err).To(MatchError("JWT Signer not set in plugin.choria.network.client_signer_cert, denying all clients"))
 		})
 
 		It("Should fail for empty JWTs", func() {
-			auth.jwtSigner = "testdata/public.pem"
-			_, _, _, err := auth.parseClientIDJWT("")
+			auth.clientJwtSigner = "testdata/public.pem"
+			_, err := auth.parseClientIDJWT("")
 			Expect(err).To(MatchError("no JWT received"))
 		})
 
 		It("Should verify JWTs", func() {
-			auth.jwtSigner = filepath.Join(td, "public.pem")
-			signed := createSignedJWT(privateKey, map[string]interface{}{
+			auth.clientJwtSigner = filepath.Join(td, "public.pem")
+			signed := createSignedClientJWT(privateKey, map[string]interface{}{
 				"exp": time.Now().UTC().Add(-time.Hour).Unix(),
 			})
 
-			caller, pk, perms, err := auth.parseClientIDJWT(signed)
+			_, err := auth.parseClientIDJWT(signed)
 			Expect(err.Error()).To(MatchRegexp("token is expired by"))
-			Expect(perms).To(BeNil())
-			Expect(caller).To(BeEmpty())
-			Expect(pk).To(BeEmpty())
 		})
 
 		It("Should detect missing callers", func() {
-			auth.jwtSigner = filepath.Join(td, "public.pem")
-			signed := createSignedJWT(privateKey, map[string]interface{}{
+			auth.clientJwtSigner = filepath.Join(td, "public.pem")
+			signed := createSignedClientJWT(privateKey, map[string]interface{}{
 				"callerid": "",
-				"purpose":  "choria_client_id",
+				"purpose":  tokens.ClientIDPurpose,
 			})
 
-			caller, _, perms, err := auth.parseClientIDJWT(signed)
+			_, err := auth.parseClientIDJWT(signed)
 			Expect(err).To(MatchError("no callerid in claims"))
-			Expect(perms).To(BeNil())
-			Expect(caller).To(BeEmpty())
 		})
 
 		It("Should expect a purpose field", func() {
-			auth.jwtSigner = filepath.Join(td, "public.pem")
-			signed := createSignedJWT(privateKey, nil)
-			_, _, _, err := auth.parseClientIDJWT(signed)
+			auth.clientJwtSigner = filepath.Join(td, "public.pem")
+			signed := createSignedClientJWT(privateKey, nil)
+			_, err := auth.parseClientIDJWT(signed)
 			Expect(err).To(MatchError("not a client id token"))
 
-			signed = createSignedJWT(privateKey, map[string]interface{}{
+			signed = createSignedClientJWT(privateKey, map[string]interface{}{
 				"purpose": "wrong",
 			})
-			_, _, _, err = auth.parseClientIDJWT(signed)
+			_, err = auth.parseClientIDJWT(signed)
 			Expect(err).To(MatchError("not a client id token"))
 		})
 
@@ -745,16 +1048,15 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			edPublicKey, _, err := choria.Ed25519KeyPair()
 			Expect(err).ToNot(HaveOccurred())
 
-			auth.jwtSigner = filepath.Join(td, "public.pem")
-			signed := createSignedJWT(privateKey, map[string]interface{}{
-				"purpose":    "choria_client_id",
+			auth.clientJwtSigner = filepath.Join(td, "public.pem")
+			signed := createSignedClientJWT(privateKey, map[string]interface{}{
+				"purpose":    tokens.ClientIDPurpose,
 				"public_key": hex.EncodeToString(edPublicKey),
 			})
 
-			caller, _, perms, err := auth.parseClientIDJWT(signed)
+			claims, err := auth.parseClientIDJWT(signed)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(perms).To(BeNil())
-			Expect(caller).To(Equal("up=ginkgo"))
+			Expect(claims.CallerID).To(Equal("up=ginkgo"))
 		})
 	})
 
@@ -936,7 +1238,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 	Describe("setServerPermissions", func() {
 		It("Should set correct permissions", func() {
-			auth.setServerPermissions(user)
+			auth.setServerPermissions(user, nil, log)
 
 			Expect(user.Permissions.Publish.Allow).To(Equal([]string{
 				">",
@@ -959,7 +1261,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 		It("Should support denying servers", func() {
 			auth.denyServers = true
-			auth.setServerPermissions(user)
+			auth.setServerPermissions(user, nil, log)
 			Expect(user.Permissions.Publish.Deny).To(Equal([]string{">"}))
 			Expect(user.Permissions.Publish.Allow).To(BeNil())
 		})

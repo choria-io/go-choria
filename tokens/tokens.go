@@ -25,6 +25,9 @@ const (
 
 	// ProvisioningPurpose indicates a JWT is a ProvisioningClaims JWT
 	ProvisioningPurpose Purpose = "choria_provisioning"
+
+	// ServerPurpose indicates a JWT is a ServerClaims JWT
+	ServerPurpose Purpose = "choria_server"
 )
 
 // ParseToken parses token into claims and verify the token is valid using the pk

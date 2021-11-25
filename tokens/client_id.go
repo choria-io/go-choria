@@ -83,6 +83,10 @@ func NewClientIDClaims(callerID string, allowedAgents []string, org string, prop
 		pubKey = hex.EncodeToString(pk)
 	}
 
+	if org == "" {
+		org = "choria"
+	}
+
 	return &ClientIDClaims{
 		CallerID:         callerID,
 		AllowedAgents:    allowedAgents,
@@ -103,7 +107,7 @@ func NewClientIDClaims(callerID string, allowedAgents []string, org string, prop
 //
 // Further, at the moment, we do not verity the Purpose for backward compatibility
 //
-// An empty callerid will result in a error
+// An empty callerid will result in an error
 func UnverifiedCallerFromClientIDToken(token string) (*jwt.Token, string, error) {
 	claims := &ClientIDClaims{}
 	t, _, err := new(jwt.Parser).ParseUnverified(token, claims)
@@ -161,10 +165,8 @@ func ParseClientIDToken(token string, pk *rsa.PublicKey, verifyPurpose bool) (*C
 		return nil, fmt.Errorf("could not parse client id token: %s", err)
 	}
 
-	if verifyPurpose {
-		if !IsClientIDToken(claims.StandardClaims) {
-			return nil, fmt.Errorf("not a client id token")
-		}
+	if verifyPurpose && !IsClientIDToken(claims.StandardClaims) {
+		return nil, fmt.Errorf("not a client id token")
 	}
 
 	return claims, nil
