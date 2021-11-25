@@ -69,6 +69,15 @@ action "configure", :description => "Configure the Choria Server" do
         :optional    => true
 
 
+  input :server_jwt,
+        :prompt      => "Server JWT",
+        :description => "JWT file used to identify the server to the broker for ed25519 based authentication",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 2048,
+        :optional    => true
+
+
   input :ssldir,
         :prompt      => "SSL Dir",
         :description => "Directory for storing the certificate in",

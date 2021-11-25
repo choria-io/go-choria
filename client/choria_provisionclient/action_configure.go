@@ -219,6 +219,15 @@ func (d *ConfigureRequester) OpaPolicies(v map[string]interface{}) *ConfigureReq
 	return d
 }
 
+// ServerJwt is an optional input to the configure action
+//
+// Description: JWT file used to identify the server to the broker for ed25519 based authentication
+func (d *ConfigureRequester) ServerJwt(v string) *ConfigureRequester {
+	d.r.args["server_jwt"] = v
+
+	return d
+}
+
 // Ssldir is an optional input to the configure action
 //
 // Description: Directory for storing the certificate in
