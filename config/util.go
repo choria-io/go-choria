@@ -16,7 +16,7 @@ import (
 	"strings"
 
 	"github.com/choria-io/go-choria/confkey"
-	"github.com/choria-io/go-choria/internal/util"
+	iu "github.com/choria-io/go-choria/internal/util"
 )
 
 // ProjectConfigurationFiles returns any configuration file in the specified directory and their parents directories.
@@ -42,7 +42,7 @@ func ProjectConfigurationFiles(path string) ([]string, error) {
 	}
 
 	config := filepath.Join(path, "choria.conf")
-	if util.FileExist(config) {
+	if iu.FileExist(config) {
 		res = append(res, config)
 	}
 
@@ -86,7 +86,7 @@ func DNSFQDN() (string, error) {
 // can be used to extract the parsed settings
 func parseDotConfFile(plugin string, conf *Config, target interface{}) error {
 	cfgPath := filepath.Join(conf.dotdDir(), fmt.Sprintf("%s.cfg", plugin))
-	if util.FileExist(cfgPath) {
+	if iu.FileExist(cfgPath) {
 		err := parseConfig(cfgPath, target, fmt.Sprintf("plugin.%s", plugin), conf.rawOpts)
 		if err != nil {
 			return err
@@ -110,7 +110,7 @@ func (c *Config) parseAllDotCfg() error {
 		return nil
 	}
 
-	if !util.FileIsDir(dir) {
+	if !iu.FileIsDir(dir) {
 		return nil
 	}
 

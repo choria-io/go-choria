@@ -50,16 +50,15 @@ func ed25519Action(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply
 		return
 	}
 
-	secureDir := filepath.Join(filepath.Dir(agent.Config.ConfigFile), "secure")
-	keyFile := filepath.Join(secureDir, "server.key")
-
-	agent.Log.Infof("Creating a new ED25519 key pair in %s", secureDir)
-
-	err := os.MkdirAll(secureDir, 0700)
+	secureDir, err := filepath.Abs(filepath.Dir(agent.Config.ConfigFile))
 	if err != nil {
-		abort(fmt.Sprintf("Could not create secure directory %s: %s", secureDir, err), reply)
+		abort(fmt.Sprintf("could not determine absolute path to config directory: %s", err), reply)
 		return
 	}
+
+	keyFile := filepath.Join(secureDir, "server.seed")
+
+	agent.Log.Infof("Creating a new ED25519 key in %s", secureDir)
 
 	pubK, priK, err := choria.Ed25519KeyPair()
 	if err != nil {
@@ -81,7 +80,7 @@ func ed25519Action(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply
 
 	reply.Data = &ED25519Reply{
 		PublicKey: hex.EncodeToString(pubK),
+		Signature: hex.EncodeToString(sig),
 		Directory: secureDir,
-		Signature: string(sig),
 	}
 }

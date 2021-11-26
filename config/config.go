@@ -13,11 +13,11 @@ import (
 	"strings"
 
 	"github.com/choria-io/go-choria/build"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/fatih/color"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/confkey"
-	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/puppet"
 )
 
@@ -370,14 +370,14 @@ func (c *Config) normalize() error {
 			if c.ConfigFile == "" {
 				return fmt.Errorf("cannot determine path to server token file")
 			}
-			c.Choria.ServerTokenFile = filepath.Join(filepath.Dir(c.ConfigFile), "choria.token")
+			c.Choria.ServerTokenFile = filepath.Join(filepath.Dir(c.ConfigFile), "server.jwt")
 		}
 
 		if c.Choria.ServerTokenSeedFile == "" {
 			if c.ConfigFile == "" {
 				return fmt.Errorf("cannot determine path to server token file")
 			}
-			c.Choria.ServerTokenSeedFile = filepath.Join(filepath.Dir(c.ConfigFile), "choria.key")
+			c.Choria.ServerTokenSeedFile = filepath.Join(filepath.Dir(c.ConfigFile), "server.seed")
 		}
 	}
 
@@ -438,7 +438,7 @@ func (c *Config) UnParsedOptions() map[string]string {
 
 func (c *Config) dotdDir() string {
 	if !forceDotParse {
-		home, err := util.HomeDir()
+		home, err := iu.HomeDir()
 		if err == nil {
 			if strings.HasPrefix(c.ConfigFile, home) {
 				return ""
