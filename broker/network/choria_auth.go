@@ -250,7 +250,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 				return false, fmt.Errorf("invalid nonce signature or jwt token")
 			}
 			log = log.WithField("caller", caller)
-			log.Debugf("Extracted caller id %s from JWT token", caller)
+			log.Debugf("Extracted caller id %s from JWT token", clientClaims.CallerID)
 
 			caller = clientClaims.CallerID
 
@@ -267,7 +267,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 				return false, fmt.Errorf("invalid nonce signature or jwt token")
 			}
 			log = log.WithField("identity", serverClaims.ChoriaIdentity)
-			log.Debugf("Extracted remote identity %s from JWT token", user.Username)
+			log.Debugf("Extracted remote identity %s from JWT token", serverClaims.ChoriaIdentity)
 
 			setServerPerms = true
 			user.Username = serverClaims.ChoriaIdentity

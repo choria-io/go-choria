@@ -80,6 +80,7 @@ func configureAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		return
 	}
 
+	// the default path based on Config#normalize
 	err = writeJWT(filepath.Join(filepath.Dir(agent.Config.ConfigFile), "server.jwt"), args.ServerJWT, agent.Log)
 	if err != nil {
 		abort(fmt.Sprintf("JWT Setup Failed: %s", err), reply)

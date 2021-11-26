@@ -69,6 +69,10 @@ func NewServerClaims(identity string, collectives []string, org string, perms *S
 		issuer = "choria"
 	}
 
+	if validity == 0 {
+		return nil, fmt.Errorf("validity is required")
+	}
+
 	stdClaims, err := newStandardClaims(issuer, ServerPurpose, validity, false)
 	if err != nil {
 		return nil, err
