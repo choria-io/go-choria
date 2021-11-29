@@ -1508,6 +1508,21 @@ func (mr *MockFrameworkMockRecorder) SignerToken() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignerToken", reflect.TypeOf((*MockFramework)(nil).SignerToken))
 }
 
+// SignerTokenFile mocks base method.
+func (m *MockFramework) SignerTokenFile() (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SignerTokenFile")
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// SignerTokenFile indicates an expected call of SignerTokenFile.
+func (mr *MockFrameworkMockRecorder) SignerTokenFile() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignerTokenFile", reflect.TypeOf((*MockFramework)(nil).SignerTokenFile))
+}
+
 // SupportsProvisioning mocks base method.
 func (m *MockFramework) SupportsProvisioning() bool {
 	m.ctrl.T.Helper()
