@@ -52,7 +52,7 @@ func (b *brokerCommand) Setup() (err error) {
 
 	b.cmd.PreAction(func(pc *kingpin.ParseContext) error {
 		cmd := pc.String()
-		if cmd == "broker run" {
+		if cmd == "broker" || cmd == "broker run" {
 			return nil
 		}
 
