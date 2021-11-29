@@ -685,18 +685,17 @@ func (fw *Framework) UniqueIDFromUnverifiedToken() (id string, uid string, token
 // SignerSeedFile is the path to the seed file for JWT auth
 func (fw *Framework) SignerSeedFile() (f string, err error) {
 	switch {
-	case fw.Config.Choria.ClientAnonTLS:
-		if fw.Config.Choria.RemoteSignerTokenSeedFile != "" {
-			return fw.Config.Choria.RemoteSignerTokenSeedFile, nil
-		}
-
 	case fw.Config.Choria.ServerAnonTLS:
 		if fw.Config.Choria.ServerTokenSeedFile != "" {
 			return fw.Config.Choria.ServerTokenSeedFile, nil
 		}
+	default:
+		if fw.Config.Choria.RemoteSignerTokenSeedFile != "" {
+			return fw.Config.Choria.RemoteSignerTokenSeedFile, nil
+		}
 	}
 
-	t, err := fw.SignerToken()
+	t, err := fw.SignerTokenFile()
 	if err != nil {
 		return "", err
 	}
@@ -704,21 +703,25 @@ func (fw *Framework) SignerSeedFile() (f string, err error) {
 	return fmt.Sprintf("%s.key", strings.TrimSuffix(t, filepath.Ext(t))), nil
 }
 
-// SignerToken retrieves the token used for signing requests or connecting to the broker
-func (fw *Framework) SignerToken() (token string, err error) {
-	var tf string
-
-	switch {
-	case fw.Config.Choria.ClientAnonTLS:
-		tf = fw.Config.Choria.RemoteSignerTokenFile
-	case fw.Config.Choria.ServerAnonTLS:
+// SignerTokenFile is the path to the token file, supports clients and servers
+func (fw *Framework) SignerTokenFile() (f string, err error) {
+	tf := fw.Config.Choria.RemoteSignerTokenFile
+	if fw.Config.Choria.ServerAnonTLS {
 		tf = fw.Config.Choria.ServerTokenFile
-	default:
-		return "", fmt.Errorf("no token file defined")
 	}
 
 	if tf == "" {
 		return "", fmt.Errorf("no token file defined")
+	}
+
+	return tf, nil
+}
+
+// SignerToken retrieves the token used for signing requests or connecting to the broker
+func (fw *Framework) SignerToken() (token string, err error) {
+	tf, err := fw.SignerTokenFile()
+	if err != nil {
+		return "", err
 	}
 
 	tb, err := os.ReadFile(tf)
