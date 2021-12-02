@@ -158,6 +158,7 @@ func (o *RequestOptions) ConfigureMessage(msg inter.Message) (err error) {
 	// so disable processing replies
 	if stdtarget != o.ReplyTo {
 		o.ProcessReplies = false
+		o.Workers = 1
 	}
 
 	err = msg.SetReplyTo(o.ReplyTo)

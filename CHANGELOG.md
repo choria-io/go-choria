@@ -1,5 +1,20 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/11/29|1522  |Specifically use `choria broker run` to start the broker                                                 |
+|2021/11/24|1526  |Import the `nats` CLI tool into Choria under `choria broker`                                             |
+|2021/11/19|1522  |Support enabling connection `nonce` feature allowing per connection private key validation               |
+|2021/11/25|1522  |Extend provisioning agent to on board ed25519 seeds and process signed JWTs from the provisioner         |
+|2021/11/12|1509  |Allow JWT clients to have permissions that can restrict access to Choria Streams related features        |
+|2021/11/12|1509  |Extract all jwt handling code in all packages into a new `tokens` package                                |
+|2021/11/09|1507  |Allow non TLS connections from both servers and clients in combination of AAA and Provisioner using JWTs |
+|2021/10/28|1502  |Move to NATS official KV implementation, formalize Leader Election in Choria Broker                      |
+|2021/10/28|1499  |Avoid leaving some tempoary directories around in the archive watcher                                    |
+|2021/10/28|1495  |Allow succesfull KV operations that do not change data to transition autonomous agents                   |
+|2021/10/28|1494  |Relax identity validation in flatfile discovery to avoid rejecting some valid hostnames as identities    |
+|2021/10/27|1491  |Add `--senders` to `choria req` that shows only those replying identities                                |
+|2021/10/26|1487  |Support for latest Cert Manager APIs                                                                     |
+|2021/10/25|1482  |Support tallying governor events                                                                         |
+|2021/10/25|1483  |Allow custom loggers to be passed to Choria and avoid changing settings of the default logrus logger     |
 |2021/10/25|1480  |Support tallying wildcard components rather than just a single component                                 |
 |2021/10/15|      |Add SPDX License Identifier and Copyright to source files                                                |
 |2021/10/15|1475  |Support `stdout` and `stderr` as logging destinations in addition to `discard` and a file name           |

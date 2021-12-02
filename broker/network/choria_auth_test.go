@@ -1119,6 +1119,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						"$JS.API.STREAM.MSG.GET.*",
 						"$JS.API.CONSUMER.CREATE.*",
 						"$JS.API.CONSUMER.DURABLE.CREATE.*.*",
+						"$JS.API.CONSUMER.DELETE.*.*",
 						"$JS.API.CONSUMER.NAMES.*",
 						"$JS.API.CONSUMER.LIST.*",
 						"$JS.API.CONSUMER.INFO.*.*",
