@@ -15,9 +15,10 @@ RUN groupadd --gid 2048 choria && \
     useradd -c "Choria Orchestrator - choria.io" -m --uid 2048 --gid 2048 choria && \
     chown -R choria:choria /etc/choria && \
     mkdir /data && \
-    chown choria:choria /data
+    chown choria:choria /data && \
+    rm -f /etc/choria/server.conf
 
 USER choria
 VOLUME /data
 
-ENTRYPOINT ["/bin/choria"]
+ENTRYPOINT ["/usr/bin/choria"]
