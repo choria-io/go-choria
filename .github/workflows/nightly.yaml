@@ -86,6 +86,7 @@ jobs:
       - el8_64
       - linux_tarball
       - windows_zip
+      - darwin_amd64_tarball
 
     runs-on: ubuntu-latest
     steps:
