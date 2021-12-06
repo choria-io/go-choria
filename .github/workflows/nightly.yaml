@@ -61,7 +61,22 @@ jobs:
       - name: Build
         uses: choria-io/actions/packager@main
         with:
-          build_package: darwin_64_tarball
+          build_package: darwin_amd64_tarball
+          packager_tag: el8-go1.17
+          version: nightly
+
+  darwin_arm64_tarball:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+        with:
+          path: src/github.com/choria-io/go-choria
+
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: darwin_arm64_tarball
           packager_tag: el8-go1.17
           version: nightly
 

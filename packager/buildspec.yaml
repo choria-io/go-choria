@@ -68,6 +68,13 @@ foss:
         - rm plugin_*.go || true
         - GOOS=linux GOARCH=amd64 go generate --run plugin
 
+    darwin_arm64:
+      os: darwin
+      arch: arm64
+      pre:
+        - rm plugin_*.go || true
+        - GOOS=linux GOARCH=amd64 go generate --run plugin
+
     # can probably not be built on an actual windows machine
     64bit_windows:
       flags:
@@ -94,10 +101,17 @@ foss:
       broker_start_runlevels: "-"
       broker_start_order: 50
 
-    darwin_64_tarball:
+    darwin_amd64_tarball:
       template: archive/basic
-      target_arch: x86_64
+      target_arch: amd64
       binary: darwin_amd64
+      os: darwin
+      format: tgz
+
+    darwin_arm64_tarball:
+      template: archive/basic
+      target_arch: arm64
+      binary: darwin_arm64
       os: darwin
       format: tgz
 
