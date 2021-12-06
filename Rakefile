@@ -27,6 +27,8 @@ task :build do
   packages.each do |pkg|
     if pkg =~ /^windows/
       builder = "choria/packager:stretch-go%s" % [go_version]
+    elsif pkg =~ /darwin.+tarball/
+      builder = "choria/packager:el8-go%s" % go_version
     elsif pkg =~ /linux.+tarball/
       builder = "choria/packager:el8-go%s" % go_version
     elsif pkg =~ /^(.+?)_(.+)$/
