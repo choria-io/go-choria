@@ -61,7 +61,7 @@ foss:
         - rm plugin_*.go || true
         - GOOS=linux GOARCH=amd64 go generate --run plugin
 
-    darwin:
+    darwin_amd64:
       os: darwin
       arch: amd64
       pre:
@@ -93,6 +93,13 @@ foss:
       server_start_order: 50
       broker_start_runlevels: "-"
       broker_start_order: 50
+
+    darwin_64_tarball:
+      template: archive/basic
+      target_arch: x86_64
+      binary: darwin_amd64
+      os: darwin
+      format: tgz
 
     linux_64_tarball:
       template: archive/basic
