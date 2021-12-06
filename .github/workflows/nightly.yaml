@@ -8,11 +8,6 @@ jobs:
   el7_64:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          path: src/github.com/choria-io/go-choria
-
       - name: Build
         uses: choria-io/actions/packager@main
         with:
@@ -23,11 +18,6 @@ jobs:
   el8_64:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          path: src/github.com/choria-io/go-choria
-
       - name: Build
         uses: choria-io/actions/packager@main
         with:
@@ -38,11 +28,6 @@ jobs:
   linux_tarball:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          path: src/github.com/choria-io/go-choria
-
       - name: Build
         uses: choria-io/actions/packager@main
         with:
@@ -53,11 +38,6 @@ jobs:
   darwin_amd64_tarball:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          path: src/github.com/choria-io/go-choria
-
       - name: Build
         uses: choria-io/actions/packager@main
         with:
@@ -68,11 +48,6 @@ jobs:
   darwin_arm64_tarball:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          path: src/github.com/choria-io/go-choria
-
       - name: Build
         uses: choria-io/actions/packager@main
         with:
@@ -83,11 +58,6 @@ jobs:
   windows_zip:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-        with:
-          path: src/github.com/choria-io/go-choria
-
       - name: Build
         uses: choria-io/actions/packager@main
         with:
