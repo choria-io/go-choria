@@ -1,5 +1,7 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/12/07|1543  |Remove NATS Streaming Server support                                                                     |
+|2021/12/07|1541  |Improve `choria tool governor run` when the broker is down                                               |
 |2021/11/29|1522  |Specifically use `choria broker run` to start the broker                                                 |
 |2021/11/24|1526  |Import the `nats` CLI tool into Choria under `choria broker`                                             |
 |2021/11/19|1522  |Support enabling connection `nonce` feature allowing per connection private key validation               |
