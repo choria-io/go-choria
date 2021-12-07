@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/choria-io/go-choria/broker/adapter/natsstream"
 	"github.com/choria-io/go-choria/broker/adapter/streams"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
@@ -64,16 +63,7 @@ func RunAdapters(ctx context.Context, c ChoriaFramework, wg *sync.WaitGroup) err
 			}
 
 		case "nats_stream":
-			n, err := natsstream.Create(a, c)
-			if err != nil {
-				return fmt.Errorf("could not start nats_stream adapter: %s", err)
-			}
-
-			log.Infof("Starting %s Protocol Adapter %s", atype, a)
-			err = startAdapter(ctx, n, c, wg)
-			if err != nil {
-				return fmt.Errorf("could not start nats_stream adapter: %s", err)
-			}
+			return fmt.Errorf("the NATS Streaming Server adapter has been deprecated")
 
 		default:
 			return fmt.Errorf("unknown Protocol Adapter type %s", atype)

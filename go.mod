@@ -16,8 +16,8 @@ require (
 	github.com/cloudevents/sdk-go/v2 v2.6.1
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/gofrs/uuid v4.1.0+incompatible
-	github.com/golang-jwt/jwt/v4 v4.1.0
+	github.com/gofrs/uuid v4.2.0+incompatible
+	github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.6
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -26,31 +26,29 @@ require (
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.0.3
-	github.com/mitchellh/mapstructure v1.4.2
+	github.com/mitchellh/mapstructure v1.4.3
 	github.com/nats-io/jsm.go v0.0.28-0.20211202160437-51dd2107bf12
-	github.com/nats-io/nats-server/v2 v2.6.6-0.20211201222205-4464ba9bf33b
-	github.com/nats-io/nats-streaming-server v0.23.1 // indirect
+	github.com/nats-io/nats-server/v2 v2.6.7-0.20211207160927-f55ee2194191
 	github.com/nats-io/nats.go v1.13.1-0.20211122170419-d7c1d78a50fc
-	github.com/nats-io/natscli v0.0.27-0.20211124120915-6f3203375637
-	github.com/nats-io/stan.go v0.10.2
+	github.com/nats-io/natscli v0.0.28
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.5
 	github.com/onsi/gomega v1.17.0
-	github.com/open-policy-agent/opa v0.34.2
+	github.com/open-policy-agent/opa v0.35.0
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/client_model v0.2.0
+	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/tidwall/gjson v1.11.0
+	github.com/tidwall/gjson v1.12.1
 	github.com/tidwall/pretty v1.2.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.9.0
-	golang.org/x/crypto v0.0.0-20211117183948-ae814b36b871
-	golang.org/x/mod v0.5.1 // indirect
-	golang.org/x/net v0.0.0-20211118161319-6a13c67c3ce4 // indirect
-	golang.org/x/sys v0.0.0-20211117180635-dee7805ff2e1
+	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
+	golang.org/x/net v0.0.0-20211206223403-eba003a116a9 // indirect
+	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
-	golang.org/x/tools v0.1.7
+	golang.org/x/tools v0.1.8
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	rsc.io/goversion v1.2.0
 )
