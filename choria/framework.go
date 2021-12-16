@@ -729,6 +729,34 @@ func (fw *Framework) SignerToken() (token string, err error) {
 		return "", fmt.Errorf("could not read token file: %v", err)
 	}
 
+	purpose := tokens.TokenPurpose(string(tb))
+	switch purpose {
+	case tokens.ClientIDPurpose:
+		claims, err := tokens.ParseClientIDTokenUnverified(string(tb))
+		if err != nil {
+			return "", err
+		}
+		err = claims.Valid()
+		if err != nil {
+			fw.log.Warnf("Authentication token %s is not valid: %v", tf, err)
+			return "", err
+		}
+
+	case tokens.ServerPurpose:
+		claims, err := tokens.ParseServerTokenUnverified(string(tb))
+		if err != nil {
+			return "", err
+		}
+		err = claims.Valid()
+		if err != nil {
+			fw.log.Warnf("Authentication token %s is not valid: %v", tf, err)
+			return "", err
+		}
+
+	default:
+		return "", fmt.Errorf("cannot use token with purpose %q as signer token", purpose)
+	}
+
 	return strings.TrimSpace(string(tb)), err
 }
 
