@@ -83,7 +83,8 @@ func (d *pDocCommand) agents() (map[string]*agents.DDL, error) {
 		log.Infof("Resolving DDL names via %s", resolver)
 		names, err := resolver.DDLNames(ctx, "agent", c)
 		if err != nil {
-			return nil, err
+			log.Warnf("Could not resolve DDL names using resolver %s: %v", resolver.String(), err)
+			continue
 		}
 
 		for _, name := range names {
@@ -130,10 +131,7 @@ func (d *pDocCommand) showList() error {
 		fmt.Println()
 	}
 
-	addls, err := d.agents()
-	if err != nil {
-		return err
-	}
+	addls, _ := d.agents()
 	for _, addl := range addls {
 		plugins["agent"][addl.Metadata.Name] = addl.Metadata.Description
 	}
