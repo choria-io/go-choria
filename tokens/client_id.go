@@ -6,6 +6,7 @@ package tokens
 
 import (
 	"crypto/ed25519"
+	"crypto/md5"
 	"crypto/rsa"
 	"encoding/hex"
 	"fmt"
@@ -61,6 +62,11 @@ type ClientIDClaims struct {
 	PublicKey string `json:"public_key,omitempty"`
 
 	StandardClaims
+}
+
+// UniqueID returns the caller id and unique id used to generate private inboxes
+func (c *ClientIDClaims) UniqueID() (id string, uid string) {
+	return c.CallerID, fmt.Sprintf("%x", md5.Sum([]byte(c.CallerID)))
 }
 
 // NewClientIDClaims generates new ClientIDClaims
