@@ -31,9 +31,9 @@ These will connect to the middleware using your usual client configuration.
 |`choria scout trigger`|Trigger Scout checks|
 |`choria scout watch`|Watch live events from the Scout system|
 |`choria sout status`|View the Scout status of a particular node|
+|`choria jwt`|Create, view and validate Choria JWT tokens|
 |`choria tool config`|To view details about known configuration options|
 |`choria tool event`|Listens for Choria life cycle events emitted by various daemons and related tools|
-|`choria tool jwt`|Generates JWT tokens used to configure automatic provisioning|
 |`choria tool provision`|Tool to test provision target discovery|
 |`choria tool pub`|Publishes to any middleware topic|
 |`choria tool status`|Parse the status file and check overall health|

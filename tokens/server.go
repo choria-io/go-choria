@@ -6,6 +6,7 @@ package tokens
 
 import (
 	"crypto/ed25519"
+	"crypto/md5"
 	"crypto/rsa"
 	"encoding/hex"
 	"fmt"
@@ -46,6 +47,11 @@ type ServerClaims struct {
 	AdditionalPublishSubjects []string `json:"pub_subjects,omitempty"`
 
 	StandardClaims
+}
+
+// UniqueID returns the identity and unique id used to generate private inboxes
+func (c *ServerClaims) UniqueID() (id string, uid string) {
+	return c.ChoriaIdentity, fmt.Sprintf("%x", md5.Sum([]byte(c.ChoriaIdentity)))
 }
 
 func NewServerClaims(identity string, collectives []string, org string, perms *ServerPermissions, additionalPublish []string, pk ed25519.PublicKey, issuer string, validity time.Duration) (*ServerClaims, error) {
