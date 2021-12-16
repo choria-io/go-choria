@@ -3,7 +3,7 @@ module github.com/choria-io/go-choria
 go 1.16
 
 // shuts up vulnerability alerts that did not affect this project
-replace github.com/opencontainers/runc v0.0.0-20161107232042-8779fa57eb4a => github.com/opencontainers/runc v1.0.2
+replace github.com/opencontainers/runc v0.0.0-20161107232042-8779fa57eb4a => github.com/opencontainers/runc v1.0.3
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.2
@@ -13,7 +13,7 @@ require (
 	github.com/awesome-gocui/gocui v1.0.1
 	github.com/brutella/hc v1.2.4
 	github.com/choria-io/go-updater v0.0.3
-	github.com/cloudevents/sdk-go/v2 v2.6.1
+	github.com/cloudevents/sdk-go/v2 v2.7.0
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.2.0+incompatible
@@ -27,9 +27,9 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.0.3
 	github.com/mitchellh/mapstructure v1.4.3
-	github.com/nats-io/jsm.go v0.0.28-0.20211202160437-51dd2107bf12
-	github.com/nats-io/nats-server/v2 v2.6.7-0.20211207160927-f55ee2194191
-	github.com/nats-io/nats.go v1.13.1-0.20211122170419-d7c1d78a50fc
+	github.com/nats-io/jsm.go v0.0.28-0.20211213114924-006ae57a98b9
+	github.com/nats-io/nats-server/v2 v2.6.7-0.20211215191532-575bb4eee08d
+	github.com/nats-io/nats.go v1.13.1-0.20211215215833-e5a568955929
 	github.com/nats-io/natscli v0.0.28
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo v1.16.5
@@ -44,9 +44,9 @@ require (
 	github.com/tidwall/pretty v1.2.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.9.0
-	golang.org/x/crypto v0.0.0-20211202192323-5770296d904e
-	golang.org/x/net v0.0.0-20211206223403-eba003a116a9 // indirect
-	golang.org/x/sys v0.0.0-20211205182925-97ca703d548d
+	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
+	golang.org/x/net v0.0.0-20211216030914-fe4d6282115f // indirect
+	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/tools v0.1.8
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
