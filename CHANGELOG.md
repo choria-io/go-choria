@@ -1,5 +1,6 @@
 |Date      |Issue |Description                                                                                              |
 |----------|------|---------------------------------------------------------------------------------------------------------|
+|2021/12/16|1547  |Unify the `kv del` and `kv rm` commands                                                                  |
 |2021/12/07|1543  |Remove NATS Streaming Server support                                                                     |
 |2021/12/07|1541  |Improve `choria tool governor run` when the broker is down                                               |
 |2021/11/29|1522  |Specifically use `choria broker run` to start the broker                                                 |
