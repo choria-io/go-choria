@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/nats-io/jsm.go"
 	natscli "github.com/nats-io/natscli/cli"
@@ -42,6 +43,77 @@ type brokerRunCommand struct {
 }
 
 // broker
+func (b *brokerCommand) prepareNatsCli(pc *kingpin.ParseContext, opts *natscli.Options) error {
+	cmd := pc.String()
+	if cmd == "broker" || cmd == "broker run" {
+		return nil
+	}
+
+	for _, e := range pc.Elements {
+		f, ok := e.Clause.(*kingpin.FlagClause)
+		if ok {
+			if strings.HasPrefix(f.Model().Name, "help") {
+				return nil
+			}
+		}
+	}
+
+	err = commonConfigure()
+	if err != nil {
+		return err
+	}
+
+	c, err = choria.NewWithConfig(cfg)
+	if err != nil {
+		return err
+	}
+
+	natscli.SetContext(ctx)
+	natscli.SetVersion(build.Version)
+
+	if strings.HasPrefix(cmd, "broker server") && !strings.HasPrefix(cmd, "broker server check stream") {
+		if cfg.Choria.NetworkSystemUsername == "" || cfg.Choria.NetworkSystemPassword == "" {
+			return fmt.Errorf("the %q command needs system username and password set using plugin.choria.network.system.*", cmd)
+		}
+
+		cfg.Choria.NatsUser = cfg.Choria.NetworkSystemUsername
+		cfg.Choria.NatsPass = cfg.Choria.NetworkSystemPassword
+	}
+
+	conn, err := c.NewConnector(ctx, c.MiddlewareServers, "cli", c.Logger("connection"))
+	if err != nil {
+		return err
+	}
+
+	logger := c.Logger("cli")
+	// cli does a lot of Printf which is info
+	logger.Logger.SetLevel(log.InfoLevel)
+	natscli.SetLogger(logger)
+
+	opts.Conn = conn.Nats()
+	opts.JSc, err = opts.Conn.JetStream()
+	if err != nil {
+		return err
+	}
+
+	var jsmOpts []jsm.Option
+
+	if os.Getenv("TRACE") == "1" {
+		logger.Printf("Tracing Choria Streams API interactions due to TRACE environment variable")
+		opts.Trace = true
+		jsmOpts = append(jsmOpts, jsm.WithTrace())
+	}
+
+	opts.Mgr, err = jsm.New(opts.Conn, jsmOpts...)
+	if err != nil {
+		return err
+	}
+
+	ran = true
+
+	return nil
+}
+
 func (b *brokerCommand) Setup() (err error) {
 	b.cmd = cli.app.Command("broker", "Choria Network Broker")
 
@@ -51,64 +123,7 @@ func (b *brokerCommand) Setup() (err error) {
 	}
 
 	b.cmd.PreAction(func(pc *kingpin.ParseContext) error {
-		cmd := pc.String()
-		if cmd == "broker" || cmd == "broker run" {
-			return nil
-		}
-
-		for _, e := range pc.Elements {
-			f, ok := e.Clause.(*kingpin.FlagClause)
-			if ok {
-				if strings.HasPrefix(f.Model().Name, "help") {
-					return nil
-				}
-			}
-		}
-
-		err = commonConfigure()
-		if err != nil {
-			return err
-		}
-
-		if strings.HasPrefix(cmd, "broker server") && !strings.HasPrefix(cmd, "broker server check stream") {
-			if cfg.Choria.NetworkSystemUsername == "" || cfg.Choria.NetworkSystemPassword == "" {
-				return fmt.Errorf("the %q command needs system username and password set using plugin.choria.network.system.*", cmd)
-			}
-
-			cfg.Choria.NatsUser = cfg.Choria.NetworkSystemUsername
-			cfg.Choria.NatsPass = cfg.Choria.NetworkSystemPassword
-		}
-
-		c, err = choria.NewWithConfig(cfg)
-		if err != nil {
-			return err
-		}
-
-		conn, err := c.NewConnector(ctx, c.MiddlewareServers, "cli", c.Logger("connection"))
-		if err != nil {
-			return err
-		}
-
-		opts.Conn = conn.Nats()
-		opts.JSc, err = opts.Conn.JetStream()
-		if err != nil {
-			return err
-		}
-
-		opts.Mgr, err = jsm.New(opts.Conn)
-		if err != nil {
-			return err
-		}
-
-		logger := c.Logger("choria")
-		// cli does a lot of Printf which is info
-		logger.Logger.SetLevel(log.InfoLevel)
-		natscli.SetContext(ctx)
-		natscli.SetLogger(logger)
-
-		ran = true
-
-		return nil
+		return b.prepareNatsCli(pc, opts)
 	})
 
 	return
