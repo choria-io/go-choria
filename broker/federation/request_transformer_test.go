@@ -12,7 +12,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/protocol"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 )
@@ -59,11 +59,11 @@ var _ = Describe("RequestTransformer", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		go transformer.Run(ctx)
-	}, 10)
+	})
 
 	AfterEach(func() {
 		cancel()
-	}, 10)
+	})
 
 	It("should correctly transform a message", func() {
 		tr, err := c.NewTransportForSecureRequest(srequest)

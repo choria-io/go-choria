@@ -20,4 +20,4 @@ jobs:
       - name: Lint and Test
         uses: choria-io/actions/lint_and_test/go@main
         with:
-          ginkgo: "yes"
+          ginkgo: "v2"

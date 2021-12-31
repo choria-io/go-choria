@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 

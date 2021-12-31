@@ -13,7 +13,7 @@ import (
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
@@ -29,7 +29,7 @@ var _ = Describe("Server/Discovery/Facts", func() {
 		l *logrus.Entry
 	)
 
-	BeforeSuite(func() {
+	BeforeEach(func() {
 		l = logrus.WithFields(logrus.Fields{"test": true})
 		l.Logger.Out = io.Discard
 

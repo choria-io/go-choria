@@ -11,7 +11,7 @@ import (
 
 	"github.com/choria-io/go-choria/protocol"
 	gomock "github.com/golang/mock/gomock"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
@@ -23,6 +23,7 @@ var _ = Describe("SecureRequest", func() {
 	var pub []byte
 
 	BeforeEach(func() {
+		logrus.SetLevel(logrus.FatalLevel)
 		mockctl = gomock.NewController(GinkgoT())
 		security = NewMockSecurityProvider(mockctl)
 
@@ -33,10 +34,6 @@ var _ = Describe("SecureRequest", func() {
 
 	AfterEach(func() {
 		mockctl.Finish()
-	})
-
-	BeforeSuite(func() {
-		logrus.SetLevel(logrus.FatalLevel)
 	})
 
 	It("Should support insecure mode", func() {

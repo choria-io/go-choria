@@ -8,7 +8,7 @@ import (
 	"context"
 	"io"
 
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 )
@@ -24,7 +24,7 @@ var _ = Describe("Pooled Worker", func() {
 		s, _ = PooledWorkerFactory("socket", 1, Unconnected, 1000, broker, logger, func(ctx context.Context, w *pooledWorker, i int, l *log.Entry) {})
 		l, _ = PooledWorkerFactory("left", 1, Unconnected, 1000, broker, logger, func(ctx context.Context, w *pooledWorker, i int, l *log.Entry) {})
 		r, _ = PooledWorkerFactory("right", 1, Unconnected, 1000, broker, logger, func(ctx context.Context, w *pooledWorker, i int, l *log.Entry) {})
-	}, 10)
+	})
 
 	It("Should correctly initialize", func() {
 		Expect(s.Name()).To(Equal("socket"))

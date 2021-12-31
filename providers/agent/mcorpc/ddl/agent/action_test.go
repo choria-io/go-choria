@@ -8,7 +8,7 @@ import (
 	"path"
 
 	common "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
