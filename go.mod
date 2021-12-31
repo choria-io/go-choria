@@ -12,7 +12,7 @@ require (
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.0.1
 	github.com/brutella/hc v1.2.4
-	github.com/choria-io/go-updater v0.0.3
+	github.com/choria-io/go-updater v0.0.4-0.20211231123842-da243cbc508c
 	github.com/cloudevents/sdk-go/v2 v2.7.0
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
@@ -32,7 +32,7 @@ require (
 	github.com/nats-io/nats.go v1.13.1-0.20211215215833-e5a568955929
 	github.com/nats-io/natscli v0.0.28
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/onsi/ginkgo v1.16.5
+	github.com/onsi/ginkgo/v2 v2.0.0
 	github.com/onsi/gomega v1.17.0
 	github.com/open-policy-agent/opa v0.35.0
 	github.com/prometheus/client_golang v1.11.0

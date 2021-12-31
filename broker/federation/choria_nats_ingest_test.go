@@ -12,7 +12,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 )
@@ -70,11 +70,11 @@ var _ = Describe("Choria NATS Ingest", func() {
 		connector.choria.Configuration().Choria.MiddlewareHosts = []string{"c3:4222", "c4:4222"}
 
 		go connector.Run(ctx)
-	}, 1)
+	})
 
 	AfterEach(func() {
 		cancel()
-	}, 1)
+	})
 
 	It("Should fail for invalid JSON", func() {
 		in = choria.NewConnectorMessage(in.Subject(), in.Reply(), []byte("{}"), nil)
@@ -125,5 +125,5 @@ var _ = Describe("Choria NATS Ingest", func() {
 		Expect(out.Message).To(Equal(transport))
 		Expect(out.RequestID).To(Equal(request.RequestID()))
 		Expect(out.Seen).To(Equal([]string{"nats://stub:4222", "choria_nats_ingest:0"}))
-	}, 1)
+	})
 })

@@ -7,7 +7,7 @@ package v1
 import (
 	"github.com/choria-io/go-choria/protocol"
 	gomock "github.com/golang/mock/gomock"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"
 )

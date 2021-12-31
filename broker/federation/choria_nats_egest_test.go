@@ -10,7 +10,7 @@ import (
 	"context"
 
 	"github.com/choria-io/go-choria/protocol"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	log "github.com/sirupsen/logrus"
 )
@@ -59,11 +59,11 @@ var _ = Describe("Choria NATS Egest", func() {
 		connector.connection = manager
 
 		go connector.Run(ctx)
-	}, 10)
+	})
 
 	AfterEach(func() {
 		cancel()
-	}, 10)
+	})
 
 	It("Should send the message to every target", func() {
 		in.RequestID = "80a1ac20463745c0b12cfe6e3db61dff"

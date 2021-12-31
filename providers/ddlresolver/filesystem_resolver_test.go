@@ -12,7 +12,7 @@ import (
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	agentDDL "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/golang/mock/gomock"
-	. "github.com/onsi/ginkgo"
+	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
