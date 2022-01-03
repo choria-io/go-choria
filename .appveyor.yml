@@ -31,4 +31,4 @@ deploy: false
 
 test_script:
   # TODO: support windows pkcs11sec
-  - ginkgo -r -keep-going -skipMeasurements -skipPackage pkcs11sec
+  - ginkgo -r -keep-going -skip-package pkcs11sec
