@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -266,6 +266,15 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	if publishOnly {
 		opts = append(opts, rpc.ReplyTo(r.reply))
+
+		// with a custom reply we do not do our specific discovery here and
+		// so must publish the filter with the broadcast request
+		f, err := r.fo.NewFilter(r.agent)
+		if err != nil {
+			return err
+		}
+
+		opts = append(opts, rpc.Filter(f))
 	}
 
 	if r.batch > 0 {
