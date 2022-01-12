@@ -251,7 +251,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	if shouldPerformJWTBasedAuth {
 		purpose := tokens.TokenPurpose(jwts)
 		log = log.WithFields(logrus.Fields{"jwt_auth": shouldPerformJWTBasedAuth, "purpose": purpose})
-		log.Debugf("Performing JWT based authentication verification")
+		log.Infof("Performing JWT based authentication verification")
 
 		switch purpose {
 		case tokens.ClientIDPurpose:
@@ -661,7 +661,11 @@ func (a *ChoriaAuth) setClaimsBasedServerPermissions(user *server.User, claims *
 
 	user.Permissions.Subscribe = &server.SubjectPermission{}
 	user.Permissions.Publish = &server.SubjectPermission{
-		Allow: []string{"choria.lifecycle.>"},
+		Allow: []string{
+			"choria.lifecycle.>",
+			"choria.machine.transition",
+			"choria.machine.watcher.>",
+		},
 	}
 
 	user.Permissions.Publish.Allow = append(user.Permissions.Publish.Allow, claims.AdditionalPublishSubjects...)
