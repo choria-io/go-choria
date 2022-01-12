@@ -7,9 +7,11 @@ package cmd
 import (
 	"encoding/hex"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/tokens"
 )
@@ -32,17 +34,23 @@ type jWTCreateServerCommand struct {
 
 func (s *jWTCreateServerCommand) Setup() (err error) {
 	if jwt, ok := cmdWithFullCommand("jwt"); ok {
+		parts := strings.Split(build.DefaultCollectives, ",")
+		collective := "mcollective"
+		if len(parts) > 0 {
+			collective = parts[0]
+		}
+
 		s.cmd = jwt.Cmd().Command("server", "Create a Server JWT token").Alias("s")
 		s.cmd.Arg("file", "The JWT file to act on").Required().StringVar(&s.file)
 		s.cmd.Arg("identity", "The identity for this server").Required().StringVar(&s.identity)
 		s.cmd.Arg("public-key", "Ed25519 public key to embed in the token").Required().StringVar(&s.pk)
 		s.cmd.Arg("signing-key", "Path to a private key used to sign the JWT").Required().ExistingFileVar(&s.signingKey)
-		s.cmd.Flag("collectives", "Allow the server to access certain collectives").Default("mcollective").StringsVar(&s.collectives)
+		s.cmd.Flag("collectives", "Allow the server to access certain collectives").Default(collective).StringsVar(&s.collectives)
 		s.cmd.Flag("org", "Adds the user to a specific organization").Default("choria").StringVar(&s.org)
 		s.cmd.Flag("subjects", "Additional subjects this node may publish to").StringsVar(&s.subjects)
 		s.cmd.Flag("submission", "Enable the node to publish to Choria Streams using Choria Submission").BoolVar(&s.submission)
 		s.cmd.Flag("stream-user", "Allow the node to access Choria Streams").BoolVar(&s.streamUser)
-		s.cmd.Flag("validity", "How long the token should be valid for").Default("365d").DurationVar(&s.validity)
+		s.cmd.Flag("validity", "How long the token should be valid for").Default("8760h").DurationVar(&s.validity)
 		s.cmd.Flag("service", "Indicates that the user can have long validity tokens").BoolVar(&s.service)
 	}
 
