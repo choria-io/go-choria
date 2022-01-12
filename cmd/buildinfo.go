@@ -98,7 +98,6 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 		}
 		fmt.Printf("            Provisioning Default: %t\n", bi.ProvisionDefault())
 		fmt.Printf("                Provisioning TLS: %t\n", bi.ProvisionSecurity())
-		fmt.Printf("    Provisioning Target Resolver: %s\n", provtarget.Name())
 		fmt.Printf("      Default Provisioning Agent: %t\n", bi.ProvisionAgent())
 		if bi.ProvisionBrokerURLs() != "" {
 			fmt.Printf("            Provisioning Brokers: %s\n", bi.ProvisionBrokerURLs())
