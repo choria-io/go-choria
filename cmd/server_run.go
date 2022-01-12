@@ -64,7 +64,25 @@ func (r *serverRunCommand) Configure() error {
 		}
 
 	default:
-		return fmt.Errorf("configuration file %s was not found and provisioning is disabled", configFile)
+		// we have no configuration file or anything, so we use defaults and possibly initiate provisioning
+		cfg, err = config.NewDefaultSystemConfig(true)
+		if err != nil {
+			return fmt.Errorf("could not create default server configuration")
+		}
+
+		provtarget.Configure(cfg, log.WithField("component", "provtarget"))
+
+		// if a config file didn't exist and prov is disabled we cant start
+		if !r.shouldProvision(cfg) {
+			return fmt.Errorf("configuration file %s was not found and provisioning is disabled", configFile)
+		}
+
+		log.Warnf("Switching to provisioning configuration due to build defaults and missing %s", configFile)
+
+		cfg, err = r.provisionConfig(configFile)
+		if err != nil {
+			return err
+		}
 	}
 
 	cfg.ApplyBuildSettings(bi)
