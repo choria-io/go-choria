@@ -139,7 +139,7 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 		outbox:            make(chan *nats.Msg, 1000),
 	}
 
-	if fw.Config.Choria.ClientAnonTLS {
+	if fw.Config.Choria.ClientAnonTLS || fw.Config.Choria.ServerAnonTLS {
 		caller, id, token, err := fw.UniqueIDFromUnverifiedToken()
 		if err != nil {
 			return nil, fmt.Errorf("could not parse JWT: %s", err)
@@ -621,7 +621,9 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 	}
 
 	if conn.uniqueId != "" {
-		options = append(options, nats.CustomInboxPrefix(fmt.Sprintf("%s.reply.%s", conn.config.MainCollective, conn.uniqueId)))
+		prefix := fmt.Sprintf("%s.reply.%s", conn.config.MainCollective, conn.uniqueId)
+		conn.log.Infof("Setting custom inbox prefix based on unique ID to %s", prefix)
+		options = append(options, nats.CustomInboxPrefix(prefix))
 	} else {
 		options = append(options, nats.CustomInboxPrefix(fmt.Sprintf("%s.reply", conn.config.MainCollective)))
 	}

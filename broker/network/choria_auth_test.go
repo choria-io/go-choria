@@ -356,6 +356,8 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 							Allow: []string{
 								"choria.lifecycle.>",
+								"choria.machine.transition",
+								"choria.machine.watcher.>",
 								"c1.reply.>",
 								"c1.broadcast.agent.registration",
 								"choria.federation.c1.collective",
@@ -455,6 +457,8 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 							Allow: []string{
 								"choria.lifecycle.>",
+								"choria.machine.transition",
+								"choria.machine.watcher.>",
 								"c1.reply.>",
 								"c1.broadcast.agent.registration",
 								"choria.federation.c1.collective",
@@ -487,6 +491,8 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 							Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 								Allow: []string{
 									"choria.lifecycle.>",
+									"choria.machine.transition",
+									"choria.machine.watcher.>",
 									"c1.reply.>",
 									"c1.broadcast.agent.registration",
 									"choria.federation.c1.collective",
@@ -524,6 +530,8 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 							Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 								Allow: []string{
 									"choria.lifecycle.>",
+									"choria.machine.transition",
+									"choria.machine.watcher.>",
 									"c1.reply.>",
 									"c1.broadcast.agent.registration",
 									"choria.federation.c1.collective",
@@ -562,6 +570,8 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 							Allow: []string{
 								"choria.lifecycle.>",
+								"choria.machine.transition",
+								"choria.machine.watcher.>",
 								"other",
 								"subject",
 								"c1.reply.>",
