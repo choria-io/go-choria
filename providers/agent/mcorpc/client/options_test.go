@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -405,7 +405,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			Expect(targets[99]).To(Equal("target99"))
 		})
 
-		It("Should shuffle random method targets", func() {
+		It("Should shuffle random method targets", FlakeAttempts(3), func() {
 			o.LimitMethod = "random"
 			o.LimitSeed = -1
 			o.shuffleLimitedTargets(targets)
