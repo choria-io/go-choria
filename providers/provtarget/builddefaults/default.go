@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -37,7 +37,7 @@ type Resolver struct {
 
 // Name is te name of the resolver
 func (b *Resolver) Name() string {
-	return "Default"
+	return "Choria JWT Resolver"
 }
 
 // Configure overrides build settings using the contents of the JWT
