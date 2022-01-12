@@ -152,13 +152,27 @@ func (a *ChoriaAuth) verifyNonceSignature(nonce []byte, sig string, pks string, 
 		return false, fmt.Errorf("invalid url encoded signature: %s", err)
 	}
 
-	if !ed25519.Verify(pubK, nonce, sigBytes) {
+	valid, err := a.ed25519Verify(pubK, nonce, sigBytes)
+	if err != nil {
+		return false, fmt.Errorf("could not verify nonce signature: %v", err)
+	}
+
+	if !valid {
 		return false, fmt.Errorf("nonce signature did not verify using pub key in the jwt")
 	}
 
 	log.Debugf("Successfully verified nonce signature")
 
 	return true, nil
+}
+
+// ed25519.Verify() panics on bad pubkeys, this does not
+func (a *ChoriaAuth) ed25519Verify(publicKey ed25519.PublicKey, message []byte, sig []byte) (bool, error) {
+	if len(publicKey) != ed25519.PublicKeySize {
+		return false, fmt.Errorf("invalid public key length %d", len(publicKey))
+	}
+
+	return ed25519.Verify(publicKey, message, sig), nil
 }
 
 func (a *ChoriaAuth) verifyServerJWTBasedAuth(remote net.Addr, jwts string, nonce []byte, sig string, log *logrus.Entry) (claims *tokens.ServerClaims, err error) {
