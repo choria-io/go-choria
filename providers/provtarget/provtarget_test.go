@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -50,7 +50,7 @@ var _ = Describe("Provision", func() {
 
 	Describe("RegisterTargetResolver", func() {
 		It("Should register the resolver", func() {
-			Expect(Name()).To(Equal("Default"))
+			Expect(Name()).To(Equal("Choria JWT Resolver"))
 			RegisterTargetResolver(mockresolver)
 			Expect(Name()).To(Equal("Mock Resolver"))
 		})
@@ -67,14 +67,14 @@ var _ = Describe("Provision", func() {
 		It("Should handle empty response from the resolver", func() {
 			build.ProvisionBrokerURLs = ""
 			t, err := Targets(ctx, log)
-			Expect(err).To(MatchError("provisioning target plugin Default returned no servers"))
+			Expect(err).To(MatchError("provisioning target plugin Choria JWT Resolver returned no servers"))
 			Expect(t.Count()).To(Equal(0))
 		})
 
 		It("Should handle invalid format hosts", func() {
 			build.ProvisionBrokerURLs = "foo,bar"
 			t, err := Targets(ctx, log)
-			Expect(err).To(MatchError("could not determine provisioning servers using Default provisioning target plugin: could not parse host foo: address foo: missing port in address"))
+			Expect(err).To(MatchError("could not determine provisioning servers using Choria JWT Resolver provisioning target plugin: could not parse host foo: address foo: missing port in address"))
 			Expect(t.Count()).To(Equal(0))
 		})
 

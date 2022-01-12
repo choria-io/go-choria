@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -85,6 +85,7 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	fmt.Println()
 	fmt.Println("Server Settings:")
 	fmt.Println()
+	fmt.Printf("    Provisioning Target Resolver: %s\n", provtarget.Name())
 	fmt.Printf("           Supports Provisioning: %t\n", bi.SupportsProvisioning())
 	if bi.ProvisionJWTFile() != "" {
 		fmt.Printf("           Provisioning JWT file: %s\n", bi.ProvisionJWTFile())
