@@ -703,6 +703,18 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(err).To(MatchError("invalid url encoded signature: illegal base64 data at input byte 0"))
 			})
 
+			It("Should not panic for invalid length public keys", func() {
+				nonce := []byte("toomanysecrets")
+
+				sig, err := choria.Ed25519Sign(edPrivateKey, nonce)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(sig).To(HaveLen(64))
+
+				ok, err := auth.verifyNonceSignature(nonce, base64.RawURLEncoding.EncodeToString(sig), hex.EncodeToString([]byte(hex.EncodeToString(edPublicKey))), log)
+				Expect(err).To(MatchError("could not verify nonce signature: invalid public key length 64"))
+				Expect(ok).To(BeFalse())
+			})
+
 			It("Should pass correct signatures", func() {
 				nonce := []byte("toomanysecrets")
 

@@ -5,6 +5,7 @@
 package cmd
 
 import (
+	"encoding/hex"
 	"fmt"
 	"sync"
 	"time"
@@ -80,7 +81,12 @@ func (s *jWTCreateServerCommand) createJWT() error {
 		ServiceHost: s.service,
 	}
 
-	claims, err := tokens.NewServerClaims(s.identity, s.collectives, s.org, perms, s.subjects, []byte(s.pk), "Choria CLI", s.validity)
+	pk, err := hex.DecodeString(s.pk)
+	if err != nil {
+		return err
+	}
+
+	claims, err := tokens.NewServerClaims(s.identity, s.collectives, s.org, perms, s.subjects, pk, "Choria CLI", s.validity)
 	if err != nil {
 		return err
 	}
