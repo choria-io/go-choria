@@ -6,10 +6,11 @@ package cmd
 
 import (
 	"fmt"
-	"strings"
+	"github.com/choria-io/go-choria/config"
+	log "github.com/sirupsen/logrus"
+	"os"
 	"sync"
 
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/provtarget"
 )
 
@@ -26,21 +27,31 @@ func (p *tProvisionerCommand) Setup() (err error) {
 }
 
 func (p *tProvisionerCommand) Configure() error {
-	err := commonConfigure()
+	if debug {
+		log.SetOutput(os.Stdout)
+		log.SetLevel(log.DebugLevel)
+		log.Debug("Logging at debug level due to CLI override")
+	}
+
+	if configFile == "" {
+		return fmt.Errorf("please specify the server configuration using --config")
+	}
+
+	cfg, err = config.NewSystemConfig(configFile, true)
 	if err != nil {
 		return err
 	}
 
-	cfg, err = config.NewDefaultSystemConfig(true)
-	if err != nil {
-		return err
-	}
-
-	cfg.ApplyBuildSettings(bi)
-
+	cfg.LogFile = ""
+	cfg.LoggerType = "console"
 	cfg.DisableSecurityProviderVerify = true
 	cfg.InitiatedByServer = true
 	cfg.Choria.Provision = true
+	if debug {
+		cfg.LogLevel = "debug"
+	}
+
+	cfg.ApplyBuildSettings(bi)
 
 	return nil
 }
@@ -51,7 +62,7 @@ func (p *tProvisionerCommand) Run(wg *sync.WaitGroup) (err error) {
 	c.ConfigureProvisioning()
 
 	if !c.ProvisionMode() {
-		return fmt.Errorf("not a server compiled for auto provisioning or no JWT token found to enable it")
+		return fmt.Errorf("not a server compiled for auto provisioning or the provisioning target is not functional")
 	}
 
 	fmt.Printf("Attempting provisioner resolution using: %s\n", provtarget.Name())
@@ -62,7 +73,9 @@ func (p *tProvisionerCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	fmt.Printf("Provisioning using %d broker(s):\n\n", targets.Count())
-	fmt.Print(strings.Join(targets.Strings(), "\t"))
+	for _, t := range targets.Strings() {
+		fmt.Printf("\t%s\n", t)
+	}
 
 	fmt.Println()
 
