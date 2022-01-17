@@ -99,6 +99,13 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 		s.log.Errorf("Could not setup gateways: %s", err)
 	}
 
+	// Initial configuration to enable JetStream but accounts will come later
+	if s.config.Choria.NetworkStreamStore != "" {
+		s.log.Infof("Configuring Choria Streams in %v", s.config.Choria.NetworkStreamStore)
+		s.opts.JetStream = true
+		s.opts.StoreDir = s.config.Choria.NetworkStreamStore
+	}
+
 	s.gnatsd, err = natsd.NewServer(s.opts)
 	if err != nil {
 		return s, fmt.Errorf("could not setup server: %s", err)
