@@ -10,7 +10,7 @@ require (
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/aelsabbahy/goss v0.3.16
 	github.com/antonmedv/expr v1.9.0
-	github.com/awesome-gocui/gocui v1.0.1
+	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.4
 	github.com/choria-io/go-updater v0.0.4-0.20211231123842-da243cbc508c
 	github.com/cloudevents/sdk-go/v2 v2.8.0
@@ -27,26 +27,26 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.4.3
-	github.com/nats-io/jsm.go v0.0.28-0.20211213114924-006ae57a98b9
-	github.com/nats-io/nats-server/v2 v2.6.7-0.20220107190315-08ff14a24e37
-	github.com/nats-io/nats.go v1.13.1-0.20220108020953-a915f8581127
+	github.com/nats-io/jsm.go v0.0.28-0.20220114120941-6b58848ff92e
+	github.com/nats-io/nats-server/v2 v2.7.1-0.20220114031104-297b44394f92
+	github.com/nats-io/nats.go v1.13.1-0.20220112203823-4db0fb0b7033
 	github.com/nats-io/natscli v0.0.28
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.0.0
 	github.com/onsi/gomega v1.17.0
-	github.com/open-policy-agent/opa v0.36.0
+	github.com/open-policy-agent/opa v0.36.1
 	github.com/prometheus/client_golang v1.11.0
 	github.com/prometheus/client_model v0.2.0
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/tidwall/gjson v1.12.1
+	github.com/tidwall/gjson v1.13.0
 	github.com/tidwall/pretty v1.2.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.9.0
-	golang.org/x/crypto v0.0.0-20211215153901-e495a2d5b3d3
-	golang.org/x/net v0.0.0-20220107192237-5cfca573fb4d // indirect
-	golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e
+	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
+	golang.org/x/net v0.0.0-20220114011407-0dd24b26b47d // indirect
+	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/tools v0.1.8
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
