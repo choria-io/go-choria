@@ -192,7 +192,7 @@ func (e *election) campaign(wg *sync.WaitGroup) error {
 	e.mu.Unlock()
 
 	// spread out startups a bit
-	splay := time.Duration(rand.Intn(int(5 * time.Second)))
+	splay := time.Duration(rand.Intn(5000)) * time.Millisecond
 	ctxSleep(e.ctx, splay)
 
 	var ticker *time.Ticker
