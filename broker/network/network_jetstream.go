@@ -7,11 +7,11 @@ package network
 import (
 	"context"
 	"fmt"
+	"math/rand"
 	"time"
 
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/jsm.go/api"
-	"github.com/nats-io/nats-server/v2/server"
 	"github.com/nats-io/nats.go"
 
 	"github.com/choria-io/go-choria/backoff"
@@ -27,16 +27,9 @@ func (s *Server) setupStreaming() error {
 		return fmt.Errorf("system Account is required for Choria Streams")
 	}
 
-	s.log.Infof("Configuring Choria Streams in %v", s.config.Choria.NetworkStreamStore)
-
-	err := s.gnatsd.EnableJetStream(&server.JetStreamConfig{StoreDir: s.config.Choria.NetworkStreamStore})
-	if err != nil {
-		return err
-	}
-
 	s.log.Infof("Enabling Choria Streams for account %s", s.choriaAccount)
 
-	err = s.choriaAccount.EnableJetStream(nil)
+	err := s.choriaAccount.EnableJetStream(nil)
 	if err != nil {
 		s.log.Errorf("Could not enable Choria Streams for the %s account: %s", s.choriaAccount.Name, err)
 	}
@@ -90,6 +83,14 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 
 	cfg := s.config.Choria
 	if cfg.NetworkEventStoreReplicas == -1 || cfg.NetworkMachineStoreReplicas == -1 || cfg.NetworkStreamAdvisoryReplicas == -1 || cfg.NetworkLeaderElectionReplicas == -1 {
+		delay := time.Duration(rand.Intn(60)+10) * time.Second
+		s.log.Infof("Configuring system streams after %v", delay)
+		err = backoff.Default.Sleep(ctx, delay)
+		if err != nil {
+			s.log.Errorf("Aborting stream configuration: %v", err)
+			return err
+		}
+
 		peers, err := s.choria.NetworkBrokerPeers()
 		if err != nil {
 			s.log.Warnf("Cannot determine network peers to calculate dynamic replica sizes: %s", err)
