@@ -1,1 +1,1 @@
-enable %{pkgname}-server.service
+enable {{cpkg_name}}-server.service
