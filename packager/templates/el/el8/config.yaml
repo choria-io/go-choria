@@ -3,6 +3,7 @@ required_properties:
   - bindir
   - etcdir
   - manage_conf
+  - manage_server_preset
   - contact
   - dist
   - target_arch

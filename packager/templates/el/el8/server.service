@@ -8,6 +8,8 @@ User=root
 Group=root
 ExecStart=/bin/sh -c "${COMMAND_PREFIX} {{cpkg_bindir}}/{{cpkg_name}} server --config={{cpkg_etcdir}}/server.conf"
 KillMode=process
+Restart=on-failure
+RestartSec=5s
 
 [Install]
 WantedBy=multi-user.target
