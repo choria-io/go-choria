@@ -6,6 +6,7 @@
 %define release {{cpkg_release}}
 %define dist {{cpkg_dist}}
 %define manage_conf {{cpkg_manage_conf}}
+%define manage_server_preset {{cpkg_manage_server_preset}}
 %define binary {{cpkg_binary}}
 %define tarball {{cpkg_tarball}}
 %define contact {{cpkg_contact}}
@@ -40,15 +41,19 @@ rm -rf %{buildroot}
 %{__install} -d -m0755  %{buildroot}%{bindir}
 %{__install} -d -m0755  %{buildroot}%{etcdir}
 %{__install} -d -m0755  %{buildroot}/var/log
+%{__install} -d -m0755  %{buildroot}/usr/lib/systemd/system-preset
 %{__install} -m0644 dist/server.sysconfig %{buildroot}/etc/sysconfig/%{pkgname}-server
 %{__install} -m0644 dist/server.service %{buildroot}/usr/lib/systemd/system/%{pkgname}-server.service
 %{__install} -m0644 dist/broker.service %{buildroot}/usr/lib/systemd/system/%{pkgname}-broker.service
 %{__install} -m0644 dist/choria-logrotate %{buildroot}/etc/logrotate.d/%{pkgname}
+%{__install} -m0755 %{binary} %{buildroot}%{bindir}/%{pkgname}
 %if 0%{?manage_conf} > 0
 %{__install} -m0640 dist/server.conf %{buildroot}%{etcdir}/server.conf
 %{__install} -m0640 dist/broker.conf %{buildroot}%{etcdir}/broker.conf
 %endif
-%{__install} -m0755 %{binary} %{buildroot}%{bindir}/%{pkgname}
+%if 0%{?manage_server_preset} > 0
+%{__install} -m0644 dist/server-enable.preset %{buildroot}/usr/lib/systemd/system-preset/60-%{pkgname}-server.preset
+%endif
 
 %clean
 rm -rf %{buildroot}
@@ -76,6 +81,9 @@ fi
 %if 0%{?manage_conf} > 0
 %config(noreplace)%{etcdir}/broker.conf
 %config(noreplace)%{etcdir}/server.conf
+%endif
+%if 0%{?manage_server_preset} > 0
+/usr/lib/systemd/system-preset/60-%{pkgname}-server.preset
 %endif
 %{bindir}/%{pkgname}
 /etc/logrotate.d/%{pkgname}
