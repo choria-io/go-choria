@@ -44,7 +44,11 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 
 		signature, err = r.security.SignString(j)
 		if err != nil {
-			return fmt.Errorf("could not sign message string: %s", err)
+			// registration when doing anon tls might not have a certificate - so we allow that to go unsigned
+			if !protocol.IsRegistrationAgent(request.Agent()) {
+				return fmt.Errorf("could not sign message string: %s", err)
+			}
+			signature = []byte("insecure registration")
 		}
 
 		r.Signature = base64.StdEncoding.EncodeToString(signature)
@@ -52,7 +56,7 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 
 	r.MessageBody = j
 
-	return
+	return nil
 }
 
 // Message retrieves the stored message.  It will be a JSON encoded version of the request set via SetMessage
