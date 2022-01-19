@@ -54,6 +54,13 @@ foss:
         - rm plugin_*.go || true
         - GOOS=linux GOARCH=amd64 go generate --run plugin
 
+    aarch64_linux:
+      os: linux
+      arch: arm64
+      pre:
+        - rm plugin_*.go || true
+        - GOOS=linux GOARCH=amd64 go generate --run plugin
+
     ppc64le_linux:
       os: linux
       arch: ppc64le
@@ -211,6 +218,11 @@ foss:
       template: debian/generic
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
+
+    bullseye_aarch64:
+      template: debian/generic
+      target_arch: aarch64-linux-gnu
+      binary: aarch64_linux
 
     windows_64:
       name: Choria
