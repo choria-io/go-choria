@@ -25,16 +25,6 @@ jobs:
           packager_tag: el8-go1.17
           version: nightly
 
-  bullseye_aarch64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: bullseye_aarch64
-          packager_tag: bullseye-go1.17
-          version: nightly
-
   linux_tarball:
     runs-on: ubuntu-latest
     steps:

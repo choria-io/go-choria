@@ -194,10 +194,20 @@ foss:
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
 
+    bionic_aarch64:
+      template: debian/generic
+      target_arch: aarch64-linux-gnu
+      binary: aarch64_linux
+
     focal_64:
       template: debian/generic
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
+
+    focal_aarch64:
+      template: debian/generic
+      target_arch: aarch64-linux-gnu
+      binary: aarch64_linux
 
     buster_64:
       template: debian/generic
@@ -213,6 +223,11 @@ foss:
       template: debian/generic
       target_arch: arm-linux-gnueabihf
       binary: armv7_linux
+
+    buster_aarch64:
+      template: debian/generic
+      target_arch: aarch64-linux-gnu
+      binary: aarch64_linux
 
     bullseye_64:
       template: debian/generic
