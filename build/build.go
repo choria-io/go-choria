@@ -65,13 +65,6 @@ var ProvisioningBrokerUsername = ""
 // ProvisioningBrokerPassword is the password used to connect to the middleware with
 var ProvisioningBrokerPassword = ""
 
-// ProvisioningNotPossibleReason is a reason to display when provisioning is required but not possible.
-// The Choria Server will exit cleanly preventing any automatic restarts by systemd after logging this
-// reason. Provisioning Target Providers can set this to facilitate handling large multi-environment setups
-// where in some environments no infrastructure to support Choria is present but a standard image is used for
-// all environments.
-var ProvisioningNotPossibleReason = ""
-
 // AgentProviders are registered systems capable of extending choria with new agents
 var AgentProviders = []string{}
 

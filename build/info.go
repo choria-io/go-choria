@@ -150,13 +150,6 @@ func (i *Info) ProvisionStatusFile() string {
 	return ProvisionStatusFile
 }
 
-func (i *Info) ProvisioningNotPossibleReason() string {
-	mu.Lock()
-	defer mu.Unlock()
-
-	return ProvisioningNotPossibleReason
-}
-
 func (i *Info) AgentProviders() []string {
 	mu.Lock()
 	defer mu.Unlock()

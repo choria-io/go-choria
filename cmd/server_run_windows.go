@@ -69,10 +69,6 @@ func (r *serverRunCommand) platformRun(wg *sync.WaitGroup) (err error) {
 		}
 
 		wg.Add(1)
-		if r.serviceHost {
-			return instance.RunServiceHost(ctx, wg)
-		}
-
 		return instance.Run(ctx, wg)
 	}
 
