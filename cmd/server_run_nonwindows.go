@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,17 +8,10 @@
 package cmd
 
 import (
-	"fmt"
 	"sync"
 )
 
-func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
-	defer wg.Done()
-
-	if len(c.BuildInfo().AgentProviders()) == 0 {
-		return fmt.Errorf("invalid Choria Server build, no agent providers present")
-	}
-
+func (r *serverRunCommand) platformRun(wg *sync.WaitGroup) (err error) {
 	instance, err := r.prepareInstance()
 	if err != nil {
 		return err
@@ -27,7 +20,7 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	wg.Add(1)
 	if r.serviceHost {
 		return instance.RunServiceHost(ctx, wg)
-	} else {
-		return instance.Run(ctx, wg)
 	}
+
+	return instance.Run(ctx, wg)
 }

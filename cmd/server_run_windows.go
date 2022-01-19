@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -56,10 +56,8 @@ loop:
 	return false, 0
 }
 
-func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
-	defer wg.Done()
-
-	interactive, err := svc.IsAnInteractiveSession()
+func (r *serverRunCommand) platformRun(wg *sync.WaitGroup) (err error) {
+	interactive, err := svc.IsWindowsService()
 	if err != nil {
 		return err
 	}
@@ -71,6 +69,10 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		}
 
 		wg.Add(1)
+		if r.serviceHost {
+			return instance.RunServiceHost(ctx, wg)
+		}
+
 		return instance.Run(ctx, wg)
 	}
 

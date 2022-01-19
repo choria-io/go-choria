@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"sync"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
@@ -15,6 +16,16 @@ import (
 	"github.com/choria-io/go-choria/server"
 	log "github.com/sirupsen/logrus"
 )
+
+type serverRunCommand struct {
+	command
+
+	shouldExitSilently bool
+	serviceHost        bool
+	disableTLS         bool
+	disableTLSVerify   bool
+	pidFile            string
+}
 
 func (r *serverRunCommand) Setup() (err error) {
 	if broker, ok := cmdWithFullCommand("server"); ok {
@@ -39,7 +50,10 @@ func (r *serverRunCommand) Configure() error {
 		return fmt.Errorf("server run requires a configuration file")
 	}
 
+	var provisioning bool
+
 	switch {
+	// config file exist
 	case util.FileExist(configFile):
 		cfg, err = config.NewSystemConfig(configFile, true)
 		if err != nil {
@@ -48,23 +62,25 @@ func (r *serverRunCommand) Configure() error {
 
 		provtarget.Configure(cfg, log.WithField("component", "provtarget"))
 
-		// if a config file existed and prov is disable even after reading it, discard it and start fresh
 		if r.shouldProvision(cfg) {
 			log.Warnf("Switching to provisioning configuration due to build defaults and server.provision configuration setting")
 			cfg, err = r.provisionConfig(configFile)
 			if err != nil {
 				return err
 			}
+			provisioning = true
 		}
 
+	// compiled in defaults
 	case bi.ProvisionBrokerURLs() != "" || util.FileExist(bi.ProvisionJWTFile()):
 		cfg, err = r.provisionConfig(configFile)
 		if err != nil {
 			return err
 		}
+		provisioning = true
 
+	// we have no configuration file or anything, so we use defaults and possibly initiate provisioning
 	default:
-		// we have no configuration file or anything, so we use defaults and possibly initiate provisioning
 		cfg, err = config.NewDefaultSystemConfig(true)
 		if err != nil {
 			return fmt.Errorf("could not create default server configuration")
@@ -83,10 +99,16 @@ func (r *serverRunCommand) Configure() error {
 		if err != nil {
 			return err
 		}
+
+		provisioning = true
+	}
+
+	if provisioning && bi.ProvisioningNotPossibleReason() != "" {
+		log.Warnf("Provisioning not possible in this environment, exiting cleanly: %v", bi.ProvisioningNotPossibleReason())
+		r.shouldExitSilently = true
 	}
 
 	cfg.ApplyBuildSettings(bi)
-
 	cfg.DisableSecurityProviderVerify = true
 
 	if os.Getenv("INSECURE_YES_REALLY") == "true" {
@@ -95,6 +117,20 @@ func (r *serverRunCommand) Configure() error {
 	}
 
 	return nil
+}
+
+func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
+	defer wg.Done()
+
+	if r.shouldExitSilently {
+		return nil
+	}
+
+	if len(c.BuildInfo().AgentProviders()) == 0 {
+		return fmt.Errorf("invalid Choria Server build, no agent providers present")
+	}
+
+	return r.platformRun(wg)
 }
 
 func (r *serverRunCommand) shouldProvision(cfg *config.Config) bool {
