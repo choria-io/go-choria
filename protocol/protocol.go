@@ -29,6 +29,11 @@ func IsRemoteSignerAgent(agent string) bool {
 	return agent == "aaa_signer"
 }
 
+// IsRegistrationAgent determines if agent is the registration target agent
+func IsRegistrationAgent(agent string) bool {
+	return agent == "registration"
+}
+
 // ClientStrictValidation gives hints to the protocol implementations that
 // a client does not wish to be fully validated, this is because validation
 // can often be very slow so clients can elect to disable that.

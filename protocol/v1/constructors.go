@@ -176,8 +176,12 @@ func NewSecureRequest(request protocol.Request, security SecurityProvider) (secu
 	if protocol.IsSecure() && !protocol.IsRemoteSignerAgent(request.Agent()) {
 		pub, err = security.PublicCertTXT()
 		if err != nil {
-			err = fmt.Errorf("could not retrieve Public Certificate from the security subsystem: %s", err)
-			return
+			// registration when doing anon tls might not have a certificate - so we allow that to go unsigned
+			if protocol.IsRegistrationAgent(request.Agent()) {
+				pub = []byte("insecure registration")
+			} else {
+				return secure, fmt.Errorf("could not retrieve Public Certificate from the security subsystem: %s", err)
+			}
 		}
 	}
 
@@ -189,10 +193,10 @@ func NewSecureRequest(request protocol.Request, security SecurityProvider) (secu
 
 	err = secure.SetMessage(request)
 	if err != nil {
-		err = fmt.Errorf("could not set message SecureRequest structure: %s", err)
+		return secure, fmt.Errorf("could not set message SecureRequest structure: %s", err)
 	}
 
-	return
+	return secure, nil
 }
 
 // NewRemoteSignedSecureRequest is a NewSecureRequest that delegates the signing to a remote signer like aaasvc
