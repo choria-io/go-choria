@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -148,6 +148,13 @@ func (i *Info) ProvisionStatusFile() string {
 	defer mu.Unlock()
 
 	return ProvisionStatusFile
+}
+
+func (i *Info) ProvisioningNotPossibleReason() string {
+	mu.Lock()
+	defer mu.Unlock()
+
+	return ProvisioningNotPossibleReason
 }
 
 func (i *Info) AgentProviders() []string {
