@@ -20,11 +20,10 @@ import (
 type serverRunCommand struct {
 	command
 
-	shouldExitSilently bool
-	serviceHost        bool
-	disableTLS         bool
-	disableTLSVerify   bool
-	pidFile            string
+	serviceHost      bool
+	disableTLS       bool
+	disableTLSVerify bool
+	pidFile          string
 }
 
 func (r *serverRunCommand) Setup() (err error) {
@@ -50,8 +49,6 @@ func (r *serverRunCommand) Configure() error {
 		return fmt.Errorf("server run requires a configuration file")
 	}
 
-	var provisioning bool
-
 	switch {
 	// config file exist
 	case util.FileExist(configFile):
@@ -68,7 +65,6 @@ func (r *serverRunCommand) Configure() error {
 			if err != nil {
 				return err
 			}
-			provisioning = true
 		}
 
 	// compiled in defaults
@@ -77,7 +73,6 @@ func (r *serverRunCommand) Configure() error {
 		if err != nil {
 			return err
 		}
-		provisioning = true
 
 	// we have no configuration file or anything, so we use defaults and possibly initiate provisioning
 	default:
@@ -99,13 +94,6 @@ func (r *serverRunCommand) Configure() error {
 		if err != nil {
 			return err
 		}
-
-		provisioning = true
-	}
-
-	if provisioning && bi.ProvisioningNotPossibleReason() != "" {
-		log.Warnf("Provisioning not possible in this environment, exiting cleanly: %v", bi.ProvisioningNotPossibleReason())
-		r.shouldExitSilently = true
 	}
 
 	cfg.ApplyBuildSettings(bi)
@@ -121,10 +109,6 @@ func (r *serverRunCommand) Configure() error {
 
 func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
-
-	if r.shouldExitSilently {
-		return nil
-	}
 
 	if len(c.BuildInfo().AgentProviders()) == 0 {
 		return fmt.Errorf("invalid Choria Server build, no agent providers present")
