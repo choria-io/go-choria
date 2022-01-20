@@ -69,7 +69,6 @@ jobs:
     needs:
       - el7_64
       - el8_64
-      - bullseye_aarch64
       - linux_tarball
       - windows_zip
       - darwin_amd64_tarball
