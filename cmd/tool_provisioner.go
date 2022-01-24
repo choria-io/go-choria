@@ -7,6 +7,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
 	log "github.com/sirupsen/logrus"
 	"os"
 	"sync"
@@ -37,15 +38,21 @@ func (p *tProvisionerCommand) Configure() error {
 		return fmt.Errorf("please specify the server configuration using --config")
 	}
 
-	cfg, err = config.NewSystemConfig(configFile, true)
-	if err != nil {
-		return err
+	if util.FileExist(configFile) {
+		cfg, err = config.NewSystemConfig(configFile, true)
+		if err != nil {
+			return err
+		}
+	} else {
+		log.Warnf("Using generated default config as %s does not exist", configFile)
+		cfg, err = config.NewDefaultSystemConfig(true)
+		cfg.Choria.SecurityProvider = "file"
+		cfg.Choria.SSLDir = "/tmp"
 	}
 
 	cfg.LogFile = ""
 	cfg.LoggerType = "console"
 	cfg.DisableSecurityProviderVerify = true
-	cfg.InitiatedByServer = true
 	cfg.Choria.Provision = true
 	if debug {
 		cfg.LogLevel = "debug"
