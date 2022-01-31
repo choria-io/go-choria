@@ -29,6 +29,9 @@ type ClientPermissions struct {
 	// ElectionUser allows using leader elections
 	ElectionUser bool `json:"election_user,omitempty"`
 
+	// Governor enables access to Governors, cannot make new ones, also requires Streams permission
+	Governor bool `json:"governor"`
+
 	// OrgAdmin has access to all subjects
 	OrgAdmin bool `json:"org_admin,omitempty"`
 
