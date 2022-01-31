@@ -20,8 +20,11 @@ type ServerPermissions struct {
 	// Submission enables access to <collective>.submission.in.>
 	Submission bool `json:"submission"`
 
-	// Streams allow access to Choria Streams such as reading KV values
+	// Streams allow access to Choria Streams such as reading KV values and using Governors
 	Streams bool `json:"streams"`
+
+	// Governor enables access to Governors, cannot make new ones, also requires Streams permission
+	Governor bool `json:"governor"`
 
 	// ServiceHost allows a node to listen for service requests
 	ServiceHost bool `json:"service_host"`

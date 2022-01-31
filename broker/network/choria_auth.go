@@ -538,6 +538,7 @@ func (a *ChoriaAuth) setStreamsUserPermissions(user *server.User, subs []string,
 		"$JS.API.STREAM.LIST",
 		"$JS.API.STREAM.INFO.*",
 		"$JS.API.STREAM.MSG.GET.*",
+		"$JS.API.STREAM.MSG.DELETE.*",
 		"$JS.API.CONSUMER.CREATE.*",
 		"$JS.API.CONSUMER.DURABLE.CREATE.*.*",
 		"$JS.API.CONSUMER.DELETE.*.*",
@@ -562,6 +563,16 @@ func (a *ChoriaAuth) setEventsViewerPermissions(user *server.User, subs []string
 		// provisioner should only listen to one specific kind of event, not strictly needed but its what it is
 		subs = append(subs, "choria.lifecycle.event.*.provision_mode_server")
 	}
+
+	return subs, pubs
+}
+
+func (a *ChoriaAuth) setClientGovernorPermissions(user *server.User, subs []string, pubs []string) ([]string, []string) {
+	if user.Account != a.choriaAccount {
+		return subs, pubs
+	}
+
+	pubs = append(pubs, "*.governor.*")
 
 	return subs, pubs
 }
@@ -616,6 +627,11 @@ func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string,
 	if perms.ElectionUser {
 		log.Infof("Granting user Leader Election access")
 		subs, pubs = a.setElectionPermissions(user, subs, pubs)
+	}
+
+	if perms.Governor && (perms.StreamsUser || perms.StreamsAdmin) {
+		log.Infof("Granting user Governor access")
+		subs, pubs = a.setClientGovernorPermissions(user, subs, pubs)
 	}
 
 	return pubs, subs, nil
@@ -695,6 +711,12 @@ func (a *ChoriaAuth) setClaimsBasedServerPermissions(user *server.User, claims *
 					fmt.Sprintf("%s.submission.in.>", c),
 				)
 			}
+
+			if claims.Permissions.Governor && claims.Permissions.Streams {
+				user.Permissions.Publish.Allow = append(user.Permissions.Publish.Allow,
+					fmt.Sprintf("%s.governor.*", c),
+				)
+			}
 		}
 	}
 
@@ -707,6 +729,7 @@ func (a *ChoriaAuth) setClaimsBasedServerPermissions(user *server.User, claims *
 		user.Permissions.Publish.Allow = append(user.Permissions.Publish.Allow,
 			fmt.Sprintf("%s.STREAM.INFO.*", prefix),
 			fmt.Sprintf("%s.STREAM.MSG.GET.*", prefix),
+			fmt.Sprintf("%s.STREAM.MSG.DELETE.*", prefix),
 			fmt.Sprintf("%s.CONSUMER.CREATE.*", prefix),
 			fmt.Sprintf("%s.CONSUMER.DURABLE.CREATE.*.*", prefix),
 			fmt.Sprintf("%s.CONSUMER.INFO.*.*", prefix),

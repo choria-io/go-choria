@@ -443,6 +443,48 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					Expect(verified).To(BeTrue())
 				})
 
+				It("Should support Governors", func() {
+					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+						"purpose":     tokens.ServerPurpose,
+						"public_key":  hex.EncodeToString(edPublicKey),
+						"collectives": []string{"c1", "c2"},
+						"permissions": &tokens.ServerPermissions{Governor: true, Streams: true},
+					})
+
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+						Expect(user.Username).To(Equal("ginkgo.example.net"))
+						Expect(user.Account).To(Equal(auth.choriaAccount))
+						Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+							Allow: []string{
+								"choria.lifecycle.>",
+								"choria.machine.transition",
+								"choria.machine.watcher.>",
+								"c1.reply.>",
+								"c1.broadcast.agent.registration",
+								"choria.federation.c1.collective",
+								"c1.governor.*",
+								"c2.reply.>",
+								"c2.broadcast.agent.registration",
+								"choria.federation.c2.collective",
+								"c2.governor.*",
+								"$JS.API.STREAM.INFO.*",
+								"$JS.API.STREAM.MSG.GET.*",
+								"$JS.API.STREAM.MSG.DELETE.*",
+								"$JS.API.CONSUMER.CREATE.*",
+								"$JS.API.CONSUMER.DURABLE.CREATE.*.*",
+								"$JS.API.CONSUMER.INFO.*.*",
+								"$JS.API.CONSUMER.MSG.NEXT.*.*",
+								"$JS.ACK.>",
+								"$JS.FC.>",
+							},
+						}))
+					})
+
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					Expect(err).ToNot(HaveOccurred())
+					Expect(verified).To(BeTrue())
+				})
+
 				It("Should support Submission", func() {
 					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
 						"purpose":     tokens.ServerPurpose,
@@ -501,6 +543,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 									"choria.federation.c2.collective",
 									"$JS.API.STREAM.INFO.*",
 									"$JS.API.STREAM.MSG.GET.*",
+									"$JS.API.STREAM.MSG.DELETE.*",
 									"$JS.API.CONSUMER.CREATE.*",
 									"$JS.API.CONSUMER.DURABLE.CREATE.*.*",
 									"$JS.API.CONSUMER.INFO.*.*",
@@ -540,6 +583,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 									"choria.federation.c2.collective",
 									"choria.streams.STREAM.INFO.*",
 									"choria.streams.STREAM.MSG.GET.*",
+									"choria.streams.STREAM.MSG.DELETE.*",
 									"choria.streams.CONSUMER.CREATE.*",
 									"choria.streams.CONSUMER.DURABLE.CREATE.*.*",
 									"choria.streams.CONSUMER.INFO.*.*",
@@ -1139,6 +1183,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						"$JS.API.STREAM.LIST",
 						"$JS.API.STREAM.INFO.*",
 						"$JS.API.STREAM.MSG.GET.*",
+						"$JS.API.STREAM.MSG.DELETE.*",
 						"$JS.API.CONSUMER.CREATE.*",
 						"$JS.API.CONSUMER.DURABLE.CREATE.*.*",
 						"$JS.API.CONSUMER.DELETE.*.*",
@@ -1150,6 +1195,48 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						"$JS.FC.>"),
 				}))
 			})
+		})
+
+		Describe("Governor Users", func() {
+			It("Should not set provisioner permissions", func() {
+				user.Account = auth.provisioningAccount
+				auth.setClientPermissions(user, "", &tokens.ClientPermissions{StreamsUser: true, Governor: true}, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: minSub,
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: minPub,
+				}))
+			})
+
+			It("Should set choria permissions", func() {
+				user.Account = auth.choriaAccount
+				auth.setClientPermissions(user, "", &tokens.ClientPermissions{StreamsUser: true, Governor: true}, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: minSub,
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: append(minPub, []string{
+						"$JS.API.INFO",
+						"$JS.API.STREAM.NAMES",
+						"$JS.API.STREAM.LIST",
+						"$JS.API.STREAM.INFO.*",
+						"$JS.API.STREAM.MSG.GET.*",
+						"$JS.API.STREAM.MSG.DELETE.*",
+						"$JS.API.CONSUMER.CREATE.*",
+						"$JS.API.CONSUMER.DURABLE.CREATE.*.*",
+						"$JS.API.CONSUMER.DELETE.*.*",
+						"$JS.API.CONSUMER.NAMES.*",
+						"$JS.API.CONSUMER.LIST.*",
+						"$JS.API.CONSUMER.INFO.*.*",
+						"$JS.API.CONSUMER.MSG.NEXT.*.*",
+						"$JS.ACK.>",
+						"$JS.FC.>",
+						"*.governor.*",
+					}...),
+				}))
+			})
+
 		})
 
 		Describe("Event Viewers", func() {
