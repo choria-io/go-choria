@@ -11,7 +11,7 @@ require (
 	github.com/aelsabbahy/goss v0.3.16
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
-	github.com/brutella/hc v1.2.4
+	github.com/brutella/hc v1.2.5
 	github.com/choria-io/go-updater v0.0.4-0.20211231123842-da243cbc508c
 	github.com/cloudevents/sdk-go/v2 v2.8.0
 	github.com/fatih/color v1.13.0
@@ -19,7 +19,7 @@ require (
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/golang/mock v1.6.0
-	github.com/google/go-cmp v0.5.6
+	github.com/google/go-cmp v0.5.7
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.5.2
@@ -27,28 +27,27 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.4.3
-	github.com/nats-io/jsm.go v0.0.28-0.20220114120941-6b58848ff92e
-	github.com/nats-io/nats-server/v2 v2.7.1-0.20220114031104-297b44394f92
-	github.com/nats-io/nats.go v1.13.1-0.20220112203823-4db0fb0b7033
-	github.com/nats-io/natscli v0.0.28
+	github.com/nats-io/jsm.go v0.0.28-0.20220204102144-b67426e04bf2
+	github.com/nats-io/nats-server/v2 v2.7.2-0.20220202171332-d3f78deaaf2c
+	github.com/nats-io/nats.go v1.13.1-0.20220202232944-a0a6a71ede98
+	github.com/nats-io/natscli v0.0.29-0.20220128122540-1cde5d99fbeb
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/onsi/ginkgo/v2 v2.0.0
-	github.com/onsi/gomega v1.17.0
-	github.com/open-policy-agent/opa v0.36.1
-	github.com/prometheus/client_golang v1.11.0
+	github.com/onsi/ginkgo/v2 v2.1.1
+	github.com/onsi/gomega v1.18.1
+	github.com/open-policy-agent/opa v0.37.1
+	github.com/prometheus/client_golang v1.12.1
 	github.com/prometheus/client_model v0.2.0
-	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.8.1
-	github.com/tidwall/gjson v1.13.0
+	github.com/tidwall/gjson v1.14.0
 	github.com/tidwall/pretty v1.2.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.9.0
-	golang.org/x/crypto v0.0.0-20220112180741-5e0467b6c7ce
-	golang.org/x/net v0.0.0-20220114011407-0dd24b26b47d // indirect
-	golang.org/x/sys v0.0.0-20220114195835-da31bd327af9
+	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838
+	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
+	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
-	golang.org/x/tools v0.1.8
+	golang.org/x/tools v0.1.9
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	rsc.io/goversion v1.2.0
 )
