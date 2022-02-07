@@ -10,6 +10,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/choria-io/go-choria/config"
 	iu "github.com/choria-io/go-choria/internal/util"
@@ -69,6 +70,11 @@ func (v *tJWTViewCommand) validateServerToken(token string) error {
 	}
 
 	fmt.Printf("             Identity: %s\n", claims.ChoriaIdentity)
+	if claims.ExpiresAt != nil && time.Now().Before(claims.ExpiresAt.Time) {
+		fmt.Printf("           Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, time.Since(claims.ExpiresAt.Time).Round(time.Minute))
+	} else if claims.ExpiresAt != nil {
+		fmt.Printf("           Expires At: %s (%s)\n", claims.ExpiresAt.Time, time.Until(claims.ExpiresAt.Time))
+	}
 	fmt.Printf("          Collectives: %s\n", strings.Join(claims.Collectives, ", "))
 	fmt.Printf("           Public Key: %s\n", claims.PublicKey)
 	fmt.Printf("    Organization Unit: %s\n", claims.OrganizationUnit)
@@ -126,6 +132,11 @@ func (v *tJWTViewCommand) validateProvisionToken(token string) error {
 		fmt.Printf("Unvalidated Provisioning Token %s\n\n", v.file)
 	}
 
+	if claims.ExpiresAt != nil && time.Now().Before(claims.ExpiresAt.Time) {
+		fmt.Printf("                    Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, time.Since(claims.ExpiresAt.Time).Round(time.Minute))
+	} else if claims.ExpiresAt != nil {
+		fmt.Printf("                    Expires At: %s (%s)\n", claims.ExpiresAt.Time, time.Until(claims.ExpiresAt.Time))
+	}
 	fmt.Printf("                         Token: %s\n", claims.Token)
 	fmt.Printf("                        Secure: %t\n", claims.Secure)
 	if claims.SRVDomain != "" {
@@ -188,6 +199,11 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 	fmt.Printf("         Public Key: %s\n", claims.PublicKey)
 	_, uid := claims.UniqueID()
 	fmt.Printf(" Private Network ID: %s\n", uid)
+	if claims.ExpiresAt != nil && time.Now().After(claims.ExpiresAt.Time) {
+		fmt.Printf("         Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, time.Since(claims.ExpiresAt.Time).Round(time.Minute))
+	} else if claims.ExpiresAt != nil {
+		fmt.Printf("         Expires At: %s (%s)\n", claims.ExpiresAt.Time, time.Until(claims.ExpiresAt.Time))
+	}
 	if claims.Permissions != nil {
 		fmt.Println(" Broker Permissions:")
 		if claims.Permissions.ElectionUser {
