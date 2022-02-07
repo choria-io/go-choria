@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -133,8 +133,6 @@ func (p *loginCommand) login() error {
 		if err != nil {
 			return err
 		}
-		tlsc.InsecureSkipVerify = true
-		tlsc.VerifyConnection = nil // legacy san checks are here
 		client.Transport = &http.Transport{TLSClientConfig: tlsc}
 	}
 

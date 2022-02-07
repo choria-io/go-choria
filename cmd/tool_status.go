@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -20,6 +20,7 @@ type tStatusCommand struct {
 	lastMessage    time.Duration
 	maxAge         time.Duration
 	certExpire     time.Duration
+	tokenExpire    time.Duration
 	provisioning   bool
 	provisioned    bool
 }
@@ -32,6 +33,7 @@ func (s *tStatusCommand) Setup() (err error) {
 		s.cmd.Flag("message-since", "Maximum time to allow no messages to pass (0 disables)").Default("1h").DurationVar(&s.lastMessage)
 		s.cmd.Flag("max-age", "Maximum age for the status file (0 disables)").Default("30m").DurationVar(&s.maxAge)
 		s.cmd.Flag("certificate-age", "Check if the certificate expires sooner than this duration (0 disabled").Default("24h").DurationVar(&s.certExpire)
+		s.cmd.Flag("token-age", "Check if the token expires sooner than this duration (0 disabled)").Default("24h").DurationVar(&s.tokenExpire)
 		s.cmd.Flag("unprovisioned", "Checks that the server is in provisioning mode").Default("false").BoolVar(&s.provisioning)
 		s.cmd.Flag("provisioned", "Checks that the server is not being provisioned").Default("false").BoolVar(&s.provisioned)
 	}
@@ -49,6 +51,14 @@ func (s *tStatusCommand) checkCertificate(status *statistics.InstanceStatus) err
 	}
 
 	return status.CheckCertValidity(s.certExpire)
+}
+
+func (s *tStatusCommand) checkToken(status *statistics.InstanceStatus) error {
+	if s.tokenExpire == 0 {
+		return nil
+	}
+
+	return status.CheckTokenValidity(s.tokenExpire)
 }
 
 func (s *tStatusCommand) checkConnection(status *statistics.InstanceStatus) (err error) {
@@ -101,6 +111,11 @@ func (s *tStatusCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	err = s.checkCertificate(status)
+	if err != nil {
+		s.exit(err)
+	}
+
+	err = s.checkToken(status)
 	if err != nil {
 		s.exit(err)
 	}

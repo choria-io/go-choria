@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,6 +16,7 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/statistics"
+	"github.com/choria-io/go-choria/tokens"
 
 	"github.com/choria-io/go-choria/lifecycle"
 
@@ -209,6 +210,16 @@ func (srv *Instance) Status() *statistics.InstanceStatus {
 	cert, _ := srv.fw.PublicCert()
 	if cert != nil {
 		s.CertificateExpires = cert.NotAfter
+	}
+
+	token, _ := srv.fw.SignerToken()
+	if token != "" {
+		claims, err := tokens.ParseServerTokenUnverified(token)
+		if err == nil {
+			if claims.ExpiresAt != nil {
+				s.TokenExpires = claims.ExpiresAt.Time
+			}
+		}
 	}
 
 	return s
