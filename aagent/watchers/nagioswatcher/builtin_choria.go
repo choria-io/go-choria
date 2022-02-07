@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -29,9 +29,18 @@ func (w *Watcher) watchUsingChoria() (state State, output string, err error) {
 		return CRITICAL, fmt.Sprintf("CRITICAL: %s|%s", err, perfData), nil
 	}
 
-	err = status.CheckCertValidity(w.properties.CertExpiry)
-	if err != nil {
-		return CRITICAL, fmt.Sprintf("CRITICAL: %s|%s", err, perfData), nil
+	if w.properties.CertExpiry > 0 {
+		err = status.CheckCertValidity(w.properties.CertExpiry)
+		if err != nil {
+			return CRITICAL, fmt.Sprintf("CRITICAL: %s|%s", err, perfData), nil
+		}
+	}
+
+	if w.properties.TokenExpiry > 0 {
+		err = status.CheckTokenValidity(w.properties.TokenExpiry)
+		if err != nil {
+			return CRITICAL, fmt.Sprintf("CRITICAL: %s|%s", err, perfData), nil
+		}
 	}
 
 	err = status.CheckLastMessage(w.properties.LastMessage)

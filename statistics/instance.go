@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -31,6 +31,7 @@ type InstanceStatus struct {
 	Provisioning       bool         `json:"provisioning_mode"`
 	Stats              *ServerStats `json:"stats"`
 	CertificateExpires time.Time    `json:"certificate_expires"`
+	TokenExpires       time.Time    `json:"token_expires"`
 	FileName           string       `json:"-"`
 	ModTime            time.Time    `json:"-"`
 }
@@ -58,7 +59,23 @@ func LoadInstanceStatus(f string) (*InstanceStatus, error) {
 	return status, nil
 }
 
+func (i *InstanceStatus) CheckTokenValidity(tillExpire time.Duration) error {
+	if i.TokenExpires.IsZero() {
+		return nil
+	}
+
+	if time.Until(i.TokenExpires) < tillExpire {
+		return fmt.Errorf("token expires %v (%v)", i.TokenExpires, time.Until(i.TokenExpires).Round(time.Second))
+	}
+
+	return nil
+}
+
 func (i *InstanceStatus) CheckCertValidity(tillExpire time.Duration) error {
+	if i.CertificateExpires.IsZero() {
+		return nil
+	}
+
 	if time.Until(i.CertificateExpires) < tillExpire {
 		return fmt.Errorf("certificate expires %v (%v)", i.CertificateExpires, time.Until(i.CertificateExpires).Round(time.Second))
 	}

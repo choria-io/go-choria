@@ -27,10 +27,10 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.4.3
-	github.com/nats-io/jsm.go v0.0.28-0.20220204102144-b67426e04bf2
-	github.com/nats-io/nats-server/v2 v2.7.2-0.20220202171332-d3f78deaaf2c
-	github.com/nats-io/nats.go v1.13.1-0.20220202232944-a0a6a71ede98
-	github.com/nats-io/natscli v0.0.29-0.20220128122540-1cde5d99fbeb
+	github.com/nats-io/jsm.go v0.0.28-0.20220204133248-560e881d29a4
+	github.com/nats-io/nats-server/v2 v2.7.2
+	github.com/nats-io/nats.go v1.13.1-0.20220206022646-bf1b00513eab
+	github.com/nats-io/natscli v0.0.29-0.20220204133629-ccbbdfae9919
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.1
 	github.com/onsi/gomega v1.18.1
@@ -45,7 +45,7 @@ require (
 	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
-	golang.org/x/sys v0.0.0-20220128215802-99c3d69c2c27
+	golang.org/x/sys v0.0.0-20220204135822-1c1b9b1eba6a
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/tools v0.1.9
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6

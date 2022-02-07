@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -81,6 +81,7 @@ type properties struct {
 	Timeout     time.Duration
 	LastMessage time.Duration `mapstructure:"last_message"`
 	CertExpiry  time.Duration `mapstructure:"pubcert_expire"`
+	TokenExpiry time.Duration `mapstructure:"token_expire"`
 }
 
 type Execution struct {
