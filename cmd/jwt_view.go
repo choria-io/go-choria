@@ -70,7 +70,7 @@ func (v *tJWTViewCommand) validateServerToken(token string) error {
 	}
 
 	fmt.Printf("             Identity: %s\n", claims.ChoriaIdentity)
-	if claims.ExpiresAt != nil && time.Now().Before(claims.ExpiresAt.Time) {
+	if claims.ExpiresAt != nil && time.Now().After(claims.ExpiresAt.Time) {
 		fmt.Printf("           Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, time.Since(claims.ExpiresAt.Time).Round(time.Minute))
 	} else if claims.ExpiresAt != nil {
 		fmt.Printf("           Expires At: %s (%s)\n", claims.ExpiresAt.Time, time.Until(claims.ExpiresAt.Time))
@@ -132,7 +132,7 @@ func (v *tJWTViewCommand) validateProvisionToken(token string) error {
 		fmt.Printf("Unvalidated Provisioning Token %s\n\n", v.file)
 	}
 
-	if claims.ExpiresAt != nil && time.Now().Before(claims.ExpiresAt.Time) {
+	if claims.ExpiresAt != nil && time.Now().After(claims.ExpiresAt.Time) {
 		fmt.Printf("                    Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, time.Since(claims.ExpiresAt.Time).Round(time.Minute))
 	} else if claims.ExpiresAt != nil {
 		fmt.Printf("                    Expires At: %s (%s)\n", claims.ExpiresAt.Time, time.Until(claims.ExpiresAt.Time))
