@@ -27,14 +27,14 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.4.3
-	github.com/nats-io/jsm.go v0.0.28-0.20220204133248-560e881d29a4
-	github.com/nats-io/nats-server/v2 v2.7.3-0.20220207172817-d71bb63e1bcf
-	github.com/nats-io/nats.go v1.13.1-0.20220206022646-bf1b00513eab
-	github.com/nats-io/natscli v0.0.29-0.20220204133629-ccbbdfae9919
+	github.com/nats-io/jsm.go v0.0.28-0.20220211125725-501a222fb5d6
+	github.com/nats-io/nats-server/v2 v2.7.3-0.20220214175354-ae9bb19d66eb
+	github.com/nats-io/nats.go v1.13.1-0.20220210170715-3ead80931bdf
+	github.com/nats-io/natscli v0.0.29-0.20220211151034-0a0b6b121add
 	github.com/olekukonko/tablewriter v0.0.5
-	github.com/onsi/ginkgo/v2 v2.1.1
+	github.com/onsi/ginkgo/v2 v2.1.2
 	github.com/onsi/gomega v1.18.1
-	github.com/open-policy-agent/opa v0.37.1
+	github.com/open-policy-agent/opa v0.37.2
 	github.com/prometheus/client_golang v1.12.1
 	github.com/prometheus/client_model v0.2.0
 	github.com/robfig/cron v1.2.0
@@ -43,9 +43,9 @@ require (
 	github.com/tidwall/pretty v1.2.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.9.0
-	golang.org/x/crypto v0.0.0-20220131195533-30dcbda58838
+	golang.org/x/crypto v0.0.0-20220214200702-86341886e292
 	golang.org/x/net v0.0.0-20220127200216-cd36cc0744dd // indirect
-	golang.org/x/sys v0.0.0-20220204135822-1c1b9b1eba6a
+	golang.org/x/sys v0.0.0-20220209214540-3681064d5158
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/tools v0.1.9
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
