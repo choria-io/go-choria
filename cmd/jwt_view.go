@@ -71,9 +71,9 @@ func (v *tJWTViewCommand) validateServerToken(token string) error {
 
 	fmt.Printf("             Identity: %s\n", claims.ChoriaIdentity)
 	if claims.ExpiresAt != nil && time.Now().After(claims.ExpiresAt.Time) {
-		fmt.Printf("           Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, time.Since(claims.ExpiresAt.Time).Round(time.Minute))
+		fmt.Printf("           Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Since(claims.ExpiresAt.Time)))
 	} else if claims.ExpiresAt != nil {
-		fmt.Printf("           Expires At: %s (%s)\n", claims.ExpiresAt.Time, time.Until(claims.ExpiresAt.Time))
+		fmt.Printf("           Expires At: %s (%s)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Until(claims.ExpiresAt.Time)))
 	}
 	fmt.Printf("          Collectives: %s\n", strings.Join(claims.Collectives, ", "))
 	fmt.Printf("           Public Key: %s\n", claims.PublicKey)
@@ -133,9 +133,9 @@ func (v *tJWTViewCommand) validateProvisionToken(token string) error {
 	}
 
 	if claims.ExpiresAt != nil && time.Now().After(claims.ExpiresAt.Time) {
-		fmt.Printf("                    Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, time.Since(claims.ExpiresAt.Time).Round(time.Minute))
+		fmt.Printf("                    Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Since(claims.ExpiresAt.Time)))
 	} else if claims.ExpiresAt != nil {
-		fmt.Printf("                    Expires At: %s (%s)\n", claims.ExpiresAt.Time, time.Until(claims.ExpiresAt.Time))
+		fmt.Printf("                    Expires At: %s (%s)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Until(claims.ExpiresAt.Time)))
 	}
 	fmt.Printf("                         Token: %s\n", claims.Token)
 	fmt.Printf("                        Secure: %t\n", claims.Secure)
@@ -200,9 +200,9 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 	_, uid := claims.UniqueID()
 	fmt.Printf(" Private Network ID: %s\n", uid)
 	if claims.ExpiresAt != nil && time.Now().After(claims.ExpiresAt.Time) {
-		fmt.Printf("         Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, time.Since(claims.ExpiresAt.Time).Round(time.Minute))
+		fmt.Printf("         Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Since(claims.ExpiresAt.Time)))
 	} else if claims.ExpiresAt != nil {
-		fmt.Printf("         Expires At: %s (%s)\n", claims.ExpiresAt.Time, time.Until(claims.ExpiresAt.Time))
+		fmt.Printf("         Expires At: %s (%s)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Until(claims.ExpiresAt.Time)))
 	}
 	if claims.Permissions != nil {
 		fmt.Println(" Broker Permissions:")
