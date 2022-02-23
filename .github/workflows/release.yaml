@@ -1,0 +1,214 @@
+name: Choria Release
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  el7_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: el7_64
+          packager_tag: el7-go1.17
+          version: tag
+
+  el8_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: el8_64
+          packager_tag: el8-go1.17
+          version: tag
+
+  el7_ppc64le:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: el7_ppc64le
+          packager_tag: el7-go1.17
+          version: tag
+
+  el8_ppc64le:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: el8_ppc64le
+          packager_tag: el8-go1.17
+          version: tag
+
+  xenial_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: xenial_64
+          packager_tag: xenial-go1.17
+          version: tag
+
+  stretch_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: stretch_64
+          packager_tag: stretch-go1.17
+          version: tag
+
+  buster_armhf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: buster_armhf
+          packager_tag: buster-go1.17
+          version: tag
+
+  buster_armel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: buster_armel
+          packager_tag: buster-go1.17
+          version: tag
+
+  buster_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: buster_64
+          packager_tag: buster-go1.17
+          version: tag
+
+  buster_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: buster_aarch64
+          packager_tag: buster-go1.17
+          version: tag
+
+  bullseye_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: bullseye_64
+          packager_tag: bullseye-go1.17
+          version: tag
+
+  bullseye_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: bullseye_aarch64
+          packager_tag: bullseye-go1.17
+          version: tag
+
+  bionic_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: bionic_64
+          packager_tag: stretch-go1.17
+          version: tag
+
+  bionic_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: bionic_aarch64
+          packager_tag: stretch-go1.17
+          version: tag
+
+  focal_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: focal_64
+          packager_tag: focal-go1.17
+          version: tag
+
+  focal_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: focal_aarch64
+          packager_tag: focal-go1.17
+          version: tag
+
+  windows_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: windows_64
+          packager_tag: focal-go1.17
+          version: tag
+
+  upload:
+    needs:
+      - bionic_64
+      - bionic_aarch64
+      - bullseye_64
+      - bullseye_aarch64
+      - buster_64
+      - buster_aarch64
+      - buster_armel
+      - buster_armhf
+      - el7_64
+      - el7_ppc64le
+      - el8_64
+      - el8_ppc64le
+      - focal_64
+      - focal_aarch64
+      - stretch_64
+      - windows_64
+      - xenial_64
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download all artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+
+      - name: Upload artifacts to Spaces
+        uses: jakejarvis/s3-sync-action@master
+        with:
+          args: --endpoint=https://ams3.digitaloceanspaces.com --acl authenticated-read
+        env:
+          AWS_S3_BUCKET: choria-packages-ams
+          AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.SPACES_SECRET_ACCESS_KEY }}
+          SOURCE_DIR: artifacts/foss
+          DEST_DIR: release
