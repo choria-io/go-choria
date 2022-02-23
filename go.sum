@@ -324,8 +324,9 @@ github.com/gosuri/uilive v0.0.4/go.mod h1:V/epo5LjjlDE5RJUcqx8dbw+zc93y5Ya3yg8tf
 github.com/gosuri/uiprogress v0.0.1 h1:0kpv/XY/qTmFWl/SkaJykZXrBBzwwadmW8fRb7RJSxw=
 github.com/gosuri/uiprogress v0.0.1/go.mod h1:C1RTYn4Sc7iEyf6j8ft5dyoZ4212h8G1ol9QQluh5+0=
 github.com/grpc-ecosystem/grpc-gateway v1.16.0/go.mod h1:BDjrQk3hbvj6Nolgz8mAMFbcEtjT1g+wF4CSlocrBnw=
-github.com/guptarohit/asciigraph v0.5.2 h1:aG4kATuuyHQMdTi89KKVIRIcDSIHrsKIozo/UsUE5AM=
 github.com/guptarohit/asciigraph v0.5.2/go.mod h1:dYl5wwK4gNsnFf9Zp+l06rFiDZ5YtXM6x7SRWZ3KGag=
+github.com/guptarohit/asciigraph v0.5.3 h1:jtVQFC7KX6cQowPntN6rtXmI9O+FuXNeVa3fzf8t120=
+github.com/guptarohit/asciigraph v0.5.3/go.mod h1:dYl5wwK4gNsnFf9Zp+l06rFiDZ5YtXM6x7SRWZ3KGag=
 github.com/hashicorp/consul/api v1.11.0/go.mod h1:XjsvQN+RJGWI2TWy1/kqaE16HrR2J/FWgkYjdZQsX9M=
 github.com/hashicorp/consul/sdk v0.8.0/go.mod h1:GBvyrGALthsZObzUGsfgHZQDXjg4lOjagTIwIR1vPms=
 github.com/hashicorp/errwrap v1.0.0/go.mod h1:YH+1FKiLXxHSkmPseP+kNlulaMuP3n2brvKWEqk/Jc4=
@@ -472,11 +473,13 @@ github.com/nats-io/jsm.go v0.0.29 h1:5y4WaH5OkhknpU35/ej8ZGfWQ6FzugklvlUBGj6EJNo
 github.com/nats-io/jsm.go v0.0.29/go.mod h1:ez2gzt0p1YhQXJlzYDZkkoxAQpl6HHpnEI4/GBDzzQA=
 github.com/nats-io/jwt/v2 v2.2.1-0.20220113022732-58e87895b296 h1:vU9tpM3apjYlLLeY23zRWJ9Zktr5jp+mloR942LEOpY=
 github.com/nats-io/jwt/v2 v2.2.1-0.20220113022732-58e87895b296/go.mod h1:0tqz9Hlu6bCBFLWAASKhE5vUA4c24L9KPUUgvwumE/k=
-github.com/nats-io/nats-server/v2 v2.7.3-0.20220217204130-58806c1290b3 h1:/EbgHNWe/Co8f9pA0E17LpkJ+iq2GsouXO9vWEJjLLM=
 github.com/nats-io/nats-server/v2 v2.7.3-0.20220217204130-58806c1290b3/go.mod h1:tckmrt0M6bVaDT3kmh9UrIq/CBOBBse+TpXQi5ldaa8=
+github.com/nats-io/nats-server/v2 v2.7.3-0.20220221230640-130b2546991a h1:C2EtaJGKEPSnBApGgCqf4VT/7GvbIgmRlZHh4LFI57k=
+github.com/nats-io/nats-server/v2 v2.7.3-0.20220221230640-130b2546991a/go.mod h1:tckmrt0M6bVaDT3kmh9UrIq/CBOBBse+TpXQi5ldaa8=
 github.com/nats-io/nats.go v1.13.1-0.20220121202836-972a071d373d/go.mod h1:BPko4oXsySz4aSWeFgOHLZs3G4Jq4ZAyE6/zMCxRT6w=
-github.com/nats-io/nats.go v1.13.1-0.20220216000616-0096b1bfae8d h1:0aVg1U2lBfksxhhnff5DOWwJix9D2n4uBHGaHBroI6I=
 github.com/nats-io/nats.go v1.13.1-0.20220216000616-0096b1bfae8d/go.mod h1:BPko4oXsySz4aSWeFgOHLZs3G4Jq4ZAyE6/zMCxRT6w=
+github.com/nats-io/nats.go v1.13.1-0.20220223001118-268c37bd5f2b h1:uMHw/N0ojIp9XBzhLwckU3OMn97DrzPS1WniVFLru9Q=
+github.com/nats-io/nats.go v1.13.1-0.20220223001118-268c37bd5f2b/go.mod h1:BPko4oXsySz4aSWeFgOHLZs3G4Jq4ZAyE6/zMCxRT6w=
 github.com/nats-io/natscli v0.0.29 h1:ttPk72knMzQmnCx9P75YEEEyMIZyRVPoT+4LPCFZ6wI=
 github.com/nats-io/natscli v0.0.29/go.mod h1:YtrIMqZzj6Akae9F4mDFdqHsxGvoB3B65t4LvGxqblA=
 github.com/nats-io/nkeys v0.3.0 h1:cgM5tL53EvYRU+2YLXIK0G2mJtK12Ft9oeooSZMA2G8=
@@ -906,8 +909,8 @@ golang.org/x/sys v0.0.0-20211205182925-97ca703d548d/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220111092808-5a964db01320/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220114195835-da31bd327af9/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
-golang.org/x/sys v0.0.0-20220209214540-3681064d5158 h1:rm+CHSpPEEW2IsXUib1ThaHIjuBVZjxNgSKmBLFfD4c=
-golang.org/x/sys v0.0.0-20220209214540-3681064d5158/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20220222200937-f2425489ef4c h1:sSIdNI2Dd6vGv47bKc/xArpfxVmEz2+3j0E6I484xC4=
+golang.org/x/sys v0.0.0-20220222200937-f2425489ef4c/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/term v0.0.0-20201117132131-f5c789dd3221/go.mod h1:Nr5EML6q2oocZ2LXRh80K7BxOlk5/8JxuGnuhpl+muw=
 golang.org/x/term v0.0.0-20201126162022-7de9c90e9dd1/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
 golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf/go.mod h1:bj7SfCRtBDWHUb9snDiAeCFNEtKQo2Wmx5Cou7ajbmo=
