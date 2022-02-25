@@ -57,12 +57,12 @@ loop:
 }
 
 func (r *serverRunCommand) platformRun(wg *sync.WaitGroup) (err error) {
-	interactive, err := svc.IsWindowsService()
+	is_service, err := svc.IsWindowsService()
 	if err != nil {
 		return err
 	}
 
-	if interactive {
+	if !is_service {
 		instance, err := r.prepareInstance()
 		if err != nil {
 			return err
