@@ -1,6 +1,8 @@
 | Date       | Issue | Description                                                                                               |
 |------------|-------|-----------------------------------------------------------------------------------------------------------|
-| 2022/02/23|        | Release 0.25.0                                                                                            |
+| 2022/02/25 |       | Release 0.25.1                                                                                            |
+| 2022/02/25 | 1604  | Fix startup on windows                                                                                    |
+| 2022/02/23 |       | Release 0.25.0                                                                                            |
 | 2022/02/07 | 1590  | Support checking server JWT token validity                                                                |
 | 2022/01/18 | 1405  | Add 64 bit ARM packages                                                                                   |
 | 2022/01/18 | 1576  | Allow custom builders to set the server service to auto start after install                               |
