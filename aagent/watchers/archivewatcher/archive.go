@@ -363,11 +363,15 @@ func (w *Watcher) untar(s io.Reader, t string) error {
 			return err
 		}
 
-		if strings.HasPrefix(header.Name, "..") {
-			continue
+		if header.Typeflag != tar.TypeReg && header.Typeflag != tar.TypeDir {
+			return fmt.Errorf("only regular files and directories are supported")
 		}
 
 		path := filepath.Join(t, header.Name)
+		if !strings.HasPrefix(path, t) {
+			return fmt.Errorf("invalid tar file detected")
+		}
+
 		nfo := header.FileInfo()
 		w.Debugf("untar: %s", path)
 		if nfo.IsDir() {
