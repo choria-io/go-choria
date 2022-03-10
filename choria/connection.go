@@ -543,13 +543,13 @@ func (conn *Connection) IsConnected() bool {
 	return conn.nats.IsConnected()
 }
 
-// ConnectedServer returns the URL of the current server that the library is connected to, "unknown" when not initialized
+// ConnectedServer returns the URL of the current server that the library is connected to, passwords in the URL will be redacted, "unknown" when not initialized
 func (conn *Connection) ConnectedServer() string {
 	if conn.Nats() == nil {
 		return "unknown"
 	}
 
-	uri, err := url.Parse(conn.nats.ConnectedUrl())
+	uri, err := url.Parse(conn.nats.ConnectedUrlRedacted())
 	if err != nil {
 		return "unknown"
 	}
@@ -602,7 +602,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}),
 
 		nats.ReconnectHandler(func(nc *nats.Conn) {
-			conn.log.Warnf("NATS client reconnected after a previous disconnection, connected to %s", nc.ConnectedUrl())
+			conn.log.Warnf("NATS client reconnected after a previous disconnection, connected to %s", nc.ConnectedUrlRedacted())
 			connReconnectCtr.Inc()
 		}),
 
@@ -615,7 +615,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}),
 
 		nats.ErrorHandler(func(nc *nats.Conn, sub *nats.Subscription, err error) {
-			conn.log.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrl(), err)
+			conn.log.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrlRedacted(), err)
 			connErrorCtr.Inc()
 		}),
 	}
