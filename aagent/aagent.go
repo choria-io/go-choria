@@ -126,9 +126,7 @@ func (a *AAgent) loadMachine(ctx context.Context, path string) (err error) {
 func (aa *AAgent) startMachines(ctx context.Context, wg *sync.WaitGroup) error {
 	aa.Lock()
 	machines := make([]*managedMachine, len(aa.machines))
-	for i, m := range aa.machines {
-		machines[i] = m
-	}
+	copy(machines, aa.machines)
 	aa.Unlock()
 
 	for _, m := range machines {

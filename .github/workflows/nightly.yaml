@@ -12,7 +12,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el7_64
-          packager_tag: el7-go1.17
+          packager_tag: el7-go1.18
           version: nightly
 
   el8_64:
@@ -22,7 +22,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el8_64
-          packager_tag: el8-go1.17
+          packager_tag: el8-go1.18
           version: nightly
 
   linux_tarball:
@@ -32,7 +32,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: linux_64_tarball
-          packager_tag: el8-go1.17
+          packager_tag: el8-go1.18
           version: nightly
 
   darwin_amd64_tarball:
@@ -42,7 +42,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: darwin_amd64_tarball
-          packager_tag: el8-go1.17
+          packager_tag: el8-go1.18
           version: nightly
 
   darwin_arm64_tarball:
@@ -52,7 +52,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: darwin_arm64_tarball
-          packager_tag: el8-go1.17
+          packager_tag: el8-go1.18
           version: nightly
 
   windows_zip:
@@ -62,7 +62,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: windows_64_zip
-          packager_tag: el8-go1.17
+          packager_tag: el8-go1.18
           version: nightly
 
   upload:
