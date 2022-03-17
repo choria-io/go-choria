@@ -45,26 +45,6 @@ jobs:
           packager_tag: el8-go1.18
           version: tag
 
-  xenial_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: xenial_64
-          packager_tag: xenial-go1.18
-          version: tag
-
-  stretch_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: stretch_64
-          packager_tag: stretch-go1.18
-          version: tag
-
   buster_armhf:
     runs-on: ubuntu-latest
     steps:
@@ -132,7 +112,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bionic_64
-          packager_tag: stretch-go1.18
+          packager_tag: bullseye-go1.18
           version: tag
 
   bionic_aarch64:
@@ -142,7 +122,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bionic_aarch64
-          packager_tag: stretch-go1.18
+          packager_tag: bullseye-go1.18
           version: tag
 
   focal_64:
@@ -191,9 +171,7 @@ jobs:
       - el8_ppc64le
       - focal_64
       - focal_aarch64
-      - stretch_64
       - windows_64
-      - xenial_64
 
     runs-on: ubuntu-latest
     steps:

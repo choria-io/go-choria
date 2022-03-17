@@ -19,14 +19,14 @@ task :build do
   sha = `git rev-parse --short HEAD`.chomp
   build = ENV["BUILD"] || "foss"
   packages = (ENV["PACKAGES"] || "").split(",")
-  packages = ["el6_32", "el6_64", "el7_64", "el8_64", "xenial_64"] if packages.empty?
-  go_version = ENV["GOVERSION"] || "1.17"
+  packages = ["el7_64", "el8_64", "bullseye_64"] if packages.empty?
+  go_version = ENV["GOVERSION"] || "1.18"
 
   source = "/go/src/github.com/choria-io/go-choria"
 
   packages.each do |pkg|
     if pkg =~ /^windows/
-      builder = "choria/packager:stretch-go%s" % [go_version]
+      builder = "choria/packager:bullseye-go%s" % [go_version]
     elsif pkg =~ /darwin.+tarball/
       builder = "choria/packager:el8-go%s" % go_version
     elsif pkg =~ /linux.+tarball/
