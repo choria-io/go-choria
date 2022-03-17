@@ -17,7 +17,7 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.2.0+incompatible
-	github.com/golang-jwt/jwt/v4 v4.2.0
+	github.com/golang-jwt/jwt/v4 v4.4.0
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.7
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -27,14 +27,14 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.4.3
-	github.com/nats-io/jsm.go v0.0.30-0.20220309094415-3ad1ee857665
-	github.com/nats-io/nats-server/v2 v2.7.5-0.20220309212130-5c0d1999ff72
+	github.com/nats-io/jsm.go v0.0.30
+	github.com/nats-io/nats-server/v2 v2.7.5-0.20220316221935-acfd456758dc
 	github.com/nats-io/nats.go v1.13.1-0.20220309170007-8045a5037b01
-	github.com/nats-io/natscli v0.0.30-0.20220309231439-ac5a0cb40b3e
+	github.com/nats-io/natscli v0.0.31-0.20220315144356-3219055c388e
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.3
 	github.com/onsi/gomega v1.18.1
-	github.com/open-policy-agent/opa v0.38.0
+	github.com/open-policy-agent/opa v0.38.1
 	github.com/prometheus/client_golang v1.12.1
 	github.com/prometheus/client_model v0.2.0
 	github.com/robfig/cron v1.2.0
@@ -43,10 +43,10 @@ require (
 	github.com/tidwall/pretty v1.2.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.9.0
-	golang.org/x/crypto v0.0.0-20220307211146-efcb8507fb70
-	golang.org/x/sys v0.0.0-20220307203707-22a9840ba4d7
+	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd
+	golang.org/x/sys v0.0.0-20220317061510-51cd9980dadf
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
-	golang.org/x/tools v0.1.9
+	golang.org/x/tools v0.1.10
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
 	rsc.io/goversion v1.2.0
 )
@@ -114,7 +114,7 @@ require (
 	github.com/yashtewari/glob-intersection v0.0.0-20180916065949-5c77d914dd0b // indirect
 	go.uber.org/multierr v1.6.0 // indirect
 	go.uber.org/zap v1.17.0 // indirect
-	golang.org/x/mod v0.5.1 // indirect
+	golang.org/x/mod v0.6.0-dev.0.20220106191415-9b9b3d81d5e3 // indirect
 	golang.org/x/net v0.0.0-20220225172249-27dd8689420f // indirect
 	golang.org/x/text v0.3.7 // indirect
 	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11 // indirect
