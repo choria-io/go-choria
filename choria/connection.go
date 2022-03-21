@@ -701,6 +701,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		conn.log.Infof("Attempting to connect to: %s", urls)
 		conn.nats, err = nats.Connect(urls, options...)
 		if err == nil {
+			conn.log.Infof("Connected to %s", conn.nats.ConnectedUrlRedacted())
 			return nil
 		}
 

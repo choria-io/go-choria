@@ -27,10 +27,10 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.4.3
-	github.com/nats-io/jsm.go v0.0.30
-	github.com/nats-io/nats-server/v2 v2.7.5-0.20220316221935-acfd456758dc
-	github.com/nats-io/nats.go v1.13.1-0.20220309170007-8045a5037b01
-	github.com/nats-io/natscli v0.0.31-0.20220315144356-3219055c388e
+	github.com/nats-io/jsm.go v0.0.31-0.20220318094353-016d9b02a83f
+	github.com/nats-io/nats-server/v2 v2.7.5-0.20220318022501-29ff67e2ac34
+	github.com/nats-io/nats.go v1.13.1-0.20220317185802-4fef66c57d2b
+	github.com/nats-io/natscli v0.0.31-0.20220318100334-07b84974c7d4
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.3
 	github.com/onsi/gomega v1.18.1
@@ -79,7 +79,7 @@ require (
 	github.com/huandu/xstrings v1.3.0 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.14.4 // indirect
+	github.com/klauspost/compress v1.15.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.0.3 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
