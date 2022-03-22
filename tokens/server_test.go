@@ -113,7 +113,7 @@ var _ = Describe("ServerClaims", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = ParseServerTokenWithKeyfile(signed, "testdata/other-public.pem")
-			Expect(err).To(MatchError("could not parse client id token: crypto/rsa: verification error"))
+			Expect(err).To(MatchError("could not parse server id token: crypto/rsa: verification error"))
 		})
 
 		It("Should parse valid token", func() {

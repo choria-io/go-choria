@@ -1,0 +1,24 @@
+name: Integration Tests
+on: [push, pull_request]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        go: [1.18]
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Setup Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: ${{matrix.go}}
+
+      - name: Integration Tests
+        shell: bash
+        run: |
+          go install github.com/onsi/ginkgo/v2/ginkgo@latest
+          ginkgo --keep-going -vet=off -r integration

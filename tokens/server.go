@@ -158,7 +158,7 @@ func ParseServerToken(token string, pk *rsa.PublicKey) (*ServerClaims, error) {
 	claims := &ServerClaims{}
 	err := ParseToken(token, claims, pk)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse client id token: %s", err)
+		return nil, fmt.Errorf("could not parse server id token: %s", err)
 	}
 
 	if !IsServerToken(claims.StandardClaims) {

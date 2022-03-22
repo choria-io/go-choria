@@ -84,39 +84,41 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 		return false
 	}
 
+	log := a.log.WithField("stage", "check")
+
+	remote := c.RemoteAddress()
+	if remote != nil {
+		log = log.WithField("remote", remote.String())
+	}
+
 	switch {
 	case a.isProvisionUser(c):
-		if !tlsVerified {
-			a.log.Warnf("Provision user is only allowed over verified TLS connections")
-			return false
-		}
-
-		verified, err = a.handleProvisioningUserConnection(c)
+		verified, err = a.handleProvisioningUserConnection(c, tlsVerified)
 		if err != nil {
-			a.log.Warnf("Handling provisioning user connection failed, denying %s: %s", c.RemoteAddress().String(), err)
+			log.Warnf("Handling provisioning user connection failed, denying %s: %s", c.RemoteAddress().String(), err)
 		}
 
 	case a.isSystemUser(c):
 		if !tlsVerified {
-			a.log.Warnf("System user is only allowed over verified TLS connections")
+			log.Warnf("System user is only allowed over verified TLS connections")
 			return false
 		}
 
 		verified, err = a.handleSystemAccount(c)
 		if err != nil {
-			a.log.Warnf("Handling system user failed, denying %s: %s", c.RemoteAddress().String(), err)
+			log.Warnf("Handling system user failed, denying: %s", err)
 		}
 
 	default:
 		verified, err = a.handleDefaultConnection(c, tlsc, tlsVerified)
 		if err != nil {
-			a.log.Warnf("Handling normal connection failed, denying %s: %s", c.RemoteAddress().String(), err)
+			log.Warnf("Handling normal connection failed, denying %s: %s", c.RemoteAddress().String(), err)
 		}
 
 		if !verified && a.isTLS && !tlsVerified {
 			verified, err = a.handleUnverifiedProvisioningConnection(c)
 			if err != nil {
-				a.log.Warnf("Handling unverified connection failed, denying %s: %s", c.RemoteAddress().String(), err)
+				log.Warnf("Handling unverified connection failed, denying %s: %s", c.RemoteAddress().String(), err)
 			}
 		}
 	}
@@ -231,9 +233,6 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	if tlsVerified && len(conn.PeerCertificates) > 0 {
 		log = log.WithField("subject", conn.PeerCertificates[0].Subject.CommonName)
 	}
-	if remote != nil {
-		log = log.WithField("remote", remote.String())
-	}
 	if user.Account != nil {
 		log = log.WithField("account", user.Account.Name)
 	}
@@ -273,7 +272,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 
 		case tokens.ServerPurpose:
 			if c.Kind() != server.CLIENT {
-				return false, fmt.Errorf("a client JWT was presented by a %d connection", c.Kind())
+				return false, fmt.Errorf("a server JWT was presented by a %d connection", c.Kind())
 			}
 
 			serverClaims, err = a.verifyServerJWTBasedAuth(remote, jwts, nonce, opts.Sig, log)
@@ -292,6 +291,10 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	}
 
 	switch {
+	case !shouldPerformJWTBasedAuth && !tlsVerified:
+		log.Warnf("Rejecting unverified connection without token")
+		return false, fmt.Errorf("unverified connection without JWT token")
+
 	// if a caller is set from the Client ID JWT we want to restrict it to just client stuff
 	// if a client allow list is set and the client is in the ip range we restrict it also
 	// else its default open like users with certs
@@ -301,14 +304,13 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 
 	// Else in the case where an allow list is configured we set server permissions on other conns
 	case setServerPerms || len(a.clientAllowList) > 0:
-		log.Debugf("Setting server permissions")
 		a.setServerPermissions(user, serverClaims, log)
 	}
 
 	if user.Account != nil {
-		log.Debugf("Registering user %q in account %q", user.Username, user.Account.Name)
+		log.Debugf("Registering user '%s' in account '%s'", user.Username, user.Account.Name)
 	} else {
-		log.Debugf("Registering user %q in default account", user.Username)
+		log.Debugf("Registering user '%s' in default account", user.Username)
 	}
 
 	c.RegisterUser(user)
@@ -338,13 +340,17 @@ func (a *ChoriaAuth) handleSystemAccount(c server.ClientAuthentication) (bool, e
 	user := a.createUser(c)
 	user.Account = a.systemAccount
 
-	a.log.Debugf("Registering user %q in account %q", user.Username, user.Account.Name)
+	a.log.Debugf("Registering user '%s' in account '%s'", user.Username, user.Account.Name)
 	c.RegisterUser(user)
 
 	return true, nil
 }
 
-func (a *ChoriaAuth) handleProvisioningUserConnection(c server.ClientAuthentication) (bool, error) {
+func (a *ChoriaAuth) handleProvisioningUserConnection(c server.ClientAuthentication, tlsVerified bool) (bool, error) {
+	if !tlsVerified {
+		return false, fmt.Errorf("provisioning user is only allowed over verified TLS connections")
+	}
+
 	if a.provPass == emptyString {
 		return false, fmt.Errorf("provisioning user password not enabled")
 	}
@@ -374,7 +380,7 @@ func (a *ChoriaAuth) handleProvisioningUserConnection(c server.ClientAuthenticat
 	user := a.createUser(c)
 	user.Account = a.provisioningAccount
 
-	a.log.Debugf("Registering user %q in account %q", user.Username, user.Account.Name)
+	a.log.Debugf("Registering user '%s' in account '%s'", user.Username, user.Account.Name)
 	c.RegisterUser(user)
 
 	return true, nil
@@ -393,13 +399,13 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 		return false, fmt.Errorf("provisioning account is not set")
 	}
 
-	user := a.createUser(c)
-	user.Account = a.provisioningAccount
 	opts := c.GetOpts()
-
 	if opts.Username == provisioningUser {
 		return false, fmt.Errorf("provisioning user requires verified TLS")
 	}
+
+	user := a.createUser(c)
+	user.Account = a.provisioningAccount
 
 	switch {
 	case opts.Token != emptyString:
@@ -408,7 +414,7 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 			return false, err
 		}
 
-		a.log.Debugf("Allowing a provisioning server from %s using unverified TLS connection", c.RemoteAddress().String())
+		a.log.Debugf("Allowing a provisioning server from using unverified TLS connection from %s", c.RemoteAddress().String())
 
 	default:
 		return false, fmt.Errorf("provisioning requires a token")
@@ -438,7 +444,7 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 		},
 	}
 
-	a.log.Debugf("Registering user %s in account %s", user.Username, user.Account.Name)
+	a.log.Debugf("Registering user '%s' in account '%s'", user.Username, user.Account.Name)
 	c.RegisterUser(user)
 
 	return true, nil
@@ -764,12 +770,15 @@ func (a *ChoriaAuth) setDefaultServerPermissions(user *server.User) {
 func (a *ChoriaAuth) setServerPermissions(user *server.User, claims *tokens.ServerClaims, log *logrus.Entry) {
 	switch {
 	case a.denyServers:
+		log.Debugf("Setting server permissions, denying servers")
 		a.setDenyServersPermissions(user)
 
 	case claims != nil:
+		log.Debugf("Setting server permissions based on token claims")
 		a.setClaimsBasedServerPermissions(user, claims, log)
 
 	default:
+		log.Debugf("Setting default server permissions")
 		a.setDefaultServerPermissions(user)
 	}
 }
