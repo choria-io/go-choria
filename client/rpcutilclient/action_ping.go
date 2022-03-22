@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'rpcutil' Version 0.24.0 generated using Choria version 0.24.1
+// Client for Choria RPC Agent 'rpcutil' Version 0.25.1 generated using Choria version 0.25.1
 
 package rpcutilclient
 
@@ -158,6 +158,11 @@ func (d *PingRequester) Do(ctx context.Context) (*PingResult, error) {
 	return dres, nil
 }
 
+// AllOutputs provide access to all outputs
+func (d *PingResult) AllOutputs() []*PingOutput {
+	return d.outputs
+}
+
 // EachOutput iterates over all results received
 func (d *PingResult) EachOutput(h func(r *PingOutput)) {
 	for _, resp := range d.outputs {
@@ -168,9 +173,9 @@ func (d *PingResult) EachOutput(h func(r *PingOutput)) {
 // Pong is the value of the pong output
 //
 // Description: The local Unix timestamp
-func (d *PingOutput) Pong() string {
+func (d *PingOutput) Pong() float64 {
 	val := d.reply["pong"]
 
-	return val.(string)
+	return val.(float64)
 
 }

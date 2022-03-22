@@ -155,6 +155,11 @@ func (d *{{ .ActionName | SnakeToCamel }}Requester) Do(ctx context.Context) (*{{
 	return dres, nil
 }
 
+// AllOutputs provide access to all outputs
+func (d *{{ .ActionName | SnakeToCamel }}Result) AllOutputs() []*{{ .ActionName | SnakeToCamel }}Output {
+	return d.outputs
+}
+
 // EachOutput iterates over all results received
 func (d *{{ .ActionName | SnakeToCamel }}Result) EachOutput(h func(r *{{ .ActionName | SnakeToCamel }}Output)) {
 	for _, resp := range d.outputs {

@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'choria_registry' Version 0.24.0 generated using Choria version 0.24.1
+// Client for Choria RPC Agent 'choria_registry' Version 0.25.1 generated using Choria version 0.25.1
 
 package choria_registryclient
 
@@ -156,6 +156,11 @@ func (d *DdlRequester) Do(ctx context.Context) (*DdlResult, error) {
 	dres.stats = res
 
 	return dres, nil
+}
+
+// AllOutputs provide access to all outputs
+func (d *DdlResult) AllOutputs() []*DdlOutput {
+	return d.outputs
 }
 
 // EachOutput iterates over all results received

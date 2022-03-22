@@ -319,7 +319,7 @@
         "pong": {
           "description": "The local Unix timestamp",
           "display_as": "Timestamp",
-          "type": "string"
+          "type": "number"
         }
       },
       "display": "always",
