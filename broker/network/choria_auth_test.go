@@ -5,26 +5,21 @@
 package network
 
 import (
-	"bytes"
 	"crypto/ed25519"
-	"crypto/rand"
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
-	"crypto/x509/pkix"
 	"encoding/base64"
 	"encoding/hex"
-	"encoding/pem"
 	"io"
-	"math/big"
 	"net"
 	"os"
 	"path/filepath"
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/integration/testutil"
 	"github.com/choria-io/go-choria/tokens"
-	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang/mock/gomock"
 	"github.com/nats-io/nats-server/v2/server"
 	. "github.com/onsi/ginkgo/v2"
@@ -68,79 +63,21 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		td, err := os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
-		privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+		pri, err = testutil.CreateRSAKeyAndCert(td)
 		Expect(err).ToNot(HaveOccurred())
 
-		template := x509.Certificate{
-			SerialNumber: big.NewInt(1),
-			Subject: pkix.Name{
-				Organization: []string{"Choria.IO"},
-			},
-			NotBefore: time.Now(),
-			NotAfter:  time.Now().Add(time.Hour * 24 * 180),
-
-			KeyUsage:              x509.KeyUsageKeyEncipherment | x509.KeyUsageDigitalSignature,
-			ExtKeyUsage:           []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth},
-			BasicConstraintsValid: true,
-		}
-
-		derBytes, err := x509.CreateCertificate(rand.Reader, &template, &template, &privateKey.PublicKey, privateKey)
-		Expect(err).ToNot(HaveOccurred())
-
-		out := &bytes.Buffer{}
-
-		pem.Encode(out, &pem.Block{Type: "CERTIFICATE", Bytes: derBytes})
-		err = os.WriteFile(filepath.Join(td, "public.pem"), out.Bytes(), 0600)
-		Expect(err).ToNot(HaveOccurred())
-
-		out.Reset()
-
-		blk := &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(privateKey)}
-		pem.Encode(out, blk)
-
-		err = os.WriteFile(filepath.Join(td, "private.pem"), out.Bytes(), 0600)
-		Expect(err).ToNot(HaveOccurred())
-
-		return td, privateKey
+		return td, pri
 	}
 
 	createSignedServerJWT := func(pk *rsa.PrivateKey, pubK ed25519.PublicKey, claims map[string]interface{}) string {
-		c := map[string]interface{}{
-			"exp":        time.Now().UTC().Add(time.Hour).Unix(),
-			"nbf":        time.Now().UTC().Add(-1 * time.Minute).Unix(),
-			"iat":        time.Now().UTC().Unix(),
-			"iss":        "Ginkgo",
-			"public_key": hex.EncodeToString(pubK),
-			"identity":   "ginkgo.example.net",
-			"ou":         "choria",
-		}
-		for k, v := range claims {
-			c[k] = v
-		}
-
-		token := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(c))
-		signed, err := token.SignedString(pk)
+		signed, err := testutil.CreateSignedServerJWT(pk, pubK, claims)
 		Expect(err).ToNot(HaveOccurred())
 
 		return signed
 	}
 
 	createSignedClientJWT := func(pk *rsa.PrivateKey, claims map[string]interface{}) string {
-		c := map[string]interface{}{
-			"exp":      time.Now().UTC().Add(time.Hour).Unix(),
-			"nbf":      time.Now().UTC().Add(-1 * time.Minute).Unix(),
-			"iat":      time.Now().UTC().Unix(),
-			"iss":      "Ginkgo",
-			"callerid": "up=ginkgo",
-			"sub":      "up=ginkgo",
-		}
-
-		for k, v := range claims {
-			c[k] = v
-		}
-
-		token := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(c))
-		signed, err := token.SignedString(pk)
+		signed, err := testutil.CreateSignedClientJWT(pk, claims)
 		Expect(err).ToNot(HaveOccurred())
 
 		return signed
@@ -844,7 +781,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		It("Should fail without a password", func() {
 			auth.provPass = ""
 
-			verified, err := auth.handleProvisioningUserConnection(mockClient)
+			verified, err := auth.handleProvisioningUserConnection(mockClient, true)
 			Expect(err).To(MatchError("provisioning user password not enabled"))
 			Expect(verified).To(BeFalse())
 		})
@@ -852,7 +789,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		It("Should fail without an account", func() {
 			auth.provPass = "s3cret"
 
-			verified, err := auth.handleProvisioningUserConnection(mockClient)
+			verified, err := auth.handleProvisioningUserConnection(mockClient, true)
 			Expect(err).To(MatchError("provisioning account is not set"))
 			Expect(verified).To(BeFalse())
 		})
@@ -862,7 +799,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			auth.isTLS = false
 			auth.provisioningAccount = &server.Account{Name: provisioningUser}
 
-			verified, err := auth.handleProvisioningUserConnection(mockClient)
+			verified, err := auth.handleProvisioningUserConnection(mockClient, true)
 			Expect(err).To(MatchError("provisioning user access requires TLS"))
 			Expect(verified).To(BeFalse())
 		})
@@ -873,8 +810,8 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			auth.provisioningAccount = &server.Account{Name: provisioningUser}
 			mockClient.EXPECT().GetTLSConnectionState().Return(nil).AnyTimes()
 
-			verified, err := auth.handleProvisioningUserConnection(mockClient)
-			Expect(err).To(MatchError("provisioning user can only connect over tls"))
+			verified, err := auth.handleProvisioningUserConnection(mockClient, false)
+			Expect(err).To(MatchError("provisioning user is only allowed over verified TLS connections"))
 			Expect(verified).To(BeFalse())
 		})
 
@@ -894,7 +831,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(user.Permissions.Response).To(BeNil())
 			})
 
-			verified, err := auth.handleProvisioningUserConnection(mockClient)
+			verified, err := auth.handleProvisioningUserConnection(mockClient, true)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(verified).To(BeTrue())
 		})

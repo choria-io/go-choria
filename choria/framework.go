@@ -556,7 +556,7 @@ func (fw *Framework) QuerySrvRecords(records []string) (srvcache.Servers, error)
 func (fw *Framework) NetworkBrokerPeers() (servers srvcache.Servers, err error) {
 	servers, err = fw.QuerySrvRecords([]string{"_mcollective-broker._tcp"})
 	if err != nil {
-		log.Errorf("SRV lookup for _mcollective-broker._tcp failed: %s", err)
+		fw.log.Errorf("SRV lookup for _mcollective-broker._tcp failed: %s", err)
 		err = nil
 	}
 

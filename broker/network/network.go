@@ -263,6 +263,10 @@ func (s *Server) setupTLS() (err error) {
 			s.log.Warnf("Allowing unverified TLS connections for AAA signed clients")
 		}
 
+		if s.config.Choria.NetworkServerTokenSignerFile != "" {
+			s.log.Warnf("Allowing unverified TLS connections for Provisioner signed servers")
+		}
+
 	case s.config.Choria.NetworkClientTLSAnon:
 		if len(s.config.Choria.NetworkLeafRemotes) == 0 {
 			return fmt.Errorf("can only configure anonymous TLS for client connections when leafnodes are defined using plugin.choria.network.leafnode_remotes")
