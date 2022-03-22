@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'choria_util' Version 0.24.0 generated using Choria version 0.24.1
+// Client for Choria RPC Agent 'choria_util' Version 0.25.1 generated using Choria version 0.25.1
 
 package choria_utilclient
 
@@ -156,6 +156,11 @@ func (d *MachineTransitionRequester) Do(ctx context.Context) (*MachineTransition
 	dres.stats = res
 
 	return dres, nil
+}
+
+// AllOutputs provide access to all outputs
+func (d *MachineTransitionResult) AllOutputs() []*MachineTransitionOutput {
+	return d.outputs
 }
 
 // EachOutput iterates over all results received

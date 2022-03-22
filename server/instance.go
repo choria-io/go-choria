@@ -262,9 +262,9 @@ func (srv *Instance) RegisterRegistrationProvider(ctx context.Context, wg *sync.
 	return srv.registration.RegisterProvider(ctx, wg, provider)
 }
 
-// RegisterAgent adds a new agent to the running instance
-func (srv *Instance) RegisterAgent(ctx context.Context, name string, agent agents.Agent) error {
-	return srv.agents.RegisterAgent(ctx, name, agent, srv.connector)
+// AgentManager returns the agent manager for the instance
+func (srv *Instance) AgentManager() *agents.Manager {
+	return srv.agents
 }
 
 // DenyAgent prevents an agent from being loaded, if it was already loaded this has no effect

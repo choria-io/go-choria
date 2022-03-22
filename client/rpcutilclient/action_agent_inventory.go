@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'rpcutil' Version 0.24.0 generated using Choria version 0.24.1
+// Client for Choria RPC Agent 'rpcutil' Version 0.25.1 generated using Choria version 0.25.1
 
 package rpcutilclient
 
@@ -156,6 +156,11 @@ func (d *AgentInventoryRequester) Do(ctx context.Context) (*AgentInventoryResult
 	dres.stats = res
 
 	return dres, nil
+}
+
+// AllOutputs provide access to all outputs
+func (d *AgentInventoryResult) AllOutputs() []*AgentInventoryOutput {
+	return d.outputs
 }
 
 // EachOutput iterates over all results received

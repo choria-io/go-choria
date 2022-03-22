@@ -276,7 +276,7 @@ action "ping", :description => "Responds to requests for PING with PONG" do
 
   output :pong,
          :description => "The local Unix timestamp",
-         :type        => "string",
+         :type        => "number",
          :display_as  => "Timestamp"
 
 end

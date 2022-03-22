@@ -1,8 +1,8 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'scout' Version 0.24.0 generated using Choria version 0.24.1
+// Client for Choria RPC Agent 'scout' Version 0.25.1 generated using Choria version 0.25.1
 
-// Package scoutclient is an API client to the Choria Scout agent Version 0.24.0.
+// Package scoutclient is an API client to the Choria Scout agent Version 0.25.1.
 //
 // Actions:
 //   * Checks - Obtain a list of checks and their current status

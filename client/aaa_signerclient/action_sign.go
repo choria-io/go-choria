@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT"
 //
-// Client for Choria RPC Agent 'aaa_signer' Version 0.24.0 generated using Choria version 0.24.1
+// Client for Choria RPC Agent 'aaa_signer' Version 0.25.1 generated using Choria version 0.25.1
 
 package aaa_signerclient
 
@@ -156,6 +156,11 @@ func (d *SignRequester) Do(ctx context.Context) (*SignResult, error) {
 	dres.stats = res
 
 	return dres, nil
+}
+
+// AllOutputs provide access to all outputs
+func (d *SignResult) AllOutputs() []*SignOutput {
+	return d.outputs
 }
 
 // EachOutput iterates over all results received

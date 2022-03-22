@@ -759,13 +759,13 @@ Path to the public certificate of the key used to sign the JWTs in the Signing S
 
  * **Type:** path_string
 
-The server token seed to use for authentication, defaults to choria.key in the same location as server.conf
+The server token seed to use for authentication, defaults to server.seed in the same location as server.conf
 
 ## plugin.choria.security.server.token_file
 
  * **Type:** path_string
 
-The server token file to use for authentication, defaults to choria.token in the same location as server.conf
+The server token file to use for authentication, defaults to serer.jwt in the same location as server.conf
 
 ## plugin.choria.server.provision
 
