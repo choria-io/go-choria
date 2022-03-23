@@ -1,4 +1,4 @@
-name: Choria Repository Installtion Check
+name: Choria Repository Installation Check
 on:
   workflow_dispatch: {}
   schedule:
