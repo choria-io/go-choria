@@ -43,6 +43,6 @@ jobs:
   bullseye_64:
     runs-on: ubuntu-latest
     steps:
-      - name: Buster Installation Tests
+      - name: Bullseye Installation Tests
         shell: bash
         run: docker run --entrypoint=/bin/install-choria.sh choria/packager:bullseye-go1.18
