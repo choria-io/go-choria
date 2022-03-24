@@ -6,7 +6,7 @@ go 1.17
 replace github.com/opencontainers/runc v0.0.0-20161107232042-8779fa57eb4a => github.com/opencontainers/runc v1.0.3
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.3.2
+	github.com/AlecAivazis/survey/v2 v2.3.3
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/aelsabbahy/goss v0.3.16
 	github.com/antonmedv/expr v1.9.0
@@ -29,8 +29,8 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/nats-io/jsm.go v0.0.31-0.20220318094353-016d9b02a83f
-	github.com/nats-io/nats-server/v2 v2.7.5-0.20220318022501-29ff67e2ac34
-	github.com/nats-io/nats.go v1.13.1-0.20220317185802-4fef66c57d2b
+	github.com/nats-io/nats-server/v2 v2.7.5-0.20220323205829-fde6c61f9fe8
+	github.com/nats-io/nats.go v1.13.1-0.20220318132711-e0e03e374228
 	github.com/nats-io/natscli v0.0.31-0.20220318100334-07b84974c7d4
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.3
@@ -44,8 +44,8 @@ require (
 	github.com/tidwall/pretty v1.2.0
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.9.0
-	golang.org/x/crypto v0.0.0-20220315160706-3147a52a75dd
-	golang.org/x/sys v0.0.0-20220317061510-51cd9980dadf
+	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064
+	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/tools v0.1.10
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
