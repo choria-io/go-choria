@@ -6,7 +6,7 @@ go 1.17
 replace github.com/opencontainers/runc v0.0.0-20161107232042-8779fa57eb4a => github.com/opencontainers/runc v1.0.3
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.3.3
+	github.com/AlecAivazis/survey/v2 v2.3.4
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/aelsabbahy/goss v0.3.16
 	github.com/antonmedv/expr v1.9.0
@@ -18,7 +18,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.2.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
-	github.com/golang-jwt/jwt/v4 v4.4.0
+	github.com/golang-jwt/jwt/v4 v4.2.0
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.7
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -29,12 +29,12 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.4.3
 	github.com/nats-io/jsm.go v0.0.31-0.20220318094353-016d9b02a83f
-	github.com/nats-io/nats-server/v2 v2.7.5-0.20220323205829-fde6c61f9fe8
-	github.com/nats-io/nats.go v1.13.1-0.20220318132711-e0e03e374228
-	github.com/nats-io/natscli v0.0.31-0.20220318100334-07b84974c7d4
+	github.com/nats-io/nats-server/v2 v2.7.5-0.20220330021613-7faa8bf5b7c0
+	github.com/nats-io/nats.go v1.13.1-0.20220329232831-e076b0dcab31
+	github.com/nats-io/natscli v0.0.31-0.20220330142628-887d79d1dd70
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.3
-	github.com/onsi/gomega v1.18.1
+	github.com/onsi/gomega v1.19.0
 	github.com/open-policy-agent/opa v0.38.1
 	github.com/prometheus/client_golang v1.12.1
 	github.com/prometheus/client_model v0.2.0
@@ -45,7 +45,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20220321153916-2c7772ba3064
-	golang.org/x/sys v0.0.0-20220319134239-a9b59b0215f8
+	golang.org/x/sys v0.0.0-20220330033206-e17cdc41300f
 	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
 	golang.org/x/tools v0.1.10
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
@@ -93,7 +93,7 @@ require (
 	github.com/mitchellh/reflectwalk v1.0.0 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/nats-io/jwt/v2 v2.2.1-0.20220113022732-58e87895b296 // indirect
+	github.com/nats-io/jwt/v2 v2.2.1-0.20220323195037-3472a33220ba // indirect
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/oleiade/reflections v0.0.0-20160817071559-0e86b3c98b2f // indirect
