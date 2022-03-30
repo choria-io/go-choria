@@ -7,12 +7,13 @@ package plugin
 import (
 	"encoding/json"
 	"fmt"
-	"strings"
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/inter"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func NewWatcherPlugin(wtype string, version string, notification func() interface{}, new func(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error)) *WatcherPlugin {
@@ -70,7 +71,7 @@ func (p *WatcherPlugin) PluginVersion() string {
 
 // PluginName implements plugin.Pluggable
 func (p *WatcherPlugin) PluginName() string {
-	return fmt.Sprintf("%s Watcher version %s", strings.Title(p.Name), build.Version)
+	return fmt.Sprintf("%s Watcher version %s", cases.Title(language.AmericanEnglish).String(p.Name), build.Version)
 }
 
 // PluginType implements plugin.Pluggable

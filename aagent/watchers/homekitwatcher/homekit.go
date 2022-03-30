@@ -19,6 +19,8 @@ import (
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type State int
@@ -287,7 +289,7 @@ func (w *Watcher) setPreviousState(s State) {
 
 func (w *Watcher) startAccessoryUnlocked() error {
 	info := accessory.Info{
-		Name:             strings.Title(strings.Replace(w.name, "_", " ", -1)),
+		Name:             cases.Title(language.AmericanEnglish).String(strings.Replace(w.name, "_", " ", -1)),
 		SerialNumber:     w.properties.SerialNumber,
 		Manufacturer:     "Choria",
 		Model:            w.properties.Model,

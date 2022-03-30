@@ -11,6 +11,8 @@ import (
 	"text/template"
 
 	"github.com/fatih/color"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/choria-io/go-choria/internal/util"
 )
@@ -39,7 +41,7 @@ func ExecuteTemplate(file string, i interface{}, funcMap template.FuncMap) ([]by
 		"RenderMarkdown": renderMarkdown,
 		"MarkdownEscape": markdownEscape,
 		"Bold":           boldString,
-		"Title":          strings.Title,
+		"Title":          cases.Title(language.AmericanEnglish).String,
 	}
 
 	for k, v := range funcMap {

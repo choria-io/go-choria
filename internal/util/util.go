@@ -32,6 +32,8 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/gofrs/uuid"
 	"github.com/olekukonko/tablewriter"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 var ConstantBackOffForTests = backoff.Policy{
@@ -528,8 +530,8 @@ func tBase64Decode(v string) (string, error) {
 
 func FuncMap(f map[string]interface{}) template.FuncMap {
 	fm := map[string]interface{}{
-		"Title":        strings.Title,
-		"Capitalize":   strings.Title,
+		"Title":        cases.Title(language.AmericanEnglish).String,
+		"Capitalize":   cases.Title(language.AmericanEnglish).String,
 		"ToLower":      strings.ToLower,
 		"ToUpper":      strings.ToUpper,
 		"StringsJoin":  tStringsJoin,

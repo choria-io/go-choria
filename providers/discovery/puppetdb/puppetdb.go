@@ -14,6 +14,8 @@ import (
 	"time"
 
 	"github.com/sirupsen/logrus"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
@@ -164,7 +166,7 @@ func (p *PuppetDB) capitalizePuppetResource(r string) string {
 	var res []string
 
 	for _, p := range parts {
-		res = append(res, strings.Title(p))
+		res = append(res, cases.Title(language.AmericanEnglish).String(p))
 	}
 
 	return strings.Join(res, "::")
