@@ -19,6 +19,8 @@ import (
 	"github.com/olekukonko/tablewriter"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/pretty"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
@@ -237,7 +239,7 @@ func (r *RPCResults) RenderTable(w io.Writer, action ActionDDL) (err error) {
 		if ok {
 			headers = append(headers, output.DisplayAs)
 		} else {
-			headers = append(headers, strings.Title(o))
+			headers = append(headers, cases.Title(language.AmericanEnglish).String(o))
 		}
 	}
 

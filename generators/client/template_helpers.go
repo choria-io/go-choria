@@ -13,6 +13,8 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 )
@@ -21,7 +23,7 @@ func (g *Generator) templFSnakeToCamel(v string) string {
 	parts := strings.Split(v, "_")
 	out := []string{}
 	for _, s := range parts {
-		out = append(out, strings.Title(s))
+		out = append(out, cases.Title(language.AmericanEnglish).String(s))
 	}
 
 	return strings.Join(out, "")
@@ -34,7 +36,7 @@ func (g *Generator) templFSnakeToCamelUnexported(v string) string {
 		if i == 0 {
 			out = append(out, strings.ToLower(s))
 		} else {
-			out = append(out, strings.Title(s))
+			out = append(out, cases.Title(language.AmericanEnglish).String(s))
 		}
 	}
 
@@ -121,7 +123,7 @@ func (g *Generator) funcMap() template.FuncMap {
 	return template.FuncMap{
 		"GeneratedWarning":               g.templFGeneratedWarning,
 		"Base64Encode":                   g.templFBase64Encode,
-		"Capitalize":                     strings.Title,
+		"Capitalize":                     cases.Title(language.AmericanEnglish).String,
 		"ToLower":                        strings.ToLower,
 		"SnakeToCamel":                   g.templFSnakeToCamel,
 		"SnakeToCamelUnexported":         g.templFSnakeToCamelUnexported,

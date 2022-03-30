@@ -14,6 +14,8 @@ import (
 
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/fatih/color"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
@@ -100,7 +102,7 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 			fmt.Printf("     Security Provider: Using Anonymous TLS\n")
 		} else {
 			errs, _ := c.ValidateSecurity()
-			fmt.Printf("     Security Provider: %s\n", strings.Title(c.SecurityProvider()))
+			fmt.Printf("     Security Provider: %s\n", cases.Title(language.AmericanEnglish).String(c.SecurityProvider()))
 			if len(errs) == 0 {
 				fmt.Printf("        Valid Security: %s\n", c.Colorize("green", "yes"))
 			} else {

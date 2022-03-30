@@ -6,11 +6,12 @@ package plugin
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/data"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 type DataPlugin struct {
@@ -34,7 +35,7 @@ func (p *DataPlugin) PluginVersion() string {
 
 // PluginName implements plugin.Pluggable
 func (p *DataPlugin) PluginName() string {
-	return fmt.Sprintf("%s Data version %s", strings.Title(p.Name), build.Version)
+	return fmt.Sprintf("%s Data version %s", cases.Title(language.AmericanEnglish).String(p.Name), build.Version)
 }
 
 // PluginType implements plugin.Pluggable

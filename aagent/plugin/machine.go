@@ -6,10 +6,11 @@ package plugin
 
 import (
 	"fmt"
-	"strings"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/inter"
+	"golang.org/x/text/cases"
+	"golang.org/x/text/language"
 )
 
 func NewMachinePlugin(name string, machine interface{}) *MachinePlugin {
@@ -38,7 +39,7 @@ func (p *MachinePlugin) PluginVersion() string {
 }
 
 func (p *MachinePlugin) PluginName() string {
-	return fmt.Sprintf("%s Autonomous Agent version %s", strings.Title(p.name), build.Version)
+	return fmt.Sprintf("%s Autonomous Agent version %s", cases.Title(language.AmericanEnglish).String(p.name), build.Version)
 }
 
 func (p *MachinePlugin) PluginType() inter.PluginType {
