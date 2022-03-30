@@ -71,7 +71,7 @@ func (b *brokerCommand) prepareNatsCli(pc *kingpin.ParseContext, opts *natscli.O
 	natscli.SetContext(ctx)
 	natscli.SetVersion(build.Version)
 
-	if strings.HasPrefix(cmd, "broker server") && !strings.HasPrefix(cmd, "broker server check stream") {
+	if strings.HasPrefix(cmd, "broker server") && !strings.HasPrefix(cmd, "broker server check stream") && !strings.HasPrefix(cmd, "broker server check kv") {
 		if cfg.Choria.NetworkSystemUsername == "" || cfg.Choria.NetworkSystemPassword == "" {
 			return fmt.Errorf("the %q command needs system username and password set using plugin.choria.network.system.*", cmd)
 		}
