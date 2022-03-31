@@ -32,6 +32,7 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/gofrs/uuid"
 	"github.com/olekukonko/tablewriter"
+	xtablewriter "github.com/xlab/tablewriter"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
 )
@@ -333,6 +334,25 @@ func ExpandPath(p string) (string, error) {
 		a = strings.Replace(a, "~", home, 1)
 	}
 	return a, nil
+}
+
+// NewUTF8TableWithTitle creates a table formatted with UTF8 styling with a title set
+func NewUTF8TableWithTitle(title string, hdr ...interface{}) *xtablewriter.Table {
+	table := xtablewriter.CreateTable()
+	table.UTF8Box()
+
+	if title != "" {
+		table.AddTitle(title)
+	}
+
+	table.AddHeaders(hdr...)
+
+	return table
+}
+
+// NewUTF8Table creates a table formatted with UTF8 styling
+func NewUTF8Table(hdr ...interface{}) *xtablewriter.Table {
+	return NewUTF8TableWithTitle("", hdr...)
 }
 
 // NewMarkdownTable makes a new table writer formatted to be valid markdown

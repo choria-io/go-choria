@@ -6,11 +6,11 @@ package cmd
 
 import (
 	"fmt"
-	"strconv"
 	"sync"
 	"time"
 
 	"github.com/choria-io/go-choria/internal/util"
+	"github.com/nats-io/nats.go"
 )
 
 type kvHistoryCommand struct {
@@ -46,23 +46,30 @@ func (k *kvHistoryCommand) Run(wg *sync.WaitGroup) error {
 		return err
 	}
 
-	table := util.NewMarkdownTable("Seq", "Operation", "Time", "Length", "Value")
+	table := util.NewUTF8Table("Seq", "Operation", "Time", "Length", "Value")
 	for _, r := range history {
 		val := util.Base64IfNotPrintable(r.Value())
 		if len(val) > 40 {
 			val = fmt.Sprintf("%s...%s", val[0:15], val[len(val)-15:])
 		}
 
-		table.Append([]string{
-			strconv.Itoa(int(r.Revision())),
-			string(r.Operation()),
-			r.Created().Format(time.RFC822),
-			strconv.Itoa(len(r.Value())),
-			val,
-		})
+		var op string
+
+		switch r.Operation() {
+		case nats.KeyValuePurge:
+			op = "PURGE"
+		case nats.KeyValueDelete:
+			op = "DELETE"
+		case nats.KeyValuePut:
+			op = "PUT"
+		default:
+			op = r.Operation().String()
+		}
+
+		table.AddRow(r.Revision(), op, r.Created().Format(time.RFC822), len(r.Value()), val)
 	}
 
-	table.Render()
+	fmt.Println(table.Render())
 
 	return nil
 }
