@@ -6,7 +6,6 @@ package cmd
 
 import (
 	"fmt"
-	"strconv"
 	"strings"
 	"sync"
 
@@ -44,8 +43,7 @@ func (k *kvLSCommand) Run(wg *sync.WaitGroup) error {
 	}
 
 	found := 0
-	table := util.NewMarkdownTable("Bucket", "History", "Values")
-
+	table := util.NewUTF8Table("Bucket", "History", "Values")
 	mgr.EachStream(func(s *jsm.Stream) {
 		if !strings.HasPrefix(s.Name(), "KV_") {
 			return
@@ -62,11 +60,7 @@ func (k *kvLSCommand) Run(wg *sync.WaitGroup) error {
 		}
 
 		found++
-		table.Append([]string{
-			parts[1],
-			strconv.Itoa(int(s.MaxMsgsPerSubject())),
-			strconv.Itoa(int(state.Msgs)),
-		})
+		table.AddRow(parts[1], s.MaxMsgsPerSubject(), state.Msgs)
 	})
 
 	if found == 0 {
@@ -74,7 +68,7 @@ func (k *kvLSCommand) Run(wg *sync.WaitGroup) error {
 		return nil
 	}
 
-	table.Render()
+	fmt.Println(table.Render())
 
 	return nil
 }
