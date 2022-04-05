@@ -109,6 +109,18 @@ var _ = Describe("Server/Agents", func() {
 	})
 
 	Describe("RegisterAgent", func() {
+		It("Should reject agents with small timeouts", func() {
+			agent.Metadata().Timeout = 0
+			err := mgr.RegisterAgent(ctx, "testing", agent, conn)
+			Expect(err).To(MatchError("Denying agent testing with a metadata timeout < 1"))
+		})
+
+		It("Should reject agents without a name", func() {
+			agent.Metadata().Name = ""
+			err := mgr.RegisterAgent(ctx, "testing", agent, conn)
+			Expect(err).To(MatchError("Denying agent testing with no name in its metadata"))
+		})
+
 		It("Should honor the ShouldActivate wish of the agent", func() {
 			agent.EXPECT().ShouldActivate().Return(false).Times(1)
 			err := mgr.RegisterAgent(ctx, "testing", agent, conn)

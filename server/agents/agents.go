@@ -120,10 +120,28 @@ func (a *Manager) DenyAgent(agent string) {
 
 // RegisterAgent connects a new agent to the server instance, subscribe to all its targets etc
 func (a *Manager) RegisterAgent(ctx context.Context, name string, agent Agent, conn inter.AgentConnector) error {
+	if name == "" {
+		return fmt.Errorf("agent name is required")
+	}
+
+	md := agent.Metadata()
+
+	if md.Timeout < 1 {
+		msg := fmt.Sprintf("Denying agent %s with a metadata timeout < 1", name)
+		a.log.Warnf(msg)
+		return fmt.Errorf(msg)
+	}
+
+	if md.Name == "" {
+		msg := fmt.Sprintf("Denying agent %s with no name in its metadata", name)
+		a.log.Warnf(msg)
+		return fmt.Errorf(msg)
+	}
+
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	if a.servicesOnly && !agent.Metadata().Service {
+	if a.servicesOnly && !md.Service {
 		a.log.Infof("Denying non Service Agent %s", name)
 		return nil
 	}
