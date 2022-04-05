@@ -14,7 +14,6 @@ import (
 	"encoding/hex"
 	"encoding/json"
 	"encoding/pem"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -29,7 +28,6 @@ import (
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/go-updater"
 	"github.com/golang/mock/gomock"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -104,7 +102,7 @@ var _ = Describe("Provision/Agent", func() {
 
 	Describe("New", func() {
 		It("Should create all the actions", func() {
-			Expect(prov.ActionNames()).To(Equal([]string{"configure", "gen25519", "gencsr", "jwt", "release_update", "reprovision", "restart"}))
+			Expect(prov.ActionNames()).To(Equal([]string{"configure", "gen25519", "gencsr", "jwt", "reprovision", "restart"}))
 		})
 	})
 
@@ -162,65 +160,6 @@ var _ = Describe("Provision/Agent", func() {
 			_, priK, err := choria.Ed25519KeyPairFromSeedFile(filepath.Join(td, "server.seed"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(priK.Public()).To(Equal(ed25519.PublicKey(pubKBytes)))
-		})
-	})
-
-	Describe("releaseUpdateAction", func() {
-		It("should require a token", func() {
-			req := &mcorpc.Request{
-				Data:      json.RawMessage(`{"token":"toomanysecrets"}`),
-				RequestID: "uniq_req_id",
-				CallerID:  "choria=rip.mcollective",
-				SenderID:  "go.test",
-			}
-			build.ProvisionToken = "xx"
-
-			releaseUpdateAction(ctx, req, reply, prov, nil)
-			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
-		})
-
-		It("Should handle update errors", func() {
-			build.ProvisionModeDefault = "true"
-			cfg.ConfigFile = "testdata/provisioning.cfg"
-
-			updaterf = func(_ ...updater.Option) error {
-				return errors.New("simulated error")
-			}
-
-			req := &mcorpc.Request{
-				Data:      json.RawMessage(`{"token":"toomanysecrets", "version":"0.7.0"}`),
-				RequestID: "uniq_req_id",
-				CallerID:  "choria=rip.mcollective",
-				SenderID:  "go.test",
-			}
-
-			build.ProvisionToken = "toomanysecrets"
-
-			releaseUpdateAction(ctx, req, reply, prov, nil)
-			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
-			Expect(reply.Statusmsg).To(Equal("Update to version 0.7.0 failed, release rolled back: simulated error"))
-		})
-
-		It("Should update and publish an event", func() {
-			build.ProvisionToken = "testdata/provisioning.cfg"
-			build.ProvisionModeDefault = "true"
-			build.ProvisionToken = "toomanysecrets"
-
-			updaterf = func(_ ...updater.Option) error {
-				return nil
-			}
-
-			req := &mcorpc.Request{
-				Data:      json.RawMessage(`{"token":"toomanysecrets", "version":"0.7.0"}`),
-				RequestID: "uniq_req_id",
-				CallerID:  "choria=rip.mcollective",
-				SenderID:  "go.test",
-			}
-
-			si.EXPECT().NewEvent(lifecycle.Shutdown).Times(1)
-			releaseUpdateAction(ctx, req, reply, prov, nil)
-			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
-			Expect(reply.Statusmsg).To(Equal(""))
 		})
 	})
 
