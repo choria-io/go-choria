@@ -17,6 +17,14 @@ func TestGinkgo(t *testing.T) {
 }
 
 var _ = Describe("Internal/Util", func() {
+	Describe("HasPrefix", func() {
+		It("Should function correctly", func() {
+			Expect(HasPrefix("foo.bar", "bar", ".bar", "f", "meh")).To(BeTrue())
+			Expect(HasPrefix("foo.bar", "foo", "bar", ".bar", "f", "meh")).To(BeTrue())
+			Expect(HasPrefix("foo.bar", "!foo", "bar", ".bar", "xf")).To(BeFalse())
+		})
+	})
+
 	Describe("Sha256Bytes", func() {
 		It("Should correctly calculate the checksum", func() {
 			Expect(Sha256HashBytes([]byte("sample file"))).To(Equal("9f28ca60126cb0c438bc90f6d323efb4abf699f976c18a7a88cdb166e45e22ec"))
