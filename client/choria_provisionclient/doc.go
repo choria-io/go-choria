@@ -8,7 +8,6 @@
 //   * Configure - Configure the Choria Server
 //   * Gen25519 - Generates a new ED25519 keypair
 //   * Gencsr - Request a CSR from the Choria Server
-//   * ReleaseUpdate - Performs an in-place binary update and restarts Choria
 //   * Jwt - Re-enable provision mode in a running Choria Server
 //   * Reprovision - Reenable provision mode in a running Choria Server
 //   * Restart - Restart the Choria Server

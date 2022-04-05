@@ -46,6 +46,10 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 		return nil
 	}
 
+	if !s.config.Choria.NetworkStreamManageStreams {
+		return nil
+	}
+
 	var opts []nats.Option
 
 	if s.IsTLS() {

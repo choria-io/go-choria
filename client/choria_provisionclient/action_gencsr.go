@@ -197,19 +197,19 @@ func (d *GencsrRequester) O(v string) *GencsrRequester {
 	return d
 }
 
-// OU is an optional input to the gencsr action
+// Ou is an optional input to the gencsr action
 //
 // Description: Organizational Unit
-func (d *GencsrRequester) OU(v string) *GencsrRequester {
+func (d *GencsrRequester) Ou(v string) *GencsrRequester {
 	d.r.args["ou"] = v
 
 	return d
 }
 
-// ST is an optional input to the gencsr action
+// St is an optional input to the gencsr action
 //
 // Description: State
-func (d *GencsrRequester) ST(v string) *GencsrRequester {
+func (d *GencsrRequester) St(v string) *GencsrRequester {
 	d.r.args["st"] = v
 
 	return d

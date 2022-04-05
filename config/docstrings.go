@@ -79,6 +79,7 @@ var docStrings = map[string]string{
 	"plugin.choria.network.tls_timeout":                        "Time to allow for TLS connections to establish, increase on slow or very large networks",
 	"plugin.choria.network.public_url":                         "Name:Port to advertise to clients, useful when fronted by a proxy",
 	"plugin.choria.network.stream.store":                       "Enables Streaming data persistence stored in this path",
+	"plugin.choria.network.stream.manage_streams":              "When set to zero will disable managing the standard streams on this node",
 	"plugin.choria.network.stream.event_retention":             "When not zero enables retaining Lifecycle events in the Stream Store",
 	"plugin.choria.network.stream.event_replicas":              "When configuring LifeCycle events ensure data is replicated in the cluster over this many servers, -1 means count of peers",
 	"plugin.choria.network.stream.machine_retention":           "When not zero enables retaining Autonomous Agent events in the Stream Store",
