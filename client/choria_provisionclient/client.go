@@ -288,34 +288,6 @@ func (p *ChoriaProvisionClient) Gencsr(inputToken string) *GencsrRequester {
 	return d
 }
 
-// ReleaseUpdate performs the release_update action
-//
-// Description: Performs an in-place binary update and restarts Choria
-//
-// Required Inputs:
-//    - repository (string) - HTTP(S) server hosting the update repository
-//    - token (string) - Authentication token to pass to the server
-//    - version (string) - Package version to update to
-func (p *ChoriaProvisionClient) ReleaseUpdate(inputRepository string, inputToken string, inputVersion string) *ReleaseUpdateRequester {
-	d := &ReleaseUpdateRequester{
-		outc: nil,
-		r: &requester{
-			args: map[string]interface{}{
-				"repository": inputRepository,
-				"token":      inputToken,
-				"version":    inputVersion,
-			},
-			action: "release_update",
-			client: p,
-		},
-	}
-
-	action, _ := p.ddl.ActionInterface(d.r.action)
-	action.SetDefaults(d.r.args)
-
-	return d
-}
-
 // Jwt performs the jwt action
 //
 // Description: Re-enable provision mode in a running Choria Server
