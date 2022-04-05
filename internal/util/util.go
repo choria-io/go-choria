@@ -609,3 +609,14 @@ func Sha256HashFile(path string) (string, error) {
 
 	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
+
+// HasPrefix checks if s has any one of prefixes
+func HasPrefix(s string, prefixes ...string) bool {
+	for _, p := range prefixes {
+		if strings.HasPrefix(s, p) {
+			return true
+		}
+	}
+
+	return false
+}
