@@ -12,7 +12,6 @@ require (
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/go-updater v0.0.4-0.20211231123842-da243cbc508c
 	github.com/cloudevents/sdk-go/v2 v2.9.0
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0

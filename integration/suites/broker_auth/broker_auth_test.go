@@ -309,7 +309,7 @@ var _ = Describe("Authentication", func() {
 		})
 	})
 
-	Describe("mTLS Connections", func() {
+	Describe("mTLS Connections", FlakeAttempts(3), func() {
 		BeforeEach(func() {
 			_, err := testbroker.StartNetworkBrokerWithConfigFile(ctx, &wg, "testdata/mtls.conf", logger)
 			Expect(err).ToNot(HaveOccurred())

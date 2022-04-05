@@ -11,7 +11,7 @@ import (
 	"runtime"
 	"sync"
 
-	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/nats-server/v2/server/pse"
 	"github.com/prometheus/client_golang/prometheus"
@@ -45,14 +45,10 @@ type SysInfo struct {
 	Cores int     `json:"cpu_cores"`
 }
 
-type ChoriaFramework interface {
-	Configuration() *config.Config
-}
-
 var (
 	running = false
 	mu      = &sync.Mutex{}
-	fw      ChoriaFramework
+	fw      inter.Framework
 
 	buildInfo = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: "choria_build_info",
@@ -61,7 +57,7 @@ var (
 )
 
 // Start starts serving exp stats and metrics on the configured statistics port
-func Start(cfw ChoriaFramework, handler http.Handler) {
+func Start(cfw inter.Framework, handler http.Handler) {
 	mu.Lock()
 	defer mu.Unlock()
 
