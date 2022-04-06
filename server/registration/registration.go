@@ -13,6 +13,7 @@ import (
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/registration"
 	"github.com/choria-io/go-choria/server/data"
@@ -123,7 +124,11 @@ func (reg *Manager) registrationWorker(ctx context.Context, wg *sync.WaitGroup, 
 	if reg.cfg.RegistrationSplay {
 		sleepTime := time.Duration(rand.Intn(reg.cfg.RegisterInterval)) * time.Second
 		reg.log.Infof("Sleeping %s seconds before first poll due to RegistrationSplay", sleepTime)
-		time.Sleep(sleepTime)
+		err := util.InterruptibleSleep(ctx, sleepTime)
+		if err != nil {
+			reg.log.Infof("Registration system exiting on shut down")
+			return
+		}
 	}
 
 	wg.Add(1)

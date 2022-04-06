@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/config"
@@ -65,9 +66,12 @@ func (ic *InventoryContent) StartRegistration(ctx context.Context, wg *sync.Wait
 
 	delay := time.Duration(rand.Intn(4)+1) * time.Second
 	ic.log.Infof("Sleeping %v before first registration publish", delay)
-	time.Sleep(delay)
+	err := util.InterruptibleSleep(ctx, delay)
+	if err != nil {
+		return
+	}
 
-	err := ic.publish(output)
+	err = ic.publish(output)
 	if err != nil {
 		ic.log.Errorf("Could not create registration data: %s", err)
 	}

@@ -26,8 +26,6 @@ func (b *serverCommand) Run(wg *sync.WaitGroup) (err error) {
 }
 
 func (b *serverCommand) Configure() error {
-	cfg.DisableSecurityProviderVerify = true
-
 	return nil
 }
 

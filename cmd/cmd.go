@@ -120,6 +120,7 @@ func applyBuildAndEnvironmentSettings() {
 	}
 
 	if os.Getenv("INSECURE_YES_REALLY") == "true" {
+		cfg.DisableSecurityProviderVerify = true
 		protocol.Secure = "false"
 		cfg.DisableTLS = true
 		log.Warn("Disabling protocol security via environment override")
