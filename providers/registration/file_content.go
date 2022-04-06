@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/server/data"
 
 	"github.com/sirupsen/logrus"
@@ -66,9 +67,12 @@ func (fc *FileContent) StartRegistration(ctx context.Context, wg *sync.WaitGroup
 
 	delay := time.Duration(rand.Intn(4)+1) * time.Second
 	fc.log.Infof("Sleeping %v before first registration publish", delay)
-	time.Sleep(delay)
+	err := util.InterruptibleSleep(ctx, delay)
+	if err != nil {
+		return
+	}
 
-	err := fc.publish(output)
+	err = fc.publish(output)
 	if err != nil {
 		fc.log.Errorf("Could not create registration data: %s", err)
 	}

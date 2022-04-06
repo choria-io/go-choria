@@ -11,7 +11,6 @@ import (
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
-	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/server"
 	log "github.com/sirupsen/logrus"
@@ -97,12 +96,6 @@ func (r *serverRunCommand) Configure() error {
 	}
 
 	cfg.ApplyBuildSettings(bi)
-	cfg.DisableSecurityProviderVerify = true
-
-	if os.Getenv("INSECURE_YES_REALLY") == "true" {
-		protocol.Secure = "false"
-		cfg.DisableTLS = true
-	}
 
 	return nil
 }
