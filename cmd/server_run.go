@@ -124,11 +124,15 @@ func (r *serverRunCommand) provisionConfig(f string) (*config.Config, error) {
 	if err != nil {
 		return nil, fmt.Errorf("could not create default configuration for provisioning: %s", err)
 	}
+
 	cfg.ConfigFile = f
 
 	// set this to avoid calling into puppet on non puppet machines
 	// later ConfigureProvisioning() will do all the right things
 	cfg.Choria.SecurityProvider = "file"
+
+	// in provision mode we do not yet have certs and stuff so we disable these checks
+	cfg.DisableSecurityProviderVerify = true
 
 	return cfg, nil
 }
