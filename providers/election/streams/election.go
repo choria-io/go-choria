@@ -62,6 +62,19 @@ type election struct {
 
 var skipValidate bool
 
+// NewElection creates a new leader election for a member name.
+//
+// Leader election is done using a KV Bucket where each key is an election, the key therefore
+// should be a unique identifier for the election.  Bucket is a loaded bucket using either NATS
+// libraries of the helper in the choria package.
+//
+// Buckets can be created using the NATS libraries or the "choria kv add ELECTION --ttl 30s --replicas 3"
+// command, here we set a 30s TTL on the bucket which would be used to influence campaign frequency and
+// the failover time after an outage of the leader. The smallest allowed TTL is 5 seconds though we suggest
+// picking the biggest number in the range of 30 to 60 seconds that works for your use case.
+//
+// A standard bucket CHORIA_LEADER_ELECTION gets made for Choria Streams and it's replicas and ttl is
+// configurable in the config file.
 func NewElection(name string, key string, bucket nats.KeyValue, opts ...Option) (*election, error) {
 	e := &election{
 		state:   UnknownState,
@@ -80,8 +93,8 @@ func NewElection(name string, key string, bucket nats.KeyValue, opts ...Option) 
 
 	e.opts.ttl = status.TTL()
 	if !skipValidate {
-		if e.opts.ttl < 30*time.Second {
-			return nil, fmt.Errorf("bucket TTL should be 30 seconds or more")
+		if e.opts.ttl < 5*time.Second {
+			return nil, fmt.Errorf("bucket TTL should be 5 seconds or more")
 		}
 		if e.opts.ttl > time.Hour {
 			return nil, fmt.Errorf("bucket TTL should be less than or equal to 1 hour")
@@ -95,10 +108,10 @@ func NewElection(name string, key string, bucket nats.KeyValue, opts ...Option) 
 	}
 
 	if !skipValidate {
-		if e.opts.cInterval.Seconds() < 5 {
+		if e.opts.cInterval.Seconds() < 1 {
 			return nil, fmt.Errorf("campaign interval %v too small", e.opts.cInterval)
 		}
-		if e.opts.ttl.Seconds()-e.opts.cInterval.Seconds() < 5 {
+		if e.opts.ttl.Seconds()-e.opts.cInterval.Seconds() < 1 {
 			return nil, fmt.Errorf("campaign interval %v is too close to bucket ttl %v", e.opts.cInterval, e.opts.ttl)
 		}
 	}
