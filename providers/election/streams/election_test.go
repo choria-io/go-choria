@@ -68,7 +68,7 @@ var _ = Describe("Choria KV Leader Election", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = NewElection("test", "test.key", kv)
-			Expect(err).To(MatchError("bucket TTL should be 30 seconds or more"))
+			Expect(err).To(MatchError("bucket TTL should be 5 seconds or more"))
 
 			err = js.DeleteKeyValue("LE")
 			Expect(err).ToNot(HaveOccurred())
@@ -81,6 +81,17 @@ var _ = Describe("Choria KV Leader Election", func() {
 
 			_, err = NewElection("test", "test.key", kv)
 			Expect(err).To(MatchError("bucket TTL should be less than or equal to 1 hour"))
+		})
+
+		It("Should allow 5 second TTLs", func() {
+			kv, err := js.CreateKeyValue(&nats.KeyValueConfig{
+				Bucket: "LE",
+				TTL:    5 * time.Second,
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			_, err = NewElection("test", "test.key", kv)
+			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("Should correctly manage leadership", func() {
