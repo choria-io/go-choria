@@ -61,6 +61,11 @@ func (s *Server) setupAccounts() (err error) {
 			if err != nil {
 				s.log.Warnf("Could not import CHORIA_LEADER_ELECTION message subjects: %s", err)
 			}
+
+			err = s.provisioningAccount.AddServiceImport(s.choriaAccount, "choria.streams.$KV.CHORIA_LEADER_ELECTION.provisioner", "$KV.CHORIA_LEADER_ELECTION.provisioner")
+			if err != nil {
+				s.log.Warnf("Could not import CHORIA_LEADER_ELECTION message subjects: %s", err)
+			}
 		} else {
 			s.log.Warnf("Could not export CHORIA_LEADER_ELECTION message subjects to Provisioning: %s", err)
 		}
