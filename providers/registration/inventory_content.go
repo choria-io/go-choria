@@ -35,12 +35,25 @@ type InventoryData struct {
 	Facts       json.RawMessage            `json:"facts"`
 	Status      *statistics.InstanceStatus `json:"status"`
 	Collectives []string                   `json:"collectives"`
+	BuildInfo   *InventoryBuildInfo        `json:"build_info"`
+	AutoAgents  []*InventoryMachineState   `json:"machines"`
+}
+
+type InventoryBuildInfo struct {
+	Version string `json:"version"`
+	SHA     string `json:"sha"`
 }
 
 type InventoryContentMessage struct {
 	Protocol string          `json:"protocol"`
 	Content  json.RawMessage `json:"content,omitempty"`
 	ZContent []byte          `json:"zcontent,omitempty"`
+}
+
+type InventoryMachineState struct {
+	Name    string `json:"name"`
+	Version string `json:"version"`
+	State   string `json:"state"`
 }
 
 // NewInventoryContent creates a new fully managed registration plugin instance
@@ -95,17 +108,35 @@ func (ic *InventoryContent) StartRegistration(ctx context.Context, wg *sync.Wait
 func (ic *InventoryContent) publish(output chan *data.RegistrationItem) error {
 	ic.log.Infof("Starting inventory registration poll")
 
+	bi := ic.si.BuildInfo()
+
 	idata := &InventoryData{
 		Classes:     ic.si.Classes(),
 		Facts:       ic.si.Facts(),
 		Collectives: ic.c.Collectives,
 		Status:      ic.si.Status(),
+		AutoAgents:  []*InventoryMachineState{},
+		BuildInfo: &InventoryBuildInfo{
+			Version: bi.Version(),
+			SHA:     bi.SHA(),
+		},
 	}
 
 	for _, a := range ic.si.KnownAgents() {
 		agent, ok := ic.si.AgentMetadata(a)
 		if ok {
 			idata.Agents = append(idata.Agents, agent)
+		}
+	}
+
+	ms, err := ic.si.MachinesStatus()
+	if err == nil {
+		for _, m := range ms {
+			idata.AutoAgents = append(idata.AutoAgents, &InventoryMachineState{
+				Name:    m.Name,
+				Version: m.Version,
+				State:   m.State,
+			})
 		}
 	}
 

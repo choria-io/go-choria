@@ -9,6 +9,8 @@ import (
 	"compress/gzip"
 	"encoding/json"
 
+	"github.com/choria-io/go-choria/aagent"
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/providers/data/ddl"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-choria/statistics"
@@ -22,6 +24,8 @@ type ServerInfoSource interface {
 	DataFuncMap() (ddl.FuncMap, error)
 	Status() *statistics.InstanceStatus
 	AgentMetadata(agent string) (agents.Metadata, bool)
+	BuildInfo() *build.Info
+	MachinesStatus() ([]aagent.MachineState, error)
 }
 
 func compress(data []byte) ([]byte, error) {
