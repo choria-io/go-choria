@@ -8,7 +8,7 @@ replace github.com/opencontainers/runc v0.0.0-20161107232042-8779fa57eb4a => git
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.4
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
-	github.com/aelsabbahy/goss v0.3.16
+	github.com/aelsabbahy/goss v0.3.17-0.20220408175819-a2153db055d1
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
@@ -27,10 +27,10 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.4.3
-	github.com/nats-io/jsm.go v0.0.31-0.20220401122808-745078cafbd4
-	github.com/nats-io/nats-server/v2 v2.7.5-0.20220407221100-5662141932a1
-	github.com/nats-io/nats.go v1.13.1-0.20220329232831-e076b0dcab31
-	github.com/nats-io/natscli v0.0.31-0.20220402184315-b98523fb59e1
+	github.com/nats-io/jsm.go v0.0.31-0.20220412093208-5d463745c819
+	github.com/nats-io/nats-server/v2 v2.7.5-0.20220413010444-e06e0a247fe7
+	github.com/nats-io/nats.go v1.14.1-0.20220412004736-c75dfd54b52c
+	github.com/nats-io/natscli v0.0.31-0.20220412095423-9338fb354ca4
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.3
 	github.com/onsi/gomega v1.19.0
@@ -55,7 +55,7 @@ require (
 
 require (
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
-	github.com/Masterminds/goutils v1.1.0 // indirect
+	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver v1.5.0 // indirect
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
@@ -76,9 +76,9 @@ require (
 	github.com/gdamore/tcell/v2 v2.4.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/uuid v1.1.2 // indirect
+	github.com/google/uuid v1.3.0 // indirect
 	github.com/gosuri/uilive v0.0.4 // indirect
-	github.com/huandu/xstrings v1.3.0 // indirect
+	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.1 // indirect
@@ -88,16 +88,16 @@ require (
 	github.com/mattn/go-runewidth v0.0.10 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.1 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
-	github.com/miekg/dns v1.1.43 // indirect
+	github.com/miekg/dns v1.1.45 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
-	github.com/mitchellh/copystructure v1.0.0 // indirect
-	github.com/mitchellh/reflectwalk v1.0.0 // indirect
+	github.com/mitchellh/copystructure v1.2.0 // indirect
+	github.com/mitchellh/reflectwalk v1.0.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/nats-io/jwt/v2 v2.2.1-0.20220330180145-442af02fd36a // indirect
 	github.com/nats-io/nkeys v0.3.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
-	github.com/oleiade/reflections v0.0.0-20160817071559-0e86b3c98b2f // indirect
+	github.com/oleiade/reflections v1.0.1 // indirect
 	github.com/opencontainers/runc v0.0.0-20161107232042-8779fa57eb4a // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
