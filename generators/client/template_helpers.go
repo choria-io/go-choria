@@ -114,7 +114,7 @@ func (g *Generator) templFBase64Encode(v string) string {
 
 func (g *Generator) templFGeneratedWarning() string {
 	meta := g.agent.DDL.Metadata
-	return fmt.Sprintf(`// generated code; DO NOT EDIT"
+	return fmt.Sprintf(`// generated code; DO NOT EDIT
 //
 // Client for Choria RPC Agent '%s' Version %s generated using Choria version %s`, meta.Name, meta.Version, choria.BuildInfo().Version())
 }
