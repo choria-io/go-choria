@@ -1,4 +1,4 @@
-// generated code; DO NOT EDIT"
+// generated code; DO NOT EDIT
 //
 // Client for Choria RPC Agent 'choria_util' Version 0.25.1 generated using Choria version 0.25.1
 
