@@ -29,6 +29,8 @@ type InventoryContent struct {
 	si  ServerInfoSource
 }
 
+const inventoryContentProtocol = "choria:registration:inventorycontent:1"
+
 type InventoryData struct {
 	Agents      []agents.Metadata          `json:"agents"`
 	Classes     []string                   `json:"classes"`
@@ -140,9 +142,7 @@ func (ic *InventoryContent) publish(output chan *data.RegistrationItem) error {
 		}
 	}
 
-	msg := &InventoryContentMessage{
-		Protocol: "choria:registration:inventorycontent:1",
-	}
+	msg := &InventoryContentMessage{Protocol: inventoryContentProtocol}
 
 	dat, err := json.Marshal(idata)
 	if err != nil {
