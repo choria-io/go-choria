@@ -76,6 +76,11 @@ func (d *InventoryResult) Stats() Stats {
 	return d.stats
 }
 
+// RPCClientStats is the rpc request stats
+func (d *InventoryResult) RPCClientStats() *rpcclient.Stats {
+	return d.stats
+}
+
 // ResultDetails is the details about the request
 func (d *InventoryOutput) ResultDetails() *ResultDetails {
 	return d.details
