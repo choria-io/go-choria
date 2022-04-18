@@ -123,6 +123,7 @@ var _ = Describe("rpcutil agent", func() {
 			res, err := rpcutilClient.OptionTargets([]string{"localhost"}).AgentInventory().Do(ctx)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(HaveOnlySuccessfulResponses())
+
 			r := rpcutil.AgentInventoryReply{}
 			Expect(res.AllOutputs()[0].ParseAgentInventoryOutput(&r)).ToNot(HaveOccurred())
 

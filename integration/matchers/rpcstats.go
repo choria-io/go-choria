@@ -114,7 +114,7 @@ func (m *haveResponsesMatcher) FailureMessage(actual interface{}) (message strin
 	switch {
 	case m.unexpected:
 		if m.responses < 0 {
-			return fmt.Sprintf("Expected unexpected responses")
+			return "Expected unexpected responses"
 		} else {
 			return fmt.Sprintf("Expected %d unexpected responses, had %d", m.responses, len(stats.UnexpectedResponseFrom()))
 		}
@@ -154,7 +154,7 @@ func (m *haveResponsesMatcher) NegatedFailureMessage(actual interface{}) (messag
 	switch {
 	case m.unexpected:
 		if m.responses < 0 {
-			return fmt.Sprintf("Expected no unexpected responders")
+			return "Expected no unexpected responders"
 		} else {
 			return fmt.Sprintf("Expected all discovered nodes to not have responded, %d / %d received", stats.ResponsesCount(), stats.DiscoveredCount())
 		}
