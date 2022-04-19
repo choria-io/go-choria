@@ -126,7 +126,6 @@ var _ = Describe("rpcutil agent", func() {
 
 			r := rpcutil.AgentInventoryReply{}
 			Expect(res.AllOutputs()[0].ParseAgentInventoryOutput(&r)).ToNot(HaveOccurred())
-
 			Expect(r.Agents).To(HaveLen(1))
 			Expect(r.Agents[0].Agent).To(Equal("rpcutil"))
 			Expect(r.Agents[0].Name).To(Equal("rpcutil"))
