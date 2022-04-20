@@ -2,19 +2,17 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
+//go:build ignore
 // +build ignore
 
 package main
 
 import (
-	"encoding/base64"
 	"fmt"
 	"os"
 
 	"github.com/choria-io/go-choria/generators/client"
 )
-
-var ddls map[string]string
 
 func generate(agent string, ddl string, pkg string) error {
 	if ddl == "" {
@@ -46,19 +44,10 @@ func generate(agent string, ddl string, pkg string) error {
 		return err
 	}
 
-	rawddl, err := os.ReadFile(ddl)
-	if err != nil {
-		return err
-	}
-
-	ddls[agent] = base64.StdEncoding.EncodeToString(rawddl)
-
 	return nil
 }
 
 func main() {
-	ddls = make(map[string]string)
-
 	for _, agent := range []string{"rpcutil", "choria_util", "scout", "choria_provision", "choria_registry", "aaa_signer"} {
 		err := generate(agent, "", "")
 		if err != nil {
