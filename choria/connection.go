@@ -120,6 +120,10 @@ func init() {
 	prometheus.MustRegister(connInitialConnectTime)
 }
 
+var (
+	skipConnect bool // for testing
+)
+
 // NewConnector creates a new NATS connector
 //
 // It will attempt to connect to the given servers and will keep trying till it manages to do so
@@ -145,13 +149,26 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 			return nil, fmt.Errorf("could not parse JWT: %s", err)
 		}
 
+		// if we used such a token we would subscribe to node subject x but the broker would
+		// set permissions to the identity in the token, which would not match making the node
+		// unusable.
+		//
+		// Server run would have detected this and triggered reprovision but we should double check
+		// here anyway and also for clients would have invalid reply channels
+		if caller != "" && fw.Config.Identity != caller {
+			return nil, fmt.Errorf("identity %s does not match caller %s in JWT token", fw.Config.Identity, caller)
+		}
+
 		conn.log.Infof("Setting JWT token and unique reply queues based on JWT for %q", caller)
 
 		conn.token = token
 		conn.uniqueId = id
 	}
 
-	err := conn.Connect(ctx)
+	var err error
+	if !skipConnect {
+		err = conn.Connect(ctx)
+	}
 
 	return conn, err
 }

@@ -20,3 +20,4 @@ provisioning_target_provider.go
 .idea/
 *.msi
 *.exe
+*.test
