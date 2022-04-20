@@ -179,6 +179,11 @@ var _ = Describe("Choria", func() {
 	})
 
 	Describe("ProvisionMode", func() {
+		BeforeEach(func() {
+			build.ProvisionBrokerURLs = ""
+			build.ProvisionModeDefault = ""
+		})
+
 		It("Should be on only in the Server", func() {
 			c := config.NewConfigForTests()
 			c.Choria.SSLDir = "/nonexisting"
@@ -231,6 +236,44 @@ var _ = Describe("Choria", func() {
 			Expect(fw.ProvisionMode()).To(Equal(false))
 		})
 
+		It("Should be true when the JWT token does not match the running identity", func() {
+			c := config.NewConfigForTests()
+			c.DisableTLS = true
+			c.Choria.SSLDir = "/nonexisting"
+			c.InitiatedByServer = true
+			c.Choria.ServerAnonTLS = true
+			build.ProvisionBrokerURLs = "nats://n1:4222"
+			build.ProvisionModeDefault = "false"
+
+			// no token path set here so token wont be considered
+			// even though we are in server anon tls mode
+			fw, err := NewWithConfig(c)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(fw.ProvisionMode()).To(Equal(false))
+
+			// now we create a token file with other.example.net as id and config with
+			// ginkgo.example.net as id so at this point it should trigger true
+			tf, err := os.CreateTemp("", "")
+			Expect(err).ToNot(HaveOccurred())
+			defer os.Remove(tf.Name())
+
+			pk, _, err := Ed25519KeyPair()
+			Expect(err).ToNot(HaveOccurred())
+
+			t, err := tokens.NewServerClaims("other.example.net", []string{"choria"}, "choria", nil, []string{}, pk, "ginkgo", time.Hour)
+			Expect(err).ToNot(HaveOccurred())
+			s, err := tokens.SignTokenWithKeyFile(t, "../tokens/testdata/signer-key.pem")
+			Expect(err).ToNot(HaveOccurred())
+
+			_, err = tf.WriteString(s)
+			Expect(err).ToNot(HaveOccurred())
+			tf.Close()
+
+			c.Choria.ServerTokenFile = tf.Name()
+
+			Expect(fw.ProvisionMode()).To(Equal(true))
+		})
+
 		It("Should be false if there are no brokers", func() {
 			c, err := config.NewConfig("testdata/provision.cfg")
 			Expect(err).ToNot(HaveOccurred())
@@ -240,7 +283,6 @@ var _ = Describe("Choria", func() {
 			fw, err := NewWithConfig(c)
 			Expect(err).ToNot(HaveOccurred())
 
-			build.ProvisionBrokerURLs = ""
 			c.InitiatedByServer = true
 
 			Expect(fw.ProvisionMode()).To(Equal(false))

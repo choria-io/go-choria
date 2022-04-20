@@ -171,6 +171,24 @@ func (fw *Framework) ProvisionMode() bool {
 		return fw.Config.Choria.Provision
 	}
 
+	// some build environments might go through provisioning as a test phase
+	// and if those base images do not remove their config they might start up
+	// with still-valid tokens from building phase instead of re-provisioning
+	// as intended, typically in those cases the hostnames will have changed between
+	// base image and eventual running OS.  So we can detect that by comparing identity
+	// of the provisioned token and the running identity.
+	//
+	// Regardless how it happened this is bad because the node will subscribe to its
+	// node subject with its identity set but the token will have another identity in
+	// it causing the broker to not set appropriate allow rules for that connection
+	caller, _, _, _ := fw.UniqueIDFromUnverifiedToken()
+	if caller != "" {
+		if fw.Config.Identity != caller {
+			fw.log.Warnf("Caller %q from server token does not match identity %q, enabling provisioning", caller, fw.Config.Identity)
+			return true
+		}
+	}
+
 	return fw.bi.ProvisionDefault()
 }
 
