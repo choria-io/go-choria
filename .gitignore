@@ -21,3 +21,4 @@ provisioning_target_provider.go
 *.msi
 *.exe
 *.test
+tokens/testdata/good-server.jwt

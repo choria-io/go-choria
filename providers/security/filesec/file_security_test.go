@@ -476,7 +476,8 @@ var _ = Describe("FileSSL", func() {
 			pd, err := os.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
-			should, priv, name := prov.shouldCacheClientCert(pd, "foo")
+			should, priv, name, err := prov.shouldCacheClientCert(pd, "foo")
+			Expect(err).To(HaveOccurred())
 			Expect(should).To(BeFalse())
 			Expect(priv).To(BeFalse())
 			Expect(name).To(Equal("foo"))
@@ -485,7 +486,8 @@ var _ = Describe("FileSSL", func() {
 			pd, err = os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
-			should, priv, name = prov.shouldCacheClientCert(pd, "rip.mcollective")
+			should, priv, name, err = prov.shouldCacheClientCert(pd, "rip.mcollective")
+			Expect(err).ToNot(HaveOccurred())
 			Expect(should).To(BeTrue())
 			Expect(priv).To(BeFalse())
 			Expect(name).To(Equal("rip.mcollective"))
@@ -495,7 +497,8 @@ var _ = Describe("FileSSL", func() {
 			pd, err := os.ReadFile(filepath.Join("..", "testdata", "good", "certs", "1.privileged.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
-			should, priv, name := prov.shouldCacheClientCert(pd, "bob")
+			should, priv, name, err := prov.shouldCacheClientCert(pd, "bob")
+			Expect(err).ToNot(HaveOccurred())
 			Expect(should).To(BeTrue())
 			Expect(priv).To(BeTrue())
 			Expect(name).To(Equal("1.privileged.mcollective"))
@@ -507,7 +510,8 @@ var _ = Describe("FileSSL", func() {
 			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
-			should, priv, name := prov.shouldCacheClientCert(pd, "bob")
+			should, priv, name, err := prov.shouldCacheClientCert(pd, "bob")
+			Expect(err).To(HaveOccurred())
 			Expect(should).To(BeFalse())
 			Expect(priv).To(BeFalse())
 			Expect(name).To(Equal("bob"))
@@ -520,7 +524,8 @@ var _ = Describe("FileSSL", func() {
 			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
-			should, priv, name := prov.shouldCacheClientCert(pd, "rip.mcollective")
+			should, priv, name, err := prov.shouldCacheClientCert(pd, "rip.mcollective")
+			Expect(err).ToNot(HaveOccurred())
 			Expect(should).To(BeFalse())
 			Expect(priv).To(BeFalse())
 			Expect(name).To(Equal("rip.mcollective"))
@@ -532,7 +537,8 @@ var _ = Describe("FileSSL", func() {
 			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
-			should, priv, name := prov.shouldCacheClientCert(pd, "rip.mcollective")
+			should, priv, name, err := prov.shouldCacheClientCert(pd, "rip.mcollective")
+			Expect(err).ToNot(HaveOccurred())
 			Expect(should).To(BeTrue())
 			Expect(priv).To(BeFalse())
 			Expect(name).To(Equal("rip.mcollective"))
@@ -545,7 +551,7 @@ var _ = Describe("FileSSL", func() {
 			pd, err := os.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			err = prov.CachePublicData(pd, "foreign")
-			Expect(err).To(MatchError("certificate 'foreign' did not pass validation"))
+			Expect(err).To(MatchError("certificate 'foreign' did not pass validation: x509: certificate signed by unknown authority"))
 
 			cpath, err := prov.cachePath("foreign")
 			Expect(err).ToNot(HaveOccurred())
