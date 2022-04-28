@@ -28,9 +28,12 @@ func TLSConfig(c *config.Config) *Config {
 	} else if c.Choria.CipherSuites == nil || len(c.Choria.CipherSuites) == 0 {
 		cfg.CipherSuites = DefaultCipherSuites()
 	} else {
-		cfg.CipherSuites = []uint16{}
+		cfg.CipherSuites = make([]uint16, 0)
 		for _, cipher := range c.Choria.CipherSuites {
-			cfg.CipherSuites = append(cfg.CipherSuites, CipherMap[cipher])
+			cs := findCipherSuite(cipher)
+			if cs != nil {
+				cfg.CipherSuites = append(cfg.CipherSuites, cs.ID)
+			}
 		}
 	}
 
