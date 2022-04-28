@@ -725,8 +725,8 @@ var _ = Describe("FileSSL", func() {
 		})
 
 		It("Should work with just one cipher", func() {
-			for cm := range tlssetup.CipherMap {
-				cipher = cm
+			for _, cm := range tls.CipherSuites() {
+				cipher = cm.Name
 				break
 			}
 
