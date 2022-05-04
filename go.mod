@@ -27,10 +27,10 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.4.3
-	github.com/nats-io/jsm.go v0.0.31-0.20220414103519-83c9d5c82c54
-	github.com/nats-io/nats-server/v2 v2.7.5-0.20220414055341-ec3f9258afde
-	github.com/nats-io/nats.go v1.14.1-0.20220412004736-c75dfd54b52c
-	github.com/nats-io/natscli v0.0.31-0.20220414105955-22ba2516e0db
+	github.com/nats-io/jsm.go v0.0.31
+	github.com/nats-io/nats-server/v2 v2.8.2
+	github.com/nats-io/nats.go v1.14.1-0.20220503230705-96c14456be81
+	github.com/nats-io/natscli v0.0.33-0.20220504193301-7314458ad54f
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.3
 	github.com/onsi/gomega v1.19.0
@@ -44,9 +44,9 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/atomic v1.9.0
-	golang.org/x/crypto v0.0.0-20220331220935-ae2d96664a29
+	golang.org/x/crypto v0.0.0-20220427172511-eb4f295cb31f
 	golang.org/x/sys v0.0.0-20220403205710-6acee93ad0eb
-	golang.org/x/term v0.0.0-20210927222741-03fcf44c2211
+	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.10
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
@@ -101,7 +101,7 @@ require (
 	github.com/opencontainers/runc v0.0.0-20161107232042-8779fa57eb4a // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/common v0.32.1 // indirect
+	github.com/prometheus/common v0.33.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0 // indirect
 	github.com/rivo/uniseg v0.1.0 // indirect
