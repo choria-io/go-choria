@@ -6,10 +6,11 @@ package harness
 
 import (
 	"context"
-	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/discovery"
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/discovery"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/rpcutilclient"
@@ -137,7 +138,7 @@ var _ = Describe("testing harness agent", func() {
 	})
 
 	Describe("action stubbing", func() {
-		It("Should do the correct stubs", func() {
+		It("Should do the correct stubs", FlakeAttempts(5), func() {
 			rpcutilAgent.Stub("ping", func(_ context.Context, _ *mcorpc.Request, reply *mcorpc.Reply, _ *mcorpc.Agent, _ inter.ConnectorInfo) {
 				reply.Data = map[string]interface{}{
 					"pong": time.Now().Unix(),
@@ -153,7 +154,7 @@ var _ = Describe("testing harness agent", func() {
 				Expect(r.Pong()).To(BeNumerically("==", time.Now().Unix(), 1))
 			}
 
-			// checks that the server did indeed had sent back 5 replies ie. round trip calls all happened
+			// checks that the server did indeed sent back 10 - 5+discovery replies ie. round trip calls all happened
 			Expect(srv.Stats().Replies).To(Equal(int64(10)))
 		})
 	})
