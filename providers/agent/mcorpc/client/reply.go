@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Masterminds/semver"
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/vm"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
@@ -40,6 +41,7 @@ func (r *RPCReply) MatchExpr(q string, prog *vm.Program) (bool, *vm.Program, err
 		"unknown_action": r.isUnknownAction,
 		"unknown_error":  r.isUnknownError,
 		"include":        r.include,
+		"semver":         r.semverCompare,
 		"sender":         func() string { return r.Sender },
 		"time":           func() time.Time { return r.Time },
 	}
@@ -92,6 +94,20 @@ func (r *RPCReply) isUnknownError() bool {
 // https://github.com/tidwall/gjson/blob/master/SYNTAX.md
 func (r *RPCReply) lookup(query string) interface{} {
 	return gjson.GetBytes(r.Data, query).Value()
+}
+
+func (r *RPCReply) semverCompare(value string, cmp string) (bool, error) {
+	cons, err := semver.NewConstraint(cmp)
+	if err != nil {
+		return false, err
+	}
+
+	v, err := semver.NewVersion(value)
+	if err != nil {
+		return false, err
+	}
+
+	return cons.Check(v), nil
 }
 
 func (r *RPCReply) include(hay []interface{}, needle interface{}) bool {
