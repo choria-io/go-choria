@@ -60,6 +60,7 @@ require (
 	github.com/Masterminds/sprig v2.22.0+incompatible // indirect
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/achanda/go-sysctl v0.0.0-20160222034550-6be7678c45d2 // indirect
+	github.com/adrg/xdg v0.4.0 // indirect
 	github.com/aelsabbahy/GOnetstat v0.0.0-20160428114218-edf89f784e08 // indirect
 	github.com/aelsabbahy/go-ps v0.0.0-20201009164808-61c449472dcf // indirect
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect

@@ -12,11 +12,13 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
+	"strings"
 	"sync"
 	"syscall"
 	"time"
 
 	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/providers/appbuilder"
 
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -52,6 +54,20 @@ func ParseCLI() (err error) {
 	ctx, cancel = context.WithCancel(context.Background())
 
 	go interruptWatcher()
+
+	// If we are not invoked as something something choria, then check
+	// if the app builder has an app configuration matching the name we
+	// are run as, if it does, we invoke it instead of the standard choria
+	// cli tools
+	//
+	// TODO: too janky, need to do a better job here, looking at the name is not enough
+	if !strings.Contains(os.Args[0], "choria") {
+		builder := appbuilder.NewAppBuilder(ctx, filepath.Base(os.Args[0]))
+		if builder.HasDefinition() {
+			builder.RunCommand()
+			os.Exit(0)
+		}
+	}
 
 	bi = &build.Info{}
 
@@ -210,7 +226,7 @@ func forcequit() {
 		}
 	}
 
-	<-time.NewTimer(grace).C
+	<-time.After(grace)
 
 	dumpGoRoutines()
 
