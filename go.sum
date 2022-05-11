@@ -54,6 +54,8 @@ github.com/OneOfOne/xxhash v1.2.8 h1:31czK/TI9sNkxIKfaUfGlU47BAxQ0ztGgd9vPyqimf8
 github.com/OneOfOne/xxhash v1.2.8/go.mod h1:eZbhyaAYD41SGSSsnmcpxVoRiQ/MPUTjUdIIOT9Um7Q=
 github.com/achanda/go-sysctl v0.0.0-20160222034550-6be7678c45d2 h1:NYoPVh1XuUB5VBWLXRKoqzQhl4bajIxh+XuURbJ0uwc=
 github.com/achanda/go-sysctl v0.0.0-20160222034550-6be7678c45d2/go.mod h1:DCNKSpXhum14Y258jSbRmJvcesbzEdBPincz7yJUx3k=
+github.com/adrg/xdg v0.4.0 h1:RzRqFcjH4nE5C6oTAxhBtoE2IRyjBSa62SCbyPidvls=
+github.com/adrg/xdg v0.4.0/go.mod h1:N6ag73EX4wyxeaoeHctc1mas01KZgsj5tYiAIwqJE/E=
 github.com/aelsabbahy/GOnetstat v0.0.0-20160428114218-edf89f784e08 h1:oD15ssIOuFLi64zhkPRsaIDvhx4PeZb2QdQoR/wKY2g=
 github.com/aelsabbahy/GOnetstat v0.0.0-20160428114218-edf89f784e08/go.mod h1:FETZSu2VGNDJbGfeRExaz/SNbX0TTaqJEMo1yvsKoZ8=
 github.com/aelsabbahy/go-ps v0.0.0-20201009164808-61c449472dcf h1:KyjxaqJO0pHF7Clre644OiJ5s235JVRsz6ioDkoQ96s=
@@ -752,6 +754,7 @@ golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1/go.mod h1:oPkhp1MJrh7nUepCBc
 golang.org/x/sys v0.0.0-20210630005230-0f9fa26af87c/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20210927094055-39ccf1dd6fa6/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20211019181941-9d821ace8654/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
+golang.org/x/sys v0.0.0-20211025201205-69cdffdb9359/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20211216021012-1d35b9e2eb4e/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220111092808-5a964db01320/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=
 golang.org/x/sys v0.0.0-20220114195835-da31bd327af9/go.mod h1:oPkhp1MJrh7nUepCBck5+mAzfO9JrbApNNgaTdGDITg=

@@ -1,0 +1,294 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "id": "https://choria.io/schemas/choria/builder/v1/application.json",
+  "title": "io.choria.builder.v1.application",
+  "description": "Choria Builder Application Specification",
+  "type": "object",
+  "required": ["name","description","version","author","commands"],
+  "definitions": {
+    "shortname": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[a-z0-9_-]*$"
+    },
+    "semver": {
+      "type": "string",
+      "description": "Semantic Versioning 2.0.0 version string",
+      "minLength": 5,
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
+    },
+    "standard_command": {
+      "type": "object",
+      "required": ["name","description","type"],
+      "properties": {
+        "name": {
+          "type": "string",
+          "description": "A unique name for this command",
+          "$ref": "#/definitions/shortname"
+        },
+        "description": {
+          "$ref": "#/definitions/description"
+        }
+      }
+    },
+    "description": {
+      "type": "string",
+      "description": "A human friendly description of what an item does",
+      "minLength": 1
+    },
+    "generic_flag": {
+      "type": "object",
+      "required": ["name","description"],
+      "properties": {
+        "name": {
+          "description": "A unique name for this flag",
+          "$ref": "#/definitions/shortname"
+        },
+        "description": {
+          "$ref": "#/definitions/description"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Indicates this flag must be passed",
+          "default": false
+        },
+        "placeholder": {
+          "type": "string",
+          "description": "String to show as value place holder in help output"
+        }
+      }
+    },
+    "generic_argument":{
+      "type": "object",
+      "required": ["name","description"],
+      "properties": {
+        "name": {
+          "description": "A unique name for this argument",
+          "$ref": "#/definitions/shortname"
+        },
+        "description": {
+          "$ref": "#/definitions/description"
+        },
+        "required": {
+          "type": "boolean",
+          "description": "Indicates that this flag must be passed",
+          "default": false
+        }
+      }
+    },
+    "commands": {
+      "type": "array",
+      "items": {
+        "anyOf": [
+          {"$ref": "#/definitions/rpc_command"},
+          {"$ref": "#/definitions/parent_command"},
+          {"$ref": "#/definitions/kv_command"},
+          {"$ref": "#/definitions/exec_command"}
+        ]
+      }
+    },
+    "parent_command": {
+      "type": "object",
+      "description": "A command that does not do anything but serves as a anchor for sub commands",
+      "additionalItems": false,
+      "allOf": [
+        {"$ref":"#/definitions/standard_command"},
+        {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "parent"
+            },
+            "commands": {
+              "description": "Additional CLI commands to add",
+              "$ref": "#/definitions/commands",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "exec_command": {
+      "type": "object",
+      "description": "A command that calls an external script",
+      "additionalItems": false,
+      "allOf": [
+        {"$ref":"#/definitions/standard_command"},
+        {
+          "type": "object",
+          "required": ["type", "command"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "exec"
+            },
+            "commands": {
+              "description": "Additional CLI commands to add",
+              "$ref": "#/definitions/commands"
+            },
+            "command": {
+              "type": "string",
+              "description": "The command to execute, supports template interpolation",
+              "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "kv_command": {
+      "type": "object",
+      "description": "A command that interact with the Choria Key-Value store",
+      "additionalItems": false,
+      "allOf": [
+        {"$ref":"#/definitions/standard_command"},
+        {
+          "type": "object",
+          "required": ["type","action","bucket","key"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "kv"
+            },
+            "commands": {
+              "description": "Additional CLI commands to add",
+              "$ref": "#/definitions/commands"
+            },
+            "bucket": {
+              "type": "string",
+              "description": "The name of the Key-Value store bucket",
+              "pattern": "\\A[a-zA-Z0-9_-]+\\z",
+              "minLength": 1
+            },
+            "key": {
+              "type": "string",
+              "description": "The key to act on",
+              "minLength": 1
+            },
+            "value": {
+              "type": "string",
+              "description": "The value to store for the put operation"
+            },
+            "action": {
+              "type": "string",
+              "description": "The action to perform against the bucket and key",
+              "enum": ["get","put","del"]
+            }
+          }
+        }
+      ]
+    },
+    "rpc_command": {
+      "type": "object",
+      "additionalItems": false,
+      "allOf": [
+        {"$ref":"#/definitions/standard_command"},
+        {
+          "type": "object",
+          "required": ["type"],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "rpc"
+            },
+            "commands": {
+              "description": "Additional CLI commands to add",
+              "$ref": "#/definitions/commands"
+            },
+            "request": {
+              "type": "object",
+              "description": "Details of the RPC request",
+              "properties": {
+                "agent": {
+                  "type": "string",
+                  "description": "The agent to call",
+                  "$ref": "#/definitions/shortname"
+                },
+                "action": {
+                  "type": "string",
+                  "description": "The action to call",
+                  "$ref": "#/definitions/shortname"
+                },
+                "params": {
+                  "type": "object",
+                  "description": "Free form list of input arguments as a hash, values support template interpolation",
+                  "additionalProperties": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "std_filters": {
+              "type": "boolean",
+              "description": "Enables standard RPC filters like -C, -I etc",
+              "default": false
+            },
+            "output_formats_flags": {
+              "type": "boolean",
+              "description": "Enable flags to adjust the output format like --json, --table etc",
+              "default": false
+            },
+            "display_flag": {
+              "type": "boolean",
+              "description": "Enables the --display flag",
+              "default": false
+            },
+            "batch_flags": {
+              "type": "boolean",
+              "description": "Enables the --batch and --batch-sleep flags",
+              "default": false
+            },
+            "arguments": {
+              "type": "array",
+              "description": "List or arguments to accept after the command name",
+              "items": {
+                "$ref": "#/definitions/generic_argument"
+              }
+            },
+            "flags": {
+              "type": "array",
+              "description": "List of flags to add to the command",
+              "items": {
+                "allOf": [
+                  { "$ref":"#/definitions/generic_flag"},
+                  {
+                    "type": "object",
+                    "properties": {
+                      "reply_filter":{
+                        "type": "string",
+                        "description": "Choria reply filter"
+                      }
+                    }
+                  }
+                ]
+              }
+            }
+          }
+        }
+      ]
+    }
+  },
+  "properties": {
+    "name": {
+      "description": "A unique name for this application",
+      "$ref": "#/definitions/shortname"
+    },
+    "description": {
+      "$ref": "#/definitions/description"
+    },
+    "version": {
+      "$ref": "#/definitions/semver"
+    },
+    "author": {
+      "type": "string",
+      "description": "Contact details for the author",
+      "minLength": 1
+    },
+    "commands": {
+      "description": "A list of commands that make up the application",
+      "minItems": 1,
+      "$ref": "#/definitions/commands"
+    }
+  }
+}
