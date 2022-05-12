@@ -25,6 +25,7 @@ import (
 	"github.com/tidwall/gjson"
 	"github.com/xeipuuv/gojsonschema"
 	"gopkg.in/alecthomas/kingpin.v2"
+	"gopkg.in/alessio/shellescape.v1"
 )
 
 type StandardCommand struct {
@@ -342,6 +343,9 @@ func parseStateTemplate(body string, args interface{}, flags interface{}, cfg in
 			}
 
 			return v, nil
+		},
+		"escape": func(v string) string {
+			return shellescape.Quote(v)
 		},
 	}
 
