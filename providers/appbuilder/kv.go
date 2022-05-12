@@ -10,6 +10,7 @@ import (
 	"fmt"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -51,7 +52,7 @@ func (r *KV) SubCommands() []json.RawMessage {
 	return r.def.Commands
 }
 
-func (r *KV) CreateCommand(app kingpinParent) (*kingpin.CmdClause, error) {
+func (r *KV) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
 	r.cmd = app.Command(r.def.Name, r.def.Description).Action(r.runCommand)
 	for _, a := range r.def.Aliases {
 		r.cmd.Alias(a)
