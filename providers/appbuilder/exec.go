@@ -11,6 +11,7 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/kballard/go-shellquote"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -50,7 +51,7 @@ func (r *Exec) SubCommands() []json.RawMessage {
 	return r.def.Commands
 }
 
-func (r *Exec) CreateCommand(app kingpinParent) (*kingpin.CmdClause, error) {
+func (r *Exec) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
 	r.cmd = app.Command(r.def.Name, r.def.Description).Action(r.runCommand)
 	for _, a := range r.def.Aliases {
 		r.cmd.Alias(a)

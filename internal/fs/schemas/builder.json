@@ -17,6 +17,84 @@
       "minLength": 5,
       "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$"
     },
+    "rpc_filter": {
+      "type": "object",
+      "description": "Standard Choria RPC discovery options",
+      "additionalItems": false,
+      "properties": {
+        "collective": {
+          "type": "string",
+          "description": "Target nodes in a specific sub-collective, defaults to configured main collective"
+        },
+        "facts": {
+          "type": "array",
+          "description": "List of fact filters, like operatingsystem=CentOS, as typed in -F filters on the CLI",
+          "items": {
+            "type": "string"
+          }
+        },
+        "agents": {
+          "type": "array",
+          "description": "List of agents to require, as typed in -A filters on the CLI",
+          "items": {
+            "type": "string"
+          }
+        },
+        "classes": {
+          "type": "array",
+          "description": "List of classes to match on, as typed in -C filters on the CLI",
+          "items": {
+            "type": "string"
+          }
+        },
+        "identities": {
+          "type": "array",
+          "description": "List of identities to target, as typed in -I filters on the CLI",
+          "items": {
+            "type": "string"
+          }
+        },
+        "combined": {
+          "type": "array",
+          "description": "List of combined filters to match on targets, as typed in -W filters on the CLI",
+          "items": {
+            "type": "string"
+          }
+        },
+        "compound": {
+          "type": "array",
+          "description": "List of compound filters to use, as typed in -S filters on the CLI",
+          "items": {
+            "type": "string"
+          }
+        },
+        "discovery_method": {
+          "type": "string",
+          "description": "The discovery method to use",
+          "enum": ["mc","broadcast","choria","puppetdb","external","flatfile","file","inventory"]
+        },
+        "discovery_timeout": {
+          "type": "integer",
+          "description": "Number of seconds to allow for discovery to complete",
+          "minimum": 0
+        },
+        "dynamic_discovery_timeout": {
+          "type": "boolean",
+          "description": "Enables windowed dynamic discovery timeout"
+        },
+        "nodes_file": {
+          "type": "string",
+          "description": "Path to a file listing node names in text or JSON format"
+        },
+        "discovery_options": {
+          "type": "object",
+          "description": "Discovery options as a map of string values",
+          "additionalItems": {
+            "type": "string"
+          }
+        }
+      }
+    },
     "standard_command": {
       "type": "object",
       "required": ["name","description","type"],
@@ -219,9 +297,13 @@
                 }
               }
             },
+            "filter": {
+              "description": "Optional filters to apply to the request, can not be combined with std_filters",
+              "$ref": "#/definitions/rpc_filter"
+            },
             "std_filters": {
               "type": "boolean",
-              "description": "Enables standard RPC filters like -C, -I etc",
+              "description": "Enables standard RPC filters like -C, -I etc, can not be combined with filters",
               "default": false
             },
             "output_formats_flags": {
@@ -231,8 +313,25 @@
             },
             "display_flag": {
               "type": "boolean",
-              "description": "Enables the --display flag",
+              "description": "Enables the --display flag, not compatible with display",
               "default": false
+            },
+            "display": {
+              "type": "string",
+              "description": "Force a specific display format to be used, not compatible with display_flags",
+              "enum": ["ok", "failed", "all", "none"]
+            },
+            "no_progress": {
+              "type": "boolean",
+              "description": "Disables the progress bar"
+            },
+            "batch": {
+              "type": "integer",
+              "description": "Batch size to use when executing the RPC request, not compatible with batch_flags"
+            },
+            "batch_sleep": {
+              "type": "integer",
+              "description": "When batch is given this is the seconds to sleep between batches, not compatible with batch_flags"
             },
             "batch_flags": {
               "type": "boolean",

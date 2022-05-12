@@ -13,33 +13,31 @@ import (
 	"strings"
 	"time"
 
-	"github.com/choria-io/go-choria/inter"
-	log "github.com/sirupsen/logrus"
-	"gopkg.in/alecthomas/kingpin.v2"
-
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/filter"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/discovery/broadcast"
 	"github.com/choria-io/go-choria/providers/discovery/external"
 	"github.com/choria-io/go-choria/providers/discovery/flatfile"
 	"github.com/choria-io/go-choria/providers/discovery/inventory"
 	"github.com/choria-io/go-choria/providers/discovery/puppetdb"
+	log "github.com/sirupsen/logrus"
 )
 
 type StandardOptions struct {
-	Collective              string
-	FactFilter              []string
-	AgentFilter             []string
-	ClassFilter             []string
-	IdentityFilter          []string
-	CombinedFilter          []string
-	CompoundFilter          string
-	DiscoveryMethod         string
-	DiscoveryTimeout        int
-	DynamicDiscoveryTimeout bool
-	NodesFile               string
-	DiscoveryOptions        map[string]string
+	Collective              string            `json:"collective"`
+	FactFilter              []string          `json:"facts"`
+	AgentFilter             []string          `json:"agents"`
+	ClassFilter             []string          `json:"classes"`
+	IdentityFilter          []string          `json:"identities"`
+	CombinedFilter          []string          `json:"combined"`
+	CompoundFilter          string            `json:"compound"`
+	DiscoveryMethod         string            `json:"discovery_method"`
+	DiscoveryTimeout        int               `json:"discovery_timeout"`
+	DynamicDiscoveryTimeout bool              `json:"dynamic_discovery_timeout"`
+	NodesFile               string            `json:"nodes_file"`
+	DiscoveryOptions        map[string]string `json:"discovery_options"`
 
 	unsetMethod bool
 }
@@ -56,19 +54,15 @@ func NewStandardOptions() *StandardOptions {
 	}
 }
 
-type FlagApp interface {
-	Flag(name, help string) *kingpin.FlagClause
-}
-
 // AddSelectionFlags adds the --dm and --discovery-timeout options
-func (o *StandardOptions) AddSelectionFlags(app FlagApp) {
+func (o *StandardOptions) AddSelectionFlags(app inter.FlagApp) {
 	app.Flag("dm", "Sets a discovery method (mc, choria, file, external, inventory)").EnumVar(&o.DiscoveryMethod, "broadcast", "choria", "mc", "file", "flatfile", "external", "inventory")
 	app.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&o.DiscoveryTimeout)
 	app.Flag("discovery-window", "Enables a sliding window based dynamic discovery timeout (experimental)").BoolVar(&o.DynamicDiscoveryTimeout)
 }
 
 // AddFilterFlags adds the various flags like -W, -S, -T etc
-func (o *StandardOptions) AddFilterFlags(app FlagApp) {
+func (o *StandardOptions) AddFilterFlags(app inter.FlagApp) {
 	app.Flag("wf", "Match hosts with a certain fact").Short('F').StringsVar(&o.FactFilter)
 	app.Flag("wc", "Match hosts with a certain configuration management class").Short('C').StringsVar(&o.ClassFilter)
 	app.Flag("wa", "Match hosts with a certain Choria agent").Short('A').StringsVar(&o.AgentFilter)
@@ -80,7 +74,7 @@ func (o *StandardOptions) AddFilterFlags(app FlagApp) {
 }
 
 // AddFlatFileFlags adds the flags to select nodes using --nodes in text, json and yaml formats
-func (o *StandardOptions) AddFlatFileFlags(app FlagApp) {
+func (o *StandardOptions) AddFlatFileFlags(app inter.FlagApp) {
 	app.Flag("nodes", "List of nodes to interact with in JSON, YAML or TEXT formats").ExistingFileVar(&o.NodesFile)
 }
 

@@ -17,6 +17,7 @@ import (
 
 	"github.com/adrg/xdg"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/ghodss/yaml"
@@ -70,12 +71,8 @@ type templateState struct {
 }
 
 type command interface {
-	CreateCommand(app kingpinParent) (*kingpin.CmdClause, error)
+	CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error)
 	SubCommands() []json.RawMessage
-}
-
-type kingpinParent interface {
-	Command(name string, description string) *kingpin.CmdClause
 }
 
 type AppBuilder struct {
@@ -142,7 +139,7 @@ func (b *AppBuilder) runCLI() error {
 	return err
 }
 
-func (b *AppBuilder) registerCommands(cli kingpinParent, cmds ...command) error {
+func (b *AppBuilder) registerCommands(cli inter.FlagApp, cmds ...command) error {
 	for _, c := range cmds {
 		cmd, err := c.CreateCommand(cli)
 		if err != nil {

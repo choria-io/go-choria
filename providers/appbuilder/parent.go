@@ -7,6 +7,7 @@ package appbuilder
 import (
 	"encoding/json"
 
+	"github.com/choria-io/go-choria/inter"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -37,7 +38,7 @@ func (p *Parent) SubCommands() []json.RawMessage {
 	return p.def.Commands
 }
 
-func (p *Parent) CreateCommand(app kingpinParent) (*kingpin.CmdClause, error) {
+func (p *Parent) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
 	p.cmd = app.Command(p.def.Name, p.def.Description)
 	for _, a := range p.def.Aliases {
 		p.cmd.Alias(a)
