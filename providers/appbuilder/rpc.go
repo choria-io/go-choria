@@ -39,18 +39,19 @@ type RPCRequest struct {
 }
 
 type RPCCommand struct {
-	StandardFilter     bool                       `json:"std_filters"`
-	OutputFormatsFlags bool                       `json:"output_formats_flags"`
-	Display            string                     `json:"display"`
-	DisplayFlag        bool                       `json:"display_flag"`
-	BatchFlags         bool                       `json:"batch_flags"`
-	BatchSize          int                        `json:"batch"`
-	BatchSleep         int                        `json:"batch_sleep"`
-	NoProgress         bool                       `json:"no_progress"`
-	Arguments          []GenericArgument          `json:"arguments"`
-	Flags              []RPCFlag                  `json:"flags"`
-	Request            RPCRequest                 `json:"request"`
-	Filter             *discovery.StandardOptions `json:"filter"`
+	StandardFilter    bool                       `json:"std_filters"`
+	OutputFormatFlags bool                       `json:"output_format_flags"`
+	OutputFormat      string                     `json:"output_format"`
+	Display           string                     `json:"display"`
+	DisplayFlag       bool                       `json:"display_flag"`
+	BatchFlags        bool                       `json:"batch_flags"`
+	BatchSize         int                        `json:"batch"`
+	BatchSleep        int                        `json:"batch_sleep"`
+	NoProgress        bool                       `json:"no_progress"`
+	Arguments         []GenericArgument          `json:"arguments"`
+	Flags             []RPCFlag                  `json:"flags"`
+	Request           RPCRequest                 `json:"request"`
+	Filter            *discovery.StandardOptions `json:"filter"`
 
 	StandardCommand
 	StandardSubCommands
@@ -109,10 +110,26 @@ func (r *RPC) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
 		r.Arguments[a.Name] = arg.String()
 	}
 
-	if r.def.OutputFormatsFlags {
+	switch {
+	case r.def.OutputFormatFlags && r.def.OutputFormat != "":
+		return nil, fmt.Errorf("only one of output_format_flags and output_format may be supplied to command %s", r.def.Name)
+
+	case r.def.OutputFormatFlags:
 		r.cmd.Flag("senders", "List only the names of matching nodes").BoolVar(&r.senders)
 		r.cmd.Flag("json", "Render results as JSON").BoolVar(&r.json)
 		r.cmd.Flag("table", "Render results as a table").BoolVar(&r.table)
+
+	case r.def.OutputFormat == "senders":
+		r.senders = true
+
+	case r.def.OutputFormat == "json":
+		r.json = true
+
+	case r.def.OutputFormat == "table":
+		r.table = true
+
+	case r.def.OutputFormat != "":
+		return nil, fmt.Errorf("invalid output format %q, valid formats are senders, json and table", r.def.OutputFormat)
 	}
 
 	switch {

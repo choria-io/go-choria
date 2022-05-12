@@ -306,10 +306,15 @@
               "description": "Enables standard RPC filters like -C, -I etc, can not be combined with filters",
               "default": false
             },
-            "output_formats_flags": {
+            "output_format_flags": {
               "type": "boolean",
               "description": "Enable flags to adjust the output format like --json, --table etc",
               "default": false
+            },
+            "output_format": {
+              "type": "string",
+              "description": "Sets a specific output format, not compatible with output_format_flags",
+              "enum": ["senders", "json", "table"]
             },
             "display_flag": {
               "type": "boolean",
