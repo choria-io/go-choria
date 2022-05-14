@@ -106,6 +106,10 @@
         },
         "description": {
           "$ref": "#/definitions/description"
+        },
+        "confirm_prompt": {
+          "type": "string",
+          "default": "When set always confirms the operation using the value as prompt"
         }
       }
     },
@@ -251,7 +255,7 @@
             "action": {
               "type": "string",
               "description": "The action to perform against the bucket and key",
-              "enum": ["get","put","del"]
+              "enum": ["get","put","del", "history"]
             }
           }
         }
@@ -288,7 +292,7 @@
                   "description": "The action to call",
                   "$ref": "#/definitions/shortname"
                 },
-                "params": {
+                "inputs": {
                   "type": "object",
                   "description": "Free form list of input arguments as a hash, values support template interpolation",
                   "additionalProperties": {
@@ -349,6 +353,10 @@
               "items": {
                 "$ref": "#/definitions/generic_argument"
               }
+            },
+            "all_nodes_confirm_prompt": {
+              "type": "string",
+              "description": "Prompts for confirmation when no filter is active resulting on an action against all nodes"
             },
             "flags": {
               "type": "array",

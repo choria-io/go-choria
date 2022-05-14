@@ -21,7 +21,7 @@ type Parent struct {
 	def *ParentCommand
 }
 
-func NewParentCommand(j json.RawMessage, _ interface{}) (*Parent, error) {
+func NewParentCommand(_ *AppBuilder, j json.RawMessage) (*Parent, error) {
 	parent := &Parent{
 		def: &ParentCommand{},
 	}

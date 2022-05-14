@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/inter"
@@ -35,29 +36,31 @@ type RPCFlag struct {
 type RPCRequest struct {
 	Agent  string            `json:"agent"`
 	Action string            `json:"action"`
-	Params map[string]string `json:"params"`
+	Params map[string]string `json:"inputs"`
 }
 
 type RPCCommand struct {
-	StandardFilter    bool                       `json:"std_filters"`
-	OutputFormatFlags bool                       `json:"output_format_flags"`
-	OutputFormat      string                     `json:"output_format"`
-	Display           string                     `json:"display"`
-	DisplayFlag       bool                       `json:"display_flag"`
-	BatchFlags        bool                       `json:"batch_flags"`
-	BatchSize         int                        `json:"batch"`
-	BatchSleep        int                        `json:"batch_sleep"`
-	NoProgress        bool                       `json:"no_progress"`
-	Arguments         []GenericArgument          `json:"arguments"`
-	Flags             []RPCFlag                  `json:"flags"`
-	Request           RPCRequest                 `json:"request"`
-	Filter            *discovery.StandardOptions `json:"filter"`
+	StandardFilter        bool                       `json:"std_filters"`
+	OutputFormatFlags     bool                       `json:"output_format_flags"`
+	OutputFormat          string                     `json:"output_format"`
+	Display               string                     `json:"display"`
+	DisplayFlag           bool                       `json:"display_flag"`
+	BatchFlags            bool                       `json:"batch_flags"`
+	BatchSize             int                        `json:"batch"`
+	BatchSleep            int                        `json:"batch_sleep"`
+	NoProgress            bool                       `json:"no_progress"`
+	AllNodesConfirmPrompt string                     `json:"all_nodes_confirm_prompt"`
+	Arguments             []GenericArgument          `json:"arguments"`
+	Flags                 []RPCFlag                  `json:"flags"`
+	Request               RPCRequest                 `json:"request"`
+	Filter                *discovery.StandardOptions `json:"filter"`
 
 	StandardCommand
 	StandardSubCommands
 }
 
 type RPC struct {
+	b           *AppBuilder
 	cmd         *kingpin.CmdClause
 	fo          *discovery.StandardOptions
 	def         *RPCCommand
@@ -74,13 +77,14 @@ type RPC struct {
 	ctx         context.Context
 }
 
-func NewRPCCommand(ctx context.Context, j json.RawMessage, cfg interface{}) (*RPC, error) {
+func NewRPCCommand(b *AppBuilder, j json.RawMessage) (*RPC, error) {
 	rpc := &RPC{
 		Arguments: map[string]*string{},
 		Flags:     map[string]*string{},
 		def:       &RPCCommand{},
-		cfg:       cfg,
-		ctx:       ctx,
+		cfg:       b.cfg,
+		ctx:       b.ctx,
+		b:         b,
 	}
 
 	err := json.Unmarshal(j, rpc.def)
@@ -96,7 +100,7 @@ func (r *RPC) SubCommands() []json.RawMessage {
 }
 
 func (r *RPC) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
-	r.cmd = app.Command(r.def.Name, r.def.Description).Action(r.runCommand)
+	r.cmd = app.Command(r.def.Name, r.def.Description).Action(r.b.runWrapper(r.def.StandardCommand, r.runCommand))
 	for _, a := range r.def.Aliases {
 		r.cmd.Alias(a)
 	}
@@ -270,13 +274,30 @@ func (r *RPC) runCommand(_ *kingpin.ParseContext) error {
 		mu.Unlock()
 	}))
 
-	start := time.Now()
-
 	if r.fo == nil {
 		r.fo = discovery.NewStandardOptions()
 	}
 
 	r.fo.SetDefaultsFromChoria(fw)
+
+	if r.def.AllNodesConfirmPrompt != "" && r.fo.NodesFile == "" {
+		f, err := r.fo.NewFilter(r.def.Request.Agent)
+		if err != nil {
+			return err
+		}
+		if f.Empty() {
+			ans := false
+			err := survey.AskOne(&survey.Confirm{Message: r.def.AllNodesConfirmPrompt, Default: false}, &ans)
+			if err != nil {
+				return err
+			}
+			if !ans {
+				return fmt.Errorf("aborted")
+			}
+		}
+	}
+
+	start := time.Now()
 	targets, dt, err = r.fo.Discover(r.ctx, fw, r.def.Request.Agent, true, noisy, log)
 	if err != nil {
 		return err

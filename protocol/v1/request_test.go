@@ -36,7 +36,11 @@ var _ = Describe("Request", func() {
 
 		filter.AddAgentFilter("rpcutil")
 		filter, filtered = request.Filter()
+		Expect(filtered).To(BeFalse())
+		Expect(filter).ToNot(BeNil())
 
+		filter.AddAgentFilter("other")
+		filter, filtered = request.Filter()
 		Expect(filtered).To(BeTrue())
 		Expect(filter).ToNot(BeNil())
 	})
