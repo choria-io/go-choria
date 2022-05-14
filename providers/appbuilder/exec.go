@@ -30,13 +30,17 @@ type Exec struct {
 	def       *ExecCommand
 	cfg       interface{}
 	ctx       context.Context
+	b         *AppBuilder
 }
 
-func NewExecCommand(ctx context.Context, j json.RawMessage, cfg interface{}) (*Exec, error) {
+func NewExecCommand(b *AppBuilder, j json.RawMessage) (*Exec, error) {
 	exec := &Exec{
-		def: &ExecCommand{},
-		cfg: cfg,
-		ctx: ctx,
+		def:       &ExecCommand{},
+		cfg:       b.cfg,
+		ctx:       b.ctx,
+		b:         b,
+		Arguments: map[string]*string{},
+		Flags:     map[string]*string{},
 	}
 
 	err := json.Unmarshal(j, exec.def)
@@ -52,7 +56,7 @@ func (r *Exec) SubCommands() []json.RawMessage {
 }
 
 func (r *Exec) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
-	r.cmd = app.Command(r.def.Name, r.def.Description).Action(r.runCommand)
+	r.cmd = app.Command(r.def.Name, r.def.Description).Action(r.b.runWrapper(r.def.StandardCommand, r.runCommand))
 	for _, a := range r.def.Aliases {
 		r.cmd.Alias(a)
 	}

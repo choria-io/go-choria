@@ -8,9 +8,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/internal/util"
+	"github.com/nats-io/nats.go"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -25,6 +28,7 @@ type KVCommand struct {
 }
 
 type KV struct {
+	b         *AppBuilder
 	Arguments map[string]*string
 	Flags     map[string]*string
 	cmd       *kingpin.CmdClause
@@ -33,11 +37,14 @@ type KV struct {
 	ctx       context.Context
 }
 
-func NewKVCommand(ctx context.Context, j json.RawMessage, cfg interface{}) (*KV, error) {
+func NewKVCommand(b *AppBuilder, j json.RawMessage) (*KV, error) {
 	kv := &KV{
-		def: &KVCommand{},
-		cfg: cfg,
-		ctx: ctx,
+		def:       &KVCommand{},
+		cfg:       b.cfg,
+		ctx:       b.ctx,
+		b:         b,
+		Arguments: map[string]*string{},
+		Flags:     map[string]*string{},
 	}
 
 	err := json.Unmarshal(j, kv.def)
@@ -53,7 +60,7 @@ func (r *KV) SubCommands() []json.RawMessage {
 }
 
 func (r *KV) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
-	r.cmd = app.Command(r.def.Name, r.def.Description).Action(r.runCommand)
+	r.cmd = app.Command(r.def.Name, r.def.Description).Action(r.b.runWrapper(r.def.StandardCommand, r.runCommand))
 	for _, a := range r.def.Aliases {
 		r.cmd.Alias(a)
 	}
@@ -119,6 +126,37 @@ func (r *KV) runCommand(_ *kingpin.ParseContext) error {
 			return err
 		}
 		fmt.Printf("Deleted key %s\n", r.def.Key)
+
+	case "history":
+		history, err := kv.History(r.def.Key)
+		if err != nil {
+			return err
+		}
+
+		table := util.NewUTF8Table("Seq", "Operation", "Time", "Length", "Value")
+		for _, r := range history {
+			val := util.Base64IfNotPrintable(r.Value())
+			if len(val) > 40 {
+				val = fmt.Sprintf("%s...%s", val[0:15], val[len(val)-15:])
+			}
+
+			var op string
+
+			switch r.Operation() {
+			case nats.KeyValuePurge:
+				op = "PURGE"
+			case nats.KeyValueDelete:
+				op = "DELETE"
+			case nats.KeyValuePut:
+				op = "PUT"
+			default:
+				op = r.Operation().String()
+			}
+
+			table.AddRow(r.Revision(), op, r.Created().Format(time.RFC822), len(r.Value()), val)
+		}
+
+		fmt.Println(table.Render())
 	}
 
 	return nil

@@ -239,15 +239,10 @@ func (r *request) Filter() (filter *protocol.Filter, filtered bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if r.Envelope.Filter.Empty() {
-		filtered = false
-	} else {
-		filtered = true
-	}
-
+	filtered = !r.Envelope.Filter.Empty()
 	filter = r.Envelope.Filter
 
-	return
+	return filter, filtered
 }
 
 // NewFilter creates a new empty filter and sets it

@@ -15,6 +15,7 @@ import (
 	"strings"
 	"text/template"
 
+	"github.com/AlecAivazis/survey/v2"
 	"github.com/adrg/xdg"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/inter"
@@ -29,12 +30,13 @@ import (
 )
 
 type StandardCommand struct {
-	Name        string            `json:"name"`
-	Description string            `json:"description"`
-	Aliases     []string          `json:"aliases"`
-	Type        string            `json:"type"`
-	Arguments   []GenericArgument `json:"args"`
-	Flags       []GenericFlag     `json:"flags"`
+	Name          string            `json:"name"`
+	Description   string            `json:"description"`
+	Aliases       []string          `json:"aliases"`
+	Type          string            `json:"type"`
+	Arguments     []GenericArgument `json:"args"`
+	Flags         []GenericFlag     `json:"flags"`
+	ConfirmPrompt string            `json:"confirm_prompt"`
 }
 
 type StandardSubCommands struct {
@@ -248,15 +250,32 @@ func (b *AppBuilder) createCommand(def json.RawMessage) (command, error) {
 
 	switch t.String() {
 	case "rpc":
-		return NewRPCCommand(b.ctx, def, b.cfg)
+		return NewRPCCommand(b, def)
 	case "parent":
-		return NewParentCommand(def, b.cfg)
+		return NewParentCommand(b, def)
 	case "kv":
-		return NewKVCommand(b.ctx, def, b.cfg)
+		return NewKVCommand(b, def)
 	case "exec":
-		return NewExecCommand(b.ctx, def, b.cfg)
+		return NewExecCommand(b, def)
 	default:
 		return nil, fmt.Errorf("unknown command type %q", t.String())
+	}
+}
+
+func (b *AppBuilder) runWrapper(cmd StandardCommand, handler kingpin.Action) kingpin.Action {
+	return func(pc *kingpin.ParseContext) error {
+		if cmd.ConfirmPrompt != "" {
+			ans := false
+			err := survey.AskOne(&survey.Confirm{Message: cmd.ConfirmPrompt, Default: false}, &ans)
+			if err != nil {
+				return err
+			}
+			if !ans {
+				return fmt.Errorf("aborted")
+			}
+		}
+
+		return handler(pc)
 	}
 }
 
@@ -346,6 +365,14 @@ func parseStateTemplate(body string, args interface{}, flags interface{}, cfg in
 		},
 		"escape": func(v string) string {
 			return shellescape.Quote(v)
+		},
+		"read_file": func(v string) (string, error) {
+			b, err := os.ReadFile(v)
+			if err != nil {
+				return "", err
+			}
+
+			return string(b), nil
 		},
 	}
 

@@ -184,7 +184,7 @@ func (f *Filter) Empty() bool {
 		return true
 	}
 
-	if len(f.Fact) == 0 && len(f.Class) == 0 && len(f.Agent) == 0 && len(f.Identity) == 0 && len(f.Compound) == 0 {
+	if len(f.Fact) == 0 && len(f.Class) == 0 && (len(f.Agent) == 0 || len(f.Agent) == 1) && len(f.Identity) == 0 && len(f.Compound) == 0 {
 		return true
 	}
 
