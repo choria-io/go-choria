@@ -302,12 +302,12 @@
               }
             },
             "filter": {
-              "description": "Optional filters to apply to the request, can not be combined with std_filters",
+              "description": "Optional filters to apply to the request, will be merged with standard options if set",
               "$ref": "#/definitions/rpc_filter"
             },
             "std_filters": {
               "type": "boolean",
-              "description": "Enables standard RPC filters like -C, -I etc, can not be combined with filters",
+              "description": "Enables standard RPC filters like -C, -I etc",
               "default": false
             },
             "output_format_flags": {

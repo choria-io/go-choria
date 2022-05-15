@@ -54,6 +54,35 @@ func NewStandardOptions() *StandardOptions {
 	}
 }
 
+// Merge merges opt with the settings here, when a basic setting is
+// set in opt it will overwrite the one here, when its a filter like
+// a list or map it will extend ours with its values.
+func (o *StandardOptions) Merge(opt *StandardOptions) {
+	if opt.Collective != "" {
+		o.Collective = opt.Collective
+	}
+	o.FactFilter = append(o.FactFilter, opt.FactFilter...)
+	o.AgentFilter = append(o.AgentFilter, opt.AgentFilter...)
+	o.ClassFilter = append(o.ClassFilter, opt.ClassFilter...)
+	o.IdentityFilter = append(o.IdentityFilter, opt.IdentityFilter...)
+	o.CombinedFilter = append(o.CombinedFilter, opt.CombinedFilter...)
+	if opt.CompoundFilter != "" {
+		o.CompoundFilter = opt.CompoundFilter
+	}
+	if opt.DiscoveryMethod != "" {
+		o.DiscoveryMethod = opt.DiscoveryMethod
+	}
+	if opt.DiscoveryTimeout > 0 {
+		o.DiscoveryTimeout = opt.DiscoveryTimeout
+	}
+	if opt.NodesFile != "" {
+		o.NodesFile = opt.NodesFile
+	}
+	for k, v := range opt.DiscoveryOptions {
+		o.DiscoveryOptions[k] = v
+	}
+}
+
 // AddSelectionFlags adds the --dm and --discovery-timeout options
 func (o *StandardOptions) AddSelectionFlags(app inter.FlagApp) {
 	app.Flag("dm", "Sets a discovery method (mc, choria, file, external, inventory)").EnumVar(&o.DiscoveryMethod, "broadcast", "choria", "mc", "file", "flatfile", "external", "inventory")
