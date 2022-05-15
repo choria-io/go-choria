@@ -136,18 +136,11 @@ func (r *RPC) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
 		return nil, fmt.Errorf("invalid output format %q, valid formats are senders, json and table", r.def.OutputFormat)
 	}
 
-	switch {
-	case r.def.StandardFilter && r.def.Filter != nil:
-		return nil, fmt.Errorf("only one of std_filters and filter may be supplied in command %s", r.def.Name)
-
-	case r.def.StandardFilter:
+	if r.def.StandardFilter {
 		r.fo = discovery.NewStandardOptions()
 		r.fo.AddFilterFlags(r.cmd)
 		r.fo.AddFlatFileFlags(r.cmd)
 		r.fo.AddSelectionFlags(r.cmd)
-
-	case r.def.Filter != nil:
-		r.fo = r.def.Filter
 	}
 
 	switch {
@@ -276,6 +269,10 @@ func (r *RPC) runCommand(_ *kingpin.ParseContext) error {
 
 	if r.fo == nil {
 		r.fo = discovery.NewStandardOptions()
+	}
+
+	if r.def.Filter != nil {
+		r.fo.Merge(r.def.Filter)
 	}
 
 	r.fo.SetDefaultsFromChoria(fw)
