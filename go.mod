@@ -26,10 +26,10 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.0.32-0.20220506065209-61a1b67e1c24
-	github.com/nats-io/nats-server/v2 v2.8.3-0.20220507195202-b47de12bbd92
-	github.com/nats-io/nats.go v1.15.0
-	github.com/nats-io/natscli v0.0.33-0.20220509091523-0ae0f2f80055
+	github.com/nats-io/jsm.go v0.0.32-0.20220513090927-15c2dbec2581
+	github.com/nats-io/nats-server/v2 v2.8.3-0.20220512230344-3aa7965ad7e5
+	github.com/nats-io/nats.go v1.15.1-0.20220510154044-144a3b25a04c
+	github.com/nats-io/natscli v0.0.33-0.20220513120614-5449781755c0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.19.0
@@ -43,7 +43,7 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/atomic v1.9.0
-	golang.org/x/crypto v0.0.0-20220507011949-2cf3adece122
+	golang.org/x/crypto v0.0.0-20220511200225-c6db032c6c88
 	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6
 	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171
 	golang.org/x/text v0.3.7
@@ -81,7 +81,7 @@ require (
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.15.2 // indirect
+	github.com/klauspost/compress v1.15.4 // indirect
 	github.com/lucasb-eyer/go-colorful v1.0.3 // indirect
 	github.com/mattn/go-colorable v0.1.12 // indirect
 	github.com/mattn/go-isatty v0.0.14 // indirect
@@ -101,7 +101,7 @@ require (
 	github.com/oleiade/reflections v1.0.1 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/common v0.33.0 // indirect
+	github.com/prometheus/common v0.34.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20200313005456-10cdbea86bc0 // indirect
 	github.com/rivo/uniseg v0.1.0 // indirect
