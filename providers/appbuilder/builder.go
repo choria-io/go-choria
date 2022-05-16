@@ -64,7 +64,7 @@ type GenericFlag struct {
 	Name        string `json:"name"`
 	Description string `json:"description"`
 	Required    bool   `json:"required"`
-	PlaceHolder string `json:"place_holder"`
+	PlaceHolder string `json:"placeholder"`
 }
 
 type templateState struct {
@@ -373,6 +373,13 @@ func parseStateTemplate(body string, args interface{}, flags interface{}, cfg in
 			}
 
 			return string(b), nil
+		},
+		"default": func(v string, dflt string) string {
+			if v != "" {
+				return v
+			}
+
+			return dflt
 		},
 	}
 
