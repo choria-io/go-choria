@@ -258,6 +258,8 @@ func (b *AppBuilder) createCommand(def json.RawMessage) (command, error) {
 		return NewKVCommand(b, def)
 	case "exec":
 		return NewExecCommand(b, def)
+	case "discover":
+		return NewDiscoverCommand(b, def)
 	default:
 		return nil, fmt.Errorf("unknown command type %q", t.String())
 	}
