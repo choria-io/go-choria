@@ -18,8 +18,10 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/client"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 	"github.com/gosuri/uiprogress"
+	"github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
@@ -100,19 +102,7 @@ func (r *RPC) SubCommands() []json.RawMessage {
 }
 
 func (r *RPC) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
-	r.cmd = app.Command(r.def.Name, r.def.Description).Action(r.b.runWrapper(r.def.StandardCommand, r.runCommand))
-	for _, a := range r.def.Aliases {
-		r.cmd.Alias(a)
-	}
-
-	for _, a := range r.def.Arguments {
-		arg := r.cmd.Arg(a.Name, a.Description)
-		if a.Required {
-			arg.Required()
-		}
-
-		r.Arguments[a.Name] = arg.String()
-	}
+	r.cmd = createStandardCommand(app, r.b, &r.def.StandardCommand, r.Arguments, nil, r.runCommand)
 
 	switch {
 	case r.def.OutputFormatFlags && r.def.OutputFormat != "":
@@ -216,65 +206,12 @@ func (r *RPC) setupFilter(fw inter.Framework) error {
 	}
 
 	if r.def.Filter != nil {
-		f := r.def.Filter
-
-		if f.Collective != "" {
-			f.Collective, err = r.parseStateTemplate(f.Collective)
-			if err != nil {
-				return err
-			}
+		err = processStdDiscoveryOptions(r.def.Filter, r.Arguments, r.Flags, r.cfg)
+		if err != nil {
+			return err
 		}
 
-		if f.NodesFile != "" {
-			f.NodesFile, err = r.parseStateTemplate(f.NodesFile)
-			if err != nil {
-				return err
-			}
-		}
-
-		if f.CompoundFilter != "" {
-			f.CompoundFilter, err = r.parseStateTemplate(f.CompoundFilter)
-			if err != nil {
-				return err
-			}
-		}
-
-		for i, item := range f.CombinedFilter {
-			f.CombinedFilter[i], err = r.parseStateTemplate(item)
-			if err != nil {
-				return err
-			}
-		}
-
-		for i, item := range f.IdentityFilter {
-			f.IdentityFilter[i], err = r.parseStateTemplate(item)
-			if err != nil {
-				return err
-			}
-		}
-
-		for i, item := range f.AgentFilter {
-			f.AgentFilter[i], err = r.parseStateTemplate(item)
-			if err != nil {
-				return err
-			}
-		}
-
-		for i, item := range f.ClassFilter {
-			f.ClassFilter[i], err = r.parseStateTemplate(item)
-			if err != nil {
-				return err
-			}
-		}
-
-		for i, item := range f.FactFilter {
-			f.FactFilter[i], err = r.parseStateTemplate(item)
-			if err != nil {
-				return err
-			}
-		}
-
-		r.fo.Merge(f)
+		r.fo.Merge(r.def.Filter)
 	}
 
 	r.fo.SetDefaultsFromChoria(fw)
@@ -330,13 +267,7 @@ func (r *RPC) runCommand(_ *kingpin.ParseContext) error {
 		return err
 	}
 
-	// todo: surface rpc command somewhere as learning aid
-	_, inputs, opts, err := r.choriaCommand()
-	if err != nil {
-		return err
-	}
-
-	rpcInputs, _, err := action.ValidateAndConvertToDDLTypes(inputs)
+	_, rpcInputs, opts, err := r.reqOptions(action)
 	if err != nil {
 		return err
 	}
@@ -396,6 +327,16 @@ func (r *RPC) runCommand(_ *kingpin.ParseContext) error {
 		fmt.Println()
 	}
 
+	err = r.renderResults(fw, log, results, action)
+	if err != nil {
+		return err
+	}
+
+	return nil
+
+}
+
+func (r *RPC) renderResults(fw inter.Framework, log *logrus.Entry, results *replyfmt.RPCResults, action *agent.Action) (err error) {
 	switch {
 	case r.senders:
 		err = results.RenderNames(os.Stdout, r.json, false)
@@ -418,16 +359,11 @@ func (r *RPC) runCommand(_ *kingpin.ParseContext) error {
 
 		err = results.RenderTXT(os.Stdout, action, false, false, mode, fw.Configuration().Color, log)
 	}
-	if err != nil {
-		return err
-	}
 
-	return nil
-
+	return err
 }
 
-func (r *RPC) choriaCommand() (cmd []string, inputs map[string]string, opts []client.RequestOption, err error) {
-	var params []string
+func (r *RPC) reqOptions(action *agent.Action) (inputs map[string]string, rpcInputs map[string]interface{}, opts []client.RequestOption, err error) {
 	opts = []client.RequestOption{}
 	inputs = map[string]string{}
 
@@ -437,68 +373,7 @@ func (r *RPC) choriaCommand() (cmd []string, inputs map[string]string, opts []cl
 			return nil, nil, nil, err
 		}
 		if len(body) > 0 {
-			params = append(params, fmt.Sprintf("%s=%s", k, body))
 			inputs[k] = body
-		}
-	}
-
-	if r.senders {
-		params = append(params, "--senders")
-	}
-	if r.json {
-		params = append(params, "--json")
-	}
-	if r.table {
-		params = append(params, "--table")
-	}
-	if r.display != "" {
-		params = append(params, "--display", r.display)
-	}
-
-	if r.batch > 0 {
-		opts = append(opts, client.InBatches(r.batch, r.batchSleep))
-		params = append(params, "--batch", fmt.Sprintf("%d", r.batch))
-		if r.batchSleep > 0 {
-			params = append(params, "--batch-sleep", fmt.Sprintf("%d", r.batchSleep))
-
-		}
-	}
-
-	if r.fo != nil {
-		opt := r.fo
-		if opt.DynamicDiscoveryTimeout {
-			params = append(params, "--discovery-window")
-		}
-		if opt.Collective != "" {
-			params = append(params, "-T", opt.Collective)
-		}
-		for _, f := range opt.AgentFilter {
-			params = append(params, "-A", f)
-		}
-		for _, f := range opt.ClassFilter {
-			params = append(params, "-C", f)
-		}
-		for _, f := range opt.FactFilter {
-			params = append(params, "-F", f)
-		}
-		for _, f := range opt.CombinedFilter {
-			params = append(params, "-W", f)
-		}
-		for _, f := range opt.IdentityFilter {
-			params = append(params, "-I", f)
-		}
-		for k, v := range opt.DiscoveryOptions {
-			params = append(params, "--do", fmt.Sprintf("%s=%s", k, v))
-		}
-		if opt.NodesFile != "" {
-			params = append(params, "--nodes", opt.NodesFile)
-		}
-		if opt.CompoundFilter != "" {
-			params = append(params, "-S", opt.CompoundFilter)
-		}
-
-		if opt.DiscoveryMethod != "" {
-			params = append(params, "--dm", opt.DiscoveryMethod)
 		}
 	}
 
@@ -523,15 +398,16 @@ func (r *RPC) choriaCommand() (cmd []string, inputs map[string]string, opts []cl
 		}
 	}
 
-	cmd = []string{"choria", "req", r.def.Request.Agent, r.def.Request.Action}
-
-	cmd = append(cmd, params...)
 	if filter != "" {
 		opts = append(opts, client.ReplyExprFilter(filter))
-		cmd = append(cmd, "--filter-replies", filter)
 	}
 
-	return cmd, inputs, opts, nil
+	rpcInputs, _, err = action.ValidateAndConvertToDDLTypes(inputs)
+	if err != nil {
+		return nil, nil, nil, err
+	}
+
+	return inputs, rpcInputs, opts, nil
 }
 
 func (r *RPC) parseStateTemplate(body string) (string, error) {
