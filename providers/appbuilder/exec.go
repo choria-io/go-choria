@@ -56,30 +56,7 @@ func (r *Exec) SubCommands() []json.RawMessage {
 }
 
 func (r *Exec) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
-	r.cmd = app.Command(r.def.Name, r.def.Description).Action(r.b.runWrapper(r.def.StandardCommand, r.runCommand))
-	for _, a := range r.def.Aliases {
-		r.cmd.Alias(a)
-	}
-
-	for _, a := range r.def.Arguments {
-		arg := r.cmd.Arg(a.Name, a.Description)
-		if a.Required {
-			arg.Required()
-		}
-
-		r.Arguments[a.Name] = arg.String()
-	}
-
-	for _, f := range r.def.Flags {
-		flag := r.cmd.Flag(f.Name, f.Description)
-		if f.Required {
-			flag.Required()
-		}
-		if f.PlaceHolder != "" {
-			flag.PlaceHolder(f.PlaceHolder)
-		}
-		r.Flags[f.Name] = flag.String()
-	}
+	r.cmd = createStandardCommand(app, r.b, &r.def.StandardCommand, r.Arguments, r.Flags, r.runCommand)
 
 	return r.cmd, nil
 }

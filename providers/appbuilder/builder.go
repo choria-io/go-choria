@@ -18,6 +18,7 @@ import (
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/adrg/xdg"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/choria-io/go-choria/internal/util"
@@ -395,4 +396,99 @@ func parseStateTemplate(body string, args interface{}, flags interface{}, cfg in
 	}
 
 	return b.String(), nil
+}
+
+func createStandardCommand(app inter.FlagApp, b *AppBuilder, sc *StandardCommand, arguments map[string]*string, flags map[string]*string, cb kingpin.Action) *kingpin.CmdClause {
+	cmd := app.Command(sc.Name, sc.Description).Action(b.runWrapper(*sc, cb))
+	for _, a := range sc.Aliases {
+		cmd.Alias(a)
+	}
+
+	if arguments != nil {
+		for _, a := range sc.Arguments {
+			arg := cmd.Arg(a.Name, a.Description)
+			if a.Required {
+				arg.Required()
+			}
+
+			arguments[a.Name] = arg.String()
+		}
+	}
+
+	if flags != nil {
+		for _, f := range sc.Flags {
+			flag := cmd.Flag(f.Name, f.Description)
+			if f.Required {
+				flag.Required()
+			}
+			if f.PlaceHolder != "" {
+				flag.PlaceHolder(f.PlaceHolder)
+			}
+			flags[f.Name] = flag.String()
+		}
+	}
+
+	return cmd
+}
+
+func processStdDiscoveryOptions(f *discovery.StandardOptions, arguments interface{}, flags interface{}, config interface{}) error {
+	var err error
+
+	if f.Collective != "" {
+		f.Collective, err = parseStateTemplate(f.Collective, arguments, flags, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	if f.NodesFile != "" {
+		f.NodesFile, err = parseStateTemplate(f.NodesFile, arguments, flags, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	if f.CompoundFilter != "" {
+		f.CompoundFilter, err = parseStateTemplate(f.CompoundFilter, arguments, flags, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	for i, item := range f.CombinedFilter {
+		f.CombinedFilter[i], err = parseStateTemplate(item, arguments, flags, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	for i, item := range f.IdentityFilter {
+		f.IdentityFilter[i], err = parseStateTemplate(item, arguments, flags, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	for i, item := range f.AgentFilter {
+		f.AgentFilter[i], err = parseStateTemplate(item, arguments, flags, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	for i, item := range f.ClassFilter {
+		f.ClassFilter[i], err = parseStateTemplate(item, arguments, flags, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	for i, item := range f.FactFilter {
+		f.FactFilter[i], err = parseStateTemplate(item, arguments, flags, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
 }

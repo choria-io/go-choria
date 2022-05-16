@@ -61,33 +61,10 @@ func (r *KV) SubCommands() []json.RawMessage {
 }
 
 func (r *KV) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
-	r.cmd = app.Command(r.def.Name, r.def.Description).Action(r.b.runWrapper(r.def.StandardCommand, r.runCommand))
-	for _, a := range r.def.Aliases {
-		r.cmd.Alias(a)
-	}
-
-	for _, a := range r.def.Arguments {
-		arg := r.cmd.Arg(a.Name, a.Description)
-		if a.Required {
-			arg.Required()
-		}
-
-		r.Arguments[a.Name] = arg.String()
-	}
+	r.cmd = createStandardCommand(app, r.b, &r.def.StandardCommand, r.Arguments, r.Flags, r.runCommand)
 
 	if r.def.Action == "get" || r.def.Action == "history" && !r.def.RenderJSON {
 		r.cmd.Flag("json", "Renders results in JSON format").BoolVar(&r.def.RenderJSON)
-	}
-
-	for _, f := range r.def.Flags {
-		flag := r.cmd.Flag(f.Name, f.Description)
-		if f.Required {
-			flag.Required()
-		}
-		if f.PlaceHolder != "" {
-			flag.PlaceHolder(f.PlaceHolder)
-		}
-		r.Flags[f.Name] = flag.String()
 	}
 
 	return r.cmd, nil
