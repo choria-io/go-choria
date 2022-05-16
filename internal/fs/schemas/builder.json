@@ -4,7 +4,13 @@
   "title": "io.choria.builder.v1.application",
   "description": "Choria Builder Application Specification",
   "type": "object",
-  "required": ["name","description","version","author","commands"],
+  "required": [
+    "name",
+    "description",
+    "version",
+    "author",
+    "commands"
+  ],
   "definitions": {
     "shortname": {
       "type": "string",
@@ -62,8 +68,8 @@
           }
         },
         "compound": {
-          "type": "array",
-          "description": "List of compound filters to use, as typed in -S filters on the CLI",
+          "type": "string",
+          "description": "Compound filter to use, as typed in -S filters on the CLI",
           "items": {
             "type": "string"
           }
@@ -71,7 +77,16 @@
         "discovery_method": {
           "type": "string",
           "description": "The discovery method to use",
-          "enum": ["mc","broadcast","choria","puppetdb","external","flatfile","file","inventory"]
+          "enum": [
+            "mc",
+            "broadcast",
+            "choria",
+            "puppetdb",
+            "external",
+            "flatfile",
+            "file",
+            "inventory"
+          ]
         },
         "discovery_timeout": {
           "type": "integer",
@@ -97,7 +112,11 @@
     },
     "standard_command": {
       "type": "object",
-      "required": ["name","description","type"],
+      "required": [
+        "name",
+        "description",
+        "type"
+      ],
       "properties": {
         "name": {
           "type": "string",
@@ -109,7 +128,7 @@
         },
         "confirm_prompt": {
           "type": "string",
-          "default": "When set always confirms the operation using the value as prompt"
+          "description": "When set always confirms the operation using the value as prompt"
         }
       }
     },
@@ -120,7 +139,10 @@
     },
     "generic_flag": {
       "type": "object",
-      "required": ["name","description"],
+      "required": [
+        "name",
+        "description"
+      ],
       "properties": {
         "name": {
           "description": "A unique name for this flag",
@@ -140,9 +162,12 @@
         }
       }
     },
-    "generic_argument":{
+    "generic_argument": {
       "type": "object",
-      "required": ["name","description"],
+      "required": [
+        "name",
+        "description"
+      ],
       "properties": {
         "name": {
           "description": "A unique name for this argument",
@@ -162,10 +187,18 @@
       "type": "array",
       "items": {
         "anyOf": [
-          {"$ref": "#/definitions/rpc_command"},
-          {"$ref": "#/definitions/parent_command"},
-          {"$ref": "#/definitions/kv_command"},
-          {"$ref": "#/definitions/exec_command"}
+          {
+            "$ref": "#/definitions/rpc_command"
+          },
+          {
+            "$ref": "#/definitions/parent_command"
+          },
+          {
+            "$ref": "#/definitions/kv_command"
+          },
+          {
+            "$ref": "#/definitions/exec_command"
+          }
         ]
       }
     },
@@ -174,10 +207,14 @@
       "description": "A command that does not do anything but serves as a anchor for sub commands",
       "additionalItems": false,
       "allOf": [
-        {"$ref":"#/definitions/standard_command"},
+        {
+          "$ref": "#/definitions/standard_command"
+        },
         {
           "type": "object",
-          "required": ["type"],
+          "required": [
+            "type"
+          ],
           "properties": {
             "type": {
               "type": "string",
@@ -197,10 +234,15 @@
       "description": "A command that calls an external script",
       "additionalItems": false,
       "allOf": [
-        {"$ref":"#/definitions/standard_command"},
+        {
+          "$ref": "#/definitions/standard_command"
+        },
         {
           "type": "object",
-          "required": ["type", "command"],
+          "required": [
+            "type",
+            "command"
+          ],
           "properties": {
             "type": {
               "type": "string",
@@ -224,10 +266,17 @@
       "description": "A command that interact with the Choria Key-Value store",
       "additionalItems": false,
       "allOf": [
-        {"$ref":"#/definitions/standard_command"},
+        {
+          "$ref": "#/definitions/standard_command"
+        },
         {
           "type": "object",
-          "required": ["type","action","bucket","key"],
+          "required": [
+            "type",
+            "action",
+            "bucket",
+            "key"
+          ],
           "properties": {
             "type": {
               "type": "string",
@@ -255,7 +304,12 @@
             "action": {
               "type": "string",
               "description": "The action to perform against the bucket and key",
-              "enum": ["get","put","del", "history"]
+              "enum": [
+                "get",
+                "put",
+                "del",
+                "history"
+              ]
             },
             "json": {
               "type": "boolean",
@@ -270,10 +324,14 @@
       "type": "object",
       "additionalItems": false,
       "allOf": [
-        {"$ref":"#/definitions/standard_command"},
+        {
+          "$ref": "#/definitions/standard_command"
+        },
         {
           "type": "object",
-          "required": ["type"],
+          "required": [
+            "type"
+          ],
           "properties": {
             "type": {
               "type": "string",
@@ -323,7 +381,11 @@
             "output_format": {
               "type": "string",
               "description": "Sets a specific output format, not compatible with output_format_flags",
-              "enum": ["senders", "json", "table"]
+              "enum": [
+                "senders",
+                "json",
+                "table"
+              ]
             },
             "display_flag": {
               "type": "boolean",
@@ -333,7 +395,12 @@
             "display": {
               "type": "string",
               "description": "Force a specific display format to be used, not compatible with display_flags",
-              "enum": ["ok", "failed", "all", "none"]
+              "enum": [
+                "ok",
+                "failed",
+                "all",
+                "none"
+              ]
             },
             "no_progress": {
               "type": "boolean",
@@ -368,11 +435,13 @@
               "description": "List of flags to add to the command",
               "items": {
                 "allOf": [
-                  { "$ref":"#/definitions/generic_flag"},
+                  {
+                    "$ref": "#/definitions/generic_flag"
+                  },
                   {
                     "type": "object",
                     "properties": {
-                      "reply_filter":{
+                      "reply_filter": {
                         "type": "string",
                         "description": "Choria reply filter"
                       }

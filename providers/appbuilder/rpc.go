@@ -208,6 +208,97 @@ func (r *RPC) configureProgressBar(fw inter.Framework, count int, expected int) 
 	uiprogress.Start()
 }
 
+func (r *RPC) setupFilter(fw inter.Framework) error {
+	var err error
+
+	if r.fo == nil {
+		r.fo = discovery.NewStandardOptions()
+	}
+
+	if r.def.Filter != nil {
+		f := r.def.Filter
+
+		if f.Collective != "" {
+			f.Collective, err = r.parseStateTemplate(f.Collective)
+			if err != nil {
+				return err
+			}
+		}
+
+		if f.NodesFile != "" {
+			f.NodesFile, err = r.parseStateTemplate(f.NodesFile)
+			if err != nil {
+				return err
+			}
+		}
+
+		if f.CompoundFilter != "" {
+			f.CompoundFilter, err = r.parseStateTemplate(f.CompoundFilter)
+			if err != nil {
+				return err
+			}
+		}
+
+		for i, item := range f.CombinedFilter {
+			f.CombinedFilter[i], err = r.parseStateTemplate(item)
+			if err != nil {
+				return err
+			}
+		}
+
+		for i, item := range f.IdentityFilter {
+			f.IdentityFilter[i], err = r.parseStateTemplate(item)
+			if err != nil {
+				return err
+			}
+		}
+
+		for i, item := range f.AgentFilter {
+			f.AgentFilter[i], err = r.parseStateTemplate(item)
+			if err != nil {
+				return err
+			}
+		}
+
+		for i, item := range f.ClassFilter {
+			f.ClassFilter[i], err = r.parseStateTemplate(item)
+			if err != nil {
+				return err
+			}
+		}
+
+		for i, item := range f.FactFilter {
+			f.FactFilter[i], err = r.parseStateTemplate(item)
+			if err != nil {
+				return err
+			}
+		}
+
+		r.fo.Merge(f)
+	}
+
+	r.fo.SetDefaultsFromChoria(fw)
+
+	if r.def.AllNodesConfirmPrompt != "" && r.fo.NodesFile == "" {
+		f, err := r.fo.NewFilter(r.def.Request.Agent)
+		if err != nil {
+			return err
+		}
+		if f.Empty() {
+			ans := false
+			err := survey.AskOne(&survey.Confirm{Message: r.def.AllNodesConfirmPrompt, Default: false}, &ans)
+			if err != nil {
+				return err
+			}
+			if !ans {
+				return fmt.Errorf("aborted")
+			}
+		}
+	}
+
+	return nil
+}
+
 func (r *RPC) runCommand(_ *kingpin.ParseContext) error {
 	var (
 		noisy   = !(r.json || r.senders || r.def.NoProgress)
@@ -267,31 +358,9 @@ func (r *RPC) runCommand(_ *kingpin.ParseContext) error {
 		mu.Unlock()
 	}))
 
-	if r.fo == nil {
-		r.fo = discovery.NewStandardOptions()
-	}
-
-	if r.def.Filter != nil {
-		r.fo.Merge(r.def.Filter)
-	}
-
-	r.fo.SetDefaultsFromChoria(fw)
-
-	if r.def.AllNodesConfirmPrompt != "" && r.fo.NodesFile == "" {
-		f, err := r.fo.NewFilter(r.def.Request.Agent)
-		if err != nil {
-			return err
-		}
-		if f.Empty() {
-			ans := false
-			err := survey.AskOne(&survey.Confirm{Message: r.def.AllNodesConfirmPrompt, Default: false}, &ans)
-			if err != nil {
-				return err
-			}
-			if !ans {
-				return fmt.Errorf("aborted")
-			}
-		}
+	err = r.setupFilter(fw)
+	if err != nil {
+		return err
 	}
 
 	start := time.Now()
