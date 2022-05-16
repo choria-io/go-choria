@@ -198,6 +198,9 @@
           },
           {
             "$ref": "#/definitions/exec_command"
+          },
+          {
+            "$ref": "#/definitions/discover_command"
           }
         ]
       }
@@ -224,6 +227,55 @@
               "description": "Additional CLI commands to add",
               "$ref": "#/definitions/commands",
               "minLength": 1
+            }
+          }
+        }
+      ]
+    },
+    "discover_command": {
+      "type": "object",
+      "default": "A command that does Choria based node discovery",
+      "additionalItems": false,
+      "allOf": [
+        {
+          "$ref": "#/definitions/standard_command"
+        },
+        {
+          "type": "object",
+          "required": [
+            "type"
+          ],
+          "properties": {
+            "type": {
+              "type": "string",
+              "const": "discover"
+            },
+            "filter": {
+              "description": "Optional filters to apply to the request, will be merged with standard options if set",
+              "$ref": "#/definitions/rpc_filter"
+            },
+            "std_filters": {
+              "type": "boolean",
+              "description": "Enables standard RPC filters like -C, -I etc",
+              "default": false
+            },
+            "arguments": {
+              "type": "array",
+              "description": "List or arguments to accept after the command name",
+              "items": {
+                "$ref": "#/definitions/generic_argument"
+              }
+            },
+            "flags": {
+              "type": "array",
+              "description": "List of flags to add to the command",
+              "items": {
+                "allOf": [
+                  {
+                    "$ref": "#/definitions/generic_flag"
+                  }
+                ]
+              }
             }
           }
         }

@@ -67,8 +67,8 @@ type RPC struct {
 	fo          *discovery.StandardOptions
 	def         *RPCCommand
 	cfg         interface{}
-	Arguments   map[string]*string
-	Flags       map[string]*string
+	arguments   map[string]*string
+	flags       map[string]*string
 	senders     bool
 	json        bool
 	table       bool
@@ -81,8 +81,8 @@ type RPC struct {
 
 func NewRPCCommand(b *AppBuilder, j json.RawMessage) (*RPC, error) {
 	rpc := &RPC{
-		Arguments: map[string]*string{},
-		Flags:     map[string]*string{},
+		arguments: map[string]*string{},
+		flags:     map[string]*string{},
 		def:       &RPCCommand{},
 		cfg:       b.cfg,
 		ctx:       b.ctx,
@@ -102,7 +102,7 @@ func (r *RPC) SubCommands() []json.RawMessage {
 }
 
 func (r *RPC) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
-	r.cmd = createStandardCommand(app, r.b, &r.def.StandardCommand, r.Arguments, nil, r.runCommand)
+	r.cmd = createStandardCommand(app, r.b, &r.def.StandardCommand, r.arguments, nil, r.runCommand)
 
 	switch {
 	case r.def.OutputFormatFlags && r.def.OutputFormat != "":
@@ -165,7 +165,7 @@ func (r *RPC) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
 		if f.PlaceHolder != "" {
 			flag.PlaceHolder(f.PlaceHolder)
 		}
-		r.Flags[f.Name] = flag.String()
+		r.flags[f.Name] = flag.String()
 	}
 
 	return r.cmd, nil
@@ -206,7 +206,7 @@ func (r *RPC) setupFilter(fw inter.Framework) error {
 	}
 
 	if r.def.Filter != nil {
-		err = processStdDiscoveryOptions(r.def.Filter, r.Arguments, r.Flags, r.cfg)
+		err = processStdDiscoveryOptions(r.def.Filter, r.arguments, r.flags, r.cfg)
 		if err != nil {
 			return err
 		}
@@ -379,7 +379,7 @@ func (r *RPC) reqOptions(action *agent.Action) (inputs map[string]string, rpcInp
 
 	filter := ""
 	for _, flag := range r.def.Flags {
-		if *r.Flags[flag.Name] != "" {
+		if *r.flags[flag.Name] != "" {
 			if flag.ReplyFilter == "" {
 				continue
 			}
@@ -411,5 +411,5 @@ func (r *RPC) reqOptions(action *agent.Action) (inputs map[string]string, rpcInp
 }
 
 func (r *RPC) parseStateTemplate(body string) (string, error) {
-	return parseStateTemplate(body, r.Arguments, r.Flags, r.cfg)
+	return parseStateTemplate(body, r.arguments, r.flags, r.cfg)
 }
