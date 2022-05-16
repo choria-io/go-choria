@@ -256,6 +256,11 @@
               "type": "string",
               "description": "The action to perform against the bucket and key",
               "enum": ["get","put","del", "history"]
+            },
+            "json": {
+              "type": "boolean",
+              "description": "Renders the result in JSON format for get and history actions",
+              "default": false
             }
           }
         }
