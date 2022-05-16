@@ -18,10 +18,11 @@ import (
 )
 
 type KVCommand struct {
-	Action string `json:"action"`
-	Bucket string `json:"bucket"`
-	Key    string `json:"key"`
-	Value  string `json:"value"`
+	Action     string `json:"action"`
+	Bucket     string `json:"bucket"`
+	Key        string `json:"key"`
+	Value      string `json:"value"`
+	RenderJSON bool   `json:"json"`
 
 	StandardSubCommands
 	StandardCommand
@@ -74,6 +75,10 @@ func (r *KV) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
 		r.Arguments[a.Name] = arg.String()
 	}
 
+	if r.def.Action == "get" || r.def.Action == "history" && !r.def.RenderJSON {
+		r.cmd.Flag("json", "Renders results in JSON format").BoolVar(&r.def.RenderJSON)
+	}
+
 	for _, f := range r.def.Flags {
 		flag := r.cmd.Flag(f.Name, f.Description)
 		if f.Required {
@@ -86,6 +91,124 @@ func (r *KV) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
 	}
 
 	return r.cmd, nil
+}
+
+func (r *KV) getAction(kv nats.KeyValue) error {
+	entry, err := kv.Get(r.def.Key)
+	if err != nil {
+		return err
+	}
+
+	if r.def.RenderJSON {
+		ej, err := json.MarshalIndent(r.entryMap(entry), "", "  ")
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(string(ej))
+	} else {
+		fmt.Println(string(entry.Value()))
+	}
+
+	return nil
+}
+
+func (r *KV) putAction(kv nats.KeyValue) error {
+	v, err := parseStateTemplate(r.def.Value, r.Arguments, r.Flags, r.cfg)
+	if err != nil {
+		return err
+	}
+
+	rev, err := kv.PutString(r.def.Key, v)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Wrote revision %d\n", rev)
+
+	return nil
+}
+
+func (r *KV) delAction(kv nats.KeyValue) error {
+	err := kv.Delete(r.def.Key)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Deleted key %s\n", r.def.Key)
+
+	return nil
+}
+
+func (r *KV) opStringForOp(kvop nats.KeyValueOp) string {
+	var op string
+
+	switch kvop {
+	case nats.KeyValuePurge:
+		op = "PURGE"
+	case nats.KeyValueDelete:
+		op = "DELETE"
+	case nats.KeyValuePut:
+		op = "PUT"
+	default:
+		op = kvop.String()
+	}
+
+	return op
+}
+
+func (r *KV) entryMap(e nats.KeyValueEntry) map[string]interface{} {
+	if e == nil {
+		return nil
+	}
+
+	res := map[string]interface{}{
+		"operation": r.opStringForOp(e.Operation()),
+		"revision":  e.Revision(),
+		"value":     util.Base64IfNotPrintable(e.Value()),
+		"created":   e.Created().Unix(),
+	}
+
+	return res
+}
+
+func (r *KV) historyAction(kv nats.KeyValue) error {
+	history, err := kv.History(r.def.Key)
+	if err != nil {
+		return err
+	}
+
+	if r.def.RenderJSON {
+		hist := map[string]map[string]map[string]interface{}{}
+		for _, e := range history {
+			if _, ok := hist[e.Bucket()]; !ok {
+				hist[e.Bucket()] = map[string]map[string]interface{}{}
+			}
+
+			hist[e.Bucket()][e.Key()] = r.entryMap(e)
+		}
+
+		j, err := json.MarshalIndent(hist, "", "  ")
+		if err != nil {
+			return err
+		}
+
+		fmt.Println(string(j))
+		return nil
+	}
+
+	table := util.NewUTF8Table("Seq", "Operation", "Time", "Length", "Value")
+	for _, e := range history {
+		val := util.Base64IfNotPrintable(e.Value())
+		if len(val) > 40 {
+			val = fmt.Sprintf("%s...%s", val[0:15], val[len(val)-15:])
+		}
+
+		table.AddRow(e.Revision(), r.opStringForOp(e.Operation()), e.Created().Format(time.RFC822), len(e.Value()), val)
+	}
+
+	fmt.Println(table.Render())
+
+	return nil
 }
 
 func (r *KV) runCommand(_ *kingpin.ParseContext) error {
@@ -101,63 +224,17 @@ func (r *KV) runCommand(_ *kingpin.ParseContext) error {
 
 	switch r.def.Action {
 	case "get":
-		entry, err := kv.Get(r.def.Key)
-		if err != nil {
-			return err
-		}
-		fmt.Println(string(entry.Value()))
+		err = r.getAction(kv)
 
 	case "put":
-		v, err := parseStateTemplate(r.def.Value, r.Arguments, r.Flags, r.cfg)
-		if err != nil {
-			return err
-		}
-
-		rev, err := kv.PutString(r.def.Key, v)
-		if err != nil {
-			return err
-		}
-
-		fmt.Printf("Wrote revision %d\n", rev)
+		err = r.putAction(kv)
 
 	case "del":
-		err = kv.Delete(r.def.Key)
-		if err != nil {
-			return err
-		}
-		fmt.Printf("Deleted key %s\n", r.def.Key)
+		err = r.delAction(kv)
 
 	case "history":
-		history, err := kv.History(r.def.Key)
-		if err != nil {
-			return err
-		}
-
-		table := util.NewUTF8Table("Seq", "Operation", "Time", "Length", "Value")
-		for _, r := range history {
-			val := util.Base64IfNotPrintable(r.Value())
-			if len(val) > 40 {
-				val = fmt.Sprintf("%s...%s", val[0:15], val[len(val)-15:])
-			}
-
-			var op string
-
-			switch r.Operation() {
-			case nats.KeyValuePurge:
-				op = "PURGE"
-			case nats.KeyValueDelete:
-				op = "DELETE"
-			case nats.KeyValuePut:
-				op = "PUT"
-			default:
-				op = r.Operation().String()
-			}
-
-			table.AddRow(r.Revision(), op, r.Created().Format(time.RFC822), len(r.Value()), val)
-		}
-
-		fmt.Println(table.Render())
+		err = r.historyAction(kv)
 	}
 
-	return nil
+	return err
 }
