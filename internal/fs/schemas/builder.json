@@ -427,12 +427,12 @@
                   "additionalProperties": {
                     "type": "string"
                   }
+                },
+                "filter": {
+                  "description": "Optional filters to apply to the request, will be merged with standard options if set",
+                  "$ref": "#/definitions/rpc_filter"
                 }
               }
-            },
-            "filter": {
-              "description": "Optional filters to apply to the request, will be merged with standard options if set",
-              "$ref": "#/definitions/rpc_filter"
             },
             "std_filters": {
               "type": "boolean",
