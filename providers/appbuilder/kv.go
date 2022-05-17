@@ -8,9 +8,10 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"time"
+
 	"github.com/choria-io/go-choria/config"
 	"github.com/sirupsen/logrus"
-	"time"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/inter"
@@ -159,13 +160,13 @@ func (r *KV) historyAction(kv nats.KeyValue) error {
 	}
 
 	if r.def.RenderJSON {
-		hist := map[string]map[string]map[string]interface{}{}
+		hist := map[string]map[string][]interface{}{}
 		for _, e := range history {
 			if _, ok := hist[e.Bucket()]; !ok {
-				hist[e.Bucket()] = map[string]map[string]interface{}{}
+				hist[e.Bucket()] = map[string][]interface{}{}
 			}
 
-			hist[e.Bucket()][e.Key()] = r.entryMap(e)
+			hist[e.Bucket()][e.Key()] = append(hist[e.Bucket()][e.Key()], r.entryMap(e))
 		}
 
 		j, err := json.MarshalIndent(hist, "", "  ")
@@ -177,14 +178,14 @@ func (r *KV) historyAction(kv nats.KeyValue) error {
 		return nil
 	}
 
-	table := util.NewUTF8Table("Seq", "Operation", "Time", "Length", "Value")
+	table := util.NewUTF8Table("Seq", "Operation", "Time", "Value")
 	for _, e := range history {
 		val := util.Base64IfNotPrintable(e.Value())
 		if len(val) > 40 {
 			val = fmt.Sprintf("%s...%s", val[0:15], val[len(val)-15:])
 		}
 
-		table.AddRow(e.Revision(), r.opStringForOp(e.Operation()), e.Created().Format(time.RFC822), len(e.Value()), val)
+		table.AddRow(e.Revision(), r.opStringForOp(e.Operation()), e.Created().Format(time.RFC822), val)
 	}
 
 	fmt.Println(table.Render())
