@@ -9,11 +9,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/choria-io/go-choria/config"
 	"io"
 	"os"
 	"sync"
 	"time"
+
+	"github.com/choria-io/go-choria/config"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/choria"
@@ -29,37 +30,32 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-// TODO: this is essentially a full re-implementation of choria req, not sure it adds value over
-// just doing an exec of choria req.  However I think in time we might extend this to cover some
-// new display options to only show some fields etc, but as it stands I am inclined to remove it
-// should we get no additional needs in this one.
-
 type RPCFlag struct {
 	GenericFlag
 	ReplyFilter string `json:"reply_filter"`
 }
 
 type RPCRequest struct {
-	Agent  string            `json:"agent"`
-	Action string            `json:"action"`
-	Params map[string]string `json:"inputs"`
+	Agent  string                     `json:"agent"`
+	Action string                     `json:"action"`
+	Params map[string]string          `json:"inputs"`
+	Filter *discovery.StandardOptions `json:"filter"`
 }
 
 type RPCCommand struct {
-	StandardFilter        bool                       `json:"std_filters"`
-	OutputFormatFlags     bool                       `json:"output_format_flags"`
-	OutputFormat          string                     `json:"output_format"`
-	Display               string                     `json:"display"`
-	DisplayFlag           bool                       `json:"display_flag"`
-	BatchFlags            bool                       `json:"batch_flags"`
-	BatchSize             int                        `json:"batch"`
-	BatchSleep            int                        `json:"batch_sleep"`
-	NoProgress            bool                       `json:"no_progress"`
-	AllNodesConfirmPrompt string                     `json:"all_nodes_confirm_prompt"`
-	Flags                 []RPCFlag                  `json:"flags"`
-	Request               RPCRequest                 `json:"request"`
-	Filter                *discovery.StandardOptions `json:"filter"`
-	Transform             *GenericTransform          `json:"transform"`
+	StandardFilter        bool              `json:"std_filters"`
+	OutputFormatFlags     bool              `json:"output_format_flags"`
+	OutputFormat          string            `json:"output_format"`
+	Display               string            `json:"display"`
+	DisplayFlag           bool              `json:"display_flag"`
+	BatchFlags            bool              `json:"batch_flags"`
+	BatchSize             int               `json:"batch"`
+	BatchSleep            int               `json:"batch_sleep"`
+	NoProgress            bool              `json:"no_progress"`
+	AllNodesConfirmPrompt string            `json:"all_nodes_confirm_prompt"`
+	Flags                 []RPCFlag         `json:"flags"`
+	Request               RPCRequest        `json:"request"`
+	Transform             *GenericTransform `json:"transform"`
 
 	StandardCommand
 	StandardSubCommands
@@ -219,13 +215,13 @@ func (r *RPC) setupFilter(fw inter.Framework) error {
 		r.fo = discovery.NewStandardOptions()
 	}
 
-	if r.def.Filter != nil {
-		err = processStdDiscoveryOptions(r.def.Filter, r.arguments, r.flags, r.cfg)
+	if r.def.Request.Filter != nil {
+		err = processStdDiscoveryOptions(r.def.Request.Filter, r.arguments, r.flags, r.cfg)
 		if err != nil {
 			return err
 		}
 
-		r.fo.Merge(r.def.Filter)
+		r.fo.Merge(r.def.Request.Filter)
 	}
 
 	r.fo.SetDefaultsFromChoria(fw)
