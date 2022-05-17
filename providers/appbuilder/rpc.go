@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/choria-io/go-choria/config"
 	"os"
 	"sync"
 	"time"
@@ -52,7 +53,6 @@ type RPCCommand struct {
 	BatchSleep            int                        `json:"batch_sleep"`
 	NoProgress            bool                       `json:"no_progress"`
 	AllNodesConfirmPrompt string                     `json:"all_nodes_confirm_prompt"`
-	Arguments             []GenericArgument          `json:"arguments"`
 	Flags                 []RPCFlag                  `json:"flags"`
 	Request               RPCRequest                 `json:"request"`
 	Filter                *discovery.StandardOptions `json:"filter"`
@@ -76,10 +76,11 @@ type RPC struct {
 	batch       int
 	batchSleep  int
 	progressBar *uiprogress.Bar
+	log         *logrus.Entry
 	ctx         context.Context
 }
 
-func NewRPCCommand(b *AppBuilder, j json.RawMessage) (*RPC, error) {
+func NewRPCCommand(b *AppBuilder, j json.RawMessage, log *logrus.Entry) (*RPC, error) {
 	rpc := &RPC{
 		arguments: map[string]*string{},
 		flags:     map[string]*string{},
@@ -87,6 +88,7 @@ func NewRPCCommand(b *AppBuilder, j json.RawMessage) (*RPC, error) {
 		cfg:       b.cfg,
 		ctx:       b.ctx,
 		b:         b,
+		log:       log,
 	}
 
 	err := json.Unmarshal(j, rpc.def)
@@ -244,7 +246,13 @@ func (r *RPC) runCommand(_ *kingpin.ParseContext) error {
 		targets []string
 	)
 
-	fw, err := choria.New(choria.UserConfig())
+	cfg, err := config.NewConfig(choria.UserConfig())
+	if err != nil {
+		return err
+	}
+	cfg.CustomLogger = r.log.Logger
+
+	fw, err := choria.NewWithConfig(cfg)
 	if err != nil {
 		return err
 	}

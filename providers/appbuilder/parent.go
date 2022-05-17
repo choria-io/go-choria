@@ -6,6 +6,7 @@ package appbuilder
 
 import (
 	"encoding/json"
+	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/inter"
 	"gopkg.in/alecthomas/kingpin.v2"
@@ -21,7 +22,7 @@ type Parent struct {
 	def *ParentCommand
 }
 
-func NewParentCommand(_ *AppBuilder, j json.RawMessage) (*Parent, error) {
+func NewParentCommand(_ *AppBuilder, j json.RawMessage, _ *logrus.Entry) (*Parent, error) {
 	parent := &Parent{
 		def: &ParentCommand{},
 	}

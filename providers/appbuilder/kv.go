@@ -8,6 +8,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/choria-io/go-choria/config"
+	"github.com/sirupsen/logrus"
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
@@ -35,15 +37,17 @@ type KV struct {
 	cmd       *kingpin.CmdClause
 	def       *KVCommand
 	cfg       interface{}
+	log       *logrus.Entry
 	ctx       context.Context
 }
 
-func NewKVCommand(b *AppBuilder, j json.RawMessage) (*KV, error) {
+func NewKVCommand(b *AppBuilder, j json.RawMessage, log *logrus.Entry) (*KV, error) {
 	kv := &KV{
 		def:       &KVCommand{},
 		cfg:       b.cfg,
 		ctx:       b.ctx,
 		b:         b,
+		log:       log,
 		Arguments: map[string]*string{},
 		Flags:     map[string]*string{},
 	}
@@ -189,7 +193,13 @@ func (r *KV) historyAction(kv nats.KeyValue) error {
 }
 
 func (r *KV) runCommand(_ *kingpin.ParseContext) error {
-	fw, err := choria.New(choria.UserConfig())
+	cfg, err := config.NewConfig(choria.UserConfig())
+	if err != nil {
+		return err
+	}
+	cfg.CustomLogger = r.log.Logger
+
+	fw, err := choria.NewWithConfig(cfg)
 	if err != nil {
 		return err
 	}
