@@ -471,13 +471,6 @@
               "description": "Enables the --batch and --batch-sleep flags",
               "default": false
             },
-            "arguments": {
-              "type": "array",
-              "description": "List or arguments to accept after the command name",
-              "items": {
-                "$ref": "#/definitions/generic_argument"
-              }
-            },
             "all_nodes_confirm_prompt": {
               "type": "string",
               "description": "Prompts for confirmation when no filter is active resulting on an action against all nodes"

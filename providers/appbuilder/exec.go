@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 
@@ -33,7 +34,7 @@ type Exec struct {
 	b         *AppBuilder
 }
 
-func NewExecCommand(b *AppBuilder, j json.RawMessage) (*Exec, error) {
+func NewExecCommand(b *AppBuilder, j json.RawMessage, _ *logrus.Entry) (*Exec, error) {
 	exec := &Exec{
 		def:       &ExecCommand{},
 		cfg:       b.cfg,

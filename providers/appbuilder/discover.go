@@ -8,6 +8,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/choria-io/go-choria/config"
+	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/discovery"
@@ -31,16 +33,18 @@ type Discover struct {
 	arguments map[string]*string
 	flags     map[string]*string
 	json      bool
+	log       *logrus.Entry
 	ctx       context.Context
 }
 
-func NewDiscoverCommand(b *AppBuilder, j json.RawMessage) (*Discover, error) {
+func NewDiscoverCommand(b *AppBuilder, j json.RawMessage, log *logrus.Entry) (*Discover, error) {
 	find := &Discover{
 		arguments: map[string]*string{},
 		flags:     map[string]*string{},
 		def:       &DiscoverCommand{},
 		cfg:       b.cfg,
 		ctx:       b.ctx,
+		log:       log,
 		b:         b,
 	}
 
@@ -73,7 +77,13 @@ func (r *Discover) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) 
 }
 
 func (r *Discover) runCommand(_ *kingpin.ParseContext) error {
-	fw, err := choria.New(choria.UserConfig())
+	cfg, err := config.NewConfig(choria.UserConfig())
+	if err != nil {
+		return err
+	}
+	cfg.CustomLogger = r.log.Logger
+
+	fw, err := choria.NewWithConfig(cfg)
 	if err != nil {
 		return err
 	}

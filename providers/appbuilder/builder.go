@@ -35,7 +35,7 @@ type StandardCommand struct {
 	Description   string            `json:"description"`
 	Aliases       []string          `json:"aliases"`
 	Type          string            `json:"type"`
-	Arguments     []GenericArgument `json:"args"`
+	Arguments     []GenericArgument `json:"arguments"`
 	Flags         []GenericFlag     `json:"flags"`
 	ConfirmPrompt string            `json:"confirm_prompt"`
 }
@@ -90,6 +90,10 @@ type AppBuilder struct {
 var (
 	errDefinitionNotfound = errors.New("definition not found")
 	appDefPattern         = "%s-app.yaml"
+	descriptionFmt        = `%s
+
+Contact: %s
+`
 )
 
 func NewAppBuilder(ctx context.Context, name string) *AppBuilder {
@@ -129,7 +133,7 @@ func (b *AppBuilder) runCLI() error {
 		return err
 	}
 
-	cmd := kingpin.New(b.name, b.def.Description)
+	cmd := kingpin.New(b.name, fmt.Sprintf(descriptionFmt, b.def.Description, b.def.Author))
 	cmd.Version(b.def.Version)
 	cmd.Author(b.def.Author)
 	cmd.VersionFlag.Hidden()
@@ -251,15 +255,15 @@ func (b *AppBuilder) createCommand(def json.RawMessage) (command, error) {
 
 	switch t.String() {
 	case "rpc":
-		return NewRPCCommand(b, def)
+		return NewRPCCommand(b, def, b.log)
 	case "parent":
-		return NewParentCommand(b, def)
+		return NewParentCommand(b, def, b.log)
 	case "kv":
-		return NewKVCommand(b, def)
+		return NewKVCommand(b, def, b.log)
 	case "exec":
-		return NewExecCommand(b, def)
+		return NewExecCommand(b, def, b.log)
 	case "discover":
-		return NewDiscoverCommand(b, def)
+		return NewDiscoverCommand(b, def, b.log)
 	default:
 		return nil, fmt.Errorf("unknown command type %q", t.String())
 	}
