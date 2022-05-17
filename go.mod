@@ -22,6 +22,7 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.5.5
+	github.com/itchyny/gojq v0.12.7
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
@@ -80,6 +81,7 @@ require (
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.12 // indirect
+	github.com/itchyny/timefmt-go v0.1.3 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.4 // indirect
 	github.com/lucasb-eyer/go-colorful v1.0.3 // indirect

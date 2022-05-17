@@ -162,6 +162,17 @@
         }
       }
     },
+    "generic_transform": {
+      "description": "Transform the data using the GOJQ implementation of the JQ language",
+      "type": "object",
+      "required": ["query"],
+      "properties": {
+        "query": {
+          "type": "string",
+          "description": "A JQ query to pass the data through"
+        }
+      }
+    },
     "generic_argument": {
       "type": "object",
       "required": [
@@ -392,6 +403,9 @@
             "commands": {
               "description": "Additional CLI commands to add",
               "$ref": "#/definitions/commands"
+            },
+            "transform": {
+              "$ref": "#/definitions/generic_transform"
             },
             "request": {
               "type": "object",
