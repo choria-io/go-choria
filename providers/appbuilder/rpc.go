@@ -5,10 +5,12 @@
 package appbuilder
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/choria-io/go-choria/config"
+	"io"
 	"os"
 	"sync"
 	"time"
@@ -22,6 +24,7 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 	"github.com/gosuri/uiprogress"
+	"github.com/itchyny/gojq"
 	"github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
@@ -56,6 +59,7 @@ type RPCCommand struct {
 	Flags                 []RPCFlag                  `json:"flags"`
 	Request               RPCRequest                 `json:"request"`
 	Filter                *discovery.StandardOptions `json:"filter"`
+	Transform             *GenericTransform          `json:"transform"`
 
 	StandardCommand
 	StandardSubCommands
@@ -75,6 +79,7 @@ type RPC struct {
 	display     string
 	batch       int
 	batchSleep  int
+	jqQuery     *gojq.Query
 	progressBar *uiprogress.Bar
 	log         *logrus.Entry
 	ctx         context.Context
@@ -94,6 +99,13 @@ func NewRPCCommand(b *AppBuilder, j json.RawMessage, log *logrus.Entry) (*RPC, e
 	err := json.Unmarshal(j, rpc.def)
 	if err != nil {
 		return nil, err
+	}
+
+	if rpc.def.Transform != nil && rpc.def.Transform.Query != "" {
+		rpc.jqQuery, err = gojq.Parse(rpc.def.Transform.Query)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	return rpc, nil
@@ -240,7 +252,7 @@ func (r *RPC) setupFilter(fw inter.Framework) error {
 
 func (r *RPC) runCommand(_ *kingpin.ParseContext) error {
 	var (
-		noisy   = !(r.json || r.senders || r.def.NoProgress)
+		noisy   = !(r.json || r.senders || r.def.NoProgress || r.def.Transform != nil)
 		mu      = sync.Mutex{}
 		dt      time.Duration
 		targets []string
@@ -344,8 +356,47 @@ func (r *RPC) runCommand(_ *kingpin.ParseContext) error {
 
 }
 
+func (r *RPC) transformResults(w io.Writer, results *replyfmt.RPCResults, action *agent.Action) error {
+	out := bytes.NewBuffer([]byte{})
+	err := results.RenderJSON(out, action)
+	if err != nil {
+		return err
+	}
+
+	data := map[string]interface{}{}
+	err = json.Unmarshal(out.Bytes(), &data)
+	if err != nil {
+		return err
+	}
+
+	iter := r.jqQuery.RunWithContext(r.ctx, data)
+	for {
+		v, ok := iter.Next()
+		if !ok {
+			break
+		}
+
+		switch val := v.(type) {
+		case error:
+			return val
+		case string:
+			fmt.Fprintln(w, val)
+		default:
+			j, err := json.MarshalIndent(val, "", "  ")
+			if err != nil {
+				return err
+			}
+			fmt.Fprintln(w, string(j))
+		}
+	}
+
+	return nil
+}
+
 func (r *RPC) renderResults(fw inter.Framework, log *logrus.Entry, results *replyfmt.RPCResults, action *agent.Action) (err error) {
 	switch {
+	case r.jqQuery != nil:
+		err = r.transformResults(os.Stdout, results, action)
 	case r.senders:
 		err = results.RenderNames(os.Stdout, r.json, false)
 	case r.table:

@@ -68,6 +68,10 @@ type GenericFlag struct {
 	PlaceHolder string `json:"placeholder"`
 }
 
+type GenericTransform struct {
+	Query string `json:"query"`
+}
+
 type templateState struct {
 	Arguments interface{}
 	Flags     interface{}
