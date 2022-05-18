@@ -30,22 +30,36 @@ var _ = Describe("Compound", func() {
 
 	Describe("MatchExprString", func() {
 		It("Should correctly match", func() {
-			query := [][]map[string]string{{{"expr": `with("foo") && scout("x").name=="bob" && scout("x").value==1`}}}
-			df := ddl.FuncMap{
-				"scout": {
-					F: func(q string) interface{} {
-						return map[string]interface{}{
-							"name":  "bob",
-							"value": 1,
-						}
-					},
-					Name: "scout",
-					DDL:  &ddl.DDL{Metadata: ddl.Metadata{Name: "scout", Timeout: 1}},
-				},
+			cases := []struct {
+				query  string
+				expect bool
+			}{
+				{`semver(scout("x").version, "= 1.2.3")`, true},
+				{`semver(scout("x").version, "< 1.2.4")`, true},
+				{`semver(scout("x").version, "> 1.0.0")`, true},
+				{`semver(scout("x").version, "< 1.0.0")`, false},
+				{`with("foo") && scout("x").name=="bob" && scout("x").value==1`, true},
 			}
 
-			match := MatchExprString(query, json.RawMessage{}, []string{"foo"}, []string{}, df, log)
-			Expect(match).To(BeTrue())
+			for _, tc := range cases {
+				query := [][]map[string]string{{{"expr": tc.query}}}
+				df := ddl.FuncMap{
+					"scout": {
+						F: func(q string) interface{} {
+							return map[string]interface{}{
+								"name":    "bob",
+								"value":   1,
+								"version": "1.2.3",
+							}
+						},
+						Name: "scout",
+						DDL:  &ddl.DDL{Metadata: ddl.Metadata{Name: "scout", Timeout: 1}},
+					},
+				}
+
+				match := MatchExprString(query, json.RawMessage{}, []string{"foo"}, []string{}, df, log)
+				Expect(match).To(Equal(tc.expect))
+			}
 		})
 	})
 })

@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 
+	"github.com/Masterminds/semver"
 	"github.com/antonmedv/expr"
 	"github.com/antonmedv/expr/vm"
 	"github.com/google/go-cmp/cmp"
@@ -54,6 +55,7 @@ func MatchExprProgram(prog *vm.Program, facts json.RawMessage, classes []string,
 	env["with"] = matchFunc(facts, classes, knownAgents, log)
 	env["fact"] = factFunc(facts)
 	env["include"] = includeFunc
+	env["semver"] = semverFunc
 
 	res, err := expr.Run(prog, env)
 	if err != nil {
@@ -127,6 +129,20 @@ func factFunc(facts json.RawMessage) func(string) interface{} {
 	}
 }
 
+func semverFunc(value string, cmp string) (bool, error) {
+	cons, err := semver.NewConstraint(cmp)
+	if err != nil {
+		return false, err
+	}
+
+	v, err := semver.NewVersion(value)
+	if err != nil {
+		return false, err
+	}
+
+	return cons.Check(v), nil
+}
+
 func includeFunc(hay []interface{}, needle interface{}) bool {
 	// gjson always turns numbers into float64
 	i, ok := needle.(int)
@@ -151,6 +167,7 @@ func EmptyEnv(df ddl.FuncMap) map[string]interface{} {
 		"with":    func(_ string) bool { return false },
 		"fact":    func(_ string) interface{} { return nil },
 		"include": func(_ []interface{}, _ interface{}) bool { return false },
+		"semver":  func(_ string, _ string) (bool, error) { return false, nil },
 	}
 
 	for k, v := range df {
