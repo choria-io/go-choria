@@ -28,14 +28,14 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.32-0.20220513090927-15c2dbec2581
-	github.com/nats-io/nats-server/v2 v2.8.3-0.20220512230344-3aa7965ad7e5
+	github.com/nats-io/nats-server/v2 v2.8.3-0.20220517225422-bb9e94220893
 	github.com/nats-io/nats.go v1.15.1-0.20220510154044-144a3b25a04c
 	github.com/nats-io/natscli v0.0.33-0.20220513120614-5449781755c0
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.19.0
-	github.com/open-policy-agent/opa v0.39.0
-	github.com/prometheus/client_golang v1.12.1
+	github.com/open-policy-agent/opa v0.40.0
+	github.com/prometheus/client_golang v1.12.2
 	github.com/prometheus/client_model v0.2.0
 	github.com/robfig/cron v1.2.0
 	github.com/sirupsen/logrus v1.8.1
@@ -44,8 +44,8 @@ require (
 	github.com/xeipuuv/gojsonschema v1.2.0
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/atomic v1.9.0
-	golang.org/x/crypto v0.0.0-20220511200225-c6db032c6c88
-	golang.org/x/sys v0.0.0-20220503163025-988cb79eb6c6
+	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
+	golang.org/x/sys v0.0.0-20220517195934-5e4e11fc645e
 	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.10
