@@ -69,10 +69,7 @@
         },
         "compound": {
           "type": "string",
-          "description": "Compound filter to use, as typed in -S filters on the CLI",
-          "items": {
-            "type": "string"
-          }
+          "description": "Compound filter to use, as typed in -S filters on the CLI"
         },
         "discovery_method": {
           "type": "string",
@@ -237,7 +234,7 @@
             "commands": {
               "description": "Additional CLI commands to add",
               "$ref": "#/definitions/commands",
-              "minLength": 1
+              "minItems": 1
             }
           }
         }
@@ -245,7 +242,7 @@
     },
     "discover_command": {
       "type": "object",
-      "default": "A command that does Choria based node discovery",
+      "description": "A command that does Choria based node discovery",
       "additionalItems": false,
       "allOf": [
         {
