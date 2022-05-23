@@ -22,7 +22,6 @@ import (
 //go:embed plugin
 //go:embed misc
 //go:embed completion
-//go:embed schemas
 var FS embed.FS
 
 type consoleRender interface {

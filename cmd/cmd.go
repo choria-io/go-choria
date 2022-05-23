@@ -17,9 +17,14 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/adrg/xdg"
+	"github.com/choria-io/appbuilder/builder"
+	"github.com/choria-io/appbuilder/commands/exec"
+	"github.com/choria-io/appbuilder/commands/parent"
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/choria-io/go-choria/providers/appbuilder"
-
+	"github.com/choria-io/go-choria/providers/appbuilder/discover"
+	"github.com/choria-io/go-choria/providers/appbuilder/kv"
+	"github.com/choria-io/go-choria/providers/appbuilder/rpc"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/alecthomas/kingpin.v2"
 
@@ -62,11 +67,7 @@ func ParseCLI() (err error) {
 	//
 	// TODO: too janky, need to do a better job here, looking at the name is not enough
 	if !strings.Contains(os.Args[0], "choria") {
-		builder := appbuilder.NewAppBuilder(ctx, filepath.Base(os.Args[0]))
-		if builder.HasDefinition() {
-			builder.RunCommand()
-			os.Exit(0)
-		}
+		runBuilder()
 	}
 
 	bi = &build.Info{}
@@ -93,6 +94,24 @@ func ParseCLI() (err error) {
 	}
 
 	return
+}
+
+func runBuilder() {
+	kv.MustRegister()
+	rpc.MustRegister()
+	discover.MustRegister()
+	parent.MustRegister()
+	exec.MustRegister()
+
+	logger := log.New()
+	logger.SetLevel(log.WarnLevel)
+	err := builder.RunStandardCLI(ctx, filepath.Base(os.Args[0]), false, log.NewEntry(logger),
+		builder.WithLogger(log.NewEntry(logger)),
+		builder.WithConfigPaths(".", filepath.Join(xdg.ConfigHome, "choria", "builder"), filepath.Join("etc", "choria", "builder")))
+	if err != nil {
+		panic(fmt.Sprintf("app builder setup failed: %v", err))
+	}
+	os.Exit(0)
 }
 
 func systemConfigureIfRoot(actAsServer bool) error {

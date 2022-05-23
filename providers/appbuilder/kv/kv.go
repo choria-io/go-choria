@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package appbuilder
+package kv
 
 import (
 	"context"
@@ -10,43 +10,43 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/choria-io/appbuilder/builder"
 	"github.com/choria-io/go-choria/config"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/nats.go"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-type KVCommand struct {
+type Command struct {
 	Action     string `json:"action"`
 	Bucket     string `json:"bucket"`
 	Key        string `json:"key"`
 	Value      string `json:"value"`
 	RenderJSON bool   `json:"json"`
 
-	StandardSubCommands
-	StandardCommand
+	builder.GenericCommand
+	builder.GenericSubCommands
 }
 
 type KV struct {
-	b         *AppBuilder
+	b         *builder.AppBuilder
 	Arguments map[string]*string
 	Flags     map[string]*string
 	cmd       *kingpin.CmdClause
-	def       *KVCommand
+	def       *Command
 	cfg       interface{}
-	log       *logrus.Entry
+	log       builder.Logger
 	ctx       context.Context
 }
 
-func NewKVCommand(b *AppBuilder, j json.RawMessage, log *logrus.Entry) (*KV, error) {
+func NewKVCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Logger) (builder.Command, error) {
 	kv := &KV{
-		def:       &KVCommand{},
-		cfg:       b.cfg,
-		ctx:       b.ctx,
+		def:       &Command{},
+		cfg:       b.Configuration(),
+		ctx:       b.Context(),
 		b:         b,
 		log:       log,
 		Arguments: map[string]*string{},
@@ -61,12 +61,19 @@ func NewKVCommand(b *AppBuilder, j json.RawMessage, log *logrus.Entry) (*KV, err
 	return kv, nil
 }
 
+func MustRegister() {
+	builder.MustRegisterCommand("kv", NewKVCommand)
+}
+
+func (r *KV) Validate(log builder.Logger) error { return nil }
+func (r *KV) String() string                    { return fmt.Sprintf("%s (kv)", r.def.Name) }
+
 func (r *KV) SubCommands() []json.RawMessage {
 	return r.def.Commands
 }
 
-func (r *KV) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
-	r.cmd = createStandardCommand(app, r.b, &r.def.StandardCommand, r.Arguments, r.Flags, r.runCommand)
+func (r *KV) CreateCommand(app builder.KingpinCommand) (*kingpin.CmdClause, error) {
+	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.Arguments, r.Flags, r.runCommand)
 
 	if r.def.Action == "get" || r.def.Action == "history" && !r.def.RenderJSON {
 		r.cmd.Flag("json", "Renders results in JSON format").BoolVar(&r.def.RenderJSON)
@@ -96,7 +103,7 @@ func (r *KV) getAction(kv nats.KeyValue) error {
 }
 
 func (r *KV) putAction(kv nats.KeyValue) error {
-	v, err := parseStateTemplate(r.def.Value, r.Arguments, r.Flags, r.cfg)
+	v, err := builder.ParseStateTemplate(r.def.Value, r.Arguments, r.Flags, r.cfg)
 	if err != nil {
 		return err
 	}
@@ -198,7 +205,11 @@ func (r *KV) runCommand(_ *kingpin.ParseContext) error {
 	if err != nil {
 		return err
 	}
-	cfg.CustomLogger = r.log.Logger
+
+	logger, ok := interface{}(r.log).(*logrus.Logger)
+	if ok {
+		cfg.CustomLogger = logger
+	}
 
 	fw, err := choria.NewWithConfig(cfg)
 	if err != nil {

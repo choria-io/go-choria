@@ -71,6 +71,7 @@ require (
 	github.com/brutella/dnssd v1.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
+	github.com/choria-io/appbuilder v0.0.4 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/emicklei/dot v0.16.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
