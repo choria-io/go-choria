@@ -2,48 +2,50 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package appbuilder
+package discover
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
+
+	"github.com/choria-io/appbuilder/builder"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/providers/appbuilder"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/discovery"
-	"github.com/choria-io/go-choria/inter"
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-type DiscoverCommand struct {
+type Command struct {
 	StandardFilter bool                       `json:"std_filters"`
 	Filter         *discovery.StandardOptions `json:"filter"`
-	StandardCommand
-	StandardSubCommands
+	builder.GenericCommand
+	builder.GenericSubCommands
 }
 
 type Discover struct {
-	b         *AppBuilder
+	b         *builder.AppBuilder
 	cmd       *kingpin.CmdClause
 	fo        *discovery.StandardOptions
-	def       *DiscoverCommand
+	def       *Command
 	cfg       interface{}
 	arguments map[string]*string
 	flags     map[string]*string
 	json      bool
-	log       *logrus.Entry
+	log       builder.Logger
 	ctx       context.Context
 }
 
-func NewDiscoverCommand(b *AppBuilder, j json.RawMessage, log *logrus.Entry) (*Discover, error) {
+func NewDiscoverCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Logger) (builder.Command, error) {
 	find := &Discover{
 		arguments: map[string]*string{},
 		flags:     map[string]*string{},
-		def:       &DiscoverCommand{},
-		cfg:       b.cfg,
-		ctx:       b.ctx,
+		def:       &Command{},
+		cfg:       b.Configuration(),
+		ctx:       b.Context(),
 		log:       log,
 		b:         b,
 	}
@@ -56,12 +58,20 @@ func NewDiscoverCommand(b *AppBuilder, j json.RawMessage, log *logrus.Entry) (*D
 	return find, nil
 }
 
+func MustRegister() {
+	builder.MustRegisterCommand("discover", NewDiscoverCommand)
+}
+
+func (r *Discover) Validate(log builder.Logger) error { return nil }
+
+func (r *Discover) String() string { return fmt.Sprintf("%s (discover)", r.def.Name) }
+
 func (r *Discover) SubCommands() []json.RawMessage {
 	return r.def.Commands
 }
 
-func (r *Discover) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
-	r.cmd = createStandardCommand(app, r.b, &r.def.StandardCommand, r.arguments, r.flags, r.runCommand)
+func (r *Discover) CreateCommand(app builder.KingpinCommand) (*kingpin.CmdClause, error) {
+	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, r.flags, r.runCommand)
 
 	r.fo = discovery.NewStandardOptions()
 
@@ -81,7 +91,11 @@ func (r *Discover) runCommand(_ *kingpin.ParseContext) error {
 	if err != nil {
 		return err
 	}
-	cfg.CustomLogger = r.log.Logger
+
+	logger, ok := interface{}(r.log).(*logrus.Logger)
+	if ok {
+		cfg.CustomLogger = logger
+	}
 
 	fw, err := choria.NewWithConfig(cfg)
 	if err != nil {
@@ -91,7 +105,7 @@ func (r *Discover) runCommand(_ *kingpin.ParseContext) error {
 	log := fw.Logger("find")
 
 	if r.def.Filter != nil {
-		err = processStdDiscoveryOptions(r.def.Filter, r.arguments, r.flags, r.cfg)
+		err = appbuilder.ProcessStdDiscoveryOptions(r.def.Filter, r.arguments, r.flags, r.cfg)
 		if err != nil {
 			return err
 		}

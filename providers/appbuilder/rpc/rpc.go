@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package appbuilder
+package rpc
 
 import (
 	"bytes"
@@ -14,7 +14,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/appbuilder/builder"
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/providers/appbuilder"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/choria"
@@ -30,42 +32,42 @@ import (
 	"gopkg.in/alecthomas/kingpin.v2"
 )
 
-type RPCFlag struct {
-	GenericFlag
+type Flag struct {
+	builder.GenericFlag
 	ReplyFilter string `json:"reply_filter"`
 }
 
-type RPCRequest struct {
+type Request struct {
 	Agent  string                     `json:"agent"`
 	Action string                     `json:"action"`
 	Params map[string]string          `json:"inputs"`
 	Filter *discovery.StandardOptions `json:"filter"`
 }
 
-type RPCCommand struct {
-	StandardFilter        bool              `json:"std_filters"`
-	OutputFormatFlags     bool              `json:"output_format_flags"`
-	OutputFormat          string            `json:"output_format"`
-	Display               string            `json:"display"`
-	DisplayFlag           bool              `json:"display_flag"`
-	BatchFlags            bool              `json:"batch_flags"`
-	BatchSize             int               `json:"batch"`
-	BatchSleep            int               `json:"batch_sleep"`
-	NoProgress            bool              `json:"no_progress"`
-	AllNodesConfirmPrompt string            `json:"all_nodes_confirm_prompt"`
-	Flags                 []RPCFlag         `json:"flags"`
-	Request               RPCRequest        `json:"request"`
-	Transform             *GenericTransform `json:"transform"`
+type Command struct {
+	StandardFilter        bool                      `json:"std_filters"`
+	OutputFormatFlags     bool                      `json:"output_format_flags"`
+	OutputFormat          string                    `json:"output_format"`
+	Display               string                    `json:"display"`
+	DisplayFlag           bool                      `json:"display_flag"`
+	BatchFlags            bool                      `json:"batch_flags"`
+	BatchSize             int                       `json:"batch"`
+	BatchSleep            int                       `json:"batch_sleep"`
+	NoProgress            bool                      `json:"no_progress"`
+	AllNodesConfirmPrompt string                    `json:"all_nodes_confirm_prompt"`
+	Flags                 []Flag                    `json:"flags"`
+	Request               Request                   `json:"request"`
+	Transform             *builder.GenericTransform `json:"transform"`
 
-	StandardCommand
-	StandardSubCommands
+	builder.GenericCommand
+	builder.GenericSubCommands
 }
 
 type RPC struct {
-	b           *AppBuilder
+	b           *builder.AppBuilder
 	cmd         *kingpin.CmdClause
 	fo          *discovery.StandardOptions
-	def         *RPCCommand
+	def         *Command
 	cfg         interface{}
 	arguments   map[string]*string
 	flags       map[string]*string
@@ -77,17 +79,17 @@ type RPC struct {
 	batchSleep  int
 	jqQuery     *gojq.Query
 	progressBar *uiprogress.Bar
-	log         *logrus.Entry
+	log         builder.Logger
 	ctx         context.Context
 }
 
-func NewRPCCommand(b *AppBuilder, j json.RawMessage, log *logrus.Entry) (*RPC, error) {
+func NewRPCCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Logger) (builder.Command, error) {
 	rpc := &RPC{
 		arguments: map[string]*string{},
 		flags:     map[string]*string{},
-		def:       &RPCCommand{},
-		cfg:       b.cfg,
-		ctx:       b.ctx,
+		def:       &Command{},
+		cfg:       b.Configuration(),
+		ctx:       b.Context(),
 		b:         b,
 		log:       log,
 	}
@@ -107,12 +109,20 @@ func NewRPCCommand(b *AppBuilder, j json.RawMessage, log *logrus.Entry) (*RPC, e
 	return rpc, nil
 }
 
+func MustRegister() {
+	builder.MustRegisterCommand("rpc", NewRPCCommand)
+}
+
+func (r *RPC) String() string { return fmt.Sprintf("%s (rpc)", r.def.Name) }
+
+func (r *RPC) Validate(log builder.Logger) error { return nil }
+
 func (r *RPC) SubCommands() []json.RawMessage {
 	return r.def.Commands
 }
 
-func (r *RPC) CreateCommand(app inter.FlagApp) (*kingpin.CmdClause, error) {
-	r.cmd = createStandardCommand(app, r.b, &r.def.StandardCommand, r.arguments, nil, r.runCommand)
+func (r *RPC) CreateCommand(app builder.KingpinCommand) (*kingpin.CmdClause, error) {
+	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, nil, r.runCommand)
 
 	switch {
 	case r.def.OutputFormatFlags && r.def.OutputFormat != "":
@@ -216,7 +226,7 @@ func (r *RPC) setupFilter(fw inter.Framework) error {
 	}
 
 	if r.def.Request.Filter != nil {
-		err = processStdDiscoveryOptions(r.def.Request.Filter, r.arguments, r.flags, r.cfg)
+		err = appbuilder.ProcessStdDiscoveryOptions(r.def.Request.Filter, r.arguments, r.flags, r.cfg)
 		if err != nil {
 			return err
 		}
@@ -258,7 +268,11 @@ func (r *RPC) runCommand(_ *kingpin.ParseContext) error {
 	if err != nil {
 		return err
 	}
-	cfg.CustomLogger = r.log.Logger
+
+	logger, ok := interface{}(r.log).(*logrus.Logger)
+	if ok {
+		cfg.CustomLogger = logger
+	}
 
 	fw, err := choria.NewWithConfig(cfg)
 	if err != nil {
@@ -466,5 +480,5 @@ func (r *RPC) reqOptions(action *agent.Action) (inputs map[string]string, rpcInp
 }
 
 func (r *RPC) parseStateTemplate(body string) (string, error) {
-	return parseStateTemplate(body, r.arguments, r.flags, r.cfg)
+	return builder.ParseStateTemplate(body, r.arguments, r.flags, r.cfg)
 }
