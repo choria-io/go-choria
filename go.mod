@@ -7,11 +7,12 @@ require (
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.4.0
-	github.com/aelsabbahy/goss v0.3.17-0.20220512130421-4157932dd2e2
+	github.com/aelsabbahy/goss v0.3.18
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/cloudevents/sdk-go/v2 v2.9.0
+	github.com/choria-io/appbuilder v0.0.4
+	github.com/cloudevents/sdk-go/v2 v2.10.0
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.2.0+incompatible
@@ -27,10 +28,10 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.0.32-0.20220513090927-15c2dbec2581
-	github.com/nats-io/nats-server/v2 v2.8.3-0.20220517225422-bb9e94220893
+	github.com/nats-io/jsm.go v0.0.32-0.20220520130442-4fcfcb01e3a5
+	github.com/nats-io/nats-server/v2 v2.8.3
 	github.com/nats-io/nats.go v1.15.1-0.20220510154044-144a3b25a04c
-	github.com/nats-io/natscli v0.0.33-0.20220513120614-5449781755c0
+	github.com/nats-io/natscli v0.0.33-0.20220523083704-8df8a5abe5b6
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.19.0
@@ -45,12 +46,11 @@ require (
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20220518034528-6f7dac969898
-	golang.org/x/sys v0.0.0-20220517195934-5e4e11fc645e
+	golang.org/x/sys v0.0.0-20220520151302-bc2c85ada10a
 	golang.org/x/term v0.0.0-20220411215600-e5f449aeb171
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.10
 	gopkg.in/alecthomas/kingpin.v2 v2.2.6
-	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61
 	rsc.io/goversion v1.2.0
 )
 
@@ -65,13 +65,11 @@ require (
 	github.com/aelsabbahy/go-ps v0.0.0-20201009164808-61c449472dcf // indirect
 	github.com/alecthomas/template v0.0.0-20190718012654-fb15b899a751 // indirect
 	github.com/alecthomas/units v0.0.0-20211218093645-b94a6e3cc137 // indirect
-	github.com/alessio/shellescape v1.4.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/brutella/dnssd v1.2.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
-	github.com/choria-io/appbuilder v0.0.4 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/emicklei/dot v0.16.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
@@ -91,7 +89,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.10 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.2-0.20181231171920-c182affec369 // indirect
 	github.com/mgutz/ansi v0.0.0-20170206155736-9520e82c474b // indirect
-	github.com/miekg/dns v1.1.48 // indirect
+	github.com/miekg/dns v1.1.49 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
@@ -125,5 +123,6 @@ require (
 	golang.org/x/time v0.0.0-20211116232009-f0f3c7e86c11 // indirect
 	golang.org/x/xerrors v0.0.0-20200804184101-5ec99f83aff1 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
+	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
