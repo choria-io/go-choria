@@ -71,7 +71,7 @@ func (r *Discover) SubCommands() []json.RawMessage {
 }
 
 func (r *Discover) CreateCommand(app builder.KingpinCommand) (*kingpin.CmdClause, error) {
-	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, r.flags, r.runCommand)
+	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, r.flags, r.b.Configuration(), r.runCommand)
 
 	r.fo = discovery.NewStandardOptions()
 

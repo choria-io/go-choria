@@ -11,7 +11,7 @@ require (
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.0.5
+	github.com/choria-io/appbuilder v0.0.6-0.20220525182517-76af9d4d363c
 	github.com/cloudevents/sdk-go/v2 v2.10.0
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
@@ -29,7 +29,7 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.32-0.20220520130442-4fcfcb01e3a5
-	github.com/nats-io/nats-server/v2 v2.8.4-0.20220524225320-752c0adec50d
+	github.com/nats-io/nats-server/v2 v2.8.4-0.20220525164427-72ed48d0966b
 	github.com/nats-io/nats.go v1.15.1-0.20220525015314-4e4f31855ccb
 	github.com/nats-io/natscli v0.0.33-0.20220523083704-8df8a5abe5b6
 	github.com/olekukonko/tablewriter v0.0.5
