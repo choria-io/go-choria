@@ -102,7 +102,7 @@ func (r *KV) Validate(log builder.Logger) error {
 	}
 
 	if !(act == "put" || act == "get" || act == "history" || act == "del") {
-		errs = append(errs, "invalid action %q", act)
+		errs = append(errs, fmt.Sprintf("invalid action %q", act))
 	}
 
 	if len(errs) > 0 {
