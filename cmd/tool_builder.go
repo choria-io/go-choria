@@ -5,6 +5,11 @@
 package cmd
 
 import (
+	"github.com/choria-io/appbuilder/commands/exec"
+	"github.com/choria-io/appbuilder/commands/parent"
+	"github.com/choria-io/go-choria/providers/appbuilder/discover"
+	"github.com/choria-io/go-choria/providers/appbuilder/kv"
+	"github.com/choria-io/go-choria/providers/appbuilder/rpc"
 	"sync"
 
 	"github.com/choria-io/appbuilder/builder"
@@ -15,6 +20,12 @@ type tBuilderCommand struct {
 }
 
 func (c *tBuilderCommand) Setup() error {
+	kv.MustRegister()
+	rpc.MustRegister()
+	discover.MustRegister()
+	parent.MustRegister()
+	exec.MustRegister()
+
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		c.cmd = tool.Cmd().Command("builder", "Application Builder tools")
 		bldr, err := builder.New(ctx, "builder", builderOptions()...)
@@ -32,7 +43,7 @@ func (c *tBuilderCommand) Setup() error {
 }
 
 func (c *tBuilderCommand) Configure() error {
-	return nil
+	return commonConfigure()
 }
 
 func (c *tBuilderCommand) Run(wg *sync.WaitGroup) error {

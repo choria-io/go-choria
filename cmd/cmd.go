@@ -109,7 +109,12 @@ func runBuilder() {
 
 	err := builder.RunStandardCLI(ctx, filepath.Base(os.Args[0]), false, nil, builderOptions()...)
 	if err != nil {
-		panic(fmt.Sprintf("app builder setup failed: %v", err))
+		if strings.Contains(err.Error(), "must select a") {
+			fmt.Println(err.Error())
+		} else {
+			fmt.Printf("app builder setup failed: %v\n", err)
+		}
+		os.Exit(1)
 	}
 
 	os.Exit(0)
