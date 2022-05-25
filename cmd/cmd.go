@@ -96,6 +96,10 @@ func ParseCLI() (err error) {
 	return
 }
 
+func builderOptions() []builder.Option {
+	return []builder.Option{builder.WithConfigPaths(".", filepath.Join(xdg.ConfigHome, "choria", "builder"), filepath.Join("/", "etc", "choria", "builder"))}
+}
+
 func runBuilder() {
 	kv.MustRegister()
 	rpc.MustRegister()
@@ -103,14 +107,11 @@ func runBuilder() {
 	parent.MustRegister()
 	exec.MustRegister()
 
-	logger := log.New()
-	logger.SetLevel(log.WarnLevel)
-	err := builder.RunStandardCLI(ctx, filepath.Base(os.Args[0]), false, log.NewEntry(logger),
-		builder.WithLogger(log.NewEntry(logger)),
-		builder.WithConfigPaths(".", filepath.Join(xdg.ConfigHome, "choria", "builder"), filepath.Join("etc", "choria", "builder")))
+	err := builder.RunStandardCLI(ctx, filepath.Base(os.Args[0]), false, nil, builderOptions()...)
 	if err != nil {
 		panic(fmt.Sprintf("app builder setup failed: %v", err))
 	}
+
 	os.Exit(0)
 }
 
