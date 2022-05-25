@@ -7,7 +7,10 @@ package kv
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"os"
+	"strings"
 	"time"
 
 	"github.com/choria-io/appbuilder/builder"
@@ -21,11 +24,12 @@ import (
 )
 
 type Command struct {
-	Action     string `json:"action"`
-	Bucket     string `json:"bucket"`
-	Key        string `json:"key"`
-	Value      string `json:"value"`
-	RenderJSON bool   `json:"json"`
+	Action     string                    `json:"action"`
+	Bucket     string                    `json:"bucket"`
+	Key        string                    `json:"key"`
+	Value      string                    `json:"value"`
+	RenderJSON bool                      `json:"json"`
+	Transform  *builder.GenericTransform `json:"transform"`
 
 	builder.GenericCommand
 	builder.GenericSubCommands
@@ -65,8 +69,50 @@ func MustRegister() {
 	builder.MustRegisterCommand("kv", NewKVCommand)
 }
 
-func (r *KV) Validate(log builder.Logger) error { return nil }
-func (r *KV) String() string                    { return fmt.Sprintf("%s (kv)", r.def.Name) }
+func (r *KV) Validate(log builder.Logger) error {
+	if r.def.Type != "kv" {
+		return fmt.Errorf("not a kv command")
+	}
+
+	var errs []string
+
+	err := r.def.GenericCommand.Validate(log)
+	if err != nil {
+		errs = append(errs, err.Error())
+	}
+
+	if r.def.Transform != nil {
+		err := r.def.Transform.Validate()
+		if err != nil {
+			errs = append(errs, err.Error())
+		}
+	}
+
+	if r.def.Bucket == "" {
+		errs = append(errs, "bucket is required")
+	}
+
+	if r.def.Key == "" {
+		errs = append(errs, "key is required")
+	}
+
+	act := r.def.Action
+	if act == "put" && r.def.Value == "" {
+		errs = append(errs, "value is required for put operations")
+	}
+
+	if !(act == "put" || act == "get" || act == "history" || act == "del") {
+		errs = append(errs, "invalid action %q", act)
+	}
+
+	if len(errs) > 0 {
+		return errors.New(strings.Join(errs, ", "))
+	}
+
+	return nil
+}
+
+func (r *KV) String() string { return fmt.Sprintf("%s (kv)", r.def.Name) }
 
 func (r *KV) SubCommands() []json.RawMessage {
 	return r.def.Commands
@@ -88,14 +134,17 @@ func (r *KV) getAction(kv nats.KeyValue) error {
 		return err
 	}
 
-	if r.def.RenderJSON {
+	switch {
+	case r.def.Transform != nil:
+		r.def.Transform.FTransformJSON(r.ctx, os.Stdout, entry.Value())
+	case r.def.RenderJSON:
 		ej, err := json.MarshalIndent(r.entryMap(entry), "", "  ")
 		if err != nil {
 			return err
 		}
 
 		fmt.Println(string(ej))
-	} else {
+	default:
 		fmt.Println(string(entry.Value()))
 	}
 
