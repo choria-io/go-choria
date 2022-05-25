@@ -82,7 +82,7 @@ func (r *KV) Validate(log builder.Logger) error {
 	}
 
 	if r.def.Transform != nil {
-		err := r.def.Transform.Validate()
+		err := r.def.Transform.Validate(log)
 		if err != nil {
 			errs = append(errs, err.Error())
 		}
@@ -119,7 +119,7 @@ func (r *KV) SubCommands() []json.RawMessage {
 }
 
 func (r *KV) CreateCommand(app builder.KingpinCommand) (*kingpin.CmdClause, error) {
-	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.Arguments, r.Flags, r.runCommand)
+	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.Arguments, r.Flags, r.b.Configuration(), r.runCommand)
 
 	if r.def.Action == "get" || r.def.Action == "history" && !r.def.RenderJSON {
 		r.cmd.Flag("json", "Renders results in JSON format").BoolVar(&r.def.RenderJSON)

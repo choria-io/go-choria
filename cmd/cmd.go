@@ -97,7 +97,13 @@ func ParseCLI() (err error) {
 }
 
 func builderOptions() []builder.Option {
-	return []builder.Option{builder.WithConfigPaths(".", filepath.Join(xdg.ConfigHome, "choria", "builder"), filepath.Join("/", "etc", "choria", "builder"))}
+	return []builder.Option{builder.WithConfigPaths(
+		".",
+		filepath.Join(xdg.ConfigHome, "choria", "builder"),
+		filepath.Join("/", "etc", "choria", "builder"),
+		filepath.Join(xdg.ConfigHome, "appbuilder"),
+		filepath.Join("/", "etc", "appbuilder"),
+	)}
 }
 
 func runBuilder() {

@@ -122,7 +122,7 @@ func (r *RPC) SubCommands() []json.RawMessage {
 }
 
 func (r *RPC) CreateCommand(app builder.KingpinCommand) (*kingpin.CmdClause, error) {
-	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, nil, r.runCommand)
+	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, nil, r.b.Configuration(), r.runCommand)
 
 	switch {
 	case r.def.OutputFormatFlags && r.def.OutputFormat != "":
