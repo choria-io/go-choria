@@ -56,6 +56,7 @@ type ChoriaPluginConfig struct {
 	NetworkPeers                       []string      `confkey:"plugin.choria.network.peers" type:"comma_split" url:"https://choria.io/docs/deployment/broker/"`    // List of cluster peers in host:port format
 	NetworkLeafPort                    int           `confkey:"plugin.choria.network.leafnode_port" default:"0"`                                                   // Port to listen on for Leafnode connections, disabled with 0
 	NetworkLeafRemotes                 []string      `confkey:"plugin.choria.network.leafnode_remotes" type:"comma_split"`                                         // Remote networks to connect to as a Leafnode
+	NetworkMappings                    []string      `confkey:"plugin.choria.network.mapping.names" type:"comma_split"`                                            // List of subject remappings to apply
 	NetworkGatewayPort                 int           `confkey:"plugin.choria.network.gateway_port" default:"0"`                                                    // Port to listen on for Super Cluster connections
 	NetworkGatewayName                 string        `confkey:"plugin.choria.network.gateway_name" default:"CHORIA"`                                               // Name for the Super Cluster
 	NetworkGatewayRemotes              []string      `confkey:"plugin.choria.network.gateway_remotes" type:"comma_split"`                                          // List of remote Super Clusters to connect to

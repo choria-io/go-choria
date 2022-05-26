@@ -117,6 +117,11 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 		return s, fmt.Errorf("could not set up accounts: %s", err)
 	}
 
+	err = s.setupMappings()
+	if err != nil {
+		s.log.Errorf("Network Mapping setup failed: %v", err)
+	}
+
 	err = s.setupWebSockets()
 	if err != nil {
 		return s, fmt.Errorf("could not set up WebSocket: %s", err)
