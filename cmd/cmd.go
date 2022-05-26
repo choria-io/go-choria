@@ -97,6 +97,12 @@ func ParseCLI() (err error) {
 }
 
 func builderOptions() []builder.Option {
+	kv.Register()
+	rpc.Register()
+	discover.Register()
+	parent.Register()
+	exec.Register()
+
 	return []builder.Option{builder.WithConfigPaths(
 		".",
 		filepath.Join(xdg.ConfigHome, "choria", "builder"),
@@ -107,12 +113,6 @@ func builderOptions() []builder.Option {
 }
 
 func runBuilder() {
-	kv.MustRegister()
-	rpc.MustRegister()
-	discover.MustRegister()
-	parent.MustRegister()
-	exec.MustRegister()
-
 	err := builder.RunStandardCLI(ctx, filepath.Base(os.Args[0]), false, nil, builderOptions()...)
 	if err != nil {
 		if strings.Contains(err.Error(), "must select a") {
