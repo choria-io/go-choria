@@ -410,7 +410,6 @@ func (r *RPC) transformResults(w io.Writer, results *replyfmt.RPCResults, action
 		return err
 	}
 
-	fmt.Printf("transform: %#v", r.def.Transform)
 	return r.def.Transform.FTransformJSON(r.ctx, w, out.Bytes())
 }
 
