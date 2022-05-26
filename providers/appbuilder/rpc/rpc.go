@@ -8,9 +8,11 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
+	"strings"
 	"sync"
 	"time"
 
@@ -119,7 +121,38 @@ func MustRegister() {
 
 func (r *RPC) String() string { return fmt.Sprintf("%s (rpc)", r.def.Name) }
 
-func (r *RPC) Validate(log builder.Logger) error { return nil }
+func (r *RPC) Validate(log builder.Logger) error {
+	if r.def.Type != "rpc" {
+		return fmt.Errorf("not a rpc command")
+	}
+
+	var errs []string
+
+	err := r.def.GenericCommand.Validate(log)
+	if err != nil {
+		errs = append(errs, err.Error())
+	}
+
+	if r.def.Transform != nil {
+		err := r.def.Transform.Validate(log)
+		if err != nil {
+			errs = append(errs, err.Error())
+		}
+	}
+
+	if r.def.Request.Agent == "" {
+		errs = append(errs, "agent is required")
+	}
+	if r.def.Request.Action == "" {
+		errs = append(errs, "action is required")
+	}
+
+	if len(errs) > 0 {
+		return errors.New(strings.Join(errs, ", "))
+	}
+
+	return nil
+}
 
 func (r *RPC) SubCommands() []json.RawMessage {
 	return r.def.Commands
@@ -377,34 +410,8 @@ func (r *RPC) transformResults(w io.Writer, results *replyfmt.RPCResults, action
 		return err
 	}
 
-	data := map[string]interface{}{}
-	err = json.Unmarshal(out.Bytes(), &data)
-	if err != nil {
-		return err
-	}
-
-	iter := r.jqQuery.RunWithContext(r.ctx, data)
-	for {
-		v, ok := iter.Next()
-		if !ok {
-			break
-		}
-
-		switch val := v.(type) {
-		case error:
-			return val
-		case string:
-			fmt.Fprintln(w, val)
-		default:
-			j, err := json.MarshalIndent(val, "", "  ")
-			if err != nil {
-				return err
-			}
-			fmt.Fprintln(w, string(j))
-		}
-	}
-
-	return nil
+	fmt.Printf("transform: %#v", r.def.Transform)
+	return r.def.Transform.FTransformJSON(r.ctx, w, out.Bytes())
 }
 
 func (r *RPC) renderResults(fw inter.Framework, log *logrus.Entry, results *replyfmt.RPCResults, action *agent.Action) (err error) {
