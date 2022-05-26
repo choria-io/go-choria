@@ -33,7 +33,7 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.32-0.20220520130442-4fcfcb01e3a5
-	github.com/nats-io/nats-server/v2 v2.8.4-0.20220525164427-72ed48d0966b
+	github.com/nats-io/nats-server/v2 v2.8.4
 	github.com/nats-io/nats.go v1.15.1-0.20220525015314-4e4f31855ccb
 	github.com/nats-io/natscli v0.0.33-0.20220523083704-8df8a5abe5b6
 	github.com/olekukonko/tablewriter v0.0.5
