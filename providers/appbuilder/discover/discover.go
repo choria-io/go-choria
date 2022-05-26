@@ -58,6 +58,10 @@ func NewDiscoverCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Lo
 	return find, nil
 }
 
+func Register() error {
+	return builder.RegisterCommand("discover", NewDiscoverCommand)
+}
+
 func MustRegister() {
 	builder.MustRegisterCommand("discover", NewDiscoverCommand)
 }

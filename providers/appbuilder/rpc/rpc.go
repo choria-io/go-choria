@@ -109,6 +109,10 @@ func NewRPCCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Logger)
 	return rpc, nil
 }
 
+func Register() error {
+	return builder.RegisterCommand("rpc", NewRPCCommand)
+}
+
 func MustRegister() {
 	builder.MustRegisterCommand("rpc", NewRPCCommand)
 }

@@ -194,8 +194,8 @@ github.com/checkpoint-restore/go-criu/v5 v5.0.0/go.mod h1:cfwC0EG7HMUenopBsUf9d8
 github.com/checkpoint-restore/go-criu/v5 v5.3.0/go.mod h1:E/eQpaFtUKGOOSEBZgmKAcn+zUUwWxqcaKZlF54wK8E=
 github.com/cheekybits/genny v1.0.0 h1:uGGa4nei+j20rOSeDeP5Of12XVm7TGUd4dJA9RDitfE=
 github.com/cheekybits/genny v1.0.0/go.mod h1:+tQajlRqAUrPI7DOSpB0XAqZYtQakVtB7wXkRAgjxjQ=
-github.com/choria-io/appbuilder v0.0.6-0.20220525182517-76af9d4d363c h1:WO3RbOCgMwhFQeOSVPkrR18FHc9C3kNMFztDqXuxVRs=
-github.com/choria-io/appbuilder v0.0.6-0.20220525182517-76af9d4d363c/go.mod h1:O8B23N32wXfk7dvgslAkedrjjRE6nDeXpBT1ByUtYFg=
+github.com/choria-io/appbuilder v0.0.6-0.20220526085554-43c5b44a0614 h1:TtsvbKBmgIUSJG/TF6FRKuSNIV4YqII4JqZtTLaVxCo=
+github.com/choria-io/appbuilder v0.0.6-0.20220526085554-43c5b44a0614/go.mod h1:O8B23N32wXfk7dvgslAkedrjjRE6nDeXpBT1ByUtYFg=
 github.com/chzyer/logex v1.1.10/go.mod h1:+Ywpsq7O8HXn0nuIou7OrIPyXbp3wmkHB+jjWRnGsAI=
 github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e/go.mod h1:nSuG5e5PlCu98SY8svDHJxuZscDgtXS6KTTbou5AhLI=
 github.com/chzyer/test v0.0.0-20180213035817-a1ea475d72b1/go.mod h1:Q3SI9o4m/ZMnBNeIyt5eFwwo7qiLfzFZmjNmxjkiQlU=

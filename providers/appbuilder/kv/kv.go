@@ -65,6 +65,10 @@ func NewKVCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Logger) 
 	return kv, nil
 }
 
+func Register() error {
+	return builder.RegisterCommand("kv", NewKVCommand)
+}
+
 func MustRegister() {
 	builder.MustRegisterCommand("kv", NewKVCommand)
 }
