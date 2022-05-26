@@ -12,6 +12,20 @@ import (
 func ProcessStdDiscoveryOptions(f *discovery.StandardOptions, arguments interface{}, flags interface{}, config interface{}) error {
 	var err error
 
+	if f.DiscoveryMethod != "" {
+		f.DiscoveryMethod, err = builder.ParseStateTemplate(f.DiscoveryMethod, arguments, flags, config)
+		if err != nil {
+			return err
+		}
+	}
+
+	for k, v := range f.DiscoveryOptions {
+		f.DiscoveryOptions[k], err = builder.ParseStateTemplate(v, arguments, flags, config)
+		if err != nil {
+			return err
+		}
+	}
+
 	if f.Collective != "" {
 		f.Collective, err = builder.ParseStateTemplate(f.Collective, arguments, flags, config)
 		if err != nil {
