@@ -2,6 +2,10 @@ module github.com/choria-io/go-choria
 
 go 1.17
 
+// fixes a vulnerability, this can be removed once all
+// dependencies have also updated themselves
+replace gopkg.in/yaml.v2 => gopkg.in/yaml.v3 v3.0.0
+
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.4
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
