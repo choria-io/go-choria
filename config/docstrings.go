@@ -68,6 +68,7 @@ var docStrings = map[string]string{
 	"plugin.choria.network.peers":                              "List of cluster peers in host:port format",
 	"plugin.choria.network.leafnode_port":                      "Port to listen on for Leafnode connections, disabled with 0",
 	"plugin.choria.network.leafnode_remotes":                   "Remote networks to connect to as a Leafnode",
+	"plugin.choria.network.mapping.names":                      "List of subject remappings to apply",
 	"plugin.choria.network.gateway_port":                       "Port to listen on for Super Cluster connections",
 	"plugin.choria.network.gateway_name":                       "Name for the Super Cluster",
 	"plugin.choria.network.gateway_remotes":                    "List of remote Super Clusters to connect to",
