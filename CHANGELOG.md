@@ -1,5 +1,27 @@
 | Date       | Issue | Description                                                                                               |
 |------------|-------|-----------------------------------------------------------------------------------------------------------|
+| 2022/05/10 | 1665  | Introduce a new kind of Application by adopting the `appbuilder` project and extending it for Choria      |
+| 2022/05/09 | 1663  | Adds a `semver` reply filter function                                                                     |
+| 2022/05/28 | 1659  | Use core Go list of supported ciphersuites                                                                |
+| 2022/05/20 | 1654  | Prevent use of JWT tokens with incorrect caller ID                                                        |
+| 2022/05/14 | 1649  | Fix typo in generated code                                                                                |
+| 2022/05/12 | 1647  | Expand the `inventory` registration payload to include version, hash and auto agent information           |
+| 2022/05/11 | 1645  | Work around breaking change in nats.go related to KV access                                               |
+| 2022/05/08 | 1643  | Allow show TTLs for leader elections                                                                      |
+| 2022/05/06 | 1640  | Improve reliability of clean shutdowns                                                                    |
+| 2022/04/05 | 1445  | Reject agents without a name or too small timeout                                                         |
+| 2022/04/05 | 1636  | Support skipping system stream management                                                                 |
+| 2022/04/05 | 1591  | Use correct credentials when running `choria broker server check jetstream`                               |
+| 2022/04/05 | 1633  | Remove the Provisioner agent `release_update` action                                                      |
+| 2022/03/31 | 1630  | UX improvements for `choria kv`                                                                           |
+| 2022/03/30 | 1628  | Use correct credentials when running `choria broker server check kv`                                      |
+| 2022/03/29 | 1625  | When using the embedded `nats` cli allow a custom Choria configuration to be set                          |
+| 2022/03/22 | 1619  | Adds full end to end integration testing                                                                  |
+| 2022/03/21 |       | Improve logging during initial connection establishment                                                   |
+| 2022/03/17 | 1615  | Remove obsolte operating system distributions                                                             |
+| 2022/03/16 |       | Switch to go 1.18                                                                                         |
+| 2022/03/10 |       | Redact some passwords when logging                                                                        |
+| 2022/03/01 | 1608  | Improve hostname validation checks in flatfile discovery                                                  |
 | 2022/02/25 |       | Release 0.25.1                                                                                            |
 | 2022/02/25 | 1604  | Fix startup on windows                                                                                    |
 | 2022/02/23 |       | Release 0.25.0                                                                                            |
@@ -90,7 +112,7 @@
 | 2021/07/09 | 1289  | Additional Prometheus statistics for Choria Streams                                                       |
 | 2021/07/05 | 1276  | Support Governors in the Exec Autonomous Agent watcher                                                    |
 | 2021/07/02 | 1276  | Introduce `choria governor` for network wide concurrency control                                          |
-| 2021/06/30 | 1277  | Support PKCS8 containers                                                                                  | 
+| 2021/06/30 | 1277  | Support PKCS8 containers                                                                                  |
 | 2021/06/23 | 1273  | Introduce Choria Submission to allow messages to be placed into Streams via Choria Server                 |
 | 2021/06/21 | 1272  | Use default client-like resolution to find brokers in the JetStream adapter when no urls are given        |
 | 2021/06/09 | 1042  | Rate limit fast transitions in autonomous agents                                                          |
@@ -136,7 +158,7 @@
 | 2021/03/05 | 1156  | Support retrieving a single choria autonomous agent state using choria_util                               |
 | 2021/03/02 | 1154  | Support building ppc64le EL7 and EL8 RPMs                                                                 |
 | 2021/03/02 | 1152  | Improve ping response calculations in federated networks                                                  |
-| 2021/03/01 | 1150  | Avoid unnecessary warning level logs                                                                      | 
+| 2021/03/01 | 1150  | Avoid unnecessary warning level logs                                                                      |
 | 2021/02/23 |       | Drop support for Enterprise Linux 6 due to go1.16                                                         |
 | 2021/02/22 | 1147  | Correctly detect stdin discovery                                                                          |
 | 2021/02/17 | 1145  | Improve stability of `choria scout watch`                                                                 |
