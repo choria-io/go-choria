@@ -21,6 +21,7 @@ import (
 	"github.com/choria-io/go-choria/providers/appbuilder"
 
 	"github.com/AlecAivazis/survey/v2"
+	"github.com/alecthomas/kingpin"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/inter"
@@ -31,7 +32,6 @@ import (
 	"github.com/gosuri/uiprogress"
 	"github.com/itchyny/gojq"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 type Flag struct {

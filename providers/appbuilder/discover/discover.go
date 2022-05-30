@@ -14,9 +14,9 @@ import (
 	"github.com/choria-io/go-choria/providers/appbuilder"
 	"github.com/sirupsen/logrus"
 
+	"github.com/alecthomas/kingpin"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/discovery"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 type Command struct {

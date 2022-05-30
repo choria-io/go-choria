@@ -5,7 +5,7 @@
 package inter
 
 import (
-	"gopkg.in/alecthomas/kingpin.v2"
+	"github.com/alecthomas/kingpin"
 )
 
 // FlagApp is a kingpin command or app
