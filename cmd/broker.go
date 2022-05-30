@@ -10,13 +10,13 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/alecthomas/kingpin"
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/jsm.go"
 	natscli "github.com/nats-io/natscli/cli"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 type brokerCommand struct {

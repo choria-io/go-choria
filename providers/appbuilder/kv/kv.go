@@ -17,10 +17,10 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/sirupsen/logrus"
 
+	"github.com/alecthomas/kingpin"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/nats.go"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 type Command struct {

@@ -7,7 +7,7 @@ package cmd
 import (
 	"sync"
 
-	kingpin "gopkg.in/alecthomas/kingpin.v2"
+	kingpin "github.com/alecthomas/kingpin"
 )
 
 type command struct {

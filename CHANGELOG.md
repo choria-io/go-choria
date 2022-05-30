@@ -7,7 +7,7 @@
 | 2022/05/14 | 1649  | Fix typo in generated code                                                                                |
 | 2022/05/12 | 1647  | Expand the `inventory` registration payload to include version, hash and auto agent information           |
 | 2022/05/11 | 1645  | Work around breaking change in nats.go related to KV access                                               |
-| 2022/05/08 | 1643  | Allow show TTLs for leader elections                                                                      |
+| 2022/05/08 | 1643  | Allow slow TTLs for leader elections                                                                      |
 | 2022/05/06 | 1640  | Improve reliability of clean shutdowns                                                                    |
 | 2022/04/05 | 1445  | Reject agents without a name or too small timeout                                                         |
 | 2022/04/05 | 1636  | Support skipping system stream management                                                                 |
@@ -18,7 +18,7 @@
 | 2022/03/29 | 1625  | When using the embedded `nats` cli allow a custom Choria configuration to be set                          |
 | 2022/03/22 | 1619  | Adds full end to end integration testing                                                                  |
 | 2022/03/21 |       | Improve logging during initial connection establishment                                                   |
-| 2022/03/17 | 1615  | Remove obsolte operating system distributions                                                             |
+| 2022/03/17 | 1615  | Remove obsolete operating system distributions                                                            |
 | 2022/03/16 |       | Switch to go 1.18                                                                                         |
 | 2022/03/10 |       | Redact some passwords when logging                                                                        |
 | 2022/03/01 | 1608  | Improve hostname validation checks in flatfile discovery                                                  |

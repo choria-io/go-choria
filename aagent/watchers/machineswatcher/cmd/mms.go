@@ -12,9 +12,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/alecthomas/kingpin"
 	machines "github.com/choria-io/go-choria/aagent/watchers/machineswatcher"
 	"github.com/sirupsen/logrus"
-	"gopkg.in/alecthomas/kingpin.v2"
 )
 
 var (
