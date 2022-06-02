@@ -1,0 +1,14 @@
+[Unit]
+Description=The Choria Orchestrator Network Broker
+After=network.target
+
+[Service]
+LimitNOFILE=51200
+User=root
+Group=root
+ExecStart={{cpkg_bindir}}/{{cpkg_name}} broker run --config={{cpkg_etcdir}}/broker.conf
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=multi-user.target
