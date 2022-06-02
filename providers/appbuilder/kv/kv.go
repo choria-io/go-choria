@@ -133,7 +133,12 @@ func (r *KV) CreateCommand(app builder.KingpinCommand) (*kingpin.CmdClause, erro
 }
 
 func (r *KV) getAction(kv nats.KeyValue) error {
-	entry, err := kv.Get(r.def.Key)
+	key, err := r.key()
+	if err != nil {
+		return err
+	}
+
+	entry, err := kv.Get(key)
 	if err != nil {
 		return err
 	}
@@ -161,7 +166,12 @@ func (r *KV) putAction(kv nats.KeyValue) error {
 		return err
 	}
 
-	rev, err := kv.PutString(r.def.Key, v)
+	key, err := r.key()
+	if err != nil {
+		return err
+	}
+
+	rev, err := kv.PutString(key, v)
 	if err != nil {
 		return err
 	}
@@ -172,11 +182,16 @@ func (r *KV) putAction(kv nats.KeyValue) error {
 }
 
 func (r *KV) delAction(kv nats.KeyValue) error {
-	err := kv.Delete(r.def.Key)
+	key, err := r.key()
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Deleted key %s\n", r.def.Key)
+
+	err = kv.Delete(key)
+	if err != nil {
+		return err
+	}
+	fmt.Printf("Deleted key %s\n", key)
 
 	return nil
 }
@@ -214,7 +229,12 @@ func (r *KV) entryMap(e nats.KeyValueEntry) map[string]interface{} {
 }
 
 func (r *KV) historyAction(kv nats.KeyValue) error {
-	history, err := kv.History(r.def.Key)
+	key, err := r.key()
+	if err != nil {
+		return err
+	}
+
+	history, err := kv.History(key)
 	if err != nil {
 		return err
 	}
@@ -253,6 +273,14 @@ func (r *KV) historyAction(kv nats.KeyValue) error {
 	return nil
 }
 
+func (r *KV) bucket() (string, error) {
+	return builder.ParseStateTemplate(r.def.Bucket, r.def.Arguments, r.def.Flags, r.cfg)
+}
+
+func (r *KV) key() (string, error) {
+	return builder.ParseStateTemplate(r.def.Key, r.def.Arguments, r.def.Flags, r.cfg)
+}
+
 func (r *KV) runCommand(_ *kingpin.ParseContext) error {
 	cfg, err := config.NewConfig(choria.UserConfig())
 	if err != nil {
@@ -269,7 +297,12 @@ func (r *KV) runCommand(_ *kingpin.ParseContext) error {
 		return err
 	}
 
-	kv, err := fw.KV(r.ctx, nil, r.def.Bucket, false)
+	bucket, err := r.bucket()
+	if err != nil {
+		return err
+	}
+
+	kv, err := fw.KV(r.ctx, nil, bucket, false)
 	if err != nil {
 		return err
 	}
