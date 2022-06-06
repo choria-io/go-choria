@@ -9,7 +9,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/alecthomas/kingpin"
+	"github.com/choria-io/fisk"
 )
 
 type enrollCommand struct {
@@ -52,7 +52,7 @@ func (e *enrollCommand) Run(wg *sync.WaitGroup) (err error) {
 		}
 		fmt.Printf("Attempting to download certificate for %s, try %d\n", c.Certname(), try)
 	})
-	kingpin.FatalIfError(err, "Could not enroll")
+	fisk.FatalIfError(err, "Could not enroll")
 
 	return nil
 }

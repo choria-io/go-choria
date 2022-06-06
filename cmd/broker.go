@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/alecthomas/kingpin"
+	"github.com/choria-io/fisk"
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/internal/util"
@@ -24,14 +24,14 @@ type brokerCommand struct {
 }
 
 // broker
-func (b *brokerCommand) prepareNatsCli(pc *kingpin.ParseContext, opts *natscli.Options) error {
+func (b *brokerCommand) prepareNatsCli(pc *fisk.ParseContext, opts *natscli.Options) error {
 	cmd := pc.String()
 	if cmd == "broker" || cmd == "broker run" {
 		return nil
 	}
 
 	for _, e := range pc.Elements {
-		f, ok := e.Clause.(*kingpin.FlagClause)
+		f, ok := e.Clause.(*fisk.FlagClause)
 		if ok {
 			if strings.HasPrefix(f.Model().Name, "help") {
 				return nil
@@ -104,7 +104,7 @@ func (b *brokerCommand) Setup() (err error) {
 		return err
 	}
 
-	b.cmd.PreAction(func(pc *kingpin.ParseContext) error {
+	b.cmd.PreAction(func(pc *fisk.ParseContext) error {
 		return b.prepareNatsCli(pc, opts)
 	})
 

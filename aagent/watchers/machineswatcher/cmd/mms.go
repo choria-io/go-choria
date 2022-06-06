@@ -12,7 +12,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/alecthomas/kingpin"
+	"github.com/choria-io/fisk"
 	machines "github.com/choria-io/go-choria/aagent/watchers/machineswatcher"
 	"github.com/sirupsen/logrus"
 )
@@ -24,7 +24,7 @@ var (
 )
 
 func main() {
-	app := kingpin.New("mms", "Manage machine specifications")
+	app := fisk.New("mms", "Manage machine specifications")
 
 	app.Command("keys", "Create a key ed25519 pair").Action(keysAction)
 
@@ -33,10 +33,10 @@ func main() {
 	sign.Arg("key", "The ED25519 private key to encode with").Envar("KEY").StringVar(&key)
 	sign.Flag("force", "Do not warn about no ed25519 key").BoolVar(&force)
 
-	kingpin.MustParse(app.Parse(os.Args[1:]))
+	fisk.MustParse(app.Parse(os.Args[1:]))
 }
 
-func keysAction(_ *kingpin.ParseContext) error {
+func keysAction(_ *fisk.ParseContext) error {
 	pub, pri, err := ed25519.GenerateKey(rand.Reader)
 	if err != nil {
 		return err
@@ -48,7 +48,7 @@ func keysAction(_ *kingpin.ParseContext) error {
 	return nil
 }
 
-func signAction(_ *kingpin.ParseContext) error {
+func signAction(_ *fisk.ParseContext) error {
 	data, err := os.ReadFile(managed)
 	if err != nil {
 		return err
