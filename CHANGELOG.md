@@ -1,5 +1,8 @@
 | Date       | Issue | Description                                                                                               |
 |------------|-------|-----------------------------------------------------------------------------------------------------------|
+| 2022/06/06 | 1708  | Move to `fisk` CLI package, improve default help output verbosity                                         |
+| 2022/06/02 | 1704  | Support EL9                                                                                               |
+| 2022/05/26 | 1697  | Support subject mappings witin the Choria Brokers for partitioning                                        |
 | 2022/05/10 | 1665  | Introduce a new kind of Application by adopting the `appbuilder` project and extending it for Choria      |
 | 2022/05/09 | 1663  | Adds a `semver` reply filter function                                                                     |
 | 2022/05/28 | 1659  | Use core Go list of supported ciphersuites                                                                |
