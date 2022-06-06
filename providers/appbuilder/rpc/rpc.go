@@ -16,19 +16,18 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/appbuilder/builder"
-	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/providers/appbuilder"
-
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/alecthomas/kingpin"
+	"github.com/choria-io/appbuilder/builder"
+	"github.com/choria-io/fisk"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/discovery"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
+	"github.com/choria-io/go-choria/providers/appbuilder"
 	"github.com/gosuri/uiprogress"
 	"github.com/itchyny/gojq"
 	"github.com/sirupsen/logrus"
@@ -67,7 +66,7 @@ type Command struct {
 
 type RPC struct {
 	b           *builder.AppBuilder
-	cmd         *kingpin.CmdClause
+	cmd         *fisk.CmdClause
 	fo          *discovery.StandardOptions
 	def         *Command
 	cfg         interface{}
@@ -158,7 +157,7 @@ func (r *RPC) SubCommands() []json.RawMessage {
 	return r.def.Commands
 }
 
-func (r *RPC) CreateCommand(app builder.KingpinCommand) (*kingpin.CmdClause, error) {
+func (r *RPC) CreateCommand(app builder.KingpinCommand) (*fisk.CmdClause, error) {
 	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, nil, r.b.Configuration(), r.runCommand)
 
 	switch {
@@ -293,7 +292,7 @@ func (r *RPC) setupFilter(fw inter.Framework) error {
 	return nil
 }
 
-func (r *RPC) runCommand(_ *kingpin.ParseContext) error {
+func (r *RPC) runCommand(_ *fisk.ParseContext) error {
 	var (
 		noisy   = !(r.json || r.senders || r.def.NoProgress || r.def.Transform != nil)
 		mu      = sync.Mutex{}

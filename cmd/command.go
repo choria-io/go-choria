@@ -7,21 +7,21 @@ package cmd
 import (
 	"sync"
 
-	kingpin "github.com/alecthomas/kingpin"
+	"github.com/choria-io/fisk"
 )
 
 type command struct {
 	Run   func(wg *sync.WaitGroup) error
 	Setup func() error
 
-	cmd *kingpin.CmdClause
+	cmd *fisk.CmdClause
 }
 
 type runableCmd interface {
 	Setup() error
 	Run(wg *sync.WaitGroup) error
 	FullCommand() string
-	Cmd() *kingpin.CmdClause
+	Cmd() *fisk.CmdClause
 	Configure() error
 }
 
@@ -29,6 +29,6 @@ func (c *command) FullCommand() string {
 	return c.Cmd().FullCommand()
 }
 
-func (c *command) Cmd() *kingpin.CmdClause {
+func (c *command) Cmd() *fisk.CmdClause {
 	return c.cmd
 }

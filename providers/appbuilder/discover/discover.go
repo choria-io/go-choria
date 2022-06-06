@@ -10,13 +10,12 @@ import (
 	"fmt"
 
 	"github.com/choria-io/appbuilder/builder"
+	"github.com/choria-io/fisk"
+	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/appbuilder"
 	"github.com/sirupsen/logrus"
-
-	"github.com/alecthomas/kingpin"
-	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/client/discovery"
 )
 
 type Command struct {
@@ -28,7 +27,7 @@ type Command struct {
 
 type Discover struct {
 	b         *builder.AppBuilder
-	cmd       *kingpin.CmdClause
+	cmd       *fisk.CmdClause
 	fo        *discovery.StandardOptions
 	def       *Command
 	cfg       interface{}
@@ -74,7 +73,7 @@ func (r *Discover) SubCommands() []json.RawMessage {
 	return r.def.Commands
 }
 
-func (r *Discover) CreateCommand(app builder.KingpinCommand) (*kingpin.CmdClause, error) {
+func (r *Discover) CreateCommand(app builder.KingpinCommand) (*fisk.CmdClause, error) {
 	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, r.flags, r.b.Configuration(), r.runCommand)
 
 	r.fo = discovery.NewStandardOptions()
@@ -90,7 +89,7 @@ func (r *Discover) CreateCommand(app builder.KingpinCommand) (*kingpin.CmdClause
 	return r.cmd, nil
 }
 
-func (r *Discover) runCommand(_ *kingpin.ParseContext) error {
+func (r *Discover) runCommand(_ *fisk.ParseContext) error {
 	cfg, err := config.NewConfig(choria.UserConfig())
 	if err != nil {
 		return err

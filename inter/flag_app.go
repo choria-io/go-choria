@@ -5,11 +5,11 @@
 package inter
 
 import (
-	"github.com/alecthomas/kingpin"
+	"github.com/choria-io/fisk"
 )
 
-// FlagApp is a kingpin command or app
+// FlagApp is a fisk command or app
 type FlagApp interface {
-	Flag(name, help string) *kingpin.FlagClause
-	Command(name, help string) *kingpin.CmdClause
+	Flag(name, help string) *fisk.FlagClause
+	Command(name, help string) *fisk.CmdClause
 }

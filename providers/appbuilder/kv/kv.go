@@ -14,13 +14,12 @@ import (
 	"time"
 
 	"github.com/choria-io/appbuilder/builder"
-	"github.com/choria-io/go-choria/config"
-	"github.com/sirupsen/logrus"
-
-	"github.com/alecthomas/kingpin"
+	"github.com/choria-io/fisk"
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/nats.go"
+	"github.com/sirupsen/logrus"
 )
 
 type Command struct {
@@ -39,7 +38,7 @@ type KV struct {
 	b         *builder.AppBuilder
 	Arguments map[string]*string
 	Flags     map[string]*string
-	cmd       *kingpin.CmdClause
+	cmd       *fisk.CmdClause
 	def       *Command
 	cfg       interface{}
 	log       builder.Logger
@@ -122,7 +121,7 @@ func (r *KV) SubCommands() []json.RawMessage {
 	return r.def.Commands
 }
 
-func (r *KV) CreateCommand(app builder.KingpinCommand) (*kingpin.CmdClause, error) {
+func (r *KV) CreateCommand(app builder.KingpinCommand) (*fisk.CmdClause, error) {
 	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.Arguments, r.Flags, r.b.Configuration(), r.runCommand)
 
 	if r.def.Action == "get" || r.def.Action == "history" && !r.def.RenderJSON {
@@ -281,7 +280,7 @@ func (r *KV) key() (string, error) {
 	return builder.ParseStateTemplate(r.def.Key, r.def.Arguments, r.def.Flags, r.cfg)
 }
 
-func (r *KV) runCommand(_ *kingpin.ParseContext) error {
+func (r *KV) runCommand(_ *fisk.ParseContext) error {
 	cfg, err := config.NewConfig(choria.UserConfig())
 	if err != nil {
 		return err
