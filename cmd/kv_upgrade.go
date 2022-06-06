@@ -45,7 +45,7 @@ func (k *kvUpgradeCommand) Run(wg *sync.WaitGroup) error {
 	}
 
 	nfo := status.(*nats.KeyValueBucketStatus).StreamInfo()
-	if nfo.Config.AllowRollup {
+	if nfo.Config.AllowRollup && nfo.Config.Discard == nats.DiscardNew {
 		fmt.Printf("Configuration for %s is already up to date\n", k.name)
 		return nil
 	}
@@ -60,7 +60,7 @@ func (k *kvUpgradeCommand) Run(wg *sync.WaitGroup) error {
 		return err
 	}
 
-	err = stream.UpdateConfiguration(stream.Configuration(), jsm.AllowRollup())
+	err = stream.UpdateConfiguration(stream.Configuration(), jsm.AllowRollup(), jsm.DiscardNew())
 	if err != nil {
 		return err
 	}
