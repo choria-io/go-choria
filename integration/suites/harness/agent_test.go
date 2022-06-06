@@ -155,7 +155,8 @@ var _ = Describe("testing harness agent", func() {
 			}
 
 			// checks that the server did indeed sent back 10 - 5+discovery replies ie. round trip calls all happened
-			Expect(srv.Stats().Replies).To(Equal(int64(10)))
+			// we check for >= 10 since flake attempts will continue to increase the stats
+			Expect(srv.Stats().Replies).To(BeNumerically(">=", 10))
 		})
 	})
 })
