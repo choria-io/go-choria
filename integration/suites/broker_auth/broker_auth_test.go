@@ -365,7 +365,7 @@ var _ = Describe("Authentication", func() {
 				nats.UserInfo("system", "systemS3cret"),
 				nats.Secure(&tls.Config{InsecureSkipVerify: true}))
 			Expect(err).To(MatchError("nats: Authorization Violation"))
-			Expect(logbuff).To(gbytes.Say("System user is only allowed over verified TLS connections"))
+			Expect(logbuff).To(gbytes.Say("Handling unverified TLS system user failed, denying: no JWT token received"))
 			Expect(logbuff).ToNot(gbytes.Say("Registering user"))
 		})
 

@@ -149,20 +149,17 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		})
 
 		Describe("system user", func() {
+			var copts *server.ClientOpts
+
 			BeforeEach(func() {
 				auth.isTLS = true
 				auth.systemAccount = &server.Account{Name: "system"}
 				auth.systemUser = "system"
 				auth.systemPass = "sysTem"
 
-				copts := &server.ClientOpts{Username: "system", Password: "sysTem"}
+				copts = &server.ClientOpts{Username: "system", Password: "sysTem"}
 				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
 				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}).AnyTimes()
-			})
-
-			It("Should reject non mTLS system users", func() {
-				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
-				Expect(auth.Check(mockClient)).To(BeFalse())
 			})
 
 			It("Should verify the password correctly", func() {
@@ -180,6 +177,95 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 				Expect(auth.Check(mockClient)).To(BeTrue())
 			})
+
+			It("Should reject non mTLS system users that has no JWT", func() {
+				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
+				mockClient.EXPECT().RegisterUser(gomock.Any()).Times(0)
+				Expect(auth.Check(mockClient)).To(BeFalse())
+			})
+
+			Describe("JWT based system access", func() {
+				var (
+					td           string
+					privateKey   *rsa.PrivateKey
+					edPrivateKey ed25519.PrivateKey
+					edPublicKey  ed25519.PublicKey
+					// verifiedConn *tls.ConnectionState
+					err error
+				)
+
+				BeforeEach(func() {
+					td, privateKey = createKeyPair()
+					auth.clientJwtSigner = filepath.Join(td, "public.pem")
+					edPublicKey, edPrivateKey, err = choria.Ed25519KeyPair()
+					Expect(err).ToNot(HaveOccurred())
+					sig, err := choria.Ed25519Sign(edPrivateKey, []byte("toomanysecrets"))
+					mockClient.EXPECT().GetNonce().Return([]byte("toomanysecrets")).AnyTimes()
+					Expect(err).ToNot(HaveOccurred())
+					copts.Sig = base64.RawURLEncoding.EncodeToString(sig)
+					mockClient.EXPECT().Kind().Return(server.CLIENT).AnyTimes()
+				})
+
+				AfterEach(func() {
+					os.RemoveAll(td)
+				})
+
+				It("Should reject non mTLS system users with a JWT but without the needed permissions", func() {
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Times(0)
+					mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
+					copts.Token = createSignedClientJWT(privateKey, map[string]interface{}{
+						"purpose":    tokens.ClientIDPurpose,
+						"public_key": hex.EncodeToString(edPublicKey),
+					})
+
+					Expect(auth.Check(mockClient)).To(BeFalse())
+				})
+
+				It("Should reject non mTLS system users with a JWT that does not allow system access", func() {
+					mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Times(0)
+
+					copts.Token = createSignedClientJWT(privateKey, map[string]interface{}{
+						"purpose":     tokens.ClientIDPurpose,
+						"public_key":  hex.EncodeToString(edPublicKey),
+						"permissions": map[string]bool{},
+					})
+
+					Expect(auth.Check(mockClient)).To(BeFalse())
+				})
+
+				It("Should only accept system users with a JWT over TLS", func() {
+					mockClient.EXPECT().GetTLSConnectionState().Return(nil).AnyTimes()
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Times(0)
+
+					copts.Token = createSignedClientJWT(privateKey, map[string]interface{}{
+						"purpose":    tokens.ClientIDPurpose,
+						"public_key": hex.EncodeToString(edPublicKey),
+						"permissions": map[string]bool{
+							"system_user": true,
+						},
+					})
+
+					Expect(auth.Check(mockClient)).To(BeFalse())
+				})
+
+				It("Should accept non mTLS system users with a correct JWT", func() {
+					mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+						Expect(user.Account).To(Equal(auth.systemAccount))
+					})
+
+					copts.Token = createSignedClientJWT(privateKey, map[string]interface{}{
+						"purpose":    tokens.ClientIDPurpose,
+						"public_key": hex.EncodeToString(edPublicKey),
+						"permissions": map[string]bool{
+							"system_user": true,
+						},
+					})
+
+					Expect(auth.Check(mockClient)).To(BeTrue())
+				})
+			})
 		})
 	})
 
@@ -195,8 +281,8 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		)
 
 		BeforeEach(func() {
-			auth.serverJwtSigner = filepath.Join(td, "public.pem")
 			td, privateKey = createKeyPair()
+			auth.serverJwtSigner = filepath.Join(td, "public.pem")
 			edPublicKey, edPrivateKey, err = choria.Ed25519KeyPair()
 			Expect(err).ToNot(HaveOccurred())
 		})
@@ -720,17 +806,17 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		})
 	})
 
-	Describe("handleSystemAccount", func() {
+	Describe("handleVerifiedSystemAccount", func() {
 		It("Should fail without a password", func() {
 			auth.systemUser = ""
 			auth.systemPass = ""
 
-			verified, err := auth.handleSystemAccount(mockClient)
+			verified, err := auth.handleVerifiedSystemAccount(mockClient)
 			Expect(err).To(MatchError("system user is required"))
 			Expect(verified).To(BeFalse())
 
 			auth.systemUser = "system"
-			verified, err = auth.handleSystemAccount(mockClient)
+			verified, err = auth.handleVerifiedSystemAccount(mockClient)
 			Expect(err).To(MatchError("system password is required"))
 			Expect(verified).To(BeFalse())
 		})
@@ -739,7 +825,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			auth.systemUser = "system"
 			auth.systemPass = "s3cret"
 
-			verified, err := auth.handleSystemAccount(mockClient)
+			verified, err := auth.handleVerifiedSystemAccount(mockClient)
 			Expect(err).To(MatchError("system account is not set"))
 			Expect(verified).To(BeFalse())
 		})
@@ -750,7 +836,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			auth.systemAccount = &server.Account{Name: "system"}
 
 			mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: "system", Password: "s3cret"}).AnyTimes()
-			verified, err := auth.handleSystemAccount(mockClient)
+			verified, err := auth.handleVerifiedSystemAccount(mockClient)
 			Expect(err).To(MatchError("invalid system credentials"))
 			Expect(verified).To(BeFalse())
 		})
@@ -771,7 +857,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(user.Permissions.Response).To(BeNil())
 			})
 
-			verified, err := auth.handleSystemAccount(mockClient)
+			verified, err := auth.handleVerifiedSystemAccount(mockClient)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(verified).To(BeTrue())
 		})
