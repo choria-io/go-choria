@@ -20,12 +20,12 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-// ChoriaAuth implements Nats Server server.Authentication interface and
+// ChoriaAuth implements the Nats server.Authentication interface and
 // allows IP limits to be configured, connections that do not match
 // the configured IP or CIDRs are not allowed to publish to the
 // network targets used by clients to request actions on nodes.
 //
-// Additionally when the server is running in a mode where anonymous
+// Additionally, when the server is running in a mode where anonymous
 // TLS connections is accepted then servers are entirely denied and
 // clients are allowed but restricted based on the JWT issued by the
 // AAA Service. This is activated using the plugin.choria.network.client_anon_tls
@@ -91,6 +91,8 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 		log = log.WithField("remote", remote.String())
 	}
 
+	systemUser := a.isSystemUser(c)
+
 	switch {
 	case a.isProvisionUser(c):
 		verified, err = a.handleProvisioningUserConnection(c, tlsVerified)
@@ -98,15 +100,20 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 			log.Warnf("Handling provisioning user connection failed, denying %s: %s", c.RemoteAddress().String(), err)
 		}
 
-	case a.isSystemUser(c):
-		if !tlsVerified {
-			log.Warnf("System user is only allowed over verified TLS connections")
-			return false
-		}
-
-		verified, err = a.handleSystemAccount(c)
+	case systemUser && tlsVerified:
+		verified, err = a.handleVerifiedSystemAccount(c)
 		if err != nil {
 			log.Warnf("Handling system user failed, denying: %s", err)
+		}
+
+	case systemUser && tlsc == nil:
+		verified = false
+		log.Warnf("System user is only allowed over TLS connections")
+
+	case systemUser && !tlsVerified:
+		verified, err = a.handleUnverifiedSystemAccount(c, tlsc, log)
+		if err != nil {
+			log.Warnf("Handling unverified TLS system user failed, denying: %s", err)
 		}
 
 	default:
@@ -244,7 +251,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 		setServerPerms bool
 	)
 
-	shouldPerformJWTBasedAuth := (a.anonTLS || jwts != "") && conn != nil
+	shouldPerformJWTBasedAuth := (a.anonTLS || jwts != emptyString) && conn != nil
 
 	// we only do JWT based auth in TLS mode
 	if shouldPerformJWTBasedAuth {
@@ -266,7 +273,6 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 			log.Debugf("Extracted caller id %s from JWT token", clientClaims.CallerID)
 
 			caller = clientClaims.CallerID
-
 			setClientPerms = true
 			user.Username = caller
 
@@ -318,7 +324,52 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	return true, nil
 }
 
-func (a *ChoriaAuth) handleSystemAccount(c server.ClientAuthentication) (bool, error) {
+func (a *ChoriaAuth) handleUnverifiedSystemAccount(c server.ClientAuthentication, conn *tls.ConnectionState, log *logrus.Entry) (bool, error) {
+	if conn == nil {
+		return false, fmt.Errorf("requires TLS")
+	}
+
+	remote := c.RemoteAddress()
+	opts := c.GetOpts()
+	jwts := opts.Token
+
+	if jwts == emptyString {
+		return false, fmt.Errorf("no JWT token received")
+	}
+
+	purpose := tokens.TokenPurpose(jwts)
+	log = log.WithFields(logrus.Fields{"jwt_auth": true, "purpose": purpose})
+	log.Infof("Performing JWT based authentication verification for system account access")
+
+	if purpose != tokens.ClientIDPurpose {
+		return false, fmt.Errorf("client token required")
+	}
+
+	if c.Kind() != server.CLIENT {
+		return false, fmt.Errorf("a client JWT was presented by a %d connection", c.Kind())
+	}
+
+	claims, err := a.parseClientIDJWT(jwts)
+	if err != nil {
+		log.Errorf("could not parse JWT from %s: %s", remote.String(), err)
+		return false, fmt.Errorf("invalid JWT token")
+	}
+
+	if claims.Permissions == nil || !claims.Permissions.SystemUser {
+		return false, fmt.Errorf("no system_user claim")
+	}
+
+	nonce := c.GetNonce()
+	_, err = a.verifyNonceSignature(nonce, opts.Sig, claims.PublicKey, log)
+	if err != nil {
+		log.Errorf("nonce signature verification failed: %s", err)
+		return false, fmt.Errorf("invalid nonce signature")
+	}
+
+	return a.handleVerifiedSystemAccount(c)
+}
+
+func (a *ChoriaAuth) handleVerifiedSystemAccount(c server.ClientAuthentication) (bool, error) {
 	if a.systemUser == "" {
 		return false, fmt.Errorf("system user is required")
 	}
