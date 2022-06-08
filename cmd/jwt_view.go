@@ -221,6 +221,9 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 		if claims.Permissions.OrgAdmin {
 			fmt.Println("      Can observe all traffic on all subjects")
 		}
+		if claims.Permissions.SystemUser {
+			fmt.Println("      Can access the Broker system account")
+		}
 	}
 
 	if len(claims.UserProperties) > 0 {
