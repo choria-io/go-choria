@@ -30,7 +30,7 @@ type tSubmitCommand struct {
 
 func (s *tSubmitCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
-		s.cmd = tool.Cmd().Command("submit", "Submit a message to the submission system")
+		s.cmd = tool.Cmd().Command("submit", "Submit a message to the Submission system")
 		s.cmd.Arg("subject", "The subject to publish to").Required().StringVar(&s.subject)
 		s.cmd.Arg("payload", "The file to read as payload, - for STDIN").Required().StringVar(&s.payloadFile)
 		s.cmd.Flag("reliable", "Marks the message as reliable").BoolVar(&s.reliable)

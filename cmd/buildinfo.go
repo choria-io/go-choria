@@ -26,7 +26,7 @@ type buildinfoCommand struct {
 }
 
 func (b *buildinfoCommand) Setup() (err error) {
-	b.cmd = cli.app.Command("buildinfo", "View build settings")
+	b.cmd = cli.app.Command("buildinfo", "View build settings and configuration")
 	b.cmd.Flag("dependencies", "Show dependencies used to build the binary").Short('D').BoolVar(&b.dependencies)
 
 	return

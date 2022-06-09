@@ -13,7 +13,7 @@ type serverCommand struct {
 }
 
 func (b *serverCommand) Setup() (err error) {
-	b.cmd = cli.app.Command("server", "Choria Server")
+	b.cmd = cli.app.Command("server", "Choria Orchestration Server")
 	b.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 
 	return

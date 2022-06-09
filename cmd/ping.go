@@ -46,7 +46,7 @@ type pingCommand struct {
 }
 
 func (p *pingCommand) Setup() (err error) {
-	p.cmd = cli.app.Command("ping", "Low level Choria network testing tool")
+	p.cmd = cli.app.Command("ping", "Low level network protocol testing tool")
 	p.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 	p.cmd.Flag("silent", "Do not print any hostnames").BoolVar(&p.silent)
 	p.cmd.Flag("names", "Only show the names that respond, no statistics").BoolVar(&p.namesOnly)

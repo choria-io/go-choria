@@ -1,5 +1,6 @@
 | Date       | Issue | Description                                                                                               |
 |------------|-------|-----------------------------------------------------------------------------------------------------------|
+| 2022/06/08 | 1713  | Allow access to the broker system account via unverified TLS given a JWT with the system permission       |
 | 2022/06/06 | 1703  | Adds `kv create` and `kv update`                                                                          |
 | 2022/06/06 | 1708  | Move to `fisk` CLI package, improve default help output verbosity                                         |
 | 2022/06/02 | 1704  | Support EL9                                                                                               |
@@ -14,7 +15,7 @@
 | 2022/05/08 | 1643  | Allow slow TTLs for leader elections                                                                      |
 | 2022/05/06 | 1640  | Improve reliability of clean shutdowns                                                                    |
 | 2022/04/05 | 1445  | Reject agents without a name or too small timeout                                                         |
-| 2022/04/05 | 1636  | Support skipping system stream management                                                                 |
+| 2022/04/05 | 1636  | Support skipping system stream management                                                                 |s
 | 2022/04/05 | 1591  | Use correct credentials when running `choria broker server check jetstream`                               |
 | 2022/04/05 | 1633  | Remove the Provisioner agent `release_update` action                                                      |
 | 2022/03/31 | 1630  | UX improvements for `choria kv`                                                                           |

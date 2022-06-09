@@ -4,15 +4,20 @@
 
 package cmd
 
-import "sync"
+import (
+	"sync"
+
+	"github.com/choria-io/go-choria/internal/fs"
+)
 
 type tGovCommand struct {
 	command
 }
 
 func (g *tGovCommand) Setup() (err error) {
-	g.cmd = cli.app.Command("governor", "Distributed concurrency control system for Choria Streams").Alias("gov")
+	g.cmd = cli.app.Command("governor", "Distributed Concurrency Control System management").Alias("gov")
 	g.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
+	g.cmd.CheatFile(fs.FS, "governor", "cheats/governor.md")
 
 	return nil
 }
