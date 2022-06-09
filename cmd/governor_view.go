@@ -6,15 +6,13 @@ package cmd
 
 import (
 	"fmt"
-	"os"
-	"strconv"
 	"sync"
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/jsm.go/governor"
-	"github.com/olekukonko/tablewriter"
 )
 
 type tGovViewCommand struct {
@@ -69,10 +67,7 @@ func (g *tGovViewCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	if nfo.State.Msgs > 0 {
 		fmt.Println()
-		table := tablewriter.NewWriter(os.Stdout)
-		defer table.Render()
-
-		table.SetHeader([]string{"ID", "Process Name", "Age"})
+		table := util.NewUTF8Table("ID", "Process Name", "Age")
 
 		sub, err := conn.Nats().SubscribeSync(choria.Inbox(cfg.MainCollective, cfg.Identity))
 		if err != nil {
@@ -96,11 +91,13 @@ func (g *tGovViewCommand) Run(wg *sync.WaitGroup) (err error) {
 				continue
 			}
 
-			table.Append([]string{strconv.Itoa(int(meta.StreamSequence())), string(msg.Data), fmt.Sprintf("%v", time.Since(meta.TimeStamp()).Round(time.Millisecond))})
+			table.AddRow(meta.StreamSequence(), string(msg.Data), fmt.Sprintf("%v", time.Since(meta.TimeStamp()).Round(time.Millisecond)))
 			if meta.Pending() == 0 {
 				break
 			}
 		}
+
+		fmt.Println(table.Render())
 	}
 
 	return nil

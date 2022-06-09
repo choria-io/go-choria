@@ -10,6 +10,7 @@ import (
 	"os"
 	"sync"
 
+	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/discovery"
@@ -27,6 +28,7 @@ type discoverCommand struct {
 func (d *discoverCommand) Setup() error {
 	d.cmd = cli.app.Command("discover", "Discover nodes using the discovery system matching filter criteria").Alias("find")
 	d.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
+	d.cmd.CheatFile(fs.FS, "discover", "cheats/discover.md")
 
 	d.fo = discovery.NewStandardOptions()
 	d.fo.AddFilterFlags(d.cmd)

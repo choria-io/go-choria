@@ -72,10 +72,12 @@ func ParseCLI() (err error) {
 
 	bi = &build.Info{}
 
-	cli.app = fisk.New("choria", "Choria Orchestration System")
+	cli.app = fisk.New("choria", "Choria Orchestration System\n\nUse 'choria cheat' for cheat sheet style help.")
 	cli.app.Version(bi.Version())
+	cli.app.WithCheats()
 	cli.app.Flag("debug", "Enable debug logging").BoolVar(&debug)
 	cli.app.Flag("profile", "Enable CPU profiling and write to the supplied file").Hidden().StringVar(&cpuProfile)
+	cli.app.CheatCommand.Hidden()
 
 	for _, cmd := range cli.commands {
 		err = cmd.Setup()

@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/client/discovery"
+	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/choria-io/go-choria/protocol"
 	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
 	agentddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
@@ -60,9 +61,7 @@ type reqCommand struct {
 func (r *reqCommand) Setup() (err error) {
 	r.args = make(map[string]string)
 
-	help := `Performs a RPC request against the Choria network
-
-Replies are shown according to DDL rules or --display, replies can also
+	help := `Replies are shown according to DDL rules or --display, replies can also
 be filtered using an expression language that will include only those replies
 that match the filter.
 
@@ -75,12 +74,13 @@ that match the filter.
    # include only responses where the array item includes 'needle'
    --filter-replies 'ok() && include(data("array"), "needle")'
 
-
 `
 
-	r.cmd = cli.app.Command("req", help).Alias("rpc")
-	r.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
+	r.cmd = cli.app.Command("req", "Invokes Choria RPC Actions").Alias("rpc")
+	r.cmd.HelpLong(help)
+	r.cmd.CheatFile(fs.FS, "req", "cheats/req.md")
 
+	r.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 	r.cmd.Arg("agent", "The agent to invoke").Required().StringVar(&r.agent)
 	r.cmd.Arg("action", "The action to invoke").Required().StringVar(&r.action)
 	r.cmd.Arg("args", "Arguments to pass to the action in key=val format").StringMapVar(&r.args)

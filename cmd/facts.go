@@ -14,8 +14,9 @@ import (
 	"sync"
 	"time"
 
-	"github.com/olekukonko/tablewriter"
+	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/sirupsen/logrus"
+	xtablewriter "github.com/xlab/tablewriter"
 
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/client/rpcutilclient"
@@ -43,6 +44,7 @@ type factCommandValue struct {
 
 func (f *factsCommand) Setup() error {
 	f.cmd = cli.app.Command("facts", "Reports on usage for a specific fact")
+	f.cmd.CheatFile(fs.FS, "facts", "cheats/facts.md")
 	f.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 	f.cmd.Arg("fact", "The fact to report on").Required().StringVar(&f.fact)
 	f.cmd.Flag("table", "Produce tabular output").Short('t').BoolVar(&f.table)
@@ -91,28 +93,23 @@ func (f *factsCommand) sortByCount(facts map[string]*factCommandValue) []*factCo
 }
 
 func (f *factsCommand) showTable(facts map[string]*factCommandValue) error {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetAutoWrapText(true)
-	table.SetAutoFormatHeaders(true)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-
+	var table *xtablewriter.Table
 	if f.verbose || f.nodes {
-		table.SetHeader([]string{"Fact", "Matches", "Nodes"})
+		table = util.NewUTF8Table("Fact", "Matches", "Nodes")
 	} else {
-		table.SetHeader([]string{"Fact", "Matches"})
+		table = util.NewUTF8Table("Fact", "Matches")
 	}
 
 	for _, v := range f.sortByCount(facts) {
 		if f.verbose || f.nodes {
 			sort.Strings(v.Nodes)
-			table.Append([]string{v.value, strconv.Itoa(v.Cnt), strings.Join(v.Nodes, "\n")})
+			table.AddRow(v.value, strconv.Itoa(v.Cnt), strings.Join(v.Nodes, "\n"))
 		} else {
-			table.Append([]string{v.value, strconv.Itoa(v.Cnt)})
+			table.AddRow(v.value, strconv.Itoa(v.Cnt))
 		}
 	}
 
-	table.Render()
+	fmt.Println(table.Render())
 
 	return nil
 }
