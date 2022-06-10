@@ -9,6 +9,7 @@ import (
 	"os"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/choria-io/fisk"
 	"github.com/choria-io/go-choria/build"
@@ -99,7 +100,7 @@ func (b *brokerCommand) Setup() (err error) {
 	b.cmd = cli.app.Command("broker", "Choria Network Broker and Management Utilities")
 	b.cmd.Flag("choria-config", "Choria Config file to use").Hidden().PlaceHolder("FILE").ExistingFileVar(&configFile)
 
-	opts, err := natscli.ConfigureInCommand(b.cmd, nil, false, "cheat", "rtt", "backup", "latency", "restore", "bench", "schema", "errors", "kv", "object", "governor", "context")
+	opts, err := natscli.ConfigureInCommand(b.cmd, &natscli.Options{NoCheats: true, Timeout: 5 * time.Second}, false, "cheat", "rtt", "backup", "latency", "restore", "bench", "schema", "errors", "kv", "object", "governor", "context")
 	if err != nil {
 		return err
 	}
