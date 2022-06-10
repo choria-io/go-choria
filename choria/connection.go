@@ -155,7 +155,7 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 		//
 		// Server run would have detected this and triggered reprovision but we should double check
 		// here anyway and also for clients would have invalid reply channels
-		if caller != "" && fw.Config.Identity != caller {
+		if fw.Config.InitiatedByServer && caller != "" && fw.Config.Identity != caller {
 			return nil, fmt.Errorf("identity %s does not match caller %s in JWT token", fw.Config.Identity, caller)
 		}
 
