@@ -378,6 +378,14 @@ func (r *RPC) runCommand(_ *fisk.ParseContext) error {
 		}
 	}
 
+	if r.batch > 0 {
+		if r.batchSleep == 0 {
+			r.batchSleep = 1
+		}
+
+		opts = append(opts, client.InBatches(r.batch, r.batchSleep))
+	}
+
 	rpcres, err := agent.Do(r.ctx, r.def.Request.Action, rpcInputs, opts...)
 	if err != nil {
 		return err
