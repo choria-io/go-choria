@@ -15,15 +15,16 @@ import (
 )
 
 type ProvisioningClaims struct {
-	Token        string `json:"cht"`
-	Secure       bool   `json:"chs"`
-	URLs         string `json:"chu,omitempty"`
-	SRVDomain    string `json:"chsrv,omitempty"`
-	ProvDefault  bool   `json:"chpd"`
-	ProvRegData  string `json:"chrd,omitempty"`
-	ProvFacts    string `json:"chf,omitempty"`
-	ProvNatsUser string `json:"chusr,omitempty"`
-	ProvNatsPass string `json:"chpwd,omitempty"`
+	Token        string    `json:"cht"`
+	Secure       bool      `json:"chs"`
+	URLs         string    `json:"chu,omitempty"`
+	SRVDomain    string    `json:"chsrv,omitempty"`
+	ProvDefault  bool      `json:"chpd"`
+	ProvRegData  string    `json:"chrd,omitempty"`
+	ProvFacts    string    `json:"chf,omitempty"`
+	ProvNatsUser string    `json:"chusr,omitempty"`
+	ProvNatsPass string    `json:"chpwd,omitempty"`
+	Extensions   MapClaims `json:"extensions"`
 
 	StandardClaims
 }
