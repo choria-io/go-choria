@@ -30,6 +30,9 @@ const (
 	ServerPurpose Purpose = "choria_server"
 )
 
+// MapClaims are free form map claims
+type MapClaims jwt.MapClaims
+
 // ParseToken parses token into claims and verify the token is valid using the pk
 func ParseToken(token string, claims jwt.Claims, pk *rsa.PublicKey) error {
 	if pk == nil {

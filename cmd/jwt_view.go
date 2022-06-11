@@ -158,8 +158,16 @@ func (v *tJWTViewCommand) validateProvisionToken(token string) error {
 	if claims.ProvNatsPass != "" {
 		fmt.Println("               Broker Password: *****")
 	}
+	if len(claims.Extensions) > 0 {
+		ext, err := json.MarshalIndent(claims.Extensions, "                                ", "  ")
+		if err != nil {
+			return nil
+		}
+		fmt.Printf("             Extensions Claims: %s\n", string(ext))
 
-	stdc, err := json.MarshalIndent(claims.StandardClaims, "                               ", "  ")
+	}
+
+	stdc, err := json.MarshalIndent(claims.StandardClaims, "                                ", "  ")
 	if err != nil {
 		return nil
 	}

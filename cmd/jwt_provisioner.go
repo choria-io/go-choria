@@ -5,6 +5,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"fmt"
 	"sync"
 
@@ -24,7 +25,9 @@ type jWTCreateProvCommand struct {
 	uname       string
 	password    string
 	provDefault bool
-	urls        []string
+	extensions  string
+
+	urls []string
 
 	command
 }
@@ -43,6 +46,7 @@ func (p *jWTCreateProvCommand) Setup() (err error) {
 		p.cmd.Flag("facts", "File to use for facts during registration").StringVar(&p.facts)
 		p.cmd.Flag("username", "Username to connect to the provisioning broker with").StringVar(&p.uname)
 		p.cmd.Flag("password", "Password to connect to the provisioning broker with").StringVar(&p.password)
+		p.cmd.Flag("extensions", "Adds additional extensions to the token, accepts JSON data").PlaceHolder("JSON").StringVar(&p.extensions)
 	}
 
 	return nil
@@ -82,6 +86,15 @@ func (p *jWTCreateProvCommand) createJWT() error {
 	claims, err := tokens.NewProvisioningClaims(!p.insecure, p.provDefault, p.token, p.uname, p.password, p.urls, p.srvDomain, p.regData, p.facts, "Choria CLI", 0)
 	if err != nil {
 		return err
+	}
+
+	if p.extensions != "" {
+		ext := tokens.MapClaims{}
+		err := json.Unmarshal([]byte(p.extensions), &ext)
+		if err != nil {
+			return fmt.Errorf("invalid extensions: %v", err)
+		}
+		claims.Extensions = ext
 	}
 
 	err = tokens.SaveAndSignTokenWithKeyFile(claims, p.signingKey, p.file, 0600)

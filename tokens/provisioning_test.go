@@ -34,6 +34,7 @@ var _ = Describe("ProvisioningClaims", func() {
 
 		pclaims, err := NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", []string{"nats://example.net:4222"}, "example.net", "/reg.data", "/facts.json", "Ginkgo", time.Hour)
 		Expect(err).ToNot(HaveOccurred())
+		pclaims.Extensions = MapClaims{"hello": "world"}
 		validToken, err = SignToken(pclaims, loadPriKey("testdata/signer-key.pem"))
 		Expect(err).ToNot(HaveOccurred())
 
@@ -108,6 +109,7 @@ var _ = Describe("ProvisioningClaims", func() {
 			t, err := ParseProvisioningToken(validToken, loadPubKey("testdata/signer-public.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(t.Secure).To(BeTrue())
+			Expect(t.Extensions).To(Equal(MapClaims{"hello": "world"}))
 		})
 	})
 
