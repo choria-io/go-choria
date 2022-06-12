@@ -135,7 +135,6 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 
 	choriaAuth := &ChoriaAuth{
 		clientAllowList: s.config.Choria.NetworkAllowedClientHosts,
-		anonTLS:         s.config.Choria.NetworkClientTLSAnon,
 		choriaAccount:   s.choriaAccount,
 		denyServers:     s.config.Choria.NetworkDenyServers,
 		isTLS:           s.isClientTlSBroker(),
@@ -272,27 +271,6 @@ func (s *Server) setupTLS() (err error) {
 		if s.config.Choria.NetworkServerTokenSignerFile != "" {
 			s.log.Warnf("Allowing unverified TLS connections for Provisioner signed servers")
 		}
-
-	case s.config.Choria.NetworkClientTLSAnon:
-		if len(s.config.Choria.NetworkLeafRemotes) == 0 {
-			return fmt.Errorf("can only configure anonymous TLS for client connections when leafnodes are defined using plugin.choria.network.leafnode_remotes")
-		}
-
-		if !s.config.Choria.NetworkDenyServers {
-			s.log.Warnf("Disabling connections from Servers while in Anon TLS mode")
-			s.config.Choria.NetworkDenyServers = true
-		}
-
-		if len(s.config.Choria.NetworkAllowedClientHosts) == 0 {
-			s.log.Warnf("Adding 0.0.0.0/0 to client hosts list, override using plugin.choria.network.client_hosts")
-			s.config.Choria.NetworkAllowedClientHosts = []string{"0.0.0.0/0"}
-		}
-
-		s.log.Warnf("Configuring anonymous TLS for client connections")
-		s.opts.TLSVerify = false
-		s.opts.TLS = true
-		tlsc.InsecureSkipVerify = true
-		tlsc.ClientAuth = tls.NoClientCert
 	}
 
 	s.opts.TLSConfig = tlsc

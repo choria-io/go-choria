@@ -5,17 +5,12 @@
 package network
 
 import (
-	"fmt"
 	"time"
 )
 
 func (s *Server) setupWebSockets() error {
 	if s.config.Choria.NetworkWebSocketPort == 0 {
 		return nil
-	}
-
-	if s.config.Choria.NetworkClientTLSAnon {
-		return fmt.Errorf("disabled when anonymous TLS is configured")
 	}
 
 	s.log.Infof("Starting Broker WebSocket support on port %d", s.config.Choria.NetworkWebSocketPort)

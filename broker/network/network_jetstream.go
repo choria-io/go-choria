@@ -66,25 +66,6 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 	var nc *nats.Conn
 	var err error
 
-	err = backoff.TwentySec.For(ctx, func(try int) error {
-		nc, err = nats.Connect(s.opts.ClientAdvertise, opts...)
-		if err != nil {
-			s.log.Warnf("Could not connect to broker %s to configure System Streams: %s", s.opts.ClientAdvertise, err)
-			return err
-		}
-
-		return nil
-	})
-	if err != nil {
-		return err
-	}
-	defer nc.Close()
-
-	mgr, err := jsm.New(nc)
-	if err != nil {
-		return err
-	}
-
 	cfg := s.config.Choria
 	if cfg.NetworkEventStoreReplicas == -1 || cfg.NetworkMachineStoreReplicas == -1 || cfg.NetworkStreamAdvisoryReplicas == -1 || cfg.NetworkLeaderElectionReplicas == -1 {
 		delay := time.Duration(rand.Intn(60)+10) * time.Second
@@ -124,6 +105,25 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 			s.log.Infof("Setting Choria Streams Leader election Replicas to %d", count)
 			cfg.NetworkLeaderElectionReplicas = count
 		}
+	}
+
+	err = backoff.TwentySec.For(ctx, func(try int) error {
+		nc, err = nats.Connect(s.opts.ClientAdvertise, opts...)
+		if err != nil {
+			s.log.Warnf("Could not connect to broker %s to configure System Streams: %s", s.opts.ClientAdvertise, err)
+			return err
+		}
+
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	defer nc.Close()
+
+	mgr, err := jsm.New(nc)
+	if err != nil {
+		return err
 	}
 
 	err = s.createOrUpdateStream("CHORIA_EVENTS", []string{"choria.lifecycle.>"}, cfg.NetworkEventStoreDuration, cfg.NetworkEventStoreReplicas, mgr)

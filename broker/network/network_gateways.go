@@ -17,10 +17,6 @@ func (s *Server) setupGateways() (err error) {
 		return nil
 	}
 
-	if s.config.Choria.NetworkClientTLSAnon && len(s.config.Choria.NetworkGatewayRemotes) > 0 {
-		return fmt.Errorf("super clusters are disabled when anonymous TLS is configured")
-	}
-
 	if s.config.Choria.NetworkGatewayName == "" {
 		return fmt.Errorf("network Gateways require a name")
 	}

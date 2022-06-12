@@ -21,10 +21,6 @@ func (s *Server) setupCluster() (err error) {
 		return nil
 	}
 
-	if s.config.Choria.NetworkClientTLSAnon && (s.config.Choria.NetworkPeerPort > 0 || peers.Count() > 0) {
-		return fmt.Errorf("clustering is disabled when anonymous TLS is configured")
-	}
-
 	if peers.Count() > 0 && s.config.Choria.NetworkPeerPort == 0 {
 		s.log.Info("Defaulting Choria Broker Peer port to 5222")
 		s.config.Choria.NetworkPeerPort = 5222
