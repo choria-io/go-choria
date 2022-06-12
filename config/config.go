@@ -23,7 +23,7 @@ import (
 
 var forceDotParse bool
 
-// Config represents Choria configuration
+// Config represents Choria cofnfiguration
 //
 // NOTE: When adding or updating doc strings please run `go generate` in the root of the repository
 type Config struct {

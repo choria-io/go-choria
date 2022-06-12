@@ -26,8 +26,7 @@ type jWTCreateProvCommand struct {
 	password    string
 	provDefault bool
 	extensions  string
-
-	urls []string
+	urls        []string
 
 	command
 }

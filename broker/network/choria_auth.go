@@ -304,13 +304,14 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	// if a caller is set from the Client ID JWT we want to restrict it to just client stuff
 	// if a client allow list is set and the client is in the ip range we restrict it also
 	// else its default open like users with certs
-	case setClientPerms || ((a.anonTLS || caller != "") && a.remoteInClientAllowList(remote)):
+	case setClientPerms || (!setServerPerms && (a.anonTLS || caller != "") && a.remoteInClientAllowList(remote)):
 		log.Debugf("Setting client permissions")
 		a.setClientPermissions(user, caller, clientClaims.Permissions, log)
 
 	// Else in the case where an allow list is configured we set server permissions on other conns
 	case setServerPerms || len(a.clientAllowList) > 0:
 		a.setServerPermissions(user, serverClaims, log)
+
 	}
 
 	if user.Account != nil {
