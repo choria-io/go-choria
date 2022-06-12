@@ -736,23 +736,6 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(verified).To(BeTrue())
 			})
-
-			It("Should not access a JWT in non TLS mode", func() {
-				auth.clientJwtSigner = ""
-				auth.anonTLS = false
-				mockClient.GetOpts().Token = ""
-
-				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
-				mockClient.EXPECT().GetNonce().Return(nil)
-				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
-					Expect(user.Username).To(BeEmpty()) // caller would be set from the jwt
-					Expect(user.Account).To(Equal(auth.choriaAccount))
-				})
-
-				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
-				Expect(verified).To(BeTrue())
-				Expect(err).ToNot(HaveOccurred())
-			})
 		})
 
 		Describe("verifyNonceSignature", func() {
@@ -1170,8 +1153,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 		Describe("System User", func() {
 			It("Should should set correct permissions", func() {
-				auth.anonTLS = true
-				auth.setClientPermissions(user, "", &tokens.ClientPermissions{OrgAdmin: true}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{OrgAdmin: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: []string{">"},
 				}))
@@ -1184,7 +1166,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		Describe("Stream Users", func() {
 			It("Should set no permissions for non choria users", func() {
 				user.Account = auth.provisioningAccount
-				auth.setClientPermissions(user, "", &tokens.ClientPermissions{StreamsUser: true}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{StreamsUser: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: minSub,
 				}))
@@ -1195,7 +1177,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 			It("Should set correct permissions for the choria user", func() {
 				user.Account = auth.choriaAccount
-				auth.setClientPermissions(user, "", &tokens.ClientPermissions{StreamsUser: true}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{StreamsUser: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: minSub,
 				}))
@@ -1223,7 +1205,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		Describe("Governor Users", func() {
 			It("Should not set provisioner permissions", func() {
 				user.Account = auth.provisioningAccount
-				auth.setClientPermissions(user, "", &tokens.ClientPermissions{StreamsUser: true, Governor: true}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{StreamsUser: true, Governor: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: minSub,
 				}))
@@ -1234,7 +1216,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 			It("Should set choria permissions", func() {
 				user.Account = auth.choriaAccount
-				auth.setClientPermissions(user, "", &tokens.ClientPermissions{StreamsUser: true, Governor: true}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{StreamsUser: true, Governor: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: minSub,
 				}))
@@ -1265,7 +1247,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		Describe("Event Viewers", func() {
 			It("Should set provisioning permissions", func() {
 				user.Account = auth.provisioningAccount
-				auth.setClientPermissions(user, "", &tokens.ClientPermissions{EventsViewer: true}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{EventsViewer: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: append(minSub, "choria.lifecycle.event.*.provision_mode_server"),
 				}))
@@ -1276,7 +1258,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 			It("Should set choria permissions", func() {
 				user.Account = auth.choriaAccount
-				auth.setClientPermissions(user, "", &tokens.ClientPermissions{EventsViewer: true}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{EventsViewer: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: append(minSub, "choria.lifecycle.event.>",
 						"choria.machine.watcher.>",
@@ -1291,7 +1273,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		Describe("Election Users", func() {
 			It("Should set provisioning permissions", func() {
 				user.Account = auth.provisioningAccount
-				auth.setClientPermissions(user, "", &tokens.ClientPermissions{ElectionUser: true}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{ElectionUser: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: minSub,
 				}))
@@ -1304,7 +1286,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 			It("Should set choria permissions", func() {
 				user.Account = auth.choriaAccount
-				auth.setClientPermissions(user, "", &tokens.ClientPermissions{ElectionUser: true}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{ElectionUser: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: minSub,
 				}))
@@ -1318,7 +1300,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		Describe("Streams Admin", func() {
 			It("Should set no permissions for non choria users", func() {
 				user.Account = auth.provisioningAccount
-				auth.setClientPermissions(user, "", &tokens.ClientPermissions{StreamsAdmin: true}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{StreamsAdmin: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: minSub,
 				}))
@@ -1329,7 +1311,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 			It("Should set correct permissions for choria user", func() {
 				user.Account = auth.choriaAccount
-				auth.setClientPermissions(user, "", &tokens.ClientPermissions{StreamsAdmin: true}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{StreamsAdmin: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: append(minSub, "$JS.EVENT.>"),
 				}))
@@ -1341,7 +1323,6 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 		Describe("Minimal Permissions", func() {
 			It("Should support caller private reply subjects", func() {
-				auth.anonTLS = true
 				auth.setClientPermissions(user, "u=ginkgo", nil, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: []string{"*.reply.0f47cbbd2accc01a51e57261d6e64b8b.>"},
@@ -1352,7 +1333,6 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			})
 
 			It("Should support standard reply subjects", func() {
-				auth.anonTLS = true
 				auth.setClientPermissions(user, "", nil, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: []string{"*.reply.>"},

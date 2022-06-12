@@ -120,15 +120,6 @@ var _ = Describe("Network Broker", func() {
 				fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(), nil)
 			})
 
-			It("Should fail in anon tls mode", func() {
-				cfg.Choria.NetworkLeafPort = 6222
-				cfg.Choria.NetworkClientTLSAnon = true
-				cfg.Choria.NetworkWebSocketPort = 4223
-				cfg.Choria.NetworkLeafRemotes = []string{"n1.example.net:6222"}
-				srv, err = NewServer(fw, bi, false)
-				Expect(err).To(MatchError("could not set up WebSocket: disabled when anonymous TLS is configured"))
-
-			})
 			It("Should correctly configure websockets", func() {
 				cfg.Choria.NetworkWebSocketPort = 4223
 				cfg.Choria.NetworkWebSocketAdvertise = "wss://example.net:433"

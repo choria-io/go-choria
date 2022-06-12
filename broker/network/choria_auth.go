@@ -44,7 +44,6 @@ import (
 // is set
 type ChoriaAuth struct {
 	clientAllowList         []string
-	anonTLS                 bool
 	isTLS                   bool
 	denyServers             bool
 	provisioningTokenSigner string
@@ -251,9 +250,8 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 		setServerPerms bool
 	)
 
-	shouldPerformJWTBasedAuth := (a.anonTLS || jwts != emptyString) && conn != nil
+	shouldPerformJWTBasedAuth := jwts != emptyString && conn != nil
 
-	// we only do JWT based auth in TLS mode
 	if shouldPerformJWTBasedAuth {
 		purpose := tokens.TokenPurpose(jwts)
 		log = log.WithFields(logrus.Fields{"jwt_auth": shouldPerformJWTBasedAuth, "purpose": purpose})
@@ -304,9 +302,9 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	// if a caller is set from the Client ID JWT we want to restrict it to just client stuff
 	// if a client allow list is set and the client is in the ip range we restrict it also
 	// else its default open like users with certs
-	case setClientPerms || (!setServerPerms && (a.anonTLS || caller != "") && a.remoteInClientAllowList(remote)):
+	case setClientPerms || (!setServerPerms && caller != "" && a.remoteInClientAllowList(remote)):
 		log.Debugf("Setting client permissions")
-		a.setClientPermissions(user, caller, clientClaims.Permissions, log)
+		a.setClientPermissions(user, caller, clientClaims, log)
 
 	// Else in the case where an allow list is configured we set server permissions on other conns
 	case setServerPerms || len(a.clientAllowList) > 0:
@@ -536,11 +534,7 @@ func (a *ChoriaAuth) parseClientIDJWT(jwts string) (claims *tokens.ClientIDClaim
 		return nil, fmt.Errorf("no JWT received")
 	}
 
-	// Generally now we want to accept all mix mode clients who have a valid JWT, ie. one with the
-	// correct purpose flag in addition to being valid, but to keep backwards compatibility with the
-	// mode documented in https://choria.io/blog/post/2020/09/13/aaa_improvements/ we accept them in
-	// the specific scenario where AnonTLS is configured without checking the purpose field
-	claims, err = tokens.ParseClientIDTokenWithKeyfile(jwts, a.clientJwtSigner, !a.anonTLS)
+	claims, err = tokens.ParseClientIDTokenWithKeyfile(jwts, a.clientJwtSigner, true)
 	if err != nil {
 		return nil, err
 	}
@@ -695,9 +689,14 @@ func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string,
 	return pubs, subs, nil
 }
 
-func (a *ChoriaAuth) setClientPermissions(user *server.User, caller string, perms *tokens.ClientPermissions, log *logrus.Entry) {
+func (a *ChoriaAuth) setClientPermissions(user *server.User, caller string, client *tokens.ClientIDClaims, log *logrus.Entry) {
 	user.Permissions.Subscribe = &server.SubjectPermission{}
 	user.Permissions.Publish = &server.SubjectPermission{}
+
+	var perms *tokens.ClientPermissions
+	if client != nil {
+		perms = client.Permissions
+	}
 
 	pubs, subs, err := a.setClientTokenPermissions(user, caller, perms, log)
 	if err != nil {

@@ -49,7 +49,6 @@ type ChoriaPluginConfig struct {
 	NetworkWebSocketAdvertise          string        `confkey:"plugin.choria.network.websocket_advertise" url:"https://choria.io/docs/deployment/broker/"`         // The URL to advertise for websocket connections
 	NetworkClientPort                  int           `confkey:"plugin.choria.network.client_port" default:"4222" url:"https://choria.io/docs/deployment/broker/"`  // Port the Network Broker will accept client connections on
 	NetworkClientTLSForce              bool          `confkey:"plugin.choria.network.client_tls_force_required"`                                                   // Force requiring/not requiring TLS for all clients
-	NetworkClientTLSAnon               bool          `confkey:"plugin.choria.network.client_anon_tls"  deprecated:"1"`                                             // Now enabled using plugin.choria.network.client_signer_cert
 	NetworkPeerPort                    int           `confkey:"plugin.choria.network.peer_port" url:"https://choria.io/docs/deployment/broker/"`                   // Port used to communicate with other local cluster peers
 	NetworkPeerUser                    string        `confkey:"plugin.choria.network.peer_user"`                                                                   // Username to use when connecting to cluster peers
 	NetworkPeerPassword                string        `confkey:"plugin.choria.network.peer_password"`                                                               // Password to use when connecting to cluster peers

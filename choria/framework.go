@@ -528,6 +528,8 @@ func (fw *Framework) TrySrvLookup(names []string, defaultSrv srvcache.Server) (s
 	return defaultSrv, nil
 }
 
+var errSRVDisabled = errors.New("SRV lookups are disabled in the configuration file")
+
 // QuerySrvRecords looks for SRV records within the right domain either
 // thanks to facter domain or the configured domain.
 //
@@ -536,7 +538,7 @@ func (fw *Framework) QuerySrvRecords(records []string) (srvcache.Servers, error)
 	servers := srvcache.NewServers()
 
 	if !fw.Config.Choria.UseSRVRecords {
-		return servers, errors.New("SRV lookups are disabled in the configuration file")
+		return servers, errSRVDisabled
 	}
 
 	domain := fw.Config.Choria.SRVDomain
@@ -574,7 +576,10 @@ func (fw *Framework) QuerySrvRecords(records []string) (srvcache.Servers, error)
 func (fw *Framework) NetworkBrokerPeers() (servers srvcache.Servers, err error) {
 	servers, err = fw.QuerySrvRecords([]string{"_mcollective-broker._tcp"})
 	if err != nil {
-		fw.log.Errorf("SRV lookup for _mcollective-broker._tcp failed: %s", err)
+		if !errors.Is(err, errSRVDisabled) {
+			fw.log.Errorf("SRV lookup for _mcollective-broker._tcp failed: %s", err)
+		}
+
 		err = nil
 	}
 
