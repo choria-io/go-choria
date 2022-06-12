@@ -163,7 +163,7 @@ func (v *tJWTViewCommand) validateProvisionToken(token string) error {
 		if err != nil {
 			return nil
 		}
-		fmt.Printf("             Extensions Claims: %s\n", string(ext))
+		fmt.Printf("                    Extensions: %s\n", string(ext))
 
 	}
 
