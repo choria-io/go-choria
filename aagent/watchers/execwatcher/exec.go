@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
 	"os/exec"
 	"sync"
@@ -47,6 +48,7 @@ type Properties struct {
 	GovernorTimeout         time.Duration `mapstructure:"governor_timeout"`
 	OutputAsData            bool          `mapstructure:"parse_as_data"`
 	SuppressSuccessAnnounce bool          `mapstructure:"suppress_success_announce"`
+	GatherInitialState      bool          `mapstructure:"gather_initial_state"`
 	Timeout                 time.Duration
 }
 
@@ -160,11 +162,17 @@ func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	tick := time.NewTicker(w.interval)
+	if w.properties.GatherInitialState {
+		splay := time.Duration(rand.Intn(30)) * time.Second
+		w.Infof("Performing initial execution after %v", splay)
+		tick.Reset(splay)
+	}
 
 	for {
 		select {
 		case <-tick.C:
 			w.performWatch(ctx, false)
+			tick.Reset(w.interval)
 
 		case <-ctx.Done():
 			tick.Stop()
