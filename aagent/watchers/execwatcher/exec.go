@@ -165,6 +165,10 @@ func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 	if w.properties.GatherInitialState {
 		splay := time.Duration(rand.Intn(30)) * time.Second
 		w.Infof("Performing initial execution after %v", splay)
+		if splay < 1 {
+			splay = 1
+		}
+
 		tick.Reset(splay)
 	}
 
