@@ -199,18 +199,18 @@ func (w *Watcher) poll() (State, error) {
 	}
 	w.lastPoll = time.Now()
 
-	w.Infof("Polling for %s.%s", w.properties.Bucket, w.properties.Key)
+	parsedKey, err := w.ProcessTemplate(w.properties.Key)
+	if err != nil {
+		return 0, fmt.Errorf("could not parse template for key: %v", err)
+	}
+
+	w.Infof("Polling for %s.%s", w.properties.Bucket, parsedKey)
 
 	var parsedValue interface{}
 
 	dk := w.dataKey()
 	if w.previousVal == nil {
 		w.previousVal, _ = w.machine.DataGet(dk)
-	}
-
-	parsedKey, err := w.ProcessTemplate(w.properties.Key)
-	if err != nil {
-		return 0, fmt.Errorf("could not parse template for key: %v", err)
 	}
 
 	val, err := w.kv.Get(parsedKey)
@@ -306,11 +306,17 @@ func (w *Watcher) handleState(s State, err error) error {
 }
 
 func (w *Watcher) dataKey() string {
-	if w.properties.BucketPrefix {
-		return fmt.Sprintf("%s_%s", w.properties.Bucket, w.properties.Key)
+	parsedKey, err := w.ProcessTemplate(w.properties.Key)
+	if err != nil {
+		w.Warnf("Failed to parse key value %s: %v", w.properties.Key, err)
+		return w.properties.Key
 	}
 
-	return w.properties.Key
+	if w.properties.BucketPrefix {
+		return fmt.Sprintf("%s_%s", w.properties.Bucket, parsedKey)
+	}
+
+	return parsedKey
 }
 
 func (w *Watcher) pollKey(ctx context.Context, wg *sync.WaitGroup) {
