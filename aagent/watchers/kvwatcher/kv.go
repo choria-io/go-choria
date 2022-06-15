@@ -208,7 +208,12 @@ func (w *Watcher) poll() (State, error) {
 		w.previousVal, _ = w.machine.DataGet(dk)
 	}
 
-	val, err := w.kv.Get(w.properties.Key)
+	parsedKey, err := w.ProcessTemplate(w.properties.Key)
+	if err != nil {
+		return 0, fmt.Errorf("could not parse template for key: %v", err)
+	}
+
+	val, err := w.kv.Get(parsedKey)
 	if err == nil {
 		// we try to handle json files into a map[string]interface this means nested lookups can be done
 		// in other machines using the lookup template func and it works just fine, deep compares are done
@@ -252,7 +257,7 @@ func (w *Watcher) poll() (State, error) {
 
 	// get failed in an unknown way
 	case err != nil:
-		w.Errorf("Could not get %s.%s: %s", w.properties.Bucket, w.properties.Key, err)
+		w.Errorf("Could not get %s.%s: %s", w.properties.Bucket, parsedKey, err)
 		return Error, err
 
 	// a change
@@ -266,7 +271,7 @@ func (w *Watcher) poll() (State, error) {
 		w.previousVal = parsedValue
 		return Changed, nil
 
-	// a put that didnt update, but we are asked to transition anyway
+	// a put that didn't update, but we are asked to transition anyway
 	// we do not trigger this on first start of the machine only once its running (previousSeq is 0)
 	case cmp.Equal(w.previousVal, parsedValue) && w.properties.TransitionOnMatch && w.previousSeq > 0 && val.Revision() > w.previousSeq:
 		w.previousSeq = val.Revision()
