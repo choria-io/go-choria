@@ -15,8 +15,8 @@ require (
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.0.7
-	github.com/choria-io/fisk v0.1.1
+	github.com/choria-io/appbuilder v0.0.8
+	github.com/choria-io/fisk v0.1.3
 	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
@@ -35,8 +35,8 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.34-0.20220610113917-5a299917dacd
 	github.com/nats-io/nats-server/v2 v2.8.5-0.20220607144903-0794eafa6f0e
-	github.com/nats-io/nats.go v1.16.0
-	github.com/nats-io/natscli v0.0.34-0.20220610115840-50b3ffc4359e
+	github.com/nats-io/nats.go v1.16.1-0.20220610202224-dcbb65a13ee9
+	github.com/nats-io/natscli v0.0.34-0.20220617135711-98725765760e
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.19.0
@@ -51,7 +51,7 @@ require (
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20220525230936-793ad666bf5e
-	golang.org/x/sys v0.0.0-20220610221304-9f5ed59c137d
+	golang.org/x/sys v0.0.0-20220615213510-4f61da869c0c
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.11
