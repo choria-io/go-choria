@@ -14,7 +14,7 @@ import (
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // Streams is an adapter that connects a NATS topic with messages sent from Choria
@@ -44,7 +44,7 @@ type Streams struct {
 	streams []*stream
 	ingests []*ingest.NatsIngest
 	work    chan ingest.Adaptable
-	log     *log.Entry
+	log     *logrus.Entry
 }
 
 var fw inter.Framework
@@ -63,7 +63,7 @@ func Create(name string, choria inter.Framework) (adapter *Streams, err error) {
 	stats.WorkQueueCapacityGauge.WithLabelValues(name, cfg.Identity).Set(float64(worklen))
 
 	adapter = &Streams{
-		log:  log.WithFields(log.Fields{"component": "streams_adapter", "name": name}),
+		log:  fw.Logger("streams_adapter").WithFields(logrus.Fields{"name": name}),
 		work: make(chan ingest.Adaptable, worklen),
 	}
 

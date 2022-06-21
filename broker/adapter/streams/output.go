@@ -19,7 +19,7 @@ import (
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/prometheus/client_golang/prometheus"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 type stream struct {
@@ -27,14 +27,14 @@ type stream struct {
 	clientID    string
 	topic       string
 	conn        inter.Connector
-	log         *log.Entry
+	log         *logrus.Entry
 	name        string
 	adapterName string
 
 	work chan ingest.Adaptable
 }
 
-func newStream(name string, work chan ingest.Adaptable, logger *log.Entry) ([]*stream, error) {
+func newStream(name string, work chan ingest.Adaptable, logger *logrus.Entry) ([]*stream, error) {
 	prefix := fmt.Sprintf("plugin.choria.adapter.%s.stream.", name)
 
 	instances, err := strconv.Atoi(cfg.Option(prefix+"workers", "10"))
@@ -63,7 +63,7 @@ func newStream(name string, work chan ingest.Adaptable, logger *log.Entry) ([]*s
 			name:        fmt.Sprintf("%s.%d", name, i),
 			adapterName: name,
 			work:        work,
-			log:         logger.WithFields(log.Fields{"side": "stream", "instance": i}),
+			log:         logger.WithFields(logrus.Fields{"side": "stream", "instance": i}),
 		}
 
 		if servers != "" {
