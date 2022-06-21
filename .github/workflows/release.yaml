@@ -165,6 +165,26 @@ jobs:
           packager_tag: focal-go1.18
           version: tag
 
+  jammy_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: jammy_64
+          packager_tag: jammy-go1.18
+          version: tag
+
+  jammy_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: jammy_aarch64
+          packager_tag: jammy-go1.18
+          version: tag
+
   windows_64:
     runs-on: ubuntu-latest
     steps:
@@ -193,6 +213,8 @@ jobs:
       - el9_ppc64le
       - focal_64
       - focal_aarch64
+      - jammy_64
+      - jammy_aarch64
       - windows_64
 
     runs-on: ubuntu-latest

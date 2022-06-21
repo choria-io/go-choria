@@ -4,6 +4,7 @@ required_properties:
   - etcdir
   - manage_conf
   - contact
+  - distro
 
 artifacts:
  - "*.deb"

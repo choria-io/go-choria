@@ -183,51 +183,73 @@ foss:
       template: debian/generic
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
+      distro: bionic
 
     bionic_aarch64:
       template: debian/generic
       target_arch: aarch64-linux-gnu
       binary: aarch64_linux
+      distro: bionic
 
     focal_64:
       template: debian/generic
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
+      distro: focal
 
     focal_aarch64:
       template: debian/generic
       target_arch: aarch64-linux-gnu
       binary: aarch64_linux
+      distro: focal
+
+    jammy_64:
+      template: debian/generic
+      target_arch: x86_64-linux-gnu
+      binary: 64bit_linux
+      distro: jammy
+
+    jammy_aarch64:
+      template: debian/generic
+      target_arch: aarch64-linux-gnu
+      binary: aarch64_linux
+      distro: jammy
 
     buster_64:
       template: debian/generic
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
+      distro: buster
 
     buster_armel:
       template: debian/generic
       target_arch: arm-linux-gnu
       binary: armv5_linux
+      distro: buster
 
     buster_armhf:
       template: debian/generic
       target_arch: arm-linux-gnueabihf
       binary: armv7_linux
+      distro: buster
 
     buster_aarch64:
       template: debian/generic
       target_arch: aarch64-linux-gnu
       binary: aarch64_linux
+      distro: buster
 
     bullseye_64:
       template: debian/generic
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
+      distro: bullseye
 
     bullseye_aarch64:
       template: debian/generic
       target_arch: aarch64-linux-gnu
       binary: aarch64_linux
+      distro: bullseye
 
     windows_64:
       name: Choria
