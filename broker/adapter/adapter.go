@@ -10,20 +10,8 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/broker/adapter/streams"
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
-	"github.com/choria-io/go-choria/protocol"
-	"github.com/choria-io/go-choria/srvcache"
-	log "github.com/sirupsen/logrus"
 )
-
-type ChoriaFramework interface {
-	Configuration() *config.Config
-	MiddlewareServers() (servers srvcache.Servers, err error)
-	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn inter.Connector, err error)
-	NewRequestFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Request, err error)
-	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
-}
 
 type adapter interface {
 	Init(ctx context.Context, cm inter.ConnectionManager) (err error)
@@ -42,7 +30,8 @@ func startAdapter(ctx context.Context, a adapter, c inter.ConnectionManager, wg 
 	return nil
 }
 
-func RunAdapters(ctx context.Context, c ChoriaFramework, wg *sync.WaitGroup) error {
+func RunAdapters(ctx context.Context, c inter.Framework, wg *sync.WaitGroup) error {
+	log := c.Logger("adapters")
 	for _, a := range c.Configuration().Choria.Adapters {
 		atype := c.Configuration().Option(fmt.Sprintf("plugin.choria.adapter.%s.type", a), "")
 		if atype == "" {

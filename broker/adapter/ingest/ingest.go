@@ -14,8 +14,6 @@ import (
 	"github.com/choria-io/go-choria/broker/adapter/stats"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
-	"github.com/choria-io/go-choria/protocol"
-	"github.com/choria-io/go-choria/srvcache"
 	"github.com/prometheus/client_golang/prometheus"
 
 	log "github.com/sirupsen/logrus"
@@ -39,20 +37,13 @@ type NatsIngest struct {
 	input chan inter.ConnectorMessage
 	work  chan Adaptable
 
-	fw   Framework
+	fw   inter.Framework
 	cfg  *config.Config
 	log  *log.Entry
 	conn inter.Connector
 }
 
-type Framework interface {
-	Configuration() *config.Config
-	MiddlewareServers() (servers srvcache.Servers, err error)
-	NewRequestFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Request, err error)
-	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
-}
-
-func New(name string, work chan Adaptable, fw Framework, logger *log.Entry) ([]*NatsIngest, error) {
+func New(name string, work chan Adaptable, fw inter.Framework, logger *log.Entry) ([]*NatsIngest, error) {
 	prefix := fmt.Sprintf("plugin.choria.adapter.%s.ingest.", name)
 	cfg := fw.Configuration()
 
