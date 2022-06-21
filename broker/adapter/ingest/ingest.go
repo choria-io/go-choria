@@ -15,8 +15,7 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/prometheus/client_golang/prometheus"
-
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // Adaptable matches both protocol.Request and protocol.Reply
@@ -39,11 +38,11 @@ type NatsIngest struct {
 
 	fw   inter.Framework
 	cfg  *config.Config
-	log  *log.Entry
+	log  *logrus.Entry
 	conn inter.Connector
 }
 
-func New(name string, work chan Adaptable, fw inter.Framework, logger *log.Entry) ([]*NatsIngest, error) {
+func New(name string, work chan Adaptable, fw inter.Framework, logger *logrus.Entry) ([]*NatsIngest, error) {
 	prefix := fmt.Sprintf("plugin.choria.adapter.%s.ingest.", name)
 	cfg := fw.Configuration()
 
@@ -81,7 +80,7 @@ func New(name string, work chan Adaptable, fw inter.Framework, logger *log.Entry
 			proto:       proto,
 			fw:          fw,
 			cfg:         fw.Configuration(),
-			log:         logger.WithFields(log.Fields{"side": "ingest", "instance": i}),
+			log:         logger.WithFields(logrus.Fields{"side": "ingest", "instance": i}),
 		}
 
 		workers = append(workers, n)
