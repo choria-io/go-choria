@@ -76,9 +76,10 @@ func New(name string, work chan Adaptable, fw Framework, logger *log.Entry) ([]*
 		proto = "choria:reply"
 	}
 
+	logger.Infof("Creating NATS Adapter %s for topic %s Ingest with %d instances", name, topic, instances)
 	for i := 0; i < instances; i++ {
 		iname := fmt.Sprintf("%s.%d", name, i)
-		logger.Infof("Creating NATS Adapter %s %s Ingest instance %d / %d", name, topic, i, instances)
+		logger.Debugf("Creating NATS Adapter %s %s Ingest instance %d / %d", name, topic, i, instances)
 
 		n := &NatsIngest{
 			name:        iname,
@@ -120,7 +121,7 @@ func (na *NatsIngest) Connect(ctx context.Context, cm inter.ConnectionManager) e
 
 func (na *NatsIngest) disconnect() {
 	if na.conn != nil {
-		na.log.Info("Disconnecting from NATS")
+		na.log.Debugf("Disconnecting from NATS")
 		na.conn.Close()
 	}
 }

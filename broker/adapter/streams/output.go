@@ -51,8 +51,9 @@ func newStream(name string, work chan ingest.Adaptable, logger *log.Entry) ([]*s
 
 	var workers []*stream
 
+	logger.Infof("Creating Choria Streams Adapter %s with %d workers publishing to %s", name, instances, topic)
 	for i := 0; i < instances; i++ {
-		logger.Infof("Creating Choria Streams Adapter %s instance %d / %d publishing to message set %s", name, i, instances, topic)
+		logger.Debugf("Creating Choria Streams Adapter %s instance %d / %d publishing to message set %s", name, i, instances, topic)
 
 		iname := fmt.Sprintf("%s_%d-%s", name, i, strings.Replace(util.UniqueID(), "-", "", -1))
 
@@ -97,14 +98,14 @@ func (sc *stream) connect(ctx context.Context, cm inter.ConnectionManager) error
 
 	sc.conn = nc
 
-	sc.log.Infof("%s connected to Choria Streams", sc.clientID)
+	sc.log.Debugf("%s connected to Choria Streams", sc.clientID)
 
 	return nil
 }
 
 func (sc *stream) disconnect() {
 	if sc.conn != nil {
-		sc.log.Info("Disconnecting from Choria Streams")
+		sc.log.Debugf("Disconnecting from Choria Streams")
 		sc.conn.Close()
 	}
 }
