@@ -1,6 +1,6 @@
-{{cpkg_name}} ({{cpkg_version}}) stable; urgency=medium
+{{cpkg_name}} ({{cpkg_version}}+{{cpkg_distro}}) stable; urgency=medium
 
-  * Version bump to {{cpkg_version}}.
+  * Version bump to {{cpkg_version}}+{{cpkg_distro}}.
 
  -- {{cpkg_contact}}  {{cpkg_date}}
 
