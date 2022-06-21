@@ -12,11 +12,8 @@ import (
 
 	"github.com/choria-io/go-choria/broker/adapter/ingest"
 	"github.com/choria-io/go-choria/broker/adapter/stats"
-	"github.com/choria-io/go-choria/inter"
-	"github.com/choria-io/go-choria/protocol"
-	"github.com/choria-io/go-choria/srvcache"
-
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -50,18 +47,10 @@ type Streams struct {
 	log     *log.Entry
 }
 
-type Framework interface {
-	Configuration() *config.Config
-	MiddlewareServers() (servers srvcache.Servers, err error)
-	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *log.Entry) (conn inter.Connector, err error)
-	NewRequestFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Request, err error)
-	NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error)
-}
-
-var fw Framework
+var fw inter.Framework
 var cfg *config.Config
 
-func Create(name string, choria Framework) (adapter *Streams, err error) {
+func Create(name string, choria inter.Framework) (adapter *Streams, err error) {
 	fw = choria
 	cfg = fw.Configuration()
 
