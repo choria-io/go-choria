@@ -5,8 +5,9 @@
 package v1
 
 import (
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"
@@ -14,11 +15,11 @@ import (
 
 var _ = Describe("TransportMessage", func() {
 	var mockctl *gomock.Controller
-	var security *MockSecurityProvider
+	var security *imock.MockSecurityProvider
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		security = NewMockSecurityProvider(mockctl)
+		security = imock.NewMockSecurityProvider(mockctl)
 	})
 
 	AfterEach(func() {
@@ -80,14 +81,20 @@ var _ = Describe("TransportMessage", func() {
 		security.EXPECT().PublicCertTXT().Return([]byte("stub cert"), nil).AnyTimes()
 		security.EXPECT().SignString(gomock.Any()).Return([]byte("stub sig"), nil).AnyTimes()
 
-		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-		srequest, _ := NewSecureRequest(request, security)
-		trequest, _ := NewTransportMessage("rip.mcollective")
-		trequest.SetRequestData(srequest)
+		request, err := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		Expect(err).ToNot(HaveOccurred())
+		request.SetMessage("hello world")
+		srequest, err := NewSecureRequest(request, security)
+		Expect(err).ToNot(HaveOccurred())
+		trequest, err := NewTransportMessage("rip.mcollective")
+		Expect(err).ToNot(HaveOccurred())
 
-		j, _ := trequest.JSON()
+		Expect(trequest.SetRequestData(srequest)).To(Succeed())
 
-		_, err := NewTransportFromJSON(j)
+		j, err := trequest.JSON()
+		Expect(err).ToNot(HaveOccurred())
+
+		_, err = NewTransportFromJSON(j)
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = NewTransportFromJSON(`{"protocol": 1}`)

@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 )
 
@@ -31,14 +32,13 @@ func NewRequest(agent string, senderid string, callerid string, ttl int, request
 	req.SetCallerID(callerid)
 	req.SetFilter(protocol.NewFilter())
 
-	return
+	return req, nil
 }
 
 // NewReply creates a choria:reply:1 based on a previous Request
 func NewReply(request protocol.Request, certname string) (rep protocol.Reply, err error) {
 	if request.Version() != protocol.RequestV1 {
-		err = fmt.Errorf("cannot create a version 1 Reply from a %s request", request.Version())
-		return
+		return nil, fmt.Errorf("cannot create a version 1 Reply from a %s request", request.Version())
 	}
 
 	rep = &reply{
@@ -55,75 +55,64 @@ func NewReply(request protocol.Request, certname string) (rep protocol.Reply, er
 
 	j, err := request.JSON()
 	if err != nil {
-		err = fmt.Errorf("could not turn Request %s into a JSON document: %s", request.RequestID(), err)
-		return
+		return nil, fmt.Errorf("could not turn Request %s into a JSON document: %s", request.RequestID(), err)
 	}
 
 	rep.SetMessage(j)
 
-	return
+	return rep, nil
 }
 
 // NewReplyFromSecureReply create a choria:reply:1 based on the data contained in a SecureReply
 func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err error) {
 	if sr.Version() != protocol.SecureReplyV1 {
-		err = fmt.Errorf("cannot create a version 1 SecureReply from a %s SecureReply", sr.Version())
-		return
+		return nil, fmt.Errorf("cannot create a version 1 SecureReply from a %s SecureReply", sr.Version())
 	}
 
-	r := &reply{
+	rep = &reply{
 		Protocol: protocol.ReplyV1,
 		Envelope: &replyEnvelope{},
 	}
 
-	err = r.IsValidJSON(sr.Message())
+	err = rep.IsValidJSON(sr.Message())
 	if err != nil {
-		err = fmt.Errorf("the JSON body from the SecureReply is not a valid Reply message: %s", err)
-		return
+		return nil, fmt.Errorf("the JSON body from the SecureReply is not a valid Reply message: %s", err)
 	}
 
-	err = json.Unmarshal([]byte(sr.Message()), r)
+	err = json.Unmarshal([]byte(sr.Message()), rep)
 	if err != nil {
-		err = fmt.Errorf("could not parse JSON data from Secure Reply: %s", err)
-		return
+		return nil, fmt.Errorf("could not parse JSON data from Secure Reply: %s", err)
 	}
 
-	rep = r
-
-	return
+	return rep, nil
 }
 
 // NewRequestFromSecureRequest creates a choria::request:1 based on the data contained in a SecureRequest
 func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Request, err error) {
 	if sr.Version() != protocol.SecureRequestV1 {
-		err = fmt.Errorf("cannot create a version 1 SecureRequest from a %s SecureRequest", sr.Version())
-		return
+		return nil, fmt.Errorf("cannot create a version 1 SecureRequest from a %s SecureRequest", sr.Version())
 	}
 
-	r := &request{
+	req = &request{
 		Protocol: protocol.RequestV1,
 		Envelope: &requestEnvelope{},
 	}
 
-	err = r.IsValidJSON(sr.Message())
+	err = req.IsValidJSON(sr.Message())
 	if err != nil {
-		err = fmt.Errorf("the JSON body from the SecureRequest is not a valid Request message: %s", err)
-		return
+		return nil, fmt.Errorf("the JSON body from the SecureRequest is not a valid Request message: %s", err)
 	}
 
-	err = json.Unmarshal([]byte(sr.Message()), r)
+	err = json.Unmarshal([]byte(sr.Message()), req)
 	if err != nil {
-		err = fmt.Errorf("could not parse JSON data from Secure Request: %s", err)
-		return
+		return nil, fmt.Errorf("could not parse JSON data from Secure Request: %s", err)
 	}
 
-	req = r
-
-	return
+	return req, nil
 }
 
 // NewSecureReply creates a choria:secure:reply:1
-func NewSecureReply(reply protocol.Reply, security SecurityProvider) (secure protocol.SecureReply, err error) {
+func NewSecureReply(reply protocol.Reply, security inter.SecurityProvider) (secure protocol.SecureReply, err error) {
 	secure = &secureReply{
 		Protocol: protocol.SecureReplyV1,
 		security: security,
@@ -131,14 +120,14 @@ func NewSecureReply(reply protocol.Reply, security SecurityProvider) (secure pro
 
 	err = secure.SetMessage(reply)
 	if err != nil {
-		err = fmt.Errorf("could not set message on SecureReply structure: %s", err)
+		return nil, fmt.Errorf("could not set message on SecureReply structure: %s", err)
 	}
 
-	return
+	return secure, nil
 }
 
 // NewSecureReplyFromTransport creates a new choria:secure:reply:1 from the data contained in a Transport message
-func NewSecureReplyFromTransport(message protocol.TransportMessage, security SecurityProvider, skipvalidate bool) (secure protocol.SecureReply, err error) {
+func NewSecureReplyFromTransport(message protocol.TransportMessage, security inter.SecurityProvider, skipvalidate bool) (secure protocol.SecureReply, err error) {
 	secure = &secureReply{
 		Protocol: protocol.SecureReplyV1,
 		security: security,
@@ -146,31 +135,30 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage, security Sec
 
 	data, err := message.Message()
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	err = secure.IsValidJSON(data)
 	if err != nil {
-		err = fmt.Errorf("the JSON body from the TransportMessage is not a valid SecureReply message: %s", err)
-		return
+		return nil, fmt.Errorf("the JSON body from the TransportMessage is not a valid SecureReply message: %s", err)
 	}
 
 	err = json.Unmarshal([]byte(data), &secure)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	if !skipvalidate {
 		if !secure.Valid() {
-			err = errors.New("SecureReply message created from the Transport Message is not valid: %s")
+			return nil, errors.New("SecureReply message created from the Transport Message is not valid: %s")
 		}
 	}
 
-	return
+	return secure, nil
 }
 
 // NewSecureRequest creates a choria:secure:request:1
-func NewSecureRequest(request protocol.Request, security SecurityProvider) (secure protocol.SecureRequest, err error) {
+func NewSecureRequest(request protocol.Request, security inter.SecurityProvider) (secure protocol.SecureRequest, err error) {
 	pub := []byte("insecure")
 
 	if protocol.IsSecure() && !protocol.IsRemoteSignerAgent(request.Agent()) {
@@ -180,7 +168,7 @@ func NewSecureRequest(request protocol.Request, security SecurityProvider) (secu
 			if protocol.IsRegistrationAgent(request.Agent()) {
 				pub = []byte("insecure registration")
 			} else {
-				return secure, fmt.Errorf("could not retrieve Public Certificate from the security subsystem: %s", err)
+				return nil, fmt.Errorf("could not retrieve Public Certificate from the security subsystem: %s", err)
 			}
 		}
 	}
@@ -193,14 +181,14 @@ func NewSecureRequest(request protocol.Request, security SecurityProvider) (secu
 
 	err = secure.SetMessage(request)
 	if err != nil {
-		return secure, fmt.Errorf("could not set message SecureRequest structure: %s", err)
+		return nil, fmt.Errorf("could not set message SecureRequest structure: %s", err)
 	}
 
 	return secure, nil
 }
 
 // NewRemoteSignedSecureRequest is a NewSecureRequest that delegates the signing to a remote signer like aaasvc
-func NewRemoteSignedSecureRequest(request protocol.Request, security SecurityProvider) (secure protocol.SecureRequest, err error) {
+func NewRemoteSignedSecureRequest(request protocol.Request, security inter.SecurityProvider) (secure protocol.SecureRequest, err error) {
 	// no need for remote stuff, we don't do any signing or certs,
 	// additionally the service hosting the remote signing service isnt
 	// secured by choria protocol since at calling time the client does
@@ -234,7 +222,7 @@ func NewRemoteSignedSecureRequest(request protocol.Request, security SecurityPro
 }
 
 // NewSecureRequestFromTransport creates a new choria:secure:request:1 from the data contained in a Transport message
-func NewSecureRequestFromTransport(message protocol.TransportMessage, security SecurityProvider, skipvalidate bool) (secure protocol.SecureRequest, err error) {
+func NewSecureRequestFromTransport(message protocol.TransportMessage, security inter.SecurityProvider, skipvalidate bool) (secure protocol.SecureRequest, err error) {
 	secure = &secureRequest{
 		security: security,
 	}
@@ -246,22 +234,21 @@ func NewSecureRequestFromTransport(message protocol.TransportMessage, security S
 
 	err = secure.IsValidJSON(data)
 	if err != nil {
-		err = fmt.Errorf("the JSON body from the TransportMessage is not a valid SecureRequest message: %s", err)
-		return
+		return nil, fmt.Errorf("the JSON body from the TransportMessage is not a valid SecureRequest message: %s", err)
 	}
 
 	err = json.Unmarshal([]byte(data), &secure)
 	if err != nil {
-		return
+		return nil, err
 	}
 
 	if !skipvalidate {
 		if !secure.Valid() {
-			err = fmt.Errorf("SecureRequest message created from the Transport Message did not pass security validation")
+			return nil, fmt.Errorf("SecureRequest message created from the Transport Message did not pass security validation")
 		}
 	}
 
-	return
+	return secure, nil
 }
 
 // NewTransportMessage creates a choria:transport:1
@@ -273,26 +260,24 @@ func NewTransportMessage(certname string) (message protocol.TransportMessage, er
 
 	message.SetSender(certname)
 
-	return
+	return message, nil
 }
 
 // NewTransportFromJSON creates a new TransportMessage from JSON
 func NewTransportFromJSON(data string) (message protocol.TransportMessage, err error) {
-	msg := &transportMessage{
+	message = &transportMessage{
 		Headers: &transportHeaders{},
 	}
 
-	err = msg.IsValidJSON(data)
+	err = message.IsValidJSON(data)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(data), &msg)
+	err = json.Unmarshal([]byte(data), &message)
 	if err != nil {
-		return
+		return nil, err
 	}
 
-	message = msg
-
-	return
+	return message, nil
 }

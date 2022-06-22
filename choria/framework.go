@@ -38,7 +38,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/providers/security"
+
 	"github.com/choria-io/go-choria/providers/security/filesec"
 	"github.com/choria-io/go-choria/providers/security/puppetsec"
 	"github.com/choria-io/go-choria/puppet"
@@ -50,7 +50,7 @@ import (
 type Framework struct {
 	Config *config.Config
 
-	security security.Provider
+	security inter.SecurityProvider
 	log      *log.Logger
 
 	bi       *build.Info

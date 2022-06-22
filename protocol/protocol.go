@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,6 +14,11 @@ const (
 	SecureRequestV1 = "choria:secure:request:1"
 	SecureReplyV1   = "choria:secure:reply:1"
 	TransportV1     = "choria:transport:1"
+	RequestV2       = "io.choria.protocol.v2.request"
+	ReplyV2         = "io.choria.protocol.v2.reply"
+	SecureRequestV2 = "io.choria.protocol.v2.secure_request"
+	SecureReplyV2   = "io.choria.protocol.v2.secure_reply"
+	TransportV2     = "io.choria.protocol.v2.transport"
 )
 
 // Secure controls the signing and validations of certificates in the protocol
@@ -121,7 +126,7 @@ type SecureRequest interface {
 	Message() string
 }
 
-// SecureReply is a container for a Reply.  It's the reply counter part of a
+// SecureReply is a container for a Reply.  It's the reply counterpart of a
 // SecureRequest but replies are not signed using cryptographic keys it's only
 // hashed in transport
 type SecureReply interface {

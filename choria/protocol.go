@@ -11,6 +11,7 @@ import (
 	"github.com/choria-io/go-choria/message"
 	"github.com/choria-io/go-choria/protocol"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
+	v2 "github.com/choria-io/go-choria/protocol/v2"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 )
@@ -100,6 +101,8 @@ func (fw *Framework) NewRequest(version string, agent string, senderid string, c
 	switch version {
 	case protocol.RequestV1:
 		request, err = v1.NewRequest(agent, senderid, callerid, ttl, requestid, collective)
+	case protocol.RequestV2:
+		request, err = v2.NewRequest(agent, senderid, callerid, ttl, requestid, collective)
 	default:
 		err = fmt.Errorf("do not know how to create a Request version %s", version)
 	}
@@ -135,6 +138,8 @@ func (fw *Framework) NewReply(request protocol.Request) (reply protocol.Reply, e
 	switch request.Version() {
 	case protocol.RequestV1:
 		return v1.NewReply(request, fw.Config.Identity)
+	case protocol.RequestV2:
+		return v2.NewReply(request, fw.Config.Identity)
 	default:
 		return nil, fmt.Errorf("do not know how to create a Reply version %s", request.Version())
 	}

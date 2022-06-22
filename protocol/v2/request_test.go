@@ -1,0 +1,47 @@
+// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
+package v2
+
+import (
+	"time"
+
+	"github.com/choria-io/go-choria/protocol"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/tidwall/gjson"
+)
+
+var _ = Describe("Request", func() {
+	It("Should construct the correct request", func() {
+		request, _ := NewRequest("test", "go.tests", "choria=test", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		filter, filtered := request.Filter()
+
+		request.SetMessage("hello world")
+
+		j, _ := request.JSON()
+
+		Expect(gjson.Get(j, "protocol").String()).To(Equal(protocol.RequestV2))
+		Expect(request.Message()).To(Equal("hello world"))
+		Expect(len(request.RequestID())).To(Equal(32))
+		Expect(request.SenderID()).To(Equal("go.tests"))
+		Expect(request.CallerID()).To(Equal("choria=test"))
+		Expect(request.Collective()).To(Equal("mcollective"))
+		Expect(request.Agent()).To(Equal("test"))
+		Expect(request.TTL()).To(Equal(120))
+		Expect(request.Time()).To(BeTemporally("~", time.Now(), time.Second))
+		Expect(filtered).To(BeFalse())
+		Expect(filter.Empty()).To(BeTrue())
+
+		filter.AddAgentFilter("rpcutil")
+		filter, filtered = request.Filter()
+		Expect(filtered).To(BeFalse())
+		Expect(filter).ToNot(BeNil())
+
+		filter.AddAgentFilter("other")
+		filter, filtered = request.Filter()
+		Expect(filtered).To(BeTrue())
+		Expect(filter).ToNot(BeNil())
+	})
+})

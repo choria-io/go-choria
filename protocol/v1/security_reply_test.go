@@ -8,8 +8,9 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	"github.com/tidwall/gjson"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -18,11 +19,11 @@ import (
 
 var _ = Describe("SecureReply", func() {
 	var mockctl *gomock.Controller
-	var security *MockSecurityProvider
+	var security *imock.MockSecurityProvider
 
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
-		security = NewMockSecurityProvider(mockctl)
+		security = imock.NewMockSecurityProvider(mockctl)
 	})
 
 	AfterEach(func() {
