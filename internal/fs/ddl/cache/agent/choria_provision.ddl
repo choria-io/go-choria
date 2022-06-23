@@ -2,7 +2,7 @@ metadata :name        => "choria_provision",
          :description => "Choria Provisioner",
          :author      => "R.I.Pienaar <rip@devco.net>",
          :license     => "Apache-2.0",
-         :version     => "0.25.1",
+         :version     => "0.26.0",
          :url         => "https://choria.io",
          :timeout     => 20
 

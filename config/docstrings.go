@@ -61,7 +61,6 @@ var docStrings = map[string]string{
 	"plugin.choria.network.websocket_advertise":                "The URL to advertise for websocket connections",
 	"plugin.choria.network.client_port":                        "Port the Network Broker will accept client connections on",
 	"plugin.choria.network.client_tls_force_required":          "Force requiring/not requiring TLS for all clients",
-	"plugin.choria.network.client_anon_tls":                    "Now enabled using plugin.choria.network.client_signer_cert",
 	"plugin.choria.network.peer_port":                          "Port used to communicate with other local cluster peers",
 	"plugin.choria.network.peer_user":                          "Username to use when connecting to cluster peers",
 	"plugin.choria.network.peer_password":                      "Password to use when connecting to cluster peers",
