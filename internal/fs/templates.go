@@ -6,7 +6,6 @@ package fs
 
 import (
 	"bytes"
-	"embed"
 	"strings"
 	"text/template"
 
@@ -16,14 +15,6 @@ import (
 
 	"github.com/choria-io/go-choria/internal/util"
 )
-
-//go:embed ddl
-//go:embed client
-//go:embed plugin
-//go:embed misc
-//go:embed completion
-//go:embed cheats
-var FS embed.FS
 
 type consoleRender interface {
 	RenderConsole() ([]byte, error)
