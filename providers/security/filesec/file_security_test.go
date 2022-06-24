@@ -16,11 +16,11 @@ import (
 	"testing"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/tlssetup"
 
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/providers/security"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -76,7 +76,7 @@ var _ = Describe("FileSSL", func() {
 	})
 
 	It("Should implement the provider interface", func() {
-		f := func(p security.Provider) {}
+		f := func(p inter.SecurityProvider) {}
 		f(prov)
 		Expect(prov.Provider()).To(Equal("file"))
 	})

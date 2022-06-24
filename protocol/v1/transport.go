@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -37,18 +37,22 @@ type federationTransportHeader struct {
 
 // Message retrieves the stored data
 func (m *transportMessage) Message() (data string, err error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	d, err := base64.StdEncoding.DecodeString(m.Data)
 	if err != nil {
 		return "", fmt.Errorf("could not base64 decode data received on the transport: %s", err)
 	}
 
-	data = string(d)
-
-	return
+	return string(d), nil
 }
 
 // IsFederated determines if this message is federated
 func (m *transportMessage) IsFederated() bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	return m.Headers.Federation != nil
 }
 
@@ -58,30 +62,22 @@ func (m *transportMessage) FederationTargets() (targets []string, federated bool
 	defer m.mu.Unlock()
 
 	if m.Headers.Federation == nil {
-		federated = false
-		return
+		return nil, false
 	}
 
-	federated = true
-	targets = m.Headers.Federation.Targets
-
-	return
+	return m.Headers.Federation.Targets, true
 }
 
-// FederationReply retrieves the reply to string set by the federation broker
+// FederationReplyTo retrieves the reply to string set by the federation broker
 func (m *transportMessage) FederationReplyTo() (replyto string, federated bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if m.Headers.Federation == nil {
-		federated = false
-		return
+		return "", false
 	}
 
-	federated = true
-	replyto = m.Headers.Federation.ReplyTo
-
-	return
+	return m.Headers.Federation.ReplyTo, true
 }
 
 // FederationRequestID retrieves the federation specific requestid
@@ -90,28 +86,33 @@ func (m *transportMessage) FederationRequestID() (id string, federated bool) {
 	defer m.mu.Unlock()
 
 	if m.Headers.Federation == nil {
-		federated = false
-		return
+		return "", false
 	}
 
-	federated = true
-	id = m.Headers.Federation.RequestID
-
-	return
+	return m.Headers.Federation.RequestID, true
 }
 
 // SenderID retrieves the identity of the sending host
 func (m *transportMessage) SenderID() string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	return m.Headers.MCollectiveSender
 }
 
-// ReplyTo retrieves the detination description where replies should go to
+// ReplyTo retrieves the destination description where replies should go to
 func (m *transportMessage) ReplyTo() string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	return m.Headers.ReplyTo
 }
 
 // SeenBy retrieves the list of end points that this messages passed thruogh
 func (m *transportMessage) SeenBy() [][3]string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	return m.Headers.SeenBy
 }
 
@@ -155,16 +156,22 @@ func (m *transportMessage) SetFederationRequestID(id string) {
 
 // SetSender sets the "mc_sender" - typically the identity of the sending host
 func (m *transportMessage) SetSender(sender string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	m.Headers.MCollectiveSender = sender
 }
 
-// SetsReplyTo sets the reply-to targget
+// SetReplyTo sets the reply-to targget
 func (m *transportMessage) SetReplyTo(reply string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	m.Headers.ReplyTo = reply
 }
 
 // SetReplyData extracts the JSON body from a SecureReply and stores it
-func (m *transportMessage) SetReplyData(reply protocol.SecureReply) (err error) {
+func (m *transportMessage) SetReplyData(reply protocol.SecureReply) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -175,11 +182,11 @@ func (m *transportMessage) SetReplyData(reply protocol.SecureReply) (err error) 
 
 	m.Data = base64.StdEncoding.EncodeToString([]byte(j))
 
-	return
+	return nil
 }
 
 // SetRequestData extracts the JSON body from a SecureRequest and stores it
-func (m *transportMessage) SetRequestData(request protocol.SecureRequest) (err error) {
+func (m *transportMessage) SetRequestData(request protocol.SecureRequest) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -190,22 +197,30 @@ func (m *transportMessage) SetRequestData(request protocol.SecureRequest) (err e
 
 	m.Data = base64.StdEncoding.EncodeToString([]byte(j))
 
-	return
+	return nil
 }
 
 // RecordNetworkHop appends a hop onto the list of those who processed this message
 func (m *transportMessage) RecordNetworkHop(in string, processor string, out string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	m.Headers.SeenBy = append(m.Headers.SeenBy, [3]string{in, processor, out})
 }
 
 // NetworkHops returns a list of tuples this messaged traveled through
 func (m *transportMessage) NetworkHops() [][3]string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	return m.Headers.SeenBy
 }
 
 // JSON creates a JSON encoded message
 func (m *transportMessage) JSON() (body string, err error) {
+	m.mu.Lock()
 	j, err := json.Marshal(m)
+	m.mu.Unlock()
 	if err != nil {
 		return "", fmt.Errorf("could not JSON Marshal: %s", err)
 	}
@@ -216,7 +231,7 @@ func (m *transportMessage) JSON() (body string, err error) {
 		return "", fmt.Errorf("the JSON produced from the Transport does not pass validation: %s", err)
 	}
 
-	return
+	return body, nil
 }
 
 // SetUnfederated removes any federation information from the message
@@ -227,18 +242,21 @@ func (m *transportMessage) SetUnfederated() {
 	m.Headers.Federation = nil
 }
 
-// Version retreives the protocol version for this message
+// Version retrieves the protocol version for this message
 func (m *transportMessage) Version() string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
 	return m.Protocol
 }
 
 // IsValidJSON validates the given JSON data against the Transport schema
-func (m *transportMessage) IsValidJSON(data string) (err error) {
+func (m *transportMessage) IsValidJSON(data string) error {
 	if !protocol.ClientStrictValidation {
 		return nil
 	}
 
-	_, errors, err := schemas.Validate(schemas.TransportV1, data)
+	_, errors, err := schemaValidate(transportSchema, data)
 	if err != nil {
 		return fmt.Errorf("could not validate Transport JSON data: %s", err)
 	}

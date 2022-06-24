@@ -1,8 +1,8 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package security
+package inter
 
 import (
 	"context"
@@ -13,8 +13,8 @@ import (
 	"time"
 )
 
-// Provider provides a security plugin for the choria subsystem
-type Provider interface {
+// SecurityProvider provides a security plugin for the choria subsystem
+type SecurityProvider interface {
 	// Provider reports the name of the current security provider
 	Provider() string
 

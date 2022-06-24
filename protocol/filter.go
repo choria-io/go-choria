@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -26,7 +26,7 @@ type FactFilter struct {
 
 // note compound filter structure is not ideal at all, but this is
 // the structure old compound filters had and will let us not fail
-// on older machines as json validation errors and it's actually not
+// on older machines as json validation errors, and it's actually not
 // bad to store expr based compounds in its own key in case we later
 // support other types of filter
 
@@ -165,12 +165,12 @@ func (f *Filter) MatchClasses(knownClasses []string, _ Logger) bool {
 	return classes.Match(f.ClassFilters(), knownClasses)
 }
 
-// MatchCompoundFiles determines if the filter would match against classes, facts and agents using a expr expression
+// MatchCompoundFiles determines if the filter would match against classes, facts and agents using an expr expression
 func (f *Filter) MatchCompoundFiles(factsFile string, classesFile string, knownAgents []string, log Logger) bool {
 	return compound.MatchExprStringFiles(f.CompoundFilters(), factsFile, classesFile, knownAgents, log)
 }
 
-// MatchCompound determines if the filter would match against classes, facts and agents using a expr expression
+// MatchCompound determines if the filter would match against classes, facts and agents using an expr expression
 func (f *Filter) MatchCompound(facts json.RawMessage, knownClasses []string, knownAgents []string, fm ddl.FuncMap, log Logger) bool {
 	return compound.MatchExprString(f.CompoundFilters(), facts, knownClasses, knownAgents, fm, log)
 }
@@ -223,8 +223,7 @@ func (f *Filter) FactFilters() [][3]string {
 	return filter
 }
 
-// AddCompoundFilter appends a filter to the compound filters,
-// the filter should be a expr string representing a valid choria filter
+// AddCompoundFilter appends a filter to the compound filters, the filter should be an expr string representing a valid choria filter
 func (f *Filter) AddCompoundFilter(query string) error {
 	if query == "" {
 		return nil

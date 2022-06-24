@@ -9,8 +9,9 @@ import (
 	"errors"
 	"os"
 
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
-	gomock "github.com/golang/mock/gomock"
+	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
@@ -19,13 +20,13 @@ import (
 
 var _ = Describe("SecureRequest", func() {
 	var mockctl *gomock.Controller
-	var security *MockSecurityProvider
+	var security *imock.MockSecurityProvider
 	var pub []byte
 
 	BeforeEach(func() {
 		logrus.SetLevel(logrus.FatalLevel)
 		mockctl = gomock.NewController(GinkgoT())
-		security = NewMockSecurityProvider(mockctl)
+		security = imock.NewMockSecurityProvider(mockctl)
 
 		protocol.Secure = "true"
 

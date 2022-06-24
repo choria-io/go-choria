@@ -16,7 +16,7 @@ import (
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/providers/security"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
 
@@ -65,7 +65,7 @@ var _ = Describe("PuppetSSL", func() {
 	})
 
 	It("Should implement the provider interface", func() {
-		f := func(p security.Provider) {}
+		f := func(p inter.SecurityProvider) {}
 		f(prov)
 		Expect(prov.Provider()).To(Equal("puppet"))
 	})

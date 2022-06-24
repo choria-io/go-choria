@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 )
 
@@ -20,7 +21,7 @@ type secureReply struct {
 	MessageBody string `json:"message"`
 	Hash        string `json:"hash"`
 
-	security SecurityProvider
+	security inter.SecurityProvider
 
 	mu sync.Mutex
 }
@@ -37,18 +38,21 @@ func (r *secureReply) SetMessage(reply protocol.Reply) (err error) {
 	}
 
 	hash := r.security.ChecksumString(j)
-	r.MessageBody = string(j)
+	r.MessageBody = j
 	r.Hash = base64.StdEncoding.EncodeToString(hash[:])
 
-	return
+	return nil
 }
 
 // Message retrieves the stored message content
 func (r *secureReply) Message() string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	return r.MessageBody
 }
 
-// Validates the body of the message by comparing the recorded hash with the hash of the body
+// Valid validates the body of the message by comparing the recorded hash with the hash of the body
 func (r *secureReply) Valid() bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
@@ -65,7 +69,9 @@ func (r *secureReply) Valid() bool {
 
 // JSON creates a JSON encoded reply
 func (r *secureReply) JSON() (body string, err error) {
+	r.mu.Lock()
 	j, err := json.Marshal(r)
+	r.mu.Unlock()
 	if err != nil {
 		protocolErrorCtr.Inc()
 		return "", fmt.Errorf("could not JSON Marshal: %s", err)
@@ -77,11 +83,14 @@ func (r *secureReply) JSON() (body string, err error) {
 		return "", fmt.Errorf("reply JSON produced from the SecureRequest does not pass validation: %s", err)
 	}
 
-	return
+	return body, nil
 }
 
-// Version retreives the protocol version for this message
+// Version retrieves the protocol version for this message
 func (r *secureReply) Version() string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	return r.Protocol
 }
 
@@ -91,7 +100,7 @@ func (r *secureReply) IsValidJSON(data string) (err error) {
 		return nil
 	}
 
-	_, errors, err := schemas.Validate(schemas.SecureReplyV1, data)
+	_, errors, err := schemaValidate(secureReplySchema, data)
 	if err != nil {
 		return fmt.Errorf("could not validate SecureReply JSON data: %s", err)
 	}
@@ -100,5 +109,5 @@ func (r *secureReply) IsValidJSON(data string) (err error) {
 		return fmt.Errorf("supplied JSON document is not a valid SecureReply message: %s", strings.Join(errors, ", "))
 	}
 
-	return
+	return nil
 }

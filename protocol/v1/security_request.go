@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,6 +11,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	log "github.com/sirupsen/logrus"
 )
@@ -22,7 +23,7 @@ type secureRequest struct {
 	Signature         string `json:"signature"`
 	PublicCertificate string `json:"pubcert"`
 
-	security SecurityProvider
+	security inter.SecurityProvider
 	mu       sync.Mutex
 }
 
@@ -61,13 +62,15 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 
 // Message retrieves the stored message.  It will be a JSON encoded version of the request set via SetMessage
 func (r *secureRequest) Message() string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	return r.MessageBody
 }
 
 // Valid determines if the request is valid
 func (r *secureRequest) Valid() bool {
-	r.mu.Lock()
-	defer r.mu.Unlock()
+	// should not be locked
 
 	if !protocol.IsSecure() {
 		log.Debug("Bypassing validation on secure request due to build time flags")
@@ -108,12 +111,15 @@ func (r *secureRequest) Valid() bool {
 	}
 
 	validCtr.Inc()
+
 	return true
 }
 
 // JSON creates a JSON encoded request
 func (r *secureRequest) JSON() (body string, err error) {
+	r.mu.Lock()
 	j, err := json.Marshal(r)
+	r.mu.Unlock()
 	if err != nil {
 		protocolErrorCtr.Inc()
 		return "", fmt.Errorf("could not JSON Marshal: %s", err)
@@ -128,14 +134,17 @@ func (r *secureRequest) JSON() (body string, err error) {
 	return body, nil
 }
 
-// Version retreives the protocol version for this message
+// Version retrieves the protocol version for this message
 func (r *secureRequest) Version() string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	return r.Protocol
 }
 
 // IsValidJSON validates the given JSON data against the schema
 func (r *secureRequest) IsValidJSON(data string) (err error) {
-	_, errors, err := schemas.Validate(schemas.SecureRequestV1, data)
+	_, errors, err := schemaValidate(secureRequestSchema, data)
 	if err != nil {
 		protocolErrorCtr.Inc()
 		return fmt.Errorf("could not validate SecureRequest JSON data: %s", err)
