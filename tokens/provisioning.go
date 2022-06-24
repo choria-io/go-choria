@@ -5,7 +5,6 @@
 package tokens
 
 import (
-	"crypto/rsa"
 	"fmt"
 	"os"
 	"strings"
@@ -68,7 +67,7 @@ func IsProvisioningToken(claims StandardClaims) bool {
 }
 
 // ParseProvisioningToken parses token and verifies it with pk
-func ParseProvisioningToken(token string, pk *rsa.PublicKey) (*ProvisioningClaims, error) {
+func ParseProvisioningToken(token string, pk interface{}) (*ProvisioningClaims, error) {
 	claims := &ProvisioningClaims{}
 	err := ParseToken(token, claims, pk)
 	if err != nil {
@@ -82,7 +81,7 @@ func ParseProvisioningToken(token string, pk *rsa.PublicKey) (*ProvisioningClaim
 	return claims, nil
 }
 
-// ParseProvisioningTokenWithKeyfile parses token and verifies it with the RSA Public key in pkFile
+// ParseProvisioningTokenWithKeyfile parses token and verifies it with the RSA Public key in pkFile, does not support ed25519
 func ParseProvisioningTokenWithKeyfile(token string, pkFile string) (*ProvisioningClaims, error) {
 	if pkFile == "" {
 		return nil, fmt.Errorf("invalid public key file")

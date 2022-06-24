@@ -29,19 +29,19 @@ var _ = Describe("ProvisioningClaims", func() {
 
 		claims, err := NewClientIDClaims("up=ginkgo", []string{"rpcutil"}, "choria", map[string]string{"group": "admins"}, "// opa policy", "Ginkgo", time.Hour, nil, pubK)
 		Expect(err).ToNot(HaveOccurred())
-		clientToken, err = SignToken(claims, loadPriKey("testdata/signer-key.pem"))
+		clientToken, err = SignToken(claims, loadRSAPriKey("testdata/rsa/signer-key.pem"))
 		Expect(err).ToNot(HaveOccurred())
 
 		pclaims, err := NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", []string{"nats://example.net:4222"}, "example.net", "/reg.data", "/facts.json", "Ginkgo", time.Hour)
 		Expect(err).ToNot(HaveOccurred())
 		pclaims.Extensions = MapClaims{"hello": "world"}
-		validToken, err = SignToken(pclaims, loadPriKey("testdata/signer-key.pem"))
+		validToken, err = SignToken(pclaims, loadRSAPriKey("testdata/rsa/signer-key.pem"))
 		Expect(err).ToNot(HaveOccurred())
 
 		pclaims, err = NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", []string{"nats://example.net:4222"}, "example.net", "/reg.data", "/facts.json", "Ginkgo", time.Hour)
 		Expect(err).ToNot(HaveOccurred())
 		pclaims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(-1 * time.Hour))
-		expiredToken, err = SignToken(pclaims, loadPriKey("testdata/signer-key.pem"))
+		expiredToken, err = SignToken(pclaims, loadRSAPriKey("testdata/rsa/signer-key.pem"))
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -94,19 +94,19 @@ var _ = Describe("ProvisioningClaims", func() {
 
 	Describe("ParseProvisioningToken", func() {
 		It("Should verify the token", func() {
-			t, err := ParseProvisioningToken(expiredToken, loadPubKey("testdata/signer-public.pem"))
+			t, err := ParseProvisioningToken(expiredToken, loadRSAPubKey("testdata/rsa/signer-public.pem"))
 			Expect(err.Error()).To(MatchRegexp("could not parse provisioner token: token is expired by"))
 			Expect(t).To(BeNil())
 		})
 
 		It("Should check the purpose", func() {
-			t, err := ParseProvisioningToken(clientToken, loadPubKey("testdata/signer-public.pem"))
+			t, err := ParseProvisioningToken(clientToken, loadRSAPubKey("testdata/rsa/signer-public.pem"))
 			Expect(err).To(MatchError("not a provisioning token"))
 			Expect(t).To(BeNil())
 		})
 
 		It("Should load valid tokens", func() {
-			t, err := ParseProvisioningToken(validToken, loadPubKey("testdata/signer-public.pem"))
+			t, err := ParseProvisioningToken(validToken, loadRSAPubKey("testdata/rsa/signer-public.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(t.Secure).To(BeTrue())
 			Expect(t.Extensions).To(Equal(MapClaims{"hello": "world"}))
@@ -115,7 +115,7 @@ var _ = Describe("ProvisioningClaims", func() {
 
 	Describe("ParseProvisioningTokenWithKeyfile", func() {
 		It("Should parse the token", func() {
-			t, err := ParseProvisioningTokenWithKeyfile(validToken, "testdata/signer-public.pem")
+			t, err := ParseProvisioningTokenWithKeyfile(validToken, "testdata/rsa/signer-public.pem")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(t.Secure).To(BeTrue())
 		})

@@ -36,7 +36,7 @@ var _ = Describe("Connector", func() {
 
 			t, err := tokens.NewServerClaims(id, []string{"choria"}, "choria", nil, []string{}, pk, "ginkgo", time.Hour)
 			Expect(err).ToNot(HaveOccurred())
-			s, err := tokens.SignTokenWithKeyFile(t, "../tokens/testdata/signer-key.pem")
+			s, err := tokens.SignTokenWithKeyFile(t, "../tokens/testdata/rsa/signer-key.pem")
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = tf.WriteString(s)
