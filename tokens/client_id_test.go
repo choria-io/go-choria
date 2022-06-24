@@ -39,16 +39,16 @@ var _ = Describe("ClientIDClaims", func() {
 		perms = &ClientPermissions{OrgAdmin: true}
 		claims, err := NewClientIDClaims("up=ginkgo", []string{"rpcutil"}, "choria", map[string]string{"group": "admins"}, "// opa policy", "Ginkgo", time.Hour, perms, pubK)
 		Expect(err).ToNot(HaveOccurred())
-		validToken, err = SignToken(claims, loadPriKey("testdata/signer-key.pem"))
+		validToken, err = SignToken(claims, loadRSAPriKey("testdata/rsa/signer-key.pem"))
 		Expect(err).ToNot(HaveOccurred())
 
 		claims, err = NewClientIDClaims("up=ginkgo.expired", []string{"rpcutil"}, "choria", map[string]string{"group": "admins"}, "// opa policy", "Ginkgo", -1*time.Hour, perms, pubK)
 		Expect(err).ToNot(HaveOccurred())
 		claims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(-1 * time.Hour))
-		expiredToken, err = SignToken(claims, loadPriKey("testdata/signer-key.pem"))
+		expiredToken, err = SignToken(claims, loadRSAPriKey("testdata/rsa/signer-key.pem"))
 		Expect(err).ToNot(HaveOccurred())
 
-		provToken, err = os.ReadFile("testdata/good-provisioning.jwt")
+		provToken, err = os.ReadFile("testdata/rsa/good-provisioning.jwt")
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -85,25 +85,25 @@ var _ = Describe("ClientIDClaims", func() {
 
 	Describe("ParseClientIDToken", func() {
 		It("Should parse any token when not set to validate", func() {
-			claims, err := ParseClientIDToken(string(provToken), loadPubKey("testdata/signer-public.pem"), false)
+			claims, err := ParseClientIDToken(string(provToken), loadRSAPubKey("testdata/rsa/signer-public.pem"), false)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(claims.CallerID).To(Equal(""))
 
-			claims, err = ParseClientIDToken(expiredToken, loadPubKey("testdata/signer-public.pem"), false)
+			claims, err = ParseClientIDToken(expiredToken, loadRSAPubKey("testdata/rsa/signer-public.pem"), false)
 			Expect(err.Error()).To(MatchRegexp("could not parse client id token: token is expired by"))
 			Expect(claims).To(BeNil())
 		})
 
 		It("Should validate when required", func() {
-			claims, err := ParseClientIDToken(expiredToken, loadPubKey("testdata/signer-public.pem"), false)
+			claims, err := ParseClientIDToken(expiredToken, loadRSAPubKey("testdata/rsa/signer-public.pem"), false)
 			Expect(err.Error()).To(MatchRegexp("could not parse client id token: token is expired by"))
 			Expect(claims).To(BeNil())
 
-			claims, err = ParseClientIDToken(string(provToken), loadPubKey("testdata/signer-public.pem"), true)
+			claims, err = ParseClientIDToken(string(provToken), loadRSAPubKey("testdata/rsa/signer-public.pem"), true)
 			Expect(err.Error()).To(MatchRegexp("not a client id token"))
 			Expect(claims).To(BeNil())
 
-			claims, err = ParseClientIDToken(validToken, loadPubKey("testdata/signer-public.pem"), true)
+			claims, err = ParseClientIDToken(validToken, loadRSAPubKey("testdata/rsa/signer-public.pem"), true)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(claims.CallerID).To(Equal("up=ginkgo"))
 		})
@@ -111,7 +111,7 @@ var _ = Describe("ClientIDClaims", func() {
 
 	Describe("ParseClientIDTokenWithKeyfile", func() {
 		It("Should parse using the file", func() {
-			claims, err := ParseClientIDTokenWithKeyfile(validToken, "testdata/signer-public.pem", false)
+			claims, err := ParseClientIDTokenWithKeyfile(validToken, "testdata/rsa/signer-public.pem", false)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(claims.CallerID).To(Equal("up=ginkgo"))
 		})

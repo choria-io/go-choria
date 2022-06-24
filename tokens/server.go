@@ -7,7 +7,6 @@ package tokens
 import (
 	"crypto/ed25519"
 	"crypto/md5"
-	"crypto/rsa"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -154,7 +153,7 @@ func ParseServerTokenUnverified(token string) (*ServerClaims, error) {
 }
 
 // ParseServerToken parses token and verifies it with pk
-func ParseServerToken(token string, pk *rsa.PublicKey) (*ServerClaims, error) {
+func ParseServerToken(token string, pk interface{}) (*ServerClaims, error) {
 	claims := &ServerClaims{}
 	err := ParseToken(token, claims, pk)
 	if err != nil {
@@ -168,7 +167,7 @@ func ParseServerToken(token string, pk *rsa.PublicKey) (*ServerClaims, error) {
 	return claims, nil
 }
 
-// ParseServerTokenWithKeyfile parses token and verifies it with the RSA Public key in pkFile
+// ParseServerTokenWithKeyfile parses token and verifies it with the RSA Public key in pkFile, does not support ed25519
 func ParseServerTokenWithKeyfile(token string, pkFile string) (*ServerClaims, error) {
 	if pkFile == "" {
 		return nil, fmt.Errorf("invalid public key file")

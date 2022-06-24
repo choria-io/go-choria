@@ -61,14 +61,14 @@ var _ = Describe("ServerClaims", func() {
 
 	Describe("IsServerTokenString", func() {
 		It("Should detect correctly", func() {
-			pt, err := os.ReadFile("testdata/good-provisioning.jwt")
+			pt, err := os.ReadFile("testdata/rsa/good-provisioning.jwt")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(IsServerTokenString(string(pt))).To(BeFalse())
 
 			perms := &ServerPermissions{Submission: true}
 			claims, err := NewServerClaims("ginkgo.example.net", []string{"choria"}, "ginkgo_org", perms, nil, pubK, "ginkgo issuer", 365*24*time.Hour)
 			Expect(err).ToNot(HaveOccurred())
-			signed, err := SignTokenWithKeyFile(claims, "testdata/signer-key.pem")
+			signed, err := SignTokenWithKeyFile(claims, "testdata/rsa/signer-key.pem")
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(IsServerTokenString(signed)).To(BeTrue())
@@ -84,7 +84,7 @@ var _ = Describe("ServerClaims", func() {
 
 	Describe("ParseServerTokenUnverified", func() {
 		It("Should fail for wrong kinds of tokens", func() {
-			pt, err := os.ReadFile("testdata/good-provisioning.jwt")
+			pt, err := os.ReadFile("testdata/rsa/good-provisioning.jwt")
 			Expect(err).ToNot(HaveOccurred())
 			_, err = ParseServerTokenUnverified(string(pt))
 			Expect(err).To(MatchError("not a server token"))
@@ -94,7 +94,7 @@ var _ = Describe("ServerClaims", func() {
 			perms := &ServerPermissions{Submission: true}
 			claims, err := NewServerClaims("ginkgo.example.net", []string{"choria"}, "ginkgo_org", perms, nil, pubK, "ginkgo issuer", 365*24*time.Hour)
 			Expect(err).ToNot(HaveOccurred())
-			signed, err := SignTokenWithKeyFile(claims, "testdata/signer-key.pem")
+			signed, err := SignTokenWithKeyFile(claims, "testdata/rsa/signer-key.pem")
 			Expect(err).ToNot(HaveOccurred())
 
 			claims = nil
@@ -109,10 +109,10 @@ var _ = Describe("ServerClaims", func() {
 			perms := &ServerPermissions{Submission: true}
 			claims, err := NewServerClaims("ginkgo.example.net", []string{"choria"}, "ginkgo_org", perms, nil, pubK, "ginkgo issuer", 365*24*time.Hour)
 			Expect(err).ToNot(HaveOccurred())
-			signed, err := SignTokenWithKeyFile(claims, "testdata/signer-key.pem")
+			signed, err := SignTokenWithKeyFile(claims, "testdata/rsa/signer-key.pem")
 			Expect(err).ToNot(HaveOccurred())
 
-			_, err = ParseServerTokenWithKeyfile(signed, "testdata/other-public.pem")
+			_, err = ParseServerTokenWithKeyfile(signed, "testdata/rsa/other-public.pem")
 			Expect(err).To(MatchError("could not parse server id token: crypto/rsa: verification error"))
 		})
 
@@ -120,13 +120,11 @@ var _ = Describe("ServerClaims", func() {
 			perms := &ServerPermissions{Submission: true}
 			claims, err := NewServerClaims("ginkgo.example.net", []string{"choria"}, "ginkgo_org", perms, []string{"additional.subject"}, pubK, "ginkgo issuer", 365*24*time.Hour)
 			Expect(err).ToNot(HaveOccurred())
-			signed, err := SignTokenWithKeyFile(claims, "testdata/signer-key.pem")
+			signed, err := SignTokenWithKeyFile(claims, "testdata/rsa/signer-key.pem")
 			Expect(err).ToNot(HaveOccurred())
 
-			os.WriteFile("testdata/good-server.jwt", []byte(signed), 0644)
-
 			claims = nil
-			claims, err = ParseServerTokenWithKeyfile(signed, "testdata/signer-public.pem")
+			claims, err = ParseServerTokenWithKeyfile(signed, "testdata/rsa/signer-public.pem")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(claims.ChoriaIdentity).To(Equal("ginkgo.example.net"))
 		})

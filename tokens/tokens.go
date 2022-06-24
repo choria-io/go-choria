@@ -5,12 +5,23 @@
 package tokens
 
 import (
+	"bytes"
+	"crypto/ed25519"
 	"crypto/rsa"
+	"encoding/hex"
 	"fmt"
 	"os"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
+)
+
+const (
+	algRS256     = "RS256"
+	algRS384     = "RS384"
+	algRS512     = "RS512"
+	alsEdDSA     = "EdDSA"
+	rsaKeyHeader = "-----BEGIN RSA PRIVATE KEY"
 )
 
 // Purpose indicates what kind of token a JWT is and helps us parse it into the right data structure
@@ -34,17 +45,31 @@ const (
 type MapClaims jwt.MapClaims
 
 // ParseToken parses token into claims and verify the token is valid using the pk
-func ParseToken(token string, claims jwt.Claims, pk *rsa.PublicKey) error {
+func ParseToken(token string, claims jwt.Claims, pk interface{}) error {
 	if pk == nil {
 		return fmt.Errorf("invalid public key")
 	}
 
 	_, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
-		if _, ok := t.Method.(*jwt.SigningMethodRSA); !ok {
-			return nil, fmt.Errorf("unsupported signing method in token")
-		}
+		switch t.Method.Alg() {
+		case algRS256, algRS512, algRS384:
+			pk, ok := pk.(*rsa.PublicKey)
+			if !ok {
+				return nil, fmt.Errorf("rsa public key required")
+			}
+			return pk, nil
 
-		return pk, nil
+		case alsEdDSA:
+			pk, ok := pk.(ed25519.PublicKey)
+			if !ok {
+				return nil, fmt.Errorf("ed25519 public key required")
+			}
+
+			return pk, nil
+
+		default:
+			return nil, fmt.Errorf("unsupported signing method %v in token", t.Method)
+		}
 	})
 
 	return err
@@ -85,18 +110,45 @@ func SignTokenWithKeyFile(claims jwt.Claims, pkFile string) (string, error) {
 		return "", fmt.Errorf("could not read signing key: %s", err)
 	}
 
-	key, err := jwt.ParseRSAPrivateKeyFromPEM(keydat)
-	if err != nil {
-		return "", fmt.Errorf("could not parse signing key: %s", err)
+	if bytes.HasPrefix(keydat, []byte(rsaKeyHeader)) {
+		key, err := jwt.ParseRSAPrivateKeyFromPEM(keydat)
+		if err != nil {
+			return "", fmt.Errorf("could not parse signing key: %s", err)
+		}
+
+		return SignToken(claims, key)
 	}
 
-	return SignToken(claims, key)
+	if len(keydat) == ed25519.PrivateKeySize {
+		seed, err := hex.DecodeString(string(keydat))
+		if err != nil {
+			return "", fmt.Errorf("invalid ed25519 seed file: %v", err)
+		}
+
+		return SignToken(claims, ed25519.NewKeyFromSeed(seed))
+	}
+
+	return "", fmt.Errorf("unsupported key in %v", pkFile)
 }
 
 // SignToken signs a JWT using a RSA Private Key
-func SignToken(claims jwt.Claims, pk *rsa.PrivateKey) (string, error) {
-	token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
-	stoken, err := token.SignedString(pk)
+func SignToken(claims jwt.Claims, pk interface{}) (string, error) {
+	var stoken string
+	var err error
+
+	switch pri := pk.(type) {
+	case ed25519.PrivateKey:
+		token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
+		stoken, err = token.SignedString(pri)
+
+	case *rsa.PrivateKey:
+		token := jwt.NewWithClaims(jwt.SigningMethodRS256, claims)
+		stoken, err = token.SignedString(pri)
+
+	default:
+		return "", fmt.Errorf("unsupported private key")
+	}
+
 	if err != nil {
 		return "", fmt.Errorf("could not sign token using key: %s", err)
 	}
