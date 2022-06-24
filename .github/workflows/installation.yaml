@@ -19,6 +19,13 @@ jobs:
         shell: bash
         run: docker run --entrypoint=/bin/install-choria.sh choria/packager:el8-go1.18
 
+  el9_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: EL9 Installation Tests
+        shell: bash
+        run: docker run --entrypoint=/bin/install-choria.sh choria/packager:el9-go1.18
+
   bionic_64:
     runs-on: ubuntu-latest
     steps:
