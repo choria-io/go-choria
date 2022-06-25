@@ -83,7 +83,7 @@ func ParseCLI() (err error) {
 		err = cmd.Setup()
 	}
 
-	cli.command = fisk.MustParse(cli.app.Parse(os.Args[1:]))
+	cli.command = cli.app.MustParseWithUsage(os.Args[1:])
 
 	for _, cmd := range cli.commands {
 		if cmd.FullCommand() == cli.command {
