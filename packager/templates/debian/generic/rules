@@ -3,6 +3,9 @@
 %:
 	dh $@ --with systemd
 
+override_dh_builddeb:
+	dh_builddeb -- -Zgzip
+
 override_dh_strip:
 
 override_dh_auto_clean:
@@ -21,7 +24,7 @@ ifeq ({{cpkg_manage_conf}},1)
 endif
 	install -Dm644 debian/choria-logrotate debian/{{cpkg_name}}/etc/logrotate.d/{{cpkg_name}}
 
-  # do this here due to xenial bugs, post xenial this can be done in override_dh_systemd_enable
+	# do this here due to xenial bugs, post xenial this can be done in override_dh_systemd_enable
 	# and override_dh_systemd_enable
 	dh_systemd_enable -p{{cpkg_name}} --no-enable --name={{cpkg_name}}-broker
 	dh_systemd_enable -p{{cpkg_name}} --name={{cpkg_name}}-server

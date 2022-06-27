@@ -15,8 +15,8 @@ require (
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.0.9
-	github.com/choria-io/fisk v0.1.5-0.20220625143252-ede8b65f403e
+	github.com/choria-io/appbuilder v0.1.0
+	github.com/choria-io/fisk v0.1.5
 	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
