@@ -16,7 +16,7 @@ require (
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
 	github.com/choria-io/appbuilder v0.0.9
-	github.com/choria-io/fisk v0.1.4
+	github.com/choria-io/fisk v0.1.5-0.20220625143252-ede8b65f403e
 	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
@@ -33,10 +33,10 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.0.34-0.20220610113917-5a299917dacd
-	github.com/nats-io/nats-server/v2 v2.8.5-0.20220621161222-4d6b56245072
+	github.com/nats-io/jsm.go v0.0.34-0.20220624081812-70883a58262d
+	github.com/nats-io/nats-server/v2 v2.8.5-0.20220624182245-67a182f98e29
 	github.com/nats-io/nats.go v1.16.1-0.20220610202224-dcbb65a13ee9
-	github.com/nats-io/natscli v0.0.34-0.20220620184400-e32bc5ed70af
+	github.com/nats-io/natscli v0.0.34-0.20220625082016-84c91a5d5877
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.19.0
