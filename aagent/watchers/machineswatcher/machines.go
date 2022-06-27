@@ -188,7 +188,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	updated := false
 
 	if w.properties.PurgeUnknown {
-		purged, err = w.purgeUnknownMachines(desired)
+		purged, err = w.purgeUnknownMachines(ctx, desired)
 		if err != nil {
 			return Error, err
 		}
@@ -318,7 +318,7 @@ func (w *Watcher) targetDirForManagedMachine(m string) string {
 	return filepath.Join(filepath.Dir(w.machine.Directory()), m)
 }
 
-func (w *Watcher) purgeUnknownMachines(desired []*ManagedMachine) (bool, error) {
+func (w *Watcher) purgeUnknownMachines(ctx context.Context, desired []*ManagedMachine) (bool, error) {
 	current, err := w.currentMachines()
 	if err != nil {
 		return false, err
@@ -350,6 +350,9 @@ func (w *Watcher) purgeUnknownMachines(desired []*ManagedMachine) (bool, error) 
 				w.Errorf("Could not remove %s: %s", target, err)
 				continue
 			}
+
+			w.Debugf("Sleeping for 2 seconds to allow manager to exit")
+			iu.InterruptibleSleep(ctx, 2*time.Second)
 
 			target = w.targetDirForManagedMachine(m)
 			err = os.RemoveAll(target)
