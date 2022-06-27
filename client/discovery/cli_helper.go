@@ -5,9 +5,11 @@
 package discovery
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -121,16 +123,6 @@ func (o *StandardOptions) Discover(ctx context.Context, fw inter.Framework, agen
 	}
 
 	switch {
-	case supportStdin && o.isPiped() && (o.DiscoveryMethod == "" || o.unsetMethod):
-		o.DiscoveryMethod = "flatfile"
-		fformat = flatfile.ChoriaResponsesFormat
-		sourceFile = os.Stdin
-		logger.Debugf("Forcing discovery mode to flatfile with Choria responses on STDIN")
-
-	case len(filter.Compound) > 0 && o.DiscoveryMethod != "broadcast" && o.DiscoveryMethod != "inventory" && o.DiscoveryMethod != "mc":
-		o.DiscoveryMethod = "broadcast"
-		logger.Debugf("Forcing discovery mode to broadcast to support compound filters")
-
 	case o.NodesFile != "":
 		o.DiscoveryMethod = "flatfile"
 
@@ -150,6 +142,34 @@ func (o *StandardOptions) Discover(ctx context.Context, fw inter.Framework, agen
 		if err != nil {
 			return nil, 0, err
 		}
+
+	case len(filter.Compound) > 0 && o.DiscoveryMethod != "broadcast" && o.DiscoveryMethod != "inventory" && o.DiscoveryMethod != "mc":
+		o.DiscoveryMethod = "broadcast"
+		logger.Debugf("Forcing discovery mode to broadcast to support compound filters")
+
+	case supportStdin && o.isPiped() && (o.DiscoveryMethod == "" || o.unsetMethod):
+		stdin, err := ioutil.ReadAll(os.Stdin)
+		stdin = bytes.TrimSpace(stdin)
+		sourceFile = bytes.NewReader(stdin)
+
+		if err != nil {
+			logger.Debugf("Could not read STDIN to detect flatfile override")
+			break
+		}
+
+		if len(stdin) == 0 {
+			logger.Debugf("No data on STDIN found, not forcing flatfile override")
+			break
+		}
+
+		if !(bytes.HasPrefix(stdin, []byte("{")) && bytes.HasSuffix(stdin, []byte("}"))) {
+			logger.Debugf("Found non JSON data on STDIN, not forcing flatfile override")
+			break
+		}
+
+		o.DiscoveryMethod = "flatfile"
+		fformat = flatfile.ChoriaResponsesFormat
+		logger.Debugf("Forcing discovery mode to flatfile with Choria responses on STDIN")
 	}
 
 	if o.DiscoveryMethod == "flatfile" && (fformat == 0 || sourceFile == nil) && len(o.DiscoveryOptions) == 0 {
