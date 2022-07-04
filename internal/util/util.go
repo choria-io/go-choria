@@ -143,10 +143,12 @@ func StringInList(list []string, match string) bool {
 // InterruptibleSleep sleep for the duration in a way that can be interrupted by the context.
 // An error is returned if the context cancels the sleep
 func InterruptibleSleep(ctx context.Context, d time.Duration) error {
+	timer := time.NewTimer(d)
 	select {
-	case <-time.After(d):
+	case <-timer.C:
 		return nil
 	case <-ctx.Done():
+		timer.Stop()
 		return fmt.Errorf("sleep interrupted by context")
 	}
 }

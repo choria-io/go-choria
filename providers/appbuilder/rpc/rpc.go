@@ -29,7 +29,6 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 	"github.com/choria-io/go-choria/providers/appbuilder"
 	"github.com/gosuri/uiprogress"
-	"github.com/itchyny/gojq"
 	"github.com/sirupsen/logrus"
 )
 
@@ -46,19 +45,19 @@ type Request struct {
 }
 
 type Command struct {
-	StandardFilter        bool                      `json:"std_filters"`
-	OutputFormatFlags     bool                      `json:"output_format_flags"`
-	OutputFormat          string                    `json:"output_format"`
-	Display               string                    `json:"display"`
-	DisplayFlag           bool                      `json:"display_flag"`
-	BatchFlags            bool                      `json:"batch_flags"`
-	BatchSize             int                       `json:"batch"`
-	BatchSleep            int                       `json:"batch_sleep"`
-	NoProgress            bool                      `json:"no_progress"`
-	AllNodesConfirmPrompt string                    `json:"all_nodes_confirm_prompt"`
-	Flags                 []Flag                    `json:"flags"`
-	Request               Request                   `json:"request"`
-	Transform             *builder.GenericTransform `json:"transform"`
+	StandardFilter        bool               `json:"std_filters"`
+	OutputFormatFlags     bool               `json:"output_format_flags"`
+	OutputFormat          string             `json:"output_format"`
+	Display               string             `json:"display"`
+	DisplayFlag           bool               `json:"display_flag"`
+	BatchFlags            bool               `json:"batch_flags"`
+	BatchSize             int                `json:"batch"`
+	BatchSleep            int                `json:"batch_sleep"`
+	NoProgress            bool               `json:"no_progress"`
+	AllNodesConfirmPrompt string             `json:"all_nodes_confirm_prompt"`
+	Flags                 []Flag             `json:"flags"`
+	Request               Request            `json:"request"`
+	Transform             *builder.Transform `json:"transform"`
 
 	builder.GenericCommand
 	builder.GenericSubCommands
@@ -70,15 +69,14 @@ type RPC struct {
 	fo          *discovery.StandardOptions
 	def         *Command
 	cfg         interface{}
-	arguments   map[string]*string
-	flags       map[string]*string
+	arguments   map[string]interface{}
+	flags       map[string]interface{}
 	senders     bool
 	json        bool
 	table       bool
 	display     string
 	batch       int
 	batchSleep  int
-	jqQuery     *gojq.Query
 	progressBar *uiprogress.Bar
 	log         builder.Logger
 	ctx         context.Context
@@ -86,8 +84,8 @@ type RPC struct {
 
 func NewRPCCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Logger) (builder.Command, error) {
 	rpc := &RPC{
-		arguments: map[string]*string{},
-		flags:     map[string]*string{},
+		arguments: map[string]interface{}{},
+		flags:     map[string]interface{}{},
 		def:       &Command{},
 		cfg:       b.Configuration(),
 		ctx:       b.Context(),
@@ -98,13 +96,6 @@ func NewRPCCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Logger)
 	err := json.Unmarshal(j, rpc.def)
 	if err != nil {
 		return nil, err
-	}
-
-	if rpc.def.Transform != nil && rpc.def.Transform.Query != "" {
-		rpc.jqQuery, err = gojq.Parse(rpc.def.Transform.Query)
-		if err != nil {
-			return nil, err
-		}
 	}
 
 	return rpc, nil
@@ -158,7 +149,7 @@ func (r *RPC) SubCommands() []json.RawMessage {
 }
 
 func (r *RPC) CreateCommand(app builder.KingpinCommand) (*fisk.CmdClause, error) {
-	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, nil, r.b.Configuration(), r.runCommand)
+	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, r.flags, r.b, r.runCommand)
 
 	switch {
 	case r.def.OutputFormatFlags && r.def.OutputFormat != "":
@@ -417,12 +408,18 @@ func (r *RPC) transformResults(w io.Writer, results *replyfmt.RPCResults, action
 		return err
 	}
 
-	return r.def.Transform.FTransformJSON(r.ctx, w, out.Bytes())
+	res, err := r.def.Transform.TransformBytes(r.ctx, out.Bytes(), r.flags, r.arguments, r.b.Configuration())
+	if err != nil {
+		return err
+	}
+
+	fmt.Fprintln(w, string(res))
+	return nil
 }
 
 func (r *RPC) renderResults(fw inter.Framework, log *logrus.Entry, results *replyfmt.RPCResults, action *agent.Action) (err error) {
 	switch {
-	case r.jqQuery != nil:
+	case r.def.Transform != nil:
 		err = r.transformResults(os.Stdout, results, action)
 	case r.senders:
 		err = results.RenderNames(os.Stdout, r.json, false)
@@ -465,7 +462,7 @@ func (r *RPC) reqOptions(action *agent.Action) (inputs map[string]string, rpcInp
 
 	filter := ""
 	for _, flag := range r.def.Flags {
-		if *r.flags[flag.Name] != "" {
+		if r.flags[flag.Name] != "" {
 			if flag.ReplyFilter == "" {
 				continue
 			}

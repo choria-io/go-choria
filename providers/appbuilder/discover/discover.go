@@ -31,8 +31,8 @@ type Discover struct {
 	fo        *discovery.StandardOptions
 	def       *Command
 	cfg       interface{}
-	arguments map[string]*string
-	flags     map[string]*string
+	arguments map[string]interface{}
+	flags     map[string]interface{}
 	json      bool
 	log       builder.Logger
 	ctx       context.Context
@@ -40,8 +40,8 @@ type Discover struct {
 
 func NewDiscoverCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Logger) (builder.Command, error) {
 	find := &Discover{
-		arguments: map[string]*string{},
-		flags:     map[string]*string{},
+		arguments: map[string]interface{}{},
+		flags:     map[string]interface{}{},
 		def:       &Command{},
 		cfg:       b.Configuration(),
 		ctx:       b.Context(),
@@ -74,7 +74,7 @@ func (r *Discover) SubCommands() []json.RawMessage {
 }
 
 func (r *Discover) CreateCommand(app builder.KingpinCommand) (*fisk.CmdClause, error) {
-	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, r.flags, r.b.Configuration(), r.runCommand)
+	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, r.flags, r.b, r.runCommand)
 
 	r.fo = discovery.NewStandardOptions()
 

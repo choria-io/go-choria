@@ -9,7 +9,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
@@ -23,12 +22,12 @@ import (
 )
 
 type Command struct {
-	Action     string                    `json:"action"`
-	Bucket     string                    `json:"bucket"`
-	Key        string                    `json:"key"`
-	Value      string                    `json:"value"`
-	RenderJSON bool                      `json:"json"`
-	Transform  *builder.GenericTransform `json:"transform"`
+	Action     string             `json:"action"`
+	Bucket     string             `json:"bucket"`
+	Key        string             `json:"key"`
+	Value      string             `json:"value"`
+	RenderJSON bool               `json:"json"`
+	Transform  *builder.Transform `json:"transform"`
 
 	builder.GenericCommand
 	builder.GenericSubCommands
@@ -36,8 +35,8 @@ type Command struct {
 
 type KV struct {
 	b         *builder.AppBuilder
-	Arguments map[string]*string
-	Flags     map[string]*string
+	arguments map[string]interface{}
+	flags     map[string]interface{}
 	cmd       *fisk.CmdClause
 	def       *Command
 	cfg       interface{}
@@ -52,8 +51,8 @@ func NewKVCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Logger) 
 		ctx:       b.Context(),
 		b:         b,
 		log:       log,
-		Arguments: map[string]*string{},
-		Flags:     map[string]*string{},
+		arguments: map[string]interface{}{},
+		flags:     map[string]interface{}{},
 	}
 
 	err := json.Unmarshal(j, kv.def)
@@ -122,7 +121,7 @@ func (r *KV) SubCommands() []json.RawMessage {
 }
 
 func (r *KV) CreateCommand(app builder.KingpinCommand) (*fisk.CmdClause, error) {
-	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.Arguments, r.Flags, r.b.Configuration(), r.runCommand)
+	r.cmd = builder.CreateGenericCommand(app, &r.def.GenericCommand, r.arguments, r.flags, r.b, r.runCommand)
 
 	if r.def.Action == "get" || r.def.Action == "history" && !r.def.RenderJSON {
 		r.cmd.Flag("json", "Renders results in JSON format").BoolVar(&r.def.RenderJSON)
@@ -144,7 +143,12 @@ func (r *KV) getAction(kv nats.KeyValue) error {
 
 	switch {
 	case r.def.Transform != nil:
-		r.def.Transform.FTransformJSON(r.ctx, os.Stdout, entry.Value())
+		res, err := r.def.Transform.TransformBytes(r.ctx, entry.Value(), r.arguments, r.flags, r.b.Configuration())
+		if err != nil {
+			return err
+		}
+		fmt.Println(string(res))
+
 	case r.def.RenderJSON:
 		ej, err := json.MarshalIndent(r.entryMap(entry), "", "  ")
 		if err != nil {
@@ -152,6 +156,7 @@ func (r *KV) getAction(kv nats.KeyValue) error {
 		}
 
 		fmt.Println(string(ej))
+
 	default:
 		fmt.Println(string(entry.Value()))
 	}
@@ -160,7 +165,7 @@ func (r *KV) getAction(kv nats.KeyValue) error {
 }
 
 func (r *KV) putAction(kv nats.KeyValue) error {
-	v, err := builder.ParseStateTemplate(r.def.Value, r.Arguments, r.Flags, r.cfg)
+	v, err := builder.ParseStateTemplate(r.def.Value, r.arguments, r.flags, r.cfg)
 	if err != nil {
 		return err
 	}
@@ -273,11 +278,11 @@ func (r *KV) historyAction(kv nats.KeyValue) error {
 }
 
 func (r *KV) bucket() (string, error) {
-	return builder.ParseStateTemplate(r.def.Bucket, r.def.Arguments, r.def.Flags, r.cfg)
+	return builder.ParseStateTemplate(r.def.Bucket, r.arguments, r.flags, r.cfg)
 }
 
 func (r *KV) key() (string, error) {
-	return builder.ParseStateTemplate(r.def.Key, r.def.Arguments, r.def.Flags, r.cfg)
+	return builder.ParseStateTemplate(r.def.Key, r.arguments, r.flags, r.cfg)
 }
 
 func (r *KV) runCommand(_ *fisk.ParseContext) error {
