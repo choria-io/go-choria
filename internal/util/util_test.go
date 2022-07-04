@@ -5,6 +5,8 @@
 package util
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -66,3 +68,21 @@ var _ = Describe("Internal/Util", func() {
 		})
 	})
 })
+
+func BenchmarkCompare(b *testing.B) {
+	all := "\t\n\f\r "
+	ts := "some stringdddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd with \t in it"
+	c := ' '
+	bv := false
+	b.Run("ContainsAny", func(b *testing.B) {
+		for i := 0; i < b.N; i++ {
+			strings.ContainsAny(ts, all)
+		}
+	})
+
+	b.Run("Rune compare", func(b *testing.B) {
+		bv = c == '\t' || c == '\n' || c == '\f' || c == '\r' || c == ' '
+	})
+
+	fmt.Printf("%t", bv)
+}

@@ -104,13 +104,15 @@ func builderOptions() []builder.Option {
 	parent.Register()
 	exec.Register()
 
-	return []builder.Option{builder.WithConfigPaths(
-		".",
-		filepath.Join(xdg.ConfigHome, "choria", "builder"),
-		filepath.Join("/", "etc", "choria", "builder"),
-		filepath.Join(xdg.ConfigHome, "appbuilder"),
-		filepath.Join("/", "etc", "appbuilder"),
-	)}
+	return []builder.Option{
+		builder.WithContextualUsageOnError(),
+		builder.WithConfigPaths(
+			".",
+			filepath.Join(xdg.ConfigHome, "choria", "builder"),
+			filepath.Join("/", "etc", "choria", "builder"),
+			filepath.Join(xdg.ConfigHome, "appbuilder"),
+			filepath.Join("/", "etc", "appbuilder")),
+	}
 }
 
 func runBuilder() {
@@ -119,7 +121,7 @@ func runBuilder() {
 		if strings.Contains(err.Error(), "must select a") {
 			fmt.Println(err.Error())
 		} else {
-			fmt.Printf("app builder setup failed: %v\n", err)
+			fmt.Printf("appbuilder setup failed: %v\n", err)
 		}
 		os.Exit(1)
 	}
