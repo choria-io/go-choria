@@ -15,7 +15,7 @@ type tGovCommand struct {
 }
 
 func (g *tGovCommand) Setup() (err error) {
-	g.cmd = cli.app.Command("governor", "Distributed Concurrency Control System management").Alias("gov")
+	g.cmd = cli.app.Command("governor", "Distributed Concurrency Control System Tools").Alias("gov")
 	g.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 	g.cmd.CheatFile(fs.FS, "governor", "cheats/governor.md")
 

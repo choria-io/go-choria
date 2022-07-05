@@ -13,7 +13,7 @@ type jWTCommand struct {
 }
 
 func (j *jWTCommand) Setup() (err error) {
-	j.cmd = cli.app.Command("jwt", "Create, validate and view Choria JWT files")
+	j.cmd = cli.app.Command("jwt", "Create, Validate and View Choria JWT files")
 
 	return nil
 }

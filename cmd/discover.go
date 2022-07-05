@@ -26,7 +26,7 @@ type discoverCommand struct {
 }
 
 func (d *discoverCommand) Setup() error {
-	d.cmd = cli.app.Command("discover", "Discover nodes using the discovery system matching filter criteria").Alias("find")
+	d.cmd = cli.app.Command("discover", "Discover nodes using filters").Alias("find")
 	d.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 	d.cmd.CheatFile(fs.FS, "discover", "cheats/discover.md")
 

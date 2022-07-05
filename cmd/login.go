@@ -29,7 +29,7 @@ type loginCommand struct {
 }
 
 func (p *loginCommand) Setup() error {
-	p.cmd = cli.app.Command("login", "Authenticate into the Choria AAA System")
+	p.cmd = cli.app.Command("login", "Authenticate against the Choria AAA System")
 	p.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 
 	return nil
