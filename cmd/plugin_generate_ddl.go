@@ -27,8 +27,8 @@ func (c *pGenerateDDLCommand) Setup() (err error) {
 		c.cmd = gen.Cmd().Command("ddl", "Generate and convert DDL files")
 		c.cmd.Arg("json_output", "Where to place the JSON output").Required().StringVar(&c.jsonOut)
 		c.cmd.Arg("ruby_output", "Where to place the Ruby output").StringVar(&c.rubyOut)
-		c.cmd.Flag("skip-verify", "Do not verify the JSON file against the DDL Schema").Default("false").BoolVar(&c.skipVerify)
-		c.cmd.Flag("convert", "Convert JSON to DDL without prompting").Default("false").BoolVar(&c.forceConvert)
+		c.cmd.Flag("skip-verify", "Do not verify the JSON file against the DDL Schema").UnNegatableBoolVar(&c.skipVerify)
+		c.cmd.Flag("convert", "Convert JSON to DDL without prompting").UnNegatableBoolVar(&c.forceConvert)
 	}
 
 	return nil

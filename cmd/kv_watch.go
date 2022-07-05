@@ -28,7 +28,7 @@ func (k *kvWatchCommand) Setup() error {
 		k.cmd = kv.Cmd().Command("watch", "Watch a bucket or key for changes")
 		k.cmd.Arg("bucket", "The bucket name").Required().StringVar(&k.name)
 		k.cmd.Arg("key", "The key to watch").StringVar(&k.key)
-		k.cmd.Flag("once", "Wait for one value and print it, exit after").BoolVar(&k.once)
+		k.cmd.Flag("once", "Wait for one value and print it, exit after").UnNegatableBoolVar(&k.once)
 		k.cmd.Flag("timeout", "Timeout waiting for values").DurationVar(&k.timeout)
 	}
 

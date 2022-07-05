@@ -23,7 +23,7 @@ func (g *tGovResetCommand) Setup() (err error) {
 	if gov, ok := cmdWithFullCommand("governor"); ok {
 		g.cmd = gov.Cmd().Command("reset", "Evicts all workers")
 		g.cmd.Arg("name", "The name for the Governor to managed").Required().StringVar(&g.name)
-		g.cmd.Flag("force", "Reset without prompting").Short('f').BoolVar(&g.force)
+		g.cmd.Flag("force", "Reset without prompting").Short('f').UnNegatableBoolVar(&g.force)
 	}
 
 	return nil

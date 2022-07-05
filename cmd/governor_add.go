@@ -30,7 +30,7 @@ func (g *tGovAddCommand) Setup() (err error) {
 		g.cmd.Arg("capacity", "How many concurrent lease entries to allow").Required().Int64Var(&g.limit)
 		g.cmd.Arg("expire", "Expire entries from the Governor after a period").Required().DurationVar(&g.expire)
 		g.cmd.Arg("replicas", "Create a replicated Governor with this many replicas").Default("1").IntVar(&g.replicas)
-		g.cmd.Flag("force", "Force operations requiring confirmation").Short('f').BoolVar(&g.force)
+		g.cmd.Flag("force", "Force operations requiring confirmation").Short('f').UnNegatableBoolVar(&g.force)
 	}
 
 	return nil

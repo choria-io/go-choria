@@ -49,14 +49,14 @@ func (p *pingCommand) Setup() (err error) {
 	p.cmd = cli.app.Command("ping", "Low level network protocol testing tool")
 	p.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 	p.cmd.Flag("silent", "Do not print any hostnames").BoolVar(&p.silent)
-	p.cmd.Flag("names", "Only show the names that respond, no statistics").BoolVar(&p.namesOnly)
+	p.cmd.Flag("names", "Only show the names that respond, no statistics").UnNegatableBoolVar(&p.namesOnly)
 
 	p.fo = discovery.NewStandardOptions()
 	p.fo.AddFilterFlags(p.cmd)
 
 	p.cmd.Flag("expect", "Wait until this many replies were received or timeout").IntVar(&p.waitfor)
 	p.cmd.Flag("timeout", "How long to wait for responses").IntVar(&p.timeout)
-	p.cmd.Flag("graph", "Produce a graph of the result times").BoolVar(&p.graph)
+	p.cmd.Flag("graph", "Produce a graph of the result times").UnNegatableBoolVar(&p.graph)
 	p.cmd.Flag("workers", "How many workers to start for receiving messages").Default("3").IntVar(&p.workers)
 
 	p.start = time.Now()

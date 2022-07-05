@@ -21,7 +21,7 @@ type tGovListCommand struct {
 func (g *tGovListCommand) Setup() (err error) {
 	if gov, ok := cmdWithFullCommand("governor"); ok {
 		g.cmd = gov.Cmd().Command("list", "Lists governors").Alias("ls")
-		g.cmd.Flag("json", "Produce JSON output").Short('j').BoolVar(&g.json)
+		g.cmd.Flag("json", "Produce JSON output").Short('j').UnNegatableBoolVar(&g.json)
 	}
 
 	return nil

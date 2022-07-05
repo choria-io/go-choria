@@ -26,7 +26,7 @@ func (k *kvGetCommand) Setup() error {
 		k.cmd = kv.Cmd().Command("get", "Get a value")
 		k.cmd.Arg("bucket", "The bucket name").Required().StringVar(&k.name)
 		k.cmd.Arg("key", "The key to fetch").Required().StringVar(&k.key)
-		k.cmd.Flag("raw", "Show only the value").BoolVar(&k.raw)
+		k.cmd.Flag("raw", "Show only the value").UnNegatableBoolVar(&k.raw)
 	}
 
 	return nil

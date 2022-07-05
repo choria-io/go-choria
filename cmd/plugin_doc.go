@@ -29,8 +29,8 @@ func (d *pDocCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("plugin"); ok {
 		d.cmd = tool.Cmd().Command("doc", "Inspect plugin documentation")
 		d.cmd.Arg("name", "Plugin to inspect").StringVar(&d.name)
-		d.cmd.Flag("json", "Produce JSON output only").Short('j').BoolVar(&d.jsonOnly)
-		d.cmd.Flag("markdown", "Produce Markdown output").Short('m').BoolVar(&d.markdown)
+		d.cmd.Flag("json", "Produce JSON output only").Short('j').UnNegatableBoolVar(&d.jsonOnly)
+		d.cmd.Flag("markdown", "Produce Markdown output").Short('m').UnNegatableBoolVar(&d.markdown)
 	}
 
 	return nil

@@ -34,8 +34,8 @@ func (s *tStatusCommand) Setup() (err error) {
 		s.cmd.Flag("max-age", "Maximum age for the status file (0 disables)").Default("30m").DurationVar(&s.maxAge)
 		s.cmd.Flag("certificate-age", "Check if the certificate expires sooner than this duration (0 disabled").Default("24h").DurationVar(&s.certExpire)
 		s.cmd.Flag("token-age", "Check if the token expires sooner than this duration (0 disabled)").Default("24h").DurationVar(&s.tokenExpire)
-		s.cmd.Flag("unprovisioned", "Checks that the server is in provisioning mode").Default("false").BoolVar(&s.provisioning)
-		s.cmd.Flag("provisioned", "Checks that the server is not being provisioned").Default("false").BoolVar(&s.provisioned)
+		s.cmd.Flag("unprovisioned", "Checks that the server is in provisioning mode").UnNegatableBoolVar(&s.provisioning)
+		s.cmd.Flag("provisioned", "Checks that the server is not being provisioned").UnNegatableBoolVar(&s.provisioned)
 	}
 
 	return nil

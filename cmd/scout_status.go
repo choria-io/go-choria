@@ -23,8 +23,8 @@ func (s *sStatusCommand) Setup() (err error) {
 	if scout, ok := cmdWithFullCommand("scout"); ok {
 		s.cmd = scout.Cmd().Command("status", "Retrieve check statuses from an agent")
 		s.cmd.Arg("identity", "Node to retrieve data from").Required().StringVar(&s.identity)
-		s.cmd.Flag("json", "JSON format output").BoolVar(&s.json)
-		s.cmd.Flag("verbose", "Show verbose output").Short('v').BoolVar(&s.verbose)
+		s.cmd.Flag("json", "JSON format output").UnNegatableBoolVar(&s.json)
+		s.cmd.Flag("verbose", "Show verbose output").Short('v').UnNegatableBoolVar(&s.verbose)
 	}
 
 	return nil

@@ -23,7 +23,7 @@ func (k *kvKeysCommand) Setup() error {
 	if kv, ok := cmdWithFullCommand("kv"); ok {
 		k.cmd = kv.Cmd().Command("keys", "List the keys in a bucket")
 		k.cmd.Arg("bucket", "The bucket name").Required().StringVar(&k.name)
-		k.cmd.Arg("json", "Produce the list in JSON format").BoolVar(&k.json)
+		k.cmd.Arg("json", "Produce the list in JSON format").UnNegatableBoolVar(&k.json)
 	}
 
 	return nil

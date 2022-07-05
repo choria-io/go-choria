@@ -84,9 +84,9 @@ that match the filter.
 	r.cmd.Arg("agent", "The agent to invoke").Required().StringVar(&r.agent)
 	r.cmd.Arg("action", "The action to invoke").Required().StringVar(&r.action)
 	r.cmd.Arg("args", "Arguments to pass to the action in key=val format").StringMapVar(&r.args)
-	r.cmd.Flag("json", "Produce JSON output only").Short('j').BoolVar(&r.jsonOnly)
-	r.cmd.Flag("table", "Produce a Table output of successful responses").BoolVar(&r.tableOnly)
-	r.cmd.Flag("senders", "Produce a list of sender identities of successful responses").BoolVar(&r.senderNamesOnly)
+	r.cmd.Flag("json", "Produce JSON output only").Short('j').UnNegatableBoolVar(&r.jsonOnly)
+	r.cmd.Flag("table", "Produce a Table output of successful responses").UnNegatableBoolVar(&r.tableOnly)
+	r.cmd.Flag("senders", "Produce a list of sender identities of successful responses").UnNegatableBoolVar(&r.senderNamesOnly)
 
 	r.fo = discovery.NewStandardOptions()
 	r.fo.AddFilterFlags(r.cmd)
@@ -98,13 +98,13 @@ that match the filter.
 	r.cmd.Flag("batch", "Do requests in batches").PlaceHolder("SIZE").IntVar(&r.batch)
 	r.cmd.Flag("batch-sleep", "Sleep time between batches").PlaceHolder("SECONDS").IntVar(&r.batchSleep)
 	r.cmd.Flag("workers", "How many workers to start for receiving messages").Default("3").IntVar(&r.workers)
-	r.cmd.Flag("np", "Disable the progress bar").BoolVar(&r.noProgress)
-	r.cmd.Flag("verbose", "Enable verbose output").Short('v').BoolVar(&r.verbose)
+	r.cmd.Flag("np", "Disable the progress bar").UnNegatableBoolVar(&r.noProgress)
+	r.cmd.Flag("verbose", "Enable verbose output").Short('v').UnNegatableBoolVar(&r.verbose)
 	r.cmd.Flag("display", "Display only a subset of results (ok, failed, all, none)").EnumVar(&r.displayOverride, "ok", "failed", "all", "none")
 	r.cmd.Flag("output-file", "Filename to write output to").PlaceHolder("FILENAME").Short('o').StringVar(&r.outputFile)
 	r.cmd.Flag("filter-replies", "Filter replies using a expr filter").PlaceHolder("EXPR").StringVar(&r.exprFilter)
 	r.cmd.Flag("reply-to", "Set a custom reply subject").PlaceHolder("TARGET").Short('r').StringVar(&r.reply)
-	r.cmd.Flag("sort", "Sort replies by responder identity").BoolVar(&r.sort)
+	r.cmd.Flag("sort", "Sort replies by responder identity").UnNegatableBoolVar(&r.sort)
 
 	return
 }

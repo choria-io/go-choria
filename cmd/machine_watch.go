@@ -40,8 +40,8 @@ type mWatchableState interface {
 func (w *mWatchCommand) Setup() (err error) {
 	if machine, ok := cmdWithFullCommand("machine"); ok {
 		w.cmd = machine.Cmd().Command("watch", "Real time view of machine transitions and watcher states")
-		w.cmd.Flag("transitions", "View only transitions").BoolVar(&w.onlyTransitions)
-		w.cmd.Flag("watchers", "View only watcher states").BoolVar(&w.onlyWatchers)
+		w.cmd.Flag("transitions", "View only transitions").UnNegatableBoolVar(&w.onlyTransitions)
+		w.cmd.Flag("watchers", "View only watcher states").UnNegatableBoolVar(&w.onlyWatchers)
 		w.cmd.Flag("type", "Limit watcher events to certain types").StringsVar(&w.filterWatcherType)
 		w.cmd.Flag("identity", "Filters identity").StringVar(&w.filterIdentity)
 		w.cmd.Flag("machine", "Filters based on machine name").StringVar(&w.filterMachine)
