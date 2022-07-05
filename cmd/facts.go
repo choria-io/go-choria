@@ -43,7 +43,7 @@ type factCommandValue struct {
 }
 
 func (f *factsCommand) Setup() error {
-	f.cmd = cli.app.Command("facts", "Reports on usage for a specific fact")
+	f.cmd = cli.app.Command("facts", "Fact usage reporting")
 	f.cmd.CheatFile(fs.FS, "facts", "cheats/facts.md")
 	f.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 	f.cmd.Arg("fact", "The fact to report on").Required().StringVar(&f.fact)

@@ -19,7 +19,7 @@ type enrollCommand struct {
 }
 
 func (e *enrollCommand) Setup() (err error) {
-	e.cmd = cli.app.Command("enroll", "Enrolls this node with the security provider")
+	e.cmd = cli.app.Command("enroll", "Enroll with the security provider")
 	e.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 	e.cmd.Flag("certname", "Custom Certificate Name").StringVar(&e.cn)
 

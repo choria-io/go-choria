@@ -75,7 +75,9 @@ func ParseCLI() (err error) {
 	cli.app = fisk.New("choria", "Choria Orchestration System\n\nUse 'choria cheat' for cheat sheet style help.")
 	cli.app.Version(bi.Version())
 	cli.app.WithCheats()
-	cli.app.Flag("debug", "Enable debug logging").BoolVar(&debug)
+	cli.app.UsageTemplate(fisk.CompactMainUsageTemplate)
+	cli.app.ErrorUsageTemplate(fisk.CompactMainUsageTemplate)
+	cli.app.Flag("debug", "Enable debug logging").UnNegatableBoolVar(&debug)
 	cli.app.Flag("profile", "Enable CPU profiling and write to the supplied file").Hidden().StringVar(&cpuProfile)
 	cli.app.CheatCommand.Hidden()
 

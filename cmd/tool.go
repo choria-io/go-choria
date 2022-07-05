@@ -13,7 +13,7 @@ type toolCommand struct {
 }
 
 func (t *toolCommand) Setup() (err error) {
-	t.cmd = cli.app.Command("tool", "Various utilities for debugging and verification of Choria Networks").Alias("t")
+	t.cmd = cli.app.Command("tool", "Various debugging and management utilities").Alias("t")
 	t.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 
 	return nil
