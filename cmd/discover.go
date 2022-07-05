@@ -35,9 +35,9 @@ func (d *discoverCommand) Setup() error {
 	d.fo.AddSelectionFlags(d.cmd)
 	d.fo.AddFlatFileFlags(d.cmd)
 
-	d.cmd.Flag("verbose", "Log verbosely").Default("false").Short('v').BoolVar(&d.verbose)
-	d.cmd.Flag("json", "Produce JSON output").Short('j').BoolVar(&d.jsonFormat)
-	d.cmd.Flag("silent", "Produce as little logging as possible").Hidden().BoolVar(&d.silent)
+	d.cmd.Flag("verbose", "Log verbosely").Default("false").Short('v').UnNegatableBoolVar(&d.verbose)
+	d.cmd.Flag("json", "Produce JSON output").Short('j').UnNegatableBoolVar(&d.jsonFormat)
+	d.cmd.Flag("silent", "Produce as little logging as possible").Hidden().UnNegatableBoolVar(&d.silent)
 
 	return nil
 }

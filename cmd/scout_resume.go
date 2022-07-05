@@ -31,8 +31,8 @@ func (s *sResumeCommand) Setup() (err error) {
 		s.fo.AddSelectionFlags(s.cmd)
 
 		s.cmd.Flag("check", "Affect only specific checks").StringsVar(&s.checks)
-		s.cmd.Flag("json", "JSON format output").BoolVar(&s.json)
-		s.cmd.Flag("verbose", "Show verbose output").Short('v').BoolVar(&s.verbose)
+		s.cmd.Flag("json", "JSON format output").UnNegatableBoolVar(&s.json)
+		s.cmd.Flag("verbose", "Show verbose output").Short('v').UnNegatableBoolVar(&s.verbose)
 	}
 
 	return nil

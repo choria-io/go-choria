@@ -24,7 +24,7 @@ func (k *kvPurgeCommand) Setup() error {
 		k.cmd = kv.Cmd().Command("purge", "Deletes historical data from a key")
 		k.cmd.Arg("bucket", "The bucket name").Required().StringVar(&k.name)
 		k.cmd.Arg("key", "The key to purge").Required().StringVar(&k.key)
-		k.cmd.Flag("force", "Purge without prompting").Short('f').BoolVar(&k.force)
+		k.cmd.Flag("force", "Purge without prompting").Short('f').UnNegatableBoolVar(&k.force)
 	}
 
 	return nil

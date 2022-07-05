@@ -89,7 +89,7 @@ func (o *StandardOptions) Merge(opt *StandardOptions) {
 func (o *StandardOptions) AddSelectionFlags(app inter.FlagApp) {
 	app.Flag("dm", "Sets a discovery method (mc, choria, file, external, inventory)").EnumVar(&o.DiscoveryMethod, "broadcast", "choria", "mc", "file", "flatfile", "external", "inventory")
 	app.Flag("discovery-timeout", "Timeout for doing discovery").PlaceHolder("SECONDS").IntVar(&o.DiscoveryTimeout)
-	app.Flag("discovery-window", "Enables a sliding window based dynamic discovery timeout (experimental)").BoolVar(&o.DynamicDiscoveryTimeout)
+	app.Flag("discovery-window", "Enables a sliding window based dynamic discovery timeout (experimental)").UnNegatableBoolVar(&o.DynamicDiscoveryTimeout)
 }
 
 // AddFilterFlags adds the various flags like -W, -S, -T etc

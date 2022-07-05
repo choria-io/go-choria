@@ -28,10 +28,10 @@ type serverRunCommand struct {
 func (r *serverRunCommand) Setup() (err error) {
 	if broker, ok := cmdWithFullCommand("server"); ok {
 		r.cmd = broker.Cmd().Command("run", "Runs a Choria Server").Default()
-		r.cmd.Flag("disable-tls", "Disables TLS").Hidden().Default("false").BoolVar(&r.disableTLS)
-		r.cmd.Flag("disable-ssl-verification", "Disables SSL Verification").Hidden().Default("false").BoolVar(&r.disableTLSVerify)
+		r.cmd.Flag("disable-tls", "Disables TLS").Hidden().UnNegatableBoolVar(&r.disableTLS)
+		r.cmd.Flag("disable-ssl-verification", "Disables SSL Verification").Hidden().UnNegatableBoolVar(&r.disableTLSVerify)
 		r.cmd.Flag("pid", "Write running PID to a file").StringVar(&r.pidFile)
-		r.cmd.Flag("service-host", "Runs as a Service Agent host").BoolVar(&r.serviceHost)
+		r.cmd.Flag("service-host", "Runs as a Service Agent host").UnNegatableBoolVar(&r.serviceHost)
 	}
 
 	return

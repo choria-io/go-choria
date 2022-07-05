@@ -24,7 +24,7 @@ func (k *kvDelCommand) Setup() error {
 		k.cmd = kv.Cmd().Command("del", "Deletes a key or bucket").Alias("rm")
 		k.cmd.Arg("bucket", "The bucket name").Required().StringVar(&k.name)
 		k.cmd.Arg("key", "The key to delete, will preserve history").StringVar(&k.key)
-		k.cmd.Flag("force", "Force delete without prompting").Short('f').BoolVar(&k.force)
+		k.cmd.Flag("force", "Force delete without prompting").Short('f').UnNegatableBoolVar(&k.force)
 	}
 
 	return nil

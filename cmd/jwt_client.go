@@ -47,12 +47,12 @@ func (c *jWTCreateClientCommand) Setup() (err error) {
 		c.cmd.Flag("opa", "Open Policy Agent Policy as a string").StringVar(&c.opaPolicy)
 		c.cmd.Flag("validity", "How long the token should be valid for").Default("1h").DurationVar(&c.validity)
 		c.cmd.Flag("public-key", "Ed25519 public key to embed in the token").StringVar(&c.pk)
-		c.cmd.Flag("stream-admin", "Allow the user to administer and use Choria Streams").BoolVar(&c.streamAdmin)
-		c.cmd.Flag("stream-user", "Allow the user to use Choria Streams").BoolVar(&c.streamUser)
-		c.cmd.Flag("event-viewer", "Allow the user to view various Choria Events").BoolVar(&c.eventViewer)
-		c.cmd.Flag("elections-user", "Allow the user to use Choria Elections").BoolVar(&c.electionUser)
-		c.cmd.Flag("service", "Indicates that the user can have long validity tokens").BoolVar(&c.service)
-		c.cmd.Flag("system", "Allow the user to access the broker system account").BoolVar(&c.system)
+		c.cmd.Flag("stream-admin", "Allow the user to administer and use Choria Streams").UnNegatableBoolVar(&c.streamAdmin)
+		c.cmd.Flag("stream-user", "Allow the user to use Choria Streams").UnNegatableBoolVar(&c.streamUser)
+		c.cmd.Flag("event-viewer", "Allow the user to view various Choria Events").UnNegatableBoolVar(&c.eventViewer)
+		c.cmd.Flag("elections-user", "Allow the user to use Choria Elections").UnNegatableBoolVar(&c.electionUser)
+		c.cmd.Flag("service", "Indicates that the user can have long validity tokens").UnNegatableBoolVar(&c.service)
+		c.cmd.Flag("system", "Allow the user to access the broker system account").UnNegatableBoolVar(&c.system)
 	}
 
 	return nil

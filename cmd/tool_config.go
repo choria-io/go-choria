@@ -34,7 +34,7 @@ func (cc *tConfigCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		cc.cmd = tool.Cmd().Command("config", "Show documentation for a configuration item")
 		cc.cmd.Arg("key", "The configuration keys to look up, supports regular expressions").StringVar(&cc.key)
-		cc.cmd.Flag("list", "Only list matching config keys").Short('l').BoolVar(&cc.list)
+		cc.cmd.Flag("list", "Only list matching config keys").Short('l').UnNegatableBoolVar(&cc.list)
 	}
 
 	return nil

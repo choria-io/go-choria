@@ -28,9 +28,9 @@ func (w *sWatchCommand) Setup() (err error) {
 		w.cmd = scout.Cmd().Command("watch", "Watch CloudEvents produced by Scout")
 		w.cmd.Flag("identity", "Filters events by identity").StringVar(&w.identity)
 		w.cmd.Flag("check", "Filters events by check").StringVar(&w.check)
-		w.cmd.Flag("perf", "Show performance data").BoolVar(&w.perf)
+		w.cmd.Flag("perf", "Show performance data").UnNegatableBoolVar(&w.perf)
 		w.cmd.Flag("history", "Retrieve a certain period of history from Choria Streaming Server").DurationVar(&w.history)
-		w.cmd.Flag("ok", "Include OK status updates (--no-ok only new and status changes)").Default("true").BoolVar(&w.ok)
+		w.cmd.Flag("ok", "Include OK status updates").Default("true").BoolVar(&w.ok)
 	}
 
 	return nil

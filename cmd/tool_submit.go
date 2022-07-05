@@ -33,7 +33,7 @@ func (s *tSubmitCommand) Setup() (err error) {
 		s.cmd = tool.Cmd().Command("submit", "Submit a message to the Submission system")
 		s.cmd.Arg("subject", "The subject to publish to").Required().StringVar(&s.subject)
 		s.cmd.Arg("payload", "The file to read as payload, - for STDIN").Required().StringVar(&s.payloadFile)
-		s.cmd.Flag("reliable", "Marks the message as reliable").BoolVar(&s.reliable)
+		s.cmd.Flag("reliable", "Marks the message as reliable").UnNegatableBoolVar(&s.reliable)
 		s.cmd.Flag("priority", "The message priority").Default("4").EnumVar(&s.priority, "0", "1", "2", "3", "4")
 		s.cmd.Flag("ttl", "The maximum time this message is valid for as duration").Default("24h").DurationVar(&s.ttl)
 		s.cmd.Flag("tries", "Maximum amount of attempts made to deliver this message").Default("100").UintVar(&s.maxTries)

@@ -48,10 +48,10 @@ func (s *jWTCreateServerCommand) Setup() (err error) {
 		s.cmd.Flag("collectives", "Allow the server to access certain collectives").Default(collective).StringsVar(&s.collectives)
 		s.cmd.Flag("org", "Adds the user to a specific organization").Default("choria").StringVar(&s.org)
 		s.cmd.Flag("subjects", "Additional subjects this node may publish to").StringsVar(&s.subjects)
-		s.cmd.Flag("submission", "Enable the node to publish to Choria Streams using Choria Submission").BoolVar(&s.submission)
-		s.cmd.Flag("stream-user", "Allow the node to access Choria Streams").BoolVar(&s.streamUser)
+		s.cmd.Flag("submission", "Enable the node to publish to Choria Streams using Choria Submission").UnNegatableBoolVar(&s.submission)
+		s.cmd.Flag("stream-user", "Allow the node to access Choria Streams").UnNegatableBoolVar(&s.streamUser)
 		s.cmd.Flag("validity", "How long the token should be valid for").Default("8760h").DurationVar(&s.validity)
-		s.cmd.Flag("service", "Indicates that the user can have long validity tokens").BoolVar(&s.service)
+		s.cmd.Flag("service", "Indicates that the user can have long validity tokens").UnNegatableBoolVar(&s.service)
 	}
 
 	return nil

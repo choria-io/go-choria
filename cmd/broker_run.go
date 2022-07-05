@@ -36,8 +36,8 @@ func (r *brokerRunCommand) Setup() (err error) {
 	if broker, ok := cmdWithFullCommand("broker"); ok {
 		r.cmd = broker.Cmd().Command("run", "Runs a Choria Network Broker instance")
 		r.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
-		r.cmd.Flag("disable-tls", "Disables TLS").Hidden().Default("false").BoolVar(&r.disableTLS)
-		r.cmd.Flag("disable-ssl-verification", "Disables SSL Verification").Hidden().Default("false").BoolVar(&r.disableTLSVerify)
+		r.cmd.Flag("disable-tls", "Disables TLS").Hidden().Default("false").UnNegatableBoolVar(&r.disableTLS)
+		r.cmd.Flag("disable-ssl-verification", "Disables SSL Verification").Hidden().Default("false").UnNegatableBoolVar(&r.disableTLSVerify)
 		r.cmd.Flag("pid", "Write running PID to a file").StringVar(&r.pidFile)
 	}
 

@@ -30,7 +30,7 @@ func (v *tJWTViewCommand) Setup() (err error) {
 		v.cmd = jwt.Cmd().Command("view", "View and Validate Choria JWT tokens").Alias("show").Alias("v").Alias("s").Default()
 		v.cmd.Arg("file", "The JWT file to act on").Required().ExistingFileVar(&v.file)
 		v.cmd.Arg("certificate", "Path to a certificate used to validate or sign the JWT").ExistingFileVar(&v.validateCert)
-		v.cmd.Flag("json", "Render the token as JSON").BoolVar(&v.json)
+		v.cmd.Flag("json", "Render the token as JSON").UnNegatableBoolVar(&v.json)
 	}
 
 	return nil

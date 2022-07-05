@@ -35,8 +35,8 @@ func (e *tInventoryCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		e.cmd = tool.Cmd().Command("inventory", "Manage inventory files")
 		e.cmd.Arg("file", "File to act one").StringVar(&e.file)
-		e.cmd.Flag("validate", "Just validate that the file is valid").BoolVar(&e.validate)
-		e.cmd.Flag("update", "Updates an existing inventory file with discovered nodes").BoolVar(&e.update)
+		e.cmd.Flag("validate", "Just validate that the file is valid").UnNegatableBoolVar(&e.validate)
+		e.cmd.Flag("update", "Updates an existing inventory file with discovered nodes").UnNegatableBoolVar(&e.update)
 
 		e.fo = discovery.NewStandardOptions()
 		e.fo.AddFilterFlags(e.cmd)

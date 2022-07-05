@@ -27,7 +27,7 @@ func (k *jWTKeyPairCommand) Setup() (err error) {
 		k.cmd = jwt.Cmd().Command("keys", "Create an Ed25519 keypair").Alias("k")
 		k.cmd.Arg("seed-file", "The private seed file to create").Required().StringVar(&k.seedFile)
 		k.cmd.Arg("public", "The optional public key file to create").StringVar(&k.pubFile)
-		k.cmd.Flag("force", "Force overwrite existing seed file").Short('f').BoolVar(&k.force)
+		k.cmd.Flag("force", "Force overwrite existing seed file").Short('f').UnNegatableBoolVar(&k.force)
 	}
 
 	return nil
