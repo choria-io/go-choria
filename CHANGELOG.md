@@ -1,5 +1,14 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2022/07/06 |       | Upgrade `appbuilder` to `v0.2.0`                                                                                   |
+| 2022/07/05 | 1712  | Switch to a new help template                                                                                      |
+| 2022/06/27 | 1732  | Improved detection of STDIN avoiding some unexpected switches in discovery method and improving running under cron |
+| 2022/06/27 | 1528  | Improve reliability of removing self-managed autonomous agents                                                     |
+| 2022/06/27 | 1747  | Force gzip compression on Jammy debs to improve compatability with other distros and mirroring tools               |
+| 2022/06/24 |       | End to end nightly installation tests on EL9                                                                       |
+| 2022/06/24 | 1740  | Support signing JWT tokens using ed25519 tokens                                                                    |
+| 2022/06/24 | 1740  | Refactor protocol and security layers to start work on version 2 of the network protocol                           |
+| 2022/06/23 |       | Release 0.26.0                                                                                                     |
 | 2022/06/21 | 1735  | Support Ubuntu 22.04 LTS                                                                                           |
 | 2022/06/21 | 1735  | Debian packages will not have the distro as part of the package name to easy mirroring                             |
 | 2022/06/15 | 1738  | KV autonomous agent watchers will now template parse the names of keys                                             |

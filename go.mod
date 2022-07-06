@@ -2,10 +2,6 @@ module github.com/choria-io/go-choria
 
 go 1.17
 
-// fixes a vulnerability, this can be removed once all
-// dependencies have also updated themselves
-replace gopkg.in/yaml.v2 => gopkg.in/yaml.v3 v3.0.0
-
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.5
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
@@ -15,8 +11,8 @@ require (
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.1.2-0.20220704111842-76ff40b1a3bc
-	github.com/choria-io/fisk v0.1.6-0.20220704204204-31c4e55ecb26
+	github.com/choria-io/appbuilder v0.2.0
+	github.com/choria-io/fisk v0.2.0
 	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
@@ -33,7 +29,7 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.34-0.20220703100451-24c9fcc2ceb9
-	github.com/nats-io/nats-server/v2 v2.8.5-0.20220702153544-7cf814de8e09
+	github.com/nats-io/nats-server/v2 v2.8.5-0.20220705210128-0c9ed8c10a5a
 	github.com/nats-io/nats.go v1.16.1-0.20220610202224-dcbb65a13ee9
 	github.com/nats-io/natscli v0.0.34-0.20220705082836-28fad4b855a1
 	github.com/olekukonko/tablewriter v0.0.5
@@ -69,7 +65,7 @@ require (
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
-	github.com/brutella/dnssd v1.2.2 // indirect
+	github.com/brutella/dnssd v1.2.3 // indirect
 	github.com/bytecodealliance/wasmtime-go v0.38.1 // indirect
 	github.com/cespare/xxhash/v2 v2.1.2 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
