@@ -838,8 +838,8 @@ github.com/mwitkow/go-conntrack v0.0.0-20161129095857-cc309e4a2223/go.mod h1:qRW
 github.com/mwitkow/go-conntrack v0.0.0-20190716064945-2f068394615f/go.mod h1:qRWi+5nqEBWmkhHvq77mSJWrCKwh8bxhgT7d/eI7P4U=
 github.com/mxk/go-flowrate v0.0.0-20140419014527-cca7078d478f/go.mod h1:ZdcZmHo+o7JKHSa8/e818NopupXU1YMK5fe1lsApnBw=
 github.com/nats-io/jsm.go v0.0.34-0.20220701104412-8617c15ee4fb/go.mod h1:QGmPROy+VAkQ2y170WYZDVbz/PmoZduVhOaopVX7PjQ=
-github.com/nats-io/jsm.go v0.0.34-0.20220703100451-24c9fcc2ceb9 h1:2EA3fT+kZh2GzoEFE2FIPJwEMEhcKkqiywIxaHuTsBA=
-github.com/nats-io/jsm.go v0.0.34-0.20220703100451-24c9fcc2ceb9/go.mod h1:a0hptFdjlhwGqWosXQMNOP5+au28ZIpr1GcPcETtjr0=
+github.com/nats-io/jsm.go v0.0.34-0.20220707091313-652e7ddccded h1:TY7KzunXSRfSWQjbpepi1O5ufFtRaibap8orTHtcu3g=
+github.com/nats-io/jsm.go v0.0.34-0.20220707091313-652e7ddccded/go.mod h1:a0hptFdjlhwGqWosXQMNOP5+au28ZIpr1GcPcETtjr0=
 github.com/nats-io/jwt/v2 v2.3.0 h1:z2mA1a7tIf5ShggOFlR1oBPgd6hGqcDYsISxZByUzdI=
 github.com/nats-io/jwt/v2 v2.3.0/go.mod h1:0tqz9Hlu6bCBFLWAASKhE5vUA4c24L9KPUUgvwumE/k=
 github.com/nats-io/nats-server/v2 v2.8.5-0.20220630223440-b7d94e1b5211/go.mod h1:DDSswj1ITPghvnFXGoj+aP13Zq5vTX40YJaqtiEYYkQ=
