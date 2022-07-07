@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
+	"strings"
 	"sync"
 	"time"
 
@@ -23,18 +24,20 @@ import (
 type tGovRunCommand struct {
 	command
 	name     string
-	fullCmd  string
+	fullCmd  []string
 	maxWait  time.Duration
 	interval time.Duration
+	noLEave  bool
 }
 
 func (g *tGovRunCommand) Setup() (err error) {
 	if gov, ok := cmdWithFullCommand("governor"); ok {
 		g.cmd = gov.Cmd().Command("run", "Runs a command subject to Governor control")
 		g.cmd.Arg("name", "The name for the Governor").Required().StringVar(&g.name)
-		g.cmd.Arg("command", "Command to execute").Required().StringVar(&g.fullCmd)
+		g.cmd.Arg("command", "Command to execute").Required().StringsVar(&g.fullCmd)
 		g.cmd.Flag("max-wait", "Maximum amount of time to wait to obtain a lease").Default("5m").DurationVar(&g.maxWait)
 		g.cmd.Flag("interval", "Interval for attempting to get a lease").Default("5s").DurationVar(&g.interval)
+		g.cmd.Flag("max-per-period", "Instead of limiting concurrent runs, limit runs per governor period").UnNegatableBoolVar(&g.noLEave)
 	}
 
 	return nil
@@ -73,7 +76,7 @@ func (g *tGovRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		return err
 	}
 
-	parts, err := shellquote.Split(g.fullCmd)
+	parts, err := shellquote.Split(strings.Join(g.fullCmd, " "))
 	if err != nil {
 		return fmt.Errorf("can not parse command: %s", err)
 	}
@@ -90,9 +93,23 @@ func (g *tGovRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		args = append(args, parts[1:]...)
 	}
 
-	gov := governor.NewJSGovernor(g.name, mgr, governor.WithSubject(c.GovernorSubject(g.name)), governor.WithInterval(g.interval), governor.WithLogger(log))
+	opts := []governor.Option{
+		governor.WithSubject(c.GovernorSubject(g.name)),
+		governor.WithInterval(g.interval),
+		governor.WithLogger(log),
+	}
+
+	if g.noLEave {
+		opts = append(opts, governor.WithoutLeavingOnCompletion())
+	}
+
+	gov := governor.NewJSGovernor(g.name, mgr, opts...)
 	finisher, seq, err := gov.Start(ctx, cfg.Identity)
 	if err != nil {
+		if g.noLEave && err == context.DeadlineExceeded {
+			return nil
+		}
+
 		g.trySendEvent(lifecycle.GovernorTimeoutEvent, 0, conn)
 		return fmt.Errorf("could not get a execution slot: %s", err)
 	}
