@@ -1,5 +1,6 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2022/07/10 | 1760  | Add a `gossip` watcher to publish regulary to the Choria Broker                                                    |
 | 2022/07/06 |       | Upgrade `appbuilder` to `v0.2.0`                                                                                   |
 | 2022/07/05 | 1712  | Switch to a new help template                                                                                      |
 | 2022/06/27 | 1732  | Improved detection of STDIN avoiding some unexpected switches in discovery method and improving running under cron |
