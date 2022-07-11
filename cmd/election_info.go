@@ -120,6 +120,7 @@ func (i *tElectionInfoCommand) Run(wg *sync.WaitGroup) (err error) {
 		for {
 			entry := <-w.Updates()
 			if entry == nil {
+				w.Stop()
 				break
 			}
 			if entry.Operation() == nats.KeyValuePut {
