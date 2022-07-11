@@ -27,8 +27,8 @@ type tElectFileCommand struct {
 }
 
 func (f *tElectFileCommand) Setup() (err error) {
-	if gov, ok := cmdWithFullCommand("election"); ok {
-		f.cmd = gov.Cmd().Command("file", "Maintains a file based on Leader Elections")
+	if elect, ok := cmdWithFullCommand("election"); ok {
+		f.cmd = elect.Cmd().Command("file", "Maintains a file based on Leader Elections")
 		f.cmd.Arg("name", "The name for the Leader Election to campaign in").Required().StringVar(&f.name)
 		f.cmd.Arg("file", "The file to maintain under election").Required().StringVar(&f.file)
 		f.cmd.Flag("bucket", "Use a specific bucket for elections").Default("CHORIA_LEADER_ELECTION").StringVar(&f.bucket)
