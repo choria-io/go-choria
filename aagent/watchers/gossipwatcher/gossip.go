@@ -143,36 +143,41 @@ func (w *Watcher) startGossip() {
 			w.mu.Unlock()
 		}
 
+		publish := func() {
+			nc, err := w.getConn()
+			if err != nil {
+				w.Errorf("Could not get NATS connection: %v", err)
+				return
+			}
+
+			subject, err := w.ProcessTemplate(w.properties.Subject)
+			if err != nil {
+				w.Errorf("Could not template parse subject: %v", err)
+				return
+			}
+
+			payload, err := w.ProcessTemplate(w.properties.Payload)
+			if err != nil {
+				w.Errorf("Could not template parse payload: %v", err)
+				return
+			}
+
+			w.Infof("Publishing gossip to %s", subject)
+			nc.Publish(subject, []byte(payload))
+
+			w.mu.Lock()
+			w.lastGossip = time.Now()
+			w.lastSubject = subject
+			w.lastPayload = payload
+			w.mu.Unlock()
+		}
+
+		publish()
+
 		for {
 			select {
 			case <-tick.C:
-				nc, err := w.getConn()
-				if err != nil {
-					w.Errorf("Could not get NATS connection: %v", err)
-					continue
-				}
-
-				subject, err := w.ProcessTemplate(w.properties.Subject)
-				if err != nil {
-					w.Errorf("Could not template parse subject: %v", err)
-					continue
-				}
-
-				payload, err := w.ProcessTemplate(w.properties.Payload)
-				if err != nil {
-					w.Errorf("Could not template parse payload: %v", err)
-					continue
-				}
-
-				w.Infof("Publishing gossip to %s", subject)
-				nc.Publish(subject, []byte(payload))
-
-				w.mu.Lock()
-				w.lastGossip = time.Now()
-				w.lastSubject = subject
-				w.lastPayload = payload
-				w.mu.Unlock()
-
+				publish()
 			case <-gCtx.Done():
 				stop()
 				return
