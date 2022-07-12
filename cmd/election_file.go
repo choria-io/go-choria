@@ -21,6 +21,7 @@ type tElectFileCommand struct {
 	file   string
 	name   string
 	bucket string
+	check  bool
 	cnt    int
 	log    *logrus.Entry
 	mu     sync.Mutex
@@ -29,9 +30,10 @@ type tElectFileCommand struct {
 func (f *tElectFileCommand) Setup() (err error) {
 	if elect, ok := cmdWithFullCommand("election"); ok {
 		f.cmd = elect.Cmd().Command("file", "Maintains a file based on Leader Elections")
-		f.cmd.Arg("name", "The name for the Leader Election to campaign in").Required().StringVar(&f.name)
 		f.cmd.Arg("file", "The file to maintain under election").Required().StringVar(&f.file)
+		f.cmd.Arg("name", "The name for the Leader Election to campaign in").StringVar(&f.name)
 		f.cmd.Flag("bucket", "Use a specific bucket for elections").Default("CHORIA_LEADER_ELECTION").StringVar(&f.bucket)
+		f.cmd.Flag("check", "Checks a specific file for leadership").UnNegatableBoolVar(&f.check)
 	}
 
 	return nil
@@ -91,8 +93,30 @@ func (f *tElectFileCommand) campaign(s election.State) {
 	}
 }
 
+func (f *tElectFileCommand) checkFile() error {
+	stat, err := os.Stat(f.file)
+	if os.IsNotExist(err) {
+		os.Exit(1)
+	}
+	if err != nil {
+		return err
+	}
+
+	if time.Since(stat.ModTime()) > time.Minute {
+		os.Exit(1)
+	}
+
+	return nil
+}
+
 func (f *tElectFileCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
+
+	if f.check {
+		return f.checkFile()
+	}
+
+	defer os.Remove(f.file)
 
 	f.log = c.Logger("election")
 
