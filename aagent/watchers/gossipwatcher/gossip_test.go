@@ -60,9 +60,34 @@ var _ = Describe("ExecWatcher", func() {
 				"subject": "foo.bar",
 				"payload": "pay.load",
 			}
-			Expect(watch.setProperties(prop)).ToNot(HaveOccurred())
+			Expect(watch.setProperties(prop)).To(Succeed())
 			Expect(watch.properties.Subject).To(Equal("foo.bar"))
 			Expect(watch.properties.Payload).To(Equal("pay.load"))
+			Expect(watch.properties.Registration).To(BeNil())
+
+			prop = map[string]interface{}{
+				"registration": map[string]interface{}{
+					"cluster":  "lon",
+					"service":  "ginkgo",
+					"protocol": "http",
+					"ip":       "192.168.1.1",
+					"port":     8080,
+					"priority": 1,
+				},
+			}
+
+			watch.properties = nil
+			Expect(watch.setProperties(prop)).To(Succeed())
+			Expect(watch.properties.Registration).To(Equal(&registration{
+				Cluster:  "lon",
+				Service:  "ginkgo",
+				Protocol: "http",
+				IP:       "192.168.1.1",
+				Port:     8080,
+				Priority: 1,
+			}))
+
+			Expect(watch.properties.Subject).To(Equal("choria.hoist.lon.ginkgo.member.http.192.168.1.1.P.8080.1"))
 		})
 
 		It("Should handle errors", func() {
