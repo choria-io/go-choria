@@ -11,7 +11,7 @@ require (
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.2.0
+	github.com/choria-io/appbuilder v0.2.1
 	github.com/choria-io/fisk v0.2.0
 	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/fatih/color v1.13.0
@@ -28,14 +28,14 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.0.34-0.20220707091313-652e7ddccded
-	github.com/nats-io/nats-server/v2 v2.8.5-0.20220705210128-0c9ed8c10a5a
+	github.com/nats-io/jsm.go v0.0.34-0.20220708145958-5a418c85744e
+	github.com/nats-io/nats-server/v2 v2.8.5-0.20220708145433-da305f2044cb
 	github.com/nats-io/nats.go v1.16.1-0.20220610202224-dcbb65a13ee9
-	github.com/nats-io/natscli v0.0.34-0.20220705082836-28fad4b855a1
+	github.com/nats-io/natscli v0.0.34-0.20220708155629-21a78d973bd1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.19.0
-	github.com/open-policy-agent/opa v0.42.0
+	github.com/open-policy-agent/opa v0.42.1
 	github.com/prometheus/client_golang v1.12.2
 	github.com/prometheus/client_model v0.2.0
 	github.com/robfig/cron v1.2.0
@@ -46,7 +46,7 @@ require (
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d
-	golang.org/x/sys v0.0.0-20220704084225-05e143d24a9e
+	golang.org/x/sys v0.0.0-20220712014510-0a85c31ab51e
 	golang.org/x/term v0.0.0-20220526004731-065cf7ba2467
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.11
@@ -103,7 +103,7 @@ require (
 	github.com/oleiade/reflections v1.0.1 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/common v0.35.0 // indirect
+	github.com/prometheus/common v0.36.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rivo/uniseg v0.2.0 // indirect
@@ -121,7 +121,7 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/net v0.0.0-20220630215102-69896b714898 // indirect
+	golang.org/x/net v0.0.0-20220708220712-1185a9018129 // indirect
 	golang.org/x/time v0.0.0-20220609170525-579cf78fd858 // indirect
 	google.golang.org/protobuf v1.28.0 // indirect
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61 // indirect
