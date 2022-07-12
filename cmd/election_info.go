@@ -7,6 +7,7 @@ package cmd
 import (
 	"fmt"
 	"math"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -18,12 +19,14 @@ import (
 type tElectionInfoCommand struct {
 	command
 
-	bucket string
+	election string
+	bucket   string
 }
 
 func (i *tElectionInfoCommand) Setup() (err error) {
 	if elect, ok := cmdWithFullCommand("election"); ok {
-		i.cmd = elect.Cmd().Command("info", "View information about an Election bucket")
+		i.cmd = elect.Cmd().Command("info", "View information about an Election bucket").Alias("view").Alias("i")
+		i.cmd.Arg("election", "Limit to a specific election").StringVar(&i.election)
 		i.cmd.Flag("bucket", "Use a specific bucket for elections").Default("CHORIA_LEADER_ELECTION").StringVar(&i.bucket)
 	}
 
@@ -109,6 +112,14 @@ func (i *tElectionInfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 	fmt.Printf("     Elections: %d\n", si.State.Msgs)
 
+	keymatch := regexp.MustCompile(".")
+	if i.election != "" {
+		keymatch, err = regexp.Compile(i.election)
+		if err != nil {
+			return fmt.Errorf("invalid reggular expression for key match: %v", err)
+		}
+	}
+
 	if si.State.Msgs > 0 {
 		table := iu.NewUTF8Table("Election", "Leader")
 		table.AddTitle("Active Elections")
@@ -123,7 +134,7 @@ func (i *tElectionInfoCommand) Run(wg *sync.WaitGroup) (err error) {
 				w.Stop()
 				break
 			}
-			if entry.Operation() == nats.KeyValuePut {
+			if entry.Operation() == nats.KeyValuePut && keymatch.MatchString(entry.Key()) {
 				table.AddRow(entry.Key(), string(entry.Value()))
 			}
 		}
