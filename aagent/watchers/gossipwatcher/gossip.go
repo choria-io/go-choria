@@ -7,6 +7,9 @@ package gossipwatcher
 import (
 	"context"
 	"fmt"
+	"net"
+	"regexp"
+	"strings"
 	"sync"
 	"time"
 
@@ -28,9 +31,25 @@ const (
 	version = "v1"
 )
 
+var (
+	validBasicName    = `[a-zA-Z][a-zA-Z\d_-]*`
+	validServiceRegex = regexp.MustCompile(`^` + validBasicName + `$`)
+)
+
+type registration struct {
+	Cluster  string
+	Service  string
+	Protocol string
+	IP       string
+	Port     uint
+	Priority uint
+	Prefix   string
+}
+
 type properties struct {
-	Subject string
-	Payload string
+	Subject      string
+	Payload      string
+	Registration *registration
 }
 
 type Watcher struct {
@@ -239,11 +258,64 @@ func (w *Watcher) setProperties(props map[string]interface{}) error {
 }
 
 func (w *Watcher) validate() error {
-	if w.properties.Subject == "" {
-		return fmt.Errorf("subject is required")
-	}
-	if w.properties.Payload == "" {
-		return fmt.Errorf("payload is required")
+	switch {
+	case w.properties.Registration == nil:
+		if w.properties.Subject == "" {
+			return fmt.Errorf("subject is required")
+		}
+		if w.properties.Payload == "" {
+			return fmt.Errorf("payload is required")
+		}
+
+	default:
+		if w.properties.Subject != "" {
+			return fmt.Errorf("subject cannot be set with registration")
+		}
+		if w.properties.Payload != "" {
+			return fmt.Errorf("payload cannot be set with registration")
+		}
+		reg := w.properties.Registration
+		if reg.Cluster == "" {
+			return fmt.Errorf("cluster is required")
+		}
+		if !validServiceRegex.MatchString(reg.Cluster) {
+			return fmt.Errorf("invalid cluster")
+		}
+		if reg.Service == "" {
+			return fmt.Errorf("service is required")
+		}
+		if !validServiceRegex.MatchString(reg.Service) {
+			return fmt.Errorf("invalid service")
+		}
+		if reg.Protocol == "" {
+			return fmt.Errorf("protocol is required")
+		}
+		if !validServiceRegex.MatchString(reg.Protocol) {
+			return fmt.Errorf("invalid protocol")
+		}
+		if reg.IP == "" {
+			return fmt.Errorf("ip is required")
+		}
+		nip := net.ParseIP(reg.IP)
+		if nip == nil {
+			return fmt.Errorf("invalid ip")
+		}
+		if reg.Port == 0 {
+			return fmt.Errorf("port is required")
+		}
+
+		subj := fmt.Sprintf(`%s.%s.member.%s.%s.P.%d.%d`, reg.Cluster, reg.Service, reg.Protocol, reg.IP, reg.Port, reg.Priority)
+		if reg.Prefix == "" {
+			w.properties.Subject = fmt.Sprintf("choria.hoist.%s", subj)
+		} else {
+			w.properties.Subject = fmt.Sprintf("%s.%s", reg.Prefix, subj)
+		}
+
+		if strings.ContainsAny(w.properties.Subject, " ^*") || strings.Contains(w.properties.Subject, "..") {
+			return fmt.Errorf("invalid registration properties")
+		}
+
+		w.properties.Payload = "1"
 	}
 
 	if w.interval == 0 {
