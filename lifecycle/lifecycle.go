@@ -30,10 +30,11 @@ import (
 type Type int
 
 const (
-	_ = iota
+	// Unknown is for when a Type string was passed in that doesn't match what was expected
+	Unknown Type = iota - 1
 
 	// Startup is an event components can publish when they start
-	Startup Type = iota
+	Startup
 
 	// Shutdown is an event components can publish when they shutdown
 	Shutdown
@@ -48,11 +49,29 @@ const (
 	Governor
 )
 
+//lint:ignore U1000 #1768 support for external clients
+func (t Type) String() string {
+	switch t {
+	case Startup:
+		return "Startup"
+	case Shutdown:
+		return "Startup"
+	case Provisioned:
+		return "Provisioned"
+	case Alive:
+		return "Alive"
+	case Governor:
+		return "Governor"
+	default:
+		return "Unknown"
+	}
+}
+
 // Format is the event format used for transporting events
 type Format int
 
 const (
-	// UnknownFormat is a unknown format message
+	// UnknownFormat is an unknown format message
 	UnknownFormat Format = iota
 
 	// ChoriaFormat is classical ChoriaFormat lifecycle events in its own package
@@ -61,6 +80,20 @@ const (
 	// CloudEventV1Format is a classical Choria lifecycle event carried within a version 1.0 CloudEvent
 	CloudEventV1Format
 )
+
+//lint:ignore U1000 #1768 support for external clients
+func (f Format) String() string {
+	switch f {
+	case UnknownFormat:
+		return "UnknownFormat"
+	case ChoriaFormat:
+		return "ChoriaFormat"
+	case CloudEventV1Format:
+		return "CloudEventV1Format"
+	default:
+		return "UnknownFormat"
+	}
+}
 
 var eventTypes = make(map[string]Type)
 var eventJSONParsers = make(map[Type]func([]byte) (Event, error))
@@ -221,7 +254,10 @@ func PublishEvent(e Event, conn inter.RawNATSConnector) error {
 		return err
 	}
 
-	conn.PublishRaw(target, j)
+	err = conn.PublishRaw(target, j)
+	if err != nil {
+		return err
+	}
 
 	return nil
 }
