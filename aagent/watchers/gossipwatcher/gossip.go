@@ -181,7 +181,7 @@ func (w *Watcher) startGossip() {
 				return
 			}
 
-			w.Infof("Publishing gossip to %s", subject)
+			w.Debugf("Publishing gossip to %s", subject)
 			nc.Publish(subject, []byte(payload))
 
 			w.mu.Lock()
