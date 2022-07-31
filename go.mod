@@ -11,7 +11,7 @@ require (
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.2.2-0.20220728074709-cecbfef634b2
+	github.com/choria-io/appbuilder v0.3.0
 	github.com/choria-io/fisk v0.2.0
 	github.com/cloudevents/sdk-go/v2 v2.10.1
 	github.com/fatih/color v1.13.0
@@ -29,13 +29,13 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.34-0.20220708145958-5a418c85744e
-	github.com/nats-io/nats-server/v2 v2.8.5-0.20220728010612-725c1949e687
+	github.com/nats-io/nats-server/v2 v2.8.5-0.20220729232518-32ffc0257b2d
 	github.com/nats-io/nats.go v1.16.1-0.20220610202224-dcbb65a13ee9
 	github.com/nats-io/natscli v0.0.34-0.20220708155629-21a78d973bd1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.4
 	github.com/onsi/gomega v1.20.0
-	github.com/open-policy-agent/opa v0.42.2
+	github.com/open-policy-agent/opa v0.43.0
 	github.com/prometheus/client_golang v1.12.2
 	github.com/prometheus/client_model v0.2.0
 	github.com/robfig/cron v1.2.0
@@ -46,7 +46,7 @@ require (
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20220722155217-630584e8d5aa
-	golang.org/x/sys v0.0.0-20220728004956-3c1f35247d10
+	golang.org/x/sys v0.0.0-20220730100132-1609e554cd39
 	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.12
@@ -73,7 +73,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/emicklei/dot v1.0.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
-	github.com/gdamore/tcell/v2 v2.5.1 // indirect
+	github.com/gdamore/tcell/v2 v2.5.2 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/flatbuffers v2.0.6+incompatible // indirect
@@ -122,9 +122,9 @@ require (
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/net v0.0.0-20220728030405-41545e8bf201 // indirect
+	golang.org/x/net v0.0.0-20220728211354-c7608f3a8462 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
-	google.golang.org/protobuf v1.28.0 // indirect
+	google.golang.org/protobuf v1.28.1 // indirect
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
