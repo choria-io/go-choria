@@ -6,6 +6,7 @@ package network
 
 import (
 	"context"
+	"crypto/tls"
 	"fmt"
 	"math/rand"
 	"time"
@@ -48,19 +49,6 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 
 	if !s.config.Choria.NetworkStreamManageStreams {
 		return nil
-	}
-
-	var opts []nats.Option
-
-	if s.IsTLS() {
-		s.log.Info("Configuring Choria System Streams with TLS")
-		tlsc, err := s.choria.ClientTLSConfig()
-		if err != nil {
-			return err
-		}
-		opts = append(opts, nats.Secure(tlsc))
-	} else {
-		s.log.Info("Configuring Choria System Streams without TLS")
 	}
 
 	var nc *nats.Conn
@@ -108,9 +96,10 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 	}
 
 	err = backoff.TwentySec.For(ctx, func(try int) error {
-		nc, err = nats.Connect(s.opts.ClientAdvertise, opts...)
+		// in-process connections do not need tls
+		nc, err = nats.Connect(s.opts.ClientAdvertise, nats.InProcessServer(s), nats.Secure(&tls.Config{InsecureSkipVerify: true}))
 		if err != nil {
-			s.log.Warnf("Could not connect to broker %s to configure System Streams: %s", s.opts.ClientAdvertise, err)
+			s.log.Warnf("Could not connect to broker using in-process connection to configure System Streams: %s", err)
 			return err
 		}
 

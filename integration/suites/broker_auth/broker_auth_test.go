@@ -12,6 +12,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/choria-io/go-choria/broker/network"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/integration/testbroker"
 	"github.com/choria-io/go-choria/integration/testutil"
@@ -305,6 +306,58 @@ var _ = Describe("Authentication", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Eventually(clBuffer, 1).Should(gbytes.Say("Permissions Violation for Subscription to c1.node.other.node"))
 
+			})
+		})
+	})
+
+	Describe("In-process connections", func() {
+		var broker *network.Server
+		var err error
+
+		Describe("mTLS Broker", func() {
+			BeforeEach(func() {
+				broker, err = testbroker.StartNetworkBrokerWithConfigFile(ctx, &wg, "testdata/mtls.conf", logger)
+				Expect(err).ToNot(HaveOccurred())
+				Eventually(logbuff, 1).Should(gbytes.Say("TLS required for client connections"))
+				Eventually(logbuff, 1).Should(gbytes.Say("Server is ready"))
+			})
+
+			It("Should allow in process connections to the choria account", func() {
+				_, err = nats.Connect("nats://localhost:4222", nats.InProcessServer(broker), nats.Secure(&tls.Config{InsecureSkipVerify: true}))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(logbuff.Contents()).To(ContainSubstring("Allowing pipe connection without any limitations"))
+				Expect(logbuff.Contents()).To(ContainSubstring("Registering user '' in account 'choria'"))
+			})
+
+			It("Should allow in process connections to the system account", func() {
+				_, err = nats.Connect("nats://localhost:4222", nats.UserInfo("system", "system"), nats.InProcessServer(broker), nats.Secure(&tls.Config{InsecureSkipVerify: true}))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(logbuff.Contents()).To(ContainSubstring("Registering user 'system' in account 'system'"))
+			})
+		})
+
+		Describe("JWT Broker", func() {
+			BeforeEach(func() {
+				broker, err = testbroker.StartNetworkBrokerWithConfigFile(ctx, &wg, "testdata/anontls.conf", logger)
+				Expect(err).ToNot(HaveOccurred())
+
+				Eventually(logbuff, 1).Should(gbytes.Say("Server is ready"))
+				Expect(logbuff.Contents()).To(ContainSubstring("Allowing unverified TLS connections for AAA signed clients"))
+				Expect(logbuff.Contents()).To(ContainSubstring("Allowing unverified TLS connections for Provisioner signed servers"))
+				Expect(logbuff.Contents()).To(ContainSubstring("TLS required for client connections"))
+			})
+
+			It("Should allow in process connections to the choria account", func() {
+				_, err = nats.Connect("nats://localhost:4222", nats.InProcessServer(broker), nats.Secure(&tls.Config{InsecureSkipVerify: true}))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(logbuff.Contents()).To(ContainSubstring("Allowing pipe connection without any limitations"))
+				Expect(logbuff.Contents()).To(ContainSubstring("Registering user '' in account 'choria'"))
+			})
+
+			It("Should allow in process connections to the system account", func() {
+				_, err = nats.Connect("nats://localhost:4222", nats.UserInfo("system", "systemS3cret"), nats.InProcessServer(broker), nats.Secure(&tls.Config{InsecureSkipVerify: true}))
+				Expect(err).ToNot(HaveOccurred())
+				Expect(logbuff.Contents()).To(ContainSubstring("Registering user 'system' in account 'system'"))
 			})
 		})
 	})
