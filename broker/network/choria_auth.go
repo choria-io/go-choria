@@ -91,6 +91,7 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 	}
 
 	systemUser := a.isSystemUser(c)
+	pipeConnection := remote.String() == "pipe"
 
 	switch {
 	case a.isProvisionUser(c):
@@ -99,8 +100,8 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 			log.Warnf("Handling provisioning user connection failed, denying %s: %s", c.RemoteAddress().String(), err)
 		}
 
-	case systemUser && tlsVerified:
-		verified, err = a.handleVerifiedSystemAccount(c)
+	case systemUser && (tlsVerified || pipeConnection):
+		verified, err = a.handleVerifiedSystemAccount(c, log)
 		if err != nil {
 			log.Warnf("Handling system user failed, denying: %s", err)
 		}
@@ -116,7 +117,7 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 		}
 
 	default:
-		verified, err = a.handleDefaultConnection(c, tlsc, tlsVerified)
+		verified, err = a.handleDefaultConnection(c, tlsc, tlsVerified, log)
 		if err != nil {
 			log.Warnf("Handling normal connection failed, denying %s: %s", c.RemoteAddress().String(), err)
 		}
@@ -225,17 +226,19 @@ func (a *ChoriaAuth) verifyClientJWTBasedAuth(remote net.Addr, jwts string, nonc
 	return claims, nil
 }
 
-func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn *tls.ConnectionState, tlsVerified bool) (bool, error) {
+func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn *tls.ConnectionState, tlsVerified bool, log *logrus.Entry) (bool, error) {
 	user := a.createUser(c)
 	remote := c.RemoteAddress()
 	opts := c.GetOpts()
 	nonce := c.GetNonce()
 	jwts := opts.Token
 	caller := ""
+	pipeConnection := remote.String() == "pipe"
 
 	var err error
 
-	log := a.log.WithField("mTLS", tlsVerified)
+	log = log.WithField("mTLS", tlsVerified)
+
 	if tlsVerified && len(conn.PeerCertificates) > 0 {
 		log = log.WithField("subject", conn.PeerCertificates[0].Subject.CommonName)
 	}
@@ -295,7 +298,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	}
 
 	switch {
-	case !shouldPerformJWTBasedAuth && !tlsVerified:
+	case !shouldPerformJWTBasedAuth && !tlsVerified && !pipeConnection:
 		log.Warnf("Rejecting unverified connection without token")
 		return false, fmt.Errorf("unverified connection without JWT token")
 
@@ -310,6 +313,8 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	case setServerPerms || len(a.clientAllowList) > 0:
 		a.setServerPermissions(user, serverClaims, log)
 
+	case pipeConnection:
+		log.Debugf("Allowing pipe connection without any limitations")
 	}
 
 	if user.Account != nil {
@@ -365,10 +370,10 @@ func (a *ChoriaAuth) handleUnverifiedSystemAccount(c server.ClientAuthentication
 		return false, fmt.Errorf("invalid nonce signature")
 	}
 
-	return a.handleVerifiedSystemAccount(c)
+	return a.handleVerifiedSystemAccount(c, log)
 }
 
-func (a *ChoriaAuth) handleVerifiedSystemAccount(c server.ClientAuthentication) (bool, error) {
+func (a *ChoriaAuth) handleVerifiedSystemAccount(c server.ClientAuthentication, log *logrus.Entry) (bool, error) {
 	if a.systemUser == "" {
 		return false, fmt.Errorf("system user is required")
 	}
@@ -390,7 +395,7 @@ func (a *ChoriaAuth) handleVerifiedSystemAccount(c server.ClientAuthentication) 
 	user := a.createUser(c)
 	user.Account = a.systemAccount
 
-	a.log.Debugf("Registering user '%s' in account '%s'", user.Username, user.Account.Name)
+	log.Debugf("Registering user '%s' in account '%s'", user.Username, user.Account.Name)
 	c.RegisterUser(user)
 
 	return true, nil

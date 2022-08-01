@@ -324,7 +324,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
 				mockClient.EXPECT().GetNonce().Return([]byte("toomanysecrets"))
 
-				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 				Expect(err).To(MatchError("invalid nonce signature or jwt token"))
 				Expect(verified).To(BeFalse())
 			})
@@ -346,7 +346,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					))
 				})
 
-				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(verified).To(BeTrue())
 			})
@@ -391,7 +391,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						}))
 					})
 
-					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(verified).To(BeTrue())
 				})
@@ -409,7 +409,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						}))
 					})
 
-					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(verified).To(BeTrue())
 				})
@@ -431,7 +431,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						}))
 					})
 
-					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(verified).To(BeTrue())
 				})
@@ -461,7 +461,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						}))
 					})
 
-					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(verified).To(BeTrue())
 				})
@@ -503,7 +503,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						}))
 					})
 
-					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(verified).To(BeTrue())
 				})
@@ -536,7 +536,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						}))
 					})
 
-					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(verified).To(BeTrue())
 				})
@@ -577,7 +577,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 							}))
 						})
 
-						verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+						verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 						Expect(err).ToNot(HaveOccurred())
 						Expect(verified).To(BeTrue())
 					})
@@ -617,7 +617,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 							}))
 						})
 
-						verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+						verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 						Expect(err).ToNot(HaveOccurred())
 						Expect(verified).To(BeTrue())
 					})
@@ -651,7 +651,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						}))
 					})
 
-					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 					Expect(err).ToNot(HaveOccurred())
 					Expect(verified).To(BeTrue())
 
@@ -688,7 +688,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
 				mockClient.EXPECT().GetNonce().Return([]byte("toomanysecrets"))
 
-				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 				Expect(err).To(MatchError("invalid nonce signature or jwt token"))
 				Expect(verified).To(BeFalse())
 			})
@@ -716,7 +716,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					}))
 				})
 
-				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(verified).To(BeTrue())
 			})
@@ -732,7 +732,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					Expect(user.Permissions.Publish).To(BeNil())
 				})
 
-				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true)
+				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(verified).To(BeTrue())
 			})
@@ -794,12 +794,12 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			auth.systemUser = ""
 			auth.systemPass = ""
 
-			verified, err := auth.handleVerifiedSystemAccount(mockClient)
+			verified, err := auth.handleVerifiedSystemAccount(mockClient, log)
 			Expect(err).To(MatchError("system user is required"))
 			Expect(verified).To(BeFalse())
 
 			auth.systemUser = "system"
-			verified, err = auth.handleVerifiedSystemAccount(mockClient)
+			verified, err = auth.handleVerifiedSystemAccount(mockClient, log)
 			Expect(err).To(MatchError("system password is required"))
 			Expect(verified).To(BeFalse())
 		})
@@ -808,7 +808,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			auth.systemUser = "system"
 			auth.systemPass = "s3cret"
 
-			verified, err := auth.handleVerifiedSystemAccount(mockClient)
+			verified, err := auth.handleVerifiedSystemAccount(mockClient, log)
 			Expect(err).To(MatchError("system account is not set"))
 			Expect(verified).To(BeFalse())
 		})
@@ -819,7 +819,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			auth.systemAccount = &server.Account{Name: "system"}
 
 			mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: "system", Password: "s3cret"}).AnyTimes()
-			verified, err := auth.handleVerifiedSystemAccount(mockClient)
+			verified, err := auth.handleVerifiedSystemAccount(mockClient, log)
 			Expect(err).To(MatchError("invalid system credentials"))
 			Expect(verified).To(BeFalse())
 		})
@@ -840,7 +840,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(user.Permissions.Response).To(BeNil())
 			})
 
-			verified, err := auth.handleVerifiedSystemAccount(mockClient)
+			verified, err := auth.handleVerifiedSystemAccount(mockClient, log)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(verified).To(BeTrue())
 		})

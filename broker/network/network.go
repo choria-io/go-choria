@@ -8,6 +8,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
+	"net"
 	"net/http"
 	"strings"
 	"sync"
@@ -173,6 +174,11 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 // HTTPHandler Exposes the natsd HTTP Handler
 func (s *Server) HTTPHandler() http.Handler {
 	return s.gnatsd.HTTPHandler()
+}
+
+// InProcessConn implements nats.InProcessConnProvider
+func (s *Server) InProcessConn() (net.Conn, error) {
+	return s.gnatsd.InProcessConn()
 }
 
 // Start the embedded NATS instance, this is a blocking call until it exits

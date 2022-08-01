@@ -29,8 +29,8 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.34-0.20220708145958-5a418c85744e
-	github.com/nats-io/nats-server/v2 v2.8.5-0.20220729232518-32ffc0257b2d
-	github.com/nats-io/nats.go v1.16.1-0.20220610202224-dcbb65a13ee9
+	github.com/nats-io/nats-server/v2 v2.8.5-0.20220731184415-903a06a5b4ee
+	github.com/nats-io/nats.go v1.16.1-0.20220731182438-87bbea85922b
 	github.com/nats-io/natscli v0.0.34-0.20220708155629-21a78d973bd1
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.4
@@ -119,6 +119,7 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xiam/to v0.0.0-20200126224905-d60d31e03561 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
+	go.uber.org/automaxprocs v1.5.1 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.21.0 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
