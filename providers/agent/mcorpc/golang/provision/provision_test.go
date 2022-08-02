@@ -25,6 +25,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
@@ -145,8 +146,12 @@ var _ = Describe("Provision/Agent", func() {
 			build.ProvisionToken = "toomanysecrets"
 
 			cfg.ConfigFile = filepath.Join(td, "server.conf")
+			jwtPath := filepath.Join(td, "server.jwt")
+			Expect(os.WriteFile(jwtPath, []byte("x"), 0700)).To(Succeed())
+
 			ed25519Action(ctx, req, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
+			Expect(iu.FileExist(jwtPath)).To(BeFalse())
 
 			resp := reply.Data.(*ED25519Reply)
 			Expect(resp.PublicKey).To(HaveLen(64))

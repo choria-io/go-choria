@@ -13,6 +13,7 @@ import (
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/server"
+	"github.com/choria-io/go-choria/tokens"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -114,8 +115,42 @@ func (r *serverRunCommand) shouldProvision(cfg *config.Config) bool {
 	prov := bi.ProvisionDefault()
 	hasOpt := cfg.HasOption("plugin.choria.server.provision")
 	if hasOpt {
-		prov = cfg.Choria.Provision
+		if cfg.Choria.Provision {
+			log.Warnf("plugin.choria.server.provision is true, reprovisioning")
+			return true
+		}
 	}
+
+	// we want to make sure we re-provision if ever the seed and jwt isnt aligned
+	if cfg.Choria.ServerAnonTLS && cfg.Choria.ServerTokenSeedFile != "" && cfg.Choria.ServerTokenFile != "" {
+		if !util.FileExist(cfg.Choria.ServerTokenSeedFile) {
+			log.Warnf("Server seed file %s does not exist, reprovisioning", cfg.Choria.ServerTokenSeedFile)
+			return true
+		}
+
+		if !util.FileExist(cfg.Choria.ServerTokenFile) {
+			log.Warnf("Server token file %s does not exist, reprovisioning", cfg.Choria.ServerTokenFile)
+			return true
+		}
+
+		token, err := tokens.ParseServerTokenFileUnverified(cfg.Choria.ServerTokenFile)
+		if err != nil {
+			log.Warnf("Could not parse server JWT token %s, reprovisioning: %v", cfg.Choria.ServerTokenFile, err)
+			return true
+		}
+
+		matched, err := token.IsMatchingSeedFile(cfg.Choria.ServerTokenSeedFile)
+		if err != nil {
+			log.Warnf("Could not compare the token %s to the seed from %s, reprovisioning: %v", cfg.Choria.ServerTokenFile, cfg.Choria.ServerTokenSeedFile, err)
+			return true
+		}
+
+		if !matched {
+			log.Warnf("Public key in the JWT file %s does not match the seed file %s, reprovisioning", cfg.Choria.ServerTokenFile, cfg.Choria.ServerTokenSeedFile)
+			return true
+		}
+	}
+
 	return prov
 }
 

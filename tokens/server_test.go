@@ -9,6 +9,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"os"
+	"runtime"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
@@ -18,11 +19,12 @@ import (
 var _ = Describe("ServerClaims", func() {
 	var (
 		pubK ed25519.PublicKey
+		priK ed25519.PrivateKey
 		err  error
 	)
 
 	BeforeEach(func() {
-		pubK, _, err = ed25519.GenerateKey(rand.Reader)
+		pubK, priK, err = ed25519.GenerateKey(rand.Reader)
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -56,6 +58,106 @@ var _ = Describe("ServerClaims", func() {
 			Expect(claims.AdditionalPublishSubjects).To(Equal([]string{"choria.registration"}))
 			Expect(claims.IssuedAt.Time).To(BeTemporally("~", time.Now(), time.Second))
 			Expect(claims.ExpiresAt.Time).To(BeTemporally("~", time.Now().Add(365*24*time.Hour), time.Second))
+		})
+	})
+
+	Describe("IsMatchingPublicKey", func() {
+		var claims *ServerClaims
+		var err error
+
+		BeforeEach(func() {
+			perms := &ServerPermissions{Submission: true}
+			claims, err = NewServerClaims("ginkgo.example.net", []string{"choria"}, "ginkgo_org", perms, []string{"choria.registration"}, pubK, "ginkgo issuer", 365*24*time.Hour)
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should detect incorrect length public keys", func() {
+			match, err := claims.IsMatchingPublicKey(nil)
+			Expect(match).To(BeFalse())
+			Expect(err).To(MatchError("invalid size for public key"))
+
+			claims.PublicKey = claims.PublicKey[2:]
+			match, err = claims.IsMatchingPublicKey(pubK)
+			Expect(match).To(BeFalse())
+			Expect(err).To(MatchError("invalid size for token stored public key"))
+
+			claims.PublicKey = ""
+			match, err = claims.IsMatchingPublicKey(pubK)
+			Expect(match).To(BeFalse())
+			Expect(err).To(MatchError("no public key stored in the JWT"))
+		})
+
+		It("Should fail for invalid public keys", func() {
+			pK, _, err := ed25519.GenerateKey(rand.Reader)
+			Expect(err).ToNot(HaveOccurred())
+			match, err := claims.IsMatchingPublicKey(pK)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(match).To(BeFalse())
+		})
+
+		It("Should match correct keys", func() {
+			match, err := claims.IsMatchingPublicKey(pubK)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(match).To(BeTrue())
+		})
+	})
+
+	Describe("IsMatchingSeedFile", func() {
+		var claims *ServerClaims
+		var err error
+
+		BeforeEach(func() {
+			perms := &ServerPermissions{Submission: true}
+			claims, err = NewServerClaims("ginkgo.example.net", []string{"choria"}, "ginkgo_org", perms, []string{"choria.registration"}, pubK, "ginkgo issuer", 365*24*time.Hour)
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should fail for invalid files", func() {
+			match, err := claims.IsMatchingSeedFile("/nonexisting")
+			Expect(match).To(BeFalse())
+			if runtime.GOOS == "windows" {
+				Expect(err).To(HaveOccurred())
+			} else {
+				Expect(err).To(MatchError("open /nonexisting: no such file or directory"))
+			}
+
+			tf, err := os.CreateTemp("", "")
+			Expect(err).ToNot(HaveOccurred())
+			defer os.Remove(tf.Name())
+			tf.WriteString("x")
+			tf.Close()
+
+			match, err = claims.IsMatchingSeedFile(tf.Name())
+			Expect(match).To(BeFalse())
+			Expect(err).To(HaveOccurred())
+		})
+
+		It("Should fail for invalid seeds", func() {
+			_, priK, err := ed25519.GenerateKey(rand.Reader)
+			Expect(err).ToNot(HaveOccurred())
+			tf, err := os.CreateTemp("", "")
+			Expect(err).ToNot(HaveOccurred())
+			defer os.Remove(tf.Name())
+			_, err = tf.Write([]byte(hex.EncodeToString(priK.Seed())))
+			Expect(err).ToNot(HaveOccurred())
+			tf.Close()
+
+			match, err := claims.IsMatchingSeedFile(tf.Name())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(match).To(BeFalse())
+		})
+
+		It("Should succeed for correct seeds", func() {
+			tf, err := os.CreateTemp("", "")
+			Expect(err).ToNot(HaveOccurred())
+			defer os.Remove(tf.Name())
+			_, err = tf.Write([]byte(hex.EncodeToString(priK.Seed())))
+			Expect(err).ToNot(HaveOccurred())
+			tf.Close()
+
+			match, err := claims.IsMatchingSeedFile(tf.Name())
+			Expect(err).ToNot(HaveOccurred())
+			Expect(match).To(BeTrue())
 		})
 	})
 

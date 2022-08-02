@@ -8,6 +8,7 @@ import (
 	"crypto/ed25519"
 	"crypto/rand"
 	"encoding/hex"
+	"fmt"
 	"os"
 )
 
@@ -39,6 +40,10 @@ func Ed25519KeyPairFromSeedFile(f string) (ed25519.PublicKey, ed25519.PrivateKey
 }
 
 func Ed25519KeyPairFromSeed(seed []byte) (ed25519.PublicKey, ed25519.PrivateKey, error) {
+	if len(seed) != ed25519.SeedSize {
+		return nil, nil, fmt.Errorf("invalid seed length")
+	}
+
 	priK := ed25519.NewKeyFromSeed(seed)
 	pubK := priK.Public().(ed25519.PublicKey)
 	return pubK, priK, nil

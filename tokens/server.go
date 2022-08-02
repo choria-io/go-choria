@@ -5,6 +5,7 @@
 package tokens
 
 import (
+	"bytes"
 	"crypto/ed25519"
 	"crypto/md5"
 	"encoding/hex"
@@ -54,6 +55,49 @@ type ServerClaims struct {
 // UniqueID returns the identity and unique id used to generate private inboxes
 func (c *ServerClaims) UniqueID() (id string, uid string) {
 	return c.ChoriaIdentity, fmt.Sprintf("%x", md5.Sum([]byte(c.ChoriaIdentity)))
+}
+
+// IsMatchingPublicKey checks that the stored public key matches the supplied one
+func (c *ServerClaims) IsMatchingPublicKey(pubK ed25519.PublicKey) (bool, error) {
+	if c.PublicKey == "" {
+		return false, fmt.Errorf("no public key stored in the JWT")
+	}
+
+	if len(pubK) != ed25519.PublicKeySize {
+		return false, fmt.Errorf("invalid size for public key")
+	}
+
+	jpubK, err := hex.DecodeString(c.PublicKey)
+	if err != nil {
+		return false, err
+	}
+
+	if len(jpubK) != ed25519.PublicKeySize {
+		return false, fmt.Errorf("invalid size for token stored public key")
+	}
+
+	return bytes.Equal(jpubK, pubK), nil
+}
+
+// IsMatchingSeedFile determines if the token public key matches the seed in file
+func (c *ServerClaims) IsMatchingSeedFile(file string) (bool, error) {
+	sb, err := os.ReadFile(file)
+	if err != nil {
+		return false, err
+	}
+
+	seed, err := hex.DecodeString(string(sb))
+	if err != nil {
+		return false, err
+	}
+
+	if len(seed) != ed25519.SeedSize {
+		return false, fmt.Errorf("invalid seed size")
+	}
+
+	pubK := ed25519.NewKeyFromSeed(seed).Public().(ed25519.PublicKey)
+
+	return c.IsMatchingPublicKey(pubK)
 }
 
 func NewServerClaims(identity string, collectives []string, org string, perms *ServerPermissions, additionalPublish []string, pk ed25519.PublicKey, issuer string, validity time.Duration) (*ServerClaims, error) {
@@ -135,6 +179,16 @@ func IsServerTokenString(token string) (bool, error) {
 // IsServerToken determines if this is a server token
 func IsServerToken(claims StandardClaims) bool {
 	return claims.Purpose == ServerPurpose
+}
+
+// ParseServerTokenFileUnverified calls ParseServerTokenUnverified using the contents of file
+func ParseServerTokenFileUnverified(file string) (*ServerClaims, error) {
+	b, err := os.ReadFile(file)
+	if err != nil {
+		return nil, err
+	}
+
+	return ParseServerTokenUnverified(string(b))
 }
 
 // ParseServerTokenUnverified parses the server token in an unverified manner.
