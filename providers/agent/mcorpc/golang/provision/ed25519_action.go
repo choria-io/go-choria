@@ -13,6 +13,7 @@ import (
 
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/inter"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 )
 
@@ -64,6 +65,18 @@ func ed25519Action(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply
 	if err != nil {
 		abort(fmt.Sprintf("Could not create keypair: %s", err), reply)
 		return
+	}
+
+	// we check if the jwt is there and remove it if it is.  This is important
+	// because we are about to write a new seed that would invalidate that JWT
+	// as the pubkey in it will not match.  So if the server.jwt exist, it has
+	// to be removed before and if that fails its a critical failure
+	jwtFile := filepath.Join(secureDir, "server.jwt")
+	if iu.FileExist(jwtFile) {
+		err = os.Remove(jwtFile)
+		if err != nil {
+			abort(fmt.Sprintf("Could not remove existing jwt file: %v: %v", jwtFile, err), reply)
+		}
 	}
 
 	err = os.WriteFile(keyFile, []byte(hex.EncodeToString(priK.Seed())), 0600)

@@ -1,7 +1,12 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
-| 2022/07/10 | 1760  | Add a `gossip` watcher to publish regulary to the Choria Broker                                                    |
-| 2022/07/06 |       | Upgrade `appbuilder` to `v0.2.0`                                                                                   |
+| 2022/08/02 | 1774  | When generating a new ed25519 server seed, remove the invalidated JWT from disk                                    |
+| 2022/08/02 | 1774  | Detect JWT and Server seed mismatches, trigger reprovision if possible                                             |
+| 2022/08/01 |       | Upgrade `appbuilder` to `v0.3.0`                                                                                   |
+| 2022/08/01 | 1722  | Allow in-process connections to bypass TLS, use them to configure Choria Streams                                   |
+| 2022/07/07 | 1756  | Allow governors to control executions per period                                                                   |
+| 2022/07/07 | 1755  | Add various election based tools for command execution, cron jobs and more, also various management tools          |
+| 2022/07/10 | 1760  | Add a `gossip` watcher to publish regular to the Choria Broker, including basic service registration               |
 | 2022/07/05 | 1712  | Switch to a new help template                                                                                      |
 | 2022/06/27 | 1732  | Improved detection of STDIN avoiding some unexpected switches in discovery method and improving running under cron |
 | 2022/06/27 | 1528  | Improve reliability of removing self-managed autonomous agents                                                     |
