@@ -9,7 +9,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"strings"
@@ -148,7 +147,7 @@ func (o *StandardOptions) Discover(ctx context.Context, fw inter.Framework, agen
 		logger.Debugf("Forcing discovery mode to broadcast to support compound filters")
 
 	case supportStdin && o.isPiped() && (o.DiscoveryMethod == "" || o.unsetMethod):
-		stdin, err := ioutil.ReadAll(os.Stdin)
+		stdin, err := io.ReadAll(os.Stdin)
 		stdin = bytes.TrimSpace(stdin)
 		sourceFile = bytes.NewReader(stdin)
 

@@ -7,7 +7,6 @@ package election
 import (
 	"context"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"sync"
 	"testing"
@@ -231,7 +230,7 @@ var _ = Describe("Choria KV Leader Election", func() {
 func startJSServer(t GinkgoTInterface) (*server.Server, *nats.Conn) {
 	t.Helper()
 
-	d, err := ioutil.TempDir("", "jstest")
+	d, err := os.MkdirTemp("", "jstest")
 	if err != nil {
 		t.Fatalf("temp dir could not be made: %s", err)
 	}
