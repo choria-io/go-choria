@@ -79,12 +79,12 @@ const (
 )
 
 type Log interface {
-	Debugf(format string, args ...interface{})
-	Infof(format string, args ...interface{})
-	Warnf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Panicf(format string, args ...interface{})
+	Debugf(format string, args ...any)
+	Infof(format string, args ...any)
+	Warnf(format string, args ...any)
+	Errorf(format string, args ...any)
+	Fatalf(format string, args ...any)
+	Panicf(format string, args ...any)
 }
 
 // ScoutClient to the scout agent
@@ -202,7 +202,7 @@ func (p *ScoutClient) Checks() *ChecksRequester {
 	d := &ChecksRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "checks",
 			client: p,
 		},
@@ -219,12 +219,12 @@ func (p *ScoutClient) Checks() *ChecksRequester {
 // Description: Resume active checking of one or more checks
 //
 // Optional Inputs:
-//    - checks ([]interface{}) - Check to resume, empty means all
+//   - checks ([]any) - Check to resume, empty means all
 func (p *ScoutClient) Resume() *ResumeRequester {
 	d := &ResumeRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "resume",
 			client: p,
 		},
@@ -241,12 +241,12 @@ func (p *ScoutClient) Resume() *ResumeRequester {
 // Description: Pause checking of one or more checks
 //
 // Optional Inputs:
-//    - checks ([]interface{}) - Check to pause, empty means all
+//   - checks ([]any) - Check to pause, empty means all
 func (p *ScoutClient) Maintenance() *MaintenanceRequester {
 	d := &MaintenanceRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "maintenance",
 			client: p,
 		},
@@ -263,15 +263,15 @@ func (p *ScoutClient) Maintenance() *MaintenanceRequester {
 // Description: Performs a Goss validation using a specific file
 //
 // Required Inputs:
-//    - file (string) - Path to the Goss validation specification
+//   - file (string) - Path to the Goss validation specification
 //
 // Optional Inputs:
-//    - vars (string) - Path to a file to use as template variables
+//   - vars (string) - Path to a file to use as template variables
 func (p *ScoutClient) GossValidate(inputFile string) *GossValidateRequester {
 	d := &GossValidateRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"file": inputFile,
 			},
 			action: "goss_validate",
@@ -290,12 +290,12 @@ func (p *ScoutClient) GossValidate(inputFile string) *GossValidateRequester {
 // Description: Force an immediate check of one or more checks
 //
 // Optional Inputs:
-//    - checks ([]interface{}) - Check to trigger, empty means all
+//   - checks ([]any) - Check to trigger, empty means all
 func (p *ScoutClient) Trigger() *TriggerRequester {
 	d := &TriggerRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "trigger",
 			client: p,
 		},

@@ -39,7 +39,7 @@ func (m *MockFederable) SetFederationRequestID(id string) {
 }
 
 // SetFederationRequestID indicates an expected call of SetFederationRequestID
-func (mr *MockFederableMockRecorder) SetFederationRequestID(id interface{}) *gomock.Call {
+func (mr *MockFederableMockRecorder) SetFederationRequestID(id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFederationRequestID", reflect.TypeOf((*MockFederable)(nil).SetFederationRequestID), id)
 }
 
@@ -49,7 +49,7 @@ func (m *MockFederable) SetFederationReplyTo(reply string) {
 }
 
 // SetFederationReplyTo indicates an expected call of SetFederationReplyTo
-func (mr *MockFederableMockRecorder) SetFederationReplyTo(reply interface{}) *gomock.Call {
+func (mr *MockFederableMockRecorder) SetFederationReplyTo(reply any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFederationReplyTo", reflect.TypeOf((*MockFederable)(nil).SetFederationReplyTo), reply)
 }
 
@@ -59,7 +59,7 @@ func (m *MockFederable) SetFederationTargets(targets []string) {
 }
 
 // SetFederationTargets indicates an expected call of SetFederationTargets
-func (mr *MockFederableMockRecorder) SetFederationTargets(targets interface{}) *gomock.Call {
+func (mr *MockFederableMockRecorder) SetFederationTargets(targets any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFederationTargets", reflect.TypeOf((*MockFederable)(nil).SetFederationTargets), targets)
 }
 
@@ -118,7 +118,7 @@ func (m *MockFederable) RecordNetworkHop(in, processor, out string) {
 }
 
 // RecordNetworkHop indicates an expected call of RecordNetworkHop
-func (mr *MockFederableMockRecorder) RecordNetworkHop(in, processor, out interface{}) *gomock.Call {
+func (mr *MockFederableMockRecorder) RecordNetworkHop(in, processor, out any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordNetworkHop", reflect.TypeOf((*MockFederable)(nil).RecordNetworkHop), in, processor, out)
 }
 
@@ -175,7 +175,7 @@ func (m *MockRequest) SetFederationRequestID(id string) {
 }
 
 // SetFederationRequestID indicates an expected call of SetFederationRequestID
-func (mr *MockRequestMockRecorder) SetFederationRequestID(id interface{}) *gomock.Call {
+func (mr *MockRequestMockRecorder) SetFederationRequestID(id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFederationRequestID", reflect.TypeOf((*MockRequest)(nil).SetFederationRequestID), id)
 }
 
@@ -185,7 +185,7 @@ func (m *MockRequest) SetFederationReplyTo(reply string) {
 }
 
 // SetFederationReplyTo indicates an expected call of SetFederationReplyTo
-func (mr *MockRequestMockRecorder) SetFederationReplyTo(reply interface{}) *gomock.Call {
+func (mr *MockRequestMockRecorder) SetFederationReplyTo(reply any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFederationReplyTo", reflect.TypeOf((*MockRequest)(nil).SetFederationReplyTo), reply)
 }
 
@@ -195,7 +195,7 @@ func (m *MockRequest) SetFederationTargets(targets []string) {
 }
 
 // SetFederationTargets indicates an expected call of SetFederationTargets
-func (mr *MockRequestMockRecorder) SetFederationTargets(targets interface{}) *gomock.Call {
+func (mr *MockRequestMockRecorder) SetFederationTargets(targets any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFederationTargets", reflect.TypeOf((*MockRequest)(nil).SetFederationTargets), targets)
 }
 
@@ -254,7 +254,7 @@ func (m *MockRequest) RecordNetworkHop(in, processor, out string) {
 }
 
 // RecordNetworkHop indicates an expected call of RecordNetworkHop
-func (mr *MockRequestMockRecorder) RecordNetworkHop(in, processor, out interface{}) *gomock.Call {
+func (mr *MockRequestMockRecorder) RecordNetworkHop(in, processor, out any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordNetworkHop", reflect.TypeOf((*MockRequest)(nil).RecordNetworkHop), in, processor, out)
 }
 
@@ -288,7 +288,7 @@ func (m *MockRequest) SetMessage(message string) {
 }
 
 // SetMessage indicates an expected call of SetMessage
-func (mr *MockRequestMockRecorder) SetMessage(message interface{}) *gomock.Call {
+func (mr *MockRequestMockRecorder) SetMessage(message any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMessage", reflect.TypeOf((*MockRequest)(nil).SetMessage), message)
 }
 
@@ -298,7 +298,7 @@ func (m *MockRequest) SetCallerID(id string) {
 }
 
 // SetCallerID indicates an expected call of SetCallerID
-func (mr *MockRequestMockRecorder) SetCallerID(id interface{}) *gomock.Call {
+func (mr *MockRequestMockRecorder) SetCallerID(id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCallerID", reflect.TypeOf((*MockRequest)(nil).SetCallerID), id)
 }
 
@@ -308,7 +308,7 @@ func (m *MockRequest) SetCollective(collective string) {
 }
 
 // SetCollective indicates an expected call of SetCollective
-func (mr *MockRequestMockRecorder) SetCollective(collective interface{}) *gomock.Call {
+func (mr *MockRequestMockRecorder) SetCollective(collective any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetCollective", reflect.TypeOf((*MockRequest)(nil).SetCollective), collective)
 }
 
@@ -318,7 +318,7 @@ func (m *MockRequest) SetAgent(agent string) {
 }
 
 // SetAgent indicates an expected call of SetAgent
-func (mr *MockRequestMockRecorder) SetAgent(agent interface{}) *gomock.Call {
+func (mr *MockRequestMockRecorder) SetAgent(agent any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetAgent", reflect.TypeOf((*MockRequest)(nil).SetAgent), agent)
 }
 
@@ -340,7 +340,7 @@ func (m *MockRequest) SetFilter(arg0 *Filter) {
 }
 
 // SetFilter indicates an expected call of SetFilter
-func (mr *MockRequestMockRecorder) SetFilter(arg0 interface{}) *gomock.Call {
+func (mr *MockRequestMockRecorder) SetFilter(arg0 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFilter", reflect.TypeOf((*MockRequest)(nil).SetFilter), arg0)
 }
 
@@ -350,7 +350,7 @@ func (m *MockRequest) SetRequestID(id string) {
 }
 
 // SetRequestID indicates an expected call of SetRequestID
-func (mr *MockRequestMockRecorder) SetRequestID(id interface{}) *gomock.Call {
+func (mr *MockRequestMockRecorder) SetRequestID(id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRequestID", reflect.TypeOf((*MockRequest)(nil).SetRequestID), id)
 }
 
@@ -360,7 +360,7 @@ func (m *MockRequest) SetTTL(ttl int) {
 }
 
 // SetTTL indicates an expected call of SetTTL
-func (mr *MockRequestMockRecorder) SetTTL(ttl interface{}) *gomock.Call {
+func (mr *MockRequestMockRecorder) SetTTL(ttl any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetTTL", reflect.TypeOf((*MockRequest)(nil).SetTTL), ttl)
 }
 
@@ -506,7 +506,7 @@ func (m *MockRequest) IsValidJSON(data string) error {
 }
 
 // IsValidJSON indicates an expected call of IsValidJSON
-func (mr *MockRequestMockRecorder) IsValidJSON(data interface{}) *gomock.Call {
+func (mr *MockRequestMockRecorder) IsValidJSON(data any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidJSON", reflect.TypeOf((*MockRequest)(nil).IsValidJSON), data)
 }
 
@@ -539,7 +539,7 @@ func (m *MockReply) SetFederationRequestID(id string) {
 }
 
 // SetFederationRequestID indicates an expected call of SetFederationRequestID
-func (mr *MockReplyMockRecorder) SetFederationRequestID(id interface{}) *gomock.Call {
+func (mr *MockReplyMockRecorder) SetFederationRequestID(id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFederationRequestID", reflect.TypeOf((*MockReply)(nil).SetFederationRequestID), id)
 }
 
@@ -549,7 +549,7 @@ func (m *MockReply) SetFederationReplyTo(reply string) {
 }
 
 // SetFederationReplyTo indicates an expected call of SetFederationReplyTo
-func (mr *MockReplyMockRecorder) SetFederationReplyTo(reply interface{}) *gomock.Call {
+func (mr *MockReplyMockRecorder) SetFederationReplyTo(reply any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFederationReplyTo", reflect.TypeOf((*MockReply)(nil).SetFederationReplyTo), reply)
 }
 
@@ -559,7 +559,7 @@ func (m *MockReply) SetFederationTargets(targets []string) {
 }
 
 // SetFederationTargets indicates an expected call of SetFederationTargets
-func (mr *MockReplyMockRecorder) SetFederationTargets(targets interface{}) *gomock.Call {
+func (mr *MockReplyMockRecorder) SetFederationTargets(targets any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFederationTargets", reflect.TypeOf((*MockReply)(nil).SetFederationTargets), targets)
 }
 
@@ -618,7 +618,7 @@ func (m *MockReply) RecordNetworkHop(in, processor, out string) {
 }
 
 // RecordNetworkHop indicates an expected call of RecordNetworkHop
-func (mr *MockReplyMockRecorder) RecordNetworkHop(in, processor, out interface{}) *gomock.Call {
+func (mr *MockReplyMockRecorder) RecordNetworkHop(in, processor, out any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordNetworkHop", reflect.TypeOf((*MockReply)(nil).RecordNetworkHop), in, processor, out)
 }
 
@@ -652,7 +652,7 @@ func (m *MockReply) SetMessage(message string) {
 }
 
 // SetMessage indicates an expected call of SetMessage
-func (mr *MockReplyMockRecorder) SetMessage(message interface{}) *gomock.Call {
+func (mr *MockReplyMockRecorder) SetMessage(message any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMessage", reflect.TypeOf((*MockReply)(nil).SetMessage), message)
 }
 
@@ -749,7 +749,7 @@ func (m *MockReply) IsValidJSON(data string) error {
 }
 
 // IsValidJSON indicates an expected call of IsValidJSON
-func (mr *MockReplyMockRecorder) IsValidJSON(data interface{}) *gomock.Call {
+func (mr *MockReplyMockRecorder) IsValidJSON(data any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidJSON", reflect.TypeOf((*MockReply)(nil).IsValidJSON), data)
 }
 
@@ -784,7 +784,7 @@ func (m *MockSecureRequest) SetMessage(request Request) error {
 }
 
 // SetMessage indicates an expected call of SetMessage
-func (mr *MockSecureRequestMockRecorder) SetMessage(request interface{}) *gomock.Call {
+func (mr *MockSecureRequestMockRecorder) SetMessage(request any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMessage", reflect.TypeOf((*MockSecureRequest)(nil).SetMessage), request)
 }
 
@@ -833,7 +833,7 @@ func (m *MockSecureRequest) IsValidJSON(data string) error {
 }
 
 // IsValidJSON indicates an expected call of IsValidJSON
-func (mr *MockSecureRequestMockRecorder) IsValidJSON(data interface{}) *gomock.Call {
+func (mr *MockSecureRequestMockRecorder) IsValidJSON(data any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidJSON", reflect.TypeOf((*MockSecureRequest)(nil).IsValidJSON), data)
 }
 
@@ -880,7 +880,7 @@ func (m *MockSecureReply) SetMessage(reply Reply) error {
 }
 
 // SetMessage indicates an expected call of SetMessage
-func (mr *MockSecureReplyMockRecorder) SetMessage(reply interface{}) *gomock.Call {
+func (mr *MockSecureReplyMockRecorder) SetMessage(reply any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMessage", reflect.TypeOf((*MockSecureReply)(nil).SetMessage), reply)
 }
 
@@ -941,7 +941,7 @@ func (m *MockSecureReply) IsValidJSON(data string) error {
 }
 
 // IsValidJSON indicates an expected call of IsValidJSON
-func (mr *MockSecureReplyMockRecorder) IsValidJSON(data interface{}) *gomock.Call {
+func (mr *MockSecureReplyMockRecorder) IsValidJSON(data any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidJSON", reflect.TypeOf((*MockSecureReply)(nil).IsValidJSON), data)
 }
 
@@ -974,7 +974,7 @@ func (m *MockTransportMessage) SetFederationRequestID(id string) {
 }
 
 // SetFederationRequestID indicates an expected call of SetFederationRequestID
-func (mr *MockTransportMessageMockRecorder) SetFederationRequestID(id interface{}) *gomock.Call {
+func (mr *MockTransportMessageMockRecorder) SetFederationRequestID(id any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFederationRequestID", reflect.TypeOf((*MockTransportMessage)(nil).SetFederationRequestID), id)
 }
 
@@ -984,7 +984,7 @@ func (m *MockTransportMessage) SetFederationReplyTo(reply string) {
 }
 
 // SetFederationReplyTo indicates an expected call of SetFederationReplyTo
-func (mr *MockTransportMessageMockRecorder) SetFederationReplyTo(reply interface{}) *gomock.Call {
+func (mr *MockTransportMessageMockRecorder) SetFederationReplyTo(reply any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFederationReplyTo", reflect.TypeOf((*MockTransportMessage)(nil).SetFederationReplyTo), reply)
 }
 
@@ -994,7 +994,7 @@ func (m *MockTransportMessage) SetFederationTargets(targets []string) {
 }
 
 // SetFederationTargets indicates an expected call of SetFederationTargets
-func (mr *MockTransportMessageMockRecorder) SetFederationTargets(targets interface{}) *gomock.Call {
+func (mr *MockTransportMessageMockRecorder) SetFederationTargets(targets any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetFederationTargets", reflect.TypeOf((*MockTransportMessage)(nil).SetFederationTargets), targets)
 }
 
@@ -1053,7 +1053,7 @@ func (m *MockTransportMessage) RecordNetworkHop(in, processor, out string) {
 }
 
 // RecordNetworkHop indicates an expected call of RecordNetworkHop
-func (mr *MockTransportMessageMockRecorder) RecordNetworkHop(in, processor, out interface{}) *gomock.Call {
+func (mr *MockTransportMessageMockRecorder) RecordNetworkHop(in, processor, out any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RecordNetworkHop", reflect.TypeOf((*MockTransportMessage)(nil).RecordNetworkHop), in, processor, out)
 }
 
@@ -1089,7 +1089,7 @@ func (m *MockTransportMessage) SetReplyData(reply SecureReply) error {
 }
 
 // SetReplyData indicates an expected call of SetReplyData
-func (mr *MockTransportMessageMockRecorder) SetReplyData(reply interface{}) *gomock.Call {
+func (mr *MockTransportMessageMockRecorder) SetReplyData(reply any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetReplyData", reflect.TypeOf((*MockTransportMessage)(nil).SetReplyData), reply)
 }
 
@@ -1101,7 +1101,7 @@ func (m *MockTransportMessage) SetRequestData(request SecureRequest) error {
 }
 
 // SetRequestData indicates an expected call of SetRequestData
-func (mr *MockTransportMessageMockRecorder) SetRequestData(request interface{}) *gomock.Call {
+func (mr *MockTransportMessageMockRecorder) SetRequestData(request any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetRequestData", reflect.TypeOf((*MockTransportMessage)(nil).SetRequestData), request)
 }
 
@@ -1111,7 +1111,7 @@ func (m *MockTransportMessage) SetReplyTo(reply string) {
 }
 
 // SetReplyTo indicates an expected call of SetReplyTo
-func (mr *MockTransportMessageMockRecorder) SetReplyTo(reply interface{}) *gomock.Call {
+func (mr *MockTransportMessageMockRecorder) SetReplyTo(reply any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetReplyTo", reflect.TypeOf((*MockTransportMessage)(nil).SetReplyTo), reply)
 }
 
@@ -1121,7 +1121,7 @@ func (m *MockTransportMessage) SetSender(sender string) {
 }
 
 // SetSender indicates an expected call of SetSender
-func (mr *MockTransportMessageMockRecorder) SetSender(sender interface{}) *gomock.Call {
+func (mr *MockTransportMessageMockRecorder) SetSender(sender any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSender", reflect.TypeOf((*MockTransportMessage)(nil).SetSender), sender)
 }
 
@@ -1182,7 +1182,7 @@ func (m *MockTransportMessage) IsValidJSON(data string) error {
 }
 
 // IsValidJSON indicates an expected call of IsValidJSON
-func (mr *MockTransportMessageMockRecorder) IsValidJSON(data interface{}) *gomock.Call {
+func (mr *MockTransportMessageMockRecorder) IsValidJSON(data any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsValidJSON", reflect.TypeOf((*MockTransportMessage)(nil).IsValidJSON), data)
 }
 

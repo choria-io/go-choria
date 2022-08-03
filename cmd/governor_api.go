@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -135,7 +135,7 @@ func (g *tGovAPICommand) updateCmd() {
 
 	parts := strings.Split(gov.Subject(), ".")
 
-	g.jsonDump(map[string]interface{}{
+	g.jsonDump(map[string]any{
 		"name":       gov.Name(),
 		"capacity":   gov.Limit(),
 		"expire":     gov.MaxAge().Seconds(),
@@ -221,7 +221,7 @@ func (g *tGovAPICommand) listCmd() {
 	g.jsonDump(govs)
 }
 
-func (g *tGovAPICommand) fail(format string, a ...interface{}) {
+func (g *tGovAPICommand) fail(format string, a ...any) {
 	g.jsonDump(map[string]string{
 		"error": fmt.Sprintf(format, a...),
 	})
@@ -229,7 +229,7 @@ func (g *tGovAPICommand) fail(format string, a ...interface{}) {
 	os.Exit(1)
 }
 
-func (g *tGovAPICommand) jsonDump(d interface{}) {
+func (g *tGovAPICommand) jsonDump(d any) {
 	j, err := json.Marshal(d)
 	if err != nil {
 		panic(err)

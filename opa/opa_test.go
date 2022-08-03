@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -32,7 +32,7 @@ var _ = Describe("Opa", func() {
 
 	Describe("Evaluate", func() {
 		It("Should support basic evaluations", func() {
-			inputs := map[string]interface{}{"hello": "world"}
+			inputs := map[string]any{"hello": "world"}
 			e, err := New("io.choria.ginkgo", "data.io.choria.ginkgo.allow", Logger(log), File("testdata/test1.rego"), Trace())
 			Expect(err).ToNot(HaveOccurred())
 
@@ -42,7 +42,7 @@ var _ = Describe("Opa", func() {
 		})
 
 		It("Should support functions", func() {
-			inputs := map[string]interface{}{"hello": "world"}
+			inputs := map[string]any{"hello": "world"}
 			ran := 0
 			f := rego.FunctionDyn(&rego.Function{
 				Name: "ginkgo",
@@ -63,7 +63,7 @@ var _ = Describe("Opa", func() {
 		})
 
 		It("Should support supplied policies", func() {
-			inputs := map[string]interface{}{"hello": "world"}
+			inputs := map[string]any{"hello": "world"}
 			policy, err := os.ReadFile("testdata/test1.rego")
 			Expect(err).ToNot(HaveOccurred())
 
@@ -76,7 +76,7 @@ var _ = Describe("Opa", func() {
 		})
 
 		It("Should run the same with multiple inputs", func() {
-			inputs := map[string]interface{}{"hello": "world"}
+			inputs := map[string]any{"hello": "world"}
 			e, err := New("io.choria.ginkgo", "data.io.choria.ginkgo.allow", Logger(log), File("testdata/test1.rego"), Trace())
 			Expect(err).ToNot(HaveOccurred())
 

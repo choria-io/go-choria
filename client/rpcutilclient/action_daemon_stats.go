@@ -26,7 +26,7 @@ type DaemonStatsRequester struct {
 // DaemonStatsOutput is the output from the daemon_stats action
 type DaemonStatsOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // DaemonStatsResult is the result from a daemon_stats action
@@ -82,7 +82,7 @@ func (d *DaemonStatsOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *DaemonStatsOutput) HashMap() map[string]interface{} {
+func (d *DaemonStatsOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *DaemonStatsOutput) JSON() ([]byte, error) {
 }
 
 // ParseDaemonStatsOutput parses the result value from the DaemonStats action into target
-func (d *DaemonStatsOutput) ParseDaemonStatsOutput(target interface{}) error {
+func (d *DaemonStatsOutput) ParseDaemonStatsOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *DaemonStatsRequester) Do(ctx context.Context) (*DaemonStatsResult, erro
 		}
 
 		output := &DaemonStatsOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -173,10 +173,10 @@ func (d *DaemonStatsResult) EachOutput(h func(r *DaemonStatsOutput)) {
 // Agents is the value of the agents output
 //
 // Description: List of agents loaded
-func (d *DaemonStatsOutput) Agents() []interface{} {
+func (d *DaemonStatsOutput) Agents() []any {
 	val := d.reply["agents"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
@@ -243,20 +243,20 @@ func (d *DaemonStatsOutput) Starttime() int64 {
 // Threads is the value of the threads output
 //
 // Description: List of threads active in the Choria Server
-func (d *DaemonStatsOutput) Threads() []interface{} {
+func (d *DaemonStatsOutput) Threads() []any {
 	val := d.reply["threads"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // Times is the value of the times output
 //
 // Description: Processor time consumed by the Choria Server
-func (d *DaemonStatsOutput) Times() map[string]interface{} {
+func (d *DaemonStatsOutput) Times() map[string]any {
 	val := d.reply["times"]
 
-	return val.(map[string]interface{})
+	return val.(map[string]any)
 
 }
 

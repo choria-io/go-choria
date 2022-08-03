@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -78,7 +78,7 @@ func (d *Doc) Environment() string {
 }
 
 // KeyDoc constructs a Doc for key within target, marked up to be within container
-func KeyDoc(target interface{}, key string, container string) *Doc {
+func KeyDoc(target any, key string, container string) *Doc {
 	var err error
 
 	d := Doc{

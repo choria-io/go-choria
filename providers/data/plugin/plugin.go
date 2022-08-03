@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -24,7 +24,7 @@ func NewDataPlugin(name string, creator func(fw data.Framework) (data.Plugin, er
 }
 
 // PluginInstance implements plugin.Pluggable
-func (p *DataPlugin) PluginInstance() interface{} {
+func (p *DataPlugin) PluginInstance() any {
 	return p.Creator
 }
 

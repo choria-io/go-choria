@@ -26,7 +26,7 @@ type MachineStateRequester struct {
 // MachineStateOutput is the output from the machine_state action
 type MachineStateOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // MachineStateResult is the result from a machine_state action
@@ -82,7 +82,7 @@ func (d *MachineStateOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *MachineStateOutput) HashMap() map[string]interface{} {
+func (d *MachineStateOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *MachineStateOutput) JSON() ([]byte, error) {
 }
 
 // ParseMachineStateOutput parses the result value from the MachineState action into target
-func (d *MachineStateOutput) ParseMachineStateOutput(target interface{}) error {
+func (d *MachineStateOutput) ParseMachineStateOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *MachineStateRequester) Do(ctx context.Context) (*MachineStateResult, er
 		}
 
 		output := &MachineStateOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -200,20 +200,20 @@ func (d *MachineStateRequester) Path(v string) *MachineStateRequester {
 // AvailableTransitions is the value of the available_transitions output
 //
 // Description: The list of available transitions this autonomous agent can make
-func (d *MachineStateOutput) AvailableTransitions() []interface{} {
+func (d *MachineStateOutput) AvailableTransitions() []any {
 	val := d.reply["available_transitions"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // CurrentState is the value of the current_state output
 //
 // Description: The Choria Scout specific state for Scout checks
-func (d *MachineStateOutput) CurrentState() interface{} {
+func (d *MachineStateOutput) CurrentState() any {
 	val, ok := d.reply["current_state"]
 	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
+		// we have to avoid returning nil.(any)
 		return nil
 	}
 

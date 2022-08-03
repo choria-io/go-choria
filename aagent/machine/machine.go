@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -71,7 +71,7 @@ type Machine struct {
 	startTime        time.Time
 
 	embedded    bool
-	data        map[string]interface{}
+	data        map[string]any
 	facts       func() json.RawMessage
 	jsm         *jsm.Manager
 	conn        inter.Connector
@@ -117,8 +117,8 @@ type Transition struct {
 type WatcherManager interface {
 	Run(context.Context, *sync.WaitGroup) error
 	NotifyStateChance()
-	SetMachine(interface{}) error
-	WatcherState(watcher string) (interface{}, bool)
+	SetMachine(any) error
+	WatcherState(watcher string) (any, bool)
 	Delete()
 }
 
@@ -170,7 +170,7 @@ func initializeMachine(m *Machine, dir string, afile string, manager WatcherMana
 	m.manager = manager
 	m.instanceID = m.UniqueID()
 	m.knownStates = make(map[string]bool)
-	m.data = make(map[string]interface{})
+	m.data = make(map[string]any)
 
 	if dir != "" {
 		m.SetDirectory(dir, afile)
@@ -645,7 +645,7 @@ func (m *Machine) backoffTransition(t string) error {
 }
 
 // Transition performs the machine transition as defined by event t
-func (m *Machine) Transition(t string, args ...interface{}) error {
+func (m *Machine) Transition(t string, args ...any) error {
 	m.Lock()
 	defer m.Unlock()
 
@@ -718,7 +718,7 @@ func (m *Machine) KnownStates() []string {
 }
 
 // DataGet gets the value for a key, empty string and false when no value is stored
-func (m *Machine) DataGet(key string) (interface{}, bool) {
+func (m *Machine) DataGet(key string) (any, bool) {
 	m.dataMu.Lock()
 	defer m.dataMu.Unlock()
 
@@ -728,7 +728,7 @@ func (m *Machine) DataGet(key string) (interface{}, bool) {
 }
 
 // DataPut stores a value in a key
-func (m *Machine) DataPut(key string, val interface{}) error {
+func (m *Machine) DataPut(key string, val any) error {
 	m.dataMu.Lock()
 	defer m.dataMu.Unlock()
 
@@ -804,11 +804,11 @@ func (m *Machine) saveData() error {
 }
 
 // Data retrieves a copy of the current data stored by the machine, changes will not be reflected in the machine
-func (m *Machine) Data() map[string]interface{} {
+func (m *Machine) Data() map[string]any {
 	m.dataMu.Lock()
 	defer m.dataMu.Unlock()
 
-	res := make(map[string]interface{}, len(m.data))
+	res := make(map[string]any, len(m.data))
 	for k, v := range m.data {
 		res[k] = v
 	}

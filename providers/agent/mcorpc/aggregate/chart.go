@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -21,7 +21,7 @@ type ChartAggregator struct {
 }
 
 // NewChartAggregator creates a new ChartAggregator with the specific options
-func NewChartAggregator(args []interface{}) (*ChartAggregator, error) {
+func NewChartAggregator(args []any) (*ChartAggregator, error) {
 	agg := &ChartAggregator{
 		items: []float64{},
 	}
@@ -35,7 +35,7 @@ func (s *ChartAggregator) Type() string {
 }
 
 // ProcessValue processes and tracks the specific value
-func (s *ChartAggregator) ProcessValue(v interface{}) error {
+func (s *ChartAggregator) ProcessValue(v any) error {
 	s.Lock()
 	defer s.Unlock()
 
@@ -94,7 +94,7 @@ func (s *ChartAggregator) ResultFormattedStrings(format string) ([]string, error
 	return []string{fmt.Sprintf(format, line)}, nil
 }
 
-func (s *ChartAggregator) processString(v interface{}) bool {
+func (s *ChartAggregator) processString(v any) bool {
 	str, ok := v.(string)
 	if !ok {
 		return false
@@ -110,7 +110,7 @@ func (s *ChartAggregator) processString(v interface{}) bool {
 	return true
 }
 
-func (s *ChartAggregator) processFloat(v interface{}) bool {
+func (s *ChartAggregator) processFloat(v any) bool {
 	f, ok := v.(float64)
 	if !ok {
 		return false
@@ -121,7 +121,7 @@ func (s *ChartAggregator) processFloat(v interface{}) bool {
 	return true
 }
 
-func (s *ChartAggregator) processInt(v interface{}) bool {
+func (s *ChartAggregator) processInt(v any) bool {
 	i, ok := v.(int)
 	if !ok {
 		return false
@@ -132,7 +132,7 @@ func (s *ChartAggregator) processInt(v interface{}) bool {
 	return true
 }
 
-func (s *ChartAggregator) processInt64(v interface{}) bool {
+func (s *ChartAggregator) processInt64(v any) bool {
 	i, ok := v.(int64)
 	if !ok {
 		return false

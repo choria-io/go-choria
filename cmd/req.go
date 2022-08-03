@@ -30,7 +30,7 @@ type reqCommand struct {
 	ddl             *agentddl.DDL
 	actionInterface *agentddl.Action
 	progressBar     *uiprogress.Bar
-	input           map[string]interface{}
+	input           map[string]any
 	filter          *protocol.Filter
 
 	displayOverride string

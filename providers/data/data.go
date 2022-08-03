@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -18,8 +18,8 @@ import (
 	"github.com/choria-io/go-choria/server/agents"
 )
 
-type Query interface{}
-type OutputItem interface{}
+type Query any
+type OutputItem any
 
 type Creator struct {
 	F    func(Framework) (Plugin, error)
@@ -171,7 +171,7 @@ func (m *Manager) Execute(ctx context.Context, plugin string, query string, srv 
 	}
 
 	var (
-		q interface{}
+		q any
 	)
 
 	if pddl.Query != nil {

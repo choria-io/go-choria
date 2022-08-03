@@ -45,7 +45,7 @@ func (m *MockChoriaClient) Request(ctx context.Context, msg inter.Message, handl
 }
 
 // Request indicates an expected call of Request.
-func (mr *MockChoriaClientMockRecorder) Request(ctx, msg, handler interface{}) *gomock.Call {
+func (mr *MockChoriaClientMockRecorder) Request(ctx, msg, handler any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Request", reflect.TypeOf((*MockChoriaClient)(nil).Request), ctx, msg, handler)
 }

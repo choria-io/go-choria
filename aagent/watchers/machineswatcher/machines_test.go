@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -41,7 +41,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 		machine = model.NewMockMachine(mockctl)
 		machine.EXPECT().Directory().Return(td).AnyTimes()
 
-		wi, err := New(machine, "machines", nil, "", "", "1m", time.Hour, map[string]interface{}{
+		wi, err := New(machine, "machines", nil, "", "", "1m", time.Hour, map[string]any{
 			"data_item": "spec",
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -80,7 +80,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 		})
 
 		It("Should handle data with no signatures when signature is required", func() {
-			err = w.setProperties(map[string]interface{}{
+			err = w.setProperties(map[string]any{
 				"data_item":  "spec",
 				"public_key": "x",
 			})
@@ -94,7 +94,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 		})
 
 		It("Should handle data with corrupt signatures", func() {
-			err = w.setProperties(map[string]interface{}{
+			err = w.setProperties(map[string]any{
 				"data_item":  "spec",
 				"public_key": hex.EncodeToString(pub),
 			})
@@ -109,7 +109,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 		})
 
 		It("Should handle data with invalid signatures", func() {
-			err = w.setProperties(map[string]interface{}{
+			err = w.setProperties(map[string]any{
 				"data_item":  "spec",
 				"public_key": hex.EncodeToString(pub),
 			})
@@ -124,7 +124,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 		})
 
 		It("Should handle valid signatures", func() {
-			err = w.setProperties(map[string]interface{}{
+			err = w.setProperties(map[string]any{
 				"data_item":  "spec",
 				"public_key": hex.EncodeToString(pub),
 			})

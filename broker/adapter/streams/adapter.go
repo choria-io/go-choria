@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -24,22 +24,23 @@ import (
 // body, sender and time.  Body is a base64 encoded string
 //
 // Configure the adapters:
-//   # required
-//   plugin.choria.adapters = discovery
-//   plugin.choria.adapter.discovery.type = choria_streams
-//   plugin.choria.adapter.discovery.queue_len = 1000 # default
+//
+//	# required
+//	plugin.choria.adapters = discovery
+//	plugin.choria.adapter.discovery.type = choria_streams
+//	plugin.choria.adapter.discovery.queue_len = 1000 # default
 //
 // Configure the stream output:
 //
-//   plugin.choria.adapter.discovery.stream.servers = js1:4222,js2:4222 # uses normal middleware server resolution when unset
-//   plugin.choria.adapter.discovery.stream.topic = discovery # default, %s gets replaced with sender id
-//   plugin.choria.adapter.discovery.stream.workers = 10 # default
+//	plugin.choria.adapter.discovery.stream.servers = js1:4222,js2:4222 # uses normal middleware server resolution when unset
+//	plugin.choria.adapter.discovery.stream.topic = discovery # default, %s gets replaced with sender id
+//	plugin.choria.adapter.discovery.stream.workers = 10 # default
 //
 // Configure the NATS ingest:
 //
-//    plugin.choria.adapter.discovery.ingest.topic = mcollective.broadcast.agent.discovery
-//    plugin.choria.adapter.discovery.ingest.protocol = request # or reply
-//    plugin.choria.adapter.discovery.ingest.workers = 10 # default
+//	plugin.choria.adapter.discovery.ingest.topic = mcollective.broadcast.agent.discovery
+//	plugin.choria.adapter.discovery.ingest.protocol = request # or reply
+//	plugin.choria.adapter.discovery.ingest.workers = 10 # default
 type Streams struct {
 	streams []*stream
 	ingests []*ingest.NatsIngest

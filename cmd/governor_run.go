@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -132,7 +132,7 @@ func (g *tGovRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		finish(wg)
 	}()
 
-	osExit := func(c int, format string, a ...interface{}) {
+	osExit := func(c int, format string, a ...any) {
 		if format != "" {
 			fmt.Println(fmt.Sprintf(format, a...))
 		}

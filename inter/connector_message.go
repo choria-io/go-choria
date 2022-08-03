@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,5 +11,5 @@ type ConnectorMessage interface {
 	Data() []byte
 
 	// Msg is the middleware specific message like *nats.Msg
-	Msg() interface{}
+	Msg() any
 }

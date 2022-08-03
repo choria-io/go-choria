@@ -35,11 +35,11 @@ type Command struct {
 
 type KV struct {
 	b         *builder.AppBuilder
-	arguments map[string]interface{}
-	flags     map[string]interface{}
+	arguments map[string]any
+	flags     map[string]any
 	cmd       *fisk.CmdClause
 	def       *Command
-	cfg       interface{}
+	cfg       any
 	log       builder.Logger
 	ctx       context.Context
 }
@@ -51,8 +51,8 @@ func NewKVCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Logger) 
 		ctx:       b.Context(),
 		b:         b,
 		log:       log,
-		arguments: map[string]interface{}{},
-		flags:     map[string]interface{}{},
+		arguments: map[string]any{},
+		flags:     map[string]any{},
 	}
 
 	err := json.Unmarshal(j, kv.def)
@@ -217,12 +217,12 @@ func (r *KV) opStringForOp(kvop nats.KeyValueOp) string {
 	return op
 }
 
-func (r *KV) entryMap(e nats.KeyValueEntry) map[string]interface{} {
+func (r *KV) entryMap(e nats.KeyValueEntry) map[string]any {
 	if e == nil {
 		return nil
 	}
 
-	res := map[string]interface{}{
+	res := map[string]any{
 		"operation": r.opStringForOp(e.Operation()),
 		"revision":  e.Revision(),
 		"value":     util.Base64IfNotPrintable(e.Value()),
@@ -244,10 +244,10 @@ func (r *KV) historyAction(kv nats.KeyValue) error {
 	}
 
 	if r.def.RenderJSON {
-		hist := map[string]map[string][]interface{}{}
+		hist := map[string]map[string][]any{}
 		for _, e := range history {
 			if _, ok := hist[e.Bucket()]; !ok {
-				hist[e.Bucket()] = map[string][]interface{}{}
+				hist[e.Bucket()] = map[string][]any{}
 			}
 
 			hist[e.Bucket()][e.Key()] = append(hist[e.Bucket()][e.Key()], r.entryMap(e))
@@ -291,7 +291,7 @@ func (r *KV) runCommand(_ *fisk.ParseContext) error {
 		return err
 	}
 
-	logger, ok := interface{}(r.log).(*logrus.Logger)
+	logger, ok := any(r.log).(*logrus.Logger)
 	if ok {
 		cfg.CustomLogger = logger
 	}

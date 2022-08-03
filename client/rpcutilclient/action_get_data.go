@@ -26,7 +26,7 @@ type GetDataRequester struct {
 // GetDataOutput is the output from the get_data action
 type GetDataOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // GetDataResult is the result from a get_data action
@@ -82,7 +82,7 @@ func (d *GetDataOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *GetDataOutput) HashMap() map[string]interface{} {
+func (d *GetDataOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *GetDataOutput) JSON() ([]byte, error) {
 }
 
 // ParseGetDataOutput parses the result value from the GetData action into target
-func (d *GetDataOutput) ParseGetDataOutput(target interface{}) error {
+func (d *GetDataOutput) ParseGetDataOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *GetDataRequester) Do(ctx context.Context) (*GetDataResult, error) {
 		}
 
 		output := &GetDataOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),

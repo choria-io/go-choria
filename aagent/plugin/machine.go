@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,24 +13,24 @@ import (
 	"golang.org/x/text/language"
 )
 
-func NewMachinePlugin(name string, machine interface{}) *MachinePlugin {
+func NewMachinePlugin(name string, machine any) *MachinePlugin {
 	return &MachinePlugin{name: name, machine: machine}
 }
 
 type MachinePlugin struct {
 	name    string
-	machine interface{}
+	machine any
 }
 
 func (p *MachinePlugin) Name() string {
 	return p.name
 }
 
-func (p *MachinePlugin) Machine() interface{} {
+func (p *MachinePlugin) Machine() any {
 	return p.machine
 }
 
-func (p *MachinePlugin) PluginInstance() interface{} {
+func (p *MachinePlugin) PluginInstance() any {
 	return p
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,7 +14,7 @@ type DDLResolver interface {
 	String() string
 
 	// DDL resolves a DDL and unmarshal it into target, which should be a pointer to a DDL type
-	DDL(ctx context.Context, kind string, name string, target interface{}, fw Framework) error
+	DDL(ctx context.Context, kind string, name string, target any, fw Framework) error
 
 	// DDLBytes resolves a DDL and return the bytes
 	DDLBytes(ctx context.Context, kind string, name string, fw Framework) ([]byte, error)

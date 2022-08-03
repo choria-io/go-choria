@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,7 +17,7 @@ import (
 )
 
 // WatcherState is the status of a given watcher, boolean result is false for unknown watchers
-func (m *Machine) WatcherState(watcher string) (interface{}, bool) {
+func (m *Machine) WatcherState(watcher string) (any, bool) {
 	return m.manager.WatcherState(watcher)
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -59,8 +59,8 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 			Expect(converted["number"].(float64)).To(Equal(10.1))
 			Expect(converted["string"].(string)).To(Equal("hello world"))
 			Expect(converted["list"].(string)).To(Equal("one"))
-			Expect(converted["hash"]).To(Equal(map[string]interface{}{"hello": "world"}))
-			Expect(converted["array"]).To(Equal([]interface{}{"hello", "world"}))
+			Expect(converted["hash"]).To(Equal(map[string]any{"hello": "world"}))
+			Expect(converted["array"]).To(Equal([]any{"hello", "world"}))
 		})
 
 		It("Should validate inputs", func() {
@@ -251,7 +251,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 
 	Describe("SetOutputDefaults", func() {
 		It("Should set defaults correctly", func() {
-			res := map[string]interface{}{}
+			res := map[string]any{}
 			act.SetOutputDefaults(res)
 			Expect(res["int"].(int)).To(Equal(1))
 			Expect(res).ToNot(HaveKey("string"))
@@ -284,7 +284,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 				cu, err := pkg.ActionInterface("apt_checkupdates")
 				Expect(err).ToNot(HaveOccurred())
 
-				w, err := cu.ValidateRequestData(map[string]interface{}{})
+				w, err := cu.ValidateRequestData(map[string]any{})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(w).To(HaveLen(0))
 			})
@@ -292,7 +292,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 				cu, err := pkg.ActionInterface("apt_checkupdates")
 				Expect(err).ToNot(HaveOccurred())
 
-				w, err := cu.ValidateRequestData(map[string]interface{}{"process_results": true})
+				w, err := cu.ValidateRequestData(map[string]any{"process_results": true})
 				Expect(err).ToNot(HaveOccurred())
 				Expect(w).To(HaveLen(0))
 			})
@@ -300,7 +300,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 				cu, err := pkg.ActionInterface("apt_checkupdates")
 				Expect(err).ToNot(HaveOccurred())
 
-				w, err := cu.ValidateRequestData(map[string]interface{}{"test": "test"})
+				w, err := cu.ValidateRequestData(map[string]any{"test": "test"})
 				Expect(err).To(MatchError("request contains inputs while none are declared in the DDL"))
 				Expect(w).To(HaveLen(0))
 			})
@@ -311,7 +311,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 				install, err := pkg.ActionInterface("install")
 				Expect(err).ToNot(HaveOccurred())
 
-				w, err := install.ValidateRequestData(map[string]interface{}{})
+				w, err := install.ValidateRequestData(map[string]any{})
 				Expect(err).To(MatchError("input 'package' is required"))
 				Expect(w).To(HaveLen(0))
 			})
@@ -320,7 +320,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 				install, err := pkg.ActionInterface("install")
 				Expect(err).ToNot(HaveOccurred())
 
-				w, err := install.ValidateRequestData(map[string]interface{}{
+				w, err := install.ValidateRequestData(map[string]any{
 					"package":         "zsh",
 					"process_results": true,
 				})
@@ -331,7 +331,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 				install, err := pkg.ActionInterface("install")
 				Expect(err).ToNot(HaveOccurred())
 
-				w, err := install.ValidateRequestData(map[string]interface{}{
+				w, err := install.ValidateRequestData(map[string]any{
 					"package": "zsh",
 					"other":   "test",
 				})

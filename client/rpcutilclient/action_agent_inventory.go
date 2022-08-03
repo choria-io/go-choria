@@ -26,7 +26,7 @@ type AgentInventoryRequester struct {
 // AgentInventoryOutput is the output from the agent_inventory action
 type AgentInventoryOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // AgentInventoryResult is the result from a agent_inventory action
@@ -82,7 +82,7 @@ func (d *AgentInventoryOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *AgentInventoryOutput) HashMap() map[string]interface{} {
+func (d *AgentInventoryOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *AgentInventoryOutput) JSON() ([]byte, error) {
 }
 
 // ParseAgentInventoryOutput parses the result value from the AgentInventory action into target
-func (d *AgentInventoryOutput) ParseAgentInventoryOutput(target interface{}) error {
+func (d *AgentInventoryOutput) ParseAgentInventoryOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *AgentInventoryRequester) Do(ctx context.Context) (*AgentInventoryResult
 		}
 
 		output := &AgentInventoryOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -173,9 +173,9 @@ func (d *AgentInventoryResult) EachOutput(h func(r *AgentInventoryOutput)) {
 // Agents is the value of the agents output
 //
 // Description: List of agents on the server
-func (d *AgentInventoryOutput) Agents() []interface{} {
+func (d *AgentInventoryOutput) Agents() []any {
 	val := d.reply["agents"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }

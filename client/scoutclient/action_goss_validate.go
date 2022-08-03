@@ -26,7 +26,7 @@ type GossValidateRequester struct {
 // GossValidateOutput is the output from the goss_validate action
 type GossValidateOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // GossValidateResult is the result from a goss_validate action
@@ -82,7 +82,7 @@ func (d *GossValidateOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *GossValidateOutput) HashMap() map[string]interface{} {
+func (d *GossValidateOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *GossValidateOutput) JSON() ([]byte, error) {
 }
 
 // ParseGossValidateOutput parses the result value from the GossValidate action into target
-func (d *GossValidateOutput) ParseGossValidateOutput(target interface{}) error {
+func (d *GossValidateOutput) ParseGossValidateOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *GossValidateRequester) Do(ctx context.Context) (*GossValidateResult, er
 		}
 
 		output := &GossValidateOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -192,10 +192,10 @@ func (d *GossValidateOutput) Failures() int64 {
 // Results is the value of the results output
 //
 // Description: The full test results
-func (d *GossValidateOutput) Results() []interface{} {
+func (d *GossValidateOutput) Results() []any {
 	val := d.reply["results"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 

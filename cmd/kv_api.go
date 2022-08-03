@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -174,7 +174,7 @@ func (g *kvAPICommand) updateCmd() {
 	}
 	nfo = status.(*nats.KeyValueBucketStatus).StreamInfo()
 
-	g.jsonDump(map[string]interface{}{
+	g.jsonDump(map[string]any{
 		"name":            status.Bucket(),
 		"history":         status.History(),
 		"expire":          status.TTL().Seconds(),
@@ -276,7 +276,7 @@ func (g *kvAPICommand) listCmd() {
 	g.jsonDump(buckets)
 }
 
-func (g *kvAPICommand) fail(format string, a ...interface{}) {
+func (g *kvAPICommand) fail(format string, a ...any) {
 	g.jsonDump(map[string]string{
 		"error": fmt.Sprintf(format, a...),
 	})
@@ -284,7 +284,7 @@ func (g *kvAPICommand) fail(format string, a ...interface{}) {
 	os.Exit(1)
 }
 
-func (g *kvAPICommand) jsonDump(d interface{}) {
+func (g *kvAPICommand) jsonDump(d any) {
 	j, err := json.Marshal(d)
 	if err != nil {
 		panic(err)

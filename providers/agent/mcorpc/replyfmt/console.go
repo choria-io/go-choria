@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -183,7 +183,7 @@ func (c *ConsoleFormatter) ddlAssistedPrinter(reply *client.RPCReply) {
 	max := 0
 	keys := []string{}
 
-	parsed, ok := gjson.ParseBytes(reply.Data).Value().(map[string]interface{})
+	parsed, ok := gjson.ParseBytes(reply.Data).Value().(map[string]any)
 	if ok {
 		c.actionInterface.SetOutputDefaults(parsed)
 	}

@@ -26,7 +26,7 @@ type InventoryRequester struct {
 // InventoryOutput is the output from the inventory action
 type InventoryOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // InventoryResult is the result from a inventory action
@@ -82,7 +82,7 @@ func (d *InventoryOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *InventoryOutput) HashMap() map[string]interface{} {
+func (d *InventoryOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *InventoryOutput) JSON() ([]byte, error) {
 }
 
 // ParseInventoryOutput parses the result value from the Inventory action into target
-func (d *InventoryOutput) ParseInventoryOutput(target interface{}) error {
+func (d *InventoryOutput) ParseInventoryOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *InventoryRequester) Do(ctx context.Context) (*InventoryResult, error) {
 		}
 
 		output := &InventoryOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -173,60 +173,60 @@ func (d *InventoryResult) EachOutput(h func(r *InventoryOutput)) {
 // Agents is the value of the agents output
 //
 // Description: List of agent names
-func (d *InventoryOutput) Agents() []interface{} {
+func (d *InventoryOutput) Agents() []any {
 	val := d.reply["agents"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // Classes is the value of the classes output
 //
 // Description: List of classes on the system
-func (d *InventoryOutput) Classes() []interface{} {
+func (d *InventoryOutput) Classes() []any {
 	val := d.reply["classes"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // Collectives is the value of the collectives output
 //
 // Description: All Collectives
-func (d *InventoryOutput) Collectives() []interface{} {
+func (d *InventoryOutput) Collectives() []any {
 	val := d.reply["collectives"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // DataPlugins is the value of the data_plugins output
 //
 // Description: List of data plugin names
-func (d *InventoryOutput) DataPlugins() []interface{} {
+func (d *InventoryOutput) DataPlugins() []any {
 	val := d.reply["data_plugins"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // Facts is the value of the facts output
 //
 // Description: List of facts and values
-func (d *InventoryOutput) Facts() map[string]interface{} {
+func (d *InventoryOutput) Facts() map[string]any {
 	val := d.reply["facts"]
 
-	return val.(map[string]interface{})
+	return val.(map[string]any)
 
 }
 
 // Machines is the value of the machines output
 //
 // Description: Autonomous Agents
-func (d *InventoryOutput) Machines() map[string]interface{} {
+func (d *InventoryOutput) Machines() map[string]any {
 	val := d.reply["machines"]
 
-	return val.(map[string]interface{})
+	return val.(map[string]any)
 
 }
 

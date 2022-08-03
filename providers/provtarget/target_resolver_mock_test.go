@@ -56,7 +56,7 @@ func (m *MockTargetResolver) Targets(arg0 context.Context, arg1 *logrus.Entry) [
 }
 
 // Targets indicates an expected call of Targets
-func (mr *MockTargetResolverMockRecorder) Targets(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTargetResolverMockRecorder) Targets(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Targets", reflect.TypeOf((*MockTargetResolver)(nil).Targets), arg0, arg1)
 }
 
@@ -66,6 +66,6 @@ func (m *MockTargetResolver) Configure(arg0 *go_config.Config, arg1 *logrus.Entr
 }
 
 // Configure indicates an expected call of Configure
-func (mr *MockTargetResolverMockRecorder) Configure(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockTargetResolverMockRecorder) Configure(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Configure", reflect.TypeOf((*MockTargetResolver)(nil).Configure), arg0, arg1)
 }

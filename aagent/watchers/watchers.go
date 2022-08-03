@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -73,7 +73,7 @@ func New(ctx context.Context) *Manager {
 	return m
 }
 
-func ParseWatcherState(state []byte) (interface{}, error) {
+func ParseWatcherState(state []byte) (any, error) {
 	r := gjson.GetBytes(state, "protocol")
 	if !r.Exists() {
 		return nil, fmt.Errorf("no protocol header in state json")
@@ -120,7 +120,7 @@ func (m *Manager) JetStreamConnection() (*jsm.Manager, error) {
 }
 
 // SetMachine supplies the machine this manager will manage
-func (m *Manager) SetMachine(t interface{}) (err error) {
+func (m *Manager) SetMachine(t any) (err error) {
 	machine, ok := t.(Machine)
 	if !ok {
 		return fmt.Errorf("supplied machine does not implement watchers.Machine")
@@ -148,7 +148,7 @@ func (m *Manager) AddWatcher(w model.Watcher) error {
 }
 
 // WatcherState retrieves the current status for a given watcher, boolean result is false for unknown watchers
-func (m *Manager) WatcherState(watcher string) (interface{}, bool) {
+func (m *Manager) WatcherState(watcher string) (any, bool) {
 	m.Lock()
 	defer m.Unlock()
 	w, ok := m.watchers[watcher]

@@ -9,7 +9,7 @@ import (
 	"github.com/choria-io/go-choria/client/discovery"
 )
 
-func ProcessStdDiscoveryOptions(f *discovery.StandardOptions, arguments map[string]interface{}, flags map[string]interface{}, config interface{}) error {
+func ProcessStdDiscoveryOptions(f *discovery.StandardOptions, arguments map[string]any, flags map[string]any, config any) error {
 	var err error
 
 	if f.DiscoveryMethod != "" {

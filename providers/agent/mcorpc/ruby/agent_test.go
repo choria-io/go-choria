@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -134,7 +134,7 @@ var _ = Describe("McoRPC/Ruby", func() {
 			Expect(rep.Statusmsg).To(Equal("OK"))
 			Expect(rep.Statuscode).To(Equal(mcorpc.OK))
 
-			d := rep.Data.(map[string]interface{})
+			d := rep.Data.(map[string]any)
 			Expect(d["test"].(string)).To(Equal("ok"))
 		})
 	})

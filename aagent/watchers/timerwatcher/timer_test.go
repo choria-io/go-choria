@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -40,7 +40,7 @@ var _ = Describe("TimerWatcher", func() {
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
 		mockMachine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
-		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "", "2m", time.Second, map[string]interface{}{})
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "", "2m", time.Second, map[string]any{})
 		Expect(err).ToNot(HaveOccurred())
 		watch = wi.(*Watcher)
 	})
@@ -51,7 +51,7 @@ var _ = Describe("TimerWatcher", func() {
 
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
-			err := watch.setProperties(map[string]interface{}{
+			err := watch.setProperties(map[string]any{
 				"timer": "1h",
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -59,13 +59,13 @@ var _ = Describe("TimerWatcher", func() {
 		})
 
 		It("Should handle errors", func() {
-			err := watch.setProperties(map[string]interface{}{})
+			err := watch.setProperties(map[string]any{})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(watch.properties.Timer).To(Equal(time.Second))
 		})
 
 		It("Should handle splay", func() {
-			err := watch.setProperties(map[string]interface{}{
+			err := watch.setProperties(map[string]any{
 				"timer": "1h",
 				"splay": true,
 			})
@@ -83,19 +83,19 @@ var _ = Describe("TimerWatcher", func() {
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
 
-			event := map[string]interface{}{}
+			event := map[string]any{}
 			err = json.Unmarshal(csj, &event)
 			Expect(err).ToNot(HaveOccurred())
 			delete(event, "id")
 
-			Expect(event).To(Equal(map[string]interface{}{
+			Expect(event).To(Equal(map[string]any{
 				"time":            "2020-12-02T16:02:33Z",
 				"type":            "io.choria.machine.watcher.timer.v1.state",
 				"subject":         "ginkgo",
 				"specversion":     "1.0",
 				"source":          "io.choria.machine",
 				"datacontenttype": "application/json",
-				"data": map[string]interface{}{
+				"data": map[string]any{
 					"id":        "1234567890",
 					"identity":  "ginkgo",
 					"machine":   "timer",

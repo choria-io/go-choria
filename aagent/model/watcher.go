@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,15 +16,15 @@ type Watcher interface {
 	Type() string
 	Run(context.Context, *sync.WaitGroup)
 	NotifyStateChance()
-	CurrentState() interface{}
+	CurrentState() any
 	AnnounceInterval() time.Duration
 	Delete()
 }
 
 // WatcherConstructor creates a new watcher plugin
 type WatcherConstructor interface {
-	New(machine Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error)
+	New(machine Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error)
 	Type() string
 	EventType() string
-	UnmarshalNotification(n []byte) (interface{}, error)
+	UnmarshalNotification(n []byte) (any, error)
 }

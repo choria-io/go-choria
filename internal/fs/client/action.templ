@@ -23,7 +23,7 @@ type {{ .ActionName | SnakeToCamel }}Requester struct {
 // {{ .ActionName | SnakeToCamel }}Output is the output from the {{ .ActionName | ToLower }} action
 type {{ .ActionName | SnakeToCamel }}Output struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // {{ .ActionName | SnakeToCamel }}Result is the result from a {{ .ActionName | ToLower }} action
@@ -79,7 +79,7 @@ func (d *{{ .ActionName | SnakeToCamel }}Output) ResultDetails() *ResultDetails 
 }
 
 // HashMap is the raw output data
-func (d *{{ .ActionName | SnakeToCamel }}Output) HashMap() map[string]interface{} {
+func (d *{{ .ActionName | SnakeToCamel }}Output) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -89,7 +89,7 @@ func (d *{{ .ActionName | SnakeToCamel }}Output) JSON() ([]byte, error) {
 }
 
 // Parse{{ .ActionName | SnakeToCamel }}Output parses the result value from the {{ .ActionName | SnakeToCamel }} action into target
-func (d *{{ $.ActionName | SnakeToCamel }}Output) Parse{{ .ActionName | SnakeToCamel }}Output(target interface{}) error {
+func (d *{{ $.ActionName | SnakeToCamel }}Output) Parse{{ .ActionName | SnakeToCamel }}Output(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -114,7 +114,7 @@ func (d *{{ .ActionName | SnakeToCamel }}Requester) Do(ctx context.Context) (*{{
 		}
 
 		output := &{{ .ActionName | SnakeToCamel }}Output{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -183,17 +183,17 @@ func (d *{{ $.ActionName | SnakeToCamel }}Requester) {{ $name | SnakeToCamel }}(
 //
 // Description: {{ $output.Description }}
 func (d *{{ $.ActionName | SnakeToCamel }}Output) {{ $name | SnakeToCamel }}() {{ $return_type }} {
-{{- if eq "interface{}" $return_type  -}}
+{{- if eq "any" $return_type  -}}
 	val, ok := d.reply["{{ $name }}"]
 	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
+		// we have to avoid returning nil.(any)
 		return nil
 	}
 {{- else -}}
 	val := d.reply["{{ $name }}"]
 {{ end }}
 
-{{ if eq "interface{}" $return_type  -}}
+{{ if eq "any" $return_type  -}}
     	return val
 {{ else -}}
 	return {{ ChoriaTypeToValOfType $output.Type }}

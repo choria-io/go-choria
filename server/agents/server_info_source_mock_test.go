@@ -50,7 +50,7 @@ func (m *MockAgent) HandleMessage(arg0 context.Context, arg1 inter.Message, arg2
 }
 
 // HandleMessage indicates an expected call of HandleMessage.
-func (mr *MockAgentMockRecorder) HandleMessage(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockAgentMockRecorder) HandleMessage(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HandleMessage", reflect.TypeOf((*MockAgent)(nil).HandleMessage), arg0, arg1, arg2, arg3, arg4)
 }
@@ -104,7 +104,7 @@ func (m *MockAgent) SetServerInfo(arg0 ServerInfoSource) {
 }
 
 // SetServerInfo indicates an expected call of SetServerInfo.
-func (mr *MockAgentMockRecorder) SetServerInfo(arg0 interface{}) *gomock.Call {
+func (mr *MockAgentMockRecorder) SetServerInfo(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetServerInfo", reflect.TypeOf((*MockAgent)(nil).SetServerInfo), arg0)
 }
@@ -156,7 +156,7 @@ func (m *MockServerInfoSource) AgentMetadata(arg0 string) (Metadata, bool) {
 }
 
 // AgentMetadata indicates an expected call of AgentMetadata.
-func (mr *MockServerInfoSourceMockRecorder) AgentMetadata(arg0 interface{}) *gomock.Call {
+func (mr *MockServerInfoSourceMockRecorder) AgentMetadata(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentMetadata", reflect.TypeOf((*MockServerInfoSource)(nil).AgentMetadata), arg0)
 }
@@ -297,7 +297,7 @@ func (m *MockServerInfoSource) MachineTransition(name, version, path, id, transi
 }
 
 // MachineTransition indicates an expected call of MachineTransition.
-func (mr *MockServerInfoSourceMockRecorder) MachineTransition(name, version, path, id, transition interface{}) *gomock.Call {
+func (mr *MockServerInfoSourceMockRecorder) MachineTransition(name, version, path, id, transition any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MachineTransition", reflect.TypeOf((*MockServerInfoSource)(nil).MachineTransition), name, version, path, id, transition)
 }
@@ -320,7 +320,7 @@ func (mr *MockServerInfoSourceMockRecorder) MachinesStatus() *gomock.Call {
 // NewEvent mocks base method.
 func (m *MockServerInfoSource) NewEvent(t lifecycle.Type, opts ...lifecycle.Option) error {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{t}
+	varargs := []any{t}
 	for _, a := range opts {
 		varargs = append(varargs, a)
 	}
@@ -330,9 +330,9 @@ func (m *MockServerInfoSource) NewEvent(t lifecycle.Type, opts ...lifecycle.Opti
 }
 
 // NewEvent indicates an expected call of NewEvent.
-func (mr *MockServerInfoSourceMockRecorder) NewEvent(t interface{}, opts ...interface{}) *gomock.Call {
+func (mr *MockServerInfoSourceMockRecorder) NewEvent(t any, opts ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{t}, opts...)
+	varargs := append([]any{t}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewEvent", reflect.TypeOf((*MockServerInfoSource)(nil).NewEvent), varargs...)
 }
 

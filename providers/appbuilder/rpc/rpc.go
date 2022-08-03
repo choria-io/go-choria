@@ -68,9 +68,9 @@ type RPC struct {
 	cmd         *fisk.CmdClause
 	fo          *discovery.StandardOptions
 	def         *Command
-	cfg         interface{}
-	arguments   map[string]interface{}
-	flags       map[string]interface{}
+	cfg         any
+	arguments   map[string]any
+	flags       map[string]any
 	senders     bool
 	json        bool
 	table       bool
@@ -84,8 +84,8 @@ type RPC struct {
 
 func NewRPCCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Logger) (builder.Command, error) {
 	rpc := &RPC{
-		arguments: map[string]interface{}{},
-		flags:     map[string]interface{}{},
+		arguments: map[string]any{},
+		flags:     map[string]any{},
 		def:       &Command{},
 		cfg:       b.Configuration(),
 		ctx:       b.Context(),
@@ -296,7 +296,7 @@ func (r *RPC) runCommand(_ *fisk.ParseContext) error {
 		return err
 	}
 
-	logger, ok := interface{}(r.log).(*logrus.Logger)
+	logger, ok := any(r.log).(*logrus.Logger)
 	if ok {
 		cfg.CustomLogger = logger
 	}
@@ -446,7 +446,7 @@ func (r *RPC) renderResults(fw inter.Framework, log *logrus.Entry, results *repl
 	return err
 }
 
-func (r *RPC) reqOptions(action *agent.Action) (inputs map[string]string, rpcInputs map[string]interface{}, opts []client.RequestOption, err error) {
+func (r *RPC) reqOptions(action *agent.Action) (inputs map[string]string, rpcInputs map[string]any, opts []client.RequestOption, err error) {
 	opts = []client.RequestOption{}
 	inputs = map[string]string{}
 

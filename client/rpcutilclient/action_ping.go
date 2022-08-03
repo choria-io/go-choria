@@ -26,7 +26,7 @@ type PingRequester struct {
 // PingOutput is the output from the ping action
 type PingOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // PingResult is the result from a ping action
@@ -82,7 +82,7 @@ func (d *PingOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *PingOutput) HashMap() map[string]interface{} {
+func (d *PingOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *PingOutput) JSON() ([]byte, error) {
 }
 
 // ParsePingOutput parses the result value from the Ping action into target
-func (d *PingOutput) ParsePingOutput(target interface{}) error {
+func (d *PingOutput) ParsePingOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *PingRequester) Do(ctx context.Context) (*PingResult, error) {
 		}
 
 		output := &PingOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),

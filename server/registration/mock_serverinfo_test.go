@@ -49,7 +49,7 @@ func (m *MockServerInfoSource) AgentMetadata(agent string) (agents.Metadata, boo
 }
 
 // AgentMetadata indicates an expected call of AgentMetadata.
-func (mr *MockServerInfoSourceMockRecorder) AgentMetadata(agent interface{}) *gomock.Call {
+func (mr *MockServerInfoSourceMockRecorder) AgentMetadata(agent any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentMetadata", reflect.TypeOf((*MockServerInfoSource)(nil).AgentMetadata), agent)
 }

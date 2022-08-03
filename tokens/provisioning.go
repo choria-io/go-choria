@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -67,7 +67,7 @@ func IsProvisioningToken(claims StandardClaims) bool {
 }
 
 // ParseProvisioningToken parses token and verifies it with pk
-func ParseProvisioningToken(token string, pk interface{}) (*ProvisioningClaims, error) {
+func ParseProvisioningToken(token string, pk any) (*ProvisioningClaims, error) {
 	claims := &ProvisioningClaims{}
 	err := ParseToken(token, claims, pk)
 	if err != nil {

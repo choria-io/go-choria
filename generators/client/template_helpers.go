@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -54,11 +54,11 @@ func (g *Generator) templFChoriaTypeToValOfType(v string) string {
 	case "boolean":
 		return "val.(bool)"
 	case "hash":
-		return "val.(map[string]interface{})"
+		return "val.(map[string]any)"
 	case "array":
-		return "val.([]interface{})"
+		return "val.([]any)"
 	default:
-		return "val.(interface{})"
+		return "val.(any)"
 	}
 }
 
@@ -92,11 +92,11 @@ func (g *Generator) templFChoriaTypeToGo(v string) string {
 	case "boolean":
 		return "bool"
 	case "hash":
-		return "map[string]interface{}"
+		return "map[string]any"
 	case "array":
-		return "[]interface{}"
+		return "[]any"
 	default:
-		return "interface{}"
+		return "any"
 	}
 }
 

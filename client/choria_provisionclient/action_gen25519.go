@@ -26,7 +26,7 @@ type Gen25519Requester struct {
 // Gen25519Output is the output from the gen25519 action
 type Gen25519Output struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // Gen25519Result is the result from a gen25519 action
@@ -82,7 +82,7 @@ func (d *Gen25519Output) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *Gen25519Output) HashMap() map[string]interface{} {
+func (d *Gen25519Output) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *Gen25519Output) JSON() ([]byte, error) {
 }
 
 // ParseGen25519Output parses the result value from the Gen25519 action into target
-func (d *Gen25519Output) ParseGen25519Output(target interface{}) error {
+func (d *Gen25519Output) ParseGen25519Output(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *Gen25519Requester) Do(ctx context.Context) (*Gen25519Result, error) {
 		}
 
 		output := &Gen25519Output{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),

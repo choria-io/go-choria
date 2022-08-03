@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -24,10 +24,10 @@ type mdRender interface {
 	RenderMarkdown() ([]byte, error)
 }
 
-func ExecuteTemplate(file string, i interface{}, funcMap template.FuncMap) ([]byte, error) {
+func ExecuteTemplate(file string, i any, funcMap template.FuncMap) ([]byte, error) {
 	buf := bytes.NewBuffer([]byte{})
 	t := template.New(file)
-	funcs := map[string]interface{}{
+	funcs := map[string]any{
 		"StringsJoin":    stringsJoin,
 		"RenderConsole":  renderConsolePadded,
 		"RenderMarkdown": renderMarkdown,

@@ -26,7 +26,7 @@ type ChecksRequester struct {
 // ChecksOutput is the output from the checks action
 type ChecksOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // ChecksResult is the result from a checks action
@@ -82,7 +82,7 @@ func (d *ChecksOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *ChecksOutput) HashMap() map[string]interface{} {
+func (d *ChecksOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *ChecksOutput) JSON() ([]byte, error) {
 }
 
 // ParseChecksOutput parses the result value from the Checks action into target
-func (d *ChecksOutput) ParseChecksOutput(target interface{}) error {
+func (d *ChecksOutput) ParseChecksOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *ChecksRequester) Do(ctx context.Context) (*ChecksResult, error) {
 		}
 
 		output := &ChecksOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -173,9 +173,9 @@ func (d *ChecksResult) EachOutput(h func(r *ChecksOutput)) {
 // Checks is the value of the checks output
 //
 // Description: Details about each check
-func (d *ChecksOutput) Checks() []interface{} {
+func (d *ChecksOutput) Checks() []any {
 	val := d.reply["checks"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }

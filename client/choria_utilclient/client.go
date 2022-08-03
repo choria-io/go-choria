@@ -79,12 +79,12 @@ const (
 )
 
 type Log interface {
-	Debugf(format string, args ...interface{})
-	Infof(format string, args ...interface{})
-	Warnf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Panicf(format string, args ...interface{})
+	Debugf(format string, args ...any)
+	Infof(format string, args ...any)
+	Warnf(format string, args ...any)
+	Errorf(format string, args ...any)
+	Fatalf(format string, args ...any)
+	Panicf(format string, args ...any)
 }
 
 // ChoriaUtilClient to the choria_util agent
@@ -202,7 +202,7 @@ func (p *ChoriaUtilClient) Info() *InfoRequester {
 	d := &InfoRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "info",
 			client: p,
 		},
@@ -219,14 +219,14 @@ func (p *ChoriaUtilClient) Info() *InfoRequester {
 // Description: Retrieves the current state of a specific Choria Autonomous Agent
 //
 // Optional Inputs:
-//    - instance (string) - Machine Instance ID
-//    - name (string) - Machine Name
-//    - path (string) - Machine Path
+//   - instance (string) - Machine Instance ID
+//   - name (string) - Machine Name
+//   - path (string) - Machine Path
 func (p *ChoriaUtilClient) MachineState() *MachineStateRequester {
 	d := &MachineStateRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "machine_state",
 			client: p,
 		},
@@ -245,7 +245,7 @@ func (p *ChoriaUtilClient) MachineStates() *MachineStatesRequester {
 	d := &MachineStatesRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "machine_states",
 			client: p,
 		},
@@ -262,18 +262,18 @@ func (p *ChoriaUtilClient) MachineStates() *MachineStatesRequester {
 // Description: Attempts to force a transition in a hosted Choria Autonomous Agent
 //
 // Required Inputs:
-//    - transition (string) - The transition event to send to the machine
+//   - transition (string) - The transition event to send to the machine
 //
 // Optional Inputs:
-//    - instance (string) - Machine Instance ID
-//    - name (string) - Machine Name
-//    - path (string) - Machine Path
-//    - version (string) - Machine Version
+//   - instance (string) - Machine Instance ID
+//   - name (string) - Machine Name
+//   - path (string) - Machine Path
+//   - version (string) - Machine Version
 func (p *ChoriaUtilClient) MachineTransition(inputTransition string) *MachineTransitionRequester {
 	d := &MachineTransitionRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"transition": inputTransition,
 			},
 			action: "machine_transition",

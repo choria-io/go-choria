@@ -9,5 +9,5 @@ import (
 )
 
 func ChoriaPlugin() *plugin.WatcherPlugin {
-	return plugin.NewWatcherPlugin(wtype, version, func() interface{} { return &StateNotification{} }, New)
+	return plugin.NewWatcherPlugin(wtype, version, func() any { return &StateNotification{} }, New)
 }

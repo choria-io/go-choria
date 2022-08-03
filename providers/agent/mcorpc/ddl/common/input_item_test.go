@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -28,7 +28,7 @@ var _ = Describe("InputItem", func() {
 			Expect(err).To(MatchError("is not an integer"))
 			Expect(warnings).To(HaveLen(0))
 
-			i := map[string]interface{}{}
+			i := map[string]any{}
 			err = json.Unmarshal([]byte(`{"x":1}`), &i)
 			Expect(err).ToNot(HaveOccurred())
 			warnings, err = input.ValidateValue(i["x"])

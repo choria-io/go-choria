@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -185,7 +185,7 @@ func (r *RPC) DDL() *addl.DDL {
 //
 // If a filter is supplied using the Filter() option and Targets() are not then discovery will be done for you
 // using the broadcast method, should no nodes be discovered an error will be returned
-func (r *RPC) Do(ctx context.Context, action string, payload interface{}, opts ...RequestOption) (RequestResult, error) {
+func (r *RPC) Do(ctx context.Context, action string, payload any, opts ...RequestOption) (RequestResult, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -337,7 +337,7 @@ func (r *RPC) discover(ctx context.Context) error {
 	return nil
 }
 
-func (r *RPC) setupMessage(ctx context.Context, action string, payload interface{}, opts ...RequestOption) (msg inter.Message, cl ChoriaClient, err error) {
+func (r *RPC) setupMessage(ctx context.Context, action string, payload any, opts ...RequestOption) (msg inter.Message, cl ChoriaClient, err error) {
 	pj, err := json.Marshal(payload)
 	if err != nil {
 		return nil, nil, fmt.Errorf("could not encode payload: %s", err)

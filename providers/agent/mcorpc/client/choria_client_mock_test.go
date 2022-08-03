@@ -77,7 +77,7 @@ func (m *MockChoriaFramework) Logger(arg0 string) *logrus.Entry {
 }
 
 // Logger indicates an expected call of Logger.
-func (mr *MockChoriaFrameworkMockRecorder) Logger(arg0 interface{}) *gomock.Call {
+func (mr *MockChoriaFrameworkMockRecorder) Logger(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logger", reflect.TypeOf((*MockChoriaFramework)(nil).Logger), arg0)
 }
@@ -107,7 +107,7 @@ func (m *MockChoriaFramework) NewConnector(ctx context.Context, servers func() (
 }
 
 // NewConnector indicates an expected call of NewConnector.
-func (mr *MockChoriaFrameworkMockRecorder) NewConnector(ctx, servers, name, logger interface{}) *gomock.Call {
+func (mr *MockChoriaFrameworkMockRecorder) NewConnector(ctx, servers, name, logger any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewConnector", reflect.TypeOf((*MockChoriaFramework)(nil).NewConnector), ctx, servers, name, logger)
 }
@@ -122,7 +122,7 @@ func (m *MockChoriaFramework) NewMessage(payload, agent, collective, msgType str
 }
 
 // NewMessage indicates an expected call of NewMessage.
-func (mr *MockChoriaFrameworkMockRecorder) NewMessage(payload, agent, collective, msgType, request interface{}) *gomock.Call {
+func (mr *MockChoriaFrameworkMockRecorder) NewMessage(payload, agent, collective, msgType, request any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewMessage", reflect.TypeOf((*MockChoriaFramework)(nil).NewMessage), payload, agent, collective, msgType, request)
 }
@@ -137,7 +137,7 @@ func (m *MockChoriaFramework) NewReplyFromTransportJSON(payload []byte, skipvali
 }
 
 // NewReplyFromTransportJSON indicates an expected call of NewReplyFromTransportJSON.
-func (mr *MockChoriaFrameworkMockRecorder) NewReplyFromTransportJSON(payload, skipvalidate interface{}) *gomock.Call {
+func (mr *MockChoriaFrameworkMockRecorder) NewReplyFromTransportJSON(payload, skipvalidate any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReplyFromTransportJSON", reflect.TypeOf((*MockChoriaFramework)(nil).NewReplyFromTransportJSON), payload, skipvalidate)
 }
@@ -167,7 +167,7 @@ func (m *MockChoriaFramework) NewTransportFromJSON(data string) (protocol.Transp
 }
 
 // NewTransportFromJSON indicates an expected call of NewTransportFromJSON.
-func (mr *MockChoriaFrameworkMockRecorder) NewTransportFromJSON(data interface{}) *gomock.Call {
+func (mr *MockChoriaFrameworkMockRecorder) NewTransportFromJSON(data any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewTransportFromJSON", reflect.TypeOf((*MockChoriaFramework)(nil).NewTransportFromJSON), data)
 }
@@ -182,7 +182,7 @@ func (m *MockChoriaFramework) PQLQueryCertNames(query string) ([]string, error) 
 }
 
 // PQLQueryCertNames indicates an expected call of PQLQueryCertNames.
-func (mr *MockChoriaFrameworkMockRecorder) PQLQueryCertNames(query interface{}) *gomock.Call {
+func (mr *MockChoriaFrameworkMockRecorder) PQLQueryCertNames(query any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PQLQueryCertNames", reflect.TypeOf((*MockChoriaFramework)(nil).PQLQueryCertNames), query)
 }
@@ -256,7 +256,7 @@ func (m *MockChoriaClient) Request(ctx context.Context, msg inter.Message, handl
 }
 
 // Request indicates an expected call of Request.
-func (mr *MockChoriaClientMockRecorder) Request(ctx, msg, handler interface{}) *gomock.Call {
+func (mr *MockChoriaClientMockRecorder) Request(ctx, msg, handler any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Request", reflect.TypeOf((*MockChoriaClient)(nil).Request), ctx, msg, handler)
 }
@@ -293,7 +293,7 @@ func (m *MockConnector) Publish(msg inter.Message) error {
 }
 
 // Publish indicates an expected call of Publish.
-func (mr *MockConnectorMockRecorder) Publish(msg interface{}) *gomock.Call {
+func (mr *MockConnectorMockRecorder) Publish(msg any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockConnector)(nil).Publish), msg)
 }
@@ -307,7 +307,7 @@ func (m *MockConnector) QueueSubscribe(ctx context.Context, name, subject, group
 }
 
 // QueueSubscribe indicates an expected call of QueueSubscribe.
-func (mr *MockConnectorMockRecorder) QueueSubscribe(ctx, name, subject, group, output interface{}) *gomock.Call {
+func (mr *MockConnectorMockRecorder) QueueSubscribe(ctx, name, subject, group, output any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueSubscribe", reflect.TypeOf((*MockConnector)(nil).QueueSubscribe), ctx, name, subject, group, output)
 }

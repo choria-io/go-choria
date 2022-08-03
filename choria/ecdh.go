@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,21 +17,21 @@ import (
 //
 // This can be used to do Diffie-Hellman key exchange using Curve 25519 keys
 //
-// 		leftPri, leftPub, _ := ECDHKeyPair()
+//	leftPri, leftPub, _ := ECDHKeyPair()
 //
-// 		rightPri, rightPub, _ := ECDHKeyPair()
+//	rightPri, rightPub, _ := ECDHKeyPair()
 //
 // If left sends his pub to the remote end a shared secret
 // can be calculated by the right side:
 //
-// 		secret, err := ECDHSharedSecret(rightPri, leftPub)
+//	secret, err := ECDHSharedSecret(rightPri, leftPub)
 //
 // Right now does whatever needs doing with the shared
 // secret and sends back rightPub to the left hand
 //
 // Left can now figure out the same shared secret:
 //
-// 		secret, err := ECDHSharedSecret(leftPri, rightPub)
+//	secret, err := ECDHSharedSecret(leftPri, rightPub)
 //
 // And decode any data encrypted using the shared secret,
 // no shared keys ever traverse the network

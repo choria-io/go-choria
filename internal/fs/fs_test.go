@@ -32,7 +32,7 @@ var _ = Describe("FS", func() {
 					return nil
 				}
 
-				d := map[string]interface{}{}
+				d := map[string]any{}
 				jd, err := os.ReadFile(path)
 				if err != nil {
 					return err

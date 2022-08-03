@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,14 +15,14 @@ import (
 type AverageAggregator struct {
 	sum    float64
 	count  int
-	args   []interface{}
+	args   []any
 	format string
 
 	sync.Mutex
 }
 
 // NewAverageAggregator creates a new AverageAggregator with the specific options supplied
-func NewAverageAggregator(args []interface{}) (*AverageAggregator, error) {
+func NewAverageAggregator(args []any) (*AverageAggregator, error) {
 	agg := &AverageAggregator{
 		args:   args,
 		format: parseFormatFromArgs(args),
@@ -37,7 +37,7 @@ func (a *AverageAggregator) Type() string {
 }
 
 // ProcessValue processes and tracks the specific value
-func (a *AverageAggregator) ProcessValue(v interface{}) error {
+func (a *AverageAggregator) ProcessValue(v any) error {
 	a.Lock()
 	defer a.Unlock()
 
@@ -100,7 +100,7 @@ func (a *AverageAggregator) ResultFormattedStrings(format string) ([]string, err
 	return []string{fmt.Sprintf(format, avg)}, nil
 }
 
-func (a *AverageAggregator) processString(v interface{}) bool {
+func (a *AverageAggregator) processString(v any) bool {
 	s, ok := v.(string)
 	if !ok {
 		return false
@@ -117,7 +117,7 @@ func (a *AverageAggregator) processString(v interface{}) bool {
 	return true
 }
 
-func (a *AverageAggregator) processFloat(v interface{}) bool {
+func (a *AverageAggregator) processFloat(v any) bool {
 	f, ok := v.(float64)
 	if !ok {
 		return false
@@ -129,7 +129,7 @@ func (a *AverageAggregator) processFloat(v interface{}) bool {
 	return true
 }
 
-func (a *AverageAggregator) processInt64(v interface{}) bool {
+func (a *AverageAggregator) processInt64(v any) bool {
 	i, ok := v.(int64)
 	if !ok {
 		return false
@@ -141,7 +141,7 @@ func (a *AverageAggregator) processInt64(v interface{}) bool {
 	return true
 }
 
-func (a *AverageAggregator) processInt(v interface{}) bool {
+func (a *AverageAggregator) processInt(v any) bool {
 	i, ok := v.(int)
 	if !ok {
 		return false

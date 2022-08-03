@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -22,9 +22,9 @@ import (
 
 // Logger provides logging facilities
 type Logger interface {
-	Warnf(format string, args ...interface{})
-	Debugf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
+	Warnf(format string, args ...any)
+	Debugf(format string, args ...any)
+	Errorf(format string, args ...any)
 }
 
 func MatchExprStringFiles(queries [][]map[string]string, factFile string, classesFile string, knownAgents []string, log Logger) bool {
@@ -123,8 +123,8 @@ func matchFunc(f json.RawMessage, c []string, a []string, log Logger) func(strin
 	}
 }
 
-func factFunc(facts json.RawMessage) func(string) interface{} {
-	return func(query string) interface{} {
+func factFunc(facts json.RawMessage) func(string) any {
+	return func(query string) any {
 		return gjson.GetBytes(facts, query).Value()
 	}
 }
@@ -143,7 +143,7 @@ func semverFunc(value string, cmp string) (bool, error) {
 	return cons.Check(v), nil
 }
 
-func includeFunc(hay []interface{}, needle interface{}) bool {
+func includeFunc(hay []any, needle any) bool {
 	// gjson always turns numbers into float64
 	i, ok := needle.(int)
 	if ok {
@@ -159,14 +159,14 @@ func includeFunc(hay []interface{}, needle interface{}) bool {
 	return false
 }
 
-func EmptyEnv(df ddl.FuncMap) map[string]interface{} {
-	env := map[string]interface{}{
+func EmptyEnv(df ddl.FuncMap) map[string]any {
+	env := map[string]any{
 		"agents":  []string{},
 		"classes": []string{},
 		"facts":   json.RawMessage{},
 		"with":    func(_ string) bool { return false },
-		"fact":    func(_ string) interface{} { return nil },
-		"include": func(_ []interface{}, _ interface{}) bool { return false },
+		"fact":    func(_ string) any { return nil },
+		"include": func(_ []any, _ any) bool { return false },
 		"semver":  func(_ string, _ string) (bool, error) { return false, nil },
 	}
 

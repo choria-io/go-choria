@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -163,7 +163,7 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 	}
 
 	wg := &sync.WaitGroup{}
-	outputReader := func(wg *sync.WaitGroup, in io.ReadCloser, logger func(args ...interface{})) {
+	outputReader := func(wg *sync.WaitGroup, in io.ReadCloser, logger func(args ...any)) {
 		defer wg.Done()
 
 		scanner := bufio.NewScanner(in)

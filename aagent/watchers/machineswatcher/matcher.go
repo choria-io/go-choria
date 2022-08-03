@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -27,7 +27,7 @@ func (w *Watcher) isNodeMatch(machine *ManagedMachine) (bool, error) {
 		return true, nil
 	}
 
-	env := map[string]interface{}{
+	env := map[string]any{
 		"identity":      w.identityMatchFunc,
 		"has_file":      iu.FileExist,
 		"has_directory": iu.FileIsDir,

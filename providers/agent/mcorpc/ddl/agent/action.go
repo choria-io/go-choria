@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -56,7 +56,7 @@ func (a *Action) DisplayMode() string {
 
 // AggregateResultJSON receives a JSON reply and aggregate all the data found in it
 func (a *Action) AggregateResultJSON(jres []byte) error {
-	res := make(map[string]interface{})
+	res := make(map[string]any)
 
 	err := json.Unmarshal(jres, &res)
 	if err != nil {
@@ -70,7 +70,7 @@ func (a *Action) AggregateResultJSON(jres []byte) error {
 // errors are squashed since aggregation are called during processing of replies
 // and we do not want to fail a reply just because aggregation failed, thus this
 // is basically a best efforts kind of thing on purpose
-func (a *Action) AggregateResult(result map[string]interface{}) error {
+func (a *Action) AggregateResult(result map[string]any) error {
 	a.Lock()
 	defer a.Unlock()
 
@@ -149,7 +149,7 @@ func (a *Action) OutputNames() (names []string) {
 }
 
 // SetOutputDefaults adds items to results that have defaults declared in the DDL but not found in the result
-func (a *Action) SetOutputDefaults(results map[string]interface{}) {
+func (a *Action) SetOutputDefaults(results map[string]any) {
 	for _, k := range a.OutputNames() {
 		_, ok := results[k]
 		if ok {
@@ -173,7 +173,7 @@ func (a *Action) RequiresInput(input string) bool {
 }
 
 // SetDefaults looks through inputs and sets default values on any values with defaults that's not been set
-func (a *Action) SetDefaults(inputs map[string]interface{}) error {
+func (a *Action) SetDefaults(inputs map[string]any) error {
 	for _, iname := range a.InputNames() {
 		input := a.Input[iname]
 
@@ -190,10 +190,10 @@ func (a *Action) SetDefaults(inputs map[string]interface{}) error {
 
 // ValidateAndConvertToDDLTypes takes a map of strings like you might receive from the CLI, convert each
 // item to the correct type according to the DDL type hints associated with inputs, validates its valid
-// according to the DDL hints and returns a map of interface{} ready for conversion to JSON that would
+// according to the DDL hints and returns a map of any ready for conversion to JSON that would
 // then have the correct types
-func (a *Action) ValidateAndConvertToDDLTypes(args map[string]string) (result map[string]interface{}, warnings []string, err error) {
-	result = make(map[string]interface{})
+func (a *Action) ValidateAndConvertToDDLTypes(args map[string]string) (result map[string]any, warnings []string, err error) {
+	result = make(map[string]any)
 	warnings = []string{}
 
 	for k, v := range args {
@@ -233,7 +233,7 @@ func (a *Action) ValidateAndConvertToDDLTypes(args map[string]string) (result ma
 
 // ValidateRequestJSON receives request data in JSON format and validates it against the DDL
 func (a *Action) ValidateRequestJSON(req json.RawMessage) (warnings []string, err error) {
-	reqdata := make(map[string]interface{})
+	reqdata := make(map[string]any)
 	err = json.Unmarshal(req, &reqdata)
 	if err != nil {
 		return []string{}, err
@@ -243,7 +243,7 @@ func (a *Action) ValidateRequestJSON(req json.RawMessage) (warnings []string, er
 }
 
 // ValidateRequestData validates request data against the DDL
-func (a *Action) ValidateRequestData(data map[string]interface{}) (warnings []string, err error) {
+func (a *Action) ValidateRequestData(data map[string]any) (warnings []string, err error) {
 	validNames := a.InputNames()
 
 	// We currently ignore the process_results flag that may be set by the MCO RPC CLI
@@ -303,7 +303,7 @@ func (a *Action) ValidateInputString(input string, val string) (warnings []strin
 }
 
 // ValidateInputValue validates the input matches requirements in the DDL
-func (a *Action) ValidateInputValue(input string, val interface{}) (warnings []string, err error) {
+func (a *Action) ValidateInputValue(input string, val any) (warnings []string, err error) {
 	warnings = []string{}
 
 	i, ok := a.Input[input]

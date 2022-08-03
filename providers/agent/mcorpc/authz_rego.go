@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -104,8 +104,8 @@ func (r *regoPolicy) lookupPolicyFile() (string, error) {
 
 }
 
-func (r *regoPolicy) regoInputs() map[string]interface{} {
-	facts := map[string]interface{}{}
+func (r *regoPolicy) regoInputs() map[string]any {
+	facts := map[string]any{}
 
 	sif := r.agent.ServerInfoSource.Facts()
 	err := json.Unmarshal(sif, &facts)
@@ -113,13 +113,13 @@ func (r *regoPolicy) regoInputs() map[string]interface{} {
 		r.log.Errorf("could not marshal facts for rego policy: %v", err)
 	}
 
-	data := make(map[string]interface{})
+	data := make(map[string]any)
 	err = json.Unmarshal(r.req.Data, &data)
 	if err != nil {
 		r.log.Errorf("could not marshal data from request: %v", err)
 	}
 
-	return map[string]interface{}{
+	return map[string]any{
 		"agent":          r.req.Agent,
 		"action":         r.req.Action,
 		"callerid":       r.req.CallerID,

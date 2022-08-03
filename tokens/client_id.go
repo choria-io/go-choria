@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -116,7 +116,7 @@ func NewClientIDClaims(callerID string, allowedAgents []string, org string, prop
 // the signer public key to verify the certificate. This is safe as the signer
 // will later verify the token anyway.
 //
-// Further, at the moment, we do not verity the Purpose for backward compatibility
+// # Further, at the moment, we do not verity the Purpose for backward compatibility
 //
 // An empty callerid will result in an error
 func UnverifiedCallerFromClientIDToken(token string) (*jwt.Token, string, error) {
@@ -169,7 +169,7 @@ func ParseClientIDTokenUnverified(token string) (*ClientIDClaims, error) {
 }
 
 // ParseClientIDToken parses token and verifies it with pk
-func ParseClientIDToken(token string, pk interface{}, verifyPurpose bool) (*ClientIDClaims, error) {
+func ParseClientIDToken(token string, pk any, verifyPurpose bool) (*ClientIDClaims, error) {
 	claims := &ClientIDClaims{}
 	err := ParseToken(token, claims, pk)
 	if err != nil {

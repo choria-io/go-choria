@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -286,15 +286,15 @@ func (cm *CertManagerSecurity) submitCSR() (code int, body []byte, err error) {
 		return 500, nil, fmt.Errorf("could not read CSR: %s", err)
 	}
 
-	csrReq := map[string]interface{}{
+	csrReq := map[string]any{
 		"apiVersion": fmt.Sprintf("cert-manager.io/%s", cm.conf.apiVersion),
 		"kind":       "CertificateRequest",
-		"metadata": map[string]interface{}{
+		"metadata": map[string]any{
 			"name":      cm.Identity(),
 			"namespace": cm.conf.namespace,
 		},
-		"spec": map[string]interface{}{
-			"issuerRef": map[string]interface{}{
+		"spec": map[string]any{
+			"issuerRef": map[string]any{
 				"name": cm.conf.issuer,
 			},
 			"csr":     csr,

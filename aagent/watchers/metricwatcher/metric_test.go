@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -53,7 +53,7 @@ var _ = Describe("MetricWatcher", func() {
 		mockMachine.EXPECT().TextFileDirectory().Return(td).AnyTimes()
 		mockMachine.EXPECT().State().Return("run").AnyTimes()
 
-		wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]interface{}{
+		wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]any{
 			"command": "metric.sh",
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -85,7 +85,7 @@ var _ = Describe("MetricWatcher", func() {
 				handled = true
 			})
 
-			wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]interface{}{
+			wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]any{
 				"command": filepath.Join("testdata", "nagios.sh"),
 				"labels":  map[string]string{"dupe": "w"},
 			})
@@ -117,7 +117,7 @@ var _ = Describe("MetricWatcher", func() {
 				handled = true
 			})
 
-			wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]interface{}{
+			wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]any{
 				"command": filepath.Join("testdata", "metric.sh"),
 				"labels":  map[string]string{"dupe": "w"},
 			})
@@ -134,7 +134,7 @@ var _ = Describe("MetricWatcher", func() {
 
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
-			err := watch.setProperties(map[string]interface{}{
+			err := watch.setProperties(map[string]any{
 				"command":  "cmd",
 				"interval": "1s",
 				"labels": map[string]string{
@@ -149,14 +149,14 @@ var _ = Describe("MetricWatcher", func() {
 
 		It("Should handle errors", func() {
 			watch.properties = nil
-			err = watch.setProperties(map[string]interface{}{
+			err = watch.setProperties(map[string]any{
 				"interval": "500ms",
 			})
 			Expect(err).To(MatchError("command is required"))
 		})
 
 		It("Should enforce 1 second intervals", func() {
-			err := watch.setProperties(map[string]interface{}{
+			err := watch.setProperties(map[string]any{
 				"command":  "cmd",
 				"interval": "500ms",
 			})
@@ -173,19 +173,19 @@ var _ = Describe("MetricWatcher", func() {
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
 
-			event := map[string]interface{}{}
+			event := map[string]any{}
 			err = json.Unmarshal(csj, &event)
 			Expect(err).ToNot(HaveOccurred())
 			delete(event, "id")
 
-			Expect(event).To(Equal(map[string]interface{}{
+			Expect(event).To(Equal(map[string]any{
 				"time":            "2020-12-02T16:02:33Z",
 				"type":            "io.choria.machine.watcher.metric.v1.state",
 				"subject":         "ginkgo",
 				"specversion":     "1.0",
 				"source":          "io.choria.machine",
 				"datacontenttype": "application/json",
-				"data": map[string]interface{}{
+				"data": map[string]any{
 					"id":        "1234567890",
 					"identity":  "ginkgo",
 					"machine":   "metric",
@@ -194,9 +194,9 @@ var _ = Describe("MetricWatcher", func() {
 					"type":      "metric",
 					"version":   "1.0.0",
 					"timestamp": float64(now.Unix()),
-					"metrics": map[string]interface{}{
-						"labels": map[string]interface{}{},
-						"metrics": map[string]interface{}{
+					"metrics": map[string]any{
+						"labels": map[string]any{},
+						"metrics": map[string]any{
 							"choria_runtime_seconds": 0.5,
 						},
 					},

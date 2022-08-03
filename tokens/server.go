@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -207,7 +207,7 @@ func ParseServerTokenUnverified(token string) (*ServerClaims, error) {
 }
 
 // ParseServerToken parses token and verifies it with pk
-func ParseServerToken(token string, pk interface{}) (*ServerClaims, error) {
+func ParseServerToken(token string, pk any) (*ServerClaims, error) {
 	claims := &ServerClaims{}
 	err := ParseToken(token, claims, pk)
 	if err != nil {

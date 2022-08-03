@@ -42,7 +42,7 @@ var _ = Describe("ExecWatcher", func() {
 
 		now = time.Unix(1606924953, 0)
 
-		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "10s", time.Second, map[string]interface{}{
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "10s", time.Second, map[string]any{
 			"subject": "foo.bar",
 			"payload": "msg.msg",
 		})
@@ -56,7 +56,7 @@ var _ = Describe("ExecWatcher", func() {
 
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
-			prop := map[string]interface{}{
+			prop := map[string]any{
 				"subject": "foo.bar",
 				"payload": "pay.load",
 			}
@@ -65,8 +65,8 @@ var _ = Describe("ExecWatcher", func() {
 			Expect(watch.properties.Payload).To(Equal("pay.load"))
 			Expect(watch.properties.Registration).To(BeNil())
 
-			prop = map[string]interface{}{
-				"registration": map[string]interface{}{
+			prop = map[string]any{
+				"registration": map[string]any{
 					"cluster":  "lon",
 					"service":  "ginkgo",
 					"protocol": "http",
@@ -92,11 +92,11 @@ var _ = Describe("ExecWatcher", func() {
 
 		It("Should handle errors", func() {
 			watch.properties = nil
-			err := watch.setProperties(map[string]interface{}{})
+			err := watch.setProperties(map[string]any{})
 			Expect(err).To(MatchError("subject is required"))
 
 			watch.properties = nil
-			err = watch.setProperties(map[string]interface{}{
+			err = watch.setProperties(map[string]any{
 				"subject": "foo.bar",
 			})
 			Expect(err).To(MatchError("payload is required"))
@@ -113,19 +113,19 @@ var _ = Describe("ExecWatcher", func() {
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
 
-			event := map[string]interface{}{}
+			event := map[string]any{}
 			err = json.Unmarshal(csj, &event)
 			Expect(err).ToNot(HaveOccurred())
 			delete(event, "id")
 
-			Expect(event).To(Equal(map[string]interface{}{
+			Expect(event).To(Equal(map[string]any{
 				"time":            "2020-12-02T16:02:33Z",
 				"type":            "io.choria.machine.watcher.gossip.v1.state",
 				"subject":         "ginkgo",
 				"specversion":     "1.0",
 				"source":          "io.choria.machine",
 				"datacontenttype": "application/json",
-				"data": map[string]interface{}{
+				"data": map[string]any{
 					"previous_subject": "x.y",
 					"previous_payload": "a.b",
 					"previous_gossip":  float64(now.Unix()),

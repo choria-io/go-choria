@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -22,10 +22,10 @@ var (
 
 // OutputItem describes an individual output item
 type OutputItem struct {
-	Description string      `json:"description"`
-	DisplayAs   string      `json:"display_as"`
-	Default     interface{} `json:"default,omitempty"`
-	Type        string      `json:"type,omitempty"`
+	Description string `json:"description"`
+	DisplayAs   string `json:"display_as"`
+	Default     any    `json:"default,omitempty"`
+	Type        string `json:"type,omitempty"`
 }
 
 func (i *OutputItem) RenderConsole() ([]byte, error) {

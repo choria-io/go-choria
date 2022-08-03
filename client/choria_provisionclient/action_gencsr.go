@@ -26,7 +26,7 @@ type GencsrRequester struct {
 // GencsrOutput is the output from the gencsr action
 type GencsrOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // GencsrResult is the result from a gencsr action
@@ -82,7 +82,7 @@ func (d *GencsrOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *GencsrOutput) HashMap() map[string]interface{} {
+func (d *GencsrOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *GencsrOutput) JSON() ([]byte, error) {
 }
 
 // ParseGencsrOutput parses the result value from the Gencsr action into target
-func (d *GencsrOutput) ParseGencsrOutput(target interface{}) error {
+func (d *GencsrOutput) ParseGencsrOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *GencsrRequester) Do(ctx context.Context) (*GencsrResult, error) {
 		}
 
 		output := &GencsrOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),

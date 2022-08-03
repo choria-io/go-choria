@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -42,7 +42,7 @@ var _ = Describe("ExecWatcher", func() {
 
 		now = time.Unix(1606924953, 0)
 
-		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]interface{}{
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]any{
 			"path": filepath.Join("bin", "sh"),
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -55,7 +55,7 @@ var _ = Describe("ExecWatcher", func() {
 
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
-			prop := map[string]interface{}{
+			prop := map[string]any{
 				"path":                 "cmd",
 				"gather_initial_state": "t",
 			}
@@ -66,7 +66,7 @@ var _ = Describe("ExecWatcher", func() {
 
 		It("Should handle errors", func() {
 			watch.properties = &Properties{}
-			err := watch.setProperties(map[string]interface{}{})
+			err := watch.setProperties(map[string]any{})
 			Expect(err).To(MatchError("path is required"))
 		})
 	})
@@ -78,19 +78,19 @@ var _ = Describe("ExecWatcher", func() {
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
 
-			event := map[string]interface{}{}
+			event := map[string]any{}
 			err = json.Unmarshal(csj, &event)
 			Expect(err).ToNot(HaveOccurred())
 			delete(event, "id")
 
-			Expect(event).To(Equal(map[string]interface{}{
+			Expect(event).To(Equal(map[string]any{
 				"time":            "2020-12-02T16:02:33Z",
 				"type":            "io.choria.machine.watcher.file.v1.state",
 				"subject":         "ginkgo",
 				"specversion":     "1.0",
 				"source":          "io.choria.machine",
 				"datacontenttype": "application/json",
-				"data": map[string]interface{}{
+				"data": map[string]any{
 					"id":               "1234567890",
 					"identity":         "ginkgo",
 					"machine":          "file",

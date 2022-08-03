@@ -35,8 +35,8 @@ func (m *MockLogger) EXPECT() *MockLoggerMockRecorder {
 }
 
 // Warnf mocks base method
-func (m *MockLogger) Warnf(format string, args ...interface{}) {
-	varargs := []interface{}{format}
+func (m *MockLogger) Warnf(format string, args ...any) {
+	varargs := []any{format}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -44,14 +44,14 @@ func (m *MockLogger) Warnf(format string, args ...interface{}) {
 }
 
 // Warnf indicates an expected call of Warnf
-func (mr *MockLoggerMockRecorder) Warnf(format interface{}, args ...interface{}) *gomock.Call {
-	varargs := append([]interface{}{format}, args...)
+func (mr *MockLoggerMockRecorder) Warnf(format any, args ...any) *gomock.Call {
+	varargs := append([]any{format}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Warnf", reflect.TypeOf((*MockLogger)(nil).Warnf), varargs...)
 }
 
 // Debugf mocks base method
-func (m *MockLogger) Debugf(format string, args ...interface{}) {
-	varargs := []interface{}{format}
+func (m *MockLogger) Debugf(format string, args ...any) {
+	varargs := []any{format}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -59,14 +59,14 @@ func (m *MockLogger) Debugf(format string, args ...interface{}) {
 }
 
 // Debugf indicates an expected call of Debugf
-func (mr *MockLoggerMockRecorder) Debugf(format interface{}, args ...interface{}) *gomock.Call {
-	varargs := append([]interface{}{format}, args...)
+func (mr *MockLoggerMockRecorder) Debugf(format any, args ...any) *gomock.Call {
+	varargs := append([]any{format}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Debugf", reflect.TypeOf((*MockLogger)(nil).Debugf), varargs...)
 }
 
 // Errorf mocks base method
-func (m *MockLogger) Errorf(format string, args ...interface{}) {
-	varargs := []interface{}{format}
+func (m *MockLogger) Errorf(format string, args ...any) {
+	varargs := []any{format}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -74,8 +74,8 @@ func (m *MockLogger) Errorf(format string, args ...interface{}) {
 }
 
 // Errorf indicates an expected call of Errorf
-func (mr *MockLoggerMockRecorder) Errorf(format interface{}, args ...interface{}) *gomock.Call {
-	varargs := append([]interface{}{format}, args...)
+func (mr *MockLoggerMockRecorder) Errorf(format any, args ...any) *gomock.Call {
+	varargs := append([]any{format}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Errorf", reflect.TypeOf((*MockLogger)(nil).Errorf), varargs...)
 }
 

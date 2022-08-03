@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -220,7 +220,7 @@ func (s *FileSecurity) SignBytes(str []byte) ([]byte, error) {
 	if err != nil {
 		return sig, err
 	}
-	var parsedKey interface{}
+	var parsedKey any
 
 	parsedKey, err = x509.ParsePKCS1PrivateKey(pkpem.Bytes)
 	if err != nil {

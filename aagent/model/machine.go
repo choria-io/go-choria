@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,14 +13,14 @@ import (
 
 type MachineConstructor interface {
 	Name() string
-	Machine() interface{}
+	Machine() any
 	PluginName() string
 }
 
 type Machine interface {
 	State() string
-	Transition(t string, args ...interface{}) error
-	NotifyWatcherState(string, interface{})
+	Transition(t string, args ...any) error
+	NotifyWatcherState(string, any)
 	Name() string
 	Directory() string
 	TextFileDirectory() string
@@ -34,12 +34,12 @@ type Machine interface {
 	PublishLifecycleEvent(t lifecycle.Type, opts ...lifecycle.Option)
 	MainCollective() string
 	Facts() json.RawMessage
-	Data() map[string]interface{}
-	DataPut(key string, val interface{}) error
-	DataGet(key string) (interface{}, bool)
+	Data() map[string]any
+	DataPut(key string, val any) error
+	DataGet(key string) (any, bool)
 	DataDelete(key string) error
-	Debugf(name string, format string, args ...interface{})
-	Infof(name string, format string, args ...interface{})
-	Warnf(name string, format string, args ...interface{})
-	Errorf(name string, format string, args ...interface{})
+	Debugf(name string, format string, args ...any)
+	Infof(name string, format string, args ...any)
+	Warnf(name string, format string, args ...any)
+	Errorf(name string, format string, args ...any)
 }

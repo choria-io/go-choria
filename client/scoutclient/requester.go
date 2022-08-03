@@ -16,7 +16,7 @@ import (
 type requester struct {
 	client   *ScoutClient
 	action   string
-	args     map[string]interface{}
+	args     map[string]any
 	progress *uiprogress.Bar
 }
 
