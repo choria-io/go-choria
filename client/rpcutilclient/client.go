@@ -257,7 +257,7 @@ func (p *RpcutilClient) DaemonStats() *DaemonStatsRequester {
 // Description: Get the active value of a specific config property
 //
 // Required Inputs:
-//    - item (string) - The item to retrieve from the server
+//   - item (string) - The item to retrieve from the server
 func (p *RpcutilClient) GetConfigItem(inputItem string) *GetConfigItemRequester {
 	d := &GetConfigItemRequester{
 		outc: nil,
@@ -281,10 +281,10 @@ func (p *RpcutilClient) GetConfigItem(inputItem string) *GetConfigItemRequester 
 // Description: Get data from a data plugin
 //
 // Required Inputs:
-//    - source (string) - The data plugin to retrieve information from
+//   - source (string) - The data plugin to retrieve information from
 //
 // Optional Inputs:
-//    - query (string) - The query argument to supply to the data plugin
+//   - query (string) - The query argument to supply to the data plugin
 func (p *RpcutilClient) GetData(inputSource string) *GetDataRequester {
 	d := &GetDataRequester{
 		outc: nil,
@@ -308,7 +308,7 @@ func (p *RpcutilClient) GetData(inputSource string) *GetDataRequester {
 // Description: Retrieve a single fact from the fact store
 //
 // Required Inputs:
-//    - fact (string) - The fact to retrieve
+//   - fact (string) - The fact to retrieve
 func (p *RpcutilClient) GetFact(inputFact string) *GetFactRequester {
 	d := &GetFactRequester{
 		outc: nil,
@@ -332,7 +332,7 @@ func (p *RpcutilClient) GetFact(inputFact string) *GetFactRequester {
 // Description: Retrieve multiple facts from the fact store
 //
 // Required Inputs:
-//    - facts (string) - Facts to retrieve
+//   - facts (string) - Facts to retrieve
 func (p *RpcutilClient) GetFacts(inputFacts string) *GetFactsRequester {
 	d := &GetFactsRequester{
 		outc: nil,

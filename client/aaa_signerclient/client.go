@@ -200,8 +200,8 @@ func (p *AaaSignerClient) DiscoverNodes(ctx context.Context) (nodes []string, er
 // Description: Signs a RPC Request on behalf of a user
 //
 // Required Inputs:
-//    - request (string) - The request to sign
-//    - token (string) - The JWT token authenticating the user
+//   - request (string) - The request to sign
+//   - token (string) - The JWT token authenticating the user
 func (p *AaaSignerClient) Sign(inputRequest string, inputToken string) *SignRequester {
 	d := &SignRequester{
 		outc: nil,

@@ -200,7 +200,7 @@ func (p *ChoriaRegistryClient) DiscoverNodes(ctx context.Context) (nodes []strin
 // Description: List of all known DDLs for a specific plugin type
 //
 // Required Inputs:
-//    - plugin_type (string) - The type of plugin
+//   - plugin_type (string) - The type of plugin
 func (p *ChoriaRegistryClient) Names(inputPluginType string) *NamesRequester {
 	d := &NamesRequester{
 		outc: nil,
@@ -224,11 +224,11 @@ func (p *ChoriaRegistryClient) Names(inputPluginType string) *NamesRequester {
 // Description: Retrieve the DDL for a specific plugin
 //
 // Required Inputs:
-//    - name (string) - The name of the plugin
-//    - plugin_type (string) - The type of plugin
+//   - name (string) - The name of the plugin
+//   - plugin_type (string) - The type of plugin
 //
 // Optional Inputs:
-//    - format (string) - The result format the plugin should be retrieved in
+//   - format (string) - The result format the plugin should be retrieved in
 func (p *ChoriaRegistryClient) Ddl(inputName string, inputPluginType string) *DdlRequester {
 	d := &DdlRequester{
 		outc: nil,

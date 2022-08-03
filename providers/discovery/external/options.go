@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -52,7 +52,7 @@ func Command(c string) DiscoverOption {
 //
 // Supported options:
 //
-//   command - The command to execute instead of configured default
+//	command - The command to execute instead of configured default
 //
 // All options will be passed to the external command in the request, so other
 // command specific options is supported and will be ignored by this code

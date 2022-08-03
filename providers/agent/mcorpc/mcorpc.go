@@ -96,16 +96,16 @@ type Request struct {
 //
 // Example used in a action:
 //
-//   var rparams struct {
-//      Package string `json:"package" validate:"shellsafe"`
-//   }
+//	  var rparams struct {
+//	     Package string `json:"package" validate:"shellsafe"`
+//	  }
 //
-//   if !mcorpc.ParseRequestData(&rparams, req, reply) {
-//     // the function already set appropriate errors on reply
-//	   return
-//   }
+//	  if !mcorpc.ParseRequestData(&rparams, req, reply) {
+//	    // the function already set appropriate errors on reply
+//		   return
+//	  }
 //
-//   // do stuff with rparams.Package
+//	  // do stuff with rparams.Package
 func ParseRequestData(target any, request *Request, reply *Reply) bool {
 	err := json.Unmarshal(request.Data, target)
 	if err != nil {

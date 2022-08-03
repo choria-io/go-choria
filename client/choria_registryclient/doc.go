@@ -5,6 +5,6 @@
 // Package choria_registryclient is an API client to the Choria Choria_registry agent Version 0.26.0.
 //
 // Actions:
-//   * Names - List of all known DDLs for a specific plugin type
-//   * Ddl - Retrieve the DDL for a specific plugin
+//   - Names - List of all known DDLs for a specific plugin type
+//   - Ddl - Retrieve the DDL for a specific plugin
 package choria_registryclient

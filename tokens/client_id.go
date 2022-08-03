@@ -116,7 +116,7 @@ func NewClientIDClaims(callerID string, allowedAgents []string, org string, prop
 // the signer public key to verify the certificate. This is safe as the signer
 // will later verify the token anyway.
 //
-// Further, at the moment, we do not verity the Purpose for backward compatibility
+// # Further, at the moment, we do not verity the Purpose for backward compatibility
 //
 // An empty callerid will result in an error
 func UnverifiedCallerFromClientIDToken(token string) (*jwt.Token, string, error) {

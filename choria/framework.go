@@ -288,8 +288,8 @@ func (fw *Framework) FederationCollectives() (collectives []string) {
 //
 // It does this by:
 //
-//    * looking for choria.federation_middleware_hosts configuration
-//	  * Doing SRV lookups of  _mcollective-federation_server._tcp and _x-puppet-mcollective_federation._tcp
+//   - looking for choria.federation_middleware_hosts configuration
+//   - Doing SRV lookups of  _mcollective-federation_server._tcp and _x-puppet-mcollective_federation._tcp
 func (fw *Framework) FederationMiddlewareServers() (servers srvcache.Servers, err error) {
 	configured := fw.Config.Choria.FederationMiddlewareHosts
 	servers = srvcache.NewServers()
@@ -384,10 +384,10 @@ func (fw *Framework) ShouldUseNGS() bool {
 //
 // It does this by:
 //
-//    * if ngs is configured and credentials are set and middleware_hosts are empty, use ngs
-//    * looking for choria.federation_middleware_hosts configuration
-//	  * Doing SRV lookups of _mcollective-server._tcp and __x-puppet-mcollective._tcp
-//    * Defaulting to puppet:4222
+//   - if ngs is configured and credentials are set and middleware_hosts are empty, use ngs
+//   - looking for choria.federation_middleware_hosts configuration
+//   - Doing SRV lookups of _mcollective-server._tcp and __x-puppet-mcollective._tcp
+//   - Defaulting to puppet:4222
 func (fw *Framework) MiddlewareServers() (servers srvcache.Servers, err error) {
 	configured := fw.Config.Choria.MiddlewareHosts
 

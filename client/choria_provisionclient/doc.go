@@ -5,10 +5,10 @@
 // Package choria_provisionclient is an API client to the Choria Choria_provision agent Version 0.26.0.
 //
 // Actions:
-//   * Configure - Configure the Choria Server
-//   * Gen25519 - Generates a new ED25519 keypair
-//   * Gencsr - Request a CSR from the Choria Server
-//   * Jwt - Re-enable provision mode in a running Choria Server
-//   * Reprovision - Reenable provision mode in a running Choria Server
-//   * Restart - Restart the Choria Server
+//   - Configure - Configure the Choria Server
+//   - Gen25519 - Generates a new ED25519 keypair
+//   - Gencsr - Request a CSR from the Choria Server
+//   - Jwt - Re-enable provision mode in a running Choria Server
+//   - Reprovision - Reenable provision mode in a running Choria Server
+//   - Restart - Restart the Choria Server
 package choria_provisionclient

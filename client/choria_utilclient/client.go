@@ -219,9 +219,9 @@ func (p *ChoriaUtilClient) Info() *InfoRequester {
 // Description: Retrieves the current state of a specific Choria Autonomous Agent
 //
 // Optional Inputs:
-//    - instance (string) - Machine Instance ID
-//    - name (string) - Machine Name
-//    - path (string) - Machine Path
+//   - instance (string) - Machine Instance ID
+//   - name (string) - Machine Name
+//   - path (string) - Machine Path
 func (p *ChoriaUtilClient) MachineState() *MachineStateRequester {
 	d := &MachineStateRequester{
 		outc: nil,
@@ -262,13 +262,13 @@ func (p *ChoriaUtilClient) MachineStates() *MachineStatesRequester {
 // Description: Attempts to force a transition in a hosted Choria Autonomous Agent
 //
 // Required Inputs:
-//    - transition (string) - The transition event to send to the machine
+//   - transition (string) - The transition event to send to the machine
 //
 // Optional Inputs:
-//    - instance (string) - Machine Instance ID
-//    - name (string) - Machine Name
-//    - path (string) - Machine Path
-//    - version (string) - Machine Version
+//   - instance (string) - Machine Instance ID
+//   - name (string) - Machine Name
+//   - path (string) - Machine Path
+//   - version (string) - Machine Version
 func (p *ChoriaUtilClient) MachineTransition(inputTransition string) *MachineTransitionRequester {
 	d := &MachineTransitionRequester{
 		outc: nil,

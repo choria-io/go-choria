@@ -219,7 +219,7 @@ func (p *ScoutClient) Checks() *ChecksRequester {
 // Description: Resume active checking of one or more checks
 //
 // Optional Inputs:
-//    - checks ([]any) - Check to resume, empty means all
+//   - checks ([]any) - Check to resume, empty means all
 func (p *ScoutClient) Resume() *ResumeRequester {
 	d := &ResumeRequester{
 		outc: nil,
@@ -241,7 +241,7 @@ func (p *ScoutClient) Resume() *ResumeRequester {
 // Description: Pause checking of one or more checks
 //
 // Optional Inputs:
-//    - checks ([]any) - Check to pause, empty means all
+//   - checks ([]any) - Check to pause, empty means all
 func (p *ScoutClient) Maintenance() *MaintenanceRequester {
 	d := &MaintenanceRequester{
 		outc: nil,
@@ -263,10 +263,10 @@ func (p *ScoutClient) Maintenance() *MaintenanceRequester {
 // Description: Performs a Goss validation using a specific file
 //
 // Required Inputs:
-//    - file (string) - Path to the Goss validation specification
+//   - file (string) - Path to the Goss validation specification
 //
 // Optional Inputs:
-//    - vars (string) - Path to a file to use as template variables
+//   - vars (string) - Path to a file to use as template variables
 func (p *ScoutClient) GossValidate(inputFile string) *GossValidateRequester {
 	d := &GossValidateRequester{
 		outc: nil,
@@ -290,7 +290,7 @@ func (p *ScoutClient) GossValidate(inputFile string) *GossValidateRequester {
 // Description: Force an immediate check of one or more checks
 //
 // Optional Inputs:
-//    - checks ([]any) - Check to trigger, empty means all
+//   - checks ([]any) - Check to trigger, empty means all
 func (p *ScoutClient) Trigger() *TriggerRequester {
 	d := &TriggerRequester{
 		outc: nil,

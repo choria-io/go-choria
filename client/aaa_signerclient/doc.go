@@ -5,5 +5,5 @@
 // Package aaa_signerclient is an API client to the Choria Aaa_signer agent Version 0.26.0.
 //
 // Actions:
-//   * Sign - Signs a RPC Request on behalf of a user
+//   - Sign - Signs a RPC Request on behalf of a user
 package aaa_signerclient

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -70,9 +70,9 @@ func Reader(r io.Reader) DiscoverOption {
 //
 // Supported options:
 //
-//   filter - GJSON Path Syntax search over YAML or JSON data
-//     file - set the file to read
-//   format - override format detection: json, yaml, yml, choriarpc, results, rpc, response, text, txt
+//	filter - GJSON Path Syntax search over YAML or JSON data
+//	  file - set the file to read
+//	format - override format detection: json, yaml, yml, choriarpc, results, rpc, response, text, txt
 func DiscoveryOptions(opt map[string]string) DiscoverOption {
 	return func(o *dOpts) {
 		o.do = opt
