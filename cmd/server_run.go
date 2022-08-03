@@ -60,6 +60,13 @@ func (r *serverRunCommand) Configure() error {
 		provtarget.Configure(cfg, log.WithField("component", "provtarget"))
 
 		if r.shouldProvision(cfg) {
+			if cfg.Choria.ServerTokenSeedFile != "" {
+				os.Remove(cfg.Choria.ServerTokenSeedFile)
+			}
+			if cfg.Choria.ServerTokenFile != "" {
+				os.Remove(cfg.Choria.ServerTokenFile)
+			}
+
 			log.Warnf("Switching to provisioning configuration due to build defaults and server.provision configuration setting")
 			cfg, err = r.provisionConfig(configFile)
 			if err != nil {
@@ -90,6 +97,13 @@ func (r *serverRunCommand) Configure() error {
 
 		log.Warnf("Switching to provisioning configuration due to build defaults and missing %s", configFile)
 
+		if cfg.Choria.ServerTokenSeedFile != "" {
+			os.Remove(cfg.Choria.ServerTokenSeedFile)
+		}
+		if cfg.Choria.ServerTokenFile != "" {
+			os.Remove(cfg.Choria.ServerTokenFile)
+		}
+
 		cfg, err = r.provisionConfig(configFile)
 		if err != nil {
 			return err
@@ -113,13 +127,6 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 
 func (r *serverRunCommand) shouldProvision(cfg *config.Config) bool {
 	prov := bi.ProvisionDefault()
-	hasOpt := cfg.HasOption("plugin.choria.server.provision")
-	if hasOpt {
-		if cfg.Choria.Provision {
-			log.Warnf("plugin.choria.server.provision is true, reprovisioning")
-			return true
-		}
-	}
 
 	// we want to make sure we re-provision if ever the seed and jwt isnt aligned
 	if cfg.Choria.ServerAnonTLS && cfg.Choria.ServerTokenSeedFile != "" && cfg.Choria.ServerTokenFile != "" {
@@ -149,6 +156,14 @@ func (r *serverRunCommand) shouldProvision(cfg *config.Config) bool {
 			log.Warnf("Public key in the JWT file %s does not match the seed file %s, reprovisioning", cfg.Choria.ServerTokenFile, cfg.Choria.ServerTokenSeedFile)
 			return true
 		}
+	}
+
+	hasOpt := cfg.HasOption("plugin.choria.server.provision")
+	if hasOpt {
+		if !cfg.Choria.Provision {
+			return false
+		}
+		log.Warnf("plugin.choria.server.provision is true, reprovisioning")
 	}
 
 	return prov
