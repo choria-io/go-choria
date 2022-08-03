@@ -209,7 +209,7 @@ func (m *MockNotificationService) NotifyPostTransition(t *TransitionNotification
 }
 
 // NotifyPostTransition indicates an expected call of NotifyPostTransition
-func (mr *MockNotificationServiceMockRecorder) NotifyPostTransition(t interface{}) *gomock.Call {
+func (mr *MockNotificationServiceMockRecorder) NotifyPostTransition(t any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyPostTransition", reflect.TypeOf((*MockNotificationService)(nil).NotifyPostTransition), t)
 }
 
@@ -221,13 +221,13 @@ func (m *MockNotificationService) NotifyWatcherState(watcher string, state Watch
 }
 
 // NotifyWatcherState indicates an expected call of NotifyWatcherState
-func (mr *MockNotificationServiceMockRecorder) NotifyWatcherState(watcher, state interface{}) *gomock.Call {
+func (mr *MockNotificationServiceMockRecorder) NotifyWatcherState(watcher, state any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyWatcherState", reflect.TypeOf((*MockNotificationService)(nil).NotifyWatcherState), watcher, state)
 }
 
 // Debugf mocks base method
-func (m *MockNotificationService) Debugf(machine InfoSource, watcher, format string, args ...interface{}) {
-	varargs := []interface{}{machine, watcher, format}
+func (m *MockNotificationService) Debugf(machine InfoSource, watcher, format string, args ...any) {
+	varargs := []any{machine, watcher, format}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -235,14 +235,14 @@ func (m *MockNotificationService) Debugf(machine InfoSource, watcher, format str
 }
 
 // Debugf indicates an expected call of Debugf
-func (mr *MockNotificationServiceMockRecorder) Debugf(machine, watcher, format interface{}, args ...interface{}) *gomock.Call {
-	varargs := append([]interface{}{machine, watcher, format}, args...)
+func (mr *MockNotificationServiceMockRecorder) Debugf(machine, watcher, format any, args ...any) *gomock.Call {
+	varargs := append([]any{machine, watcher, format}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Debugf", reflect.TypeOf((*MockNotificationService)(nil).Debugf), varargs...)
 }
 
 // Infof mocks base method
-func (m *MockNotificationService) Infof(machine InfoSource, watcher, format string, args ...interface{}) {
-	varargs := []interface{}{machine, watcher, format}
+func (m *MockNotificationService) Infof(machine InfoSource, watcher, format string, args ...any) {
+	varargs := []any{machine, watcher, format}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -250,14 +250,14 @@ func (m *MockNotificationService) Infof(machine InfoSource, watcher, format stri
 }
 
 // Infof indicates an expected call of Infof
-func (mr *MockNotificationServiceMockRecorder) Infof(machine, watcher, format interface{}, args ...interface{}) *gomock.Call {
-	varargs := append([]interface{}{machine, watcher, format}, args...)
+func (mr *MockNotificationServiceMockRecorder) Infof(machine, watcher, format any, args ...any) *gomock.Call {
+	varargs := append([]any{machine, watcher, format}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Infof", reflect.TypeOf((*MockNotificationService)(nil).Infof), varargs...)
 }
 
 // Warnf mocks base method
-func (m *MockNotificationService) Warnf(machine InfoSource, watcher, format string, args ...interface{}) {
-	varargs := []interface{}{machine, watcher, format}
+func (m *MockNotificationService) Warnf(machine InfoSource, watcher, format string, args ...any) {
+	varargs := []any{machine, watcher, format}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -265,14 +265,14 @@ func (m *MockNotificationService) Warnf(machine InfoSource, watcher, format stri
 }
 
 // Warnf indicates an expected call of Warnf
-func (mr *MockNotificationServiceMockRecorder) Warnf(machine, watcher, format interface{}, args ...interface{}) *gomock.Call {
-	varargs := append([]interface{}{machine, watcher, format}, args...)
+func (mr *MockNotificationServiceMockRecorder) Warnf(machine, watcher, format any, args ...any) *gomock.Call {
+	varargs := append([]any{machine, watcher, format}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Warnf", reflect.TypeOf((*MockNotificationService)(nil).Warnf), varargs...)
 }
 
 // Errorf mocks base method
-func (m *MockNotificationService) Errorf(machine InfoSource, watcher, format string, args ...interface{}) {
-	varargs := []interface{}{machine, watcher, format}
+func (m *MockNotificationService) Errorf(machine InfoSource, watcher, format string, args ...any) {
+	varargs := []any{machine, watcher, format}
 	for _, a := range args {
 		varargs = append(varargs, a)
 	}
@@ -280,7 +280,7 @@ func (m *MockNotificationService) Errorf(machine InfoSource, watcher, format str
 }
 
 // Errorf indicates an expected call of Errorf
-func (mr *MockNotificationServiceMockRecorder) Errorf(machine, watcher, format interface{}, args ...interface{}) *gomock.Call {
-	varargs := append([]interface{}{machine, watcher, format}, args...)
+func (mr *MockNotificationServiceMockRecorder) Errorf(machine, watcher, format any, args ...any) *gomock.Call {
+	varargs := append([]any{machine, watcher, format}, args...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Errorf", reflect.TypeOf((*MockNotificationService)(nil).Errorf), varargs...)
 }

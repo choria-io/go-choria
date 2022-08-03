@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -337,7 +337,7 @@ func ExpandPath(p string) (string, error) {
 }
 
 // NewUTF8TableWithTitle creates a table formatted with UTF8 styling with a title set
-func NewUTF8TableWithTitle(title string, hdr ...interface{}) *xtablewriter.Table {
+func NewUTF8TableWithTitle(title string, hdr ...any) *xtablewriter.Table {
 	table := xtablewriter.CreateTable()
 	table.UTF8Box()
 
@@ -351,7 +351,7 @@ func NewUTF8TableWithTitle(title string, hdr ...interface{}) *xtablewriter.Table
 }
 
 // NewUTF8Table creates a table formatted with UTF8 styling
-func NewUTF8Table(hdr ...interface{}) *xtablewriter.Table {
+func NewUTF8Table(hdr ...any) *xtablewriter.Table {
 	return NewUTF8TableWithTitle("", hdr...)
 }
 
@@ -398,7 +398,7 @@ func DumpMapStrings(data map[string]string, leftPad int) {
 }
 
 // DumpJSONIndent dumps data to stdout as indented JSON
-func DumpJSONIndent(data interface{}) error {
+func DumpJSONIndent(data any) error {
 	j, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return err
@@ -502,7 +502,7 @@ func ParseDuration(dstr string) (dur time.Duration, err error) {
 }
 
 // PromptForConfirmation asks for confirmation on the CLI
-func PromptForConfirmation(format string, a ...interface{}) (bool, error) {
+func PromptForConfirmation(format string, a ...any) (bool, error) {
 	ans := false
 	err := survey.AskOne(&survey.Confirm{
 		Message: fmt.Sprintf(format, a...),
@@ -548,8 +548,8 @@ func tBase64Decode(v string) (string, error) {
 	return string(r), nil
 }
 
-func FuncMap(f map[string]interface{}) template.FuncMap {
-	fm := map[string]interface{}{
+func FuncMap(f map[string]any) template.FuncMap {
+	fm := map[string]any{
 		"Title":        cases.Title(language.AmericanEnglish).String,
 		"Capitalize":   cases.Title(language.AmericanEnglish).String,
 		"ToLower":      strings.ToLower,

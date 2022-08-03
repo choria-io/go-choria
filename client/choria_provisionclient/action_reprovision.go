@@ -26,7 +26,7 @@ type ReprovisionRequester struct {
 // ReprovisionOutput is the output from the reprovision action
 type ReprovisionOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // ReprovisionResult is the result from a reprovision action
@@ -82,7 +82,7 @@ func (d *ReprovisionOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *ReprovisionOutput) HashMap() map[string]interface{} {
+func (d *ReprovisionOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *ReprovisionOutput) JSON() ([]byte, error) {
 }
 
 // ParseReprovisionOutput parses the result value from the Reprovision action into target
-func (d *ReprovisionOutput) ParseReprovisionOutput(target interface{}) error {
+func (d *ReprovisionOutput) ParseReprovisionOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *ReprovisionRequester) Do(ctx context.Context) (*ReprovisionResult, erro
 		}
 
 		output := &ReprovisionOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -204,10 +204,10 @@ func (p *Provider) setReplyDefaults(ddl *agentddl.DDL, action string, reply *mco
 	}
 
 	if reply.Data == nil {
-		reply.Data = make(map[string]interface{})
+		reply.Data = make(map[string]any)
 	}
 
-	result, ok := reply.Data.(map[string]interface{})
+	result, ok := reply.Data.(map[string]any)
 	if !ok {
 		return fmt.Errorf("reply data is in the wrong format")
 	}
@@ -218,7 +218,7 @@ func (p *Provider) setReplyDefaults(ddl *agentddl.DDL, action string, reply *mco
 	return nil
 }
 
-func (p *Provider) executeRequest(ctx context.Context, command string, protocol string, req []byte, reply interface{}, agentName string, log *logrus.Entry, si agents.ServerInfoSource) error {
+func (p *Provider) executeRequest(ctx context.Context, command string, protocol string, req []byte, reply any, agentName string, log *logrus.Entry, si agents.ServerInfoSource) error {
 	reqfile, err := os.CreateTemp("", "request")
 	if err != nil {
 		return fmt.Errorf("could not create request temp file: %s", err)
@@ -274,7 +274,7 @@ func (p *Provider) executeRequest(ctx context.Context, command string, protocol 
 	}
 
 	wg := &sync.WaitGroup{}
-	outputReader := func(wg *sync.WaitGroup, in io.ReadCloser, logger func(args ...interface{})) {
+	outputReader := func(wg *sync.WaitGroup, in io.ReadCloser, logger func(args ...any)) {
 		defer wg.Done()
 
 		scanner := bufio.NewScanner(in)

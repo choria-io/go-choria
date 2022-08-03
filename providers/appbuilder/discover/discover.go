@@ -30,9 +30,9 @@ type Discover struct {
 	cmd       *fisk.CmdClause
 	fo        *discovery.StandardOptions
 	def       *Command
-	cfg       interface{}
-	arguments map[string]interface{}
-	flags     map[string]interface{}
+	cfg       any
+	arguments map[string]any
+	flags     map[string]any
 	json      bool
 	log       builder.Logger
 	ctx       context.Context
@@ -40,8 +40,8 @@ type Discover struct {
 
 func NewDiscoverCommand(b *builder.AppBuilder, j json.RawMessage, log builder.Logger) (builder.Command, error) {
 	find := &Discover{
-		arguments: map[string]interface{}{},
-		flags:     map[string]interface{}{},
+		arguments: map[string]any{},
+		flags:     map[string]any{},
 		def:       &Command{},
 		cfg:       b.Configuration(),
 		ctx:       b.Context(),
@@ -95,7 +95,7 @@ func (r *Discover) runCommand(_ *fisk.ParseContext) error {
 		return err
 	}
 
-	logger, ok := interface{}(r.log).(*logrus.Logger)
+	logger, ok := any(r.log).(*logrus.Logger)
 	if ok {
 		cfg.CustomLogger = logger
 	}

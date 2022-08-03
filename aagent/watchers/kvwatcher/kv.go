@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -61,7 +61,7 @@ type Watcher struct {
 	kv       nats.KeyValue
 	interval time.Duration
 
-	previousVal   interface{}
+	previousVal   any
 	previousSeq   uint64
 	previousState State
 	polling       bool
@@ -71,7 +71,7 @@ type Watcher struct {
 	mu        *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error) {
+func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
 	var err error
 
 	tw := &Watcher{
@@ -99,7 +99,7 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 	return tw, nil
 }
 
-func (w *Watcher) setProperties(props map[string]interface{}) error {
+func (w *Watcher) setProperties(props map[string]any) error {
 	if w.properties == nil {
 		w.properties = &properties{
 			BucketPrefix: true,
@@ -206,7 +206,7 @@ func (w *Watcher) poll() (State, error) {
 
 	w.Infof("Polling for %s.%s", w.properties.Bucket, parsedKey)
 
-	var parsedValue interface{}
+	var parsedValue any
 
 	dk := w.dataKey()
 	if w.previousVal == nil {
@@ -219,13 +219,13 @@ func (w *Watcher) poll() (State, error) {
 		// in other machines using the lookup template func and it works just fine, deep compares are done
 		// on the entire structure later
 		if bytes.HasPrefix(val.Value(), []byte("{")) && bytes.HasSuffix(val.Value(), []byte("}")) {
-			parsedValue = map[string]interface{}{}
+			parsedValue = map[string]any{}
 			err := json.Unmarshal(val.Value(), &parsedValue)
 			if err != nil {
 				w.Warnf("unmarshal failed: %s", err)
 			}
 		} else if bytes.HasPrefix(val.Value(), []byte("[")) && bytes.HasSuffix(val.Value(), []byte("]")) {
-			parsedValue = []interface{}{}
+			parsedValue = []any{}
 			err := json.Unmarshal(val.Value(), &parsedValue)
 			if err != nil {
 				w.Warnf("unmarshal failed: %s", err)
@@ -377,7 +377,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (w *Watcher) CurrentState() interface{} {
+func (w *Watcher) CurrentState() any {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 

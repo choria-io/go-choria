@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -57,8 +57,8 @@ type RPCResults struct {
 }
 
 type ActionDDL interface {
-	SetOutputDefaults(results map[string]interface{})
-	AggregateResult(result map[string]interface{}) error
+	SetOutputDefaults(results map[string]any)
+	AggregateResult(result map[string]any) error
 	AggregateResultJSON(jres []byte) error
 	AggregateSummaryJSON() ([]byte, error)
 	GetOutput(string) (*common.OutputItem, bool)
@@ -68,12 +68,12 @@ type ActionDDL interface {
 }
 
 type Logger interface {
-	Debugf(format string, args ...interface{})
-	Infof(format string, args ...interface{})
-	Warnf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Panicf(format string, args ...interface{})
+	Debugf(format string, args ...any)
+	Infof(format string, args ...any)
+	Warnf(format string, args ...any)
+	Errorf(format string, args ...any)
+	Fatalf(format string, args ...any)
+	Panicf(format string, args ...any)
 }
 
 type flusher interface {
@@ -279,7 +279,7 @@ func (r *RPCResults) RenderTable(w io.Writer, action ActionDDL) (err error) {
 
 func (r *RPCResults) RenderJSON(w io.Writer, action ActionDDL) (err error) {
 	for _, reply := range r.Replies {
-		parsed, ok := gjson.ParseBytes(reply.RPCReply.Data).Value().(map[string]interface{})
+		parsed, ok := gjson.ParseBytes(reply.RPCReply.Data).Value().(map[string]any)
 		if ok {
 			action.SetOutputDefaults(parsed)
 			action.AggregateResult(parsed)

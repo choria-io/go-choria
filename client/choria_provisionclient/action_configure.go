@@ -26,7 +26,7 @@ type ConfigureRequester struct {
 // ConfigureOutput is the output from the configure action
 type ConfigureOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // ConfigureResult is the result from a configure action
@@ -82,7 +82,7 @@ func (d *ConfigureOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *ConfigureOutput) HashMap() map[string]interface{} {
+func (d *ConfigureOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *ConfigureOutput) JSON() ([]byte, error) {
 }
 
 // ParseConfigureOutput parses the result value from the Configure action into target
-func (d *ConfigureOutput) ParseConfigureOutput(target interface{}) error {
+func (d *ConfigureOutput) ParseConfigureOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *ConfigureRequester) Do(ctx context.Context) (*ConfigureResult, error) {
 		}
 
 		output := &ConfigureOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -173,7 +173,7 @@ func (d *ConfigureResult) EachOutput(h func(r *ConfigureOutput)) {
 // ActionPolicies is an optional input to the configure action
 //
 // Description: Map of Action Policy documents indexed by file name
-func (d *ConfigureRequester) ActionPolicies(v map[string]interface{}) *ConfigureRequester {
+func (d *ConfigureRequester) ActionPolicies(v map[string]any) *ConfigureRequester {
 	d.r.args["action_policies"] = v
 
 	return d
@@ -218,7 +218,7 @@ func (d *ConfigureRequester) Key(v string) *ConfigureRequester {
 // OpaPolicies is an optional input to the configure action
 //
 // Description: Map of Open Policy Agent Policy documents indexed by file name
-func (d *ConfigureRequester) OpaPolicies(v map[string]interface{}) *ConfigureRequester {
+func (d *ConfigureRequester) OpaPolicies(v map[string]any) *ConfigureRequester {
 	d.r.args["opa_policies"] = v
 
 	return d

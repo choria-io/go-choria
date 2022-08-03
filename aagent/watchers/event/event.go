@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -40,7 +40,7 @@ type Event struct {
 }
 
 // CloudEvent creates a CloudEvent from the state notification
-func (e *Event) CloudEvent(data interface{}) cloudevents.Event {
+func (e *Event) CloudEvent(data any) cloudevents.Event {
 	event := cloudevents.NewEvent("1.0")
 
 	event.SetType(e.Protocol)

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,7 +11,7 @@ import (
 	"github.com/mitchellh/mapstructure"
 )
 
-func ParseMapStructure(properties map[string]interface{}, target interface{}) error {
+func ParseMapStructure(properties map[string]any, target any) error {
 	decoder, err := mapstructure.NewDecoder(&mapstructure.DecoderConfig{
 		DecodeHook:       mapstructure.ComposeDecodeHookFunc(mapstructure.StringToTimeDurationHookFunc(), StringSliceHookFunc),
 		Result:           target,
@@ -24,7 +24,7 @@ func ParseMapStructure(properties map[string]interface{}, target interface{}) er
 	return decoder.Decode(properties)
 }
 
-func StringSliceHookFunc(f reflect.Type, t reflect.Type, data interface{}) (interface{}, error) {
+func StringSliceHookFunc(f reflect.Type, t reflect.Type, data any) (any, error) {
 	if f.Kind() != reflect.Array {
 		return data, nil
 	}
@@ -34,7 +34,7 @@ func StringSliceHookFunc(f reflect.Type, t reflect.Type, data interface{}) (inte
 	}
 
 	var result []string
-	for _, env := range data.([]interface{}) {
+	for _, env := range data.([]any) {
 		s, ok := env.(string)
 		if !ok {
 			return nil, fmt.Errorf("string slice is required")

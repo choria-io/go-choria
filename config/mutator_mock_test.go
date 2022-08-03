@@ -38,6 +38,6 @@ func (m *MockMutator) Mutate(arg0 *Config, arg1 *logrus.Entry) {
 }
 
 // Mutate indicates an expected call of Mutate
-func (mr *MockMutatorMockRecorder) Mutate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockMutatorMockRecorder) Mutate(arg0, arg1 any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Mutate", reflect.TypeOf((*MockMutator)(nil).Mutate), arg0, arg1)
 }

@@ -26,7 +26,7 @@ type MaintenanceRequester struct {
 // MaintenanceOutput is the output from the maintenance action
 type MaintenanceOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // MaintenanceResult is the result from a maintenance action
@@ -82,7 +82,7 @@ func (d *MaintenanceOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *MaintenanceOutput) HashMap() map[string]interface{} {
+func (d *MaintenanceOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *MaintenanceOutput) JSON() ([]byte, error) {
 }
 
 // ParseMaintenanceOutput parses the result value from the Maintenance action into target
-func (d *MaintenanceOutput) ParseMaintenanceOutput(target interface{}) error {
+func (d *MaintenanceOutput) ParseMaintenanceOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *MaintenanceRequester) Do(ctx context.Context) (*MaintenanceResult, erro
 		}
 
 		output := &MaintenanceOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -173,7 +173,7 @@ func (d *MaintenanceResult) EachOutput(h func(r *MaintenanceOutput)) {
 // Checks is an optional input to the maintenance action
 //
 // Description: Check to pause, empty means all
-func (d *MaintenanceRequester) Checks(v []interface{}) *MaintenanceRequester {
+func (d *MaintenanceRequester) Checks(v []any) *MaintenanceRequester {
 	d.r.args["checks"] = v
 
 	return d
@@ -182,29 +182,29 @@ func (d *MaintenanceRequester) Checks(v []interface{}) *MaintenanceRequester {
 // Failed is the value of the failed output
 //
 // Description: List of checks that could not be paused
-func (d *MaintenanceOutput) Failed() []interface{} {
+func (d *MaintenanceOutput) Failed() []any {
 	val := d.reply["failed"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // Skipped is the value of the skipped output
 //
 // Description: List of checks that was skipped
-func (d *MaintenanceOutput) Skipped() []interface{} {
+func (d *MaintenanceOutput) Skipped() []any {
 	val := d.reply["skipped"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // Transitioned is the value of the transitioned output
 //
 // Description: List of checks that were paused
-func (d *MaintenanceOutput) Transitioned() []interface{} {
+func (d *MaintenanceOutput) Transitioned() []any {
 	val := d.reply["transitioned"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }

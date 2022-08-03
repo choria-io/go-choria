@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -102,7 +102,7 @@ type Watcher struct {
 	mu  *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]interface{}) (interface{}, error) {
+func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]any) (any, error) {
 	var err error
 
 	machines := &Watcher{
@@ -523,7 +523,7 @@ func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (w *Watcher) setProperties(props map[string]interface{}) error {
+func (w *Watcher) setProperties(props map[string]any) error {
 	if w.properties == nil {
 		w.properties = &Properties{}
 	}
@@ -555,7 +555,7 @@ func (w *Watcher) validate() error {
 	return nil
 }
 
-func (w *Watcher) CurrentState() interface{} {
+func (w *Watcher) CurrentState() any {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 

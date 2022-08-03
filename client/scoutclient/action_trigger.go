@@ -26,7 +26,7 @@ type TriggerRequester struct {
 // TriggerOutput is the output from the trigger action
 type TriggerOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // TriggerResult is the result from a trigger action
@@ -82,7 +82,7 @@ func (d *TriggerOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *TriggerOutput) HashMap() map[string]interface{} {
+func (d *TriggerOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *TriggerOutput) JSON() ([]byte, error) {
 }
 
 // ParseTriggerOutput parses the result value from the Trigger action into target
-func (d *TriggerOutput) ParseTriggerOutput(target interface{}) error {
+func (d *TriggerOutput) ParseTriggerOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *TriggerRequester) Do(ctx context.Context) (*TriggerResult, error) {
 		}
 
 		output := &TriggerOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -173,7 +173,7 @@ func (d *TriggerResult) EachOutput(h func(r *TriggerOutput)) {
 // Checks is an optional input to the trigger action
 //
 // Description: Check to trigger, empty means all
-func (d *TriggerRequester) Checks(v []interface{}) *TriggerRequester {
+func (d *TriggerRequester) Checks(v []any) *TriggerRequester {
 	d.r.args["checks"] = v
 
 	return d
@@ -182,29 +182,29 @@ func (d *TriggerRequester) Checks(v []interface{}) *TriggerRequester {
 // Failed is the value of the failed output
 //
 // Description: List of checks that could not be triggered
-func (d *TriggerOutput) Failed() []interface{} {
+func (d *TriggerOutput) Failed() []any {
 	val := d.reply["failed"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // Skipped is the value of the skipped output
 //
 // Description: List of checks that was skipped
-func (d *TriggerOutput) Skipped() []interface{} {
+func (d *TriggerOutput) Skipped() []any {
 	val := d.reply["skipped"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // Transitioned is the value of the transitioned output
 //
 // Description: List of checks that were triggered
-func (d *TriggerOutput) Transitioned() []interface{} {
+func (d *TriggerOutput) Transitioned() []any {
 	val := d.reply["transitioned"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }

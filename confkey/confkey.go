@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -49,14 +49,14 @@ import (
 )
 
 // Validate validates the struct
-func Validate(target interface{}) error {
+func Validate(target any) error {
 	_, err := validator.ValidateStruct(target)
 
 	return err
 }
 
 // SetStructDefaults extract defaults out of the tags and set them to the key
-func SetStructDefaults(target interface{}) error {
+func SetStructDefaults(target any) error {
 	if reflect.TypeOf(target).Kind() != reflect.Ptr {
 		return errors.New("pointer is required")
 	}
@@ -80,7 +80,7 @@ func SetStructDefaults(target interface{}) error {
 }
 
 // StringFieldWithKey retrieves a string from target that matches key, "" when not found
-func StringFieldWithKey(target interface{}, key string) string {
+func StringFieldWithKey(target any, key string) string {
 	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return ""
@@ -98,7 +98,7 @@ func StringFieldWithKey(target interface{}, key string) string {
 }
 
 // StringListWithKey retrieves a []string from target that matches key, empty when not found
-func StringListWithKey(target interface{}, key string) []string {
+func StringListWithKey(target any, key string) []string {
 	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return []string{}
@@ -120,7 +120,7 @@ func StringListWithKey(target interface{}, key string) []string {
 }
 
 // BoolWithKey retrieves a bool from target that matches key, false when not found
-func BoolWithKey(target interface{}, key string) bool {
+func BoolWithKey(target any, key string) bool {
 	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return false
@@ -138,7 +138,7 @@ func BoolWithKey(target interface{}, key string) bool {
 }
 
 // IntWithKey retrieves an int from target that matches key, 0 when not found
-func IntWithKey(target interface{}, key string) int {
+func IntWithKey(target any, key string) int {
 	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return 0
@@ -156,7 +156,7 @@ func IntWithKey(target interface{}, key string) int {
 }
 
 // Int64WithKey retrieves an int from target that matches key, 0 when not found
-func Int64WithKey(target interface{}, key string) int64 {
+func Int64WithKey(target any, key string) int64 {
 	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return 0
@@ -173,8 +173,8 @@ func Int64WithKey(target interface{}, key string) int64 {
 	return 0
 }
 
-// InterfaceWithKey retrieves the value from target that matches key as an interface{}
-func InterfaceWithKey(target interface{}, key string) (interface{}, bool) {
+// InterfaceWithKey retrieves the value from target that matches key as an any
+func InterfaceWithKey(target any, key string) (any, bool) {
 	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return nil, false
@@ -189,7 +189,7 @@ func InterfaceWithKey(target interface{}, key string) (interface{}, bool) {
 }
 
 // SetStructFieldWithKey finds the struct key that matches the confkey on target and assign the value to it
-func SetStructFieldWithKey(target interface{}, key string, value interface{}) error {
+func SetStructFieldWithKey(target any, key string, value any) error {
 	if reflect.TypeOf(target).Kind() != reflect.Ptr {
 		return errors.New("pointer is required")
 	}
@@ -312,7 +312,7 @@ func SetStructFieldWithKey(target interface{}, key string, value interface{}) er
 }
 
 // FieldWithKey determines the struct key name that is tagged with a certain confkey
-func FieldWithKey(target interface{}, key string) (string, error) {
+func FieldWithKey(target any, key string) (string, error) {
 	st := reflect.TypeOf(target)
 	if st.Kind() == reflect.Ptr {
 		st = st.Elem()
@@ -332,7 +332,7 @@ func FieldWithKey(target interface{}, key string) (string, error) {
 }
 
 // FindFields looks for fields matching regular expression re and return their keys
-func FindFields(target interface{}, re string) ([]string, error) {
+func FindFields(target any, re string) ([]string, error) {
 	var found = []string{}
 
 	matcher, err := regexp.Compile(re)
@@ -361,7 +361,7 @@ func FindFields(target interface{}, re string) ([]string, error) {
 }
 
 // KeyTag retrieves a specific tag from a field with key on target
-func KeyTag(target interface{}, key string, tag string) (string, bool) {
+func KeyTag(target any, key string, tag string) (string, bool) {
 	item, err := FieldWithKey(target, key)
 	if err != nil {
 		return "", false
@@ -371,32 +371,32 @@ func KeyTag(target interface{}, key string, tag string) (string, bool) {
 }
 
 // Description retrieves the description tag from a key in target
-func Description(target interface{}, key string) (string, bool) {
+func Description(target any, key string) (string, bool) {
 	return KeyTag(target, key, "description")
 }
 
 // Validation retrieves the validation configuration, empty when unvalidated
-func Validation(target interface{}, key string) (string, bool) {
+func Validation(target any, key string) (string, bool) {
 	return KeyTag(target, key, "validate")
 }
 
 // DefaultString retrieves the default for a field
-func DefaultString(target interface{}, key string) (string, bool) {
+func DefaultString(target any, key string) (string, bool) {
 	return KeyTag(target, key, "default")
 }
 
 // Environment retrieves the environment variable used to set a value
-func Environment(target interface{}, key string) (string, bool) {
+func Environment(target any, key string) (string, bool) {
 	return KeyTag(target, key, "environment")
 }
 
 // URL retrieves the url for additional docs for a key
-func URL(target interface{}, key string) (string, bool) {
+func URL(target any, key string) (string, bool) {
 	return KeyTag(target, key, "url")
 }
 
 // IsDeprecated determines if the key is set to be deprecated on target
-func IsDeprecated(target interface{}, key string) (bool, bool) {
+func IsDeprecated(target any, key string) (bool, bool) {
 	d, ok := KeyTag(target, key, "deprecated")
 	if !ok {
 		return false, false
@@ -411,7 +411,7 @@ func IsDeprecated(target interface{}, key string) (bool, bool) {
 }
 
 // Type returns the type for a field as a string, target has to be a pointer
-func Type(target interface{}, key string) (string, bool) {
+func Type(target any, key string) (string, bool) {
 	tt := reflect.TypeOf(target)
 	if tt.Kind() != reflect.Ptr {
 		return "", false
@@ -449,7 +449,7 @@ func Type(target interface{}, key string) (string, bool) {
 }
 
 // Tag retrieve a tag for a struct field
-func Tag(s interface{}, field string, tag string) (string, bool) {
+func Tag(s any, field string, tag string) (string, bool) {
 	st := reflect.TypeOf(s)
 
 	if st.Kind() == reflect.Ptr {

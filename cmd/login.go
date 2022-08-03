@@ -108,7 +108,7 @@ func (p *loginCommand) login() error {
 		return err
 	}
 
-	request := map[string]interface{}{
+	request := map[string]any{
 		"username":   user,
 		"password":   pass,
 		"signature":  sig,

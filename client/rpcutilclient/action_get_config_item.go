@@ -26,7 +26,7 @@ type GetConfigItemRequester struct {
 // GetConfigItemOutput is the output from the get_config_item action
 type GetConfigItemOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // GetConfigItemResult is the result from a get_config_item action
@@ -82,7 +82,7 @@ func (d *GetConfigItemOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *GetConfigItemOutput) HashMap() map[string]interface{} {
+func (d *GetConfigItemOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *GetConfigItemOutput) JSON() ([]byte, error) {
 }
 
 // ParseGetConfigItemOutput parses the result value from the GetConfigItem action into target
-func (d *GetConfigItemOutput) ParseGetConfigItemOutput(target interface{}) error {
+func (d *GetConfigItemOutput) ParseGetConfigItemOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *GetConfigItemRequester) Do(ctx context.Context) (*GetConfigItemResult, 
 		}
 
 		output := &GetConfigItemOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -183,10 +183,10 @@ func (d *GetConfigItemOutput) Item() string {
 // Value is the value of the value output
 //
 // Description: The value that is in use
-func (d *GetConfigItemOutput) Value() interface{} {
+func (d *GetConfigItemOutput) Value() any {
 	val, ok := d.reply["value"]
 	if !ok || val == nil {
-		// we have to avoid returning nil.(interface{})
+		// we have to avoid returning nil.(any)
 		return nil
 	}
 

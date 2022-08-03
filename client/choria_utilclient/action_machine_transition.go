@@ -26,7 +26,7 @@ type MachineTransitionRequester struct {
 // MachineTransitionOutput is the output from the machine_transition action
 type MachineTransitionOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // MachineTransitionResult is the result from a machine_transition action
@@ -82,7 +82,7 @@ func (d *MachineTransitionOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *MachineTransitionOutput) HashMap() map[string]interface{} {
+func (d *MachineTransitionOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *MachineTransitionOutput) JSON() ([]byte, error) {
 }
 
 // ParseMachineTransitionOutput parses the result value from the MachineTransition action into target
-func (d *MachineTransitionOutput) ParseMachineTransitionOutput(target interface{}) error {
+func (d *MachineTransitionOutput) ParseMachineTransitionOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *MachineTransitionRequester) Do(ctx context.Context) (*MachineTransition
 		}
 
 		output := &MachineTransitionOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),

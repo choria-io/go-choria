@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -65,7 +65,7 @@ func (f *factsCommand) Configure() error {
 	return commonConfigure()
 }
 
-func (f *factsCommand) showJson(facts interface{}) error {
+func (f *factsCommand) showJson(facts any) error {
 	j, err := json.MarshalIndent(facts, "", "  ")
 	if err != nil {
 		return err

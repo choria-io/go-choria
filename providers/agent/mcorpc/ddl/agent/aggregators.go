@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,7 +25,7 @@ type actionAggregators struct {
 
 // OutputName is the name of the output being aggregated
 func (a *ActionAggregateItem) OutputName() string {
-	out := []interface{}{}
+	out := []any{}
 	err := json.Unmarshal(a.Arguments, &out)
 	if err != nil || len(out) < 1 {
 		return "unknown"
@@ -50,7 +50,7 @@ func newActionAggregators(a *Action) *actionAggregators {
 	// where possible and summaries are kind of optional, so we do not fail if
 	// there is a structural error in the spec
 	for _, spec := range a.Aggregation {
-		var args []interface{}
+		var args []any
 
 		err := json.Unmarshal(spec.Arguments, &args)
 		if err != nil {
@@ -73,7 +73,7 @@ func newActionAggregators(a *Action) *actionAggregators {
 	return agg
 }
 
-func (a *actionAggregators) aggregateItem(item string, val interface{}) {
+func (a *actionAggregators) aggregateItem(item string, val any) {
 	vs, ok := val.(string)
 	if !ok {
 		v, err := json.Marshal(val)

@@ -79,12 +79,12 @@ const (
 )
 
 type Log interface {
-	Debugf(format string, args ...interface{})
-	Infof(format string, args ...interface{})
-	Warnf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Panicf(format string, args ...interface{})
+	Debugf(format string, args ...any)
+	Infof(format string, args ...any)
+	Warnf(format string, args ...any)
+	Errorf(format string, args ...any)
+	Fatalf(format string, args ...any)
+	Panicf(format string, args ...any)
 }
 
 // ChoriaUtilClient to the choria_util agent
@@ -202,7 +202,7 @@ func (p *ChoriaUtilClient) Info() *InfoRequester {
 	d := &InfoRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "info",
 			client: p,
 		},
@@ -226,7 +226,7 @@ func (p *ChoriaUtilClient) MachineState() *MachineStateRequester {
 	d := &MachineStateRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "machine_state",
 			client: p,
 		},
@@ -245,7 +245,7 @@ func (p *ChoriaUtilClient) MachineStates() *MachineStatesRequester {
 	d := &MachineStatesRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "machine_states",
 			client: p,
 		},
@@ -273,7 +273,7 @@ func (p *ChoriaUtilClient) MachineTransition(inputTransition string) *MachineTra
 	d := &MachineTransitionRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"transition": inputTransition,
 			},
 			action: "machine_transition",

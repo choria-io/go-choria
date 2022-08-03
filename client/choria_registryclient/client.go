@@ -79,12 +79,12 @@ const (
 )
 
 type Log interface {
-	Debugf(format string, args ...interface{})
-	Infof(format string, args ...interface{})
-	Warnf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Panicf(format string, args ...interface{})
+	Debugf(format string, args ...any)
+	Infof(format string, args ...any)
+	Warnf(format string, args ...any)
+	Errorf(format string, args ...any)
+	Fatalf(format string, args ...any)
+	Panicf(format string, args ...any)
 }
 
 // ChoriaRegistryClient to the choria_registry agent
@@ -205,7 +205,7 @@ func (p *ChoriaRegistryClient) Names(inputPluginType string) *NamesRequester {
 	d := &NamesRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"plugin_type": inputPluginType,
 			},
 			action: "names",
@@ -233,7 +233,7 @@ func (p *ChoriaRegistryClient) Ddl(inputName string, inputPluginType string) *Dd
 	d := &DdlRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"name":        inputName,
 				"plugin_type": inputPluginType,
 			},

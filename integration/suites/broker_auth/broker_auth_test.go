@@ -81,7 +81,7 @@ var _ = Describe("Authentication", func() {
 		Describe("JWT Token Servers", func() {
 			It("Should fail for invalid server tokens", func() {
 				// signing the server jwt with the client signer which will yield an invalid connection
-				jwt, err := testutil.CreateSignedServerJWT(clientSignerPK, edPublicKey, map[string]interface{}{
+				jwt, err := testutil.CreateSignedServerJWT(clientSignerPK, edPublicKey, map[string]any{
 					"purpose":     tokens.ServerPurpose,
 					"public_key":  hex.EncodeToString(edPublicKey),
 					"collectives": []string{"c1"},
@@ -105,7 +105,7 @@ var _ = Describe("Authentication", func() {
 			})
 
 			It("Should fail for invalid nonce signatures", func() {
-				jwt, err := testutil.CreateSignedServerJWT(nodeSignerPK, edPublicKey, map[string]interface{}{
+				jwt, err := testutil.CreateSignedServerJWT(nodeSignerPK, edPublicKey, map[string]any{
 					"purpose":     tokens.ServerPurpose,
 					"public_key":  hex.EncodeToString(edPublicKey),
 					"collectives": []string{"c1"},
@@ -129,7 +129,7 @@ var _ = Describe("Authentication", func() {
 			})
 
 			It("Should accept valid servers and set permissions", func() {
-				jwt, err := testutil.CreateSignedServerJWT(nodeSignerPK, edPublicKey, map[string]interface{}{
+				jwt, err := testutil.CreateSignedServerJWT(nodeSignerPK, edPublicKey, map[string]any{
 					"purpose":     tokens.ServerPurpose,
 					"public_key":  hex.EncodeToString(edPublicKey),
 					"collectives": []string{"c1"},
@@ -188,7 +188,7 @@ var _ = Describe("Authentication", func() {
 		Describe("JWT Token Clients", func() {
 			It("Should fail for invalid client tokens", func() {
 				// signing the client jwt with the server signer which will yield an invalid connection
-				jwt, err := testutil.CreateSignedServerJWT(nodeSignerPK, edPublicKey, map[string]interface{}{
+				jwt, err := testutil.CreateSignedServerJWT(nodeSignerPK, edPublicKey, map[string]any{
 					"purpose":    tokens.ClientIDPurpose,
 					"callerid":   "up=ginkgo",
 					"public_key": hex.EncodeToString(edPublicKey),
@@ -212,7 +212,7 @@ var _ = Describe("Authentication", func() {
 			})
 
 			It("Should fail for invalid nonce signatures", func() {
-				jwt, err := testutil.CreateSignedServerJWT(clientSignerPK, edPublicKey, map[string]interface{}{
+				jwt, err := testutil.CreateSignedServerJWT(clientSignerPK, edPublicKey, map[string]any{
 					"purpose":    tokens.ClientIDPurpose,
 					"callerid":   "up=ginkgo",
 					"public_key": hex.EncodeToString(edPublicKey),
@@ -237,7 +237,7 @@ var _ = Describe("Authentication", func() {
 			})
 
 			It("Should require a caller id claim", func() {
-				jwt, err := testutil.CreateSignedServerJWT(clientSignerPK, edPublicKey, map[string]interface{}{
+				jwt, err := testutil.CreateSignedServerJWT(clientSignerPK, edPublicKey, map[string]any{
 					"purpose":    tokens.ClientIDPurpose,
 					"public_key": hex.EncodeToString(edPublicKey),
 				})
@@ -260,7 +260,7 @@ var _ = Describe("Authentication", func() {
 			})
 
 			It("Should accept valid clients and set permissions", func() {
-				jwt, err := testutil.CreateSignedServerJWT(clientSignerPK, edPublicKey, map[string]interface{}{
+				jwt, err := testutil.CreateSignedServerJWT(clientSignerPK, edPublicKey, map[string]any{
 					"purpose":    tokens.ClientIDPurpose,
 					"callerid":   "up=ginkgo",
 					"public_key": hex.EncodeToString(edPublicKey),

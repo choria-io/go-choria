@@ -79,12 +79,12 @@ const (
 )
 
 type Log interface {
-	Debugf(format string, args ...interface{})
-	Infof(format string, args ...interface{})
-	Warnf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Panicf(format string, args ...interface{})
+	Debugf(format string, args ...any)
+	Infof(format string, args ...any)
+	Warnf(format string, args ...any)
+	Errorf(format string, args ...any)
+	Fatalf(format string, args ...any)
+	Panicf(format string, args ...any)
 }
 
 // {{ .DDL.Metadata.Name | SnakeToCamel }}Client to the {{ .DDL.Metadata.Name }} agent
@@ -217,7 +217,7 @@ func (p *{{ $.DDL.Metadata.Name | SnakeToCamel }}Client) {{ $action.Name | Snake
 	d := &{{ $action.Name | SnakeToCamel }}Requester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{
+			args:   map[string]any{
 {{- range $name, $input := ChoriaRequiredInputs $action }}
 				"{{ $name }}": input{{ $name | SnakeToCamel }},
 {{- end }}

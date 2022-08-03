@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -27,7 +27,7 @@ func NewChoriaAgentPlugin(metadata *agents.Metadata, creator func(mgr server.Age
 }
 
 // PluginInstance implements plugin.Pluggable
-func (p *AgentPlugin) PluginInstance() interface{} {
+func (p *AgentPlugin) PluginInstance() any {
 	return p.creator
 }
 

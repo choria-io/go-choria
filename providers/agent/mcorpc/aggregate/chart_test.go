@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -19,7 +19,7 @@ var _ = Describe("ChartAggregator", func() {
 	)
 
 	BeforeEach(func() {
-		agg, err = NewChartAggregator([]interface{}{})
+		agg, err = NewChartAggregator([]any{})
 		Expect(err).ToNot(HaveOccurred())
 	})
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -33,7 +33,7 @@ type Watcher struct {
 	failEvent        string
 
 	deleteCb       func()
-	currentStateCb func() interface{}
+	currentStateCb func() any
 	govCancel      func()
 
 	mu sync.Mutex
@@ -206,8 +206,8 @@ func (w *Watcher) templateFuncMap() (template.FuncMap, error) {
 		return nil, err
 	}
 
-	return util.FuncMap(map[string]interface{}{
-		"lookup": func(q string, dflt interface{}) interface{} {
+	return util.FuncMap(map[string]any{
+		"lookup": func(q string, dflt any) any {
 			r := gjson.GetBytes(jinput, q)
 			if !r.Exists() {
 				w.Infof("Query did not match any data, returning default: %s", q)
@@ -243,7 +243,7 @@ func (w *Watcher) SetDeleteFunc(f func()) {
 	w.deleteCb = f
 }
 
-func (w *Watcher) NotifyWatcherState(state interface{}) {
+func (w *Watcher) NotifyWatcherState(state any) {
 	w.machine.NotifyWatcherState(w.name, state)
 }
 
@@ -283,7 +283,7 @@ func (w *Watcher) NotifyStateChance() {
 	}
 }
 
-func (w *Watcher) CurrentState() interface{} {
+func (w *Watcher) CurrentState() any {
 	if w.currentStateCb != nil {
 		return w.currentStateCb()
 	}
@@ -326,18 +326,18 @@ func (w *Watcher) ShouldWatch() bool {
 	return false
 }
 
-func (w *Watcher) Debugf(format string, args ...interface{}) {
+func (w *Watcher) Debugf(format string, args ...any) {
 	w.machine.Debugf(w.name, format, args...)
 }
 
-func (w *Watcher) Infof(format string, args ...interface{}) {
+func (w *Watcher) Infof(format string, args ...any) {
 	w.machine.Infof(w.name, format, args...)
 }
 
-func (w *Watcher) Warnf(format string, args ...interface{}) {
+func (w *Watcher) Warnf(format string, args ...any) {
 	w.machine.Warnf(w.name, format, args...)
 }
 
-func (w *Watcher) Errorf(format string, args ...interface{}) {
+func (w *Watcher) Errorf(format string, args ...any) {
 	w.machine.Errorf(w.name, format, args...)
 }

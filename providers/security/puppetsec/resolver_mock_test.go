@@ -42,6 +42,6 @@ func (m *MockResolver) QuerySrvRecords(records []string) (go_srvcache.Servers, e
 }
 
 // QuerySrvRecords indicates an expected call of QuerySrvRecords
-func (mr *MockResolverMockRecorder) QuerySrvRecords(records interface{}) *gomock.Call {
+func (mr *MockResolverMockRecorder) QuerySrvRecords(records any) *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuerySrvRecords", reflect.TypeOf((*MockResolver)(nil).QuerySrvRecords), records)
 }

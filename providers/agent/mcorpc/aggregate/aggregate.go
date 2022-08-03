@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,7 +10,7 @@ import (
 
 // Aggregator can summarize rpc reply data
 type Aggregator interface {
-	ProcessValue(interface{}) error
+	ProcessValue(any) error
 	ResultStrings() (map[string]string, error)
 	ResultFormattedStrings(format string) ([]string, error)
 	ResultJSON() ([]byte, error)
@@ -18,7 +18,7 @@ type Aggregator interface {
 }
 
 // AggregatorByType retrieves an instance of an aggregator given its type like "summarize"
-func AggregatorByType(t string, args []interface{}) (Aggregator, error) {
+func AggregatorByType(t string, args []any) (Aggregator, error) {
 	switch t {
 	case "summary", "boolean_summary":
 		return NewSummaryAggregator(args)
@@ -34,9 +34,9 @@ func AggregatorByType(t string, args []interface{}) (Aggregator, error) {
 	}
 }
 
-func parseFormatFromArgs(args []interface{}) string {
+func parseFormatFromArgs(args []any) string {
 	if len(args) == 2 {
-		cfg, ok := args[1].(map[string]interface{})
+		cfg, ok := args[1].(map[string]any)
 		if ok {
 			fmt, ok := cfg["format"]
 			if ok {

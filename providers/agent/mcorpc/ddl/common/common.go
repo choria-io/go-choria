@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -42,7 +42,7 @@ func EachFile(kind string, libdirs []string, cb func(name string, path string) (
 }
 
 // ValToDDLType converts val into the type described in typedef where typedef is a typical choria DDL supported type
-func ValToDDLType(typedef string, val string) (res interface{}, err error) {
+func ValToDDLType(typedef string, val string) (res any, err error) {
 	switch strings.ToLower(typedef) {
 	case "integer":
 		i, err := strconv.Atoi(val)
@@ -72,7 +72,7 @@ func ValToDDLType(typedef string, val string) (res interface{}, err error) {
 		return b, nil
 
 	case "hash":
-		res := map[string]interface{}{}
+		res := map[string]any{}
 		err := json.Unmarshal([]byte(val), &res)
 		if err != nil {
 			return nil, fmt.Errorf("'%s' is not a valid JSON string with a hash inside", val)
@@ -81,7 +81,7 @@ func ValToDDLType(typedef string, val string) (res interface{}, err error) {
 		return res, nil
 
 	case "array":
-		res := []interface{}{}
+		res := []any{}
 		err := json.Unmarshal([]byte(val), &res)
 		if err != nil {
 			return nil, fmt.Errorf("'%s' is not a valid JSON string with an array inside", val)

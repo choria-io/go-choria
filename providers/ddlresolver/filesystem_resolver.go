@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -23,7 +23,7 @@ func (f *FileSystemDDLResolver) String() string {
 	return "File System DDL Resolver"
 }
 
-func (f *FileSystemDDLResolver) DDL(ctx context.Context, kind string, name string, target interface{}, fw inter.Framework) error {
+func (f *FileSystemDDLResolver) DDL(ctx context.Context, kind string, name string, target any, fw inter.Framework) error {
 	b, err := f.DDLBytes(ctx, kind, name, fw)
 	if err != nil {
 		return err

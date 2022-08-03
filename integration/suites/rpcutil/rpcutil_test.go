@@ -140,7 +140,7 @@ var _ = Describe("rpcutil agent", func() {
 			Expect(res.Stats().OKCount()).To(Equal(1))
 
 			r := res.AllOutputs()[0]
-			Expect(r.Collectives()).To(Equal([]interface{}{"mcollective", "other"}))
+			Expect(r.Collectives()).To(Equal([]any{"mcollective", "other"}))
 			Expect(r.MainCollective()).To(Equal("mcollective"))
 		})
 	})
@@ -153,7 +153,7 @@ var _ = Describe("rpcutil agent", func() {
 
 			r := res.AllOutputs()[0]
 
-			Expect(r.Agents()).To(Equal([]interface{}{"rpcutil"}))
+			Expect(r.Agents()).To(Equal([]any{"rpcutil"}))
 			Expect(r.Version()).To(Equal(build.Version))
 			path, _ := filepath.Abs("testdata/server.conf")
 			Expect(r.Configfile()).To(Equal(path))
@@ -180,7 +180,7 @@ var _ = Describe("rpcutil agent", func() {
 
 			r := res.AllOutputs()[0].HashMap()
 
-			Expect(r).To(HaveKeyWithValue("classes", []interface{}{"one", "three", "two"}))
+			Expect(r).To(HaveKeyWithValue("classes", []any{"one", "three", "two"}))
 			Expect(r).To(HaveKeyWithValue("classes_count", float64(3)))
 			Expect(r).To(HaveKeyWithValue("connected_broker", "nats://localhost:4222"))
 		})
@@ -205,8 +205,8 @@ var _ = Describe("rpcutil agent", func() {
 			Expect(res.Stats().OKCount()).To(Equal(1))
 
 			r := res.AllOutputs()[0].Values()
-			Expect(r).To(HaveKeyWithValue("struct.foo", interface{}("bar")))
-			Expect(r).To(HaveKeyWithValue("bool", interface{}(false)))
+			Expect(r).To(HaveKeyWithValue("struct.foo", any("bar")))
+			Expect(r).To(HaveKeyWithValue("bool", any(false)))
 		})
 	})
 
@@ -217,11 +217,11 @@ var _ = Describe("rpcutil agent", func() {
 			Expect(res.Stats().OKCount()).To(Equal(1))
 
 			r := res.AllOutputs()[0]
-			Expect(r.Agents()).To(Equal([]interface{}{"rpcutil"}))
-			Expect(r.Classes()).To(Equal([]interface{}{"one", "three", "two"}))
-			Expect(r.Collectives()).To(Equal([]interface{}{"mcollective", "other"}))
+			Expect(r.Agents()).To(Equal([]any{"rpcutil"}))
+			Expect(r.Classes()).To(Equal([]any{"one", "three", "two"}))
+			Expect(r.Collectives()).To(Equal([]any{"mcollective", "other"}))
 			Expect(r.MainCollective()).To(Equal("mcollective"))
-			Expect(r.DataPlugins()).To(Equal([]interface{}{"choria", "scout"}))
+			Expect(r.DataPlugins()).To(Equal([]any{"choria", "scout"}))
 			fj, err := json.Marshal(r.Facts())
 			Expect(err).ToNot(HaveOccurred())
 			Expect(fj).To(MatchJSON(`{"bool":false,"float":1.1,"int":1,"string":"hello world","struct":{"foo":"bar"}}`))

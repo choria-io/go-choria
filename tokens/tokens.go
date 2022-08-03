@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -45,12 +45,12 @@ const (
 type MapClaims jwt.MapClaims
 
 // ParseToken parses token into claims and verify the token is valid using the pk
-func ParseToken(token string, claims jwt.Claims, pk interface{}) error {
+func ParseToken(token string, claims jwt.Claims, pk any) error {
 	if pk == nil {
 		return fmt.Errorf("invalid public key")
 	}
 
-	_, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (interface{}, error) {
+	_, err := jwt.ParseWithClaims(token, claims, func(t *jwt.Token) (any, error) {
 		switch t.Method.Alg() {
 		case algRS256, algRS512, algRS384:
 			pk, ok := pk.(*rsa.PublicKey)
@@ -132,7 +132,7 @@ func SignTokenWithKeyFile(claims jwt.Claims, pkFile string) (string, error) {
 }
 
 // SignToken signs a JWT using a RSA Private Key
-func SignToken(claims jwt.Claims, pk interface{}) (string, error) {
+func SignToken(claims jwt.Claims, pk any) (string, error) {
 	var stoken string
 	var err error
 

@@ -26,7 +26,7 @@ type InfoRequester struct {
 // InfoOutput is the output from the info action
 type InfoOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // InfoResult is the result from a info action
@@ -82,7 +82,7 @@ func (d *InfoOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *InfoOutput) HashMap() map[string]interface{} {
+func (d *InfoOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *InfoOutput) JSON() ([]byte, error) {
 }
 
 // ParseInfoOutput parses the result value from the Info action into target
-func (d *InfoOutput) ParseInfoOutput(target interface{}) error {
+func (d *InfoOutput) ParseInfoOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *InfoRequester) Do(ctx context.Context) (*InfoResult, error) {
 		}
 
 		output := &InfoOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -193,20 +193,20 @@ func (d *InfoOutput) ClientFlavour() string {
 // ClientOptions is the value of the client_options output
 //
 // Description: Active Middleware client options
-func (d *InfoOutput) ClientOptions() map[string]interface{} {
+func (d *InfoOutput) ClientOptions() map[string]any {
 	val := d.reply["client_options"]
 
-	return val.(map[string]interface{})
+	return val.(map[string]any)
 
 }
 
 // ClientStats is the value of the client_stats output
 //
 // Description: Middleware client statistics
-func (d *InfoOutput) ClientStats() map[string]interface{} {
+func (d *InfoOutput) ClientStats() map[string]any {
 	val := d.reply["client_stats"]
 
-	return val.(map[string]interface{})
+	return val.(map[string]any)
 
 }
 
@@ -273,10 +273,10 @@ func (d *InfoOutput) FacterDomain() string {
 // MiddlewareServers is the value of the middleware_servers output
 //
 // Description: Middleware Servers configured or discovered
-func (d *InfoOutput) MiddlewareServers() []interface{} {
+func (d *InfoOutput) MiddlewareServers() []any {
 	val := d.reply["middleware_servers"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 

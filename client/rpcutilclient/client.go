@@ -79,12 +79,12 @@ const (
 )
 
 type Log interface {
-	Debugf(format string, args ...interface{})
-	Infof(format string, args ...interface{})
-	Warnf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Panicf(format string, args ...interface{})
+	Debugf(format string, args ...any)
+	Infof(format string, args ...any)
+	Warnf(format string, args ...any)
+	Errorf(format string, args ...any)
+	Fatalf(format string, args ...any)
+	Panicf(format string, args ...any)
 }
 
 // RpcutilClient to the rpcutil agent
@@ -202,7 +202,7 @@ func (p *RpcutilClient) AgentInventory() *AgentInventoryRequester {
 	d := &AgentInventoryRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "agent_inventory",
 			client: p,
 		},
@@ -221,7 +221,7 @@ func (p *RpcutilClient) CollectiveInfo() *CollectiveInfoRequester {
 	d := &CollectiveInfoRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "collective_info",
 			client: p,
 		},
@@ -240,7 +240,7 @@ func (p *RpcutilClient) DaemonStats() *DaemonStatsRequester {
 	d := &DaemonStatsRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "daemon_stats",
 			client: p,
 		},
@@ -262,7 +262,7 @@ func (p *RpcutilClient) GetConfigItem(inputItem string) *GetConfigItemRequester 
 	d := &GetConfigItemRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"item": inputItem,
 			},
 			action: "get_config_item",
@@ -289,7 +289,7 @@ func (p *RpcutilClient) GetData(inputSource string) *GetDataRequester {
 	d := &GetDataRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"source": inputSource,
 			},
 			action: "get_data",
@@ -313,7 +313,7 @@ func (p *RpcutilClient) GetFact(inputFact string) *GetFactRequester {
 	d := &GetFactRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"fact": inputFact,
 			},
 			action: "get_fact",
@@ -337,7 +337,7 @@ func (p *RpcutilClient) GetFacts(inputFacts string) *GetFactsRequester {
 	d := &GetFactsRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"facts": inputFacts,
 			},
 			action: "get_facts",
@@ -358,7 +358,7 @@ func (p *RpcutilClient) Inventory() *InventoryRequester {
 	d := &InventoryRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "inventory",
 			client: p,
 		},
@@ -377,7 +377,7 @@ func (p *RpcutilClient) Ping() *PingRequester {
 	d := &PingRequester{
 		outc: nil,
 		r: &requester{
-			args:   map[string]interface{}{},
+			args:   map[string]any{},
 			action: "ping",
 			client: p,
 		},

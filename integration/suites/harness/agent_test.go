@@ -140,7 +140,7 @@ var _ = Describe("testing harness agent", func() {
 	Describe("action stubbing", func() {
 		It("Should do the correct stubs", FlakeAttempts(5), func() {
 			rpcutilAgent.Stub("ping", func(_ context.Context, _ *mcorpc.Request, reply *mcorpc.Reply, _ *mcorpc.Agent, _ inter.ConnectorInfo) {
-				reply.Data = map[string]interface{}{
+				reply.Data = map[string]any{
 					"pong": time.Now().Unix(),
 				}
 			}).AnyTimes()

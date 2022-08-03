@@ -26,7 +26,7 @@ type SignRequester struct {
 // SignOutput is the output from the sign action
 type SignOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // SignResult is the result from a sign action
@@ -82,7 +82,7 @@ func (d *SignOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *SignOutput) HashMap() map[string]interface{} {
+func (d *SignOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *SignOutput) JSON() ([]byte, error) {
 }
 
 // ParseSignOutput parses the result value from the Sign action into target
-func (d *SignOutput) ParseSignOutput(target interface{}) error {
+func (d *SignOutput) ParseSignOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *SignRequester) Do(ctx context.Context) (*SignResult, error) {
 		}
 
 		output := &SignOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),

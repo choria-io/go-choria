@@ -26,7 +26,7 @@ type RestartRequester struct {
 // RestartOutput is the output from the restart action
 type RestartOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // RestartResult is the result from a restart action
@@ -82,7 +82,7 @@ func (d *RestartOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *RestartOutput) HashMap() map[string]interface{} {
+func (d *RestartOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *RestartOutput) JSON() ([]byte, error) {
 }
 
 // ParseRestartOutput parses the result value from the Restart action into target
-func (d *RestartOutput) ParseRestartOutput(target interface{}) error {
+func (d *RestartOutput) ParseRestartOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *RestartRequester) Do(ctx context.Context) (*RestartResult, error) {
 		}
 
 		output := &RestartOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),

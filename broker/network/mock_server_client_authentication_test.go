@@ -101,7 +101,7 @@ func (m *MockClientAuthentication) RegisterUser(arg0 *server.User) {
 }
 
 // RegisterUser indicates an expected call of RegisterUser.
-func (mr *MockClientAuthenticationMockRecorder) RegisterUser(arg0 interface{}) *gomock.Call {
+func (mr *MockClientAuthenticationMockRecorder) RegisterUser(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterUser", reflect.TypeOf((*MockClientAuthentication)(nil).RegisterUser), arg0)
 }

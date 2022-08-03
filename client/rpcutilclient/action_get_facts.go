@@ -26,7 +26,7 @@ type GetFactsRequester struct {
 // GetFactsOutput is the output from the get_facts action
 type GetFactsOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // GetFactsResult is the result from a get_facts action
@@ -82,7 +82,7 @@ func (d *GetFactsOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *GetFactsOutput) HashMap() map[string]interface{} {
+func (d *GetFactsOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *GetFactsOutput) JSON() ([]byte, error) {
 }
 
 // ParseGetFactsOutput parses the result value from the GetFacts action into target
-func (d *GetFactsOutput) ParseGetFactsOutput(target interface{}) error {
+func (d *GetFactsOutput) ParseGetFactsOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *GetFactsRequester) Do(ctx context.Context) (*GetFactsResult, error) {
 		}
 
 		output := &GetFactsOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -173,9 +173,9 @@ func (d *GetFactsResult) EachOutput(h func(r *GetFactsOutput)) {
 // Values is the value of the values output
 //
 // Description: List of values of the facts
-func (d *GetFactsOutput) Values() map[string]interface{} {
+func (d *GetFactsOutput) Values() map[string]any {
 	val := d.reply["values"]
 
-	return val.(map[string]interface{})
+	return val.(map[string]any)
 
 }

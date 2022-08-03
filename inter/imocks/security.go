@@ -48,7 +48,7 @@ func (m *MockSecurityProvider) CachePublicData(arg0 []byte, arg1 string) error {
 }
 
 // CachePublicData indicates an expected call of CachePublicData.
-func (mr *MockSecurityProviderMockRecorder) CachePublicData(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) CachePublicData(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CachePublicData", reflect.TypeOf((*MockSecurityProvider)(nil).CachePublicData), arg0, arg1)
 }
@@ -63,7 +63,7 @@ func (m *MockSecurityProvider) CachedPublicData(arg0 string) ([]byte, error) {
 }
 
 // CachedPublicData indicates an expected call of CachedPublicData.
-func (mr *MockSecurityProviderMockRecorder) CachedPublicData(arg0 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) CachedPublicData(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CachedPublicData", reflect.TypeOf((*MockSecurityProvider)(nil).CachedPublicData), arg0)
 }
@@ -78,7 +78,7 @@ func (m *MockSecurityProvider) CallerIdentity(arg0 string) (string, error) {
 }
 
 // CallerIdentity indicates an expected call of CallerIdentity.
-func (mr *MockSecurityProviderMockRecorder) CallerIdentity(arg0 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) CallerIdentity(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallerIdentity", reflect.TypeOf((*MockSecurityProvider)(nil).CallerIdentity), arg0)
 }
@@ -106,7 +106,7 @@ func (m *MockSecurityProvider) ChecksumBytes(arg0 []byte) []byte {
 }
 
 // ChecksumBytes indicates an expected call of ChecksumBytes.
-func (mr *MockSecurityProviderMockRecorder) ChecksumBytes(arg0 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) ChecksumBytes(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChecksumBytes", reflect.TypeOf((*MockSecurityProvider)(nil).ChecksumBytes), arg0)
 }
@@ -120,7 +120,7 @@ func (m *MockSecurityProvider) ChecksumString(arg0 string) []byte {
 }
 
 // ChecksumString indicates an expected call of ChecksumString.
-func (mr *MockSecurityProviderMockRecorder) ChecksumString(arg0 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) ChecksumString(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ChecksumString", reflect.TypeOf((*MockSecurityProvider)(nil).ChecksumString), arg0)
 }
@@ -149,7 +149,7 @@ func (m *MockSecurityProvider) Enroll(arg0 context.Context, arg1 time.Duration, 
 }
 
 // Enroll indicates an expected call of Enroll.
-func (mr *MockSecurityProviderMockRecorder) Enroll(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) Enroll(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Enroll", reflect.TypeOf((*MockSecurityProvider)(nil).Enroll), arg0, arg1, arg2)
 }
@@ -164,7 +164,7 @@ func (m *MockSecurityProvider) HTTPClient(arg0 bool) (*http.Client, error) {
 }
 
 // HTTPClient indicates an expected call of HTTPClient.
-func (mr *MockSecurityProviderMockRecorder) HTTPClient(arg0 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) HTTPClient(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HTTPClient", reflect.TypeOf((*MockSecurityProvider)(nil).HTTPClient), arg0)
 }
@@ -206,7 +206,7 @@ func (m *MockSecurityProvider) PrivilegedVerifyByteSignature(arg0, arg1 []byte, 
 }
 
 // PrivilegedVerifyByteSignature indicates an expected call of PrivilegedVerifyByteSignature.
-func (mr *MockSecurityProviderMockRecorder) PrivilegedVerifyByteSignature(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) PrivilegedVerifyByteSignature(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrivilegedVerifyByteSignature", reflect.TypeOf((*MockSecurityProvider)(nil).PrivilegedVerifyByteSignature), arg0, arg1, arg2)
 }
@@ -220,7 +220,7 @@ func (m *MockSecurityProvider) PrivilegedVerifyStringSignature(arg0 string, arg1
 }
 
 // PrivilegedVerifyStringSignature indicates an expected call of PrivilegedVerifyStringSignature.
-func (mr *MockSecurityProviderMockRecorder) PrivilegedVerifyStringSignature(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) PrivilegedVerifyStringSignature(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrivilegedVerifyStringSignature", reflect.TypeOf((*MockSecurityProvider)(nil).PrivilegedVerifyStringSignature), arg0, arg1, arg2)
 }
@@ -294,7 +294,7 @@ func (m *MockSecurityProvider) RemoteSignRequest(arg0 context.Context, arg1 []by
 }
 
 // RemoteSignRequest indicates an expected call of RemoteSignRequest.
-func (mr *MockSecurityProviderMockRecorder) RemoteSignRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) RemoteSignRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoteSignRequest", reflect.TypeOf((*MockSecurityProvider)(nil).RemoteSignRequest), arg0, arg1)
 }
@@ -324,7 +324,7 @@ func (m *MockSecurityProvider) SignBytes(arg0 []byte) ([]byte, error) {
 }
 
 // SignBytes indicates an expected call of SignBytes.
-func (mr *MockSecurityProviderMockRecorder) SignBytes(arg0 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) SignBytes(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignBytes", reflect.TypeOf((*MockSecurityProvider)(nil).SignBytes), arg0)
 }
@@ -339,7 +339,7 @@ func (m *MockSecurityProvider) SignString(arg0 string) ([]byte, error) {
 }
 
 // SignString indicates an expected call of SignString.
-func (mr *MockSecurityProviderMockRecorder) SignString(arg0 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) SignString(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignString", reflect.TypeOf((*MockSecurityProvider)(nil).SignString), arg0)
 }
@@ -383,7 +383,7 @@ func (m *MockSecurityProvider) VerifyByteSignature(arg0, arg1 []byte, arg2 strin
 }
 
 // VerifyByteSignature indicates an expected call of VerifyByteSignature.
-func (mr *MockSecurityProviderMockRecorder) VerifyByteSignature(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) VerifyByteSignature(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyByteSignature", reflect.TypeOf((*MockSecurityProvider)(nil).VerifyByteSignature), arg0, arg1, arg2)
 }
@@ -397,7 +397,7 @@ func (m *MockSecurityProvider) VerifyCertificate(arg0 []byte, arg1 string) error
 }
 
 // VerifyCertificate indicates an expected call of VerifyCertificate.
-func (mr *MockSecurityProviderMockRecorder) VerifyCertificate(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) VerifyCertificate(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyCertificate", reflect.TypeOf((*MockSecurityProvider)(nil).VerifyCertificate), arg0, arg1)
 }
@@ -411,7 +411,7 @@ func (m *MockSecurityProvider) VerifyStringSignature(arg0 string, arg1 []byte, a
 }
 
 // VerifyStringSignature indicates an expected call of VerifyStringSignature.
-func (mr *MockSecurityProviderMockRecorder) VerifyStringSignature(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) VerifyStringSignature(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyStringSignature", reflect.TypeOf((*MockSecurityProvider)(nil).VerifyStringSignature), arg0, arg1, arg2)
 }

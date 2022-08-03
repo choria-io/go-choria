@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -69,14 +69,14 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		return td, pri
 	}
 
-	createSignedServerJWT := func(pk *rsa.PrivateKey, pubK ed25519.PublicKey, claims map[string]interface{}) string {
+	createSignedServerJWT := func(pk *rsa.PrivateKey, pubK ed25519.PublicKey, claims map[string]any) string {
 		signed, err := testutil.CreateSignedServerJWT(pk, pubK, claims)
 		Expect(err).ToNot(HaveOccurred())
 
 		return signed
 	}
 
-	createSignedClientJWT := func(pk *rsa.PrivateKey, claims map[string]interface{}) string {
+	createSignedClientJWT := func(pk *rsa.PrivateKey, claims map[string]any) string {
 		signed, err := testutil.CreateSignedClientJWT(pk, claims)
 		Expect(err).ToNot(HaveOccurred())
 
@@ -213,7 +213,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				It("Should reject non mTLS system users with a JWT but without the needed permissions", func() {
 					mockClient.EXPECT().RegisterUser(gomock.Any()).Times(0)
 					mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
-					copts.Token = createSignedClientJWT(privateKey, map[string]interface{}{
+					copts.Token = createSignedClientJWT(privateKey, map[string]any{
 						"purpose":    tokens.ClientIDPurpose,
 						"public_key": hex.EncodeToString(edPublicKey),
 					})
@@ -225,7 +225,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
 					mockClient.EXPECT().RegisterUser(gomock.Any()).Times(0)
 
-					copts.Token = createSignedClientJWT(privateKey, map[string]interface{}{
+					copts.Token = createSignedClientJWT(privateKey, map[string]any{
 						"purpose":     tokens.ClientIDPurpose,
 						"public_key":  hex.EncodeToString(edPublicKey),
 						"permissions": map[string]bool{},
@@ -238,7 +238,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					mockClient.EXPECT().GetTLSConnectionState().Return(nil).AnyTimes()
 					mockClient.EXPECT().RegisterUser(gomock.Any()).Times(0)
 
-					copts.Token = createSignedClientJWT(privateKey, map[string]interface{}{
+					copts.Token = createSignedClientJWT(privateKey, map[string]any{
 						"purpose":    tokens.ClientIDPurpose,
 						"public_key": hex.EncodeToString(edPublicKey),
 						"permissions": map[string]bool{
@@ -255,7 +255,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						Expect(user.Account).To(Equal(auth.systemAccount))
 					})
 
-					copts.Token = createSignedClientJWT(privateKey, map[string]interface{}{
+					copts.Token = createSignedClientJWT(privateKey, map[string]any{
 						"purpose":    tokens.ClientIDPurpose,
 						"public_key": hex.EncodeToString(edPublicKey),
 						"permissions": map[string]bool{
@@ -298,7 +298,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				auth.denyServers = false
 
 				copts = &server.ClientOpts{
-					Token: createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+					Token: createSignedServerJWT(privateKey, edPublicKey, map[string]any{
 						"purpose":     tokens.ServerPurpose,
 						"public_key":  hex.EncodeToString(edPublicKey),
 						"collectives": []string{"c1", "c2"},
@@ -415,7 +415,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				})
 
 				It("Should handle no collectives being set", func() {
-					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]any{
 						"purpose":    tokens.ServerPurpose,
 						"public_key": hex.EncodeToString(edPublicKey),
 					})
@@ -437,7 +437,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				})
 
 				It("Should support service hosts", func() {
-					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]any{
 						"purpose":     tokens.ServerPurpose,
 						"public_key":  hex.EncodeToString(edPublicKey),
 						"collectives": []string{"c1", "c2"},
@@ -467,7 +467,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				})
 
 				It("Should support Governors", func() {
-					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]any{
 						"purpose":     tokens.ServerPurpose,
 						"public_key":  hex.EncodeToString(edPublicKey),
 						"collectives": []string{"c1", "c2"},
@@ -509,7 +509,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				})
 
 				It("Should support Submission", func() {
-					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]any{
 						"purpose":     tokens.ServerPurpose,
 						"public_key":  hex.EncodeToString(edPublicKey),
 						"collectives": []string{"c1", "c2"},
@@ -543,7 +543,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 				Describe("Should support Streams", func() {
 					It("Should support Streams in the choria org", func() {
-						copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+						copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]any{
 							"purpose":     tokens.ServerPurpose,
 							"public_key":  hex.EncodeToString(edPublicKey),
 							"collectives": []string{"c1", "c2"},
@@ -582,7 +582,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						Expect(verified).To(BeTrue())
 					})
 					It("Should support Streams in other orgs", func() {
-						copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+						copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]any{
 							"purpose":     tokens.ServerPurpose,
 							"public_key":  hex.EncodeToString(edPublicKey),
 							"collectives": []string{"c1", "c2"},
@@ -624,7 +624,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				})
 
 				It("Should support additional subjects", func() {
-					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]interface{}{
+					copts.Token = createSignedServerJWT(privateKey, edPublicKey, map[string]any{
 						"purpose":      tokens.ServerPurpose,
 						"public_key":   hex.EncodeToString(edPublicKey),
 						"collectives":  []string{"c1", "c2"},
@@ -663,7 +663,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			BeforeEach(func() {
 				auth.clientJwtSigner = filepath.Join(td, "public.pem")
 				copts = &server.ClientOpts{
-					Token: createSignedClientJWT(privateKey, map[string]interface{}{
+					Token: createSignedClientJWT(privateKey, map[string]any{
 						"purpose":    tokens.ClientIDPurpose,
 						"public_key": hex.EncodeToString(edPublicKey),
 					}),
@@ -1084,7 +1084,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 		It("Should verify JWTs", func() {
 			auth.clientJwtSigner = filepath.Join(td, "public.pem")
-			signed := createSignedClientJWT(privateKey, map[string]interface{}{
+			signed := createSignedClientJWT(privateKey, map[string]any{
 				"exp": time.Now().UTC().Add(-time.Hour).Unix(),
 			})
 
@@ -1094,7 +1094,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 		It("Should detect missing callers", func() {
 			auth.clientJwtSigner = filepath.Join(td, "public.pem")
-			signed := createSignedClientJWT(privateKey, map[string]interface{}{
+			signed := createSignedClientJWT(privateKey, map[string]any{
 				"callerid": "",
 				"purpose":  tokens.ClientIDPurpose,
 			})
@@ -1109,7 +1109,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			_, err := auth.parseClientIDJWT(signed)
 			Expect(err).To(MatchError("not a client id token"))
 
-			signed = createSignedClientJWT(privateKey, map[string]interface{}{
+			signed = createSignedClientJWT(privateKey, map[string]any{
 				"purpose": "wrong",
 			})
 			_, err = auth.parseClientIDJWT(signed)
@@ -1121,7 +1121,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			auth.clientJwtSigner = filepath.Join(td, "public.pem")
-			signed := createSignedClientJWT(privateKey, map[string]interface{}{
+			signed := createSignedClientJWT(privateKey, map[string]any{
 				"purpose":    tokens.ClientIDPurpose,
 				"public_key": hex.EncodeToString(edPublicKey),
 			})

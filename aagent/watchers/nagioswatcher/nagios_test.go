@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -51,7 +51,7 @@ var _ = Describe("NagiosWatcher", func() {
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
 		mockMachine.EXPECT().TextFileDirectory().Return(td).AnyTimes()
 
-		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "1s", time.Second, map[string]interface{}{
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "1s", time.Second, map[string]any{
 			"plugin": "/bin/sh",
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -73,7 +73,7 @@ var _ = Describe("NagiosWatcher", func() {
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
 			watch.properties = nil
-			err = watch.setProperties(map[string]interface{}{
+			err = watch.setProperties(map[string]any{
 				"annotations": map[string]string{
 					"a1": "v1",
 					"a2": "v2",
@@ -94,24 +94,24 @@ var _ = Describe("NagiosWatcher", func() {
 
 		It("Should handle errors", func() {
 			watch.properties = nil
-			err = watch.setProperties(map[string]interface{}{})
+			err = watch.setProperties(map[string]any{})
 			Expect(err).To(MatchError("plugin or builtin is required"))
 
 			watch.properties = nil
-			err = watch.setProperties(map[string]interface{}{
+			err = watch.setProperties(map[string]any{
 				"plugin":  "cmd",
 				"builtin": "goss",
 			})
 			Expect(err).To(MatchError("cannot set plugin and builtin"))
 
 			watch.properties = nil
-			err = watch.setProperties(map[string]interface{}{
+			err = watch.setProperties(map[string]any{
 				"builtin": "goss",
 			})
 			Expect(err).To(MatchError("gossfile property is required for the goss builtin check"))
 
 			watch.properties = nil
-			err = watch.setProperties(map[string]interface{}{
+			err = watch.setProperties(map[string]any{
 				"builtin": "choria_status",
 			})
 			Expect(err).To(MatchError("last_message property is required for the choria_status builtin check"))
@@ -119,7 +119,7 @@ var _ = Describe("NagiosWatcher", func() {
 
 		It("Should handle valid goss setups", func() {
 			watch.properties = nil
-			err = watch.setProperties(map[string]interface{}{
+			err = watch.setProperties(map[string]any{
 				"builtin":  "goss",
 				"gossFile": "/x",
 			})
@@ -130,7 +130,7 @@ var _ = Describe("NagiosWatcher", func() {
 
 		It("Should handle valid choria_status setups", func() {
 			watch.properties = nil
-			err = watch.setProperties(map[string]interface{}{
+			err = watch.setProperties(map[string]any{
 				"builtin":      "choria_status",
 				"last_message": "1h",
 			})
@@ -204,19 +204,19 @@ var _ = Describe("NagiosWatcher", func() {
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
 
-			event := map[string]interface{}{}
+			event := map[string]any{}
 			err = json.Unmarshal(csj, &event)
 			Expect(err).ToNot(HaveOccurred())
 			delete(event, "id")
 
-			Expect(event).To(Equal(map[string]interface{}{
+			Expect(event).To(Equal(map[string]any{
 				"time":            "2020-12-02T16:02:33Z",
 				"type":            "io.choria.machine.watcher.nagios.v1.state",
 				"subject":         "ginkgo",
 				"specversion":     "1.0",
 				"source":          "io.choria.machine",
 				"datacontenttype": "application/json",
-				"data": map[string]interface{}{
+				"data": map[string]any{
 					"id":          "1234567890",
 					"identity":    "ginkgo",
 					"machine":     "nagios",
@@ -228,9 +228,9 @@ var _ = Describe("NagiosWatcher", func() {
 					"status_code": float64(0),
 					"runtime":     0.5,
 					"check_time":  float64(now.Unix()),
-					"annotations": map[string]interface{}{},
-					"perfdata":    []interface{}{},
-					"history":     []interface{}{},
+					"annotations": map[string]any{},
+					"perfdata":    []any{},
+					"history":     []any{},
 					"status":      "OK",
 					"output":      "OK: ginkgo",
 					"plugin":      "/bin/sh",

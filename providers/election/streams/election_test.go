@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -31,7 +31,7 @@ var _ = Describe("Choria KV Leader Election", func() {
 		js       nats.KeyValueManager
 		kv       nats.KeyValue
 		err      error
-		debugger func(f string, a ...interface{})
+		debugger func(f string, a ...any)
 	)
 
 	BeforeEach(func() {
@@ -45,7 +45,7 @@ var _ = Describe("Choria KV Leader Election", func() {
 			TTL:    750 * time.Millisecond,
 		})
 		Expect(err).ToNot(HaveOccurred())
-		debugger = func(f string, a ...interface{}) {
+		debugger = func(f string, a ...any) {
 			fmt.Fprintf(GinkgoWriter, fmt.Sprintf("%s\n", f), a...)
 		}
 	})

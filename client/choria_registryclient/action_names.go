@@ -26,7 +26,7 @@ type NamesRequester struct {
 // NamesOutput is the output from the names action
 type NamesOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // NamesResult is the result from a names action
@@ -82,7 +82,7 @@ func (d *NamesOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *NamesOutput) HashMap() map[string]interface{} {
+func (d *NamesOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *NamesOutput) JSON() ([]byte, error) {
 }
 
 // ParseNamesOutput parses the result value from the Names action into target
-func (d *NamesOutput) ParseNamesOutput(target interface{}) error {
+func (d *NamesOutput) ParseNamesOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *NamesRequester) Do(ctx context.Context) (*NamesResult, error) {
 		}
 
 		output := &NamesOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -173,10 +173,10 @@ func (d *NamesResult) EachOutput(h func(r *NamesOutput)) {
 // Names is the value of the names output
 //
 // Description: The names of all known DDL files
-func (d *NamesOutput) Names() []interface{} {
+func (d *NamesOutput) Names() []any {
 	val := d.reply["names"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 

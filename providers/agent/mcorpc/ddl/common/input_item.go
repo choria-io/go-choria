@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -32,14 +32,14 @@ var (
 
 // InputItem describes an individual input item
 type InputItem struct {
-	Prompt      string      `json:"prompt"`
-	Description string      `json:"description"`
-	Type        string      `json:"type"`
-	Default     interface{} `json:"default,omitempty"`
-	Optional    bool        `json:"optional"`
-	Validation  string      `json:"validation,omitempty"`
-	MaxLength   int         `json:"maxlength,omitempty"`
-	Enum        []string    `json:"list,omitempty"`
+	Prompt      string   `json:"prompt"`
+	Description string   `json:"description"`
+	Type        string   `json:"type"`
+	Default     any      `json:"default,omitempty"`
+	Optional    bool     `json:"optional"`
+	Validation  string   `json:"validation,omitempty"`
+	MaxLength   int      `json:"maxlength,omitempty"`
+	Enum        []string `json:"list,omitempty"`
 }
 
 func (i *InputItem) RenderConsole() ([]byte, error) {
@@ -56,12 +56,12 @@ func (i *InputItem) Required() bool {
 }
 
 // ConvertStringValue converts a string representing value into the correct type according to the input Type
-func (i *InputItem) ConvertStringValue(val string) (interface{}, error) {
+func (i *InputItem) ConvertStringValue(val string) (any, error) {
 	return ValToDDLType(i.Type, val)
 }
 
 // ValidateStringValue converts a value to the appropriate type for this input then validates it
-func (i *InputItem) ValidateStringValue(val string) (converted interface{}, warnings []string, err error) {
+func (i *InputItem) ValidateStringValue(val string) (converted any, warnings []string, err error) {
 	converted, err = ValToDDLType(i.Type, val)
 	if err != nil {
 		return nil, warnings, err
@@ -73,7 +73,7 @@ func (i *InputItem) ValidateStringValue(val string) (converted interface{}, warn
 }
 
 // ValidateValue validates a value against this input, should be of the right data type already. See ValToDDLType()
-func (i *InputItem) ValidateValue(val interface{}) (warnings []string, err error) {
+func (i *InputItem) ValidateValue(val any) (warnings []string, err error) {
 	switch strings.ToLower(i.Type) {
 	case InputTypeInteger, "int":
 		if !validator.IsAnyInt(val) && !validator.IsIntFloat64(val) {

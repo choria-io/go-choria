@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -31,12 +31,12 @@ type PingReply struct {
 }
 
 type GetFactReply struct {
-	Fact  string      `json:"fact"`
-	Value interface{} `json:"value"`
+	Fact  string `json:"fact"`
+	Value any    `json:"value"`
 }
 
 type GetFactsReply struct {
-	Values map[string]interface{} `json:"values"`
+	Values map[string]any `json:"values"`
 }
 
 type CollectiveInfoReply struct {
@@ -110,8 +110,8 @@ type GetConfigItemRequest struct {
 }
 
 type GetConfigItemResponse struct {
-	Item  string      `json:"item"`
-	Value interface{} `json:"value"`
+	Item  string `json:"item"`
+	Value any    `json:"value"`
 }
 
 // New creates a new rpcutil agent
@@ -297,7 +297,7 @@ func getFactsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Repl
 	}
 
 	o := &GetFactsReply{
-		Values: make(map[string]interface{}),
+		Values: make(map[string]any),
 	}
 	reply.Data = o
 
@@ -341,7 +341,7 @@ func collectiveInfoAction(ctx context.Context, req *mcorpc.Request, reply *mcorp
 	}
 }
 
-func getFactValue(fact string, c *config.Config, log *logrus.Entry) (interface{}, error) {
+func getFactValue(fact string, c *config.Config, log *logrus.Entry) (any, error) {
 	_, value, err := facts.GetFact(fact, c.FactSourceFile, log)
 	if err != nil {
 		return nil, err

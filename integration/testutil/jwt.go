@@ -13,8 +13,8 @@ import (
 	"github.com/golang-jwt/jwt"
 )
 
-func CreateSignedClientJWT(pk *rsa.PrivateKey, claims map[string]interface{}) (string, error) {
-	c := map[string]interface{}{
+func CreateSignedClientJWT(pk *rsa.PrivateKey, claims map[string]any) (string, error) {
+	c := map[string]any{
 		"exp":      time.Now().UTC().Add(time.Hour).Unix(),
 		"nbf":      time.Now().UTC().Add(-1 * time.Minute).Unix(),
 		"iat":      time.Now().UTC().Unix(),
@@ -31,8 +31,8 @@ func CreateSignedClientJWT(pk *rsa.PrivateKey, claims map[string]interface{}) (s
 	return token.SignedString(pk)
 }
 
-func CreateSignedServerJWT(pk *rsa.PrivateKey, pubK ed25519.PublicKey, claims map[string]interface{}) (string, error) {
-	c := map[string]interface{}{
+func CreateSignedServerJWT(pk *rsa.PrivateKey, pubK ed25519.PublicKey, claims map[string]any) (string, error) {
+	c := map[string]any{
 		"exp":        time.Now().UTC().Add(time.Hour).Unix(),
 		"nbf":        time.Now().UTC().Add(-1 * time.Minute).Unix(),
 		"iat":        time.Now().UTC().Unix(),

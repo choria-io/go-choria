@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -39,7 +39,7 @@ var _ = Describe("ScheduleWatcher", func() {
 		mockMachine.EXPECT().Version().Return("1.0.0").AnyTimes()
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
 
-		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]interface{}{
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]any{
 			"schedules": []string{"1 * * * *"},
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -55,7 +55,7 @@ var _ = Describe("ScheduleWatcher", func() {
 
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
-			err := watch.setProperties(map[string]interface{}{
+			err := watch.setProperties(map[string]any{
 				"duration":  "1h",
 				"schedules": []string{"* * * * *", "1 * * * *"},
 			})
@@ -68,11 +68,11 @@ var _ = Describe("ScheduleWatcher", func() {
 		})
 
 		It("Should handle errors", func() {
-			err := watch.setProperties(map[string]interface{}{})
+			err := watch.setProperties(map[string]any{})
 			Expect(err).To(MatchError("no schedules defined"))
 
 			watch.properties = nil
-			err = watch.setProperties(map[string]interface{}{
+			err = watch.setProperties(map[string]any{
 				"schedules": []string{"* * * * *", "1 * * * *"},
 			})
 			Expect(err).ToNot(HaveOccurred())
@@ -82,14 +82,14 @@ var _ = Describe("ScheduleWatcher", func() {
 		})
 
 		It("Should handle startup splays", func() {
-			err := watch.setProperties(map[string]interface{}{
+			err := watch.setProperties(map[string]any{
 				"start_splay": "1m",
 				"duration":    "1m",
 				"schedules":   []string{"* * * * *", "1 * * * *"},
 			})
 			Expect(err).To(MatchError("start splay 1m0s is bigger than half the duration 1m0s"))
 
-			err = watch.setProperties(map[string]interface{}{
+			err = watch.setProperties(map[string]any{
 				"start_splay": "10s",
 				"duration":    "1m",
 				"schedules":   []string{"* * * * *", "1 * * * *"},
@@ -104,19 +104,19 @@ var _ = Describe("ScheduleWatcher", func() {
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
 
-			event := map[string]interface{}{}
+			event := map[string]any{}
 			err = json.Unmarshal(csj, &event)
 			Expect(err).ToNot(HaveOccurred())
 			delete(event, "id")
 
-			Expect(event).To(Equal(map[string]interface{}{
+			Expect(event).To(Equal(map[string]any{
 				"time":            "2020-12-02T16:02:33Z",
 				"type":            "io.choria.machine.watcher.schedule.v1.state",
 				"subject":         "ginkgo",
 				"specversion":     "1.0",
 				"source":          "io.choria.machine",
 				"datacontenttype": "application/json",
-				"data": map[string]interface{}{
+				"data": map[string]any{
 					"id":        "1234567890",
 					"identity":  "ginkgo",
 					"machine":   "schedule",

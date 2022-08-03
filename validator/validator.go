@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -26,7 +26,7 @@ import (
 )
 
 // ValidateStruct validates all keys in a struct using their validate tag
-func ValidateStruct(target interface{}) (bool, error) {
+func ValidateStruct(target any) (bool, error) {
 	val := reflect.ValueOf(target)
 
 	if val.Kind() == reflect.Ptr {
@@ -37,7 +37,7 @@ func ValidateStruct(target interface{}) (bool, error) {
 }
 
 // ValidateStructField validates one field in a struct
-func ValidateStructField(target interface{}, field string) (bool, error) {
+func ValidateStructField(target any, field string) (bool, error) {
 	val := reflect.ValueOf(target)
 
 	if val.Kind() == reflect.Ptr {

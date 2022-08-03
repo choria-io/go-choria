@@ -26,7 +26,7 @@ type ResumeRequester struct {
 // ResumeOutput is the output from the resume action
 type ResumeOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // ResumeResult is the result from a resume action
@@ -82,7 +82,7 @@ func (d *ResumeOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *ResumeOutput) HashMap() map[string]interface{} {
+func (d *ResumeOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *ResumeOutput) JSON() ([]byte, error) {
 }
 
 // ParseResumeOutput parses the result value from the Resume action into target
-func (d *ResumeOutput) ParseResumeOutput(target interface{}) error {
+func (d *ResumeOutput) ParseResumeOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *ResumeRequester) Do(ctx context.Context) (*ResumeResult, error) {
 		}
 
 		output := &ResumeOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -173,7 +173,7 @@ func (d *ResumeResult) EachOutput(h func(r *ResumeOutput)) {
 // Checks is an optional input to the resume action
 //
 // Description: Check to resume, empty means all
-func (d *ResumeRequester) Checks(v []interface{}) *ResumeRequester {
+func (d *ResumeRequester) Checks(v []any) *ResumeRequester {
 	d.r.args["checks"] = v
 
 	return d
@@ -182,29 +182,29 @@ func (d *ResumeRequester) Checks(v []interface{}) *ResumeRequester {
 // Failed is the value of the failed output
 //
 // Description: List of checks that could not be resumed
-func (d *ResumeOutput) Failed() []interface{} {
+func (d *ResumeOutput) Failed() []any {
 	val := d.reply["failed"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // Skipped is the value of the skipped output
 //
 // Description: List of checks that was skipped
-func (d *ResumeOutput) Skipped() []interface{} {
+func (d *ResumeOutput) Skipped() []any {
 	val := d.reply["skipped"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // Transitioned is the value of the transitioned output
 //
 // Description: List of checks that were resumed
-func (d *ResumeOutput) Transitioned() []interface{} {
+func (d *ResumeOutput) Transitioned() []any {
 	val := d.reply["transitioned"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }

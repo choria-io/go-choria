@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,7 +15,7 @@ import (
 
 // Logger provides logging facilities
 type Logger interface {
-	Warnf(format string, args ...interface{})
+	Warnf(format string, args ...any)
 }
 
 func Match(needles []string, classes []string) bool {

@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,22 +16,22 @@ import (
 type Notifier struct{}
 
 // Debugf implements machine.NotificationService
-func (n *Notifier) Debugf(m machine.InfoSource, name string, format string, args ...interface{}) {
+func (n *Notifier) Debugf(m machine.InfoSource, name string, format string, args ...any) {
 	logrus.Debugf("%s#%s: %s", m.Name(), name, fmt.Sprintf(format, args...))
 }
 
 // Infof implements machine.NotificationService
-func (n *Notifier) Infof(m machine.InfoSource, name string, format string, args ...interface{}) {
+func (n *Notifier) Infof(m machine.InfoSource, name string, format string, args ...any) {
 	logrus.Infof("%s#%s: %s", m.Name(), name, fmt.Sprintf(format, args...))
 }
 
 // Warnf implements machine.NotificationService
-func (n *Notifier) Warnf(m machine.InfoSource, name string, format string, args ...interface{}) {
+func (n *Notifier) Warnf(m machine.InfoSource, name string, format string, args ...any) {
 	logrus.Warnf("%s#%s: %s", m.Name(), name, fmt.Sprintf(format, args...))
 }
 
 // Errorf implements machine.NotificationService
-func (n *Notifier) Errorf(m machine.InfoSource, name string, format string, args ...interface{}) {
+func (n *Notifier) Errorf(m machine.InfoSource, name string, format string, args ...any) {
 	logrus.Errorf("%s#%s: %s", m.Name(), name, fmt.Sprintf(format, args...))
 }
 

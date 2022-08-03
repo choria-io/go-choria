@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,7 +16,7 @@ var _ = Describe("AverageAggregator", func() {
 	)
 
 	BeforeEach(func() {
-		agg, err = NewAverageAggregator([]interface{}{})
+		agg, err = NewAverageAggregator([]any{})
 		Expect(err).ToNot(HaveOccurred())
 	})
 

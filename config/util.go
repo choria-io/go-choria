@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -84,7 +84,7 @@ func DNSFQDN() (string, error) {
 }
 
 // can be used to extract the parsed settings
-func parseDotConfFile(plugin string, conf *Config, target interface{}) error {
+func parseDotConfFile(plugin string, conf *Config, target any) error {
 	cfgPath := filepath.Join(conf.dotdDir(), fmt.Sprintf("%s.cfg", plugin))
 	if iu.FileExist(cfgPath) {
 		err := parseConfig(cfgPath, target, fmt.Sprintf("plugin.%s", plugin), conf.rawOpts)
@@ -123,7 +123,7 @@ func (c *Config) parseAllDotCfg() error {
 		ext := filepath.Ext(file.Name())
 		if ext == ".cfg" || ext == ".conf" {
 			base := path.Base(file.Name())
-			var target interface{}
+			var target any
 
 			if base == "choria.cfg" {
 				target = c.Choria
@@ -141,7 +141,7 @@ func (c *Config) parseAllDotCfg() error {
 }
 
 // parse a config file and fill in the given config structure based on its tags
-func parseConfig(path string, config interface{}, prefix string, found map[string]string) error {
+func parseConfig(path string, config any, prefix string, found map[string]string) error {
 	file, err := os.Open(path)
 	if err != nil {
 		return err
@@ -158,7 +158,7 @@ func parseConfig(path string, config interface{}, prefix string, found map[strin
 	return nil
 }
 
-func parseConfigContents(content io.Reader, config interface{}, prefix string, found map[string]string) {
+func parseConfigContents(content io.Reader, config any, prefix string, found map[string]string) {
 	scanner := bufio.NewScanner(content)
 	itemr := regexp.MustCompile(`(.+?)\s*=\s*(.+)`)
 	skipr := regexp.MustCompile(`^#|^$`)

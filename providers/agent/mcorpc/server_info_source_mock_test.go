@@ -51,7 +51,7 @@ func (m *MockServerInfoSource) AgentMetadata(arg0 string) (agents.Metadata, bool
 }
 
 // AgentMetadata indicates an expected call of AgentMetadata.
-func (mr *MockServerInfoSourceMockRecorder) AgentMetadata(arg0 interface{}) *gomock.Call {
+func (mr *MockServerInfoSourceMockRecorder) AgentMetadata(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AgentMetadata", reflect.TypeOf((*MockServerInfoSource)(nil).AgentMetadata), arg0)
 }
@@ -192,7 +192,7 @@ func (m *MockServerInfoSource) MachineTransition(arg0, arg1, arg2, arg3, arg4 st
 }
 
 // MachineTransition indicates an expected call of MachineTransition.
-func (mr *MockServerInfoSourceMockRecorder) MachineTransition(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockServerInfoSourceMockRecorder) MachineTransition(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MachineTransition", reflect.TypeOf((*MockServerInfoSource)(nil).MachineTransition), arg0, arg1, arg2, arg3, arg4)
 }
@@ -215,7 +215,7 @@ func (mr *MockServerInfoSourceMockRecorder) MachinesStatus() *gomock.Call {
 // NewEvent mocks base method.
 func (m *MockServerInfoSource) NewEvent(arg0 lifecycle.Type, arg1 ...lifecycle.Option) error {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0}
+	varargs := []any{arg0}
 	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
@@ -225,9 +225,9 @@ func (m *MockServerInfoSource) NewEvent(arg0 lifecycle.Type, arg1 ...lifecycle.O
 }
 
 // NewEvent indicates an expected call of NewEvent.
-func (mr *MockServerInfoSourceMockRecorder) NewEvent(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+func (mr *MockServerInfoSourceMockRecorder) NewEvent(arg0 any, arg1 ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0}, arg1...)
+	varargs := append([]any{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewEvent", reflect.TypeOf((*MockServerInfoSource)(nil).NewEvent), varargs...)
 }
 

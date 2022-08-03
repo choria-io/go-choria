@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -207,7 +207,7 @@ func (c *Generator) askEnum(name string, prompt string, help string, valid []str
 	}
 }
 
-func (c *Generator) showJSON(m string, d interface{}) error {
+func (c *Generator) showJSON(m string, d any) error {
 	j, err := json.MarshalIndent(d, "", "  ")
 	if err != nil {
 		return err
@@ -222,7 +222,7 @@ func (c *Generator) showJSON(m string, d interface{}) error {
 	return nil
 }
 
-func (c *Generator) urlValidator(v interface{}) error {
+func (c *Generator) urlValidator(v any) error {
 	err := survey.Required(v)
 	if err != nil {
 		return err
@@ -241,7 +241,7 @@ func (c *Generator) urlValidator(v interface{}) error {
 	return nil
 }
 
-func (c *Generator) semVerValidator(v interface{}) error {
+func (c *Generator) semVerValidator(v any) error {
 	err := survey.Required(v)
 	if err != nil {
 		return err
@@ -259,7 +259,7 @@ func (c *Generator) semVerValidator(v interface{}) error {
 	return nil
 }
 
-func (c *Generator) boolValidator(v interface{}) error {
+func (c *Generator) boolValidator(v any) error {
 	vs, ok := v.(string)
 	if !ok {
 		return fmt.Errorf("should be a string")
@@ -273,7 +273,7 @@ func (c *Generator) boolValidator(v interface{}) error {
 	return err
 }
 
-func (c *Generator) shortnameValidator(v interface{}) error {
+func (c *Generator) shortnameValidator(v any) error {
 	err := survey.Required(v)
 	if err != nil {
 		return err
@@ -300,7 +300,7 @@ func (c *Generator) askActions(agent *ddl.DDL) error {
 		}
 
 		qs := []*survey.Question{
-			c.askBasicItem("name", "Action Name", "", survey.ToLower, func(v interface{}) error {
+			c.askBasicItem("name", "Action Name", "", survey.ToLower, func(v any) error {
 				act := v.(string)
 
 				if act == "" {
@@ -360,7 +360,7 @@ For string data there are additional properties:
 
 			input := &common.InputItem{}
 			name := ""
-			survey.AskOne(&survey.Input{Message: "Input Name:"}, &name, survey.WithValidator(survey.Required), survey.WithValidator(func(v interface{}) error {
+			survey.AskOne(&survey.Input{Message: "Input Name:"}, &name, survey.WithValidator(survey.Required), survey.WithValidator(func(v any) error {
 				i := v.(string)
 				if i == "" {
 					return fmt.Errorf("input name is required")
@@ -458,7 +458,7 @@ any number of outputs.
 
 			output := &common.OutputItem{}
 			name := ""
-			survey.AskOne(&survey.Input{Message: "Name:"}, &name, survey.WithValidator(survey.Required), survey.WithValidator(func(v interface{}) error {
+			survey.AskOne(&survey.Input{Message: "Name:"}, &name, survey.WithValidator(survey.Required), survey.WithValidator(func(v any) error {
 				i := v.(string)
 				if i == "" {
 					return fmt.Errorf("output name is required")

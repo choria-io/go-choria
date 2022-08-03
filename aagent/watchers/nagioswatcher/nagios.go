@@ -112,7 +112,7 @@ type Watcher struct {
 	mu       *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error) {
+func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
 	var err error
 
 	nw := &Watcher{
@@ -161,7 +161,7 @@ func (w *Watcher) Delete() {
 	deletePromState(w.machineName, w.textFileDir, w)
 }
 
-func (w *Watcher) CurrentState() interface{} {
+func (w *Watcher) CurrentState() any {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
@@ -209,7 +209,7 @@ func (w *Watcher) validate() error {
 	return nil
 }
 
-func (w *Watcher) setProperties(props map[string]interface{}) error {
+func (w *Watcher) setProperties(props map[string]any) error {
 	if w.properties == nil {
 		w.properties = &properties{
 			Annotations: make(map[string]string),
@@ -371,7 +371,7 @@ func (w *Watcher) processOverrides(c string) (string, error) {
 
 func (w *Watcher) funcMap() template.FuncMap {
 	return template.FuncMap{
-		"o": func(path string, dflt interface{}) string {
+		"o": func(path string, dflt any) string {
 			overrides, err := w.machine.OverrideData()
 			if err != nil {
 				return fmt.Sprintf("%v", dflt)

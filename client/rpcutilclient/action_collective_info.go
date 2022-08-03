@@ -26,7 +26,7 @@ type CollectiveInfoRequester struct {
 // CollectiveInfoOutput is the output from the collective_info action
 type CollectiveInfoOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // CollectiveInfoResult is the result from a collective_info action
@@ -82,7 +82,7 @@ func (d *CollectiveInfoOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *CollectiveInfoOutput) HashMap() map[string]interface{} {
+func (d *CollectiveInfoOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *CollectiveInfoOutput) JSON() ([]byte, error) {
 }
 
 // ParseCollectiveInfoOutput parses the result value from the CollectiveInfo action into target
-func (d *CollectiveInfoOutput) ParseCollectiveInfoOutput(target interface{}) error {
+func (d *CollectiveInfoOutput) ParseCollectiveInfoOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *CollectiveInfoRequester) Do(ctx context.Context) (*CollectiveInfoResult
 		}
 
 		output := &CollectiveInfoOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -173,10 +173,10 @@ func (d *CollectiveInfoResult) EachOutput(h func(r *CollectiveInfoOutput)) {
 // Collectives is the value of the collectives output
 //
 // Description: All Collectives
-func (d *CollectiveInfoOutput) Collectives() []interface{} {
+func (d *CollectiveInfoOutput) Collectives() []any {
 	val := d.reply["collectives"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 

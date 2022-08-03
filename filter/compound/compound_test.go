@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -45,8 +45,8 @@ var _ = Describe("Compound", func() {
 				query := [][]map[string]string{{{"expr": tc.query}}}
 				df := ddl.FuncMap{
 					"scout": {
-						F: func(q string) interface{} {
-							return map[string]interface{}{
+						F: func(q string) any {
+							return map[string]any{
 								"name":    "bob",
 								"value":   1,
 								"version": "1.2.3",

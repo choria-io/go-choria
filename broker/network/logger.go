@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,32 +14,32 @@ type Logger struct {
 }
 
 // Noticef logs at info level
-func (l Logger) Noticef(format string, v ...interface{}) {
+func (l Logger) Noticef(format string, v ...any) {
 	l.log.Infof(format, v...)
 }
 
 // Fatalf logs at fatal level
-func (l Logger) Fatalf(format string, v ...interface{}) {
+func (l Logger) Fatalf(format string, v ...any) {
 	l.log.Fatalf(format, v...)
 }
 
 // Errorf logs at error lovel
-func (l Logger) Errorf(format string, v ...interface{}) {
+func (l Logger) Errorf(format string, v ...any) {
 	l.log.Errorf(format, v...)
 }
 
 // Warnf logs at warn lovel
-func (l Logger) Warnf(format string, v ...interface{}) {
+func (l Logger) Warnf(format string, v ...any) {
 	l.log.Warnf(format, v...)
 }
 
 // Debugf logs at debug level
-func (l Logger) Debugf(format string, v ...interface{}) {
+func (l Logger) Debugf(format string, v ...any) {
 	l.log.Debugf(format, v...)
 }
 
 // Tracef logs at debug level
-func (l Logger) Tracef(format string, v ...interface{}) {
+func (l Logger) Tracef(format string, v ...any) {
 	l.log.Debugf(format, v...)
 }
 

@@ -26,7 +26,7 @@ type MachineStatesRequester struct {
 // MachineStatesOutput is the output from the machine_states action
 type MachineStatesOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // MachineStatesResult is the result from a machine_states action
@@ -82,7 +82,7 @@ func (d *MachineStatesOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *MachineStatesOutput) HashMap() map[string]interface{} {
+func (d *MachineStatesOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *MachineStatesOutput) JSON() ([]byte, error) {
 }
 
 // ParseMachineStatesOutput parses the result value from the MachineStates action into target
-func (d *MachineStatesOutput) ParseMachineStatesOutput(target interface{}) error {
+func (d *MachineStatesOutput) ParseMachineStatesOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *MachineStatesRequester) Do(ctx context.Context) (*MachineStatesResult, 
 		}
 
 		output := &MachineStatesOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),
@@ -173,29 +173,29 @@ func (d *MachineStatesResult) EachOutput(h func(r *MachineStatesOutput)) {
 // MachineIds is the value of the machine_ids output
 //
 // Description: List of running machine IDs
-func (d *MachineStatesOutput) MachineIds() []interface{} {
+func (d *MachineStatesOutput) MachineIds() []any {
 	val := d.reply["machine_ids"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // MachineNames is the value of the machine_names output
 //
 // Description: List of running machine names
-func (d *MachineStatesOutput) MachineNames() []interface{} {
+func (d *MachineStatesOutput) MachineNames() []any {
 	val := d.reply["machine_names"]
 
-	return val.([]interface{})
+	return val.([]any)
 
 }
 
 // States is the value of the states output
 //
 // Description: Hash map of machine statusses indexed by machine ID
-func (d *MachineStatesOutput) States() map[string]interface{} {
+func (d *MachineStatesOutput) States() map[string]any {
 	val := d.reply["states"]
 
-	return val.(map[string]interface{})
+	return val.(map[string]any)
 
 }

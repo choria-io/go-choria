@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -75,7 +75,7 @@ func (e *Evaluator) prepare() error {
 	return nil
 }
 
-func (e *Evaluator) Evaluate(ctx context.Context, inputs interface{}) (pass bool, err error) {
+func (e *Evaluator) Evaluate(ctx context.Context, inputs any) (pass bool, err error) {
 	var buf *topdown.BufferTracer
 
 	opts := []rego.EvalOption{rego.EvalInput(inputs)}

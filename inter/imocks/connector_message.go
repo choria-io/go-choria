@@ -48,10 +48,10 @@ func (mr *MockConnectorMessageMockRecorder) Data() *gomock.Call {
 }
 
 // Msg mocks base method.
-func (m *MockConnectorMessage) Msg() interface{} {
+func (m *MockConnectorMessage) Msg() any {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Msg")
-	ret0, _ := ret[0].(interface{})
+	ret0, _ := ret[0].(any)
 	return ret0
 }
 

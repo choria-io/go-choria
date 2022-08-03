@@ -79,12 +79,12 @@ const (
 )
 
 type Log interface {
-	Debugf(format string, args ...interface{})
-	Infof(format string, args ...interface{})
-	Warnf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
-	Fatalf(format string, args ...interface{})
-	Panicf(format string, args ...interface{})
+	Debugf(format string, args ...any)
+	Infof(format string, args ...any)
+	Warnf(format string, args ...any)
+	Errorf(format string, args ...any)
+	Fatalf(format string, args ...any)
+	Panicf(format string, args ...any)
 }
 
 // ChoriaProvisionClient to the choria_provision agent
@@ -203,12 +203,12 @@ func (p *ChoriaProvisionClient) DiscoverNodes(ctx context.Context) (nodes []stri
 //    - config (string) - The configuration to apply to this node
 //
 // Optional Inputs:
-//    - action_policies (map[string]interface{}) - Map of Action Policy documents indexed by file name
+//    - action_policies (map[string]any) - Map of Action Policy documents indexed by file name
 //    - ca (string) - PEM text block for the CA
 //    - certificate (string) - PEM text block for the certificate
 //    - ecdh_public (string) - Required when sending a private key
 //    - key (string) - A RSA private key
-//    - opa_policies (map[string]interface{}) - Map of Open Policy Agent Policy documents indexed by file name
+//    - opa_policies (map[string]any) - Map of Open Policy Agent Policy documents indexed by file name
 //    - server_jwt (string) - JWT file used to identify the server to the broker for ed25519 based authentication
 //    - ssldir (string) - Directory for storing the certificate in
 //    - token (string) - Authentication token to pass to the server
@@ -216,7 +216,7 @@ func (p *ChoriaProvisionClient) Configure(inputConfig string) *ConfigureRequeste
 	d := &ConfigureRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"config": inputConfig,
 			},
 			action: "configure",
@@ -241,7 +241,7 @@ func (p *ChoriaProvisionClient) Gen25519(inputNonce string, inputToken string) *
 	d := &Gen25519Requester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"nonce": inputNonce,
 				"token": inputToken,
 			},
@@ -274,7 +274,7 @@ func (p *ChoriaProvisionClient) Gencsr(inputToken string) *GencsrRequester {
 	d := &GencsrRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"token": inputToken,
 			},
 			action: "gencsr",
@@ -298,7 +298,7 @@ func (p *ChoriaProvisionClient) Jwt(inputToken string) *JwtRequester {
 	d := &JwtRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"token": inputToken,
 			},
 			action: "jwt",
@@ -322,7 +322,7 @@ func (p *ChoriaProvisionClient) Reprovision(inputToken string) *ReprovisionReque
 	d := &ReprovisionRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"token": inputToken,
 			},
 			action: "reprovision",
@@ -349,7 +349,7 @@ func (p *ChoriaProvisionClient) Restart(inputToken string) *RestartRequester {
 	d := &RestartRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]interface{}{
+			args: map[string]any{
 				"token": inputToken,
 			},
 			action: "restart",

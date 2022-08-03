@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -256,8 +256,8 @@ var _ = Describe("McoRPC/External", func() {
 				prov.externalAction(ctx, req, rep, agent, nil)
 				Expect(rep.Statusmsg).To(Equal("OK"))
 				Expect(rep.Statuscode).To(Equal(mcorpc.OK))
-				Expect(rep.Data.(map[string]interface{})["hello"].(string)).To(Equal("world"))
-				Expect(rep.Data.(map[string]interface{})["optional"].(string)).To(Equal("optional default"))
+				Expect(rep.Data.(map[string]any)["hello"].(string)).To(Equal("world"))
+				Expect(rep.Data.(map[string]any)["optional"].(string)).To(Equal("optional default"))
 			})
 		}
 	})

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -49,7 +49,7 @@ func (t *ResumeCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		return err
 	}
 
-	var checks = make([]interface{}, len(t.checks))
+	var checks = make([]any, len(t.checks))
 	for i, c := range t.checks {
 		checks[i] = c
 	}

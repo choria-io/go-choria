@@ -49,7 +49,7 @@ func (m *MockActionMiddleware) Action(ctx context.Context, req *mcorpc.Request, 
 }
 
 // Action indicates an expected call of Action.
-func (mr *MockActionMiddlewareMockRecorder) Action(ctx, req, rep, agent, conn interface{}) *gomock.Call {
+func (mr *MockActionMiddlewareMockRecorder) Action(ctx, req, rep, agent, conn any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Action", reflect.TypeOf((*MockActionMiddleware)(nil).Action), ctx, req, rep, agent, conn)
 }

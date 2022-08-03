@@ -76,7 +76,7 @@ func (m *MockAgentManager) RegisterAgent(arg0 context.Context, arg1 string, arg2
 }
 
 // RegisterAgent indicates an expected call of RegisterAgent.
-func (mr *MockAgentManagerMockRecorder) RegisterAgent(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockAgentManagerMockRecorder) RegisterAgent(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterAgent", reflect.TypeOf((*MockAgentManager)(nil).RegisterAgent), arg0, arg1, arg2, arg3)
 }

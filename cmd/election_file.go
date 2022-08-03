@@ -61,7 +61,7 @@ func (f *tElectFileCommand) create() {
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
-	data := map[string]interface{}{
+	data := map[string]any{
 		"timestamp": time.Now(),
 		"count":     f.cnt,
 	}

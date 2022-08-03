@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -42,7 +42,7 @@ var _ = Describe("ExecWatcher", func() {
 
 		now = time.Unix(1606924953, 0)
 
-		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]interface{}{
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]any{
 			"command": "foo",
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -56,7 +56,7 @@ var _ = Describe("ExecWatcher", func() {
 	Describe("processTemplate", func() {
 		It("Should handle absent data correctly", func() {
 			mockMachine.EXPECT().Facts().Return([]byte(`{"location":"lon"}`)).AnyTimes()
-			mockMachine.EXPECT().Data().Return(map[string]interface{}{"x": 1}).AnyTimes()
+			mockMachine.EXPECT().Data().Return(map[string]any{"x": 1}).AnyTimes()
 
 			res, err := watch.ProcessTemplate(`{{lookup "facts.foo" "default"}}`)
 			Expect(err).ToNot(HaveOccurred())
@@ -65,7 +65,7 @@ var _ = Describe("ExecWatcher", func() {
 
 		It("Should handle present data correctly", func() {
 			mockMachine.EXPECT().Facts().Return([]byte(`{"location":"lon", "i":1}`))
-			mockMachine.EXPECT().Data().Return(map[string]interface{}{"x": 1})
+			mockMachine.EXPECT().Data().Return(map[string]any{"x": 1})
 
 			res, err := watch.ProcessTemplate(`{{lookup "facts.location" "default"| ToUpper }}: {{ lookup "i" 1 }} ({{ lookup "data.x" 2 }})`)
 			Expect(err).ToNot(HaveOccurred())
@@ -75,7 +75,7 @@ var _ = Describe("ExecWatcher", func() {
 
 	Describe("setProperties", func() {
 		It("Should parse valid properties", func() {
-			prop := map[string]interface{}{
+			prop := map[string]any{
 				"command":                   "cmd",
 				"timeout":                   "1.5s",
 				"environment":               []string{"key1=val1", "key2=val2"},
@@ -90,12 +90,12 @@ var _ = Describe("ExecWatcher", func() {
 
 		It("Should handle errors", func() {
 			watch.properties = nil
-			err := watch.setProperties(map[string]interface{}{})
+			err := watch.setProperties(map[string]any{})
 			Expect(err).To(MatchError("command is required"))
 		})
 
 		It("Should enforce 1 second intervals", func() {
-			err := watch.setProperties(map[string]interface{}{
+			err := watch.setProperties(map[string]any{
 				"command": "cmd",
 				"timeout": "0",
 			})
@@ -115,19 +115,19 @@ var _ = Describe("ExecWatcher", func() {
 			csj, err := cs.(*StateNotification).JSON()
 			Expect(err).ToNot(HaveOccurred())
 
-			event := map[string]interface{}{}
+			event := map[string]any{}
 			err = json.Unmarshal(csj, &event)
 			Expect(err).ToNot(HaveOccurred())
 			delete(event, "id")
 
-			Expect(event).To(Equal(map[string]interface{}{
+			Expect(event).To(Equal(map[string]any{
 				"time":            "2020-12-02T16:02:33Z",
 				"type":            "io.choria.machine.watcher.exec.v1.state",
 				"subject":         "ginkgo",
 				"specversion":     "1.0",
 				"source":          "io.choria.machine",
 				"datacontenttype": "application/json",
-				"data": map[string]interface{}{
+				"data": map[string]any{
 					"command":           "/bin/sh",
 					"previous_outcome":  "success",
 					"previous_run_time": float64(time.Second),

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -64,11 +64,11 @@ const (
 // Reply is the reply data as stipulated by MCollective RPC system.  The Data
 // has to be something that can be turned into JSON using the normal Marshal system
 type Reply struct {
-	Action          string      `json:"action"`
-	Statuscode      StatusCode  `json:"statuscode"`
-	Statusmsg       string      `json:"statusmsg"`
-	Data            interface{} `json:"data"`
-	DisableResponse bool        `json:"-"`
+	Action          string     `json:"action"`
+	Statuscode      StatusCode `json:"statuscode"`
+	Statusmsg       string     `json:"statusmsg"`
+	Data            any        `json:"data"`
+	DisableResponse bool       `json:"-"`
 }
 
 // Request is a request as defined by the MCollective RPC system.
@@ -106,7 +106,7 @@ type Request struct {
 //   }
 //
 //   // do stuff with rparams.Package
-func ParseRequestData(target interface{}, request *Request, reply *Reply) bool {
+func ParseRequestData(target any, request *Request, reply *Reply) bool {
 	err := json.Unmarshal(request.Data, target)
 	if err != nil {
 		reply.Statuscode = InvalidData

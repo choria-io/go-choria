@@ -26,7 +26,7 @@ type JwtRequester struct {
 // JwtOutput is the output from the jwt action
 type JwtOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // JwtResult is the result from a jwt action
@@ -82,7 +82,7 @@ func (d *JwtOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *JwtOutput) HashMap() map[string]interface{} {
+func (d *JwtOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *JwtOutput) JSON() ([]byte, error) {
 }
 
 // ParseJwtOutput parses the result value from the Jwt action into target
-func (d *JwtOutput) ParseJwtOutput(target interface{}) error {
+func (d *JwtOutput) ParseJwtOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *JwtRequester) Do(ctx context.Context) (*JwtResult, error) {
 		}
 
 		output := &JwtOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),

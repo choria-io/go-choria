@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -139,7 +139,7 @@ func (d *DDL) Timeout() time.Duration {
 }
 
 // ValidateAndConvertToDDLTypes converts args to the correct data types as declared in the DDL and validates everything
-func (d *DDL) ValidateAndConvertToDDLTypes(action string, args map[string]string) (result map[string]interface{}, warnings []string, err error) {
+func (d *DDL) ValidateAndConvertToDDLTypes(action string, args map[string]string) (result map[string]any, warnings []string, err error) {
 	acti, err := d.ActionInterface(action)
 	if err != nil {
 		return result, warnings, err
@@ -154,7 +154,7 @@ func (d *DDL) ToRuby() (string, error) {
 
 	funcs := template.FuncMap{
 		"fmtAggregateArguments": func(output string, v json.RawMessage) string {
-			var args []interface{}
+			var args []any
 			err := json.Unmarshal(v, &args)
 			if err != nil {
 				return fmt.Sprintf(":%s", output)
@@ -165,7 +165,7 @@ func (d *DDL) ToRuby() (string, error) {
 				return fmt.Sprintf(":%v", args[0])
 			case 2:
 				opts := ""
-				margs, ok := args[1].(map[string]interface{})
+				margs, ok := args[1].(map[string]any)
 				if ok {
 					for k, v := range margs {
 						vs, ok := v.(string)
@@ -203,7 +203,7 @@ func (d *DDL) ToRuby() (string, error) {
 			return `["` + strings.Join(v, `", "`) + `"]`
 		},
 
-		"goval2rubyval": func(typedef string, v interface{}) string {
+		"goval2rubyval": func(typedef string, v any) string {
 			if v == nil {
 				return `nil`
 			}

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -18,7 +18,7 @@ var _ = Describe("SummaryAggregator", func() {
 	)
 
 	BeforeEach(func() {
-		agg, err = NewSummaryAggregator([]interface{}{})
+		agg, err = NewSummaryAggregator([]any{})
 		Expect(err).ToNot(HaveOccurred())
 	})
 
@@ -80,7 +80,7 @@ var _ = Describe("SummaryAggregator", func() {
 
 	Describe("Value mapping", func() {
 		It("Should format correctly", func() {
-			agg, err = NewSummaryAggregator([]interface{}{"item", map[string]interface{}{
+			agg, err = NewSummaryAggregator([]any{"item", map[string]any{
 				"true":  "enabled",
 				"false": "disabled",
 				"thing": "other thing",
@@ -112,7 +112,7 @@ var _ = Describe("SummaryAggregator", func() {
 
 	Describe("CustomFormat", func() {
 		It("Should format correctly", func() {
-			agg, err = NewSummaryAggregator([]interface{}{"item", map[string]interface{}{"format": "%s=%v"}})
+			agg, err = NewSummaryAggregator([]any{"item", map[string]any{"format": "%s=%v"}})
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(agg.ProcessValue("med")).ToNot(HaveOccurred())

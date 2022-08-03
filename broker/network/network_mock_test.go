@@ -112,7 +112,7 @@ func (m *MockChoriaFramework) Logger(arg0 string) *logrus.Entry {
 }
 
 // Logger indicates an expected call of Logger.
-func (mr *MockChoriaFrameworkMockRecorder) Logger(arg0 interface{}) *gomock.Call {
+func (mr *MockChoriaFrameworkMockRecorder) Logger(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logger", reflect.TypeOf((*MockChoriaFramework)(nil).Logger), arg0)
 }

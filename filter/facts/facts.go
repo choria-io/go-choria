@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -20,9 +20,9 @@ import (
 
 // Logger provides logging facilities
 type Logger interface {
-	Warnf(format string, args ...interface{})
-	Debugf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
+	Warnf(format string, args ...any)
+	Debugf(format string, args ...any)
+	Errorf(format string, args ...any)
 }
 
 // MatchFacts match fact filters in a OR manner, only facts matching all filters will be true
@@ -59,7 +59,7 @@ func MatchFile(filters [][3]string, file string, log Logger) bool {
 
 // JSON parses the data, including doing any conversions needed, and returns JSON text
 func JSON(file string, log Logger) (json.RawMessage, error) {
-	out := make(map[string]interface{})
+	out := make(map[string]any)
 
 	for _, f := range strings.Split(file, string(os.PathListSeparator)) {
 		if f == "" {
@@ -85,7 +85,7 @@ func JSON(file string, log Logger) (json.RawMessage, error) {
 			}
 		}
 
-		facts := make(map[string]interface{})
+		facts := make(map[string]any)
 		err = json.Unmarshal(j, &facts)
 		if err != nil {
 			log.Errorf("Could not parse facts file: %s", err)

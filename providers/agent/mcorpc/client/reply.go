@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -30,7 +30,7 @@ type RPCReply struct {
 // MatchExpr determines if the Reply  matches expression q using the expr format.
 // The query q is expected to return a boolean type else an error will be raised
 func (r *RPCReply) MatchExpr(q string, prog *vm.Program) (bool, *vm.Program, error) {
-	env := map[string]interface{}{
+	env := map[string]any{
 		"msg":            r.Statusmsg,
 		"code":           int(r.Statuscode),
 		"data":           r.lookup,
@@ -92,7 +92,7 @@ func (r *RPCReply) isUnknownError() bool {
 }
 
 // https://github.com/tidwall/gjson/blob/master/SYNTAX.md
-func (r *RPCReply) lookup(query string) interface{} {
+func (r *RPCReply) lookup(query string) any {
 	return gjson.GetBytes(r.Data, query).Value()
 }
 
@@ -110,7 +110,7 @@ func (r *RPCReply) semverCompare(value string, cmp string) (bool, error) {
 	return cons.Check(v), nil
 }
 
-func (r *RPCReply) include(hay []interface{}, needle interface{}) bool {
+func (r *RPCReply) include(hay []any, needle any) bool {
 	// gjson always turns numbers into float64
 	i, ok := needle.(int)
 	if ok {

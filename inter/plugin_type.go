@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -37,7 +37,7 @@ const (
 // Pluggable is a Choria Plugin
 type Pluggable interface {
 	// PluginInstance is any structure that implements the plugin, should be right type for the kind of plugin
-	PluginInstance() interface{}
+	PluginInstance() any
 
 	// PluginName is a human friendly name for the plugin
 	PluginName() string

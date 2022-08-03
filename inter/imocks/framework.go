@@ -95,7 +95,7 @@ func (m *MockProtocolConstructor) NewMessage(arg0, arg1, arg2, arg3 string, arg4
 }
 
 // NewMessage indicates an expected call of NewMessage.
-func (mr *MockProtocolConstructorMockRecorder) NewMessage(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewMessage(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewMessage", reflect.TypeOf((*MockProtocolConstructor)(nil).NewMessage), arg0, arg1, arg2, arg3, arg4)
 }
@@ -110,7 +110,7 @@ func (m *MockProtocolConstructor) NewMessageFromRequest(arg0 protocol.Request, a
 }
 
 // NewMessageFromRequest indicates an expected call of NewMessageFromRequest.
-func (mr *MockProtocolConstructorMockRecorder) NewMessageFromRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewMessageFromRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewMessageFromRequest", reflect.TypeOf((*MockProtocolConstructor)(nil).NewMessageFromRequest), arg0, arg1)
 }
@@ -125,7 +125,7 @@ func (m *MockProtocolConstructor) NewReply(arg0 protocol.Request) (protocol.Repl
 }
 
 // NewReply indicates an expected call of NewReply.
-func (mr *MockProtocolConstructorMockRecorder) NewReply(arg0 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewReply(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReply", reflect.TypeOf((*MockProtocolConstructor)(nil).NewReply), arg0)
 }
@@ -140,7 +140,7 @@ func (m *MockProtocolConstructor) NewReplyFromMessage(arg0 string, arg1 inter.Me
 }
 
 // NewReplyFromMessage indicates an expected call of NewReplyFromMessage.
-func (mr *MockProtocolConstructorMockRecorder) NewReplyFromMessage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewReplyFromMessage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReplyFromMessage", reflect.TypeOf((*MockProtocolConstructor)(nil).NewReplyFromMessage), arg0, arg1)
 }
@@ -155,7 +155,7 @@ func (m *MockProtocolConstructor) NewReplyFromSecureReply(arg0 protocol.SecureRe
 }
 
 // NewReplyFromSecureReply indicates an expected call of NewReplyFromSecureReply.
-func (mr *MockProtocolConstructorMockRecorder) NewReplyFromSecureReply(arg0 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewReplyFromSecureReply(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReplyFromSecureReply", reflect.TypeOf((*MockProtocolConstructor)(nil).NewReplyFromSecureReply), arg0)
 }
@@ -170,7 +170,7 @@ func (m *MockProtocolConstructor) NewReplyFromTransportJSON(arg0 []byte, arg1 bo
 }
 
 // NewReplyFromTransportJSON indicates an expected call of NewReplyFromTransportJSON.
-func (mr *MockProtocolConstructorMockRecorder) NewReplyFromTransportJSON(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewReplyFromTransportJSON(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReplyFromTransportJSON", reflect.TypeOf((*MockProtocolConstructor)(nil).NewReplyFromTransportJSON), arg0, arg1)
 }
@@ -185,7 +185,7 @@ func (m *MockProtocolConstructor) NewReplyTransportForMessage(arg0 inter.Message
 }
 
 // NewReplyTransportForMessage indicates an expected call of NewReplyTransportForMessage.
-func (mr *MockProtocolConstructorMockRecorder) NewReplyTransportForMessage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewReplyTransportForMessage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReplyTransportForMessage", reflect.TypeOf((*MockProtocolConstructor)(nil).NewReplyTransportForMessage), arg0, arg1)
 }
@@ -200,7 +200,7 @@ func (m *MockProtocolConstructor) NewRequest(arg0, arg1, arg2, arg3 string, arg4
 }
 
 // NewRequest indicates an expected call of NewRequest.
-func (mr *MockProtocolConstructorMockRecorder) NewRequest(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewRequest(arg0, arg1, arg2, arg3, arg4, arg5, arg6 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequest", reflect.TypeOf((*MockProtocolConstructor)(nil).NewRequest), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
@@ -215,7 +215,7 @@ func (m *MockProtocolConstructor) NewRequestFromMessage(arg0 string, arg1 inter.
 }
 
 // NewRequestFromMessage indicates an expected call of NewRequestFromMessage.
-func (mr *MockProtocolConstructorMockRecorder) NewRequestFromMessage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewRequestFromMessage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestFromMessage", reflect.TypeOf((*MockProtocolConstructor)(nil).NewRequestFromMessage), arg0, arg1)
 }
@@ -230,7 +230,7 @@ func (m *MockProtocolConstructor) NewRequestFromSecureRequest(arg0 protocol.Secu
 }
 
 // NewRequestFromSecureRequest indicates an expected call of NewRequestFromSecureRequest.
-func (mr *MockProtocolConstructorMockRecorder) NewRequestFromSecureRequest(arg0 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewRequestFromSecureRequest(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestFromSecureRequest", reflect.TypeOf((*MockProtocolConstructor)(nil).NewRequestFromSecureRequest), arg0)
 }
@@ -245,7 +245,7 @@ func (m *MockProtocolConstructor) NewRequestFromTransportJSON(arg0 []byte, arg1 
 }
 
 // NewRequestFromTransportJSON indicates an expected call of NewRequestFromTransportJSON.
-func (mr *MockProtocolConstructorMockRecorder) NewRequestFromTransportJSON(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewRequestFromTransportJSON(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestFromTransportJSON", reflect.TypeOf((*MockProtocolConstructor)(nil).NewRequestFromTransportJSON), arg0, arg1)
 }
@@ -275,7 +275,7 @@ func (m *MockProtocolConstructor) NewRequestMessageFromTransportJSON(arg0 []byte
 }
 
 // NewRequestMessageFromTransportJSON indicates an expected call of NewRequestMessageFromTransportJSON.
-func (mr *MockProtocolConstructorMockRecorder) NewRequestMessageFromTransportJSON(arg0 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewRequestMessageFromTransportJSON(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestMessageFromTransportJSON", reflect.TypeOf((*MockProtocolConstructor)(nil).NewRequestMessageFromTransportJSON), arg0)
 }
@@ -290,7 +290,7 @@ func (m *MockProtocolConstructor) NewRequestTransportForMessage(arg0 inter.Messa
 }
 
 // NewRequestTransportForMessage indicates an expected call of NewRequestTransportForMessage.
-func (mr *MockProtocolConstructorMockRecorder) NewRequestTransportForMessage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewRequestTransportForMessage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestTransportForMessage", reflect.TypeOf((*MockProtocolConstructor)(nil).NewRequestTransportForMessage), arg0, arg1)
 }
@@ -305,7 +305,7 @@ func (m *MockProtocolConstructor) NewSecureReply(arg0 protocol.Reply) (protocol.
 }
 
 // NewSecureReply indicates an expected call of NewSecureReply.
-func (mr *MockProtocolConstructorMockRecorder) NewSecureReply(arg0 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewSecureReply(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSecureReply", reflect.TypeOf((*MockProtocolConstructor)(nil).NewSecureReply), arg0)
 }
@@ -320,7 +320,7 @@ func (m *MockProtocolConstructor) NewSecureReplyFromTransport(arg0 protocol.Tran
 }
 
 // NewSecureReplyFromTransport indicates an expected call of NewSecureReplyFromTransport.
-func (mr *MockProtocolConstructorMockRecorder) NewSecureReplyFromTransport(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewSecureReplyFromTransport(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSecureReplyFromTransport", reflect.TypeOf((*MockProtocolConstructor)(nil).NewSecureReplyFromTransport), arg0, arg1)
 }
@@ -335,7 +335,7 @@ func (m *MockProtocolConstructor) NewSecureRequest(arg0 protocol.Request) (proto
 }
 
 // NewSecureRequest indicates an expected call of NewSecureRequest.
-func (mr *MockProtocolConstructorMockRecorder) NewSecureRequest(arg0 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewSecureRequest(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSecureRequest", reflect.TypeOf((*MockProtocolConstructor)(nil).NewSecureRequest), arg0)
 }
@@ -350,7 +350,7 @@ func (m *MockProtocolConstructor) NewSecureRequestFromTransport(arg0 protocol.Tr
 }
 
 // NewSecureRequestFromTransport indicates an expected call of NewSecureRequestFromTransport.
-func (mr *MockProtocolConstructorMockRecorder) NewSecureRequestFromTransport(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewSecureRequestFromTransport(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSecureRequestFromTransport", reflect.TypeOf((*MockProtocolConstructor)(nil).NewSecureRequestFromTransport), arg0, arg1)
 }
@@ -365,7 +365,7 @@ func (m *MockProtocolConstructor) NewTransportForSecureReply(arg0 protocol.Secur
 }
 
 // NewTransportForSecureReply indicates an expected call of NewTransportForSecureReply.
-func (mr *MockProtocolConstructorMockRecorder) NewTransportForSecureReply(arg0 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewTransportForSecureReply(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewTransportForSecureReply", reflect.TypeOf((*MockProtocolConstructor)(nil).NewTransportForSecureReply), arg0)
 }
@@ -380,7 +380,7 @@ func (m *MockProtocolConstructor) NewTransportForSecureRequest(arg0 protocol.Sec
 }
 
 // NewTransportForSecureRequest indicates an expected call of NewTransportForSecureRequest.
-func (mr *MockProtocolConstructorMockRecorder) NewTransportForSecureRequest(arg0 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewTransportForSecureRequest(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewTransportForSecureRequest", reflect.TypeOf((*MockProtocolConstructor)(nil).NewTransportForSecureRequest), arg0)
 }
@@ -395,7 +395,7 @@ func (m *MockProtocolConstructor) NewTransportFromJSON(arg0 string) (protocol.Tr
 }
 
 // NewTransportFromJSON indicates an expected call of NewTransportFromJSON.
-func (mr *MockProtocolConstructorMockRecorder) NewTransportFromJSON(arg0 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewTransportFromJSON(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewTransportFromJSON", reflect.TypeOf((*MockProtocolConstructor)(nil).NewTransportFromJSON), arg0)
 }
@@ -410,7 +410,7 @@ func (m *MockProtocolConstructor) NewTransportMessage(arg0 string) (protocol.Tra
 }
 
 // NewTransportMessage indicates an expected call of NewTransportMessage.
-func (mr *MockProtocolConstructorMockRecorder) NewTransportMessage(arg0 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewTransportMessage(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewTransportMessage", reflect.TypeOf((*MockProtocolConstructor)(nil).NewTransportMessage), arg0)
 }
@@ -448,7 +448,7 @@ func (m *MockConnectionManager) NewConnector(arg0 context.Context, arg1 func() (
 }
 
 // NewConnector indicates an expected call of NewConnector.
-func (mr *MockConnectionManagerMockRecorder) NewConnector(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockConnectionManagerMockRecorder) NewConnector(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewConnector", reflect.TypeOf((*MockConnectionManager)(nil).NewConnector), arg0, arg1, arg2, arg3)
 }
@@ -534,9 +534,9 @@ func (mr *MockFrameworkMockRecorder) ClientTLSConfig() *gomock.Call {
 }
 
 // Colorize mocks base method.
-func (m *MockFramework) Colorize(arg0, arg1 string, arg2 ...interface{}) string {
+func (m *MockFramework) Colorize(arg0, arg1 string, arg2 ...any) string {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
+	varargs := []any{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
@@ -546,9 +546,9 @@ func (m *MockFramework) Colorize(arg0, arg1 string, arg2 ...interface{}) string 
 }
 
 // Colorize indicates an expected call of Colorize.
-func (mr *MockFrameworkMockRecorder) Colorize(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) Colorize(arg0, arg1 any, arg2 ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	varargs := append([]any{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Colorize", reflect.TypeOf((*MockFramework)(nil).Colorize), varargs...)
 }
 
@@ -616,7 +616,7 @@ func (m *MockFramework) Enroll(arg0 context.Context, arg1 time.Duration, arg2 fu
 }
 
 // Enroll indicates an expected call of Enroll.
-func (mr *MockFrameworkMockRecorder) Enroll(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) Enroll(arg0, arg1, arg2 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Enroll", reflect.TypeOf((*MockFramework)(nil).Enroll), arg0, arg1, arg2)
 }
@@ -675,7 +675,7 @@ func (m *MockFramework) FacterStringFact(arg0 string) (string, error) {
 }
 
 // FacterStringFact indicates an expected call of FacterStringFact.
-func (mr *MockFrameworkMockRecorder) FacterStringFact(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) FacterStringFact(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "FacterStringFact", reflect.TypeOf((*MockFramework)(nil).FacterStringFact), arg0)
 }
@@ -732,7 +732,7 @@ func (m *MockFramework) GovernorSubject(arg0 string) string {
 }
 
 // GovernorSubject indicates an expected call of GovernorSubject.
-func (mr *MockFrameworkMockRecorder) GovernorSubject(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) GovernorSubject(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GovernorSubject", reflect.TypeOf((*MockFramework)(nil).GovernorSubject), arg0)
 }
@@ -747,7 +747,7 @@ func (m *MockFramework) HTTPClient(arg0 bool) (*http.Client, error) {
 }
 
 // HTTPClient indicates an expected call of HTTPClient.
-func (mr *MockFrameworkMockRecorder) HTTPClient(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) HTTPClient(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HTTPClient", reflect.TypeOf((*MockFramework)(nil).HTTPClient), arg0)
 }
@@ -761,7 +761,7 @@ func (m *MockFramework) HasCollective(arg0 string) bool {
 }
 
 // HasCollective indicates an expected call of HasCollective.
-func (mr *MockFrameworkMockRecorder) HasCollective(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) HasCollective(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HasCollective", reflect.TypeOf((*MockFramework)(nil).HasCollective), arg0)
 }
@@ -783,7 +783,7 @@ func (mr *MockFrameworkMockRecorder) IsFederated() *gomock.Call {
 // KV mocks base method.
 func (m *MockFramework) KV(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 bool, arg4 ...kv.Option) (nats.KeyValue, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1, arg2, arg3}
+	varargs := []any{arg0, arg1, arg2, arg3}
 	for _, a := range arg4 {
 		varargs = append(varargs, a)
 	}
@@ -794,16 +794,16 @@ func (m *MockFramework) KV(arg0 context.Context, arg1 inter.Connector, arg2 stri
 }
 
 // KV indicates an expected call of KV.
-func (mr *MockFrameworkMockRecorder) KV(arg0, arg1, arg2, arg3 interface{}, arg4 ...interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) KV(arg0, arg1, arg2, arg3 any, arg4 ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1, arg2, arg3}, arg4...)
+	varargs := append([]any{arg0, arg1, arg2, arg3}, arg4...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KV", reflect.TypeOf((*MockFramework)(nil).KV), varargs...)
 }
 
 // KVWithConn mocks base method.
 func (m *MockFramework) KVWithConn(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 bool, arg4 ...kv.Option) (nats.KeyValue, inter.Connector, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1, arg2, arg3}
+	varargs := []any{arg0, arg1, arg2, arg3}
 	for _, a := range arg4 {
 		varargs = append(varargs, a)
 	}
@@ -815,9 +815,9 @@ func (m *MockFramework) KVWithConn(arg0 context.Context, arg1 inter.Connector, a
 }
 
 // KVWithConn indicates an expected call of KVWithConn.
-func (mr *MockFrameworkMockRecorder) KVWithConn(arg0, arg1, arg2, arg3 interface{}, arg4 ...interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) KVWithConn(arg0, arg1, arg2, arg3 any, arg4 ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1, arg2, arg3}, arg4...)
+	varargs := append([]any{arg0, arg1, arg2, arg3}, arg4...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "KVWithConn", reflect.TypeOf((*MockFramework)(nil).KVWithConn), varargs...)
 }
 
@@ -830,7 +830,7 @@ func (m *MockFramework) Logger(arg0 string) *logrus.Entry {
 }
 
 // Logger indicates an expected call of Logger.
-func (mr *MockFrameworkMockRecorder) Logger(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) Logger(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logger", reflect.TypeOf((*MockFramework)(nil).Logger), arg0)
 }
@@ -875,7 +875,7 @@ func (m *MockFramework) NewConnector(arg0 context.Context, arg1 func() (srvcache
 }
 
 // NewConnector indicates an expected call of NewConnector.
-func (mr *MockFrameworkMockRecorder) NewConnector(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewConnector(arg0, arg1, arg2, arg3 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewConnector", reflect.TypeOf((*MockFramework)(nil).NewConnector), arg0, arg1, arg2, arg3)
 }
@@ -883,7 +883,7 @@ func (mr *MockFrameworkMockRecorder) NewConnector(arg0, arg1, arg2, arg3 interfa
 // NewElection mocks base method.
 func (m *MockFramework) NewElection(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 bool, arg4 ...election.Option) (inter.Election, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1, arg2, arg3}
+	varargs := []any{arg0, arg1, arg2, arg3}
 	for _, a := range arg4 {
 		varargs = append(varargs, a)
 	}
@@ -894,16 +894,16 @@ func (m *MockFramework) NewElection(arg0 context.Context, arg1 inter.Connector, 
 }
 
 // NewElection indicates an expected call of NewElection.
-func (mr *MockFrameworkMockRecorder) NewElection(arg0, arg1, arg2, arg3 interface{}, arg4 ...interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewElection(arg0, arg1, arg2, arg3 any, arg4 ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1, arg2, arg3}, arg4...)
+	varargs := append([]any{arg0, arg1, arg2, arg3}, arg4...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewElection", reflect.TypeOf((*MockFramework)(nil).NewElection), varargs...)
 }
 
 // NewElectionWithConn mocks base method.
 func (m *MockFramework) NewElectionWithConn(arg0 context.Context, arg1 inter.Connector, arg2 string, arg3 bool, arg4 ...election.Option) (inter.Election, inter.Connector, error) {
 	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1, arg2, arg3}
+	varargs := []any{arg0, arg1, arg2, arg3}
 	for _, a := range arg4 {
 		varargs = append(varargs, a)
 	}
@@ -915,9 +915,9 @@ func (m *MockFramework) NewElectionWithConn(arg0 context.Context, arg1 inter.Con
 }
 
 // NewElectionWithConn indicates an expected call of NewElectionWithConn.
-func (mr *MockFrameworkMockRecorder) NewElectionWithConn(arg0, arg1, arg2, arg3 interface{}, arg4 ...interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewElectionWithConn(arg0, arg1, arg2, arg3 any, arg4 ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1, arg2, arg3}, arg4...)
+	varargs := append([]any{arg0, arg1, arg2, arg3}, arg4...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewElectionWithConn", reflect.TypeOf((*MockFramework)(nil).NewElectionWithConn), varargs...)
 }
 
@@ -931,7 +931,7 @@ func (m *MockFramework) NewMessage(arg0, arg1, arg2, arg3 string, arg4 inter.Mes
 }
 
 // NewMessage indicates an expected call of NewMessage.
-func (mr *MockFrameworkMockRecorder) NewMessage(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewMessage(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewMessage", reflect.TypeOf((*MockFramework)(nil).NewMessage), arg0, arg1, arg2, arg3, arg4)
 }
@@ -946,7 +946,7 @@ func (m *MockFramework) NewMessageFromRequest(arg0 protocol.Request, arg1 string
 }
 
 // NewMessageFromRequest indicates an expected call of NewMessageFromRequest.
-func (mr *MockFrameworkMockRecorder) NewMessageFromRequest(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewMessageFromRequest(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewMessageFromRequest", reflect.TypeOf((*MockFramework)(nil).NewMessageFromRequest), arg0, arg1)
 }
@@ -961,7 +961,7 @@ func (m *MockFramework) NewReply(arg0 protocol.Request) (protocol.Reply, error) 
 }
 
 // NewReply indicates an expected call of NewReply.
-func (mr *MockFrameworkMockRecorder) NewReply(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewReply(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReply", reflect.TypeOf((*MockFramework)(nil).NewReply), arg0)
 }
@@ -976,7 +976,7 @@ func (m *MockFramework) NewReplyFromMessage(arg0 string, arg1 inter.Message) (pr
 }
 
 // NewReplyFromMessage indicates an expected call of NewReplyFromMessage.
-func (mr *MockFrameworkMockRecorder) NewReplyFromMessage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewReplyFromMessage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReplyFromMessage", reflect.TypeOf((*MockFramework)(nil).NewReplyFromMessage), arg0, arg1)
 }
@@ -991,7 +991,7 @@ func (m *MockFramework) NewReplyFromSecureReply(arg0 protocol.SecureReply) (prot
 }
 
 // NewReplyFromSecureReply indicates an expected call of NewReplyFromSecureReply.
-func (mr *MockFrameworkMockRecorder) NewReplyFromSecureReply(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewReplyFromSecureReply(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReplyFromSecureReply", reflect.TypeOf((*MockFramework)(nil).NewReplyFromSecureReply), arg0)
 }
@@ -1006,7 +1006,7 @@ func (m *MockFramework) NewReplyFromTransportJSON(arg0 []byte, arg1 bool) (proto
 }
 
 // NewReplyFromTransportJSON indicates an expected call of NewReplyFromTransportJSON.
-func (mr *MockFrameworkMockRecorder) NewReplyFromTransportJSON(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewReplyFromTransportJSON(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReplyFromTransportJSON", reflect.TypeOf((*MockFramework)(nil).NewReplyFromTransportJSON), arg0, arg1)
 }
@@ -1021,7 +1021,7 @@ func (m *MockFramework) NewReplyTransportForMessage(arg0 inter.Message, arg1 pro
 }
 
 // NewReplyTransportForMessage indicates an expected call of NewReplyTransportForMessage.
-func (mr *MockFrameworkMockRecorder) NewReplyTransportForMessage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewReplyTransportForMessage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReplyTransportForMessage", reflect.TypeOf((*MockFramework)(nil).NewReplyTransportForMessage), arg0, arg1)
 }
@@ -1036,7 +1036,7 @@ func (m *MockFramework) NewRequest(arg0, arg1, arg2, arg3 string, arg4 int, arg5
 }
 
 // NewRequest indicates an expected call of NewRequest.
-func (mr *MockFrameworkMockRecorder) NewRequest(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewRequest(arg0, arg1, arg2, arg3, arg4, arg5, arg6 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequest", reflect.TypeOf((*MockFramework)(nil).NewRequest), arg0, arg1, arg2, arg3, arg4, arg5, arg6)
 }
@@ -1051,7 +1051,7 @@ func (m *MockFramework) NewRequestFromMessage(arg0 string, arg1 inter.Message) (
 }
 
 // NewRequestFromMessage indicates an expected call of NewRequestFromMessage.
-func (mr *MockFrameworkMockRecorder) NewRequestFromMessage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewRequestFromMessage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestFromMessage", reflect.TypeOf((*MockFramework)(nil).NewRequestFromMessage), arg0, arg1)
 }
@@ -1066,7 +1066,7 @@ func (m *MockFramework) NewRequestFromSecureRequest(arg0 protocol.SecureRequest)
 }
 
 // NewRequestFromSecureRequest indicates an expected call of NewRequestFromSecureRequest.
-func (mr *MockFrameworkMockRecorder) NewRequestFromSecureRequest(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewRequestFromSecureRequest(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestFromSecureRequest", reflect.TypeOf((*MockFramework)(nil).NewRequestFromSecureRequest), arg0)
 }
@@ -1081,7 +1081,7 @@ func (m *MockFramework) NewRequestFromTransportJSON(arg0 []byte, arg1 bool) (pro
 }
 
 // NewRequestFromTransportJSON indicates an expected call of NewRequestFromTransportJSON.
-func (mr *MockFrameworkMockRecorder) NewRequestFromTransportJSON(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewRequestFromTransportJSON(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestFromTransportJSON", reflect.TypeOf((*MockFramework)(nil).NewRequestFromTransportJSON), arg0, arg1)
 }
@@ -1111,7 +1111,7 @@ func (m *MockFramework) NewRequestMessageFromTransportJSON(arg0 []byte) (inter.M
 }
 
 // NewRequestMessageFromTransportJSON indicates an expected call of NewRequestMessageFromTransportJSON.
-func (mr *MockFrameworkMockRecorder) NewRequestMessageFromTransportJSON(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewRequestMessageFromTransportJSON(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestMessageFromTransportJSON", reflect.TypeOf((*MockFramework)(nil).NewRequestMessageFromTransportJSON), arg0)
 }
@@ -1126,7 +1126,7 @@ func (m *MockFramework) NewRequestTransportForMessage(arg0 inter.Message, arg1 s
 }
 
 // NewRequestTransportForMessage indicates an expected call of NewRequestTransportForMessage.
-func (mr *MockFrameworkMockRecorder) NewRequestTransportForMessage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewRequestTransportForMessage(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestTransportForMessage", reflect.TypeOf((*MockFramework)(nil).NewRequestTransportForMessage), arg0, arg1)
 }
@@ -1141,7 +1141,7 @@ func (m *MockFramework) NewSecureReply(arg0 protocol.Reply) (protocol.SecureRepl
 }
 
 // NewSecureReply indicates an expected call of NewSecureReply.
-func (mr *MockFrameworkMockRecorder) NewSecureReply(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewSecureReply(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSecureReply", reflect.TypeOf((*MockFramework)(nil).NewSecureReply), arg0)
 }
@@ -1156,7 +1156,7 @@ func (m *MockFramework) NewSecureReplyFromTransport(arg0 protocol.TransportMessa
 }
 
 // NewSecureReplyFromTransport indicates an expected call of NewSecureReplyFromTransport.
-func (mr *MockFrameworkMockRecorder) NewSecureReplyFromTransport(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewSecureReplyFromTransport(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSecureReplyFromTransport", reflect.TypeOf((*MockFramework)(nil).NewSecureReplyFromTransport), arg0, arg1)
 }
@@ -1171,7 +1171,7 @@ func (m *MockFramework) NewSecureRequest(arg0 protocol.Request) (protocol.Secure
 }
 
 // NewSecureRequest indicates an expected call of NewSecureRequest.
-func (mr *MockFrameworkMockRecorder) NewSecureRequest(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewSecureRequest(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSecureRequest", reflect.TypeOf((*MockFramework)(nil).NewSecureRequest), arg0)
 }
@@ -1186,7 +1186,7 @@ func (m *MockFramework) NewSecureRequestFromTransport(arg0 protocol.TransportMes
 }
 
 // NewSecureRequestFromTransport indicates an expected call of NewSecureRequestFromTransport.
-func (mr *MockFrameworkMockRecorder) NewSecureRequestFromTransport(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewSecureRequestFromTransport(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSecureRequestFromTransport", reflect.TypeOf((*MockFramework)(nil).NewSecureRequestFromTransport), arg0, arg1)
 }
@@ -1201,7 +1201,7 @@ func (m *MockFramework) NewTransportForSecureReply(arg0 protocol.SecureReply) (p
 }
 
 // NewTransportForSecureReply indicates an expected call of NewTransportForSecureReply.
-func (mr *MockFrameworkMockRecorder) NewTransportForSecureReply(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewTransportForSecureReply(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewTransportForSecureReply", reflect.TypeOf((*MockFramework)(nil).NewTransportForSecureReply), arg0)
 }
@@ -1216,7 +1216,7 @@ func (m *MockFramework) NewTransportForSecureRequest(arg0 protocol.SecureRequest
 }
 
 // NewTransportForSecureRequest indicates an expected call of NewTransportForSecureRequest.
-func (mr *MockFrameworkMockRecorder) NewTransportForSecureRequest(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewTransportForSecureRequest(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewTransportForSecureRequest", reflect.TypeOf((*MockFramework)(nil).NewTransportForSecureRequest), arg0)
 }
@@ -1231,7 +1231,7 @@ func (m *MockFramework) NewTransportFromJSON(arg0 string) (protocol.TransportMes
 }
 
 // NewTransportFromJSON indicates an expected call of NewTransportFromJSON.
-func (mr *MockFrameworkMockRecorder) NewTransportFromJSON(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewTransportFromJSON(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewTransportFromJSON", reflect.TypeOf((*MockFramework)(nil).NewTransportFromJSON), arg0)
 }
@@ -1246,7 +1246,7 @@ func (m *MockFramework) NewTransportMessage(arg0 string) (protocol.TransportMess
 }
 
 // NewTransportMessage indicates an expected call of NewTransportMessage.
-func (mr *MockFrameworkMockRecorder) NewTransportMessage(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewTransportMessage(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewTransportMessage", reflect.TypeOf((*MockFramework)(nil).NewTransportMessage), arg0)
 }
@@ -1275,7 +1275,7 @@ func (m *MockFramework) PQLQuery(arg0 string) ([]byte, error) {
 }
 
 // PQLQuery indicates an expected call of PQLQuery.
-func (mr *MockFrameworkMockRecorder) PQLQuery(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) PQLQuery(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PQLQuery", reflect.TypeOf((*MockFramework)(nil).PQLQuery), arg0)
 }
@@ -1290,7 +1290,7 @@ func (m *MockFramework) PQLQueryCertNames(arg0 string) ([]string, error) {
 }
 
 // PQLQueryCertNames indicates an expected call of PQLQueryCertNames.
-func (mr *MockFrameworkMockRecorder) PQLQueryCertNames(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) PQLQueryCertNames(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PQLQueryCertNames", reflect.TypeOf((*MockFramework)(nil).PQLQueryCertNames), arg0)
 }
@@ -1347,7 +1347,7 @@ func (m *MockFramework) ProvisioningServers(arg0 context.Context) (srvcache.Serv
 }
 
 // ProvisioningServers indicates an expected call of ProvisioningServers.
-func (mr *MockFrameworkMockRecorder) ProvisioningServers(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) ProvisioningServers(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ProvisioningServers", reflect.TypeOf((*MockFramework)(nil).ProvisioningServers), arg0)
 }
@@ -1376,7 +1376,7 @@ func (m *MockFramework) PuppetAIOCmd(arg0, arg1 string) string {
 }
 
 // PuppetAIOCmd indicates an expected call of PuppetAIOCmd.
-func (mr *MockFrameworkMockRecorder) PuppetAIOCmd(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) PuppetAIOCmd(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PuppetAIOCmd", reflect.TypeOf((*MockFramework)(nil).PuppetAIOCmd), arg0, arg1)
 }
@@ -1406,7 +1406,7 @@ func (m *MockFramework) PuppetSetting(arg0 string) (string, error) {
 }
 
 // PuppetSetting indicates an expected call of PuppetSetting.
-func (mr *MockFrameworkMockRecorder) PuppetSetting(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) PuppetSetting(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PuppetSetting", reflect.TypeOf((*MockFramework)(nil).PuppetSetting), arg0)
 }
@@ -1421,7 +1421,7 @@ func (m *MockFramework) QuerySrvRecords(arg0 []string) (srvcache.Servers, error)
 }
 
 // QuerySrvRecords indicates an expected call of QuerySrvRecords.
-func (mr *MockFrameworkMockRecorder) QuerySrvRecords(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) QuerySrvRecords(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QuerySrvRecords", reflect.TypeOf((*MockFramework)(nil).QuerySrvRecords), arg0)
 }
@@ -1433,7 +1433,7 @@ func (m *MockFramework) SetLogWriter(arg0 io.Writer) {
 }
 
 // SetLogWriter indicates an expected call of SetLogWriter.
-func (mr *MockFrameworkMockRecorder) SetLogWriter(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) SetLogWriter(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLogWriter", reflect.TypeOf((*MockFramework)(nil).SetLogWriter), arg0)
 }
@@ -1445,7 +1445,7 @@ func (m *MockFramework) SetLogger(arg0 *logrus.Logger) {
 }
 
 // SetLogger indicates an expected call of SetLogger.
-func (mr *MockFrameworkMockRecorder) SetLogger(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) SetLogger(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetLogger", reflect.TypeOf((*MockFramework)(nil).SetLogger), arg0)
 }
@@ -1459,7 +1459,7 @@ func (m *MockFramework) SetupLogging(arg0 bool) error {
 }
 
 // SetupLogging indicates an expected call of SetupLogging.
-func (mr *MockFrameworkMockRecorder) SetupLogging(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) SetupLogging(arg0 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetupLogging", reflect.TypeOf((*MockFramework)(nil).SetupLogging), arg0)
 }
@@ -1562,7 +1562,7 @@ func (m *MockFramework) TrySrvLookup(arg0 []string, arg1 srvcache.Server) (srvca
 }
 
 // TrySrvLookup indicates an expected call of TrySrvLookup.
-func (mr *MockFrameworkMockRecorder) TrySrvLookup(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) TrySrvLookup(arg0, arg1 any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TrySrvLookup", reflect.TypeOf((*MockFramework)(nil).TrySrvLookup), arg0, arg1)
 }

@@ -71,7 +71,7 @@ type Watcher struct {
 	mu        *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]interface{}) (interface{}, error) {
+func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
 	var err error
 
 	tw := &Watcher{
@@ -244,7 +244,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	}
 }
 
-func (w *Watcher) setProperties(props map[string]interface{}) error {
+func (w *Watcher) setProperties(props map[string]any) error {
 	if w.properties == nil {
 		w.properties = &properties{}
 	}
@@ -329,7 +329,7 @@ func (w *Watcher) Delete() {
 	close(w.terminate)
 }
 
-func (w *Watcher) CurrentState() interface{} {
+func (w *Watcher) CurrentState() any {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 

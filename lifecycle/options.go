@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,7 +9,7 @@ import (
 )
 
 // Option configures events
-type Option func(e interface{}) error
+type Option func(e any) error
 
 // VersionEvent is an event that has a version
 type VersionEvent interface {
@@ -30,7 +30,7 @@ type GovernedEvent interface {
 
 // Component set the component for events
 func Component(component string) Option {
-	return func(e interface{}) error {
+	return func(e any) error {
 		event, ok := e.(ComponentEvent)
 		if !ok {
 			return errors.New("cannot set component, event does not implement ComponentEvent")
@@ -44,7 +44,7 @@ func Component(component string) Option {
 
 // Version set the version for events
 func Version(version string) Option {
-	return func(e interface{}) error {
+	return func(e any) error {
 		event, ok := e.(VersionEvent)
 		if !ok {
 			return errors.New("cannot set version, event does not implement VersionEvent")
@@ -58,7 +58,7 @@ func Version(version string) Option {
 
 // Identity sets the identity for events
 func Identity(identity string) Option {
-	return func(e interface{}) error {
+	return func(e any) error {
 		event, ok := e.(Event)
 		if !ok {
 			return errors.New("cannot set identity, event does not implement Event")
@@ -72,7 +72,7 @@ func Identity(identity string) Option {
 
 // GovernorName sets the name of the Governor being interacted with
 func GovernorName(name string) Option {
-	return func(e interface{}) error {
+	return func(e any) error {
 		event, ok := e.(GovernedEvent)
 		if !ok {
 			return errors.New("cannot set governor, event is not a Governor event")
@@ -86,7 +86,7 @@ func GovernorName(name string) Option {
 
 // GovernorType sets the stage this event relates to
 func GovernorType(stage GovernorEventType) Option {
-	return func(e interface{}) error {
+	return func(e any) error {
 		event, ok := e.(GovernedEvent)
 		if !ok {
 			return errors.New("cannot set governor, event is not a Governor event")
@@ -98,7 +98,7 @@ func GovernorType(stage GovernorEventType) Option {
 
 // GovernorSequence sets the sequence of the event when applicable
 func GovernorSequence(seq uint64) Option {
-	return func(e interface{}) error {
+	return func(e any) error {
 		event, ok := e.(GovernedEvent)
 		if !ok {
 			return errors.New("cannot set governor, event is not a Governor event")

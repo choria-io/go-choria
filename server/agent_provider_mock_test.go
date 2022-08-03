@@ -44,7 +44,7 @@ func (m *MockAgentProvider) Initialize(cfg *config.Config, log *logrus.Entry) {
 }
 
 // Initialize indicates an expected call of Initialize.
-func (mr *MockAgentProviderMockRecorder) Initialize(cfg, log interface{}) *gomock.Call {
+func (mr *MockAgentProviderMockRecorder) Initialize(cfg, log any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Initialize", reflect.TypeOf((*MockAgentProvider)(nil).Initialize), cfg, log)
 }
@@ -58,7 +58,7 @@ func (m *MockAgentProvider) RegisterAgents(ctx context.Context, mgr AgentManager
 }
 
 // RegisterAgents indicates an expected call of RegisterAgents.
-func (mr *MockAgentProviderMockRecorder) RegisterAgents(ctx, mgr, connector, log interface{}) *gomock.Call {
+func (mr *MockAgentProviderMockRecorder) RegisterAgents(ctx, mgr, connector, log any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RegisterAgents", reflect.TypeOf((*MockAgentProvider)(nil).RegisterAgents), ctx, mgr, connector, log)
 }

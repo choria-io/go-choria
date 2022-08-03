@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,5 +9,5 @@ import (
 )
 
 func ChoriaPlugin() *plugin.WatcherPlugin {
-	return plugin.NewWatcherPlugin(wtype, version, func() interface{} { return &StateNotification{} }, New)
+	return plugin.NewWatcherPlugin(wtype, version, func() any { return &StateNotification{} }, New)
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -29,7 +29,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func NewConnectorMessage(subject string, reply string, data []byte, msg interface{}) *ConnectorMessage {
+func NewConnectorMessage(subject string, reply string, data []byte, msg any) *ConnectorMessage {
 	return &ConnectorMessage{
 		subject: subject,
 		reply:   reply,
@@ -42,7 +42,7 @@ type ConnectorMessage struct {
 	subject string
 	reply   string
 	data    []byte
-	msg     interface{}
+	msg     any
 }
 
 func (m *ConnectorMessage) Subject() string {
@@ -57,7 +57,7 @@ func (m *ConnectorMessage) Data() []byte {
 	return m.data
 }
 
-func (m *ConnectorMessage) Msg() interface{} {
+func (m *ConnectorMessage) Msg() any {
 	return m.msg
 }
 
@@ -65,7 +65,7 @@ type channelSubscription struct {
 	subscription *nats.Subscription
 	in           chan *nats.Msg
 	out          chan inter.ConnectorMessage
-	quit         chan interface{}
+	quit         chan any
 }
 
 // Connection is a actual NATS connection handler, it implements Connector
@@ -194,7 +194,7 @@ func (conn *Connection) ChanQueueSubscribe(name string, subject string, group st
 	s := &channelSubscription{
 		in:   make(chan *nats.Msg, capacity),
 		out:  make(chan inter.ConnectorMessage, capacity),
-		quit: make(chan interface{}, 1),
+		quit: make(chan any, 1),
 	}
 
 	conn.subMu.Lock()
@@ -237,7 +237,7 @@ func (conn *Connection) QueueSubscribe(ctx context.Context, name string, subject
 	s := &channelSubscription{
 		in:   make(chan *nats.Msg, cap(output)),
 		out:  output,
-		quit: make(chan interface{}, 1),
+		quit: make(chan any, 1),
 	}
 
 	conn.subMu.Lock()

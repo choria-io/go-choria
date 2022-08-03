@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -29,7 +29,7 @@ type Message struct {
 	Identity string    `json:"identity"`
 
 	st StoreType
-	sm interface{}
+	sm any
 }
 
 func newMessage(sender string) *Message {

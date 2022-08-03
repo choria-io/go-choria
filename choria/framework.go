@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -856,7 +856,7 @@ func (fw *Framework) PQLQueryCertNames(query string) ([]string, error) {
 
 // Colorize returns a string of either 'red', 'green' or 'yellow'. If the 'color' configuration
 // is set to false then the string will have no color hints
-func (fw *Framework) Colorize(c string, format string, a ...interface{}) string {
+func (fw *Framework) Colorize(c string, format string, a ...any) string {
 	if !fw.Config.Color {
 		return fmt.Sprintf(format, a...)
 	}

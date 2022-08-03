@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,8 +13,8 @@ import (
 
 // SummaryAggregator keeps track of seen values and summarize how many times each were seen
 type SummaryAggregator struct {
-	items  map[interface{}]int
-	args   []interface{}
+	items  map[any]int
+	args   []any
 	format string
 
 	jsonTrue  string
@@ -26,9 +26,9 @@ type SummaryAggregator struct {
 }
 
 // NewSummaryAggregator creates a new SummaryAggregator with the specific options supplied
-func NewSummaryAggregator(args []interface{}) (*SummaryAggregator, error) {
+func NewSummaryAggregator(args []any) (*SummaryAggregator, error) {
 	agg := &SummaryAggregator{
-		items:   make(map[interface{}]int),
+		items:   make(map[any]int),
 		args:    args,
 		format:  parseFormatFromArgs(args),
 		mapping: make(map[string]string),
@@ -53,7 +53,7 @@ func (s *SummaryAggregator) Type() string {
 }
 
 // ProcessValue processes and tracks a specified value
-func (s *SummaryAggregator) ProcessValue(v interface{}) error {
+func (s *SummaryAggregator) ProcessValue(v any) error {
 	s.Lock()
 	defer s.Unlock()
 
@@ -182,7 +182,7 @@ func (s *SummaryAggregator) ResultFormattedStrings(format string) ([]string, err
 
 func (a *SummaryAggregator) parseBoolMapsFromArgs() error {
 	if len(a.args) == 2 {
-		cfg, ok := a.args[1].(map[string]interface{})
+		cfg, ok := a.args[1].(map[string]any)
 		if !ok {
 			return nil
 		}

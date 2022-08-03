@@ -56,9 +56,9 @@ func NewFilter() *Filter {
 
 // Logger provides logging facilities
 type Logger interface {
-	Warnf(format string, args ...interface{})
-	Debugf(format string, args ...interface{})
-	Errorf(format string, args ...interface{})
+	Warnf(format string, args ...any)
+	Debugf(format string, args ...any)
+	Errorf(format string, args ...any)
 }
 
 type ServerInfoSource interface {

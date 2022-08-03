@@ -26,7 +26,7 @@ type DdlRequester struct {
 // DdlOutput is the output from the ddl action
 type DdlOutput struct {
 	details *ResultDetails
-	reply   map[string]interface{}
+	reply   map[string]any
 }
 
 // DdlResult is the result from a ddl action
@@ -82,7 +82,7 @@ func (d *DdlOutput) ResultDetails() *ResultDetails {
 }
 
 // HashMap is the raw output data
-func (d *DdlOutput) HashMap() map[string]interface{} {
+func (d *DdlOutput) HashMap() map[string]any {
 	return d.reply
 }
 
@@ -92,7 +92,7 @@ func (d *DdlOutput) JSON() ([]byte, error) {
 }
 
 // ParseDdlOutput parses the result value from the Ddl action into target
-func (d *DdlOutput) ParseDdlOutput(target interface{}) error {
+func (d *DdlOutput) ParseDdlOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -117,7 +117,7 @@ func (d *DdlRequester) Do(ctx context.Context) (*DdlResult, error) {
 		}
 
 		output := &DdlOutput{
-			reply: make(map[string]interface{}),
+			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
 				code:    int(r.Statuscode),

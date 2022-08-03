@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -79,16 +79,16 @@ type NotificationService interface {
 	NotifyWatcherState(watcher string, state WatcherStateNotification) error
 
 	// Debugf logs a message at debug level
-	Debugf(machine InfoSource, watcher string, format string, args ...interface{})
+	Debugf(machine InfoSource, watcher string, format string, args ...any)
 
 	// Infof logs a message at info level
-	Infof(machine InfoSource, watcher string, format string, args ...interface{})
+	Infof(machine InfoSource, watcher string, format string, args ...any)
 
 	// Warnf logs a message at warning level
-	Warnf(machine InfoSource, watcher string, format string, args ...interface{})
+	Warnf(machine InfoSource, watcher string, format string, args ...any)
 
 	// Errorf logs a message at error level
-	Errorf(machine InfoSource, watcher string, format string, args ...interface{})
+	Errorf(machine InfoSource, watcher string, format string, args ...any)
 }
 
 // RegisterNotifier adds a new NotificationService to the list of ones to receive notifications
@@ -97,35 +97,35 @@ func (m *Machine) RegisterNotifier(services ...NotificationService) {
 }
 
 // Debugf implements NotificationService
-func (m *Machine) Debugf(watcher string, format string, args ...interface{}) {
+func (m *Machine) Debugf(watcher string, format string, args ...any) {
 	for _, n := range m.notifiers {
 		n.Debugf(m, watcher, format, args...)
 	}
 }
 
 // Infof implements NotificationService
-func (m *Machine) Infof(watcher string, format string, args ...interface{}) {
+func (m *Machine) Infof(watcher string, format string, args ...any) {
 	for _, n := range m.notifiers {
 		n.Infof(m, watcher, format, args...)
 	}
 }
 
 // Warnf implements NotificationService
-func (m *Machine) Warnf(watcher string, format string, args ...interface{}) {
+func (m *Machine) Warnf(watcher string, format string, args ...any) {
 	for _, n := range m.notifiers {
 		n.Warnf(m, watcher, format, args...)
 	}
 }
 
 // Errorf implements NotificationService
-func (m *Machine) Errorf(watcher string, format string, args ...interface{}) {
+func (m *Machine) Errorf(watcher string, format string, args ...any) {
 	for _, n := range m.notifiers {
 		n.Errorf(m, watcher, format, args...)
 	}
 }
 
 // NotifyWatcherState implements NotificationService
-func (m *Machine) NotifyWatcherState(watcher string, state interface{}) {
+func (m *Machine) NotifyWatcherState(watcher string, state any) {
 	notification, ok := state.(WatcherStateNotification)
 	if !ok {
 		m.Errorf(watcher, "Could not notify watcher state: state does not implement WatcherStateNotification: %#v", state)
