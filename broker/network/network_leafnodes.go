@@ -18,7 +18,12 @@ func (s *Server) setupLeafNodes() (err error) {
 		return nil
 	}
 
-	s.log.Infof("Starting Broker Leafnode support listening on %s:%d", s.config.Choria.NetworkListenAddress, s.config.Choria.NetworkLeafPort)
+	if s.config.Choria.NetworkLeafPort == 0 {
+		s.log.Infof("Starting Broker Leafnode support with %d remote connection(s)", len(s.config.Choria.NetworkLeafRemotes))
+		s.opts.LeafNode.Port = 0
+	} else {
+		s.log.Infof("Starting Broker Leafnode support listening on %s:%d", s.config.Choria.NetworkListenAddress, s.config.Choria.NetworkLeafPort)
+	}
 
 	for _, r := range s.config.Choria.NetworkLeafRemotes {
 		account := s.extractKeyedConfigString("leafnode_remote", r, "account", "choria")
