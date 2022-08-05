@@ -19,6 +19,7 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/atomic"
 )
 
 var _ = Describe("Directory Spool", func() {
@@ -54,8 +55,8 @@ var _ = Describe("Directory Spool", func() {
 			spool.pollInterval = 5 * time.Millisecond
 			spool.bo = util.ConstantBackOffForTests
 
-			unreliables := map[string]int{}
-			reliables := map[string]int{}
+			unreliables := map[string]int64{}
+			reliables := map[string]int64{}
 
 			umsg1 := spool.NewMessage()
 			umsg1.Subject = "foo.p1"
@@ -105,7 +106,7 @@ var _ = Describe("Directory Spool", func() {
 			wg.Add(1)
 
 			tries := 1
-			completed := 0
+			completed := atomic.NewInt32(0)
 
 			err = spool.StartPoll(ctx, wg, func(msgs []*Message) error {
 				defer GinkgoRecover()
@@ -132,7 +133,7 @@ var _ = Describe("Directory Spool", func() {
 					if (msg.Reliable && tries > 0 && msg.Tries%10 == 7) || !msg.Reliable {
 						log.Infof("completing message %s on try %d\n", msg.ID, msg.Tries)
 						spool.Complete(msg)
-						completed++
+						completed.Add(1)
 					} else {
 						spool.IncrementTries(msg)
 					}
@@ -145,7 +146,7 @@ var _ = Describe("Directory Spool", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			for i := 0; i < 300; i++ {
-				if completed == 3 {
+				if completed.Load() == 3 {
 					for k, v := range unreliables {
 						if v != 1 {
 							Fail(fmt.Sprintf("Unreliable message %s was tried %d times", k, v))

@@ -33,6 +33,7 @@ type DirectorySpool struct {
 	spoolMax     int
 	identity     string
 	skipList     map[uint]map[string]struct{} // per priority list of files to skip
+	slMu         sync.Mutex
 }
 
 func NewDirectorySpool(dir string, maxSize int, identity string, log *logrus.Entry) (*DirectorySpool, error) {
@@ -69,7 +70,11 @@ func (d *DirectorySpool) Discard(m *Message) error {
 
 	d.log.Debugf("Discarding message %s in %s", m.ID, m.sm)
 
-	d.removeCompletedWithSkip(m.sm.(string), d.skipList[m.Priority])
+	d.slMu.Lock()
+	sl := d.skipList[m.Priority]
+	d.slMu.Unlock()
+
+	d.removeCompletedWithSkip(m.sm.(string), sl)
 
 	return nil
 }
@@ -88,7 +93,12 @@ func (d *DirectorySpool) IncrementTries(m *Message) error {
 
 	if m.Tries >= m.MaxTries {
 		d.log.Debugf("Discarding message %s in %s as it reached max tries %d", m.ID, m.sm, m.MaxTries)
-		d.removeCompletedWithSkip(m.sm.(string), d.skipList[m.Priority])
+
+		d.slMu.Lock()
+		sl := d.skipList[m.Priority]
+		d.slMu.Unlock()
+
+		d.removeCompletedWithSkip(m.sm.(string), sl)
 		return nil
 	}
 
@@ -102,7 +112,11 @@ func (d *DirectorySpool) IncrementTries(m *Message) error {
 	err = os.WriteFile(m.sm.(string), jm, 0600)
 	if err != nil {
 		d.log.Errorf("Could not increment tries in message %s, discarding: %s", m.sm, err)
-		d.removeCompletedWithSkip(m.sm.(string), d.skipList[m.Priority])
+		d.slMu.Lock()
+		sl := d.skipList[m.Priority]
+		d.slMu.Unlock()
+
+		d.removeCompletedWithSkip(m.sm.(string), sl)
 	}
 
 	return nil
@@ -143,7 +157,9 @@ func (d *DirectorySpool) NewMessage() *Message {
 }
 
 func (d *DirectorySpool) processDir(priority uint, dir string, handler func([]*Message) error) error {
+	d.slMu.Lock()
 	skipList := d.skipList[priority]
+	d.slMu.Unlock()
 
 	entries, err := d.entries(priority)
 	if err != nil {
@@ -254,7 +270,9 @@ func (d *DirectorySpool) worker(ctx context.Context, wg *sync.WaitGroup, priorit
 
 	// files we cant remove, cant write to or just generally cause hassles will
 	// be added here for a ephemeral list of files just to ignore
+	d.slMu.Lock()
 	d.skipList[priority] = map[string]struct{}{}
+	d.slMu.Unlock()
 
 	ready <- struct{}{}
 

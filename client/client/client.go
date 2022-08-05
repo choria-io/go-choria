@@ -51,6 +51,7 @@ type Client struct {
 	receivers     int
 	log           *logrus.Entry
 	name          string
+	mu            sync.Mutex
 
 	startPublishCB func()
 	endPublishCB   func()
@@ -140,7 +141,10 @@ func (c *Client) Request(ctx context.Context, msg inter.Message, handler Handler
 }
 
 func (c *Client) publish(msg inter.Message) error {
+	c.mu.Lock()
 	conn := c.conn
+	c.mu.Unlock()
+
 	var err error
 
 	if conn == nil {
@@ -176,7 +180,10 @@ func (c *Client) publish(msg inter.Message) error {
 func (c *Client) receiver(i int, target string, cb Handler) {
 	defer c.wg.Done()
 
+	c.mu.Lock()
 	conn := c.conn
+	c.mu.Unlock()
+
 	var err error
 
 	if conn == nil {
@@ -235,7 +242,9 @@ func (c *Client) connect(name string) (Connector, error) {
 
 		c.log.Debug("Closing connection")
 		connector.Close()
+		c.mu.Lock()
 		c.conn = nil
+		c.mu.Unlock()
 	}
 
 	go closer()

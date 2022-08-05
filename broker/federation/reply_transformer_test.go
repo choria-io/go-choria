@@ -5,10 +5,10 @@
 package federation
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 
+	"github.com/choria-io/go-choria/integration/testutil"
+	"github.com/onsi/gomega/gbytes"
 	log "github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/choria"
@@ -27,8 +27,7 @@ var _ = Describe("Reply Transformer", func() {
 		transformer *pooledWorker
 		in          chainmessage
 		err         error
-		logtxt      *bufio.Writer
-		logbuf      *bytes.Buffer
+		logbuf      *gbytes.Buffer
 		logger      *log.Entry
 		ctx         context.Context
 		cancel      func()
@@ -36,7 +35,9 @@ var _ = Describe("Reply Transformer", func() {
 
 	BeforeEach(func() {
 		ctx, cancel = context.WithCancel(context.Background())
-		logger, logtxt, logbuf = newDiscardLogger()
+		var gblogger *log.Logger
+		logbuf, gblogger = testutil.GbytesLogger(log.DebugLevel)
+		logger = log.NewEntry(gblogger)
 
 		c, err = choria.New("testdata/federation.cfg")
 		Expect(err).ToNot(HaveOccurred())
@@ -92,23 +93,18 @@ var _ = Describe("Reply Transformer", func() {
 	It("should fail for unfederated messages", func() {
 		transformer.Input() <- in
 
-		waitForLogLines(logtxt, logbuf)
-
-		Expect(logbuf.String()).To(MatchRegexp("Received a message from rip.mcollective that is not federated"))
+		Eventually(logbuf).Should(gbytes.Say("Received a message from rip.mcollective that is not federated"))
 	})
 
 	It("Should fail for messages with no reply-to", func() {
 		in.Message.SetFederationRequestID("80a1ac20463745c0b12cfe6e3db61dff")
 		transformer.Input() <- in
 
-		waitForLogLines(logtxt, logbuf)
-
-		Expect(logbuf.String()).To(MatchRegexp("Received message 80a1ac20463745c0b12cfe6e3db61dff with no reply-to set"))
+		Eventually(logbuf).Should(gbytes.Say("Received message 80a1ac20463745c0b12cfe6e3db61dff with no reply-to set"))
 	})
 
 	It("Should support Quit", func() {
 		cancel()
-		waitForLogLines(logtxt, logbuf)
-		Expect(logbuf.String()).To(MatchRegexp("Worker routine choria_reply_transformer exiting"))
+		Eventually(logbuf).Should(gbytes.Say("Worker routine choria_reply_transformer exiting"))
 	})
 })

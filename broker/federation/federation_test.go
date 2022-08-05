@@ -5,8 +5,6 @@
 package federation
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 	"fmt"
 	"io"
@@ -39,27 +37,6 @@ func TestFederation(t *testing.T) {
 
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Broker/Federation")
-}
-
-func newDiscardLogger() (*log.Entry, *bufio.Writer, *bytes.Buffer) {
-	var logbuf bytes.Buffer
-
-	logger := log.New().WithFields(log.Fields{"test": "true"})
-	logger.Logger.Level = log.DebugLevel
-	logtxt := bufio.NewWriter(&logbuf)
-	logger.Logger.Out = logtxt
-
-	return logger, logtxt, &logbuf
-}
-
-func waitForLogLines(w *bufio.Writer, b *bytes.Buffer) {
-	for {
-		w.Flush()
-		if b.Len() > 0 {
-			return
-		}
-	}
-
 }
 
 type stubConnectionManager struct {
