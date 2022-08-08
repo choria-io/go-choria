@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"reflect"
 	"strings"
 	"sync"
 	"time"
@@ -461,8 +462,9 @@ func (r *RPC) reqOptions(action *agent.Action) (inputs map[string]string, rpcInp
 	}
 
 	filter := ""
+	dFlags := dereferenceArgsOrFlags(r.flags)
 	for _, flag := range r.def.Flags {
-		if r.flags[flag.Name] != "" {
+		if dFlags[flag.Name] != "" {
 			if flag.ReplyFilter == "" {
 				continue
 			}
@@ -495,4 +497,20 @@ func (r *RPC) reqOptions(action *agent.Action) (inputs map[string]string, rpcInp
 
 func (r *RPC) parseStateTemplate(body string) (string, error) {
 	return builder.ParseStateTemplate(body, r.arguments, r.flags, r.cfg)
+}
+
+func dereferenceArgsOrFlags(input map[string]any) map[string]any {
+	res := map[string]any{}
+	for k, v := range input {
+		e := reflect.ValueOf(v).Elem()
+
+		// the only kinds of values we support
+		if e.Kind() == reflect.Bool {
+			res[k] = e.Bool()
+		} else {
+			res[k] = e.String()
+		}
+	}
+
+	return res
 }
