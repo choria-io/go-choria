@@ -5,15 +5,15 @@
 package federation
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/integration/testutil"
 	"github.com/choria-io/go-choria/protocol"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,8 +25,7 @@ var _ = Describe("RequestTransformer", func() {
 		transformer *pooledWorker
 		in          chainmessage
 		err         error
-		logtxt      *bufio.Writer
-		logbuf      *bytes.Buffer
+		logbuf      *gbytes.Buffer
 		logger      *log.Entry
 		ctx         context.Context
 		cancel      func()
@@ -34,7 +33,9 @@ var _ = Describe("RequestTransformer", func() {
 
 	BeforeEach(func() {
 		ctx, cancel = context.WithCancel(context.Background())
-		logger, logtxt, logbuf = newDiscardLogger()
+		var gblogger *log.Logger
+		logbuf, gblogger = testutil.GbytesLogger(log.DebugLevel)
+		logger = log.NewEntry(gblogger)
 
 		c, err = choria.New("testdata/federation.cfg")
 		Expect(err).ToNot(HaveOccurred())
@@ -94,18 +95,15 @@ var _ = Describe("RequestTransformer", func() {
 
 	It("should fail for unfederated messages", func() {
 		transformer.Input() <- in
-		waitForLogLines(logtxt, logbuf)
 
-		Expect(logbuf.String()).To(MatchRegexp("Received a message from rip.mcollective that is not federated"))
+		Eventually(logbuf).Should(gbytes.Say("Received a message from rip.mcollective that is not federated"))
 	})
 
 	It("Should fail for messages with no targets", func() {
 		in.Message.SetFederationRequestID("80a1ac20463745c0b12cfe6e3db61dff")
 		transformer.Input() <- in
 
-		waitForLogLines(logtxt, logbuf)
-
-		Expect(logbuf.String()).To(MatchRegexp("Received a message 80a1ac20463745c0b12cfe6e3db61dff from rip.mcollective that does not have any targets"))
+		Eventually(logbuf).Should(gbytes.Say("Received a message 80a1ac20463745c0b12cfe6e3db61dff from rip.mcollective that does not have any targets"))
 	})
 
 	It("Should fail for messages with no reply-to", func() {
@@ -113,14 +111,13 @@ var _ = Describe("RequestTransformer", func() {
 		in.Message.SetFederationTargets([]string{"reply.1"})
 
 		transformer.Input() <- in
-		waitForLogLines(logtxt, logbuf)
 
-		Expect(logbuf.String()).To(MatchRegexp("Received a message 80a1ac20463745c0b12cfe6e3db61dff with no reply-to set"))
+		Eventually(logbuf).Should(gbytes.Say("Received a message 80a1ac20463745c0b12cfe6e3db61dff with no reply-to set"))
 	})
 
 	It("Should support Quit", func() {
 		cancel()
-		waitForLogLines(logtxt, logbuf)
-		Expect(logbuf.String()).To(MatchRegexp("Worker routine choria_request_transformer exiting"))
+
+		Eventually(logbuf).Should(gbytes.Say("Worker routine choria_request_transformer exiting"))
 	})
 })

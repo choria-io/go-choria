@@ -5,13 +5,13 @@
 package federation
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 
+	"github.com/choria-io/go-choria/integration/testutil"
 	"github.com/choria-io/go-choria/protocol"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -23,8 +23,7 @@ var _ = Describe("Choria NATS Egest", func() {
 		connector *pooledWorker
 		manager   *stubConnectionManager
 		in        chainmessage
-		logtxt    *bufio.Writer
-		logbuf    *bytes.Buffer
+		logbuf    *gbytes.Buffer
 		logger    *log.Entry
 		ctx       context.Context
 		cancel    func()
@@ -32,7 +31,9 @@ var _ = Describe("Choria NATS Egest", func() {
 
 	BeforeEach(func() {
 		ctx, cancel = context.WithCancel(context.Background())
-		logger, logtxt, logbuf = newDiscardLogger()
+		var gblogger *log.Logger
+		logbuf, gblogger = testutil.GbytesLogger(log.DebugLevel)
+		logger = log.NewEntry(gblogger)
 
 		rid, err := c.NewRequestID()
 		Expect(err).ToNot(HaveOccurred())
@@ -71,8 +72,7 @@ var _ = Describe("Choria NATS Egest", func() {
 
 		connector.in <- in
 
-		waitForLogLines(logtxt, logbuf)
-		Expect(logbuf.String()).To(MatchRegexp("Publishing message '80a1ac20463745c0b12cfe6e3db61dff' to 2 target\\(s\\)"))
+		Eventually(logbuf).Should(gbytes.Say("Publishing message '80a1ac20463745c0b12cfe6e3db61dff' to 2 target\\(s\\)"))
 
 		j, _ := in.Message.JSON()
 
@@ -89,13 +89,11 @@ var _ = Describe("Choria NATS Egest", func() {
 		in.RequestID = "80a1ac20463745c0b12cfe6e3db61dff"
 		connector.in <- in
 
-		waitForLogLines(logtxt, logbuf)
-		Expect(logbuf.String()).To(MatchRegexp("Received message '80a1ac20463745c0b12cfe6e3db61dff' with no targets, discarding"))
+		Eventually(logbuf).Should(gbytes.Say("Received message '80a1ac20463745c0b12cfe6e3db61dff' with no targets, discarding"))
 	})
 
 	It("Should support Quit", func() {
 		cancel()
-		waitForLogLines(logtxt, logbuf)
-		Expect(logbuf.String()).To(MatchRegexp("Worker routine choria_nats_egest exiting"))
+		Eventually(logbuf).Should(gbytes.Say("Worker routine choria_nats_egest exiting"))
 	})
 })

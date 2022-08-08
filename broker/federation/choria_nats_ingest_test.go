@@ -5,15 +5,15 @@
 package federation
 
 import (
-	"bufio"
-	"bytes"
 	"context"
 
 	"github.com/choria-io/go-choria/choria"
+	"github.com/choria-io/go-choria/integration/testutil"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -25,8 +25,7 @@ var _ = Describe("Choria NATS Ingest", func() {
 		connector *pooledWorker
 		manager   *stubConnectionManager
 		in        inter.ConnectorMessage
-		logtxt    *bufio.Writer
-		logbuf    *bytes.Buffer
+		logbuf    *gbytes.Buffer
 		logger    *log.Entry
 		broker    *FederationBroker
 		ctx       context.Context
@@ -35,7 +34,9 @@ var _ = Describe("Choria NATS Ingest", func() {
 
 	BeforeEach(func() {
 		ctx, cancel = context.WithCancel(context.Background())
-		logger, logtxt, logbuf = newDiscardLogger()
+		var gblogger *log.Logger
+		logbuf, gblogger = testutil.GbytesLogger(log.DebugLevel)
+		logger = log.NewEntry(gblogger)
 
 		c.Config.OverrideCertname = "rip.mcollective"
 
@@ -79,8 +80,7 @@ var _ = Describe("Choria NATS Ingest", func() {
 	It("Should fail for invalid JSON", func() {
 		in = choria.NewConnectorMessage(in.Subject(), in.Reply(), []byte("{}"), nil)
 		manager.connection.PublishToQueueSub("ingest", in)
-		waitForLogLines(logtxt, logbuf)
-		Expect(logbuf.String()).To(MatchRegexp("Could not parse received message into a TransportMessage: do not know how to create a TransportMessage from an expected JSON format message with content: {}"))
+		Eventually(logbuf).Should(gbytes.Say("Could not parse received message into a TransportMessage: do not know how to create a TransportMessage from an expected JSON format message with content: {}"))
 	})
 
 	It("Should fail for unfederated messages", func() {
@@ -88,9 +88,7 @@ var _ = Describe("Choria NATS Ingest", func() {
 		j, _ := transport.JSON()
 		in = choria.NewConnectorMessage(in.Subject(), in.Reply(), []byte(j), nil)
 		manager.connection.PublishToQueueSub("ingest", in)
-		waitForLogLines(logtxt, logbuf)
-		Expect(logbuf.String()).To(MatchRegexp("Received a message on test that was not federated"))
-
+		Eventually(logbuf).Should(gbytes.Say("Received a message on test that was not federated"))
 	})
 
 	It("Should subscribe to the right target in Federation mode", func() {
