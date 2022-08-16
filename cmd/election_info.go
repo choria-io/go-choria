@@ -14,6 +14,7 @@ import (
 
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/nats.go"
+	log "github.com/sirupsen/logrus"
 )
 
 type tElectionInfoCommand struct {
@@ -124,12 +125,14 @@ func (i *tElectionInfoCommand) Run(wg *sync.WaitGroup) (err error) {
 		table := iu.NewUTF8Table("Election", "Leader")
 		table.AddTitle("Active Elections")
 
+		log.Debugf("Loading elections with %d messages", si.State.Msgs)
 		w, err := kv.WatchAll()
 		if err != nil {
 			return fmt.Errorf("cannot load elections: %v", err)
 		}
 		for {
 			entry := <-w.Updates()
+			log.Debugf("Received entry %#v", entry)
 			if entry == nil {
 				w.Stop()
 				break
