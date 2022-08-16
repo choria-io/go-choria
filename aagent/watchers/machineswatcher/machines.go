@@ -549,7 +549,7 @@ func (w *Watcher) validate() error {
 	}
 
 	if w.properties.MachineManageInterval == 0 {
-		w.properties.MachineManageInterval = 10 * time.Minute
+		w.properties.MachineManageInterval = 5 * time.Minute
 	}
 
 	return nil

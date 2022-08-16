@@ -40,6 +40,10 @@ func (f *tElectFileCommand) Setup() (err error) {
 }
 
 func (f *tElectFileCommand) Configure() (err error) {
+	if f.check || f.bucket == "--check" {
+		return nil
+	}
+
 	return commonConfigure()
 }
 
@@ -112,7 +116,7 @@ func (f *tElectFileCommand) checkFile() error {
 func (f *tElectFileCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	if f.check {
+	if f.check || f.bucket == "--check" {
 		return f.checkFile()
 	}
 
