@@ -45,7 +45,7 @@ var _ = Describe("Choria KV Leader Election", func() {
 		})
 		Expect(err).ToNot(HaveOccurred())
 		debugger = func(f string, a ...any) {
-			fmt.Fprintf(GinkgoWriter, fmt.Sprintf("%s\n", f), a...)
+			fmt.Fprintf(GinkgoWriter, fmt.Sprintf("%s: %s\n", time.Now(), f), a...)
 		}
 	})
 
@@ -106,7 +106,7 @@ var _ = Describe("Choria KV Leader Election", func() {
 
 			skipValidate = true
 
-			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 			defer cancel()
 
 			worker := func(wg *sync.WaitGroup, i int, key string) {
@@ -157,14 +157,14 @@ var _ = Describe("Choria KV Leader Election", func() {
 				elect, err := NewElection(fmt.Sprintf("other %d", i), "other", kv,
 					OnWon(func() {
 						mu.Lock()
-						debugger("other gained leader")
+						debugger("other %d gained leader", i)
 						other++
 						mu.Unlock()
 					}),
 					OnLost(func() {
 						defer GinkgoRecover()
-
-						Fail("Other election was lost")
+						debugger("other %d lost leader", i)
+						Fail(fmt.Sprintf("Other %d election was lost", i))
 					}))
 				Expect(err).ToNot(HaveOccurred())
 
@@ -181,7 +181,7 @@ var _ = Describe("Choria KV Leader Election", func() {
 			// fail until the corruption is removed by the MaxAge limit
 			kills := 0
 			for {
-				if ctxSleep(ctx, 100*time.Millisecond) != nil {
+				if ctxSleep(ctx, 400*time.Millisecond) != nil {
 					break
 				}
 
