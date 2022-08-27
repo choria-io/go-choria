@@ -41,7 +41,7 @@ var _ = Describe("Choria KV Leader Election", func() {
 
 		kv, err = js.CreateKeyValue(&nats.KeyValueConfig{
 			Bucket: "LEADER_ELECTION",
-			TTL:    750 * time.Millisecond,
+			TTL:    500 * time.Millisecond,
 		})
 		Expect(err).ToNot(HaveOccurred())
 		debugger = func(f string, a ...any) {
@@ -106,7 +106,7 @@ var _ = Describe("Choria KV Leader Election", func() {
 
 			skipValidate = true
 
-			ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
 			defer cancel()
 
 			worker := func(wg *sync.WaitGroup, i int, key string) {
