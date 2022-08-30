@@ -239,6 +239,18 @@ foss:
       binary: aarch64_linux
       distro: buster
 
+    bullseye_armel:
+      template: debian/generic
+      target_arch: arm-linux-gnueabi
+      binary: armv5_linux
+      distro: bullseye
+
+    bullseye_armhf:
+      template: debian/generic
+      target_arch: arm-linux-gnueabihf
+      binary: armv7_linux
+      distro: bullseye
+
     bullseye_64:
       template: debian/generic
       target_arch: x86_64-linux-gnu
