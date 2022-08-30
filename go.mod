@@ -29,8 +29,8 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.34-0.20220819130354-30ace5d49ea8
-	github.com/nats-io/nats-server/v2 v2.8.5-0.20220826223104-d73ca7d46809
-	github.com/nats-io/nats.go v1.16.1-0.20220816170848-b81c9e71b479
+	github.com/nats-io/nats-server/v2 v2.8.5-0.20220830004553-ce8608a8930b
+	github.com/nats-io/nats.go v1.16.1-0.20220824195108-6761fc3b77e5
 	github.com/nats-io/natscli v0.0.34-0.20220824061610-7c31f06231d3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.4

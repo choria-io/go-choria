@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,12 +11,11 @@ import (
 	"math/rand"
 	"time"
 
+	"github.com/choria-io/go-choria/backoff"
+	"github.com/choria-io/go-choria/scout"
 	"github.com/nats-io/jsm.go"
 	"github.com/nats-io/jsm.go/api"
 	"github.com/nats-io/nats.go"
-
-	"github.com/choria-io/go-choria/backoff"
-	"github.com/choria-io/go-choria/scout"
 )
 
 func (s *Server) setupStreaming() error {
@@ -138,11 +137,13 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 	eCfg, err := jsm.NewStreamConfiguration(jsm.DefaultStream,
 		jsm.Replicas(cfg.NetworkLeaderElectionReplicas),
 		jsm.MaxAge(cfg.NetworkLeaderElectionTTL),
-		jsm.AllowRollup(),
 		jsm.Subjects("$KV.CHORIA_LEADER_ELECTION.>"),
 		jsm.StreamDescription("Choria Leader Election Bucket"),
 		jsm.MaxMessageSize(1024),
 		jsm.FileStorage(),
+		jsm.DiscardNew(),
+		jsm.DenyDelete(),
+		jsm.AllowDirect(),
 		jsm.MaxMessagesPerSubject(1))
 	if err != nil {
 		return err
