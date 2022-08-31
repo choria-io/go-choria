@@ -330,6 +330,30 @@
       },
       "display": "failed",
       "description": "Restart the Choria Server"
+    },
+    {
+      "action": "shutdown",
+      "input": {
+        "token": {
+          "prompt": "Token",
+          "description": "Authentication token to pass to the server",
+          "type": "string",
+          "default": "",
+          "optional": false,
+          "validation": ".",
+          "maxlength": 128
+        }
+      },
+      "output": {
+        "message": {
+          "description": "Status message from the Provisioner",
+          "display_as": "Message",
+          "type": "string",
+          "default": null
+        }
+      },
+      "display": "failed",
+      "description": "Shut the Choria Server down cleanly"
     }
   ]
 }

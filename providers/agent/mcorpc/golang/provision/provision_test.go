@@ -103,7 +103,7 @@ var _ = Describe("Provision/Agent", func() {
 
 	Describe("New", func() {
 		It("Should create all the actions", func() {
-			Expect(prov.ActionNames()).To(Equal([]string{"configure", "gen25519", "gencsr", "jwt", "reprovision", "restart"}))
+			Expect(prov.ActionNames()).To(Equal([]string{"configure", "gen25519", "gencsr", "jwt", "reprovision", "restart", "shutdown"}))
 		})
 	})
 
@@ -231,6 +231,78 @@ var _ = Describe("Provision/Agent", func() {
 			stat, err = os.Stat(filepath.Join(prov.Config.Choria.SSLDir, "csr.pem"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(stat.Mode()).To(Equal(os.FileMode(0644)))
+		})
+	})
+
+	Describe("shutdownAction", func() {
+		It("Should not shut nodes not provision mode", func() {
+			build.ProvisionToken = ""
+			shutdownAction(ctx, &mcorpc.Request{}, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
+			Expect(reply.Statusmsg).To(Equal("Cannot shutdown a server that is not in provisioning mode or with no token set"))
+		})
+
+		It("Should support a token", func() {
+			build.ProvisionModeDefault = "true"
+			cfg.ConfigFile = "testdata/default.cfg"
+			build.ProvisionToken = "fail"
+
+			req := &mcorpc.Request{
+				Data:      json.RawMessage(`{"splay":10, "token":"toomanysecrets"}`),
+				RequestID: "uniq_req_id",
+				CallerID:  "choria=rip.mcollective",
+				SenderID:  "go.test",
+			}
+
+			shutdownAction(ctx, req, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
+
+			// tests the path with no provisioning set but with a token set
+			build.ProvisionModeDefault = "false"
+			build.ProvisionToken = "toomanysecrets"
+			reply = &mcorpc.Reply{}
+
+			Expect(prov.Choria.ProvisionMode()).To(BeFalse())
+			shutdownAction(ctx, req, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
+
+			// tests the path with provision mode and no token
+			build.ProvisionModeDefault = "true"
+			build.ProvisionToken = ""
+			reply = &mcorpc.Reply{}
+
+			Expect(prov.Choria.ProvisionMode()).To(BeTrue())
+			restartAction(ctx, req, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
+		})
+
+		It("Should shutdown with splay", func() {
+			// TODO: windows support
+			if runtime.GOOS == "windows" {
+				Skip("TODO: windows support")
+			}
+
+			build.ProvisionModeDefault = "true"
+			cfg.ConfigFile = "testdata/default.cfg"
+
+			req := &mcorpc.Request{
+				Data:      json.RawMessage(`{"splay":10}`),
+				RequestID: "uniq_req_id",
+				CallerID:  "choria=rip.mcollective",
+				SenderID:  "go.test",
+			}
+
+			done := make(chan bool)
+			SetShutdownAction(func(_ time.Duration, _ agents.ServerInfoSource, _ *logrus.Entry) {
+				close(done)
+			})
+
+			shutdownAction(ctx, req, reply, prov, nil)
+			runtime.Gosched()
+			<-done
+
+			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
+			Expect(reply.Data.(Reply).Message).To(MatchRegexp("Shutting Choria Server down after \\d+s"))
 		})
 	})
 

@@ -39,6 +39,7 @@ var metadata = &agents.Metadata{
 }
 
 var restartCb = restart
+var shutdownCb = restartViaExit
 
 func init() {
 	switch {
@@ -64,6 +65,7 @@ func New(mgr server.AgentManager) (agents.Agent, error) {
 	agent.MustRegisterAction("gen25519", ed25519Action)
 	agent.MustRegisterAction("configure", configureAction)
 	agent.MustRegisterAction("restart", restartAction)
+	agent.MustRegisterAction("shutdown", shutdownAction)
 	agent.MustRegisterAction("reprovision", reprovisionAction)
 	agent.MustRegisterAction("jwt", jwtAction)
 
@@ -81,5 +83,13 @@ func ChoriaPlugin() plugin.Pluggable {
 func SetRestartAction(f func(splay time.Duration, si agents.ServerInfoSource, log *logrus.Entry)) {
 	mu.Lock()
 	restartCb = f
+	mu.Unlock()
+}
+
+// SetShutdownAction sets a custom shutdown function to call than the default that
+// causes a os.Exit(0) to be called
+func SetShutdownAction(f func(splay time.Duration, si agents.ServerInfoSource, log *logrus.Entry)) {
+	mu.Lock()
+	shutdownCb = f
 	mu.Unlock()
 }
