@@ -305,3 +305,24 @@ action "restart", :description => "Restart the Choria Server" do
 
 end
 
+action "shutdown", :description => "Shut the Choria Server down cleanly" do
+  display :failed
+
+  input :token,
+        :prompt      => "Token",
+        :description => "Authentication token to pass to the server",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 128,
+        :optional    => false
+
+
+
+
+  output :message,
+         :description => "Status message from the Provisioner",
+         :type        => "string",
+         :display_as  => "Message"
+
+end
+

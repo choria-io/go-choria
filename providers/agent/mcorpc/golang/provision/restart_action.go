@@ -69,12 +69,12 @@ func restartAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply
 }
 
 func restartViaExit(splay time.Duration, si agents.ServerInfoSource, log *logrus.Entry) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	if !allowRestart {
 		return
 	}
-
-	mu.Lock()
-	defer mu.Unlock()
 
 	allowRestart = false
 
@@ -92,12 +92,12 @@ func restartViaExit(splay time.Duration, si agents.ServerInfoSource, log *logrus
 }
 
 func restart(splay time.Duration, si agents.ServerInfoSource, log *logrus.Entry) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	if !allowRestart {
 		return
 	}
-
-	mu.Lock()
-	defer mu.Unlock()
 
 	allowRestart = false
 

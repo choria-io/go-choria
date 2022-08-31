@@ -29,7 +29,7 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.34-0.20220819130354-30ace5d49ea8
-	github.com/nats-io/nats-server/v2 v2.8.5-0.20220830232411-cb3b88d4e4a1
+	github.com/nats-io/nats-server/v2 v2.8.5-0.20220831135813-4b9db05a0cba
 	github.com/nats-io/nats.go v1.16.1-0.20220824195108-6761fc3b77e5
 	github.com/nats-io/natscli v0.0.34-0.20220824061610-7c31f06231d3
 	github.com/olekukonko/tablewriter v0.0.5
@@ -75,7 +75,6 @@ require (
 	github.com/dgryski/trifles v0.0.0-20220729183022-231ecf6ed548 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/emicklei/dot v1.0.0 // indirect
-	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/foxcpp/go-mockdns v1.0.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/gdamore/tcell/v2 v2.5.3 // indirect
