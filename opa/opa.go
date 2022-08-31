@@ -82,7 +82,7 @@ func (e *Evaluator) Evaluate(ctx context.Context, inputs any) (pass bool, err er
 
 	if e.opts.trace {
 		buf = topdown.NewBufferTracer()
-		opts = append(opts, rego.EvalTracer(buf))
+		opts = append(opts, rego.EvalQueryTracer(buf))
 	}
 
 	rs, err := e.pq.Eval(ctx, opts...)
