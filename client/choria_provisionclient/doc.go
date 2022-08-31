@@ -11,4 +11,5 @@
 //   - Jwt - Re-enable provision mode in a running Choria Server
 //   - Reprovision - Reenable provision mode in a running Choria Server
 //   - Restart - Restart the Choria Server
+//   - Shutdown - Shut the Choria Server down cleanly
 package choria_provisionclient

@@ -362,3 +362,27 @@ func (p *ChoriaProvisionClient) Restart(inputToken string) *RestartRequester {
 
 	return d
 }
+
+// Shutdown performs the shutdown action
+//
+// Description: Shut the Choria Server down cleanly
+//
+// Required Inputs:
+//   - token (string) - Authentication token to pass to the server
+func (p *ChoriaProvisionClient) Shutdown(inputToken string) *ShutdownRequester {
+	d := &ShutdownRequester{
+		outc: nil,
+		r: &requester{
+			args: map[string]any{
+				"token": inputToken,
+			},
+			action: "shutdown",
+			client: p,
+		},
+	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
+	return d
+}
