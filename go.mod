@@ -30,11 +30,11 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.34-0.20220819130354-30ace5d49ea8
 	github.com/nats-io/nats-server/v2 v2.8.5-0.20220831135813-4b9db05a0cba
-	github.com/nats-io/nats.go v1.16.1-0.20220824195108-6761fc3b77e5
+	github.com/nats-io/nats.go v1.16.1-0.20220901120628-84e2c74b56da
 	github.com/nats-io/natscli v0.0.34-0.20220824061610-7c31f06231d3
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.6
-	github.com/onsi/gomega v1.20.1
+	github.com/onsi/gomega v1.20.2
 	github.com/open-policy-agent/opa v0.43.0
 	github.com/prometheus/client_golang v1.13.0
 	github.com/prometheus/client_model v0.2.0
@@ -86,8 +86,8 @@ require (
 	github.com/hinshun/vt10x v0.0.0-20220301184237-5011da428d02 // indirect
 	github.com/huandu/xstrings v1.3.2 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
-	github.com/itchyny/gojq v0.12.8 // indirect
-	github.com/itchyny/timefmt-go v0.1.3 // indirect
+	github.com/itchyny/gojq v0.12.9 // indirect
+	github.com/itchyny/timefmt-go v0.1.4 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.9 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
