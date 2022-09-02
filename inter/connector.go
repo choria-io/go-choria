@@ -19,6 +19,7 @@ type Connector interface {
 	ConnectedServer() string
 	ConnectionOptions() nats.Options
 	ConnectionStats() nats.Statistics
+	InboxPrefix() string
 	IsConnected() bool
 	Nats() *nats.Conn
 	NodeDirectedTarget(collective string, identity string) string

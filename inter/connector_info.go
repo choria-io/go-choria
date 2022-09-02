@@ -13,4 +13,5 @@ type ConnectorInfo interface {
 	ConnectedServer() string
 	ConnectionOptions() nats.Options
 	ConnectionStats() nats.Statistics
+	InboxPrefix() string
 }

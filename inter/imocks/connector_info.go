@@ -75,3 +75,17 @@ func (mr *MockConnectorInfoMockRecorder) ConnectionStats() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConnectionStats", reflect.TypeOf((*MockConnectorInfo)(nil).ConnectionStats))
 }
+
+// InboxPrefix mocks base method.
+func (m *MockConnectorInfo) InboxPrefix() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "InboxPrefix")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// InboxPrefix indicates an expected call of InboxPrefix.
+func (mr *MockConnectorInfoMockRecorder) InboxPrefix() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "InboxPrefix", reflect.TypeOf((*MockConnectorInfo)(nil).InboxPrefix))
+}

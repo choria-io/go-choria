@@ -11,7 +11,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/nats-io/jsm.go"
-	"github.com/nats-io/jsm.go/governor"
+	"github.com/nats-io/jsm.go/governor" //lint:ignore SA1019 Will vendor
 )
 
 type tGovAddCommand struct {

@@ -18,7 +18,7 @@ import (
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
-	"github.com/nats-io/jsm.go/governor"
+	"github.com/nats-io/jsm.go/governor" //lint:ignore SA1019 Will vendor
 	"github.com/tidwall/gjson"
 )
 
