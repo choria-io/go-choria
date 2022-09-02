@@ -130,7 +130,7 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 			return nil, fmt.Errorf("invalid interval: %v", err)
 		}
 
-		if machines.interval < 10*time.Second {
+		if machines.interval < 2*time.Second {
 			return nil, fmt.Errorf("interval %v is too small", machines.interval)
 		}
 	}
@@ -549,7 +549,7 @@ func (w *Watcher) validate() error {
 	}
 
 	if w.properties.MachineManageInterval == 0 {
-		w.properties.MachineManageInterval = 5 * time.Minute
+		w.properties.MachineManageInterval = 2 * time.Minute
 	}
 
 	return nil
