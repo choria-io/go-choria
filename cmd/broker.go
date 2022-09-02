@@ -89,6 +89,8 @@ func (b *brokerCommand) prepareNatsCli(pc *fisk.ParseContext, opts *natscli.Opti
 	natscli.SetLogger(logger)
 
 	opts.Conn = conn.Nats()
+	opts.InboxPrefix = conn.InboxPrefix()
+
 	opts.JSc, err = opts.Conn.JetStream()
 	if err != nil {
 		return err

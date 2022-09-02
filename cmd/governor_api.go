@@ -15,7 +15,7 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/jsm.go"
-	"github.com/nats-io/jsm.go/governor"
+	"github.com/nats-io/jsm.go/governor" //lint:ignore SA1019 Will vendor
 )
 
 type tGovAPICommand struct {

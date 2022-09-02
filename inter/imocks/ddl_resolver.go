@@ -36,7 +36,7 @@ func (m *MockDDLResolver) EXPECT() *MockDDLResolverMockRecorder {
 }
 
 // DDL mocks base method.
-func (m *MockDDLResolver) DDL(arg0 context.Context, arg1, arg2 string, arg3 any, arg4 inter.Framework) error {
+func (m *MockDDLResolver) DDL(arg0 context.Context, arg1, arg2 string, arg3 interface{}, arg4 inter.Framework) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DDL", arg0, arg1, arg2, arg3, arg4)
 	ret0, _ := ret[0].(error)
@@ -44,7 +44,7 @@ func (m *MockDDLResolver) DDL(arg0 context.Context, arg1, arg2 string, arg3 any,
 }
 
 // DDL indicates an expected call of DDL.
-func (mr *MockDDLResolverMockRecorder) DDL(arg0, arg1, arg2, arg3, arg4 any) *gomock.Call {
+func (mr *MockDDLResolverMockRecorder) DDL(arg0, arg1, arg2, arg3, arg4 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DDL", reflect.TypeOf((*MockDDLResolver)(nil).DDL), arg0, arg1, arg2, arg3, arg4)
 }
@@ -59,7 +59,7 @@ func (m *MockDDLResolver) DDLBytes(arg0 context.Context, arg1, arg2 string, arg3
 }
 
 // DDLBytes indicates an expected call of DDLBytes.
-func (mr *MockDDLResolverMockRecorder) DDLBytes(arg0, arg1, arg2, arg3 any) *gomock.Call {
+func (mr *MockDDLResolverMockRecorder) DDLBytes(arg0, arg1, arg2, arg3 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DDLBytes", reflect.TypeOf((*MockDDLResolver)(nil).DDLBytes), arg0, arg1, arg2, arg3)
 }
@@ -74,7 +74,7 @@ func (m *MockDDLResolver) DDLNames(arg0 context.Context, arg1 string, arg2 inter
 }
 
 // DDLNames indicates an expected call of DDLNames.
-func (mr *MockDDLResolverMockRecorder) DDLNames(arg0, arg1, arg2 any) *gomock.Call {
+func (mr *MockDDLResolverMockRecorder) DDLNames(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DDLNames", reflect.TypeOf((*MockDDLResolver)(nil).DDLNames), arg0, arg1, arg2)
 }

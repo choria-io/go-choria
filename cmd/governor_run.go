@@ -18,7 +18,7 @@ import (
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/kballard/go-shellquote"
 	"github.com/nats-io/jsm.go"
-	"github.com/nats-io/jsm.go/governor"
+	"github.com/nats-io/jsm.go/governor" //lint:ignore SA1019 Will vendor
 )
 
 type tGovRunCommand struct {

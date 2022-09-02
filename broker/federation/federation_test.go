@@ -87,6 +87,8 @@ func (s *stubConnection) ConnectionStats() nats.Statistics {
 	return nats.Statistics{}
 }
 
+func (s *stubConnection) InboxPrefix() string { return "_INBOX.>" }
+
 func (s *stubConnection) IsConnected() bool { return true }
 
 func (s *stubConnection) Unsubscribe(name string) error {

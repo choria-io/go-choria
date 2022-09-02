@@ -637,13 +637,11 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}),
 	}
 
+	prefix := conn.InboxPrefix()
 	if conn.uniqueId != "" {
-		prefix := fmt.Sprintf("%s.reply.%s", conn.config.MainCollective, conn.uniqueId)
 		conn.log.Infof("Setting custom inbox prefix based on unique ID to %s", prefix)
-		options = append(options, nats.CustomInboxPrefix(prefix))
-	} else {
-		options = append(options, nats.CustomInboxPrefix(fmt.Sprintf("%s.reply", conn.config.MainCollective)))
 	}
+	options = append(options, nats.CustomInboxPrefix(prefix))
 
 	if !conn.fw.Config.InitiatedByServer {
 		options = append(options, nats.PingInterval(30*time.Second))
@@ -733,6 +731,15 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 func (conn *Connection) Flush() {
 	conn.log.Debug("Flushing pending NATS messages")
 	conn.nats.Flush()
+}
+
+// InboxPrefix is the subject prefix used for replies
+func (conn *Connection) InboxPrefix() string {
+	if conn.uniqueId != "" {
+		return fmt.Sprintf("%s.reply.%s", conn.config.MainCollective, conn.uniqueId)
+	} else {
+		return fmt.Sprintf("%s.reply", conn.config.MainCollective)
+	}
 }
 
 // Close closes the NATS connection after flushing what needed to be sent

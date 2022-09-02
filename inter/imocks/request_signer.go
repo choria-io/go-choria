@@ -113,7 +113,7 @@ func (m *MockRequestSigner) Sign(ctx context.Context, request []byte, cfg inter.
 }
 
 // Sign indicates an expected call of Sign.
-func (mr *MockRequestSignerMockRecorder) Sign(ctx, request, cfg any) *gomock.Call {
+func (mr *MockRequestSignerMockRecorder) Sign(ctx, request, cfg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Sign", reflect.TypeOf((*MockRequestSigner)(nil).Sign), ctx, request, cfg)
 }
