@@ -1,5 +1,5 @@
 name: machine_manager
-version: 0.0.1
+version: 0.0.2
 initial_state: INITIAL
 
 # States
@@ -24,7 +24,7 @@ transitions:
 watchers:
   - name: initial_specification
     type: kv
-    interval: 10m
+    interval: 30s
     state_match: [ INITIAL ]
     success_transition: to_manage
     properties:
@@ -36,7 +36,7 @@ watchers:
 
   - name: specification
     type: kv
-    interval: 10m
+    interval: 5m
     state_match: [ MANAGE ]
     properties:
       bucket: MACHINES
@@ -47,8 +47,8 @@ watchers:
   - name: manage_machines
     state_match: [ MANAGE ]
     type: machines
-    interval: 5m
+    interval: 2m
     properties:
       data_item: spec
       purge_unknown: true
-      machine_manage_interval: 10m
+      machine_manage_interval: 2m
