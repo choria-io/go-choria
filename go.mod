@@ -29,8 +29,8 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.34-0.20220902100732-f238d2edcd1f
-	github.com/nats-io/nats-server/v2 v2.8.5-0.20220901192829-c4b5ca7cff77
-	github.com/nats-io/nats.go v1.16.1-0.20220901120628-84e2c74b56da
+	github.com/nats-io/nats-server/v2 v2.8.5-0.20220906203546-e4a6b6bc94d1
+	github.com/nats-io/nats.go v1.16.1-0.20220906180156-a1017eec10b0
 	github.com/nats-io/natscli v0.0.34-0.20220902113825-755db5fe7ed9
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.6
@@ -46,7 +46,7 @@ require (
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
-	golang.org/x/sys v0.0.0-20220829200755-d48e67d00261
+	golang.org/x/sys v0.0.0-20220906135438-9e1f76180b77
 	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.12
