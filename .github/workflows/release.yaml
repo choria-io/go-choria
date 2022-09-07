@@ -125,6 +125,26 @@ jobs:
           packager_tag: bullseye-go1.18
           version: tag
 
+  bullseye_armel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: bullseye_armel
+          packager_tag: bullseye-go1.18
+          version: tag
+
+  bullseye_armhf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: bullseye_armhf
+          packager_tag: bullseye-go1.18
+          version: tag
+
   bionic_64:
     runs-on: ubuntu-latest
     steps:
