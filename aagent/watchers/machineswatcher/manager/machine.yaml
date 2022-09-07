@@ -24,7 +24,7 @@ transitions:
 watchers:
   - name: initial_specification
     type: kv
-    interval: 30s
+    interval: 1m
     state_match: [ INITIAL ]
     success_transition: to_manage
     properties:
@@ -47,8 +47,8 @@ watchers:
   - name: manage_machines
     state_match: [ MANAGE ]
     type: machines
-    interval: 2m
+    interval: 6m
     properties:
       data_item: spec
       purge_unknown: true
-      machine_manage_interval: 2m
+      machine_manage_interval: 5m
