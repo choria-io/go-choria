@@ -28,7 +28,7 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.0.34-0.20220902100732-f238d2edcd1f
+	github.com/nats-io/jsm.go v0.0.34-0.20220907131652-7f444094f290
 	github.com/nats-io/nats-server/v2 v2.8.5-0.20220906203546-e4a6b6bc94d1
 	github.com/nats-io/nats.go v1.16.1-0.20220906180156-a1017eec10b0
 	github.com/nats-io/natscli v0.0.34-0.20220902113825-755db5fe7ed9
