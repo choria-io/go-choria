@@ -16,9 +16,8 @@ import (
 
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/lifecycle"
+	"github.com/choria-io/go-choria/providers/governor"
 	"github.com/kballard/go-shellquote"
-	"github.com/nats-io/jsm.go"
-	"github.com/nats-io/jsm.go/governor" //lint:ignore SA1019 Will vendor
 )
 
 type tGovRunCommand struct {
@@ -62,20 +61,6 @@ func (g *tGovRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("interval should be >=1s")
 	}
 
-	ctx, cancel := context.WithTimeout(ctx, g.maxWait)
-	defer cancel()
-
-	log := c.Logger("governor").WithField("name", g.name)
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("governor manager: %s", g.name), log)
-	if err != nil {
-		return err
-	}
-
-	mgr, err := jsm.New(conn.Nats())
-	if err != nil {
-		return err
-	}
-
 	parts, err := shellquote.Split(strings.Join(g.fullCmd, " "))
 	if err != nil {
 		return fmt.Errorf("can not parse command: %s", err)
@@ -93,6 +78,10 @@ func (g *tGovRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		args = append(args, parts[1:]...)
 	}
 
+	ctx, cancel := context.WithTimeout(ctx, g.maxWait)
+	defer cancel()
+
+	log := c.Logger("governor").WithField("name", g.name)
 	opts := []governor.Option{
 		governor.WithSubject(c.GovernorSubject(g.name)),
 		governor.WithInterval(g.interval),
@@ -103,7 +92,10 @@ func (g *tGovRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		opts = append(opts, governor.WithoutLeavingOnCompletion())
 	}
 
-	gov := governor.NewJSGovernor(g.name, mgr, opts...)
+	gov, conn, err := c.NewGovernor(ctx, g.name, nil, opts...)
+	if err != nil {
+		return err
+	}
 	finisher, seq, err := gov.Start(ctx, cfg.Identity)
 	if err != nil {
 		if g.noLEave && err == context.DeadlineExceeded {

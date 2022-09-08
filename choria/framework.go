@@ -24,6 +24,7 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/ddlresolver"
 	election "github.com/choria-io/go-choria/providers/election/streams"
+	"github.com/choria-io/go-choria/providers/governor"
 	"github.com/choria-io/go-choria/providers/kv"
 	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/providers/signers"
@@ -895,6 +896,38 @@ func (fw *Framework) ProgressWidth() int {
 // GovernorSubject the subject to use for choria managed Governors
 func (fw *Framework) GovernorSubject(name string) string {
 	return util.GovernorSubject(name, fw.Config.MainCollective)
+}
+
+// NewGovernor creates a new governor client with its own connection when none is given
+func (fw *Framework) NewGovernor(ctx context.Context, name string, conn inter.Connector, opts ...governor.Option) (governor.Governor, inter.Connector, error) {
+	var err error
+	if conn == nil {
+		conn, err = fw.NewConnector(ctx, fw.MiddlewareServers, fmt.Sprintf("governor client: %s", name), fw.Logger("governor"))
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	return governor.New(name, conn.Nats(), opts...), conn, nil
+}
+
+// NewGovernorManager creates a new governor manager with its own connection when none is given
+func (fw *Framework) NewGovernorManager(ctx context.Context, name string, limit uint64, maxAge time.Duration, replicas uint, update bool, conn inter.Connector, opts ...governor.Option) (governor.Manager, inter.Connector, error) {
+	var err error
+
+	if conn != nil {
+		conn, err = fw.NewConnector(ctx, fw.MiddlewareServers, fmt.Sprintf("governor manager: %s", name), fw.Logger("governor"))
+		if err != nil {
+			return nil, nil, err
+		}
+	}
+
+	gov, err := governor.NewManager(name, limit, maxAge, replicas, conn.Nats(), update, opts...)
+	if err != nil {
+		return nil, nil, err
+	}
+
+	return gov, conn, nil
 }
 
 // NewElection establishes a new, named, leader election requiring a Choria Streams bucket called CHORIA_LEADER_ELECTION.

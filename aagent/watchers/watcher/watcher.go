@@ -18,7 +18,7 @@ import (
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
-	"github.com/nats-io/jsm.go/governor" //lint:ignore SA1019 Will vendor
+	"github.com/choria-io/go-choria/providers/governor"
 	"github.com/tidwall/gjson"
 )
 
@@ -142,7 +142,7 @@ func (w *Watcher) EnterGovernor(ctx context.Context, name string, timeout time.D
 
 	w.Infof("Obtaining a slot in the %s Governor with %v timeout", name, timeout)
 	subj := util.GovernorSubject(name, w.machine.MainCollective())
-	gov := governor.NewJSGovernor(name, mgr, governor.WithLogger(w), governor.WithSubject(subj), governor.WithBackoff(backoff.FiveSec))
+	gov := governor.New(name, mgr.NatsConn(), governor.WithLogger(w), governor.WithSubject(subj), governor.WithBackoff(backoff.FiveSec))
 
 	var gCtx context.Context
 	w.mu.Lock()

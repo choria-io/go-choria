@@ -15,6 +15,7 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/protocol"
 	election "github.com/choria-io/go-choria/providers/election/streams"
+	"github.com/choria-io/go-choria/providers/governor"
 	"github.com/choria-io/go-choria/providers/kv"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/nats-io/nats.go"
@@ -68,6 +69,8 @@ type Framework interface {
 	FederationMiddlewareServers() (servers srvcache.Servers, err error)
 	Getuid() int
 	GovernorSubject(name string) string
+	NewGovernor(ctx context.Context, name string, conn Connector, opts ...governor.Option) (governor.Governor, Connector, error)
+	NewGovernorManager(ctx context.Context, name string, limit uint64, maxAge time.Duration, replicas uint, update bool, conn Connector, opts ...governor.Option) (governor.Manager, Connector, error)
 	HTTPClient(secure bool) (*http.Client, error)
 	HasCollective(collective string) bool
 	IsFederated() (result bool)

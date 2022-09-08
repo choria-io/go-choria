@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,8 +10,7 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/nats-io/jsm.go"
-	"github.com/nats-io/jsm.go/governor" //lint:ignore SA1019 Will vendor
+	"github.com/choria-io/go-choria/providers/governor"
 )
 
 type tGovAddCommand struct {
@@ -43,17 +42,7 @@ func (g *tGovAddCommand) Configure() (err error) {
 func (g *tGovAddCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("governor manager: %s", g.name), c.Logger("governor"))
-	if err != nil {
-		return err
-	}
-
-	mgr, err := jsm.New(conn.Nats())
-	if err != nil {
-		return err
-	}
-
-	gov, err := governor.NewJSGovernorManager(g.name, uint64(g.limit), g.expire, uint(g.replicas), mgr, false, governor.WithSubject(c.GovernorSubject(g.name)))
+	gov, _, err := c.NewGovernorManager(ctx, g.name, uint64(g.limit), g.expire, uint(g.replicas), false, nil, governor.WithSubject(c.GovernorSubject(g.name)))
 	if err != nil {
 		return err
 	}

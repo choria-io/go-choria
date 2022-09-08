@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,8 +9,6 @@ import (
 	"sync"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/nats-io/jsm.go"
-	"github.com/nats-io/jsm.go/governor" //lint:ignore SA1019 Will vendor
 )
 
 type tGovResetCommand struct {
@@ -36,17 +34,7 @@ func (g *tGovResetCommand) Configure() (err error) {
 func (g *tGovResetCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("governor manager: %s", g.name), c.Logger("governor"))
-	if err != nil {
-		return err
-	}
-
-	mgr, err := jsm.New(conn.Nats())
-	if err != nil {
-		return err
-	}
-
-	gov, err := governor.NewJSGovernorManager(g.name, 0, 0, 1, mgr, false)
+	gov, _, err := c.NewGovernorManager(ctx, g.name, 0, 0, 1, false, nil)
 	if err != nil {
 		return err
 	}
