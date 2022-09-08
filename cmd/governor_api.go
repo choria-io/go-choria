@@ -14,7 +14,7 @@ import (
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
-	"github.com/choria-io/go-choria/providers/governor"
+	governor "github.com/choria-io/go-choria/providers/governor/streams"
 	"github.com/nats-io/jsm.go"
 )
 

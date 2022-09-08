@@ -332,6 +332,48 @@
       "description": "Restart the Choria Server"
     },
     {
+      "action": "release_update",
+      "input": {
+        "token": {
+          "prompt": "Token",
+          "description": "Authentication token to pass to the server",
+          "type": "string",
+          "default": "",
+          "optional": false,
+          "validation": ".",
+          "maxlength": 128
+        },
+        "repository": {
+          "prompt": "Repository URL",
+          "description": "HTTP(S) server hosting the update repository",
+          "type": "string",
+          "default": "",
+          "optional": false,
+          "validation": "^http(s*)://",
+          "maxlength": 512
+        },
+        "version": {
+          "prompt": "Version to update to",
+          "description": "Package version to update to",
+          "type": "string",
+          "default": "",
+          "optional": false,
+          "validation": ".+",
+          "maxlength": 32
+        }
+      },
+      "output": {
+        "message": {
+          "description": "Status message from the Provisioner",
+          "display_as": "Message",
+          "type": "string",
+          "default": null
+        }
+      },
+      "display": "always",
+      "description": "Performs an in-place binary update and restarts Choria"
+    },
+    {
       "action": "shutdown",
       "input": {
         "token": {

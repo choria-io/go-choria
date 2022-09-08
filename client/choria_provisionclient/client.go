@@ -363,6 +363,34 @@ func (p *ChoriaProvisionClient) Restart(inputToken string) *RestartRequester {
 	return d
 }
 
+// ReleaseUpdate performs the release_update action
+//
+// Description: Performs an in-place binary update and restarts Choria
+//
+// Required Inputs:
+//   - repository (string) - HTTP(S) server hosting the update repository
+//   - token (string) - Authentication token to pass to the server
+//   - version (string) - Package version to update to
+func (p *ChoriaProvisionClient) ReleaseUpdate(inputRepository string, inputToken string, inputVersion string) *ReleaseUpdateRequester {
+	d := &ReleaseUpdateRequester{
+		outc: nil,
+		r: &requester{
+			args: map[string]any{
+				"repository": inputRepository,
+				"token":      inputToken,
+				"version":    inputVersion,
+			},
+			action: "release_update",
+			client: p,
+		},
+	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
+	return d
+}
+
 // Shutdown performs the shutdown action
 //
 // Description: Shut the Choria Server down cleanly

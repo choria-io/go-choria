@@ -24,7 +24,7 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/ddlresolver"
 	election "github.com/choria-io/go-choria/providers/election/streams"
-	"github.com/choria-io/go-choria/providers/governor"
+	governor "github.com/choria-io/go-choria/providers/governor/streams"
 	"github.com/choria-io/go-choria/providers/kv"
 	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/providers/signers"

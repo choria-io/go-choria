@@ -16,7 +16,7 @@ import (
 
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/lifecycle"
-	"github.com/choria-io/go-choria/providers/governor"
+	governor "github.com/choria-io/go-choria/providers/governor/streams"
 	"github.com/kballard/go-shellquote"
 )
 

@@ -15,7 +15,7 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/protocol"
 	election "github.com/choria-io/go-choria/providers/election/streams"
-	"github.com/choria-io/go-choria/providers/governor"
+	governor "github.com/choria-io/go-choria/providers/governor/streams"
 	"github.com/choria-io/go-choria/providers/kv"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/nats-io/nats.go"

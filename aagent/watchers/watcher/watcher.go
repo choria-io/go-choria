@@ -18,7 +18,7 @@ import (
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
-	"github.com/choria-io/go-choria/providers/governor"
+	governor "github.com/choria-io/go-choria/providers/governor/streams"
 	"github.com/tidwall/gjson"
 )
 

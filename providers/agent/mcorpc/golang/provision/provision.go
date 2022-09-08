@@ -68,6 +68,7 @@ func New(mgr server.AgentManager) (agents.Agent, error) {
 	agent.MustRegisterAction("shutdown", shutdownAction)
 	agent.MustRegisterAction("reprovision", reprovisionAction)
 	agent.MustRegisterAction("jwt", jwtAction)
+	agent.MustRegisterAction("release_update", releaseUpdateAction)
 
 	return agent, nil
 }
