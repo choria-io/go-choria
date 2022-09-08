@@ -915,7 +915,7 @@ func (fw *Framework) NewGovernor(ctx context.Context, name string, conn inter.Co
 func (fw *Framework) NewGovernorManager(ctx context.Context, name string, limit uint64, maxAge time.Duration, replicas uint, update bool, conn inter.Connector, opts ...governor.Option) (governor.Manager, inter.Connector, error) {
 	var err error
 
-	if conn != nil {
+	if conn == nil {
 		conn, err = fw.NewConnector(ctx, fw.MiddlewareServers, fmt.Sprintf("governor manager: %s", name), fw.Logger("governor"))
 		if err != nil {
 			return nil, nil, err

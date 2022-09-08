@@ -54,12 +54,6 @@ func (g *tGovAddCommand) Run(wg *sync.WaitGroup) (err error) {
 		fmt.Printf("   Expires: %v desired: %v\n", gov.MaxAge(), g.expire)
 		fmt.Printf("  Replicas: %d desired: %d\n", gov.Replicas(), g.replicas)
 
-		if gov.Replicas() != g.replicas {
-			fmt.Println()
-			fmt.Println("WARNING: replicas can not be updated")
-			fmt.Println()
-		}
-
 		ans := g.force
 		if !g.force {
 			fmt.Println()
