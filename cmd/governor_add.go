@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/choria-io/go-choria/providers/governor"
+	governor "github.com/choria-io/go-choria/providers/governor/streams"
 )
 
 type tGovAddCommand struct {

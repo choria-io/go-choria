@@ -305,6 +305,45 @@ action "restart", :description => "Restart the Choria Server" do
 
 end
 
+action "release_update", :description => "Performs an in-place binary update and restarts Choria" do
+  display :always
+
+  input :repository,
+        :prompt      => "Repository URL",
+        :description => "HTTP(S) server hosting the update repository",
+        :type        => :string,
+        :validation  => '^http(s*)://',
+        :maxlength   => 512,
+        :optional    => false
+
+
+  input :token,
+        :prompt      => "Token",
+        :description => "Authentication token to pass to the server",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 128,
+        :optional    => false
+
+
+  input :version,
+        :prompt      => "Version to update to",
+        :description => "Package version to update to",
+        :type        => :string,
+        :validation  => '.+',
+        :maxlength   => 32,
+        :optional    => false
+
+
+
+
+  output :message,
+         :description => "Status message from the Provisioner",
+         :type        => "string",
+         :display_as  => "Message"
+
+end
+
 action "shutdown", :description => "Shut the Choria Server down cleanly" do
   display :failed
 

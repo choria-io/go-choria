@@ -13,6 +13,7 @@ require (
 	github.com/brutella/hc v1.2.5
 	github.com/choria-io/appbuilder v0.3.0
 	github.com/choria-io/fisk v0.2.1
+	github.com/choria-io/go-updater v0.0.4-0.20220908181418-3c897a2c1e79
 	github.com/cloudevents/sdk-go/v2 v2.11.0
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
@@ -20,7 +21,7 @@ require (
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/golang/mock v1.6.0
-	github.com/google/go-cmp v0.5.8
+	github.com/google/go-cmp v0.5.9
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.5.5
@@ -46,7 +47,7 @@ require (
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
-	golang.org/x/sys v0.0.0-20220907062415-87db552b00fd
+	golang.org/x/sys v0.0.0-20220908164124-27713097b956
 	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.12
@@ -75,6 +76,7 @@ require (
 	github.com/dgryski/trifles v0.0.0-20220729183022-231ecf6ed548 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/emicklei/dot v1.0.0 // indirect
+	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/foxcpp/go-mockdns v1.0.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/gdamore/tcell/v2 v2.5.3 // indirect
