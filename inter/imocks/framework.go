@@ -18,6 +18,7 @@ import (
 	inter "github.com/choria-io/go-choria/inter"
 	protocol "github.com/choria-io/go-choria/protocol"
 	election "github.com/choria-io/go-choria/providers/election/streams"
+	governor "github.com/choria-io/go-choria/providers/governor"
 	kv "github.com/choria-io/go-choria/providers/kv"
 	srvcache "github.com/choria-io/go-choria/srvcache"
 	gomock "github.com/golang/mock/gomock"
@@ -919,6 +920,48 @@ func (mr *MockFrameworkMockRecorder) NewElectionWithConn(arg0, arg1, arg2, arg3 
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]interface{}{arg0, arg1, arg2, arg3}, arg4...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewElectionWithConn", reflect.TypeOf((*MockFramework)(nil).NewElectionWithConn), varargs...)
+}
+
+// NewGovernor mocks base method.
+func (m *MockFramework) NewGovernor(arg0 context.Context, arg1 string, arg2 inter.Connector, arg3 ...governor.Option) (governor.Governor, inter.Connector, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2}
+	for _, a := range arg3 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "NewGovernor", varargs...)
+	ret0, _ := ret[0].(governor.Governor)
+	ret1, _ := ret[1].(inter.Connector)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// NewGovernor indicates an expected call of NewGovernor.
+func (mr *MockFrameworkMockRecorder) NewGovernor(arg0, arg1, arg2 interface{}, arg3 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2}, arg3...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewGovernor", reflect.TypeOf((*MockFramework)(nil).NewGovernor), varargs...)
+}
+
+// NewGovernorManager mocks base method.
+func (m *MockFramework) NewGovernorManager(arg0 context.Context, arg1 string, arg2 uint64, arg3 time.Duration, arg4 uint, arg5 bool, arg6 inter.Connector, arg7 ...governor.Option) (governor.Manager, inter.Connector, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1, arg2, arg3, arg4, arg5, arg6}
+	for _, a := range arg7 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "NewGovernorManager", varargs...)
+	ret0, _ := ret[0].(governor.Manager)
+	ret1, _ := ret[1].(inter.Connector)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
+}
+
+// NewGovernorManager indicates an expected call of NewGovernorManager.
+func (mr *MockFrameworkMockRecorder) NewGovernorManager(arg0, arg1, arg2, arg3, arg4, arg5, arg6 interface{}, arg7 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1, arg2, arg3, arg4, arg5, arg6}, arg7...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewGovernorManager", reflect.TypeOf((*MockFramework)(nil).NewGovernorManager), varargs...)
 }
 
 // NewMessage mocks base method.

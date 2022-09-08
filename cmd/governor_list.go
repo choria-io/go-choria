@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,7 +10,7 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/nats-io/jsm.go"
+	"github.com/choria-io/go-choria/providers/governor"
 )
 
 type tGovListCommand struct {
@@ -39,14 +39,7 @@ func (g *tGovListCommand) Run(wg *sync.WaitGroup) (err error) {
 		return err
 	}
 
-	mgr, err := jsm.New(conn.Nats())
-	if err != nil {
-		return err
-	}
-
-	known, err := mgr.StreamNames(&jsm.StreamNamesFilter{
-		Subject: c.GovernorSubject("*"),
-	})
+	known, err := governor.List(conn.Nats(), c.Config.MainCollective)
 	if err != nil {
 		return err
 	}

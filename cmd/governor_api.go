@@ -14,8 +14,8 @@ import (
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
+	"github.com/choria-io/go-choria/providers/governor"
 	"github.com/nats-io/jsm.go"
-	"github.com/nats-io/jsm.go/governor" //lint:ignore SA1019 Will vendor
 )
 
 type tGovAPICommand struct {
@@ -102,35 +102,9 @@ func (g *tGovAPICommand) updateCmd() {
 		g.fail("collective is required")
 	}
 
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, fmt.Sprintf("governor manager: %s", "governor_list"), c.Logger("governor"))
-	if err != nil {
-		g.fail("connection failed: %s", err)
-	}
-
-	mgr, err := jsm.New(conn.Nats())
-	if err != nil {
-		g.fail("connection failed: %s", err)
-	}
-
-	gov, err := governor.NewJSGovernorManager(g.name, uint64(g.limit), time.Duration(g.expire)*time.Second, uint(g.replicas), mgr, true, governor.WithSubject(util.GovernorSubject(g.name, g.collective)))
+	gov, _, err := c.NewGovernorManager(ctx, g.name, uint64(g.limit), time.Duration(g.expire)*time.Second, uint(g.replicas), true, nil, governor.WithSubject(util.GovernorSubject(g.name, g.collective)))
 	if err != nil {
 		g.fail("update failed: %s", err)
-	}
-
-	if gov.Replicas() != g.replicas {
-		if !g.force {
-			g.fail("replica update requires force")
-		}
-
-		err = gov.Stream().Delete()
-		if err != nil {
-			g.fail("deleting existing stream failed: %s", err)
-		}
-
-		gov, err = governor.NewJSGovernorManager(g.name, uint64(g.limit), time.Duration(g.expire)*time.Second, uint(g.replicas), mgr, true, governor.WithSubject(util.GovernorSubject(g.name, g.collective)))
-		if err != nil {
-			g.fail("update failed: %s", err)
-		}
 	}
 
 	parts := strings.Split(gov.Subject(), ".")
@@ -187,14 +161,7 @@ func (g *tGovAPICommand) listCmd() {
 		g.fail("connection failed: %s", err)
 	}
 
-	mgr, err := jsm.New(conn.Nats())
-	if err != nil {
-		g.fail("connection failed: %s", err)
-	}
-
-	known, err := mgr.StreamNames(&jsm.StreamNamesFilter{
-		Subject: util.GovernorSubject("*", "*"),
-	})
+	known, err := governor.List(conn.Nats(), c.Config.MainCollective)
 	if err != nil {
 		g.fail("connection failed: %s", err)
 	}
@@ -203,7 +170,7 @@ func (g *tGovAPICommand) listCmd() {
 	for i := 0; i < len(known); i++ {
 		name := strings.TrimPrefix(known[i], "GOVERNOR_")
 
-		mgr, err := governor.NewJSGovernorManager(name, 0, 0, 1, mgr, false)
+		mgr, _, err := c.NewGovernorManager(ctx, name, 0, 0, 1, false, conn)
 		if err != nil {
 			g.fail("loading failed: %s", err)
 		}
