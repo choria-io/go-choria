@@ -29,10 +29,10 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.0.34-0.20220907133909-326980515eae
-	github.com/nats-io/nats-server/v2 v2.8.5-0.20220908023556-a7744026e124
+	github.com/nats-io/jsm.go v0.0.34
+	github.com/nats-io/nats-server/v2 v2.9.0
 	github.com/nats-io/nats.go v1.16.1-0.20220906180156-a1017eec10b0
-	github.com/nats-io/natscli v0.0.34-0.20220908062454-26ad8d63ae13
+	github.com/nats-io/natscli v0.0.34
 	github.com/olekukonko/tablewriter v0.0.5
 	github.com/onsi/ginkgo/v2 v2.1.6
 	github.com/onsi/gomega v1.20.2
@@ -76,7 +76,6 @@ require (
 	github.com/dgryski/trifles v0.0.0-20220729183022-231ecf6ed548 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/emicklei/dot v1.0.0 // indirect
-	github.com/fatih/structtag v1.2.0 // indirect
 	github.com/foxcpp/go-mockdns v1.0.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
 	github.com/gdamore/tcell/v2 v2.5.3 // indirect
