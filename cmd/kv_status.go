@@ -49,9 +49,18 @@ func (k *kvStatusCommand) Run(wg *sync.WaitGroup) error {
 	fmt.Printf("    Values Stored: %d\n", status.Values())
 	fmt.Printf("          History: %d\n", status.History())
 	fmt.Printf("              TTL: %v\n", status.TTL())
-	fmt.Printf("  Max Bucket Size: %d\n", nfo.Config.MaxBytes)
-	fmt.Printf("   Max Value Size: %d\n", nfo.Config.MaxMsgSize)
+	if nfo.Config.MaxBytes == -1 {
+		fmt.Printf("  Max Bucket Size: unlimited\n")
+	} else {
+		fmt.Printf("  Max Bucket Size: %d\n", nfo.Config.MaxBytes)
+	}
+	if nfo.Config.MaxMsgSize == -1 {
+		fmt.Printf("   Max Value Size: unlimited\n")
+	} else {
+		fmt.Printf("   Max Value Size: %d\n", nfo.Config.MaxMsgSize)
+	}
 	fmt.Printf(" Storage Replicas: %d\n", nfo.Config.Replicas)
+	fmt.Printf("       Direct Get: %t\n", nfo.Config.AllowDirect)
 
 	return nil
 }
