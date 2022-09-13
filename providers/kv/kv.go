@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/nats-io/jsm.go"
+	"github.com/nats-io/jsm.go/api"
 	"github.com/nats-io/nats.go"
 )
 
@@ -22,6 +24,7 @@ type options struct {
 	ttl           time.Duration
 	maxBucketSize int64
 	replicas      int
+	direct        bool
 }
 
 func WithTTL(ttl time.Duration) Option {
@@ -44,6 +47,10 @@ func WithMaxValueSize(s int32) Option {
 	return func(o *options) { o.maxValSize = s }
 }
 
+func WithoutDirectAccess() Option {
+	return func(o *options) { o.direct = false }
+}
+
 func DeleteKV(nc *nats.Conn, kv nats.KeyValue) error {
 	status, err := kv.Status()
 	if err != nil {
@@ -59,10 +66,20 @@ func DeleteKV(nc *nats.Conn, kv nats.KeyValue) error {
 	return js.DeleteStream(nfo.Config.Name)
 }
 
+func LoadKV(nc *nats.Conn, name string) (nats.KeyValue, error) {
+	js, err := nc.JetStream()
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to Choria Streams: %s", err)
+	}
+
+	return js.KeyValue(name)
+}
+
 func NewKV(nc *nats.Conn, name string, create bool, opts ...Option) (nats.KeyValue, error) {
 	opt := &options{
 		name:        name,
 		replicas:    1,
+		direct:      true,
 		description: "Choria Streams Key-Value Bucket",
 	}
 
@@ -70,12 +87,7 @@ func NewKV(nc *nats.Conn, name string, create bool, opts ...Option) (nats.KeyVal
 		o(opt)
 	}
 
-	js, err := nc.JetStream()
-	if err != nil {
-		return nil, fmt.Errorf("failed to connect to Choria Streams: %s", err)
-	}
-
-	kv, err := js.KeyValue(name)
+	kv, err := LoadKV(nc, name)
 	if err == nil {
 		return kv, nil
 	}
@@ -84,14 +96,34 @@ func NewKV(nc *nats.Conn, name string, create bool, opts ...Option) (nats.KeyVal
 		return nil, fmt.Errorf("failed to load Choria Key-Value store %s: %s", name, err)
 	}
 
-	return js.CreateKeyValue(&nats.KeyValueConfig{
-		Bucket:       name,
-		Description:  opt.description,
-		MaxValueSize: opt.maxValSize,
-		History:      opt.history,
-		TTL:          opt.ttl,
-		MaxBytes:     opt.maxBucketSize,
-		Storage:      nats.FileStorage,
-		Replicas:     opt.replicas,
-	})
+	mgr, err := jsm.New(nc)
+	if err != nil {
+		return nil, fmt.Errorf("failed to connect to Choria Streams: %s", err)
+	}
+
+	cfg := api.StreamConfig{
+		Name:          fmt.Sprintf("KV_%s", name),
+		Subjects:      []string{fmt.Sprintf("$KV.%s.>", name)},
+		Retention:     api.LimitsPolicy,
+		MaxMsgsPer:    int64(opt.history),
+		MaxBytes:      opt.maxBucketSize,
+		MaxAge:        opt.ttl,
+		Replicas:      opt.replicas,
+		AllowDirect:   opt.direct,
+		MaxConsumers:  -1,
+		MaxMsgs:       -1,
+		MaxMsgSize:    -1,
+		Storage:       api.FileStorage,
+		Discard:       api.DiscardNew,
+		Duplicates:    2 * time.Minute,
+		RollupAllowed: true,
+		DenyDelete:    true,
+	}
+
+	_, err = mgr.NewStreamFromDefault(cfg.Name, cfg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create key-value bucket: %s", err)
+	}
+
+	return LoadKV(nc, name)
 }
