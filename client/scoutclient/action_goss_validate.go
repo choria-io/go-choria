@@ -170,11 +170,38 @@ func (d *GossValidateResult) EachOutput(h func(r *GossValidateOutput)) {
 	}
 }
 
+// File is an optional input to the goss_validate action
+//
+// Description: Path to the Goss validation specification
+func (d *GossValidateRequester) File(v string) *GossValidateRequester {
+	d.r.args["file"] = v
+
+	return d
+}
+
+// Rules is an optional input to the goss_validate action
+//
+// Description: Contents of the Gossfile to validate
+func (d *GossValidateRequester) Rules(v string) *GossValidateRequester {
+	d.r.args["rules"] = v
+
+	return d
+}
+
 // Vars is an optional input to the goss_validate action
 //
 // Description: Path to a file to use as template variables
 func (d *GossValidateRequester) Vars(v string) *GossValidateRequester {
 	d.r.args["vars"] = v
+
+	return d
+}
+
+// YamlVars is an optional input to the goss_validate action
+//
+// Description: YAML data to use as variables
+func (d *GossValidateRequester) YamlVars(v string) *GossValidateRequester {
+	d.r.args["yaml_vars"] = v
 
 	return d
 }

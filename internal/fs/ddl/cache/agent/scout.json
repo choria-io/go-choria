@@ -112,19 +112,35 @@
         }
       ],
       "input": {
+        "rules": {
+          "prompt": "Gossfile contents",
+          "description": "Contents of the Gossfile to validate",
+          "type": "string",
+          "maxlength": 5120,
+          "validation": ".",
+          "optional": true
+        },
         "file": {
           "prompt": "Goss File",
           "description": "Path to the Goss validation specification",
           "type": "string",
           "maxlength": 256,
           "validation": ".+",
-          "optional": false
+          "optional": true
         },
         "vars": {
           "prompt": "Vars File",
           "description": "Path to a file to use as template variables",
           "type": "string",
           "maxlength": 256,
+          "validation": ".+",
+          "optional": true
+        },
+        "yaml_vars": {
+          "prompt": "Variables YAML",
+          "description": "YAML data to use as variables",
+          "type": "string",
+          "maxlength": 5120,
           "validation": ".+",
           "optional": true
         }

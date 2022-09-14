@@ -3,7 +3,7 @@ module github.com/choria-io/go-choria
 go 1.18
 
 require (
-	github.com/AlecAivazis/survey/v2 v2.3.5
+	github.com/AlecAivazis/survey/v2 v2.3.6
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.4.0
@@ -11,13 +11,13 @@ require (
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.3.0
+	github.com/choria-io/appbuilder v0.4.0
 	github.com/choria-io/fisk v0.2.1
 	github.com/choria-io/go-updater v0.0.4-0.20220908181418-3c897a2c1e79
 	github.com/cloudevents/sdk-go/v2 v2.11.0
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/gofrs/uuid v4.2.0+incompatible
+	github.com/gofrs/uuid v4.3.0+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/golang/mock v1.6.0
@@ -47,7 +47,7 @@ require (
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/atomic v1.9.0
 	golang.org/x/crypto v0.0.0-20220829220503-c86fa9a7ed90
-	golang.org/x/sys v0.0.0-20220908164124-27713097b956
+	golang.org/x/sys v0.0.0-20220913175220-63ea55921009
 	golang.org/x/term v0.0.0-20220722155259-a9ba230a4035
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.12
@@ -113,7 +113,7 @@ require (
 	github.com/prometheus/common v0.37.0 // indirect
 	github.com/prometheus/procfs v0.8.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
-	github.com/rivo/uniseg v0.3.4 // indirect
+	github.com/rivo/uniseg v0.4.2 // indirect
 	github.com/rogpeppe/go-internal v1.8.1 // indirect
 	github.com/santhosh-tekuri/jsonschema/v5 v5.0.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
@@ -132,7 +132,7 @@ require (
 	go.uber.org/zap v1.23.0 // indirect
 	golang.org/x/exp v0.0.0-20200331195152-e8c3332aa8e5 // indirect
 	golang.org/x/mod v0.6.0-dev.0.20220419223038-86c51ed26bb4 // indirect
-	golang.org/x/net v0.0.0-20220907135653-1e95f45603a7 // indirect
+	golang.org/x/net v0.0.0-20220909164309-bea034e7d591 // indirect
 	golang.org/x/sync v0.0.0-20220907140024-f12130a52804 // indirect
 	golang.org/x/time v0.0.0-20220722155302-e5dcc9cfc0b9 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect

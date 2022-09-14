@@ -262,18 +262,16 @@ func (p *ScoutClient) Maintenance() *MaintenanceRequester {
 //
 // Description: Performs a Goss validation using a specific file
 //
-// Required Inputs:
-//   - file (string) - Path to the Goss validation specification
-//
 // Optional Inputs:
+//   - file (string) - Path to the Goss validation specification
+//   - rules (string) - Contents of the Gossfile to validate
 //   - vars (string) - Path to a file to use as template variables
-func (p *ScoutClient) GossValidate(inputFile string) *GossValidateRequester {
+//   - yaml_vars (string) - YAML data to use as variables
+func (p *ScoutClient) GossValidate() *GossValidateRequester {
 	d := &GossValidateRequester{
 		outc: nil,
 		r: &requester{
-			args: map[string]any{
-				"file": inputFile,
-			},
+			args:   map[string]any{},
 			action: "goss_validate",
 			client: p,
 		},

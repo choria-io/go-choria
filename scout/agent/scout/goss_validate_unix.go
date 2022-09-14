@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +12,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"os"
 	"time"
 
 	"github.com/aelsabbahy/goss"
@@ -23,8 +24,10 @@ import (
 )
 
 type GossValidateRequest struct {
-	File string `json:"file"`
-	Vars string `json:"vars"`
+	Rules    string `json:"rules"`
+	File     string `json:"file"`
+	Vars     string `json:"vars"`
+	VarsData string `json:"yaml_vars"`
 }
 
 type GossValidateResponse struct {
@@ -43,6 +46,39 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 	args := &GossValidateRequest{}
 	if !mcorpc.ParseRequestData(args, req, reply) {
 		return
+	}
+
+	switch {
+	case args.Rules == "" && args.File == "":
+		abort("one of rules or file is required", reply)
+		return
+	case args.Rules != "" && args.File != "":
+		abort("only one of rules or file can be supplied", reply)
+		return
+	case args.Rules != "":
+		tf, err := os.CreateTemp("", fmt.Sprintf("choria-gossfile-%s-*.yaml", req.RequestID))
+		if err != nil {
+			agent.Log.Errorf("Writing gossfile failed: %v", err)
+			abort("Could not create gossfile", reply)
+			return
+		}
+		defer os.Remove(tf.Name())
+		args.File = tf.Name()
+	}
+
+	switch {
+	case args.VarsData != "" && args.Vars != "":
+		abort("only one of yaml_vars or vars can be supplied", reply)
+		return
+	case args.VarsData != "":
+		tf, err := os.CreateTemp("", fmt.Sprintf("choria-gossvars-%s-*.yaml", req.RequestID))
+		if err != nil {
+			agent.Log.Errorf("Writing goss variables file failed: %v", err)
+			abort("Could not create variables file", reply)
+			return
+		}
+		defer os.Remove(tf.Name())
+		args.Vars = tf.Name()
 	}
 
 	var out bytes.Buffer
