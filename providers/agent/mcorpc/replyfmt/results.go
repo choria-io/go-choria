@@ -128,7 +128,7 @@ func (r *RPCResults) RenderTXTFooter(w io.Writer, verbose bool) {
 			wr := new(tabwriter.Writer)
 			wr.Init(out, 0, 0, 4, ' ', 0)
 			util.SliceGroups(nodes, 3, func(g []string) {
-				fmt.Fprintf(w, "    %s\t\n", strings.Join(g, "\t"))
+				fmt.Fprintf(wr, "    %s\t\n", strings.Join(g, "\t"))
 			})
 			wr.Flush()
 
