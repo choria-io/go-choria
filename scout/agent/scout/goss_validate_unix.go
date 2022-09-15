@@ -63,6 +63,13 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 			return
 		}
 		defer os.Remove(tf.Name())
+
+		err = os.WriteFile(tf.Name(), []byte(args.Rules), 0400)
+		if err != nil {
+			agent.Log.Errorf("Writing gossfile failed: %v", err)
+			abort("Could not create gossfile", reply)
+			return
+		}
 		args.File = tf.Name()
 	}
 
@@ -78,6 +85,13 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 			return
 		}
 		defer os.Remove(tf.Name())
+
+		err = os.WriteFile(tf.Name(), []byte(args.VarsData), 0400)
+		if err != nil {
+			agent.Log.Errorf("Writing variables file failed: %v", err)
+			abort("Could not create variables file", reply)
+			return
+		}
 		args.Vars = tf.Name()
 	}
 
