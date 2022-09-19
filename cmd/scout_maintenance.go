@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,8 +6,6 @@ package cmd
 
 import (
 	"sync"
-
-	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/discovery"
 	scoutcmd "github.com/choria-io/go-choria/scout/cmd"
@@ -46,7 +44,7 @@ func (s *sMaintenanceCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
 	s.fo.SetDefaultsFromChoria(c)
-	trigger, err := scoutcmd.NewMaintenanceCommand(s.fo, c, s.checks, s.json, debug || s.verbose, c.Config.Color, logrus.NewEntry(c.Logger("scout").Logger))
+	trigger, err := scoutcmd.NewMaintenanceCommand(s.fo, c, s.checks, s.json, debug || s.verbose, c.Config.Color, c.Logger("scout"))
 	if err != nil {
 		return err
 	}

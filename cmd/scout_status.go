@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,6 @@ import (
 	"sync"
 
 	scoutcmd "github.com/choria-io/go-choria/scout/cmd"
-	"github.com/sirupsen/logrus"
 )
 
 type sStatusCommand struct {
@@ -37,7 +36,7 @@ func (s *sStatusCommand) Configure() error {
 func (s *sStatusCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	status, err := scoutcmd.NewStatusCommand(c, s.identity, s.json, debug || s.verbose, c.Config.Color, logrus.NewEntry(c.Logger("scout").Logger))
+	status, err := scoutcmd.NewStatusCommand(c, s.identity, s.json, debug || s.verbose, c.Config.Color, c.Logger("scout"))
 	if err != nil {
 		return err
 	}
