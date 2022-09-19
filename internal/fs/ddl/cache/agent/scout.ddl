@@ -90,21 +90,21 @@ action "goss_validate", :description => "Performs a Goss validation using a spec
         :optional    => true
 
 
-  input :rules,
-        :prompt      => "Gossfile contents",
-        :description => "Contents of the Gossfile to validate",
-        :type        => :string,
-        :validation  => '.',
-        :maxlength   => 5120,
-        :optional    => true
-
-
   input :vars,
         :prompt      => "Vars File",
         :description => "Path to a file to use as template variables",
         :type        => :string,
         :validation  => '.+',
         :maxlength   => 256,
+        :optional    => true
+
+
+  input :yaml_rules,
+        :prompt      => "Gossfile contents",
+        :description => "Contents of the Gossfile to validate",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 5120,
         :optional    => true
 
 
