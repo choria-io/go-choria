@@ -168,7 +168,7 @@ func (v *ValidateCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 
 	var table *xtablewriter.Table
 	if v.opts.Table {
-		table = iu.NewUTF8TableWithTitle("Goss check results", "Result", "Node", "Resource", "State")
+		table = iu.NewUTF8TableWithTitle("Goss check results", "", "Node", "Resource", "State")
 	}
 
 	result.EachOutput(func(r *scoutclient.GossValidateOutput) {
