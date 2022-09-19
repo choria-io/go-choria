@@ -112,7 +112,7 @@
         }
       ],
       "input": {
-        "rules": {
+        "yaml_rules": {
           "prompt": "Gossfile contents",
           "description": "Contents of the Gossfile to validate",
           "type": "string",

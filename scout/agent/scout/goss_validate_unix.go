@@ -24,7 +24,7 @@ import (
 )
 
 type GossValidateRequest struct {
-	Rules    string `json:"rules"`
+	Rules    string `json:"yaml_rules"`
 	File     string `json:"file"`
 	Vars     string `json:"vars"`
 	VarsData string `json:"yaml_vars"`
@@ -50,10 +50,10 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 
 	switch {
 	case args.Rules == "" && args.File == "":
-		abort("one of rules or file is required", reply)
+		abort("One of rules or file is required", reply)
 		return
 	case args.Rules != "" && args.File != "":
-		abort("only one of rules or file can be supplied", reply)
+		abort("Only one of rules or file can be supplied", reply)
 		return
 	case args.Rules != "":
 		tf, err := os.CreateTemp("", fmt.Sprintf("choria-gossfile-%s-*.yaml", req.RequestID))
@@ -63,6 +63,7 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 			return
 		}
 		defer os.Remove(tf.Name())
+		tf.Close()
 
 		err = os.WriteFile(tf.Name(), []byte(args.Rules), 0400)
 		if err != nil {
@@ -75,7 +76,7 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 
 	switch {
 	case args.VarsData != "" && args.Vars != "":
-		abort("only one of yaml_vars or vars can be supplied", reply)
+		abort("Only one of yaml_vars or vars can be supplied", reply)
 		return
 	case args.VarsData != "":
 		tf, err := os.CreateTemp("", fmt.Sprintf("choria-gossvars-%s-*.yaml", req.RequestID))
@@ -85,6 +86,7 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 			return
 		}
 		defer os.Remove(tf.Name())
+		tf.Close()
 
 		err = os.WriteFile(tf.Name(), []byte(args.VarsData), 0400)
 		if err != nil {
@@ -104,7 +106,7 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 	}
 
 	if args.Vars != "" {
-		opts = append(opts, gossutil.WithVarsFile(args.File))
+		opts = append(opts, gossutil.WithVarsFile(args.Vars))
 	}
 
 	cfg, err := gossutil.NewConfig(opts...)
