@@ -20,6 +20,7 @@ type GossValidateResponse struct {
 	Results  []gossoutputs.StructuredTestResult `json:"results"`
 	Runtime  float64                            `json:"runtime"`
 	Success  int                                `json:"success"`
+	Skipped  int                                `json:"skipped"`
 	Summary  string                             `json:"summary"`
 	Tests    int                                `json:"tests"`
 }

@@ -162,9 +162,14 @@
           "type": "integer"
         },
         "success": {
-          "description": "Indicates if the test passed",
+          "description": "Indicates how many tests passed",
           "display_as": "Success",
-          "type": "string"
+          "type": "integer"
+        },
+        "skipped": {
+          "description": "Indicates how many tests were skipped",
+          "display_as": "Skipped",
+          "type": "integer"
         },
         "summary": {
           "description": "A human friendly test result",
