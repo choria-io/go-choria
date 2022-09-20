@@ -236,13 +236,23 @@ func (d *GossValidateOutput) Runtime() int64 {
 
 }
 
+// Skipped is the value of the skipped output
+//
+// Description: Indicates how many tests were skipped
+func (d *GossValidateOutput) Skipped() int64 {
+	val := d.reply["skipped"]
+
+	return val.(int64)
+
+}
+
 // Success is the value of the success output
 //
-// Description: Indicates if the test passed
-func (d *GossValidateOutput) Success() string {
+// Description: Indicates how many tests passed
+func (d *GossValidateOutput) Success() int64 {
 	val := d.reply["success"]
 
-	return val.(string)
+	return val.(int64)
 
 }
 

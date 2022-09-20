@@ -17,6 +17,7 @@ import (
 
 	"github.com/aelsabbahy/goss"
 	gossoutputs "github.com/aelsabbahy/goss/outputs"
+	"github.com/aelsabbahy/goss/resource"
 	gossutil "github.com/aelsabbahy/goss/util"
 	"github.com/choria-io/go-choria/inter"
 
@@ -112,10 +113,16 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 		return
 	}
 
+	for _, r := range res.Results {
+		if r.Result == resource.SKIP {
+			resp.Skipped++
+		}
+	}
 	resp.Results = res.Results
 	resp.Summary = res.SummaryLine
 	resp.Failures = res.Summary.Failed
 	resp.Runtime = res.Summary.TotalDuration.Seconds()
-	resp.Success = res.Summary.TestCount - res.Summary.Failed
+	resp.Success = res.Summary.TestCount - res.Summary.Failed - resp.Skipped
 	resp.Tests = res.Summary.TestCount
+
 }

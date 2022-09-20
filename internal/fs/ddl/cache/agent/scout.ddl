@@ -134,9 +134,14 @@ action "goss_validate", :description => "Performs a Goss validation using a spec
          :type        => "integer",
          :display_as  => "Runtime"
 
+  output :skipped,
+         :description => "Indicates how many tests were skipped",
+         :type        => "integer",
+         :display_as  => "Skipped"
+
   output :success,
-         :description => "Indicates if the test passed",
-         :type        => "string",
+         :description => "Indicates how many tests passed",
+         :type        => "integer",
          :display_as  => "Success"
 
   output :summary,

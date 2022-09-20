@@ -13,6 +13,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aelsabbahy/goss/resource"
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/client/scoutclient"
 	"github.com/choria-io/go-choria/inter"
@@ -53,20 +54,21 @@ func NewValidateCommand(sopts *discovery.StandardOptions, fw inter.Framework, op
 func (v *ValidateCommand) renderTableResult(table *xtablewriter.Table, vr *scoutagent.GossValidateResponse, r *scoutclient.GossValidateOutput) bool {
 	fail := v.fw.Colorize("red", "X")
 	ok := v.fw.Colorize("green", "✓")
+	skip := v.fw.Colorize("yellow", "?")
 
 	should := false
 
 	if !r.ResultDetails().OK() {
-		table.AddRow(fail, r.ResultDetails().Sender(), "", r.ResultDetails().StatusMessage())
+		table.AddRow(fail, r.ResultDetails().Sender(), "", "", r.ResultDetails().StatusMessage())
 		return true
 	}
 
 	if vr.Failures > 0 || vr.Tests == 0 {
 		should = true
-		table.AddRow(fail, r.ResultDetails().Sender(), "", vr.Summary)
+		table.AddRow(fail, r.ResultDetails().Sender(), "", "", vr.Summary)
 	} else {
 		should = true
-		table.AddRow(ok, r.ResultDetails().Sender(), "", vr.Summary)
+		table.AddRow(ok, r.ResultDetails().Sender(), "", "", vr.Summary)
 	}
 
 	sort.Slice(vr.Results, func(i, j int) bool {
@@ -74,12 +76,14 @@ func (v *ValidateCommand) renderTableResult(table *xtablewriter.Table, vr *scout
 	})
 
 	for _, res := range vr.Results {
-		if res.Successful {
-			should = true
-			table.AddRow(ok, "", res.ResourceType, fmt.Sprintf("%s: %s: matches expectation: %v", res.ResourceId, res.Property, res.Expected))
-		} else {
-			should = true
-			table.AddRow(fail, "", res.ResourceType, fmt.Sprintf("%s: %s: does not match expectation: %v", res.ResourceId, res.Property, res.Expected))
+		should = true
+		switch res.Result {
+		case resource.SKIP:
+			table.AddRow(skip, "", res.ResourceType, res.ResourceId, fmt.Sprintf("%s: skipped", res.Property))
+		case resource.SUCCESS:
+			table.AddRow(ok, "", res.ResourceType, res.ResourceId, fmt.Sprintf("%s: matches expectation: %v", res.Property, res.Expected))
+		case resource.FAIL:
+			table.AddRow(fail, "", res.ResourceType, res.ResourceId, fmt.Sprintf("%s: does not match expectation: %v", res.Property, res.Expected))
 		}
 	}
 
@@ -104,19 +108,26 @@ func (v *ValidateCommand) renderTextResult(vr *scoutagent.GossValidateResponse, 
 
 	lb := false
 	for i, res := range vr.Results {
-		if res.Successful {
+		switch res.Result {
+		case resource.SKIP:
 			if lb {
 				fmt.Println()
 			}
-			fmt.Printf("   %s %s: %s: %s: matches expectation: %v\n", v.fw.Colorize("green", "✓"), res.ResourceType, res.ResourceId, res.Property, res.Expected)
+			fmt.Printf("   %s %s: %s: %s: skipped\n", v.fw.Colorize("yellow", "?"), res.ResourceType, res.ResourceId, res.Property)
 			lb = false
-		} else {
+		case resource.FAIL:
 			if i != 0 {
 				fmt.Println()
 			}
 			lb = true
 			msg := fmt.Sprintf("%s %s", v.fw.Colorize("red", "X"), res.SummaryLine)
 			fmt.Printf("%s\n", iu.ParagraphPadding(msg, 3))
+		case resource.SUCCESS:
+			if lb {
+				fmt.Println()
+			}
+			fmt.Printf("   %s %s: %s: %s: matches expectation: %v\n", v.fw.Colorize("green", "✓"), res.ResourceType, res.ResourceId, res.Property, res.Expected)
+			lb = false
 		}
 	}
 	fmt.Println()
@@ -163,12 +174,13 @@ func (v *ValidateCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	count := 0
 	failed := 0
 	success := 0
+	skipped := 0
 	nodes := 0
 	shouldRenderTable := false
 
 	var table *xtablewriter.Table
 	if v.opts.Table {
-		table = iu.NewUTF8TableWithTitle("Goss check results", "", "Node", "Resource", "State")
+		table = iu.NewUTF8TableWithTitle("Goss check results", "", "Node", "Resource", "ID", "State")
 	}
 
 	result.EachOutput(func(r *scoutclient.GossValidateOutput) {
@@ -183,6 +195,7 @@ func (v *ValidateCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		count += vr.Tests
 		failed += vr.Failures
 		success += vr.Success
+		skipped += vr.Skipped
 		if !r.ResultDetails().OK() {
 			failed++
 		}
@@ -210,10 +223,15 @@ func (v *ValidateCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	} else {
 		parts = append(parts, v.fw.Colorize("green", fmt.Sprintf("Failed: %d", failed)))
 	}
+	if skipped > 0 {
+		parts = append(parts, v.fw.Colorize("yellow", fmt.Sprintf("Skipped: %d", skipped)))
+	} else {
+		parts = append(parts, v.fw.Colorize("green", fmt.Sprintf("Skipped: %d", skipped)))
+	}
 	if success > 0 {
 		parts = append(parts, v.fw.Colorize("green", fmt.Sprintf("Success: %d", success)))
 	} else {
-		parts = append(parts, v.fw.Colorize("orange", fmt.Sprintf("Success: %d", success)))
+		parts = append(parts, v.fw.Colorize("red", fmt.Sprintf("Success: %d", success)))
 	}
 	parts = append(parts, fmt.Sprintf("Duration: %v", runTime.Round(time.Millisecond)))
 
