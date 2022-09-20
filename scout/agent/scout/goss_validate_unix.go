@@ -23,22 +23,6 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 )
 
-type GossValidateRequest struct {
-	Rules    string `json:"yaml_rules"`
-	File     string `json:"file"`
-	Vars     string `json:"vars"`
-	VarsData string `json:"yaml_vars"`
-}
-
-type GossValidateResponse struct {
-	Failures int                                `json:"failures"`
-	Results  []gossoutputs.StructuredTestResult `json:"results"`
-	Runtime  float64                            `json:"runtime"`
-	Success  int                                `json:"success"`
-	Summary  string                             `json:"summary"`
-	Tests    int                                `json:"tests"`
-}
-
 func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, _ inter.ConnectorInfo) {
 	resp := &GossValidateResponse{Results: []gossoutputs.StructuredTestResult{}}
 	reply.Data = resp
