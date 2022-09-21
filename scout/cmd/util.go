@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,12 +6,10 @@ package scoutcmd
 
 import (
 	"github.com/choria-io/go-choria/inter"
-	"github.com/olekukonko/tablewriter"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/client/scoutclient"
-	"github.com/choria-io/go-choria/internal/util"
 )
 
 func scoutClient(fw inter.Framework, opt *discovery.StandardOptions, log *logrus.Entry) (*scoutclient.ScoutClient, error) {
@@ -31,8 +29,4 @@ func scoutClient(fw inter.Framework, opt *discovery.StandardOptions, log *logrus
 	}
 
 	return sc, nil
-}
-
-func newMarkdownTable(hdr ...string) *tablewriter.Table {
-	return util.NewMarkdownTable(hdr...)
 }

@@ -12,6 +12,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/inter"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/discovery"
@@ -70,7 +71,7 @@ func (t *TriggerCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	mu := sync.Mutex{}
 	triggered := 0
 	shown := 0
-	table := newMarkdownTable("Name", "Triggered", "Skipped", "Failed", "Message")
+	table := iu.NewUTF8TableWithTitle("Scout check trigger", "Name", "Triggered", "Skipped", "Failed", "Message")
 
 	result.EachOutput(func(r *scoutclient.TriggerOutput) {
 		tr := &scoutagent.TriggerReply{}
@@ -91,15 +92,15 @@ func (t *TriggerCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 
 		shown++
 
-		table.Append([]string{r.ResultDetails().Sender(), strings.Join(tr.TransitionedChecks, ", "), strings.Join(tr.SkippedChecks, ", "), strings.Join(tr.FailedChecks, ", "), r.ResultDetails().StatusMessage()})
+		table.AddRow(r.ResultDetails().Sender(), strings.Join(tr.TransitionedChecks, ", "), strings.Join(tr.SkippedChecks, ", "), strings.Join(tr.FailedChecks, ", "), r.ResultDetails().StatusMessage())
 	})
 
 	if shown == 0 {
 		fmt.Printf("Triggered %d checks on %d nodes\n", triggered, result.Stats().ResponsesCount())
+		fmt.Println()
 	} else {
-		table.Render()
+		fmt.Println(table.Render())
 	}
 
-	fmt.Println()
 	return result.RenderResults(os.Stdout, scoutclient.TXTFooter, scoutclient.DisplayDDL, t.verbose, false, t.colorize, t.log)
 }

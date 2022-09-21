@@ -190,6 +190,9 @@ func (w *WatchCommand) colorizeState(state string) string {
 	case "UNKNOWN":
 		return color.HiWhiteString("UNKN")
 	default:
+		if state == "" {
+			return color.CyanString("INVA")
+		}
 		return color.CyanString(state)
 	}
 }

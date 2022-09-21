@@ -31,7 +31,6 @@ import (
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/build"
 	"github.com/gofrs/uuid"
-	"github.com/olekukonko/tablewriter"
 	xtablewriter "github.com/xlab/tablewriter"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
@@ -353,18 +352,6 @@ func NewUTF8TableWithTitle(title string, hdr ...any) *xtablewriter.Table {
 // NewUTF8Table creates a table formatted with UTF8 styling
 func NewUTF8Table(hdr ...any) *xtablewriter.Table {
 	return NewUTF8TableWithTitle("", hdr...)
-}
-
-// NewMarkdownTable makes a new table writer formatted to be valid markdown
-func NewMarkdownTable(hdr ...string) *tablewriter.Table {
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetAutoWrapText(true)
-	table.SetAutoFormatHeaders(true)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-	table.SetHeader(hdr)
-
-	return table
 }
 
 // StringsMapKeys returns the keys from a map[string]string in sorted order

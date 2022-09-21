@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/inter"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/client/scoutclient"
@@ -75,7 +76,7 @@ func (s *StatusCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error)
 		return err
 	}
 
-	table := newMarkdownTable("Name", "State", "Last Check", "History")
+	table := iu.NewUTF8TableWithTitle("Scout status history", "Name", "State", "Last Check", "History")
 
 	for _, c := range checks.Checks {
 		last := "Never"
@@ -104,11 +105,10 @@ func (s *StatusCommand) Run(ctx context.Context, wg *sync.WaitGroup) (err error)
 			}
 		}
 
-		table.Append([]string{c.Name, c.State, last, strings.Join(history, " ")})
+		table.AddRow(c.Name, c.State, last, strings.Join(history, " "))
 	}
 
-	table.Render()
+	fmt.Println(table.Render())
 
-	fmt.Println()
 	return res.RenderResults(os.Stdout, scoutclient.TXTFooter, scoutclient.DisplayDDL, s.verbose, false, s.colorize, s.log)
 }
