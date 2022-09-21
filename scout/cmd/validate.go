@@ -28,7 +28,9 @@ type ValidateCommandOptions struct {
 	NodeVarsFile  string
 	Rules         []byte
 	NodeRulesFile string
-	ShowAll       bool
+	KVRules       string
+	KVVariables   string
+	Display       string
 	Table         bool
 	Verbose       bool
 	Json          bool
@@ -200,8 +202,20 @@ func (v *ValidateCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 			failed++
 		}
 
-		if !v.opts.ShowAll && !v.opts.Verbose && r.ResultDetails().OK() && (vr.Tests > 0 && vr.Failures == 0) {
+		switch v.opts.Display {
+		case "none":
 			return
+		case "all":
+		case "ok":
+			// skip on not ok
+			if !r.ResultDetails().OK() || vr.Tests == 0 || vr.Failures > 0 || vr.Skipped > 0 {
+				return
+			}
+		case "failed":
+			// skip all ok
+			if r.ResultDetails().OK() && vr.Tests > 0 && vr.Failures == 0 && vr.Skipped == 0 {
+				return
+			}
 		}
 
 		if v.opts.Table {
