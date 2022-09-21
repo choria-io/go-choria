@@ -10,9 +10,9 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"text/tabwriter"
 	"time"
 
-	"github.com/olekukonko/tablewriter"
 	log "github.com/sirupsen/logrus"
 	"github.com/tidwall/pretty"
 
@@ -40,7 +40,7 @@ func (i *inventoryCommand) Setup() (err error) {
 	i.cmd = cli.app.Command("inventory", "Reporting tool for nodes, collectives and sub-collectives")
 	i.cmd.Flag("config", "Config file to use").PlaceHolder("FILE").StringVar(&configFile)
 	i.cmd.Arg("identity", "Identity of a Choria Server to retrieve inventory from").StringVar(&i.ident)
-	i.cmd.Flag("collectives", "List all known collectives").BoolVar(&i.listCollective)
+	i.cmd.Flag("collectives", "List all known collectives").UnNegatableBoolVar(&i.listCollective)
 	i.cmd.Flag("facts", "Enable or disable displaying of facts").Default("true").BoolVar(&i.showFacts)
 	i.cmd.Flag("wf", "Match hosts with a certain fact").Short('F').StringsVar(&i.factF)
 	i.cmd.Flag("wc", "Match hosts with a certain tagged class").Short('C').StringsVar(&i.classF)
@@ -135,15 +135,13 @@ func (i *inventoryCommand) inventoryAgent() error {
 	fmt.Println()
 	if len(inventory.Machines) > 0 {
 		fmt.Printf("  Autonomous Agents:\n\n")
-		table := tablewriter.NewWriter(os.Stdout)
-		table.SetHeaderLine(false)
-		table.SetBorders(tablewriter.Border{Left: false, Right: false, Top: false, Bottom: false})
-		table.SetCenterSeparator("")
-		table.SetColumnSeparator("")
+		table := new(tabwriter.Writer)
+		table.Init(os.Stdout, 0, 0, 4, ' ', 0)
+
 		for _, m := range inventory.Machines {
-			table.Append([]string{"", m.Name, m.Version, m.State})
+			fmt.Fprintf(table, "    %s\t%s\t%s\t\n", m.Name, m.Version, m.State)
 		}
-		table.Render()
+		table.Flush()
 		fmt.Println()
 	}
 
@@ -200,7 +198,6 @@ func (i *inventoryCommand) inventoryCollectives() error {
 		}
 	})
 
-	fmt.Printf("Subcollective report for %d nodes\n\n", res.Stats().OKCount())
 	type kv struct {
 		Key   string
 		Value int
@@ -215,18 +212,12 @@ func (i *inventoryCommand) inventoryCollectives() error {
 		return cs[i].Value > cs[j].Value
 	})
 
-	table := tablewriter.NewWriter(os.Stdout)
-	table.SetHeader([]string{"Collective", "Nodes"})
-	table.SetBorders(tablewriter.Border{
-		Left:   false,
-		Right:  false,
-		Top:    false,
-		Bottom: false,
-	})
+	table := util.NewUTF8TableWithTitle(fmt.Sprintf("Collective Report for %d nodes", res.Stats().OKCount()), "Collective", "Nodes")
 	for _, kv := range cs {
-		table.Append([]string{kv.Key, fmt.Sprintf("%d", kv.Value)})
+		table.AddRow(kv.Key, fmt.Sprintf("%d", kv.Value))
 	}
-	table.Render()
+
+	fmt.Println(table.Render())
 
 	if len(res.Stats().NoResponseFrom()) > 0 {
 		res.RenderResults(os.Stdout, rpcutilclient.TXTFooter, rpcutilclient.DisplayAll, debug, false, c.Config.Color, c.Logger("inventory"))

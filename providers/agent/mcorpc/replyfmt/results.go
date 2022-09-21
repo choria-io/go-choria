@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/fatih/color"
-	"github.com/olekukonko/tablewriter"
 	"github.com/tidwall/gjson"
 	"github.com/tidwall/pretty"
 	"golang.org/x/text/cases"
@@ -223,14 +222,8 @@ func (r *RPCResults) RenderNames(w io.Writer, jsonFormat bool, sortNames bool) e
 // RenderTable renders a table of outputs
 // TODO: should become a reply format formatter, but those lack a prepare phase to print headers etc
 func (r *RPCResults) RenderTable(w io.Writer, action ActionDDL) (err error) {
-	table := tablewriter.NewWriter(w)
-	table.SetAutoWrapText(true)
-	table.SetAutoFormatHeaders(true)
-	table.SetHeaderAlignment(tablewriter.ALIGN_LEFT)
-	table.SetAlignment(tablewriter.ALIGN_LEFT)
-
 	var (
-		headers = []string{"sender"}
+		headers = []any{"Sender"}
 		outputs = action.OutputNames()
 	)
 
@@ -243,11 +236,7 @@ func (r *RPCResults) RenderTable(w io.Writer, action ActionDDL) (err error) {
 		}
 	}
 
-	if len(headers) == 0 {
-		return nil
-	}
-
-	table.SetHeader(headers)
+	table := util.NewUTF8Table(headers...)
 
 	for _, reply := range r.Replies {
 		if reply.Statuscode != mcorpc.OK {
@@ -256,7 +245,7 @@ func (r *RPCResults) RenderTable(w io.Writer, action ActionDDL) (err error) {
 
 		parsedResult := gjson.ParseBytes(reply.RPCReply.Data)
 		if parsedResult.Exists() {
-			row := []string{reply.Sender}
+			row := []any{reply.Sender}
 			for _, o := range outputs {
 				val := parsedResult.Get(o)
 				switch {
@@ -268,11 +257,11 @@ func (r *RPCResults) RenderTable(w io.Writer, action ActionDDL) (err error) {
 					row = append(row, val.String())
 				}
 			}
-			table.Append(row)
+			table.AddRow(row...)
 		}
 	}
 
-	table.Render()
+	fmt.Fprintln(w, table.Render())
 
 	return nil
 }
