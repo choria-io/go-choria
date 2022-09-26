@@ -5,7 +5,9 @@
 package scoutcmd
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
@@ -13,7 +15,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/aelsabbahy/goss"
+	gossoutputs "github.com/aelsabbahy/goss/outputs"
 	"github.com/aelsabbahy/goss/resource"
+	gossutil "github.com/aelsabbahy/goss/util"
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/client/scoutclient"
 	"github.com/choria-io/go-choria/inter"
@@ -28,13 +33,12 @@ type ValidateCommandOptions struct {
 	NodeVarsFile  string
 	Rules         []byte
 	NodeRulesFile string
-	KVRules       string
-	KVVariables   string
 	Display       string
 	Table         bool
 	Verbose       bool
 	Json          bool
 	Color         bool
+	Local         bool
 }
 
 type ValidateCommand struct {
@@ -53,24 +57,24 @@ func NewValidateCommand(sopts *discovery.StandardOptions, fw inter.Framework, op
 	}, nil
 }
 
-func (v *ValidateCommand) renderTableResult(table *xtablewriter.Table, vr *scoutagent.GossValidateResponse, r *scoutclient.GossValidateOutput) bool {
+func (v *ValidateCommand) renderTableResult(table *xtablewriter.Table, vr *scoutagent.GossValidateResponse, reqOk bool, sender string, statusMsg string) bool {
 	fail := v.fw.Colorize("red", "X")
 	ok := v.fw.Colorize("green", "✓")
 	skip := v.fw.Colorize("yellow", "?")
 
 	should := false
 
-	if !r.ResultDetails().OK() {
-		table.AddRow(fail, r.ResultDetails().Sender(), "", "", r.ResultDetails().StatusMessage())
+	if !reqOk {
+		table.AddRow(fail, sender, "", "", statusMsg)
 		return true
 	}
 
 	if vr.Failures > 0 || vr.Tests == 0 {
 		should = true
-		table.AddRow(fail, r.ResultDetails().Sender(), "", "", vr.Summary)
+		table.AddRow(fail, sender, "", "", vr.Summary)
 	} else {
 		should = true
-		table.AddRow(ok, r.ResultDetails().Sender(), "", "", vr.Summary)
+		table.AddRow(ok, sender, "", "", vr.Summary)
 	}
 
 	sort.Slice(vr.Results, func(i, j int) bool {
@@ -92,16 +96,16 @@ func (v *ValidateCommand) renderTableResult(table *xtablewriter.Table, vr *scout
 	return should
 }
 
-func (v *ValidateCommand) renderTextResult(vr *scoutagent.GossValidateResponse, r *scoutclient.GossValidateOutput) {
-	if !r.ResultDetails().OK() {
-		fmt.Printf("%s: %s\n\n", r.ResultDetails().Sender(), v.fw.Colorize("red", r.ResultDetails().StatusMessage()))
+func (v *ValidateCommand) renderTextResult(vr *scoutagent.GossValidateResponse, reqOk bool, sender string, statusMsg string) {
+	if !reqOk {
+		fmt.Printf("%s: %s\n\n", sender, v.fw.Colorize("red", statusMsg))
 		return
 	}
 
 	if vr.Failures > 0 || vr.Tests == 0 {
-		fmt.Printf("%s: %s\n\n", r.ResultDetails().Sender(), v.fw.Colorize("red", vr.Summary))
+		fmt.Printf("%s: %s\n\n", sender, v.fw.Colorize("red", vr.Summary))
 	} else {
-		fmt.Printf("%s: %s\n\n", r.ResultDetails().Sender(), v.fw.Colorize("green", vr.Summary))
+		fmt.Printf("%s: %s\n\n", sender, v.fw.Colorize("green", vr.Summary))
 	}
 
 	sort.Slice(vr.Results, func(i, j int) bool {
@@ -135,8 +139,98 @@ func (v *ValidateCommand) renderTextResult(vr *scoutagent.GossValidateResponse, 
 	fmt.Println()
 }
 
+func (v *ValidateCommand) localValidate() error {
+	var err error
+	var out bytes.Buffer
+	var table *xtablewriter.Table
+	var shouldRenderTable bool
+
+	rules, err := os.CreateTemp("", "choria-gossfile-*.yaml")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(rules.Name())
+	defer rules.Close()
+
+	_, err = rules.Write(v.opts.Rules)
+	if err != nil {
+		return err
+	}
+	rules.Close()
+
+	opts := []gossutil.ConfigOption{
+		gossutil.WithMaxConcurrency(1),
+		gossutil.WithResultWriter(&out),
+		gossutil.WithSpecFile(rules.Name()),
+	}
+
+	if len(v.opts.Variables) > 0 {
+		opts = append(opts, gossutil.WithVarsBytes(v.opts.Variables))
+	}
+
+	cfg, err := gossutil.NewConfig(opts...)
+	if err != nil {
+		return err
+	}
+
+	_, err = goss.Validate(cfg, time.Now())
+	if err != nil {
+		return err
+	}
+
+	res := &gossoutputs.StructuredOutput{}
+	err = json.Unmarshal(out.Bytes(), res)
+	if err != nil {
+		return err
+	}
+
+	resp := &scoutagent.GossValidateResponse{Results: []gossoutputs.StructuredTestResult{}}
+
+	for _, r := range res.Results {
+		if r.Result == resource.SKIP {
+			resp.Skipped++
+		}
+	}
+	resp.Results = res.Results
+	resp.Summary = res.SummaryLine
+	resp.Failures = res.Summary.Failed
+	resp.Runtime = res.Summary.TotalDuration.Seconds()
+	resp.Success = res.Summary.TestCount - res.Summary.Failed - resp.Skipped
+	resp.Tests = res.Summary.TestCount
+
+	if v.opts.Table {
+		table = iu.NewUTF8TableWithTitle("Goss check results", "", "Node", "Resource", "ID", "State")
+	}
+
+	if v.opts.Table {
+		shouldRenderTable = v.renderTableResult(table, resp, true, "localhost", "OK")
+	} else {
+		v.renderTextResult(resp, true, "localhost", "OK")
+	}
+
+	if v.opts.Table && shouldRenderTable {
+		fmt.Println(table.Render())
+	}
+
+	return nil
+}
+
 func (v *ValidateCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	defer wg.Done()
+
+	if v.opts.NodeRulesFile == "" && len(v.opts.Rules) == 0 {
+		return fmt.Errorf("neither local validation rules nor a remote file were supplied")
+	}
+	if v.opts.NodeRulesFile != "" && len(v.opts.Rules) > 0 {
+		return fmt.Errorf("both local validation rules and a remote rules file were supplied")
+	}
+	if len(v.opts.Variables) > 0 && v.opts.NodeVarsFile != "" {
+		return fmt.Errorf("both local variables and a remote variables file were supplied")
+	}
+
+	if v.opts.Local {
+		return v.localValidate()
+	}
 
 	sc, err := scoutClient(v.fw, v.sopts, v.log)
 	if err != nil {
@@ -219,9 +313,9 @@ func (v *ValidateCommand) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		}
 
 		if v.opts.Table {
-			shouldRenderTable = v.renderTableResult(table, vr, r)
+			shouldRenderTable = v.renderTableResult(table, vr, r.ResultDetails().OK(), r.ResultDetails().Sender(), r.ResultDetails().StatusMessage())
 		} else {
-			v.renderTextResult(vr, r)
+			v.renderTextResult(vr, r.ResultDetails().OK(), r.ResultDetails().Sender(), r.ResultDetails().StatusMessage())
 		}
 	})
 

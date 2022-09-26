@@ -27,6 +27,7 @@ type sValidateCommand struct {
 	varInKV     bool
 	display     string
 	table       bool
+	local       bool
 
 	command
 }
@@ -49,6 +50,7 @@ func (s *sValidateCommand) Setup() (err error) {
 		s.cmd.Flag("table", "Render results in table format").UnNegatableBoolVar(&s.table)
 		s.cmd.Flag("verbose", "Show verbose output").Short('v').UnNegatableBoolVar(&s.verbose)
 		s.cmd.Flag("display", "Display only a subset of results (ok, failed, all, none)").Default("failed").EnumVar(&s.display, "ok", "failed", "all", "none")
+		s.cmd.Flag("local", "Operate locally without connecting to the network").UnNegatableBoolVar(&s.local)
 	}
 
 	return nil
@@ -68,7 +70,7 @@ func (s *sValidateCommand) parseKv(bk string) (string, string, error) {
 }
 
 func (s *sValidateCommand) loadKV(bk string) ([]byte, error) {
-	b, k, err := s.parseKv(s.rulesFile)
+	b, k, err := s.parseKv(bk)
 	if err != nil {
 		return nil, err
 	}
@@ -102,6 +104,7 @@ func (s *sValidateCommand) Run(wg *sync.WaitGroup) (err error) {
 		Display: s.display,
 		Table:   s.table,
 		Color:   c.Config.Color,
+		Local:   s.local,
 	}
 
 	switch {
