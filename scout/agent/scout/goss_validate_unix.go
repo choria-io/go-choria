@@ -124,5 +124,4 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 	resp.Runtime = res.Summary.TotalDuration.Seconds()
 	resp.Success = res.Summary.TestCount - res.Summary.Failed - resp.Skipped
 	resp.Tests = res.Summary.TestCount
-
 }
