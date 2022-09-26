@@ -43,7 +43,7 @@ func NewReply(request protocol.Request, certName string) (protocol.Reply, error)
 
 type reply struct {
 	Protocol    string `json:"protocol"`
-	MessageBody string `json:"message"`
+	MessageBody []byte `json:"message"`
 
 	replyEnvelope
 
@@ -81,7 +81,7 @@ func (r *reply) SetMessage(message string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.MessageBody = message
+	r.MessageBody = []byte(message)
 }
 
 // Message retrieves the JSON encoded message set using SetMessage
@@ -89,7 +89,7 @@ func (r *reply) Message() (msg string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.MessageBody
+	return string(r.MessageBody)
 }
 
 // RequestID retrieves the unique request id

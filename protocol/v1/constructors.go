@@ -162,7 +162,7 @@ func NewSecureRequest(request protocol.Request, security inter.SecurityProvider)
 	pub := []byte("insecure")
 
 	if protocol.IsSecure() && !protocol.IsRemoteSignerAgent(request.Agent()) {
-		pub, err = security.PublicCertTXT()
+		pub, err = security.PublicCertBytes()
 		if err != nil {
 			// registration when doing anon tls might not have a certificate - so we allow that to go unsigned
 			if protocol.IsRegistrationAgent(request.Agent()) {
