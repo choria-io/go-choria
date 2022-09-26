@@ -30,6 +30,7 @@ type jWTCreateClientCommand struct {
 	orgAdmin      bool
 	service       bool
 	system        bool
+	authDelegate  bool
 	pk            string
 
 	command
@@ -53,6 +54,7 @@ func (c *jWTCreateClientCommand) Setup() (err error) {
 		c.cmd.Flag("elections-user", "Allow the user to use Choria Elections").UnNegatableBoolVar(&c.electionUser)
 		c.cmd.Flag("service", "Indicates that the user can have long validity tokens").UnNegatableBoolVar(&c.service)
 		c.cmd.Flag("system", "Allow the user to access the broker system account").UnNegatableBoolVar(&c.system)
+		c.cmd.Flag("auth-delegation", "Allow the user to sign requests for other users").UnNegatableBoolVar(&c.authDelegate)
 	}
 
 	return nil
@@ -102,6 +104,7 @@ func (c *jWTCreateClientCommand) createJWT() error {
 		OrgAdmin:                c.orgAdmin,
 		ExtendedServiceLifetime: c.service,
 		SystemUser:              c.system,
+		AuthenticationDelegator: c.authDelegate,
 	}
 
 	claims, err := tokens.NewClientIDClaims(c.identity, c.agents, c.org, nil, string(opa), "Choria CLI", c.validity, perms, []byte(c.pk))

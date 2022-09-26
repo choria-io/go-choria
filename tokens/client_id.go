@@ -37,8 +37,11 @@ type ClientPermissions struct {
 	// OrgAdmin has access to all subjects
 	OrgAdmin bool `json:"org_admin,omitempty"`
 
-	// ExtendedServiceLifetime allows a token to have a longer than common life time, suitable for services users
+	// ExtendedServiceLifetime allows a token to have a longer than common lifetime, suitable for services users
 	ExtendedServiceLifetime bool `json:"service,omitempty"`
+
+	// AuthenticationDelegator has the right to sign requests on behalf of others
+	AuthenticationDelegator bool `json:"authentication_delegator"`
 }
 
 // ClientIDClaims represents a user and all AAA Authenticators should create a JWT using this format

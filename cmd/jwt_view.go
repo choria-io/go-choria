@@ -232,6 +232,9 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 		if claims.Permissions.SystemUser {
 			fmt.Println("      Can access the Broker system account")
 		}
+		if claims.Permissions.AuthenticationDelegator {
+			fmt.Println("      Can sign requests on behalf of other users")
+		}
 	}
 
 	if len(claims.UserProperties) > 0 {
