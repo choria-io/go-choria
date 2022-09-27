@@ -43,7 +43,7 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 	if protocol.IsSecure() && !protocol.IsRemoteSignerAgent(request.Agent()) {
 		var signature []byte
 
-		signature, err = r.security.SignString(j)
+		signature, err = r.security.SignBytes([]byte(j))
 		if err != nil {
 			// registration when doing anon tls might not have a certificate - so we allow that to go unsigned
 			if !protocol.IsRegistrationAgent(request.Agent()) {

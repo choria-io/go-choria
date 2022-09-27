@@ -27,7 +27,7 @@ var _ = Describe("TransportMessage", func() {
 	})
 
 	It("Should support reply data", func() {
-		security.EXPECT().ChecksumString(gomock.Any()).Return([]byte("stub checksum")).AnyTimes()
+		security.EXPECT().ChecksumBytes(gomock.Any()).Return([]byte("stub checksum")).AnyTimes()
 
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		request.SetMessage(`{"message":1}`)
@@ -54,7 +54,7 @@ var _ = Describe("TransportMessage", func() {
 
 	It("Should support request data", func() {
 		security.EXPECT().PublicCertBytes().Return([]byte("stub cert"), nil).AnyTimes()
-		security.EXPECT().SignString(gomock.Any()).Return([]byte("stub sig"), nil).AnyTimes()
+		security.EXPECT().SignBytes(gomock.Any()).Return([]byte("stub sig"), nil).AnyTimes()
 
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		request.SetMessage(`{"message":1}`)
@@ -79,7 +79,7 @@ var _ = Describe("TransportMessage", func() {
 		defer func() { protocol.ClientStrictValidation = false }()
 
 		security.EXPECT().PublicCertBytes().Return([]byte("stub cert"), nil).AnyTimes()
-		security.EXPECT().SignString(gomock.Any()).Return([]byte("stub sig"), nil).AnyTimes()
+		security.EXPECT().SignBytes(gomock.Any()).Return([]byte("stub sig"), nil).AnyTimes()
 
 		request, err := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		Expect(err).ToNot(HaveOccurred())

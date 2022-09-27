@@ -327,11 +327,6 @@ func (p *Pkcs11Security) ChecksumBytes(data []byte) []byte {
 	return p.fsec.ChecksumBytes(data)
 }
 
-// ChecksumString calculates a sha256 checksum for data
-func (p *Pkcs11Security) ChecksumString(data string) []byte {
-	return p.fsec.ChecksumBytes([]byte(data))
-}
-
 // SignBytes signs a message using a SHA256 PKCS1v15 protocol
 func (p *Pkcs11Security) SignBytes(str []byte) ([]byte, error) {
 	hashed := p.ChecksumBytes(str)
@@ -386,11 +381,6 @@ func (p *Pkcs11Security) VerifyByteSignature(dat []byte, sig []byte, pubcert []b
 	p.log.Debugf("Verified signature from %s", strings.Join(names, ", "))
 
 	return true, names[0]
-}
-
-// SignString signs a message using a SHA256 PKCS1v15 protocol
-func (p *Pkcs11Security) SignString(str string) ([]byte, error) {
-	return p.SignBytes([]byte(str))
 }
 
 // CallerName creates a choria like caller name in the form of choria=identity

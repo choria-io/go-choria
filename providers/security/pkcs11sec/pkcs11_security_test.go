@@ -159,7 +159,7 @@ var _ = Describe("Pkcs11Security", func() {
 
 	Describe("SignString", func() {
 		It("Should produce the right signature", func() {
-			sig, err := prov.SignString("too many secrets")
+			sig, err := prov.SignBytes([]byte("too many secrets"))
 			Expect(err).ToNot(HaveOccurred())
 
 			l.Infof("target str: %s", base64.StdEncoding.EncodeToString(sig))
@@ -175,15 +175,6 @@ var _ = Describe("Pkcs11Security", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.ChecksumBytes([]byte("too many secrets"))).To(Equal(sum))
-		})
-	})
-
-	Describe("ChecksumString", func() {
-		It("Should produce the right checksum", func() {
-			sum, err := base64.StdEncoding.DecodeString("Yk+jdKdZ3v8E2p6dmbfn+ZN9lBBAHEIcOMp4lzuYKTo=")
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(prov.ChecksumString("too many secrets")).To(Equal(sum))
 		})
 	})
 

@@ -36,9 +36,6 @@ type SecurityProvider interface {
 	// VerifyByteSignature verifies that dat signature was made using pubcert
 	VerifyByteSignature(dat []byte, sig []byte, pubcert []byte) (should bool, signer string)
 
-	// SignString signs a string using the current active certificate
-	SignString(s string) (signature []byte, err error)
-
 	// RemoteSignRequest signs a choria request using a remote signer and returns a secure request
 	RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error)
 
@@ -47,9 +44,6 @@ type SecurityProvider interface {
 
 	// ChecksumBytes produce a crypto checksum for data
 	ChecksumBytes(data []byte) []byte
-
-	// ChecksumString produce a crypto checksum for data
-	ChecksumString(data string) []byte
 
 	// TLSConfig produce a tls.Config for the current identity using it's certificates etc
 	TLSConfig() (*tls.Config, error)
