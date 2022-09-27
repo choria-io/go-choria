@@ -145,11 +145,11 @@ func (r *request) SetUnfederated() {
 }
 
 // SetMessage set the message body thats contained in this request.  It should be JSON encoded text
-func (r *request) SetMessage(message string) {
+func (r *request) SetMessage(message []byte) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.MessageBody = message
+	r.MessageBody = string(message)
 }
 
 // SetCallerID sets the caller id for this request
@@ -186,11 +186,11 @@ func (r *request) SetTTL(ttl int) {
 }
 
 // Message retrieves the JSON encoded Message body
-func (r *request) Message() string {
+func (r *request) Message() []byte {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.MessageBody
+	return []byte(r.MessageBody)
 }
 
 // RequestID retrieves the unique request ID
@@ -265,22 +265,20 @@ func (r *request) NewFilter() *protocol.Filter {
 }
 
 // JSON creates a JSON encoded request
-func (r *request) JSON() (body string, err error) {
+func (r *request) JSON() ([]byte, error) {
 	r.mu.Lock()
 	j, err := json.Marshal(r)
 	r.mu.Unlock()
 	if err != nil {
 		protocolErrorCtr.Inc()
-		return "", fmt.Errorf("could not JSON Marshal: %s", err)
+		return nil, fmt.Errorf("could not JSON Marshal: %s", err)
 	}
 
-	body = string(j)
-
-	if err = r.IsValidJSON(body); err != nil {
-		return "", fmt.Errorf("serialized JSON produced from the Request does not pass validation: %s", err)
+	if err = r.IsValidJSON(j); err != nil {
+		return nil, fmt.Errorf("serialized JSON produced from the Request does not pass validation: %s", err)
 	}
 
-	return body, nil
+	return j, nil
 }
 
 // SetFilter sets and overwrites the filter for a message with a new one
@@ -300,7 +298,7 @@ func (r *request) Version() string {
 }
 
 // IsValidJSON validates the given JSON data against the schema
-func (r *request) IsValidJSON(data string) error {
+func (r *request) IsValidJSON(data []byte) error {
 	_, errors, err := schemaValidate(requestSchema, data)
 	if err != nil {
 		return fmt.Errorf("could not validate Request JSON data: %s", err)

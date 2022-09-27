@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -79,7 +79,7 @@ func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err e
 		return nil, fmt.Errorf("the JSON body from the SecureReply is not a valid Reply message: %s", err)
 	}
 
-	err = json.Unmarshal([]byte(sr.Message()), rep)
+	err = json.Unmarshal(sr.Message(), rep)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse JSON data from Secure Reply: %s", err)
 	}
@@ -103,7 +103,7 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Reques
 		return nil, fmt.Errorf("the JSON body from the SecureRequest is not a valid Request message: %s", err)
 	}
 
-	err = json.Unmarshal([]byte(sr.Message()), req)
+	err = json.Unmarshal(sr.Message(), req)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse JSON data from Secure Request: %s", err)
 	}
@@ -143,14 +143,14 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage, security int
 		return nil, fmt.Errorf("the JSON body from the TransportMessage is not a valid SecureReply message: %s", err)
 	}
 
-	err = json.Unmarshal([]byte(data), &secure)
+	err = json.Unmarshal(data, &secure)
 	if err != nil {
 		return nil, err
 	}
 
 	if !skipvalidate {
 		if !secure.Valid() {
-			return nil, errors.New("SecureReply message created from the Transport Message is not valid: %s")
+			return nil, errors.New("SecureReply message created from the Transport Message is not valid")
 		}
 	}
 
@@ -237,7 +237,7 @@ func NewSecureRequestFromTransport(message protocol.TransportMessage, security i
 		return nil, fmt.Errorf("the JSON body from the TransportMessage is not a valid SecureRequest message: %s", err)
 	}
 
-	err = json.Unmarshal([]byte(data), &secure)
+	err = json.Unmarshal(data, &secure)
 	if err != nil {
 		return nil, err
 	}
@@ -264,7 +264,7 @@ func NewTransportMessage(certname string) (message protocol.TransportMessage, er
 }
 
 // NewTransportFromJSON creates a new TransportMessage from JSON
-func NewTransportFromJSON(data string) (message protocol.TransportMessage, err error) {
+func NewTransportFromJSON(data []byte) (message protocol.TransportMessage, err error) {
 	message = &transportMessage{
 		Headers: &transportHeaders{},
 	}
@@ -274,7 +274,7 @@ func NewTransportFromJSON(data string) (message protocol.TransportMessage, err e
 		return nil, err
 	}
 
-	err = json.Unmarshal([]byte(data), &message)
+	err = json.Unmarshal(data, &message)
 	if err != nil {
 		return nil, err
 	}

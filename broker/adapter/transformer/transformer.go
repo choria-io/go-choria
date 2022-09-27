@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -21,7 +21,7 @@ type Msg struct {
 func TransformToOutput(msg ingest.Adaptable, adapterName string) *Msg {
 	return &Msg{
 		Protocol:  "choria:adapters:" + adapterName + ":output:1",
-		Data:      msg.Message(),
+		Data:      string(msg.Message()),
 		Sender:    msg.SenderID(),
 		Time:      msg.Time().UTC(),
 		RequestID: msg.RequestID(),

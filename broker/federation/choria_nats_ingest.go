@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -51,7 +51,7 @@ func NewChoriaNatsIngest(workers int, mode int, capacity int, broker *Federation
 			obs := prometheus.NewTimer(timer)
 			defer obs.ObserveDuration()
 
-			message, err := self.choria.NewTransportFromJSON(string(msg.Data()))
+			message, err := self.choria.NewTransportFromJSON(msg.Data())
 			if err != nil {
 				logger.Warnf("Could not parse received message into a TransportMessage: %s", err)
 				ectr.Inc()

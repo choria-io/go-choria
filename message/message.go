@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -18,7 +18,7 @@ import (
 
 // Message represents a Choria message
 type Message struct {
-	payload string
+	payload []byte
 	agent   string
 
 	request   inter.Message
@@ -80,7 +80,7 @@ func NewMessageFromRequest(req protocol.Request, replyto string, choria inter.Fr
 }
 
 // NewMessage constructs a basic Message instance
-func NewMessage(payload string, agent string, collective string, msgType string, request inter.Message, choria inter.Framework) (inter.Message, error) {
+func NewMessage(payload []byte, agent string, collective string, msgType string, request inter.Message, choria inter.Framework) (inter.Message, error) {
 	m, err := newMessage(payload, agent, collective, msgType, request, choria)
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func NewMessage(payload string, agent string, collective string, msgType string,
 	return m, nil
 }
 
-func newMessage(payload string, agent string, collective string, msgType string, request inter.Message, choria inter.Framework) (*Message, error) {
+func newMessage(payload []byte, agent string, collective string, msgType string, request inter.Message, choria inter.Framework) (*Message, error) {
 	id, err := choria.NewRequestID()
 	if err != nil {
 		return nil, err
@@ -306,20 +306,20 @@ func (m *Message) ValidateTTL() bool {
 }
 
 // SetBase64Payload sets the payload for the message, use it if the payload is Base64 encoded
-func (m *Message) SetBase64Payload(payload string) error {
-	str, err := base64.StdEncoding.DecodeString(payload)
+func (m *Message) SetBase64Payload(payload []byte) error {
+	p, err := base64.StdEncoding.DecodeString(string(payload))
 	if err != nil {
 		return fmt.Errorf("could not decode supplied payload using base64: %s", err)
 	}
 
-	m.payload = string(str)
+	m.payload = p
 
 	return nil
 }
 
 // Base64Payload retrieves the payload Base64 encoded
 func (m *Message) Base64Payload() string {
-	return base64.StdEncoding.EncodeToString([]byte(m.payload))
+	return base64.StdEncoding.EncodeToString(m.payload)
 }
 
 // SetExpectedMsgID sets the Request ID that is expected from the reply data
@@ -404,8 +404,8 @@ func (m *Message) String() string {
 }
 
 func (m *Message) SetRequestID(id string)            { m.requestID = id }
-func (m *Message) SetPayload(p string)               { m.payload = p }
-func (m *Message) Payload() string                   { return m.payload }
+func (m *Message) SetPayload(p []byte)               { m.payload = p }
+func (m *Message) Payload() []byte                   { return m.payload }
 func (m *Message) RequestID() string                 { return m.requestID }
 func (m *Message) Agent() string                     { return m.agent }
 func (m *Message) TTL() int                          { return m.ttl }

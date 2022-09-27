@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -47,7 +47,7 @@ var _ = Describe("Server/Registration", func() {
 			cfg.MainCollective = "test_collective"
 			cfg.RegistrationCollective = "test_collective"
 
-			fw.EXPECT().NewMessage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
+			fw.EXPECT().NewMessage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(payload []byte, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
 				return message.NewMessage(payload, agent, collective, msgType, request, fw)
 			}).AnyTimes()
 

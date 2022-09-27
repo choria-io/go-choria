@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -22,7 +22,7 @@ import (
 )
 
 type ChoriaFramework interface {
-	NewMessage(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error)
+	NewMessage(payload []byte, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error)
 	Configuration() *config.Config
 }
 
@@ -165,7 +165,7 @@ func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 		rmsg.TargetAgent = "registration"
 	}
 
-	msg, err := reg.choria.NewMessage(string(rmsg.Data), rmsg.TargetAgent, reg.cfg.RegistrationCollective, "request", nil)
+	msg, err := reg.choria.NewMessage(rmsg.Data, rmsg.TargetAgent, reg.cfg.RegistrationCollective, "request", nil)
 	if err != nil {
 		reg.log.Warnf("Could not create Message for registration data: %s", err)
 		return

@@ -49,19 +49,19 @@ func (r *reply) NetworkHops() [][3]string {
 }
 
 // SetMessage sets the data to be stored in the Reply.  It should be JSON encoded already.
-func (r *reply) SetMessage(message string) {
+func (r *reply) SetMessage(message []byte) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.MessageBody = message
+	r.MessageBody = string(message)
 }
 
 // Message retrieves the JSON encoded message set using SetMessage
-func (r *reply) Message() (msg string) {
+func (r *reply) Message() (msg []byte) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.MessageBody
+	return []byte(r.MessageBody)
 }
 
 // RequestID retrieves the unique request id
@@ -97,23 +97,21 @@ func (r *reply) Time() time.Time {
 }
 
 // JSON creates a JSON encoded reply
-func (r *reply) JSON() (body string, err error) {
+func (r *reply) JSON() ([]byte, error) {
 	r.mu.Lock()
 	j, err := json.Marshal(r)
 	r.mu.Unlock()
 	if err != nil {
 		protocolErrorCtr.Inc()
-		return "", fmt.Errorf("could not JSON Marshal: %s", err)
+		return nil, fmt.Errorf("could not JSON Marshal: %s", err)
 	}
 
-	body = string(j)
-
-	err = r.IsValidJSON(body)
+	err = r.IsValidJSON(j)
 	if err != nil {
-		return "", fmt.Errorf("serialized JSON produced from the Reply does not pass validation: %s", err)
+		return nil, fmt.Errorf("serialized JSON produced from the Reply does not pass validation: %s", err)
 	}
 
-	return body, nil
+	return j, nil
 }
 
 // Version retrieves the protocol version for this message
@@ -125,7 +123,7 @@ func (r *reply) Version() string {
 }
 
 // IsValidJSON validates the given JSON data against the schema
-func (r *reply) IsValidJSON(data string) (err error) {
+func (r *reply) IsValidJSON(data []byte) (err error) {
 	if !protocol.ClientStrictValidation {
 		return nil
 	}

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -41,7 +41,7 @@ var _ = Describe("Choria/Message", func() {
 		mockctl = gomock.NewController(GinkgoT())
 
 		request = NewMockRequest(mockctl)
-		request.EXPECT().Message().Return("hello world").AnyTimes()
+		request.EXPECT().Message().Return([]byte("hello world")).AnyTimes()
 		request.EXPECT().Agent().Return("test").AnyTimes()
 		request.EXPECT().Collective().Return("test_collective").AnyTimes()
 		request.EXPECT().RequestID().Return("stub.request.id").AnyTimes()
@@ -50,7 +50,7 @@ var _ = Describe("Choria/Message", func() {
 		request.EXPECT().Filter().Return(protocol.NewFilter(), true).AnyTimes()
 		request.EXPECT().Version().Return(protocol.RequestV1).AnyTimes()
 		request.EXPECT().IsFederated().Return(false).AnyTimes()
-		request.EXPECT().JSON().Return("{\"mock_request\": true}", nil).AnyTimes()
+		request.EXPECT().JSON().Return([]byte("{\"mock_request\": true}"), nil).AnyTimes()
 
 		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
 		cfg.Collectives = []string{"test_collective"}
@@ -80,7 +80,7 @@ var _ = Describe("Choria/Message", func() {
 			return transport, nil
 		}).AnyTimes()
 		fw.EXPECT().NewRequestFromTransportJSON(gomock.Any(), gomock.Any()).DoAndReturn(func(payload []byte, skipvalidate bool) (msg protocol.Request, err error) {
-			t, err := v1.NewTransportFromJSON(string(payload))
+			t, err := v1.NewTransportFromJSON(payload)
 			Expect(err).ToNot(HaveOccurred())
 			sreq, err := v1.NewSecureRequestFromTransport(t, sec, true)
 			Expect(err).ToNot(HaveOccurred())
@@ -113,7 +113,7 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessageFromRequest(request, "reply.to", fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(m.Payload()).To(Equal("hello world"))
+			Expect(m.Payload()).To(Equal([]byte("hello world")))
 			Expect(m.ReplyTo()).To(Equal("reply.to"))
 			Expect(m.RequestID()).To(Equal("stub.request.id"))
 			Expect(m.TimeStamp()).To(Equal(now))
@@ -140,7 +140,7 @@ var _ = Describe("Choria/Message", func() {
 			r, err := NewMessageFromRequest(request, "reply.to", fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.ReplyMessageType, r, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.ReplyMessageType, r, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(m.Request()).To(Equal(r))
@@ -152,7 +152,7 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should handle requests", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(m.Request()).To(BeNil())
@@ -163,16 +163,16 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should validate", func() {
-			_, err := NewMessage("hello world", "", "test_collective", inter.RequestMessageType, nil, fw)
+			_, err := NewMessage([]byte("hello world"), "", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).To(MatchError("agent has not been set"))
 
-			_, err = NewMessage("hello world", "ginkgo", "mcollective", inter.RequestMessageType, nil, fw)
+			_, err = NewMessage([]byte("hello world"), "ginkgo", "mcollective", inter.RequestMessageType, nil, fw)
 			Expect(err).To(MatchError("cannot set collective to 'mcollective', it is not on the list of known collectives"))
 		})
 
 		It("Should cache transports when configured to do so", func() {
 			cfg.CacheBatchedTransports = true
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(m.IsCachedTransport()).To(BeTrue())
 		})
@@ -180,7 +180,7 @@ var _ = Describe("Choria/Message", func() {
 
 	Describe("Cached transports", func() {
 		It("Should support setting and unsetting caching", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(m.IsCachedTransport()).To(BeFalse())
 			Expect(m.IsCachedTransport()).To(BeFalse())
@@ -192,7 +192,7 @@ var _ = Describe("Choria/Message", func() {
 	})
 	Describe("Transport", func() {
 		It("Should support requests", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			m.SetProtocolVersion(protocol.RequestV1)
@@ -217,7 +217,7 @@ var _ = Describe("Choria/Message", func() {
 		It("Should support cached transports", func() {
 			fw.Configuration().CacheBatchedTransports = true
 
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			m.SetProtocolVersion(protocol.RequestV1)
@@ -240,7 +240,7 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should support direct_requests", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			m.SetDiscoveredHosts([]string{"node1", "node2"})
@@ -255,7 +255,7 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should support service_requests", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.ServiceRequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.ServiceRequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			m.SetDiscoveredHosts([]string{"node1", "node2"})
@@ -275,7 +275,7 @@ var _ = Describe("Choria/Message", func() {
 
 			req, err := fw.NewRequest(protocol.RequestV1, "test_agent", "sender.example.net", "test=sender", 60, rid, "test_collective")
 			Expect(err).ToNot(HaveOccurred())
-			req.SetMessage("hello world")
+			req.SetMessage([]byte("hello world"))
 
 			m, err := NewMessageFromRequest(req, "reply.to", fw)
 			Expect(err).ToNot(HaveOccurred())
@@ -288,7 +288,7 @@ var _ = Describe("Choria/Message", func() {
 
 	Describe("requestTransport", func() {
 		It("Should require a version", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = m.(*Message).UncachedRequestTransport()
@@ -296,7 +296,7 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should require a reply-to", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			m.SetProtocolVersion(protocol.RequestV1)
@@ -308,7 +308,7 @@ var _ = Describe("Choria/Message", func() {
 
 		It("Should prevent empty filters when configured to do so", func() {
 			cfg.Choria.RequireClientFilter = true
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
@@ -327,7 +327,7 @@ var _ = Describe("Choria/Message", func() {
 
 			// discovery has m.Agent==discovery but the filter agent will be what the next request will target so special case tests
 			cfg.Choria.RequireClientFilter = true
-			m, err = NewMessage("hello world", "discovery", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err = NewMessage([]byte("hello world"), "discovery", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
@@ -338,7 +338,7 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should set up the transport", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			m.SetProtocolVersion(protocol.RequestV1)
@@ -361,7 +361,7 @@ var _ = Describe("Choria/Message", func() {
 
 	Describe("replyTransport", func() {
 		It("Should require a request", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = m.(*Message).UncachedReplyTransport()
@@ -374,7 +374,7 @@ var _ = Describe("Choria/Message", func() {
 
 			req, err := v1.NewRequest("test_agent", "sender.example.net", "test=sender", 60, rid, "test_collective")
 			Expect(err).ToNot(HaveOccurred())
-			req.SetMessage("hello world")
+			req.SetMessage([]byte("hello world"))
 
 			m, err := NewMessageFromRequest(req, "reply.to", fw)
 			Expect(err).ToNot(HaveOccurred())
@@ -387,7 +387,7 @@ var _ = Describe("Choria/Message", func() {
 
 	Describe("SetProtocolVersion", func() {
 		It("Should set the version", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(m.ProtocolVersion()).To(Equal(""))
@@ -398,7 +398,7 @@ var _ = Describe("Choria/Message", func() {
 
 	Describe("Validate", func() {
 		It("Should validate the message", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			m.(*Message).collective = "foo"
@@ -420,27 +420,27 @@ var _ = Describe("Choria/Message", func() {
 
 	Describe("SetBase64Payload", func() {
 		It("Should store the correct payload", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			err = m.SetBase64Payload("aGVsbG8gd29ybGQ=")
+			err = m.SetBase64Payload([]byte("aGVsbG8gd29ybGQ="))
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(m.Payload()).To(Equal("hello world"))
+			Expect(m.Payload()).To(Equal([]byte("hello world")))
 		})
 
 		It("Should handle invalid base64", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			err = m.SetBase64Payload("foo")
+			err = m.SetBase64Payload([]byte("foo"))
 			Expect(err).To(MatchError("could not decode supplied payload using base64: illegal base64 data at input byte 0"))
 		})
 	})
 
 	Describe("SetExpectedMsgID", func() {
 		It("Should only set it for reply messages", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = m.SetExpectedMsgID("x")
@@ -448,7 +448,7 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should store the expectation", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = m.SetExpectedMsgID("x")
@@ -459,7 +459,7 @@ var _ = Describe("Choria/Message", func() {
 
 	Describe("SetReplyTo", func() {
 		It("Should set it only for requests", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = m.SetReplyTo("reply.to")
@@ -467,7 +467,7 @@ var _ = Describe("Choria/Message", func() {
 		})
 
 		It("Should set it correctly", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = m.SetReplyTo("reply.to")
@@ -478,7 +478,7 @@ var _ = Describe("Choria/Message", func() {
 
 	Describe("SetType", func() {
 		It("Should only allow valid types", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = m.SetType("bob")
@@ -502,7 +502,7 @@ var _ = Describe("Choria/Message", func() {
 
 	Describe("SetCollective", func() {
 		It("Should only accept valid collectives", func() {
-			m, err := NewMessage("hello world", "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			err = m.SetCollective("bob")

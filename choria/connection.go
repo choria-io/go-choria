@@ -353,7 +353,7 @@ func (conn *Connection) publishFederatedDirect(msg inter.Message, transport prot
 
 	util.SliceGroups(msg.DiscoveredHosts(), 200, func(nodes []string) {
 		targets := []string{}
-		var j string
+		var j []byte
 
 		for i := range nodes {
 			if nodes[i] == "" {
@@ -376,7 +376,7 @@ func (conn *Connection) publishFederatedDirect(msg inter.Message, transport prot
 
 			conn.log.Debugf("Sending a federated direct message to NATS target '%s' for message %s with type %s", target, msg.RequestID(), msg.Type())
 
-			err = conn.PublishRaw(target, []byte(j))
+			err = conn.PublishRaw(target, j)
 			if err != nil {
 				return
 			}

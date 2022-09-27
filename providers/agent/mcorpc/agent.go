@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -192,10 +192,10 @@ func (a *Agent) newReply() *Reply {
 	return reply
 }
 
-func (a *Agent) parseIncomingMessage(msg string, request protocol.Request) (*Request, error) {
+func (a *Agent) parseIncomingMessage(msg []byte, request protocol.Request) (*Request, error) {
 	r := &Request{}
 
-	err := json.Unmarshal([]byte(msg), r)
+	err := json.Unmarshal(msg, r)
 	if err != nil {
 		return nil, fmt.Errorf("could not parse incoming message as a MCollective SimpleRPC Request: %s", err)
 	}

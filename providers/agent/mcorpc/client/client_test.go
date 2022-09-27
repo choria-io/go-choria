@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -61,7 +61,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 		cl = NewMockChoriaClient(mockctl)
 
 		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID(), imock.WithDDLFiles("agent", "package", "testdata/mcollective/agent/package.json"))
-		fw.EXPECT().NewMessage(gomock.Any(), gomock.Eq("package"), gomock.Eq("ginkgo"), gomock.Eq(inter.RequestMessageType), gomock.Eq(nil)).DoAndReturn(func(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
+		fw.EXPECT().NewMessage(gomock.Any(), gomock.Eq("package"), gomock.Eq("ginkgo"), gomock.Eq(inter.RequestMessageType), gomock.Eq(nil)).DoAndReturn(func(payload []byte, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
 			return message.NewMessage(payload, agent, collective, msgType, request, fw)
 		}).AnyTimes()
 
@@ -194,7 +194,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 				return t, nil
 			}).AnyTimes()
 			fw.EXPECT().NewReplyFromTransportJSON(gomock.Any(), gomock.Any()).DoAndReturn(func(payload []byte, skipvalidate bool) (msg protocol.Reply, err error) {
-				t, err := v1.NewTransportFromJSON(string(payload))
+				t, err := v1.NewTransportFromJSON(payload)
 				Expect(err).ToNot(HaveOccurred())
 				sreply, err := v1.NewSecureReplyFromTransport(t, sec, skipvalidate)
 				Expect(err).ToNot(HaveOccurred())
@@ -226,7 +226,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 
 			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg inter.Message, handler client.Handler) {
 				Expect(msg.Collective()).To(Equal("ginkgo"))
-				Expect(msg.Payload()).To(Equal("{\"agent\":\"package\",\"action\":\"test_action\",\"data\":{\"testing\":true}}"))
+				Expect(msg.Payload()).To(Equal([]byte("{\"agent\":\"package\",\"action\":\"test_action\",\"data\":{\"testing\":true}}")))
 
 				reqid = msg.RequestID()
 
@@ -253,7 +253,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 				for i := 0; i < 2; i++ {
 					reply, err := v1.NewReply(req, fmt.Sprintf("test.sender.%d", i))
 					Expect(err).ToNot(HaveOccurred())
-					reply.SetMessage(string(j))
+					reply.SetMessage(j)
 
 					srep, err := fw.NewSecureReply(reply)
 					Expect(err).ToNot(HaveOccurred())

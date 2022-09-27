@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -18,12 +18,12 @@ var _ = Describe("Request", func() {
 		request, _ := NewRequest("test", "go.tests", "choria=test", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		filter, filtered := request.Filter()
 
-		request.SetMessage("hello world")
+		request.SetMessage([]byte("hello world"))
 
 		j, _ := request.JSON()
 
-		Expect(gjson.Get(j, "protocol").String()).To(Equal(protocol.RequestV1))
-		Expect(request.Message()).To(Equal("hello world"))
+		Expect(gjson.GetBytes(j, "protocol").String()).To(Equal(protocol.RequestV1))
+		Expect(request.Message()).To(Equal([]byte("hello world")))
 		Expect(len(request.RequestID())).To(Equal(32))
 		Expect(request.SenderID()).To(Equal("go.tests"))
 		Expect(request.CallerID()).To(Equal("choria=test"))

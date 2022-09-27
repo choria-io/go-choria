@@ -5,7 +5,6 @@
 package v1
 
 import (
-	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -16,7 +15,7 @@ import (
 
 type transportMessage struct {
 	Protocol string            `json:"protocol"`
-	Data     string            `json:"data"`
+	Data     []byte            `json:"data"`
 	Headers  *transportHeaders `json:"headers"`
 
 	mu sync.Mutex
@@ -36,16 +35,11 @@ type federationTransportHeader struct {
 }
 
 // Message retrieves the stored data
-func (m *transportMessage) Message() (data string, err error) {
+func (m *transportMessage) Message() (data []byte, err error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
-	d, err := base64.StdEncoding.DecodeString(m.Data)
-	if err != nil {
-		return "", fmt.Errorf("could not base64 decode data received on the transport: %s", err)
-	}
-
-	return string(d), nil
+	return m.Data, nil
 }
 
 // IsFederated determines if this message is federated
@@ -180,7 +174,7 @@ func (m *transportMessage) SetReplyData(reply protocol.SecureReply) error {
 		return fmt.Errorf("could not JSON encode the Reply structure for transport: %s", err)
 	}
 
-	m.Data = base64.StdEncoding.EncodeToString([]byte(j))
+	m.Data = j
 
 	return nil
 }
@@ -195,7 +189,7 @@ func (m *transportMessage) SetRequestData(request protocol.SecureRequest) error 
 		return fmt.Errorf("could not JSON encode the Request structure for transport: %s", err)
 	}
 
-	m.Data = base64.StdEncoding.EncodeToString([]byte(j))
+	m.Data = j
 
 	return nil
 }
@@ -217,21 +211,19 @@ func (m *transportMessage) NetworkHops() [][3]string {
 }
 
 // JSON creates a JSON encoded message
-func (m *transportMessage) JSON() (body string, err error) {
+func (m *transportMessage) JSON() ([]byte, error) {
 	m.mu.Lock()
 	j, err := json.Marshal(m)
 	m.mu.Unlock()
 	if err != nil {
-		return "", fmt.Errorf("could not JSON Marshal: %s", err)
+		return nil, fmt.Errorf("could not JSON Marshal: %s", err)
 	}
 
-	body = string(j)
-
-	if err = m.IsValidJSON(body); err != nil {
-		return "", fmt.Errorf("the JSON produced from the Transport does not pass validation: %s", err)
+	if err = m.IsValidJSON(j); err != nil {
+		return nil, fmt.Errorf("the JSON produced from the Transport does not pass validation: %s", err)
 	}
 
-	return body, nil
+	return j, nil
 }
 
 // SetUnfederated removes any federation information from the message
@@ -251,7 +243,7 @@ func (m *transportMessage) Version() string {
 }
 
 // IsValidJSON validates the given JSON data against the Transport schema
-func (m *transportMessage) IsValidJSON(data string) error {
+func (m *transportMessage) IsValidJSON(data []byte) error {
 	if !protocol.ClientStrictValidation {
 		return nil
 	}

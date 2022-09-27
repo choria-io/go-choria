@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -29,7 +29,7 @@ import (
 
 // Broadcast implements mcollective like broadcast discovery
 type Broadcast struct {
-	fw      client.ChoriaFramework
+	fw      inter.Framework
 	timeout time.Duration
 	log     *logrus.Entry
 }
@@ -44,7 +44,7 @@ var (
 )
 
 // New creates a new broadcast discovery client
-func New(fw client.ChoriaFramework) *Broadcast {
+func New(fw inter.Framework) *Broadcast {
 	b := &Broadcast{
 		fw:      fw,
 		timeout: time.Second * time.Duration(fw.Configuration().DiscoveryTimeout),
@@ -125,7 +125,9 @@ func (b *Broadcast) identityOptimize(filter *protocol.Filter) bool {
 }
 
 func (b *Broadcast) createMessage(filter *protocol.Filter, collective string) (inter.Message, error) {
-	msg, err := b.fw.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", collective, "request", nil)
+	body := base64.StdEncoding.EncodeToString([]byte("ping"))
+
+	msg, err := b.fw.NewMessage([]byte(body), "discovery", collective, "request", nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create message: %s", err)
 	}
@@ -155,7 +157,7 @@ func (b *Broadcast) handler(ctx context.Context, cancel func(), dopts *dOpts) cl
 	}
 
 	return func(_ context.Context, m inter.ConnectorMessage) {
-		reply, err := b.fw.NewTransportFromJSON(string(m.Data()))
+		reply, err := b.fw.NewTransportFromJSON(m.Data())
 		if err != nil {
 			b.log.Errorf("Could not process a reply: %s", err)
 			return

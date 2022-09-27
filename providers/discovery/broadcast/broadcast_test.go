@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -48,14 +48,14 @@ var _ = Describe("Broadcast", func() {
 		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.WithCallerID())
 		cfg.Collectives = []string{"mcollective", "test"}
 
-		fw.EXPECT().NewMessage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
+		fw.EXPECT().NewMessage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(payload []byte, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
 			return message.NewMessage(payload, agent, collective, msgType, request, fw)
 		}).AnyTimes()
 
 		sec, err := filesec.New(filesec.WithChoriaConfig(&build.Info{}, cfg), filesec.WithLog(fw.Logger("")))
 		Expect(err).ToNot(HaveOccurred())
 
-		fw.EXPECT().NewTransportFromJSON(gomock.Any()).DoAndReturn(func(data string) (message protocol.TransportMessage, err error) {
+		fw.EXPECT().NewTransportFromJSON(gomock.Any()).DoAndReturn(func(data []byte) (message protocol.TransportMessage, err error) {
 			return v1.NewTransportFromJSON(data)
 		}).AnyTimes()
 		fw.EXPECT().NewReplyTransportForMessage(gomock.Any(), gomock.Any()).DoAndReturn(func(msg inter.Message, request protocol.Request) (protocol.TransportMessage, error) {
@@ -101,7 +101,7 @@ var _ = Describe("Broadcast", func() {
 
 			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg *message.Message, handler client.Handler) {
 				Expect(msg.Collective()).To(Equal("test"))
-				Expect(msg.Payload()).To(Equal("cGluZw=="))
+				Expect(msg.Payload()).To(Equal([]byte("cGluZw==")))
 
 				req, err := v1.NewRequest(msg.Agent(), msg.SenderID(), msg.CallerID(), msg.TTL(), msg.RequestID(), msg.Collective())
 				Expect(err).ToNot(HaveOccurred())

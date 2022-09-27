@@ -42,7 +42,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 
 	Describe("ConfigureMessage", func() {
 		It("Should configure the message", func() {
-			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
+			msg, err := message.NewMessage(nil, "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			Targets([]string{"host1", "host2"})(o)
@@ -62,7 +62,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 		})
 
 		It("Should support the message supplying targets", func() {
-			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
+			msg, err := message.NewMessage(nil, "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 			msg.SetDiscoveredHosts([]string{"host1", "host2"})
 
@@ -72,7 +72,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 		})
 
 		It("Should support custom reply targets", func() {
-			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
+			msg, err := message.NewMessage(nil, "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			Targets([]string{"host1", "host2"})(o)
@@ -91,7 +91,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 				targets[i] = fmt.Sprintf("target%d", i)
 			}
 
-			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
+			msg, err := message.NewMessage(nil, "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			Targets(targets)(o)
@@ -108,7 +108,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 				targets[i] = fmt.Sprintf("target%d", i)
 			}
 
-			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
+			msg, err := message.NewMessage(nil, "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			msg.CacheTransport()
@@ -131,7 +131,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 				targets[i] = fmt.Sprintf("target%d", i)
 			}
 
-			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
+			msg, err := message.NewMessage(nil, "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			msg.CacheTransport()
@@ -146,7 +146,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 		})
 
 		It("Should support service requests", func() {
-			msg, err := message.NewMessage("", "test", "mcollective", "request", nil, fw)
+			msg, err := message.NewMessage(nil, "test", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			msg.CacheTransport()

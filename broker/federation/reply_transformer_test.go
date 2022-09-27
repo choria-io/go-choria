@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -47,7 +47,7 @@ var _ = Describe("Reply Transformer", func() {
 
 		request, err = c.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, rid, "mcollective")
 		Expect(err).ToNot(HaveOccurred())
-		request.SetMessage(`{"hello":"world"}`)
+		request.SetMessage([]byte(`{"hello":"world"}`))
 
 		reply, err = c.NewReply(request)
 		Expect(err).ToNot(HaveOccurred())

@@ -157,18 +157,6 @@ var _ = Describe("Pkcs11Security", func() {
 		})
 	})
 
-	Describe("SignString", func() {
-		It("Should produce the right signature", func() {
-			sig, err := prov.SignBytes([]byte("too many secrets"))
-			Expect(err).ToNot(HaveOccurred())
-
-			l.Infof("target str: %s", base64.StdEncoding.EncodeToString(sig))
-
-			Expect(base64.StdEncoding.EncodeToString(sig)).To(Equal("PQlGnXt8jQ9N2WbghvKhH4qNTJcmTpbfspkT+9aSabivRbMGNIlMwDGMg8PQEC5AMF9eoxdaXuR/t2rbgUfqQrB3oI2YMD2clUtdVI1MIJ81ww90o0KHZa3C0N/OlshJVCDg1mUiget7rdfE5K3HARKbPZZbQFe/q5yPnjA7FGHEb1K+qnPyLGKD8WKIDTjHza16O6QWAcbyAWk2CP9ziLH5flVGMP0zMkdXQPiFfzexUG6iTIi64zVJ2k6E3k1JOGzRLeQfvUDNEQnmekH4w0iK0+uTZzBsQPr3jbd8xraTInv+v1CzrpBwoIP36Qlr296vxKngaqDSN2K3uSyKWg=="))
-
-		})
-	})
-
 	Describe("ChecksumBytes", func() {
 		It("Should produce the right checksum", func() {
 			sum, err := base64.StdEncoding.DecodeString("Yk+jdKdZ3v8E2p6dmbfn+ZN9lBBAHEIcOMp4lzuYKTo=")

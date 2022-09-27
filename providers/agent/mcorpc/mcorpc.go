@@ -30,7 +30,7 @@ type ChoriaFramework interface {
 	FacterDomain() (string, error)
 	FacterCmd() string
 	MiddlewareServers() (srvcache.Servers, error)
-	NewTransportFromJSON(data string) (protocol.TransportMessage, error)
+	NewTransportFromJSON(data []byte) (protocol.TransportMessage, error)
 	ProvisionMode() bool
 	UniqueID() string
 	Certname() string

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -95,7 +95,7 @@ var _ = Describe("McoRPC", func() {
 		})
 
 		It("Should handle unknown actions", func() {
-			msg.SetPayload(`{"agent":"test", "action":"nonexisting"}`)
+			msg.SetPayload([]byte(`{"agent":"test", "action":"nonexisting"}`))
 			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
@@ -111,7 +111,7 @@ var _ = Describe("McoRPC", func() {
 			}
 
 			agent.RegisterAction("test", action)
-			msg.SetPayload(`{"agent":"test", "action":"test"}`)
+			msg.SetPayload([]byte(`{"agent":"test", "action":"test"}`))
 			agent.HandleMessage(ctx, msg, req, nil, outbox)
 
 			reply := <-outbox
@@ -123,7 +123,7 @@ var _ = Describe("McoRPC", func() {
 		It("Should detect unsupported authorization systems", func() {
 			cfg.RPCAuthorization = true
 			cfg.RPCAuditProvider = "unsupported"
-			msg.SetPayload(`{"agent":"test", "action":"test"}`)
+			msg.SetPayload([]byte(`{"agent":"test", "action":"test"}`))
 			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {
 				d := map[string]string{"test": "hello world"}
 				reply.Data = &d
@@ -141,7 +141,7 @@ var _ = Describe("McoRPC", func() {
 			cfg.ConfigFile = "testdata/config.cfg"
 			cfg.RPCAuthorization = true
 			cfg.RPCAuditProvider = "action_policy"
-			msg.SetPayload(`{"agent":"test", "action":"test"}`)
+			msg.SetPayload([]byte(`{"agent":"test", "action":"test"}`))
 
 			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {
 				d := map[string]string{"test": "hello world"}
@@ -160,7 +160,7 @@ var _ = Describe("McoRPC", func() {
 			cfg.ConfigFile = "testdata/config.cfg"
 			cfg.RPCAuthorization = true
 			cfg.RPCAuditProvider = "rego_policy"
-			msg.SetPayload(`{"agent":"test", "action":"test"}`)
+			msg.SetPayload([]byte(`{"agent":"test", "action":"test"}`))
 
 			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {
 				d := map[string]string{"test": "hello world"}

@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -32,19 +32,19 @@ type Message interface {
 	IsCachedTransport() bool
 	NotifyPublish()
 	OnPublish(func())
-	Payload() string
+	Payload() []byte
 	ProtocolVersion() string
 	ReplyTo() string
 	Request() Message
 	RequestID() string
 	SenderID() string
-	SetBase64Payload(payload string) error
+	SetBase64Payload(payload []byte) error
 	SetCollective(string) error
 	SetCustomTarget(string)
 	SetDiscoveredHosts(hosts []string)
 	SetExpectedMsgID(id string) error
 	SetFilter(*protocol.Filter)
-	SetPayload(string)
+	SetPayload([]byte)
 	SetProtocolVersion(string)
 	SetReplyTo(string) error
 	SetTTL(int)

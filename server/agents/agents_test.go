@@ -1,10 +1,11 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
 package agents
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"errors"
@@ -65,7 +66,7 @@ var _ = Describe("Server/Agents", func() {
 		}
 
 		handler = func(ctx context.Context, msg *message.Message, request protocol.Request, ci inter.ConnectorInfo, result chan *AgentReply) {
-			if msg.Payload() == "sleep" {
+			if bytes.Equal(msg.Payload(), []byte("sleep")) {
 				time.Sleep(10 * time.Second)
 			}
 
@@ -250,7 +251,7 @@ var _ = Describe("Server/Agents", func() {
 			cfg.Collectives = []string{"cone"}
 			request, err = v1.NewRequest("stub", "example.net", "choria=rip.mcollective", 60, "123", "cone")
 			Expect(err).ToNot(HaveOccurred())
-			request.SetMessage("hello world")
+			request.SetMessage([]byte("hello world"))
 
 			msg, err = message.NewMessageFromRequest(request, "choria.reply.to", mgr.fw)
 			Expect(err).ToNot(HaveOccurred())
@@ -300,7 +301,7 @@ var _ = Describe("Server/Agents", func() {
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
 
-			msg.SetPayload("sleep")
+			msg.SetPayload([]byte("sleep"))
 			replyc := make(chan *AgentReply, 1)
 			go func() {
 				defer GinkgoRecover()
@@ -322,7 +323,7 @@ var _ = Describe("Server/Agents", func() {
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
 
-			msg.SetPayload("sleep")
+			msg.SetPayload([]byte("sleep"))
 			replyc := make(chan *AgentReply, 1)
 			go func() {
 				defer GinkgoRecover()

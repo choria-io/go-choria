@@ -171,11 +171,11 @@ func (r *request) SetUnfederated() {
 }
 
 // SetMessage set the message body that's contained in this request
-func (r *request) SetMessage(message string) {
+func (r *request) SetMessage(message []byte) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.MessageBody = []byte(message)
+	r.MessageBody = message
 }
 
 // SetCallerID sets the caller id for this request
@@ -212,11 +212,11 @@ func (r *request) SetTTL(ttl int) {
 }
 
 // Message retrieves the Message body
-func (r *request) Message() string {
+func (r *request) Message() []byte {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return string(r.MessageBody)
+	return r.MessageBody
 }
 
 // RequestID retrieves the unique request ID
@@ -298,23 +298,21 @@ func (r *request) NewFilter() *protocol.Filter {
 }
 
 // JSON creates a JSON encoded request
-func (r *request) JSON() (body string, err error) {
+func (r *request) JSON() ([]byte, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	j, err := json.Marshal(r)
 	if err != nil {
 		protocolErrorCtr.Inc()
-		return "", fmt.Errorf("could not JSON Marshal: %s", err)
+		return nil, fmt.Errorf("could not JSON Marshal: %s", err)
 	}
 
-	body = string(j)
-
-	if err = r.isValidJSONUnlocked(body); err != nil {
-		return "", fmt.Errorf("serialized JSON produced from the Request does not pass validation: %s", err)
+	if err = r.isValidJSONUnlocked(j); err != nil {
+		return nil, fmt.Errorf("serialized JSON produced from the Request does not pass validation: %s", err)
 	}
 
-	return body, nil
+	return j, nil
 }
 
 // SetFilter sets and overwrites the filter for a message with a new one
@@ -334,14 +332,14 @@ func (r *request) Version() string {
 }
 
 // IsValidJSON validates the given JSON data against the schema
-func (r *request) IsValidJSON(data string) (err error) {
+func (r *request) IsValidJSON(data []byte) (err error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	return r.isValidJSONUnlocked(data)
 }
 
-func (r *request) isValidJSONUnlocked(data string) error {
+func (r *request) isValidJSONUnlocked(data []byte) error {
 	// TODO
 
 	// _, errors, err := schemaValidate(requestSchema, data)

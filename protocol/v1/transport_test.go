@@ -30,7 +30,7 @@ var _ = Describe("TransportMessage", func() {
 		security.EXPECT().ChecksumBytes(gomock.Any()).Return([]byte("stub checksum")).AnyTimes()
 
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-		request.SetMessage(`{"message":1}`)
+		request.SetMessage([]byte(`{"message":1}`))
 		reply, _ := NewReply(request, "testing")
 		sreply, _ := NewSecureReply(reply, security)
 		treply, _ := NewTransportMessage("rip.mcollective")
@@ -43,8 +43,8 @@ var _ = Describe("TransportMessage", func() {
 		j, err := treply.JSON()
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(gjson.Get(j, "protocol").String()).To(Equal(protocol.TransportV1))
-		Expect(gjson.Get(j, "headers.mc_sender").String()).To(Equal("rip.mcollective"))
+		Expect(gjson.GetBytes(j, "protocol").String()).To(Equal(protocol.TransportV1))
+		Expect(gjson.GetBytes(j, "headers.mc_sender").String()).To(Equal("rip.mcollective"))
 
 		d, err := treply.Message()
 		Expect(err).ToNot(HaveOccurred())
@@ -57,7 +57,7 @@ var _ = Describe("TransportMessage", func() {
 		security.EXPECT().SignBytes(gomock.Any()).Return([]byte("stub sig"), nil).AnyTimes()
 
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-		request.SetMessage(`{"message":1}`)
+		request.SetMessage([]byte(`{"message":1}`))
 		srequest, _ := NewSecureRequest(request, security)
 		trequest, _ := NewTransportMessage("rip.mcollective")
 		trequest.SetRequestData(srequest)
@@ -65,8 +65,8 @@ var _ = Describe("TransportMessage", func() {
 		sj, _ := srequest.JSON()
 		j, _ := trequest.JSON()
 
-		Expect(gjson.Get(j, "protocol").String()).To(Equal(protocol.TransportV1))
-		Expect(gjson.Get(j, "headers.mc_sender").String()).To(Equal("rip.mcollective"))
+		Expect(gjson.GetBytes(j, "protocol").String()).To(Equal(protocol.TransportV1))
+		Expect(gjson.GetBytes(j, "headers.mc_sender").String()).To(Equal("rip.mcollective"))
 
 		d, err := trequest.Message()
 		Expect(err).ToNot(HaveOccurred())
@@ -83,7 +83,7 @@ var _ = Describe("TransportMessage", func() {
 
 		request, err := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		Expect(err).ToNot(HaveOccurred())
-		request.SetMessage("hello world")
+		request.SetMessage([]byte("hello world"))
 		srequest, err := NewSecureRequest(request, security)
 		Expect(err).ToNot(HaveOccurred())
 		trequest, err := NewTransportMessage("rip.mcollective")
@@ -97,7 +97,7 @@ var _ = Describe("TransportMessage", func() {
 		_, err = NewTransportFromJSON(j)
 		Expect(err).ToNot(HaveOccurred())
 
-		_, err = NewTransportFromJSON(`{"protocol": 1}`)
+		_, err = NewTransportFromJSON([]byte(`{"protocol": 1}`))
 		Expect(err).To(MatchError("supplied JSON document is not a valid Transport message: (root): data is required, (root): headers is required, protocol: Invalid type. Expected: string, given: integer"))
 	})
 })

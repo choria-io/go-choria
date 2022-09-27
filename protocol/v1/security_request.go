@@ -43,7 +43,7 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 	if protocol.IsSecure() && !protocol.IsRemoteSignerAgent(request.Agent()) {
 		var signature []byte
 
-		signature, err = r.security.SignBytes([]byte(j))
+		signature, err = r.security.SignBytes(j)
 		if err != nil {
 			// registration when doing anon tls might not have a certificate - so we allow that to go unsigned
 			if !protocol.IsRegistrationAgent(request.Agent()) {
@@ -55,17 +55,17 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 		r.Signature = base64.StdEncoding.EncodeToString(signature)
 	}
 
-	r.MessageBody = j
+	r.MessageBody = string(j)
 
 	return nil
 }
 
 // Message retrieves the stored message.  It will be a JSON encoded version of the request set via SetMessage
-func (r *secureRequest) Message() string {
+func (r *secureRequest) Message() []byte {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.MessageBody
+	return []byte(r.MessageBody)
 }
 
 // Valid determines if the request is valid
@@ -118,22 +118,20 @@ func (r *secureRequest) Valid() bool {
 }
 
 // JSON creates a JSON encoded request
-func (r *secureRequest) JSON() (body string, err error) {
+func (r *secureRequest) JSON() ([]byte, error) {
 	r.mu.Lock()
 	j, err := json.Marshal(r)
 	r.mu.Unlock()
 	if err != nil {
 		protocolErrorCtr.Inc()
-		return "", fmt.Errorf("could not JSON Marshal: %s", err)
+		return nil, fmt.Errorf("could not JSON Marshal: %s", err)
 	}
 
-	body = string(j)
-
-	if err = r.IsValidJSON(body); err != nil {
-		return "", fmt.Errorf("the JSON produced from the SecureRequest does not pass validation: %s", err)
+	if err = r.IsValidJSON(j); err != nil {
+		return nil, fmt.Errorf("the JSON produced from the SecureRequest does not pass validation: %s", err)
 	}
 
-	return body, nil
+	return j, nil
 }
 
 // Version retrieves the protocol version for this message
@@ -145,7 +143,7 @@ func (r *secureRequest) Version() string {
 }
 
 // IsValidJSON validates the given JSON data against the schema
-func (r *secureRequest) IsValidJSON(data string) (err error) {
+func (r *secureRequest) IsValidJSON(data []byte) (err error) {
 	_, errors, err := schemaValidate(secureRequestSchema, data)
 	if err != nil {
 		protocolErrorCtr.Inc()

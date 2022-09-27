@@ -16,9 +16,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/google/shlex"
 
-	"github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/protocol"
 
 	"github.com/sirupsen/logrus"
@@ -26,7 +26,7 @@ import (
 
 // External implements discovery via externally executed binaries
 type External struct {
-	fw      client.ChoriaFramework
+	fw      inter.Framework
 	timeout time.Duration
 	log     *logrus.Entry
 }
@@ -57,7 +57,7 @@ const (
 	RequestSchema = "https://choria.io/schemas/choria/discovery/v1/external_request.json"
 )
 
-func New(fw client.ChoriaFramework) *External {
+func New(fw inter.Framework) *External {
 	return &External{
 		fw:      fw,
 		timeout: time.Second * time.Duration(fw.Configuration().DiscoveryTimeout),
