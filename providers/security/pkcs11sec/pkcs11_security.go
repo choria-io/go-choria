@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,9 +16,6 @@ import (
 	"io"
 	"net/http"
 	"os"
-	"path/filepath"
-	"regexp"
-	"sort"
 	"strings"
 	"time"
 
@@ -28,7 +25,6 @@ import (
 	"github.com/miekg/pkcs11/p11"
 	"github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/security/filesec"
 )
 
@@ -86,9 +82,6 @@ type Config struct {
 	// CAFile is the file where the trusted CA cert resides
 	CAFile string
 
-	// CertCacheDir is the dir where cached certs reside
-	CertCacheDir string
-
 	// PrivilegedUsers is a list of regular expressions that identity privileged users
 	PrivilegedUsers []string
 
@@ -97,9 +90,6 @@ type Config struct {
 
 	// DisableTLSVerify disables TLS verify in HTTP clients etc
 	DisableTLSVerify bool
-
-	// AlwaysOverwriteCache supports always overwriting the local filesystem cache
-	AlwaysOverwriteCache bool
 
 	// PKCS11DriverFile points to the dynamic library file to use (usually a .so file)
 	PKCS11DriverFile string
@@ -274,15 +264,13 @@ func (p *Pkcs11Security) reinit() error {
 	var err error
 
 	fc := filesec.Config{
-		AllowList:            p.conf.AllowList,
-		DisableTLSVerify:     p.conf.DisableTLSVerify,
-		PrivilegedUsers:      p.conf.PrivilegedUsers,
-		CA:                   p.conf.CAFile,
-		Certificate:          "unused",
-		Cache:                p.conf.CertCacheDir,
-		Identity:             "unused",
-		AlwaysOverwriteCache: p.conf.AlwaysOverwriteCache,
-		RemoteSigner:         p.conf.RemoteSigner,
+		AllowList:        p.conf.AllowList,
+		DisableTLSVerify: p.conf.DisableTLSVerify,
+		PrivilegedUsers:  p.conf.PrivilegedUsers,
+		CA:               p.conf.CAFile,
+		Certificate:      "unused",
+		Identity:         "unused",
+		RemoteSigner:     p.conf.RemoteSigner,
 	}
 
 	p.fsec, err = filesec.New(filesec.WithConfig(&fc), filesec.WithLog(p.log))
@@ -306,25 +294,17 @@ func (p *Pkcs11Security) Enroll(ctx context.Context, wait time.Duration, cb func
 }
 
 // RemoteSignRequest signs a choria request against using a remote signer and returns a secure request
-func (s *Pkcs11Security) RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error) {
+func (p *Pkcs11Security) RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error) {
 	return nil, fmt.Errorf("pkcs11 security provider does not support remote signing requests")
 }
 
-func (s *Pkcs11Security) IsRemoteSigning() bool { return false }
+func (p *Pkcs11Security) IsRemoteSigning() bool { return false }
 
 // Validate determines if the node represents a valid SSL configuration
 func (p *Pkcs11Security) Validate() ([]string, bool) {
 	var errorsList []string
 
-	stat, err := os.Stat(p.conf.CertCacheDir)
-	switch {
-	case os.IsNotExist(err):
-		errorsList = append(errorsList, err.Error())
-	case !stat.IsDir():
-		errorsList = append(errorsList, fmt.Sprintf("%s is not a directory", p.conf.CertCacheDir))
-	}
-
-	stat, err = os.Stat(p.conf.CAFile)
+	stat, err := os.Stat(p.conf.CAFile)
 	switch {
 	case os.IsNotExist(err):
 		errorsList = append(errorsList, err.Error())
@@ -365,31 +345,22 @@ func (p *Pkcs11Security) SignBytes(str []byte) ([]byte, error) {
 	return output, nil
 }
 
-// VerifyByteSignature verify that dat matches signature sig made by the key of identity
-// if identity is "" the active public key will be used
-func (p *Pkcs11Security) VerifyByteSignature(dat []byte, sig []byte, identity string) bool {
+// VerifyByteSignature verify that dat matches signature sig made by the key, if pub cert is empty the active public key will be used
+func (p *Pkcs11Security) VerifyByteSignature(dat []byte, sig []byte, pubcert []byte) (should bool, signer string) {
 	var cert *x509.Certificate
-	pubkeyPath := "pkcs11 certificate"
+	var err error
 
-	if identity != "" {
-		pubkeyPath, err := p.cachePath(identity)
-		if err != nil {
-			p.log.Warnf("Could not lookup cache path while verifying signature for %s: %v", identity, err)
-			return false
-		}
-
-		p.log.Debugf("Attempting to verify signature for %s using %s", identity, pubkeyPath)
-
-		pkpem, err := p.decodePEM(pubkeyPath)
-		if err != nil {
-			p.log.Errorf("Could not decode PEM data in public key %s: %s", pubkeyPath, err)
-			return false
+	if len(pubcert) > 0 {
+		pkpem, _ := pem.Decode(pubcert)
+		if pkpem == nil {
+			p.log.Errorf("Could not decode PEM data in public key: invalid pem data")
+			return false, ""
 		}
 
 		cert, err = x509.ParseCertificate(pkpem.Bytes)
 		if err != nil {
-			p.log.Errorf("Could not parse decoded PEM data for public key %s: %s", pubkeyPath, err)
-			return false
+			p.log.Errorf("Could not parse decoded PEM data for public key: %s", err)
+			return false, ""
 		}
 	} else {
 		cert = p.cert.Leaf
@@ -398,44 +369,23 @@ func (p *Pkcs11Security) VerifyByteSignature(dat []byte, sig []byte, identity st
 	rsaPublicKey := cert.PublicKey.(*rsa.PublicKey)
 	hashed := p.ChecksumBytes(dat)
 
-	err := rsa.VerifyPKCS1v15(rsaPublicKey, crypto.SHA256, hashed[:], sig)
+	err = rsa.VerifyPKCS1v15(rsaPublicKey, crypto.SHA256, hashed[:], sig)
 	if err != nil {
-		p.log.Errorf("Signature verification using %s failed: %s", pubkeyPath, err)
-		return false
+		p.log.Errorf("Signature verification failed: %s", err)
+		return false, ""
 	}
 
-	p.log.Debugf("Verified signature from %s using %s", identity, pubkeyPath)
-	return true
-}
+	names := []string{cert.Subject.CommonName}
+	names = append(names, cert.DNSNames...)
 
-// VerifyStringSignature verify that str matches signature sig made by the key of identity
-func (p *Pkcs11Security) VerifyStringSignature(str string, sig []byte, identity string) bool {
-	return p.VerifyByteSignature([]byte(str), sig, identity)
-}
-
-// PrivilegedVerifyByteSignature verifies if the signature received is from any of the privileged certs or the given identity
-func (p *Pkcs11Security) PrivilegedVerifyByteSignature(dat []byte, sig []byte, identity string) bool {
-	var candidates []string
-
-	if identity != "" && p.cachedCertExists(identity) {
-		candidates = append(candidates, identity)
+	if len(names) == 0 {
+		p.log.Errorf("Signature verification failed: no names found in signer certificate")
+		return false, ""
 	}
 
-	candidates = append(candidates, p.privilegedCerts()...)
+	p.log.Debugf("Verified signature from %s", strings.Join(names, ", "))
 
-	for _, candidate := range candidates {
-		if p.VerifyByteSignature(dat, sig, candidate) {
-			p.log.Debugf("Allowing certificate %s to act as %s", candidate, identity)
-			return true
-		}
-	}
-
-	return false
-}
-
-// PrivilegedVerifyStringSignature verifies if the signature received is from any of the privilged certs or the given identity
-func (p *Pkcs11Security) PrivilegedVerifyStringSignature(dat string, sig []byte, identity string) bool {
-	return p.PrivilegedVerifyByteSignature([]byte(dat), sig, identity)
+	return true, names[0]
 }
 
 // SignString signs a message using a SHA256 PKCS1v15 protocol
@@ -453,14 +403,9 @@ func (p *Pkcs11Security) CallerIdentity(caller string) (string, error) {
 	return p.fsec.CallerIdentity(caller)
 }
 
-// CachePublicData caches the public key for a identity
-func (p *Pkcs11Security) CachePublicData(data []byte, identity string) error {
-	return p.fsec.CachePublicData(data, identity)
-}
-
-// CachedPublicData retrieves the previously cached public data for a given identity
-func (p *Pkcs11Security) CachedPublicData(identity string) ([]byte, error) {
-	return p.fsec.CachedPublicData(identity)
+// ShouldAllowCaller verifies the public data
+func (p *Pkcs11Security) ShouldAllowCaller(data []byte, name string) (privileged bool, err error) {
+	return p.fsec.ShouldAllowCaller(data, name)
 }
 
 // VerifyCertificate verifies a certificate is signed with the configured CA and if
@@ -471,7 +416,6 @@ func (p *Pkcs11Security) VerifyCertificate(certpem []byte, name string) error {
 
 // PublicCertPem retrieves the public certificate for this instance
 func (p *Pkcs11Security) PublicCertPem() (*pem.Block, error) {
-
 	pb := &pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: p.cert.Leaf.Raw,
@@ -480,7 +424,7 @@ func (p *Pkcs11Security) PublicCertPem() (*pem.Block, error) {
 	return pb, nil
 }
 
-// PublicCertTXT retrieves pem data in textual form for the public certificate of the current identity
+// PublicCertBytes retrieves pem data in textual form for the public certificate of the current identity
 func (p *Pkcs11Security) PublicCertBytes() ([]byte, error) {
 
 	pemCert, err := p.PublicCertPem()
@@ -557,87 +501,4 @@ func (p *Pkcs11Security) HTTPClient(secure bool) (*http.Client, error) {
 	}
 
 	return client, nil
-}
-
-func (p *Pkcs11Security) decodePEM(certpath string) (*pem.Block, error) {
-	var err error
-
-	if certpath == "" {
-		return nil, fmt.Errorf("invalid certpath '' provided")
-	}
-
-	keydat, err := os.ReadFile(certpath)
-	if err != nil {
-		return nil, fmt.Errorf("could not read PEM data from %s: %s", certpath, err)
-	}
-
-	pb, _ := pem.Decode(keydat)
-	if pb == nil {
-		return nil, fmt.Errorf("failed to parse PEM data from key %s", certpath)
-	}
-
-	return pb, nil
-}
-
-func (p *Pkcs11Security) cachePath(identity string) (string, error) {
-	certfile := filepath.Join(filepath.FromSlash(p.conf.CertCacheDir), fmt.Sprintf("%s.pem", identity))
-
-	return certfile, nil
-}
-
-func (p *Pkcs11Security) cachedCertExists(identity string) bool {
-	f, err := p.cachePath(identity)
-	if err != nil {
-		return false
-	}
-
-	return util.FileExist(f)
-}
-
-func (p *Pkcs11Security) privilegedCerts() []string {
-	certs := []string{}
-
-	err := filepath.Walk(p.conf.CertCacheDir, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if !info.IsDir() {
-			cert := []byte(strings.TrimSuffix(filepath.Base(path), ".pem"))
-
-			if p.isPrivilegedCert(cert) {
-				certs = append(certs, string(cert))
-			}
-		}
-
-		return nil
-	})
-	if err != nil {
-		return nil
-	}
-
-	sort.Strings(certs)
-
-	return certs
-}
-
-func (p *Pkcs11Security) isPrivilegedCert(cert []byte) bool {
-	return MatchAnyRegex(cert, p.conf.PrivilegedUsers)
-}
-
-func MatchAnyRegex(str []byte, regex []string) bool {
-	matcher := regexp.MustCompile("^/.+/$")
-
-	for _, reg := range regex {
-		if matcher.MatchString(reg) {
-			reg = strings.TrimLeft(reg, "/")
-			reg = strings.TrimRight(reg, "/")
-		}
-
-		if matched, _ := regexp.Match(reg, str); matched {
-			return true
-		}
-	}
-
-	return false
 }

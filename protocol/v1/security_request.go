@@ -91,9 +91,9 @@ func (r *secureRequest) Valid() bool {
 		return false
 	}
 
-	err = r.security.CachePublicData([]byte(r.PublicCertificate), certname)
+	_, err = r.security.ShouldAllowCaller([]byte(r.PublicCertificate), certname)
 	if err != nil {
-		log.Errorf("Could not cache Client Certificate: %s", err)
+		log.Errorf("Client Certificate verification failed: %s", err)
 		protocolErrorCtr.Inc()
 		return false
 	}
@@ -105,7 +105,9 @@ func (r *secureRequest) Valid() bool {
 		return false
 	}
 
-	if !r.security.PrivilegedVerifyStringSignature(r.MessageBody, sig, certname) {
+	should, _ := r.security.VerifyByteSignature([]byte(r.MessageBody), sig, []byte(r.PublicCertificate))
+	if !should {
+		log.Errorf("Signature in request did not pass validation with embedded public certificate")
 		invalidCtr.Inc()
 		return false
 	}

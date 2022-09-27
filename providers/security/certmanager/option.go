@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -19,16 +19,15 @@ type Option func(*CertManagerSecurity) error
 func WithChoriaConfig(c *config.Config) Option {
 	return func(p *CertManagerSecurity) error {
 		cfg := Config{
-			apiVersion:           c.Choria.CertManagerAPIVersion,
-			sslDir:               c.Choria.SSLDir,
-			privilegedUsers:      c.Choria.PrivilegedUsers,
-			alwaysOverwriteCache: c.Choria.SecurityAlwaysOverwriteCache,
-			namespace:            c.Choria.CertManagerSecurityNamespace,
-			issuer:               c.Choria.CertManagerSecurityIssuer,
-			replace:              c.Choria.CertManagerSecurityReplaceCSR,
-			altnames:             c.Choria.CertManagerSecurityAltNames,
-			identity:             c.Identity,
-			legacyCerts:          c.Choria.SecurityAllowLegacyCerts,
+			apiVersion:      c.Choria.CertManagerAPIVersion,
+			sslDir:          c.Choria.SSLDir,
+			privilegedUsers: c.Choria.PrivilegedUsers,
+			namespace:       c.Choria.CertManagerSecurityNamespace,
+			issuer:          c.Choria.CertManagerSecurityIssuer,
+			replace:         c.Choria.CertManagerSecurityReplaceCSR,
+			altnames:        c.Choria.CertManagerSecurityAltNames,
+			identity:        c.Identity,
+			legacyCerts:     c.Choria.SecurityAllowLegacyCerts,
 		}
 
 		if c.OverrideCertname == "" {

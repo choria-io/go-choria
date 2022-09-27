@@ -923,6 +923,8 @@ Path to a file holding tags for a Scout entity
 
 Always store new Public Keys to the cache overwriting existing ones
 
+**This setting is deprecated or already unused**
+
 ## plugin.security.certmanager.alt_names
 
  * **Type:** comma_split
@@ -986,6 +988,8 @@ When using file security provider, the path to the Certificate Authority public 
  * **Type:** path_string
 
 When using file security provider, the path to the client cache
+
+**This setting is deprecated or already unused**
 
 ## plugin.security.file.certificate
 

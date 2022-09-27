@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -133,7 +133,6 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 			fmt.Printf("           Certificate: %s (%s)\n", c.Config.Choria.FileSecurityCertificate, cc.checkFileExist(c.Config.Choria.FileSecurityCertificate))
 			fmt.Printf("                   Key: %s (%s)\n", c.Config.Choria.FileSecurityKey, cc.checkFileExist(c.Config.Choria.FileSecurityKey))
 			fmt.Printf("                    CA: %s (%s)\n", c.Config.Choria.FileSecurityCA, cc.checkFileExist(c.Config.Choria.FileSecurityCA))
-			fmt.Printf("                 Cache: %s (%s)\n", c.Config.Choria.FileSecurityCache, cc.checkFileExist(c.Config.Choria.FileSecurityCache))
 		}
 
 		if c.Config.Choria.RemoteSignerService {

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -102,7 +102,7 @@ type ChoriaPluginConfig struct {
 	CertnameWhitelist            []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split" default:"\\.mcollective$,\\.choria$"`                                                                     // Patterns of certificate names that are allowed to be clients
 	Serializer                   string   `confkey:"plugin.choria.security.serializer" validate:"enum=json,yaml" default:"json" deprecated:"1"`
 	SecurityProvider             string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11,certmanager"`                      // The Security Provider to use
-	SecurityAlwaysOverwriteCache bool     `confkey:"plugin.security.always_overwrite_cache" default:"false"`                                                        // Always store new Public Keys to the cache overwriting existing ones
+	SecurityAlwaysOverwriteCache bool     `confkey:"plugin.security.always_overwrite_cache" default:"false" deprecated:"1"`                                         // Always store new Public Keys to the cache overwriting existing ones
 	SecurityAllowLegacyCerts     bool     `confkey:"plugin.security.support_legacy_certificates" default:"false"`                                                   // Allow certificates without SANs to be used
 	RemoteSignerTokenSeedFile    string   `confkey:"plugin.choria.security.request_signer.seed_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"`  // Path to the seed file used to access a Central Authenticator
 	RemoteSignerTokenFile        string   `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"` // Path to the token used to access a Central Authenticator
@@ -115,10 +115,10 @@ type ChoriaPluginConfig struct {
 	ServerTokenFile              string   `confkey:"plugin.choria.security.server.token_file" type:"path_string"`                                                   // The server token file to use for authentication, defaults to serer.jwt in the same location as server.conf
 	ServerTokenSeedFile          string   `confkey:"plugin.choria.security.server.seed_file" type:"path_string"`                                                    // The server token seed to use for authentication, defaults to server.seed in the same location as server.conf
 
-	FileSecurityCertificate string `confkey:"plugin.security.file.certificate" type:"path_string"` // When using file security provider, the path to the public certificate
-	FileSecurityKey         string `confkey:"plugin.security.file.key" type:"path_string"`         // When using file security provider, the path to the private key
-	FileSecurityCA          string `confkey:"plugin.security.file.ca" type:"path_string"`          // When using file security provider, the path to the Certificate Authority public certificate
-	FileSecurityCache       string `confkey:"plugin.security.file.cache" type:"path_string"`       // When using file security provider, the path to the client cache
+	FileSecurityCertificate string `confkey:"plugin.security.file.certificate" type:"path_string"`          // When using file security provider, the path to the public certificate
+	FileSecurityKey         string `confkey:"plugin.security.file.key" type:"path_string"`                  // When using file security provider, the path to the private key
+	FileSecurityCA          string `confkey:"plugin.security.file.ca" type:"path_string"`                   // When using file security provider, the path to the Certificate Authority public certificate
+	FileSecurityCache       string `confkey:"plugin.security.file.cache" type:"path_string" deprecated:"1"` // When using file security provider, the path to the client cache
 
 	CertManagerSecurityNamespace  string   `confkey:"plugin.security.certmanager.namespace" default:"choria"`   // When using Cert Manager security provider, the namespace the issuer is in
 	CertManagerSecurityIssuer     string   `confkey:"plugin.security.certmanager.issuer"`                       // When using Cert Manager security provider, the name of the issuer

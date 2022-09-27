@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -38,7 +38,7 @@ var _ = Describe("SecureRequest", func() {
 	})
 
 	It("Should support insecure mode", func() {
-		security.EXPECT().PublicCertTXT().Return([]byte{}, errors.New("simulated")).AnyTimes()
+		security.EXPECT().PublicCertBytes().Return([]byte{}, errors.New("simulated")).AnyTimes()
 
 		protocol.Secure = "false"
 
@@ -62,7 +62,7 @@ var _ = Describe("SecureRequest", func() {
 	})
 
 	It("Should create a valid SecureRequest", func() {
-		security.EXPECT().PublicCertTXT().Return(pub, nil).AnyTimes()
+		security.EXPECT().PublicCertBytes().Return(pub, nil).AnyTimes()
 
 		r, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		r.SetMessage(`{"test":1}`)

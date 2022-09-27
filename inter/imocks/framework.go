@@ -5,25 +5,25 @@
 package imock
 
 import (
-	"context"
-	"crypto/tls"
-	"crypto/x509"
-	"io"
-	"net/http"
-	"reflect"
-	"time"
+	context "context"
+	tls "crypto/tls"
+	x509 "crypto/x509"
+	io "io"
+	http "net/http"
+	reflect "reflect"
+	time "time"
 
-	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/inter"
-	"github.com/choria-io/go-choria/protocol"
+	build "github.com/choria-io/go-choria/build"
+	config "github.com/choria-io/go-choria/config"
+	inter "github.com/choria-io/go-choria/inter"
+	protocol "github.com/choria-io/go-choria/protocol"
 	election "github.com/choria-io/go-choria/providers/election/streams"
 	governor "github.com/choria-io/go-choria/providers/governor/streams"
-	"github.com/choria-io/go-choria/providers/kv"
-	"github.com/choria-io/go-choria/srvcache"
-	"github.com/golang/mock/gomock"
-	"github.com/nats-io/nats.go"
-	"github.com/sirupsen/logrus"
+	kv "github.com/choria-io/go-choria/providers/kv"
+	srvcache "github.com/choria-io/go-choria/srvcache"
+	gomock "github.com/golang/mock/gomock"
+	nats "github.com/nats-io/nats.go"
+	logrus "github.com/sirupsen/logrus"
 )
 
 // MockConfigurationProvider is a mock of ConfigurationProvider interface.

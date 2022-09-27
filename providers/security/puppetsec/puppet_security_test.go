@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -170,23 +170,6 @@ var _ = Describe("PuppetSSL", func() {
 			prov.reinit()
 
 			Expect(prov.Identity()).To(Equal("bob.choria"))
-		})
-	})
-
-	Describe("cachePath", func() {
-		It("Should get the right cache path", func() {
-			path := prov.cachePath("rip.mcollective")
-			Expect(err).ToNot(HaveOccurred())
-			Expect(path).To(Equal(filepath.FromSlash(filepath.Join(cfg.SSLDir, "choria_security", "public_certs", "rip.mcollective.pem"))))
-		})
-	})
-
-	Describe("certCacheDir", func() {
-		It("Should determine the right directory", func() {
-			path := prov.certCacheDir()
-			Expect(err).ToNot(HaveOccurred())
-
-			Expect(path).To(Equal(filepath.FromSlash(filepath.Join(cfg.SSLDir, "choria_security", "public_certs"))))
 		})
 	})
 

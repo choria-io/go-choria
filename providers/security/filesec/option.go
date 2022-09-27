@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -28,13 +28,11 @@ func WithChoriaConfig(bi BuildInfoProvider, c *config.Config) Option {
 	cfg := Config{
 		AllowList:                  c.Choria.CertnameWhitelist,
 		CA:                         c.Choria.FileSecurityCA,
-		Cache:                      c.Choria.FileSecurityCache,
 		Certificate:                c.Choria.FileSecurityCertificate,
 		DisableTLSVerify:           c.DisableTLSVerify,
 		Key:                        c.Choria.FileSecurityKey,
 		PrivilegedUsers:            c.Choria.PrivilegedUsers,
 		Identity:                   c.Identity,
-		AlwaysOverwriteCache:       c.Choria.SecurityAlwaysOverwriteCache,
 		RemoteSignerURL:            c.Choria.RemoteSignerURL,
 		RemoteSignerTokenFile:      c.Choria.RemoteSignerTokenFile,
 		TLSConfig:                  tlssetup.TLSConfig(c),

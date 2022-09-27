@@ -26,7 +26,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"sort"
 	"strings"
 	"sync"
 	"time"
@@ -66,9 +65,6 @@ type Config struct {
 	// CA is the path to the Certificate Authority
 	CA string
 
-	// Cache is where known client certificates will be stored
-	Cache string
-
 	// PrivilegedUsers is a list of regular expressions that identity privileged users
 	PrivilegedUsers []string
 
@@ -77,9 +73,6 @@ type Config struct {
 
 	// DisableTLSVerify disables TLS verify in HTTP clients etc
 	DisableTLSVerify bool
-
-	// AlwaysOverwriteCache supports always overwriting the local filesystem cache
-	AlwaysOverwriteCache bool
 
 	// Is a URL where a remote signer is running
 	RemoteSignerURL string
@@ -247,34 +240,28 @@ func (s *FileSecurity) SignBytes(str []byte) ([]byte, error) {
 	return sig, err
 }
 
-// VerifyByteSignature verify that dat matches signature sig made by the key of identity
-// if identity is "" the active public key will be used
-func (s *FileSecurity) VerifyByteSignature(dat []byte, sig []byte, identity string) bool {
-	pubkeyPath := ""
+// VerifyByteSignature verify that dat matches signature sig made by the key, if pub cert is empty the active public key will be used
+func (s *FileSecurity) VerifyByteSignature(dat []byte, sig []byte, pubcert []byte) (should bool, signer string) {
 	var err error
 
-	pubkeyPath = s.publicCertPath()
-
-	if identity != "" {
-		pubkeyPath, err = s.cachePath(identity)
+	if len(pubcert) == 0 {
+		pubcert, err = s.PublicCertBytes()
 		if err != nil {
-			s.log.Warnf("Could not retrieve cache path while verifying signature for %s: %s", identity, err)
-			return false
+			s.log.Errorf("Could not load public cert: %v", err)
+			return false, ""
 		}
 	}
 
-	s.log.Debugf("Attempting to verify signature for %s using %s", identity, pubkeyPath)
-
-	pkpem, err := s.decodePEM(pubkeyPath)
-	if err != nil {
-		s.log.Errorf("Could not decode PEM data in public key %s: %s", pubkeyPath, err)
-		return false
+	pkpem, _ := pem.Decode(pubcert)
+	if pkpem == nil {
+		s.log.Errorf("Could not decode PEM data in public key: invalid pem data")
+		return false, ""
 	}
 
 	cert, err := x509.ParseCertificate(pkpem.Bytes)
 	if err != nil {
-		s.log.Errorf("Could not parse decoded PEM data for public key %s: %s", pubkeyPath, err)
-		return false
+		s.log.Errorf("Could not parse decoded PEM data for public certificate: %s", err)
+		return false, ""
 	}
 
 	rsaPublicKey := cert.PublicKey.(*rsa.PublicKey)
@@ -282,42 +269,21 @@ func (s *FileSecurity) VerifyByteSignature(dat []byte, sig []byte, identity stri
 
 	err = rsa.VerifyPKCS1v15(rsaPublicKey, crypto.SHA256, hashed[:], sig)
 	if err != nil {
-		s.log.Errorf("Signature verification using %s failed: %s", pubkeyPath, err)
-		return false
+		s.log.Errorf("Signature verification failed: %s", err)
+		return false, ""
 	}
 
-	s.log.Debugf("Verified signature from %s using %s", identity, pubkeyPath)
-	return true
-}
+	names := []string{cert.Subject.CommonName}
+	names = append(names, cert.DNSNames...)
 
-// VerifyStringSignature verify that str matches signature sig made by the key of identity
-func (s *FileSecurity) VerifyStringSignature(str string, sig []byte, identity string) bool {
-	return s.VerifyByteSignature([]byte(str), sig, identity)
-}
-
-// PrivilegedVerifyByteSignature verifies if the signature received is from any of the privileged certs or the given identity
-func (s *FileSecurity) PrivilegedVerifyByteSignature(dat []byte, sig []byte, identity string) bool {
-	var candidates []string
-
-	if identity != "" && s.cachedCertExists(identity) {
-		candidates = append(candidates, identity)
+	if len(names) == 0 {
+		s.log.Errorf("Signature verification failed: no names found in signer certificate")
+		return false, ""
 	}
 
-	candidates = append(candidates, s.privilegedCerts()...)
+	s.log.Debugf("Verified signature from %s", strings.Join(names, ", "))
 
-	for _, candidate := range candidates {
-		if s.VerifyByteSignature(dat, sig, candidate) {
-			s.log.Debugf("Allowing certificate %s to act as %s", candidate, identity)
-			return true
-		}
-	}
-
-	return false
-}
-
-// PrivilegedVerifyStringSignature verifies if the signature received is from any of the privileged certs or the given identity
-func (s *FileSecurity) PrivilegedVerifyStringSignature(dat string, sig []byte, identity string) bool {
-	return s.PrivilegedVerifyByteSignature([]byte(dat), sig, identity)
+	return true, names[0]
 }
 
 // SignString signs a message using a SHA256 PKCS1v15 protocol
@@ -347,108 +313,9 @@ func (s *FileSecurity) IsRemoteSigning() bool {
 	return s.conf.RemoteSigner != nil
 }
 
-// CachePublicData caches the public key for a identity
-func (s *FileSecurity) CachePublicData(data []byte, identity string) error {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	should, privileged, identity, serr := s.shouldCacheClientCert(data, identity)
-	if !should {
-		return fmt.Errorf("certificate '%s' did not pass validation: %s", identity, serr)
-	}
-
-	err := os.MkdirAll(s.certCacheDir(), os.FileMode(int(0755)))
-	if err != nil {
-		return fmt.Errorf("could not create Client Certificate Cache Directory: %s", err)
-	}
-
-	certfile, err := s.cachePath(identity)
-	if err != nil {
-		return err
-	}
-
-	if util.FileExist(certfile) {
-		if !s.conf.AlwaysOverwriteCache {
-			s.log.Debugf("Already have a certificate in %s, refusing to overwrite with a new one", certfile)
-			return nil
-		}
-
-		// it exists, lets check if its required to update it, quicker to just update it but that
-		// risks failing when disks are full etc this attempts that risky step only when needed
-		rsum := sha256.Sum256(data)
-		fsum, err := fsha256(certfile)
-		if err != nil {
-			return fmt.Errorf("could not determine sha256 of current certificate in %s: %s", certfile, err)
-		}
-
-		if fmt.Sprintf("%x", fsum) == fmt.Sprintf("%x", rsum) {
-			s.log.Debugf("Received certificate is the same as cached certificate %s, not updating cache", certfile)
-			return nil
-		}
-	}
-
-	err = os.WriteFile(certfile, data, os.FileMode(0644))
-	if err != nil {
-		return fmt.Errorf("could not cache client public certificate: %s", err.Error())
-	}
-
-	if privileged {
-		s.log.Warnf("Cached privileged certificate %s for %s", certfile, identity)
-	} else {
-		s.log.Infof("Cached certificate %s for %s", certfile, identity)
-	}
-
-	return nil
-}
-
-// CachedPublicData retrieves the previously cached public data for a given identity
-func (s *FileSecurity) CachedPublicData(identity string) ([]byte, error) {
-	s.mu.Lock()
-	defer s.mu.Unlock()
-
-	certfile, err := s.cachePath(identity)
-	if err != nil {
-		return []byte{}, fmt.Errorf("could not cache public data: %s", err)
-	}
-
-	if !util.FileExist(certfile) {
-		return []byte{}, fmt.Errorf("unknown public data: %s", identity)
-	}
-
-	return os.ReadFile(certfile)
-}
-
 // Identity determines the choria certname
 func (s *FileSecurity) Identity() string {
 	return s.conf.Identity
-}
-
-func (s *FileSecurity) privilegedCerts() []string {
-	certs := []string{}
-
-	filepath.Walk(s.certCacheDir(), func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
-
-		if !info.IsDir() {
-			cert := []byte(strings.TrimSuffix(filepath.Base(path), ".pem"))
-
-			if s.isPrivilegedCert(cert) {
-				certs = append(certs, string(cert))
-			}
-		}
-
-		return nil
-	})
-
-	sort.Strings(certs)
-
-	return certs
-}
-
-func (s *FileSecurity) isPrivilegedCert(cert []byte) bool {
-	return MatchAnyRegex(cert, s.conf.PrivilegedUsers)
 }
 
 // VerifyCertificate verifies a certificate is signed with the configured CA and if
@@ -508,7 +375,7 @@ func (s *FileSecurity) VerifyCertificate(certpem []byte, name string) error {
 		return fmt.Errorf("email address not found in SAN: %s, %v", name, cert.EmailAddresses)
 	}
 
-	// shouldCacheClientCert passes in an empty name, we just want it to verify validity of the CA chain at this point
+	// ShouldAllowCaller passes in an empty name, we just want it to verify validity of the CA chain at this point
 	if name == "" {
 		return nil
 	}
@@ -652,7 +519,7 @@ func (s *FileSecurity) PublicCertPem() (*pem.Block, error) {
 	return s.decodePEM(path)
 }
 
-// PublicCertTXT retrieves pem data in textual form for the public certificate of the current identity
+// PublicCertBytes retrieves pem data in textual form for the public certificate of the current identity
 func (s *FileSecurity) PublicCertBytes() ([]byte, error) {
 	path := s.publicCertPath()
 
@@ -689,12 +556,6 @@ func (s *FileSecurity) SSLContext() (*http.Transport, error) {
 // Enroll is not supported
 func (s *FileSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error {
 	return errors.New("the file security provider does not support enrollment")
-}
-
-func (s *FileSecurity) cachePath(identity string) (string, error) {
-	certfile := filepath.Join(s.certCacheDir(), fmt.Sprintf("%s.pem", identity))
-
-	return certfile, nil
 }
 
 func (s *FileSecurity) decodePEM(certpath string) (*pem.Block, error) {
@@ -741,15 +602,6 @@ func (s *FileSecurity) caExists() bool {
 	return util.FileExist(s.caPath())
 }
 
-func (s *FileSecurity) cachedCertExists(identity string) bool {
-	f, err := s.cachePath(identity)
-	if err != nil {
-		return false
-	}
-
-	return util.FileExist(f)
-}
-
 func (s *FileSecurity) privateKeyPEM() (pb *pem.Block, err error) {
 	key := s.privateKeyPath()
 
@@ -766,57 +618,46 @@ func (s *FileSecurity) privateKeyPEM() (pb *pem.Block, err error) {
 	return
 }
 
-func (s *FileSecurity) certCacheDir() string {
-	return filepath.FromSlash(s.conf.Cache)
-}
-
-// shouldCacheClientCert figure out if we should cache this cert and if we do by what name, we do
-// not want certificate for caller bob which is in fact signed by a privilged cert to end up cached
-// as bob, we so we determine the right name to use and pass that along back to the caller who then
-// use that to determine the cache path
-func (s *FileSecurity) shouldCacheClientCert(data []byte, name string) (should bool, privileged bool, savename string, err error) {
-	// Checks if it was signed by the CA but without any name validation
-	err = s.VerifyCertificate(data, "")
-	if err != nil {
-		s.log.Warnf("Received certificate '%s' certificate did not pass verification: %s", name, err)
-		return false, false, name, err
-	}
-
-	// Check if the certificate that would be validated is a privileged one, so we don't name validate that
-	// we already know its signed by the right CA so we accept the privileged ones.
-	//
-	// At this point name is from the caller id but we need what is in the presented certificate
-	// in order to validate since the priv'd cert can overide name to something else, so we extract
-	// the common name and all the dnsnames and check each one, if any of them are a privileged user
-	// we can go ahead with that one
+func (s *FileSecurity) ShouldAllowCaller(data []byte, name string) (privileged bool, err error) {
 	privNames, err := s.certDNSNames(data)
 	if err != nil {
 		s.log.Warnf("Could not extract DNS Names from certificate")
-		return false, false, name, err
+		return false, err
 	}
 
 	for _, privName := range privNames {
-		if MatchAnyRegex([]byte(privName), s.conf.PrivilegedUsers) {
-			return true, true, privName, nil
+		if MatchAnyRegex(privName, s.conf.PrivilegedUsers) {
+			privileged = true
+			break
 		}
 	}
 
-	// At this point we know ifs not privileged so we verify again but this time also check the name matches what
-	// is in the cert since at this point it must match the caller id name
-	err = s.VerifyCertificate(data, name)
-	if err != nil {
-		s.log.Warnf("Received certificate '%s' did not pass verification: %s", name, err)
-		return false, false, name, err
+	if privileged {
+		// Checks if it was signed by a CA issued cert but without any name validation since privileged name wouldnt match
+		err = s.VerifyCertificate(data, "")
+		if err != nil {
+			s.log.Warnf("Received certificate '%s' certificate did not pass verification: %s", name, err)
+			return false, err
+		}
+
+		return true, nil
+	} else {
+		// Checks if it was signed by a CA issued cert that matches name since it must match when not privileged
+		err = s.VerifyCertificate(data, name)
+		if err != nil {
+			s.log.Warnf("Received certificate '%s' did not pass verification: %s", name, err)
+			return false, err
+		}
 	}
 
 	// Finally if its on the allow list
-	if MatchAnyRegex([]byte(name), s.conf.AllowList) {
-		return true, false, name, nil
+	if MatchAnyRegex(name, s.conf.AllowList) {
+		return false, nil
 	}
 
 	s.log.Warnf("Received certificate '%s' does not match the allowed list '%s'", name, s.conf.AllowList)
 
-	return false, false, name, nil
+	return false, fmt.Errorf("not on allow list")
 }
 
 func (s *FileSecurity) certDNSNames(certpem []byte) (names []string, err error) {

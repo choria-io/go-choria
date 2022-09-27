@@ -43,21 +43,19 @@ type CertManagerSecurity struct {
 }
 
 type Config struct {
-	apiVersion           string
-	altnames             []string
-	namespace            string
-	issuer               string
-	identity             string
-	replace              bool
-	sslDir               string
-	alwaysOverwriteCache bool
-	privilegedUsers      []string
-	csr                  string
-	cert                 string
-	key                  string
-	ca                   string
-	cache                string
-	legacyCerts          bool
+	apiVersion      string
+	altnames        []string
+	namespace       string
+	issuer          string
+	identity        string
+	replace         bool
+	sslDir          string
+	privilegedUsers []string
+	csr             string
+	cert            string
+	key             string
+	ca              string
+	legacyCerts     bool
 }
 
 func New(opts ...Option) (*CertManagerSecurity, error) {
@@ -86,7 +84,6 @@ func New(opts ...Option) (*CertManagerSecurity, error) {
 	cm.conf.cert = filepath.Join(cm.conf.sslDir, "cert.pem")
 	cm.conf.key = filepath.Join(cm.conf.sslDir, "key.pem")
 	cm.conf.ca = filepath.Join(cm.conf.sslDir, "ca.pem")
-	cm.conf.cache = filepath.Join(cm.conf.sslDir, "cache")
 
 	return cm, cm.reinit()
 }
@@ -99,9 +96,7 @@ func (cm *CertManagerSecurity) reinit() error {
 		Certificate:                cm.conf.cert,
 		Key:                        cm.conf.key,
 		CA:                         cm.conf.ca,
-		Cache:                      cm.conf.cache,
 		PrivilegedUsers:            cm.conf.privilegedUsers,
-		AlwaysOverwriteCache:       cm.conf.alwaysOverwriteCache,
 		BackwardCompatVerification: cm.conf.legacyCerts,
 	}
 
@@ -452,11 +447,6 @@ func (cm *CertManagerSecurity) createSSLDirectories() error {
 		return err
 	}
 
-	err = os.MkdirAll(cm.conf.cache, 0700)
-	if err != nil {
-		return err
-	}
-
 	return nil
 }
 
@@ -481,10 +471,6 @@ func (cm *CertManagerSecurity) Validate() (errs []string, ok bool) {
 		errs = append(errs, fmt.Sprintf("%s does not exist or is not a directory", cm.conf.sslDir))
 	}
 
-	if !util.FileIsDir(cm.conf.cache) {
-		errs = append(errs, fmt.Sprintf("%s does not exist or is not a diectory", cm.conf.cache))
-	}
-
 	return errs, len(errs) == 0
 }
 
@@ -504,8 +490,8 @@ func (cm *CertManagerSecurity) SignBytes(b []byte) (signature []byte, err error)
 	return cm.fsec.SignBytes(b)
 }
 
-func (cm *CertManagerSecurity) VerifyByteSignature(str []byte, signature []byte, identity string) bool {
-	return cm.fsec.VerifyByteSignature(str, signature, identity)
+func (cm *CertManagerSecurity) VerifyByteSignature(dat []byte, sig []byte, pubcert []byte) (should bool, signer string) {
+	return cm.fsec.VerifyByteSignature(dat, sig, pubcert)
 }
 
 func (cm *CertManagerSecurity) SignString(s string) (signature []byte, err error) {
@@ -518,18 +504,6 @@ func (cm *CertManagerSecurity) RemoteSignRequest(ctx context.Context, str []byte
 
 func (cm *CertManagerSecurity) IsRemoteSigning() bool {
 	return cm.fsec.IsRemoteSigning()
-}
-
-func (cm *CertManagerSecurity) VerifyStringSignature(str string, signature []byte, identity string) bool {
-	return cm.fsec.VerifyStringSignature(str, signature, identity)
-}
-
-func (cm *CertManagerSecurity) PrivilegedVerifyByteSignature(dat []byte, sig []byte, identity string) bool {
-	return cm.fsec.PrivilegedVerifyByteSignature(dat, sig, identity)
-}
-
-func (cm *CertManagerSecurity) PrivilegedVerifyStringSignature(dat string, sig []byte, identity string) bool {
-	return cm.fsec.PrivilegedVerifyStringSignature(dat, sig, identity)
 }
 
 func (cm *CertManagerSecurity) ChecksumBytes(data []byte) []byte {
@@ -572,10 +546,6 @@ func (cm *CertManagerSecurity) PublicCertBytes() ([]byte, error) {
 	return cm.fsec.PublicCertBytes()
 }
 
-func (cm *CertManagerSecurity) CachePublicData(data []byte, identity string) error {
-	return cm.fsec.CachePublicData(data, identity)
-}
-
-func (cm *CertManagerSecurity) CachedPublicData(identity string) ([]byte, error) {
-	return cm.fsec.CachedPublicData(identity)
+func (c *CertManagerSecurity) ShouldAllowCaller(data []byte, name string) (privileged bool, err error) {
+	return c.fsec.ShouldAllowCaller(data, name)
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,8 +16,8 @@ var _ = Describe("MatchAnyRegex", func() {
 			"/this.+other/",
 		}
 
-		Expect(MatchAnyRegex([]byte("this is a bare word sentence"), patterns)).To(BeTrue())
-		Expect(MatchAnyRegex([]byte("this, that and the other"), patterns)).To(BeTrue())
-		Expect(MatchAnyRegex([]byte("no match"), patterns)).To(BeFalse())
+		Expect(MatchAnyRegex("this is a bare word sentence", patterns)).To(BeTrue())
+		Expect(MatchAnyRegex("this, that and the other", patterns)).To(BeTrue())
+		Expect(MatchAnyRegex("no match", patterns)).To(BeFalse())
 	})
 })
