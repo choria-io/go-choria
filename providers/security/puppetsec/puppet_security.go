@@ -382,8 +382,8 @@ func (s *PuppetSecurity) PublicCertPem() (*pem.Block, error) {
 }
 
 // PublicCertTXT retrieves pem data in textual form for the public certificate of the current identity
-func (s *PuppetSecurity) PublicCertTXT() ([]byte, error) {
-	return s.fsec.PublicCertTXT()
+func (s *PuppetSecurity) PublicCertBytes() ([]byte, error) {
+	return s.fsec.PublicCertBytes()
 }
 
 // PublicCert is the parsed public certificate

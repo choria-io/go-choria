@@ -86,8 +86,8 @@ type SecurityProvider interface {
 	// PublicCertPem retrieves pem data for the public certificate of the current identity
 	PublicCertPem() (*pem.Block, error)
 
-	// PublicCertTXT retrieves pem data in textual form for the public certificate of the current identity
-	PublicCertTXT() ([]byte, error)
+	// PublicCertBytes retrieves pem data in textual form for the public certificate of the current identity
+	PublicCertBytes() ([]byte, error)
 
 	// CachePublicData when given a pem encoded certificate and expected identity should validate
 	// the cert and then check against things like the certificate allow lists, privilege lists

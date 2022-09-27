@@ -568,8 +568,8 @@ func (cm *CertManagerSecurity) PublicCertPem() (*pem.Block, error) {
 	return cm.fsec.PublicCertPem()
 }
 
-func (cm *CertManagerSecurity) PublicCertTXT() ([]byte, error) {
-	return cm.fsec.PublicCertTXT()
+func (cm *CertManagerSecurity) PublicCertBytes() ([]byte, error) {
+	return cm.fsec.PublicCertBytes()
 }
 
 func (cm *CertManagerSecurity) CachePublicData(data []byte, identity string) error {

@@ -481,7 +481,7 @@ func (p *Pkcs11Security) PublicCertPem() (*pem.Block, error) {
 }
 
 // PublicCertTXT retrieves pem data in textual form for the public certificate of the current identity
-func (p *Pkcs11Security) PublicCertTXT() ([]byte, error) {
+func (p *Pkcs11Security) PublicCertBytes() ([]byte, error) {
 
 	pemCert, err := p.PublicCertPem()
 	if err != nil {

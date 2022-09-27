@@ -270,9 +270,9 @@ func (mr *MockSecurityProviderMockRecorder) PublicCertPem() *gomock.Call {
 }
 
 // PublicCertTXT mocks base method.
-func (m *MockSecurityProvider) PublicCertTXT() ([]byte, error) {
+func (m *MockSecurityProvider) PublicCertBytes() ([]byte, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublicCertTXT")
+	ret := m.ctrl.Call(m, "PublicCertBytes")
 	ret0, _ := ret[0].([]byte)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
@@ -281,7 +281,7 @@ func (m *MockSecurityProvider) PublicCertTXT() ([]byte, error) {
 // PublicCertTXT indicates an expected call of PublicCertTXT.
 func (mr *MockSecurityProviderMockRecorder) PublicCertTXT() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublicCertTXT", reflect.TypeOf((*MockSecurityProvider)(nil).PublicCertTXT))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublicCertBytes", reflect.TypeOf((*MockSecurityProvider)(nil).PublicCertBytes))
 }
 
 // RemoteSignRequest mocks base method.

@@ -35,7 +35,7 @@ func NewRequest(agent string, sender string, caller string, ttl int, id string, 
 
 type request struct {
 	Protocol    string `json:"protocol"`
-	MessageBody string `json:"payload"`
+	MessageBody []byte `json:"payload"`
 
 	reqEnvelope
 
@@ -175,7 +175,7 @@ func (r *request) SetMessage(message string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.MessageBody = message
+	r.MessageBody = []byte(message)
 }
 
 // SetCallerID sets the caller id for this request
@@ -216,7 +216,7 @@ func (r *request) Message() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.MessageBody
+	return string(r.MessageBody)
 }
 
 // RequestID retrieves the unique request ID

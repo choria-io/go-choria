@@ -323,7 +323,7 @@ var _ = Describe("Pkcs11SSL", func() {
 			inter.Choria.PKCS11Slot = testSlot
 			inter.Choria.PKCS11DriverFile = lib
 
-			pem, err = prov.PublicCertTXT()
+			pem, err = prov.PublicCertBytes()
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -429,7 +429,7 @@ var _ = Describe("Pkcs11SSL", func() {
 			prov, err = New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})), WithPin(pin))
 			Expect(err).ToNot(HaveOccurred())
 
-			pem, err = prov.PublicCertTXT()
+			pem, err = prov.PublicCertBytes()
 			Expect(err).ToNot(HaveOccurred())
 		})
 		It("Should not write untrusted files to disk", func() {
@@ -488,7 +488,7 @@ var _ = Describe("Pkcs11SSL", func() {
 			firstcert := filepath.Join("..", "testdata", "intermediate", "certs", identity+".pem")
 			secondcert := filepath.Join("..", "testdata", "intermediate", "certs", "second."+identity+".pem")
 
-			//c.Choria.FileSecurityCertificate = firstcert
+			// c.Choria.FileSecurityCertificate = firstcert
 			c.Choria.FileSecurityCA = filepath.Join("..", "testdata", "intermediate", "certs", "ca.pem")
 			c.Choria.FileSecurityCache = filepath.Join("..", "testdata", "intermediate", "certs")
 			c.Choria.SecurityAlwaysOverwriteCache = true
@@ -536,7 +536,7 @@ var _ = Describe("Pkcs11SSL", func() {
 			prov, err = New(WithChoriaConfig(c), WithLog(l.WithFields(logrus.Fields{})), WithPin(pin))
 			Expect(err).ToNot(HaveOccurred())
 
-			pem, err := prov.PublicCertTXT()
+			pem, err := prov.PublicCertBytes()
 			Expect(err).ToNot(HaveOccurred())
 
 			err = prov.CachePublicData(pem, "joeuser")

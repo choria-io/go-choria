@@ -653,7 +653,7 @@ func (s *FileSecurity) PublicCertPem() (*pem.Block, error) {
 }
 
 // PublicCertTXT retrieves pem data in textual form for the public certificate of the current identity
-func (s *FileSecurity) PublicCertTXT() ([]byte, error) {
+func (s *FileSecurity) PublicCertBytes() ([]byte, error) {
 	path := s.publicCertPath()
 
 	return os.ReadFile(path)
