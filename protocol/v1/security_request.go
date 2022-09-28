@@ -17,7 +17,7 @@ import (
 )
 
 // SecureRequest contains 1 serialized Request signed and with the public cert attached
-type secureRequest struct {
+type SecureRequest struct {
 	Protocol          string `json:"protocol"`
 	MessageBody       string `json:"message"`
 	Signature         string `json:"signature"`
@@ -28,7 +28,7 @@ type secureRequest struct {
 }
 
 // SetMessage sets the message contained in the Request and updates the signature
-func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
+func (r *SecureRequest) SetMessage(request protocol.Request) (err error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -61,7 +61,7 @@ func (r *secureRequest) SetMessage(request protocol.Request) (err error) {
 }
 
 // Message retrieves the stored message.  It will be a JSON encoded version of the request set via SetMessage
-func (r *secureRequest) Message() []byte {
+func (r *SecureRequest) Message() []byte {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -69,7 +69,7 @@ func (r *secureRequest) Message() []byte {
 }
 
 // Valid determines if the request is valid
-func (r *secureRequest) Valid() bool {
+func (r *SecureRequest) Valid() bool {
 	// should not be locked
 
 	if !protocol.IsSecure() {
@@ -118,7 +118,7 @@ func (r *secureRequest) Valid() bool {
 }
 
 // JSON creates a JSON encoded request
-func (r *secureRequest) JSON() ([]byte, error) {
+func (r *SecureRequest) JSON() ([]byte, error) {
 	r.mu.Lock()
 	j, err := json.Marshal(r)
 	r.mu.Unlock()
@@ -135,7 +135,7 @@ func (r *secureRequest) JSON() ([]byte, error) {
 }
 
 // Version retrieves the protocol version for this message
-func (r *secureRequest) Version() string {
+func (r *SecureRequest) Version() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -143,7 +143,7 @@ func (r *secureRequest) Version() string {
 }
 
 // IsValidJSON validates the given JSON data against the schema
-func (r *secureRequest) IsValidJSON(data []byte) (err error) {
+func (r *SecureRequest) IsValidJSON(data []byte) (err error) {
 	_, errors, err := schemaValidate(secureRequestSchema, data)
 	if err != nil {
 		protocolErrorCtr.Inc()

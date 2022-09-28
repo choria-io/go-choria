@@ -225,7 +225,7 @@ So the end result is immutable (or at least tamper evident) metadata about a req
 |-------------|-------------|-------------------------------------------------------------------------------------|
 | `protocol`  | `protocol`  | The protocol version for this secure request `io.choria.protocol.v2.secure_request` |
 | `request`   | `message`   | The request held in the Secure Request as base64 bytes                              |
-| `signature` | `signature` | A cryptographic signature of the `request` data                                     |
+| `signature` | `signature` | A signature made of the request using the ed25519 seed of the caller                |
 | `caller`    | `pubcert`   | The JWT of the caller                                                               |
 | `signer`    | `n/a`       | The JWT of the delegated signer, present when the AAA server is used                |
 
@@ -255,7 +255,7 @@ The v2 protocol includes a signature and sender JWT however in practise this is 
 | `protocol`  | `protocol` | The protocol version for this secure reply `io.choria.protocol.v2.secure_reply` |
 | `reply`     | `message`  | The reply held in the Secure Request as base64 bytes                            |
 | `hash`      | `hash`     | A sha256 of the reply                                                           |
-| `signature` | `n/a`      | A signature made using the ed25519 key of the sender                            |
+| `signature` | `n/a`      | A signature made using the ed25519 seed of the sender                           |
 | `sender`    | `n/a`      | The JWT of the sending host                                                     |
 
 #### Transport
@@ -267,15 +267,15 @@ The transport packet is the last layer that gets sent over NATS, it holds no mes
 | `protocol`   | `protocol`   | The protocol version for this transport `io.choria.protocol.v2.transport`    |
 | `data`       | `data`       | The payload to be transport, a Secure Request or Secure Reply base64 encoded |
 | `headers`    | `headers`    | Optional headers                                                             |
-| `federation` | `federation` | Headers to assist federation                                                 |
 
 Headers:
 
-| Field    | v1          | Description                                                              |
-|----------|-------------|--------------------------------------------------------------------------|
-| `reply`  | `reply-to`  | A transport specific response channel for this message, used in requests |
-| `sender` | `mc_sender` | The host that sent this message                                          |
-| `trace`  | `seen-by`   | A trace of host/broker pairs that the message traversed                  |
+| Field        | v1           | Description                                                              |
+|--------------|--------------|--------------------------------------------------------------------------|
+| `reply`      | `reply-to`   | A transport specific response channel for this message, used in requests |
+| `sender`     | `mc_sender`  | The host that sent this message                                          |
+| `trace`      | `seen-by`    | A trace of host/broker pairs that the message traversed                  |
+| `federation` | `federation` | Headers to assist federation                                             |
 
 Federation:
 
@@ -307,4 +307,9 @@ We would need to revisit these specific ones and potentially make them more gene
 
 The cache methods should be removed ([#1842](https://github.com/choria-io/go-choria/pull/1842)), removing these from the current security protocols would result in a very large refactor as the cache functions also perform verification steps. Additionally these are used to find all known privileged certificates in methods like `PrivilegedVerifyByteSignature()` and `VerifyByteSignature()`, this is obviously flawed but undoing this feature might break things significantly and prove to be impossible for v1 protocols.  V2 should not have this limitation.
 
-There are some other improvements to be made also in addition but those we'd need to see as we go along.
+There are some other improvements to be made also in addition but those we'd need to see as we go along:
+
+  * Move the API to `[]byte` based API [#1844](https://github.com/choria-io/go-choria/pull/1844)
+  * Remove some string orientated security apis [](https://github.com/choria-io/go-choria/pull/1843)
+  * Make the JWT authoritative for the secure channel name so we can stop using md5
+  * Develop a tool that can decode and dump/view network packets

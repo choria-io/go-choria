@@ -16,7 +16,7 @@ import (
 )
 
 // SecureReply contains 1 serialized Reply hashed
-type secureReply struct {
+type SecureReply struct {
 	Protocol    string `json:"protocol"`
 	MessageBody string `json:"message"`
 	Hash        string `json:"hash"`
@@ -27,7 +27,7 @@ type secureReply struct {
 }
 
 // SetMessage sets the message contained in the Reply and updates the hash
-func (r *secureReply) SetMessage(reply protocol.Reply) (err error) {
+func (r *SecureReply) SetMessage(reply protocol.Reply) (err error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -45,7 +45,7 @@ func (r *secureReply) SetMessage(reply protocol.Reply) (err error) {
 }
 
 // Message retrieves the stored message content
-func (r *secureReply) Message() []byte {
+func (r *SecureReply) Message() []byte {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -53,7 +53,7 @@ func (r *secureReply) Message() []byte {
 }
 
 // Valid validates the body of the message by comparing the recorded hash with the hash of the body
-func (r *secureReply) Valid() bool {
+func (r *SecureReply) Valid() bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -68,7 +68,7 @@ func (r *secureReply) Valid() bool {
 }
 
 // JSON creates a JSON encoded reply
-func (r *secureReply) JSON() ([]byte, error) {
+func (r *SecureReply) JSON() ([]byte, error) {
 	r.mu.Lock()
 	j, err := json.Marshal(r)
 	r.mu.Unlock()
@@ -85,7 +85,7 @@ func (r *secureReply) JSON() ([]byte, error) {
 }
 
 // Version retrieves the protocol version for this message
-func (r *secureReply) Version() string {
+func (r *SecureReply) Version() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -93,7 +93,7 @@ func (r *secureReply) Version() string {
 }
 
 // IsValidJSON validates the given JSON data against the schema
-func (r *secureReply) IsValidJSON(data []byte) (err error) {
+func (r *SecureReply) IsValidJSON(data []byte) (err error) {
 	if !protocol.ClientStrictValidation {
 		return nil
 	}

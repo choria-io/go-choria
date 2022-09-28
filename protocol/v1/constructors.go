@@ -17,9 +17,9 @@ import (
 
 // NewRequest creates a choria:request:1
 func NewRequest(agent string, senderid string, callerid string, ttl int, requestid string, collective string) (req protocol.Request, err error) {
-	req = &request{
+	req = &Request{
 		Protocol: protocol.RequestV1,
-		Envelope: &requestEnvelope{
+		Envelope: &RequestEnvelope{
 			SenderID:  senderid,
 			TTL:       ttl,
 			RequestID: requestid,
@@ -41,9 +41,9 @@ func NewReply(request protocol.Request, certname string) (rep protocol.Reply, er
 		return nil, fmt.Errorf("cannot create a version 1 Reply from a %s request", request.Version())
 	}
 
-	rep = &reply{
+	rep = &Reply{
 		Protocol: protocol.ReplyV1,
-		Envelope: &replyEnvelope{
+		Envelope: &ReplyEnvelope{
 			RequestID: request.RequestID(),
 			SenderID:  certname,
 			Agent:     request.Agent(),
@@ -69,9 +69,9 @@ func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err e
 		return nil, fmt.Errorf("cannot create a version 1 SecureReply from a %s SecureReply", sr.Version())
 	}
 
-	rep = &reply{
+	rep = &Reply{
 		Protocol: protocol.ReplyV1,
-		Envelope: &replyEnvelope{},
+		Envelope: &ReplyEnvelope{},
 	}
 
 	err = rep.IsValidJSON(sr.Message())
@@ -93,9 +93,9 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Reques
 		return nil, fmt.Errorf("cannot create a version 1 SecureRequest from a %s SecureRequest", sr.Version())
 	}
 
-	req = &request{
+	req = &Request{
 		Protocol: protocol.RequestV1,
-		Envelope: &requestEnvelope{},
+		Envelope: &RequestEnvelope{},
 	}
 
 	err = req.IsValidJSON(sr.Message())
@@ -113,7 +113,7 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Reques
 
 // NewSecureReply creates a choria:secure:reply:1
 func NewSecureReply(reply protocol.Reply, security inter.SecurityProvider) (secure protocol.SecureReply, err error) {
-	secure = &secureReply{
+	secure = &SecureReply{
 		Protocol: protocol.SecureReplyV1,
 		security: security,
 	}
@@ -128,7 +128,7 @@ func NewSecureReply(reply protocol.Reply, security inter.SecurityProvider) (secu
 
 // NewSecureReplyFromTransport creates a new choria:secure:reply:1 from the data contained in a Transport message
 func NewSecureReplyFromTransport(message protocol.TransportMessage, security inter.SecurityProvider, skipvalidate bool) (secure protocol.SecureReply, err error) {
-	secure = &secureReply{
+	secure = &SecureReply{
 		Protocol: protocol.SecureReplyV1,
 		security: security,
 	}
@@ -173,7 +173,7 @@ func NewSecureRequest(request protocol.Request, security inter.SecurityProvider)
 		}
 	}
 
-	secure = &secureRequest{
+	secure = &SecureRequest{
 		Protocol:          protocol.SecureRequestV1,
 		PublicCertificate: string(pub),
 		security:          security,
@@ -208,7 +208,7 @@ func NewRemoteSignedSecureRequest(request protocol.Request, security inter.Secur
 		return nil, err
 	}
 
-	secure = &secureRequest{
+	secure = &SecureRequest{
 		Protocol: protocol.SecureRequestV1,
 		security: security,
 	}
@@ -223,7 +223,7 @@ func NewRemoteSignedSecureRequest(request protocol.Request, security inter.Secur
 
 // NewSecureRequestFromTransport creates a new choria:secure:request:1 from the data contained in a Transport message
 func NewSecureRequestFromTransport(message protocol.TransportMessage, security inter.SecurityProvider, skipvalidate bool) (secure protocol.SecureRequest, err error) {
-	secure = &secureRequest{
+	secure = &SecureRequest{
 		security: security,
 	}
 
@@ -253,9 +253,9 @@ func NewSecureRequestFromTransport(message protocol.TransportMessage, security i
 
 // NewTransportMessage creates a choria:transport:1
 func NewTransportMessage(certname string) (message protocol.TransportMessage, err error) {
-	message = &transportMessage{
+	message = &TransportMessage{
 		Protocol: protocol.TransportV1,
-		Headers:  &transportHeaders{},
+		Headers:  &TransportHeaders{},
 	}
 
 	message.SetSender(certname)
@@ -265,8 +265,8 @@ func NewTransportMessage(certname string) (message protocol.TransportMessage, er
 
 // NewTransportFromJSON creates a new TransportMessage from JSON
 func NewTransportFromJSON(data []byte) (message protocol.TransportMessage, err error) {
-	message = &transportMessage{
-		Headers: &transportHeaders{},
+	message = &TransportMessage{
+		Headers: &TransportHeaders{},
 	}
 
 	err = message.IsValidJSON(data)
