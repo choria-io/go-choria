@@ -15,6 +15,7 @@ require (
 	github.com/choria-io/fisk v0.2.1
 	github.com/choria-io/go-updater v0.0.4-0.20220908181418-3c897a2c1e79
 	github.com/cloudevents/sdk-go/v2 v2.12.0
+	github.com/dustin/go-humanize v1.0.0
 	github.com/fatih/color v1.13.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.3.0+incompatible
@@ -73,7 +74,6 @@ require (
 	github.com/choria-io/goform v0.0.2 // indirect
 	github.com/creack/pty v1.1.18 // indirect
 	github.com/dgryski/trifles v0.0.0-20220729183022-231ecf6ed548 // indirect
-	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/emicklei/dot v1.0.0 // indirect
 	github.com/foxcpp/go-mockdns v1.0.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
