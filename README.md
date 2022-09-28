@@ -8,7 +8,9 @@ Additionally, this is the foundational technology for a monitoring pipeline call
 
 More information about the project can be found on [Choria.IO](https://choria.io).
 
-[![CodeFactor](https://www.codefactor.io/repository/github/choria-io/go-choria/badge)](https://www.codefactor.io/repository/github/choria-io/go-choria) [![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3558/badge)](https://bestpractices.coreinfrastructure.org/projects/3558)
+[![CodeFactor](https://www.codefactor.io/repository/github/choria-io/go-choria/badge)](https://www.codefactor.io/repository/github/choria-io/go-choria) 
+[![CII Best Practices](https://bestpractices.coreinfrastructure.org/projects/3558/badge)](https://bestpractices.coreinfrastructure.org/projects/3558)
+[![Go Report Card](https://goreportcard.com/badge/github.com/choria-io/go-choria)](https://goreportcard.com/report/github.com/choria-io/go-choria)
 
 # Bundled tools
 

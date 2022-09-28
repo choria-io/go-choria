@@ -395,6 +395,18 @@ func DumpJSONIndent(data any) error {
 	return nil
 }
 
+func DumpJSONIndentedFormatted(data []byte, indent int) error {
+	var out bytes.Buffer
+	err := json.Indent(&out, data, "", "  ")
+	if err != nil {
+		return err
+	}
+
+	fmt.Println(ParagraphPadding(out.String(), indent))
+
+	return nil
+}
+
 // RenderDuration create a string similar to what %v on a duration would but it supports years, months, etc.
 // Being that days and years are influenced by leap years and such it will never be 100% accurate but for
 // feedback on the terminal its sufficient
