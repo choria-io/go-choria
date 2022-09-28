@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -53,7 +53,7 @@ var _ = Describe("TransportMessage", func() {
 	})
 
 	It("Should support request data", func() {
-		security.EXPECT().PublicCertTXT().Return([]byte("stub cert"), nil).AnyTimes()
+		security.EXPECT().PublicCertBytes().Return([]byte("stub cert"), nil).AnyTimes()
 		security.EXPECT().SignString(gomock.Any()).Return([]byte("stub sig"), nil).AnyTimes()
 
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
@@ -78,7 +78,7 @@ var _ = Describe("TransportMessage", func() {
 		protocol.ClientStrictValidation = true
 		defer func() { protocol.ClientStrictValidation = false }()
 
-		security.EXPECT().PublicCertTXT().Return([]byte("stub cert"), nil).AnyTimes()
+		security.EXPECT().PublicCertBytes().Return([]byte("stub cert"), nil).AnyTimes()
 		security.EXPECT().SignString(gomock.Any()).Return([]byte("stub sig"), nil).AnyTimes()
 
 		request, err := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")

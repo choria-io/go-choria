@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -30,7 +30,6 @@ func WithChoriaConfig(bi BuildInfoProvider, c *config.Config) Option {
 			PuppetCAHost:          c.Choria.PuppetCAHost,
 			PuppetCAPort:          c.Choria.PuppetCAPort,
 			Identity:              c.Identity,
-			AlwaysOverwriteCache:  c.Choria.SecurityAlwaysOverwriteCache,
 			RemoteSignerURL:       c.Choria.RemoteSignerURL,
 			RemoteSignerTokenFile: c.Choria.RemoteSignerTokenFile,
 			TLSConfig:             tlssetup.TLSConfig(c),

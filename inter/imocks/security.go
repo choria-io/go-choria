@@ -39,35 +39,6 @@ func (m *MockSecurityProvider) EXPECT() *MockSecurityProviderMockRecorder {
 	return m.recorder
 }
 
-// CachePublicData mocks base method.
-func (m *MockSecurityProvider) CachePublicData(arg0 []byte, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CachePublicData", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// CachePublicData indicates an expected call of CachePublicData.
-func (mr *MockSecurityProviderMockRecorder) CachePublicData(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CachePublicData", reflect.TypeOf((*MockSecurityProvider)(nil).CachePublicData), arg0, arg1)
-}
-
-// CachedPublicData mocks base method.
-func (m *MockSecurityProvider) CachedPublicData(arg0 string) ([]byte, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "CachedPublicData", arg0)
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// CachedPublicData indicates an expected call of CachedPublicData.
-func (mr *MockSecurityProviderMockRecorder) CachedPublicData(arg0 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CachedPublicData", reflect.TypeOf((*MockSecurityProvider)(nil).CachedPublicData), arg0)
-}
-
 // CallerIdentity mocks base method.
 func (m *MockSecurityProvider) CallerIdentity(arg0 string) (string, error) {
 	m.ctrl.T.Helper()
@@ -197,34 +168,6 @@ func (mr *MockSecurityProviderMockRecorder) IsRemoteSigning() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IsRemoteSigning", reflect.TypeOf((*MockSecurityProvider)(nil).IsRemoteSigning))
 }
 
-// PrivilegedVerifyByteSignature mocks base method.
-func (m *MockSecurityProvider) PrivilegedVerifyByteSignature(arg0, arg1 []byte, arg2 string) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PrivilegedVerifyByteSignature", arg0, arg1, arg2)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// PrivilegedVerifyByteSignature indicates an expected call of PrivilegedVerifyByteSignature.
-func (mr *MockSecurityProviderMockRecorder) PrivilegedVerifyByteSignature(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrivilegedVerifyByteSignature", reflect.TypeOf((*MockSecurityProvider)(nil).PrivilegedVerifyByteSignature), arg0, arg1, arg2)
-}
-
-// PrivilegedVerifyStringSignature mocks base method.
-func (m *MockSecurityProvider) PrivilegedVerifyStringSignature(arg0 string, arg1 []byte, arg2 string) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PrivilegedVerifyStringSignature", arg0, arg1, arg2)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// PrivilegedVerifyStringSignature indicates an expected call of PrivilegedVerifyStringSignature.
-func (mr *MockSecurityProviderMockRecorder) PrivilegedVerifyStringSignature(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PrivilegedVerifyStringSignature", reflect.TypeOf((*MockSecurityProvider)(nil).PrivilegedVerifyStringSignature), arg0, arg1, arg2)
-}
-
 // Provider mocks base method.
 func (m *MockSecurityProvider) Provider() string {
 	m.ctrl.T.Helper()
@@ -254,6 +197,21 @@ func (mr *MockSecurityProviderMockRecorder) PublicCert() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublicCert", reflect.TypeOf((*MockSecurityProvider)(nil).PublicCert))
 }
 
+// PublicCertBytes mocks base method.
+func (m *MockSecurityProvider) PublicCertBytes() ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "PublicCertBytes")
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// PublicCertBytes indicates an expected call of PublicCertBytes.
+func (mr *MockSecurityProviderMockRecorder) PublicCertBytes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublicCertBytes", reflect.TypeOf((*MockSecurityProvider)(nil).PublicCertBytes))
+}
+
 // PublicCertPem mocks base method.
 func (m *MockSecurityProvider) PublicCertPem() (*pem.Block, error) {
 	m.ctrl.T.Helper()
@@ -267,21 +225,6 @@ func (m *MockSecurityProvider) PublicCertPem() (*pem.Block, error) {
 func (mr *MockSecurityProviderMockRecorder) PublicCertPem() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublicCertPem", reflect.TypeOf((*MockSecurityProvider)(nil).PublicCertPem))
-}
-
-// PublicCertTXT mocks base method.
-func (m *MockSecurityProvider) PublicCertBytes() ([]byte, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublicCertBytes")
-	ret0, _ := ret[0].([]byte)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// PublicCertTXT indicates an expected call of PublicCertTXT.
-func (mr *MockSecurityProviderMockRecorder) PublicCertTXT() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublicCertBytes", reflect.TypeOf((*MockSecurityProvider)(nil).PublicCertBytes))
 }
 
 // RemoteSignRequest mocks base method.
@@ -312,6 +255,21 @@ func (m *MockSecurityProvider) SSLContext() (*http.Transport, error) {
 func (mr *MockSecurityProviderMockRecorder) SSLContext() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SSLContext", reflect.TypeOf((*MockSecurityProvider)(nil).SSLContext))
+}
+
+// ShouldAllowCaller mocks base method.
+func (m *MockSecurityProvider) ShouldAllowCaller(arg0 []byte, arg1 string) (bool, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ShouldAllowCaller", arg0, arg1)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ShouldAllowCaller indicates an expected call of ShouldAllowCaller.
+func (mr *MockSecurityProviderMockRecorder) ShouldAllowCaller(arg0, arg1 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShouldAllowCaller", reflect.TypeOf((*MockSecurityProvider)(nil).ShouldAllowCaller), arg0, arg1)
 }
 
 // SignBytes mocks base method.
@@ -375,11 +333,12 @@ func (mr *MockSecurityProviderMockRecorder) Validate() *gomock.Call {
 }
 
 // VerifyByteSignature mocks base method.
-func (m *MockSecurityProvider) VerifyByteSignature(arg0, arg1 []byte, arg2 string) bool {
+func (m *MockSecurityProvider) VerifyByteSignature(arg0, arg1, arg2 []byte) (bool, string) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "VerifyByteSignature", arg0, arg1, arg2)
 	ret0, _ := ret[0].(bool)
-	return ret0
+	ret1, _ := ret[1].(string)
+	return ret0, ret1
 }
 
 // VerifyByteSignature indicates an expected call of VerifyByteSignature.
@@ -400,18 +359,4 @@ func (m *MockSecurityProvider) VerifyCertificate(arg0 []byte, arg1 string) error
 func (mr *MockSecurityProviderMockRecorder) VerifyCertificate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyCertificate", reflect.TypeOf((*MockSecurityProvider)(nil).VerifyCertificate), arg0, arg1)
-}
-
-// VerifyStringSignature mocks base method.
-func (m *MockSecurityProvider) VerifyStringSignature(arg0 string, arg1 []byte, arg2 string) bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VerifyStringSignature", arg0, arg1, arg2)
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// VerifyStringSignature indicates an expected call of VerifyStringSignature.
-func (mr *MockSecurityProviderMockRecorder) VerifyStringSignature(arg0, arg1, arg2 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyStringSignature", reflect.TypeOf((*MockSecurityProvider)(nil).VerifyStringSignature), arg0, arg1, arg2)
 }

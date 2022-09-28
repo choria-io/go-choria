@@ -35,6 +35,7 @@ In practise this works well for most users, but those with very large or complex
 * Newer technologies like ed25519 is attractive as they use small keys and signatures and can also do things like DH Key exchange
 * Using ed25519 opens the possibility of using ssh keys as signing keys, something many users have requested
 * Obtaining private CAs or intermediate CAs is often impossible forcing CA reuse and nullifying the usefulness of the mTLS security
+* Verification of certificates happen during caching rather than a separate check, more importantly the cache is used often as a means of retrieving privileged certs and more by id
 * The local cert cache is deeply embedded in the v1 protocol, but it's proven to be useless and most people disable its enforcing features - it cannot be disabled entirely
 * As Choria have evolved we need a much more granular role based permissions on each connection - can they use streams, can they admin streams, can they make rpc requests etc
 * More and more servers need to be able to make request either when publishing signed registration payloads or when interacting with Choria Services from within autonomous agents.  With v1 protocol this was not possible.
@@ -302,6 +303,8 @@ type SecurityProvider interface {
 }
 ```
 
-We would need to revisit these specific ones and potentially make them more generic, perhaps returning `any` or adding some new ones for ed25519 use. The cache ones should be removed, removing these from the current security protocols would result in a very large refactor.
+We would need to revisit these specific ones and potentially make them more generic, perhaps returning `any` or adding some new ones for ed25519 use. 
+
+The cache methods should be removed ([#1842](https://github.com/choria-io/go-choria/pull/1842)), removing these from the current security protocols would result in a very large refactor as the cache functions also perform verification steps. Additionally these are used to find all known privileged certificates in methods like `PrivilegedVerifyByteSignature()` and `VerifyByteSignature()`, this is obviously flawed but undoing this feature might break things significantly and prove to be impossible for v1 protocols.  V2 should not have this limitation.
 
 There are some other improvements to be made also in addition but those we'd need to see as we go along.

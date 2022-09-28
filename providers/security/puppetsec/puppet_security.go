@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -54,8 +54,7 @@ type PuppetSecurity struct {
 	conf *Config
 	log  *logrus.Entry
 
-	fsec  *filesec.FileSecurity
-	cache string
+	fsec *filesec.FileSecurity
 }
 
 // Config is the configuration for PuppetSecurity
@@ -95,9 +94,6 @@ type Config struct {
 
 	useFakeUID bool
 	fakeUID    int
-
-	// AlwaysOverwriteCache supports always overwriting the local filesystem cache
-	AlwaysOverwriteCache bool
 
 	// TLSConfig is the shared TLS configuration
 	TLSConfig *tlssetup.Config
@@ -146,11 +142,9 @@ func (s *PuppetSecurity) reinit() error {
 		DisableTLSVerify:           s.conf.DisableTLSVerify,
 		PrivilegedUsers:            s.conf.PrivilegedUsers,
 		CA:                         s.caPath(),
-		Cache:                      s.certCacheDir(),
 		Certificate:                s.publicCertPath(),
 		Key:                        s.privateKeyPath(),
 		Identity:                   s.conf.Identity,
-		AlwaysOverwriteCache:       s.conf.AlwaysOverwriteCache,
 		RemoteSignerURL:            s.conf.RemoteSignerURL,
 		RemoteSignerTokenFile:      s.conf.RemoteSignerTokenFile,
 		TLSConfig:                  s.conf.TLSConfig,
@@ -310,25 +304,9 @@ func (s *PuppetSecurity) SignBytes(str []byte) ([]byte, error) {
 	return s.fsec.SignBytes(str)
 }
 
-// VerifyByteSignature verify that dat matches signature sig made by the key of identity
-// if identity is "" the active public key will be used
-func (s *PuppetSecurity) VerifyByteSignature(dat []byte, sig []byte, identity string) bool {
-	return s.fsec.VerifyByteSignature(dat, sig, identity)
-}
-
-// VerifyStringSignature verify that str matches signature sig made by the key of identity
-func (s *PuppetSecurity) VerifyStringSignature(str string, sig []byte, identity string) bool {
-	return s.VerifyByteSignature([]byte(str), sig, identity)
-}
-
-// PrivilegedVerifyByteSignature verifies if the signature received is from any of the privileged certs or the given identity
-func (s *PuppetSecurity) PrivilegedVerifyByteSignature(dat []byte, sig []byte, identity string) bool {
-	return s.fsec.PrivilegedVerifyByteSignature(dat, sig, identity)
-}
-
-// PrivilegedVerifyStringSignature verifies if the signature received is from any of the privilged certs or the given identity
-func (s *PuppetSecurity) PrivilegedVerifyStringSignature(dat string, sig []byte, identity string) bool {
-	return s.fsec.PrivilegedVerifyStringSignature(dat, sig, identity)
+// VerifyByteSignature verify that dat matches signature sig made by the key, if pub cert is empty the active public key will be used
+func (s *PuppetSecurity) VerifyByteSignature(dat []byte, sig []byte, pubcert []byte) (should bool, signer string) {
+	return s.fsec.VerifyByteSignature(dat, sig, pubcert)
 }
 
 // SignString signs a message using a SHA256 PKCS1v15 protocol
@@ -346,28 +324,9 @@ func (s *PuppetSecurity) CallerIdentity(caller string) (string, error) {
 	return s.fsec.CallerIdentity(caller)
 }
 
-// CachePublicData caches the public key for a identity
-func (s *PuppetSecurity) CachePublicData(data []byte, identity string) error {
-	return s.fsec.CachePublicData(data, identity)
-}
-
-// CachedPublicData retrieves the previously cached public data for a given identity
-func (s *PuppetSecurity) CachedPublicData(identity string) ([]byte, error) {
-	return s.fsec.CachedPublicData(identity)
-}
-
-func (s *PuppetSecurity) cachePath(identity string) string {
-	var cache string
-
-	cache = s.cache
-
-	if cache == "" {
-		cache = s.certCacheDir()
-	}
-
-	certfile := filepath.Join(cache, fmt.Sprintf("%s.pem", identity))
-
-	return certfile
+// ShouldAllowCaller verifies the public data
+func (s *PuppetSecurity) ShouldAllowCaller(data []byte, name string) (privileged bool, err error) {
+	return s.fsec.ShouldAllowCaller(data, name)
 }
 
 // VerifyCertificate verifies a certificate is signed with the configured CA and if
@@ -381,7 +340,7 @@ func (s *PuppetSecurity) PublicCertPem() (*pem.Block, error) {
 	return s.fsec.PublicCertPem()
 }
 
-// PublicCertTXT retrieves pem data in textual form for the public certificate of the current identity
+// PublicCertBytes retrieves pem data in textual form for the public certificate of the current identity
 func (s *PuppetSecurity) PublicCertBytes() ([]byte, error) {
 	return s.fsec.PublicCertBytes()
 }
@@ -411,16 +370,12 @@ func (s *PuppetSecurity) SSLContext() (*http.Transport, error) {
 	return s.fsec.SSLContext()
 }
 
-func (s *PuppetSecurity) certCacheDir() string {
-	return filepath.FromSlash(filepath.Join(s.sslDir(), "choria_security", "public_certs"))
-}
-
 func (s *PuppetSecurity) caPath() string {
-	return filepath.FromSlash((filepath.Join(s.sslDir(), "certs", "ca.pem")))
+	return filepath.FromSlash(filepath.Join(s.sslDir(), "certs", "ca.pem"))
 }
 
 func (s *PuppetSecurity) privateKeyDir() string {
-	return filepath.FromSlash((filepath.Join(s.sslDir(), "private_keys")))
+	return filepath.FromSlash(filepath.Join(s.sslDir(), "private_keys"))
 }
 
 func (s *PuppetSecurity) privateKeyPath() string {

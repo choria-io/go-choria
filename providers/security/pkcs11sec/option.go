@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,14 +15,12 @@ type Option func(*Pkcs11Security) error
 func WithChoriaConfig(c *config.Config) Option {
 	return func(p *Pkcs11Security) error {
 		cfg := Config{
-			AllowList:            c.Choria.CertnameWhitelist,
-			DisableTLSVerify:     c.DisableTLSVerify,
-			PrivilegedUsers:      c.Choria.PrivilegedUsers,
-			CAFile:               c.Choria.FileSecurityCA,
-			CertCacheDir:         c.Choria.FileSecurityCache,
-			AlwaysOverwriteCache: c.Choria.SecurityAlwaysOverwriteCache,
-			PKCS11DriverFile:     c.Choria.PKCS11DriverFile,
-			PKCS11Slot:           uint(c.Choria.PKCS11Slot),
+			AllowList:        c.Choria.CertnameWhitelist,
+			DisableTLSVerify: c.DisableTLSVerify,
+			PrivilegedUsers:  c.Choria.PrivilegedUsers,
+			CAFile:           c.Choria.FileSecurityCA,
+			PKCS11DriverFile: c.Choria.PKCS11DriverFile,
+			PKCS11Slot:       uint(c.Choria.PKCS11Slot),
 		}
 
 		p.conf = &cfg

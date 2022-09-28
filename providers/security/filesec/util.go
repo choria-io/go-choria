@@ -1,12 +1,10 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
 package filesec
 
 import (
-	"crypto/sha256"
-	"io"
 	"os"
 	"regexp"
 	"runtime"
@@ -14,7 +12,7 @@ import (
 )
 
 // MatchAnyRegex checks str against a list of possible regex, if any match true is returned
-func MatchAnyRegex(str []byte, regex []string) bool {
+func MatchAnyRegex(str string, regex []string) bool {
 	matcher := regexp.MustCompile("^/.+/$")
 
 	for _, reg := range regex {
@@ -23,7 +21,7 @@ func MatchAnyRegex(str []byte, regex []string) bool {
 			reg = strings.TrimRight(reg, "/")
 		}
 
-		if matched, _ := regexp.Match(reg, str); matched {
+		if matched, _ := regexp.MatchString(reg, str); matched {
 			return true
 		}
 	}
@@ -45,20 +43,4 @@ func runtimeOs() string {
 	}
 
 	return runtime.GOOS
-}
-
-func fsha256(file string) ([]byte, error) {
-	f, err := os.Open(file)
-	if err != nil {
-		return nil, err
-	}
-	defer f.Close()
-
-	h := sha256.New()
-	_, err = io.Copy(h, f)
-	if err != nil {
-		return nil, err
-	}
-
-	return h.Sum(nil), nil
 }
