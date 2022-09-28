@@ -543,7 +543,7 @@ func (m *Machine) Setup() error {
 func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) (started chan struct{}) {
 	m.ctx, m.cancel = context.WithCancel(ctx)
 
-	started = make(chan struct{})
+	started = make(chan struct{}, 1)
 
 	runf := func() {
 		if m.SplayStart > 0 {
