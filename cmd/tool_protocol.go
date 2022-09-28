@@ -69,7 +69,10 @@ func (p *tProtocolCommand) Run(wg *sync.WaitGroup) (err error) {
 
 			cnt++
 			fmt.Printf(">>> [%d] Message received %s from %s\n\n", cnt, c.Colorize("green", time.Now().Format(time.RFC822)), c.Colorize("green", msg.Subject))
-			p.renderMsgBytes(msg.Data)
+			err = p.renderMsgBytes(msg.Data)
+			if err != nil {
+				fmt.Printf(">> invalid message on %s: %v\n\n", msg.Subject, c.Colorize("red", err.Error()))
+			}
 			fmt.Println()
 
 			if cnt == p.count {
@@ -96,6 +99,10 @@ func (p *tProtocolCommand) Run(wg *sync.WaitGroup) (err error) {
 }
 
 func (p *tProtocolCommand) renderMsgBytes(msg []byte) error {
+	if !gjson.GetBytes(msg, "protocol").Exists() {
+		return fmt.Errorf("no protocol identifier found")
+	}
+
 	transport, err := c.NewTransportFromJSON(msg)
 	if err != nil {
 		return err
