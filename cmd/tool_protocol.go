@@ -8,6 +8,7 @@ import (
 	"encoding/base64"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -15,19 +16,25 @@ import (
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/dustin/go-humanize"
+	"github.com/nats-io/nats.go"
 	"github.com/tidwall/gjson"
 )
 
 type tProtocolCommand struct {
-	msgFile string
-	json    bool
+	source string
+	subj   bool
+	json   bool
+	count  int
+
 	command
 }
 
 func (p *tProtocolCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		p.cmd = tool.Cmd().Command("protocol", "Debug Choria protocol messages").Hidden()
-		p.cmd.Arg("message", "A file holding a captured message").Required().ExistingFileVar(&p.msgFile)
+		p.cmd.Arg("source", "Where to get the message from, path to a file or subject").Required().StringVar(&p.source)
+		p.cmd.Flag("subject", "Indicates that source is a subject to listen on and not a file").UnNegatableBoolVar(&p.subj)
+		p.cmd.Flag("count", "When listening on the network exit after this many messages").Default("50").IntVar(&p.count)
 		p.cmd.Flag("json", "Render JSON data").UnNegatableBoolVar(&p.json)
 	}
 
@@ -41,12 +48,55 @@ func (p *tProtocolCommand) Configure() error {
 func (p *tProtocolCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	payload, err := os.ReadFile(p.msgFile)
-	if err != nil {
-		return err
+	var payload []byte
+
+	switch {
+	case p.subj:
+		conn, err := c.NewConnector(ctx, c.MiddlewareServers, "choria tool protocol", c.Logger("protocol"))
+		if err != nil {
+			return err
+		}
+
+		cnt := 0
+		mu := sync.Mutex{}
+		nc := conn.Nats()
+
+		fmt.Printf(">>> Subscribing to subject %s for %s message(s)\n\n", c.Colorize("green", p.source), c.Colorize("green", strconv.Itoa(p.count)))
+
+		sub, err := nc.Subscribe(p.source, func(msg *nats.Msg) {
+			mu.Lock()
+			defer mu.Unlock()
+
+			cnt++
+			fmt.Printf(">>> [%d] Message received %s from %s\n\n", cnt, c.Colorize("green", time.Now().Format(time.RFC822)), c.Colorize("green", msg.Subject))
+			p.renderMsgBytes(msg.Data)
+			fmt.Println()
+
+			if cnt == p.count {
+				cancel()
+			}
+		})
+		if err != nil {
+			return err
+		}
+		sub.AutoUnsubscribe(p.count)
+
+	default:
+		payload, err = os.ReadFile(p.source)
+		if err != nil {
+			return err
+		}
+
+		return p.renderMsgBytes(payload)
 	}
 
-	transport, err := c.NewTransportFromJSON(payload)
+	<-ctx.Done()
+
+	return nil
+}
+
+func (p *tProtocolCommand) renderMsgBytes(msg []byte) error {
+	transport, err := c.NewTransportFromJSON(msg)
 	if err != nil {
 		return err
 	}
@@ -154,8 +204,8 @@ func (p *tProtocolCommand) renderReply(t protocol.Reply) error {
 	fmt.Printf("║   ║   ║     Agent: %s\n", t.Agent())
 	fmt.Printf("║   ║   ║    Sender: %s\n", t.SenderID())
 	fmt.Printf("║   ║   ║      Time: %s (%s ago)\n", t.Time().UTC().Format(time.RFC3339Nano), iu.RenderDuration(time.Since(t.Time())))
-	if len(payload) > 50 {
-		fmt.Printf("║   ║   ║   Payload: %s...%s\n", string(payload[:20]), string(payload[len(payload)-20:]))
+	if len(payload) > 65 {
+		fmt.Printf("║   ║   ║   Payload: %s...%s\n", string(payload[:30]), string(payload[len(payload)-30:]))
 	} else {
 		fmt.Printf("║   ║   ║   Payload: %s\n", string(payload))
 	}
@@ -248,8 +298,8 @@ func (p *tProtocolCommand) renderRequest(t protocol.Request) error {
 		fmt.Printf("║   ║   ║          Filter: unfiltered\n")
 	}
 
-	if len(payload) > 50 {
-		fmt.Printf("║   ║   ║         Payload: %s...%s\n", string(payload[:20]), string(payload[len(payload)-20:]))
+	if len(payload) > 65 {
+		fmt.Printf("║   ║   ║         Payload: %s...%s\n", string(payload[:30]), string(payload[len(payload)-30:]))
 	} else {
 		fmt.Printf("║   ║   ║         Payload: %s\n", string(payload))
 	}
