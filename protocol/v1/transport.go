@@ -13,29 +13,29 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 )
 
-type transportMessage struct {
+type TransportMessage struct {
 	Protocol string            `json:"protocol"`
 	Data     []byte            `json:"data"`
-	Headers  *transportHeaders `json:"headers"`
+	Headers  *TransportHeaders `json:"headers"`
 
 	mu sync.Mutex
 }
 
-type transportHeaders struct {
+type TransportHeaders struct {
 	ReplyTo           string                     `json:"reply-to,omitempty"`
 	MCollectiveSender string                     `json:"mc_sender,omitempty"`
 	SeenBy            [][3]string                `json:"seen-by,omitempty"`
-	Federation        *federationTransportHeader `json:"federation,omitempty"`
+	Federation        *FederationTransportHeader `json:"federation,omitempty"`
 }
 
-type federationTransportHeader struct {
+type FederationTransportHeader struct {
 	RequestID string   `json:"req,omitempty"`
 	ReplyTo   string   `json:"reply-to,omitempty"`
 	Targets   []string `json:"target,omitempty"`
 }
 
 // Message retrieves the stored data
-func (m *transportMessage) Message() (data []byte, err error) {
+func (m *TransportMessage) Message() (data []byte, err error) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -43,7 +43,7 @@ func (m *transportMessage) Message() (data []byte, err error) {
 }
 
 // IsFederated determines if this message is federated
-func (m *transportMessage) IsFederated() bool {
+func (m *TransportMessage) IsFederated() bool {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -51,7 +51,7 @@ func (m *transportMessage) IsFederated() bool {
 }
 
 // FederationTargets retrieves the list of targets this message is destined for
-func (m *transportMessage) FederationTargets() (targets []string, federated bool) {
+func (m *TransportMessage) FederationTargets() (targets []string, federated bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -63,7 +63,7 @@ func (m *transportMessage) FederationTargets() (targets []string, federated bool
 }
 
 // FederationReplyTo retrieves the reply to string set by the federation broker
-func (m *transportMessage) FederationReplyTo() (replyto string, federated bool) {
+func (m *TransportMessage) FederationReplyTo() (replyto string, federated bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -75,7 +75,7 @@ func (m *transportMessage) FederationReplyTo() (replyto string, federated bool) 
 }
 
 // FederationRequestID retrieves the federation specific requestid
-func (m *transportMessage) FederationRequestID() (id string, federated bool) {
+func (m *TransportMessage) FederationRequestID() (id string, federated bool) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -87,7 +87,7 @@ func (m *transportMessage) FederationRequestID() (id string, federated bool) {
 }
 
 // SenderID retrieves the identity of the sending host
-func (m *transportMessage) SenderID() string {
+func (m *TransportMessage) SenderID() string {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -95,7 +95,7 @@ func (m *transportMessage) SenderID() string {
 }
 
 // ReplyTo retrieves the destination description where replies should go to
-func (m *transportMessage) ReplyTo() string {
+func (m *TransportMessage) ReplyTo() string {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -103,7 +103,7 @@ func (m *transportMessage) ReplyTo() string {
 }
 
 // SeenBy retrieves the list of end points that this messages passed thruogh
-func (m *transportMessage) SeenBy() [][3]string {
+func (m *TransportMessage) SeenBy() [][3]string {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -113,43 +113,43 @@ func (m *transportMessage) SeenBy() [][3]string {
 // SetFederationTargets sets the list of hosts this message should go to.
 //
 // Federation brokers will duplicate the message and send one for each target
-func (m *transportMessage) SetFederationTargets(targets []string) {
+func (m *TransportMessage) SetFederationTargets(targets []string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if m.Headers.Federation == nil {
-		m.Headers.Federation = &federationTransportHeader{}
+		m.Headers.Federation = &FederationTransportHeader{}
 	}
 
 	m.Headers.Federation.Targets = targets
 }
 
 // SetFederationReplyTo stores the original reply-to destination in the federation headers
-func (m *transportMessage) SetFederationReplyTo(reply string) {
+func (m *TransportMessage) SetFederationReplyTo(reply string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if m.Headers.Federation == nil {
-		m.Headers.Federation = &federationTransportHeader{}
+		m.Headers.Federation = &FederationTransportHeader{}
 	}
 
 	m.Headers.Federation.ReplyTo = reply
 }
 
 // SetFederationRequestID sets the request ID for federation purposes
-func (m *transportMessage) SetFederationRequestID(id string) {
+func (m *TransportMessage) SetFederationRequestID(id string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
 	if m.Headers.Federation == nil {
-		m.Headers.Federation = &federationTransportHeader{}
+		m.Headers.Federation = &FederationTransportHeader{}
 	}
 
 	m.Headers.Federation.RequestID = id
 }
 
 // SetSender sets the "mc_sender" - typically the identity of the sending host
-func (m *transportMessage) SetSender(sender string) {
+func (m *TransportMessage) SetSender(sender string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -157,7 +157,7 @@ func (m *transportMessage) SetSender(sender string) {
 }
 
 // SetReplyTo sets the reply-to targget
-func (m *transportMessage) SetReplyTo(reply string) {
+func (m *TransportMessage) SetReplyTo(reply string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -165,7 +165,7 @@ func (m *transportMessage) SetReplyTo(reply string) {
 }
 
 // SetReplyData extracts the JSON body from a SecureReply and stores it
-func (m *transportMessage) SetReplyData(reply protocol.SecureReply) error {
+func (m *TransportMessage) SetReplyData(reply protocol.SecureReply) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -180,7 +180,7 @@ func (m *transportMessage) SetReplyData(reply protocol.SecureReply) error {
 }
 
 // SetRequestData extracts the JSON body from a SecureRequest and stores it
-func (m *transportMessage) SetRequestData(request protocol.SecureRequest) error {
+func (m *TransportMessage) SetRequestData(request protocol.SecureRequest) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -195,7 +195,7 @@ func (m *transportMessage) SetRequestData(request protocol.SecureRequest) error 
 }
 
 // RecordNetworkHop appends a hop onto the list of those who processed this message
-func (m *transportMessage) RecordNetworkHop(in string, processor string, out string) {
+func (m *TransportMessage) RecordNetworkHop(in string, processor string, out string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -203,7 +203,7 @@ func (m *transportMessage) RecordNetworkHop(in string, processor string, out str
 }
 
 // NetworkHops returns a list of tuples this messaged traveled through
-func (m *transportMessage) NetworkHops() [][3]string {
+func (m *TransportMessage) NetworkHops() [][3]string {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -211,7 +211,7 @@ func (m *transportMessage) NetworkHops() [][3]string {
 }
 
 // JSON creates a JSON encoded message
-func (m *transportMessage) JSON() ([]byte, error) {
+func (m *TransportMessage) JSON() ([]byte, error) {
 	m.mu.Lock()
 	j, err := json.Marshal(m)
 	m.mu.Unlock()
@@ -227,7 +227,7 @@ func (m *transportMessage) JSON() ([]byte, error) {
 }
 
 // SetUnfederated removes any federation information from the message
-func (m *transportMessage) SetUnfederated() {
+func (m *TransportMessage) SetUnfederated() {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -235,7 +235,7 @@ func (m *transportMessage) SetUnfederated() {
 }
 
 // Version retrieves the protocol version for this message
-func (m *transportMessage) Version() string {
+func (m *TransportMessage) Version() string {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -243,7 +243,7 @@ func (m *transportMessage) Version() string {
 }
 
 // IsValidJSON validates the given JSON data against the Transport schema
-func (m *transportMessage) IsValidJSON(data []byte) error {
+func (m *TransportMessage) IsValidJSON(data []byte) error {
 	if !protocol.ClientStrictValidation {
 		return nil
 	}

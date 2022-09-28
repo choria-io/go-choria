@@ -13,29 +13,9 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 )
 
-// NewRequest creates a io.choria.protocol.v2.request
-func NewRequest(agent string, sender string, caller string, ttl int, id string, collective string) (protocol.Request, error) {
-	req := &request{
-		Protocol: protocol.RequestV2,
-		reqEnvelope: reqEnvelope{
-			SenderID:  sender,
-			TTL:       ttl,
-			RequestID: id,
-			Time:      time.Now().Unix(),
-		},
-	}
-
-	req.SetCollective(collective)
-	req.SetAgent(agent)
-	req.SetCallerID(caller)
-	req.SetFilter(protocol.NewFilter())
-
-	return req, nil
-}
-
 type request struct {
 	Protocol    string `json:"protocol"`
-	MessageBody []byte `json:"payload"`
+	MessageBody []byte `json:"message"`
 
 	reqEnvelope
 
@@ -53,7 +33,27 @@ type reqEnvelope struct {
 	Filter     *protocol.Filter `json:"filter"`
 
 	seenBy     [][3]string
-	federation *federationTransportHeader
+	federation *FederationTransportHeader
+}
+
+// NewRequest creates a io.choria.protocol.v2.request
+func NewRequest(agent string, sender string, caller string, ttl int, id string, collective string) (protocol.Request, error) {
+	req := &request{
+		Protocol: protocol.RequestV2,
+		reqEnvelope: reqEnvelope{
+			SenderID:  sender,
+			TTL:       ttl,
+			RequestID: id,
+			Time:      time.Now().UnixNano(),
+		},
+	}
+
+	req.SetCollective(collective)
+	req.SetAgent(agent)
+	req.SetCallerID(caller)
+	req.SetFilter(protocol.NewFilter())
+
+	return req, nil
 }
 
 // RecordNetworkHop appends a hop onto the list of those who processed this message
@@ -124,7 +124,7 @@ func (r *request) SetFederationTargets(targets []string) {
 	defer r.mu.Unlock()
 
 	if r.reqEnvelope.federation == nil {
-		r.reqEnvelope.federation = &federationTransportHeader{}
+		r.reqEnvelope.federation = &FederationTransportHeader{}
 	}
 
 	r.reqEnvelope.federation.Targets = targets
@@ -136,7 +136,7 @@ func (r *request) SetFederationReplyTo(reply string) {
 	defer r.mu.Unlock()
 
 	if r.reqEnvelope.federation == nil {
-		r.reqEnvelope.federation = &federationTransportHeader{}
+		r.reqEnvelope.federation = &FederationTransportHeader{}
 	}
 
 	r.reqEnvelope.federation.ReplyTo = reply
@@ -148,7 +148,7 @@ func (r *request) SetFederationRequestID(id string) {
 	defer r.mu.Unlock()
 
 	if r.reqEnvelope.federation == nil {
-		r.reqEnvelope.federation = &federationTransportHeader{}
+		r.reqEnvelope.federation = &FederationTransportHeader{}
 	}
 
 	r.reqEnvelope.federation.RequestID = id
@@ -272,7 +272,7 @@ func (r *request) Time() time.Time {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return time.Unix(r.reqEnvelope.Time, 0)
+	return time.Unix(0, r.reqEnvelope.Time)
 }
 
 // Filter retrieves the filter for the message.  The boolean is true when the filter is not empty

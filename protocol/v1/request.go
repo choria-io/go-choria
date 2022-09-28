@@ -14,15 +14,15 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 )
 
-type request struct {
+type Request struct {
 	Protocol    string           `json:"protocol"`
 	MessageBody string           `json:"message"`
-	Envelope    *requestEnvelope `json:"envelope"`
+	Envelope    *RequestEnvelope `json:"envelope"`
 
 	mu sync.Mutex
 }
 
-type requestEnvelope struct {
+type RequestEnvelope struct {
 	RequestID  string           `json:"requestid"`
 	SenderID   string           `json:"senderid"`
 	CallerID   string           `json:"callerid"`
@@ -33,21 +33,21 @@ type requestEnvelope struct {
 	Filter     *protocol.Filter `json:"filter"`
 
 	seenBy     [][3]string
-	federation *federationTransportHeader
+	federation *FederationTransportHeader
 }
 
 // RecordNetworkHop appends a hop onto the list of those who processed this message
-func (r *request) RecordNetworkHop(in string, processor string, out string) {
+func (r *Request) RecordNetworkHop(in string, processor string, out string) {
 	r.Envelope.seenBy = append(r.Envelope.seenBy, [3]string{in, processor, out})
 }
 
 // NetworkHops returns a list of tuples this messaged traveled through
-func (r *request) NetworkHops() [][3]string {
+func (r *Request) NetworkHops() [][3]string {
 	return r.Envelope.seenBy
 }
 
 // FederationTargets retrieves the list of targets this message is destined for
-func (r *request) FederationTargets() (targets []string, federated bool) {
+func (r *Request) FederationTargets() (targets []string, federated bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -59,7 +59,7 @@ func (r *request) FederationTargets() (targets []string, federated bool) {
 }
 
 // FederationReplyTo retrieves the reply to string set by the federation broker
-func (r *request) FederationReplyTo() (replyto string, federated bool) {
+func (r *Request) FederationReplyTo() (replyto string, federated bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -71,7 +71,7 @@ func (r *request) FederationReplyTo() (replyto string, federated bool) {
 }
 
 // FederationRequestID retrieves the federation specific requestid
-func (r *request) FederationRequestID() (id string, federated bool) {
+func (r *Request) FederationRequestID() (id string, federated bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -83,7 +83,7 @@ func (r *request) FederationRequestID() (id string, federated bool) {
 }
 
 // SetRequestID sets the request ID for this message
-func (r *request) SetRequestID(id string) {
+func (r *Request) SetRequestID(id string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -93,43 +93,43 @@ func (r *request) SetRequestID(id string) {
 // SetFederationTargets sets the list of hosts this message should go to.
 //
 // Federation brokers will duplicate the message and send one for each target
-func (r *request) SetFederationTargets(targets []string) {
+func (r *Request) SetFederationTargets(targets []string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	if r.Envelope.federation == nil {
-		r.Envelope.federation = &federationTransportHeader{}
+		r.Envelope.federation = &FederationTransportHeader{}
 	}
 
 	r.Envelope.federation.Targets = targets
 }
 
 // SetFederationReplyTo stores the original reply-to destination in the federation headers
-func (r *request) SetFederationReplyTo(reply string) {
+func (r *Request) SetFederationReplyTo(reply string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	if r.Envelope.federation == nil {
-		r.Envelope.federation = &federationTransportHeader{}
+		r.Envelope.federation = &FederationTransportHeader{}
 	}
 
 	r.Envelope.federation.ReplyTo = reply
 }
 
 // SetFederationRequestID sets the request ID for federation purposes
-func (r *request) SetFederationRequestID(id string) {
+func (r *Request) SetFederationRequestID(id string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	if r.Envelope.federation == nil {
-		r.Envelope.federation = &federationTransportHeader{}
+		r.Envelope.federation = &FederationTransportHeader{}
 	}
 
 	r.Envelope.federation.RequestID = id
 }
 
 // IsFederated determines if this message is federated
-func (r *request) IsFederated() bool {
+func (r *Request) IsFederated() bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -137,7 +137,7 @@ func (r *request) IsFederated() bool {
 }
 
 // SetUnfederated removes any federation information from the message
-func (r *request) SetUnfederated() {
+func (r *Request) SetUnfederated() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -145,7 +145,7 @@ func (r *request) SetUnfederated() {
 }
 
 // SetMessage set the message body thats contained in this request.  It should be JSON encoded text
-func (r *request) SetMessage(message []byte) {
+func (r *Request) SetMessage(message []byte) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -153,7 +153,7 @@ func (r *request) SetMessage(message []byte) {
 }
 
 // SetCallerID sets the caller id for this request
-func (r *request) SetCallerID(id string) {
+func (r *Request) SetCallerID(id string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -162,7 +162,7 @@ func (r *request) SetCallerID(id string) {
 }
 
 // SetCollective sets the collective this request is directed at
-func (r *request) SetCollective(collective string) {
+func (r *Request) SetCollective(collective string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -170,7 +170,7 @@ func (r *request) SetCollective(collective string) {
 }
 
 // SetAgent sets the agent this requires is created for
-func (r *request) SetAgent(agent string) {
+func (r *Request) SetAgent(agent string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -178,7 +178,7 @@ func (r *request) SetAgent(agent string) {
 }
 
 // SetTTL sets the validity period for this message
-func (r *request) SetTTL(ttl int) {
+func (r *Request) SetTTL(ttl int) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -186,7 +186,7 @@ func (r *request) SetTTL(ttl int) {
 }
 
 // Message retrieves the JSON encoded Message body
-func (r *request) Message() []byte {
+func (r *Request) Message() []byte {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -194,7 +194,7 @@ func (r *request) Message() []byte {
 }
 
 // RequestID retrieves the unique request ID
-func (r *request) RequestID() string {
+func (r *Request) RequestID() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -202,7 +202,7 @@ func (r *request) RequestID() string {
 }
 
 // SenderID retrieves the sender id that sent the message
-func (r *request) SenderID() string {
+func (r *Request) SenderID() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -210,7 +210,7 @@ func (r *request) SenderID() string {
 }
 
 // CallerID retrieves the caller id that sent the message
-func (r *request) CallerID() string {
+func (r *Request) CallerID() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -218,7 +218,7 @@ func (r *request) CallerID() string {
 }
 
 // Collective retrieves the name of the sub collective this message is aimed at
-func (r *request) Collective() string {
+func (r *Request) Collective() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -226,12 +226,12 @@ func (r *request) Collective() string {
 }
 
 // Agent retrieves the agent name this message is for
-func (r *request) Agent() string {
+func (r *Request) Agent() string {
 	return r.Envelope.Agent
 }
 
 // TTL retrieves the maximum allow lifetime of this message
-func (r *request) TTL() int {
+func (r *Request) TTL() int {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -239,7 +239,7 @@ func (r *request) TTL() int {
 }
 
 // Time retrieves the time this message was first made
-func (r *request) Time() time.Time {
+func (r *Request) Time() time.Time {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -247,7 +247,7 @@ func (r *request) Time() time.Time {
 }
 
 // Filter retrieves the filter for the message.  The boolean is true when the filter is not empty
-func (r *request) Filter() (filter *protocol.Filter, filtered bool) {
+func (r *Request) Filter() (filter *protocol.Filter, filtered bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -255,7 +255,7 @@ func (r *request) Filter() (filter *protocol.Filter, filtered bool) {
 }
 
 // NewFilter creates a new empty filter and sets it
-func (r *request) NewFilter() *protocol.Filter {
+func (r *Request) NewFilter() *protocol.Filter {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -265,7 +265,7 @@ func (r *request) NewFilter() *protocol.Filter {
 }
 
 // JSON creates a JSON encoded request
-func (r *request) JSON() ([]byte, error) {
+func (r *Request) JSON() ([]byte, error) {
 	r.mu.Lock()
 	j, err := json.Marshal(r)
 	r.mu.Unlock()
@@ -282,7 +282,7 @@ func (r *request) JSON() ([]byte, error) {
 }
 
 // SetFilter sets and overwrites the filter for a message with a new one
-func (r *request) SetFilter(filter *protocol.Filter) {
+func (r *Request) SetFilter(filter *protocol.Filter) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -290,7 +290,7 @@ func (r *request) SetFilter(filter *protocol.Filter) {
 }
 
 // Version retrieves the protocol version for this message
-func (r *request) Version() string {
+func (r *Request) Version() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -298,7 +298,7 @@ func (r *request) Version() string {
 }
 
 // IsValidJSON validates the given JSON data against the schema
-func (r *request) IsValidJSON(data []byte) error {
+func (r *Request) IsValidJSON(data []byte) error {
 	_, errors, err := schemaValidate(requestSchema, data)
 	if err != nil {
 		return fmt.Errorf("could not validate Request JSON data: %s", err)
