@@ -19,12 +19,12 @@ var _ = Describe("Reply", func() {
 		request, _ := NewRequest("test", "go.tests", "choria=test", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
 		reply, _ := NewReply(request, "testing")
 
-		reply.SetMessage("hello world")
+		reply.SetMessage([]byte("hello world"))
 
 		j, _ := reply.JSON()
 
-		Expect(gjson.Get(j, "protocol").String()).To(Equal(protocol.ReplyV2))
-		Expect(reply.Message()).To(Equal("hello world"))
+		Expect(gjson.GetBytes(j, "protocol").String()).To(Equal(protocol.ReplyV2))
+		Expect(reply.Message()).To(Equal([]byte("hello world")))
 		Expect(len(reply.RequestID())).To(Equal(32))
 		Expect(reply.SenderID()).To(Equal("testing"))
 		Expect(reply.Agent()).To(Equal("test"))

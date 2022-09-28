@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -150,7 +150,7 @@ func (p *pingCommand) summarize() error {
 }
 
 func (p *pingCommand) handler(_ context.Context, m inter.ConnectorMessage) {
-	reply, err := c.NewTransportFromJSON(string(m.Data()))
+	reply, err := c.NewTransportFromJSON(m.Data())
 	if err != nil {
 		log.Errorf("Could not process a reply: %s", err)
 		return
@@ -179,7 +179,8 @@ func (p *pingCommand) handler(_ context.Context, m inter.ConnectorMessage) {
 }
 
 func (p *pingCommand) createMessage(filter *protocol.Filter) (inter.Message, error) {
-	msg, err := c.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", p.fo.Collective, "request", nil)
+	body := base64.StdEncoding.EncodeToString([]byte("ping"))
+	msg, err := c.NewMessage([]byte(body), "discovery", p.fo.Collective, "request", nil)
 	if err != nil {
 		return nil, fmt.Errorf("could not create message: %s", err)
 	}

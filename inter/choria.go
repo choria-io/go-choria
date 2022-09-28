@@ -23,7 +23,7 @@ import (
 )
 
 type ProtocolConstructor interface {
-	NewMessage(payload string, agent string, collective string, msgType string, request Message) (msg Message, err error)
+	NewMessage(payload []byte, agent string, collective string, msgType string, request Message) (msg Message, err error)
 	NewMessageFromRequest(req protocol.Request, replyto string) (Message, error)
 	NewReply(request protocol.Request) (reply protocol.Reply, err error)
 	NewReplyFromMessage(version string, msg Message) (rep protocol.Reply, err error)
@@ -43,7 +43,7 @@ type ProtocolConstructor interface {
 	NewSecureRequestFromTransport(message protocol.TransportMessage, skipvalidate bool) (secure protocol.SecureRequest, err error)
 	NewTransportForSecureReply(reply protocol.SecureReply) (message protocol.TransportMessage, err error)
 	NewTransportForSecureRequest(request protocol.SecureRequest) (message protocol.TransportMessage, err error)
-	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
+	NewTransportFromJSON(data []byte) (message protocol.TransportMessage, err error)
 	NewTransportMessage(version string) (message protocol.TransportMessage, err error)
 }
 

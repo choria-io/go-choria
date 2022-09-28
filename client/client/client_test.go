@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -66,7 +66,8 @@ var _ = Describe("Client", func() {
 			OnPublishStart(pubStartCB)(client)
 			OnPublishFinish(pubEndCB)(client)
 
-			msg, err := message.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", "mcollective", "request", nil, fw)
+			ping := base64.StdEncoding.EncodeToString([]byte("ping"))
+			msg, err := message.NewMessage([]byte(ping), "discovery", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 			msg.SetProtocolVersion(protocol.RequestV1)
 			msg.SetReplyTo("custom")
@@ -92,7 +93,7 @@ var _ = Describe("Client", func() {
 				mu.Lock()
 				defer mu.Unlock()
 
-				reply, err := v1.NewTransportFromJSON(string(m.Data()))
+				reply, err := v1.NewTransportFromJSON(m.Data())
 				Expect(err).ToNot(HaveOccurred())
 
 				seen = append(seen, reply.SenderID())
@@ -104,7 +105,8 @@ var _ = Describe("Client", func() {
 			OnPublishStart(pubStartCB)(client)
 			OnPublishFinish(pubEndCB)(client)
 
-			msg, err := message.NewMessage(base64.StdEncoding.EncodeToString([]byte("ping")), "discovery", "mcollective", "request", nil, fw)
+			ping := base64.StdEncoding.EncodeToString([]byte("ping"))
+			msg, err := message.NewMessage([]byte(ping), "discovery", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
 			msg.SetProtocolVersion(protocol.RequestV1)
@@ -133,7 +135,7 @@ var _ = Describe("Client", func() {
 						output <- cm
 					}
 				})
-				//
+			//
 			conn.EXPECT().Publish(gomock.Any()).AnyTimes()
 
 			err = client.Request(ctx, msg, handler)

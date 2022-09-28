@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -32,7 +32,7 @@ var _ = Describe("SecureReply", func() {
 
 	It("Should create valid replies", func() {
 		request, _ := NewRequest("test", "go.tests", "rip.mcollective", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-		request.SetMessage(`{"test":1}`)
+		request.SetMessage([]byte(`{"test":1}`))
 
 		reply, err := NewReply(request, "testing")
 		Expect(err).ToNot(HaveOccurred())
@@ -48,9 +48,9 @@ var _ = Describe("SecureReply", func() {
 		sj, err := sreply.JSON()
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(gjson.Get(sj, "protocol").String()).To(Equal(protocol.SecureReplyV1))
-		Expect(gjson.Get(sj, "message").String()).To(Equal(rj))
-		Expect(gjson.Get(sj, "hash").String()).To(Equal(base64.StdEncoding.EncodeToString(sha[:])))
+		Expect(gjson.GetBytes(sj, "protocol").String()).To(Equal(protocol.SecureReplyV1))
+		Expect(gjson.GetBytes(sj, "message").String()).To(Equal(string(rj)))
+		Expect(gjson.GetBytes(sj, "hash").String()).To(Equal(base64.StdEncoding.EncodeToString(sha[:])))
 		Expect(sreply.Valid()).To(BeTrue())
 	})
 })

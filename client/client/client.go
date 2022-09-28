@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -21,27 +21,15 @@ import (
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
-	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
 )
-
-type ChoriaFramework interface {
-	Configuration() *config.Config
-	Logger(string) *logrus.Entry
-	NewRequestID() (string, error)
-	Certname() string
-	MiddlewareServers() (srvcache.Servers, error)
-	NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (conn inter.Connector, err error)
-	NewMessage(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error)
-	NewTransportFromJSON(data string) (message protocol.TransportMessage, err error)
-}
 
 // Client is a basic low level high performance Choria client
 type Client struct {
 	ctx           context.Context
 	cancel        func()
-	fw            ChoriaFramework
+	fw            inter.Framework
 	cfg           *config.Config
 	wg            *sync.WaitGroup
 	receiverReady chan struct{}
@@ -67,7 +55,7 @@ type Connector interface {
 }
 
 // New creates a Choria client
-func New(fw ChoriaFramework, opts ...Option) (*Client, error) {
+func New(fw inter.Framework, opts ...Option) (*Client, error) {
 	c := &Client{
 		fw:        fw,
 		cfg:       fw.Configuration(),

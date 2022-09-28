@@ -1,13 +1,13 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
 package discovery
 
 import (
+	"bytes"
 	"context"
 	"fmt"
-	"strings"
 
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
@@ -60,7 +60,7 @@ func (da *Agent) HandleMessage(_ context.Context, msg inter.Message, request pro
 		Request: request,
 	}
 
-	if strings.Contains(msg.Payload(), "ping") {
+	if bytes.Contains(msg.Payload(), []byte("ping")) {
 		da.log.Infof("Handling message %s for discovery#ping from %s", msg.RequestID(), request.CallerID())
 		reply.Body = []byte("pong")
 	} else {

@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,13 +17,13 @@ import (
 )
 
 // NewMessage creates a new Message associated with this Choria instance
-func (fw *Framework) NewMessage(payload string, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
+func (fw *Framework) NewMessage(payload []byte, agent string, collective string, msgType string, request inter.Message) (msg inter.Message, err error) {
 	return message.NewMessage(payload, agent, collective, msgType, request, fw)
 }
 
 // NewRequestMessageFromTransportJSON creates a Message from a Transport JSON that holds a Request
 func (fw *Framework) NewRequestMessageFromTransportJSON(payload []byte) (inter.Message, error) {
-	transport, err := fw.NewTransportFromJSON(string(payload))
+	transport, err := fw.NewTransportFromJSON(payload)
 	if err != nil {
 		return nil, err
 	}
@@ -54,7 +54,7 @@ func (fw *Framework) NewMessageFromRequest(req protocol.Request, replyto string)
 
 // NewReplyFromTransportJSON creates a new Reply from a transport JSON
 func (fw *Framework) NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Reply, err error) {
-	transport, err := fw.NewTransportFromJSON(string(payload))
+	transport, err := fw.NewTransportFromJSON(payload)
 	if err != nil {
 		return nil, err
 	}
@@ -76,7 +76,7 @@ func (fw *Framework) NewReplyFromTransportJSON(payload []byte, skipvalidate bool
 
 // NewRequestFromTransportJSON creates a new Request from transport JSON
 func (fw *Framework) NewRequestFromTransportJSON(payload []byte, skipvalidate bool) (msg protocol.Request, err error) {
-	transport, err := fw.NewTransportFromJSON(string(payload))
+	transport, err := fw.NewTransportFromJSON(payload)
 	if err != nil {
 		return nil, err
 	}
@@ -329,8 +329,8 @@ func (fw *Framework) NewTransportMessage(version string) (message protocol.Trans
 }
 
 // NewTransportFromJSON creates a new TransportMessage from a JSON payload.  The version will match what is in the payload
-func (fw *Framework) NewTransportFromJSON(data string) (message protocol.TransportMessage, err error) {
-	version := gjson.Get(data, "protocol").String()
+func (fw *Framework) NewTransportFromJSON(data []byte) (message protocol.TransportMessage, err error) {
+	version := gjson.GetBytes(data, "protocol").String()
 
 	switch version {
 	case protocol.TransportV1:

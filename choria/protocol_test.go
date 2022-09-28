@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,13 +25,13 @@ var _ = Describe("Protocol", func() {
 			c, err = NewWithConfig(cfg)
 			Expect(err).ToNot(HaveOccurred())
 
-			rm, err := message.NewMessage("ping", "discovery", "mcollective", inter.RequestMessageType, nil, c)
+			rm, err := message.NewMessage([]byte("ping"), "discovery", "mcollective", inter.RequestMessageType, nil, c)
 			Expect(err).ToNot(HaveOccurred())
 
 			req, err := c.NewRequestFromMessage(protocol.RequestV1, rm)
 			Expect(err).ToNot(HaveOccurred())
 
-			reply, err := message.NewMessage("pong", "discovery", "mcollective", inter.ReplyMessageType, rm, c)
+			reply, err := message.NewMessage([]byte("pong"), "discovery", "mcollective", inter.ReplyMessageType, rm, c)
 			Expect(err).ToNot(HaveOccurred())
 
 			replyT, err := c.NewReplyTransportForMessage(reply, req)

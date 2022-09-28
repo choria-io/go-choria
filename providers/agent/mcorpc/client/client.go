@@ -360,7 +360,7 @@ func (r *RPC) setupMessage(ctx context.Context, action string, payload any, opts
 		r.opts.Workers = 1
 	}
 
-	msg, err = r.fw.NewMessage(string(rpcp), r.agent, r.cfg.MainCollective, msgType, nil)
+	msg, err = r.fw.NewMessage(rpcp, r.agent, r.cfg.MainCollective, msgType, nil)
 	if err != nil {
 		return nil, nil, err
 	}

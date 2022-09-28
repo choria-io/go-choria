@@ -71,7 +71,7 @@ type Federable interface {
 type Request interface {
 	Federable
 
-	SetMessage(message string)
+	SetMessage(message []byte)
 	SetCallerID(id string)
 	SetCollective(collective string)
 	SetAgent(agent string)
@@ -80,7 +80,7 @@ type Request interface {
 	SetRequestID(id string)
 	SetTTL(ttl int)
 
-	Message() string
+	Message() []byte
 	RequestID() string
 	SenderID() string
 	CallerID() string
@@ -89,25 +89,25 @@ type Request interface {
 	TTL() int
 	Time() time.Time
 	Filter() (*Filter, bool)
-	JSON() (string, error)
+	JSON() ([]byte, error)
 	Version() string
-	IsValidJSON(data string) error
+	IsValidJSON(data []byte) error
 }
 
 // Reply is a core MCollective Reply containing JSON serialized agent payload
 type Reply interface {
 	Federable
 
-	SetMessage(message string)
+	SetMessage(message []byte)
 
-	Message() string
+	Message() []byte
 	RequestID() string
 	SenderID() string
 	Agent() string
 	Time() time.Time
-	JSON() (string, error)
+	JSON() ([]byte, error)
 	Version() string
-	IsValidJSON(data string) error
+	IsValidJSON(data []byte) error
 }
 
 // SecureRequest is a container for the Request.  It serializes and signs the
@@ -120,10 +120,10 @@ type Reply interface {
 type SecureRequest interface {
 	SetMessage(request Request) error
 	Valid() bool
-	JSON() (string, error)
+	JSON() ([]byte, error)
 	Version() string
-	IsValidJSON(data string) error
-	Message() string
+	IsValidJSON(data []byte) error
+	Message() []byte
 }
 
 // SecureReply is a container for a Reply.  It's the reply counterpart of a
@@ -132,10 +132,10 @@ type SecureRequest interface {
 type SecureReply interface {
 	SetMessage(reply Reply) error
 	Valid() bool
-	JSON() (string, error)
-	Message() string
+	JSON() ([]byte, error)
+	Message() []byte
 	Version() string
-	IsValidJSON(data string) error
+	IsValidJSON(data []byte) error
 }
 
 // TransportMessage is a container for SecureRequests and SecureReplies it
@@ -154,9 +154,9 @@ type TransportMessage interface {
 	ReplyTo() string
 	SenderID() string
 	SeenBy() [][3]string
-	Message() (string, error)
+	Message() ([]byte, error)
 
-	IsValidJSON(data string) error
-	JSON() (string, error)
+	IsValidJSON(data []byte) error
+	JSON() ([]byte, error)
 	Version() string
 }

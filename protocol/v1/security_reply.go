@@ -37,19 +37,19 @@ func (r *secureReply) SetMessage(reply protocol.Reply) (err error) {
 		return fmt.Errorf("could not JSON encode reply message to store it in the Secure Reply: %s", err)
 	}
 
-	hash := r.security.ChecksumBytes([]byte(j))
-	r.MessageBody = j
+	hash := r.security.ChecksumBytes(j)
+	r.MessageBody = string(j)
 	r.Hash = base64.StdEncoding.EncodeToString(hash[:])
 
 	return nil
 }
 
 // Message retrieves the stored message content
-func (r *secureReply) Message() string {
+func (r *secureReply) Message() []byte {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.MessageBody
+	return []byte(r.MessageBody)
 }
 
 // Valid validates the body of the message by comparing the recorded hash with the hash of the body
@@ -68,22 +68,20 @@ func (r *secureReply) Valid() bool {
 }
 
 // JSON creates a JSON encoded reply
-func (r *secureReply) JSON() (body string, err error) {
+func (r *secureReply) JSON() ([]byte, error) {
 	r.mu.Lock()
 	j, err := json.Marshal(r)
 	r.mu.Unlock()
 	if err != nil {
 		protocolErrorCtr.Inc()
-		return "", fmt.Errorf("could not JSON Marshal: %s", err)
+		return nil, fmt.Errorf("could not JSON Marshal: %s", err)
 	}
 
-	body = string(j)
-
-	if err = r.IsValidJSON(body); err != nil {
-		return "", fmt.Errorf("reply JSON produced from the SecureRequest does not pass validation: %s", err)
+	if err = r.IsValidJSON(j); err != nil {
+		return nil, fmt.Errorf("reply JSON produced from the SecureRequest does not pass validation: %s", err)
 	}
 
-	return body, nil
+	return j, nil
 }
 
 // Version retrieves the protocol version for this message
@@ -95,7 +93,7 @@ func (r *secureReply) Version() string {
 }
 
 // IsValidJSON validates the given JSON data against the schema
-func (r *secureReply) IsValidJSON(data string) (err error) {
+func (r *secureReply) IsValidJSON(data []byte) (err error) {
 	if !protocol.ClientStrictValidation {
 		return nil
 	}

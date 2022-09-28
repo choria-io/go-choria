@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,9 +16,9 @@ import (
 	"strings"
 	"time"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/tidwall/gjson"
 
-	"github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/filter/identity"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 
@@ -31,12 +31,12 @@ const validIdentity = `^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*(
 var validIdentityRe = regexp.MustCompile(validIdentity)
 
 type FlatFile struct {
-	fw      client.ChoriaFramework
+	fw      inter.Framework
 	timeout time.Duration
 	log     *logrus.Entry
 }
 
-func New(fw client.ChoriaFramework) *FlatFile {
+func New(fw inter.Framework) *FlatFile {
 	return &FlatFile{
 		fw:      fw,
 		timeout: time.Second * time.Duration(fw.Configuration().DiscoveryTimeout),

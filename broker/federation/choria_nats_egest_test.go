@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -40,7 +40,7 @@ var _ = Describe("Choria NATS Egest", func() {
 
 		request, err = c.NewRequest(protocol.RequestV1, "test", "tester", "choria=tester", 60, rid, "mcollective")
 		Expect(err).ToNot(HaveOccurred())
-		request.SetMessage(`{"hello":"world"}`)
+		request.SetMessage([]byte(`{"hello":"world"}`))
 
 		reply, err = c.NewReply(request)
 		Expect(err).ToNot(HaveOccurred())
@@ -78,11 +78,11 @@ var _ = Describe("Choria NATS Egest", func() {
 
 		msg := <-manager.connection.Outq
 		Expect(msg[0]).To(Equal("target.1"))
-		Expect(msg[1]).To(Equal(j))
+		Expect(msg[1]).To(Equal(string(j)))
 
 		msg = <-manager.connection.Outq
 		Expect(msg[0]).To(Equal("target.2"))
-		Expect(msg[1]).To(Equal(j))
+		Expect(msg[1]).To(Equal(string(j)))
 	})
 
 	It("Should discard messages with no targets", func() {

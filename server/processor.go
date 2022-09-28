@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -20,7 +20,7 @@ func (srv *Instance) handleRawMessage(ctx context.Context, wg *sync.WaitGroup, r
 
 	totalCtr.WithLabelValues(srv.cfg.Identity).Inc()
 
-	transport, err := srv.fw.NewTransportFromJSON(string(rawmsg.Data()))
+	transport, err := srv.fw.NewTransportFromJSON(rawmsg.Data())
 	if err != nil {
 		srv.log.Errorf("Could not deceode message into transport: %s", err)
 		unvalidatedCtr.WithLabelValues(srv.cfg.Identity).Inc()
@@ -84,7 +84,7 @@ func (srv *Instance) handleReply(reply *agents.AgentReply) {
 		return
 	}
 
-	msg.SetPayload(string(reply.Body))
+	msg.SetPayload(reply.Body)
 
 	err = srv.connector.Publish(msg)
 	if err != nil {

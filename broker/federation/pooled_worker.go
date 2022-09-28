@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -50,7 +50,7 @@ type pooledWorker struct {
 	log         *log.Entry
 	wg          *sync.WaitGroup
 
-	choria     ChoriaFramework
+	choria     inter.Framework
 	connection inter.ConnectionManager
 	servers    func() (srvcache.Servers, error)
 

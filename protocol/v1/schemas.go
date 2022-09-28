@@ -20,13 +20,13 @@ var (
 	transportSchema, _     = fs.FS.ReadFile("protocol/v1/transport.json")
 )
 
-func schemaValidate(schema []byte, data string) (result bool, errors []string, err error) {
+func schemaValidate(schema []byte, data []byte) (result bool, errors []string, err error) {
 	if len(schema) == 0 {
 		return false, nil, fmt.Errorf("invalid schema")
 	}
 
-	js := gojsonschema.NewStringLoader(string(schema))
-	d := gojsonschema.NewStringLoader(data)
+	js := gojsonschema.NewBytesLoader(schema)
+	d := gojsonschema.NewBytesLoader(data)
 
 	validation, err := gojsonschema.Validate(js, d)
 	if err != nil {
