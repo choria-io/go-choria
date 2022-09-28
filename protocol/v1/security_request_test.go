@@ -47,7 +47,7 @@ var _ = Describe("SecureRequest", func() {
 		rj, err := r.JSON()
 		Expect(err).ToNot(HaveOccurred())
 
-		security.EXPECT().SignString(gomock.Any()).Times(0)
+		security.EXPECT().SignBytes(gomock.Any()).Times(0)
 
 		sr, err := NewSecureRequest(r, security)
 		Expect(err).ToNot(HaveOccurred())
@@ -69,7 +69,7 @@ var _ = Describe("SecureRequest", func() {
 		rj, err := r.JSON()
 		Expect(err).ToNot(HaveOccurred())
 
-		security.EXPECT().SignString(rj).Return([]byte("stub.sig"), nil)
+		security.EXPECT().SignBytes([]byte(rj)).Return([]byte("stub.sig"), nil)
 
 		sr, err := NewSecureRequest(r, security)
 		Expect(err).ToNot(HaveOccurred())

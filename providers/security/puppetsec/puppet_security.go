@@ -294,11 +294,6 @@ func (s *PuppetSecurity) ChecksumBytes(data []byte) []byte {
 	return s.fsec.ChecksumBytes(data)
 }
 
-// ChecksumString calculates a sha256 checksum for data
-func (s *PuppetSecurity) ChecksumString(data string) []byte {
-	return s.fsec.ChecksumBytes([]byte(data))
-}
-
 // SignBytes signs a message using a SHA256 PKCS1v15 protocol
 func (s *PuppetSecurity) SignBytes(str []byte) ([]byte, error) {
 	return s.fsec.SignBytes(str)
@@ -307,11 +302,6 @@ func (s *PuppetSecurity) SignBytes(str []byte) ([]byte, error) {
 // VerifyByteSignature verify that dat matches signature sig made by the key, if pub cert is empty the active public key will be used
 func (s *PuppetSecurity) VerifyByteSignature(dat []byte, sig []byte, pubcert []byte) (should bool, signer string) {
 	return s.fsec.VerifyByteSignature(dat, sig, pubcert)
-}
-
-// SignString signs a message using a SHA256 PKCS1v15 protocol
-func (s *PuppetSecurity) SignString(str string) ([]byte, error) {
-	return s.fsec.SignString(str)
 }
 
 // CallerName creates a choria like caller name in the form of choria=identity

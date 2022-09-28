@@ -200,11 +200,6 @@ func (s *FileSecurity) ChecksumBytes(data []byte) []byte {
 	return sum[:]
 }
 
-// ChecksumString calculates a sha256 checksum for data
-func (s *FileSecurity) ChecksumString(data string) []byte {
-	return s.ChecksumBytes([]byte(data))
-}
-
 // SignBytes signs a message using a SHA256 PKCS1v15 protocol
 func (s *FileSecurity) SignBytes(str []byte) ([]byte, error) {
 	sig := []byte{}
@@ -237,6 +232,7 @@ func (s *FileSecurity) SignBytes(str []byte) ([]byte, error) {
 	if err != nil {
 		err = fmt.Errorf("could not sign message: %s", err)
 	}
+
 	return sig, err
 }
 
@@ -284,11 +280,6 @@ func (s *FileSecurity) VerifyByteSignature(dat []byte, sig []byte, pubcert []byt
 	s.log.Debugf("Verified signature from %s", strings.Join(names, ", "))
 
 	return true, names[0]
-}
-
-// SignString signs a message using a SHA256 PKCS1v15 protocol
-func (s *FileSecurity) SignString(str string) ([]byte, error) {
-	return s.SignBytes([]byte(str))
 }
 
 // CallerName creates a choria like caller name in the form of choria=identity

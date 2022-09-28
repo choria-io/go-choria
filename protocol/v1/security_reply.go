@@ -37,7 +37,7 @@ func (r *secureReply) SetMessage(reply protocol.Reply) (err error) {
 		return fmt.Errorf("could not JSON encode reply message to store it in the Secure Reply: %s", err)
 	}
 
-	hash := r.security.ChecksumString(j)
+	hash := r.security.ChecksumBytes([]byte(j))
 	r.MessageBody = j
 	r.Hash = base64.StdEncoding.EncodeToString(hash[:])
 
@@ -57,7 +57,7 @@ func (r *secureReply) Valid() bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	hash := r.security.ChecksumString(r.MessageBody)
+	hash := r.security.ChecksumBytes([]byte(r.MessageBody))
 	if base64.StdEncoding.EncodeToString(hash[:]) == r.Hash {
 		validCtr.Inc()
 		return true

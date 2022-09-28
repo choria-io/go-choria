@@ -42,7 +42,7 @@ var _ = Describe("SecureReply", func() {
 
 		sha := sha256.Sum256([]byte(rj))
 
-		security.EXPECT().ChecksumString(rj).Return(sha[:]).AnyTimes()
+		security.EXPECT().ChecksumBytes([]byte(rj)).Return(sha[:]).AnyTimes()
 
 		sreply, _ := NewSecureReply(reply, security)
 		sj, err := sreply.JSON()

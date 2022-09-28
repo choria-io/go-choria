@@ -494,10 +494,6 @@ func (cm *CertManagerSecurity) VerifyByteSignature(dat []byte, sig []byte, pubce
 	return cm.fsec.VerifyByteSignature(dat, sig, pubcert)
 }
 
-func (cm *CertManagerSecurity) SignString(s string) (signature []byte, err error) {
-	return cm.fsec.SignString(s)
-}
-
 func (cm *CertManagerSecurity) RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error) {
 	return cm.fsec.RemoteSignRequest(ctx, str)
 }
@@ -508,10 +504,6 @@ func (cm *CertManagerSecurity) IsRemoteSigning() bool {
 
 func (cm *CertManagerSecurity) ChecksumBytes(data []byte) []byte {
 	return cm.fsec.ChecksumBytes(data)
-}
-
-func (cm *CertManagerSecurity) ChecksumString(data string) []byte {
-	return cm.fsec.ChecksumString(data)
 }
 
 func (cm *CertManagerSecurity) ClientTLSConfig() (*tls.Config, error) {
