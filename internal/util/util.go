@@ -11,6 +11,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math"
@@ -26,6 +27,9 @@ import (
 	"text/template"
 	"time"
 	"unicode"
+
+	"github.com/choria-io/go-choria/internal/fs"
+	"github.com/santhosh-tekuri/jsonschema/v5"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/backoff"
@@ -618,4 +622,45 @@ func HasPrefix(s string, prefixes ...string) bool {
 	}
 
 	return false
+}
+
+var (
+	// ErrSchemaUnknown indicates the schema could not be found
+	ErrSchemaUnknown = errors.New("unknown schema")
+	// ErrSchemaValidationFailed indicates that the validator failed to perform validation, perhaps due to invalid schema
+	ErrSchemaValidationFailed = errors.New("validation failed")
+)
+
+func ValidateSchemaFromFS(schemaPath string, data any) (errors []string, err error) {
+	jschema, err := fs.FS.ReadFile(schemaPath)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrSchemaUnknown, err)
+	}
+
+	sch, err := jsonschema.CompileString(filepath.Base(schemaPath), string(jschema))
+	if err != nil {
+		return nil, fmt.Errorf("%w: compile error: %v", ErrSchemaValidationFailed, err)
+	}
+
+	err = sch.Validate(data)
+	if err != nil {
+		if verr, ok := err.(*jsonschema.ValidationError); ok {
+			for _, e := range verr.BasicOutput().Errors {
+				if e.KeywordLocation == "" || e.Error == "oneOf failed" || e.Error == "allOf failed" {
+					continue
+				}
+
+				if e.InstanceLocation == "" {
+					errors = append(errors, e.Error)
+				} else {
+					errors = append(errors, fmt.Sprintf("%s: %s", e.InstanceLocation, e.Error))
+				}
+			}
+			return errors, nil
+		} else {
+			return nil, fmt.Errorf("%s: validation failed: %v", ErrSchemaValidationFailed, err)
+		}
+	}
+
+	return nil, nil
 }

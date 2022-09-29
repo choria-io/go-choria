@@ -1,0 +1,111 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "id": "https://choria.io/schemas/choria/discovery/v1/inventory_file.json",
+  "description": "Structure of the data file for inventory file discovery method",
+  "title": "io.choria.choria.discovery.v1.inventory_file",
+  "type": "object",
+  "required": ["$schema","nodes"],
+  "additionalProperties": false,
+  "properties": {
+    "$schema":{
+      "type": "string",
+      "const": "https://choria.io/schemas/choria/discovery/v1/inventory_file.json"
+    },
+    "groups": {
+      "description": "Predefined groups based on discovery queries",
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name"],
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Descriptive name for the group",
+            "pattern": "^[a-zA-Z0-9_-]+$",
+            "minLength": 1
+          },
+          "filter": {
+            "type": "object",
+            "additionalProperties": false,
+            "description": "Filter to apply to the nodes in the data when resolving this group",
+            "properties": {
+              "agents": {
+                "type": "array",
+                "description": "Names of agents to match",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "classes": {
+                "type": "array",
+                "description": "Names of classes to match",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "facts": {
+                "type": "array",
+                "description": "Facts filters to match",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "identities": {
+                "type": "array",
+                "description": "Identities to match",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "compound": {
+                "type": "string",
+                "description": "Compound filter to match"
+              }
+            }
+          }
+        }
+      }
+    },
+    "nodes": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["name", "collectives", "facts", "classes", "agents"],
+        "additionalProperties": false,
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "Unique name for this node",
+            "minLength": 1
+          },
+          "collectives": {
+            "type": "array",
+            "description": "List of collectives this node belongs to",
+            "items": {
+              "type": "string"
+            }
+          },
+          "facts": {
+            "type": "object",
+            "description": "Facts describing this node"
+          },
+          "classes": {
+            "type": "array",
+            "description": "List of classes this node is tagged with",
+            "items": {
+              "type": "string"
+            }
+          },
+          "agents": {
+            "type": "array",
+            "description": "List of agents this node hosts",
+            "items": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  }
+}

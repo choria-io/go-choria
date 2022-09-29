@@ -98,6 +98,6 @@ var _ = Describe("TransportMessage", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		_, err = NewTransportFromJSON([]byte(`{"protocol": 1}`))
-		Expect(err).To(MatchError("supplied JSON document is not a valid Transport message: (root): data is required, (root): headers is required, protocol: Invalid type. Expected: string, given: integer"))
+		Expect(err).To(MatchError("supplied JSON document is not a valid Transport message: missing properties: 'data', 'headers', /protocol: expected string, but got number"))
 	})
 })

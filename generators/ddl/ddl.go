@@ -13,11 +13,10 @@ import (
 	"strings"
 
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/choria-io/go-choria/internal/util"
+	iu "github.com/choria-io/go-choria/internal/util"
 	ddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/xeipuuv/gojsonschema"
 )
 
 type Generator struct {
@@ -28,22 +27,13 @@ type Generator struct {
 }
 
 func (c *Generator) ValidateJSON(agent *ddl.DDL) error {
-	j, err := json.Marshal(agent)
+	errs, err := iu.ValidateSchemaFromFS("schemas/mcorpc/ddl/v1/agent.json", agent)
 	if err != nil {
 		return err
 	}
-
-	sloader := gojsonschema.NewReferenceLoader("https://choria.io/schemas/mcorpc/ddl/v1/agent.json")
-	dloader := gojsonschema.NewBytesLoader(j)
-
-	result, err := gojsonschema.Validate(sloader, dloader)
-	if err != nil {
-		return fmt.Errorf("schema validation failed: %s", err)
-	}
-
-	if !result.Valid() {
+	if len(errs) != 0 {
 		fmt.Printf("The generate DDL does not pass validation against https://choria.io/schemas/mcorpc/ddl/v1/agent.json:\n\n")
-		for _, err := range result.Errors() {
+		for _, err := range errs {
 			fmt.Printf(" - %s\n", err)
 		}
 
@@ -269,7 +259,7 @@ func (c *Generator) boolValidator(v any) error {
 		return nil
 	}
 
-	_, err := util.StrToBool(vs)
+	_, err := iu.StrToBool(vs)
 	return err
 }
 

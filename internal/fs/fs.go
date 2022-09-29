@@ -14,5 +14,5 @@ import (
 //go:embed misc
 //go:embed completion
 //go:embed cheats
-//go:embed protocol
+//go:embed schemas
 var FS embed.FS

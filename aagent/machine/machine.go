@@ -18,11 +18,9 @@ import (
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/lifecycle"
+	"github.com/ghodss/yaml"
 	"github.com/nats-io/jsm.go"
 	"github.com/sirupsen/logrus"
-	"github.com/xeipuuv/gojsonschema"
-
-	"github.com/ghodss/yaml"
 
 	"github.com/choria-io/go-choria/aagent/watchers"
 	"github.com/choria-io/go-choria/internal/util"
@@ -223,29 +221,13 @@ func ValidateDir(dir string) (validationErrors []string, err error) {
 		return nil, err
 	}
 
-	jbytes, err := yaml.YAMLToJSON(yml)
+	var dat any
+	err = yaml.Unmarshal(yml, &dat)
 	if err != nil {
-		return nil, fmt.Errorf("could not transform YAML to JSON: %s", err)
+		return nil, err
 	}
 
-	schemaLoader := gojsonschema.NewReferenceLoader("https://choria.io/schemas/choria/machine/v1/manifest.json")
-	documentLoader := gojsonschema.NewBytesLoader(jbytes)
-
-	result, err := gojsonschema.Validate(schemaLoader, documentLoader)
-	if err != nil {
-		return nil, fmt.Errorf("could not perform schema validation: %s", err)
-	}
-
-	if result.Valid() {
-		return []string{}, nil
-	}
-
-	validationErrors = []string{}
-	for _, desc := range result.Errors() {
-		validationErrors = append(validationErrors, desc.String())
-	}
-
-	return validationErrors, nil
+	return util.ValidateSchemaFromFS("schemas/choria/machine/v1/manifest.json", dat)
 }
 
 func (m *Machine) SetDirectory(dir string, manifest string) error {
