@@ -299,7 +299,7 @@ func (r *Request) Version() string {
 
 // IsValidJSON validates the given JSON data against the schema
 func (r *Request) IsValidJSON(data []byte) error {
-	_, errors, err := schemaValidate(requestSchema, data)
+	_, errors, err := schemaValidate(protocol.RequestV1, data)
 	if err != nil {
 		return fmt.Errorf("could not validate Request JSON data: %s", err)
 	}

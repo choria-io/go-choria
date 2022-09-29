@@ -144,7 +144,7 @@ func (r *SecureRequest) Version() string {
 
 // IsValidJSON validates the given JSON data against the schema
 func (r *SecureRequest) IsValidJSON(data []byte) (err error) {
-	_, errors, err := schemaValidate(secureRequestSchema, data)
+	_, errors, err := schemaValidate(protocol.SecureRequestV1, data)
 	if err != nil {
 		protocolErrorCtr.Inc()
 		return fmt.Errorf("could not validate SecureRequest JSON data: %s", err)

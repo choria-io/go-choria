@@ -34,7 +34,7 @@ type SecurityProvider interface {
 	SignBytes(b []byte) (signature []byte, err error)
 
 	// VerifyByteSignature verifies that dat signature was made using pubcert
-	VerifyByteSignature(dat []byte, sig []byte, pubcert []byte) (should bool, signer string)
+	VerifyByteSignature(dat []byte, sig []byte, public []byte) (should bool, signer string)
 
 	// RemoteSignRequest signs a choria request using a remote signer and returns a secure request
 	RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error)
