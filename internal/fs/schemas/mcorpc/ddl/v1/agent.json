@@ -1,0 +1,329 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "id": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
+    "type": "object",
+    "definitions": {
+        "shortname": {
+            "type": "string",
+            "minLength": 1,
+            "pattern": "^[a-z0-9_]*$"
+        },
+        "base_action_input": {
+            "type": "object",
+            "properties": {
+                "prompt": {
+                    "type": "string",
+                    "description": "When generating user interfaces use this text to prompt for information",
+                    "minLength": 1
+                },
+                "description": {
+                    "type": "string",
+                    "description": "Short description of the specific input",
+                    "minLength": 1
+                },
+                "optional": {
+                    "type": "boolean"
+                },
+                "default": {
+                    "type": [
+                        "number",
+                        "string",
+                        "boolean",
+                        "object",
+                        "array",
+                        "null"
+                    ],
+                    "description": "The default value the input will have when none is provided by the user"
+                }
+            },
+            "required": [
+                "prompt",
+                "description",
+                "optional"
+            ]
+        },
+        "string_action_input": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/base_action_input"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "description": "The data type the input should be",
+                            "enum": [
+                                "string"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "validation": {
+                            "type": "string"
+                        },
+                        "maxlength": {
+                            "type": "number"
+                        }
+                    },
+                    "required": [
+                        "validation",
+                        "maxlength"
+                    ]
+                }
+            ]
+        },
+        "other_action_input": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/base_action_input"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "description": "The data type the input should be",
+                            "enum": [
+                                "boolean",
+                                "integer",
+                                "float",
+                                "number",
+                                "Hash",
+                                "Array",
+                                "hash",
+                                "array"
+                            ]
+                        }
+                    },
+                    "required": [
+                        "type"
+                    ]
+                }
+            ]
+        },
+        "list_action_input": {
+            "allOf": [
+                {
+                    "$ref": "#/definitions/base_action_input"
+                },
+                {
+                    "type": "object",
+                    "properties": {
+                        "type": {
+                            "type": "string",
+                            "description": "The data type the input should be",
+                            "enum": [
+                                "list"
+                            ]
+                        },
+                        "list": {
+                            "type": "array",
+                            "items": {
+                                "type": "string"
+                            }
+                        }
+                    },
+                    "required": [
+                        "type",
+                        "list"
+                    ]
+                }
+            ]
+        }
+    },
+    "properties": {
+        "metadata": {
+            "type": "object",
+            "required": [
+                "name",
+                "description",
+                "author",
+                "license",
+                "version",
+                "url",
+                "timeout"
+            ],
+            "properties": {
+                "name": {
+                    "description": "The Agent name",
+                    "$ref": "#/definitions/shortname"
+                },
+                "description": {
+                    "description": "Short description of the agent function",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "author": {
+                    "description": "The person or entity responsible for maintenance of this agent",
+                    "type": "string",
+                    "minLength": 1,
+                    "examples": [
+                        "R.I.Pienaar <rip@devco.net>"
+                    ]
+                },
+                "license": {
+                    "description": "The licence this agent is distributed under",
+                    "type": "string",
+                    "minLength": 1,
+                    "examples": [
+                        "Apache-2.0"
+                    ]
+                },
+                "version": {
+                    "description": "SemVer version of this agent",
+                    "type": "string",
+                    "pattern": "^(\\d+\\.)?(\\d+\\.)?(\\*|\\d+)$"
+                },
+                "url": {
+                    "description": "URL to visit for more information about the agent",
+                    "type": "string",
+                    "minLength": 1
+                },
+                "timeout": {
+                    "description": "How long this agent is allowed to run",
+                    "type": "integer",
+                    "minimum": 2
+                },
+                "provider": {
+                    "description": "The name of the provider that hosts this agent, example 'external'",
+                    "type": "string"
+                },
+                "service": {
+                    "description": "Indicates that an Agent should be run as a service",
+                    "type": "boolean"
+                }
+            }
+        },
+        "actions": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "action": {
+                        "description": "The action name",
+                        "$ref": "#/definitions/shortname"
+                    },
+                    "description": {
+                        "description": "Short description of what the action does",
+                        "type": "string",
+                        "minLength": 1
+                    },
+                    "input": {
+                        "type": "object",
+                        "additionalProperties": false,
+                        "patternProperties": {
+                            "^[a-z0-9_]*$": {
+                                "anyOf": [
+                                    {
+                                        "$ref": "#/definitions/list_action_input"
+                                    },
+                                    {
+                                        "$ref": "#/definitions/other_action_input"
+                                    },
+                                    {
+                                        "$ref": "#/definitions/string_action_input"
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "output": {
+                        "type": "object",
+                        "patternProperties": {
+                            "^[a-z0-9_]*$": {
+                                "required": ["description", "display_as"],
+                                "properties": {
+                                    "description": {
+                                        "type": "string",
+                                        "description": "Short description of what the output means"
+                                    },
+                                    "default": {
+                                        "anyOf": [
+                                            {
+                                                "type": "array"
+                                            },
+                                            {
+                                                "type": "boolean"
+                                            },
+                                            {
+                                                "type": "integer"
+                                            },
+                                            {
+                                                "type": "null"
+                                            },
+                                            {
+                                                "type": "number"
+                                            },
+                                            {
+                                                "type": "object"
+                                            },
+                                            {
+                                                "type": "string"
+                                            }
+                                        ]
+                                    },
+                                    "display_as": {
+                                        "type": "string",
+                                        "description": "Short token to identify the data in the output as"
+                                    },
+                                    "type": {
+                                        "type": "string",
+                                        "description": "The data type being held in the output",
+                                        "enum": [
+                                            "string",
+                                            "list",
+                                            "boolean",
+                                            "integer",
+                                            "float",
+                                            "number",
+                                            "Hash",
+                                            "Array",
+                                            "hash",
+                                            "array"
+                                        ]
+                                    }
+                                }
+                            }
+                        }
+                    },
+                    "display": {
+                        "type": "string",
+                        "enum": [
+                            "ok",
+                            "failed",
+                            "always"
+                        ]
+                    },
+                    "aggregate": {
+                        "type": "array",
+                        "items": {
+                            "type": "object",
+                            "properties": {
+                                "function": {
+                                    "type": "string",
+                                    "description": "The name of the aggregation function to use"
+                                },
+                                "args": {
+                                    "description": "Arguments passed to the function, exact type depends on the function"
+                                }
+                            }
+                        }
+                    }
+                },
+                "required": [
+                    "description",
+                    "action",
+                    "input",
+                    "output"
+                ]
+            }
+        }
+    }
+}

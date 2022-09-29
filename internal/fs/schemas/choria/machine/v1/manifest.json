@@ -1,0 +1,547 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema",
+    "id": "https://choria.io/schemas/choria/machine/v1/manifest.json",
+    "description": "Choria Autonomous Agent manifest",
+    "type":"object",
+    "required":["name","version","initial_state","transitions","watchers"],
+    "definitions": {
+        "GoDuration": {
+            "type":"string",
+            "pattern": "^\\d+[hms]$"
+        },
+        "GenericName": {
+            "type":"string",
+            "pattern":"^[a-zA-Z][a-zA-Z0-9_-]+$"
+        },
+        "EnvironmentVariable": {
+            "type":"string",
+            "description": "Environment variable as accepted by Go exec package",
+            "pattern": "^[a-zA-Z_]+[a-zA-Z0-9_]*=.+"
+        },
+        "Transition": {
+            "type":"object",
+            "required": ["name", "from", "destination"],
+            "additionalItems": false,
+            "description": "A valid transition of the Finite State Machine",
+            "properties": {
+                "name": {
+                    "description": "A unique name for the transition event",
+                    "$ref":"#/definitions/GenericName"
+                },
+                "from": {
+                    "description": "The names of states that this transition is valid from",
+                    "type":"array",
+                    "items": {
+                        "$ref":"#/definitions/GenericName"
+                    }
+                },
+                "destination": {
+                    "description": "The name of the state to transition to when this event fires",
+                    "$ref":"#/definitions/GenericName"
+                },
+                "description": {
+                    "description": "A human friendly description of the purpose of this transition",
+                    "type": "string"
+                }
+            }
+        },
+        "WatcherBase": {
+            "type":"object",
+            "required": ["name", "type"],
+            "additionalItems": false,
+            "properties": {
+                "name": {
+                    "description": "The name of the watcher",
+                    "$ref":"#/definitions/GenericName"
+                },
+                "state_match": {
+                    "description": "State names where this watcher will be active",
+                    "type":"array",
+                    "items": {
+                        "$ref":"#/definitions/GenericName"
+                    }
+                },
+                "fail_transition": {
+                    "description": "When this watcher fails the machine will receive this transition event",
+                    "$ref":"#/definitions/GenericName"
+                },
+                "success_transition": {
+                    "description": "When this watcher succeeds the machine will receive this transition event",
+                    "$ref":"#/definitions/GenericName"
+                },
+                "interval": {
+                    "description": "How often this watcher will be run when in any of the valid states",
+                    "$ref":"#/definitions/GoDuration"
+                },
+                "announce_interval": {
+                    "description": "How often the internal state of the watcher will be announced as events",
+                    "$ref":"#/definitions/GoDuration"
+                }
+            }
+        },
+        "WatcherKVProperties": {
+            "type": "object",
+            "default": "KV watcher properties",
+            "required": ["bucket"],
+            "properties": {
+                "bucket": {
+                    "description": "The Bucket name that holds the data",
+                    "type": "string",
+                    "pattern": "^[a-zA-Z0-9_-]+$"
+                },
+                "key": {
+                    "description": "The key to watch for changes",
+                    "type": "string",
+                    "pattern": "\\A[-/_a-zA-Z0-9]+\\z"
+                },
+                "mode": {
+                    "description": "The method used for watching the values, must be poll for bucket watch",
+                    "type": "string",
+                    "default": "poll",
+                    "enum": ["poll","watch"]
+                },
+                "bucket_prefix": {
+                    "description": "When storing data prefix the data keys with the Bucket name",
+                    "type": "boolean",
+                    "default": true
+                }
+            }
+        },
+        "WatcherKV": {
+            "description": "A watcher that observes the state of a Choria Key-Value store Bucket or Key",
+            "type": "object",
+            "additionalItems": false,
+            "allOf": [
+                {
+                    "type":"object",
+                    "required": ["type"],
+                    "properties": {
+                        "type": {
+                            "enum": ["kv"]
+                        }
+                    }
+                },
+                {"$ref":"#/definitions/WatcherBase"},
+                {
+                    "type":"object",
+                    "required": ["properties"],
+                    "properties": {
+                        "properties": { "$ref":"#/definitions/WatcherKVProperties" }
+                    }
+                }
+            ]
+        },
+        "WatcherFileProperties": {
+            "type":"object",
+            "description": "File watcher properties",
+            "required": ["path"],
+            "properties": {
+                "path": {
+                    "type": "string",
+                    "description": "The path to a file to watch relative to the machine root"
+                },
+                "gather_initial_state": {
+                    "type":"boolean",
+                    "description": "If the properties of the file should be gathered on initial load"
+                }
+            }
+        },
+        "WatcherFile": {
+            "description": "A watcher that observes the state of a file regularly",
+            "type": "object",
+            "additionalItems": false,
+            "allOf": [
+                {
+                    "type":"object",
+                    "required": ["type"],
+                    "properties": {
+                        "type": {
+                            "enum": ["file"]
+                        }
+                    }
+                },
+                {"$ref":"#/definitions/WatcherBase"},
+                {
+                    "type":"object",
+                    "required": ["properties"],
+                    "properties": {
+                        "properties": { "$ref":"#/definitions/WatcherFileProperties" }
+                    }
+                }
+            ]
+        },
+        "WatcherNagiosProperties": {
+            "type": "object",
+            "description": "Nagios watcher properties",
+            "required": ["plugin"],
+            "properties": {
+                "annotations": {
+                    "type": "object",
+                    "description": "Map of strings presented as additional annotations per check",
+                    "propertyNames": {
+                        "pattern": "^[a-zA-Z_-]+$",
+                        "type": "string"
+                    }
+                },
+                "builtin": {
+                    "type": "string",
+                    "description": "Execute an internal plugin",
+                    "enum": ["goss", "heartbeat", "choria_status"]
+                },
+                "plugin": {
+                    "type": "string",
+                    "description": "The Nagios plugin to run including it's arguments"
+                },
+                "timeout": {
+                    "description": "How long the commands are allowed to run",
+                    "default": "10s",
+                    "$ref":"#/definitions/GoDuration"
+                },
+                "gossfile": {
+                    "description": "For the goss builtin, a check specific YAML file",
+                    "type": "string"
+                },
+                "last_message": {
+                    "description": "For the choria_status builtin how long ago the last RPC message should have been received, specified in go duration string format",
+                    "type": "string"
+                }
+            }
+        },
+        "WatcherNagios": {
+            "description": "A watcher that executes Nagios plugins",
+            "type": "object",
+            "additionalItems": false,
+            "allOf": [
+                {
+                    "type":"object",
+                    "required": ["properties"],
+                    "properties": {
+                        "properties": { "$ref":"#/definitions/WatcherNagiosProperties" }
+                    }
+                },
+                {"$ref":"#/definitions/WatcherBase"},
+                {
+                    "type":"object",
+                    "required": ["type"],
+                    "properties": {
+                        "type": {
+                            "enum": ["nagios"]
+                        }
+                    }
+                }
+            ]
+        },
+        "WatcherExecProperties": {
+            "type":"object",
+            "description": "Exec watcher properties",
+            "required": ["command"],
+            "properties": {
+                "command": {
+                    "type": "string",
+                    "description": "The path to a command to run relative to the machine root"
+                },
+                "environment": {
+                    "description": "List of environment variables to pass to the executable in the form VAR=VALUE",
+                    "default": [],
+                    "type":"array",
+                    "items":  { "$ref":"#/definitions/EnvironmentVariable" }
+                },
+                "governor": {
+                    "description": "Limit concurrent executions of the command using a named Choria Governor",
+                    "type": "string"
+                },
+                "governor_timeout": {
+                    "description": "How long to wait for a spot on the Governor prior to giving up and firing fail_transition",
+                    "type": "string",
+                    "default": "5m",
+                    "$ref":"#/definitions/GoDuration"
+                },
+                "parse_as_data": {
+                    "description": "Indicates that the command returns JSON data that should be parsed as Machine data and stored",
+                    "type": "boolean",
+                    "default": false
+                },
+                "suppress_success_announce": {
+                    "description": "Disable publishing announcements on every successful execution, still does regular timed ones if configured and failed ones",
+                    "default": false,
+                    "type":"boolean"
+                },
+                "timeout": {
+                    "description": "How long the commands are allowed to run",
+                    "default": "10s",
+                    "$ref":"#/definitions/GoDuration"
+                }
+            }
+        },
+        "WatcherExec": {
+            "description": "A watcher that executes a command regularly",
+            "type": "object",
+            "additionalItems": false,
+            "allOf": [
+                {
+                    "type":"object",
+                    "required": ["properties"],
+                    "properties": {
+                        "properties": { "$ref":"#/definitions/WatcherExecProperties" }
+                    }
+                },
+                {"$ref":"#/definitions/WatcherBase"},
+                {
+                    "type":"object",
+                    "required": ["type"],
+                    "properties": {
+                        "type": {
+                            "enum": ["exec"]
+                        }
+                    }
+                }
+            ]
+        },
+        "WatcherScheduleProperties": {
+            "type":"object",
+            "description": "Schedule watcher properties",
+            "required": ["duration", "schedules"],
+            "properties": {
+                "start_splay": {
+                    "description": "Sleep a random period between 0 and this duration before firing the success_transition. Use this to spread a fleet of schedulers out naturally.",
+                    "$ref":"#/definitions/GoDuration"
+                },
+                "duration": {
+                    "description": "How long the scheduler should stay in the success state once triggered",
+                    "$ref":"#/definitions/GoDuration"
+                },
+                "schedules": {
+                    "description": "Cron like schedules for when the scheduler trigger success states",
+                    "type":"array",
+                    "items": {
+                        "type":"string"
+                    }
+                }
+            }
+        },
+        "WatcherSchedule": {
+            "description": "A watcher that triggers transitions based on a set of cron like schedules",
+            "type":"object",
+            "additionalItems": false,
+            "allOf": [
+                {
+                    "type":"object",
+                    "required":["properties"],
+                    "properties": {
+                        "properties": { "$ref":"#/definitions/WatcherScheduleProperties" }
+                    }
+                },
+                {"$ref":"#/definitions/WatcherBase"},
+                {
+                    "type":"object",
+                    "required": ["type"],
+                    "properties": {
+                        "type": {
+                            "enum": ["schedule"]
+                        }
+                    }
+                }
+            ]
+        },
+        "WatcherTimerProperties": {
+            "type":"object",
+            "description": "Timer watcher properties",
+            "required": ["timer"],
+            "properties": {
+                "timer": {
+                    "description": "How long the timer should run for",
+                    "$ref":"#/definitions/GoDuration"
+                }
+            }
+        },
+        "WatcherTimer": {
+            "description": "A watcher that starts a time when a machine transitions into a state and emits an event when the timer ends",
+            "type":"object",
+            "additionalItems": false,
+            "allOf": [
+                {
+                    "type":"object",
+                    "required":["properties"],
+                    "properties": {
+                        "properties": { "$ref":"#/definitions/WatcherTimerProperties" }
+                    }
+                },
+                {"$ref":"#/definitions/WatcherBase"},
+                {
+                    "type":"object",
+                    "required": ["type"],
+                    "properties": {
+                        "type": {
+                            "enum": ["schedule"]
+                        }
+                    }
+                }
+            ]
+        },
+        "WatcherHomeKitProperties": {
+            "type":"object",
+            "description": "Home Kit watcher properties",
+            "required": ["pin"],
+            "properties": {
+                "pin": {
+                    "description": "The pin to enter when setting up the Homekit device",
+                    "type": "string",
+                    "pattern": "^[0-9]+$"
+                },
+                "serial_number": {
+                    "description": "The serial number to report to Home Kit",
+                    "type": "string"
+                },
+                "model": {
+                    "description": "The model to report to Home Kit",
+                    "type": "string",
+                    "default": "Autonomous Agent"
+                },
+                "setup_id": {
+                    "description": "The Home Kit set up id to report",
+                    "type": "string"
+                },
+                "initial": {
+                    "description": "The initial state of the button",
+                    "enum": ["on","off"],
+                    "type": "string"
+                },
+                "on_when": {
+                    "description": "When in any of these states the button will be on",
+                    "type": "array",
+                    "items": {
+                        "$ref":"#/definitions/GenericName"
+                    }
+                },
+                "off_when": {
+                    "description": "When in any of these states the button will be off",
+                    "type": "array",
+                    "items": {
+                        "$ref":"#/definitions/GenericName"
+                    }
+                },
+                "disable_when": {
+                    "description": "When in any of these states the button will be disabled",
+                    "type": "array",
+                    "items": {
+                        "$ref":"#/definitions/GenericName"
+                    }
+                }
+            }
+        },
+        "WatcherHomekit": {
+            "description": "A watcher creates an Apple Home Kit button that can be activated via iOS devices and Siri",
+            "type":"object",
+            "additionalItems": false,
+            "allOf": [
+                {
+                    "type":"object",
+                    "required":["properties"],
+                    "properties": {
+                        "properties": { "$ref":"#/definitions/WatcherHomeKitProperties" }
+                    }
+                },
+                {"$ref":"#/definitions/WatcherBase"},
+                {
+                    "type":"object",
+                    "required": ["type"],
+                    "properties": {
+                        "type": {
+                            "enum": ["schedule"]
+                        }
+                    }
+                }
+            ]
+        },
+        "WatcherMetricProperties": {
+            "type":"object",
+            "description": "Metric watcher properties",
+            "required": ["command", "interval"],
+            "properties": {
+                "command": {
+                    "description": "The path to the command to run to retrieve the metric data",
+                    "type": "string"
+                },
+                "interval": {
+                    "description": "Interval to run the command",
+                    "$ref": "#/definitions/GoDuration"
+                },
+                "labels": {
+                    "description": "Labels that would override those from the command",
+                    "type": "object",
+                    "propertyNames": {
+                        "propertyNames": {
+                            "pattern": "^[a-zA-Z_-]+$",
+                            "type": "string"
+                        }
+                    }
+                }
+            }
+        },
+        "WatcherMetric": {
+            "description": "A watcher that periodically runs a command and expose metrics found to Prometheus",
+            "type":"object",
+            "additionalItems": false,
+            "allOf": [
+                {
+                    "type":"object",
+                    "required":["properties"],
+                    "properties": {
+                        "properties": { "$ref":"#/definitions/WatcherMetricProperties" }
+                    }
+                },
+                {"$ref":"#/definitions/WatcherBase"},
+                {
+                    "type":"object",
+                    "required": ["type"],
+                    "properties": {
+                        "type": {
+                            "enum": ["schedule"]
+                        }
+                    }
+                }
+            ]
+        }
+    },
+    "properties": {
+        "name": {
+            "description": "A unique name for this autonomous agent",
+            "$ref":"#/definitions/GenericName"
+        },
+        "version": {
+            "type":"string",
+            "description": "SemVer compatible version of the autonomous agent",
+            "minLength": 5,
+            "pattern": "^\\d+\\.\\d+\\.\\d+$"
+        },
+        "initial_state": { "$ref":"#/definitions/GenericName" },
+        "splay_start": {
+            "type":"integer",
+            "description": "Causes a random delay on start no longer than splay_start seconds",
+            "default":0
+        },
+        "transitions": {
+            "type":"array",
+            "description": "A list of events that can be fired for this autonomous agent",
+            "minItems": 1,
+            "items": { "$ref":"#/definitions/Transition" }
+        },
+        "watchers": {
+            "description": "Watchers to observe the environment in specific states",
+            "type":"array",
+            "minItems": 1,
+            "items": {
+                "anyOf": [
+                    {"$ref":"#/definitions/WatcherFile"},
+                    {"$ref":"#/definitions/WatcherExec"},
+                    {"$ref":"#/definitions/WatcherNagios"},
+                    {"$ref":"#/definitions/WatcherSchedule"},
+                    {"$ref":"#/definitions/WatcherHomekit"},
+                    {"$ref":"#/definitions/WatcherTimer"},
+                    {"$ref":"#/definitions/WatcherMetric"},
+                    {"$ref":"#/definitions/WatcherKV"}
+                ]
+            }
+        }
+    }
+}

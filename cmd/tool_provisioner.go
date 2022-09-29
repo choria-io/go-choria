@@ -6,11 +6,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"sync"
+
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
 	log "github.com/sirupsen/logrus"
-	"os"
-	"sync"
 
 	"github.com/choria-io/go-choria/providers/provtarget"
 )

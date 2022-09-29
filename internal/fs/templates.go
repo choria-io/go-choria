@@ -6,14 +6,14 @@ package fs
 
 import (
 	"bytes"
+	"fmt"
+	"strconv"
 	"strings"
 	"text/template"
 
 	"github.com/fatih/color"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
-
-	"github.com/choria-io/go-choria/internal/util"
 )
 
 type consoleRender interface {
@@ -83,7 +83,18 @@ func renderConsolePadded(i consoleRender, padding int) string {
 		panic(err)
 	}
 
-	return util.ParagraphPadding(string(out), padding)
+	return paragraphPadding(string(out), padding)
+}
+
+func paragraphPadding(paragraph string, padding int) string {
+	parts := strings.Split(paragraph, "\n")
+	ps := fmt.Sprintf("%"+strconv.Itoa(padding)+"s", " ")
+
+	for i := range parts {
+		parts[i] = ps + parts[i]
+	}
+
+	return strings.Join(parts, "\n")
 }
 
 // use to escape within backticks, not for general full md escape, we mainly want to avoid escaping backticks and tables

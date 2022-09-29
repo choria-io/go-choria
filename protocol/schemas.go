@@ -5,11 +5,12 @@
 package protocol
 
 import (
+	"encoding/json"
 	"errors"
 	"fmt"
 
 	"github.com/choria-io/go-choria/internal/fs"
-	"github.com/xeipuuv/gojsonschema"
+	iu "github.com/choria-io/go-choria/internal/util"
 )
 
 var (
@@ -21,44 +22,53 @@ var (
 
 // SchemaBytes returns the JSON schema matching a specific protocol definition like `ReplyV1`
 func SchemaBytes(protocol string) ([]byte, error) {
+	path, err := schemaPath(protocol)
+	if err != nil {
+		return nil, err
+	}
+
+	return fs.FS.ReadFile(path)
+}
+
+func schemaPath(protocol string) (string, error) {
 	switch protocol {
 	case ReplyV1:
-		return fs.FS.ReadFile("protocol/v1/reply.json")
+		return "schemas/choria/protocol/v1/reply.json", nil
 	case RequestV1:
-		return fs.FS.ReadFile("protocol/v1/request.json")
+		return "schemas/choria/protocol/v1/request.json", nil
 	case SecureReplyV1:
-		return fs.FS.ReadFile("protocol/v1/secure_reply.json")
+		return "schemas/choria/protocol/v1/secure_reply.json", nil
 	case SecureRequestV1:
-		return fs.FS.ReadFile("protocol/v1/secure_request.json")
+		return "schemas/choria/protocol/v1/secure_request.json", nil
 	case TransportV1:
-		return fs.FS.ReadFile("protocol/v1/transport.json")
+		return "schemas/choria/protocol/v1/transport.json", nil
 	default:
-		return nil, ErrSchemaUnknown
+		return "", ErrSchemaUnknown
 	}
 }
 
 // SchemaValidate validates data against the JSON schema for protocol
 func SchemaValidate(protocol string, data []byte) (valid bool, errors []string, err error) {
-	schema, err := SchemaBytes(protocol)
+	paht, err := schemaPath(protocol)
 	if err != nil {
 		return false, nil, err
 	}
 
-	js := gojsonschema.NewBytesLoader(schema)
-	d := gojsonschema.NewBytesLoader(data)
-
-	validation, err := gojsonschema.Validate(js, d)
+	var d any
+	err = json.Unmarshal(data, &d)
 	if err != nil {
-		return false, errors, fmt.Errorf("%w: %v", ErrSchemaValidationFailed, err)
+		return false, nil, fmt.Errorf("%w: invalid json data: %v", ErrSchemaValidationFailed, err)
 	}
 
-	if !validation.Valid() {
-		for _, desc := range validation.Errors() {
-			errors = append(errors, desc.String())
-		}
-
-		return false, errors, nil
+	errors, err = iu.ValidateSchemaFromFS(paht, d)
+	switch err {
+	case nil:
+		return len(errors) == 0, errors, nil
+	case iu.ErrSchemaValidationFailed:
+		return false, nil, ErrSchemaValidationFailed
+	case iu.ErrSchemaUnknown:
+		return false, nil, ErrSchemaUnknown
 	}
 
-	return true, errors, nil
+	return len(errors) == 0, errors, nil
 }
