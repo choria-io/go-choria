@@ -76,7 +76,7 @@ that match the filter.
 
 `
 
-	r.cmd = cli.app.Command("req", "Invokes Choria RPC Actions").Alias("rpc")
+	r.cmd = cli.app.Command("req", "Invokes Choria RPC Actions").Alias("rpc").Alias("request")
 	r.cmd.HelpLong(help)
 	r.cmd.CheatFile(fs.FS, "req", "cheats/req.md")
 
@@ -299,7 +299,15 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		opts = append(opts, rpc.Targets(nodes))
 	}
 
-	agent, err := rpc.New(c, r.agent, rpc.DDL(r.ddl))
+	rpcOpts := []rpc.Option{
+		rpc.DDL(r.ddl),
+	}
+
+	if publishOnly {
+		rpcOpts = append(rpcOpts, rpc.DiscoveryMethod(r.fo.DiscoveryMethod))
+	}
+
+	agent, err := rpc.New(c, r.agent, rpcOpts...)
 	if err != nil {
 		return fmt.Errorf("could not create client: %s", err)
 	}
