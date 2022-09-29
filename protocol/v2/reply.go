@@ -18,24 +18,19 @@ type Reply struct {
 	Protocol string `json:"protocol"`
 	// The arbitrary data contained in the reply - like a RPC reply
 	MessageBody []byte `json:"message"`
-
-	ReplyEnvelope
-
-	mu sync.Mutex
-}
-
-type ReplyEnvelope struct {
 	// The ID of the request this reply relates to
 	Request string `json:"request"`
 	// The host sending the reply
 	Sender string `json:"sender"`
 	// The agent the reply originates from
-	Agent string `json:"agent"`
+	SendingAgent string `json:"agent"`
 	// The unix nano time the request was created
-	Time int64 `json:"time"`
+	TimeStamp int64 `json:"time"`
 
 	seenBy     [][3]string
 	federation *FederationTransportHeader
+
+	mu sync.Mutex
 }
 
 // NewReply creates a io.choria.protocol.v2.request based on a previous Request
@@ -45,13 +40,11 @@ func NewReply(request protocol.Request, certName string) (protocol.Reply, error)
 	}
 
 	rep := &Reply{
-		Protocol: protocol.ReplyV2,
-		ReplyEnvelope: ReplyEnvelope{
-			Request: request.RequestID(),
-			Sender:  certName,
-			Agent:   request.Agent(),
-			Time:    time.Now().UnixNano(),
-		},
+		Protocol:     protocol.ReplyV2,
+		Request:      request.RequestID(),
+		Sender:       certName,
+		SendingAgent: request.Agent(),
+		TimeStamp:    time.Now().UnixNano(),
 	}
 
 	protocol.CopyFederationData(request, rep)
@@ -119,7 +112,7 @@ func (r *Reply) Agent() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.ReplyEnvelope.Agent
+	return r.SendingAgent
 }
 
 // Time retrieves the time stamp that this message was made
@@ -127,7 +120,7 @@ func (r *Reply) Time() time.Time {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return time.Unix(0, r.ReplyEnvelope.Time)
+	return time.Unix(0, r.TimeStamp)
 }
 
 // JSON creates a JSON encoded reply
@@ -188,7 +181,7 @@ func (r *Reply) FederationTargets() (targets []string, federated bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if r.ReplyEnvelope.federation == nil {
+	if r.federation == nil {
 		return nil, false
 	}
 

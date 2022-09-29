@@ -5,7 +5,10 @@
 package cmd
 
 import (
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/json"
+	"encoding/pem"
 	"fmt"
 	"os"
 	"strconv"
@@ -15,6 +18,7 @@ import (
 
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
+	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/dustin/go-humanize"
 	"github.com/nats-io/nats.go"
 	"github.com/tidwall/gjson"
@@ -68,10 +72,10 @@ func (p *tProtocolCommand) Run(wg *sync.WaitGroup) (err error) {
 			defer mu.Unlock()
 
 			cnt++
-			fmt.Printf(">>> [%d] Message received %s from %s\n\n", cnt, c.Colorize("green", time.Now().Format(time.RFC822)), c.Colorize("green", msg.Subject))
+			fmt.Printf(">>> [%d] Message received %s from %s\n\n", cnt, c.Colorize("green", time.Now().Format(time.RFC3339)), c.Colorize("green", msg.Subject))
 			err = p.renderMsgBytes(msg.Data)
 			if err != nil {
-				fmt.Printf(">> invalid message on %s: %v\n\n", msg.Subject, c.Colorize("red", err.Error()))
+				fmt.Printf(">>> [%s] %v\n\n", c.Colorize("red", "ERROR"), c.Colorize("yellow", err.Error()))
 			}
 			fmt.Println()
 
@@ -183,6 +187,16 @@ func (p *tProtocolCommand) renderSecureReply(t protocol.SecureReply) error {
 	fmt.Printf("║   ║ %s message with %s payload\n", c.Colorize("green", t.Version()), c.Colorize("green", humanize.IBytes(uint64(len(payload)))))
 	fmt.Println("║   ║")
 	fmt.Printf("║   ║   Payload Protocol: %s\n", payloadProto.String())
+
+	switch t.Version() {
+	case protocol.SecureReplyV1:
+		err = p.renderV1SecureReplyInternals(raw)
+		if err != nil {
+			return err
+		}
+	case protocol.SecureReplyV2:
+	}
+
 	fmt.Println("║   ║")
 
 	return nil
@@ -238,18 +252,75 @@ func (p *tProtocolCommand) renderSecureRequest(t protocol.SecureRequest) error {
 		return err
 	}
 
-	sig, err := base64.StdEncoding.DecodeString(gjson.GetBytes(raw, "signature").String())
-	if err != nil {
-		return err
-	}
-
 	fmt.Println("║   ╓─ Secure Request ─────────────────────────────────────")
 	fmt.Println("║   ║")
 	fmt.Printf("║   ║ %s message with %s payload\n", c.Colorize("green", t.Version()), c.Colorize("green", humanize.IBytes(uint64(len(payload)))))
 	fmt.Println("║   ║")
 	fmt.Printf("║   ║      Payload Protocol: %s\n", payloadProto.String())
-	fmt.Printf("║   ║             Signature: %x...%x\n", sig[:15], sig[len(sig)-15:])
+
+	switch t.Version() {
+	case protocol.SecureRequestV1:
+		err = p.renderV1SecureRequestInternals(raw)
+		if err != nil {
+			return err
+		}
+	case protocol.SecureRequestV2:
+	}
+
 	fmt.Println("║   ║")
+
+	return nil
+}
+
+func (p *tProtocolCommand) renderV1SecureReplyInternals(msg []byte) error {
+	srep := &v1.SecureReply{}
+	err = json.Unmarshal(msg, srep)
+	if err != nil {
+		return err
+	}
+
+	hash, err := base64.StdEncoding.DecodeString(srep.Hash)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("║   ║               Hash: %x\n", hash)
+
+	return nil
+}
+
+func (p *tProtocolCommand) renderV1SecureRequestInternals(msg []byte) error {
+	sreq := &v1.SecureRequest{}
+	err = json.Unmarshal(msg, sreq)
+	if err != nil {
+		return err
+	}
+
+	sig, err := base64.StdEncoding.DecodeString(sreq.Signature)
+	if err != nil {
+		return err
+	}
+
+	block, _ := pem.Decode([]byte(sreq.PublicCertificate))
+	if block == nil {
+		return err
+	}
+
+	cert, err := x509.ParseCertificate(block.Bytes)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("║   ║             Signature: %x...%x\n", sig[:15], sig[len(sig)-15:])
+	na := iu.RenderDuration(time.Until(cert.NotAfter))
+	if time.Until(cert.NotAfter) < 0 {
+		na = c.Colorize("yellow", na+" ago")
+	}
+	fmt.Printf("║   ║                Signer:\n")
+	fmt.Printf("║   ║                          Subject: %s\n", cert.Subject.String())
+	fmt.Printf("║   ║                        Alt Names: %s\n", strings.Join(cert.DNSNames, ", "))
+	fmt.Printf("║   ║                          Expires: %s (%s)\n", cert.NotAfter.Format(time.RFC3339), na)
+	fmt.Printf("║   ║                           Issuer: %s\n", cert.Issuer.String())
 
 	return nil
 }
@@ -353,7 +424,6 @@ func (p *tProtocolCommand) renderTransport(t protocol.TransportMessage) (string,
 	} else {
 		fmt.Printf("║             Federated: false\n")
 	}
-
 	fmt.Println("║")
 
 	return payloadProto.String(), nil

@@ -98,7 +98,7 @@ func (r *SecureReply) IsValidJSON(data []byte) (err error) {
 		return nil
 	}
 
-	_, errors, err := schemaValidate(secureReplySchema, data)
+	_, errors, err := schemaValidate(protocol.SecureReplyV1, data)
 	if err != nil {
 		return fmt.Errorf("could not validate SecureReply JSON data: %s", err)
 	}

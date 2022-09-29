@@ -312,4 +312,4 @@ There are some other improvements to be made also in addition but those we'd nee
   * Move the API to `[]byte` based API [#1844](https://github.com/choria-io/go-choria/pull/1844)
   * Remove some string orientated security apis [](https://github.com/choria-io/go-choria/pull/1843)
   * Make the JWT authoritative for the secure channel name so we can stop using md5
-  * Develop a tool that can decode and dump/view network packets
+  * Develop a tool that can decode and dump/view network packets [#1484](https://github.com/choria-io/go-choria/pull/1848)

@@ -5,46 +5,22 @@
 package v1
 
 import (
-	_ "embed"
-	"fmt"
+	"errors"
 
-	"github.com/choria-io/go-choria/internal/fs"
-	"github.com/xeipuuv/gojsonschema"
+	"github.com/choria-io/go-choria/protocol"
 )
 
-var (
-	replySchema, _         = fs.FS.ReadFile("protocol/v1/reply.json")
-	requestSchema, _       = fs.FS.ReadFile("protocol/v1/request.json")
-	secureReplySchema, _   = fs.FS.ReadFile("protocol/v1/secure_reply.json")
-	secureRequestSchema, _ = fs.FS.ReadFile("protocol/v1/secure_request.json")
-	transportSchema, _     = fs.FS.ReadFile("protocol/v1/transport.json")
-)
+func schemaValidate(version string, data []byte) (valid bool, errs []string, err error) {
+	valid, errs, err = protocol.SchemaValidate(version, data)
 
-func schemaValidate(schema []byte, data []byte) (result bool, errors []string, err error) {
-	if len(schema) == 0 {
-		return false, nil, fmt.Errorf("invalid schema")
-	}
-
-	js := gojsonschema.NewBytesLoader(schema)
-	d := gojsonschema.NewBytesLoader(data)
-
-	validation, err := gojsonschema.Validate(js, d)
-	if err != nil {
+	switch {
+	case errors.Is(err, protocol.ErrSchemaValidationFailed):
 		badJsonCtr.Inc()
 		protocolErrorCtr.Inc()
-
-		return false, errors, fmt.Errorf("could not validate incoming document: %s", err)
-	}
-
-	if !validation.Valid() {
+	case !valid:
 		protocolErrorCtr.Inc()
 		invalidCtr.Inc()
-		for _, desc := range validation.Errors() {
-			errors = append(errors, desc.String())
-		}
-
-		return false, errors, nil
 	}
 
-	return true, errors, nil
+	return valid, errs, err
 }
