@@ -439,7 +439,7 @@ func (conn *Connection) publishConnectedBroadcast(msg inter.Message, transport p
 
 	msg.NotifyPublish()
 
-	err = conn.PublishRaw(target, []byte(j))
+	err = conn.PublishRaw(target, j)
 	if err != nil {
 		return err
 	}
@@ -455,7 +455,7 @@ func (conn *Connection) publishConnectedDirect(msg inter.Message, transport prot
 		return err
 	}
 
-	rawmsg := []byte(j)
+	rawmsg := j
 
 	for _, host := range msg.DiscoveredHosts() {
 		target, err := conn.TargetForMessage(msg, host)

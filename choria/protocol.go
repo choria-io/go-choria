@@ -124,7 +124,7 @@ func (fw *Framework) NewRequestFromMessage(version string, msg inter.Message) (r
 
 	req.SetMessage(msg.Payload())
 
-	if msg.Filter() == nil || msg.Filter().Empty() {
+	if msg.Filter() == nil {
 		req.NewFilter()
 	} else {
 		req.SetFilter(msg.Filter())

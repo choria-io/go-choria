@@ -88,17 +88,17 @@ func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err e
 }
 
 // NewRequestFromSecureRequest creates a choria::request:1 based on the data contained in a SecureRequest
-func NewRequestFromSecureRequest(sr protocol.SecureRequest) (req protocol.Request, err error) {
+func NewRequestFromSecureRequest(sr protocol.SecureRequest) (protocol.Request, error) {
 	if sr.Version() != protocol.SecureRequestV1 {
 		return nil, fmt.Errorf("cannot create a version 1 SecureRequest from a %s SecureRequest", sr.Version())
 	}
 
-	req = &Request{
+	req := &Request{
 		Protocol: protocol.RequestV1,
 		Envelope: &RequestEnvelope{},
 	}
 
-	err = req.IsValidJSON(sr.Message())
+	err := req.IsValidJSON(sr.Message())
 	if err != nil {
 		return nil, fmt.Errorf("the JSON body from the SecureRequest is not a valid Request message: %s", err)
 	}

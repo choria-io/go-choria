@@ -177,6 +177,8 @@ func (f *Filter) MatchCompound(facts json.RawMessage, knownClasses []string, kno
 
 // Empty determines if a filter is empty - that is all its contained filter arrays are empty
 func (f *Filter) Empty() bool {
+	// NOTE: Do not make empty return true when there is only 1 agent filter set, this breaks a bunch of things.
+
 	f.mu.Lock()
 	defer f.mu.Unlock()
 
@@ -184,7 +186,7 @@ func (f *Filter) Empty() bool {
 		return true
 	}
 
-	if len(f.Fact) == 0 && len(f.Class) == 0 && (len(f.Agent) == 0 || len(f.Agent) == 1) && len(f.Identity) == 0 && len(f.Compound) == 0 {
+	if len(f.Fact) == 0 && len(f.Class) == 0 && len(f.Agent) == 0 && len(f.Identity) == 0 && len(f.Compound) == 0 {
 		return true
 	}
 
