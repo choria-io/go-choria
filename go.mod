@@ -30,10 +30,10 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.0.35-0.20220922161644-b061832b5fb5
-	github.com/nats-io/nats-server/v2 v2.9.1
+	github.com/nats-io/jsm.go v0.0.35-0.20220930094031-ec07abe149c8
+	github.com/nats-io/nats-server/v2 v2.9.2
 	github.com/nats-io/nats.go v1.17.0
-	github.com/nats-io/natscli v0.0.35-0.20220923112607-55b9c9c65693
+	github.com/nats-io/natscli v0.0.35-0.20220930094603-1057211892d5
 	github.com/onsi/ginkgo/v2 v2.2.0
 	github.com/onsi/gomega v1.20.2
 	github.com/open-policy-agent/opa v0.44.0
@@ -46,8 +46,8 @@ require (
 	github.com/tidwall/pretty v1.2.0
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/atomic v1.9.0
-	golang.org/x/crypto v0.0.0-20220924013350-4ba4fb4dd9e7
-	golang.org/x/sys v0.0.0-20220919091848-fb04ddd9f9c8
+	golang.org/x/crypto v0.0.0-20220926161630-eccd6366d1be
+	golang.org/x/sys v0.0.0-20220928140112-f11e5e49a4ec
 	golang.org/x/term v0.0.0-20220919170432-7a66f970e087
 	golang.org/x/text v0.3.7
 	golang.org/x/tools v0.1.12
