@@ -1,0 +1,86 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "https://choria.io/schemas/choria/protocol/v2/transport.json",
+  "description": "Choria Transport version 2",
+  "title": "TransportV2",
+  "type":"object",
+  "required":[
+    "protocol",
+    "data",
+    "headers"
+  ],
+  "properties": {
+    "protocol": {
+      "type":"string",
+      "const": "io.choria.protocol.v2.transport"
+    },
+    "data": {
+      "type":"string",
+      "description": "Base64 encoded JSON representation of the SecureRequestV2 or SecureReplyV2"
+    },
+    "headers": {
+      "type":"object",
+      "properties": {
+        "reply": {
+          "type":"string",
+          "description": "A transport specific response channel for this message, used in requests"
+        },
+        "sender": {
+          "type":"string",
+          "description": "The configured identity of the sender",
+          "minLength": 1
+        },
+        "seen-by": {
+          "type":"array",
+          "description": "Tracks nodes this message travelled through",
+          "items": [
+            {
+              "type":"array",
+              "description": "Triplet of from, via and to",
+              "items": [
+                {
+                  "type":"string",
+                  "description": "The incoming end point - typically a NATS server name. Blank string if this is where a message starts like a request"
+                },
+                {
+                  "type":"string",
+                  "description": "The processing node - the identity of a server, client or broker processing this message"
+                },
+                {
+                  "type":"string",
+                  "description": "The outgoing end point - typically a NATS server name. Blank string if this is where the message ends like a client receiving a reply"
+                }
+              ]
+            }
+          ]
+        },
+        "federation": {
+          "description": "Optional headers set to support Federation.",
+          "type":"object",
+          "required":[
+            "request"
+          ],
+          "properties": {
+            "request": {
+              "type":"string",
+              "description": "The request ID of the contained Secure Request or Secure Reply.  Used for logging mainly",
+              "minLength": 1
+            },
+            "reply": {
+              "type":"string",
+              "description": "Used by Federation to record the original reply header"
+            },
+            "targets": {
+              "type":"array",
+              "description": "List of targets the message should be sent to, these are Choria identities",
+              "items": {
+                "type":"string",
+                "description": "Node identities this message should be dispatched to"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

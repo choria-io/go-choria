@@ -42,10 +42,16 @@ func schemaPath(protocol string) (string, error) {
 		return "schemas/choria/protocol/v2/reply.json", nil
 	case SecureRequestV1:
 		return "schemas/choria/protocol/v1/secure_request.json", nil
+	case SecureRequestV2:
+		return "schemas/choria/protocol/v2/secure_request.json", nil
 	case SecureReplyV1:
 		return "schemas/choria/protocol/v1/secure_reply.json", nil
+	case SecureReplyV2:
+		return "schemas/choria/protocol/v2/secure_reply.json", nil
 	case TransportV1:
 		return "schemas/choria/protocol/v1/transport.json", nil
+	case TransportV2:
+		return "schemas/choria/protocol/v2/transport.json", nil
 	default:
 		return "", ErrSchemaUnknown
 	}
