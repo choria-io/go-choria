@@ -140,6 +140,8 @@ The broker might set the NATS user to the identity to assist with debugging.
 
 Today requests are signed by the x509/RSA key, we'd just sign it with the ed25519 seed instead. We would not support any form of server side cache.
 
+Client JWTs will gain permissions that state they have fleet management access and, optionally, that fleet management access requires signatures.
+
 ### Issuing JWT tokens
 
 Traditionally you would use whatever your CA does for enrolling certificates and `choria enroll` might help you out if you're lucky to have a system that supports that.

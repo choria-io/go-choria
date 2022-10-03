@@ -22,6 +22,7 @@ const (
 	algRS512     = "RS512"
 	alsEdDSA     = "EdDSA"
 	rsaKeyHeader = "-----BEGIN RSA PRIVATE KEY"
+	keyHeader    = "-----BEGIN PRIVATE KEY"
 )
 
 // Purpose indicates what kind of token a JWT is and helps us parse it into the right data structure
@@ -110,7 +111,7 @@ func SignTokenWithKeyFile(claims jwt.Claims, pkFile string) (string, error) {
 		return "", fmt.Errorf("could not read signing key: %s", err)
 	}
 
-	if bytes.HasPrefix(keydat, []byte(rsaKeyHeader)) {
+	if bytes.HasPrefix(keydat, []byte(rsaKeyHeader)) || bytes.HasPrefix(keydat, []byte(keyHeader)) {
 		key, err := jwt.ParseRSAPrivateKeyFromPEM(keydat)
 		if err != nil {
 			return "", fmt.Errorf("could not parse signing key: %s", err)
