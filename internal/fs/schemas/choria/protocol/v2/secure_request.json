@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://choria.io/schemas/choria/protocol/v2/secure_request.json",
+  "description": "Choria Secure Request version 2",
+  "title":"SecureRequestV2",
+  "type":"object",
+  "required":[
+    "protocol",
+    "request",
+    "signature",
+    "caller"
+  ],
+  "properties": {
+    "protocol": {
+      "type":"string",
+      "const": "io.choria.protocol.v2.secure_request"
+    },
+    "request": {
+      "type":"string",
+      "description": "Base64 encoded JSON version of a RequestV2",
+      "minLength":1
+    },
+    "signature": {
+      "type":"string",
+      "description": "Hex encoded signature made using the ed25519 seed of the caller or signer",
+      "minLength": 1
+    },
+    "caller": {
+      "type":"string",
+      "description": "JWT of the caller",
+      "minLength": 1
+    },
+    "signer": {
+      "type": "string",
+      "description": "JWT of the delegated signer, present when the AAA server is used"
+    }
+  }
+}

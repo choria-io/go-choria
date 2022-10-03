@@ -4,6 +4,15 @@
 
 package v2
 
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+	"sync"
+
+	"github.com/choria-io/go-choria/protocol"
+)
+
 type TransportMessage struct {
 	// The protocol version for this transport `io.choria.protocol.v2.transport` / protocol.TransportV2
 	Protocol string `json:"protocol"`
@@ -11,6 +20,8 @@ type TransportMessage struct {
 	Data []byte `json:"data"`
 	// Optional headers
 	Headers *TransportHeaders `json:"headers,omitempty"`
+
+	mu sync.Mutex
 }
 
 type TransportHeaders struct {
@@ -31,4 +42,205 @@ type FederationTransportHeader struct {
 	ReplyTo string `json:"reply,omitempty"`
 	// The identities who the federated message is for
 	Targets []string `json:"targets,omitempty"`
+}
+
+func (m *TransportMessage) SetFederationRequestID(id string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.Headers.Federation == nil {
+		m.Headers.Federation = &FederationTransportHeader{}
+	}
+
+	m.Headers.Federation.RequestID = id
+}
+
+func (m *TransportMessage) SetFederationReplyTo(reply string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.Headers.Federation == nil {
+		m.Headers.Federation = &FederationTransportHeader{}
+	}
+
+	m.Headers.Federation.ReplyTo = reply
+}
+
+func (m *TransportMessage) SetFederationTargets(targets []string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.Headers.Federation == nil {
+		m.Headers.Federation = &FederationTransportHeader{}
+	}
+
+	m.Headers.Federation.Targets = targets
+}
+
+func (m *TransportMessage) SetUnfederated() {
+	// TODO implement me
+	panic("implement me")
+}
+
+func (m *TransportMessage) FederationRequestID() (string, bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.Headers.Federation == nil {
+		return "", false
+	}
+
+	return m.Headers.Federation.RequestID, true
+}
+
+func (m *TransportMessage) FederationReplyTo() (string, bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.Headers.Federation == nil {
+		return "", false
+	}
+
+	return m.Headers.Federation.ReplyTo, true
+}
+
+func (m *TransportMessage) FederationTargets() ([]string, bool) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	if m.Headers.Federation == nil {
+		return nil, false
+	}
+
+	return m.Headers.Federation.Targets, true
+}
+
+func (m *TransportMessage) RecordNetworkHop(in string, processor string, out string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.Headers.SeenBy = append(m.Headers.SeenBy, [3]string{in, processor, out})
+}
+
+func (m *TransportMessage) NetworkHops() [][3]string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	return m.Headers.SeenBy
+}
+
+func (m *TransportMessage) IsFederated() bool {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	return m.Headers.Federation != nil
+}
+
+func (m *TransportMessage) SetReplyData(reply protocol.SecureReply) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	j, err := reply.JSON()
+	if err != nil {
+		return err
+	}
+
+	m.Data = j
+
+	return nil
+}
+
+func (m *TransportMessage) SetRequestData(request protocol.SecureRequest) error {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	j, err := request.JSON()
+	if err != nil {
+		return err
+	}
+
+	m.Data = j
+
+	return nil
+}
+
+func (m *TransportMessage) SetReplyTo(reply string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.Headers.ReplyTo = reply
+}
+
+func (m *TransportMessage) SetSender(sender string) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.Headers.Sender = sender
+}
+
+func (m *TransportMessage) ReplyTo() string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	return m.Headers.ReplyTo
+}
+
+func (m *TransportMessage) SenderID() string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	return m.Headers.Sender
+}
+
+func (m *TransportMessage) SeenBy() [][3]string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	return m.Headers.SeenBy
+}
+
+func (m *TransportMessage) Message() ([]byte, error) {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	return m.Data, nil
+}
+
+func (m *TransportMessage) IsValidJSON(data []byte) error {
+	if !protocol.ClientStrictValidation {
+		return nil
+	}
+
+	_, errors, err := schemaValidate(protocol.TransportV2, data)
+	if err != nil {
+		return err
+	}
+
+	if len(errors) != 0 {
+		return fmt.Errorf("%w: %s", ErrInvalidJSON, strings.Join(errors, ", "))
+	}
+
+	return nil
+}
+
+func (m *TransportMessage) JSON() ([]byte, error) {
+	m.mu.Lock()
+	j, err := json.Marshal(m)
+	m.mu.Unlock()
+	if err != nil {
+		return nil, err
+	}
+
+	if err = m.IsValidJSON(j); err != nil {
+		return nil, fmt.Errorf("%w: %s", ErrInvalidJSON, err)
+	}
+
+	return j, nil
+}
+
+func (m *TransportMessage) Version() string {
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	return m.Protocol
 }

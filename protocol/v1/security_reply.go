@@ -22,8 +22,7 @@ type SecureReply struct {
 	Hash        string `json:"hash"`
 
 	security inter.SecurityProvider
-
-	mu sync.Mutex
+	mu       sync.Mutex
 }
 
 // SetMessage sets the message contained in the Reply and updates the hash
