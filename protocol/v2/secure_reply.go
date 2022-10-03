@@ -6,7 +6,7 @@ package v2
 
 // SecureReply contains 1 serialized Reply hashed
 type SecureReply struct {
-	// The protocol version for this secure reply `io.choria.protocol.v2.secure_reply` /  / protocol.SecureReplyV2
+	// The protocol version for this secure reply `io.choria.protocol.v2.secure_reply` / protocol.SecureReplyV2
 	Protocol string `json:"protocol"`
 	// The reply held in the Secure Request
 	MessageBody []byte `json:"reply"`

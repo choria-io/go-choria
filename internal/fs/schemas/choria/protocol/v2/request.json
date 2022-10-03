@@ -1,0 +1,144 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://choria.io/schemas/choria/protocol/v2/request.json",
+  "description": "Choria Request version 2",
+  "title": "RequestV2",
+  "type":"object",
+  "required":[
+    "protocol",
+    "message",
+    "id",
+    "sender",
+    "caller",
+    "collective",
+    "agent",
+    "ttl",
+    "time"
+  ],
+  "properties": {
+    "protocol": {
+      "type": "string",
+      "const":"io.choria.protocol.v2.request"
+    },
+    "message": {
+      "type":"string",
+      "description": "Base64 encoded data to be delivered to the Agent",
+      "minLength": 1
+    },
+    "id": {
+      "type": "string",
+      "description": "The unique ID for the request, logged in AAA etc",
+      "minLength": 1
+    },
+    "sender": {
+      "type": "string",
+      "description": "Typically the host that the request was initiated from",
+      "minLength": 1
+    },
+    "caller": {
+      "type": "string",
+      "description": "Who made the request in the form of `kind=name`",
+      "minLength": 1
+    },
+    "collective": {
+      "type": "string",
+      "description": "Collective this request is targeted at",
+      "minLength": 1
+    },
+    "agent": {
+      "type": "string",
+      "description": "The agent this request is targeted at",
+      "minLength": 1
+    },
+    "ttl": {
+      "type": "integer",
+      "description": "How long this request is valid for",
+      "minimum": 1
+    },
+    "time": {
+      "type": "integer",
+      "description": "he unix nano time the request was created",
+      "minimum": 1,
+      "maximum": 18446744073709551615
+    },
+    "filter":{
+      "type":"object",
+      "required":[
+        "fact",
+        "cf_class",
+        "identity",
+        "compound"
+      ],
+      "properties": {
+        "compound": {
+          "type":"array",
+          "description": "List of compound filters to be applied in an AND fashion",
+          "items": {
+            "type":"array",
+            "items": {
+              "type": "object"
+            }
+          }
+        },
+        "identity": {
+          "type":"array",
+          "description": "List of identities the message should match, applied in an OR fashion",
+          "items": {
+            "type":"string"
+          }
+        },
+        "agent": {
+          "type":"array",
+          "description": "List of agents the node should have, applied in an AND fashion",
+          "items": {
+            "type":"string"
+          }
+        },
+        "cf_class": {
+          "type":"array",
+          "description": "The list of configuration management classes the node should have, applied in an AND fashion",
+          "items": {
+            "type":"string"
+          }
+        },
+        "fact": {
+          "type":"array",
+          "description": "Fact values the node should have, applied in an AND fashion",
+          "items": {
+            "type":"object",
+            "required": [
+              "fact",
+              "operator",
+              "value"
+            ],
+            "properties": {
+              "fact": {
+                "type":"string",
+                "description": "The fact name to match",
+                "minLength": 1
+              },
+              "operator": {
+                "type":"string",
+                "description": "The comparison to do on it's value",
+                "enum": [
+                  ">=",
+                  "<=",
+                  "<",
+                  ">",
+                  "!=",
+                  "==",
+                  "=~"
+                ]
+              },
+              "value": {
+                "type":"string",
+                "description": "Value to compare the fact value with using the operator",
+                "minLength": 1
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

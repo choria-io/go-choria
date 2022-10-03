@@ -7,6 +7,7 @@ package v2
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -155,15 +156,14 @@ func (r *Reply) isValidJSONUnlocked(data []byte) error {
 		return nil
 	}
 
-	// TODO
-	// _, errors, err := schemaValidate(replySchema, data)
-	// if err != nil {
-	// 	return fmt.Errorf("could not validate Reply JSON data: %s", err)
-	// }
-	//
-	// if len(errors) != 0 {
-	// 	return fmt.Errorf("supplied JSON document is not a valid Reply message: %s", strings.Join(errors, ", "))
-	// }
+	_, errors, err := schemaValidate(protocol.ReplyV2, data)
+	if err != nil {
+		return fmt.Errorf("could not validate Reply JSON data: %s", err)
+	}
+
+	if len(errors) != 0 {
+		return fmt.Errorf("%w: %s", ErrInvalidJSON, strings.Join(errors, ", "))
+	}
 
 	return nil
 }

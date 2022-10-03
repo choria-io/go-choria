@@ -7,6 +7,7 @@ package v2
 import (
 	"encoding/json"
 	"fmt"
+	"strings"
 	"sync"
 	"time"
 
@@ -30,7 +31,7 @@ type reqEnvelope struct {
 	Agent      string           `json:"agent"`
 	TTL        int              `json:"ttl"`
 	Time       int64            `json:"time"`
-	Filter     *protocol.Filter `json:"filter"`
+	Filter     *protocol.Filter `json:"filter,omitempty"`
 
 	seenBy     [][3]string
 	federation *FederationTransportHeader
@@ -309,7 +310,7 @@ func (r *request) JSON() ([]byte, error) {
 	}
 
 	if err = r.isValidJSONUnlocked(j); err != nil {
-		return nil, fmt.Errorf("serialized JSON produced from the Request does not pass validation: %s", err)
+		return nil, fmt.Errorf("%w: %s", ErrInvalidJSON, err)
 	}
 
 	return j, nil
@@ -332,7 +333,7 @@ func (r *request) Version() string {
 }
 
 // IsValidJSON validates the given JSON data against the schema
-func (r *request) IsValidJSON(data []byte) (err error) {
+func (r *request) IsValidJSON(data []byte) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -340,16 +341,14 @@ func (r *request) IsValidJSON(data []byte) (err error) {
 }
 
 func (r *request) isValidJSONUnlocked(data []byte) error {
-	// TODO
+	_, errors, err := schemaValidate(protocol.RequestV2, data)
+	if err != nil {
+		return fmt.Errorf("could not validate Request JSON data: %s", err)
+	}
 
-	// _, errors, err := schemaValidate(requestSchema, data)
-	// if err != nil {
-	// 	return fmt.Errorf("could not validate Request JSON data: %s", err)
-	// }
-	//
-	// if len(errors) != 0 {
-	// 	return fmt.Errorf("supplied JSON document is not a valid Request message: %s", strings.Join(errors, ", "))
-	// }
+	if len(errors) != 0 {
+		return fmt.Errorf("%w: %s", ErrInvalidJSON, strings.Join(errors, ", "))
+	}
 
 	return nil
 }
