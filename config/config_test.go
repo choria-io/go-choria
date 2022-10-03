@@ -56,7 +56,6 @@ var _ = Describe("Choria/Config", func() {
 			Expect(c.RegistrationSplay).To(BeTrue())
 			Expect(c.Collectives).To(Equal([]string{"c_1", "c_2", "c_3"}))
 			Expect(c.MainCollective).To(Equal("c_1"))
-			Expect(c.KeepLogs).To(Equal(5))
 			Expect(c.LibDir).To(Equal([]string{"/dir1", "/dir2", "/dir3", "/dir4"}))
 			Expect(c.DefaultDiscoveryOptions).To(Equal([]string{"one", "two"}))
 			Expect(c.Choria.RandomizeMiddlewareHosts).To(BeTrue())

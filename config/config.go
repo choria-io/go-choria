@@ -63,9 +63,6 @@ type Config struct {
 	// Disables or enable CLI color
 	Color bool `confkey:"color" default:"true"`
 
-	// Used to select the security provider in Ruby clients, only sensible value is "choria"
-	SecurityProvider string `confkey:"securityprovider" default:"choria" type:"title_string" deprecated:"1"`
-
 	// Configures the network connector to use, only sensible value is "nats", unused in Go based code
 	Connector string `confkey:"connector" default:"nats" type:"title_string"`
 
@@ -114,18 +111,8 @@ type Config struct {
 	// Default options to pass to the discovery plugin
 	DefaultDiscoveryOptions []string `confkey:"default_discovery_options"`
 
-	// Deprecated settings
-
-	ActivateAgents            bool   `confkey:"activate_agents" default:"true" deprecated:"1"`
-	Daemonize                 bool   `confkey:"daemonize" default:"false" deprecated:"1"`
-	DirectAddressingThreshold int    `confkey:"direct_addressing_threshold" default:"10" deprecated:"1"`
-	FactCacheTime             int    `confkey:"fact_cache_time" default:"300" deprecated:"1"`
-	FactSource                string `confkey:"factsource" default:"yaml" deprecated:"1"`
-	KeepLogs                  int    `confkey:"keeplogs" default:"5" deprecated:"1"`
-	LogFacility               string `confkey:"logfacility" default:"user" deprecated:"1"`
-	MaxLogSize                int    `confkey:"max_log_size" default:"2097152" deprecated:"1"`
-	SoftShutdown              bool   `confkey:"soft_shutdown" default:"true" deprecated:"1"`
-	SoftShutdownTimeout       int    `confkey:"soft_shutdown_timeout" default:"2" deprecated:"1"`
+	// The amount of time to allow the server to exit, after this memory and thread dumps will be performed and a force exit will be done
+	SoftShutdownTimeout int `confkey:"soft_shutdown_timeout" default:"2"`
 
 	// ConfigFile is the main configuration that got parsed
 	ConfigFile string
