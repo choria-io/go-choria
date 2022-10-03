@@ -37,6 +37,12 @@ type ClientPermissions struct {
 	// OrgAdmin has access to all subjects
 	OrgAdmin bool `json:"org_admin,omitempty"`
 
+	// FleetManagement enables access to the choria server fleet for RPCs
+	FleetManagement bool `json:"fleet_management,omitempty"`
+
+	// SignedFleetManagement requires a user to have a valid signature by an AuthenticationDelegator to interact with the fleet
+	SignedFleetManagement bool `json:"signed_fleet_management,omitempty"`
+
 	// ExtendedServiceLifetime allows a token to have a longer than common lifetime, suitable for services users
 	ExtendedServiceLifetime bool `json:"service,omitempty"`
 

@@ -213,7 +213,14 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 		fmt.Printf("         Expires At: %s (%s)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Until(claims.ExpiresAt.Time)))
 	}
 	if claims.Permissions != nil {
-		fmt.Println(" Broker Permissions:")
+		fmt.Println(" Client Permissions:")
+		if claims.Permissions.FleetManagement || claims.Permissions.SignedFleetManagement {
+			if claims.Permissions.SignedFleetManagement {
+				fmt.Println("      Can manage Choria fleet nodes subject to authorizing signature")
+			} else {
+				fmt.Println("      Can manage Choria fleet nodes")
+			}
+		}
 		if claims.Permissions.ElectionUser {
 			fmt.Println("      Can use Leader Elections")
 		}
