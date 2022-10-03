@@ -16,8 +16,11 @@ import (
 
 var _ = Describe("Reply", func() {
 	It("should create the correct reply from a request", func() {
-		request, _ := NewRequest("test", "go.tests", "choria=test", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
-		reply, _ := NewReply(request, "testing")
+		request, err := NewRequest("test", "go.tests", "choria=test", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		Expect(err).ToNot(HaveOccurred())
+		request.SetMessage([]byte("hello"))
+		reply, err := NewReply(request, "testing")
+		Expect(err).ToNot(HaveOccurred())
 
 		reply.SetMessage([]byte("hello world"))
 

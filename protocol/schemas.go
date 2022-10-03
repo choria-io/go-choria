@@ -32,14 +32,18 @@ func SchemaBytes(protocol string) ([]byte, error) {
 
 func schemaPath(protocol string) (string, error) {
 	switch protocol {
-	case ReplyV1:
-		return "schemas/choria/protocol/v1/reply.json", nil
 	case RequestV1:
 		return "schemas/choria/protocol/v1/request.json", nil
-	case SecureReplyV1:
-		return "schemas/choria/protocol/v1/secure_reply.json", nil
+	case RequestV2:
+		return "schemas/choria/protocol/v2/request.json", nil
+	case ReplyV1:
+		return "schemas/choria/protocol/v1/reply.json", nil
+	case ReplyV2:
+		return "schemas/choria/protocol/v2/reply.json", nil
 	case SecureRequestV1:
 		return "schemas/choria/protocol/v1/secure_request.json", nil
+	case SecureReplyV1:
+		return "schemas/choria/protocol/v1/secure_reply.json", nil
 	case TransportV1:
 		return "schemas/choria/protocol/v1/transport.json", nil
 	default:

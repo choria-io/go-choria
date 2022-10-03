@@ -5,14 +5,17 @@
 package v2
 
 import (
+	"errors"
+
 	"github.com/choria-io/go-choria/protocol/stats"
 )
 
 const promVersion = "2"
 
 var (
+	ErrInvalidJSON   = errors.New("supplied JSON document does not pass schema validation")
 	protocolErrorCtr = stats.ProtocolErrorCtr.WithLabelValues(promVersion)
-	// invalidCtr       = stats.InvalidCtr.WithLabelValues(promVersion)
+	invalidCtr       = stats.InvalidCtr.WithLabelValues(promVersion)
 	// validCtr         = stats.ValidCtr.WithLabelValues(promVersion)
-	// badJsonCtr       = stats.BadJsonCtr.WithLabelValues(promVersion)
+	badJsonCtr = stats.BadJsonCtr.WithLabelValues(promVersion)
 )

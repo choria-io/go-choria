@@ -1,0 +1,47 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema",
+  "$id": "https://choria.io/schemas/choria/protocol/v2/reply.json",
+  "description": "Choria Reply version 2",
+  "title": "ReplyV2",
+  "type":"object",
+  "required":[
+    "protocol",
+    "message",
+    "request",
+    "sender",
+    "agent",
+    "time"
+  ],
+  "properties": {
+    "protocol": {
+      "type":"string",
+      "const": "io.choria.protocol.v2.request"
+    },
+    "message": {
+      "type":"string",
+      "description": "The data being sent to the Agent Base64 encoded",
+      "minLength":1
+    },
+    "request": {
+      "type": "string",
+      "description": "The ID of the request this reply relates to",
+      "minLength": 1
+    },
+    "sender": {
+      "type": "string",
+      "description": "The host identity that is sending the reply",
+      "minLength": 1
+    },
+    "agent": {
+      "type": "string",
+      "description": "The agent the reply originates from",
+      "minLength": 1
+    },
+    "time": {
+      "type": "integer",
+      "description": "The unix nano time the request was created",
+      "minimum": 1,
+      "maximum": 18446744073709551615
+    }
+  }
+}

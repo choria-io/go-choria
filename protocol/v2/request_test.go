@@ -14,13 +14,22 @@ import (
 )
 
 var _ = Describe("Request", func() {
+	It("Should validate requests against the schema", func() {
+		req, err := NewRequest("", "go.tests", "choria=test", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		Expect(err).ToNot(HaveOccurred())
+		_, err = req.JSON()
+		Expect(err).To(MatchError(ErrInvalidJSON))
+	})
+
 	It("Should construct the correct request", func() {
-		request, _ := NewRequest("test", "go.tests", "choria=test", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		request, err := NewRequest("test", "go.tests", "choria=test", 120, "a2f0ca717c694f2086cfa81b6c494648", "mcollective")
+		Expect(err).ToNot(HaveOccurred())
 		filter, filtered := request.Filter()
 
 		request.SetMessage([]byte("hello world"))
 
-		j, _ := request.JSON()
+		j, err := request.JSON()
+		Expect(err).ToNot(HaveOccurred())
 
 		Expect(gjson.GetBytes(j, "protocol").String()).To(Equal(protocol.RequestV2))
 		Expect(request.Message()).To(Equal([]byte("hello world")))

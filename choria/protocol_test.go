@@ -40,7 +40,7 @@ var _ = Describe("Protocol", func() {
 			js, err := replyT.JSON()
 			Expect(err).ToNot(HaveOccurred())
 
-			t := []byte(js)
+			t := js
 			j = &t
 		}
 	})
