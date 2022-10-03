@@ -38,10 +38,13 @@ import (
 )
 
 // used by tests to stub out uids etc, should probably be a class and use dependency injection, meh
-var useFakeUID = false
-var fakeUID = 0
-var useFakeOS = false
-var fakeOS = "fake"
+var (
+	useFakeUID = false
+	fakeUID    = 0
+	useFakeOS  = false
+	fakeOS     = "fake"
+	callerIDRe = regexp.MustCompile(`^[a-z]+=([\w\.\-]+)`)
+)
 
 // FileSecurity implements SecurityProvider using files on disk
 type FileSecurity struct {
@@ -289,8 +292,7 @@ func (s *FileSecurity) CallerName() string {
 
 // CallerIdentity extracts the identity from a choria like caller name in the form of choria=identity
 func (s *FileSecurity) CallerIdentity(caller string) (string, error) {
-	re := regexp.MustCompile(`^[a-z]+=([\w\.\-]+)`)
-	match := re.FindStringSubmatch(caller)
+	match := callerIDRe.FindStringSubmatch(caller)
 
 	if match == nil {
 		return "", fmt.Errorf("could not find a valid caller identity name in %s", caller)

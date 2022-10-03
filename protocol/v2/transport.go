@@ -44,6 +44,37 @@ type FederationTransportHeader struct {
 	Targets []string `json:"targets,omitempty"`
 }
 
+// NewTransportMessage creates a io.choria.protocol.v2.transport
+func NewTransportMessage(certname string) (message protocol.TransportMessage, err error) {
+	message = &TransportMessage{
+		Protocol: protocol.TransportV2,
+		Headers:  &TransportHeaders{},
+	}
+
+	message.SetSender(certname)
+
+	return message, nil
+}
+
+// NewTransportFromJSON creates a new TransportMessage from JSON
+func NewTransportFromJSON(data []byte) (message protocol.TransportMessage, err error) {
+	message = &TransportMessage{
+		Headers: &TransportHeaders{},
+	}
+
+	err = message.IsValidJSON(data)
+	if err != nil {
+		return nil, err
+	}
+
+	err = json.Unmarshal(data, &message)
+	if err != nil {
+		return nil, err
+	}
+
+	return message, nil
+}
+
 func (m *TransportMessage) SetFederationRequestID(id string) {
 	m.mu.Lock()
 	defer m.mu.Unlock()

@@ -60,6 +60,29 @@ func NewReply(request protocol.Request, certName string) (protocol.Reply, error)
 	return rep, nil
 }
 
+// NewReplyFromSecureReply create a choria:reply:1 based on the data contained in a SecureReply
+func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err error) {
+	if sr.Version() != protocol.SecureReplyV2 {
+		return nil, fmt.Errorf("cannot create a version 2 SecureReply from a %s SecureReply", sr.Version())
+	}
+
+	rep = &Reply{
+		Protocol: protocol.ReplyV2,
+	}
+
+	err = rep.IsValidJSON(sr.Message())
+	if err != nil {
+		return nil, fmt.Errorf("the JSON body from the SecureReply is not a valid Reply message: %s", err)
+	}
+
+	err = json.Unmarshal(sr.Message(), rep)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse JSON data from Secure Reply: %s", err)
+	}
+
+	return rep, nil
+}
+
 // RecordNetworkHop appends a hop onto the list of those who processed this message
 func (r *Reply) RecordNetworkHop(in string, processor string, out string) {
 	r.mu.Lock()

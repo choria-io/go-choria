@@ -14,16 +14,16 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 )
 
-type request struct {
+type Request struct {
 	Protocol    string `json:"protocol"`
 	MessageBody []byte `json:"message"`
 
-	reqEnvelope
+	ReqEnvelope
 
 	mu sync.Mutex
 }
 
-type reqEnvelope struct {
+type ReqEnvelope struct {
 	RequestID  string           `json:"id"`
 	SenderID   string           `json:"sender"`
 	CallerID   string           `json:"caller"`
@@ -39,9 +39,9 @@ type reqEnvelope struct {
 
 // NewRequest creates a io.choria.protocol.v2.request
 func NewRequest(agent string, sender string, caller string, ttl int, id string, collective string) (protocol.Request, error) {
-	req := &request{
+	req := &Request{
 		Protocol: protocol.RequestV2,
-		reqEnvelope: reqEnvelope{
+		ReqEnvelope: ReqEnvelope{
 			SenderID:  sender,
 			TTL:       ttl,
 			RequestID: id,
@@ -57,24 +57,47 @@ func NewRequest(agent string, sender string, caller string, ttl int, id string, 
 	return req, nil
 }
 
+// NewRequestFromSecureRequest creates a io.choria.protocol.v2.request based on the data contained in a SecureRequest
+func NewRequestFromSecureRequest(sr protocol.SecureRequest) (protocol.Request, error) {
+	if sr.Version() != protocol.SecureRequestV2 {
+		return nil, fmt.Errorf("cannot create a version 2 SecureRequest from a %s SecureRequest", sr.Version())
+	}
+
+	req := &Request{
+		Protocol: protocol.RequestV2,
+	}
+
+	err := req.IsValidJSON(sr.Message())
+	if err != nil {
+		return nil, fmt.Errorf("the JSON body from the SecureRequest is not a valid Request message: %s", err)
+	}
+
+	err = json.Unmarshal(sr.Message(), req)
+	if err != nil {
+		return nil, fmt.Errorf("could not parse JSON data from Secure Request: %s", err)
+	}
+
+	return req, nil
+}
+
 // RecordNetworkHop appends a hop onto the list of those who processed this message
-func (r *request) RecordNetworkHop(in string, processor string, out string) {
+func (r *Request) RecordNetworkHop(in string, processor string, out string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.reqEnvelope.seenBy = append(r.reqEnvelope.seenBy, [3]string{in, processor, out})
+	r.ReqEnvelope.seenBy = append(r.ReqEnvelope.seenBy, [3]string{in, processor, out})
 }
 
 // NetworkHops returns a list of tuples this messaged traveled through
-func (r *request) NetworkHops() [][3]string {
+func (r *Request) NetworkHops() [][3]string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.reqEnvelope.seenBy
+	return r.ReqEnvelope.seenBy
 }
 
 // FederationTargets retrieves the list of targets this message is destined for
-func (r *request) FederationTargets() (targets []string, federated bool) {
+func (r *Request) FederationTargets() (targets []string, federated bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -82,97 +105,97 @@ func (r *request) FederationTargets() (targets []string, federated bool) {
 		return nil, false
 	}
 
-	return r.reqEnvelope.federation.Targets, true
+	return r.ReqEnvelope.federation.Targets, true
 }
 
 // FederationReplyTo retrieves the reply to string set by the federation broker
-func (r *request) FederationReplyTo() (replyTo string, federated bool) {
+func (r *Request) FederationReplyTo() (replyTo string, federated bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if r.reqEnvelope.federation == nil {
+	if r.ReqEnvelope.federation == nil {
 		return "", false
 	}
 
-	return r.reqEnvelope.federation.ReplyTo, true
+	return r.ReqEnvelope.federation.ReplyTo, true
 }
 
 // FederationRequestID retrieves the federation specific requestid
-func (r *request) FederationRequestID() (id string, federated bool) {
+func (r *Request) FederationRequestID() (id string, federated bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if r.reqEnvelope.federation == nil {
+	if r.ReqEnvelope.federation == nil {
 		return "", false
 	}
 
-	return r.reqEnvelope.federation.RequestID, true
+	return r.ReqEnvelope.federation.RequestID, true
 }
 
 // SetRequestID sets the request ID for this message
-func (r *request) SetRequestID(id string) {
+func (r *Request) SetRequestID(id string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.reqEnvelope.RequestID = id
+	r.ReqEnvelope.RequestID = id
 }
 
 // SetFederationTargets sets the list of hosts this message should go to.
 //
 // Federation brokers will duplicate the message and send one for each target
-func (r *request) SetFederationTargets(targets []string) {
+func (r *Request) SetFederationTargets(targets []string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if r.reqEnvelope.federation == nil {
-		r.reqEnvelope.federation = &FederationTransportHeader{}
+	if r.ReqEnvelope.federation == nil {
+		r.ReqEnvelope.federation = &FederationTransportHeader{}
 	}
 
-	r.reqEnvelope.federation.Targets = targets
+	r.ReqEnvelope.federation.Targets = targets
 }
 
 // SetFederationReplyTo stores the original reply-to destination in the federation headers
-func (r *request) SetFederationReplyTo(reply string) {
+func (r *Request) SetFederationReplyTo(reply string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if r.reqEnvelope.federation == nil {
-		r.reqEnvelope.federation = &FederationTransportHeader{}
+	if r.ReqEnvelope.federation == nil {
+		r.ReqEnvelope.federation = &FederationTransportHeader{}
 	}
 
-	r.reqEnvelope.federation.ReplyTo = reply
+	r.ReqEnvelope.federation.ReplyTo = reply
 }
 
 // SetFederationRequestID sets the request ID for federation purposes
-func (r *request) SetFederationRequestID(id string) {
+func (r *Request) SetFederationRequestID(id string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if r.reqEnvelope.federation == nil {
-		r.reqEnvelope.federation = &FederationTransportHeader{}
+	if r.ReqEnvelope.federation == nil {
+		r.ReqEnvelope.federation = &FederationTransportHeader{}
 	}
 
-	r.reqEnvelope.federation.RequestID = id
+	r.ReqEnvelope.federation.RequestID = id
 }
 
 // IsFederated determines if this message is federated
-func (r *request) IsFederated() bool {
+func (r *Request) IsFederated() bool {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.reqEnvelope.federation != nil
+	return r.ReqEnvelope.federation != nil
 }
 
 // SetUnfederated removes any federation information from the message
-func (r *request) SetUnfederated() {
+func (r *Request) SetUnfederated() {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.reqEnvelope.federation = nil
+	r.ReqEnvelope.federation = nil
 }
 
 // SetMessage set the message body that's contained in this request
-func (r *request) SetMessage(message []byte) {
+func (r *Request) SetMessage(message []byte) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -180,40 +203,40 @@ func (r *request) SetMessage(message []byte) {
 }
 
 // SetCallerID sets the caller id for this request
-func (r *request) SetCallerID(id string) {
+func (r *Request) SetCallerID(id string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	// TODO validate it
-	r.reqEnvelope.CallerID = id
+	r.ReqEnvelope.CallerID = id
 }
 
 // SetCollective sets the collective this request is directed at
-func (r *request) SetCollective(collective string) {
+func (r *Request) SetCollective(collective string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.reqEnvelope.Collective = collective
+	r.ReqEnvelope.Collective = collective
 }
 
 // SetAgent sets the agent this requires is created for
-func (r *request) SetAgent(agent string) {
+func (r *Request) SetAgent(agent string) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.reqEnvelope.Agent = agent
+	r.ReqEnvelope.Agent = agent
 }
 
 // SetTTL sets the validity period for this message
-func (r *request) SetTTL(ttl int) {
+func (r *Request) SetTTL(ttl int) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.reqEnvelope.TTL = ttl
+	r.ReqEnvelope.TTL = ttl
 }
 
 // Message retrieves the Message body
-func (r *request) Message() []byte {
+func (r *Request) Message() []byte {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -221,85 +244,85 @@ func (r *request) Message() []byte {
 }
 
 // RequestID retrieves the unique request ID
-func (r *request) RequestID() string {
+func (r *Request) RequestID() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.reqEnvelope.RequestID
+	return r.ReqEnvelope.RequestID
 }
 
 // SenderID retrieves the sender id that sent the message
-func (r *request) SenderID() string {
+func (r *Request) SenderID() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.reqEnvelope.SenderID
+	return r.ReqEnvelope.SenderID
 }
 
 // CallerID retrieves the caller id that sent the message
-func (r *request) CallerID() string {
+func (r *Request) CallerID() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.reqEnvelope.CallerID
+	return r.ReqEnvelope.CallerID
 }
 
 // Collective retrieves the name of the sub collective this message is aimed at
-func (r *request) Collective() string {
+func (r *Request) Collective() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.reqEnvelope.Collective
+	return r.ReqEnvelope.Collective
 }
 
 // Agent retrieves the agent name this message is for
-func (r *request) Agent() string {
+func (r *Request) Agent() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.reqEnvelope.Agent
+	return r.ReqEnvelope.Agent
 }
 
 // TTL retrieves the maximum allow lifetime of this message
-func (r *request) TTL() int {
+func (r *Request) TTL() int {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return r.reqEnvelope.TTL
+	return r.ReqEnvelope.TTL
 }
 
 // Time retrieves the time this message was first made
-func (r *request) Time() time.Time {
+func (r *Request) Time() time.Time {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	return time.Unix(0, r.reqEnvelope.Time)
+	return time.Unix(0, r.ReqEnvelope.Time)
 }
 
 // Filter retrieves the filter for the message.  The boolean is true when the filter is not empty
-func (r *request) Filter() (filter *protocol.Filter, filtered bool) {
+func (r *Request) Filter() (filter *protocol.Filter, filtered bool) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	if r.reqEnvelope.Filter == nil {
-		r.reqEnvelope.Filter = protocol.NewFilter()
+	if r.ReqEnvelope.Filter == nil {
+		r.ReqEnvelope.Filter = protocol.NewFilter()
 	}
 
-	return r.reqEnvelope.Filter, !r.reqEnvelope.Filter.Empty()
+	return r.ReqEnvelope.Filter, !r.ReqEnvelope.Filter.Empty()
 }
 
 // NewFilter creates a new empty filter and sets it
-func (r *request) NewFilter() *protocol.Filter {
+func (r *Request) NewFilter() *protocol.Filter {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.reqEnvelope.Filter = protocol.NewFilter()
+	r.ReqEnvelope.Filter = protocol.NewFilter()
 
-	return r.reqEnvelope.Filter
+	return r.ReqEnvelope.Filter
 }
 
 // JSON creates a JSON encoded request
-func (r *request) JSON() ([]byte, error) {
+func (r *Request) JSON() ([]byte, error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -317,15 +340,15 @@ func (r *request) JSON() ([]byte, error) {
 }
 
 // SetFilter sets and overwrites the filter for a message with a new one
-func (r *request) SetFilter(filter *protocol.Filter) {
+func (r *Request) SetFilter(filter *protocol.Filter) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
-	r.reqEnvelope.Filter = filter
+	r.ReqEnvelope.Filter = filter
 }
 
 // Version retrieves the protocol version for this message
-func (r *request) Version() string {
+func (r *Request) Version() string {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
@@ -333,14 +356,14 @@ func (r *request) Version() string {
 }
 
 // IsValidJSON validates the given JSON data against the schema
-func (r *request) IsValidJSON(data []byte) error {
+func (r *Request) IsValidJSON(data []byte) error {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
 	return r.isValidJSONUnlocked(data)
 }
 
-func (r *request) isValidJSONUnlocked(data []byte) error {
+func (r *Request) isValidJSONUnlocked(data []byte) error {
 	_, errors, err := schemaValidate(protocol.RequestV2, data)
 	if err != nil {
 		return fmt.Errorf("could not validate Request JSON data: %s", err)
