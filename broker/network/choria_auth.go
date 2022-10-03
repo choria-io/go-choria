@@ -555,6 +555,17 @@ func (a *ChoriaAuth) parseClientIDJWT(jwts string) (claims *tokens.ClientIDClaim
 	return claims, nil
 }
 
+func (a *ChoriaAuth) setClientFleetManagementPermissions(subs []string, pubs []string) ([]string, []string) {
+	pubs = append(pubs,
+		"*.broadcast.agent.>",
+		"*.broadcast.service.>",
+		"*.node.>",
+		"choria.federation.*.federation",
+	)
+
+	return subs, pubs
+}
+
 func (a *ChoriaAuth) setMinimalClientPermissions(_ *server.User, caller string, subs []string, pubs []string) ([]string, []string) {
 	replys := "*.reply.>"
 	if caller != emptyString {
@@ -563,12 +574,6 @@ func (a *ChoriaAuth) setMinimalClientPermissions(_ *server.User, caller string, 
 	}
 
 	subs = append(subs, replys)
-	pubs = append(pubs,
-		"*.broadcast.agent.>",
-		"*.broadcast.service.>",
-		"*.node.>",
-		"choria.federation.*.federation",
-	)
 
 	return subs, pubs
 }
@@ -692,6 +697,11 @@ func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string,
 	if perms.Governor && (perms.StreamsUser || perms.StreamsAdmin) {
 		log.Infof("Granting user Governor access")
 		subs, pubs = a.setClientGovernorPermissions(user, subs, pubs)
+	}
+
+	if perms.FleetManagement || perms.SignedFleetManagement {
+		log.Infof("Granding user fleet management access")
+		subs, pubs = a.setClientFleetManagementPermissions(subs, pubs)
 	}
 
 	return pubs, subs, nil

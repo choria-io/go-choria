@@ -15,23 +15,25 @@ import (
 )
 
 type jWTCreateClientCommand struct {
-	file          string
-	signingKey    string
-	identity      string
-	agents        []string
-	org           string
-	opaPolicyFile string
-	opaPolicy     string
-	validity      time.Duration
-	streamAdmin   bool
-	streamUser    bool
-	eventViewer   bool
-	electionUser  bool
-	orgAdmin      bool
-	service       bool
-	system        bool
-	authDelegate  bool
-	pk            string
+	file                  string
+	signingKey            string
+	identity              string
+	agents                []string
+	org                   string
+	opaPolicyFile         string
+	opaPolicy             string
+	validity              time.Duration
+	streamAdmin           bool
+	streamUser            bool
+	eventViewer           bool
+	electionUser          bool
+	orgAdmin              bool
+	service               bool
+	system                bool
+	authDelegate          bool
+	fleetManagement       bool
+	signedFleetManagement bool
+	pk                    string
 
 	command
 }
@@ -55,6 +57,8 @@ func (c *jWTCreateClientCommand) Setup() (err error) {
 		c.cmd.Flag("service", "Indicates that the user can have long validity tokens").UnNegatableBoolVar(&c.service)
 		c.cmd.Flag("system", "Allow the user to access the broker system account").UnNegatableBoolVar(&c.system)
 		c.cmd.Flag("auth-delegation", "Allow the user to sign requests for other users").UnNegatableBoolVar(&c.authDelegate)
+		c.cmd.Flag("fleet-management", "Allows access to the Choria fleet using RPC").Default("true").BoolVar(&c.fleetManagement)
+		c.cmd.Flag("signed-fleet-management", "Requires that all fleet management requests are signed by an authority like AAA Service").UnNegatableBoolVar(&c.signedFleetManagement)
 	}
 
 	return nil
@@ -105,6 +109,8 @@ func (c *jWTCreateClientCommand) createJWT() error {
 		ExtendedServiceLifetime: c.service,
 		SystemUser:              c.system,
 		AuthenticationDelegator: c.authDelegate,
+		FleetManagement:         c.fleetManagement,
+		SignedFleetManagement:   c.signedFleetManagement,
 	}
 
 	claims, err := tokens.NewClientIDClaims(c.identity, c.agents, c.org, nil, string(opa), "Choria CLI", c.validity, perms, []byte(c.pk))
