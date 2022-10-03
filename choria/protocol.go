@@ -171,6 +171,8 @@ func (fw *Framework) NewReplyFromSecureReply(sr protocol.SecureReply) (reply pro
 	switch sr.Version() {
 	case protocol.SecureReplyV1:
 		return v1.NewReplyFromSecureReply(sr)
+	case protocol.SecureReplyV2:
+		return v2.NewReplyFromSecureReply(sr)
 	default:
 		return nil, fmt.Errorf("do not know how to create a Reply version %s", sr.Version())
 	}
@@ -181,6 +183,8 @@ func (fw *Framework) NewRequestFromSecureRequest(sr protocol.SecureRequest) (req
 	switch sr.Version() {
 	case protocol.SecureRequestV1:
 		return v1.NewRequestFromSecureRequest(sr)
+	case protocol.SecureRequestV2:
+		return v2.NewRequestFromSecureRequest(sr)
 	default:
 		return nil, fmt.Errorf("do not know how to create a Reply version %s", sr.Version())
 	}
@@ -238,21 +242,24 @@ func (fw *Framework) NewTransportForSecureRequest(request protocol.SecureRequest
 	switch request.Version() {
 	case protocol.SecureRequestV1:
 		message, err = v1.NewTransportMessage(fw.Config.Identity)
-		if err != nil {
-			logrus.Errorf("Failed to create transport from secure request: %s", err)
-			return nil, err
-		}
-
-		err = message.SetRequestData(request)
-		if err != nil {
-			logrus.Errorf("Failed to create transport from secure request: %s", err)
-			return nil, err
-		}
-
-		return message, nil
+	case protocol.SecureRequestV2:
+		message, err = v2.NewTransportMessage(fw.Config.Identity)
 	default:
 		return nil, fmt.Errorf("co not know how to create a Transport message for SecureRequest version %s", request.Version())
 	}
+
+	if err != nil {
+		logrus.Errorf("Failed to create transport from secure request: %s", err)
+		return nil, err
+	}
+
+	err = message.SetRequestData(request)
+	if err != nil {
+		logrus.Errorf("Failed to create transport from secure request: %s", err)
+		return nil, err
+	}
+
+	return message, nil
 }
 
 // NewTransportForSecureReply creates a new TransportMessage with a SecureReply as payload.  The Transport will be the same version as the SecureRequest
@@ -260,16 +267,19 @@ func (fw *Framework) NewTransportForSecureReply(reply protocol.SecureReply) (mes
 	switch reply.Version() {
 	case protocol.SecureReplyV1:
 		message, err = v1.NewTransportMessage(fw.Config.Identity)
-		if err != nil {
-			return nil, err
-		}
-
-		message.SetReplyData(reply)
-
-		return message, nil
+	case protocol.SecureReplyV2:
+		message, err = v2.NewTransportMessage(fw.Config.Identity)
 	default:
 		return nil, fmt.Errorf("do not know how to create a Transport message for SecureRequest version %s", reply.Version())
 	}
+
+	if err != nil {
+		return nil, err
+	}
+
+	message.SetReplyData(reply)
+
+	return message, nil
 }
 
 // NewReplyTransportForMessage creates a new Transport message based on a Message and the request its a reply to
@@ -323,6 +333,8 @@ func (fw *Framework) NewTransportMessage(version string) (message protocol.Trans
 	switch version {
 	case protocol.TransportV1:
 		return v1.NewTransportMessage(fw.Config.Identity)
+	case protocol.TransportV2:
+		return v2.NewTransportMessage(fw.Config.Identity)
 	default:
 		return nil, fmt.Errorf("so not know how to create a Transport version '%s'", version)
 	}
@@ -335,6 +347,8 @@ func (fw *Framework) NewTransportFromJSON(data []byte) (message protocol.Transpo
 	switch version {
 	case protocol.TransportV1:
 		return v1.NewTransportFromJSON(data)
+	case protocol.TransportV2:
+		return v2.NewTransportFromJSON(data)
 	default:
 		return nil, fmt.Errorf("do not know how to create a TransportMessage from an expected JSON format message with content: %s", data)
 	}
