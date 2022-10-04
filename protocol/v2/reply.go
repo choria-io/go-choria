@@ -16,7 +16,7 @@ import (
 
 type Reply struct {
 	// The protocol version for this transport `io.choria.protocol.v2.reply` / protocol.ReplyV2
-	Protocol string `json:"protocol"`
+	Protocol protocol.ProtocolVersion `json:"protocol"`
 	// The arbitrary data contained in the reply - like a RPC reply
 	MessageBody []byte `json:"message"`
 	// The ID of the request this reply relates to
@@ -167,7 +167,7 @@ func (r *Reply) JSON() ([]byte, error) {
 }
 
 // Version retrieves the protocol version for this message
-func (r *Reply) Version() string {
+func (r *Reply) Version() protocol.ProtocolVersion {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

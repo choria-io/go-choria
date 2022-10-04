@@ -14,9 +14,9 @@ import (
 )
 
 type TransportMessage struct {
-	Protocol string            `json:"protocol"`
-	Data     []byte            `json:"data"`
-	Headers  *TransportHeaders `json:"headers"`
+	Protocol protocol.ProtocolVersion `json:"protocol"`
+	Data     []byte                   `json:"data"`
+	Headers  *TransportHeaders        `json:"headers"`
 
 	mu sync.Mutex
 }
@@ -235,7 +235,7 @@ func (m *TransportMessage) SetUnfederated() {
 }
 
 // Version retrieves the protocol version for this message
-func (m *TransportMessage) Version() string {
+func (m *TransportMessage) Version() protocol.ProtocolVersion {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 

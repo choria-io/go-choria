@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 	log "github.com/sirupsen/logrus"
 )
@@ -28,6 +29,33 @@ type SecureRequest struct {
 	SignerJWT string `json:"signer,omitempty"`
 
 	mu sync.Mutex
+}
+
+// NewSecureRequest creates a choria:secure:request:1
+func NewSecureRequest(request protocol.Request, security inter.SecurityProvider) (secure protocol.SecureRequest, err error) {
+	if security.BackingTechnology() != inter.SecurityTechnologyED25519JWT {
+		return nil, fmt.Errorf("version 2 protocol requires a ed25519+jwt based security system")
+	}
+
+	panic("implemented me")
+}
+
+// NewRemoteSignedSecureRequest is a NewSecureRequest that delegates the signing to a remote signer like aaasvc
+func NewRemoteSignedSecureRequest(request protocol.Request, security inter.SecurityProvider) (secure protocol.SecureRequest, err error) {
+	if security.BackingTechnology() != inter.SecurityTechnologyED25519JWT {
+		return nil, fmt.Errorf("version 2 protocol requires a ed25519+jwt based security system")
+	}
+
+	panic("implemented me")
+}
+
+// NewSecureRequestFromTransport creates a new choria:secure:request:1 from the data contained in a Transport message
+func NewSecureRequestFromTransport(message protocol.TransportMessage, security inter.SecurityProvider, skipvalidate bool) (secure protocol.SecureRequest, err error) {
+	if security.BackingTechnology() != inter.SecurityTechnologyED25519JWT {
+		return nil, fmt.Errorf("version 2 protocol requires a ed25519+jwt based security system")
+	}
+
+	panic("implemented me")
 }
 
 func (r *SecureRequest) SetMessage(request protocol.Request) error {

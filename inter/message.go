@@ -33,7 +33,7 @@ type Message interface {
 	NotifyPublish()
 	OnPublish(func())
 	Payload() []byte
-	ProtocolVersion() string
+	ProtocolVersion() protocol.ProtocolVersion
 	ReplyTo() string
 	Request() Message
 	RequestID() string
@@ -45,7 +45,7 @@ type Message interface {
 	SetExpectedMsgID(id string) error
 	SetFilter(*protocol.Filter)
 	SetPayload([]byte)
-	SetProtocolVersion(string)
+	SetProtocolVersion(protocol.ProtocolVersion)
 	SetReplyTo(string) error
 	SetTTL(int)
 	SetType(string) error

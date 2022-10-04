@@ -5,6 +5,7 @@
 package v1
 
 import (
+	"github.com/choria-io/go-choria/inter"
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/golang/mock/gomock"
@@ -20,6 +21,7 @@ var _ = Describe("TransportMessage", func() {
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 		security = imock.NewMockSecurityProvider(mockctl)
+		security.EXPECT().BackingTechnology().Return(inter.SecurityTechnologyX509)
 	})
 
 	AfterEach(func() {
@@ -43,7 +45,7 @@ var _ = Describe("TransportMessage", func() {
 		j, err := treply.JSON()
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(gjson.GetBytes(j, "protocol").String()).To(Equal(protocol.TransportV1))
+		Expect(protocol.VersionFromJSON(j)).To(Equal(protocol.TransportV1))
 		Expect(gjson.GetBytes(j, "headers.mc_sender").String()).To(Equal("rip.mcollective"))
 
 		d, err := treply.Message()
@@ -65,7 +67,7 @@ var _ = Describe("TransportMessage", func() {
 		sj, _ := srequest.JSON()
 		j, _ := trequest.JSON()
 
-		Expect(gjson.GetBytes(j, "protocol").String()).To(Equal(protocol.TransportV1))
+		Expect(protocol.VersionFromJSON(j)).To(Equal(protocol.TransportV1))
 		Expect(gjson.GetBytes(j, "headers.mc_sender").String()).To(Equal("rip.mcollective"))
 
 		d, err := trequest.Message()

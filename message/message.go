@@ -38,7 +38,7 @@ type Message struct {
 	collective           string
 	msgType              string // message, request, direct_request, reply, service_request
 	req                  protocol.Request
-	protoVersion         string
+	protoVersion         protocol.ProtocolVersion
 	shouldCacheTransport bool
 	cachedTransport      protocol.TransportMessage
 	onPublish            func()
@@ -107,6 +107,7 @@ func newMessage(payload []byte, agent string, collective string, msgType string,
 		filter:               protocol.NewFilter(),
 		choria:               choria,
 		shouldCacheTransport: cfg.CacheBatchedTransports,
+		protoVersion:         protocol.Unknown,
 	}
 
 	err = msg.SetType(msgType)
@@ -242,7 +243,7 @@ func (m *Message) isEmptyFilter() bool {
 }
 
 func (m *Message) UncachedRequestTransport() (protocol.TransportMessage, error) {
-	if m.protoVersion == "" {
+	if m.protoVersion == "" || m.protoVersion == protocol.Unknown {
 		return nil, errors.New("cannot create a Request Transport without a version, please set it using SetProtocolVersion()")
 	}
 
@@ -273,11 +274,11 @@ func (m *Message) UncachedReplyTransport() (protocol.TransportMessage, error) {
 }
 
 // SetProtocolVersion sets the version of the protocol that will be used by Transport()
-func (m *Message) SetProtocolVersion(version string) {
+func (m *Message) SetProtocolVersion(version protocol.ProtocolVersion) {
 	m.protoVersion = version
 }
 
-func (m *Message) ProtocolVersion() string { return m.protoVersion }
+func (m *Message) ProtocolVersion() protocol.ProtocolVersion { return m.protoVersion }
 
 // Validate tests the Message and makes sure its settings are sane
 func (m *Message) Validate() (bool, error) {

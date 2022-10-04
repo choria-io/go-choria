@@ -5,24 +5,78 @@
 package protocol
 
 import (
+	"encoding/json"
 	"time"
 )
 
+// ProtocolVersion defines known protocol versions
+type ProtocolVersion string
+
 const (
-	RequestV1       = "choria:request:1"
-	ReplyV1         = "choria:reply:1"
-	SecureRequestV1 = "choria:secure:request:1"
-	SecureReplyV1   = "choria:secure:reply:1"
-	TransportV1     = "choria:transport:1"
-	RequestV2       = "io.choria.protocol.v2.request"
-	ReplyV2         = "io.choria.protocol.v2.reply"
-	SecureRequestV2 = "io.choria.protocol.v2.secure_request"
-	SecureReplyV2   = "io.choria.protocol.v2.secure_reply"
-	TransportV2     = "io.choria.protocol.v2.transport"
+	RequestV1       ProtocolVersion = "choria:request:1"
+	ReplyV1         ProtocolVersion = "choria:reply:1"
+	SecureRequestV1 ProtocolVersion = "choria:secure:request:1"
+	SecureReplyV1   ProtocolVersion = "choria:secure:reply:1"
+	TransportV1     ProtocolVersion = "choria:transport:1"
+	RequestV2       ProtocolVersion = "io.choria.protocol.v2.request"
+	ReplyV2         ProtocolVersion = "io.choria.protocol.v2.reply"
+	SecureRequestV2 ProtocolVersion = "io.choria.protocol.v2.secure_request"
+	SecureReplyV2   ProtocolVersion = "io.choria.protocol.v2.secure_reply"
+	TransportV2     ProtocolVersion = "io.choria.protocol.v2.transport"
+	Unknown         ProtocolVersion = "io.choria.protocol.unknown"
 )
+
+func (p ProtocolVersion) String() string { return string(p) }
+
+func (p *ProtocolVersion) UnmarshalJSON(data []byte) error {
+	var rp string
+
+	err := json.Unmarshal(data, &rp)
+
+	switch ProtocolVersion(rp) {
+	case RequestV1:
+		*p = RequestV1
+	case ReplyV1:
+		*p = ReplyV1
+	case SecureRequestV1:
+		*p = SecureRequestV1
+	case SecureReplyV1:
+		*p = SecureReplyV1
+	case TransportV1:
+		*p = TransportV1
+	case RequestV2:
+		*p = RequestV2
+	case ReplyV2:
+		*p = ReplyV2
+	case SecureRequestV2:
+		*p = SecureRequestV2
+	case SecureReplyV2:
+		*p = SecureReplyV2
+	case TransportV2:
+		*p = TransportV2
+	default:
+		*p = Unknown
+	}
+
+	return err
+}
+
+type protoDetect struct {
+	Protocol ProtocolVersion `json:"protocol"`
+}
 
 // Secure controls the signing and validations of certificates in the protocol
 var Secure = "true"
+
+func VersionFromJSON(data []byte) ProtocolVersion {
+	d := &protoDetect{}
+	err := json.Unmarshal(data, d)
+	if err != nil {
+		return Unknown
+	}
+
+	return d.Protocol
+}
 
 // IsSecure determines if this build will validate senders at protocol level
 func IsSecure() bool {
@@ -90,7 +144,7 @@ type Request interface {
 	Time() time.Time
 	Filter() (*Filter, bool)
 	JSON() ([]byte, error)
-	Version() string
+	Version() ProtocolVersion
 	IsValidJSON(data []byte) error
 }
 
@@ -106,7 +160,7 @@ type Reply interface {
 	Agent() string
 	Time() time.Time
 	JSON() ([]byte, error)
-	Version() string
+	Version() ProtocolVersion
 	IsValidJSON(data []byte) error
 }
 
@@ -121,7 +175,7 @@ type SecureRequest interface {
 	SetMessage(request Request) error
 	Valid() bool
 	JSON() ([]byte, error)
-	Version() string
+	Version() ProtocolVersion
 	IsValidJSON(data []byte) error
 	Message() []byte
 }
@@ -134,7 +188,7 @@ type SecureReply interface {
 	Valid() bool
 	JSON() ([]byte, error)
 	Message() []byte
-	Version() string
+	Version() ProtocolVersion
 	IsValidJSON(data []byte) error
 }
 
@@ -158,5 +212,5 @@ type TransportMessage interface {
 
 	IsValidJSON(data []byte) error
 	JSON() ([]byte, error)
-	Version() string
+	Version() ProtocolVersion
 }

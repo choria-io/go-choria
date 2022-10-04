@@ -60,7 +60,7 @@ var _ = Describe("Choria/Message", func() {
 		sec, err := filesec.New(filesec.WithChoriaConfig(&build.Info{}, cfg), filesec.WithLog(fw.Logger("")))
 		Expect(err).ToNot(HaveOccurred())
 
-		fw.EXPECT().NewRequest(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(version string, agent string, senderid string, callerid string, ttl int, requestid string, collective string) (request protocol.Request, err error) {
+		fw.EXPECT().NewRequest(protocol.RequestV1, gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(version protocol.ProtocolVersion, agent string, senderid string, callerid string, ttl int, requestid string, collective string) (request protocol.Request, err error) {
 			return v1.NewRequest(agent, senderid, callerid, ttl, requestid, collective)
 		}).AnyTimes()
 		fw.EXPECT().NewReplyTransportForMessage(gomock.Any(), gomock.Any()).DoAndReturn(func(msg inter.Message, request protocol.Request) (protocol.TransportMessage, error) {
@@ -86,7 +86,7 @@ var _ = Describe("Choria/Message", func() {
 			Expect(err).ToNot(HaveOccurred())
 			return v1.NewRequestFromSecureRequest(sreq)
 		}).AnyTimes()
-		fw.EXPECT().NewRequestTransportForMessage(gomock.Any(), gomock.Any()).DoAndReturn(func(msg inter.Message, version string) (protocol.TransportMessage, error) {
+		fw.EXPECT().NewRequestTransportForMessage(gomock.Any(), gomock.Any()).DoAndReturn(func(msg inter.Message, version protocol.ProtocolVersion) (protocol.TransportMessage, error) {
 			req, err := v1.NewRequest(msg.Agent(), msg.SenderID(), msg.CallerID(), msg.TTL(), msg.RequestID(), msg.Collective())
 			Expect(err).ToNot(HaveOccurred())
 			req.SetMessage(msg.Payload())
@@ -351,7 +351,7 @@ var _ = Describe("Choria/Message", func() {
 
 			j, err := t.JSON()
 			Expect(err).ToNot(HaveOccurred())
-			r, err := fw.NewRequestFromTransportJSON([]byte(j), true)
+			r, err := fw.NewRequestFromTransportJSON(j, true)
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(r.Agent()).To(Equal("ginkgo"))
@@ -390,7 +390,7 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(m.ProtocolVersion()).To(Equal(""))
+			Expect(m.ProtocolVersion()).To(Equal(protocol.Unknown))
 			m.SetProtocolVersion(protocol.ReplyV1)
 			Expect(m.ProtocolVersion()).To(Equal(protocol.ReplyV1))
 		})

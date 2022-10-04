@@ -10,7 +10,6 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"github.com/tidwall/gjson"
 )
 
 var _ = Describe("Request", func() {
@@ -22,7 +21,7 @@ var _ = Describe("Request", func() {
 
 		j, _ := request.JSON()
 
-		Expect(gjson.GetBytes(j, "protocol").String()).To(Equal(protocol.RequestV1))
+		Expect(protocol.VersionFromJSON(j)).To(Equal(protocol.RequestV1))
 		Expect(request.Message()).To(Equal([]byte("hello world")))
 		Expect(len(request.RequestID())).To(Equal(32))
 		Expect(request.SenderID()).To(Equal("go.tests"))

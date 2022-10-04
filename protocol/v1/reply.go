@@ -15,9 +15,9 @@ import (
 )
 
 type Reply struct {
-	Protocol    string         `json:"protocol"`
-	MessageBody string         `json:"message"`
-	Envelope    *ReplyEnvelope `json:"envelope"`
+	Protocol    protocol.ProtocolVersion `json:"protocol"`
+	MessageBody string                   `json:"message"`
+	Envelope    *ReplyEnvelope           `json:"envelope"`
 
 	mu sync.Mutex
 }
@@ -115,7 +115,7 @@ func (r *Reply) JSON() ([]byte, error) {
 }
 
 // Version retrieves the protocol version for this message
-func (r *Reply) Version() string {
+func (r *Reply) Version() protocol.ProtocolVersion {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

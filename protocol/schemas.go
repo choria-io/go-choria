@@ -21,7 +21,7 @@ var (
 )
 
 // SchemaBytes returns the JSON schema matching a specific protocol definition like `ReplyV1`
-func SchemaBytes(protocol string) ([]byte, error) {
+func SchemaBytes(protocol ProtocolVersion) ([]byte, error) {
 	path, err := schemaPath(protocol)
 	if err != nil {
 		return nil, err
@@ -30,7 +30,7 @@ func SchemaBytes(protocol string) ([]byte, error) {
 	return fs.FS.ReadFile(path)
 }
 
-func schemaPath(protocol string) (string, error) {
+func schemaPath(protocol ProtocolVersion) (string, error) {
 	switch protocol {
 	case RequestV1:
 		return "schemas/choria/protocol/v1/request.json", nil
@@ -58,7 +58,7 @@ func schemaPath(protocol string) (string, error) {
 }
 
 // SchemaValidate validates data against the JSON schema for protocol
-func SchemaValidate(protocol string, data []byte) (valid bool, errors []string, err error) {
+func SchemaValidate(protocol ProtocolVersion, data []byte) (valid bool, errors []string, err error) {
 	paht, err := schemaPath(protocol)
 	if err != nil {
 		return false, nil, err

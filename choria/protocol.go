@@ -12,8 +12,6 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
 	v2 "github.com/choria-io/go-choria/protocol/v2"
-	"github.com/sirupsen/logrus"
-	"github.com/tidwall/gjson"
 )
 
 // NewMessage creates a new Message associated with this Choria instance
@@ -97,7 +95,7 @@ func (fw *Framework) NewRequestFromTransportJSON(payload []byte, skipvalidate bo
 }
 
 // NewRequest creates a new Request complying with a specific protocol version like protocol.RequestV1
-func (fw *Framework) NewRequest(version string, agent string, senderid string, callerid string, ttl int, requestid string, collective string) (request protocol.Request, err error) {
+func (fw *Framework) NewRequest(version protocol.ProtocolVersion, agent string, senderid string, callerid string, ttl int, requestid string, collective string) (request protocol.Request, err error) {
 	switch version {
 	case protocol.RequestV1:
 		request, err = v1.NewRequest(agent, senderid, callerid, ttl, requestid, collective)
@@ -111,7 +109,7 @@ func (fw *Framework) NewRequest(version string, agent string, senderid string, c
 }
 
 // NewRequestFromMessage creates a new Request with the Message settings preloaded complying with a specific protocol version like protocol.RequestV1
-func (fw *Framework) NewRequestFromMessage(version string, msg inter.Message) (req protocol.Request, err error) {
+func (fw *Framework) NewRequestFromMessage(version protocol.ProtocolVersion, msg inter.Message) (req protocol.Request, err error) {
 	if !(msg.Type() == inter.RequestMessageType || msg.Type() == inter.DirectRequestMessageType || msg.Type() == inter.ServiceRequestMessageType) {
 		err = fmt.Errorf("cannot use '%s' message to construct a Request", msg.Type())
 		return nil, err
@@ -146,7 +144,7 @@ func (fw *Framework) NewReply(request protocol.Request) (reply protocol.Reply, e
 }
 
 // NewReplyFromMessage creates a new Reply with the Message settings preloaded complying with a specific protocol version like protocol.ReplyV1
-func (fw *Framework) NewReplyFromMessage(version string, msg inter.Message) (rep protocol.Reply, err error) {
+func (fw *Framework) NewReplyFromMessage(version protocol.ProtocolVersion, msg inter.Message) (rep protocol.Reply, err error) {
 	if msg.Type() != "reply" {
 		return nil, fmt.Errorf("cannot use '%s' message to construct a Reply", msg.Type())
 	}
@@ -196,6 +194,8 @@ func (fw *Framework) NewSecureReply(reply protocol.Reply) (secure protocol.Secur
 	switch reply.Version() {
 	case protocol.ReplyV1:
 		return v1.NewSecureReply(reply, fw.security)
+	case protocol.ReplyV2:
+		return v2.NewSecureReply(reply, fw.security)
 	default:
 		return nil, fmt.Errorf("do not know how to create a SecureReply based on a Reply version %s", reply.Version())
 	}
@@ -207,6 +207,8 @@ func (fw *Framework) NewSecureReplyFromTransport(message protocol.TransportMessa
 	switch message.Version() {
 	case protocol.TransportV1:
 		return v1.NewSecureReplyFromTransport(message, fw.security, skipvalidate)
+	case protocol.TransportV2:
+		return v2.NewSecureReplyFromTransport(message, fw.security, skipvalidate)
 	default:
 		return nil, fmt.Errorf("do not know how to create a SecureReply version %s", message.Version())
 	}
@@ -221,7 +223,12 @@ func (fw *Framework) NewSecureRequest(request protocol.Request) (secure protocol
 		}
 
 		return v1.NewSecureRequest(request, fw.security)
+	case protocol.RequestV2:
+		if fw.security.IsRemoteSigning() {
+			return v2.NewRemoteSignedSecureRequest(request, fw.security)
+		}
 
+		return v2.NewSecureRequest(request, fw.security)
 	default:
 		return nil, fmt.Errorf("do not know how to create a SecureReply from a Request with version %s", request.Version())
 	}
@@ -232,6 +239,8 @@ func (fw *Framework) NewSecureRequestFromTransport(message protocol.TransportMes
 	switch message.Version() {
 	case protocol.TransportV1:
 		return v1.NewSecureRequestFromTransport(message, fw.security, skipvalidate)
+	case protocol.TransportV2:
+		return v2.NewSecureRequestFromTransport(message, fw.security, skipvalidate)
 	default:
 		return nil, fmt.Errorf("do not know how to create a SecureReply from a TransportMessage version %s", message.Version())
 	}
@@ -249,13 +258,13 @@ func (fw *Framework) NewTransportForSecureRequest(request protocol.SecureRequest
 	}
 
 	if err != nil {
-		logrus.Errorf("Failed to create transport from secure request: %s", err)
+		fw.log.Errorf("Failed to create transport from secure request: %s", err)
 		return nil, err
 	}
 
 	err = message.SetRequestData(request)
 	if err != nil {
-		logrus.Errorf("Failed to create transport from secure request: %s", err)
+		fw.log.Errorf("Failed to create transport from secure request: %s", err)
 		return nil, err
 	}
 
@@ -309,7 +318,7 @@ func (fw *Framework) NewReplyTransportForMessage(msg inter.Message, request prot
 }
 
 // NewRequestTransportForMessage creates a new versioned Transport message based on a Message
-func (fw *Framework) NewRequestTransportForMessage(msg inter.Message, version string) (protocol.TransportMessage, error) {
+func (fw *Framework) NewRequestTransportForMessage(msg inter.Message, version protocol.ProtocolVersion) (protocol.TransportMessage, error) {
 	req, err := fw.NewRequestFromMessage(version, msg)
 	if err != nil {
 		return nil, fmt.Errorf("could not create Request: %s", err)
@@ -329,7 +338,7 @@ func (fw *Framework) NewRequestTransportForMessage(msg inter.Message, version st
 }
 
 // NewTransportMessage creates a new TransportMessage complying with a specific protocol version like protocol.TransportV1
-func (fw *Framework) NewTransportMessage(version string) (message protocol.TransportMessage, err error) {
+func (fw *Framework) NewTransportMessage(version protocol.ProtocolVersion) (message protocol.TransportMessage, err error) {
 	switch version {
 	case protocol.TransportV1:
 		return v1.NewTransportMessage(fw.Config.Identity)
@@ -342,9 +351,7 @@ func (fw *Framework) NewTransportMessage(version string) (message protocol.Trans
 
 // NewTransportFromJSON creates a new TransportMessage from a JSON payload.  The version will match what is in the payload
 func (fw *Framework) NewTransportFromJSON(data []byte) (message protocol.TransportMessage, err error) {
-	version := gjson.GetBytes(data, "protocol").String()
-
-	switch version {
+	switch protocol.VersionFromJSON(data) {
 	case protocol.TransportV1:
 		return v1.NewTransportFromJSON(data)
 	case protocol.TransportV2:

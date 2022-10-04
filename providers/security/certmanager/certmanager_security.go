@@ -24,6 +24,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/backoff"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/security/filesec"
 	"github.com/sirupsen/logrus"
@@ -169,6 +170,10 @@ func (cm *CertManagerSecurity) Enroll(ctx context.Context, wait time.Duration, c
 	}
 
 	return nil
+}
+
+func (cm *CertManagerSecurity) BackingTechnology() inter.SecurityTechnology {
+	return cm.fsec.BackingTechnology()
 }
 
 func (cm *CertManagerSecurity) Provider() string {
@@ -490,8 +495,8 @@ func (cm *CertManagerSecurity) SignBytes(b []byte) (signature []byte, err error)
 	return cm.fsec.SignBytes(b)
 }
 
-func (cm *CertManagerSecurity) VerifyByteSignature(dat []byte, sig []byte, pubcert []byte) (should bool, signer string) {
-	return cm.fsec.VerifyByteSignature(dat, sig, pubcert)
+func (cm *CertManagerSecurity) VerifyByteSignature(dat []byte, sig []byte, public ...[]byte) (should bool, signer string) {
+	return cm.fsec.VerifyByteSignature(dat, sig, public...)
 }
 
 func (cm *CertManagerSecurity) RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error) {

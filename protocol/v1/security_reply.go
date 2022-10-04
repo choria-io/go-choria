@@ -17,9 +17,9 @@ import (
 
 // SecureReply contains 1 serialized Reply hashed
 type SecureReply struct {
-	Protocol    string `json:"protocol"`
-	MessageBody string `json:"message"`
-	Hash        string `json:"hash"`
+	Protocol    protocol.ProtocolVersion `json:"protocol"`
+	MessageBody string                   `json:"message"`
+	Hash        string                   `json:"hash"`
 
 	security inter.SecurityProvider
 	mu       sync.Mutex
@@ -84,7 +84,7 @@ func (r *SecureReply) JSON() ([]byte, error) {
 }
 
 // Version retrieves the protocol version for this message
-func (r *SecureReply) Version() string {
+func (r *SecureReply) Version() protocol.ProtocolVersion {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

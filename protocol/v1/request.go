@@ -15,9 +15,9 @@ import (
 )
 
 type Request struct {
-	Protocol    string           `json:"protocol"`
-	MessageBody string           `json:"message"`
-	Envelope    *RequestEnvelope `json:"envelope"`
+	Protocol    protocol.ProtocolVersion `json:"protocol"`
+	MessageBody string                   `json:"message"`
+	Envelope    *RequestEnvelope         `json:"envelope"`
 
 	mu sync.Mutex
 }
@@ -290,7 +290,7 @@ func (r *Request) SetFilter(filter *protocol.Filter) {
 }
 
 // Version retrieves the protocol version for this message
-func (r *Request) Version() string {
+func (r *Request) Version() protocol.ProtocolVersion {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 
