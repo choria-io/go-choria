@@ -132,7 +132,6 @@ func (b *Broadcast) createMessage(filter *protocol.Filter, collective string) (i
 		return nil, fmt.Errorf("could not create message: %s", err)
 	}
 
-	msg.SetProtocolVersion(protocol.RequestV1)
 	msg.SetReplyTo(msg.ReplyTarget())
 	msg.SetFilter(filter)
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -73,7 +73,7 @@ func NewRequestOptions(fw inter.Framework, ddl *agent.DDL) (*RequestOptions, err
 
 	return &RequestOptions{
 		fw:              fw,
-		ProtocolVersion: protocol.RequestV1,
+		ProtocolVersion: fw.RequestProtocol(),
 		RequestType:     inter.DirectRequestMessageType,
 		Collective:      cfg.MainCollective,
 		ProcessReplies:  true,

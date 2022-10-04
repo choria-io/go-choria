@@ -195,7 +195,6 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
 
 			t1, err := m.Transport()
@@ -220,7 +219,6 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
 
 			t1, err := m.Transport()
@@ -247,7 +245,6 @@ var _ = Describe("Choria/Message", func() {
 			err = m.SetType(inter.DirectRequestMessageType)
 			Expect(err).ToNot(HaveOccurred())
 
-			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
 
 			_, err = m.Transport()
@@ -262,7 +259,6 @@ var _ = Describe("Choria/Message", func() {
 			err = m.SetType(inter.DirectRequestMessageType)
 			Expect(err).ToNot(HaveOccurred())
 
-			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
 
 			_, err = m.Transport()
@@ -290,7 +286,7 @@ var _ = Describe("Choria/Message", func() {
 		It("Should require a version", func() {
 			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
-
+			m.SetProtocolVersion(protocol.Unknown)
 			_, err = m.(*Message).UncachedRequestTransport()
 			Expect(err).To(MatchError("cannot create a Request Transport without a version, please set it using SetProtocolVersion()"))
 		})
@@ -298,8 +294,6 @@ var _ = Describe("Choria/Message", func() {
 		It("Should require a reply-to", func() {
 			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
-
-			m.SetProtocolVersion(protocol.RequestV1)
 
 			_, err = m.(*Message).UncachedRequestTransport()
 			Expect(err).To(MatchError("cannot create a Transport, no reply-to was set, please use SetReplyTo()"))
@@ -310,7 +304,6 @@ var _ = Describe("Choria/Message", func() {
 			cfg.Choria.RequireClientFilter = true
 			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
-			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
 
 			_, err = m.(*Message).UncachedRequestTransport()
@@ -329,7 +322,6 @@ var _ = Describe("Choria/Message", func() {
 			cfg.Choria.RequireClientFilter = true
 			m, err = NewMessage([]byte("hello world"), "discovery", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
-			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
 			m.Filter().AddAgentFilter("rpcutil")
 			_, err = m.(*Message).UncachedRequestTransport()
@@ -341,7 +333,6 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			m.SetProtocolVersion(protocol.RequestV1)
 			m.SetReplyTo("reply.to")
 
 			t, err := m.(*Message).UncachedRequestTransport()
@@ -390,7 +381,6 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.ReplyMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(m.ProtocolVersion()).To(Equal(protocol.Unknown))
 			m.SetProtocolVersion(protocol.ReplyV1)
 			Expect(m.ProtocolVersion()).To(Equal(protocol.ReplyV1))
 		})

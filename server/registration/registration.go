@@ -14,7 +14,6 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
-	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/registration"
 	"github.com/choria-io/go-choria/server/data"
 
@@ -171,7 +170,6 @@ func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 		return
 	}
 
-	msg.SetProtocolVersion(protocol.RequestV1)
 	msg.SetReplyTo("dev.null")
 	msg.SetCustomTarget(rmsg.Destination)
 

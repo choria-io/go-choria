@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,6 +13,7 @@ import (
 	"github.com/brutella/hc/util"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/golang/mock/gomock"
 	"github.com/sirupsen/logrus"
 )
@@ -23,8 +24,15 @@ type fwMockOpts struct {
 	cfg         *config.Config
 	ddlResolver inter.DDLResolver
 	ddls        [][3]string
+	reqProto    protocol.ProtocolVersion
 }
 type fwMockOption func(*fwMockOpts)
+
+func WithRequestProtocol(p protocol.ProtocolVersion) fwMockOption {
+	return func(o *fwMockOpts) {
+		o.reqProto = p
+	}
+}
 
 func WithCallerID(c ...string) fwMockOption {
 	return func(o *fwMockOpts) {
@@ -69,7 +77,10 @@ func WithDDLFiles(kind string, plugin string, path string) fwMockOption {
 }
 
 func NewFrameworkForTests(ctrl *gomock.Controller, logWriter io.Writer, opts ...fwMockOption) (*MockFramework, *config.Config) {
-	mopts := &fwMockOpts{cfg: config.NewConfigForTests()}
+	mopts := &fwMockOpts{
+		cfg:      config.NewConfigForTests(),
+		reqProto: protocol.RequestV1,
+	}
 	for _, o := range opts {
 		o(mopts)
 	}
@@ -119,6 +130,7 @@ func NewFrameworkForTests(ctrl *gomock.Controller, logWriter io.Writer, opts ...
 	}
 
 	fw.EXPECT().DDLResolvers().Return([]inter.DDLResolver{mopts.ddlResolver}, nil).AnyTimes()
+	fw.EXPECT().RequestProtocol().Return(mopts.reqProto).AnyTimes()
 
 	return fw, fw.Configuration()
 }
