@@ -85,6 +85,7 @@ func NewMessage(payload []byte, agent string, collective string, msgType string,
 	if err != nil {
 		return nil, err
 	}
+	m.SetProtocolVersion(choria.RequestProtocol())
 
 	return m, nil
 }

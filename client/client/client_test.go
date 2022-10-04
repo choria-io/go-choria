@@ -17,7 +17,6 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/message"
-	"github.com/choria-io/go-choria/protocol"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
@@ -69,7 +68,6 @@ var _ = Describe("Client", func() {
 			ping := base64.StdEncoding.EncodeToString([]byte("ping"))
 			msg, err := message.NewMessage([]byte(ping), "discovery", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
-			msg.SetProtocolVersion(protocol.RequestV1)
 			msg.SetReplyTo("custom")
 
 			ctx, cancel := context.WithCancel(context.Background())
@@ -109,7 +107,6 @@ var _ = Describe("Client", func() {
 			msg, err := message.NewMessage([]byte(ping), "discovery", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			msg.SetProtocolVersion(protocol.RequestV1)
 			msg.SetReplyTo(fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(msg.CallerID()))), msg.RequestID()))
 
 			ctx, cancel := context.WithCancel(context.Background())

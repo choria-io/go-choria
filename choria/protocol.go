@@ -19,6 +19,18 @@ func (fw *Framework) NewMessage(payload []byte, agent string, collective string,
 	return message.NewMessage(payload, agent, collective, msgType, request, fw)
 }
 
+// RequestProtocol determines the protocol version to use based on security provider technology
+func (fw *Framework) RequestProtocol() protocol.ProtocolVersion {
+	switch fw.security.BackingTechnology() {
+	case inter.SecurityTechnologyX509:
+		return protocol.RequestV1
+	case inter.SecurityTechnologyED25519JWT:
+		return protocol.RequestV2
+	}
+
+	return protocol.Unknown
+}
+
 // NewRequestMessageFromTransportJSON creates a Message from a Transport JSON that holds a Request
 func (fw *Framework) NewRequestMessageFromTransportJSON(payload []byte) (inter.Message, error) {
 	transport, err := fw.NewTransportFromJSON(payload)

@@ -185,7 +185,6 @@ func (p *pingCommand) createMessage(filter *protocol.Filter) (inter.Message, err
 		return nil, fmt.Errorf("could not create message: %s", err)
 	}
 
-	msg.SetProtocolVersion(protocol.RequestV1)
 	msg.SetReplyTo(choria.ReplyTarget(msg, msg.RequestID()))
 
 	msg.SetFilter(filter)

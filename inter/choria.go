@@ -23,6 +23,7 @@ import (
 )
 
 type ProtocolConstructor interface {
+	RequestProtocol() protocol.ProtocolVersion
 	NewMessage(payload []byte, agent string, collective string, msgType string, request Message) (msg Message, err error)
 	NewMessageFromRequest(req protocol.Request, replyto string) (Message, error)
 	NewReply(request protocol.Request) (reply protocol.Reply, err error)
