@@ -11,6 +11,7 @@ import (
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
+	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/tokens"
@@ -205,7 +206,12 @@ func (r *serverRunCommand) prepareInstance() (i *server.Instance, err error) {
 		return nil, fmt.Errorf("could not create Choria Server instance: %s", err)
 	}
 
-	log.Infof("Choria Server version %s starting with config %s", bi.Version(), c.Config.ConfigFile)
+	switch c.RequestProtocol() {
+	case protocol.RequestV1:
+		log.Infof("Choria Server version %s starting with config %s", bi.Version(), c.Config.ConfigFile)
+	case protocol.RequestV2:
+		log.Infof("Choria Server version %s starting with config %s using protocol version 2", bi.Version(), c.Config.ConfigFile)
+	}
 
 	if r.pidFile != "" {
 		err := os.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)

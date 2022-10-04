@@ -10,31 +10,25 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"reflect"
 	"strings"
 
 	"github.com/antonmedv/expr/vm"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/filter/compound"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 )
 
 type Inventory struct {
-	fw  ChoriaFramework
+	fw  inter.Framework
 	log *logrus.Entry
 }
 
-type ChoriaFramework interface {
-	Logger(string) *logrus.Entry
-	Configuration() *config.Config
-}
-
 // New creates a new puppetdb discovery client
-func New(fw ChoriaFramework) *Inventory {
+func New(fw inter.Framework) *Inventory {
 	b := &Inventory{
 		fw:  fw,
 		log: fw.Logger("inventory_discovery"),
@@ -143,7 +137,8 @@ func (i *Inventory) isValidGroupLookup(f *protocol.Filter) (grouped bool, err er
 		return true, fmt.Errorf("group matches cannot be combined with other filters")
 	}
 
-	if len(f.FactFilters()) > 0 || len(f.ClassFilters()) > 0 || (len(f.AgentFilters()) > 0 && !reflect.DeepEqual(f.AgentFilters(), []string{"rpcutil"})) || len(f.CompoundFilters()) > 0 {
+	// we allow one agent filter because it's pretty much always there but any additional filters would not be allowed
+	if len(f.FactFilters()) > 0 || len(f.ClassFilters()) > 0 || len(f.AgentFilters()) > 1 || len(f.CompoundFilters()) > 0 {
 		return true, fmt.Errorf("group matches cannot be combined with other filters")
 	}
 
