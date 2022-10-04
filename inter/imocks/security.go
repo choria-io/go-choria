@@ -13,6 +13,7 @@ import (
 	reflect "reflect"
 	time "time"
 
+	inter "github.com/choria-io/go-choria/inter"
 	gomock "github.com/golang/mock/gomock"
 )
 
@@ -37,6 +38,20 @@ func NewMockSecurityProvider(ctrl *gomock.Controller) *MockSecurityProvider {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSecurityProvider) EXPECT() *MockSecurityProviderMockRecorder {
 	return m.recorder
+}
+
+// BackingTechnology mocks base method.
+func (m *MockSecurityProvider) BackingTechnology() inter.SecurityTechnology {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BackingTechnology")
+	ret0, _ := ret[0].(inter.SecurityTechnology)
+	return ret0
+}
+
+// BackingTechnology indicates an expected call of BackingTechnology.
+func (mr *MockSecurityProviderMockRecorder) BackingTechnology() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BackingTechnology", reflect.TypeOf((*MockSecurityProvider)(nil).BackingTechnology))
 }
 
 // CallerIdentity mocks base method.
@@ -304,18 +319,23 @@ func (mr *MockSecurityProviderMockRecorder) Validate() *gomock.Call {
 }
 
 // VerifyByteSignature mocks base method.
-func (m *MockSecurityProvider) VerifyByteSignature(arg0, arg1, arg2 []byte) (bool, string) {
+func (m *MockSecurityProvider) VerifyByteSignature(arg0, arg1 []byte, arg2 ...[]byte) (bool, string) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VerifyByteSignature", arg0, arg1, arg2)
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "VerifyByteSignature", varargs...)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(string)
 	return ret0, ret1
 }
 
 // VerifyByteSignature indicates an expected call of VerifyByteSignature.
-func (mr *MockSecurityProviderMockRecorder) VerifyByteSignature(arg0, arg1, arg2 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) VerifyByteSignature(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyByteSignature", reflect.TypeOf((*MockSecurityProvider)(nil).VerifyByteSignature), arg0, arg1, arg2)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyByteSignature", reflect.TypeOf((*MockSecurityProvider)(nil).VerifyByteSignature), varargs...)
 }
 
 // VerifyCertificate mocks base method.

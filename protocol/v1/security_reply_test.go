@@ -8,6 +8,7 @@ import (
 	"crypto/sha256"
 	"encoding/base64"
 
+	"github.com/choria-io/go-choria/inter"
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/golang/mock/gomock"
@@ -24,6 +25,7 @@ var _ = Describe("SecureReply", func() {
 	BeforeEach(func() {
 		mockctl = gomock.NewController(GinkgoT())
 		security = imock.NewMockSecurityProvider(mockctl)
+		security.EXPECT().BackingTechnology().Return(inter.SecurityTechnologyX509)
 	})
 
 	AfterEach(func() {
@@ -48,7 +50,7 @@ var _ = Describe("SecureReply", func() {
 		sj, err := sreply.JSON()
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(gjson.GetBytes(sj, "protocol").String()).To(Equal(protocol.SecureReplyV1))
+		Expect(protocol.VersionFromJSON(sj)).To(Equal(protocol.SecureReplyV1))
 		Expect(gjson.GetBytes(sj, "message").String()).To(Equal(string(rj)))
 		Expect(gjson.GetBytes(sj, "hash").String()).To(Equal(base64.StdEncoding.EncodeToString(sha[:])))
 		Expect(sreply.Valid()).To(BeTrue())

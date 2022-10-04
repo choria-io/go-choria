@@ -13,10 +13,22 @@ import (
 	"time"
 )
 
+// SecurityTechnology indicates the technology a security provider is based on
+type SecurityTechnology int
+
+const (
+	SecurityTechnologyUnknown    SecurityTechnology = 0
+	SecurityTechnologyX509       SecurityTechnology = 1
+	SecurityTechnologyED25519JWT SecurityTechnology = 2
+)
+
 // SecurityProvider provides a security plugin for the choria subsystem
 type SecurityProvider interface {
 	// Provider reports the name of the current security provider
 	Provider() string
+
+	// BackingTechnology indicates what the technology this provider is based on
+	BackingTechnology() SecurityTechnology
 
 	// Validate that the security provider is functional
 	Validate() ([]string, bool)
@@ -34,7 +46,7 @@ type SecurityProvider interface {
 	SignBytes(b []byte) (signature []byte, err error)
 
 	// VerifyByteSignature verifies that dat signature was made using pubcert
-	VerifyByteSignature(dat []byte, sig []byte, public []byte) (should bool, signer string)
+	VerifyByteSignature(dat []byte, sig []byte, public ...[]byte) (should bool, signer string)
 
 	// RemoteSignRequest signs a choria request using a remote signer and returns a secure request
 	RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error)

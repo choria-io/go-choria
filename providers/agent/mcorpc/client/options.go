@@ -27,7 +27,7 @@ type RequestOptions struct {
 	Filter           *protocol.Filter
 	Handler          Handler
 	ProcessReplies   bool
-	ProtocolVersion  string
+	ProtocolVersion  protocol.ProtocolVersion
 	Replies          chan inter.ConnectorMessage
 	ReplyTo          string
 	RequestID        string
@@ -240,7 +240,7 @@ func Targets(t []string) RequestOption {
 }
 
 // Protocol sets the protocol version to use
-func Protocol(v string) RequestOption {
+func Protocol(v protocol.ProtocolVersion) RequestOption {
 	return func(o *RequestOptions) {
 		o.ProtocolVersion = v
 	}

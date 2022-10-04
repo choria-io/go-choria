@@ -18,10 +18,10 @@ import (
 
 // SecureRequest contains 1 serialized Request signed and with the public cert attached
 type SecureRequest struct {
-	Protocol          string `json:"protocol"`
-	MessageBody       string `json:"message"`
-	Signature         string `json:"signature"`
-	PublicCertificate string `json:"pubcert"`
+	Protocol          protocol.ProtocolVersion `json:"protocol"`
+	MessageBody       string                   `json:"message"`
+	Signature         string                   `json:"signature"`
+	PublicCertificate string                   `json:"pubcert"`
 
 	security inter.SecurityProvider
 	mu       sync.Mutex
@@ -135,7 +135,7 @@ func (r *SecureRequest) JSON() ([]byte, error) {
 }
 
 // Version retrieves the protocol version for this message
-func (r *SecureRequest) Version() string {
+func (r *SecureRequest) Version() protocol.ProtocolVersion {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

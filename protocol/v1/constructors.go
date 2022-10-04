@@ -113,6 +113,10 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (protocol.Request, e
 
 // NewSecureReply creates a choria:secure:reply:1
 func NewSecureReply(reply protocol.Reply, security inter.SecurityProvider) (secure protocol.SecureReply, err error) {
+	if security.BackingTechnology() != inter.SecurityTechnologyX509 {
+		return nil, fmt.Errorf("version 1 protocol requires a x509 based security system")
+	}
+
 	secure = &SecureReply{
 		Protocol: protocol.SecureReplyV1,
 		security: security,
@@ -128,6 +132,10 @@ func NewSecureReply(reply protocol.Reply, security inter.SecurityProvider) (secu
 
 // NewSecureReplyFromTransport creates a new choria:secure:reply:1 from the data contained in a Transport message
 func NewSecureReplyFromTransport(message protocol.TransportMessage, security inter.SecurityProvider, skipvalidate bool) (secure protocol.SecureReply, err error) {
+	if security.BackingTechnology() != inter.SecurityTechnologyX509 {
+		return nil, fmt.Errorf("version 1 protocol requires a x509 based security system")
+	}
+
 	secure = &SecureReply{
 		Protocol: protocol.SecureReplyV1,
 		security: security,
@@ -159,6 +167,10 @@ func NewSecureReplyFromTransport(message protocol.TransportMessage, security int
 
 // NewSecureRequest creates a choria:secure:request:1
 func NewSecureRequest(request protocol.Request, security inter.SecurityProvider) (secure protocol.SecureRequest, err error) {
+	if security.BackingTechnology() != inter.SecurityTechnologyX509 {
+		return nil, fmt.Errorf("version 1 protocol requires a x509 based security system")
+	}
+
 	pub := []byte("insecure")
 
 	if protocol.IsSecure() && !protocol.IsRemoteSignerAgent(request.Agent()) {
@@ -189,6 +201,10 @@ func NewSecureRequest(request protocol.Request, security inter.SecurityProvider)
 
 // NewRemoteSignedSecureRequest is a NewSecureRequest that delegates the signing to a remote signer like aaasvc
 func NewRemoteSignedSecureRequest(request protocol.Request, security inter.SecurityProvider) (secure protocol.SecureRequest, err error) {
+	if security.BackingTechnology() != inter.SecurityTechnologyX509 {
+		return nil, fmt.Errorf("version 1 protocol requires a x509 based security system")
+	}
+
 	// no need for remote stuff, we don't do any signing or certs,
 	// additionally the service hosting the remote signing service isnt
 	// secured by choria protocol since at calling time the client does
@@ -223,6 +239,10 @@ func NewRemoteSignedSecureRequest(request protocol.Request, security inter.Secur
 
 // NewSecureRequestFromTransport creates a new choria:secure:request:1 from the data contained in a Transport message
 func NewSecureRequestFromTransport(message protocol.TransportMessage, security inter.SecurityProvider, skipvalidate bool) (secure protocol.SecureRequest, err error) {
+	if security.BackingTechnology() != inter.SecurityTechnologyX509 {
+		return nil, fmt.Errorf("version 1 protocol requires a x509 based security system")
+	}
+
 	secure = &SecureRequest{
 		security: security,
 	}

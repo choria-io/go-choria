@@ -15,8 +15,8 @@ import (
 )
 
 type Request struct {
-	Protocol    string `json:"protocol"`
-	MessageBody []byte `json:"message"`
+	Protocol    protocol.ProtocolVersion `json:"protocol"`
+	MessageBody []byte                   `json:"message"`
 
 	ReqEnvelope
 
@@ -348,7 +348,7 @@ func (r *Request) SetFilter(filter *protocol.Filter) {
 }
 
 // Version retrieves the protocol version for this message
-func (r *Request) Version() string {
+func (r *Request) Version() protocol.ProtocolVersion {
 	r.mu.Lock()
 	defer r.mu.Unlock()
 

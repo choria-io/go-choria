@@ -9,183 +9,9 @@ import (
 	reflect "reflect"
 
 	client "github.com/choria-io/go-choria/client/client"
-	config "github.com/choria-io/go-choria/config"
 	inter "github.com/choria-io/go-choria/inter"
-	protocol "github.com/choria-io/go-choria/protocol"
-	srvcache "github.com/choria-io/go-choria/srvcache"
 	gomock "github.com/golang/mock/gomock"
-	logrus "github.com/sirupsen/logrus"
 )
-
-// MockChoriaFramework is a mock of ChoriaFramework interface.
-type MockChoriaFramework struct {
-	ctrl     *gomock.Controller
-	recorder *MockChoriaFrameworkMockRecorder
-}
-
-// MockChoriaFrameworkMockRecorder is the mock recorder for MockChoriaFramework.
-type MockChoriaFrameworkMockRecorder struct {
-	mock *MockChoriaFramework
-}
-
-// NewMockChoriaFramework creates a new mock instance.
-func NewMockChoriaFramework(ctrl *gomock.Controller) *MockChoriaFramework {
-	mock := &MockChoriaFramework{ctrl: ctrl}
-	mock.recorder = &MockChoriaFrameworkMockRecorder{mock}
-	return mock
-}
-
-// EXPECT returns an object that allows the caller to indicate expected use.
-func (m *MockChoriaFramework) EXPECT() *MockChoriaFrameworkMockRecorder {
-	return m.recorder
-}
-
-// Certname mocks base method.
-func (m *MockChoriaFramework) Certname() string {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Certname")
-	ret0, _ := ret[0].(string)
-	return ret0
-}
-
-// Certname indicates an expected call of Certname.
-func (mr *MockChoriaFrameworkMockRecorder) Certname() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Certname", reflect.TypeOf((*MockChoriaFramework)(nil).Certname))
-}
-
-// Configuration mocks base method.
-func (m *MockChoriaFramework) Configuration() *config.Config {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Configuration")
-	ret0, _ := ret[0].(*config.Config)
-	return ret0
-}
-
-// Configuration indicates an expected call of Configuration.
-func (mr *MockChoriaFrameworkMockRecorder) Configuration() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Configuration", reflect.TypeOf((*MockChoriaFramework)(nil).Configuration))
-}
-
-// Logger mocks base method.
-func (m *MockChoriaFramework) Logger(arg0 string) *logrus.Entry {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "Logger", arg0)
-	ret0, _ := ret[0].(*logrus.Entry)
-	return ret0
-}
-
-// Logger indicates an expected call of Logger.
-func (mr *MockChoriaFrameworkMockRecorder) Logger(arg0 any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logger", reflect.TypeOf((*MockChoriaFramework)(nil).Logger), arg0)
-}
-
-// MiddlewareServers mocks base method.
-func (m *MockChoriaFramework) MiddlewareServers() (srvcache.Servers, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MiddlewareServers")
-	ret0, _ := ret[0].(srvcache.Servers)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// MiddlewareServers indicates an expected call of MiddlewareServers.
-func (mr *MockChoriaFrameworkMockRecorder) MiddlewareServers() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MiddlewareServers", reflect.TypeOf((*MockChoriaFramework)(nil).MiddlewareServers))
-}
-
-// NewConnector mocks base method.
-func (m *MockChoriaFramework) NewConnector(ctx context.Context, servers func() (srvcache.Servers, error), name string, logger *logrus.Entry) (inter.Connector, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewConnector", ctx, servers, name, logger)
-	ret0, _ := ret[0].(inter.Connector)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NewConnector indicates an expected call of NewConnector.
-func (mr *MockChoriaFrameworkMockRecorder) NewConnector(ctx, servers, name, logger any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewConnector", reflect.TypeOf((*MockChoriaFramework)(nil).NewConnector), ctx, servers, name, logger)
-}
-
-// NewMessage mocks base method.
-func (m *MockChoriaFramework) NewMessage(payload, agent, collective, msgType string, request inter.Message) (inter.Message, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewMessage", payload, agent, collective, msgType, request)
-	ret0, _ := ret[0].(inter.Message)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NewMessage indicates an expected call of NewMessage.
-func (mr *MockChoriaFrameworkMockRecorder) NewMessage(payload, agent, collective, msgType, request any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewMessage", reflect.TypeOf((*MockChoriaFramework)(nil).NewMessage), payload, agent, collective, msgType, request)
-}
-
-// NewReplyFromTransportJSON mocks base method.
-func (m *MockChoriaFramework) NewReplyFromTransportJSON(payload []byte, skipvalidate bool) (protocol.Reply, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewReplyFromTransportJSON", payload, skipvalidate)
-	ret0, _ := ret[0].(protocol.Reply)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NewReplyFromTransportJSON indicates an expected call of NewReplyFromTransportJSON.
-func (mr *MockChoriaFrameworkMockRecorder) NewReplyFromTransportJSON(payload, skipvalidate any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewReplyFromTransportJSON", reflect.TypeOf((*MockChoriaFramework)(nil).NewReplyFromTransportJSON), payload, skipvalidate)
-}
-
-// NewRequestID mocks base method.
-func (m *MockChoriaFramework) NewRequestID() (string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewRequestID")
-	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NewRequestID indicates an expected call of NewRequestID.
-func (mr *MockChoriaFrameworkMockRecorder) NewRequestID() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestID", reflect.TypeOf((*MockChoriaFramework)(nil).NewRequestID))
-}
-
-// NewTransportFromJSON mocks base method.
-func (m *MockChoriaFramework) NewTransportFromJSON(data string) (protocol.TransportMessage, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewTransportFromJSON", data)
-	ret0, _ := ret[0].(protocol.TransportMessage)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// NewTransportFromJSON indicates an expected call of NewTransportFromJSON.
-func (mr *MockChoriaFrameworkMockRecorder) NewTransportFromJSON(data any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewTransportFromJSON", reflect.TypeOf((*MockChoriaFramework)(nil).NewTransportFromJSON), data)
-}
-
-// PQLQueryCertNames mocks base method.
-func (m *MockChoriaFramework) PQLQueryCertNames(query string) ([]string, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PQLQueryCertNames", query)
-	ret0, _ := ret[0].([]string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// PQLQueryCertNames indicates an expected call of PQLQueryCertNames.
-func (mr *MockChoriaFrameworkMockRecorder) PQLQueryCertNames(query any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PQLQueryCertNames", reflect.TypeOf((*MockChoriaFramework)(nil).PQLQueryCertNames), query)
-}
 
 // MockRequestResult is a mock of RequestResult interface.
 type MockRequestResult struct {
@@ -256,7 +82,7 @@ func (m *MockChoriaClient) Request(ctx context.Context, msg inter.Message, handl
 }
 
 // Request indicates an expected call of Request.
-func (mr *MockChoriaClientMockRecorder) Request(ctx, msg, handler any) *gomock.Call {
+func (mr *MockChoriaClientMockRecorder) Request(ctx, msg, handler interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Request", reflect.TypeOf((*MockChoriaClient)(nil).Request), ctx, msg, handler)
 }
@@ -293,7 +119,7 @@ func (m *MockConnector) Publish(msg inter.Message) error {
 }
 
 // Publish indicates an expected call of Publish.
-func (mr *MockConnectorMockRecorder) Publish(msg any) *gomock.Call {
+func (mr *MockConnectorMockRecorder) Publish(msg interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Publish", reflect.TypeOf((*MockConnector)(nil).Publish), msg)
 }
@@ -307,7 +133,7 @@ func (m *MockConnector) QueueSubscribe(ctx context.Context, name, subject, group
 }
 
 // QueueSubscribe indicates an expected call of QueueSubscribe.
-func (mr *MockConnectorMockRecorder) QueueSubscribe(ctx, name, subject, group, output any) *gomock.Call {
+func (mr *MockConnectorMockRecorder) QueueSubscribe(ctx, name, subject, group, output interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "QueueSubscribe", reflect.TypeOf((*MockConnector)(nil).QueueSubscribe), ctx, name, subject, group, output)
 }

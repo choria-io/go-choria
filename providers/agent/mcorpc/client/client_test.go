@@ -200,7 +200,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 				Expect(err).ToNot(HaveOccurred())
 				return v1.NewReplyFromSecureReply(sreply)
 			}).AnyTimes()
-			fw.EXPECT().NewRequestTransportForMessage(gomock.Any(), gomock.Any()).DoAndReturn(func(msg inter.Message, version string) (protocol.TransportMessage, error) {
+			fw.EXPECT().NewRequestTransportForMessage(gomock.Any(), gomock.Any()).DoAndReturn(func(msg inter.Message, version protocol.ProtocolVersion) (protocol.TransportMessage, error) {
 				req, err := v1.NewRequest(msg.Agent(), msg.SenderID(), msg.CallerID(), msg.TTL(), msg.RequestID(), msg.Collective())
 				Expect(err).ToNot(HaveOccurred())
 				req.SetMessage(msg.Payload())

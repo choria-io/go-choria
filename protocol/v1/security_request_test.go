@@ -9,6 +9,7 @@ import (
 	"errors"
 	"os"
 
+	"github.com/choria-io/go-choria/inter"
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/golang/mock/gomock"
@@ -27,6 +28,7 @@ var _ = Describe("SecureRequest", func() {
 		logrus.SetLevel(logrus.FatalLevel)
 		mockctl = gomock.NewController(GinkgoT())
 		security = imock.NewMockSecurityProvider(mockctl)
+		security.EXPECT().BackingTechnology().Return(inter.SecurityTechnologyX509)
 
 		protocol.Secure = "true"
 
@@ -55,7 +57,7 @@ var _ = Describe("SecureRequest", func() {
 		sj, err := sr.JSON()
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(gjson.GetBytes(sj, "protocol").String()).To(Equal(protocol.SecureRequestV1))
+		Expect(protocol.VersionFromJSON(sj)).To(Equal(protocol.SecureRequestV1))
 		Expect(gjson.GetBytes(sj, "message").String()).To(Equal(string(rj)))
 		Expect(gjson.GetBytes(sj, "pubcert").String()).To(Equal("insecure"))
 		Expect(gjson.GetBytes(sj, "signature").String()).To(Equal("insecure"))
@@ -77,7 +79,7 @@ var _ = Describe("SecureRequest", func() {
 		sj, err := sr.JSON()
 		Expect(err).ToNot(HaveOccurred())
 
-		Expect(gjson.GetBytes(sj, "protocol").String()).To(Equal(protocol.SecureRequestV1))
+		Expect(protocol.VersionFromJSON(sj)).To(Equal(protocol.SecureRequestV1))
 		Expect(gjson.GetBytes(sj, "message").String()).To(Equal(string(rj)))
 		Expect(gjson.GetBytes(sj, "pubcert").String()).To(Equal(string(pub)))
 		Expect(gjson.GetBytes(sj, "signature").String()).To(Equal(base64.StdEncoding.EncodeToString([]byte("stub.sig"))))

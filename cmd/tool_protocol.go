@@ -184,7 +184,7 @@ func (p *tProtocolCommand) renderSecureReply(t protocol.SecureReply) error {
 
 	fmt.Println("║   ╓─ Secure Reply ─────────────────────────────────────")
 	fmt.Println("║   ║")
-	fmt.Printf("║   ║ %s message with %s payload\n", c.Colorize("green", t.Version()), c.Colorize("green", humanize.IBytes(uint64(len(payload)))))
+	fmt.Printf("║   ║ %s message with %s payload\n", c.Colorize("green", t.Version().String()), c.Colorize("green", humanize.IBytes(uint64(len(payload)))))
 	fmt.Println("║   ║")
 	fmt.Printf("║   ║   Payload Protocol: %s\n", payloadProto.String())
 
@@ -219,7 +219,7 @@ func (p *tProtocolCommand) renderReply(t protocol.Reply) error {
 
 	fmt.Println("║   ║   ╓─ Reply ────────────────────────────────────────────")
 	fmt.Println("║   ║   ║")
-	fmt.Printf("║   ║   ║ %s message with %s payload\n", c.Colorize("green", t.Version()), c.Colorize("green", humanize.IBytes(uint64(len(payload)))))
+	fmt.Printf("║   ║   ║ %s message with %s payload\n", c.Colorize("green", t.Version().String()), c.Colorize("green", humanize.IBytes(uint64(len(payload)))))
 	fmt.Println("║   ║   ║")
 	fmt.Printf("║   ║   ║   Request: %s\n", t.RequestID())
 	fmt.Printf("║   ║   ║     Agent: %s\n", t.Agent())
@@ -254,7 +254,7 @@ func (p *tProtocolCommand) renderSecureRequest(t protocol.SecureRequest) error {
 
 	fmt.Println("║   ╓─ Secure Request ─────────────────────────────────────")
 	fmt.Println("║   ║")
-	fmt.Printf("║   ║ %s message with %s payload\n", c.Colorize("green", t.Version()), c.Colorize("green", humanize.IBytes(uint64(len(payload)))))
+	fmt.Printf("║   ║ %s message with %s payload\n", c.Colorize("green", t.Version().String()), c.Colorize("green", humanize.IBytes(uint64(len(payload)))))
 	fmt.Println("║   ║")
 	fmt.Printf("║   ║      Payload Protocol: %s\n", payloadProto.String())
 
@@ -343,7 +343,7 @@ func (p *tProtocolCommand) renderRequest(t protocol.Request) error {
 
 	fmt.Println("║   ║   ╓─ Request ────────────────────────────────────────────")
 	fmt.Println("║   ║   ║")
-	fmt.Printf("║   ║   ║ %s message with %s payload\n", c.Colorize("green", t.Version()), c.Colorize("green", humanize.IBytes(uint64(len(payload)))))
+	fmt.Printf("║   ║   ║ %s message with %s payload\n", c.Colorize("green", t.Version().String()), c.Colorize("green", humanize.IBytes(uint64(len(payload)))))
 	fmt.Println("║   ║   ║")
 	fmt.Printf("║   ║   ║         Request: %s\n", t.RequestID())
 	fmt.Printf("║   ║   ║          Sender: %s\n", t.SenderID())
@@ -386,12 +386,13 @@ func (p *tProtocolCommand) renderRequest(t protocol.Request) error {
 	return nil
 }
 
-func (p *tProtocolCommand) renderTransport(t protocol.TransportMessage) (string, error) {
+func (p *tProtocolCommand) renderTransport(t protocol.TransportMessage) (protocol.ProtocolVersion, error) {
 	payload, err := t.Message()
 	if err != nil {
 		return "", err
 	}
-	payloadProto := gjson.GetBytes(payload, "protocol")
+
+	payloadProto := protocol.VersionFromJSON(payload)
 
 	if p.json {
 		fmt.Println("Transport:")
@@ -403,12 +404,12 @@ func (p *tProtocolCommand) renderTransport(t protocol.TransportMessage) (string,
 		err = iu.DumpJSONIndentedFormatted(j, 4)
 		fmt.Println()
 
-		return payloadProto.String(), err
+		return payloadProto, err
 	}
 
 	fmt.Println("╓─ Transport ─────────────────────────────────────────")
 	fmt.Println("║")
-	fmt.Printf("║ %s message with %s payload from %s\n", c.Colorize("green", t.Version()), c.Colorize("green", humanize.IBytes(uint64(len(payload)))), c.Colorize("green", t.SenderID()))
+	fmt.Printf("║ %s message with %s payload from %s\n", c.Colorize("green", t.Version().String()), c.Colorize("green", humanize.IBytes(uint64(len(payload)))), c.Colorize("green", t.SenderID()))
 	fmt.Println("║")
 	fmt.Printf("║      Payload Protocol: %s\n", payloadProto.String())
 	if len(t.ReplyTo()) > 0 {
@@ -426,7 +427,7 @@ func (p *tProtocolCommand) renderTransport(t protocol.TransportMessage) (string,
 	}
 	fmt.Println("║")
 
-	return payloadProto.String(), nil
+	return payloadProto, nil
 }
 
 func init() {

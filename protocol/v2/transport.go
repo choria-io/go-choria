@@ -15,7 +15,7 @@ import (
 
 type TransportMessage struct {
 	// The protocol version for this transport `io.choria.protocol.v2.transport` / protocol.TransportV2
-	Protocol string `json:"protocol"`
+	Protocol protocol.ProtocolVersion `json:"protocol"`
 	// The payload to be transport, a Secure Request or Secure Reply
 	Data []byte `json:"data"`
 	// Optional headers
@@ -269,7 +269,7 @@ func (m *TransportMessage) JSON() ([]byte, error) {
 	return j, nil
 }
 
-func (m *TransportMessage) Version() string {
+func (m *TransportMessage) Version() protocol.ProtocolVersion {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 

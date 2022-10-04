@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
 )
 
@@ -27,6 +28,24 @@ type SecureReply struct {
 	SenderJWT string `json:"sender"`
 
 	mu sync.Mutex
+}
+
+// NewSecureReply creates a choria:secure:reply:1
+func NewSecureReply(reply protocol.Reply, security inter.SecurityProvider) (secure protocol.SecureReply, err error) {
+	if security.BackingTechnology() != inter.SecurityTechnologyED25519JWT {
+		return nil, fmt.Errorf("version 2 protocol requires a ed25519+jwt based security system")
+	}
+
+	panic("implemented me")
+}
+
+// NewSecureReplyFromTransport creates a new choria:secure:reply:1 from the data contained in a Transport message
+func NewSecureReplyFromTransport(message protocol.TransportMessage, security inter.SecurityProvider, skipvalidate bool) (secure protocol.SecureReply, err error) {
+	if security.BackingTechnology() != inter.SecurityTechnologyED25519JWT {
+		return nil, fmt.Errorf("version 2 protocol requires a ed25519+jwt based security system")
+	}
+
+	panic("implemented me")
 }
 
 func (r *SecureReply) SetMessage(reply protocol.Reply) error {

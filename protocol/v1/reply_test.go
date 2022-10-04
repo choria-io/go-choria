@@ -8,8 +8,6 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/tidwall/gjson"
-
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -26,7 +24,7 @@ var _ = Describe("Reply", func() {
 		reply.SetMessage([]byte("hello world"))
 		j, _ := reply.JSON()
 
-		Expect(gjson.GetBytes(j, "protocol").String()).To(Equal(protocol.ReplyV1))
+		Expect(protocol.VersionFromJSON(j)).To(Equal(protocol.ReplyV1))
 		Expect(reply.Message()).To(Equal([]byte("hello world")))
 		Expect(len(reply.RequestID())).To(Equal(32))
 		Expect(reply.SenderID()).To(Equal("testing"))

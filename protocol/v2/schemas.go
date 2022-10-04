@@ -10,7 +10,7 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 )
 
-func schemaValidate(version string, data []byte) (valid bool, errs []string, err error) {
+func schemaValidate(version protocol.ProtocolVersion, data []byte) (valid bool, errs []string, err error) {
 	valid, errs, err = protocol.SchemaValidate(version, data)
 
 	switch {

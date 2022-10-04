@@ -285,6 +285,10 @@ func (p *Pkcs11Security) Logout() error {
 	return p.session.Logout()
 }
 
+func (p *Pkcs11Security) BackingTechnology() inter.SecurityTechnology {
+	return p.fsec.BackingTechnology()
+}
+
 func (p *Pkcs11Security) Provider() string {
 	return "pkcs11"
 }
@@ -341,7 +345,14 @@ func (p *Pkcs11Security) SignBytes(str []byte) ([]byte, error) {
 }
 
 // VerifyByteSignature verify that dat matches signature sig made by the key, if pub cert is empty the active public key will be used
-func (p *Pkcs11Security) VerifyByteSignature(dat []byte, sig []byte, pubcert []byte) (should bool, signer string) {
+func (p *Pkcs11Security) VerifyByteSignature(dat []byte, sig []byte, public ...[]byte) (should bool, signer string) {
+	if len(public) != 1 {
+		p.log.Errorf("Could not process public data: only single signer public data is supported")
+		return false, ""
+	}
+
+	pubcert := public[0]
+
 	var cert *x509.Certificate
 	var err error
 
