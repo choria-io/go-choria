@@ -40,7 +40,7 @@ func WithSigner(signer inter.RequestSigner) Option {
 
 func WithLog(l *logrus.Entry) Option {
 	return func(p *Pkcs11Security) error {
-		p.log = l.WithFields(logrus.Fields{"ssl": "pkcs11"})
+		p.log = l.WithFields(logrus.Fields{"security": "pkcs11"})
 
 		return nil
 	}

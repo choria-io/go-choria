@@ -84,7 +84,7 @@ func WithConfig(c *Config) Option {
 // WithLog configures a logger for the File Security Provider
 func WithLog(l *logrus.Entry) Option {
 	return func(fs *FileSecurity) error {
-		fs.log = l.WithFields(logrus.Fields{"ssl": "file"})
+		fs.log = l.WithFields(logrus.Fields{"security": "file"})
 
 		if fs.conf.TLSConfig == nil {
 			fs.conf.TLSConfig = tlssetup.TLSConfig(nil)

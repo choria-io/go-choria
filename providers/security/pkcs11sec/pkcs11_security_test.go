@@ -128,17 +128,17 @@ var _ = Describe("Pkcs11Security", func() {
 		})
 	})
 
-	Describe("VerifyByteSignature", func() {
+	Describe("VerifySignatureBytes", func() {
 		It("Should validate correctly", func() {
 			sig, err := base64.StdEncoding.DecodeString("PQlGnXt8jQ9N2WbghvKhH4qNTJcmTpbfspkT+9aSabivRbMGNIlMwDGMg8PQEC5AMF9eoxdaXuR/t2rbgUfqQrB3oI2YMD2clUtdVI1MIJ81ww90o0KHZa3C0N/OlshJVCDg1mUiget7rdfE5K3HARKbPZZbQFe/q5yPnjA7FGHEb1K+qnPyLGKD8WKIDTjHza16O6QWAcbyAWk2CP9ziLH5flVGMP0zMkdXQPiFfzexUG6iTIi64zVJ2k6E3k1JOGzRLeQfvUDNEQnmekH4w0iK0+uTZzBsQPr3jbd8xraTInv+v1CzrpBwoIP36Qlr296vxKngaqDSN2K3uSyKWg==")
 			Expect(err).ToNot(HaveOccurred())
 
-			valid, _ := prov.VerifyByteSignature([]byte("too many secrets"), sig, nil)
+			valid, _ := prov.VerifySignatureBytes([]byte("too many secrets"), sig, nil)
 			Expect(valid).To(BeTrue())
 		})
 
 		It("Should fail for invalid sigs", func() {
-			valid, _ := prov.VerifyByteSignature([]byte("too many secrets"), []byte("meh"), nil)
+			valid, _ := prov.VerifySignatureBytes([]byte("too many secrets"), []byte("meh"), nil)
 			Expect(valid).To(BeFalse())
 		})
 
@@ -152,7 +152,7 @@ var _ = Describe("Pkcs11Security", func() {
 			cert, err := os.ReadFile("../testdata/good/certs/2.mcollective.pem")
 			Expect(err).ToNot(HaveOccurred())
 
-			valid, _ := prov.VerifyByteSignature([]byte("too many secrets"), sig, cert)
+			valid, _ := prov.VerifySignatureBytes([]byte("too many secrets"), sig, cert)
 			Expect(valid).To(BeTrue())
 		})
 	})

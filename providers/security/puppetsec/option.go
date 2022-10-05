@@ -19,7 +19,7 @@ import (
 // Option is a function that can configure the Puppet Security Provider
 type Option func(*PuppetSecurity) error
 
-// WithChoriaConfig optionally configures the Puppet Security Provider from settings found in a typical Choria configuration
+// WithChoriaConfig optionally configures the Security Provider from settings found in a typical Choria configuration
 func WithChoriaConfig(bi BuildInfoProvider, c *config.Config) Option {
 	return func(p *PuppetSecurity) error {
 		cfg := Config{
@@ -107,7 +107,7 @@ func WithConfig(c *Config) Option {
 // WithLog configures a logger for the Puppet Security Provider
 func WithLog(l *logrus.Entry) Option {
 	return func(p *PuppetSecurity) error {
-		p.log = l.WithFields(logrus.Fields{"ssl": "puppet"})
+		p.log = l.WithFields(logrus.Fields{"security": "puppet"})
 
 		return nil
 	}

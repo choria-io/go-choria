@@ -27,6 +27,7 @@ import (
 	governor "github.com/choria-io/go-choria/providers/governor/streams"
 	"github.com/choria-io/go-choria/providers/kv"
 	"github.com/choria-io/go-choria/providers/provtarget"
+	"github.com/choria-io/go-choria/providers/security/choria"
 	"github.com/choria-io/go-choria/providers/signers"
 	"github.com/choria-io/go-choria/tokens"
 	"github.com/fatih/color"
@@ -140,6 +141,24 @@ func (fw *Framework) setupSecurity() error {
 			certmanagersec.WithChoriaConfig(fw.Config),
 			certmanagersec.WithLog(fw.Logger("security")),
 			certmanagersec.WithContext(context.Background()))
+
+	case "choria":
+		var sf, tf string
+		sf, err = fw.SignerSeedFile()
+		if err != nil {
+			return err
+		}
+		tf, err = fw.SignerTokenFile()
+		if err != nil {
+			return err
+		}
+
+		fw.security, err = choria.New(
+			choria.WithChoriaConfig(fw.Config),
+			choria.WithLog(fw.Logger("security")),
+			choria.WithSeedFile(sf),
+			choria.WithTokenFile(tf),
+			choria.WithSigner(signer))
 
 	default:
 		err = fmt.Errorf("unknown security provider %s", fw.Config.Choria.SecurityProvider)

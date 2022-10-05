@@ -304,8 +304,8 @@ func (s *PuppetSecurity) SignBytes(str []byte) ([]byte, error) {
 }
 
 // VerifyByteSignature verify that dat matches signature sig made by the key, if pub cert is empty the active public key will be used
-func (s *PuppetSecurity) VerifyByteSignature(dat []byte, sig []byte, public ...[]byte) (should bool, signer string) {
-	return s.fsec.VerifyByteSignature(dat, sig, public...)
+func (s *PuppetSecurity) VerifySignatureBytes(dat []byte, sig []byte, public ...[]byte) (should bool, signer string) {
+	return s.fsec.VerifySignatureBytes(dat, sig, public...)
 }
 
 // CallerName creates a choria like caller name in the form of choria=identity

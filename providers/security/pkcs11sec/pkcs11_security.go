@@ -345,7 +345,7 @@ func (p *Pkcs11Security) SignBytes(str []byte) ([]byte, error) {
 }
 
 // VerifyByteSignature verify that dat matches signature sig made by the key, if pub cert is empty the active public key will be used
-func (p *Pkcs11Security) VerifyByteSignature(dat []byte, sig []byte, public ...[]byte) (should bool, signer string) {
+func (p *Pkcs11Security) VerifySignatureBytes(dat []byte, sig []byte, public ...[]byte) (should bool, signer string) {
 	if len(public) != 1 {
 		p.log.Errorf("Could not process public data: only single signer public data is supported")
 		return false, ""

@@ -495,8 +495,8 @@ func (cm *CertManagerSecurity) SignBytes(b []byte) (signature []byte, err error)
 	return cm.fsec.SignBytes(b)
 }
 
-func (cm *CertManagerSecurity) VerifyByteSignature(dat []byte, sig []byte, public ...[]byte) (should bool, signer string) {
-	return cm.fsec.VerifyByteSignature(dat, sig, public...)
+func (cm *CertManagerSecurity) VerifySignatureBytes(dat []byte, sig []byte, public ...[]byte) (should bool, signer string) {
+	return cm.fsec.VerifySignatureBytes(dat, sig, public...)
 }
 
 func (cm *CertManagerSecurity) RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error) {
