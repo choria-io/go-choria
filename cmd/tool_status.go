@@ -28,7 +28,7 @@ type tStatusCommand struct {
 func (s *tStatusCommand) Setup() (err error) {
 	if tool, ok := cmdWithFullCommand("tool"); ok {
 		s.cmd = tool.Cmd().Command("status", "Checks the health of a running Choria instance based on its status file")
-		s.cmd.Flag("status-file", "The status file to check").Required().ExistingFileVar(&s.statusFile)
+		s.cmd.Flag("status-file", "The status file to check").Required().StringVar(&s.statusFile)
 		s.cmd.Flag("disconnected", "Checks if the server is connected to a broker").Default("true").BoolVar(&s.checkConnected)
 		s.cmd.Flag("message-since", "Maximum time to allow no messages to pass (0 disables)").Default("1h").DurationVar(&s.lastMessage)
 		s.cmd.Flag("max-age", "Maximum age for the status file (0 disables)").Default("30m").DurationVar(&s.maxAge)
