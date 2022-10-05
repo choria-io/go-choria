@@ -318,26 +318,6 @@ func (mr *MockSecurityProviderMockRecorder) Validate() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validate", reflect.TypeOf((*MockSecurityProvider)(nil).Validate))
 }
 
-// VerifyByteSignature mocks base method.
-func (m *MockSecurityProvider) VerifyByteSignature(arg0, arg1 []byte, arg2 ...[]byte) (bool, string) {
-	m.ctrl.T.Helper()
-	varargs := []interface{}{arg0, arg1}
-	for _, a := range arg2 {
-		varargs = append(varargs, a)
-	}
-	ret := m.ctrl.Call(m, "VerifyByteSignature", varargs...)
-	ret0, _ := ret[0].(bool)
-	ret1, _ := ret[1].(string)
-	return ret0, ret1
-}
-
-// VerifyByteSignature indicates an expected call of VerifyByteSignature.
-func (mr *MockSecurityProviderMockRecorder) VerifyByteSignature(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	varargs := append([]interface{}{arg0, arg1}, arg2...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyByteSignature", reflect.TypeOf((*MockSecurityProvider)(nil).VerifyByteSignature), varargs...)
-}
-
 // VerifyCertificate mocks base method.
 func (m *MockSecurityProvider) VerifyCertificate(arg0 []byte, arg1 string) error {
 	m.ctrl.T.Helper()
@@ -350,4 +330,24 @@ func (m *MockSecurityProvider) VerifyCertificate(arg0 []byte, arg1 string) error
 func (mr *MockSecurityProviderMockRecorder) VerifyCertificate(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyCertificate", reflect.TypeOf((*MockSecurityProvider)(nil).VerifyCertificate), arg0, arg1)
+}
+
+// VerifySignatureBytes mocks base method.
+func (m *MockSecurityProvider) VerifySignatureBytes(arg0, arg1 []byte, arg2 ...[]byte) (bool, string) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0, arg1}
+	for _, a := range arg2 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "VerifySignatureBytes", varargs...)
+	ret0, _ := ret[0].(bool)
+	ret1, _ := ret[1].(string)
+	return ret0, ret1
+}
+
+// VerifySignatureBytes indicates an expected call of VerifySignatureBytes.
+func (mr *MockSecurityProviderMockRecorder) VerifySignatureBytes(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifySignatureBytes", reflect.TypeOf((*MockSecurityProvider)(nil).VerifySignatureBytes), varargs...)
 }

@@ -45,8 +45,8 @@ type SecurityProvider interface {
 	// SignBytes signs bytes using the current active certificate
 	SignBytes(b []byte) (signature []byte, err error)
 
-	// VerifyByteSignature verifies that dat signature was made using pubcert
-	VerifyByteSignature(dat []byte, sig []byte, public ...[]byte) (should bool, signer string)
+	// VerifySignatureBytes verifies that dat signature was made using pubcert
+	VerifySignatureBytes(dat []byte, sig []byte, public ...[]byte) (should bool, signer string)
 
 	// RemoteSignRequest signs a choria request using a remote signer and returns a secure request
 	RemoteSignRequest(ctx context.Context, str []byte) (signed []byte, err error)
@@ -57,13 +57,13 @@ type SecurityProvider interface {
 	// ChecksumBytes produce a crypto checksum for data
 	ChecksumBytes(data []byte) []byte
 
-	// TLSConfig produce a tls.Config for the current identity using it's certificates etc
+	// TLSConfig produce a tls.Config for the current identity using its certificates etc
 	TLSConfig() (*tls.Config, error)
 
 	// ClientTLSConfig produces a tls.Config specifically for clients
 	ClientTLSConfig() (*tls.Config, error)
 
-	// SSLContext produce a http.Transport for the current identity using it's certificates etc
+	// SSLContext produce a http.Transport for the current identity using its certificates etc
 	SSLContext() (*http.Transport, error)
 
 	// HTTPClient creates a standard HTTP client with optional security, it will

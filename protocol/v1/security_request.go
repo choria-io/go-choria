@@ -105,7 +105,7 @@ func (r *SecureRequest) Valid() bool {
 		return false
 	}
 
-	should, _ := r.security.VerifyByteSignature([]byte(r.MessageBody), sig, []byte(r.PublicCertificate))
+	should, _ := r.security.VerifySignatureBytes([]byte(r.MessageBody), sig, []byte(r.PublicCertificate))
 	if !should {
 		log.Errorf("Signature in request did not pass validation with embedded public certificate")
 		invalidCtr.Inc()

@@ -89,7 +89,7 @@ type Config struct {
 	// BackwardCompatVerification enables custom verification that allows legacy certificates without SANs
 	BackwardCompatVerification bool
 
-	// IdentitySuffix is the suffix to append to user names when creating certnames and identities
+	// IdentitySuffix is the suffix to append to usernames when creating certnames and identities
 	IdentitySuffix string
 
 	// RemoteSigner is the signer used to sign requests using a remote like AAA Service
@@ -156,7 +156,6 @@ func (s *FileSecurity) RemoteSignerURL() (*url.URL, error) {
 	}
 
 	return url.Parse(s.conf.RemoteSignerURL)
-
 }
 
 // RemoteSignRequest signs a choria request using a remote signer and returns a secure request
@@ -171,7 +170,7 @@ func (s *FileSecurity) RemoteSignRequest(ctx context.Context, request []byte) (s
 
 // Validate determines if the node represents a valid SSL configuration
 func (s *FileSecurity) Validate() ([]string, bool) {
-	errors := []string{}
+	var errors []string
 
 	if s.publicCertPath() != "" {
 		if !s.publicCertExists() {
@@ -244,7 +243,7 @@ func (s *FileSecurity) SignBytes(str []byte) ([]byte, error) {
 }
 
 // VerifyByteSignature verify that dat matches signature sig made by the key, if pub cert is empty the active public key will be used
-func (s *FileSecurity) VerifyByteSignature(dat []byte, sig []byte, public ...[]byte) (should bool, signer string) {
+func (s *FileSecurity) VerifySignatureBytes(dat []byte, sig []byte, public ...[]byte) (should bool, signer string) {
 	if len(public) != 1 {
 		s.log.Errorf("Could not process public data: only single signer public data is supported")
 		return false, ""

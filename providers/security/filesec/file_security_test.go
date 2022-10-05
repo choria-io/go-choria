@@ -61,7 +61,6 @@ var _ = Describe("FileSecurity", func() {
 		nonexistingStub = filepath.Join("..", "testdata", "nonexisting")
 
 		cfg = &Config{}
-		Expect(err).ToNot(HaveOccurred())
 		setSSL(cfg, goodStub, "rip.mcollective", "")
 
 		l = logrus.New()
@@ -233,17 +232,17 @@ var _ = Describe("FileSecurity", func() {
 		})
 	})
 
-	Describe("VerifyByteSignature", func() {
+	Describe("VerifySignatureBytes", func() {
 		It("Should validate correctly", func() {
 			sig, err := base64.StdEncoding.DecodeString("PXj4RDHHt1oS1zF7r6EKiPyQ9oHlY4qyDP4DemZT26Hcr1A84l1p3nOVNMoksACrCdB1mW47FAwatgCB7cfCaOHsIiGOW/LQsmyE8eRpCYrV2gAHNsU6hA/CeIATwCq0Wtzp7Vc4PWR2VgrlSmihuK7sYGBJHEkillUG7F+P9c+epGJvLleM+nP7pTZVkrPqzwQ1tXFHgCNS2di5wTc5tCoJ0HHU3b31tuLGwROny3g3SsOjirrqdLDxciHYe/WzOGKByzTiqj1jjPZuuvkCzL9myr4anMBkwn1qtuqGtQ8FSwXLfgOKEwlLyf83rQ1OYWQFP+hdPJHaOlBm4iuVGjDEjla6MG081W8wpho6SqwhD1x2U9CUofQj2e0kNLQmjNK0xbIJUGSiStMcNFhIx5qoJYub40uJZkbfTE3hVp6cuOk9+yswGxfRO/RA88DBW679v8QoGeB+3RehggL2qGyRjdiPtxJj4Jt/pUAgBofrbausiIi8SUOnRSgYqpt0CLeYIiVgiNHa2EbYRfLgCsGGdVb+owAQ2Xh2VpMCelakgEBLXxBDBQ5CU8a+K992eUqDCWN6k70hDAsxXqjL+Li1J6yFjg8mAIaPLBUYgbttu47wItFZPpqlJ82cM01mELc2LyS1mChZHlo+h1q4GEbUevt0Q/VMpGNaa/WyeSQ=")
 			Expect(err).ToNot(HaveOccurred())
 
-			valid, _ := prov.VerifyByteSignature([]byte("too many secrets"), sig, nil)
+			valid, _ := prov.VerifySignatureBytes([]byte("too many secrets"), sig, nil)
 			Expect(valid).To(BeTrue())
 		})
 
 		It("Should fail for invalid sigs", func() {
-			valid, _ := prov.VerifyByteSignature([]byte("too many secrets"), []byte("meh"), nil)
+			valid, _ := prov.VerifySignatureBytes([]byte("too many secrets"), []byte("meh"), nil)
 			Expect(valid).To(BeFalse())
 		})
 
@@ -256,7 +255,7 @@ var _ = Describe("FileSecurity", func() {
 			cert, err := os.ReadFile("../testdata/good/certs/2.mcollective.pem")
 			Expect(err).ToNot(HaveOccurred())
 
-			valid, _ := prov.VerifyByteSignature([]byte("too many secrets"), sig, cert)
+			valid, _ := prov.VerifySignatureBytes([]byte("too many secrets"), sig, cert)
 			Expect(valid).To(BeTrue())
 		})
 	})
