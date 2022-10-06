@@ -207,7 +207,7 @@ var _ = Describe("ServerClaims", func() {
 	})
 
 	Describe("ParseServerTokenWithKeyfile", func() {
-		It("Should fail for invalid tokens", func() {
+		It("Should fail for invalid rsa tokens", func() {
 			perms := &ServerPermissions{Submission: true}
 			claims, err := NewServerClaims("ginkgo.example.net", []string{"choria"}, "ginkgo_org", perms, nil, pubK, "ginkgo issuer", 365*24*time.Hour)
 			Expect(err).ToNot(HaveOccurred())
@@ -218,7 +218,18 @@ var _ = Describe("ServerClaims", func() {
 			Expect(err).To(MatchError("could not parse server id token: crypto/rsa: verification error"))
 		})
 
-		It("Should parse valid token", func() {
+		It("Should fail for invalid ed25519 tokens", func() {
+			perms := &ServerPermissions{Submission: true}
+			claims, err := NewServerClaims("ginkgo.example.net", []string{"choria"}, "ginkgo_org", perms, nil, pubK, "ginkgo issuer", 365*24*time.Hour)
+			Expect(err).ToNot(HaveOccurred())
+			signed, err := SignTokenWithKeyFile(claims, "testdata/ed25519/signer.seed")
+			Expect(err).ToNot(HaveOccurred())
+
+			_, err = ParseServerTokenWithKeyfile(signed, "testdata/ed25519/other.public")
+			Expect(err).To(MatchError("could not parse server id token: ed25519: verification error"))
+		})
+
+		It("Should parse valid rsa tokens", func() {
 			perms := &ServerPermissions{Submission: true}
 			claims, err := NewServerClaims("ginkgo.example.net", []string{"choria"}, "ginkgo_org", perms, []string{"additional.subject"}, pubK, "ginkgo issuer", 365*24*time.Hour)
 			Expect(err).ToNot(HaveOccurred())
@@ -227,6 +238,18 @@ var _ = Describe("ServerClaims", func() {
 
 			claims = nil
 			claims, err = ParseServerTokenWithKeyfile(signed, "testdata/rsa/signer-public.pem")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(claims.ChoriaIdentity).To(Equal("ginkgo.example.net"))
+		})
+
+		It("Should parse valid ed25519 tokens", func() {
+			perms := &ServerPermissions{Submission: true}
+			claims, err := NewServerClaims("ginkgo.example.net", []string{"choria"}, "ginkgo_org", perms, nil, pubK, "ginkgo issuer", 365*24*time.Hour)
+			Expect(err).ToNot(HaveOccurred())
+			signed, err := SignTokenWithKeyFile(claims, "testdata/ed25519/signer.seed")
+			Expect(err).ToNot(HaveOccurred())
+
+			_, err = ParseServerTokenWithKeyfile(signed, "testdata/ed25519/signer.public")
 			Expect(err).ToNot(HaveOccurred())
 			Expect(claims.ChoriaIdentity).To(Equal("ginkgo.example.net"))
 		})

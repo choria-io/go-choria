@@ -16,7 +16,6 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/integration/testbroker"
 	"github.com/choria-io/go-choria/integration/testutil"
-	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/discovery"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -57,13 +56,9 @@ var _ = Describe("Leafnodes", func() {
 
 			// start a choria server against the core broker with discovery agent
 			sbuff, slog := testutil.GbytesLogger(logrus.DebugLevel)
-			srv, err := testutil.StartServerInstance(ctx, &wg, "testdata/core_server.conf", slog)
+			_, err = testutil.StartServerInstance(ctx, &wg, "testdata/core_server.conf", slog, testutil.ServerWithDiscovery())
 			Expect(err).ToNot(HaveOccurred())
 			Eventually(sbuff).Should(gbytes.Say("Connected to nats://localhost:4222"))
-			da, err := discovery.New(srv.AgentManager())
-			Expect(err).ToNot(HaveOccurred())
-			err = srv.AgentManager().RegisterAgent(ctx, "discovery", da, srv.Connector())
-			Expect(err).ToNot(HaveOccurred())
 			Eventually(sbuff).Should(gbytes.Say("Registering new agent discovery of type discovery"))
 
 			// start a leafnode broker connecting to core

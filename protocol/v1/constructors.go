@@ -219,7 +219,10 @@ func NewRemoteSignedSecureRequest(request protocol.Request, security inter.Secur
 		return nil, err
 	}
 
-	secj, err := security.RemoteSignRequest(context.Background(), []byte(reqj))
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+
+	secj, err := security.RemoteSignRequest(ctx, reqj)
 	if err != nil {
 		return nil, err
 	}

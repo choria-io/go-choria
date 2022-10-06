@@ -97,7 +97,6 @@ type Framework interface {
 	SetLogWriter(out io.Writer)
 	SetLogger(logger *logrus.Logger)
 	SetupLogging(debug bool) (err error)
-	ShouldUseNGS() bool
 	SignerToken() (token string, err error)
 	SignerTokenFile() (f string, err error)
 	SignerSeedFile() (f string, err error)

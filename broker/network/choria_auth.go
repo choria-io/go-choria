@@ -10,12 +10,15 @@ import (
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net"
 	"strings"
+	"sync"
 
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/tokens"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/sirupsen/logrus"
 )
@@ -47,15 +50,17 @@ type ChoriaAuth struct {
 	isTLS                   bool
 	denyServers             bool
 	provisioningTokenSigner string
-	clientJwtSigner         string
-	serverJwtSigner         string
+	clientJwtSigners        []string
+	serverJwtSigners        []string
 	choriaAccount           *server.Account
 	systemAccount           *server.Account
 	provisioningAccount     *server.Account
 	provPass                string
 	systemUser              string
 	systemPass              string
+	tokenCache              map[string]ed25519.PublicKey
 	log                     *logrus.Entry
+	mu                      sync.Mutex
 }
 
 const (
@@ -238,6 +243,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	var err error
 
 	log = log.WithField("mTLS", tlsVerified)
+	log = log.WithField("name", opts.Name)
 
 	if tlsVerified && len(conn.PeerCertificates) > 0 {
 		log = log.WithField("subject", conn.PeerCertificates[0].Subject.CommonName)
@@ -258,7 +264,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	if shouldPerformJWTBasedAuth {
 		purpose := tokens.TokenPurpose(jwts)
 		log = log.WithFields(logrus.Fields{"jwt_auth": shouldPerformJWTBasedAuth, "purpose": purpose})
-		log.Infof("Performing JWT based authentication verification")
+		log.Debugf("Performing JWT based authentication verification")
 
 		switch purpose {
 		case tokens.ClientIDPurpose:
@@ -270,7 +276,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 			if err != nil {
 				return false, fmt.Errorf("invalid nonce signature or jwt token")
 			}
-			log = log.WithField("caller", caller)
+			log = log.WithField("caller", clientClaims.CallerID)
 			log.Debugf("Extracted caller id %s from JWT token", clientClaims.CallerID)
 
 			caller = clientClaims.CallerID
@@ -342,7 +348,7 @@ func (a *ChoriaAuth) handleUnverifiedSystemAccount(c server.ClientAuthentication
 	}
 
 	purpose := tokens.TokenPurpose(jwts)
-	log = log.WithFields(logrus.Fields{"jwt_auth": true, "purpose": purpose})
+	log = log.WithFields(logrus.Fields{"jwt_auth": true, "purpose": purpose, "name": opts.Name})
 	log.Infof("Performing JWT based authentication verification for system account access")
 
 	if purpose != tokens.ClientIDPurpose {
@@ -505,18 +511,65 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 	return true, nil
 }
 
+func (a *ChoriaAuth) cachedEd25519Token(token string) (ed25519.PublicKey, error) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	if a.tokenCache == nil {
+		a.tokenCache = make(map[string]ed25519.PublicKey)
+	}
+
+	pk, ok := a.tokenCache[token]
+	if !ok {
+		tok, err := hex.DecodeString(token)
+		if err != nil {
+			return nil, err
+		}
+		a.tokenCache[token] = tok
+		pk = tok
+	}
+
+	return pk, nil
+}
+
 func (a *ChoriaAuth) parseServerJWT(jwts string) (claims *tokens.ServerClaims, err error) {
-	if a.serverJwtSigner == emptyString {
-		return nil, fmt.Errorf("JWT Signer not set in plugin.choria.network.server_signer_cert, denying all clients")
+	if len(a.serverJwtSigners) == 0 {
+		return nil, fmt.Errorf("JWT Signer not set in plugin.choria.network.server_signer_cert, denying all servers")
 	}
 
 	if jwts == emptyString {
 		return nil, fmt.Errorf("no JWT received")
 	}
 
-	claims, err = tokens.ParseServerTokenWithKeyfile(jwts, a.serverJwtSigner)
-	if err != nil {
+	for _, s := range a.serverJwtSigners {
+		// its a token
+		if len(s) == 64 {
+			var pk ed25519.PublicKey
+			pk, err = a.cachedEd25519Token(s)
+			if err != nil {
+				continue
+			}
+			claims, err = tokens.ParseServerToken(jwts, pk)
+		} else {
+			claims, err = tokens.ParseServerTokenWithKeyfile(jwts, s)
+		}
+		switch {
+		case len(a.serverJwtSigners) == 1 && err != nil:
+			// just a bit friendlier than saying a generic error with 1 failure
+			return nil, err
+		case errors.Is(err, jwt.ErrTokenExpired), errors.Is(err, tokens.ErrNotAServerToken):
+			return nil, err
+		case err != nil:
+			continue
+		}
+
+		break
+	}
+	switch {
+	case errors.Is(err, tokens.ErrNotAServerToken):
 		return nil, err
+	case err != nil:
+		return nil, fmt.Errorf("could not parse server token with any of %d signer identities", len(a.serverJwtSigners))
 	}
 
 	if claims.ChoriaIdentity == emptyString {
@@ -531,7 +584,7 @@ func (a *ChoriaAuth) parseServerJWT(jwts string) (claims *tokens.ServerClaims, e
 }
 
 func (a *ChoriaAuth) parseClientIDJWT(jwts string) (claims *tokens.ClientIDClaims, err error) {
-	if a.clientJwtSigner == emptyString {
+	if len(a.clientJwtSigners) == 0 {
 		return nil, fmt.Errorf("JWT Signer not set in plugin.choria.network.client_signer_cert, denying all clients")
 	}
 
@@ -539,9 +592,36 @@ func (a *ChoriaAuth) parseClientIDJWT(jwts string) (claims *tokens.ClientIDClaim
 		return nil, fmt.Errorf("no JWT received")
 	}
 
-	claims, err = tokens.ParseClientIDTokenWithKeyfile(jwts, a.clientJwtSigner, true)
+	for _, s := range a.clientJwtSigners {
+		// its a token
+		if len(s) == 64 {
+			var pk ed25519.PublicKey
+			pk, err = a.cachedEd25519Token(s)
+			if err != nil {
+				continue
+			}
+			claims, err = tokens.ParseClientIDToken(jwts, pk, true)
+		} else {
+			claims, err = tokens.ParseClientIDTokenWithKeyfile(jwts, s, true)
+		}
+
+		switch {
+		case len(a.clientJwtSigners) == 1 && err != nil:
+			// just a bit friendlier than saying a generic error with 1 failure
+			return nil, err
+		case errors.Is(err, jwt.ErrTokenExpired), errors.Is(err, tokens.ErrNotAClientToken), errors.Is(err, tokens.ErrInvalidClientCallerID):
+			// these will tend to fail on every parse, so we try to catch them early and just error when we first hit them
+			return nil, err
+		case err != nil:
+			// we try the next
+			continue
+		}
+
+		break
+	}
+	// above we try to the last, if we still have an error here it failed
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("could not parse client token with any of %d signer identities", len(a.clientJwtSigners))
 	}
 
 	if claims.CallerID == emptyString {
@@ -711,7 +791,7 @@ func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string,
 	}
 
 	if perms.FleetManagement || perms.SignedFleetManagement {
-		log.Infof("Granding user fleet management access")
+		log.Infof("Granting user fleet management access")
 		subs, pubs = a.setClientFleetManagementPermissions(subs, pubs)
 	}
 

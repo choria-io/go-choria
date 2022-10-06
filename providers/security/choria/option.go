@@ -9,6 +9,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"path/filepath"
 	"runtime"
 
 	"github.com/choria-io/go-choria/config"
@@ -31,7 +32,15 @@ func WithChoriaConfig(c *config.Config) Option {
 		cfg := Config{
 			TLSConfig:             tlssetup.TLSConfig(c),
 			RemoteSignerURL:       c.Choria.RemoteSignerURL,
-			RemoteSignerTokenFile: c.Choria.RemoteSignerTokenFile,
+			RemoteSignerTokenFile: filepath.FromSlash(c.Choria.RemoteSignerTokenFile),
+			SeedFile:              filepath.FromSlash(c.Choria.ChoriaSecuritySeedFile),
+			TokenFile:             filepath.FromSlash(c.Choria.ChoriaSecurityTokenFile),
+			CA:                    filepath.FromSlash(c.Choria.ChoriaSecurityCA),
+			Certificate:           filepath.FromSlash(c.Choria.ChoriaSecurityCertificate),
+			Key:                   filepath.FromSlash(c.Choria.ChoriaSecurityKey),
+			DisableTLSVerify:      c.DisableTLSVerify,
+			InitiatedByServer:     c.InitiatedByServer,
+			SignedReplies:         c.Choria.ChoriaSecuritySignReplies,
 		}
 
 		for _, signer := range c.Choria.ChoriaSecurityTrustedSigners {
@@ -46,9 +55,7 @@ func WithChoriaConfig(c *config.Config) Option {
 			cfg.TrustedTokenSigners = append(cfg.TrustedTokenSigners, pk)
 		}
 
-		if c.Choria.ChoriaSecurityIdentity != "" {
-			cfg.Identity = c.Choria.ChoriaSecurityIdentity
-		} else if !c.InitiatedByServer {
+		if !c.InitiatedByServer {
 			userEnvVar := "USER"
 			if runtime.GOOS == "windows" {
 				userEnvVar = "USERNAME"
@@ -60,6 +67,15 @@ func WithChoriaConfig(c *config.Config) Option {
 			}
 
 			cfg.Identity = u
+		} else {
+			if cfg.SeedFile == "" && c.Choria.ServerTokenSeedFile != "" {
+				cfg.SeedFile = c.Choria.ServerTokenSeedFile
+			}
+			if cfg.TokenFile == "" && c.Choria.ServerTokenFile != "" {
+				cfg.TokenFile = c.Choria.ServerTokenFile
+			}
+
+			cfg.Identity = c.Identity
 		}
 
 		s.conf = &cfg

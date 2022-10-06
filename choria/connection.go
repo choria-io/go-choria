@@ -577,11 +577,10 @@ func (conn *Connection) ConnectedServer() string {
 func (conn *Connection) anonTLSc() *tls.Config {
 	cfg := tlssetup.TLSConfig(conn.config)
 	return &tls.Config{
-		MinVersion:               tls.VersionTLS12,
-		PreferServerCipherSuites: true,
-		CipherSuites:             cfg.CipherSuites,
-		CurvePreferences:         cfg.CurvePreferences,
-		InsecureSkipVerify:       true,
+		MinVersion:         tls.VersionTLS12,
+		CipherSuites:       cfg.CipherSuites,
+		CurvePreferences:   cfg.CurvePreferences,
+		InsecureSkipVerify: true,
 	}
 }
 
@@ -647,6 +646,10 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		options = append(options, nats.PingInterval(30*time.Second))
 	}
 
+	// TODO: rather than these checks we should just say do we have a seed and jwt regardless of that was set (1740)
+	jwtAuth := conn.config.Choria.ServerAnonTLS || conn.config.Choria.ClientAnonTLS || conn.fw.security.BackingTechnology() == inter.SecurityTechnologyED25519JWT
+	var tlsc *tls.Config
+
 	switch {
 	case conn.fw.ProvisionMode():
 		if util.FileExist(conn.fw.bi.ProvisionJWTFile()) {
@@ -657,18 +660,27 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}
 
 		conn.log.Warnf("Setting anonymous TLS mode during provisioning")
-		tlsc := conn.anonTLSc()
-		options = append(options, nats.Secure(tlsc))
+		tlsc = conn.anonTLSc()
 
-	case conn.config.Choria.ServerAnonTLS || conn.config.Choria.ClientAnonTLS:
-		conn.log.Debug("Setting anonymous TLS for NATS connection")
+	case jwtAuth:
+		conn.log.Debug("Setting JWT authentication with NONCE signatures for NATS connection")
 
-		tlsc := conn.anonTLSc()
+		// TODO: need something better to key this off (1740)
+		if conn.fw.security.BackingTechnology() == inter.SecurityTechnologyED25519JWT {
+			conn.log.Debugf("Using TLS Configuration from ed25519+jwt based security system")
+			tlsc, err = conn.fw.ClientTLSConfig()
+			if err != nil {
+				return err
+			}
+		} else {
+			conn.log.Debugf("Configuring anonymous tls connection")
+			tlsc = conn.anonTLSc()
+		}
 		options = append(options, nats.Secure(tlsc))
 
 		token, err := conn.fw.SignerToken()
 		if err != nil {
-			return fmt.Errorf("no signer token found while connecting to an anonymous TLS server: %s", err)
+			return fmt.Errorf("no valid token found to sign connection NONCE: %s", err)
 		}
 		options = append(options, nats.Token(token))
 
@@ -682,21 +694,18 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 			}))
 		}
 
-	case !(conn.config.DisableTLS || conn.fw.ShouldUseNGS()):
-		tlsc, err := conn.fw.ClientTLSConfig()
+	case conn.config.DisableTLS:
+		conn.log.Debugf("Not specifying TLS options on NATS connection: tls: %v creds: %v", conn.config.DisableTLS, conn.config.Choria.NatsCredentials)
+
+	default:
+		tlsc, err = conn.fw.ClientTLSConfig()
 		if err != nil {
 			err = fmt.Errorf("could not create TLS Config: %s", err)
 			return err
 		}
-
-		options = append(options, nats.Secure(tlsc))
-
-	default:
-		conn.log.Debugf("Not specifying TLS options on NATS connection: tls: %v ngs: %v creds: %v", conn.config.DisableTLS, conn.config.Choria.NatsNGS, conn.config.Choria.NatsCredentials)
 	}
-
-	if !conn.config.Choria.RandomizeMiddlewareHosts {
-		options = append(options, nats.DontRandomize())
+	if tlsc != nil {
+		options = append(options, nats.Secure(tlsc))
 	}
 
 	if conn.config.Choria.NatsUser != "" && conn.config.Choria.NatsPass != "" {

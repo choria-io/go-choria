@@ -149,11 +149,59 @@ var _ = Describe("Choria", func() {
 			})
 		})
 
+		Describe("SignerTokenFile", func() {
+			BeforeEach(func() {
+				cfg.Choria.ChoriaSecurityTokenFile = "stf"
+				cfg.Choria.RemoteSignerTokenFile = "rstf"
+				cfg.Choria.ServerAnonTLS = true
+				cfg.Choria.ServerTokenFile = "stf"
+			})
+
+			It("Should prefer choria security token file", func() {
+				tf, err := fw.SignerTokenFile()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(tf).To(Equal("stf"))
+			})
+
+			It("Should support remote signer token files", func() {
+				cfg.Choria.ChoriaSecurityTokenFile = ""
+				tf, err := fw.SignerTokenFile()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(tf).To(Equal("rstf"))
+			})
+
+			It("Should support server anon tls", func() {
+				cfg.Choria.ChoriaSecurityTokenFile = ""
+				cfg.Choria.RemoteSignerTokenFile = ""
+				tf, err := fw.SignerTokenFile()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(tf).To(Equal("stf"))
+			})
+
+			It("Should fail without a token", func() {
+				cfg.Choria.ChoriaSecurityTokenFile = ""
+				cfg.Choria.RemoteSignerTokenFile = ""
+				cfg.Choria.ServerAnonTLS = false
+				tf, err := fw.SignerTokenFile()
+				Expect(err).To(MatchError("no token file defined"))
+				Expect(tf).To(Equal(""))
+			})
+		})
+
 		Describe("SignerToken", func() {
 			It("Should error when there is no way to find a token", func() {
 				t, err := fw.SignerToken()
 				Expect(t).To(BeEmpty())
 				Expect(err).To(MatchError("no token file defined"))
+			})
+
+			It("Should prefer choria security seed file", func() {
+				cfg.Choria.ChoriaSecurityTokenFile = filepath.Join(td, "good-server.jwt")
+				t, err := fw.SignerToken()
+				Expect(err).ToNot(HaveOccurred())
+				dt, err := os.ReadFile(cfg.Choria.ChoriaSecurityTokenFile)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(t).To(Equal(string(dt)))
 			})
 
 			It("Should support server file tokens", func() {

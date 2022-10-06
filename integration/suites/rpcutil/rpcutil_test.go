@@ -38,22 +38,25 @@ var _ = Describe("rpcutil agent", func() {
 		cancel        context.CancelFunc
 		wg            sync.WaitGroup
 		srv           *server.Instance
+		err           error
 		rpcutilAgent  *mcorpc.Agent
 		rpcutilClient *rpcutilclient.RpcutilClient
 		brokerLogger  *logrus.Logger
 		brokerLogbuff *gbytes.Buffer
 		serverLogbuff *gbytes.Buffer
-		err           error
 	)
 
 	startServerInstance := func(cfgFile string, logbuff *gbytes.Buffer) (*server.Instance, error) {
 		logger := logrus.New()
 		logger.SetOutput(logbuff)
 
-		srv, err = testutil.StartServerInstance(ctx, &wg, cfgFile, logger)
+		srv, err = testutil.StartServerInstance(ctx, &wg, cfgFile, logger, testutil.ServerWithRPCUtilAgent())
 		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(logbuff).Should(gbytes.Say("Connected to nats://localhost:4222"))
+
+		rpcutilAgent, err = rpcutil.New(srv.AgentManager())
+		Expect(err).ToNot(HaveOccurred())
 
 		return srv, nil
 	}
@@ -98,13 +101,6 @@ var _ = Describe("rpcutil agent", func() {
 
 		srv, err = startServerInstance("testdata/server.conf", serverLogbuff)
 		Expect(err).ToNot(HaveOccurred())
-
-		rpcutilAgent, err = rpcutil.New(srv.AgentManager())
-		Expect(err).ToNot(HaveOccurred())
-
-		err = srv.AgentManager().RegisterAgent(ctx, "rpcutil", rpcutilAgent, srv.Connector())
-		Expect(err).ToNot(HaveOccurred())
-
 		Eventually(serverLogbuff).Should(gbytes.Say("Registering new agent rpcutil of type rpcutil"))
 
 		_, rpcutilClient, err = createRpcUtilClient()

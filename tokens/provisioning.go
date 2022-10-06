@@ -92,12 +92,12 @@ func ParseProvisioningTokenWithKeyfile(token string, pkFile string) (*Provisioni
 		return nil, fmt.Errorf("could not read validation certificate: %s", err)
 	}
 
-	cert, err := jwt.ParseRSAPublicKeyFromPEM(certdat)
+	pk, err := readRSAOrED25519PublicData(certdat)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse validation certificate: %s", err)
+		return nil, err
 	}
 
-	return ParseProvisioningToken(token, cert)
+	return ParseProvisioningToken(token, pk)
 }
 
 // ParseProvisionTokenUnverified parses the provisioning token in an unverified manner.

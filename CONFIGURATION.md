@@ -71,14 +71,16 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|
 |[plugin.choria.submission.max_spool_size](#pluginchoriasubmissionmax_spool_size)|[plugin.choria.submission.spool](#pluginchoriasubmissionspool)|
 |[plugin.choria.use_srv](#pluginchoriause_srv)|[plugin.login.aaasvc.login.url](#pluginloginaaasvcloginurl)|
-|[plugin.nats.credentials](#pluginnatscredentials)|[plugin.nats.ngs](#pluginnatsngs)|
-|[plugin.nats.pass](#pluginnatspass)|[plugin.nats.user](#pluginnatsuser)|
-|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|[plugin.scout.goss.denied_local_resources](#pluginscoutgossdenied_local_resources)|
-|[plugin.scout.goss.denied_remote_resources](#pluginscoutgossdenied_remote_resources)|[plugin.scout.overrides](#pluginscoutoverrides)|
-|[plugin.scout.tags](#pluginscouttags)|[plugin.security.always_overwrite_cache](#pluginsecurityalways_overwrite_cache)|
-|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|[plugin.security.certmanager.api_version](#pluginsecuritycertmanagerapi_version)|
-|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|
-|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|[plugin.security.choria.identity](#pluginsecuritychoriaidentity)|
+|[plugin.nats.credentials](#pluginnatscredentials)|[plugin.nats.pass](#pluginnatspass)|
+|[plugin.nats.user](#pluginnatsuser)|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|
+|[plugin.scout.goss.denied_local_resources](#pluginscoutgossdenied_local_resources)|[plugin.scout.goss.denied_remote_resources](#pluginscoutgossdenied_remote_resources)|
+|[plugin.scout.overrides](#pluginscoutoverrides)|[plugin.scout.tags](#pluginscouttags)|
+|[plugin.security.always_overwrite_cache](#pluginsecurityalways_overwrite_cache)|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|
+|[plugin.security.certmanager.api_version](#pluginsecuritycertmanagerapi_version)|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|
+|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|
+|[plugin.security.choria.ca](#pluginsecuritychoriaca)|[plugin.security.choria.certificate](#pluginsecuritychoriacertificate)|
+|[plugin.security.choria.key](#pluginsecuritychoriakey)|[plugin.security.choria.seed_file](#pluginsecuritychoriaseed_file)|
+|[plugin.security.choria.sign_replies](#pluginsecuritychoriasign_replies)|[plugin.security.choria.token_file](#pluginsecuritychoriatoken_file)|
 |[plugin.security.choria.trusted_signers](#pluginsecuritychoriatrusted_signers)|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|
 |[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|
 |[plugin.security.file.ca](#pluginsecurityfileca)|[plugin.security.file.cache](#pluginsecurityfilecache)|
@@ -323,9 +325,9 @@ Port the Network Broker will accept client connections on
 
 ## plugin.choria.network.client_signer_cert
 
- * **Type:** path_string
+ * **Type:** comma_split
 
-Path to the public certificate used by the AAA Service to sign client JWT tokens. This enables users with signed JWTs to use unverified TLS to connect
+Fully qualified paths to the public certificates used by the AAA Service to sign client JWT tokens. This enables users with signed JWTs to use unverified TLS to connect. Can also be a list of ed25519 public keys.
 
 ## plugin.choria.network.client_tls_force_required
 
@@ -439,9 +441,9 @@ Name:Port to advertise to clients, useful when fronted by a proxy
 
 ## plugin.choria.network.server_signer_cert
 
- * **Type:** path_string
+ * **Type:** comma_split
 
-Path to the public certificate used by the Provisioner Service to sign server JWT tokens. This enables servers with signed JWTs to use unverified TLS to connect
+Fully qualified Paths to the public certificates used by the Provisioner Service to sign server JWT tokens. This enables servers with signed JWTs to use unverified TLS to connect. Can also be a list of ed25519 public keys.
 
 ## plugin.choria.network.stream.advisory_replicas
 
@@ -606,6 +608,8 @@ The port your Puppet Server listens on
 
 Shuffle middleware hosts before connecting to spread traffic of initial connections
 
+**This setting is deprecated or already unused**
+
 ## plugin.choria.registration.file_content.compression
 
  * **Type:** boolean
@@ -693,6 +697,8 @@ URL to the Signing Service
  * **Type:** path_string
 
 Path to the public certificate of the key used to sign the JWTs in the Signing Service
+
+**This setting is deprecated or already unused**
 
 ## plugin.choria.security.server.seed_file
 
@@ -810,13 +816,6 @@ List of URLs to attempt to login against when the remote signer is enabled
 
 The NATS 2.0 credentials to use, required for accessing NGS
 
-## plugin.nats.ngs
-
- * **Type:** boolean
- * **Environment Variable:** MCOLLECTIVE_NATS_NGS
-
-Uses NATS NGS global managed network as middleware, overrides broker names to "connect.ngs.global"
-
 ## plugin.nats.pass
 
  * **Type:** string
@@ -904,15 +903,46 @@ When using Cert Manager security provider, the namespace the issuer is in
 
 when using Cert Manager security provider, replace existing CSRs with new ones
 
-## plugin.security.choria.identity
+## plugin.security.choria.ca
 
- * **Type:** string
+ * **Type:** path_string
 
-Force a specific identity to be used instead of attempting to detect it
+When using choria security provider, the path to the optional Certificate Authority public certificate
+
+## plugin.security.choria.certificate
+
+ * **Type:** path_string
+
+When using choria security provider, the path to the optional public certificate
+
+## plugin.security.choria.key
+
+ * **Type:** path_string
+
+When using choria security provider, the path to the optional private key
+
+## plugin.security.choria.seed_file
+
+ * **Type:** path_string
+
+The path to the seed file
+
+## plugin.security.choria.sign_replies
+
+ * **Type:** boolean
+ * **Default Value:** true
+
+Disables signing replies which would significantly trim down the size of replies but would remove the ability to verify signatures or verify message origin
+
+## plugin.security.choria.token_file
+
+ * **Type:** path_string
+
+The path to the JWT token file
 
 ## plugin.security.choria.trusted_signers
 
- * **Type:** strings
+ * **Type:** comma_split
 
 Ed25119 public keys of entities allowed to sign client and server JWT tokens in hex encoded format
 

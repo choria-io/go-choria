@@ -290,6 +290,11 @@ func (c *Config) normalize() error {
 		for i, collective := range c.Collectives {
 			c.Collectives[i] = strings.TrimSpace(collective)
 		}
+
+		// when using the choria security provider we switch default collectives
+		if c.Choria.SecurityProvider == "choria" && len(c.Collectives) == 1 && c.Collectives[0] == "mcollective" {
+			c.Collectives = []string{"choria"}
+		}
 	}
 
 	if c.MainCollective == "" {

@@ -39,12 +39,11 @@ type ChoriaPluginConfig struct {
 	StatsPort             int    `confkey:"plugin.choria.stats_port" default:"0"`              // The port to listen on for HTTP requests for statistics, setting to 0 disables it
 	LegacyLifeCycleFormat bool   `confkey:"plugin.choria.legacy_lifecycle_format" default:"0"` // When enabled will publish lifecycle events in the legacy format, else Cloud Events format is used
 
-	NatsUser                 string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`           // The user to connect to the NATS server as. When unset no username is used.
-	NatsPass                 string   `confkey:"plugin.nats.pass" environment:"MCOLLECTIVE_NATS_PASSWORD"`           // The password to use when connecting to the NATS server
-	NatsCredentials          string   `confkey:"plugin.nats.credentials" environment:"MCOLLECTIVE_NATS_CREDENTIALS"` // The NATS 2.0 credentials to use, required for accessing NGS
-	NatsNGS                  bool     `confkey:"plugin.nats.ngs" environment:"MCOLLECTIVE_NATS_NGS"`                 // Uses NATS NGS global managed network as middleware, overrides broker names to "connect.ngs.global"
-	MiddlewareHosts          []string `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`                  // Set specific middleware hosts in the format host:port, if unset uses SRV
-	RandomizeMiddlewareHosts bool     `confkey:"plugin.choria.randomize_middleware_hosts" default:"true"`            // Shuffle middleware hosts before connecting to spread traffic of initial connections
+	NatsUser                 string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`               // The user to connect to the NATS server as. When unset no username is used.
+	NatsPass                 string   `confkey:"plugin.nats.pass" environment:"MCOLLECTIVE_NATS_PASSWORD"`               // The password to use when connecting to the NATS server
+	NatsCredentials          string   `confkey:"plugin.nats.credentials" environment:"MCOLLECTIVE_NATS_CREDENTIALS"`     // The NATS 2.0 credentials to use, required for accessing NGS
+	MiddlewareHosts          []string `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`                      // Set specific middleware hosts in the format host:port, if unset uses SRV
+	RandomizeMiddlewareHosts bool     `confkey:"plugin.choria.randomize_middleware_hosts" deprecated:"1" default:"true"` // Shuffle middleware hosts before connecting to spread traffic of initial connections
 
 	NetworkListenAddress               string        `confkey:"plugin.choria.network.listen_address" default:"::" url:"https://choria.io/docs/deployment/broker/"` // Address the Network Broker will listen on
 	NetworkWebSocketPort               int           `confkey:"plugin.choria.network.websocket_port" url:"https://choria.io/docs/deployment/broker/"`              // Port to listen on for websocket connections
@@ -63,8 +62,8 @@ type ChoriaPluginConfig struct {
 	NetworkGatewayRemotes              []string      `confkey:"plugin.choria.network.gateway_remotes" type:"comma_split"`                                          // List of remote Super Clusters to connect to
 	NetworkWriteDeadline               time.Duration `confkey:"plugin.choria.network.write_deadline" type:"duration" default:"10s"`                                // How long to allow clients to process traffic before treating them as slow, increase this on large networks or slow networks
 	NetworkAllowedClientHosts          []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`                                             // CIDRs to limit client connections from, appropriate ACLs are added based on this
-	NetworkClientTokenSignerFile       string        `confkey:"plugin.choria.network.client_signer_cert" type:"path_string"`                                       // Path to the public certificate used by the AAA Service to sign client JWT tokens. This enables users with signed JWTs to use unverified TLS to connect
-	NetworkServerTokenSignerFile       string        `confkey:"plugin.choria.network.server_signer_cert" type:"path_string"`                                       // Path to the public certificate used by the Provisioner Service to sign server JWT tokens. This enables servers with signed JWTs to use unverified TLS to connect
+	NetworkClientTokenSigners          []string      `confkey:"plugin.choria.network.client_signer_cert" type:"comma_split"`                                       // Fully qualified paths to the public certificates used by the AAA Service to sign client JWT tokens. This enables users with signed JWTs to use unverified TLS to connect. Can also be a list of ed25519 public keys.
+	NetworkServerTokenSigners          []string      `confkey:"plugin.choria.network.server_signer_cert" type:"comma_split"`                                       // Fully qualified Paths to the public certificates used by the Provisioner Service to sign server JWT tokens. This enables servers with signed JWTs to use unverified TLS to connect. Can also be a list of ed25519 public keys.
 	NetworkDenyServers                 bool          `confkey:"plugin.choria.network.deny_server_connections"`                                                     // Set ACLs denying server connections to this broker
 	NetworkTLSTimeout                  int           `confkey:"plugin.choria.network.tls_timeout" default:"2"`                                                     // Time to allow for TLS connections to establish, increase on slow or very large networks
 	NetworkClientAdvertiseName         string        `confkey:"plugin.choria.network.public_url"`                                                                  // Name:Port to advertise to clients, useful when fronted by a proxy
@@ -115,12 +114,17 @@ type ChoriaPluginConfig struct {
 
 	RemoteSignerTokenSeedFile   string `confkey:"plugin.choria.security.request_signer.seed_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"`  // Path to the seed file used to access a Central Authenticator
 	RemoteSignerTokenFile       string `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"` // Path to the token used to access a Central Authenticator
-	RemoteSignerSigningCertFile string `confkey:"plugin.choria.security.request_signing_certificate" type:"path_string"`                                         // Path to the public certificate of the key used to sign the JWTs in the Signing Service
+	RemoteSignerSigningCertFile string `confkey:"plugin.choria.security.request_signing_certificate" type:"path_string" deprecated:"true"`                       // Path to the public certificate of the key used to sign the JWTs in the Signing Service
 	RemoteSignerURL             string `confkey:"plugin.choria.security.request_signer.url" url:"https://github.com/choria-io/aaasvc"`                           // URL to the Signing Service
 	RemoteSignerService         bool   `confkey:"plugin.choria.security.request_signer.service" url:"https://github.com/choria-io/aaasvc"`                       // Enables signing requests via Choria RPC requests
 
-	ChoriaSecurityTrustedSigners []string `confkey:"plugin.security.choria.trusted_signers"` // Ed25119 public keys of entities allowed to sign client and server JWT tokens in hex encoded format
-	ChoriaSecurityIdentity       string   `confkey:"plugin.security.choria.identity"`        // Force a specific identity to be used instead of attempting to detect it
+	ChoriaSecurityTrustedSigners []string `confkey:"plugin.security.choria.trusted_signers" type:"comma_split"` // Ed25119 public keys of entities allowed to sign client and server JWT tokens in hex encoded format
+	ChoriaSecurityCertificate    string   `confkey:"plugin.security.choria.certificate" type:"path_string"`     // When using choria security provider, the path to the optional public certificate
+	ChoriaSecurityKey            string   `confkey:"plugin.security.choria.key" type:"path_string"`             // When using choria security provider, the path to the optional private key
+	ChoriaSecurityCA             string   `confkey:"plugin.security.choria.ca" type:"path_string"`              // When using choria security provider, the path to the optional Certificate Authority public certificate
+	ChoriaSecurityTokenFile      string   `confkey:"plugin.security.choria.token_file" type:"path_string"`      // The path to the JWT token file
+	ChoriaSecuritySeedFile       string   `confkey:"plugin.security.choria.seed_file" type:"path_string"`       // The path to the seed file
+	ChoriaSecuritySignReplies    bool     `confkey:"plugin.security.choria.sign_replies" default:"true"`        // Disables signing replies which would significantly trim down the size of replies but would remove the ability to verify signatures or verify message origin
 
 	FileSecurityCertificate string `confkey:"plugin.security.file.certificate" type:"path_string"`          // When using file security provider, the path to the public certificate
 	FileSecurityKey         string `confkey:"plugin.security.file.key" type:"path_string"`                  // When using file security provider, the path to the private key

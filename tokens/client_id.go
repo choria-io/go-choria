@@ -32,7 +32,7 @@ type ClientPermissions struct {
 	SystemUser bool `json:"system_user,omitempty"`
 
 	// Governor enables access to Governors, cannot make new ones, also requires Streams permission
-	Governor bool `json:"governor"`
+	Governor bool `json:"governor,omitempty"`
 
 	// OrgAdmin has access to all subjects
 	OrgAdmin bool `json:"org_admin,omitempty"`
@@ -47,7 +47,7 @@ type ClientPermissions struct {
 	ExtendedServiceLifetime bool `json:"service,omitempty"`
 
 	// AuthenticationDelegator has the right to sign requests on behalf of others
-	AuthenticationDelegator bool `json:"authentication_delegator"`
+	AuthenticationDelegator bool `json:"authentication_delegator,omitempty"`
 }
 
 // ClientIDClaims represents a user and all AAA Authenticators should create a JWT using this format
@@ -83,6 +83,11 @@ type ClientIDClaims struct {
 
 	StandardClaims
 }
+
+var (
+	ErrNotAClientToken       = fmt.Errorf("not a client token")
+	ErrInvalidClientCallerID = fmt.Errorf("invalid caller id in token")
+)
 
 // UniqueID returns the caller id and unique id used to generate private inboxes
 func (c *ClientIDClaims) UniqueID() (id string, uid string) {
@@ -142,11 +147,11 @@ func UnverifiedCallerFromClientIDToken(token string) (*jwt.Token, string, error)
 	}
 
 	if !IsClientIDToken(claims.StandardClaims) {
-		return nil, "", fmt.Errorf("not a client id token")
+		return nil, "", ErrNotAClientToken
 	}
 
 	if claims.CallerID == "" {
-		return nil, "", fmt.Errorf("invalid caller id in token")
+		return nil, "", ErrInvalidClientCallerID
 	}
 
 	return t, claims.CallerID, nil
@@ -177,7 +182,7 @@ func ParseClientIDTokenUnverified(token string) (*ClientIDClaims, error) {
 	}
 
 	if !IsClientIDToken(claims.StandardClaims) {
-		return nil, fmt.Errorf("token is not a client id token")
+		return nil, ErrNotAClientToken
 	}
 
 	return claims, nil
@@ -188,11 +193,11 @@ func ParseClientIDToken(token string, pk any, verifyPurpose bool) (*ClientIDClai
 	claims := &ClientIDClaims{}
 	err := ParseToken(token, claims, pk)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse client id token: %s", err)
+		return nil, fmt.Errorf("could not parse client id token: %w", err)
 	}
 
 	if verifyPurpose && !IsClientIDToken(claims.StandardClaims) {
-		return nil, fmt.Errorf("not a client id token")
+		return nil, ErrNotAClientToken
 	}
 
 	return claims, nil
@@ -209,10 +214,10 @@ func ParseClientIDTokenWithKeyfile(token string, pkFile string, verifyPurpose bo
 		return nil, fmt.Errorf("could not read validation certificate: %s", err)
 	}
 
-	cert, err := jwt.ParseRSAPublicKeyFromPEM(certdat)
+	pk, err := readRSAOrED25519PublicData(certdat)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse validation certificate: %s", err)
+		return nil, err
 	}
 
-	return ParseClientIDToken(token, cert, verifyPurpose)
+	return ParseClientIDToken(token, pk, verifyPurpose)
 }

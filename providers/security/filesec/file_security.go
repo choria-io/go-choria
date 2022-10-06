@@ -137,6 +137,10 @@ func (s *FileSecurity) Provider() string {
 	return "file"
 }
 
+func (s *FileSecurity) TokenBytes() ([]byte, error) {
+	return nil, fmt.Errorf("tokens not available for file security provider")
+}
+
 func (s *FileSecurity) RemoteSignerToken() ([]byte, error) {
 	if s.conf.RemoteSignerTokenFile == "" {
 		return nil, fmt.Errorf("no token file  defined")
@@ -515,8 +519,8 @@ func (s *FileSecurity) constructCustomVerifier(pool *x509.CertPool) func(cs tls.
 	}
 }
 
-// PublicCertPem retrieves the public certificate for this instance
-func (s *FileSecurity) PublicCertPem() (*pem.Block, error) {
+// publicCertPem retrieves the public certificate for this instance
+func (s *FileSecurity) publicCertPem() (*pem.Block, error) {
 	path := s.publicCertPath()
 
 	return s.decodePEM(path)
@@ -531,7 +535,7 @@ func (s *FileSecurity) PublicCertBytes() ([]byte, error) {
 
 // PublicCert is the parsed public certificate
 func (s *FileSecurity) PublicCert() (*x509.Certificate, error) {
-	block, err := s.PublicCertPem()
+	block, err := s.publicCertPem()
 	if err != nil {
 		return nil, err
 	}
@@ -621,7 +625,14 @@ func (s *FileSecurity) privateKeyPEM() (pb *pem.Block, err error) {
 	return
 }
 
-func (s *FileSecurity) ShouldAllowCaller(data []byte, name string) (privileged bool, err error) {
+func (s *FileSecurity) ShouldAllowCaller(name string, callers ...[]byte) (privileged bool, err error) {
+	if len(callers) != 1 {
+		s.log.Warnf("Received multiple items of caller identity data in x509 security provider")
+		return false, fmt.Errorf("invalid public data")
+	}
+
+	data := callers[0]
+
 	privNames, err := s.certDNSNames(data)
 	if err != nil {
 		s.log.Warnf("Could not extract DNS Names from certificate")
@@ -681,3 +692,5 @@ func (s *FileSecurity) certDNSNames(certpem []byte) (names []string, err error) 
 
 	return names, nil
 }
+
+func (s *FileSecurity) ShouldSignReplies() bool { return false }

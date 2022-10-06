@@ -28,6 +28,30 @@ var _ = Describe("Choria/Config", func() {
 			build.DefaultCollectives = "mcollective"
 		})
 
+		It("Should switch to choria collective when not configured and the choria security system is in use", func() {
+			c := &Config{Choria: &ChoriaPluginConfig{SecurityProvider: "choria"}}
+			err := c.normalize()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(c.Collectives).To(Equal([]string{"choria"}))
+
+			c = &Config{Choria: &ChoriaPluginConfig{SecurityProvider: "puppet"}}
+			err = c.normalize()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(c.Collectives).To(Equal([]string{"mcollective"}))
+
+			build.DefaultCollectives = "foo"
+			c = &Config{Choria: &ChoriaPluginConfig{SecurityProvider: "puppet"}}
+			err = c.normalize()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(c.Collectives).To(Equal([]string{"foo"}))
+
+			c = &Config{Choria: &ChoriaPluginConfig{}, Collectives: []string{"x", "y"}}
+			err = c.normalize()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(c.Collectives).To(Equal([]string{"x", "y"}))
+			Expect(c.MainCollective).To(Equal("x"))
+		})
+
 		It("Should get collectives from build settings", func() {
 			c := &Config{Choria: &ChoriaPluginConfig{}}
 			build.DefaultCollectives = "g1 , g2"

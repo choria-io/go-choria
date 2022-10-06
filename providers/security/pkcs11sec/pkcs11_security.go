@@ -293,6 +293,10 @@ func (p *Pkcs11Security) Provider() string {
 	return "pkcs11"
 }
 
+func (p *Pkcs11Security) TokenBytes() ([]byte, error) {
+	return nil, fmt.Errorf("tokens not available for pkcs11 security provider")
+}
+
 func (p *Pkcs11Security) Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error {
 	return fmt.Errorf("pkcs11 security provider does not support enrollment")
 }
@@ -405,8 +409,8 @@ func (p *Pkcs11Security) CallerIdentity(caller string) (string, error) {
 }
 
 // ShouldAllowCaller verifies the public data
-func (p *Pkcs11Security) ShouldAllowCaller(data []byte, name string) (privileged bool, err error) {
-	return p.fsec.ShouldAllowCaller(data, name)
+func (p *Pkcs11Security) ShouldAllowCaller(name string, callers ...[]byte) (privileged bool, err error) {
+	return p.fsec.ShouldAllowCaller(name, callers...)
 }
 
 // VerifyCertificate verifies a certificate is signed with the configured CA and if
@@ -415,8 +419,8 @@ func (p *Pkcs11Security) VerifyCertificate(certpem []byte, name string) error {
 	return p.fsec.VerifyCertificate(certpem, name)
 }
 
-// PublicCertPem retrieves the public certificate for this instance
-func (p *Pkcs11Security) PublicCertPem() (*pem.Block, error) {
+// publicCertPem retrieves the public certificate for this instance
+func (p *Pkcs11Security) publicCertPem() (*pem.Block, error) {
 	pb := &pem.Block{
 		Type:  "CERTIFICATE",
 		Bytes: p.cert.Leaf.Raw,
@@ -427,10 +431,9 @@ func (p *Pkcs11Security) PublicCertPem() (*pem.Block, error) {
 
 // PublicCertBytes retrieves pem data in textual form for the public certificate of the current identity
 func (p *Pkcs11Security) PublicCertBytes() ([]byte, error) {
-
-	pemCert, err := p.PublicCertPem()
+	pemCert, err := p.publicCertPem()
 	if err != nil {
-		return nil, fmt.Errorf("failed to run PublicCertPem: %s", err)
+		return nil, fmt.Errorf("failed to run publicCertPem: %s", err)
 	}
 	var buf bytes.Buffer
 	err = pem.Encode(&buf, pemCert)
@@ -503,3 +506,5 @@ func (p *Pkcs11Security) HTTPClient(secure bool) (*http.Client, error) {
 
 	return client, nil
 }
+
+func (p *Pkcs11Security) ShouldSignReplies() bool { return false }

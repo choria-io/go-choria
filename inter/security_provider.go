@@ -8,7 +8,6 @@ import (
 	"context"
 	"crypto/tls"
 	"crypto/x509"
-	"encoding/pem"
 	"net/http"
 	"time"
 )
@@ -70,21 +69,21 @@ type SecurityProvider interface {
 	// be set to use the CA and client certs for auth.
 	HTTPClient(secure bool) (*http.Client, error)
 
-	// VerifyCertificate validates that a certificate is signed by a known CA
-	VerifyCertificate(certpem []byte, identity string) error
-
 	// PublicCert is the parsed public certificate
 	PublicCert() (*x509.Certificate, error)
-
-	// PublicCertPem retrieves pem data for the public certificate of the current identity
-	PublicCertPem() (*pem.Block, error)
 
 	// PublicCertBytes retrieves pem data in textual form for the public certificate of the current identity
 	PublicCertBytes() ([]byte, error)
 
+	// TokenBytes gives access to the users JWT token if any
+	TokenBytes() ([]byte, error)
+
+	// ShouldSignReplies indicates that the protocol should sign replies from servers, only supported in v2 protocol
+	ShouldSignReplies() bool
+
 	// ShouldAllowCaller validates the identity, the public data like certificate or JWT and checks
 	// against allowed lists and is privileged user aware
-	ShouldAllowCaller(data []byte, name string) (privileged bool, err error)
+	ShouldAllowCaller(name string, callers ...[]byte) (privileged bool, err error)
 
 	// Enroll creates a new cert with the active identity and attempt to enroll it with the security system
 	// if there's a process of waiting for the certificate to be signed for example this should wait

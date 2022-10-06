@@ -221,6 +221,8 @@ jobs:
       - bionic_aarch64
       - bullseye_64
       - bullseye_aarch64
+      - bullseye_armel
+      - bullseye_armhf
       - buster_64
       - buster_aarch64
       - buster_armel
