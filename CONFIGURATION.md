@@ -73,11 +73,13 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.use_srv](#pluginchoriause_srv)|[plugin.login.aaasvc.login.url](#pluginloginaaasvcloginurl)|
 |[plugin.nats.credentials](#pluginnatscredentials)|[plugin.nats.ngs](#pluginnatsngs)|
 |[plugin.nats.pass](#pluginnatspass)|[plugin.nats.user](#pluginnatsuser)|
-|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|[plugin.scout.overrides](#pluginscoutoverrides)|
+|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|[plugin.scout.goss.denied_local_resources](#pluginscoutgossdenied_local_resources)|
+|[plugin.scout.goss.denied_remote_resources](#pluginscoutgossdenied_remote_resources)|[plugin.scout.overrides](#pluginscoutoverrides)|
 |[plugin.scout.tags](#pluginscouttags)|[plugin.security.always_overwrite_cache](#pluginsecurityalways_overwrite_cache)|
 |[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|[plugin.security.certmanager.api_version](#pluginsecuritycertmanagerapi_version)|
 |[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|
-|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|
+|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|[plugin.security.choria.identity](#pluginsecuritychoriaidentity)|
+|[plugin.security.choria.trusted_signers](#pluginsecuritychoriatrusted_signers)|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|
 |[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|
 |[plugin.security.file.ca](#pluginsecurityfileca)|[plugin.security.file.cache](#pluginsecurityfilecache)|
 |[plugin.security.file.certificate](#pluginsecurityfilecertificate)|[plugin.security.file.key](#pluginsecurityfilekey)|
@@ -827,6 +829,15 @@ The user to connect to the NATS server as. When unset no username is used.
 
 Disables the scout agent
 
+## plugin.scout.goss.denied_local_resources
+
+ * **Type:** comma_split
+
+## plugin.scout.goss.denied_remote_resources
+
+ * **Type:** comma_split
+ * **Default Value:** command
+
 ## plugin.scout.overrides
 
  * **Type:** path_string
@@ -880,6 +891,14 @@ When using Cert Manager security provider, the namespace the issuer is in
  * **Default Value:** true
 
 when using Cert Manager security provider, replace existing CSRs with new ones
+
+## plugin.security.choria.identity
+
+ * **Type:** string
+
+## plugin.security.choria.trusted_signers
+
+ * **Type:** strings
 
 ## plugin.security.cipher_suites
 
@@ -943,7 +962,7 @@ When using the pkcs11 security provider, the slot to use in the device
 ## plugin.security.provider
 
  * **Type:** string
- * **Validation:** enum=puppet,file,pkcs11,certmanager
+ * **Validation:** enum=puppet,file,pkcs11,certmanager,choria
  * **Default Value:** puppet
 
 The Security Provider to use

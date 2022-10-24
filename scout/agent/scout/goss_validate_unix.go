@@ -13,6 +13,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/aelsabbahy/goss"
@@ -32,6 +33,8 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 	if !mcorpc.ParseRequestData(args, req, reply) {
 		return
 	}
+
+	var remote bool
 
 	switch {
 	case args.Rules == "" && args.File == "":
@@ -57,6 +60,7 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 			return
 		}
 		args.File = tf.Name()
+		remote = true
 	}
 
 	switch {
@@ -80,6 +84,7 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 			return
 		}
 		args.Vars = tf.Name()
+		remote = true
 	}
 
 	var out bytes.Buffer
@@ -92,6 +97,21 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 
 	if args.Vars != "" {
 		opts = append(opts, gossutil.WithVarsFile(args.Vars))
+	}
+
+	var denyResources []string
+	if remote {
+		if len(agent.Config.Choria.ScoutGossRemoteDenyResources) > 0 {
+			denyResources = append(denyResources, agent.Config.Choria.ScoutGossRemoteDenyResources...)
+		}
+	} else {
+		if len(agent.Config.Choria.ScoutGossLocalDenyResources) > 0 {
+			denyResources = append(denyResources, agent.Config.Choria.ScoutGossLocalDenyResources...)
+		}
+	}
+	if len(denyResources) > 0 {
+		agent.Log.WithField("remote", remote).Debugf("Denying access to goss resources: %v", strings.Join(denyResources, ", "))
+		opts = append(opts, gossutil.WithDisabledResourceTypes(denyResources...))
 	}
 
 	cfg, err := gossutil.NewConfig(opts...)
