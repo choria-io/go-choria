@@ -140,10 +140,12 @@ type ChoriaPluginConfig struct {
 
 	MachineSourceDir string `confkey:"plugin.choria.machine.store" url:"https://choria.io/docs/autoagents/"` // Directory where Autonomous Agents are stored
 
-	PrometheusTextFileDir string `confkey:"plugin.choria.prometheus_textfile_directory" type:"path_string"` // Directory where Prometheus Node Exporter textfile collector reads data
-	ScoutOverrides        string `confkey:"plugin.scout.overrides" type:"path_string"`                      // Path to a file holding overrides for Scout checks
-	ScoutTags             string `confkey:"plugin.scout.tags" type:"path_string"`                           // Path to a file holding tags for a Scout entity
-	ScoutAgentDisabled    bool   `confkey:"plugin.scout.agent_disabled"`                                    // Disables the scout agent
+	PrometheusTextFileDir        string   `confkey:"plugin.choria.prometheus_textfile_directory" type:"path_string"`                 // Directory where Prometheus Node Exporter textfile collector reads data
+	ScoutOverrides               string   `confkey:"plugin.scout.overrides" type:"path_string"`                                      // Path to a file holding overrides for Scout checks
+	ScoutTags                    string   `confkey:"plugin.scout.tags" type:"path_string"`                                           // Path to a file holding tags for a Scout entity
+	ScoutAgentDisabled           bool     `confkey:"plugin.scout.agent_disabled"`                                                    // Disables the scout agent
+	ScoutGossLocalDenyResources  []string `confkey:"plugin.scout.goss.denied_local_resources" type:"comma_split"`                    // List of resource types to deny for Goss manifests loaded from local disk
+	ScoutGossRemoteDenyResources []string `confkey:"plugin.scout.goss.denied_remote_resources" default:"command" type:"comma_split"` // List of resource types to deny when Goss manifests or variables were received over rpc
 
 	RequireClientFilter bool `confkey:"plugin.choria.require_client_filter" default:"false"` // If a client filter should always be required, only used in Go clients
 
