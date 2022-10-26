@@ -31,17 +31,17 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.0.35-0.20220930094031-ec07abe149c8
-	github.com/nats-io/nats-server/v2 v2.9.3
-	github.com/nats-io/nats.go v1.18.0
-	github.com/nats-io/natscli v0.0.35-0.20220930094603-1057211892d5
+	github.com/nats-io/jsm.go v0.0.35-0.20221026110704-935a03bca8e9
+	github.com/nats-io/nats-server/v2 v2.9.4-0.20221017231821-7041b19d801b
+	github.com/nats-io/nats.go v1.18.1-0.20221015170329-888a91d4c95a
+	github.com/nats-io/natscli v0.0.35-0.20221026111833-db004d3b02dd
 	github.com/onsi/ginkgo/v2 v2.4.0
 	github.com/onsi/gomega v1.22.1
 	github.com/open-policy-agent/opa v0.45.0
 	github.com/prometheus/client_golang v1.13.0
 	github.com/prometheus/client_model v0.3.0
 	github.com/robfig/cron v1.2.0
-	github.com/santhosh-tekuri/jsonschema/v5 v5.0.1
+	github.com/santhosh-tekuri/jsonschema/v5 v5.0.2
 	github.com/sirupsen/logrus v1.9.0
 	github.com/tidwall/gjson v1.14.3
 	github.com/tidwall/pretty v1.2.1

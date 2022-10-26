@@ -44,8 +44,8 @@ func (k *kvLSCommand) Run(wg *sync.WaitGroup) error {
 
 	found := 0
 	table := util.NewUTF8Table("Bucket", "History", "Values")
-	mgr.EachStream(func(s *jsm.Stream) {
-		if !strings.HasPrefix(s.Name(), "KV_") {
+	mgr.EachStream(&jsm.StreamNamesFilter{Subject: "$KV.>"}, func(s *jsm.Stream) {
+		if !jsm.IsKVBucketStream(s.Name()) {
 			return
 		}
 
