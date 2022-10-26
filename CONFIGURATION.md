@@ -833,10 +833,14 @@ Disables the scout agent
 
  * **Type:** comma_split
 
+List of resource types to deny for Goss manifests loaded from local disk
+
 ## plugin.scout.goss.denied_remote_resources
 
  * **Type:** comma_split
  * **Default Value:** command
+
+List of resource types to deny when Goss manifests or variables were received over rpc
 
 ## plugin.scout.overrides
 
@@ -896,9 +900,13 @@ when using Cert Manager security provider, replace existing CSRs with new ones
 
  * **Type:** string
 
+Force a specific identity to be used instead of attempting to detect it
+
 ## plugin.security.choria.trusted_signers
 
  * **Type:** strings
+
+Ed25119 public keys of entities allowed to sign client and server JWT tokens in hex encoded format
 
 ## plugin.security.cipher_suites
 
