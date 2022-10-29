@@ -62,8 +62,8 @@ github.com/aelsabbahy/GOnetstat v0.0.0-20220505220511-31d79a98d9f2 h1:uQwoRGQKT0
 github.com/aelsabbahy/GOnetstat v0.0.0-20220505220511-31d79a98d9f2/go.mod h1:FETZSu2VGNDJbGfeRExaz/SNbX0TTaqJEMo1yvsKoZ8=
 github.com/aelsabbahy/go-ps v0.0.0-20201009164808-61c449472dcf h1:KyjxaqJO0pHF7Clre644OiJ5s235JVRsz6ioDkoQ96s=
 github.com/aelsabbahy/go-ps v0.0.0-20201009164808-61c449472dcf/go.mod h1:70tSBushy/POz6cCR294bKno4BNAC7XWVdkkxWQ1N6E=
-github.com/aelsabbahy/goss v0.3.20 h1:xKQrJWJcIvtO5A/PeiQQscZmu9lXiAaiOyR7gdPqTmU=
-github.com/aelsabbahy/goss v0.3.20/go.mod h1:iaftnBGyxLhBvoI6mWyTTHgoP6wvGxVNX0TiC3eZKrY=
+github.com/aelsabbahy/goss v0.3.21-0.20221028222348-e566d708ffde h1:t4oe5IJgrJIL2gzKbZuwLxXYrYLjRuio+7V5TBGbXq4=
+github.com/aelsabbahy/goss v0.3.21-0.20221028222348-e566d708ffde/go.mod h1:iaftnBGyxLhBvoI6mWyTTHgoP6wvGxVNX0TiC3eZKrY=
 github.com/agnivade/levenshtein v1.1.1 h1:QY8M92nrzkmr798gCo3kmMyqXFzdQVpxLlGPRBij0P8=
 github.com/agnivade/levenshtein v1.1.1/go.mod h1:veldBMzWxcCG2ZvUTKD2kJNRdCk5hVbJomOvKkmgYbo=
 github.com/ajstarks/svgo v0.0.0-20180226025133-644b8db467af/go.mod h1:K08gAheRH3/J6wwsYMMT4xOr94bZjxIelGM0+d/wbFw=
