@@ -121,12 +121,16 @@ Disables or enable CLI color
 
 Ruby clients use this to determine how long they will try to connect, fails after timeout
 
+**This setting is deprecated or already unused**
+
 ## connector
 
  * **Type:** title_string
  * **Default Value:** nats
 
 Configures the network connector to use, only sensible value is "nats", unused in Go based code
+
+**This setting is deprecated or already unused**
 
 ## default_discovery_method
 
@@ -148,6 +152,8 @@ Default options to pass to the discovery plugin
  * **Default Value:** true
 
 Enables the direct-to-node communications pattern, unused in the Go clients
+
+**This setting is deprecated or already unused**
 
 ## discovery_timeout
 
@@ -182,6 +188,8 @@ The file to write logs to, when set to 'discard' logging will be disabled. Also 
  * **Default Value:** file
 
 The type of logging to use, unused in Go based programs
+
+**This setting is deprecated or already unused**
 
 ## loglevel
 
@@ -1003,6 +1011,8 @@ Where to look for YAML or JSON based facts
 
 Ruby clients use this to determine how long they will allow when publishing requests
 
+**This setting is deprecated or already unused**
+
 ## registerinterval
 
  * **Type:** integer
@@ -1044,6 +1054,8 @@ When enabled uses rpcauditprovider to audit RPC requests processed by the server
 
 The audit provider to use, unused at present as there is only a "choria" one
 
+**This setting is deprecated or already unused**
+
 ## rpcauthorization
 
  * **Type:** boolean
@@ -1081,6 +1093,8 @@ The amount of time to allow the server to exit, after this memory and thread dum
  * **Default Value:** false
 
 Enables multi threaded mode in the Ruby client, generally a bad idea
+
+**This setting is deprecated or already unused**
 
 ## ttl
 

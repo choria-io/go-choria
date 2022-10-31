@@ -58,13 +58,13 @@ type Config struct {
 	Identity string `confkey:"identity"`
 
 	// Enables the direct-to-node communications pattern, unused in the Go clients
-	DirectAddressing bool `confkey:"direct_addressing" default:"true"`
+	DirectAddressing bool `confkey:"direct_addressing" default:"true" deprecated:"true"`
 
 	// Disables or enable CLI color
 	Color bool `confkey:"color" default:"true"`
 
 	// Configures the network connector to use, only sensible value is "nats", unused in Go based code
-	Connector string `confkey:"connector" default:"nats" type:"title_string"`
+	Connector string `confkey:"connector" default:"nats" type:"title_string" deprecated:"true"`
 
 	// Path to a file listing configuration classes applied to a node, used in matches using Class filters
 	ClassesFile string `confkey:"classesfile" default:"/opt/puppetlabs/puppet/cache/state/classes.txt" type:"path_string"`
@@ -73,16 +73,16 @@ type Config struct {
 	DiscoveryTimeout int `confkey:"discovery_timeout" default:"2"`
 
 	// Ruby clients use this to determine how long they will allow when publishing requests
-	PublishTimeout int `confkey:"publish_timeout" default:"2"`
+	PublishTimeout int `confkey:"publish_timeout" default:"2" deprecated:"true"`
 
 	// Ruby clients use this to determine how long they will try to connect, fails after timeout
-	ConnectionTimeout int `confkey:"connection_timeout"`
+	ConnectionTimeout int `confkey:"connection_timeout" deprecated:"true"`
 
 	// When enabled uses rpcauditprovider to audit RPC requests processed by the server
 	RPCAudit bool `confkey:"rpcaudit" default:"false" url:"https://choria.io/docs/configuration/aaa/"`
 
 	// The audit provider to use, unused at present as there is only a "choria" one
-	RPCAuditProvider string `confkey:"rpcauditprovider" type:"title_string" url:"https://choria.io/docs/configuration/aaa/"`
+	RPCAuditProvider string `confkey:"rpcauditprovider" type:"title_string" url:"https://choria.io/docs/configuration/aaa/" deprecated:"true"`
 
 	// When enables authorization is performed on every RPC request based on rpcauthprovider
 	RPCAuthorization bool `confkey:"rpcauthorization" default:"true" url:"https://choria.io/docs/configuration/aaa/"`
@@ -94,10 +94,10 @@ type Config struct {
 	RPCLimitMethod string `confkey:"rpclimitmethod" default:"first" validate:"enum=first,random"`
 
 	// The type of logging to use, unused in Go based programs
-	LoggerType string `confkey:"logger_type" default:"file" validate:"enum=console,file,syslog"`
+	LoggerType string `confkey:"logger_type" default:"file" validate:"enum=console,file,syslog" deprecated:"true"`
 
 	// Enables multi threaded mode in the Ruby client, generally a bad idea
-	Threaded bool `confkey:"threaded" default:"false"`
+	Threaded bool `confkey:"threaded" default:"false" deprecated:"true"`
 
 	// How long published messages are allowed to linger on the network, lower numbers have a higher reliance on clocks being in sync
 	TTL int `confkey:"ttl" default:"60"`

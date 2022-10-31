@@ -23,7 +23,7 @@ type Option func(*PuppetSecurity) error
 func WithChoriaConfig(bi BuildInfoProvider, c *config.Config) Option {
 	return func(p *PuppetSecurity) error {
 		cfg := Config{
-			AllowList:             c.Choria.CertnameWhitelist,
+			AllowList:             c.Choria.CertnameAllowList,
 			DisableTLSVerify:      c.DisableTLSVerify,
 			PrivilegedUsers:       c.Choria.PrivilegedUsers,
 			SSLDir:                c.Choria.SSLDir,

@@ -32,7 +32,7 @@ func startAdapter(ctx context.Context, a adapter, c inter.ConnectionManager, wg 
 
 func RunAdapters(ctx context.Context, c inter.Framework, wg *sync.WaitGroup) error {
 	log := c.Logger("adapters")
-	for _, a := range c.Configuration().Choria.Adapters {
+	for _, a := range c.Configuration().Choria.BrokerAdapters {
 		atype := c.Configuration().Option(fmt.Sprintf("plugin.choria.adapter.%s.type", a), "")
 		if atype == "" {
 			return fmt.Errorf("could not determine type for adapter %s, set plugin.choria.adapter.%s.type", a, a)
