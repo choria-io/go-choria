@@ -15,11 +15,9 @@ a running tally of the count and versions of nodes on your network.
 package lifecycle
 
 import (
-	"encoding/json"
 	"errors"
 	"fmt"
 	"sort"
-	"strings"
 
 	"github.com/choria-io/go-choria/inter"
 	cloudevents "github.com/cloudevents/sdk-go/v2"
@@ -74,9 +72,6 @@ const (
 	// UnknownFormat is an unknown format message
 	UnknownFormat Format = iota
 
-	// ChoriaFormat is classical ChoriaFormat lifecycle events in its own package
-	ChoriaFormat
-
 	// CloudEventV1Format is a classical Choria lifecycle event carried within a version 1.0 CloudEvent
 	CloudEventV1Format
 )
@@ -86,8 +81,6 @@ func (f Format) String() string {
 	switch f {
 	case UnknownFormat:
 		return "UnknownFormat"
-	case ChoriaFormat:
-		return "ChoriaFormat"
 	case CloudEventV1Format:
 		return "CloudEventV1Format"
 	default:
@@ -124,11 +117,6 @@ func EventTypeNames() []string {
 
 // EventFormatFromJSON inspects the JSON data and tries to determine the format from it's content
 func EventFormatFromJSON(j []byte) Format {
-	protocol := gjson.GetBytes(j, "protocol")
-	if protocol.Exists() && strings.HasPrefix(protocol.String(), "io.choria.lifecycle") {
-		return ChoriaFormat
-	}
-
 	specversion := gjson.GetBytes(j, "specversion")
 	source := gjson.GetBytes(j, "source")
 
@@ -146,8 +134,6 @@ func NewFromJSON(j []byte) (event Event, err error) {
 	format := EventFormatFromJSON(j)
 
 	switch format {
-	case ChoriaFormat:
-		event, err = choriaFormatNewFromJSON(j)
 	case CloudEventV1Format:
 		event, err = cloudeventV1FormatNewFromJSON(j)
 	default:
@@ -175,49 +161,6 @@ func cloudeventV1FormatNewFromJSON(j []byte) (Event, error) {
 	return NewFromJSON(data)
 }
 
-func choriaFormatNewFromJSON(j []byte) (Event, error) {
-	protocol := gjson.GetBytes(j, "protocol")
-	proto, err := protoStringToTypeString(protocol.String())
-	if err != nil {
-		return nil, err
-	}
-
-	etype, ok := eventTypes[proto]
-	if !ok {
-		return nil, fmt.Errorf("unknown protocol '%s' received", protocol.String())
-	}
-
-	factory, ok := eventJSONParsers[etype]
-	if !ok {
-		return nil, fmt.Errorf("cannot create %s event type from JSON", proto)
-	}
-
-	return factory(j)
-}
-
-// turns io.choria.lifecycle.v1.provisioned or choria:lifecycle:provisioned:1 into provisioned
-func protoStringToTypeString(proto string) (eventType string, err error) {
-	if strings.HasPrefix(proto, "choria:lifecycle") {
-		parts := strings.Split(proto, ":")
-		if len(parts) == 4 {
-			return parts[2], nil
-		}
-
-		return "", fmt.Errorf("unknown protocol '%s' received", proto)
-	}
-
-	if strings.HasPrefix(proto, "io.choria.lifecycle") {
-		parts := strings.Split(proto, ".")
-		if len(parts) == 5 {
-			return parts[4], nil
-		}
-
-		return "", fmt.Errorf("unknown protocol '%s' received", proto)
-	}
-
-	return "", fmt.Errorf("invalid protocol '%s' received", proto)
-}
-
 // ToCloudEventV1 converts an event to a CloudEvent version 1
 func ToCloudEventV1(e Event) cloudevents.Event {
 	event := cloudevents.NewEvent("1.0")
@@ -238,8 +181,6 @@ func PublishEvent(e Event, conn inter.RawNATSConnector) error {
 	var err error
 
 	switch e.Format() {
-	case ChoriaFormat:
-		j, err = json.Marshal(e)
 	case CloudEventV1Format:
 		j, err = ToCloudEventV1(e).MarshalJSON()
 	default:

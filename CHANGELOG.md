@@ -1,5 +1,6 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2022/10/31 | 1882  | Remove the old style event format, Cloud Events is all we support                                                  |
 | 2022/10/05 | 1869  | Improve the error handling in `choria tool status` when the status file does not exist                             |
 | 2022/10/04 | 1866  | Fix inventory groups in inventory files, they now work with all agents                                             |
 | 2022/10/03 | 1740  | Support ed25519 keys for signing JWT tokens                                                                        |

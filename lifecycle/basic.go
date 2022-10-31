@@ -95,7 +95,7 @@ func newBasicEvent(t string) basicEvent {
 		EventProtocol: fmt.Sprintf("io.choria.lifecycle.v1.%s", t),
 		EventID:       eventID(),
 		Timestamp:     timeStamp(),
-		EventFormat:   ChoriaFormat,
+		EventFormat:   CloudEventV1Format,
 		etype:         t,
 		dtype:         eventTypes[t],
 	}

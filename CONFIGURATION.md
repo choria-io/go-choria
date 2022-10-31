@@ -286,6 +286,8 @@ Middleware brokers used by the Federation Broker, if unset uses SRV
 
 When enabled will publish lifecycle events in the legacy format, else Cloud Events format is used
 
+**This setting is deprecated or already unused**
+
 ## plugin.choria.machine.store
 
  * **Type:** string

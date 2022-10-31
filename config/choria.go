@@ -34,9 +34,9 @@ type ChoriaPluginConfig struct {
 	FederationMiddlewareHosts []string `confkey:"plugin.choria.federation_middleware_hosts" type:"comma_split" url:"https://choria.io/docs/federation/"`                                // Middleware brokers used by the Federation Broker, if unset uses SRV
 	FederationCluster         string   `confkey:"plugin.choria.federation.cluster" default:"mcollective" url:"https://choria.io/docs/federation/"`                                      // The cluster name a Federation Broker serves
 
-	StatsListenAddress    string `confkey:"plugin.choria.stats_address" default:"127.0.0.1"`   // The address to listen on for statistics
-	StatsPort             int    `confkey:"plugin.choria.stats_port" default:"0"`              // The port to listen on for HTTP requests for statistics, setting to 0 disables it
-	LegacyLifeCycleFormat bool   `confkey:"plugin.choria.legacy_lifecycle_format" default:"0"` // When enabled will publish lifecycle events in the legacy format, else Cloud Events format is used
+	StatsListenAddress    string `confkey:"plugin.choria.stats_address" default:"127.0.0.1"`                  // The address to listen on for statistics
+	StatsPort             int    `confkey:"plugin.choria.stats_port" default:"0"`                             // The port to listen on for HTTP requests for statistics, setting to 0 disables it
+	LegacyLifeCycleFormat bool   `confkey:"plugin.choria.legacy_lifecycle_format" default:"0" deprecated:"1"` // When enabled will publish lifecycle events in the legacy format, else Cloud Events format is used
 
 	NatsUser                 string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`           // The user to connect to the NATS server as. When unset no username is used.
 	NatsPass                 string   `confkey:"plugin.nats.pass" environment:"MCOLLECTIVE_NATS_PASSWORD"`           // The password to use when connecting to the NATS server
