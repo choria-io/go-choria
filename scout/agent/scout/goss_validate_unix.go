@@ -133,14 +133,19 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 		return
 	}
 
+	var errors int
 	for _, r := range res.Results {
-		if r.Result == resource.SKIP {
+		switch {
+		case r.Err != nil:
+			errors++
+		case r.Result == resource.SKIP:
 			resp.Skipped++
 		}
 	}
+
 	resp.Results = res.Results
 	resp.Summary = res.SummaryLine
-	resp.Failures = res.Summary.Failed
+	resp.Failures = res.Summary.Failed + errors
 	resp.Runtime = res.Summary.TotalDuration.Seconds()
 	resp.Success = res.Summary.TestCount - res.Summary.Failed - resp.Skipped
 	resp.Tests = res.Summary.TestCount

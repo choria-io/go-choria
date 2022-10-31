@@ -61,6 +61,7 @@ func (v *ValidateCommand) renderTableResult(table *xtablewriter.Table, vr *scout
 	fail := v.fw.Colorize("red", "X")
 	ok := v.fw.Colorize("green", "✓")
 	skip := v.fw.Colorize("yellow", "?")
+	errm := v.fw.Colorize("red", "!")
 
 	should := false
 
@@ -78,11 +79,17 @@ func (v *ValidateCommand) renderTableResult(table *xtablewriter.Table, vr *scout
 	}
 
 	sort.Slice(vr.Results, func(i, j int) bool {
-		return !vr.Results[i].Successful
+		return !vr.Results[i].Successful || vr.Results[i].Err != nil
 	})
 
 	for _, res := range vr.Results {
 		should = true
+
+		if res.Err != nil {
+			table.AddRow(errm, "", res.ResourceType, res.ResourceId, res.Err.Error())
+			continue
+		}
+
 		switch res.Result {
 		case resource.SKIP:
 			table.AddRow(skip, "", res.ResourceType, res.ResourceId, fmt.Sprintf("%s: skipped", res.Property))
@@ -186,14 +193,19 @@ func (v *ValidateCommand) localValidate() error {
 
 	resp := &scoutagent.GossValidateResponse{Results: []gossoutputs.StructuredTestResult{}}
 
+	var errors int
 	for _, r := range res.Results {
-		if r.Result == resource.SKIP {
+		switch {
+		case r.Err != nil:
+			errors++
+		case r.Result == resource.SKIP:
 			resp.Skipped++
 		}
 	}
+
 	resp.Results = res.Results
 	resp.Summary = res.SummaryLine
-	resp.Failures = res.Summary.Failed
+	resp.Failures = res.Summary.Failed + errors
 	resp.Runtime = res.Summary.TotalDuration.Seconds()
 	resp.Success = res.Summary.TestCount - res.Summary.Failed - resp.Skipped
 	resp.Tests = res.Summary.TestCount
