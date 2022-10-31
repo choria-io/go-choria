@@ -70,7 +70,7 @@ var _ = Describe("Choria/Config", func() {
 				"\\.privileged.mcollective$",
 				"\\.privileged.choria$",
 			}))
-			Expect(c.Choria.CertnameWhitelist).To(Equal([]string{
+			Expect(c.Choria.CertnameAllowList).To(Equal([]string{
 				"\\.mcollective$",
 				"\\.choria$",
 			}))

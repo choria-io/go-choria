@@ -15,7 +15,7 @@ type Option func(*Pkcs11Security) error
 func WithChoriaConfig(c *config.Config) Option {
 	return func(p *Pkcs11Security) error {
 		cfg := Config{
-			AllowList:        c.Choria.CertnameWhitelist,
+			AllowList:        c.Choria.CertnameAllowList,
 			DisableTLSVerify: c.DisableTLSVerify,
 			PrivilegedUsers:  c.Choria.PrivilegedUsers,
 			CAFile:           c.Choria.FileSecurityCA,

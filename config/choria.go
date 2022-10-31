@@ -15,16 +15,17 @@ import (
 //
 // NOTE: When adding or updating doc strings please run `go generate` in the root of the repository
 type ChoriaPluginConfig struct {
-	PuppetServerHost     string `confkey:"plugin.choria.puppetserver_host" default:"puppet"`                                                           // The hostname where your Puppet Server can be found
-	PuppetServerPort     int    `confkey:"plugin.choria.puppetserver_port" default:"8140"`                                                             // The port your Puppet Server listens on
-	PuppetCAHost         string `confkey:"plugin.choria.puppetca_host" default:"puppet"`                                                               // The hostname where your Puppet Certificate Authority can be found
-	PuppetCAPort         int    `confkey:"plugin.choria.puppetca_port" default:"8140"`                                                                 // The port your Puppet Certificate Authority listens on
-	PuppetDBHost         string `confkey:"plugin.choria.puppetdb_host" default:""`                                                                     // The host hosting your PuppetDB, used by the "choria" discovery plugin
-	PuppetDBPort         int    `confkey:"plugin.choria.puppetdb_port" default:"8081"`                                                                 // The port your PuppetDB listens on
-	UseSRVRecords        bool   `confkey:"plugin.choria.use_srv" default:"true" url:"https://choria.io/docs/deployment/dns/"`                          // If SRV record lookups should be attempted to find Puppet, PuppetDB, Brokers etc
-	SRVDomain            string `confkey:"plugin.choria.srv_domain" url:"https://choria.io/docs/deployment/dns/"`                                      // The domain to use for SRV records, defaults to the domain the server FQDN is in
-	Provision            bool   `confkey:"plugin.choria.server.provision" default:"false" url:"https://github.com/choria-io/provisioner"`              // Specifically enable or disable provisioning
-	ProvisionAllowUpdate bool   `confkey:"plugin.choria.server.provision.allow_update" default:"false" url:"https://github.com/choria-io/provisioner"` // Allows the provisioner to perform in-place version updates
+	PuppetServerHost string `confkey:"plugin.choria.puppetserver_host" default:"puppet"`                                  // The hostname where your Puppet Server can be found
+	PuppetServerPort int    `confkey:"plugin.choria.puppetserver_port" default:"8140"`                                    // The port your Puppet Server listens on
+	PuppetCAHost     string `confkey:"plugin.choria.puppetca_host" default:"puppet"`                                      // The hostname where your Puppet Certificate Authority can be found
+	PuppetCAPort     int    `confkey:"plugin.choria.puppetca_port" default:"8140"`                                        // The port your Puppet Certificate Authority listens on
+	PuppetDBHost     string `confkey:"plugin.choria.puppetdb_host" default:""`                                            // The host hosting your PuppetDB, used by the "choria" discovery plugin
+	PuppetDBPort     int    `confkey:"plugin.choria.puppetdb_port" default:"8081"`                                        // The port your PuppetDB listens on
+	UseSRVRecords    bool   `confkey:"plugin.choria.use_srv" default:"true" url:"https://choria.io/docs/deployment/dns/"` // If SRV record lookups should be attempted to find Puppet, PuppetDB, Brokers etc
+	SRVDomain        string `confkey:"plugin.choria.srv_domain" url:"https://choria.io/docs/deployment/dns/"`             // The domain to use for SRV records, defaults to the domain the server FQDN is in
+
+	Provision            bool `confkey:"plugin.choria.server.provision" default:"false" url:"https://github.com/choria-io/provisioner"`              // Specifically enable or disable provisioning
+	ProvisionAllowUpdate bool `confkey:"plugin.choria.server.provision.allow_update" default:"false" url:"https://github.com/choria-io/provisioner"` // Allows the provisioner to perform in-place version updates
 
 	ExternalDiscoveryCommand         string `confkey:"plugin.choria.discovery.external.command" type:"path_string"` // The command to use for external discovery
 	InventoryDiscoverySource         string `confkey:"plugin.choria.discovery.inventory.source" type:"path_string"` // The file to read for inventory discovery
@@ -83,8 +84,9 @@ type ChoriaPluginConfig struct {
 	NetworkProvisioningTokenSignerFile string        `confkey:"plugin.choria.network.provisioning.signer_cert" type:"path_string"`                                 // Path to the public cert that signs provisioning tokens, enables accepting provisioning connections into the provisioning account
 	NetworkProvisioningClientPassword  string        `confkey:"plugin.choria.network.provisioning.client_password"`                                                // Password the provisioned clients should use to connect
 
-	BrokerNetwork    bool `confkey:"plugin.choria.broker_network" default:"false" url:"https://choria.io/docs/deployment/broker/"` // Enables the Network Broker
-	BrokerFederation bool `confkey:"plugin.choria.broker_federation" default:"false" url:"https://choria.io/docs/federation/"`     // Enables the Federation Broker
+	BrokerNetwork    bool     `confkey:"plugin.choria.broker_network" default:"false" url:"https://choria.io/docs/deployment/broker/"` // Enables the Network Broker
+	BrokerFederation bool     `confkey:"plugin.choria.broker_federation" default:"false" url:"https://choria.io/docs/federation/"`     // Enables the Federation Broker
+	BrokerAdapters   []string `confkey:"plugin.choria.adapters" type:"comma_split" url:"https://choria.io/docs/adapters/"`             // The list of Data Adapters to activate
 
 	FileContentRegistrationData        string `confkey:"plugin.choria.registration.file_content.data" default:""`                 // YAML or JSON file to use as data source for registration
 	FileContentRegistrationTarget      string `confkey:"plugin.choria.registration.file_content.target" default:""`               // NATS Subject to publish registration data to
@@ -96,22 +98,26 @@ type ChoriaPluginConfig struct {
 	RubyAgentConfig string   `confkey:"plugin.choria.agent_provider.mcorpc.config"`                   // Path to the MCollective configuration file used when running MCollective Ruby agents
 	RubyLibdir      []string `confkey:"plugin.choria.agent_provider.mcorpc.libdir" type:"path_split"` // Path to the libdir MCollective Ruby agents should have
 
+	SecurityProvider    string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11,certmanager,choria"` // The Security Provider to use
+	ServerAnonTLS       bool     `confkey:"plugin.security.server_anon_tls" default:"false"`                                                 // Use anonymous TLS to the Choria brokers from a server
+	ClientAnonTLS       bool     `confkey:"plugin.security.client_anon_tls" default:"false"`                                                 // Use anonymous TLS to the Choria brokers from a client, also disables security provider verification - only when a remote signer is set
+	AAAServiceLoginURLs []string `confkey:"plugin.login.aaasvc.login.url" url:"https://github.com/choria-io/aaasvc"`                         // List of URLs to attempt to login against when the remote signer is enabled
+	ServerTokenFile     string   `confkey:"plugin.choria.security.server.token_file" type:"path_string"`                                     // The server token file to use for authentication, defaults to serer.jwt in the same location as server.conf
+	ServerTokenSeedFile string   `confkey:"plugin.choria.security.server.seed_file" type:"path_string"`                                      // The server token seed to use for authentication, defaults to server.seed in the same location as server.conf
+	CipherSuites        []string `confkey:"plugin.security.cipher_suites" type:"comma_split"`                                                // List of allowed cipher suites
+	ECCCurves           []string `confkey:"plugin.security.ecc_curves" type:"comma_split"`                                                   // List of allowed ECC curves
+
 	SSLDir                       string   `confkey:"plugin.choria.ssldir" type:"path_string"`                                                                                                                               // The SSL directory, auto detected via Puppet, when specifically set Puppet will not be consulted
 	PrivilegedUsers              []string `confkey:"plugin.choria.security.privileged_users" type:"comma_split" default:"\\.privileged.mcollective$,\\.privileged.choria$" url:"https://choria.io/docs/configuration/aaa/"` // Patterns of certificate names that would be considered privileged and able to set custom callers
-	CertnameWhitelist            []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split" default:"\\.mcollective$,\\.choria$"`                                                                     // Patterns of certificate names that are allowed to be clients
-	SecurityProvider             string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11,certmanager,choria"`                                                                       // The Security Provider to use
+	CertnameAllowList            []string `confkey:"plugin.choria.security.certname_whitelist" type:"comma_split" default:"\\.mcollective$,\\.choria$"`                                                                     // Patterns of certificate names that are allowed to be clients
 	SecurityAlwaysOverwriteCache bool     `confkey:"plugin.security.always_overwrite_cache" default:"false" deprecated:"1"`                                                                                                 // Always store new Public Keys to the cache overwriting existing ones
 	SecurityAllowLegacyCerts     bool     `confkey:"plugin.security.support_legacy_certificates" default:"false"`                                                                                                           // Allow certificates without SANs to be used
-	RemoteSignerTokenSeedFile    string   `confkey:"plugin.choria.security.request_signer.seed_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"`                                                          // Path to the seed file used to access a Central Authenticator
-	RemoteSignerTokenFile        string   `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"`                                                         // Path to the token used to access a Central Authenticator
-	RemoteSignerSigningCertFile  string   `confkey:"plugin.choria.security.request_signing_certificate" type:"path_string"`                                                                                                 // Path to the public certificate of the key used to sign the JWTs in the Signing Service
-	RemoteSignerURL              string   `confkey:"plugin.choria.security.request_signer.url" url:"https://github.com/choria-io/aaasvc"`                                                                                   // URL to the Signing Service
-	RemoteSignerService          bool     `confkey:"plugin.choria.security.request_signer.service" url:"https://github.com/choria-io/aaasvc"`                                                                               // Enables signing requests via Choria RPC requests
-	AAAServiceLoginURLs          []string `confkey:"plugin.login.aaasvc.login.url" url:"https://github.com/choria-io/aaasvc"`                                                                                               // List of URLs to attempt to login against when the remote signer is enabled
-	ServerAnonTLS                bool     `confkey:"plugin.security.server_anon_tls" default:"false"`                                                                                                                       // Use anonymous TLS to the Choria brokers from a server
-	ClientAnonTLS                bool     `confkey:"plugin.security.client_anon_tls" default:"false"`                                                                                                                       // Use anonymous TLS to the Choria brokers from a client, also disables security provider verification - only when a remote signer is set
-	ServerTokenFile              string   `confkey:"plugin.choria.security.server.token_file" type:"path_string"`                                                                                                           // The server token file to use for authentication, defaults to serer.jwt in the same location as server.conf
-	ServerTokenSeedFile          string   `confkey:"plugin.choria.security.server.seed_file" type:"path_string"`                                                                                                            // The server token seed to use for authentication, defaults to server.seed in the same location as server.conf
+
+	RemoteSignerTokenSeedFile   string `confkey:"plugin.choria.security.request_signer.seed_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"`  // Path to the seed file used to access a Central Authenticator
+	RemoteSignerTokenFile       string `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"` // Path to the token used to access a Central Authenticator
+	RemoteSignerSigningCertFile string `confkey:"plugin.choria.security.request_signing_certificate" type:"path_string"`                                         // Path to the public certificate of the key used to sign the JWTs in the Signing Service
+	RemoteSignerURL             string `confkey:"plugin.choria.security.request_signer.url" url:"https://github.com/choria-io/aaasvc"`                           // URL to the Signing Service
+	RemoteSignerService         bool   `confkey:"plugin.choria.security.request_signer.service" url:"https://github.com/choria-io/aaasvc"`                       // Enables signing requests via Choria RPC requests
 
 	ChoriaSecurityTrustedSigners []string `confkey:"plugin.security.choria.trusted_signers"` // Ed25119 public keys of entities allowed to sign client and server JWT tokens in hex encoded format
 	ChoriaSecurityIdentity       string   `confkey:"plugin.security.choria.identity"`        // Force a specific identity to be used instead of attempting to detect it
@@ -127,19 +133,13 @@ type ChoriaPluginConfig struct {
 	CertManagerSecurityAltNames   []string `confkey:"plugin.security.certmanager.alt_names" type:"comma_split"` // when using Cert Manager security provider, add these additional names to the CSR
 	CertManagerAPIVersion         string   `confkey:"plugin.security.certmanager.api_version" default:"v1"`     // the API version to call in cert manager
 
-	CipherSuites []string `confkey:"plugin.security.cipher_suites" type:"comma_split"` // List of allowed cipher suites
-	ECCCurves    []string `confkey:"plugin.security.ecc_curves" type:"comma_split"`    // List of allowed ECC curves
-
 	PKCS11DriverFile string `confkey:"plugin.security.pkcs11.driver_file" type:"path_string" url:"https://choria.io/blog/post/2019/09/09/pkcs11/"` // When using the pkcs11 security provider, the path to the PCS11 driver file
 	PKCS11Slot       int    `confkey:"plugin.security.pkcs11.slot" url:"https://choria.io/blog/post/2019/09/09/pkcs11/"`                           // When using the pkcs11 security provider, the slot to use in the device
 
-	Adapters []string `confkey:"plugin.choria.adapters" type:"comma_split" url:"https://choria.io/docs/adapters/"` // The list of Data Adapters to activate
-
-	StatusFilePath      string `confkey:"plugin.choria.status_file_path" type:"path_string"` // Path to a JSON file to write server health information to regularly
-	StatusUpdateSeconds int    `confkey:"plugin.choria.status_update_interval" default:"30"` // How frequently to write to the status_file_path
-
 	MachineSourceDir string `confkey:"plugin.choria.machine.store" url:"https://choria.io/docs/autoagents/"` // Directory where Autonomous Agents are stored
 
+	StatusFilePath               string   `confkey:"plugin.choria.status_file_path" type:"path_string"`                              // Path to a JSON file to write server health information to regularly
+	StatusUpdateSeconds          int      `confkey:"plugin.choria.status_update_interval" default:"30"`                              // How frequently to write to the status_file_path
 	PrometheusTextFileDir        string   `confkey:"plugin.choria.prometheus_textfile_directory" type:"path_string"`                 // Directory where Prometheus Node Exporter textfile collector reads data
 	ScoutOverrides               string   `confkey:"plugin.scout.overrides" type:"path_string"`                                      // Path to a file holding overrides for Scout checks
 	ScoutTags                    string   `confkey:"plugin.scout.tags" type:"path_string"`                                           // Path to a file holding tags for a Scout entity

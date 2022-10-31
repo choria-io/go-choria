@@ -122,7 +122,6 @@ var _ = Describe("McoRPC", func() {
 
 		It("Should detect unsupported authorization systems", func() {
 			cfg.RPCAuthorization = true
-			cfg.RPCAuditProvider = "unsupported"
 			msg.SetPayload([]byte(`{"agent":"test", "action":"test"}`))
 			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {
 				d := map[string]string{"test": "hello world"}
@@ -140,7 +139,6 @@ var _ = Describe("McoRPC", func() {
 		It("Should support action_policy authorization", func() {
 			cfg.ConfigFile = "testdata/config.cfg"
 			cfg.RPCAuthorization = true
-			cfg.RPCAuditProvider = "action_policy"
 			msg.SetPayload([]byte(`{"agent":"test", "action":"test"}`))
 
 			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {
@@ -159,7 +157,6 @@ var _ = Describe("McoRPC", func() {
 		It("Should support rego_policy authorization", func() {
 			cfg.ConfigFile = "testdata/config.cfg"
 			cfg.RPCAuthorization = true
-			cfg.RPCAuditProvider = "rego_policy"
 			msg.SetPayload([]byte(`{"agent":"test", "action":"test"}`))
 
 			action := func(ctx context.Context, req *Request, reply *Reply, agent *Agent, conn inter.ConnectorInfo) {

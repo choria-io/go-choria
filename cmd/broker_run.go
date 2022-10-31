@@ -64,7 +64,7 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	net := cfg.Choria.BrokerNetwork
 	federation := cfg.Choria.BrokerFederation
-	adapters := cfg.Choria.Adapters
+	adapters := cfg.Choria.BrokerAdapters
 
 	if !net && !federation && len(adapters) == 0 {
 		return fmt.Errorf("all broker features are disabled")

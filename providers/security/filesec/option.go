@@ -26,7 +26,7 @@ type BuildInfoProvider interface {
 // WithChoriaConfig optionally configures the File Security Provider from settings found in a typical Choria configuration
 func WithChoriaConfig(bi BuildInfoProvider, c *config.Config) Option {
 	cfg := Config{
-		AllowList:                  c.Choria.CertnameWhitelist,
+		AllowList:                  c.Choria.CertnameAllowList,
 		CA:                         c.Choria.FileSecurityCA,
 		Certificate:                c.Choria.FileSecurityCertificate,
 		DisableTLSVerify:           c.DisableTLSVerify,
