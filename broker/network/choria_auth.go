@@ -658,13 +658,24 @@ func (a *ChoriaAuth) setElectionPermissions(user *server.User, subs []string, pu
 	return subs, pubs
 }
 
-func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string, perms *tokens.ClientPermissions, log *logrus.Entry) (pubs []string, subs []string, err error) {
+func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string, client *tokens.ClientIDClaims, log *logrus.Entry) (pubs []string, subs []string, err error) {
+	var perms *tokens.ClientPermissions
+
+	if client != nil {
+		perms = client.Permissions
+	}
+
 	if perms != nil && perms.OrgAdmin {
 		log.Infof("Granting user access to all subjects (OrgAdmin)")
 		return allSubjects, allSubjects, nil
 	}
 
 	subs, pubs = a.setMinimalClientPermissions(user, caller, subs, pubs)
+
+	if client != nil {
+		subs = append(subs, client.AdditionalSubscribeSubjects...)
+		pubs = append(pubs, client.AdditionalPublishSubjects...)
+	}
 
 	if perms == nil {
 		return pubs, subs, nil
@@ -711,12 +722,7 @@ func (a *ChoriaAuth) setClientPermissions(user *server.User, caller string, clie
 	user.Permissions.Subscribe = &server.SubjectPermission{}
 	user.Permissions.Publish = &server.SubjectPermission{}
 
-	var perms *tokens.ClientPermissions
-	if client != nil {
-		perms = client.Permissions
-	}
-
-	pubs, subs, err := a.setClientTokenPermissions(user, caller, perms, log)
+	pubs, subs, err := a.setClientTokenPermissions(user, caller, client, log)
 	if err != nil {
 		log.Warnf("Could not determine permissions for user, denying all: %s", err)
 		user.Permissions.Subscribe.Deny = allSubjects

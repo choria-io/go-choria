@@ -1340,6 +1340,22 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			})
 		})
 
+		Describe("Additional subjects", func() {
+			It("Should set the permissions correctly", func() {
+				user.Account = auth.choriaAccount
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{
+					AdditionalSubscribeSubjects: []string{"sub.>"},
+					AdditionalPublishSubjects:   []string{"pub.>"},
+				}, log)
+				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+					Allow: append(minSub, "sub.>"),
+				}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: []string{"pub.>"},
+				}))
+			})
+		})
+
 		Describe("Minimal Permissions", func() {
 			It("Should support caller private reply subjects", func() {
 				auth.setClientPermissions(user, "u=ginkgo", nil, log)

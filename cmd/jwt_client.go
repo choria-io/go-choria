@@ -34,6 +34,8 @@ type jWTCreateClientCommand struct {
 	fleetManagement       bool
 	signedFleetManagement bool
 	pk                    string
+	additionalPub         []string
+	additionalSub         []string
 
 	command
 }
@@ -59,6 +61,9 @@ func (c *jWTCreateClientCommand) Setup() (err error) {
 		c.cmd.Flag("auth-delegation", "Allow the user to sign requests for other users").UnNegatableBoolVar(&c.authDelegate)
 		c.cmd.Flag("fleet-management", "Allows access to the Choria fleet using RPC").Default("true").BoolVar(&c.fleetManagement)
 		c.cmd.Flag("signed-fleet-management", "Requires that all fleet management requests are signed by an authority like AAA Service").UnNegatableBoolVar(&c.signedFleetManagement)
+		c.cmd.Flag("org-admin", "Allow the user to access all broker traffic").UnNegatableBoolVar(&c.orgAdmin)
+		c.cmd.Flag("publish", "Additional subjects the user can publish to").StringsVar(&c.additionalPub)
+		c.cmd.Flag("subscribe", "Additional subjects the user can subscribe to").StringsVar(&c.additionalSub)
 	}
 
 	return nil
@@ -117,6 +122,9 @@ func (c *jWTCreateClientCommand) createJWT() error {
 	if err != nil {
 		return err
 	}
+
+	claims.AdditionalSubscribeSubjects = c.additionalSub
+	claims.AdditionalPublishSubjects = c.additionalPub
 
 	err = tokens.SaveAndSignTokenWithKeyFile(claims, c.signingKey, c.file, 0600)
 	if err != nil {

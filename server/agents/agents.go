@@ -268,7 +268,7 @@ func (a *Manager) Dispatch(ctx context.Context, wg *sync.WaitGroup, replies chan
 	result := make(chan *AgentReply)
 
 	td := time.Duration(agent.Metadata().Timeout) * time.Second
-	a.log.Debugf("Handling message %s with timeout %#v", msg.RequestID(), td)
+	a.log.Debugf("Handling message %s with timeout %s", msg.RequestID(), td)
 
 	timeout, cancel := context.WithTimeout(context.Background(), td)
 	defer cancel()

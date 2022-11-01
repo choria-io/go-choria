@@ -212,7 +212,14 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 	} else if claims.ExpiresAt != nil {
 		fmt.Printf("         Expires At: %s (%s)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Until(claims.ExpiresAt.Time)))
 	}
+	if len(claims.AdditionalSubscribeSubjects) > 0 {
+		fmt.Printf(" Subscribe Subjects: %s\n", strings.Join(claims.AdditionalSubscribeSubjects, ", "))
+	}
+	if len(claims.AdditionalPublishSubjects) > 0 {
+		fmt.Printf("   Publish Subjects: %s\n", strings.Join(claims.AdditionalPublishSubjects, ", "))
+	}
 	if claims.Permissions != nil {
+		fmt.Println()
 		fmt.Println(" Client Permissions:")
 		if claims.Permissions.FleetManagement || claims.Permissions.SignedFleetManagement {
 			if claims.Permissions.SignedFleetManagement {
@@ -242,6 +249,7 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 		if claims.Permissions.AuthenticationDelegator {
 			fmt.Println("      Can sign requests on behalf of other users")
 		}
+		fmt.Println()
 	}
 
 	if len(claims.UserProperties) > 0 {
