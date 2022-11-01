@@ -82,6 +82,10 @@ func (v *ValidateCommand) renderTableResult(table *xtablewriter.Table, vr *scout
 		return !vr.Results[i].Successful || vr.Results[i].Err != nil
 	})
 
+	if v.opts.Display == "none" {
+		return should
+	}
+
 	for _, res := range vr.Results {
 		should = true
 
@@ -90,12 +94,12 @@ func (v *ValidateCommand) renderTableResult(table *xtablewriter.Table, vr *scout
 			continue
 		}
 
-		switch res.Result {
-		case resource.SKIP:
+		switch {
+		case res.Result == resource.SKIP && v.opts.Display != "ok":
 			table.AddRow(skip, "", res.ResourceType, res.ResourceId, fmt.Sprintf("%s: skipped", res.Property))
-		case resource.SUCCESS:
+		case res.Result == resource.SUCCESS && v.opts.Display != "failed":
 			table.AddRow(ok, "", res.ResourceType, res.ResourceId, fmt.Sprintf("%s: matches expectation: %v", res.Property, res.Expected))
-		case resource.FAIL:
+		case res.Result == resource.FAIL && v.opts.Display != "ok":
 			table.AddRow(fail, "", res.ResourceType, res.ResourceId, fmt.Sprintf("%s: does not match expectation: %v", res.Property, res.Expected))
 		}
 	}
@@ -119,23 +123,28 @@ func (v *ValidateCommand) renderTextResult(vr *scoutagent.GossValidateResponse, 
 		return !vr.Results[i].Successful
 	})
 
+	if v.opts.Display == "none" {
+		fmt.Println()
+		return
+	}
+
 	lb := false
 	for i, res := range vr.Results {
-		switch res.Result {
-		case resource.SKIP:
+		switch {
+		case res.Result == resource.SKIP && v.opts.Display != "ok":
 			if lb {
 				fmt.Println()
 			}
 			fmt.Printf("   %s %s: %s: %s: skipped\n", v.fw.Colorize("yellow", "?"), res.ResourceType, res.ResourceId, res.Property)
 			lb = false
-		case resource.FAIL:
+		case res.Result == resource.FAIL && v.opts.Display != "ok":
 			if i != 0 {
 				fmt.Println()
 			}
 			lb = true
 			msg := fmt.Sprintf("%s %s", v.fw.Colorize("red", "X"), res.SummaryLine)
 			fmt.Printf("%s\n", iu.ParagraphPadding(msg, 3))
-		case resource.SUCCESS:
+		case res.Result == resource.SUCCESS && v.opts.Display != "failed":
 			if lb {
 				fmt.Println()
 			}
@@ -143,6 +152,7 @@ func (v *ValidateCommand) renderTextResult(vr *scoutagent.GossValidateResponse, 
 			lb = false
 		}
 	}
+
 	fmt.Println()
 }
 
