@@ -75,6 +75,12 @@ type ClientIDClaims struct {
 	// PublicKey is a ED25519 public key that will be used to sign requests and the server nonce
 	PublicKey string `json:"public_key,omitempty"`
 
+	// AdditionalPublishSubjects are additional subjects the client can publish to
+	AdditionalPublishSubjects []string `json:"pub_subjects,omitempty"`
+
+	// AdditionalSubscribeSubjects are additional subjects the client can subscribe to
+	AdditionalSubscribeSubjects []string `json:"sub_subjects,omitempty"`
+
 	StandardClaims
 }
 
