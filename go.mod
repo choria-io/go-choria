@@ -31,10 +31,10 @@ require (
 	github.com/looplab/fsm v0.3.0
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.0.35-0.20221026110704-935a03bca8e9
-	github.com/nats-io/nats-server/v2 v2.9.4-0.20221017231821-7041b19d801b
-	github.com/nats-io/nats.go v1.18.1-0.20221015170329-888a91d4c95a
-	github.com/nats-io/natscli v0.0.35-0.20221026111833-db004d3b02dd
+	github.com/nats-io/jsm.go v0.0.35-0.20221028090525-828044783039
+	github.com/nats-io/nats-server/v2 v2.9.5
+	github.com/nats-io/nats.go v1.19.0
+	github.com/nats-io/natscli v0.0.35-0.20221101104234-2ed28a733fef
 	github.com/onsi/ginkgo/v2 v2.4.0
 	github.com/onsi/gomega v1.22.1
 	github.com/open-policy-agent/opa v0.45.0
