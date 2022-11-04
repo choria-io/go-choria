@@ -19,7 +19,7 @@ require (
 	github.com/fatih/color v1.13.0
 	github.com/fatih/structtag v1.2.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/gofrs/uuid v4.3.0+incompatible
+	github.com/gofrs/uuid v4.3.1+incompatible
 	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/golang/mock v1.6.0
@@ -32,13 +32,13 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.35-0.20221028090525-828044783039
-	github.com/nats-io/nats-server/v2 v2.9.5
+	github.com/nats-io/nats-server/v2 v2.9.6-0.20221103222500-3e467fc114b8
 	github.com/nats-io/nats.go v1.19.0
 	github.com/nats-io/natscli v0.0.35-0.20221101104234-2ed28a733fef
 	github.com/onsi/ginkgo/v2 v2.4.0
-	github.com/onsi/gomega v1.22.1
-	github.com/open-policy-agent/opa v0.45.0
-	github.com/prometheus/client_golang v1.13.0
+	github.com/onsi/gomega v1.24.0
+	github.com/open-policy-agent/opa v0.46.1
+	github.com/prometheus/client_golang v1.13.1
 	github.com/prometheus/client_model v0.3.0
 	github.com/robfig/cron v1.2.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.0.2
@@ -73,7 +73,7 @@ require (
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/choria-io/goform v0.0.2 // indirect
 	github.com/creack/pty v1.1.18 // indirect
-	github.com/dgraph-io/badger/v3 v3.2103.3 // indirect
+	github.com/dgraph-io/badger/v3 v3.2103.4 // indirect
 	github.com/dgryski/trifles v0.0.0-20220729183022-231ecf6ed548 // indirect
 	github.com/emicklei/dot v1.0.0 // indirect
 	github.com/foxcpp/go-mockdns v1.0.0 // indirect
@@ -83,22 +83,22 @@ require (
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/flatbuffers v22.9.29+incompatible // indirect
-	github.com/google/pprof v0.0.0-20210407192527-94a9f03dee38 // indirect
+	github.com/google/flatbuffers v22.10.26+incompatible // indirect
+	github.com/google/pprof v0.0.0-20221103000818-d260c55eee4c // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/hinshun/vt10x v0.0.0-20220301184237-5011da428d02 // indirect
-	github.com/huandu/xstrings v1.3.2 // indirect
+	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
 	github.com/itchyny/gojq v0.12.9 // indirect
 	github.com/itchyny/timefmt-go v0.1.4 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.15.11 // indirect
+	github.com/klauspost/compress v1.15.12 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect
 	github.com/mattn/go-runewidth v0.0.14 // indirect
-	github.com/matttproud/golang_protobuf_extensions v1.0.2 // indirect
+	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/miekg/dns v1.1.50 // indirect
 	github.com/minio/highwayhash v1.0.2 // indirect
@@ -120,6 +120,7 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
+	github.com/stretchr/testify v1.8.1 // indirect
 	github.com/tadglines/go-pkgs v0.0.0-20210623144937-b983b20f54f9 // indirect
 	github.com/tchap/go-patricia/v2 v2.3.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
@@ -128,6 +129,7 @@ require (
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xiam/to v0.0.0-20200126224905-d60d31e03561 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
+	go.opencensus.io v0.24.0 // indirect
 	go.uber.org/goleak v1.2.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.23.0 // indirect
