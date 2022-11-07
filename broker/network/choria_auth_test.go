@@ -20,6 +20,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/integration/testutil"
 	"github.com/choria-io/go-choria/tokens"
+	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang/mock/gomock"
 	"github.com/nats-io/nats-server/v2/server"
 	. "github.com/onsi/ginkgo/v2"
@@ -69,14 +70,14 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		return td, pri
 	}
 
-	createSignedServerJWT := func(pk *rsa.PrivateKey, pubK ed25519.PublicKey, claims map[string]any) string {
+	createSignedServerJWT := func(pk any, pubK []byte, claims map[string]any) string {
 		signed, err := testutil.CreateSignedServerJWT(pk, pubK, claims)
 		Expect(err).ToNot(HaveOccurred())
 
 		return signed
 	}
 
-	createSignedClientJWT := func(pk *rsa.PrivateKey, claims map[string]any) string {
+	createSignedClientJWT := func(pk any, claims map[string]any) string {
 		signed, err := testutil.CreateSignedClientJWT(pk, claims)
 		Expect(err).ToNot(HaveOccurred())
 
@@ -196,7 +197,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 				BeforeEach(func() {
 					td, privateKey = createKeyPair()
-					auth.clientJwtSigner = filepath.Join(td, "public.pem")
+					auth.clientJwtSigners = []string{filepath.Join(td, "public.pem")}
 					edPublicKey, edPrivateKey, err = choria.Ed25519KeyPair()
 					Expect(err).ToNot(HaveOccurred())
 					sig, err := choria.Ed25519Sign(edPrivateKey, []byte("toomanysecrets"))
@@ -282,7 +283,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 		BeforeEach(func() {
 			td, privateKey = createKeyPair()
-			auth.serverJwtSigner = filepath.Join(td, "public.pem")
+			auth.serverJwtSigners = []string{filepath.Join(td, "public.pem")}
 			edPublicKey, edPrivateKey, err = choria.Ed25519KeyPair()
 			Expect(err).ToNot(HaveOccurred())
 		})
@@ -293,7 +294,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 		Describe("Servers", func() {
 			BeforeEach(func() {
-				auth.serverJwtSigner = filepath.Join(td, "public.pem")
+				auth.serverJwtSigners = []string{filepath.Join(td, "public.pem")}
 				auth.clientAllowList = nil
 				auth.denyServers = false
 
@@ -670,7 +671,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 		Describe("Clients", func() {
 			BeforeEach(func() {
-				auth.clientJwtSigner = filepath.Join(td, "public.pem")
+				auth.clientJwtSigners = []string{filepath.Join(td, "public.pem")}
 				copts = &server.ClientOpts{
 					Token: createSignedClientJWT(privateKey, map[string]any{
 						"purpose":    tokens.ClientIDPurpose,
@@ -1059,11 +1060,91 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		})
 	})
 
+	Describe("parseServerJWT", func() {
+		It("Should fail without a cert", func() {
+			_, err := auth.parseServerJWT("")
+			Expect(err).To(MatchError("JWT Signer not set in plugin.choria.network.server_signer_cert, denying all servers"))
+		})
+
+		It("Should fail for empty JWTs", func() {
+			auth.serverJwtSigners = []string{"testdata/public.pem"}
+			_, err := auth.parseServerJWT("")
+			Expect(err).To(MatchError("no JWT received"))
+		})
+
+		It("Should verify JWTs", func() {
+			edPublicKey, edPriKey, err := choria.Ed25519KeyPair()
+			Expect(err).ToNot(HaveOccurred())
+
+			auth.serverJwtSigners = []string{hex.EncodeToString(edPublicKey)}
+			signed := createSignedClientJWT(edPriKey, map[string]any{
+				"exp": time.Now().UTC().Add(-time.Hour).Unix(),
+			})
+
+			_, err = auth.parseServerJWT(signed)
+			Expect(err).To(MatchError(jwt.ErrTokenExpired))
+		})
+
+		It("Should check a purpose field", func() {
+			edPublicKey, edPriKey, err := choria.Ed25519KeyPair()
+			Expect(err).ToNot(HaveOccurred())
+			auth.serverJwtSigners = []string{hex.EncodeToString(edPublicKey)}
+
+			signed := createSignedClientJWT(edPriKey, nil)
+			_, err = auth.parseServerJWT(signed)
+			Expect(err).To(MatchError(tokens.ErrNotAServerToken))
+
+			signed = createSignedClientJWT(edPriKey, map[string]any{
+				"purpose": "wrong",
+			})
+			_, err = auth.parseServerJWT(signed)
+			Expect(err).To(MatchError(tokens.ErrNotAServerToken))
+		})
+
+		It("Should check the identity", func() {
+			edPublicKey, edPriKey, err := choria.Ed25519KeyPair()
+			Expect(err).ToNot(HaveOccurred())
+			auth.serverJwtSigners = []string{hex.EncodeToString(edPublicKey)}
+
+			signed := createSignedClientJWT(edPriKey, map[string]any{
+				"purpose": tokens.ServerPurpose,
+			})
+			_, err = auth.parseServerJWT(signed)
+			Expect(err).To(MatchError("identity not in claims"))
+		})
+
+		It("Should check the public key", func() {
+			edPublicKey, edPriKey, err := choria.Ed25519KeyPair()
+			Expect(err).ToNot(HaveOccurred())
+			auth.serverJwtSigners = []string{hex.EncodeToString(edPublicKey)}
+
+			signed := createSignedClientJWT(edPriKey, map[string]any{
+				"purpose":  tokens.ServerPurpose,
+				"identity": "ginkgo.example.net",
+			})
+			_, err = auth.parseServerJWT(signed)
+			Expect(err).To(MatchError("no public key in claims"))
+		})
+
+		It("Should handle multiple public identifiers", func() {
+			edPublicKey, edPriKey, err := choria.Ed25519KeyPair()
+			Expect(err).ToNot(HaveOccurred())
+			auth.serverJwtSigners = []string{"/nonexisting", hex.EncodeToString(edPublicKey)}
+
+			signed := createSignedServerJWT(edPriKey, edPublicKey, map[string]any{
+				"purpose":    tokens.ServerPurpose,
+				"identity":   "ginkgo.example.net",
+				"public_key": hex.EncodeToString(edPublicKey),
+			})
+
+			_, err = auth.parseServerJWT(signed)
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
 	Describe("parseClientIDJWT", func() {
-		var (
-			td         string
-			privateKey *rsa.PrivateKey
-		)
+		var td string
+		var privateKey *rsa.PrivateKey
 
 		BeforeEach(func() {
 			td, privateKey = createKeyPair()
@@ -1079,13 +1160,13 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		})
 
 		It("Should fail for empty JWTs", func() {
-			auth.clientJwtSigner = "testdata/public.pem"
+			auth.clientJwtSigners = []string{"testdata/public.pem"}
 			_, err := auth.parseClientIDJWT("")
 			Expect(err).To(MatchError("no JWT received"))
 		})
 
 		It("Should verify JWTs", func() {
-			auth.clientJwtSigner = filepath.Join(td, "public.pem")
+			auth.clientJwtSigners = []string{filepath.Join(td, "public.pem")}
 			signed := createSignedClientJWT(privateKey, map[string]any{
 				"exp": time.Now().UTC().Add(-time.Hour).Unix(),
 			})
@@ -1095,7 +1176,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 		})
 
 		It("Should detect missing callers", func() {
-			auth.clientJwtSigner = filepath.Join(td, "public.pem")
+			auth.clientJwtSigners = []string{filepath.Join(td, "public.pem")}
 			signed := createSignedClientJWT(privateKey, map[string]any{
 				"callerid": "",
 				"purpose":  tokens.ClientIDPurpose,
@@ -1105,30 +1186,63 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			Expect(err).To(MatchError("no callerid in claims"))
 		})
 
-		It("Should expect a purpose field", func() {
-			auth.clientJwtSigner = filepath.Join(td, "public.pem")
+		It("Should check the purpose field", func() {
+			auth.clientJwtSigners = []string{filepath.Join(td, "public.pem")}
 			signed := createSignedClientJWT(privateKey, nil)
 			_, err := auth.parseClientIDJWT(signed)
-			Expect(err).To(MatchError("not a client id token"))
+			Expect(err).To(MatchError(tokens.ErrNotAClientToken))
 
 			signed = createSignedClientJWT(privateKey, map[string]any{
 				"purpose": "wrong",
 			})
 			_, err = auth.parseClientIDJWT(signed)
-			Expect(err).To(MatchError("not a client id token"))
+			Expect(err).To(MatchError(tokens.ErrNotAClientToken))
 		})
 
-		It("Should extract the caller", func() {
+		It("Should check the caller", func() {
 			edPublicKey, _, err := choria.Ed25519KeyPair()
 			Expect(err).ToNot(HaveOccurred())
 
-			auth.clientJwtSigner = filepath.Join(td, "public.pem")
+			auth.clientJwtSigners = []string{filepath.Join(td, "public.pem")}
 			signed := createSignedClientJWT(privateKey, map[string]any{
 				"purpose":    tokens.ClientIDPurpose,
 				"public_key": hex.EncodeToString(edPublicKey),
 			})
 
 			claims, err := auth.parseClientIDJWT(signed)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(claims.CallerID).To(Equal("up=ginkgo"))
+		})
+
+		It("Should check the public key", func() {
+			auth.clientJwtSigners = []string{filepath.Join(td, "public.pem")}
+			signed := createSignedClientJWT(privateKey, map[string]any{
+				"purpose": tokens.ClientIDPurpose,
+			})
+
+			claims, err := auth.parseClientIDJWT(signed)
+			Expect(err).To(MatchError("no public key in claims"))
+			Expect(claims).To(BeNil())
+		})
+
+		It("Should handle multiple public identifiers", func() {
+			edPublicKey, edPriKey, err := choria.Ed25519KeyPair()
+			Expect(err).ToNot(HaveOccurred())
+			auth.clientJwtSigners = []string{filepath.Join(td, "public.pem"), hex.EncodeToString(edPublicKey)}
+			signed := createSignedClientJWT(edPriKey, map[string]any{
+				"purpose":    tokens.ClientIDPurpose,
+				"public_key": hex.EncodeToString(edPublicKey),
+			})
+
+			// should fail the public key not there
+			auth.clientJwtSigners = []string{filepath.Join(td, "public.pem")}
+			claims, err := auth.parseClientIDJWT(signed)
+			Expect(err).To(MatchError("could not parse client id token: ed25519 public key required"))
+			Expect(claims).To(BeNil())
+
+			// should now pass after having done a multi check
+			auth.clientJwtSigners = []string{filepath.Join(td, "public.pem"), "/nonexisting", hex.EncodeToString(edPublicKey)}
+			claims, err = auth.parseClientIDJWT(signed)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(claims.CallerID).To(Equal("up=ginkgo"))
 		})

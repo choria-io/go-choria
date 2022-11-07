@@ -91,7 +91,7 @@ func (r *SecureRequest) Valid() bool {
 		return false
 	}
 
-	_, err = r.security.ShouldAllowCaller([]byte(r.PublicCertificate), certname)
+	_, err = r.security.ShouldAllowCaller(certname, []byte(r.PublicCertificate))
 	if err != nil {
 		log.Errorf("Client Certificate verification failed: %s", err)
 		protocolErrorCtr.Inc()

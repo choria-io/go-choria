@@ -45,13 +45,13 @@ type FederationTransportHeader struct {
 }
 
 // NewTransportMessage creates a io.choria.protocol.v2.transport
-func NewTransportMessage(certname string) (message protocol.TransportMessage, err error) {
+func NewTransportMessage(sender string) (message protocol.TransportMessage, err error) {
 	message = &TransportMessage{
 		Protocol: protocol.TransportV2,
 		Headers:  &TransportHeaders{},
 	}
 
-	message.SetSender(certname)
+	message.SetSender(sender)
 
 	return message, nil
 }
@@ -109,8 +109,10 @@ func (m *TransportMessage) SetFederationTargets(targets []string) {
 }
 
 func (m *TransportMessage) SetUnfederated() {
-	// TODO implement me
-	panic("implement me")
+	m.mu.Lock()
+	defer m.mu.Unlock()
+
+	m.Headers.Federation = nil
 }
 
 func (m *TransportMessage) FederationRequestID() (string, bool) {

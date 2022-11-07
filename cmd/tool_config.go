@@ -178,9 +178,6 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 				fmt.Printf("           Facter FQDN: %s\n", fqdn)
 			}
 		}
-		if c.Config.Choria.NatsNGS {
-			fmt.Printf("           Synadia NGS: yes\n")
-		}
 		fmt.Printf("       PuppetDB Server: %s\n", cc.renderServers(c.PuppetDBServers()))
 		fmt.Printf("        Choria Brokers: %s\n", cc.renderServers(c.MiddlewareServers()))
 		if c.IsFederated() {

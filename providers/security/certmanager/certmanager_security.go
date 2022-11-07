@@ -535,14 +535,16 @@ func (cm *CertManagerSecurity) PublicCert() (*x509.Certificate, error) {
 	return cm.fsec.PublicCert()
 }
 
-func (cm *CertManagerSecurity) PublicCertPem() (*pem.Block, error) {
-	return cm.fsec.PublicCertPem()
-}
-
 func (cm *CertManagerSecurity) PublicCertBytes() ([]byte, error) {
 	return cm.fsec.PublicCertBytes()
 }
 
-func (c *CertManagerSecurity) ShouldAllowCaller(data []byte, name string) (privileged bool, err error) {
-	return c.fsec.ShouldAllowCaller(data, name)
+func (cm *CertManagerSecurity) ShouldAllowCaller(name string, callers ...[]byte) (privileged bool, err error) {
+	return cm.fsec.ShouldAllowCaller(name, callers...)
 }
+
+func (cm *CertManagerSecurity) TokenBytes() ([]byte, error) {
+	return nil, fmt.Errorf("tokens not available for certmanager security provider")
+}
+
+func (cm *CertManagerSecurity) ShouldSignReplies() bool { return false }

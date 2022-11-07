@@ -9,6 +9,7 @@ import (
 	"crypto/ed25519"
 	"crypto/md5"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"os"
 	"time"
@@ -51,6 +52,10 @@ type ServerClaims struct {
 
 	StandardClaims
 }
+
+var (
+	ErrNotAServerToken = errors.New("not a server token")
+)
 
 // UniqueID returns the identity and unique id used to generate private inboxes
 func (c *ServerClaims) UniqueID() (id string, uid string) {
@@ -156,7 +161,7 @@ func UnverifiedIdentityFromServerToken(token string) (*jwt.Token, string, error)
 	}
 
 	if !IsServerToken(claims.StandardClaims) {
-		return nil, "", fmt.Errorf("not a server token")
+		return nil, "", ErrNotAServerToken
 	}
 
 	if claims.ChoriaIdentity == "" {
@@ -200,7 +205,7 @@ func ParseServerTokenUnverified(token string) (*ServerClaims, error) {
 	}
 
 	if !IsServerToken(claims.StandardClaims) {
-		return nil, fmt.Errorf("not a server token")
+		return nil, ErrNotAServerToken
 	}
 
 	return claims, nil
@@ -211,11 +216,11 @@ func ParseServerToken(token string, pk any) (*ServerClaims, error) {
 	claims := &ServerClaims{}
 	err := ParseToken(token, claims, pk)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse server id token: %s", err)
+		return nil, fmt.Errorf("could not parse server id token: %w", err)
 	}
 
 	if !IsServerToken(claims.StandardClaims) {
-		return nil, fmt.Errorf("not a server token")
+		return nil, ErrNotAServerToken
 	}
 
 	return claims, nil
@@ -232,10 +237,10 @@ func ParseServerTokenWithKeyfile(token string, pkFile string) (*ServerClaims, er
 		return nil, fmt.Errorf("could not read validation certificate: %s", err)
 	}
 
-	cert, err := jwt.ParseRSAPublicKeyFromPEM(certdat)
+	pk, err := readRSAOrED25519PublicData(certdat)
 	if err != nil {
-		return nil, fmt.Errorf("could not parse validation certificate: %s", err)
+		return nil, err
 	}
 
-	return ParseServerToken(token, cert)
+	return ParseServerToken(token, pk)
 }

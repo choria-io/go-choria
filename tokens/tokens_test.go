@@ -79,6 +79,14 @@ var _ = Describe("Tokens", func() {
 				pubK, _ = loadEd25519Seed("testdata/ed25519/signer.seed")
 				err = ParseToken(string(provJWTED25519), claims, pubK)
 				Expect(err).ToNot(HaveOccurred())
+
+				sclaims, err := NewServerClaims("ginkgo.example.net", []string{"choria"}, "ginkgo_org", nil, nil, pubK, "ginkgo issuer", 365*24*time.Hour)
+				Expect(err).ToNot(HaveOccurred())
+				signed, err := SignTokenWithKeyFile(sclaims, "testdata/ed25519/signer.seed")
+				Expect(err).ToNot(HaveOccurred())
+
+				err = ParseToken(signed, claims, pubK)
+				Expect(err).ToNot(HaveOccurred())
 			})
 		})
 

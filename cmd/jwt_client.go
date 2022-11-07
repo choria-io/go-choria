@@ -5,6 +5,7 @@
 package cmd
 
 import (
+	"encoding/hex"
 	"fmt"
 	"os"
 	"sync"
@@ -118,7 +119,12 @@ func (c *jWTCreateClientCommand) createJWT() error {
 		SignedFleetManagement:   c.signedFleetManagement,
 	}
 
-	claims, err := tokens.NewClientIDClaims(c.identity, c.agents, c.org, nil, string(opa), "Choria CLI", c.validity, perms, []byte(c.pk))
+	pk, err := hex.DecodeString(c.pk)
+	if err != nil {
+		return err
+	}
+
+	claims, err := tokens.NewClientIDClaims(c.identity, c.agents, c.org, nil, string(opa), "Choria CLI", c.validity, perms, pk)
 	if err != nil {
 		return err
 	}

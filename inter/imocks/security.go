@@ -8,7 +8,6 @@ import (
 	context "context"
 	tls "crypto/tls"
 	x509 "crypto/x509"
-	pem "encoding/pem"
 	http "net/http"
 	reflect "reflect"
 	time "time"
@@ -213,21 +212,6 @@ func (mr *MockSecurityProviderMockRecorder) PublicCertBytes() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublicCertBytes", reflect.TypeOf((*MockSecurityProvider)(nil).PublicCertBytes))
 }
 
-// PublicCertPem mocks base method.
-func (m *MockSecurityProvider) PublicCertPem() (*pem.Block, error) {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "PublicCertPem")
-	ret0, _ := ret[0].(*pem.Block)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
-}
-
-// PublicCertPem indicates an expected call of PublicCertPem.
-func (mr *MockSecurityProviderMockRecorder) PublicCertPem() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublicCertPem", reflect.TypeOf((*MockSecurityProvider)(nil).PublicCertPem))
-}
-
 // RemoteSignRequest mocks base method.
 func (m *MockSecurityProvider) RemoteSignRequest(arg0 context.Context, arg1 []byte) ([]byte, error) {
 	m.ctrl.T.Helper()
@@ -259,18 +243,37 @@ func (mr *MockSecurityProviderMockRecorder) SSLContext() *gomock.Call {
 }
 
 // ShouldAllowCaller mocks base method.
-func (m *MockSecurityProvider) ShouldAllowCaller(arg0 []byte, arg1 string) (bool, error) {
+func (m *MockSecurityProvider) ShouldAllowCaller(arg0 string, arg1 ...[]byte) (bool, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ShouldAllowCaller", arg0, arg1)
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "ShouldAllowCaller", varargs...)
 	ret0, _ := ret[0].(bool)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ShouldAllowCaller indicates an expected call of ShouldAllowCaller.
-func (mr *MockSecurityProviderMockRecorder) ShouldAllowCaller(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockSecurityProviderMockRecorder) ShouldAllowCaller(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShouldAllowCaller", reflect.TypeOf((*MockSecurityProvider)(nil).ShouldAllowCaller), arg0, arg1)
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShouldAllowCaller", reflect.TypeOf((*MockSecurityProvider)(nil).ShouldAllowCaller), varargs...)
+}
+
+// ShouldSignReplies mocks base method.
+func (m *MockSecurityProvider) ShouldSignReplies() bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ShouldSignReplies")
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ShouldSignReplies indicates an expected call of ShouldSignReplies.
+func (mr *MockSecurityProviderMockRecorder) ShouldSignReplies() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShouldSignReplies", reflect.TypeOf((*MockSecurityProvider)(nil).ShouldSignReplies))
 }
 
 // SignBytes mocks base method.
@@ -303,6 +306,21 @@ func (mr *MockSecurityProviderMockRecorder) TLSConfig() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TLSConfig", reflect.TypeOf((*MockSecurityProvider)(nil).TLSConfig))
 }
 
+// TokenBytes mocks base method.
+func (m *MockSecurityProvider) TokenBytes() ([]byte, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "TokenBytes")
+	ret0, _ := ret[0].([]byte)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// TokenBytes indicates an expected call of TokenBytes.
+func (mr *MockSecurityProviderMockRecorder) TokenBytes() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "TokenBytes", reflect.TypeOf((*MockSecurityProvider)(nil).TokenBytes))
+}
+
 // Validate mocks base method.
 func (m *MockSecurityProvider) Validate() ([]string, bool) {
 	m.ctrl.T.Helper()
@@ -316,20 +334,6 @@ func (m *MockSecurityProvider) Validate() ([]string, bool) {
 func (mr *MockSecurityProviderMockRecorder) Validate() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Validate", reflect.TypeOf((*MockSecurityProvider)(nil).Validate))
-}
-
-// VerifyCertificate mocks base method.
-func (m *MockSecurityProvider) VerifyCertificate(arg0 []byte, arg1 string) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "VerifyCertificate", arg0, arg1)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// VerifyCertificate indicates an expected call of VerifyCertificate.
-func (mr *MockSecurityProviderMockRecorder) VerifyCertificate(arg0, arg1 interface{}) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "VerifyCertificate", reflect.TypeOf((*MockSecurityProvider)(nil).VerifyCertificate), arg0, arg1)
 }
 
 // VerifySignatureBytes mocks base method.

@@ -35,7 +35,7 @@ type Reply struct {
 }
 
 // NewReply creates a io.choria.protocol.v2.request based on a previous Request
-func NewReply(request protocol.Request, certName string) (protocol.Reply, error) {
+func NewReply(request protocol.Request, sender string) (protocol.Reply, error) {
 	if request.Version() != protocol.RequestV2 {
 		return nil, fmt.Errorf("cannot create a version 2 Reply from a %s request", request.Version())
 	}
@@ -43,7 +43,7 @@ func NewReply(request protocol.Request, certName string) (protocol.Reply, error)
 	rep := &Reply{
 		Protocol:     protocol.ReplyV2,
 		Request:      request.RequestID(),
-		Sender:       certName,
+		Sender:       sender,
 		SendingAgent: request.Agent(),
 		TimeStamp:    time.Now().UnixNano(),
 	}
@@ -61,18 +61,18 @@ func NewReply(request protocol.Request, certName string) (protocol.Reply, error)
 }
 
 // NewReplyFromSecureReply create a choria:reply:1 based on the data contained in a SecureReply
-func NewReplyFromSecureReply(sr protocol.SecureReply) (rep protocol.Reply, err error) {
+func NewReplyFromSecureReply(sr protocol.SecureReply) (protocol.Reply, error) {
 	if sr.Version() != protocol.SecureReplyV2 {
-		return nil, fmt.Errorf("cannot create a version 2 SecureReply from a %s SecureReply", sr.Version())
+		return nil, fmt.Errorf("cannot create a version 2 Reply from a %s SecureReply", sr.Version())
 	}
 
-	rep = &Reply{
+	rep := &Reply{
 		Protocol: protocol.ReplyV2,
 	}
 
-	err = rep.IsValidJSON(sr.Message())
+	err := rep.IsValidJSON(sr.Message())
 	if err != nil {
-		return nil, fmt.Errorf("the JSON body from the SecureReply is not a valid Reply message: %s", err)
+		return nil, err
 	}
 
 	err = json.Unmarshal(sr.Message(), rep)
@@ -175,6 +175,7 @@ func (r *Reply) Version() protocol.ProtocolVersion {
 }
 
 func (r *Reply) isValidJSONUnlocked(data []byte) error {
+	// replies are usually not validates as there are too many
 	if !protocol.ClientStrictValidation {
 		return nil
 	}

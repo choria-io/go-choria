@@ -16,6 +16,6 @@ var (
 	ErrInvalidJSON   = errors.New("supplied JSON document does not pass schema validation")
 	protocolErrorCtr = stats.ProtocolErrorCtr.WithLabelValues(promVersion)
 	invalidCtr       = stats.InvalidCtr.WithLabelValues(promVersion)
-	// validCtr         = stats.ValidCtr.WithLabelValues(promVersion)
-	badJsonCtr = stats.BadJsonCtr.WithLabelValues(promVersion)
+	validCtr         = stats.ValidCtr.WithLabelValues(promVersion)
+	badJsonCtr       = stats.BadJsonCtr.WithLabelValues(promVersion)
 )

@@ -176,6 +176,10 @@ func (s *PuppetSecurity) Provider() string {
 	return "puppet"
 }
 
+func (s *PuppetSecurity) TokenBytes() ([]byte, error) {
+	return nil, fmt.Errorf("tokens not available for puppet security provider")
+}
+
 // Enroll sends a CSR to the PuppetCA and wait for it to be signed
 func (s *PuppetSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error {
 	if s.privateKeyExists() && s.caExists() && s.publicCertExists() {
@@ -319,19 +323,14 @@ func (s *PuppetSecurity) CallerIdentity(caller string) (string, error) {
 }
 
 // ShouldAllowCaller verifies the public data
-func (s *PuppetSecurity) ShouldAllowCaller(data []byte, name string) (privileged bool, err error) {
-	return s.fsec.ShouldAllowCaller(data, name)
+func (s *PuppetSecurity) ShouldAllowCaller(name string, callers ...[]byte) (privileged bool, err error) {
+	return s.fsec.ShouldAllowCaller(name, callers...)
 }
 
 // VerifyCertificate verifies a certificate is signed with the configured CA and if
 // name is not "" that it matches the name given
 func (s *PuppetSecurity) VerifyCertificate(certpem []byte, name string) error {
 	return s.fsec.VerifyCertificate(certpem, name)
-}
-
-// PublicCertPem retrieves the public certificate for this instance
-func (s *PuppetSecurity) PublicCertPem() (*pem.Block, error) {
-	return s.fsec.PublicCertPem()
 }
 
 // PublicCertBytes retrieves pem data in textual form for the public certificate of the current identity
@@ -689,3 +688,5 @@ func (s *PuppetSecurity) publicCertExists() bool {
 func (s *PuppetSecurity) caExists() bool {
 	return util.FileExist(s.caPath())
 }
+
+func (s *PuppetSecurity) ShouldSignReplies() bool { return false }

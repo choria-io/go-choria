@@ -10,10 +10,10 @@ import (
 	"encoding/hex"
 	"time"
 
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 )
 
-func CreateSignedClientJWT(pk *rsa.PrivateKey, claims map[string]any) (string, error) {
+func CreateSignedClientJWT(pk any, claims map[string]any) (string, error) {
 	c := map[string]any{
 		"exp":      time.Now().UTC().Add(time.Hour).Unix(),
 		"nbf":      time.Now().UTC().Add(-1 * time.Minute).Unix(),
@@ -27,11 +27,19 @@ func CreateSignedClientJWT(pk *rsa.PrivateKey, claims map[string]any) (string, e
 		c[k] = v
 	}
 
-	token := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(c))
+	var alg string
+	switch pk.(type) {
+	case ed25519.PrivateKey:
+		alg = "EdDSA"
+	case *rsa.PrivateKey:
+		alg = "RS512"
+	}
+
+	token := jwt.NewWithClaims(jwt.GetSigningMethod(alg), jwt.MapClaims(c))
 	return token.SignedString(pk)
 }
 
-func CreateSignedServerJWT(pk *rsa.PrivateKey, pubK ed25519.PublicKey, claims map[string]any) (string, error) {
+func CreateSignedServerJWT(pk any, pubK []byte, claims map[string]any) (string, error) {
 	c := map[string]any{
 		"exp":        time.Now().UTC().Add(time.Hour).Unix(),
 		"nbf":        time.Now().UTC().Add(-1 * time.Minute).Unix(),
@@ -45,7 +53,15 @@ func CreateSignedServerJWT(pk *rsa.PrivateKey, pubK ed25519.PublicKey, claims ma
 		c[k] = v
 	}
 
-	token := jwt.NewWithClaims(jwt.GetSigningMethod("RS512"), jwt.MapClaims(c))
+	var alg string
+	switch pk.(type) {
+	case ed25519.PrivateKey:
+		alg = "EdDSA"
+	case *rsa.PrivateKey:
+		alg = "RS512"
+	}
+
+	token := jwt.NewWithClaims(jwt.GetSigningMethod(alg), jwt.MapClaims(c))
 
 	return token.SignedString(pk)
 }

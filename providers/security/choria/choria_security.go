@@ -12,7 +12,6 @@ import (
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/hex"
-	"encoding/pem"
 	"errors"
 	"fmt"
 	"net/http"
@@ -64,12 +63,32 @@ type Config struct {
 
 	// RemoteSigner is the signer used to sign requests using a remote like AAA Service
 	RemoteSigner inter.RequestSigner
+
+	// DisableTLSVerify disables TLS verify in HTTP clients etc
+	DisableTLSVerify bool
+
+	// Certificate is the path to the public certificate
+	Certificate string
+
+	// Key is the path to the private key
+	Key string
+
+	// CA is the path to the Certificate Authority
+	CA string
+
+	// SignedReplies indicates that servers replying should sign their messages
+	SignedReplies bool
+
+	// InitiatedByServer indicates this is a server, it would require trusted signers
+	InitiatedByServer bool
 }
 
 func New(opts ...Option) (*ChoriaSecurity, error) {
 	s := &ChoriaSecurity{
-		conf: &Config{},
-		mu:   &sync.Mutex{},
+		conf: &Config{
+			SignedReplies: true,
+		},
+		mu: &sync.Mutex{},
 	}
 
 	for _, opt := range opts {
@@ -78,6 +97,19 @@ func New(opts ...Option) (*ChoriaSecurity, error) {
 			return nil, err
 		}
 	}
+
+	if s.log == nil {
+		return nil, fmt.Errorf("logger is required")
+	}
+
+	s.log = s.log.WithFields(logrus.Fields{
+		"mTLS":      s.conf.CA != "",
+		"delegated": s.conf.RemoteSigner != nil,
+		"token":     s.conf.TokenFile,
+		"seed":      s.conf.SeedFile,
+	})
+
+	s.log.Infof("Security provider initializing")
 
 	return s, nil
 }
@@ -88,6 +120,10 @@ func (s *ChoriaSecurity) Provider() string {
 
 func (s *ChoriaSecurity) BackingTechnology() inter.SecurityTechnology {
 	return inter.SecurityTechnologyED25519JWT
+}
+
+func (s *ChoriaSecurity) TokenBytes() ([]byte, error) {
+	return os.ReadFile(s.conf.TokenFile)
 }
 
 func (s *ChoriaSecurity) Validate() ([]string, bool) {
@@ -112,7 +148,7 @@ func (s *ChoriaSecurity) Validate() ([]string, bool) {
 			errors = append(errors, "the path to the ed25519 seed is not configured")
 		}
 
-		if len(s.conf.TrustedTokenSigners) == 0 {
+		if s.conf.InitiatedByServer && len(s.conf.TrustedTokenSigners) == 0 {
 			errors = append(errors, "no trusted token signers configured")
 		}
 	}
@@ -317,7 +353,7 @@ func (s *ChoriaSecurity) RemoteSignRequest(ctx context.Context, request []byte) 
 
 func (s *ChoriaSecurity) RemoteSignerToken() ([]byte, error) {
 	if s.conf.RemoteSignerTokenFile == "" {
-		return nil, fmt.Errorf("no token file  defined")
+		return nil, fmt.Errorf("no token file defined")
 	}
 
 	tb, err := os.ReadFile(s.conf.RemoteSignerTokenFile)
@@ -347,53 +383,177 @@ func (s *ChoriaSecurity) ChecksumBytes(data []byte) []byte {
 }
 
 func (s *ChoriaSecurity) TLSConfig() (*tls.Config, error) {
-	// TODO implement me
-	panic("implement me")
+	tlsc := &tls.Config{
+		MinVersion:       tls.VersionTLS12,
+		CipherSuites:     s.conf.TLSConfig.CipherSuites,
+		CurvePreferences: s.conf.TLSConfig.CurvePreferences,
+	}
+
+	if iu.FileExist(s.conf.Key) && iu.FileExist(s.conf.Certificate) {
+		cert, err := tls.LoadX509KeyPair(s.conf.Certificate, s.conf.Key)
+		if err != nil {
+			err = fmt.Errorf("could not load certificate %s and key %s: %s", s.conf.Certificate, s.conf.Key, err)
+			return nil, err
+		}
+
+		cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
+		if err != nil {
+			err = fmt.Errorf("error parsing certificate: %v", err)
+			return nil, err
+		}
+
+		tlsc.Certificates = []tls.Certificate{cert}
+	}
+
+	if iu.FileExist(s.conf.CA) {
+		caCert, err := os.ReadFile(s.conf.CA)
+		if err != nil {
+			return nil, err
+		}
+
+		caCertPool := x509.NewCertPool()
+		caCertPool.AppendCertsFromPEM(caCert)
+
+		tlsc.ClientCAs = caCertPool
+		tlsc.RootCAs = caCertPool
+	} else {
+		// in this security system we are specifically building a system
+		// where mTLS is optional, so when we do not have a CA we disable
+		// mutual verification
+		tlsc.InsecureSkipVerify = true
+	}
+
+	if s.conf.DisableTLSVerify {
+		tlsc.InsecureSkipVerify = true
+	}
+
+	return tlsc, nil
 }
 
 func (s *ChoriaSecurity) ClientTLSConfig() (*tls.Config, error) {
-	// TODO implement me
-	panic("implement me")
+	return s.TLSConfig()
 }
 
 func (s *ChoriaSecurity) SSLContext() (*http.Transport, error) {
-	// TODO implement me
-	panic("implement me")
+	tlsConfig, err := s.ClientTLSConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	transport := &http.Transport{TLSClientConfig: tlsConfig}
+
+	return transport, nil
 }
 
 func (s *ChoriaSecurity) HTTPClient(secure bool) (*http.Client, error) {
-	// TODO implement me
-	panic("implement me")
-}
+	client := &http.Client{}
 
-func (s *ChoriaSecurity) VerifyCertificate(certpem []byte, identity string) error {
-	// TODO implement me
-	panic("implement me")
+	if secure {
+		tlsc, err := s.TLSConfig()
+		if err != nil {
+			return nil, fmt.Errorf("could not set up HTTP connection: %s", err)
+		}
+
+		client.Transport = &http.Transport{TLSClientConfig: tlsc}
+	}
+
+	return client, nil
 }
 
 func (s *ChoriaSecurity) PublicCert() (*x509.Certificate, error) {
-	// TODO implement me
-	panic("implement me")
-}
+	if s.conf.Key == "" || s.conf.Certificate == "" {
+		return nil, fmt.Errorf("no certificates configured")
+	}
 
-func (s *ChoriaSecurity) PublicCertPem() (*pem.Block, error) {
-	// TODO implement me
-	panic("implement me")
+	cert, err := tls.LoadX509KeyPair(s.conf.Certificate, s.conf.Key)
+	if err != nil {
+		err = fmt.Errorf("could not load certificate %s and key %s: %s", s.conf.Certificate, s.conf.Key, err)
+		return nil, err
+	}
+
+	cert.Leaf, err = x509.ParseCertificate(cert.Certificate[0])
+	if err != nil {
+		err = fmt.Errorf("error parsing certificate: %v", err)
+		return nil, err
+	}
+
+	return cert.Leaf, nil
 }
 
 func (s *ChoriaSecurity) PublicCertBytes() ([]byte, error) {
-	// TODO implement me
-	panic("implement me")
+	if s.conf.Key == "" || s.conf.Certificate == "" {
+		return nil, fmt.Errorf("no certificates configured")
+	}
+
+	return os.ReadFile(s.conf.Certificate)
 }
 
-func (s *ChoriaSecurity) ShouldAllowCaller(data []byte, name string) (privileged bool, err error) {
-	// this might accept jwt and checks on it, things like does it have fleet management etc
-	// rather than what we have in the others doing things like checking regexes of caller names
+func (s *ChoriaSecurity) ShouldAllowCaller(name string, callers ...[]byte) (privileged bool, err error) {
+	switch len(callers) {
+	case 1:
+		return s.shouldAllowCallerUnsigned(name, callers[0])
+	case 2:
+		return s.shouldAllowSignedCaller(name, callers...)
+	default:
+		return false, fmt.Errorf("invalid caller data provided")
+	}
+}
 
-	// TODO implement me
-	panic("implement me")
+func (s *ChoriaSecurity) shouldAllowSignedCaller(name string, callers ...[]byte) (privileged bool, err error) {
+	if len(callers) != 2 {
+		return false, fmt.Errorf("invalid caller data")
+	}
+
+	signerT, err := tokens.ParseClientIDTokenUnverified(string(callers[1]))
+	if err != nil {
+		return false, fmt.Errorf("invalid signer token: %v", err)
+	}
+
+	if signerT.Permissions == nil || !signerT.Permissions.AuthenticationDelegator {
+		return false, fmt.Errorf("signer token does not have delegator permission")
+	}
+
+	callerT, err := tokens.ParseClientIDTokenUnverified(string(callers[0]))
+	if err != nil {
+		return false, fmt.Errorf("invalid caller token: %v", err)
+	}
+
+	if callerT.Permissions == nil || !(callerT.Permissions.SignedFleetManagement || callerT.Permissions.FleetManagement) {
+		return false, fmt.Errorf("caller does not have fleet management access")
+	}
+
+	// we do not check the name, delegators can override, but we log the delegation
+	s.log.Warnf("Allowing delegator %s to authorize caller %s who holds token %s", signerT.CallerID, name, callerT.CallerID)
+
+	return true, nil
+}
+
+func (s *ChoriaSecurity) shouldAllowCallerUnsigned(name string, caller []byte) (privileged bool, err error) {
+	// will fail for non client tokens
+	// we do not verify since was all verified already in sig check
+	// TODO: we should think about servers making requests out to choria services or publishing registration data (1740)
+	token, err := tokens.ParseClientIDTokenUnverified(string(caller))
+	if err != nil {
+		return false, err
+	}
+
+	// technically already done in sig verify but cant harm
+	if token.Permissions == nil || !(token.Permissions.SignedFleetManagement || token.Permissions.FleetManagement) {
+		if token.Permissions.SignedFleetManagement {
+			return false, fmt.Errorf("requires signed fleet management access")
+		}
+		return false, fmt.Errorf("does not have fleet management access")
+	}
+
+	if token.CallerID != name {
+		return false, fmt.Errorf("caller name does not match token")
+	}
+
+	return false, nil
 }
 
 func (s *ChoriaSecurity) Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error {
 	return errors.New("the choria security provider does not support enrollment")
 }
+
+func (s *ChoriaSecurity) ShouldSignReplies() bool { return s.conf.SignedReplies }

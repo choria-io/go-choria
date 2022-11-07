@@ -6,6 +6,7 @@ package choria
 
 import (
 	"crypto/ed25519"
+	"crypto/tls"
 	"encoding/hex"
 	"math/rand"
 	"os"
@@ -68,11 +69,14 @@ var _ = Describe("Providers/Security/Choria", func() {
 			Expect(err).To(MatchError("invalid ed25519 public key size: 78: 1"))
 		})
 
-		It("Should accept the configured identity", func() {
+		It("Should support disabling reply signatures", func() {
 			cc := fw.Configuration()
-			cc.Choria.ChoriaSecurityIdentity = "ginkgo"
 			Expect(WithChoriaConfig(cc)(prov)).To(Succeed())
-			Expect(prov.conf.Identity).To(Equal("ginkgo"))
+			Expect(prov.conf.SignedReplies).To(BeTrue())
+
+			cc.Choria.ChoriaSecuritySignReplies = false
+			Expect(WithChoriaConfig(cc)(prov)).To(Succeed())
+			Expect(prov.conf.SignedReplies).To(BeFalse())
 		})
 
 		It("Should load all signers", func() {
@@ -89,6 +93,7 @@ var _ = Describe("Providers/Security/Choria", func() {
 			Expect(prov.conf.TrustedTokenSigners).To(HaveLen(2))
 			Expect(prov.conf.TrustedTokenSigners[0]).To(Equal(pk1))
 			Expect(prov.conf.TrustedTokenSigners[1]).To(Equal(pk2))
+			Expect(prov.conf.SignedReplies).To(BeTrue())
 		})
 	})
 
@@ -138,8 +143,13 @@ var _ = Describe("Providers/Security/Choria", func() {
 		It("Should ensure trusted token signers are set", func() {
 			cfg.TrustedTokenSigners = []ed25519.PublicKey{}
 			errs, ok := prov.Validate()
-			Expect(ok).To(BeFalse())
+			Expect(errs).To(BeNil())
+			Expect(ok).To(BeTrue())
+
+			cfg.InitiatedByServer = true
+			errs, ok = prov.Validate()
 			Expect(errs).To(Equal([]string{"no trusted token signers configured"}))
+			Expect(ok).To(BeFalse())
 		})
 	})
 
@@ -367,7 +377,7 @@ var _ = Describe("Providers/Security/Choria", func() {
 				should, signer := prov.VerifySignatureBytes([]byte("too many secrets"), sig, server, delegate)
 				Expect(should).To(BeFalse())
 				Expect(signer).To(Equal(""))
-				Expect(logbuf).To(gbytes.Say("Could not load caller token using signer of the delegator: not a client id token"))
+				Expect(logbuf).To(gbytes.Say("Could not load caller token using signer of the delegator: not a client token"))
 			})
 
 			It("Should support client tokens", func() {
@@ -386,4 +396,60 @@ var _ = Describe("Providers/Security/Choria", func() {
 			})
 		})
 	})
+
+	Describe("PublicCert", func() {
+		It("Should load the correct public cert", func() {
+			pc, err := prov.PublicCert()
+			Expect(err).To(HaveOccurred())
+			Expect(pc).To(BeNil())
+
+			prov.conf.Key = filepath.Join("..", "testdata", "good", "private_keys", "rip.mcollective.pem")
+			prov.conf.Certificate = filepath.Join("..", "testdata", "good", "certs", "rip.mcollective.pem")
+
+			pc, err = prov.PublicCert()
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(pc.Subject.String()).To(Equal("CN=rip.mcollective"))
+		})
+	})
+
+	Describe("TLSConfig", func() {
+		It("Should support operating without cert/key/ca", func() {
+			c, err := prov.TLSConfig()
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(c.InsecureSkipVerify).To(BeTrue())
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(c.Certificates).To(HaveLen(0))
+		})
+
+		It("Should produce a valid TLS Config", func() {
+			prov.conf.Key = filepath.Join("..", "testdata", "good", "private_keys", "rip.mcollective.pem")
+			prov.conf.Certificate = filepath.Join("..", "testdata", "good", "certs", "rip.mcollective.pem")
+			prov.conf.CA = filepath.Join("..", "testdata", "good", "certs", "ca.pem")
+
+			c, err := prov.TLSConfig()
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(c.InsecureSkipVerify).To(BeFalse())
+			Expect(err).ToNot(HaveOccurred())
+
+			cert, err := tls.LoadX509KeyPair(prov.conf.Certificate, prov.conf.Key)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(c.Certificates).To(HaveLen(1))
+			Expect(c.Certificates[0].Certificate).To(Equal(cert.Certificate))
+		})
+
+		It("Should support disabling tls verify", func() {
+			cfg.DisableTLSVerify = true
+
+			c, err := prov.TLSConfig()
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(c.InsecureSkipVerify).To(BeTrue())
+		})
+	})
+
 })

@@ -13,17 +13,19 @@ import (
 type ProtocolVersion string
 
 const (
-	RequestV1       ProtocolVersion = "choria:request:1"
-	ReplyV1         ProtocolVersion = "choria:reply:1"
-	SecureRequestV1 ProtocolVersion = "choria:secure:request:1"
-	SecureReplyV1   ProtocolVersion = "choria:secure:reply:1"
-	TransportV1     ProtocolVersion = "choria:transport:1"
-	RequestV2       ProtocolVersion = "io.choria.protocol.v2.request"
-	ReplyV2         ProtocolVersion = "io.choria.protocol.v2.reply"
-	SecureRequestV2 ProtocolVersion = "io.choria.protocol.v2.secure_request"
-	SecureReplyV2   ProtocolVersion = "io.choria.protocol.v2.secure_reply"
-	TransportV2     ProtocolVersion = "io.choria.protocol.v2.transport"
-	Unknown         ProtocolVersion = "io.choria.protocol.unknown"
+	RequestV1          ProtocolVersion = "choria:request:1"
+	ReplyV1            ProtocolVersion = "choria:reply:1"
+	SecureRequestV1    ProtocolVersion = "choria:secure:request:1"
+	SecureReplyV1      ProtocolVersion = "choria:secure:reply:1"
+	TransportV1        ProtocolVersion = "choria:transport:1"
+	RequestV2          ProtocolVersion = "io.choria.protocol.v2.request"
+	ReplyV2            ProtocolVersion = "io.choria.protocol.v2.reply"
+	SecureRequestV2    ProtocolVersion = "io.choria.protocol.v2.secure_request"
+	SecureReplyV2      ProtocolVersion = "io.choria.protocol.v2.secure_reply"
+	TransportV2        ProtocolVersion = "io.choria.protocol.v2.transport"
+	Unknown            ProtocolVersion = "io.choria.protocol.unknown"
+	RemoteSigningAgent                 = "aaa_signer"
+	RegistrationAgent                  = "registration"
 )
 
 func (p ProtocolVersion) String() string { return string(p) }
@@ -85,12 +87,12 @@ func IsSecure() bool {
 
 // IsRemoteSignerAgent determines if agent is the standard remote signer
 func IsRemoteSignerAgent(agent string) bool {
-	return agent == "aaa_signer"
+	return agent == RemoteSigningAgent
 }
 
 // IsRegistrationAgent determines if agent is the registration target agent
 func IsRegistrationAgent(agent string) bool {
-	return agent == "registration"
+	return agent == RegistrationAgent
 }
 
 // ClientStrictValidation gives hints to the protocol implementations that

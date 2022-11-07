@@ -22,6 +22,8 @@ const (
 	algRS512     = "RS512"
 	alsEdDSA     = "EdDSA"
 	rsaKeyHeader = "-----BEGIN RSA PRIVATE KEY"
+	certHeader   = "-----BEGIN CERTIFICATE"
+	pkHeader     = "-----BEGIN PUBLIC KEY"
 	keyHeader    = "-----BEGIN PRIVATE KEY"
 )
 
@@ -187,4 +189,28 @@ func newStandardClaims(issuer string, purpose Purpose, validity time.Duration, s
 	}
 
 	return claims, nil
+}
+
+func readRSAOrED25519PublicData(dat []byte) (any, error) {
+	var pk any
+	var err error
+
+	if bytes.HasPrefix(dat, []byte(certHeader)) || bytes.HasPrefix(dat, []byte(pkHeader)) {
+		pk, err = jwt.ParseRSAPublicKeyFromPEM(dat)
+		if err != nil {
+			return nil, fmt.Errorf("could not parse validation certificate: %s", err)
+		}
+	} else {
+		edpk, err := hex.DecodeString(string(dat))
+		if err != nil {
+			return nil, fmt.Errorf("could not parse ed25519 public data: %v", err)
+		}
+		if len(edpk) != ed25519.PublicKeySize {
+			return nil, fmt.Errorf("invalid ed25519 public key size")
+		}
+
+		pk = ed25519.PublicKey(edpk)
+	}
+
+	return pk, nil
 }

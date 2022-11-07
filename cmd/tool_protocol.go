@@ -19,6 +19,8 @@ import (
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
+	v2 "github.com/choria-io/go-choria/protocol/v2"
+	"github.com/choria-io/go-choria/tokens"
 	"github.com/dustin/go-humanize"
 	"github.com/nats-io/nats.go"
 	"github.com/tidwall/gjson"
@@ -72,7 +74,7 @@ func (p *tProtocolCommand) Run(wg *sync.WaitGroup) (err error) {
 			defer mu.Unlock()
 
 			cnt++
-			fmt.Printf(">>> [%d] Message received %s from %s\n\n", cnt, c.Colorize("green", time.Now().Format(time.RFC3339)), c.Colorize("green", msg.Subject))
+			fmt.Printf(">>> [%d] Message received %s on subject %s\n\n", cnt, c.Colorize("green", time.Now().Format(time.RFC3339)), c.Colorize("green", msg.Subject))
 			err = p.renderMsgBytes(msg.Data)
 			if err != nil {
 				fmt.Printf(">>> [%s] %v\n\n", c.Colorize("red", "ERROR"), c.Colorize("yellow", err.Error()))
@@ -118,7 +120,7 @@ func (p *tProtocolCommand) renderMsgBytes(msg []byte) error {
 	}
 
 	switch proto {
-	case protocol.SecureReplyV1:
+	case protocol.SecureReplyV1, protocol.SecureReplyV2:
 		sreply, err := c.NewSecureReplyFromTransport(transport, true)
 		if err != nil {
 			return err
@@ -139,7 +141,7 @@ func (p *tProtocolCommand) renderMsgBytes(msg []byte) error {
 			return err
 		}
 
-	case protocol.SecureRequestV1:
+	case protocol.SecureRequestV1, protocol.SecureRequestV2:
 		srequest, err := c.NewSecureRequestFromTransport(transport, true)
 		if err != nil {
 			return err
@@ -159,6 +161,7 @@ func (p *tProtocolCommand) renderMsgBytes(msg []byte) error {
 		if err != nil {
 			return err
 		}
+
 	default:
 		return fmt.Errorf("cannot render %s", proto)
 	}
@@ -195,6 +198,10 @@ func (p *tProtocolCommand) renderSecureReply(t protocol.SecureReply) error {
 			return err
 		}
 	case protocol.SecureReplyV2:
+		err = p.renderV2SecureReplyInternals(raw)
+		if err != nil {
+			return err
+		}
 	}
 
 	fmt.Println("║   ║")
@@ -265,11 +272,48 @@ func (p *tProtocolCommand) renderSecureRequest(t protocol.SecureRequest) error {
 			return err
 		}
 	case protocol.SecureRequestV2:
+		err = p.renderV2SecureRequestInternals(raw)
+		if err != nil {
+			return err
+		}
 	}
 
 	fmt.Println("║   ║")
 
 	return nil
+}
+
+func (p *tProtocolCommand) renderV2SecureReplyInternals(msg []byte) error {
+	srep := &v2.SecureReply{}
+	err = json.Unmarshal(msg, srep)
+	if err != nil {
+		return err
+	}
+
+	hash, err := base64.StdEncoding.DecodeString(srep.Hash)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("║   ║               Hash: %x\n", hash)
+	if len(srep.Signature) > 0 {
+		fmt.Printf("║   ║          Signature: %x...%x\n", srep.Signature[:15], srep.Signature[len(srep.Signature)-15:])
+	} else {
+		fmt.Printf("║   ║          Signature: unsigned\n")
+	}
+
+	if len(srep.SenderJWT) > 0 {
+		st, err := tokens.ParseServerTokenUnverified(srep.SenderJWT)
+		if err != nil {
+			return fmt.Errorf("invalid caller token: %s", err)
+		}
+		fmt.Printf("║   ║             Sender: %s in %q org\n", st.ChoriaIdentity, st.OrganizationUnit)
+	} else {
+		fmt.Printf("║   ║             Sender: unknown\n")
+	}
+
+	return nil
+
 }
 
 func (p *tProtocolCommand) renderV1SecureReplyInternals(msg []byte) error {
@@ -285,6 +329,48 @@ func (p *tProtocolCommand) renderV1SecureReplyInternals(msg []byte) error {
 	}
 
 	fmt.Printf("║   ║               Hash: %x\n", hash)
+
+	return nil
+}
+
+func (p *tProtocolCommand) renderV2SecureRequestInternals(msg []byte) error {
+	sreq := &v2.SecureRequest{}
+	err = json.Unmarshal(msg, sreq)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("║   ║             Signature: %x...%x\n", sreq.Signature[:15], sreq.Signature[len(sreq.Signature)-15:])
+
+	caller := ""
+	purpose := tokens.TokenPurpose(sreq.CallerJWT)
+	switch purpose {
+	case tokens.ClientIDPurpose:
+		t, err := tokens.ParseClientIDTokenUnverified(sreq.CallerJWT)
+		if err != nil {
+			return fmt.Errorf("invalid caller token: %s", err)
+		}
+		caller = t.CallerID
+	case tokens.ServerPurpose:
+		t, err := tokens.ParseServerTokenUnverified(sreq.CallerJWT)
+		if err != nil {
+			return fmt.Errorf("invalid caller token: %s", err)
+		}
+		caller = fmt.Sprintf("%s (server)", t.ChoriaIdentity)
+
+	default:
+		caller = fmt.Sprintf("unknown (%s)", purpose)
+	}
+	fmt.Printf("║   ║                Caller: %s\n", caller)
+
+	if len(sreq.SignerJWT) > 0 {
+		st, err := tokens.ParseClientIDTokenUnverified(sreq.SignerJWT)
+		if err != nil {
+			return fmt.Errorf("invalid caller token: %s", err)
+		}
+
+		fmt.Printf("║   ║                Signer: %s\n", st.CallerID)
+	}
 
 	return nil
 }

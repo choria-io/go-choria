@@ -10,8 +10,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/discovery"
-
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/rpcutilclient"
 	"github.com/choria-io/go-choria/config"
@@ -53,16 +51,10 @@ var _ = Describe("testing harness agent", func() {
 		logger := logrus.New()
 		logger.SetOutput(logbuff)
 
-		srv, err = testutil.StartServerInstance(ctx, &wg, cfgFile, logger)
+		srv, err = testutil.StartServerInstance(ctx, &wg, cfgFile, logger, testutil.ServerWithDiscovery())
 		Expect(err).ToNot(HaveOccurred())
 
 		Eventually(logbuff).Should(gbytes.Say("Connected to nats://localhost:4222"))
-
-		da, err := discovery.New(srv.AgentManager())
-		Expect(err).ToNot(HaveOccurred())
-
-		err = srv.AgentManager().RegisterAgent(ctx, "discovery", da, srv.Connector())
-		Expect(err).ToNot(HaveOccurred())
 		Eventually(logbuff).Should(gbytes.Say("Registering new agent discovery of type discovery"))
 
 		return srv, nil

@@ -29,13 +29,13 @@ func TestFileSecurity(t *testing.T) {
 	RunSpecs(t, "Providers/Security/File")
 }
 
-func setSSL(c *Config, parent string, id string, private_extension string) {
-	if private_extension == "" {
-		private_extension = "pem"
+func setTLS(c *Config, parent string, id string, privateExtension string) {
+	if privateExtension == "" {
+		privateExtension = "pem"
 	}
 	c.Certificate = filepath.Join(parent, "certs", fmt.Sprintf("%s.pem", id))
 	c.CA = filepath.Join(parent, "certs", "ca.pem")
-	c.Key = filepath.Join(parent, "private_keys", fmt.Sprintf("%s.%s", id, private_extension))
+	c.Key = filepath.Join(parent, "private_keys", fmt.Sprintf("%s.%s", id, privateExtension))
 	c.AllowList = []string{"\\.mcollective$"}
 	c.PrivilegedUsers = []string{"\\.privileged.mcollective$"}
 	c.DisableTLSVerify = false
@@ -61,7 +61,7 @@ var _ = Describe("FileSecurity", func() {
 		nonexistingStub = filepath.Join("..", "testdata", "nonexisting")
 
 		cfg = &Config{}
-		setSSL(cfg, goodStub, "rip.mcollective", "")
+		setTLS(cfg, goodStub, "rip.mcollective", "")
 
 		l = logrus.New()
 
@@ -166,7 +166,7 @@ var _ = Describe("FileSecurity", func() {
 
 	Describe("Validate", func() {
 		It("Should handle missing files", func() {
-			setSSL(cfg, nonexistingStub, "test.mcollective", "")
+			setTLS(cfg, nonexistingStub, "test.mcollective", "")
 			prov, err = New(WithConfig(cfg), WithLog(l.WithFields(logrus.Fields{})))
 			Expect(err).ToNot(HaveOccurred())
 
@@ -180,7 +180,7 @@ var _ = Describe("FileSecurity", func() {
 		})
 
 		It("Should accept valid directories", func() {
-			setSSL(cfg, goodStub, "rip.mcollective", "")
+			setTLS(cfg, goodStub, "rip.mcollective", "")
 
 			errs, ok := prov.Validate()
 			Expect(errs).To(HaveLen(0))
@@ -225,7 +225,7 @@ var _ = Describe("FileSecurity", func() {
 		})
 
 		It("Should work with PKCS8 files", func() {
-			setSSL(cfg, goodStub, "rip.mcollective", "p8")
+			setTLS(cfg, goodStub, "rip.mcollective", "p8")
 			sig, err := prov.SignBytes([]byte("too many secrets"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(base64.StdEncoding.EncodeToString(sig)).To(Equal("PXj4RDHHt1oS1zF7r6EKiPyQ9oHlY4qyDP4DemZT26Hcr1A84l1p3nOVNMoksACrCdB1mW47FAwatgCB7cfCaOHsIiGOW/LQsmyE8eRpCYrV2gAHNsU6hA/CeIATwCq0Wtzp7Vc4PWR2VgrlSmihuK7sYGBJHEkillUG7F+P9c+epGJvLleM+nP7pTZVkrPqzwQ1tXFHgCNS2di5wTc5tCoJ0HHU3b31tuLGwROny3g3SsOjirrqdLDxciHYe/WzOGKByzTiqj1jjPZuuvkCzL9myr4anMBkwn1qtuqGtQ8FSwXLfgOKEwlLyf83rQ1OYWQFP+hdPJHaOlBm4iuVGjDEjla6MG081W8wpho6SqwhD1x2U9CUofQj2e0kNLQmjNK0xbIJUGSiStMcNFhIx5qoJYub40uJZkbfTE3hVp6cuOk9+yswGxfRO/RA88DBW679v8QoGeB+3RehggL2qGyRjdiPtxJj4Jt/pUAgBofrbausiIi8SUOnRSgYqpt0CLeYIiVgiNHa2EbYRfLgCsGGdVb+owAQ2Xh2VpMCelakgEBLXxBDBQ5CU8a+K992eUqDCWN6k70hDAsxXqjL+Li1J6yFjg8mAIaPLBUYgbttu47wItFZPpqlJ82cM01mELc2LyS1mChZHlo+h1q4GEbUevt0Q/VMpGNaa/WyeSQ="))
@@ -390,14 +390,14 @@ var _ = Describe("FileSecurity", func() {
 		})
 	})
 
-	Describe("PublicCertPem", func() {
+	Describe("publicCertPem", func() {
 		It("Should return the correct pem data", func() {
 			dat, err := os.ReadFile(cfg.Certificate)
 			Expect(err).ToNot(HaveOccurred())
 			pb, _ := pem.Decode(dat)
 			Expect(err).ToNot(HaveOccurred())
 
-			block, err := prov.PublicCertPem()
+			block, err := prov.publicCertPem()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(block.Bytes).To(Equal(pb.Bytes))
 		})
@@ -408,7 +408,7 @@ var _ = Describe("FileSecurity", func() {
 			pd, err := os.ReadFile(filepath.Join("..", "testdata", "foreign.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
-			priv, err := prov.ShouldAllowCaller(pd, "foo")
+			priv, err := prov.ShouldAllowCaller("foo", pd)
 			Expect(err).To(HaveOccurred())
 			Expect(priv).To(BeFalse())
 
@@ -416,7 +416,7 @@ var _ = Describe("FileSecurity", func() {
 			pd, err = os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
-			priv, err = prov.ShouldAllowCaller(pd, "rip.mcollective")
+			priv, err = prov.ShouldAllowCaller("rip.mcollective", pd)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(priv).To(BeFalse())
 		})
@@ -425,7 +425,7 @@ var _ = Describe("FileSecurity", func() {
 			pd, err := os.ReadFile(filepath.Join("..", "testdata", "good", "certs", "1.privileged.mcollective.pem"))
 			Expect(err).ToNot(HaveOccurred())
 
-			priv, err := prov.ShouldAllowCaller(pd, "bob")
+			priv, err := prov.ShouldAllowCaller("bob", pd)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(priv).To(BeTrue())
 		})
@@ -436,7 +436,7 @@ var _ = Describe("FileSecurity", func() {
 			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
-			priv, err := prov.ShouldAllowCaller(pd, "bob")
+			priv, err := prov.ShouldAllowCaller("bob", pd)
 			Expect(err).To(HaveOccurred())
 			Expect(priv).To(BeFalse())
 		})
@@ -448,7 +448,7 @@ var _ = Describe("FileSecurity", func() {
 			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
-			priv, err := prov.ShouldAllowCaller(pd, "rip.mcollective")
+			priv, err := prov.ShouldAllowCaller("rip.mcollective", pd)
 			Expect(priv).To(BeFalse())
 			Expect(err).To(MatchError("not on allow list"))
 		})
@@ -459,7 +459,7 @@ var _ = Describe("FileSecurity", func() {
 			pd, err := os.ReadFile(pub)
 			Expect(err).ToNot(HaveOccurred())
 
-			priv, err := prov.ShouldAllowCaller(pd, "rip.mcollective")
+			priv, err := prov.ShouldAllowCaller("rip.mcollective", pd)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(priv).To(BeFalse())
 		})
@@ -467,13 +467,13 @@ var _ = Describe("FileSecurity", func() {
 
 	Describe("privateKeyExists", func() {
 		It("Should detect existing keys", func() {
-			setSSL(cfg, goodStub, "rip.mcollective", "")
+			setTLS(cfg, goodStub, "rip.mcollective", "")
 
 			Expect(prov.privateKeyExists()).To(BeTrue())
 		})
 
 		It("Should detect absent keys", func() {
-			setSSL(cfg, goodStub, "na.mcollective", "")
+			setTLS(cfg, goodStub, "na.mcollective", "")
 
 			Expect(prov.privateKeyExists()).To(BeFalse())
 		})

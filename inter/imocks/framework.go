@@ -1535,20 +1535,6 @@ func (mr *MockFrameworkMockRecorder) SetupLogging(arg0 interface{}) *gomock.Call
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetupLogging", reflect.TypeOf((*MockFramework)(nil).SetupLogging), arg0)
 }
 
-// ShouldUseNGS mocks base method.
-func (m *MockFramework) ShouldUseNGS() bool {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ShouldUseNGS")
-	ret0, _ := ret[0].(bool)
-	return ret0
-}
-
-// ShouldUseNGS indicates an expected call of ShouldUseNGS.
-func (mr *MockFrameworkMockRecorder) ShouldUseNGS() *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ShouldUseNGS", reflect.TypeOf((*MockFramework)(nil).ShouldUseNGS))
-}
-
 // SignerSeedFile mocks base method.
 func (m *MockFramework) SignerSeedFile() (string, error) {
 	m.ctrl.T.Helper()

@@ -143,21 +143,9 @@ func (fw *Framework) setupSecurity() error {
 			certmanagersec.WithContext(context.Background()))
 
 	case "choria":
-		var sf, tf string
-		sf, err = fw.SignerSeedFile()
-		if err != nil {
-			return err
-		}
-		tf, err = fw.SignerTokenFile()
-		if err != nil {
-			return err
-		}
-
 		fw.security, err = choria.New(
 			choria.WithChoriaConfig(fw.Config),
 			choria.WithLog(fw.Logger("security")),
-			choria.WithSeedFile(sf),
-			choria.WithTokenFile(tf),
 			choria.WithSigner(signer))
 
 	default:
@@ -394,11 +382,6 @@ func (fw *Framework) ProvisioningServers(ctx context.Context) (srvcache.Servers,
 	return provtarget.Targets(ctx, fw.Logger("provtarget"))
 }
 
-// ShouldUseNGS determined is we are configured to use NGS
-func (fw *Framework) ShouldUseNGS() bool {
-	return fw.Config.Choria.NatsNGS && fw.Config.Choria.NatsCredentials != ""
-}
-
 // MiddlewareServers determines the correct Middleware Servers
 //
 // It does this by:
@@ -409,10 +392,6 @@ func (fw *Framework) ShouldUseNGS() bool {
 //   - Defaulting to puppet:4222
 func (fw *Framework) MiddlewareServers() (servers srvcache.Servers, err error) {
 	configured := fw.Config.Choria.MiddlewareHosts
-
-	if fw.ShouldUseNGS() && len(configured) == 0 {
-		return srvcache.NewServers(srvcache.NewServer("connect.ngs.global", 4222, "nats")), nil
-	}
 
 	if fw.IsFederated() {
 		return fw.FederationMiddlewareServers()
@@ -725,16 +704,17 @@ func (fw *Framework) UniqueIDFromUnverifiedToken() (id string, uid string, token
 }
 
 // SignerSeedFile is the path to the seed file for JWT auth
+// TODO: we need to revisit the many ways to set a seed file here and try to come up with fewer options (1740)
 func (fw *Framework) SignerSeedFile() (f string, err error) {
 	switch {
+	case fw.Config.Choria.ChoriaSecuritySeedFile != "":
+		return fw.Config.Choria.ChoriaSecuritySeedFile, nil
 	case fw.Config.Choria.ServerAnonTLS:
 		if fw.Config.Choria.ServerTokenSeedFile != "" {
 			return fw.Config.Choria.ServerTokenSeedFile, nil
 		}
-	default:
-		if fw.Config.Choria.RemoteSignerTokenSeedFile != "" {
-			return fw.Config.Choria.RemoteSignerTokenSeedFile, nil
-		}
+	case fw.Config.Choria.RemoteSignerTokenSeedFile != "":
+		return fw.Config.Choria.RemoteSignerTokenSeedFile, nil
 	}
 
 	t, err := fw.SignerTokenFile()
@@ -746,9 +726,16 @@ func (fw *Framework) SignerSeedFile() (f string, err error) {
 }
 
 // SignerTokenFile is the path to the token file, supports clients and servers
+// TODO: we need to revisit the many ways to set a token file here and try to come up with fewer options (1740)
 func (fw *Framework) SignerTokenFile() (f string, err error) {
-	tf := fw.Config.Choria.RemoteSignerTokenFile
-	if fw.Config.Choria.ServerAnonTLS {
+	tf := ""
+
+	switch {
+	case fw.Config.Choria.ChoriaSecurityTokenFile != "":
+		tf = fw.Config.Choria.ChoriaSecurityTokenFile
+	case fw.Config.Choria.RemoteSignerTokenFile != "":
+		tf = fw.Config.Choria.RemoteSignerTokenFile
+	case fw.Config.Choria.ServerAnonTLS:
 		tf = fw.Config.Choria.ServerTokenFile
 	}
 

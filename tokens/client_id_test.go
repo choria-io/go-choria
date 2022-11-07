@@ -96,11 +96,11 @@ var _ = Describe("ClientIDClaims", func() {
 
 		It("Should validate when required", func() {
 			claims, err := ParseClientIDToken(expiredToken, loadRSAPubKey("testdata/rsa/signer-public.pem"), false)
-			Expect(err.Error()).To(MatchRegexp("could not parse client id token: token is expired by"))
+			Expect(err).To(MatchError(jwt.ErrTokenExpired))
 			Expect(claims).To(BeNil())
 
 			claims, err = ParseClientIDToken(string(provToken), loadRSAPubKey("testdata/rsa/signer-public.pem"), true)
-			Expect(err.Error()).To(MatchRegexp("not a client id token"))
+			Expect(err).To(MatchError(ErrNotAClientToken))
 			Expect(claims).To(BeNil())
 
 			claims, err = ParseClientIDToken(validToken, loadRSAPubKey("testdata/rsa/signer-public.pem"), true)
@@ -140,7 +140,7 @@ var _ = Describe("ClientIDClaims", func() {
 
 		It("Should fail for wrong tokens", func() {
 			t, caller, err := UnverifiedCallerFromClientIDToken(string(provToken))
-			Expect(err).To(MatchError("not a client id token"))
+			Expect(err).To(MatchError(ErrNotAClientToken))
 			Expect(caller).To(Equal(""))
 			Expect(t).To(BeNil())
 		})
