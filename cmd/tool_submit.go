@@ -26,6 +26,7 @@ type tSubmitCommand struct {
 	ttl         time.Duration
 	maxTries    uint
 	sender      string
+	sign        bool
 }
 
 func (s *tSubmitCommand) Setup() (err error) {
@@ -38,6 +39,7 @@ func (s *tSubmitCommand) Setup() (err error) {
 		s.cmd.Flag("ttl", "The maximum time this message is valid for as duration").Default("24h").DurationVar(&s.ttl)
 		s.cmd.Flag("tries", "Maximum amount of attempts made to deliver this message").Default("100").UintVar(&s.maxTries)
 		s.cmd.Flag("sender", "The sender of the message").Default(fmt.Sprintf("user %d", os.Geteuid())).StringVar(&s.sender)
+		s.cmd.Flag("sign", "Request that the server signs the message when publishing").UnNegatableBoolVar(&s.sign)
 	}
 
 	return nil
@@ -74,6 +76,7 @@ func (s *tSubmitCommand) Run(wg *sync.WaitGroup) (err error) {
 	msg.TTL = s.ttl.Seconds()
 	msg.MaxTries = s.maxTries
 	msg.Sender = s.sender
+	msg.Sign = s.sign
 
 	if s.payloadFile == "-" {
 		msg.Payload, err = io.ReadAll(os.Stdin)

@@ -39,7 +39,8 @@ var _ = Describe("Directory Spool", func() {
 		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter, imock.LogDiscard())
 		cfg.Choria.SubmissionSpool = td
 		cfg.Choria.SubmissionSpoolMaxSize = 50
-
+		fw.EXPECT().SignerSeedFile().Return(filepath.Join("td/seed"), nil).AnyTimes()
+		fw.EXPECT().SignerTokenFile().Return(filepath.Join("td/token"), nil).AnyTimes()
 		subm, err := NewFromChoria(fw, Directory)
 		Expect(err).ToNot(HaveOccurred())
 		spool = subm.store.(*DirectorySpool)
