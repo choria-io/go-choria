@@ -5,8 +5,10 @@
 package submission
 
 import (
+	"encoding/hex"
 	"errors"
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
@@ -27,6 +29,7 @@ type Message struct {
 	NextTry  time.Time `json:"next_try"`
 	Sender   string    `json:"sender"`
 	Identity string    `json:"identity"`
+	Sign     bool      `json:"sign"`
 
 	st StoreType
 	sm any
@@ -43,8 +46,23 @@ func newMessage(sender string) *Message {
 }
 
 var (
-	ErrMessageExpired  = errors.New("message has expired")
-	ErrMessageMaxTries = errors.New("message reached maximum tries")
+	ErrMessageExpired   = errors.New("message has expired")
+	ErrMessageMaxTries  = errors.New("message reached maximum tries")
+	ErrSeedFileNotSet   = errors.New("seed file not set to sign message")
+	ErrSeedFileNotFound = errors.New("seed file not found")
+	ErrSignatureFailed  = errors.New("could not calculate message signature")
+)
+
+const (
+	HdrNatsMsgId       = "Nats-Msg-Id"
+	HdrChoriaPriority  = "Choria-Priority"
+	HdrChoriaCreated   = "Choria-Created"
+	HdrChoriaSender    = "Choria-Sender"
+	HdrChoriaReliable  = "Choria-Reliable"
+	HdrChoriaTries     = "Choria-Tries"
+	HdrChoriaIdentity  = "Choria-Identity"
+	HdrChoriaToken     = "Choria-Token"
+	HdrChoriaSignature = "Choria-Signature"
 )
 
 func (m *Message) Validate() error {
@@ -83,7 +101,7 @@ func (m *Message) Validate() error {
 	return nil
 }
 
-func (m *Message) NatsMessage(prefix string) (*nats.Msg, error) {
+func (m *Message) NatsMessage(prefix string, seed string, token string) (*nats.Msg, error) {
 	err := m.Validate()
 	if err != nil {
 		return nil, err
@@ -94,24 +112,48 @@ func (m *Message) NatsMessage(prefix string) (*nats.Msg, error) {
 	}
 
 	msg := nats.NewMsg(prefix + m.Subject)
-	msg.Header.Add("Nats-Msg-Id", m.ID)
-	msg.Header.Add("Choria-Priority", strconv.Itoa(int(m.Priority)))
-	msg.Header.Add("Choria-Created", strconv.Itoa(int(m.Created.UnixNano())))
-	msg.Header.Add("Choria-Sender", m.Sender)
+	msg.Header.Add(HdrNatsMsgId, m.ID)
+	msg.Header.Add(HdrChoriaPriority, strconv.Itoa(int(m.Priority)))
+	msg.Header.Add(HdrChoriaCreated, strconv.Itoa(int(m.Created.UnixNano())))
+	msg.Header.Add(HdrChoriaSender, m.Sender)
 
 	if m.Reliable {
-		msg.Header.Add("Choria-Reliable", "1")
+		msg.Header.Add(HdrChoriaReliable, "1")
 	}
 
 	if m.Tries > 0 {
-		msg.Header.Add("Choria-Tries", strconv.Itoa(int(m.Tries)))
+		msg.Header.Add(HdrChoriaTries, strconv.Itoa(int(m.Tries)))
 	}
 
 	if m.Identity != "" {
-		msg.Header.Add("Choria-Identity", m.Identity)
+		msg.Header.Add(HdrChoriaIdentity, m.Identity)
 	}
 
 	msg.Data = m.Payload
+
+	if m.Sign {
+		if seed == "" {
+			return nil, ErrSeedFileNotSet
+		}
+
+		if !util.FileExist(seed) {
+			return nil, ErrSeedFileNotFound
+		}
+
+		sig, err := util.Ed25519SignWithSeedFile(seed, msg.Data)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %v", ErrSignatureFailed, err)
+		}
+
+		if token != "" && util.FileExist(token) {
+			t, err := os.ReadFile(token)
+			if err != nil {
+				return nil, fmt.Errorf("%w: %v", ErrSignatureFailed, err)
+			}
+			msg.Header.Add(HdrChoriaToken, string(t))
+		}
+		msg.Header.Add(HdrChoriaSignature, hex.EncodeToString(sig))
+	}
 
 	return msg, nil
 }

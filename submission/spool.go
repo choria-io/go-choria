@@ -11,7 +11,6 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/nats-io/jsm.go/api"
 	"github.com/nats-io/nats.go"
@@ -46,15 +45,11 @@ type Submitter interface {
 }
 
 type Spool struct {
+	opts   *spoolOpts
 	store  Store
 	conn   inter.RawNATSConnector
 	prefix string
 	log    *logrus.Entry
-}
-
-type Framework interface {
-	Configuration() *config.Config
-	Logger(component string) *logrus.Entry
 }
 
 func New(collective string, identity string, store StoreType, log *logrus.Entry, opts ...Option) (*Spool, error) {
@@ -74,6 +69,7 @@ func New(collective string, identity string, store StoreType, log *logrus.Entry,
 	spool := &Spool{
 		log:    log.WithField("component", "submission"),
 		prefix: fmt.Sprintf("%s.submission.in.", collective),
+		opts:   sopts,
 	}
 
 	switch store {
@@ -92,10 +88,17 @@ func New(collective string, identity string, store StoreType, log *logrus.Entry,
 	return spool, nil
 }
 
-func NewFromChoria(fw Framework, store StoreType) (*Spool, error) {
+func NewFromChoria(fw inter.Framework, store StoreType) (*Spool, error) {
 	cfg := fw.Configuration()
 
-	return New(cfg.MainCollective, cfg.Identity, store, fw.Logger("submission"), WithSpoolDirectory(cfg.Choria.SubmissionSpool), WithMaxSpoolEntries(cfg.Choria.SubmissionSpoolMaxSize))
+	seed, _ := fw.SignerSeedFile()
+	token, _ := fw.SignerTokenFile()
+
+	return New(cfg.MainCollective, cfg.Identity, store, fw.Logger("submission"),
+		WithSpoolDirectory(cfg.Choria.SubmissionSpool),
+		WithMaxSpoolEntries(cfg.Choria.SubmissionSpoolMaxSize),
+		WithSeedFile(seed),
+		WithTokenFile(token))
 }
 
 func (s *Spool) Submit(msg *Message) error {
@@ -140,7 +143,7 @@ func (s *Spool) Run(ctx context.Context, wg *sync.WaitGroup, conn inter.RawNATSC
 		skipReliable := false
 
 		for _, m := range msgs {
-			msg, err := m.NatsMessage(s.prefix)
+			msg, err := m.NatsMessage(s.prefix, s.opts.seedFile, s.opts.tokenFile)
 			if err != nil {
 				switch err {
 				case ErrMessageMaxTries:
