@@ -33,7 +33,7 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.35
 	github.com/nats-io/nats-server/v2 v2.9.6
-	github.com/nats-io/nats.go v1.19.0
+	github.com/nats-io/nats.go v1.19.1
 	github.com/nats-io/natscli v0.0.35
 	github.com/onsi/ginkgo/v2 v2.4.0
 	github.com/onsi/gomega v1.24.0

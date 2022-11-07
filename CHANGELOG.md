@@ -1,5 +1,6 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2022/11/07 |       | Release 0.26.2                                                                                                     |
 | 2022/11/01 | 1886  | Allow additional publish and subscribe subjects to be added to client tokens                                       |
 | 2022/10/05 | 1869  | Improve the error handling in `choria tool status` when the status file does not exist                             |
 | 2022/10/04 | 1866  | Fix inventory groups in inventory files, they now work with all agents                                             |
