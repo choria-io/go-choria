@@ -5,6 +5,7 @@
 package message
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -86,7 +87,7 @@ var _ = Describe("Choria/Message", func() {
 			Expect(err).ToNot(HaveOccurred())
 			return v1.NewRequestFromSecureRequest(sreq)
 		}).AnyTimes()
-		fw.EXPECT().NewRequestTransportForMessage(gomock.Any(), gomock.Any()).DoAndReturn(func(msg inter.Message, version protocol.ProtocolVersion) (protocol.TransportMessage, error) {
+		fw.EXPECT().NewRequestTransportForMessage(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(ctx context.Context, msg inter.Message, version protocol.ProtocolVersion) (protocol.TransportMessage, error) {
 			req, err := v1.NewRequest(msg.Agent(), msg.SenderID(), msg.CallerID(), msg.TTL(), msg.RequestID(), msg.Collective())
 			Expect(err).ToNot(HaveOccurred())
 			req.SetMessage(msg.Payload())
@@ -197,7 +198,7 @@ var _ = Describe("Choria/Message", func() {
 
 			m.SetReplyTo("reply.to")
 
-			t1, err := m.Transport()
+			t1, err := m.Transport(context.Background())
 			Expect(err).ToNot(HaveOccurred())
 			t1m, err := t1.Message()
 			Expect(err).ToNot(HaveOccurred())
@@ -205,7 +206,7 @@ var _ = Describe("Choria/Message", func() {
 			// force the body to change, and so the payload must change
 			time.Sleep(time.Second)
 
-			t2, err := m.Transport()
+			t2, err := m.Transport(context.Background())
 			Expect(err).ToNot(HaveOccurred())
 			t2m, err := t2.Message()
 			Expect(err).ToNot(HaveOccurred())
@@ -221,7 +222,7 @@ var _ = Describe("Choria/Message", func() {
 
 			m.SetReplyTo("reply.to")
 
-			t1, err := m.Transport()
+			t1, err := m.Transport(context.Background())
 			Expect(err).ToNot(HaveOccurred())
 			t1m, err := t1.Message()
 			Expect(err).ToNot(HaveOccurred())
@@ -229,7 +230,7 @@ var _ = Describe("Choria/Message", func() {
 			// force the body to change, and so the payload must change, but due to cache the result should be identical
 			time.Sleep(time.Second)
 
-			t2, err := m.Transport()
+			t2, err := m.Transport(context.Background())
 			Expect(err).ToNot(HaveOccurred())
 			t2m, err := t2.Message()
 			Expect(err).ToNot(HaveOccurred())
@@ -247,7 +248,7 @@ var _ = Describe("Choria/Message", func() {
 
 			m.SetReplyTo("reply.to")
 
-			_, err = m.Transport()
+			_, err = m.Transport(context.Background())
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -261,7 +262,7 @@ var _ = Describe("Choria/Message", func() {
 
 			m.SetReplyTo("reply.to")
 
-			_, err = m.Transport()
+			_, err = m.Transport(context.Background())
 			Expect(err).ToNot(HaveOccurred())
 		})
 
@@ -276,7 +277,7 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessageFromRequest(req, "reply.to", fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			t, err := m.Transport()
+			t, err := m.Transport(context.Background())
 			Expect(err).ToNot(HaveOccurred())
 			Expect(t).ToNot(BeNil())
 		})
@@ -287,7 +288,7 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 			m.SetProtocolVersion(protocol.Unknown)
-			_, err = m.(*Message).UncachedRequestTransport()
+			_, err = m.(*Message).UncachedRequestTransport(context.Background())
 			Expect(err).To(MatchError("cannot create a Request Transport without a version, please set it using SetProtocolVersion()"))
 		})
 
@@ -295,7 +296,7 @@ var _ = Describe("Choria/Message", func() {
 			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			_, err = m.(*Message).UncachedRequestTransport()
+			_, err = m.(*Message).UncachedRequestTransport(context.Background())
 			Expect(err).To(MatchError("cannot create a Transport, no reply-to was set, please use SetReplyTo()"))
 
 		})
@@ -306,16 +307,16 @@ var _ = Describe("Choria/Message", func() {
 			Expect(err).ToNot(HaveOccurred())
 			m.SetReplyTo("reply.to")
 
-			_, err = m.(*Message).UncachedRequestTransport()
+			_, err = m.(*Message).UncachedRequestTransport(context.Background())
 			Expect(err).To(MatchError("cannot create a Request Transport, requests without filters have been disabled"))
 
 			cfg.Choria.RequireClientFilter = false
-			_, err = m.(*Message).UncachedRequestTransport()
+			_, err = m.(*Message).UncachedRequestTransport(context.Background())
 			Expect(err).ToNot(HaveOccurred())
 
 			cfg.Choria.RequireClientFilter = true
 			m.Filter().AddClassFilter("foo")
-			_, err = m.(*Message).UncachedRequestTransport()
+			_, err = m.(*Message).UncachedRequestTransport(context.Background())
 			Expect(err).ToNot(HaveOccurred())
 
 			// discovery has m.Agent==discovery but the filter agent will be what the next request will target so special case tests
@@ -324,7 +325,7 @@ var _ = Describe("Choria/Message", func() {
 			Expect(err).ToNot(HaveOccurred())
 			m.SetReplyTo("reply.to")
 			m.Filter().AddAgentFilter("rpcutil")
-			_, err = m.(*Message).UncachedRequestTransport()
+			_, err = m.(*Message).UncachedRequestTransport(context.Background())
 			Expect(err).To(MatchError("cannot create a Request Transport, requests without filters have been disabled"))
 
 		})
@@ -335,7 +336,7 @@ var _ = Describe("Choria/Message", func() {
 
 			m.SetReplyTo("reply.to")
 
-			t, err := m.(*Message).UncachedRequestTransport()
+			t, err := m.(*Message).UncachedRequestTransport(context.Background())
 			Expect(err).ToNot(HaveOccurred())
 			Expect(t.ReplyTo()).To(Equal("reply.to"))
 			Expect(t.SenderID()).To(Equal("test.identity"))

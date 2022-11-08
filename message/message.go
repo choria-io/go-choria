@@ -5,6 +5,7 @@
 package message
 
 import (
+	"context"
 	"crypto/md5"
 	"encoding/base64"
 	"errors"
@@ -191,7 +192,7 @@ func (m *Message) CacheTransport() {
 //
 // For requests you need to set the protocol version using SetProtocolVersion()
 // before calling Transport
-func (m *Message) Transport() (protocol.TransportMessage, error) {
+func (m *Message) Transport(ctx context.Context) (protocol.TransportMessage, error) {
 	m.Lock()
 	defer m.Unlock()
 
@@ -201,7 +202,7 @@ func (m *Message) Transport() (protocol.TransportMessage, error) {
 
 	switch {
 	case m.msgType == inter.RequestMessageType || m.msgType == inter.DirectRequestMessageType || m.msgType == inter.ServiceRequestMessageType:
-		t, err := m.UncachedRequestTransport()
+		t, err := m.UncachedRequestTransport(ctx)
 		if err != nil {
 			return nil, err
 		}
@@ -243,7 +244,7 @@ func (m *Message) isEmptyFilter() bool {
 	return false
 }
 
-func (m *Message) UncachedRequestTransport() (protocol.TransportMessage, error) {
+func (m *Message) UncachedRequestTransport(ctx context.Context) (protocol.TransportMessage, error) {
 	if m.protoVersion == "" || m.protoVersion == protocol.Unknown {
 		return nil, errors.New("cannot create a Request Transport without a version, please set it using SetProtocolVersion()")
 	}
@@ -256,7 +257,7 @@ func (m *Message) UncachedRequestTransport() (protocol.TransportMessage, error) 
 		return nil, fmt.Errorf("cannot create a Request Transport, requests without filters have been disabled")
 	}
 
-	transport, err := m.choria.NewRequestTransportForMessage(m, m.protoVersion)
+	transport, err := m.choria.NewRequestTransportForMessage(ctx, m, m.protoVersion)
 	if err != nil {
 		return nil, err
 	}

@@ -10,7 +10,6 @@ import (
 	"fmt"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/protocol"
@@ -64,7 +63,7 @@ func NewSecureRequest(request protocol.Request, security inter.SecurityProvider)
 }
 
 // NewRemoteSignedSecureRequest is a NewSecureRequest that delegates the signing to a remote signer like aaasvc
-func NewRemoteSignedSecureRequest(request protocol.Request, security inter.SecurityProvider) (protocol.SecureRequest, error) {
+func NewRemoteSignedSecureRequest(ctx context.Context, request protocol.Request, security inter.SecurityProvider) (protocol.SecureRequest, error) {
 	if security.BackingTechnology() != inter.SecurityTechnologyED25519JWT {
 		return nil, ErrIncorrectProtocol
 	}
@@ -84,10 +83,6 @@ func NewRemoteSignedSecureRequest(request protocol.Request, security inter.Secur
 	if err != nil {
 		return nil, err
 	}
-
-	// TODO this should somehow be a passed in context but looks like quite big surgery
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 
 	secj, err := security.RemoteSignRequest(ctx, reqj)
 	if err != nil {

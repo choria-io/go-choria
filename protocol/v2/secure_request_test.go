@@ -95,14 +95,14 @@ var _ = Describe("SecureRequest", func() {
 	Describe("NewRemoteSignedSecureRequest", func() {
 		It("Should require the correct security technology", func() {
 			tech = inter.SecurityTechnologyX509
-			_, err := NewRemoteSignedSecureRequest(nil, security)
+			_, err := NewRemoteSignedSecureRequest(context.Background(), nil, security)
 			Expect(err).To(MatchError(ErrIncorrectProtocol))
 		})
 
 		Describe("Should support insecure or remote signing operation", func() {
 			It("Should handle signing failures", func() {
 				security.EXPECT().RemoteSignRequest(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("simulated failure"))
-				_, err := NewRemoteSignedSecureRequest(req, security)
+				_, err := NewRemoteSignedSecureRequest(context.Background(), req, security)
 				Expect(err).To(MatchError("simulated failure"))
 			})
 
@@ -117,7 +117,7 @@ var _ = Describe("SecureRequest", func() {
 				Expect(err).ToNot(HaveOccurred())
 				req.SetMessage([]byte("hello"))
 
-				_, err := NewRemoteSignedSecureRequest(req, security)
+				_, err := NewRemoteSignedSecureRequest(context.Background(), req, security)
 				Expect(err).ToNot(HaveOccurred())
 			})
 		})
@@ -139,7 +139,7 @@ var _ = Describe("SecureRequest", func() {
 				return signedj, nil
 			})
 
-			sreq, err := NewRemoteSignedSecureRequest(req, security)
+			sreq, err := NewRemoteSignedSecureRequest(context.Background(), req, security)
 			Expect(err).To(MatchError("remote signer did not set a signer JWT"))
 			Expect(sreq).To(BeNil())
 		})
@@ -162,7 +162,7 @@ var _ = Describe("SecureRequest", func() {
 				return signedj, nil
 			})
 
-			sreq, err := NewRemoteSignedSecureRequest(req, security)
+			sreq, err := NewRemoteSignedSecureRequest(context.Background(), req, security)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(sreq.(*SecureRequest).SignerJWT).To(Equal("signer jwt"))
 		})
@@ -330,7 +330,7 @@ var _ = Describe("SecureRequest", func() {
 				return false, nil
 			}).Times(1)
 
-			sreq, err := NewRemoteSignedSecureRequest(req, security)
+			sreq, err := NewRemoteSignedSecureRequest(context.Background(), req, security)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(sreq.Valid()).To(BeTrue())
 		})

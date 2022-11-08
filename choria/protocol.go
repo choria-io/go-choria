@@ -5,6 +5,7 @@
 package choria
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/choria-io/go-choria/inter"
@@ -229,17 +230,17 @@ func (fw *Framework) NewSecureReplyFromTransport(message protocol.TransportMessa
 }
 
 // NewSecureRequest creates a new SecureRequest with the given Request message as payload
-func (fw *Framework) NewSecureRequest(request protocol.Request) (secure protocol.SecureRequest, err error) {
+func (fw *Framework) NewSecureRequest(ctx context.Context, request protocol.Request) (secure protocol.SecureRequest, err error) {
 	switch request.Version() {
 	case protocol.RequestV1:
 		if fw.security.IsRemoteSigning() {
-			return v1.NewRemoteSignedSecureRequest(request, fw.security)
+			return v1.NewRemoteSignedSecureRequest(ctx, request, fw.security)
 		}
 
 		return v1.NewSecureRequest(request, fw.security)
 	case protocol.RequestV2:
 		if fw.security.IsRemoteSigning() {
-			return v2.NewRemoteSignedSecureRequest(request, fw.security)
+			return v2.NewRemoteSignedSecureRequest(ctx, request, fw.security)
 		}
 
 		return v2.NewSecureRequest(request, fw.security)
@@ -332,13 +333,13 @@ func (fw *Framework) NewReplyTransportForMessage(msg inter.Message, request prot
 }
 
 // NewRequestTransportForMessage creates a new versioned Transport message based on a Message
-func (fw *Framework) NewRequestTransportForMessage(msg inter.Message, version protocol.ProtocolVersion) (protocol.TransportMessage, error) {
+func (fw *Framework) NewRequestTransportForMessage(ctx context.Context, msg inter.Message, version protocol.ProtocolVersion) (protocol.TransportMessage, error) {
 	req, err := fw.NewRequestFromMessage(version, msg)
 	if err != nil {
 		return nil, fmt.Errorf("could not create Request: %s", err)
 	}
 
-	sr, err := fw.NewSecureRequest(req)
+	sr, err := fw.NewSecureRequest(ctx, req)
 	if err != nil {
 		return nil, err
 	}

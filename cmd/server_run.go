@@ -126,35 +126,49 @@ func (r *serverRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	return r.platformRun(wg)
 }
 
+func (r *serverRunCommand) shouldProvisionTokenAndSeed(tokenFile string, seedFile string) bool {
+	if !util.FileExist(seedFile) {
+		log.Warnf("Server seed file %s does not exist, reprovisioning", seedFile)
+		return true
+	}
+
+	if !util.FileExist(tokenFile) {
+		log.Warnf("Server token file %s does not exist, reprovisioning", tokenFile)
+		return true
+	}
+
+	token, err := tokens.ParseServerTokenFileUnverified(tokenFile)
+	if err != nil {
+		log.Warnf("Could not parse server JWT token %s, reprovisioning: %v", tokenFile, err)
+		return true
+	}
+
+	matched, err := token.IsMatchingSeedFile(seedFile)
+	if err != nil {
+		log.Warnf("Could not compare the token %s to the seed from %s, reprovisioning: %v", tokenFile, seedFile, err)
+		return true
+	}
+
+	if !matched {
+		log.Warnf("Public key in the JWT file %s does not match the seed file %s, reprovisioning", tokenFile, seedFile)
+		return true
+	}
+
+	return false
+}
+
 func (r *serverRunCommand) shouldProvision(cfg *config.Config) bool {
 	prov := bi.ProvisionDefault()
 
-	// we want to make sure we re-provision if ever the seed and jwt isnt aligned
+	// we want to make sure we re-provision if ever the seed and jwt isn't aligned
 	if cfg.Choria.ServerAnonTLS && cfg.Choria.ServerTokenSeedFile != "" && cfg.Choria.ServerTokenFile != "" {
-		if !util.FileExist(cfg.Choria.ServerTokenSeedFile) {
-			log.Warnf("Server seed file %s does not exist, reprovisioning", cfg.Choria.ServerTokenSeedFile)
+		if r.shouldProvisionTokenAndSeed(cfg.Choria.ServerTokenFile, cfg.Choria.ServerTokenSeedFile) {
 			return true
 		}
+	}
 
-		if !util.FileExist(cfg.Choria.ServerTokenFile) {
-			log.Warnf("Server token file %s does not exist, reprovisioning", cfg.Choria.ServerTokenFile)
-			return true
-		}
-
-		token, err := tokens.ParseServerTokenFileUnverified(cfg.Choria.ServerTokenFile)
-		if err != nil {
-			log.Warnf("Could not parse server JWT token %s, reprovisioning: %v", cfg.Choria.ServerTokenFile, err)
-			return true
-		}
-
-		matched, err := token.IsMatchingSeedFile(cfg.Choria.ServerTokenSeedFile)
-		if err != nil {
-			log.Warnf("Could not compare the token %s to the seed from %s, reprovisioning: %v", cfg.Choria.ServerTokenFile, cfg.Choria.ServerTokenSeedFile, err)
-			return true
-		}
-
-		if !matched {
-			log.Warnf("Public key in the JWT file %s does not match the seed file %s, reprovisioning", cfg.Choria.ServerTokenFile, cfg.Choria.ServerTokenSeedFile)
+	if cfg.Choria.SecurityProvider == "choria" {
+		if r.shouldProvisionTokenAndSeed(cfg.Choria.ChoriaSecurityTokenFile, cfg.Choria.ChoriaSecuritySeedFile) {
 			return true
 		}
 	}

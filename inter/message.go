@@ -5,6 +5,7 @@
 package inter
 
 import (
+	"context"
 	"time"
 
 	"github.com/choria-io/go-choria/protocol"
@@ -52,7 +53,7 @@ type Message interface {
 	String() string
 	TTL() int
 	TimeStamp() time.Time
-	Transport() (protocol.TransportMessage, error)
+	Transport(ctx context.Context) (protocol.TransportMessage, error)
 	Type() string
 	Validate() (bool, error)
 	ValidateTTL() bool

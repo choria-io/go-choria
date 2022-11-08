@@ -139,9 +139,6 @@ func (cc *tConfigCommand) Run(wg *sync.WaitGroup) (err error) {
 			fmt.Printf("        Request Signer: Choria AAA Service\n")
 		} else if c.Config.Choria.RemoteSignerURL != "" {
 			fmt.Printf("        Request Signer: %s\n", c.Config.Choria.RemoteSignerURL)
-			if c.Config.Choria.RemoteSignerSigningCertFile != "" {
-				fmt.Printf("   Request Signer Cert: %s (%s)\n", c.Config.Choria.RemoteSignerSigningCertFile, cc.checkFileExist(c.Config.Choria.RemoteSignerSigningCertFile))
-			}
 		}
 		if c.Config.Choria.RemoteSignerTokenFile != "" {
 			fmt.Printf("            Token File: %s\n", c.Config.Choria.RemoteSignerTokenFile)
