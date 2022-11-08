@@ -24,11 +24,13 @@ func (fw *Framework) RequestProtocol() protocol.ProtocolVersion {
 	switch fw.security.BackingTechnology() {
 	case inter.SecurityTechnologyX509:
 		return protocol.RequestV1
+
 	case inter.SecurityTechnologyED25519JWT:
 		return protocol.RequestV2
-	}
 
-	return protocol.Unknown
+	default:
+		return protocol.Unknown
+	}
 }
 
 // NewRequestMessageFromTransportJSON creates a Message from a Transport JSON that holds a Request

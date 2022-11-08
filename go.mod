@@ -20,7 +20,6 @@ require (
 	github.com/fatih/structtag v1.2.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.3.1+incompatible
-	github.com/golang-jwt/jwt v3.2.2+incompatible
 	github.com/golang-jwt/jwt/v4 v4.4.2
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.9
@@ -35,7 +34,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.9.6
 	github.com/nats-io/nats.go v1.19.1
 	github.com/nats-io/natscli v0.0.35
-	github.com/onsi/ginkgo/v2 v2.4.0
+	github.com/onsi/ginkgo/v2 v2.5.0
 	github.com/onsi/gomega v1.24.0
 	github.com/open-policy-agent/opa v0.46.1
 	github.com/prometheus/client_golang v1.13.1

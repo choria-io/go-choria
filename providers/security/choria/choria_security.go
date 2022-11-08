@@ -233,7 +233,7 @@ func (s *ChoriaSecurity) verifyByteSignatureByDelegation(dat []byte, sig []byte,
 		// this ensures/assumes the caller is always signed by the same signer as the delegator, I am not yet sure if this is true
 		ct, err := tokens.ParseClientIDToken(string(caller), signer, true)
 		if err != nil {
-			s.log.Warnf("Could not load caller token using signer of the delegator: %v", err)
+			s.log.Warnf("Could not load caller token using the same signer as the delegator: %v", err)
 			return false, ""
 		}
 

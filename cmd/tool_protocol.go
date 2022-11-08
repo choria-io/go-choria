@@ -340,7 +340,11 @@ func (p *tProtocolCommand) renderV2SecureRequestInternals(msg []byte) error {
 		return err
 	}
 
-	fmt.Printf("║   ║             Signature: %x...%x\n", sreq.Signature[:15], sreq.Signature[len(sreq.Signature)-15:])
+	if len(sreq.Signature) > 20 {
+		fmt.Printf("║   ║             Signature: %x...%x\n", sreq.Signature[:15], sreq.Signature[len(sreq.Signature)-15:])
+	} else {
+		fmt.Printf("║   ║             Signature: %x\n", sreq.Signature)
+	}
 
 	caller := ""
 	purpose := tokens.TokenPurpose(sreq.CallerJWT)

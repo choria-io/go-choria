@@ -377,7 +377,7 @@ var _ = Describe("Providers/Security/Choria", func() {
 				should, signer := prov.VerifySignatureBytes([]byte("too many secrets"), sig, server, delegate)
 				Expect(should).To(BeFalse())
 				Expect(signer).To(Equal(""))
-				Expect(logbuf).To(gbytes.Say("Could not load caller token using signer of the delegator: not a client token"))
+				Expect(logbuf).To(gbytes.Say("Could not load caller token using the same signer as the delegator: not a client token"))
 			})
 
 			It("Should support client tokens", func() {

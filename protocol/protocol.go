@@ -175,6 +175,7 @@ type Reply interface {
 // effectively avoids man in the middle attacks and requestor spoofing
 type SecureRequest interface {
 	SetMessage(request Request) error
+	SetSigner(signer []byte) error
 	Valid() bool
 	JSON() ([]byte, error)
 	Version() ProtocolVersion
