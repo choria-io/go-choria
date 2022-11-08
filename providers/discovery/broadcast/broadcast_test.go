@@ -110,7 +110,7 @@ var _ = Describe("Broadcast", func() {
 				reply, err := message.NewMessageFromRequest(req, msg.ReplyTo(), fw)
 				Expect(err).ToNot(HaveOccurred())
 
-				t, err := reply.Transport()
+				t, err := reply.Transport(context.Background())
 				Expect(err).ToNot(HaveOccurred())
 
 				for i := 0; i < 10; i++ {

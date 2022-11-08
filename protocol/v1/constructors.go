@@ -200,7 +200,7 @@ func NewSecureRequest(request protocol.Request, security inter.SecurityProvider)
 }
 
 // NewRemoteSignedSecureRequest is a NewSecureRequest that delegates the signing to a remote signer like aaasvc
-func NewRemoteSignedSecureRequest(request protocol.Request, security inter.SecurityProvider) (secure protocol.SecureRequest, err error) {
+func NewRemoteSignedSecureRequest(ctx context.Context, request protocol.Request, security inter.SecurityProvider) (secure protocol.SecureRequest, err error) {
 	if security.BackingTechnology() != inter.SecurityTechnologyX509 {
 		return nil, fmt.Errorf("version 1 protocol requires a x509 based security system")
 	}
@@ -218,9 +218,6 @@ func NewRemoteSignedSecureRequest(request protocol.Request, security inter.Secur
 	if err != nil {
 		return nil, err
 	}
-
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-	defer cancel()
 
 	secj, err := security.RemoteSignRequest(ctx, reqj)
 	if err != nil {

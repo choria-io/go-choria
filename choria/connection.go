@@ -83,6 +83,7 @@ type Connection struct {
 	conMu             sync.Mutex
 	token             string
 	uniqueId          string
+	ctx               context.Context
 }
 
 var (
@@ -141,9 +142,10 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 		subscriptions:     make(map[string]*nats.Subscription),
 		chanSubscriptions: make(map[string]*channelSubscription),
 		outbox:            make(chan *nats.Msg, 1000),
+		ctx:               ctx,
 	}
 
-	if fw.Config.Choria.ClientAnonTLS || fw.Config.Choria.ServerAnonTLS {
+	if conn.isJwtAuth() {
 		caller, id, token, err := fw.UniqueIDFromUnverifiedToken()
 		if err != nil {
 			return nil, fmt.Errorf("could not parse JWT: %s", err)
@@ -322,7 +324,7 @@ func (conn *Connection) RequestRawMsgWithContext(ctx context.Context, msg *nats.
 
 // Publish inspects a Message and publish it according to its Type
 func (conn *Connection) Publish(msg inter.Message) error {
-	transport, err := msg.Transport()
+	transport, err := msg.Transport(conn.ctx)
 	if err != nil {
 		return err
 	}
@@ -584,6 +586,11 @@ func (conn *Connection) anonTLSc() *tls.Config {
 	}
 }
 
+// TODO: rather than these checks we should just say do we have a seed and jwt regardless of that was set (1740)
+func (conn *Connection) isJwtAuth() bool {
+	return conn.config.Choria.ServerAnonTLS || conn.config.Choria.ClientAnonTLS || conn.fw.security.BackingTechnology() == inter.SecurityTechnologyED25519JWT
+}
+
 // Connect creates a new connection to NATS.
 //
 // This will block until connected - basically forever should it never work.  Due to short comings
@@ -646,8 +653,6 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		options = append(options, nats.PingInterval(30*time.Second))
 	}
 
-	// TODO: rather than these checks we should just say do we have a seed and jwt regardless of that was set (1740)
-	jwtAuth := conn.config.Choria.ServerAnonTLS || conn.config.Choria.ClientAnonTLS || conn.fw.security.BackingTechnology() == inter.SecurityTechnologyED25519JWT
 	var tlsc *tls.Config
 
 	switch {
@@ -662,7 +667,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		conn.log.Warnf("Setting anonymous TLS mode during provisioning")
 		tlsc = conn.anonTLSc()
 
-	case jwtAuth:
+	case conn.isJwtAuth():
 		conn.log.Debug("Setting JWT authentication with NONCE signatures for NATS connection")
 
 		// TODO: need something better to key this off (1740)

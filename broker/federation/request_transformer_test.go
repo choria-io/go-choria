@@ -48,7 +48,7 @@ var _ = Describe("RequestTransformer", func() {
 
 		request.SetMessage([]byte(`{"hello":"world"}`))
 
-		srequest, err = c.NewSecureRequest(request)
+		srequest, err = c.NewSecureRequest(ctx, request)
 		Expect(err).ToNot(HaveOccurred())
 
 		in.Message, err = c.NewTransportForSecureRequest(srequest)

@@ -200,7 +200,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 				Expect(err).ToNot(HaveOccurred())
 				return v1.NewReplyFromSecureReply(sreply)
 			}).AnyTimes()
-			fw.EXPECT().NewRequestTransportForMessage(gomock.Any(), gomock.Any()).DoAndReturn(func(msg inter.Message, version protocol.ProtocolVersion) (protocol.TransportMessage, error) {
+			fw.EXPECT().NewRequestTransportForMessage(gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(func(_ context.Context, msg inter.Message, version protocol.ProtocolVersion) (protocol.TransportMessage, error) {
 				req, err := v1.NewRequest(msg.Agent(), msg.SenderID(), msg.CallerID(), msg.TTL(), msg.RequestID(), msg.Collective())
 				Expect(err).ToNot(HaveOccurred())
 				req.SetMessage(msg.Payload())
@@ -239,7 +239,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 				j, err := json.Marshal(rpcreply)
 				Expect(err).ToNot(HaveOccurred())
 
-				mt, err := msg.Transport()
+				mt, err := msg.Transport(context.Background())
 				Expect(err).ToNot(HaveOccurred())
 
 				sreq, err := fw.NewSecureRequestFromTransport(mt, true)

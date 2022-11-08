@@ -282,18 +282,18 @@ func (mr *MockProtocolConstructorMockRecorder) NewRequestMessageFromTransportJSO
 }
 
 // NewRequestTransportForMessage mocks base method.
-func (m *MockProtocolConstructor) NewRequestTransportForMessage(arg0 inter.Message, arg1 protocol.ProtocolVersion) (protocol.TransportMessage, error) {
+func (m *MockProtocolConstructor) NewRequestTransportForMessage(arg0 context.Context, arg1 inter.Message, arg2 protocol.ProtocolVersion) (protocol.TransportMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewRequestTransportForMessage", arg0, arg1)
+	ret := m.ctrl.Call(m, "NewRequestTransportForMessage", arg0, arg1, arg2)
 	ret0, _ := ret[0].(protocol.TransportMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NewRequestTransportForMessage indicates an expected call of NewRequestTransportForMessage.
-func (mr *MockProtocolConstructorMockRecorder) NewRequestTransportForMessage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewRequestTransportForMessage(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestTransportForMessage", reflect.TypeOf((*MockProtocolConstructor)(nil).NewRequestTransportForMessage), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestTransportForMessage", reflect.TypeOf((*MockProtocolConstructor)(nil).NewRequestTransportForMessage), arg0, arg1, arg2)
 }
 
 // NewSecureReply mocks base method.
@@ -327,18 +327,18 @@ func (mr *MockProtocolConstructorMockRecorder) NewSecureReplyFromTransport(arg0,
 }
 
 // NewSecureRequest mocks base method.
-func (m *MockProtocolConstructor) NewSecureRequest(arg0 protocol.Request) (protocol.SecureRequest, error) {
+func (m *MockProtocolConstructor) NewSecureRequest(arg0 context.Context, arg1 protocol.Request) (protocol.SecureRequest, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewSecureRequest", arg0)
+	ret := m.ctrl.Call(m, "NewSecureRequest", arg0, arg1)
 	ret0, _ := ret[0].(protocol.SecureRequest)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NewSecureRequest indicates an expected call of NewSecureRequest.
-func (mr *MockProtocolConstructorMockRecorder) NewSecureRequest(arg0 interface{}) *gomock.Call {
+func (mr *MockProtocolConstructorMockRecorder) NewSecureRequest(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSecureRequest", reflect.TypeOf((*MockProtocolConstructor)(nil).NewSecureRequest), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSecureRequest", reflect.TypeOf((*MockProtocolConstructor)(nil).NewSecureRequest), arg0, arg1)
 }
 
 // NewSecureRequestFromTransport mocks base method.
@@ -1174,18 +1174,18 @@ func (mr *MockFrameworkMockRecorder) NewRequestMessageFromTransportJSON(arg0 int
 }
 
 // NewRequestTransportForMessage mocks base method.
-func (m *MockFramework) NewRequestTransportForMessage(arg0 inter.Message, arg1 protocol.ProtocolVersion) (protocol.TransportMessage, error) {
+func (m *MockFramework) NewRequestTransportForMessage(arg0 context.Context, arg1 inter.Message, arg2 protocol.ProtocolVersion) (protocol.TransportMessage, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewRequestTransportForMessage", arg0, arg1)
+	ret := m.ctrl.Call(m, "NewRequestTransportForMessage", arg0, arg1, arg2)
 	ret0, _ := ret[0].(protocol.TransportMessage)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NewRequestTransportForMessage indicates an expected call of NewRequestTransportForMessage.
-func (mr *MockFrameworkMockRecorder) NewRequestTransportForMessage(arg0, arg1 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewRequestTransportForMessage(arg0, arg1, arg2 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestTransportForMessage", reflect.TypeOf((*MockFramework)(nil).NewRequestTransportForMessage), arg0, arg1)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewRequestTransportForMessage", reflect.TypeOf((*MockFramework)(nil).NewRequestTransportForMessage), arg0, arg1, arg2)
 }
 
 // NewSecureReply mocks base method.
@@ -1219,18 +1219,18 @@ func (mr *MockFrameworkMockRecorder) NewSecureReplyFromTransport(arg0, arg1 inte
 }
 
 // NewSecureRequest mocks base method.
-func (m *MockFramework) NewSecureRequest(arg0 protocol.Request) (protocol.SecureRequest, error) {
+func (m *MockFramework) NewSecureRequest(arg0 context.Context, arg1 protocol.Request) (protocol.SecureRequest, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "NewSecureRequest", arg0)
+	ret := m.ctrl.Call(m, "NewSecureRequest", arg0, arg1)
 	ret0, _ := ret[0].(protocol.SecureRequest)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // NewSecureRequest indicates an expected call of NewSecureRequest.
-func (mr *MockFrameworkMockRecorder) NewSecureRequest(arg0 interface{}) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) NewSecureRequest(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSecureRequest", reflect.TypeOf((*MockFramework)(nil).NewSecureRequest), arg0)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NewSecureRequest", reflect.TypeOf((*MockFramework)(nil).NewSecureRequest), arg0, arg1)
 }
 
 // NewSecureRequestFromTransport mocks base method.

@@ -75,8 +75,9 @@ func (p *loginCommand) login() error {
 		return fmt.Errorf("please configure a login server URL using plugin.login.aaasvc.login.url")
 	}
 
-	if cfg.Choria.RemoteSignerTokenFile == "" {
-		return fmt.Errorf("no token configuration set")
+	token, err := c.SignerTokenFile()
+	if err != nil {
+		return fmt.Errorf("no token path found: %v", err)
 	}
 
 	user := ""
@@ -92,7 +93,7 @@ func (p *loginCommand) login() error {
 		return err
 	}
 
-	abs, err := filepath.Abs(cfg.Choria.RemoteSignerTokenFile)
+	abs, err := filepath.Abs(token)
 	if err != nil {
 		return fmt.Errorf("cannot determine parent directory for token file: %s", err)
 	}
@@ -168,7 +169,7 @@ func (p *loginCommand) login() error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("Token saved to %s\n", cfg.Choria.RemoteSignerTokenFile)
+	fmt.Printf("Token saved to %s\n", abs)
 
 	return nil
 }

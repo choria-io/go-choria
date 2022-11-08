@@ -55,9 +55,6 @@ type Config struct {
 	// Is a URL where a remote signer is running
 	RemoteSignerURL string
 
-	// RemoteSignerTokenFile is a file with a token for access to the remote signer
-	RemoteSignerTokenFile string
-
 	// TLSSetup is the shared TLS configuration state between security providers
 	TLSConfig *tlssetup.Config
 
@@ -103,10 +100,9 @@ func New(opts ...Option) (*ChoriaSecurity, error) {
 	}
 
 	s.log = s.log.WithFields(logrus.Fields{
-		"mTLS":      s.conf.CA != "",
-		"delegated": s.conf.RemoteSigner != nil,
-		"token":     s.conf.TokenFile,
-		"seed":      s.conf.SeedFile,
+		"mTLS":  s.conf.CA != "",
+		"token": s.conf.TokenFile,
+		"seed":  s.conf.SeedFile,
 	})
 
 	s.log.Infof("Security provider initializing")
@@ -352,11 +348,11 @@ func (s *ChoriaSecurity) RemoteSignRequest(ctx context.Context, request []byte) 
 }
 
 func (s *ChoriaSecurity) RemoteSignerToken() ([]byte, error) {
-	if s.conf.RemoteSignerTokenFile == "" {
+	if s.conf.TokenFile == "" {
 		return nil, fmt.Errorf("no token file defined")
 	}
 
-	tb, err := os.ReadFile(s.conf.RemoteSignerTokenFile)
+	tb, err := os.ReadFile(s.conf.TokenFile)
 	if err != nil {
 		return bytes.TrimSpace(tb), fmt.Errorf("could not read token file: %v", err)
 	}

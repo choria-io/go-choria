@@ -154,10 +154,6 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 		choriaAuth.provisioningTokenSigner = s.config.Choria.NetworkProvisioningTokenSignerFile
 		choriaAuth.clientJwtSigners = s.config.Choria.NetworkClientTokenSigners
 		choriaAuth.serverJwtSigners = s.config.Choria.NetworkServerTokenSigners
-
-		if s.config.Choria.RemoteSignerSigningCertFile != "" && len(s.config.Choria.NetworkClientTokenSigners) == 0 {
-			return nil, fmt.Errorf("plugin.choria.security.request_signing_certificate is deprecated please use plugin.choria.network.client_signer_cert")
-		}
 	}
 
 	if len(choriaAuth.clientJwtSigners) > 0 || len(choriaAuth.serverJwtSigners) > 0 {

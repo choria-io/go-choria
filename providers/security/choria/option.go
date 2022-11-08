@@ -29,18 +29,41 @@ type BuildInfoProvider interface {
 // WithChoriaConfig optionally configures the Security Provider from settings found in a typical Choria configuration
 func WithChoriaConfig(c *config.Config) Option {
 	return func(s *ChoriaSecurity) error {
+		if c.Choria.ServerTokenFile != "" {
+			return fmt.Errorf("plugin.choria.security.server.token_file can not be set when the choria security provider is used")
+		}
+
+		if c.Choria.ServerTokenSeedFile != "" {
+			return fmt.Errorf("plugin.choria.security.server.seed_file can not be set when the choria security provider is used")
+		}
+
+		if c.Choria.ServerAnonTLS {
+			return fmt.Errorf("plugin.security.server_anon_tls can not be set when the choria security provider is used")
+		}
+
+		if c.Choria.ClientAnonTLS {
+			return fmt.Errorf("plugin.security.client_anon_tls can not be set when the choria security provider is used")
+		}
+
+		if c.Choria.RemoteSignerTokenSeedFile != "" {
+			return fmt.Errorf("plugin.choria.security.request_signer.seed_file can not be used when the choria security provider is used")
+		}
+
+		if c.Choria.RemoteSignerTokenFile != "" {
+			return fmt.Errorf("plugin.choria.security.request_signer.token_file can not be used when the choria security provider is used")
+		}
+
 		cfg := Config{
-			TLSConfig:             tlssetup.TLSConfig(c),
-			RemoteSignerURL:       c.Choria.RemoteSignerURL,
-			RemoteSignerTokenFile: filepath.FromSlash(c.Choria.RemoteSignerTokenFile),
-			SeedFile:              filepath.FromSlash(c.Choria.ChoriaSecuritySeedFile),
-			TokenFile:             filepath.FromSlash(c.Choria.ChoriaSecurityTokenFile),
-			CA:                    filepath.FromSlash(c.Choria.ChoriaSecurityCA),
-			Certificate:           filepath.FromSlash(c.Choria.ChoriaSecurityCertificate),
-			Key:                   filepath.FromSlash(c.Choria.ChoriaSecurityKey),
-			DisableTLSVerify:      c.DisableTLSVerify,
-			InitiatedByServer:     c.InitiatedByServer,
-			SignedReplies:         c.Choria.ChoriaSecuritySignReplies,
+			TLSConfig:         tlssetup.TLSConfig(c),
+			RemoteSignerURL:   c.Choria.RemoteSignerURL,
+			SeedFile:          filepath.FromSlash(c.Choria.ChoriaSecuritySeedFile),
+			TokenFile:         filepath.FromSlash(c.Choria.ChoriaSecurityTokenFile),
+			CA:                filepath.FromSlash(c.Choria.ChoriaSecurityCA),
+			Certificate:       filepath.FromSlash(c.Choria.ChoriaSecurityCertificate),
+			Key:               filepath.FromSlash(c.Choria.ChoriaSecurityKey),
+			DisableTLSVerify:  c.DisableTLSVerify,
+			InitiatedByServer: c.InitiatedByServer,
+			SignedReplies:     c.Choria.ChoriaSecuritySignReplies,
 		}
 
 		for _, signer := range c.Choria.ChoriaSecurityTrustedSigners {
@@ -55,7 +78,9 @@ func WithChoriaConfig(c *config.Config) Option {
 			cfg.TrustedTokenSigners = append(cfg.TrustedTokenSigners, pk)
 		}
 
-		if !c.InitiatedByServer {
+		if c.InitiatedByServer {
+			cfg.Identity = c.Identity
+		} else {
 			userEnvVar := "USER"
 			if runtime.GOOS == "windows" {
 				userEnvVar = "USERNAME"
@@ -67,15 +92,6 @@ func WithChoriaConfig(c *config.Config) Option {
 			}
 
 			cfg.Identity = u
-		} else {
-			if cfg.SeedFile == "" && c.Choria.ServerTokenSeedFile != "" {
-				cfg.SeedFile = c.Choria.ServerTokenSeedFile
-			}
-			if cfg.TokenFile == "" && c.Choria.ServerTokenFile != "" {
-				cfg.TokenFile = c.Choria.ServerTokenFile
-			}
-
-			cfg.Identity = c.Identity
 		}
 
 		s.conf = &cfg
