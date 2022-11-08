@@ -156,3 +156,7 @@ func (r *SecureRequest) IsValidJSON(data []byte) (err error) {
 
 	return nil
 }
+
+func (r *SecureRequest) SetSigner(signer []byte) error {
+	return nil
+}

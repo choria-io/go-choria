@@ -952,6 +952,20 @@ func (mr *MockSecureRequestMockRecorder) SetMessage(request interface{}) *gomock
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMessage", reflect.TypeOf((*MockSecureRequest)(nil).SetMessage), request)
 }
 
+// SetSigner mocks base method.
+func (m *MockSecureRequest) SetSigner(signer []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetSigner", signer)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetSigner indicates an expected call of SetSigner.
+func (mr *MockSecureRequestMockRecorder) SetSigner(signer interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSigner", reflect.TypeOf((*MockSecureRequest)(nil).SetSigner), signer)
+}
+
 // Valid mocks base method.
 func (m *MockSecureRequest) Valid() bool {
 	m.ctrl.T.Helper()

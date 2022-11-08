@@ -108,6 +108,20 @@ func NewRemoteSignedSecureRequest(request protocol.Request, security inter.Secur
 		return nil, fmt.Errorf("remote signer did not set a signer JWT")
 	}
 
+	// We set our caller token here despite having done a delegated request because the
+	// delegation would not know our token, so we just set this here which will not modify
+	// the secure payload or its signature etc
+	//
+	// TODO: we might choose to only support secure mode, but complicated with provisioning
+	if protocol.IsSecure() {
+		token, err := security.TokenBytes()
+		if err != nil {
+			return nil, err
+		}
+
+		secure.CallerJWT = string(token)
+	}
+
 	return secure, nil
 }
 
@@ -253,4 +267,13 @@ func (r *SecureRequest) Message() []byte {
 	defer r.mu.Unlock()
 
 	return r.MessageBody
+}
+
+func (r *SecureRequest) SetSigner(signer []byte) error {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	r.SignerJWT = string(signer)
+
+	return nil
 }

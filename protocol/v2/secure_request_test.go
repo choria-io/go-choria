@@ -149,7 +149,7 @@ var _ = Describe("SecureRequest", func() {
 				Expect(gjson.GetBytes(reqj, "agent").String()).To(Equal("ginkgo"))
 				Expect(gjson.GetBytes(reqj, "protocol").String()).To(Equal(string(protocol.RequestV2)))
 
-				security.EXPECT().TokenBytes().Return([]byte("token"), nil)
+				security.EXPECT().TokenBytes().Return([]byte("token"), nil).Times(2)
 				security.EXPECT().SignBytes(gomock.AssignableToTypeOf([]byte{})).Return([]byte("stub sig"), nil).AnyTimes()
 
 				signed, err := NewSecureRequest(req, security)
