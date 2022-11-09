@@ -13,6 +13,7 @@ import (
 type RequestSignerConfig interface {
 	RemoteSignerURL() (*url.URL, error)
 	RemoteSignerToken() ([]byte, error)
+	RemoteSignerSeedFile() (string, error)
 }
 
 // RequestSigner signs request, typically remote signers over HTTP or Choria RPC

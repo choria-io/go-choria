@@ -347,6 +347,10 @@ func (s *ChoriaSecurity) RemoteSignRequest(ctx context.Context, request []byte) 
 	return s.conf.RemoteSigner.Sign(ctx, request, s)
 }
 
+func (s *ChoriaSecurity) RemoteSignerSeedFile() (string, error) {
+	return s.conf.SeedFile, nil
+}
+
 func (s *ChoriaSecurity) RemoteSignerToken() ([]byte, error) {
 	if s.conf.TokenFile == "" {
 		return nil, fmt.Errorf("no token file defined")

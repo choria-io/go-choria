@@ -35,6 +35,7 @@ func WithChoriaConfig(bi BuildInfoProvider, c *config.Config) Option {
 		Identity:                   c.Identity,
 		RemoteSignerURL:            c.Choria.RemoteSignerURL,
 		RemoteSignerTokenFile:      c.Choria.RemoteSignerTokenFile,
+		RemoteSignerSeedFile:       c.Choria.RemoteSignerTokenSeedFile,
 		TLSConfig:                  tlssetup.TLSConfig(c),
 		BackwardCompatVerification: c.Choria.SecurityAllowLegacyCerts,
 		IdentitySuffix:             bi.ClientIdentitySuffix(),
