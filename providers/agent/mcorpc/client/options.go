@@ -64,11 +64,6 @@ type RequestOption func(*RequestOptions)
 
 // NewRequestOptions creates a initialized request options
 func NewRequestOptions(fw inter.Framework, ddl *agent.DDL) (*RequestOptions, error) {
-	rid, err := fw.NewRequestID()
-	if err != nil {
-		return nil, err
-	}
-
 	cfg := fw.Configuration()
 
 	return &RequestOptions{
@@ -78,7 +73,7 @@ func NewRequestOptions(fw inter.Framework, ddl *agent.DDL) (*RequestOptions, err
 		Collective:      cfg.MainCollective,
 		ProcessReplies:  true,
 		Workers:         3,
-		ConnectionName:  fmt.Sprintf("%s-mcorpc-%s", fw.Certname(), rid),
+		ConnectionName:  fw.CallerID(),
 		stats:           NewStats(),
 		totalStats:      NewStats(),
 		LimitMethod:     cfg.RPCLimitMethod,

@@ -59,9 +59,10 @@ var _ = Describe("Request", func() {
 			j, err := req.JSON()
 			Expect(err).ToNot(HaveOccurred())
 
-			r, err := NewRequestFromSecureRequest(&SecureRequest{Protocol: protocol.SecureRequestV2, MessageBody: j})
+			r, err := NewRequestFromSecureRequest(&SecureRequest{Protocol: protocol.SecureRequestV2, MessageBody: j, CallerJWT: "caller.jwt"})
 			Expect(err).ToNot(HaveOccurred())
 			Expect(r.RequestID()).To(Equal("a2f0ca717c694f2086cfa81b6c494648"))
+			Expect(r.CallerPublicData()).To(Equal("caller.jwt"))
 		})
 	})
 

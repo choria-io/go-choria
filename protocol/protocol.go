@@ -140,6 +140,7 @@ type Request interface {
 	RequestID() string
 	SenderID() string
 	CallerID() string
+	CallerPublicData() string
 	Collective() string
 	Agent() string
 	TTL() int
@@ -181,6 +182,7 @@ type SecureRequest interface {
 	Version() ProtocolVersion
 	IsValidJSON(data []byte) error
 	Message() []byte
+	CallerPublicData() string
 }
 
 // SecureReply is a container for a Reply.  It's the reply counterpart of a

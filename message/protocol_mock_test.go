@@ -219,6 +219,20 @@ func (mr *MockRequestMockRecorder) CallerID() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallerID", reflect.TypeOf((*MockRequest)(nil).CallerID))
 }
 
+// CallerPublicData mocks base method.
+func (m *MockRequest) CallerPublicData() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallerPublicData")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// CallerPublicData indicates an expected call of CallerPublicData.
+func (mr *MockRequestMockRecorder) CallerPublicData() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallerPublicData", reflect.TypeOf((*MockRequest)(nil).CallerPublicData))
+}
+
 // Collective mocks base method.
 func (m *MockRequest) Collective() string {
 	m.ctrl.T.Helper()
@@ -896,6 +910,20 @@ func (m *MockSecureRequest) EXPECT() *MockSecureRequestMockRecorder {
 	return m.recorder
 }
 
+// CallerPublicData mocks base method.
+func (m *MockSecureRequest) CallerPublicData() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallerPublicData")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// CallerPublicData indicates an expected call of CallerPublicData.
+func (mr *MockSecureRequestMockRecorder) CallerPublicData() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallerPublicData", reflect.TypeOf((*MockSecureRequest)(nil).CallerPublicData))
+}
+
 // IsValidJSON mocks base method.
 func (m *MockSecureRequest) IsValidJSON(data []byte) error {
 	m.ctrl.T.Helper()
@@ -951,6 +979,20 @@ func (m *MockSecureRequest) SetMessage(request protocol.Request) error {
 func (mr *MockSecureRequestMockRecorder) SetMessage(request interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetMessage", reflect.TypeOf((*MockSecureRequest)(nil).SetMessage), request)
+}
+
+// SetSigner mocks base method.
+func (m *MockSecureRequest) SetSigner(signer []byte) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SetSigner", signer)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// SetSigner indicates an expected call of SetSigner.
+func (mr *MockSecureRequestMockRecorder) SetSigner(signer interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetSigner", reflect.TypeOf((*MockSecureRequest)(nil).SetSigner), signer)
 }
 
 // Valid mocks base method.

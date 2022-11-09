@@ -310,3 +310,8 @@ func (r *Request) IsValidJSON(data []byte) error {
 
 	return nil
 }
+
+// CallerPublicData is not supported for version 1 messages and is always an empty string
+func (r *Request) CallerPublicData() string {
+	return ""
+}

@@ -157,6 +157,13 @@ func (r *SecureRequest) IsValidJSON(data []byte) (err error) {
 	return nil
 }
 
-func (r *SecureRequest) SetSigner(signer []byte) error {
+func (r *SecureRequest) SetSigner(_ []byte) error {
 	return nil
+}
+
+func (r *SecureRequest) CallerPublicData() string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	return r.PublicCertificate
 }

@@ -272,3 +272,10 @@ func (r *SecureRequest) SetSigner(signer []byte) error {
 
 	return nil
 }
+
+func (r *SecureRequest) CallerPublicData() string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	return r.CallerJWT
+}
