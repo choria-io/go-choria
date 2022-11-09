@@ -78,12 +78,7 @@ func New(fw inter.Framework, opts ...Option) (*Client, error) {
 	}
 
 	if c.name == "" {
-		rid, err := c.fw.NewRequestID()
-		if err != nil {
-			return nil, fmt.Errorf("could not generate unique name: %s", err)
-		}
-
-		c.name = fmt.Sprintf("%s-%s", c.fw.Certname(), rid)
+		c.name = c.fw.CallerID()
 	}
 
 	c.receiverReady = make(chan struct{}, c.receivers)

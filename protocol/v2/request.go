@@ -20,7 +20,8 @@ type Request struct {
 
 	ReqEnvelope
 
-	mu sync.Mutex
+	callerJWT string
+	mu        sync.Mutex
 }
 
 type ReqEnvelope struct {
@@ -64,7 +65,8 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (protocol.Request, e
 	}
 
 	req := &Request{
-		Protocol: protocol.RequestV2,
+		Protocol:  protocol.RequestV2,
+		callerJWT: sr.(*SecureRequest).CallerJWT,
 	}
 
 	err := req.IsValidJSON(sr.Message())
@@ -374,4 +376,12 @@ func (r *Request) isValidJSONUnlocked(data []byte) error {
 	}
 
 	return nil
+}
+
+// CallerPublicData is the JWT validated by the Secure Request, only set when a request is created from a SecureRequest
+func (r *Request) CallerPublicData() string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	return r.callerJWT
 }

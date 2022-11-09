@@ -218,6 +218,20 @@ func (mr *MockRequestMockRecorder) CallerID() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallerID", reflect.TypeOf((*MockRequest)(nil).CallerID))
 }
 
+// CallerPublicData mocks base method.
+func (m *MockRequest) CallerPublicData() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallerPublicData")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// CallerPublicData indicates an expected call of CallerPublicData.
+func (mr *MockRequestMockRecorder) CallerPublicData() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallerPublicData", reflect.TypeOf((*MockRequest)(nil).CallerPublicData))
+}
+
 // Collective mocks base method.
 func (m *MockRequest) Collective() string {
 	m.ctrl.T.Helper()
@@ -893,6 +907,20 @@ func NewMockSecureRequest(ctrl *gomock.Controller) *MockSecureRequest {
 // EXPECT returns an object that allows the caller to indicate expected use.
 func (m *MockSecureRequest) EXPECT() *MockSecureRequestMockRecorder {
 	return m.recorder
+}
+
+// CallerPublicData mocks base method.
+func (m *MockSecureRequest) CallerPublicData() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CallerPublicData")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// CallerPublicData indicates an expected call of CallerPublicData.
+func (mr *MockSecureRequestMockRecorder) CallerPublicData() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CallerPublicData", reflect.TypeOf((*MockSecureRequest)(nil).CallerPublicData))
 }
 
 // IsValidJSON mocks base method.
