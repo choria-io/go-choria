@@ -365,8 +365,8 @@ func (a *ChoriaAuth) handleUnverifiedSystemAccount(c server.ClientAuthentication
 		return false, fmt.Errorf("invalid JWT token")
 	}
 
-	if claims.Permissions == nil || !claims.Permissions.SystemUser {
-		return false, fmt.Errorf("no system_user claim")
+	if claims.Permissions == nil || !(claims.Permissions.SystemUser || claims.Permissions.OrgAdmin) {
+		return false, fmt.Errorf("no system_user or org_admin claim")
 	}
 
 	nonce := c.GetNonce()

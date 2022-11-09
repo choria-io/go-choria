@@ -6,10 +6,12 @@ package signers
 
 import (
 	"context"
+	"encoding/hex"
 	"fmt"
 
 	aaac "github.com/choria-io/go-choria/client/aaa_signerclient"
 	"github.com/choria-io/go-choria/inter"
+	iu "github.com/choria-io/go-choria/internal/util"
 )
 
 // NewAAAServiceRPCSigner creates an AAA Signer that uses Choria RPC requests to the AAA Service
@@ -34,7 +36,17 @@ func (s *aaaServiceRPC) Sign(ctx context.Context, request []byte, cfg inter.Requ
 		return nil, err
 	}
 
-	res, err := signer.OptionWorkers(1).Sign(string(request), string(token)).Do(ctx)
+	sf, err := cfg.RemoteSignerSeedFile()
+	if err != nil {
+		return nil, err
+	}
+
+	sigb, err := iu.Ed25519SignWithSeedFile(sf, request)
+	if err != nil {
+		return nil, err
+	}
+
+	res, err := signer.OptionWorkers(1).Sign(string(request), hex.EncodeToString(sigb), string(token)).Do(ctx)
 	if err != nil {
 		return nil, err
 	}

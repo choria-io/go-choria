@@ -201,14 +201,16 @@ func (p *AaaSignerClient) DiscoverNodes(ctx context.Context) (nodes []string, er
 //
 // Required Inputs:
 //   - request (string) - The request to sign
+//   - signature (string) - A signature produced using the ed25519 seed of the request, hex encoded
 //   - token (string) - The JWT token authenticating the user
-func (p *AaaSignerClient) Sign(inputRequest string, inputToken string) *SignRequester {
+func (p *AaaSignerClient) Sign(inputRequest string, inputSignature string, inputToken string) *SignRequester {
 	d := &SignRequester{
 		outc: nil,
 		r: &requester{
 			args: map[string]any{
-				"request": inputRequest,
-				"token":   inputToken,
+				"request":   inputRequest,
+				"signature": inputSignature,
+				"token":     inputToken,
 			},
 			action: "sign",
 			client: p,

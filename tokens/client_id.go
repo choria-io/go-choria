@@ -34,7 +34,7 @@ type ClientPermissions struct {
 	// Governor enables access to Governors, cannot make new ones, also requires Streams permission
 	Governor bool `json:"governor,omitempty"`
 
-	// OrgAdmin has access to all subjects
+	// OrgAdmin has access to all subjects and broker system account
 	OrgAdmin bool `json:"org_admin,omitempty"`
 
 	// FleetManagement enables access to the choria server fleet for RPCs

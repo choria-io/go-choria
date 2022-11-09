@@ -83,6 +83,9 @@ type Config struct {
 	// RemoteSignerTokenFile is a file with a token for access to the remote signer
 	RemoteSignerTokenFile string
 
+	// RemoteSignerSeedFile is a file with a seed related to RemoteSignerTokenFile
+	RemoteSignerSeedFile string
+
 	// TLSSetup is the shared TLS configuration state between security providers
 	TLSConfig *tlssetup.Config
 
@@ -141,9 +144,17 @@ func (s *FileSecurity) TokenBytes() ([]byte, error) {
 	return nil, fmt.Errorf("tokens not available for file security provider")
 }
 
+func (s *FileSecurity) RemoteSignerSeedFile() (string, error) {
+	if s.conf.RemoteSignerSeedFile == "" {
+		return "", fmt.Errorf("no seed file defined")
+	}
+
+	return s.conf.RemoteSignerSeedFile, nil
+}
+
 func (s *FileSecurity) RemoteSignerToken() ([]byte, error) {
 	if s.conf.RemoteSignerTokenFile == "" {
-		return nil, fmt.Errorf("no token file  defined")
+		return nil, fmt.Errorf("no token file defined")
 	}
 
 	tb, err := os.ReadFile(s.conf.RemoteSignerTokenFile)

@@ -30,6 +30,14 @@
           "optional": false,
           "validation": ".",
           "maxlength": 10024
+        },
+        "signature": {
+          "prompt": "Request Signature",
+          "description": "A signature produced using the ed25519 seed of the request, hex encoded",
+          "type": "string",
+          "optional": false,
+          "validation": ".",
+          "maxlength": 1024
         }
       },
       "output": {

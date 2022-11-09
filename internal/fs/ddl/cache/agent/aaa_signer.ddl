@@ -21,6 +21,15 @@ action "sign", :description => "Signs a RPC Request on behalf of a user" do
         :optional    => false
 
 
+  input :signature,
+        :prompt      => "Request Signature",
+        :description => "A signature produced using the ed25519 seed of the request, hex encoded",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 1024,
+        :optional    => false
+
+
   input :token,
         :prompt      => "JWT Token",
         :description => "The JWT token authenticating the user",

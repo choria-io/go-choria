@@ -8,12 +8,14 @@ import (
 	"bytes"
 	"context"
 	"crypto/tls"
+	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"io"
 	"net/http"
 
 	"github.com/choria-io/go-choria/inter"
+	iu "github.com/choria-io/go-choria/internal/util"
 )
 
 // NewAAAServiceHTTPSigner creates an AAA Signer that uses HTTP requests to the AAA Service
@@ -24,8 +26,9 @@ func NewAAAServiceHTTPSigner() *aaaServiceHTTP {
 type aaaServiceHTTP struct{}
 
 type httpSigningRequest struct {
-	Token   string `json:"token"`
-	Request []byte `json:"request"`
+	Token     string `json:"token"`
+	Request   []byte `json:"request"`
+	Signature string `json:"signature"`
 }
 
 type httpSigningReply struct {
@@ -46,8 +49,21 @@ func (s *aaaServiceHTTP) Sign(_ context.Context, request []byte, cfg inter.Reque
 		return nil, err
 	}
 
-	req := &httpSigningRequest{Request: request}
-	req.Token = string(token)
+	sf, err := cfg.RemoteSignerSeedFile()
+	if err != nil {
+		return nil, err
+	}
+
+	sigb, err := iu.Ed25519SignWithSeedFile(sf, request)
+	if err != nil {
+		return nil, err
+	}
+
+	req := &httpSigningRequest{
+		Request:   request,
+		Token:     string(token),
+		Signature: hex.EncodeToString(sigb),
+	}
 
 	client := &http.Client{}
 	if signer.Scheme == "https" {
