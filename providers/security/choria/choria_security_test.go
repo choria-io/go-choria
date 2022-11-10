@@ -266,7 +266,7 @@ var _ = Describe("Providers/Security/Choria", func() {
 			Expect(tokens.SaveAndSignTokenWithKeyFile(serverToken, signerSeedFile, serverJWTFile, 0600)).To(Succeed())
 
 			// a provisioner purpose token
-			provToken, err := tokens.NewProvisioningClaims(true, true, "x", "x", "x", nil, "example.net", "", "", "ginkgo", time.Minute)
+			provToken, err := tokens.NewProvisioningClaims(true, true, "x", "x", "x", nil, "example.net", "", "", "ginkgo", "", time.Minute)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(provToken.Purpose).To(Equal(tokens.ProvisioningPurpose))
 			Expect(tokens.SaveAndSignTokenWithKeyFile(provToken, signerSeedFile, provJWTFile, 0600)).To(Succeed())

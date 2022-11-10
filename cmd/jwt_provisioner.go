@@ -27,6 +27,7 @@ type jWTCreateProvCommand struct {
 	provDefault bool
 	extensions  string
 	urls        []string
+	org         string
 
 	command
 }
@@ -46,6 +47,7 @@ func (p *jWTCreateProvCommand) Setup() (err error) {
 		p.cmd.Flag("username", "Username to connect to the provisioning broker with").StringVar(&p.uname)
 		p.cmd.Flag("password", "Password to connect to the provisioning broker with").StringVar(&p.password)
 		p.cmd.Flag("extensions", "Adds additional extensions to the token, accepts JSON data").PlaceHolder("JSON").StringVar(&p.extensions)
+		p.cmd.Flag("org", "Adds the node to a specific organization for trust validation").Default("choria").StringVar(&p.org)
 	}
 
 	return nil
@@ -82,7 +84,7 @@ func (p *jWTCreateProvCommand) createJWT() error {
 	if p.srvDomain == "" && len(p.urls) == 0 {
 		return fmt.Errorf("URLs or a SRV Domain is required")
 	}
-	claims, err := tokens.NewProvisioningClaims(!p.insecure, p.provDefault, p.token, p.uname, p.password, p.urls, p.srvDomain, p.regData, p.facts, "Choria CLI", 0)
+	claims, err := tokens.NewProvisioningClaims(!p.insecure, p.provDefault, p.token, p.uname, p.password, p.urls, p.srvDomain, p.regData, p.facts, p.org, "", 0)
 	if err != nil {
 		return err
 	}

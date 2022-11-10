@@ -38,13 +38,10 @@ type ServerClaims struct {
 	// Collectives sets what collectives this server belongs to within the organization
 	Collectives []string `json:"collectives"`
 
-	// PublicKey is a ED25519 public key use to sign server nonce and other parts
-	PublicKey string `json:"public_key"`
-
 	// Permissions are additional abilities the server will have
 	Permissions *ServerPermissions `json:"permissions,omitempty"`
 
-	// OrganizationUnit is currently unused but will indicate the server account a node should belong to, set to 'choria' now
+	// OrganizationUnit broker account a user should belong to, set to 'choria' now and issuing organization
 	OrganizationUnit string `json:"ou,omitempty"`
 
 	// AdditionalPublishSubjects are additional subjects the server can publish to facilitate for example custom registration paths
@@ -119,11 +116,7 @@ func NewServerClaims(identity string, collectives []string, org string, perms *S
 	}
 
 	if org == "" {
-		org = "choria"
-	}
-
-	if issuer == "" {
-		issuer = "choria"
+		org = defaultOrg
 	}
 
 	if validity == 0 {
@@ -135,10 +128,11 @@ func NewServerClaims(identity string, collectives []string, org string, perms *S
 		return nil, err
 	}
 
+	stdClaims.PublicKey = hex.EncodeToString(pk)
+
 	return &ServerClaims{
 		ChoriaIdentity:            identity,
 		Collectives:               collectives,
-		PublicKey:                 hex.EncodeToString(pk),
 		Permissions:               perms,
 		OrganizationUnit:          org,
 		AdditionalPublishSubjects: additionalPublish,
@@ -221,6 +215,11 @@ func ParseServerToken(token string, pk any) (*ServerClaims, error) {
 
 	if !IsServerToken(claims.StandardClaims) {
 		return nil, ErrNotAServerToken
+	}
+
+	// if we have a tcs we require an issuer expiry to be set and it to not have expired
+	if !claims.StandardClaims.verifyIssuerExpiry(claims.TrustChainSignature != "") {
+		return nil, jwt.ErrTokenExpired
 	}
 
 	return claims, nil
