@@ -218,9 +218,28 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 	if len(claims.AdditionalPublishSubjects) > 0 {
 		fmt.Printf("   Publish Subjects: %s\n", strings.Join(claims.AdditionalPublishSubjects, ", "))
 	}
+
+	if claims.Issuer != "" && claims.TrustChainSignature != "" {
+		msg := ""
+		if claims.IsChainedIssuer(false) {
+			valid := claims.IsChainedIssuer(true)
+			if valid {
+				msg = fmt.Sprintf("Can Issue Clients as part of a trust chain with Issuer %s", strings.TrimPrefix(claims.Issuer, tokens.OrgIssuerPrefix))
+			} else {
+				msg = "Invalid signing data, issued users will be invalid"
+			}
+		}
+
+		fmt.Printf("        Trust Chain: %s\n", msg)
+		if claims.IssuerExpiresAt != nil {
+			fmt.Printf(" Issuer Expires: %s (%s)\n", claims.IssuerExpiresAt.Time, iu.RenderDuration(time.Until(claims.IssuerExpiresAt.Time)))
+		}
+	}
+
 	if claims.Permissions != nil {
 		fmt.Println()
 		fmt.Println(" Client Permissions:")
+		fmt.Println()
 		if claims.Permissions.FleetManagement || claims.Permissions.SignedFleetManagement {
 			if claims.Permissions.SignedFleetManagement {
 				fmt.Println("      Can manage Choria fleet nodes subject to authorizing signature")
@@ -240,8 +259,11 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 		if claims.Permissions.StreamsAdmin {
 			fmt.Println("      Can administer Choria Streams")
 		}
+		if claims.Permissions.Governor {
+			fmt.Println("      Can access Choria Governors")
+		}
 		if claims.Permissions.OrgAdmin {
-			fmt.Println("      Can observe all traffic on all subjects")
+			fmt.Println("      Can observe all traffic on all subjects and access the system account")
 		}
 		if claims.Permissions.SystemUser {
 			fmt.Println("      Can access the Broker system account")
@@ -249,6 +271,10 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 		if claims.Permissions.AuthenticationDelegator {
 			fmt.Println("      Can sign requests on behalf of other users")
 		}
+		if claims.Permissions.ExtendedServiceLifetime {
+			fmt.Println("      Can have an extended token lifetime")
+		}
+
 		fmt.Println()
 	}
 
@@ -259,12 +285,6 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 		}
 		fmt.Printf("    User Properties: %s\n", string(jc))
 	}
-
-	jc, err := json.MarshalIndent(claims.StandardClaims, strings.Repeat(" ", 21), "  ")
-	if err != nil {
-		return nil
-	}
-	fmt.Printf("    Standard Claims: %s\n", string(jc))
 
 	if len(claims.OPAPolicy) > 0 {
 		padding := strings.Repeat(" ", 21)

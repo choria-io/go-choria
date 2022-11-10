@@ -11,21 +11,29 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
+	"github.com/choria-io/go-choria/build"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/golang-jwt/jwt/v4"
 )
 
 const (
-	algRS256     = "RS256"
-	algRS384     = "RS384"
-	algRS512     = "RS512"
-	alsEdDSA     = "EdDSA"
-	rsaKeyHeader = "-----BEGIN RSA PRIVATE KEY"
-	certHeader   = "-----BEGIN CERTIFICATE"
-	pkHeader     = "-----BEGIN PUBLIC KEY"
-	keyHeader    = "-----BEGIN PRIVATE KEY"
+	algRS256          = "RS256"
+	algRS384          = "RS384"
+	algRS512          = "RS512"
+	alsEdDSA          = "EdDSA"
+	rsaKeyHeader      = "-----BEGIN RSA PRIVATE KEY"
+	certHeader        = "-----BEGIN CERTIFICATE"
+	pkHeader          = "-----BEGIN PUBLIC KEY"
+	keyHeader         = "-----BEGIN PRIVATE KEY"
+	defaultOrg        = "choria"
+	OrgIssuerPrefix   = "I-"
+	ChainIssuerPrefix = "C-"
 )
+
+var defaultIssuer = fmt.Sprintf("Choria Tokens Package v%s", build.Version)
 
 // Purpose indicates what kind of token a JWT is and helps us parse it into the right data structure
 type Purpose string
@@ -74,6 +82,9 @@ func ParseToken(token string, claims jwt.Claims, pk any) error {
 			return nil, fmt.Errorf("unsupported signing method %v in token", t.Method)
 		}
 	})
+	if err != nil {
+		return err
+	}
 
 	return err
 }
@@ -170,10 +181,15 @@ func SaveAndSignTokenWithKeyFile(claims jwt.Claims, pkFile string, outFile strin
 }
 
 func newStandardClaims(issuer string, purpose Purpose, validity time.Duration, setSubject bool) (*StandardClaims, error) {
+	if issuer == "" {
+		issuer = defaultIssuer
+	}
+
 	now := jwt.NewNumericDate(time.Now().UTC())
 	claims := &StandardClaims{
 		Purpose: purpose,
 		RegisteredClaims: jwt.RegisteredClaims{
+			ID:        strings.ReplaceAll(iu.UniqueID(), "-", ""),
 			Issuer:    issuer,
 			IssuedAt:  now,
 			NotBefore: now,

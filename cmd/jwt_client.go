@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/config"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/tokens"
 )
 
@@ -35,6 +36,7 @@ type jWTCreateClientCommand struct {
 	fleetManagement       bool
 	signedFleetManagement bool
 	pk                    string
+	chain                 bool
 	additionalPub         []string
 	additionalSub         []string
 
@@ -65,6 +67,7 @@ func (c *jWTCreateClientCommand) Setup() (err error) {
 		c.cmd.Flag("org-admin", "Allow the user to access all broker traffic").UnNegatableBoolVar(&c.orgAdmin)
 		c.cmd.Flag("publish", "Additional subjects the user can publish to").StringsVar(&c.additionalPub)
 		c.cmd.Flag("subscribe", "Additional subjects the user can subscribe to").StringsVar(&c.additionalSub)
+		c.cmd.Flag("issuer", "Allow this user to sign other users in a chain of trust").UnNegatableBoolVar(&c.chain)
 	}
 
 	return nil
@@ -124,13 +127,33 @@ func (c *jWTCreateClientCommand) createJWT() error {
 		return err
 	}
 
-	claims, err := tokens.NewClientIDClaims(c.identity, c.agents, c.org, nil, string(opa), "Choria CLI", c.validity, perms, pk)
+	claims, err := tokens.NewClientIDClaims(c.identity, c.agents, c.org, nil, string(opa), "", c.validity, perms, pk)
 	if err != nil {
 		return err
 	}
 
 	claims.AdditionalSubscribeSubjects = c.additionalSub
 	claims.AdditionalPublishSubjects = c.additionalPub
+
+	if c.chain {
+		spubk, sprik, err := iu.Ed25519KeyPairFromSeedFile(c.signingKey)
+		if err != nil {
+			return err
+		}
+
+		dat, err := claims.OrgIssuerChainData()
+		if err != nil {
+			return fmt.Errorf("could not determine chain data to sign: %w", err)
+		}
+
+		sig, err := iu.Ed25519Sign(sprik, dat)
+		if err != nil {
+			return err
+		}
+
+		claims.SetOrgIssuer(spubk)
+		claims.SetChainIssuerTrustSignature(sig)
+	}
 
 	err = tokens.SaveAndSignTokenWithKeyFile(claims, c.signingKey, c.file, 0600)
 	if err != nil {

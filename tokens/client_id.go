@@ -60,7 +60,7 @@ type ClientIDClaims struct {
 	// AllowedAgents is a list of agent names or agent.action names this user can perform
 	AllowedAgents []string `json:"agents,omitempty"`
 
-	// OrganizationUnit is currently unused but will indicate the server account a user should belong to, set to 'choria' now
+	// OrganizationUnit broker account a user should belong to, set to 'choria' now and issuing organization
 	OrganizationUnit string `json:"ou,omitempty"`
 
 	// UserProperties is a list of arbitrary properties that can be set for a user, OPA Policies in the token can access these
@@ -71,9 +71,6 @@ type ClientIDClaims struct {
 
 	// Permissions sets additional permissions for a client
 	Permissions *ClientPermissions `json:"permissions,omitempty"`
-
-	// PublicKey is a ED25519 public key that will be used to sign requests and the server nonce
-	PublicKey string `json:"public_key,omitempty"`
 
 	// AdditionalPublishSubjects are additional subjects the client can publish to
 	AdditionalPublishSubjects []string `json:"pub_subjects,omitempty"`
@@ -96,10 +93,6 @@ func (c *ClientIDClaims) UniqueID() (id string, uid string) {
 
 // NewClientIDClaims generates new ClientIDClaims
 func NewClientIDClaims(callerID string, allowedAgents []string, org string, properties map[string]string, opaPolicy string, issuer string, validity time.Duration, perms *ClientPermissions, pk ed25519.PublicKey) (*ClientIDClaims, error) {
-	if issuer == "" {
-		issuer = "Choria"
-	}
-
 	if callerID == "" {
 		return nil, fmt.Errorf("caller id is required")
 	}
@@ -115,8 +108,10 @@ func NewClientIDClaims(callerID string, allowedAgents []string, org string, prop
 	}
 
 	if org == "" {
-		org = "choria"
+		org = defaultOrg
 	}
+
+	stdClaims.PublicKey = pubKey
 
 	return &ClientIDClaims{
 		CallerID:         callerID,
@@ -125,7 +120,6 @@ func NewClientIDClaims(callerID string, allowedAgents []string, org string, prop
 		UserProperties:   properties,
 		OPAPolicy:        opaPolicy,
 		Permissions:      perms,
-		PublicKey:        pubKey,
 		StandardClaims:   *stdClaims,
 	}, nil
 }
@@ -198,6 +192,11 @@ func ParseClientIDToken(token string, pk any, verifyPurpose bool) (*ClientIDClai
 
 	if verifyPurpose && !IsClientIDToken(claims.StandardClaims) {
 		return nil, ErrNotAClientToken
+	}
+
+	// if we have a tcs we require an issuer expiry to be set and it to not have expired
+	if !claims.StandardClaims.verifyIssuerExpiry(claims.TrustChainSignature != "") {
+		return nil, jwt.ErrTokenExpired
 	}
 
 	return claims, nil

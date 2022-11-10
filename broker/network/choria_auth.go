@@ -553,11 +553,13 @@ func (a *ChoriaAuth) parseServerJWT(jwts string) (claims *tokens.ServerClaims, e
 		} else {
 			claims, err = tokens.ParseServerTokenWithKeyfile(jwts, s)
 		}
+
 		switch {
 		case len(a.serverJwtSigners) == 1 && err != nil:
 			// just a bit friendlier than saying a generic error with 1 failure
 			return nil, err
 		case errors.Is(err, jwt.ErrTokenExpired), errors.Is(err, tokens.ErrNotAServerToken):
+			// These are fatal errors that no further trying will resolve
 			return nil, err
 		case err != nil:
 			continue

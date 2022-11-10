@@ -56,7 +56,7 @@ var _ = Describe("ClientIDClaims", func() {
 		It("Should set an issuer when none is given", func() {
 			claims, err := NewClientIDClaims("up=ginkgo", []string{"rpcutil"}, "choria", map[string]string{"group": "admins"}, "// opa policy", "", time.Hour, perms, pubK)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(claims.Issuer).To(Equal("Choria"))
+			Expect(claims.Issuer).To(Equal(defaultIssuer))
 		})
 
 		It("Should ensure a callerid is set", func() {

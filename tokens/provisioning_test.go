@@ -32,13 +32,13 @@ var _ = Describe("ProvisioningClaims", func() {
 		clientToken, err = SignToken(claims, loadRSAPriKey("testdata/rsa/signer-key.pem"))
 		Expect(err).ToNot(HaveOccurred())
 
-		pclaims, err := NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", []string{"nats://example.net:4222"}, "example.net", "/reg.data", "/facts.json", "Ginkgo", time.Hour)
+		pclaims, err := NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", []string{"nats://example.net:4222"}, "example.net", "/reg.data", "/facts.json", "", "Ginkgo", time.Hour)
 		Expect(err).ToNot(HaveOccurred())
 		pclaims.Extensions = MapClaims{"hello": "world"}
 		validToken, err = SignToken(pclaims, loadRSAPriKey("testdata/rsa/signer-key.pem"))
 		Expect(err).ToNot(HaveOccurred())
 
-		pclaims, err = NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", []string{"nats://example.net:4222"}, "example.net", "/reg.data", "/facts.json", "Ginkgo", time.Hour)
+		pclaims, err = NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", []string{"nats://example.net:4222"}, "example.net", "/reg.data", "/facts.json", "", "Ginkgo", time.Hour)
 		Expect(err).ToNot(HaveOccurred())
 		pclaims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(-1 * time.Hour))
 		expiredToken, err = SignToken(pclaims, loadRSAPriKey("testdata/rsa/signer-key.pem"))
@@ -47,19 +47,19 @@ var _ = Describe("ProvisioningClaims", func() {
 
 	Describe("NewProvisioningClaims", func() {
 		It("Should set an issuer if not set", func() {
-			claims, err := NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", []string{"nats://example.net:4222"}, "example.net", "/reg.data", "/facts.json", "", time.Hour)
+			claims, err := NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", []string{"nats://example.net:4222"}, "example.net", "/reg.data", "/facts.json", "", "", time.Hour)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(claims.Issuer).To(Equal("Choria"))
+			Expect(claims.Issuer).To(Equal(defaultIssuer))
 		})
 
 		It("Should require url or srv domain", func() {
-			claims, err := NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", nil, "", "/reg.data", "/facts.json", "", time.Hour)
+			claims, err := NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", nil, "", "/reg.data", "/facts.json", "", "", time.Hour)
 			Expect(err).To(MatchError("srv domain or urls required"))
 			Expect(claims).To(BeNil())
 		})
 
 		It("Should create correct claims", func() {
-			claims, err := NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", []string{"nats://example.net:4222"}, "example.net", "/reg.data", "/facts.json", "Ginkgo", time.Hour)
+			claims, err := NewProvisioningClaims(true, true, "x", "usr", "toomanysecrets", []string{"nats://example.net:4222"}, "example.net", "/reg.data", "/facts.json", "", "Ginkgo", time.Hour)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(claims.Issuer).To(Equal("Ginkgo"))
 			Expect(claims.Purpose).To(Equal(ProvisioningPurpose))

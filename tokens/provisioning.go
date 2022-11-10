@@ -14,24 +14,25 @@ import (
 )
 
 type ProvisioningClaims struct {
-	Token        string    `json:"cht"`
-	Secure       bool      `json:"chs"`
-	URLs         string    `json:"chu,omitempty"`
-	SRVDomain    string    `json:"chsrv,omitempty"`
-	ProvDefault  bool      `json:"chpd"`
-	ProvRegData  string    `json:"chrd,omitempty"`
-	ProvFacts    string    `json:"chf,omitempty"`
-	ProvNatsUser string    `json:"chusr,omitempty"`
-	ProvNatsPass string    `json:"chpwd,omitempty"`
-	Extensions   MapClaims `json:"extensions"`
+	Token            string    `json:"cht"`
+	Secure           bool      `json:"chs"`
+	URLs             string    `json:"chu,omitempty"`
+	SRVDomain        string    `json:"chsrv,omitempty"`
+	ProvDefault      bool      `json:"chpd"`
+	ProvRegData      string    `json:"chrd,omitempty"`
+	ProvFacts        string    `json:"chf,omitempty"`
+	ProvNatsUser     string    `json:"chusr,omitempty"`
+	ProvNatsPass     string    `json:"chpwd,omitempty"`
+	Extensions       MapClaims `json:"extensions"`
+	OrganizationUnit string    `json:"ou,omitempty"`
 
 	StandardClaims
 }
 
 // NewProvisioningClaims generates new ProvisioningClaims
-func NewProvisioningClaims(secure bool, byDefault bool, token string, user string, password string, urls []string, srvDomain string, registrationDataFile string, factsDataFile string, issuer string, validity time.Duration) (*ProvisioningClaims, error) {
-	if issuer == "" {
-		issuer = "Choria"
+func NewProvisioningClaims(secure bool, byDefault bool, token string, user string, password string, urls []string, srvDomain string, registrationDataFile string, factsDataFile string, org string, issuer string, validity time.Duration) (*ProvisioningClaims, error) {
+	if org == "" {
+		org = defaultOrg
 	}
 
 	if srvDomain == "" && len(urls) == 0 {
@@ -44,16 +45,17 @@ func NewProvisioningClaims(secure bool, byDefault bool, token string, user strin
 	}
 
 	return &ProvisioningClaims{
-		Secure:         secure,
-		ProvDefault:    byDefault,
-		Token:          token,
-		ProvNatsUser:   user,
-		ProvNatsPass:   password,
-		URLs:           strings.Join(urls, ","),
-		SRVDomain:      srvDomain,
-		ProvRegData:    registrationDataFile,
-		ProvFacts:      factsDataFile,
-		StandardClaims: *stdClaims,
+		Secure:           secure,
+		ProvDefault:      byDefault,
+		Token:            token,
+		ProvNatsUser:     user,
+		ProvNatsPass:     password,
+		URLs:             strings.Join(urls, ","),
+		SRVDomain:        srvDomain,
+		ProvRegData:      registrationDataFile,
+		ProvFacts:        factsDataFile,
+		StandardClaims:   *stdClaims,
+		OrganizationUnit: org,
 	}, nil
 }
 
@@ -76,6 +78,15 @@ func ParseProvisioningToken(token string, pk any) (*ProvisioningClaims, error) {
 
 	if !IsProvisioningToken(claims.StandardClaims) {
 		return nil, fmt.Errorf("not a provisioning token")
+	}
+
+	if claims.OrganizationUnit == "" {
+		claims.OrganizationUnit = defaultOrg
+	}
+
+	// if we have a tcs we require an issuer expiry to be set and it to not have expired
+	if !claims.StandardClaims.verifyIssuerExpiry(claims.TrustChainSignature != "") {
+		return nil, jwt.ErrTokenExpired
 	}
 
 	return claims, nil
@@ -115,6 +126,10 @@ func ParseProvisionTokenUnverified(token string) (*ProvisioningClaims, error) {
 
 	if !IsProvisioningToken(claims.StandardClaims) {
 		return nil, fmt.Errorf("token is not a provisioning token")
+	}
+
+	if claims.OrganizationUnit == "" {
+		claims.OrganizationUnit = defaultOrg
 	}
 
 	return claims, nil

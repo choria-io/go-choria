@@ -94,7 +94,7 @@ func (s *jWTCreateServerCommand) createJWT() error {
 		return err
 	}
 
-	claims, err := tokens.NewServerClaims(s.identity, s.collectives, s.org, perms, s.subjects, pk, "Choria CLI", s.validity)
+	claims, err := tokens.NewServerClaims(s.identity, s.collectives, s.org, perms, s.subjects, pk, "", s.validity)
 	if err != nil {
 		return err
 	}
