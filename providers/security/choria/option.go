@@ -64,6 +64,7 @@ func WithChoriaConfig(c *config.Config) Option {
 			DisableTLSVerify:  c.DisableTLSVerify,
 			InitiatedByServer: c.InitiatedByServer,
 			SignedReplies:     c.Choria.ChoriaSecuritySignReplies,
+			Issuers:           make(map[string]ed25519.PublicKey),
 		}
 
 		for _, signer := range c.Choria.ChoriaSecurityTrustedSigners {
@@ -76,6 +77,21 @@ func WithChoriaConfig(c *config.Config) Option {
 			}
 
 			cfg.TrustedTokenSigners = append(cfg.TrustedTokenSigners, pk)
+		}
+
+		for _, issuer := range c.Choria.IssuerNames {
+			name := fmt.Sprintf("plugin.security.issuer.%s.public", issuer)
+			pks := c.Option(name, "")
+			if pks == "" {
+				return fmt.Errorf("could not find option %s while adding issuer %s", name, issuer)
+			}
+
+			pk, err := hex.DecodeString(pks)
+			if err != nil {
+				return fmt.Errorf("invalid ed25519 public key in %s: %v", name, err)
+			}
+
+			cfg.Issuers[issuer] = pk
 		}
 
 		if c.InitiatedByServer {

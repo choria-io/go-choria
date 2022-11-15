@@ -415,7 +415,7 @@ func (c *Config) Option(option string, deflt string) string {
 	return v
 }
 
-// SetOption sets a raw string option, can be used to programatically
+// SetOption sets a raw string option, can be used to programmatically
 // set plugin options etc, setting a main config item value here does
 // not update the values in the strings, so this is only really useful
 // for setting plugin options

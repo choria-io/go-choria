@@ -145,6 +145,31 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 		systemPass:      s.config.Choria.NetworkSystemPassword,
 		systemUser:      s.config.Choria.NetworkSystemUsername,
 		tokenCache:      make(map[string]ed25519.PublicKey),
+		issuerTokens:    make(map[string]string),
+	}
+
+	if len(s.config.Choria.IssuerNames) > 0 {
+		if len(s.config.Choria.NetworkClientTokenSigners) > 0 {
+			return nil, fmt.Errorf("cannot set trusted client signers using plugin.choria.network.client_signer_cert when an issuer is configured")
+		}
+		if len(s.config.Choria.NetworkServerTokenSigners) > 0 {
+			return nil, fmt.Errorf("cannot set trusted server signers using plugin.choria.network.server_signer_cert when an issuer is configured")
+		}
+		if len(s.config.Choria.ChoriaSecurityTrustedSigners) > 0 {
+			return nil, fmt.Errorf("cannot set trusted client signers using plugin.security.choria.trusted_signers when an issuer is configured")
+		}
+
+		for _, issuer := range s.config.Choria.IssuerNames {
+			name := fmt.Sprintf("plugin.security.issuer.%s.public", issuer)
+			pk := s.config.Option(name, "")
+			if pk == "" {
+				s.log.Errorf("Could not find option %s while adding issuer %s", name, issuer)
+				continue
+			}
+
+			s.log.Warnf("Loaded Organization Issuer %s with public key %s", issuer, pk)
+			choriaAuth.issuerTokens[issuer] = pk
+		}
 	}
 
 	if choriaAuth.isTLS {
@@ -156,7 +181,7 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 		choriaAuth.serverJwtSigners = s.config.Choria.NetworkServerTokenSigners
 	}
 
-	if len(choriaAuth.clientJwtSigners) > 0 || len(choriaAuth.serverJwtSigners) > 0 {
+	if len(choriaAuth.clientJwtSigners) > 0 || len(choriaAuth.serverJwtSigners) > 0 || len(choriaAuth.issuerTokens) > 0 {
 		s.opts.AlwaysEnableNonce = true
 	}
 
@@ -251,7 +276,7 @@ func (s *Server) setupTLS() (err error) {
 		s.opts.TLSVerify = false
 		tlsc.ClientAuth = tls.NoClientCert
 
-	case s.config.Choria.NetworkProvisioningTokenSignerFile != "", len(s.config.Choria.NetworkClientTokenSigners) > 0:
+	case s.config.Choria.NetworkProvisioningTokenSignerFile != "", len(s.config.Choria.NetworkClientTokenSigners) > 0, len(s.config.Choria.IssuerNames) > 0:
 		// if provisioning is allowed we allow unverified tls connections
 		// but the auth system will funnel all of those into the provisioning account
 		//
@@ -262,6 +287,10 @@ func (s *Server) setupTLS() (err error) {
 
 		if s.config.Choria.NetworkProvisioningTokenSignerFile != "" {
 			s.log.Warnf("Allowing unverified TLS connections for provisioning purposes")
+		}
+
+		if len(s.config.Choria.IssuerNames) > 0 {
+			s.log.Warnf("Allowing unverified TLS connections for Organization Issuer issued connections")
 		}
 
 		if len(s.config.Choria.NetworkClientTokenSigners) > 0 {

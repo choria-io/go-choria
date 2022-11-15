@@ -74,7 +74,7 @@ var _ = Describe("Ed25519", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(hex.EncodeToString(sig)).To(Equal("5971db5ce8eec72d586b0630e2cdd9464e6800b973e6c58575a4072018ca51a93f2e1988d47e058bb19c18d57a44ffa9931b6b7e2f70b5e44ddc50339a8c790b"))
 
-			verify, err := Ed24419Verify(pub, []byte("too many secrets"), sig)
+			verify, err := Ed25519Verify(pub, []byte("too many secrets"), sig)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(verify).To(BeTrue())
 

@@ -45,7 +45,7 @@ var _ = Describe("Network Broker", func() {
 	})
 
 	Describe("NewServer", func() {
-		It("Should initialize the server correctly", func() {
+		BeforeEach(func() {
 			cfg.Choria.NetworkListenAddress = "0.0.0.0"
 			cfg.Choria.NetworkClientPort = 8080
 			cfg.Choria.NetworkWriteDeadline = time.Duration(10 * time.Second)
@@ -56,18 +56,48 @@ var _ = Describe("Network Broker", func() {
 			cfg.Choria.NetworkPeerUser = "bob"
 			cfg.Choria.NetworkPeerPassword = "secret"
 			cfg.Choria.NetworkPeers = []string{"nats://localhost:9000", "nats://localhost:9001", "nats://localhost:8082"}
+		})
+
+		It("Should deny trusted signers and issuers being used together", func() {
+			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(
+				srvcache.NewServer("localhost", 9000, "nats"),
+				srvcache.NewServer("localhost", 9001, "nats"),
+				srvcache.NewServer("localhost", 8082, "nats"),
+			), nil).AnyTimes()
+			fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil).AnyTimes()
+
+			cfg.Choria.IssuerNames = []string{"choria"}
+			cfg.Choria.NetworkClientTokenSigners = []string{"x"}
+			_, err = NewServer(fw, bi, false)
+			Expect(err).To(MatchError("cannot set trusted client signers using plugin.choria.network.client_signer_cert when an issuer is configured"))
+
+			cfg.Choria.NetworkClientTokenSigners = []string{}
+			cfg.Choria.NetworkServerTokenSigners = []string{"x"}
+			_, err = NewServer(fw, bi, false)
+			Expect(err).To(MatchError("cannot set trusted server signers using plugin.choria.network.server_signer_cert when an issuer is configured"))
+
+			cfg.Choria.NetworkClientTokenSigners = []string{}
+			cfg.Choria.NetworkServerTokenSigners = []string{}
+			cfg.Choria.ChoriaSecurityTrustedSigners = []string{"x"}
+			_, err = NewServer(fw, bi, false)
+			Expect(err).To(MatchError("cannot set trusted client signers using plugin.security.choria.trusted_signers when an issuer is configured"))
+		})
+
+		It("Should initialize the server correctly", func() {
+			cfg.Choria.IssuerNames = []string{"choria"}
+			cfg.SetOption("plugin.security.issuer.choria.public", "pk")
 
 			fw.EXPECT().NetworkBrokerPeers().Return(srvcache.NewServers(
 				srvcache.NewServer("localhost", 9000, "nats"),
 				srvcache.NewServer("localhost", 9001, "nats"),
 				srvcache.NewServer("localhost", 8082, "nats"),
 			), nil).AnyTimes()
-
 			fw.EXPECT().TLSConfig().Return(&tls.Config{}, nil)
 
 			srv, err = NewServer(fw, bi, false)
 			Expect(err).ToNot(HaveOccurred())
 
+			Expect(srv.opts.CustomClientAuthentication.(*ChoriaAuth).issuerTokens["choria"]).To(Equal("pk"))
 			Expect(srv.opts.Host).To(Equal("0.0.0.0"))
 			Expect(srv.opts.Port).To(Equal(8080))
 			Expect(srv.opts.Logtime).To(BeFalse())

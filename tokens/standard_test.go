@@ -129,22 +129,22 @@ var _ = Describe("StandardClaims", func() {
 				c.TrustChainSignature = "x"
 				c.ID = "ID"
 
-				ok, err := c.IsSignedByIssuer(pubK)
+				ok, _, err := c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("invalid issuer content"))
 				Expect(ok).To(BeFalse())
 
 				c.Issuer = "C-.x"
-				ok, err = c.IsSignedByIssuer(pubK)
+				ok, _, err = c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("invalid id in issuer"))
 				Expect(ok).To(BeFalse())
 
 				c.Issuer = "C-y."
-				ok, err = c.IsSignedByIssuer(pubK)
+				ok, _, err = c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("invalid public key in issuer"))
 				Expect(ok).To(BeFalse())
 
 				c.Issuer = "C-!.y"
-				ok, err = c.IsSignedByIssuer(pubK)
+				ok, _, err = c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("invalid public key in issuer data"))
 				Expect(ok).To(BeFalse())
 			})
@@ -155,17 +155,17 @@ var _ = Describe("StandardClaims", func() {
 				c.ID = iu.UniqueID()
 				c.TrustChainSignature = "X"
 
-				ok, err := c.IsSignedByIssuer(pubK)
+				ok, _, err := c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("invalid trust chain signature"))
 				Expect(ok).To(BeFalse())
 
 				c.TrustChainSignature = "."
-				ok, err = c.IsSignedByIssuer(pubK)
+				ok, _, err = c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("invalid trust chain signature"))
 				Expect(ok).To(BeFalse())
 
 				c.TrustChainSignature = "foo.!!"
-				ok, err = c.IsSignedByIssuer(pubK)
+				ok, _, err = c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("invalid signature in chain signature: encoding/hex: invalid byte: U+0021 '!'"))
 				Expect(ok).To(BeFalse())
 			})
@@ -206,7 +206,7 @@ var _ = Describe("StandardClaims", func() {
 				Expect(err).ToNot(HaveOccurred())
 				Expect(user.SetChainIssuer(handler)).To(Succeed())
 				user.SetChainUserTrustSignature(handler, []byte("invalid sig"))
-				ok, err := user.IsSignedByIssuer(issuePubK)
+				ok, _, err := user.IsSignedByIssuer(issuePubK)
 				Expect(err).To(MatchError("invalid chain signature"))
 				Expect(ok).To(BeFalse())
 			})
@@ -241,7 +241,7 @@ var _ = Describe("StandardClaims", func() {
 				usig, err := iu.Ed25519Sign(handlerPrik, udat)
 				Expect(err).ToNot(HaveOccurred())
 				user.SetChainUserTrustSignature(handler, usig)
-				ok, err := user.IsSignedByIssuer(issuePubK)
+				ok, _, err := user.IsSignedByIssuer(issuePubK)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(ok).To(BeTrue())
 			})
@@ -252,7 +252,7 @@ var _ = Describe("StandardClaims", func() {
 		Describe("IsSignedByIssuer", func() {
 			It("Should expect minimally correct data", func() {
 				check := func(pk ed25519.PublicKey, expect error) {
-					ok, err := c.IsSignedByIssuer(pk)
+					ok, _, err := c.IsSignedByIssuer(pk)
 					if expect == nil && !ok {
 						Fail(fmt.Sprintf("Expected to be ok but got %v", err))
 					}
@@ -279,7 +279,7 @@ var _ = Describe("StandardClaims", func() {
 				c.TrustChainSignature = "x"
 				c.ID = "ID"
 
-				ok, err := c.IsSignedByIssuer(pubK)
+				ok, _, err := c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("unsupported issuer format"))
 				Expect(ok).To(BeFalse())
 			})
@@ -289,7 +289,7 @@ var _ = Describe("StandardClaims", func() {
 				c.Issuer = fmt.Sprintf("I-%s", c.PublicKey)
 				c.TrustChainSignature = "X"
 				c.ID = "ID"
-				ok, err := c.IsSignedByIssuer(pubK)
+				ok, _, err := c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("invalid trust chain signature: encoding/hex: invalid byte: U+0058 'X'"))
 				Expect(ok).To(BeFalse())
 			})
@@ -303,7 +303,7 @@ var _ = Describe("StandardClaims", func() {
 				Expect(err).ToNot(HaveOccurred())
 				c.TrustChainSignature = hex.EncodeToString(sig)
 
-				ok, err := c.IsSignedByIssuer(pubK)
+				ok, _, err := c.IsSignedByIssuer(pubK)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(ok).To(BeFalse())
 			})
@@ -320,8 +320,9 @@ var _ = Describe("StandardClaims", func() {
 				Expect(err).ToNot(HaveOccurred())
 				c.TrustChainSignature = hex.EncodeToString(sig)
 
-				ok, err := c.IsSignedByIssuer(pubK)
+				ok, pk, err := c.IsSignedByIssuer(pubK)
 				Expect(err).ToNot(HaveOccurred())
+				Expect(pk).To(Equal(pubK))
 				Expect(ok).To(BeTrue())
 			})
 		})

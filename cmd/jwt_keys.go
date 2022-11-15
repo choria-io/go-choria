@@ -16,9 +16,11 @@ import (
 )
 
 type jWTKeyPairCommand struct {
-	seedFile string
-	pubFile  string
-	force    bool
+	seedFile   string
+	pubFile    string
+	force      bool
+	showPublic bool
+
 	command
 }
 
@@ -28,6 +30,7 @@ func (k *jWTKeyPairCommand) Setup() (err error) {
 		k.cmd.Arg("seed-file", "The private seed file to create").Required().StringVar(&k.seedFile)
 		k.cmd.Arg("public", "The optional public key file to create").StringVar(&k.pubFile)
 		k.cmd.Flag("force", "Force overwrite existing seed file").Short('f').UnNegatableBoolVar(&k.force)
+		k.cmd.Flag("show-public", "Loads the private key and extract its public key instead of making a new one").UnNegatableBoolVar(&k.showPublic)
 	}
 
 	return nil
@@ -48,7 +51,15 @@ func (k *jWTKeyPairCommand) Configure() error {
 func (k *jWTKeyPairCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	if choria.FileExist(k.seedFile) && !k.force {
+	switch {
+	case choria.FileExist(k.seedFile) && k.showPublic:
+		pub, _, err := choria.Ed25519KeyPairFromSeedFile(k.seedFile)
+		if err != nil {
+			return err
+		}
+		fmt.Printf("Public Key: %s\n", hex.EncodeToString(pub))
+		return nil
+	case choria.FileExist(k.seedFile) && !k.force:
 		ok, err := util.PromptForConfirmation("Really overwrite %s", k.seedFile)
 		if err != nil {
 			return err

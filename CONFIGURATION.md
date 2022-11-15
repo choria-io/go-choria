@@ -84,16 +84,16 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|
 |[plugin.security.file.ca](#pluginsecurityfileca)|[plugin.security.file.cache](#pluginsecurityfilecache)|
 |[plugin.security.file.certificate](#pluginsecurityfilecertificate)|[plugin.security.file.key](#pluginsecurityfilekey)|
-|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|
-|[plugin.security.provider](#pluginsecurityprovider)|[plugin.security.server_anon_tls](#pluginsecurityserver_anon_tls)|
-|[plugin.security.support_legacy_certificates](#pluginsecuritysupport_legacy_certificates)|[plugin.yaml](#pluginyaml)|
-|[publish_timeout](#publish_timeout)|[registerinterval](#registerinterval)|
-|[registration](#registration)|[registration_collective](#registration_collective)|
-|[registration_splay](#registration_splay)|[rpcaudit](#rpcaudit)|
-|[rpcauditprovider](#rpcauditprovider)|[rpcauthorization](#rpcauthorization)|
-|[rpcauthprovider](#rpcauthprovider)|[rpclimitmethod](#rpclimitmethod)|
-|[soft_shutdown_timeout](#soft_shutdown_timeout)|[threaded](#threaded)|
-|[ttl](#ttl)|[](#)|
+|[plugin.security.issuer.names](#pluginsecurityissuernames)|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|
+|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|[plugin.security.provider](#pluginsecurityprovider)|
+|[plugin.security.server_anon_tls](#pluginsecurityserver_anon_tls)|[plugin.security.support_legacy_certificates](#pluginsecuritysupport_legacy_certificates)|
+|[plugin.yaml](#pluginyaml)|[publish_timeout](#publish_timeout)|
+|[registerinterval](#registerinterval)|[registration](#registration)|
+|[registration_collective](#registration_collective)|[registration_splay](#registration_splay)|
+|[rpcaudit](#rpcaudit)|[rpcauditprovider](#rpcauditprovider)|
+|[rpcauthorization](#rpcauthorization)|[rpcauthprovider](#rpcauthprovider)|
+|[rpclimitmethod](#rpclimitmethod)|[soft_shutdown_timeout](#soft_shutdown_timeout)|
+|[threaded](#threaded)|[ttl](#ttl)|
 
 
 ## classesfile
@@ -972,6 +972,12 @@ When using file security provider, the path to the public certificate
  * **Type:** path_string
 
 When using file security provider, the path to the private key
+
+## plugin.security.issuer.names
+
+ * **Type:** comma_split
+
+List of names of valid issuers this server will accept, set indvidiaul issuer data using plugin.security.issuer.<name>.public
 
 ## plugin.security.pkcs11.driver_file
 

@@ -21,7 +21,7 @@ func Ed25519SignWithSeedFile(f string, msg []byte) ([]byte, error) {
 	return Ed25519Sign(pri, msg)
 }
 
-func Ed24419Verify(pk ed25519.PublicKey, msg []byte, sig []byte) (bool, error) {
+func Ed25519Verify(pk ed25519.PublicKey, msg []byte, sig []byte) (bool, error) {
 	if len(pk) != ed25519.PublicKeySize {
 		return false, fmt.Errorf("invalid public key size")
 	}

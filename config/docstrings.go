@@ -110,6 +110,7 @@ var docStrings = map[string]string{
 	"plugin.login.aaasvc.login.url":                            "List of URLs to attempt to login against when the remote signer is enabled",
 	"plugin.security.cipher_suites":                            "List of allowed cipher suites",
 	"plugin.security.ecc_curves":                               "List of allowed ECC curves",
+	"plugin.security.issuer.names":                             "List of names of valid issuers this server will accept, set indvidiaul issuer data using plugin.security.issuer.<name>.public",
 	"plugin.choria.security.server.token_file":                 "The server token file to use for authentication, defaults to serer.jwt in the same location as server.conf",
 	"plugin.choria.security.server.seed_file":                  "The server token seed to use for authentication, defaults to server.seed in the same location as server.conf",
 	"plugin.choria.ssldir":                                     "The SSL directory, auto detected via Puppet, when specifically set Puppet will not be consulted",
