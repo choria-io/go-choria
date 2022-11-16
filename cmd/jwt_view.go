@@ -85,24 +85,48 @@ func (v *tJWTViewCommand) validateServerToken(token string) error {
 	_, uid := claims.UniqueID()
 	fmt.Printf("   Private Network ID: %s\n", uid)
 
-	if claims.Permissions != nil {
-		fmt.Println("   Broker Permissions:")
-		if claims.Permissions.ServiceHost {
-			fmt.Println("          Can host services")
-		}
-		if claims.Permissions.Submission {
-			fmt.Println("          Can publish Choria Submission messages")
-		}
-		if claims.Permissions.Streams {
-			fmt.Println("          Can access Choria Streams")
+	tcm, err := v.trustChainDescription(claims.StandardClaims)
+	if err != nil {
+		return err
+	}
+	if tcm != "" {
+		fmt.Printf("      Trust Chain: %s\n", tcm)
+
+		if claims.IssuerExpiresAt != nil {
+			fmt.Printf("   Issuer Expires: %s (%s)\n", claims.IssuerExpiresAt.Time, iu.RenderDuration(time.Until(claims.IssuerExpiresAt.Time)))
 		}
 	}
 
-	stdc, err := json.MarshalIndent(claims.StandardClaims, strings.Repeat(" ", 23), "  ")
-	if err != nil {
-		return nil
+	if claims.Permissions != nil {
+		perms := []string{}
+
+		if claims.Permissions.ServiceHost {
+			perms = append(perms, "          Can host services")
+		}
+		if claims.Permissions.Submission {
+			perms = append(perms, "          Can publish Choria Submission messages")
+		}
+		if claims.Permissions.Streams {
+			perms = append(perms, "          Can access Choria Streams")
+		}
+		if claims.Permissions.Governor {
+			perms = append(perms, "          Can access Choria Governor")
+		}
+
+		if len(perms) == 0 {
+			perms = append(perms, "          No server specific permissions granted")
+		}
+
+		fmt.Println()
+		fmt.Println("   Broker Permissions:")
+		fmt.Println()
+
+		for _, p := range perms {
+			fmt.Println(p)
+		}
+
+		fmt.Println()
 	}
-	fmt.Printf("      Standard Claims: %s\n", string(stdc))
 
 	return nil
 }
@@ -176,6 +200,27 @@ func (v *tJWTViewCommand) validateProvisionToken(token string) error {
 	return nil
 }
 
+func (v *tJWTViewCommand) trustChainDescription(claims tokens.StandardClaims) (string, error) {
+	if claims.Issuer == "" || claims.TrustChainSignature == "" {
+		return "", nil
+	}
+
+	if claims.IsChainedIssuer(false) {
+		if claims.IsChainedIssuer(true) {
+			return fmt.Sprintf("Can Issue Clients as part of a trust chain with Issuer %s", strings.TrimPrefix(claims.Issuer, tokens.OrgIssuerPrefix)), nil
+		}
+
+		return "Invalid signing data, issued users will be invalid", nil
+	}
+
+	id, _, _, _, err := claims.ParseChainIssuerData()
+	if err != nil {
+		return "", err
+	}
+
+	return fmt.Sprintf("Issued by %s", id), nil
+}
+
 func (v *tJWTViewCommand) validateClientToken(token string) error {
 	var claims *tokens.ClientIDClaims
 	var err error
@@ -219,60 +264,65 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 		fmt.Printf("   Publish Subjects: %s\n", strings.Join(claims.AdditionalPublishSubjects, ", "))
 	}
 
-	if claims.Issuer != "" && claims.TrustChainSignature != "" {
-		msg := ""
-		if claims.IsChainedIssuer(false) {
-			valid := claims.IsChainedIssuer(true)
-			if valid {
-				msg = fmt.Sprintf("Can Issue Clients as part of a trust chain with Issuer %s", strings.TrimPrefix(claims.Issuer, tokens.OrgIssuerPrefix))
-			} else {
-				msg = "Invalid signing data, issued users will be invalid"
-			}
-		}
+	tcm, err := v.trustChainDescription(claims.StandardClaims)
+	if err != nil {
+		return err
+	}
+	if tcm != "" {
+		fmt.Printf("        Trust Chain: %s\n", tcm)
 
-		fmt.Printf("        Trust Chain: %s\n", msg)
 		if claims.IssuerExpiresAt != nil {
-			fmt.Printf(" Issuer Expires: %s (%s)\n", claims.IssuerExpiresAt.Time, iu.RenderDuration(time.Until(claims.IssuerExpiresAt.Time)))
+			fmt.Printf("     Issuer Expires: %s (%s)\n", claims.IssuerExpiresAt.Time, iu.RenderDuration(time.Until(claims.IssuerExpiresAt.Time)))
 		}
 	}
 
 	if claims.Permissions != nil {
-		fmt.Println()
-		fmt.Println(" Client Permissions:")
-		fmt.Println()
+		perms := []string{}
 		if claims.Permissions.FleetManagement || claims.Permissions.SignedFleetManagement {
 			if claims.Permissions.SignedFleetManagement {
-				fmt.Println("      Can manage Choria fleet nodes subject to authorizing signature")
+				perms = append(perms, "      Can manage Choria fleet nodes subject to authorizing signature")
 			} else {
-				fmt.Println("      Can manage Choria fleet nodes")
+				perms = append(perms, "      Can manage Choria fleet nodes")
 			}
 		}
 		if claims.Permissions.ElectionUser {
-			fmt.Println("      Can use Leader Elections")
+			perms = append(perms, "      Can use Leader Elections")
 		}
 		if claims.Permissions.EventsViewer {
-			fmt.Println("      Can view Lifecycle and Autonomous Agent events")
+			perms = append(perms, "      Can view Lifecycle and Autonomous Agent events")
 		}
 		if claims.Permissions.StreamsUser {
-			fmt.Println("      Can use Choria Streams")
+			perms = append(perms, "      Can use Choria Streams")
 		}
 		if claims.Permissions.StreamsAdmin {
-			fmt.Println("      Can administer Choria Streams")
+			perms = append(perms, "      Can administer Choria Streams")
 		}
 		if claims.Permissions.Governor {
-			fmt.Println("      Can access Choria Governors")
+			perms = append(perms, "      Can access Choria Governors")
 		}
 		if claims.Permissions.OrgAdmin {
-			fmt.Println("      Can observe all traffic on all subjects and access the system account")
+			perms = append(perms, "      Can observe all traffic on all subjects and access the system account")
 		}
 		if claims.Permissions.SystemUser {
-			fmt.Println("      Can access the Broker system account")
+			perms = append(perms, "      Can access the Broker system account")
 		}
 		if claims.Permissions.AuthenticationDelegator {
-			fmt.Println("      Can sign requests on behalf of other users")
+			perms = append(perms, "      Can sign requests on behalf of other users")
 		}
 		if claims.Permissions.ExtendedServiceLifetime {
-			fmt.Println("      Can have an extended token lifetime")
+			perms = append(perms, "      Can have an extended token lifetime")
+		}
+
+		fmt.Println()
+		fmt.Println(" Client Permissions:")
+		fmt.Println()
+
+		if len(perms) == 0 {
+			perms = append(perms, "      No user specific permissions granted")
+		}
+
+		for _, p := range perms {
+			fmt.Println(p)
 		}
 
 		fmt.Println()
