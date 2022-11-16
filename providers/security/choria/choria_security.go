@@ -29,8 +29,9 @@ import (
 )
 
 var (
-	callerFormat = "choria=%s"
-	callerIDRe   = regexp.MustCompile(`^[a-z]+=([\w\.\-]+)`)
+	callerFormat        = "choria=%s"
+	callerIDRe          = regexp.MustCompile(`^[a-z]+=([\w\.\-]+)`)
+	errPermissionDenied = errors.New("access denied")
 )
 
 type ChoriaSecurity struct {
@@ -48,6 +49,9 @@ type Config struct {
 
 	// TokenFile is the file holding the signed JWT file
 	TokenFile string
+
+	// Issuers are Organization issuers that may issue tokens
+	Issuers map[string]ed25519.PublicKey
 
 	// TrustedTokenSigners are keys allowed to sign tokens
 	TrustedTokenSigners []ed25519.PublicKey
@@ -144,8 +148,14 @@ func (s *ChoriaSecurity) Validate() ([]string, bool) {
 			errors = append(errors, "the path to the ed25519 seed is not configured")
 		}
 
-		if s.conf.InitiatedByServer && len(s.conf.TrustedTokenSigners) == 0 {
-			errors = append(errors, "no trusted token signers configured")
+		if s.conf.InitiatedByServer {
+			if len(s.conf.TrustedTokenSigners) == 0 && len(s.conf.Issuers) == 0 {
+				errors = append(errors, "no trusted token signers or issuers configured")
+			}
+
+			if len(s.conf.TrustedTokenSigners) > 0 && len(s.conf.Issuers) > 0 {
+				errors = append(errors, "can only configure one of trusted token signers or issuers")
+			}
 		}
 	}
 
@@ -197,6 +207,31 @@ func (s *ChoriaSecurity) VerifySignatureBytes(dat []byte, sig []byte, public ...
 	}
 }
 
+func (s *ChoriaSecurity) orgPkForToken(token []byte) (pk ed25519.PublicKey, ou string, err error) {
+	uclaims, err := tokens.ParseTokenUnverified(string(token))
+	if err != nil {
+		return nil, "", err
+	}
+
+	our, ok := uclaims["ou"]
+	if !ok {
+		return nil, "", fmt.Errorf("no ou found in client token")
+	}
+
+	ous, ok := our.(string)
+	if !ok {
+		return nil, "", fmt.Errorf("empty ou found in client token")
+	}
+
+	issuer, ok := s.conf.Issuers[ous]
+	if !ok {
+		s.log.Warnf("No issuer found for %s ou", ous)
+		return nil, "", fmt.Errorf("no issuer found for %s ou", ous)
+	}
+
+	return issuer, ous, nil
+}
+
 func (s *ChoriaSecurity) verifyByteSignatureByDelegation(dat []byte, sig []byte, caller []byte, delegate []byte) (bool, string) {
 	if len(delegate) == 0 {
 		s.log.Warnf("Received an invalid token for signature verification")
@@ -213,35 +248,61 @@ func (s *ChoriaSecurity) verifyByteSignatureByDelegation(dat []byte, sig []byte,
 	var pk ed25519.PublicKey
 	var pks string
 	var name string
+	var err error
 
-	for _, signer := range s.conf.TrustedTokenSigners {
+	checkDelegate := func(signer ed25519.PublicKey, delegate []byte) (pks string, name string, error error) {
 		st, err := tokens.ParseClientIDToken(string(delegate), signer, true)
 		if err != nil {
-			continue
+			return "", "", fmt.Errorf("could not parse client token: %w", err)
 		}
 
 		// it successfully parsed but now must be a delegator else it's not allowed to sign this data
 		if st.Permissions == nil || !st.Permissions.AuthenticationDelegator {
-			s.log.Warnf("Token attempted to sign a request as delegator without required delegator permission: %s", string(signer))
-			return false, ""
+			return "", "", fmt.Errorf("%w: token attempted to sign a request as delegator without required delegator permission: %s", errPermissionDenied, hex.EncodeToString(signer))
 		}
 
-		// this ensures/assumes the caller is always signed by the same signer as the delegator, I am not yet sure if this is true
+		// this ensures/assumes the caller is always signed by the same signer as the delegator
 		ct, err := tokens.ParseClientIDToken(string(caller), signer, true)
 		if err != nil {
-			s.log.Warnf("Could not load caller token using the same signer as the delegator: %v", err)
-			return false, ""
+			return "", "", fmt.Errorf("%w: could not load caller token using the same signer as the delegator: %v", errPermissionDenied, err)
 		}
 
 		if ct.Permissions == nil || !(ct.Permissions.FleetManagement || ct.Permissions.SignedFleetManagement) {
-			s.log.Warnf("Caller token can not be used without fleet management access: %s: %v", string(caller), err)
+			return "", "", fmt.Errorf("%w: caller token cannot be used without fleet management access: %s: %v", errPermissionDenied, string(caller), err)
+		}
+
+		if st.PublicKey == "" {
+			return "", "", fmt.Errorf("%w: no public key set", errPermissionDenied)
+		}
+
+		return st.PublicKey, st.CallerID, nil
+	}
+
+	if len(s.conf.Issuers) > 0 {
+		issuer, _, err := s.orgPkForToken(delegate)
+		if err != nil {
+			s.log.Warnf("Could not get ou from delegate token: %v", err)
 			return false, ""
 		}
 
-		if st.PublicKey != "" {
-			pks = st.PublicKey
-			name = st.CallerID
-			break
+		pks, name, err = checkDelegate(issuer, delegate)
+		if err != nil {
+			s.log.Warn(err)
+			return false, ""
+		}
+	} else {
+		for _, signer := range s.conf.TrustedTokenSigners {
+			s.log.Warnf("Checking using signer %x", signer)
+			pks, name, err = checkDelegate(signer, delegate)
+			if errors.Is(err, errPermissionDenied) {
+				s.log.Warnf(err.Error())
+				return false, ""
+			} else if err != nil {
+				s.log.Warnf(err.Error())
+				continue
+			} else if err == nil {
+				break
+			}
 		}
 	}
 
@@ -250,13 +311,13 @@ func (s *ChoriaSecurity) verifyByteSignatureByDelegation(dat []byte, sig []byte,
 		return false, ""
 	}
 
-	pk, err := hex.DecodeString(pks)
+	pk, err = hex.DecodeString(pks)
 	if err != nil {
 		s.log.Warnf("Could not extract public key from token")
 		return false, ""
 	}
 
-	ok, err := iu.Ed24419Verify(pk, dat, sig)
+	ok, err := iu.Ed25519Verify(pk, dat, sig)
 	if err != nil {
 		s.log.Warnf("Could not verify signature: %v", err)
 		return false, ""
@@ -265,71 +326,113 @@ func (s *ChoriaSecurity) verifyByteSignatureByDelegation(dat []byte, sig []byte,
 	return ok, name
 }
 
-func (s *ChoriaSecurity) verifyByteSignatureByCaller(dat []byte, sig []byte, public []byte) (bool, string) {
-	if len(public) == 0 {
+func (s *ChoriaSecurity) verifyByteSignatureByCaller(dat []byte, sig []byte, token []byte) (bool, string) {
+	if len(token) == 0 {
 		s.log.Warnf("Received an invalid token for signature verification")
 		return false, ""
 	}
 
-	purpose := tokens.TokenPurpose(string(public))
+	purpose := tokens.TokenPurpose(string(token))
 	if purpose != tokens.ServerPurpose && purpose != tokens.ClientIDPurpose {
 		s.log.Warnf("Cannot verify byte signatures using a %s token", purpose)
 		return false, ""
 	}
 
+	checkClient := func(token []byte, signer ed25519.PublicKey) (pks string, name string, err error) {
+		t, err := tokens.ParseClientIDToken(string(token), signer, true)
+		if err != nil {
+			return "", "", err
+		}
+
+		// it successfully parsed but now must not require delegation
+		if t.Permissions != nil && t.Permissions.SignedFleetManagement {
+			return "", "", fmt.Errorf("%w: requires authority delegation", errPermissionDenied)
+		}
+
+		if t.Permissions == nil || !t.Permissions.FleetManagement {
+			return "", "", fmt.Errorf("%w: does not have fleet management access", errPermissionDenied)
+		}
+
+		if t.PublicKey == "" {
+			return "", "", fmt.Errorf("%w: no public key in token", errPermissionDenied)
+		}
+
+		return t.PublicKey, t.CallerID, nil
+	}
+
 	var pk ed25519.PublicKey
 	var pks string
 	var name string
+	var err error
 
-	for _, signer := range s.conf.TrustedTokenSigners {
+	if len(s.conf.Issuers) > 0 {
+		issuer, ou, err := s.orgPkForToken(token)
+		if err != nil {
+			s.log.Warnf("Could not get ou from token: %v", err)
+			return false, ""
+		}
+
 		if purpose == tokens.ServerPurpose {
-			t, err := tokens.ParseServerToken(string(public), signer)
+			t, err := tokens.ParseServerToken(string(token), issuer)
 			if err != nil {
-				continue
+				s.log.Warnf("Could not parse server token using issuer '%s': %v", ou, err)
+				return false, ""
 			}
 
-			if t.PublicKey != "" {
-				pks = t.PublicKey
-				name = t.ChoriaIdentity
-				break
+			if t.PublicKey == "" {
+				s.log.Warnf("Server token has no public key")
+				return false, ""
 			}
+
+			pks = t.PublicKey
+			name = t.ChoriaIdentity
 		} else {
-			t, err := tokens.ParseClientIDToken(string(public), signer, true)
+			pks, name, err = checkClient(token, issuer)
 			if err != nil {
-				continue
-			}
-
-			// it successfully parsed but now must not require delegation
-			if t.Permissions != nil && t.Permissions.SignedFleetManagement {
-				s.log.Warnf("Could not verify signature by caller which requires authority delegation")
+				s.log.Warnf("Could not verify signature by caller using issuer '%s': %v", ou, err)
 				return false, ""
 			}
+		}
+	} else {
+		for _, signer := range s.conf.TrustedTokenSigners {
+			if purpose == tokens.ServerPurpose {
+				t, err := tokens.ParseServerToken(string(token), signer)
+				if err != nil {
+					continue
+				}
 
-			if t.Permissions != nil && !t.Permissions.FleetManagement {
-				s.log.Warnf("Could not verify signature by caller which does not have fleet management access")
-				return false, ""
-			}
-
-			if t.PublicKey != "" {
-				pks = t.PublicKey
-				name = t.CallerID
-				break
+				if t.PublicKey != "" {
+					pks = t.PublicKey
+					name = t.ChoriaIdentity
+					break
+				}
+			} else {
+				pks, name, err = checkClient(token, signer)
+				if errors.Is(err, errPermissionDenied) {
+					s.log.Warnf("Could not verify signature by caller: %v", err)
+					return false, ""
+				} else if err != nil {
+					s.log.Warnf("Could not verify signature by caller: %v", err)
+					continue
+				} else if err == nil {
+					break
+				}
 			}
 		}
 	}
 
 	if pks == "" {
-		s.log.Warnf("Signer token %s could not be loaded using %d authorized issuers", string(public), len(s.conf.TrustedTokenSigners))
+		s.log.Warnf("Signer token %s could not be loaded using %d authorized issuers", string(token), len(s.conf.TrustedTokenSigners))
 		return false, ""
 	}
 
-	pk, err := hex.DecodeString(pks)
+	pk, err = hex.DecodeString(pks)
 	if err != nil {
 		s.log.Warnf("Could not extract public key from token")
 		return false, ""
 	}
 
-	ok, err := iu.Ed24419Verify(pk, dat, sig)
+	ok, err := iu.Ed25519Verify(pk, dat, sig)
 	if err != nil {
 		s.log.Warnf("Could not verify signature: %v", err)
 		return false, ""

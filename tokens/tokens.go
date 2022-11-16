@@ -23,7 +23,7 @@ const (
 	algRS256          = "RS256"
 	algRS384          = "RS384"
 	algRS512          = "RS512"
-	alsEdDSA          = "EdDSA"
+	algEdDSA          = "EdDSA"
 	rsaKeyHeader      = "-----BEGIN RSA PRIVATE KEY"
 	certHeader        = "-----BEGIN CERTIFICATE"
 	pkHeader          = "-----BEGIN PUBLIC KEY"
@@ -55,7 +55,9 @@ const (
 // MapClaims are free form map claims
 type MapClaims jwt.MapClaims
 
-// ParseToken parses token into claims and verify the token is valid using the pk
+// ParseToken parses token into claims and verify the token is valid using the pk,
+// if the token is signed by a chain issuer then pk must be the org issuer pk and
+// the chain will be verified
 func ParseToken(token string, claims jwt.Claims, pk any) error {
 	if pk == nil {
 		return fmt.Errorf("invalid public key")
@@ -70,10 +72,35 @@ func ParseToken(token string, claims jwt.Claims, pk any) error {
 			}
 			return pk, nil
 
-		case alsEdDSA:
+		case algEdDSA:
 			pk, ok := pk.(ed25519.PublicKey)
 			if !ok {
 				return nil, fmt.Errorf("ed25519 public key required")
+			}
+
+			var sc *StandardClaims
+
+			// if its a client and from a chain we will verify it using the chain issuer pubk
+			client, ok := claims.(*ClientIDClaims)
+			if ok && strings.HasPrefix(client.Issuer, ChainIssuerPrefix) {
+				sc = &client.StandardClaims
+			}
+
+			// if its a server and from a chain we will verify it using the chain issuer pubk
+			server, ok := claims.(*ServerClaims)
+			if ok && strings.HasPrefix(server.Issuer, ChainIssuerPrefix) {
+				sc = &server.StandardClaims
+			}
+
+			if sc != nil {
+				valid, signerPk, err := sc.IsSignedByIssuer(pk)
+				if err != nil {
+					return nil, fmt.Errorf("not signed by issuer: %w", err)
+				}
+				if !valid {
+					return nil, fmt.Errorf("token not signed by issuer")
+				}
+				pk = signerPk
 			}
 
 			return pk, nil
@@ -86,7 +113,7 @@ func ParseToken(token string, claims jwt.Claims, pk any) error {
 		return err
 	}
 
-	return err
+	return nil
 }
 
 // ParseTokenUnverified parses token into claims and DOES not verify the token validity in any way

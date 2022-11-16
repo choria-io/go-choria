@@ -52,6 +52,7 @@ type ChoriaAuth struct {
 	provisioningTokenSigner string
 	clientJwtSigners        []string
 	serverJwtSigners        []string
+	issuerTokens            map[string]string
 	choriaAccount           *server.Account
 	systemAccount           *server.Account
 	provisioningAccount     *server.Account
@@ -532,15 +533,7 @@ func (a *ChoriaAuth) cachedEd25519Token(token string) (ed25519.PublicKey, error)
 	return pk, nil
 }
 
-func (a *ChoriaAuth) parseServerJWT(jwts string) (claims *tokens.ServerClaims, err error) {
-	if len(a.serverJwtSigners) == 0 {
-		return nil, fmt.Errorf("JWT Signer not set in plugin.choria.network.server_signer_cert, denying all servers")
-	}
-
-	if jwts == emptyString {
-		return nil, fmt.Errorf("no JWT received")
-	}
-
+func (a *ChoriaAuth) parseServerJWTWithSigners(jwts string) (claims *tokens.ServerClaims, err error) {
 	for _, s := range a.serverJwtSigners {
 		// its a token
 		if len(s) == 64 {
@@ -567,11 +560,68 @@ func (a *ChoriaAuth) parseServerJWT(jwts string) (claims *tokens.ServerClaims, e
 
 		break
 	}
-	switch {
-	case errors.Is(err, tokens.ErrNotAServerToken):
-		return nil, err
-	case err != nil:
+	if err != nil {
 		return nil, fmt.Errorf("could not parse server token with any of %d signer identities", len(a.serverJwtSigners))
+	}
+
+	return claims, nil
+}
+
+func (a *ChoriaAuth) parseServerJWTWithIssuer(jwts string) (claims *tokens.ServerClaims, err error) {
+	uclaims, err := tokens.ParseTokenUnverified(jwts)
+	if err != nil {
+		return nil, err
+	}
+
+	ou := uclaims["ou"]
+	if ou == nil {
+		return nil, fmt.Errorf("no ou claim in token")
+	}
+
+	ous, ok := ou.(string)
+	if !ok {
+		return nil, fmt.Errorf("invald ou in token")
+	}
+
+	issuer, ok := a.issuerTokens[ous]
+	if !ok {
+		return nil, fmt.Errorf("no issuer found for ou %s", ous)
+	}
+
+	pk, err := a.cachedEd25519Token(issuer)
+	if err != nil {
+		return nil, fmt.Errorf("invalid issuer public key: %w", err)
+	}
+
+	claims, err = tokens.ParseServerToken(jwts, pk)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse token issued by the %s chain: %w", ous, err)
+	}
+
+	return claims, nil
+}
+
+func (a *ChoriaAuth) parseServerJWT(jwts string) (claims *tokens.ServerClaims, err error) {
+	if len(a.serverJwtSigners) == 0 && len(a.issuerTokens) == 0 {
+		return nil, fmt.Errorf("no Server JWT signer or Organization Issuer set, denying all servers")
+	}
+
+	if jwts == emptyString {
+		return nil, fmt.Errorf("no JWT received")
+	}
+
+	// if we have issuer tokens we get the org from the token and then check it using the issuer for the org
+	if len(a.issuerTokens) > 0 {
+		claims, err = a.parseServerJWTWithIssuer(jwts)
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		// if no issuer we would have signers so we check them all
+		claims, err = a.parseServerJWTWithSigners(jwts)
+		if err != nil {
+			return nil, err
+		}
 	}
 
 	if claims.ChoriaIdentity == emptyString {
@@ -585,15 +635,7 @@ func (a *ChoriaAuth) parseServerJWT(jwts string) (claims *tokens.ServerClaims, e
 	return claims, nil
 }
 
-func (a *ChoriaAuth) parseClientIDJWT(jwts string) (claims *tokens.ClientIDClaims, err error) {
-	if len(a.clientJwtSigners) == 0 {
-		return nil, fmt.Errorf("JWT Signer not set in plugin.choria.network.client_signer_cert, denying all clients")
-	}
-
-	if jwts == emptyString {
-		return nil, fmt.Errorf("no JWT received")
-	}
-
+func (a *ChoriaAuth) parseClientJWTWithSigners(jwts string) (claims *tokens.ClientIDClaims, err error) {
 	for _, s := range a.clientJwtSigners {
 		// its a token
 		if len(s) == 64 {
@@ -624,6 +666,63 @@ func (a *ChoriaAuth) parseClientIDJWT(jwts string) (claims *tokens.ClientIDClaim
 	// above we try to the last, if we still have an error here it failed
 	if err != nil {
 		return nil, fmt.Errorf("could not parse client token with any of %d signer identities", len(a.clientJwtSigners))
+	}
+
+	return claims, nil
+}
+
+func (a *ChoriaAuth) parseClientIDJWTWithIssuer(jwts string) (claims *tokens.ClientIDClaims, err error) {
+	uclaims, err := tokens.ParseTokenUnverified(jwts)
+	if err != nil {
+		return nil, err
+	}
+
+	ou := uclaims["ou"]
+	if ou == nil {
+		return nil, fmt.Errorf("no ou claim in token")
+	}
+
+	ous, ok := ou.(string)
+	if !ok {
+		return nil, fmt.Errorf("invald ou in token")
+	}
+
+	issuer, ok := a.issuerTokens[ous]
+	if !ok {
+		return nil, fmt.Errorf("no issuer configured for ou '%s'", ous)
+	}
+
+	pk, err := a.cachedEd25519Token(issuer)
+	if err != nil {
+		return nil, fmt.Errorf("invalid issuer public key: %w", err)
+	}
+
+	claims, err = tokens.ParseClientIDToken(jwts, pk, true)
+	if err != nil {
+		return nil, fmt.Errorf("failed to parse client token issued by the %s chain: %w", ous, err)
+	}
+
+	return claims, nil
+}
+
+func (a *ChoriaAuth) parseClientIDJWT(jwts string) (claims *tokens.ClientIDClaims, err error) {
+	if len(a.clientJwtSigners) == 0 && len(a.issuerTokens) == 0 {
+		return nil, fmt.Errorf("no Client JWT signer or Organization Issuer set, denying all clients")
+	}
+
+	if jwts == emptyString {
+		return nil, fmt.Errorf("no JWT received")
+	}
+
+	// if we have issuer tokens we get the org from the token and then check it using the issuer for the org
+	if len(a.issuerTokens) > 0 {
+		claims, err = a.parseClientIDJWTWithIssuer(jwts)
+	} else {
+		// else we have signers so lets check using those
+		claims, err = a.parseClientJWTWithSigners(jwts)
+	}
+	if err != nil {
+		return nil, err
 	}
 
 	if claims.CallerID == emptyString {

@@ -11,7 +11,7 @@ import (
 )
 
 func Ed24419Verify(pk ed25519.PublicKey, msg []byte, sig []byte) (bool, error) {
-	return iu.Ed24419Verify(pk, msg, sig)
+	return iu.Ed25519Verify(pk, msg, sig)
 }
 
 func Ed25519SignWithSeedFile(f string, msg []byte) ([]byte, error) {

@@ -51,7 +51,8 @@ type ServerClaims struct {
 }
 
 var (
-	ErrNotAServerToken = errors.New("not a server token")
+	ErrNotAServerToken  = errors.New("not a server token")
+	ErrChainIssuerToken = errors.New("chain issuers may not access servers")
 )
 
 // UniqueID returns the identity and unique id used to generate private inboxes
@@ -217,9 +218,11 @@ func ParseServerToken(token string, pk any) (*ServerClaims, error) {
 		return nil, ErrNotAServerToken
 	}
 
-	// if we have a tcs we require an issuer expiry to be set and it to not have expired
-	if !claims.StandardClaims.verifyIssuerExpiry(claims.TrustChainSignature != "") {
-		return nil, jwt.ErrTokenExpired
+	if claims.TrustChainSignature != "" {
+		// if we have a tcs we require an issuer expiry to be set and it to not have expired
+		if !claims.StandardClaims.verifyIssuerExpiry(true) {
+			return nil, jwt.ErrTokenExpired
+		}
 	}
 
 	return claims, nil

@@ -136,23 +136,15 @@ func (c *jWTCreateClientCommand) createJWT() error {
 	claims.AdditionalPublishSubjects = c.additionalPub
 
 	if c.chain {
-		spubk, sprik, err := iu.Ed25519KeyPairFromSeedFile(c.signingKey)
+		_, sprik, err := iu.Ed25519KeyPairFromSeedFile(c.signingKey)
 		if err != nil {
 			return err
 		}
 
-		dat, err := claims.OrgIssuerChainData()
-		if err != nil {
-			return fmt.Errorf("could not determine chain data to sign: %w", err)
-		}
-
-		sig, err := iu.Ed25519Sign(sprik, dat)
+		err = claims.AddOrgIssuerData(sprik)
 		if err != nil {
 			return err
 		}
-
-		claims.SetOrgIssuer(spubk)
-		claims.SetChainIssuerTrustSignature(sig)
 	}
 
 	err = tokens.SaveAndSignTokenWithKeyFile(claims, c.signingKey, c.file, 0600)

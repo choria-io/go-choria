@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/golang-jwt/jwt/v4"
@@ -195,8 +196,10 @@ func ParseClientIDToken(token string, pk any, verifyPurpose bool) (*ClientIDClai
 	}
 
 	// if we have a tcs we require an issuer expiry to be set and it to not have expired
-	if !claims.StandardClaims.verifyIssuerExpiry(claims.TrustChainSignature != "") {
-		return nil, jwt.ErrTokenExpired
+	if claims.TrustChainSignature != "" && strings.HasPrefix(claims.Issuer, ChainIssuerPrefix) {
+		if !claims.StandardClaims.verifyIssuerExpiry(true) {
+			return nil, jwt.ErrTokenExpired
+		}
 	}
 
 	return claims, nil

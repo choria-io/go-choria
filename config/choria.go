@@ -103,6 +103,7 @@ type ChoriaPluginConfig struct {
 	AAAServiceLoginURLs []string `confkey:"plugin.login.aaasvc.login.url" url:"https://github.com/choria-io/aaasvc"`                         // List of URLs to attempt to login against when the remote signer is enabled
 	CipherSuites        []string `confkey:"plugin.security.cipher_suites" type:"comma_split"`                                                // List of allowed cipher suites
 	ECCCurves           []string `confkey:"plugin.security.ecc_curves" type:"comma_split"`                                                   // List of allowed ECC curves
+	IssuerNames         []string `confkey:"plugin.security.issuer.names" type:"comma_split"`                                                 // List of names of valid issuers this server will accept, set indvidiaul issuer data using plugin.security.issuer.<name>.public
 	ServerTokenFile     string   `confkey:"plugin.choria.security.server.token_file" type:"path_string"`                                     // The server token file to use for authentication, defaults to serer.jwt in the same location as server.conf
 	ServerTokenSeedFile string   `confkey:"plugin.choria.security.server.seed_file" type:"path_string"`                                      // The server token seed to use for authentication, defaults to server.seed in the same location as server.conf
 

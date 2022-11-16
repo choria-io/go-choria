@@ -31,6 +31,46 @@ type StandardClaims struct {
 	jwt.RegisteredClaims
 }
 
+// AddOrgIssuerData adds the data that a Chain Issuer needs to be able to issue clients in an Org managed by an Issuer
+func (c *StandardClaims) AddOrgIssuerData(priK ed25519.PrivateKey) error {
+	dat, err := c.OrgIssuerChainData()
+	if err != nil {
+		return err
+	}
+
+	sig, err := iu.Ed25519Sign(priK, dat)
+	if err != nil {
+		return err
+	}
+
+	c.SetOrgIssuer(priK.Public().(ed25519.PublicKey))
+	c.SetChainIssuerTrustSignature(sig)
+
+	return nil
+}
+
+// AddChainIssuerData adds the data that a Signed token needs from a Chain Issuer in an Org managed by an Issuer
+func (c *StandardClaims) AddChainIssuerData(chainIssuer *ClientIDClaims, prik ed25519.PrivateKey) error {
+	err := c.SetChainIssuer(chainIssuer)
+	if err != nil {
+		return err
+	}
+
+	udat, err := c.ChainIssuerData(chainIssuer.TrustChainSignature)
+	if err != nil {
+		return err
+	}
+
+	usig, err := iu.Ed25519Sign(prik, udat)
+	if err != nil {
+		return err
+	}
+
+	c.SetChainUserTrustSignature(chainIssuer, usig)
+
+	return nil
+}
+
 func (c *StandardClaims) verifyIssuerExpiry(req bool) bool {
 	// org issuer tokens has a tcs but the org issuer has no expiry time so we can skip
 	if !strings.HasPrefix(c.Issuer, ChainIssuerPrefix) {
@@ -79,12 +119,13 @@ func (c *StandardClaims) IsChainedIssuer(verify bool) bool {
 		return false
 	}
 
-	ok, _ := iu.Ed24419Verify(pubK, dat, sig)
+	ok, _ := iu.Ed25519Verify(pubK, dat, sig)
 
 	return ok
 }
 
-// OrgIssuerChainData creates data that the org issuer would sign and embed in the token as TrustChainSignature
+// OrgIssuerChainData creates data that the org issuer would sign and embed in the token as TrustChainSignature.
+// See AddOrgIssuerData for a one-shot way to set the needed data when you have access to the private key.
 func (c *StandardClaims) OrgIssuerChainData() ([]byte, error) {
 	if c.ID == "" {
 		return nil, fmt.Errorf("no token id set")
@@ -97,11 +138,13 @@ func (c *StandardClaims) OrgIssuerChainData() ([]byte, error) {
 }
 
 // SetOrgIssuer sets the issuer field for users issued by the Org Issuer
+// See AddOrgIssuerData for a one-shot way to set the needed data when you have access to the private key.
 func (c *StandardClaims) SetOrgIssuer(pk ed25519.PublicKey) {
 	c.Issuer = fmt.Sprintf("%s%s", OrgIssuerPrefix, hex.EncodeToString(pk))
 }
 
 // SetChainIssuer used by Login Handlers that create users in a chain to set an appropriate issuer on created users
+// See AddChainIssuerData for a one-shot way to set the needed data when you have access to the private key.
 func (c *StandardClaims) SetChainIssuer(ci *ClientIDClaims) error {
 	if ci.ID == "" {
 		return fmt.Errorf("id not set")
@@ -119,6 +162,8 @@ func (c *StandardClaims) SetChainIssuer(ci *ClientIDClaims) error {
 // ChainIssuerData is the data that should be signed on a user to create a chain of trust between Org Issuer, Client Login Handler and Client.
 //
 // The Issuer should already be set using SetChainIssuer()
+//
+// See AddChainIssuerData for a one-shot way to set the needed data when you have access to the private key.
 func (c *StandardClaims) ChainIssuerData(chainSig string) ([]byte, error) {
 	if c.ID == "" {
 		return nil, fmt.Errorf("id not set")
@@ -139,28 +184,71 @@ func (c *StandardClaims) ChainIssuerData(chainSig string) ([]byte, error) {
 }
 
 // SetChainUserTrustSignature sets the TrustChainSignature for a user issued by a ChainIssuer like AAA Login Server
+//
+// See AddChainIssuerData for a one-shot way to set the needed data when you have access to the private key.
 func (c *StandardClaims) SetChainUserTrustSignature(h *ClientIDClaims, sig []byte) {
 	c.TrustChainSignature = fmt.Sprintf("%s.%s", h.TrustChainSignature, hex.EncodeToString(sig))
 }
 
 // SetChainIssuerTrustSignature sets the TrustChainSignature for a user who may issue others like a AAA Login Server
+//
+// See AddChainIssuerData for a one-shot way to set the needed data when you have access to the private key.
 func (c *StandardClaims) SetChainIssuerTrustSignature(sig []byte) {
 	c.TrustChainSignature = hex.EncodeToString(sig)
 }
 
+// ParseChainIssuerData extract the chain verifier based signature and metadata from a token
+func (c *StandardClaims) ParseChainIssuerData() (id string, pk ed25519.PublicKey, tcs string, sig []byte, err error) {
+	issuerChainData := strings.TrimPrefix(c.Issuer, ChainIssuerPrefix)
+	parts := strings.Split(issuerChainData, ".")
+	if len(parts) != 2 {
+		return "", nil, "", nil, fmt.Errorf("invalid issuer content")
+	}
+
+	if len(parts[0]) == 0 {
+		return "", nil, "", nil, fmt.Errorf("invalid id in issuer")
+	}
+	if len(parts[1]) == 0 {
+		return "", nil, "", nil, fmt.Errorf("invalid public key in issuer")
+	}
+
+	id = parts[0]
+	pks := parts[1]
+
+	hPubk, err := hex.DecodeString(pks)
+	if err != nil {
+		return "", nil, "", nil, fmt.Errorf("invalid public key in issuer data")
+	}
+
+	parts = strings.Split(c.TrustChainSignature, ".")
+	if len(parts) != 2 {
+		return "", nil, "", nil, fmt.Errorf("invalid trust chain signature")
+	}
+	if len(parts[0]) == 0 || len(parts[1]) == 0 {
+		return "", nil, "", nil, fmt.Errorf("invalid trust chain signature")
+	}
+	tcs = parts[0]
+	sig, err = hex.DecodeString(parts[1])
+	if err != nil {
+		return "", nil, "", nil, fmt.Errorf("invalid signature in chain signature: %w", err)
+	}
+
+	return id, hPubk, tcs, sig, err
+}
+
 // IsSignedByIssuer uses the chain data in Issuer and TrustChainSignature to determine if an issuer signed a token
-func (c *StandardClaims) IsSignedByIssuer(pk ed25519.PublicKey) (bool, error) {
+func (c *StandardClaims) IsSignedByIssuer(pk ed25519.PublicKey) (bool, ed25519.PublicKey, error) {
 	if c.Issuer == "" {
-		return false, fmt.Errorf("no issuer set")
+		return false, nil, fmt.Errorf("no issuer set")
 	}
 	if c.PublicKey == "" {
-		return false, fmt.Errorf("no public key set")
+		return false, nil, fmt.Errorf("no public key set")
 	}
 	if c.TrustChainSignature == "" {
-		return false, fmt.Errorf("no trust chain signature set")
+		return false, nil, fmt.Errorf("no trust chain signature set")
 	}
 	if c.ID == "" {
-		return false, fmt.Errorf("id not set")
+		return false, nil, fmt.Errorf("id not set")
 	}
 
 	switch {
@@ -174,26 +262,31 @@ func (c *StandardClaims) IsSignedByIssuer(pk ed25519.PublicKey) (bool, error) {
 		// supplied issuer public key
 
 		if c.Issuer != fmt.Sprintf("%s%s", OrgIssuerPrefix, hex.EncodeToString(pk)) {
-			return false, fmt.Errorf("public keys do not match")
+			return false, nil, fmt.Errorf("public keys do not match")
 		}
 
 		sig, err := hex.DecodeString(c.TrustChainSignature)
 		if err != nil {
-			return false, fmt.Errorf("invalid trust chain signature: %w", err)
+			return false, nil, fmt.Errorf("invalid trust chain signature: %w", err)
 		}
 
 		dat, err := c.OrgIssuerChainData()
 		if err != nil {
-			return false, err
+			return false, nil, err
 		}
 
-		return iu.Ed24419Verify(pk, dat, sig)
+		valid, err := iu.Ed25519Verify(pk, dat, sig)
+		if err != nil {
+			return false, nil, err
+		}
+
+		return valid, pk, err
 
 	case strings.HasPrefix(c.Issuer, ChainIssuerPrefix):
 		// This is a token that was created by one in the chain - not the org issuer.
 		//
 		// Its Issuer is set to C-<creator id>.<creator pubk>
-		// Its chain sig is set to <creator tcs>.hex(sign(creatorId,<creator tcs>))
+		// Its chain sig is set to <creator tcs>.hex(sign(tID,<creator tcs>))
 		//
 		// We know what the content of tcs unsigned is from the Issuer field
 		// and we are given the issuer public key, so we can confirm the issuer
@@ -205,53 +298,24 @@ func (c *StandardClaims) IsSignedByIssuer(pk ed25519.PublicKey) (bool, error) {
 		//
 		// We can confirm the tcs is valid and matches whats in the sig made by
 		// the creator because we verify it using the requested issuer pubk
-
-		// get details of the login handler or provisioner
-		issuerChainData := strings.TrimPrefix(c.Issuer, ChainIssuerPrefix)
-
-		parts := strings.Split(issuerChainData, ".")
-		if len(parts) != 2 {
-			return false, fmt.Errorf("invalid issuer content")
-		}
-
-		if len(parts[0]) == 0 {
-			return false, fmt.Errorf("invalid id in issuer")
-		}
-		if len(parts[1]) == 0 {
-			return false, fmt.Errorf("invalid public key in issuer")
-		}
-
-		hPubk, err := hex.DecodeString(parts[1])
+		_, hPubk, tcs, sig, err := c.ParseChainIssuerData()
 		if err != nil {
-			return false, fmt.Errorf("invalid public key in issuer data")
-		}
-
-		// now we check the signature is data + "." + sig(id+ "." + data)
-		parts = strings.Split(c.TrustChainSignature, ".")
-		if len(parts) != 2 {
-			return false, fmt.Errorf("invalid trust chain signature")
-		}
-		if len(parts[0]) == 0 || len(parts[1]) == 0 {
-			return false, fmt.Errorf("invalid trust chain signature")
-		}
-
-		sig, err := hex.DecodeString(parts[1])
-		if err != nil {
-			return false, fmt.Errorf("invalid signature in chain signature: %w", err)
+			return false, nil, err
 		}
 
 		// this is the signature from the handler
-		ok, err := iu.Ed24419Verify(hPubk, []byte(fmt.Sprintf("%s.%s", c.ID, parts[0])), sig)
+		// now we check the signature is data + "." + sig(id+ "." + data)
+		ok, err := iu.Ed25519Verify(hPubk, []byte(fmt.Sprintf("%s.%s", c.ID, tcs)), sig)
 		if err != nil {
-			return false, fmt.Errorf("chain signature validation failed: %w", err)
+			return false, nil, fmt.Errorf("chain signature validation failed: %w", err)
 		}
 		if !ok {
-			return false, fmt.Errorf("invalid chain signature")
+			return false, nil, fmt.Errorf("invalid chain signature")
 		}
 
-		return true, nil
+		return true, hPubk, nil
 
 	default:
-		return false, fmt.Errorf("unsupported issuer format")
+		return false, nil, fmt.Errorf("unsupported issuer format")
 	}
 }
