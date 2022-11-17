@@ -123,16 +123,15 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 		}
 
 	default:
-		verified, err = a.handleDefaultConnection(c, tlsc, tlsVerified, log)
-		if err != nil {
-			log.Warnf("Handling normal connection failed, denying %s: %s", c.RemoteAddress().String(), err)
+		var dfltErr, provErr error
+
+		verified, dfltErr = a.handleDefaultConnection(c, tlsc, tlsVerified, log)
+		if !verified && a.isTLS && !tlsVerified {
+			verified, provErr = a.handleUnverifiedProvisioningConnection(c)
 		}
 
-		if !verified && a.isTLS && !tlsVerified {
-			verified, err = a.handleUnverifiedProvisioningConnection(c)
-			if err != nil {
-				log.Warnf("Handling unverified connection failed, denying %s: %s", c.RemoteAddress().String(), err)
-			}
+		if !verified {
+			log.Warnf("Denying connection: verfiied error: %v, unverified error: %v", dfltErr, provErr)
 		}
 	}
 
@@ -350,7 +349,7 @@ func (a *ChoriaAuth) handleUnverifiedSystemAccount(c server.ClientAuthentication
 
 	purpose := tokens.TokenPurpose(jwts)
 	log = log.WithFields(logrus.Fields{"jwt_auth": true, "purpose": purpose, "name": opts.Name})
-	log.Infof("Performing JWT based authentication verification for system account access")
+	log.Debugf("Performing JWT based authentication verification for system account access")
 
 	if purpose != tokens.ClientIDPurpose {
 		return false, fmt.Errorf("client token required")
@@ -864,35 +863,35 @@ func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string,
 
 	// Can access full Streams Features
 	if perms.StreamsAdmin {
-		log.Infof("Granting user Streams Admin access")
+		log.Debugf("Granting user Streams Admin access")
 		subs, pubs = a.setStreamsAdminPermissions(user, subs, pubs)
 	}
 
 	// Can use streams but not make new ones etc
 	if perms.StreamsUser {
-		log.Infof("Granting user Streams User access")
+		log.Debugf("Granting user Streams User access")
 		subs, pubs = a.setStreamsUserPermissions(user, subs, pubs)
 	}
 
 	// Lifecycle and auto agent events
 	if perms.EventsViewer {
-		log.Infof("Granting user Events Viewer access")
+		log.Debugf("Granting user Events Viewer access")
 		subs, pubs = a.setEventsViewerPermissions(user, subs, pubs)
 	}
 
 	// KV based elections
 	if perms.ElectionUser {
-		log.Infof("Granting user Leader Election access")
+		log.Debugf("Granting user Leader Election access")
 		subs, pubs = a.setElectionPermissions(user, subs, pubs)
 	}
 
 	if perms.Governor && (perms.StreamsUser || perms.StreamsAdmin) {
-		log.Infof("Granting user Governor access")
+		log.Debugf("Granting user Governor access")
 		subs, pubs = a.setClientGovernorPermissions(user, subs, pubs)
 	}
 
 	if perms.FleetManagement || perms.SignedFleetManagement {
-		log.Infof("Granting user fleet management access")
+		log.Debugf("Granting user fleet management access")
 		subs, pubs = a.setClientFleetManagementPermissions(subs, pubs)
 	}
 
@@ -932,7 +931,7 @@ func (a *ChoriaAuth) setDenyServersPermissions(user *server.User) {
 
 func (a *ChoriaAuth) setClaimsBasedServerPermissions(user *server.User, claims *tokens.ServerClaims, log *logrus.Entry) {
 	if len(claims.Collectives) == 0 {
-		log.Warnf("no collectives in server token, denying access")
+		log.Warnf("No collectives in server token, denying access")
 		a.setDenyServersPermissions(user)
 		return
 	}
