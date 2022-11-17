@@ -313,6 +313,68 @@ Federation:
 | `reply`   | `reply-to` | The original `reply` before federation          |
 | `targets` | `targets`  | The identities who the federated message is for | 
 
+### Chained Tokens Verification
+
+We created a Chained Token system in [#1900](https://github.com/choria-io/go-choria/issues/1900) that allows a Organization Issuer to delegate Client and Server creation to Chained Issuers.
+
+From a usage perspective you can say `tokens.ParseClientIDToken(t, pubk)` where the public key is the public part of the Organisation Issuer, even when the token `t` is signed by a Chain Issuer. The intention is to make the configuration of a chain much easier, you only have to configure the issuer for an Organization.
+
+Additionally the expiry of the Chain Issuer is encoded in the token, if the issuer expires first the issued token is also considered expired.
+
+The way this is achieved is with a series of claims and signatures as described here:
+
+The Organization Issuer for an Organization is simply an `ed25519` key for the moment. If that Org Issuer is just signing some client, server or provisioner nothing special is done, it's just signing a JWT like normal.
+
+However if the Org Issuer wants to create a token that can sign other tokens additional information is added a Clent token, it's called the **Chain Issuer**:
+
+```json
+{
+  "iss": "I-514969e316eb4a7146b8066feb6af5dbc05da0965ec57c9d3a7d3299d5d98fec",
+  "jti": "ffdbaaedc9c141f6a99c14b5b66f62ac",
+  "ou": "choria",
+  "public_key": "bd2588d3dc309d536461caa11c0d6f639e89d7a09dc43eae052f3fb32e2d8687",
+  "purpose": "choria_client_id",
+  "tcs": "3f815723734c78ceaba5fb506347565f85fe2a0334c038ba2370c7f53f35e6c7c75ed3e95b531b6049426638201c39639dbf9b711fba5d866e7e3e30be02b401"
+}
+```
+
+* `jti` is a unique ID for this token
+* `iss` field indicates it is signed by a Issuer with public key `514969e316eb4a7146b8066feb6af5dbc05da0965ec57c9d3a7d3299d5d98fec`.
+* `public_key` is the public part of the ed25519 seed for the Chain Issuer `aaa_chain_delegator`
+* `tcs` is a signature made of `[chain issuer id].[chain issuer public key]` using the Org Issuer private key, in other words `sig("ffdbaaedc9c141f6a99c14b5b66f62ac.bd2588d3dc309d536461caa11c0d6f639e89d7a09dc43eae052f3fb32e2d8687", orgIssuerPrik)`
+* The Chain Issuer JWT is signed by the Organization Issuer
+
+This way we can verify that the Chain Issuer comes from the Issuer both by verifying the signature but also we have a piece of information that cannot be changed down the line (the `tcs`, signed by the Org Issuer key) which we will see again later.
+
+In code this information, signatures etc can all be added using `chainIssuer.AddOrgIssuerData(issuerPrik)`, with this added the token `chainIssuer` can issue other tokens. For a possible future integration with systems like Vault we would call out to the Vault API to sign the `tcs` plain text and then sign the token, hence the Organization Issuer private key never needs to leave Vault.
+
+Now when the Chain Issuer wants to issue a new Client or Server token additional information is again added:
+
+```json
+{
+  "callerid": "up=rip",
+  "iss": "C-ffdbaaedc9c141f6a99c14b5b66f62ac.bd2588d3dc309d536461caa11c0d6f639e89d7a09dc43eae052f3fb32e2d8687",
+  "issexp": 1700153647,
+  "jti": "b2375f965abe4bfbaf131b585cf5e1a1",
+  "ou": "choria",
+  "public_key": "676d07de6721ee396754d4e4d5fa4ee2b59a6f3b8208e760ca614bc66000e740",
+  "purpose": "choria_client_id",
+  "tcs": "3f815723734c78ceaba5fb506347565f85fe2a0334c038ba2370c7f53f35e6c7c75ed3e95b531b6049426638201c39639dbf9b711fba5d866e7e3e30be02b401.a9da5f3946c1b472f1c886912bfe5559f261e4663016846e231095bd2e16a8a253657196a5c17231fb095bc3a2d1e89e1edaddcec35dd050303e5d9cda968a04"
+}
+```
+
+* `jti` is a unique id for this token
+* `iss` indicates a Chain Issuer with token ID (`jti`) `ffdbaaedc9c141f6a99c14b5b66f62ac` issued this token and his public key is `bd2588d3dc309d536461caa11c0d6f639e89d7a09dc43eae052f3fb32e2d8687` (the one from the previous example) 
+* `issexp` indicates when the Chain Issuer expires
+* `tcs` is made up of first creating `sigdata` `[client token jti].[chain issuer tcs]` and then combining that `[chain issuer tcs].[sig(sigdata, chainIssuerPrik)]`  
+
+This way we can, given the signed Client token and the Org Issuer Public key, validate by going backwards over these claims:
+
+1. Extract the Chain Issuer `tcs`, `public key` and `id` from `iss` and `tcs`
+2. Verify the Organization Issuer signed the `tcs` of the Chain Issuer in this token, which also verifies the public key in the issuer
+3. Verify the `tcs` signature part of the Client using public key of the Chain Issuer
+4. Verify the expiry of the Chain Issuer
+
 ### General Improvements
 
 The security plugins handle signing, encoding, extracting of IDs and validating signatures. The current security plugins are all implemented around x509.
