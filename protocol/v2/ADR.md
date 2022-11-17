@@ -27,6 +27,8 @@ Choria supports a mode combined with the AAA Server where a user does not need h
 
 In practise this works well for most users, but those with very large or complex networks can run into problems either with corporate Certificate Authority policies or corporate CA configuration making it very hard to achieve a secure network with the facilities available. General CA infrastructure is also just getting a bit old and better alternatives exist. JWTs are now used pervasively in modern IT and the user based are more likely to accept their use for our needs.
 
+We would like to explore, and enable, other use cases outside of server management such as IoT, purpose built backplanes, Kubernetes side cars and more, integration into Certificate Authorities in those cases is really problematic.
+
 * x509 signatures are big and slow
 * x509 certificates are also huge and these go with every request
 * x509 certificate management, especially across multiple client machines is very difficult
@@ -79,9 +81,19 @@ Servers and clients will have:
 
 The broker will only allow connections that holds a valid, signed JWT where the signature is made using a trusted ed25519 key.
 
+##### Organisation and Chained Issuers
+
+Conceptually Choria Broker can separate connections into something called "accounts" in NATS terms, for Choria we call this an Organization. Today we support just one Organization - `choria` - but we will look to support more in future.
+
+We will add a concept called an Organization Issuer that is a ed25519 key that must, on a basic level, sign all tokens. To facilitate separation of concerns in our centralized AAA mode the Issuer can delegate JWT issuing in a chain to downstream issuers.  The tokens will validate as being signed by the issuer essentially.
+
+We support storing the Organization Issuer offline in something like Vault and at the "AAA Login Server" level that issuing key can also be stored in a Vault like system.
+
+![Chain Issuers](org-issuers.png)
+
 Thus, we achieve the following chain of trust:
 
-* We know the JWT was issued by a trusted issuer ([eventually one of many via #1834](https://github.com/choria-io/go-choria/issues/1834))
+* We know the JWT was issued by a trusted issuer
 * We verify the connecting server or client has the ed25519 seed that match the JWT because the broker force a [NONCE](https://en.wikipedia.org/wiki/Cryptographic_nonce) to be signed using the seed, the seed never traverse the network since the public part is embedded in the signed JWT
 * The JWT tokens are therefor not bearer tokens and if they are stolen in-flight (remember no mTLS), one cannot connect with them or make any requests using them
 * We have an identity that isn't tied to the common name of a cert and so is more fluid and adaptable
@@ -115,9 +127,19 @@ Here we can see the reply is set to match `<collective>.reply.<private network i
 
 To facilitate debugging users with the `OrgAdmin` permission, default not granted, on their tokens can view all replies.
 
+#### Submission and Registration Data Security
+
+As each server will have a ed25519 seed and a JWT embedding the public key we will support, optionally, signing Choria Submission and Registration messages. Signatures and Tokens will be included in headers.
+
+This way should a system need to be created where the node will ask in an async manner for operations to be done against it, think host-detected issues triggering auto remediation, these messages originating from Submission will be signed.
+
+Recipients of these messages can be certain that the message originated from a place that had access to the nodes private key.
+
+See [#1873](https://github.com/choria-io/go-choria/issues/1873)
+
 #### Identity
 
-Identity primarily concerns with Choria Requests, this is who is the one making the request for the use by AAA.
+Identity primarily concerns Choria Requests, this is who is the one making the request for the use by AAA.
 
 Traditionally this is extracted from the x509 certificate common name and have some dumb rules like `x.choria` or `x.privileged.choria` since x509 certificates don't really have a strong concept of boolean permissions.
 
@@ -152,13 +174,15 @@ Having Server enroll separate from Client enroll is good, since its conceivable 
 
 #### Servers
 
-Servers would get their JWT token from the Choria Provisioner, this is supported today and that supports setting permissions and more.
+Servers would get their JWT token from the Choria Provisioner, this is supported today and that supports setting permissions and more. The Provisioner would hold a JWT that is a Chain Issuer allowing it to sign JWTs for servers.
 
 #### Clients
 
 The current AAA Server should be extended to allow client enrollment, essentially this is already supported but there is no allowance for the client seed and new behaviors. The signing request should be extended with a signature made using the seed and the service should verify it - essentially same as the NONCE in the broker.
 
 The AAA Service would support marking a user as standalone - he can make his own requests without AAA and has his own seed - or as requiring AAA service ([#1840](https://github.com/choria-io/go-choria/issues/1840)). He might have his own seed for signing the broker NONCE but cannot make RPC requests that were not signed by AAA service.
+
+The AAA Login handler would hold a JWT that is a Chain Issuer allow it to sign JWTs for the clients and set policies and permissions.
 
 The `choria jwt` command must also be able to issue client credentials.
 
@@ -219,9 +243,9 @@ A secure request wraps a `Request`, signs it and prevents any tampering with its
 
 The signature - having been made with a private key - also conveys identity and confirms the claimed identity in the Request matches what cryptographic keys are held.
 
-The main purpose of the Secure Request is to verify what can be verified about the Request and make immutable the rest. For example, we can't exactly verify the request time and TTL, but we can prevent it from being changed by an attacker by signing it.  The caller in the `Request` is not verified in the `Request` since it's just an arbitrary string, however the Secure Request being signed using something unique to the caller (private key) confirms the information in the request.
+The main purpose of the Secure Request is to verify what can be verified about the Request and make immutable the rest. For example, we can't exactly verify the request time and TTL, but we can prevent it from being changed by an attacker by signing it.  The caller in the `Request` is not verified in the `Request` since it's just an arbitrary string, however the Secure Request being signed using something unique to the caller, private key, confirms the information in the request.
 
-So the end result is immutable (or at least tamper evident) metadata about a request and likewise the request payload or message.
+So the end result is immutable, or at least tamper evident, metadata about a request and likewise the request payload or message.
 
 | Field       | v1          | Description                                                                         |
 |-------------|-------------|-------------------------------------------------------------------------------------|
@@ -229,7 +253,7 @@ So the end result is immutable (or at least tamper evident) metadata about a req
 | `request`   | `message`   | The request held in the Secure Request as base64 bytes                              |
 | `signature` | `signature` | A signature made of the request using the ed25519 seed of the caller                |
 | `caller`    | `pubcert`   | The JWT of the caller                                                               |
-| `signer`    | `n/a`       | The JWT of the delegated signer, present when the AAA server is used                |
+| `signer`    | n/a         | The JWT of the delegated signer, present when the AAA server is used                |
 
 #### Reply
 
@@ -252,13 +276,15 @@ Like the Secure Request the Secure Reply wraps the Reply in a way that makes it 
 
 The v2 protocol includes a signature and sender JWT however in practise this is mostly not going to be used as too costly on the receiver, however might be used for registration payload verification.
 
+Signatures add quite a bit to the payload here, as the JWT has to be sent with, so it can be disabled using `plugin.security.choria.sign_replies` in the new security provider.
+
 | Field       | v1         | Description                                                                     |
 |-------------|------------|---------------------------------------------------------------------------------|
 | `protocol`  | `protocol` | The protocol version for this secure reply `io.choria.protocol.v2.secure_reply` |
 | `reply`     | `message`  | The reply held in the Secure Request as base64 bytes                            |
 | `hash`      | `hash`     | A sha256 of the reply                                                           |
-| `signature` | `n/a`      | A signature made using the ed25519 seed of the sender                           |
-| `sender`    | `n/a`      | The JWT of the sending host                                                     |
+| `signature` | n/a        | A signature made using the ed25519 seed of the sender                           |
+| `sender`    | n/a        | The JWT of the sending host                                                     |
 
 #### Transport
                         
@@ -287,31 +313,19 @@ Federation:
 | `reply`   | `reply-to` | The original `reply` before federation          |
 | `targets` | `targets`  | The identities who the federated message is for | 
 
-### Security
+### General Improvements
 
-The security plugins handle signing, encoding, extracting of IDs and validating signatures. The current security plugins are all implemented around x509 since using methods like these:
+The security plugins handle signing, encoding, extracting of IDs and validating signatures. The current security plugins are all implemented around x509.
 
-```go
-type SecurityProvider interface {
-	// ... many not shown
-    
-	// x509 specific methods
-	PublicCert() (*x509.Certificate, error)
-    PublicCertPem() (*pem.Block, error)
-	
-	// cache methods
-    CachePublicData(data []byte, identity string) error
-    CachedPublicData(identity string) ([]byte, error)
-}
-```
+We will make some general improvements, rename some functions and add a few bits to the interface, detail to be discovered during implementation.
 
-We would need to revisit these specific ones and potentially make them more generic, perhaps returning `any` or adding some new ones for ed25519 use. 
-
-The cache methods should be removed ([#1842](https://github.com/choria-io/go-choria/pull/1842)), removing these from the current security protocols would result in a very large refactor as the cache functions also perform verification steps. Additionally these are used to find all known privileged certificates in methods like `PrivilegedVerifyByteSignature()` and `VerifyByteSignature()`, this is obviously flawed but undoing this feature might break things significantly and prove to be impossible for v1 protocols.  V2 should not have this limitation.
-
-There are some other improvements to be made also in addition but those we'd need to see as we go along:
-
-  * Move the API to `[]byte` based API [#1844](https://github.com/choria-io/go-choria/pull/1844)
-  * Remove some string orientated security apis [](https://github.com/choria-io/go-choria/pull/1843)
-  * Make the JWT authoritative for the secure channel name so we can stop using md5
-  * Develop a tool that can decode and dump/view network packets [#1484](https://github.com/choria-io/go-choria/pull/1848)
+* Move the API to `[]byte` based API [#1844](https://github.com/choria-io/go-choria/pull/1844)
+* Remove some string orientated security apis [](https://github.com/choria-io/go-choria/pull/1843)
+* Make the JWT authoritative for the secure channel name so we can stop using md5
+* Develop a tool that can decode and dump/view network packets [#1484](https://github.com/choria-io/go-choria/pull/1848)
+* The entire concept of the cache to be removed [#1842](https://github.com/choria-io/go-choria/pull/1842)
+* Default collective when v2 is used will be `choria` [#1885](https://github.com/choria-io/go-choria/pull/1885)
+* Submission can sign messages [#1873](https://github.com/choria-io/go-choria/issues/1873)
+* The protocol code should be instances not a singleton so each can have unique contextes and logging
+* Stronger AAA interactions by signing NONCE like data in login and sign requests
+* Potentially entirely remove the concept of Trusted Signers that was a mid term stop gap till this work is complete, only used by 1 users as far as we are aware

@@ -7,9 +7,7 @@
   "required":[
     "protocol",
     "reply",
-    "hash",
-    "signature",
-    "sender"
+    "hash"
   ],
   "properties": {
     "protocol": {
