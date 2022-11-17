@@ -24,9 +24,9 @@ type SecureReply struct {
 	// A sha256 of the reply
 	Hash string `json:"hash"`
 	// A signature made using the ed25519 seed of the sender
-	Signature []byte `json:"signature"`
+	Signature []byte `json:"signature,omitempty"`
 	// The JWT of the sending host
-	SenderJWT string `json:"sender"`
+	SenderJWT string `json:"sender,omitempty"`
 
 	security inter.SecurityProvider
 	mu       sync.Mutex
