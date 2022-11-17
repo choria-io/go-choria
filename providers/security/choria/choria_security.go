@@ -626,7 +626,7 @@ func (s *ChoriaSecurity) shouldAllowSignedCaller(name string, callers ...[]byte)
 	}
 
 	// we do not check the name, delegators can override, but we log the delegation
-	s.log.Warnf("Allowing delegator %s to authorize caller %s who holds token %s", signerT.CallerID, name, callerT.CallerID)
+	s.log.Infof("Allowing delegator %s to authorize caller %s who holds token %s", signerT.CallerID, name, callerT.CallerID)
 
 	return true, nil
 }
