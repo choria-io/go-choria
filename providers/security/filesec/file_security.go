@@ -145,6 +145,11 @@ func (s *FileSecurity) TokenBytes() ([]byte, error) {
 }
 
 func (s *FileSecurity) RemoteSignerSeedFile() (string, error) {
+	if s.conf.RemoteSignerTokenFile != "" && s.conf.RemoteSignerSeedFile == "" {
+		// copies the behavior from framework SignerSeedFile()
+		s.conf.RemoteSignerSeedFile = fmt.Sprintf("%s.key", strings.TrimSuffix(s.conf.RemoteSignerTokenFile, filepath.Ext(s.conf.RemoteSignerTokenFile)))
+	}
+
 	if s.conf.RemoteSignerSeedFile == "" {
 		return "", fmt.Errorf("no seed file defined")
 	}
