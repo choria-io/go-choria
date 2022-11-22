@@ -77,16 +77,17 @@ type Reply struct {
 // you can choose to use the ParseRequestData function to translate
 // this for you or just do whatever JSON parsing you like
 type Request struct {
-	Agent      string           `json:"agent"`
-	Action     string           `json:"action"`
-	Data       json.RawMessage  `json:"data"`
-	RequestID  string           `json:"requestid"`
-	SenderID   string           `json:"senderid"`
-	CallerID   string           `json:"callerid"`
-	Collective string           `json:"collective"`
-	TTL        int              `json:"ttl"`
-	Time       time.Time        `json:"time"`
-	Filter     *protocol.Filter `json:"-"`
+	Agent            string           `json:"agent"`
+	Action           string           `json:"action"`
+	Data             json.RawMessage  `json:"data"`
+	RequestID        string           `json:"requestid"`
+	SenderID         string           `json:"senderid"`
+	CallerID         string           `json:"callerid"`
+	Collective       string           `json:"collective"`
+	TTL              int              `json:"ttl"`
+	Time             time.Time        `json:"time"`
+	Filter           *protocol.Filter `json:"-"`
+	CallerPublicData string           `json:"-"`
 }
 
 // ParseRequestData parses the request parameters received from the client into a target structure

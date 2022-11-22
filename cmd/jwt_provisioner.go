@@ -5,9 +5,12 @@
 package cmd
 
 import (
+	"context"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"sync"
+	"time"
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/config"
@@ -28,6 +31,7 @@ type jWTCreateProvCommand struct {
 	extensions  string
 	urls        []string
 	org         string
+	useVault    bool
 
 	command
 }
@@ -36,7 +40,7 @@ func (p *jWTCreateProvCommand) Setup() (err error) {
 	if jwt, ok := cmdWithFullCommand("jwt"); ok {
 		p.cmd = jwt.Cmd().Command("provisioning", "Create a Provisioning JWT token").Alias("prov").Alias("provision").Alias("p")
 		p.cmd.Arg("file", "The JWT file to act on").Required().StringVar(&p.file)
-		p.cmd.Arg("signing-key", "Path to a private key used to sign the JWT").Required().ExistingFileVar(&p.signingKey)
+		p.cmd.Arg("signing-key", "Path to a private key used to sign the JWT").Required().StringVar(&p.signingKey)
 		p.cmd.Flag("insecure", "Disable TLS security during provisioning").UnNegatableBoolVar(&p.insecure)
 		p.cmd.Flag("token", "Token used to secure access to the provisioning agent").StringVar(&p.token)
 		p.cmd.Flag("urls", "URLs to connect to for provisioning").StringsVar(&p.urls)
@@ -48,6 +52,7 @@ func (p *jWTCreateProvCommand) Setup() (err error) {
 		p.cmd.Flag("password", "Password to connect to the provisioning broker with").StringVar(&p.password)
 		p.cmd.Flag("extensions", "Adds additional extensions to the token, accepts JSON data").PlaceHolder("JSON").StringVar(&p.extensions)
 		p.cmd.Flag("org", "Adds the node to a specific organization for trust validation").Default("choria").StringVar(&p.org)
+		p.cmd.Flag("vault", "Use Hashicorp Vault to sign the JWT").UnNegatableBoolVar(&p.useVault)
 	}
 
 	return nil
@@ -98,7 +103,18 @@ func (p *jWTCreateProvCommand) createJWT() error {
 		claims.Extensions = ext
 	}
 
-	err = tokens.SaveAndSignTokenWithKeyFile(claims, p.signingKey, p.file, 0600)
+	if p.useVault {
+		var tlsc *tls.Config
+		tlsc, err = c.ClientTLSConfig()
+		if err == nil {
+			to, cancel := context.WithTimeout(ctx, 2*time.Second)
+			defer cancel()
+
+			err = tokens.SaveAndSignTokenWithVault(to, claims, p.signingKey, p.file, 0600, tlsc, c.Logger("jwt"))
+		}
+	} else {
+		err = tokens.SaveAndSignTokenWithKeyFile(claims, p.signingKey, p.file, 0600)
+	}
 	if err != nil {
 		return err
 	}
