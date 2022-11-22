@@ -6,10 +6,17 @@ package tokens
 
 import (
 	"bytes"
+	"context"
 	"crypto/ed25519"
 	"crypto/rsa"
+	"crypto/tls"
+	"encoding/base64"
 	"encoding/hex"
+	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+	"net/url"
 	"os"
 	"strings"
 	"time"
@@ -17,6 +24,8 @@ import (
 	"github.com/choria-io/go-choria/build"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/sirupsen/logrus"
+	"github.com/tidwall/gjson"
 )
 
 const (
@@ -205,6 +214,80 @@ func SaveAndSignTokenWithKeyFile(claims jwt.Claims, pkFile string, outFile strin
 	}
 
 	return os.WriteFile(outFile, []byte(token), perm)
+}
+
+// SaveAndSignTokenWithVault signs a token using the named key in a Vault Transit engine.  Requires VAULT_TOKEN and VAULT_ADDR to be set.
+func SaveAndSignTokenWithVault(ctx context.Context, claims jwt.Claims, key string, outFile string, perm os.FileMode, tlsc *tls.Config, log *logrus.Entry) error {
+	vt := os.Getenv("VAULT_TOKEN")
+	va := os.Getenv("VAULT_ADDR")
+
+	if vt == "" || va == "" {
+		return fmt.Errorf("requires VAULT_TOKEN and VAULT_ADDR environment variables")
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodEdDSA, claims)
+	ss, err := token.SigningString()
+	if err != nil {
+		return err
+	}
+
+	uri, err := url.Parse(va)
+	if err != nil {
+		return err
+	}
+	uri.Path = fmt.Sprintf("/v1/transit/sign/%s", key)
+
+	dat := map[string]any{
+		"signature_algorithm": "ed25519",
+		"input":               base64.StdEncoding.EncodeToString([]byte(ss)),
+	}
+	jdat, err := json.Marshal(dat)
+	if err != nil {
+		return err
+	}
+	log.Debugf("JSON Request: %s", string(jdat))
+
+	client := &http.Client{}
+	if tlsc != nil {
+		client.Transport = &http.Transport{TLSClientConfig: tlsc}
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", uri.String(), bytes.NewBuffer(jdat))
+	if err != nil {
+		return err
+	}
+	req.Header.Add("X-Vault-Token", vt)
+
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	body, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return err
+	}
+
+	if resp.StatusCode != 200 {
+		return fmt.Errorf("request failed: code: %d: %s", resp.StatusCode, string(body))
+	}
+
+	sig := gjson.GetBytes(body, "data.signature")
+	if !sig.Exists() {
+		return fmt.Errorf("no signature in response: %s", string(body))
+	}
+
+	sigs := sig.String()
+	const vaultSigPrefix = "vault:v1:"
+
+	if !strings.HasPrefix(sigs, vaultSigPrefix) {
+		return fmt.Errorf("invalid signature, no vault:v1 prefix")
+	}
+
+	signed := fmt.Sprintf("%s.%s", ss, strings.TrimPrefix(sigs, vaultSigPrefix))
+
+	return os.WriteFile(outFile, []byte(signed), perm)
 }
 
 func newStandardClaims(issuer string, purpose Purpose, validity time.Duration, setSubject bool) (*StandardClaims, error) {

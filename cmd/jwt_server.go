@@ -5,6 +5,8 @@
 package cmd
 
 import (
+	"context"
+	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"strings"
@@ -28,6 +30,7 @@ type jWTCreateServerCommand struct {
 	streamUser  bool
 	service     bool
 	pk          string
+	useVault    bool
 
 	command
 }
@@ -52,6 +55,7 @@ func (s *jWTCreateServerCommand) Setup() (err error) {
 		s.cmd.Flag("stream-user", "Allow the node to access Choria Streams").UnNegatableBoolVar(&s.streamUser)
 		s.cmd.Flag("validity", "How long the token should be valid for").Default("8760h").DurationVar(&s.validity)
 		s.cmd.Flag("service", "Indicates that the user can have long validity tokens").UnNegatableBoolVar(&s.service)
+		s.cmd.Flag("vault", "Use Hashicorp Vault to sign the JWT").UnNegatableBoolVar(&s.useVault)
 	}
 
 	return nil
@@ -99,7 +103,18 @@ func (s *jWTCreateServerCommand) createJWT() error {
 		return err
 	}
 
-	err = tokens.SaveAndSignTokenWithKeyFile(claims, s.signingKey, s.file, 0600)
+	if s.useVault {
+		var tlsc *tls.Config
+		tlsc, err = c.ClientTLSConfig()
+		if err == nil {
+			to, cancel := context.WithTimeout(ctx, 2*time.Second)
+			defer cancel()
+
+			err = tokens.SaveAndSignTokenWithVault(to, claims, s.signingKey, s.file, 0600, tlsc, c.Logger("jwt"))
+		}
+	} else {
+		err = tokens.SaveAndSignTokenWithKeyFile(claims, s.signingKey, s.file, 0600)
+	}
 	if err != nil {
 		return err
 	}

@@ -5,6 +5,8 @@
 package cmd
 
 import (
+	"context"
+	"crypto/tls"
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -39,41 +41,44 @@ type jWTCreateClientCommand struct {
 	chain                 bool
 	additionalPub         []string
 	additionalSub         []string
+	useVault              bool
 
 	command
 }
 
-func (c *jWTCreateClientCommand) Setup() (err error) {
+func (cl *jWTCreateClientCommand) Setup() (err error) {
 	if jwt, ok := cmdWithFullCommand("jwt"); ok {
-		c.cmd = jwt.Cmd().Command("client", "Create a Client JWT token").Alias("c")
-		c.cmd.Arg("file", "The JWT file to act on").Required().StringVar(&c.file)
-		c.cmd.Arg("identity", "The Caller ID for this user").Required().StringVar(&c.identity)
-		c.cmd.Arg("signing-key", "Path to a private key used to sign the JWT").Required().ExistingFileVar(&c.signingKey)
-		c.cmd.Flag("agents", "Allow the user to access certain agents").StringsVar(&c.agents)
-		c.cmd.Flag("org", "Adds the user to a specific organization").Default("choria").StringVar(&c.org)
-		c.cmd.Flag("opa-file", "Path to a file holding a Open Policy Agent Policy for this user").ExistingFileVar(&c.opaPolicyFile)
-		c.cmd.Flag("opa", "Open Policy Agent Policy as a string").StringVar(&c.opaPolicy)
-		c.cmd.Flag("validity", "How long the token should be valid for").Default("1h").DurationVar(&c.validity)
-		c.cmd.Flag("public-key", "Ed25519 public key to embed in the token").StringVar(&c.pk)
-		c.cmd.Flag("stream-admin", "Allow the user to administer and use Choria Streams").UnNegatableBoolVar(&c.streamAdmin)
-		c.cmd.Flag("stream-user", "Allow the user to use Choria Streams").UnNegatableBoolVar(&c.streamUser)
-		c.cmd.Flag("event-viewer", "Allow the user to view various Choria Events").UnNegatableBoolVar(&c.eventViewer)
-		c.cmd.Flag("elections-user", "Allow the user to use Choria Elections").UnNegatableBoolVar(&c.electionUser)
-		c.cmd.Flag("service", "Indicates that the user can have long validity tokens").UnNegatableBoolVar(&c.service)
-		c.cmd.Flag("system", "Allow the user to access the broker system account").UnNegatableBoolVar(&c.system)
-		c.cmd.Flag("auth-delegation", "Allow the user to sign requests for other users").UnNegatableBoolVar(&c.authDelegate)
-		c.cmd.Flag("fleet-management", "Allows access to the Choria fleet using RPC").Default("true").BoolVar(&c.fleetManagement)
-		c.cmd.Flag("signed-fleet-management", "Requires that all fleet management requests are signed by an authority like AAA Service").UnNegatableBoolVar(&c.signedFleetManagement)
-		c.cmd.Flag("org-admin", "Allow the user to access all broker traffic").UnNegatableBoolVar(&c.orgAdmin)
-		c.cmd.Flag("publish", "Additional subjects the user can publish to").StringsVar(&c.additionalPub)
-		c.cmd.Flag("subscribe", "Additional subjects the user can subscribe to").StringsVar(&c.additionalSub)
-		c.cmd.Flag("issuer", "Allow this user to sign other users in a chain of trust").UnNegatableBoolVar(&c.chain)
+		cl.cmd = jwt.Cmd().Command("client", "Create a Client JWT token").Alias("c")
+		cl.cmd.Arg("file", "The JWT file to act on").Required().StringVar(&cl.file)
+		cl.cmd.Arg("identity", "The Caller ID for this user").Required().StringVar(&cl.identity)
+		cl.cmd.Arg("signing-key", "Path to a private key used to sign the JWT").Required().ExistingFileVar(&cl.signingKey)
+		cl.cmd.Flag("agents", "Allow the user to access certain agents").StringsVar(&cl.agents)
+		cl.cmd.Flag("org", "Adds the user to a specific organization").Default("choria").StringVar(&cl.org)
+		cl.cmd.Flag("opa-file", "Path to a file holding a Open Policy Agent Policy for this user").ExistingFileVar(&cl.opaPolicyFile)
+		cl.cmd.Flag("opa", "Open Policy Agent Policy as a string").StringVar(&cl.opaPolicy)
+		cl.cmd.Flag("validity", "How long the token should be valid for").Default("1h").DurationVar(&cl.validity)
+		cl.cmd.Flag("public-key", "Ed25519 public key to embed in the token").StringVar(&cl.pk)
+		cl.cmd.Flag("stream-admin", "Allow the user to administer and use Choria Streams").UnNegatableBoolVar(&cl.streamAdmin)
+		cl.cmd.Flag("stream-user", "Allow the user to use Choria Streams").UnNegatableBoolVar(&cl.streamUser)
+		cl.cmd.Flag("event-viewer", "Allow the user to view various Choria Events").UnNegatableBoolVar(&cl.eventViewer)
+		cl.cmd.Flag("elections-user", "Allow the user to use Choria Elections").UnNegatableBoolVar(&cl.electionUser)
+		cl.cmd.Flag("service", "Indicates that the user can have long validity tokens").UnNegatableBoolVar(&cl.service)
+		cl.cmd.Flag("system", "Allow the user to access the broker system account").UnNegatableBoolVar(&cl.system)
+		cl.cmd.Flag("auth-delegation", "Allow the user to sign requests for other users").UnNegatableBoolVar(&cl.authDelegate)
+		cl.cmd.Flag("fleet-management", "Allows access to the Choria fleet using RPC").Default("true").BoolVar(&cl.fleetManagement)
+		cl.cmd.Flag("signed-fleet-management", "Requires that all fleet management requests are signed by an authority like AAA Service").UnNegatableBoolVar(&cl.signedFleetManagement)
+		cl.cmd.Flag("org-admin", "Allow the user to access all broker traffic").UnNegatableBoolVar(&cl.orgAdmin)
+		cl.cmd.Flag("publish", "Additional subjects the user can publish to").StringsVar(&cl.additionalPub)
+		cl.cmd.Flag("subscribe", "Additional subjects the user can subscribe to").StringsVar(&cl.additionalSub)
+		cl.cmd.Flag("issuer", "Allow this user to sign other users in a chain of trust").UnNegatableBoolVar(&cl.chain)
+		cl.cmd.Flag("vault", "Use Hashicorp Vault to sign the JWT").UnNegatableBoolVar(&cl.useVault)
+
 	}
 
 	return nil
 }
 
-func (c *jWTCreateClientCommand) Configure() error {
+func (cl *jWTCreateClientCommand) Configure() error {
 	cfg, err = config.NewDefaultConfig()
 	if err != nil {
 		return fmt.Errorf("could not create default configuration: %s", err)
@@ -85,10 +90,10 @@ func (c *jWTCreateClientCommand) Configure() error {
 	return nil
 }
 
-func (c *jWTCreateClientCommand) Run(wg *sync.WaitGroup) (err error) {
+func (cl *jWTCreateClientCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	err = c.createJWT()
+	err = cl.createJWT()
 	if err != nil {
 		return fmt.Errorf("could not create token: %s", err)
 	}
@@ -96,47 +101,47 @@ func (c *jWTCreateClientCommand) Run(wg *sync.WaitGroup) (err error) {
 	return nil
 }
 
-func (c *jWTCreateClientCommand) createJWT() error {
+func (cl *jWTCreateClientCommand) createJWT() error {
 	var err error
 
 	var opa []byte
-	if c.opaPolicyFile != "" {
-		opa, err = os.ReadFile(c.opaPolicyFile)
+	if cl.opaPolicyFile != "" {
+		opa, err = os.ReadFile(cl.opaPolicyFile)
 		if err != nil {
 			return err
 		}
-	} else if c.opaPolicy != "" {
-		opa = []byte(c.opaPolicy)
+	} else if cl.opaPolicy != "" {
+		opa = []byte(cl.opaPolicy)
 	}
 
 	perms := &tokens.ClientPermissions{
-		StreamsAdmin:            c.streamAdmin,
-		StreamsUser:             c.streamUser,
-		EventsViewer:            c.eventViewer,
-		ElectionUser:            c.electionUser,
-		OrgAdmin:                c.orgAdmin,
-		ExtendedServiceLifetime: c.service,
-		SystemUser:              c.system,
-		AuthenticationDelegator: c.authDelegate,
-		FleetManagement:         c.fleetManagement,
-		SignedFleetManagement:   c.signedFleetManagement,
+		StreamsAdmin:            cl.streamAdmin,
+		StreamsUser:             cl.streamUser,
+		EventsViewer:            cl.eventViewer,
+		ElectionUser:            cl.electionUser,
+		OrgAdmin:                cl.orgAdmin,
+		ExtendedServiceLifetime: cl.service,
+		SystemUser:              cl.system,
+		AuthenticationDelegator: cl.authDelegate,
+		FleetManagement:         cl.fleetManagement,
+		SignedFleetManagement:   cl.signedFleetManagement,
 	}
 
-	pk, err := hex.DecodeString(c.pk)
+	pk, err := hex.DecodeString(cl.pk)
 	if err != nil {
 		return err
 	}
 
-	claims, err := tokens.NewClientIDClaims(c.identity, c.agents, c.org, nil, string(opa), "", c.validity, perms, pk)
+	claims, err := tokens.NewClientIDClaims(cl.identity, cl.agents, cl.org, nil, string(opa), "", cl.validity, perms, pk)
 	if err != nil {
 		return err
 	}
 
-	claims.AdditionalSubscribeSubjects = c.additionalSub
-	claims.AdditionalPublishSubjects = c.additionalPub
+	claims.AdditionalSubscribeSubjects = cl.additionalSub
+	claims.AdditionalPublishSubjects = cl.additionalPub
 
-	if c.chain {
-		_, sprik, err := iu.Ed25519KeyPairFromSeedFile(c.signingKey)
+	if cl.chain {
+		_, sprik, err := iu.Ed25519KeyPairFromSeedFile(cl.signingKey)
 		if err != nil {
 			return err
 		}
@@ -147,12 +152,28 @@ func (c *jWTCreateClientCommand) createJWT() error {
 		}
 	}
 
-	err = tokens.SaveAndSignTokenWithKeyFile(claims, c.signingKey, c.file, 0600)
+	if cl.useVault {
+		var tlsc *tls.Config
+		tlsc, err = c.ClientTLSConfig()
+		if err == nil {
+			to, cancel := context.WithTimeout(ctx, 2*time.Second)
+			defer cancel()
+
+			err = tokens.SaveAndSignTokenWithVault(to, claims, cl.signingKey, cl.file, 0600, tlsc, c.Logger("jwt"))
+		}
+	} else {
+		err = tokens.SaveAndSignTokenWithKeyFile(claims, cl.signingKey, cl.file, 0600)
+	}
 	if err != nil {
 		return err
 	}
 
-	fmt.Printf("Saved token to %v, use 'choria jwt view %v' to view it\n", c.file, c.file)
+	err = tokens.SaveAndSignTokenWithKeyFile(claims, cl.signingKey, cl.file, 0600)
+	if err != nil {
+		return err
+	}
+
+	fmt.Printf("Saved token to %v, use 'choria jwt view %v' to view it\n", cl.file, cl.file)
 
 	return nil
 }

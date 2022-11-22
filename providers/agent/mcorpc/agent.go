@@ -204,6 +204,7 @@ func (a *Agent) parseIncomingMessage(msg []byte, request protocol.Request) (*Req
 	r.RequestID = request.RequestID()
 	r.SenderID = request.SenderID()
 	r.Collective = request.Collective()
+	r.CallerPublicData = request.CallerPublicData()
 	r.TTL = request.TTL()
 	r.Time = request.Time()
 	r.Filter, _ = request.Filter()
