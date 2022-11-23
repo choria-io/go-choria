@@ -315,3 +315,8 @@ func (r *Request) IsValidJSON(data []byte) error {
 func (r *Request) CallerPublicData() string {
 	return ""
 }
+
+// SignerPublicData is not supported for version 1 messages and is always an empty string
+func (r *Request) SignerPublicData() string {
+	return ""
+}

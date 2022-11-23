@@ -21,7 +21,9 @@ type Request struct {
 	ReqEnvelope
 
 	callerJWT string
-	mu        sync.Mutex
+	signerJWT string
+
+	mu sync.Mutex
 }
 
 type ReqEnvelope struct {
@@ -67,6 +69,7 @@ func NewRequestFromSecureRequest(sr protocol.SecureRequest) (protocol.Request, e
 	req := &Request{
 		Protocol:  protocol.RequestV2,
 		callerJWT: sr.(*SecureRequest).CallerJWT,
+		signerJWT: sr.(*SecureRequest).SignerJWT,
 	}
 
 	err := req.IsValidJSON(sr.Message())
@@ -384,4 +387,12 @@ func (r *Request) CallerPublicData() string {
 	defer r.mu.Unlock()
 
 	return r.callerJWT
+}
+
+// SignerPublicData is the JWT of the request signer validated by the Secure Request, only set when a request is created from a SecureRequest
+func (r *Request) SignerPublicData() string {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	return r.signerJWT
 }

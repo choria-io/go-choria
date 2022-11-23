@@ -509,7 +509,7 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 func (r *RPC) connectBatchedConnection(ctx context.Context, name string) (Connector, error) {
 	connector, err := r.fw.NewConnector(ctx, r.fw.MiddlewareServers, name, r.log)
 	if err != nil {
-		return nil, fmt.Errorf("could not create connector: %s", err)
+		return nil, err
 	}
 
 	closer := func() {
