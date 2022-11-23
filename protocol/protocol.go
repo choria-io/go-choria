@@ -141,6 +141,7 @@ type Request interface {
 	SenderID() string
 	CallerID() string
 	CallerPublicData() string
+	SignerPublicData() string
 	Collective() string
 	Agent() string
 	TTL() int

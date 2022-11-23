@@ -564,6 +564,20 @@ func (mr *MockRequestMockRecorder) SetUnfederated() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetUnfederated", reflect.TypeOf((*MockRequest)(nil).SetUnfederated))
 }
 
+// SignerPublicData mocks base method.
+func (m *MockRequest) SignerPublicData() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SignerPublicData")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// SignerPublicData indicates an expected call of SignerPublicData.
+func (mr *MockRequestMockRecorder) SignerPublicData() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignerPublicData", reflect.TypeOf((*MockRequest)(nil).SignerPublicData))
+}
+
 // TTL mocks base method.
 func (m *MockRequest) TTL() int {
 	m.ctrl.T.Helper()

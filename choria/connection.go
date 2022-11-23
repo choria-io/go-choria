@@ -604,6 +604,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 	options := []nats.Option{
 		nats.MaxReconnects(-1),
+		nats.IgnoreAuthErrorAbort(),
 		nats.Name(conn.name),
 
 		// This is specifically set quite small, just about enough to handle short
@@ -640,6 +641,10 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		nats.ErrorHandler(func(nc *nats.Conn, sub *nats.Subscription, err error) {
 			conn.log.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrlRedacted(), err)
 			connErrorCtr.Inc()
+		}),
+
+		nats.ConnectHandler(func(nc *nats.Conn) {
+			conn.log.Infof("Connected to %s", nc.ConnectedUrlRedacted())
 		}),
 	}
 
@@ -730,7 +735,6 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		conn.log.Infof("Attempting to connect to: %s", urls)
 		conn.nats, err = nats.Connect(urls, options...)
 		if err == nil {
-			conn.log.Infof("Connected to %s", conn.nats.ConnectedUrlRedacted())
 			return nil
 		}
 
