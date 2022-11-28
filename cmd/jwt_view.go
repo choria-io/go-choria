@@ -312,6 +312,9 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 		if claims.Permissions.ExtendedServiceLifetime {
 			perms = append(perms, "      Can have an extended token lifetime")
 		}
+		if claims.Permissions.ServerProvisioner {
+			perms = append(perms, "      Can provision Choria Servers")
+		}
 
 		fmt.Println()
 		fmt.Println(" Client Permissions:")

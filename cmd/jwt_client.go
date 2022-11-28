@@ -37,6 +37,7 @@ type jWTCreateClientCommand struct {
 	authDelegate          bool
 	fleetManagement       bool
 	signedFleetManagement bool
+	serverProvisioner     bool
 	pk                    string
 	chain                 bool
 	additionalPub         []string
@@ -71,6 +72,7 @@ func (cl *jWTCreateClientCommand) Setup() (err error) {
 		cl.cmd.Flag("publish", "Additional subjects the user can publish to").StringsVar(&cl.additionalPub)
 		cl.cmd.Flag("subscribe", "Additional subjects the user can subscribe to").StringsVar(&cl.additionalSub)
 		cl.cmd.Flag("issuer", "Allow this user to sign other users in a chain of trust").UnNegatableBoolVar(&cl.chain)
+		cl.cmd.Flag("server-provisioner", "Allows the client to provision servers").BoolVar(&cl.serverProvisioner)
 		cl.cmd.Flag("vault", "Use Hashicorp Vault to sign the JWT").UnNegatableBoolVar(&cl.useVault)
 
 	}
@@ -125,6 +127,19 @@ func (cl *jWTCreateClientCommand) createJWT() error {
 		AuthenticationDelegator: cl.authDelegate,
 		FleetManagement:         cl.fleetManagement,
 		SignedFleetManagement:   cl.signedFleetManagement,
+		ServerProvisioner:       cl.serverProvisioner,
+	}
+
+	if cl.chain {
+		perms.FleetManagement = false
+		perms.SignedFleetManagement = false
+		perms.AuthenticationDelegator = false
+	}
+	if perms.SignedFleetManagement {
+		perms.FleetManagement = true
+	}
+	if perms.ServerProvisioner {
+		perms.FleetManagement = true
 	}
 
 	pk, err := hex.DecodeString(cl.pk)

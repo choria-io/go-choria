@@ -49,6 +49,9 @@ type ClientPermissions struct {
 
 	// AuthenticationDelegator has the right to sign requests on behalf of others
 	AuthenticationDelegator bool `json:"authentication_delegator,omitempty"`
+
+	// ServerProvisioner is required by Choria Provisioner to connect to the account where unprovisioned nodes exist
+	ServerProvisioner bool `json:"provisioner,omitempty"`
 }
 
 // ClientIDClaims represents a user and all AAA Authenticators should create a JWT using this format
