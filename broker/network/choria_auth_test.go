@@ -46,6 +46,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			clientAllowList: []string{},
 			log:             log,
 			choriaAccount:   &server.Account{Name: "choria"},
+			issuerTokens:    map[string]string{},
 		}
 		user = &server.User{
 			Username:    "bob",
@@ -867,46 +868,149 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			Expect(verified).To(BeFalse())
 		})
 
-		It("Should fail when server not in TLS mode", func() {
-			auth.provPass = "s3cret"
-			auth.isTLS = false
-			auth.provisioningAccount = &server.Account{Name: provisioningUser}
+		Context("Using Issuers", func() {
+			var td string
+			var err error
+			var issuerPubk ed25519.PublicKey
+			var issuerPrik ed25519.PrivateKey
 
-			verified, err := auth.handleProvisioningUserConnection(mockClient, true)
-			Expect(err).To(MatchError("provisioning user access requires TLS"))
-			Expect(verified).To(BeFalse())
-		})
+			BeforeEach(func() {
+				td, err = os.MkdirTemp("", "")
+				Expect(err).ToNot(HaveOccurred())
 
-		It("Should fail when client is not using TLS", func() {
-			auth.provPass = "s3cret"
-			auth.isTLS = true
-			auth.provisioningAccount = &server.Account{Name: provisioningUser}
-			mockClient.EXPECT().GetTLSConnectionState().Return(nil).AnyTimes()
+				issuerPubk, issuerPrik, err = iu.Ed25519KeyPair()
+				Expect(err).ToNot(HaveOccurred())
 
-			verified, err := auth.handleProvisioningUserConnection(mockClient, false)
-			Expect(err).To(MatchError("provisioning user is only allowed over verified TLS connections"))
-			Expect(verified).To(BeFalse())
-		})
+				auth.issuerTokens = map[string]string{"choria": hex.EncodeToString(issuerPubk)}
 
-		It("Should correctly verify the password and register the user", func() {
-			auth.provPass = "s3cret"
-			auth.isTLS = true
-			auth.provisioningAccount = &server.Account{Name: provisioningUser}
-			mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
-			mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: provisioningUser, Password: "s3cret"}).AnyTimes()
-			mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
-				Expect(user.Username).To(Equal(provisioningUser))
-				Expect(user.Password).To(Equal("s3cret"))
-				Expect(user.Account).To(Equal(auth.provisioningAccount))
-				Expect(user.Permissions).To(Not(BeNil()))
-				Expect(user.Permissions.Publish).To(BeNil())
-				Expect(user.Permissions.Subscribe).To(BeNil())
-				Expect(user.Permissions.Response).To(BeNil())
+				DeferCleanup(func() {
+					os.RemoveAll(td)
+				})
 			})
 
-			verified, err := auth.handleProvisioningUserConnection(mockClient, true)
-			Expect(err).ToNot(HaveOccurred())
-			Expect(verified).To(BeTrue())
+			It("Should require a token", func() {
+				auth.provPass = "s3cret"
+				auth.provisioningAccount = &server.Account{Name: provisioningUser}
+
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: provisioningUser, Password: "s3cret"}).AnyTimes()
+
+				verified, err := auth.handleProvisioningUserConnection(mockClient, true)
+				Expect(err).To(MatchError("no token provided in connection"))
+				Expect(verified).To(BeFalse())
+			})
+
+			It("Should handle tokens that do not pass validation", func() {
+				auth.provPass = "s3cret"
+				auth.provisioningAccount = &server.Account{Name: provisioningUser}
+
+				provPubk, _, err := iu.Ed25519KeyPair()
+				Expect(err).ToNot(HaveOccurred())
+
+				provClaims, err := tokens.NewClientIDClaims("provisioner", nil, "choria", nil, "", "", time.Hour, nil, provPubk)
+				Expect(err).ToNot(HaveOccurred())
+
+				// make sure its expired
+				provClaims.ExpiresAt = jwt.NewNumericDate(time.Now().Add(-time.Hour))
+				signed, err := tokens.SignToken(provClaims, issuerPrik)
+				Expect(err).ToNot(HaveOccurred())
+
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: provisioningUser, Password: "s3cret", Token: signed}).AnyTimes()
+
+				verified, err := auth.handleProvisioningUserConnection(mockClient, true)
+				Expect(err.Error()).To(MatchRegexp("token is expired by 1h"))
+				Expect(verified).To(BeFalse())
+			})
+
+			It("Should require the provisioner permission", func() {
+				auth.provPass = "s3cret"
+				auth.provisioningAccount = &server.Account{Name: provisioningUser}
+
+				provPubk, _, err := iu.Ed25519KeyPair()
+				Expect(err).ToNot(HaveOccurred())
+
+				provClaims, err := tokens.NewClientIDClaims("provisioner", nil, "choria", nil, "", "", time.Hour, nil, provPubk)
+				Expect(err).ToNot(HaveOccurred())
+				signed, err := tokens.SignToken(provClaims, issuerPrik)
+				Expect(err).ToNot(HaveOccurred())
+
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: provisioningUser, Password: "s3cret", Token: signed}).AnyTimes()
+
+				verified, err := auth.handleProvisioningUserConnection(mockClient, true)
+				Expect(err).To(MatchError("provisioner claim is false in token with caller id 'provisioner'"))
+				Expect(verified).To(BeFalse())
+			})
+
+			It("Should correctly verify the password and register the user", func() {
+				auth.provPass = "s3cret"
+				auth.provisioningAccount = &server.Account{Name: provisioningUser}
+
+				provPubk, _, err := iu.Ed25519KeyPair()
+				Expect(err).ToNot(HaveOccurred())
+
+				provClaims, err := tokens.NewClientIDClaims("provisioner", nil, "choria", nil, "", "", time.Hour, &tokens.ClientPermissions{ServerProvisioner: true}, provPubk)
+				Expect(err).ToNot(HaveOccurred())
+				signed, err := tokens.SignToken(provClaims, issuerPrik)
+				Expect(err).ToNot(HaveOccurred())
+
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: provisioningUser, Password: "s3cret", Token: signed}).AnyTimes()
+				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+					Expect(user.Username).To(Equal(provisioningUser))
+					Expect(user.Password).To(Equal("s3cret"))
+					Expect(user.Account).To(Equal(auth.provisioningAccount))
+					Expect(user.Permissions).To(Not(BeNil()))
+					Expect(user.Permissions.Publish).To(BeNil())
+					Expect(user.Permissions.Subscribe).To(BeNil())
+					Expect(user.Permissions.Response).To(BeNil())
+				})
+
+				verified, err := auth.handleProvisioningUserConnection(mockClient, true)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(verified).To(BeTrue())
+			})
+		})
+
+		Context("Using mTLS", func() {
+			It("Should fail when server not in TLS mode", func() {
+				auth.provPass = "s3cret"
+				auth.isTLS = false
+				auth.provisioningAccount = &server.Account{Name: provisioningUser}
+
+				verified, err := auth.handleProvisioningUserConnection(mockClient, true)
+				Expect(err).To(MatchError("provisioning user access requires TLS"))
+				Expect(verified).To(BeFalse())
+			})
+
+			It("Should fail when client is not using TLS", func() {
+				auth.provPass = "s3cret"
+				auth.isTLS = true
+				auth.provisioningAccount = &server.Account{Name: provisioningUser}
+				mockClient.EXPECT().GetTLSConnectionState().Return(nil).AnyTimes()
+
+				verified, err := auth.handleProvisioningUserConnection(mockClient, false)
+				Expect(err).To(MatchError("provisioning user is only allowed over verified TLS connections"))
+				Expect(verified).To(BeFalse())
+			})
+
+			It("Should correctly verify the password and register the user", func() {
+				auth.provPass = "s3cret"
+				auth.isTLS = true
+				auth.provisioningAccount = &server.Account{Name: provisioningUser}
+				mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: provisioningUser, Password: "s3cret"}).AnyTimes()
+				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+					Expect(user.Username).To(Equal(provisioningUser))
+					Expect(user.Password).To(Equal("s3cret"))
+					Expect(user.Account).To(Equal(auth.provisioningAccount))
+					Expect(user.Permissions).To(Not(BeNil()))
+					Expect(user.Permissions.Publish).To(BeNil())
+					Expect(user.Permissions.Subscribe).To(BeNil())
+					Expect(user.Permissions.Response).To(BeNil())
+				})
+
+				verified, err := auth.handleProvisioningUserConnection(mockClient, true)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(verified).To(BeTrue())
+			})
 		})
 	})
 

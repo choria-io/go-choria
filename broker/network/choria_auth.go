@@ -407,7 +407,48 @@ func (a *ChoriaAuth) handleVerifiedSystemAccount(c server.ClientAuthentication, 
 	return true, nil
 }
 
-func (a *ChoriaAuth) handleProvisioningUserConnection(c server.ClientAuthentication, tlsVerified bool) (bool, error) {
+func (a *ChoriaAuth) handleProvisioningUserConnectionWithIssuer(c server.ClientAuthentication) (bool, error) {
+	if a.provPass == emptyString {
+		return false, fmt.Errorf("provisioning user password not enabled")
+	}
+
+	if a.provisioningAccount == nil {
+		return false, fmt.Errorf("provisioning account is not set")
+	}
+
+	opts := c.GetOpts()
+
+	if opts.Token == "" {
+		return false, fmt.Errorf("no token provided in connection")
+	}
+
+	claims, err := a.parseClientIDJWTWithIssuer(opts.Token)
+	if err != nil {
+		return false, err
+	}
+
+	if claims.Permissions == nil || !claims.Permissions.ServerProvisioner {
+		return false, fmt.Errorf("provisioner claim is false in token with caller id '%s'", claims.CallerID)
+	}
+
+	if opts.Password == emptyString {
+		return false, fmt.Errorf("password required")
+	}
+
+	if a.provPass != opts.Password {
+		return false, fmt.Errorf("invalid provisioner password supplied")
+	}
+
+	user := a.createUser(c)
+	user.Account = a.provisioningAccount
+
+	a.log.Debugf("Registering user '%s' in account '%s' from claims with identity %s", user.Username, user.Account.Name, claims.CallerID)
+	c.RegisterUser(user)
+
+	return true, nil
+}
+
+func (a *ChoriaAuth) handleProvisioningUserConnectionWithTLS(c server.ClientAuthentication, tlsVerified bool) (bool, error) {
 	if !tlsVerified {
 		return false, fmt.Errorf("provisioning user is only allowed over verified TLS connections")
 	}
@@ -445,6 +486,14 @@ func (a *ChoriaAuth) handleProvisioningUserConnection(c server.ClientAuthenticat
 	c.RegisterUser(user)
 
 	return true, nil
+}
+
+func (a *ChoriaAuth) handleProvisioningUserConnection(c server.ClientAuthentication, tlsVerified bool) (bool, error) {
+	if len(a.issuerTokens) > 0 {
+		return a.handleProvisioningUserConnectionWithIssuer(c)
+	}
+
+	return a.handleProvisioningUserConnectionWithTLS(c, tlsVerified)
 }
 
 func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthentication) (bool, error) {
