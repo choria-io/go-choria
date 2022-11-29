@@ -496,7 +496,69 @@ func (a *ChoriaAuth) handleProvisioningUserConnection(c server.ClientAuthenticat
 	return a.handleProvisioningUserConnectionWithTLS(c, tlsVerified)
 }
 
-func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthentication) (bool, error) {
+func (a *ChoriaAuth) handleUnverifiedProvisioningConnectionWithIssuer(c server.ClientAuthentication, opts *server.ClientOpts) (bool, error) {
+	if a.provPass == emptyString {
+		return false, fmt.Errorf("provisioning is not enabled")
+	}
+
+	if a.provisioningAccount == nil {
+		return false, fmt.Errorf("provisioning account is not set")
+	}
+
+	if opts.Token == emptyString {
+		return false, fmt.Errorf("provisioning requires a token")
+	}
+
+	user := a.createUser(c)
+	user.Account = a.provisioningAccount
+
+	uclaims, err := tokens.ParseTokenUnverified(opts.Token)
+	if err != nil {
+		return false, err
+	}
+
+	ou := uclaims["ou"]
+	if ou == nil {
+		return false, fmt.Errorf("no ou claim in token")
+	}
+
+	ous, ok := ou.(string)
+	if !ok {
+		return false, fmt.Errorf("invald ou in token")
+	}
+
+	issuer, ok := a.issuerTokens[ous]
+	if !ok {
+		return false, fmt.Errorf("no issuer found for ou %s", ous)
+	}
+
+	pk, err := a.cachedEd25519Token(issuer)
+	if err != nil {
+		return false, fmt.Errorf("invalid issuer public key: %w", err)
+	}
+
+	_, err = tokens.ParseProvisioningToken(opts.Token, pk)
+	if err != nil {
+		return false, err
+	}
+
+	a.log.Debugf("Allowing a provisioning server from using issuer '%s' connecting from %s", ous, c.RemoteAddress().String())
+
+	// anything that get this far has to be a server and so we unconditionally set server
+	// only permissions, and only to agents provisioning would bother hosting.
+	//
+	// We also allow provisioning.registration.> to allow a mode where prov mode servers
+	// would be publishing some known metadata, by convention, this is the only place they
+	// can publish to
+	a.setProvisioningServerPermissions(user)
+
+	a.log.Debugf("Registering user '%s' in account '%s'", user.Username, user.Account.Name)
+	c.RegisterUser(user)
+
+	return true, nil
+}
+
+func (a *ChoriaAuth) handleUnverifiedProvisioningConnectionWithTLS(c server.ClientAuthentication, opts *server.ClientOpts) (bool, error) {
 	if a.provisioningTokenSigner == emptyString {
 		return false, fmt.Errorf("provisioning is not enabled")
 	}
@@ -509,26 +571,19 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 		return false, fmt.Errorf("provisioning account is not set")
 	}
 
-	opts := c.GetOpts()
-	if opts.Username == provisioningUser {
-		return false, fmt.Errorf("provisioning user requires verified TLS")
+	if opts.Token == emptyString {
+		return false, fmt.Errorf("provisioning requires a token")
 	}
 
 	user := a.createUser(c)
 	user.Account = a.provisioningAccount
 
-	switch {
-	case opts.Token != emptyString:
-		_, err := tokens.ParseProvisioningTokenWithKeyfile(opts.Token, a.provisioningTokenSigner)
-		if err != nil {
-			return false, err
-		}
-
-		a.log.Debugf("Allowing a provisioning server from using unverified TLS connection from %s", c.RemoteAddress().String())
-
-	default:
-		return false, fmt.Errorf("provisioning requires a token")
+	_, err := tokens.ParseProvisioningTokenWithKeyfile(opts.Token, a.provisioningTokenSigner)
+	if err != nil {
+		return false, err
 	}
+
+	a.log.Debugf("Allowing a provisioning server from using unverified TLS connection from %s", c.RemoteAddress().String())
 
 	// anything that get this far has to be a server and so we unconditionally set server
 	// only permissions, and only to agents provisioning would bother hosting.
@@ -536,6 +591,15 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 	// We also allow provisioning.registration.> to allow a mode where prov mode servers
 	// would be publishing some known metadata, by convention, this is the only place they
 	// can publish to
+	a.setProvisioningServerPermissions(user)
+
+	a.log.Debugf("Registering user '%s' in account '%s'", user.Username, user.Account.Name)
+	c.RegisterUser(user)
+
+	return true, nil
+}
+
+func (a *ChoriaAuth) setProvisioningServerPermissions(user *server.User) {
 	user.Permissions.Subscribe = &server.SubjectPermission{
 		Allow: []string{
 			"provisioning.node.>",
@@ -553,11 +617,19 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthe
 			"provisioning.registration.>",
 		},
 	}
+}
 
-	a.log.Debugf("Registering user '%s' in account '%s'", user.Username, user.Account.Name)
-	c.RegisterUser(user)
+func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthentication) (bool, error) {
+	opts := c.GetOpts()
+	if opts.Username == provisioningUser {
+		return false, fmt.Errorf("provisioning user requires a verified connection")
+	}
 
-	return true, nil
+	if len(a.issuerTokens) > 0 {
+		return a.handleUnverifiedProvisioningConnectionWithIssuer(c, opts)
+	}
+
+	return a.handleUnverifiedProvisioningConnectionWithTLS(c, opts)
 }
 
 func (a *ChoriaAuth) cachedEd25519Token(token string) (ed25519.PublicKey, error) {

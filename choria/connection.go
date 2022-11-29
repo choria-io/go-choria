@@ -586,14 +586,14 @@ func (conn *Connection) anonTLSc() *tls.Config {
 	}
 }
 
-// TODO: rather than these checks we should just say do we have a seed and jwt regardless of that was set (1740)
 func (conn *Connection) isJwtAuth() bool {
-	return conn.config.Choria.ServerAnonTLS || conn.config.Choria.ClientAnonTLS || conn.fw.security.BackingTechnology() == inter.SecurityTechnologyED25519JWT
+	// in provisioning mode servers do not have seed files and the security is set to insecure, so we skip nonce signing etc for those
+	return (conn.config.Choria.ServerAnonTLS || conn.config.Choria.ClientAnonTLS || conn.fw.security.BackingTechnology() == inter.SecurityTechnologyED25519JWT) && !conn.fw.ProvisionMode()
 }
 
 // Connect creates a new connection to NATS.
 //
-// This will block until connected - basically forever should it never work.  Due to short comings
+// This will block until connected - basically forever should it never work.  Due to shortcomings
 // in the NATS library logging about failures is not optimal
 func (conn *Connection) Connect(ctx context.Context) (err error) {
 	obs := prometheus.NewTimer(connInitialConnectTime)

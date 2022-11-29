@@ -182,6 +182,9 @@ func (v *tJWTViewCommand) validateProvisionToken(token string) error {
 	if claims.ProvNatsPass != "" {
 		fmt.Println("               Broker Password: *****")
 	}
+	if claims.ProtoV2 {
+		fmt.Println("      Using version 2 Protocol: true")
+	}
 	if len(claims.Extensions) > 0 {
 		ext, err := json.MarshalIndent(claims.Extensions, "                                ", "  ")
 		if err != nil {

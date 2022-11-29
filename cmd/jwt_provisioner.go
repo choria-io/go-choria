@@ -32,6 +32,7 @@ type jWTCreateProvCommand struct {
 	urls        []string
 	org         string
 	useVault    bool
+	v2          bool
 
 	command
 }
@@ -53,6 +54,7 @@ func (p *jWTCreateProvCommand) Setup() (err error) {
 		p.cmd.Flag("extensions", "Adds additional extensions to the token, accepts JSON data").PlaceHolder("JSON").StringVar(&p.extensions)
 		p.cmd.Flag("org", "Adds the node to a specific organization for trust validation").Default("choria").StringVar(&p.org)
 		p.cmd.Flag("vault", "Use Hashicorp Vault to sign the JWT").UnNegatableBoolVar(&p.useVault)
+		p.cmd.Flag("protocol-v2", "Use version 2 network protocol and security").UnNegatableBoolVar(&p.v2)
 	}
 
 	return nil
@@ -101,6 +103,10 @@ func (p *jWTCreateProvCommand) createJWT() error {
 			return fmt.Errorf("invalid extensions: %v", err)
 		}
 		claims.Extensions = ext
+	}
+
+	if p.v2 {
+		claims.ProtoV2 = true
 	}
 
 	if p.useVault {

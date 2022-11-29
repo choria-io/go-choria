@@ -170,6 +170,10 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 			s.log.Warnf("Loaded Organization Issuer %s with public key %s", issuer, pk)
 			choriaAuth.issuerTokens[issuer] = pk
 		}
+
+		if s.config.Choria.NetworkProvisioningClientPassword != "" {
+			s.log.Warnf("Allowing Provisioner connections subject to JWT claims")
+		}
 	}
 
 	if choriaAuth.isTLS {

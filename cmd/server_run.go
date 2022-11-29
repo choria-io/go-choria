@@ -67,6 +67,12 @@ func (r *serverRunCommand) Configure() error {
 			if cfg.Choria.ServerTokenFile != "" {
 				os.Remove(cfg.Choria.ServerTokenFile)
 			}
+			if cfg.Choria.ChoriaSecuritySeedFile != "" {
+				os.Remove(cfg.Choria.ChoriaSecuritySeedFile)
+			}
+			if cfg.Choria.ChoriaSecurityTokenFile != "" {
+				os.Remove(cfg.Choria.ChoriaSecurityTokenFile)
+			}
 
 			log.Warnf("Switching to provisioning configuration due to build defaults and server.provision configuration setting")
 			cfg, err = r.provisionConfig(configFile)
@@ -103,6 +109,12 @@ func (r *serverRunCommand) Configure() error {
 		}
 		if cfg.Choria.ServerTokenFile != "" {
 			os.Remove(cfg.Choria.ServerTokenFile)
+		}
+		if cfg.Choria.ChoriaSecuritySeedFile != "" {
+			os.Remove(cfg.Choria.ChoriaSecuritySeedFile)
+		}
+		if cfg.Choria.ChoriaSecurityTokenFile != "" {
+			os.Remove(cfg.Choria.ChoriaSecurityTokenFile)
 		}
 
 		cfg, err = r.provisionConfig(configFile)
