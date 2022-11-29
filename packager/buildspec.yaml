@@ -17,6 +17,7 @@ flags_map:
   ProvisionJWTFile: github.com/choria-io/go-choria/build.ProvisionJWTFile
   ProvisioningBrokerUsername: github.com/choria-io/go-choria/build.ProvisioningBrokerUsername
   ProvisioningBrokerPassword: github.com/choria-io/go-choria/build.ProvisioningBrokerPassword
+  ProvisionAllowServerUpdate: github.com/choria-io/go-choria/build.ProvisionAllowServerUpdate
 
 foss:
   compile_targets:

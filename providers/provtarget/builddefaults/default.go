@@ -143,6 +143,7 @@ func (b *Resolver) setBuildBasedOnJWT() (*tokens.ProvisioningClaims, error) {
 	bi.SetProvisionToken(claims.Token)
 	bi.SetProvisionBrokerSRVDomain(claims.SRVDomain)
 	bi.SetProvisionUsingVersion2(claims.ProtoV2)
+	bi.SetProvisionAllowServerUpdate(claims.AllowUpdate)
 
 	if claims.ProvDefault {
 		bi.EnableProvisionModeAsDefault()

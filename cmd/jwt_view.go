@@ -185,6 +185,8 @@ func (v *tJWTViewCommand) validateProvisionToken(token string) error {
 	if claims.ProtoV2 {
 		fmt.Println("      Using version 2 Protocol: true")
 	}
+	fmt.Printf("       Server Version Upgrades: %t\n", claims.AllowUpdate)
+
 	if len(claims.Extensions) > 0 {
 		ext, err := json.MarshalIndent(claims.Extensions, "                                ", "  ")
 		if err != nil {

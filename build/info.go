@@ -157,6 +157,13 @@ func (i *Info) ProvisionUsingVersion2() bool {
 	return ProvisioningUsesProtocolV2 == "true"
 }
 
+func (i *Info) ProvisionAllowServerUpdate() bool {
+	mu.Lock()
+	defer mu.Unlock()
+
+	return ProvisionAllowServerUpdate == "true"
+}
+
 func (i *Info) AgentProviders() []string {
 	mu.Lock()
 	defer mu.Unlock()
@@ -274,6 +281,17 @@ func (i *Info) SetProvisionUsingVersion2(v2 bool) {
 		ProvisioningUsesProtocolV2 = "true"
 	} else {
 		ProvisioningUsesProtocolV2 = "false"
+	}
+}
+
+func (i *Info) SetProvisionAllowServerUpdate(allow bool) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if allow {
+		ProvisionAllowServerUpdate = "true"
+	} else {
+		ProvisionAllowServerUpdate = "false"
 	}
 }
 
