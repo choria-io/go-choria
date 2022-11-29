@@ -306,6 +306,11 @@
           "description": "Autonomous Agents",
           "display_as": "Machines",
           "type": "hash"
+        },
+        "upgradable": {
+          "description": "Indicates if the server supports upgrades",
+          "display_as": "Upgradable",
+          "type": "boolean"
         }
       },
       "display": "always",
