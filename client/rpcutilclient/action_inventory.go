@@ -240,6 +240,16 @@ func (d *InventoryOutput) MainCollective() string {
 
 }
 
+// Upgradable is the value of the upgradable output
+//
+// Description: Indicates if the server supports upgrades
+func (d *InventoryOutput) Upgradable() bool {
+	val := d.reply["upgradable"]
+
+	return val.(bool)
+
+}
+
 // Version is the value of the version output
 //
 // Description: Choria Server Version
