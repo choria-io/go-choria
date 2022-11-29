@@ -310,7 +310,8 @@
         "upgradable": {
           "description": "Indicates if the server supports upgrades",
           "display_as": "Upgradable",
-          "type": "boolean"
+          "type": "boolean",
+          "default": false
         }
       },
       "display": "always",

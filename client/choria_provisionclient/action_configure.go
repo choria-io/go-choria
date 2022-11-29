@@ -110,6 +110,11 @@ func (d *ConfigureOutput) ParseConfigureOutput(target any) error {
 func (d *ConfigureRequester) Do(ctx context.Context) (*ConfigureResult, error) {
 	dres := &ConfigureResult{ddl: d.r.client.ddl}
 
+	addl, err := dres.ddl.ActionInterface(d.r.action)
+	if err != nil {
+		return nil, err
+	}
+
 	handler := func(pr protocol.Reply, r *rpcclient.RPCReply) {
 		// filtered by expr filter
 		if r == nil {
@@ -126,12 +131,14 @@ func (d *ConfigureRequester) Do(ctx context.Context) (*ConfigureResult, error) {
 			},
 		}
 
+		addl.SetOutputDefaults(output.reply)
+
 		err := json.Unmarshal(r.Data, &output.reply)
 		if err != nil {
 			d.r.client.errorf("Could not decode reply from %s: %s", pr.SenderID(), err)
 		}
 
-		// caller wants a channel so we dont return a resulset too (lots of memory etc)
+		// caller wants a channel so we dont return a resultset too (lots of memory etc)
 		// this is unused now, no support for setting a channel
 		if d.outc != nil {
 			d.outc <- output
