@@ -150,6 +150,13 @@ func (i *Info) ProvisionStatusFile() string {
 	return ProvisionStatusFile
 }
 
+func (i *Info) ProvisionUsingVersion2() bool {
+	mu.Lock()
+	defer mu.Unlock()
+
+	return ProvisioningUsesProtocolV2 == "true"
+}
+
 func (i *Info) AgentProviders() []string {
 	mu.Lock()
 	defer mu.Unlock()
@@ -257,6 +264,17 @@ func (i *Info) SetProvisionToken(t string) {
 	defer mu.Unlock()
 
 	ProvisionToken = t
+}
+
+func (i *Info) SetProvisionUsingVersion2(v2 bool) {
+	mu.Lock()
+	defer mu.Unlock()
+
+	if v2 {
+		ProvisioningUsesProtocolV2 = "true"
+	} else {
+		ProvisioningUsesProtocolV2 = "false"
+	}
 }
 
 func (i *Info) SetProvisionBrokerSRVDomain(d string) {

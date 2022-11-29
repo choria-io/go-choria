@@ -1015,73 +1015,6 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 	})
 
 	Describe("handleUnverifiedProvisioningConnection", func() {
-		It("Should fail without a signer cert set or present", func() {
-			validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
-			Expect(validated).To(BeFalse())
-			Expect(err).To(MatchError("provisioning is not enabled"))
-
-			auth.provisioningTokenSigner = "/nonexisting"
-			validated, err = auth.handleUnverifiedProvisioningConnection(mockClient)
-			Expect(validated).To(BeFalse())
-			Expect(err).To(MatchError("provisioning signer certificate /nonexisting does not exist"))
-		})
-
-		It("Should fail without a provisioner account", func() {
-			auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
-
-			validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
-			Expect(validated).To(BeFalse())
-			Expect(err).To(MatchError("provisioning account is not set"))
-		})
-
-		Describe("Servers", func() {
-			BeforeEach(func() {
-				auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
-				auth.provisioningAccount = &server.Account{Name: "provisioning"}
-			})
-
-			It("Should fail for invalid tokens", func() {
-				t, err := os.ReadFile("testdata/provisioning/invalid.jwt")
-				Expect(err).ToNot(HaveOccurred())
-
-				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: string(t)}).AnyTimes()
-
-				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
-				Expect(validated).To(BeFalse())
-				Expect(err).To(MatchError("could not parse provisioner token: crypto/rsa: verification error"))
-			})
-
-			It("Should set server permissions and register", func() {
-				t, err := os.ReadFile("testdata/provisioning/secure.jwt")
-				Expect(err).ToNot(HaveOccurred())
-
-				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: string(t)}).AnyTimes()
-				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
-				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
-					Expect(user.Username).To(BeEmpty())
-					Expect(user.Password).To(BeEmpty())
-					Expect(user.Account).To(Equal(auth.provisioningAccount))
-					Expect(user.Permissions).To(Not(BeNil()))
-					Expect(user.Permissions.Subscribe.Allow).To(Equal([]string{
-						"provisioning.node.>",
-						"provisioning.broadcast.agent.discovery",
-						"provisioning.broadcast.agent.rpcutil",
-						"provisioning.broadcast.agent.choria_util",
-						"provisioning.broadcast.agent.choria_provision",
-					}))
-					Expect(user.Permissions.Publish.Allow).To(Equal([]string{
-						"choria.lifecycle.>",
-						"provisioning.reply.>",
-						"provisioning.registration.>",
-					}))
-				})
-
-				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
-				Expect(validated).To(BeTrue())
-				Expect(err).To(BeNil())
-			})
-		})
-
 		Describe("Provisioner Client", func() {
 			It("Should not accept connections from the provisioning user without verified TLS", func() {
 				auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
@@ -1091,8 +1024,189 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				mockClient.EXPECT().GetOpts().Return(copts).AnyTimes()
 
 				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
-				Expect(err).To(MatchError("provisioning user requires verified TLS"))
+				Expect(err).To(MatchError("provisioning user requires a verified connection"))
 				Expect(validated).To(BeFalse())
+			})
+		})
+
+		Context("Org Issuers", func() {
+			var (
+				issuerPubk                    ed25519.PublicKey
+				issuerPrik                    ed25519.PrivateKey
+				valid, invalid, wrongOU, noOU string
+				err                           error
+			)
+
+			BeforeEach(func() {
+				issuerPubk, issuerPrik, err = iu.Ed25519KeyPair()
+				Expect(err).ToNot(HaveOccurred())
+
+				td, err := os.MkdirTemp("", "")
+				Expect(err).ToNot(HaveOccurred())
+				DeferCleanup(func() { os.RemoveAll(td) })
+
+				token, err := tokens.NewProvisioningClaims(false, true, "s3cret", "", "", nil, "example.net", "", "", "choria", "xxx", time.Hour)
+				Expect(err).ToNot(HaveOccurred())
+				valid, err = tokens.SignToken(token, issuerPrik)
+				Expect(err).ToNot(HaveOccurred())
+
+				token, err = tokens.NewProvisioningClaims(false, true, "s3cret", "", "", nil, "example.net", "", "", "choria", "xxx", time.Hour)
+				Expect(err).ToNot(HaveOccurred())
+				token.ExpiresAt = jwt.NewNumericDate(time.Now().Add(-1 * time.Hour))
+				invalid, err = tokens.SignToken(token, issuerPrik)
+				Expect(err).ToNot(HaveOccurred())
+
+				token, err = tokens.NewProvisioningClaims(false, true, "s3cret", "", "", nil, "example.net", "", "", "other", "xxx", time.Hour)
+				Expect(err).ToNot(HaveOccurred())
+				wrongOU, err = tokens.SignToken(token, issuerPrik)
+				Expect(err).ToNot(HaveOccurred())
+
+				token, err = tokens.NewProvisioningClaims(false, true, "s3cret", "", "", nil, "example.net", "", "", "other", "xxx", time.Hour)
+				token.OrganizationUnit = ""
+				Expect(err).ToNot(HaveOccurred())
+				noOU, err = tokens.SignToken(token, issuerPrik)
+				Expect(err).ToNot(HaveOccurred())
+
+				auth.issuerTokens = map[string]string{"choria": hex.EncodeToString(issuerPubk)}
+				auth.provPass = "s3cret"
+			})
+
+			It("Should fail without a provisioner account", func() {
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{}).AnyTimes()
+
+				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
+				Expect(validated).To(BeFalse())
+				Expect(err).To(MatchError("provisioning account is not set"))
+			})
+
+			Describe("Servers", func() {
+				BeforeEach(func() {
+					auth.provisioningAccount = &server.Account{Name: "provisioning"}
+				})
+
+				It("Should fail for invalid tokens", func() {
+					mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: invalid}).AnyTimes()
+
+					validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
+					Expect(validated).To(BeFalse())
+					Expect(err.Error()).To(MatchRegexp("token is expired by"))
+				})
+
+				It("Should detect missing ou claims", func() {
+					mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: noOU}).AnyTimes()
+
+					validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
+					Expect(validated).To(BeFalse())
+					Expect(err.Error()).To(MatchRegexp("no ou claim in token"))
+				})
+
+				It("Should detect unconfigured Issuers", func() {
+					mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: wrongOU}).AnyTimes()
+
+					validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
+					Expect(validated).To(BeFalse())
+					Expect(err.Error()).To(MatchRegexp("no issuer found for ou other"))
+				})
+
+				It("Should set server permissions and register", func() {
+					mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: valid}).AnyTimes()
+					mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+						Expect(user.Username).To(BeEmpty())
+						Expect(user.Password).To(BeEmpty())
+						Expect(user.Account).To(Equal(auth.provisioningAccount))
+						Expect(user.Permissions).To(Not(BeNil()))
+						Expect(user.Permissions.Subscribe.Allow).To(Equal([]string{
+							"provisioning.node.>",
+							"provisioning.broadcast.agent.discovery",
+							"provisioning.broadcast.agent.rpcutil",
+							"provisioning.broadcast.agent.choria_util",
+							"provisioning.broadcast.agent.choria_provision",
+						}))
+						Expect(user.Permissions.Publish.Allow).To(Equal([]string{
+							"choria.lifecycle.>",
+							"provisioning.reply.>",
+							"provisioning.registration.>",
+						}))
+					})
+
+					validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
+					Expect(validated).To(BeTrue())
+					Expect(err).To(BeNil())
+				})
+			})
+		})
+
+		Context("mTLS", func() {
+			It("Should fail without a signer cert set or present", func() {
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{}).AnyTimes()
+
+				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
+				Expect(validated).To(BeFalse())
+				Expect(err).To(MatchError("provisioning is not enabled"))
+
+				auth.provisioningTokenSigner = "/nonexisting"
+				validated, err = auth.handleUnverifiedProvisioningConnection(mockClient)
+				Expect(validated).To(BeFalse())
+				Expect(err).To(MatchError("provisioning signer certificate /nonexisting does not exist"))
+			})
+
+			It("Should fail without a provisioner account", func() {
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{}).AnyTimes()
+
+				auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
+
+				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
+				Expect(validated).To(BeFalse())
+				Expect(err).To(MatchError("provisioning account is not set"))
+			})
+
+			Describe("Servers", func() {
+				BeforeEach(func() {
+					auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
+					auth.provisioningAccount = &server.Account{Name: "provisioning"}
+				})
+
+				It("Should fail for invalid tokens", func() {
+					t, err := os.ReadFile("testdata/provisioning/invalid.jwt")
+					Expect(err).ToNot(HaveOccurred())
+
+					mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: string(t)}).AnyTimes()
+
+					validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
+					Expect(validated).To(BeFalse())
+					Expect(err).To(MatchError("could not parse provisioner token: crypto/rsa: verification error"))
+				})
+
+				It("Should set server permissions and register", func() {
+					t, err := os.ReadFile("testdata/provisioning/secure.jwt")
+					Expect(err).ToNot(HaveOccurred())
+
+					mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: string(t)}).AnyTimes()
+					mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+						Expect(user.Username).To(BeEmpty())
+						Expect(user.Password).To(BeEmpty())
+						Expect(user.Account).To(Equal(auth.provisioningAccount))
+						Expect(user.Permissions).To(Not(BeNil()))
+						Expect(user.Permissions.Subscribe.Allow).To(Equal([]string{
+							"provisioning.node.>",
+							"provisioning.broadcast.agent.discovery",
+							"provisioning.broadcast.agent.rpcutil",
+							"provisioning.broadcast.agent.choria_util",
+							"provisioning.broadcast.agent.choria_provision",
+						}))
+						Expect(user.Permissions.Publish.Allow).To(Equal([]string{
+							"choria.lifecycle.>",
+							"provisioning.reply.>",
+							"provisioning.registration.>",
+						}))
+					})
+
+					validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
+					Expect(validated).To(BeTrue())
+					Expect(err).To(BeNil())
+				})
 			})
 		})
 	})

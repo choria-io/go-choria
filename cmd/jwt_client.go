@@ -72,7 +72,7 @@ func (cl *jWTCreateClientCommand) Setup() (err error) {
 		cl.cmd.Flag("publish", "Additional subjects the user can publish to").StringsVar(&cl.additionalPub)
 		cl.cmd.Flag("subscribe", "Additional subjects the user can subscribe to").StringsVar(&cl.additionalSub)
 		cl.cmd.Flag("issuer", "Allow this user to sign other users in a chain of trust").UnNegatableBoolVar(&cl.chain)
-		cl.cmd.Flag("server-provisioner", "Allows the client to provision servers").BoolVar(&cl.serverProvisioner)
+		cl.cmd.Flag("server-provisioner", "Allows the client to provision servers").UnNegatableBoolVar(&cl.serverProvisioner)
 		cl.cmd.Flag("vault", "Use Hashicorp Vault to sign the JWT").UnNegatableBoolVar(&cl.useVault)
 
 	}

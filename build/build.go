@@ -65,6 +65,9 @@ var ProvisioningBrokerUsername = ""
 // ProvisioningBrokerPassword is the password used to connect to the middleware with
 var ProvisioningBrokerPassword = ""
 
+// ProvisioningUsesProtocolV2 indicates if provisioning should use v2 protocol
+var ProvisioningUsesProtocolV2 = "false"
+
 // AgentProviders are registered systems capable of extending choria with new agents
 var AgentProviders = []string{}
 

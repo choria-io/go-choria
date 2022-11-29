@@ -25,6 +25,7 @@ type ProvisioningClaims struct {
 	ProvNatsPass     string    `json:"chpwd,omitempty"`
 	Extensions       MapClaims `json:"extensions"`
 	OrganizationUnit string    `json:"ou,omitempty"`
+	ProtoV2          bool      `json:"v2,omitempty"`
 
 	StandardClaims
 }
@@ -114,7 +115,7 @@ func ParseProvisioningTokenWithKeyfile(token string, pkFile string) (*Provisioni
 // ParseProvisionTokenUnverified parses the provisioning token in an unverified manner.
 //
 // This is intended to be used for nodes to figure out their settings, they will go try them
-// and if nothings there no biggie.  The broker and provisioner WILL validate this token so
+// and if nothing's there no biggie.  The broker and provisioner WILL validate this token so
 // parsing it unverified there is about equivalent to just a configuration file, which is the
 // intended purpose of this token and function.
 func ParseProvisionTokenUnverified(token string) (*ProvisioningClaims, error) {

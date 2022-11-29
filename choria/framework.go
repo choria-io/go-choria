@@ -214,8 +214,7 @@ func (fw *Framework) SupportsProvisioning() bool {
 	return fw.bi.SupportsProvisioning()
 }
 
-// ConfigureProvisioning adjusts the active configuration to match the
-// provisioning profile
+// ConfigureProvisioning adjusts the active configuration to match the provisioning profile
 func (fw *Framework) ConfigureProvisioning() {
 	provtarget.Configure(fw.Config, fw.Logger("provtarget"))
 
@@ -255,6 +254,18 @@ func (fw *Framework) ConfigureProvisioning() {
 	if fw.bi.ProvisionBrokerSRVDomain() != "" {
 		fw.Config.Choria.UseSRVRecords = true
 		fw.Config.Choria.SRVDomain = fw.bi.ProvisionBrokerSRVDomain()
+	}
+
+	if fw.bi.ProvisionJWTFile() != "" && fw.bi.ProvisionUsingVersion2() {
+		fw.Config.Choria.SecurityProvider = "choria"
+		fw.Config.Choria.ChoriaSecurityTokenFile = fw.bi.ProvisionJWTFile()
+		fw.Config.Choria.ChoriaSecuritySignReplies = false
+		protocol.Secure = "false"
+
+		err := fw.setupSecurity()
+		if err != nil {
+			fw.log.Errorf("Could not setup security to enable protocol v2: %v", err)
+		}
 	}
 }
 
@@ -782,8 +793,11 @@ func (fw *Framework) SignerToken() (token string, err error) {
 			return "", err
 		}
 
+	case tokens.ProvisioningPurpose:
+		// nothing to verify here
+
 	default:
-		return "", fmt.Errorf("cannot use token with purpose %q as signer token", purpose)
+		return "", fmt.Errorf("cannot use token %s with purpose %q as signer token", tf, purpose)
 	}
 
 	return strings.TrimSpace(string(tb)), err

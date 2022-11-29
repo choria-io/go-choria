@@ -22,7 +22,7 @@ func (s *Server) setupAccounts() (err error) {
 		return fmt.Errorf("choria account creation failed")
 	}
 
-	if s.config.Choria.NetworkProvisioningTokenSignerFile != "" {
+	if s.config.Choria.NetworkProvisioningClientPassword != "" {
 		s.provisioningAccount, _ = s.gnatsd.LookupOrRegisterAccount("provisioning")
 		if s.provisioningAccount == nil {
 			return fmt.Errorf("provisioning account creation failed")
