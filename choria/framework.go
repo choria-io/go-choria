@@ -230,6 +230,7 @@ func (fw *Framework) ConfigureProvisioning() {
 	fw.Config.FactSourceFile = fw.bi.ProvisionFacts()
 	fw.Config.Choria.NatsUser = fw.bi.ProvisioningBrokerUsername()
 	fw.Config.Choria.NatsPass = fw.bi.ProvisioningBrokerPassword()
+	fw.Config.Choria.ProvisionAllowUpdate = fw.bi.ProvisionAllowServerUpdate()
 	fw.Config.Choria.SSLDir = filepath.Join(filepath.Dir(fw.Config.ConfigFile), "ssl")
 	fw.Config.Choria.SecurityProvider = "file"
 

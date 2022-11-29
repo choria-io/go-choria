@@ -68,6 +68,9 @@ var ProvisioningBrokerPassword = ""
 // ProvisioningUsesProtocolV2 indicates if provisioning should use v2 protocol
 var ProvisioningUsesProtocolV2 = "false"
 
+// ProvisionAllowServerUpdate allows over the air updates of the choria version from provisioner
+var ProvisionAllowServerUpdate = "false"
+
 // AgentProviders are registered systems capable of extending choria with new agents
 var AgentProviders = []string{}
 

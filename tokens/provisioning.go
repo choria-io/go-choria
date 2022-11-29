@@ -26,6 +26,7 @@ type ProvisioningClaims struct {
 	Extensions       MapClaims `json:"extensions"`
 	OrganizationUnit string    `json:"ou,omitempty"`
 	ProtoV2          bool      `json:"v2,omitempty"`
+	AllowUpdate      bool      `json:"update,omitempty"`
 
 	StandardClaims
 }

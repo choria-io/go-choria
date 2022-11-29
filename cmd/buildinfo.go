@@ -120,6 +120,9 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 		if bi.ProvisionUsingVersion2() {
 			fmt.Println("  Provisioning Using Protocol v2: true")
 		}
+		if bi.ProvisionAllowServerUpdate() {
+			fmt.Println("   Provisioning Version Upgrades: true")
+		}
 	}
 
 	fmt.Println()
