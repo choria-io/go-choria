@@ -109,7 +109,11 @@ func (i *inventoryCommand) inventoryAgent() error {
 
 	fmt.Printf("Inventory for %s\n\n", i.ident)
 	fmt.Printf("  Choria Server Statistics:\n\n")
-	fmt.Printf("                    Version: %s\n", inventory.Version)
+	if inventory.Upgradable {
+		fmt.Printf("                    Version: %s (upgradable during provisioning)\n", inventory.Version)
+	} else {
+		fmt.Printf("                    Version: %s\n", inventory.Version)
+	}
 	fmt.Printf("                 Start Time: %s\n", time.Unix(stats.StartTime, 0).Round(time.Second))
 	fmt.Printf("                Config File: %s\n", stats.ConfigFile)
 	fmt.Printf("                Collectives: %s\n", strings.Join(inventory.Collectives, ", "))

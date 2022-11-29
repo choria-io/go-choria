@@ -74,6 +74,7 @@ type InventoryReply struct {
 	Machines       []MachineState  `json:"machines"`
 	MainCollective string          `json:"main_collective"`
 	Version        string          `json:"version"`
+	Upgradable     bool            `json:"upgradable"`
 }
 
 type CPUTimes struct {
@@ -246,6 +247,7 @@ func inventoryAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Rep
 		Machines:       []MachineState{},
 		MainCollective: agent.Config.MainCollective,
 		Version:        util.BuildInfo().Version(),
+		Upgradable:     agent.Config.Choria.ProvisionAllowUpdate || util.BuildInfo().ProvisionAllowServerUpdate(),
 	}
 
 	dfm, err := agent.ServerInfoSource.DataFuncMap()

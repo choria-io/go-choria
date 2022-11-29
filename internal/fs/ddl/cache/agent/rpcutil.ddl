@@ -262,6 +262,11 @@ action "inventory", :description => "System Inventory" do
          :type        => "string",
          :display_as  => "Main Collective"
 
+  output :upgradable,
+         :description => "Indicates if the server supports upgrades",
+         :type        => "boolean",
+         :display_as  => "Upgradable"
+
   output :version,
          :description => "Choria Server Version",
          :type        => "string",

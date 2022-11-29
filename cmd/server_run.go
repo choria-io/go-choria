@@ -239,6 +239,10 @@ func (r *serverRunCommand) prepareInstance() (i *server.Instance, err error) {
 		log.Infof("Choria Server version %s starting with config %s using protocol version 2", bi.Version(), c.Config.ConfigFile)
 	}
 
+	if c.Config.Choria.ProvisionAllowUpdate {
+		log.Warnf("Server Version upgrades are enabled during provisioning")
+	}
+
 	if r.pidFile != "" {
 		err := os.WriteFile(r.pidFile, []byte(fmt.Sprintf("%d", os.Getpid())), 0644)
 		if err != nil {
