@@ -39,11 +39,10 @@ type ChoriaPluginConfig struct {
 	StatsPort             int    `confkey:"plugin.choria.stats_port" default:"0"`              // The port to listen on for HTTP requests for statistics, setting to 0 disables it
 	LegacyLifeCycleFormat bool   `confkey:"plugin.choria.legacy_lifecycle_format" default:"0"` // When enabled will publish lifecycle events in the legacy format, else Cloud Events format is used
 
-	NatsUser                 string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`               // The user to connect to the NATS server as. When unset no username is used.
-	NatsPass                 string   `confkey:"plugin.nats.pass" environment:"MCOLLECTIVE_NATS_PASSWORD"`               // The password to use when connecting to the NATS server
-	NatsCredentials          string   `confkey:"plugin.nats.credentials" environment:"MCOLLECTIVE_NATS_CREDENTIALS"`     // The NATS 2.0 credentials to use, required for accessing NGS
-	MiddlewareHosts          []string `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`                      // Set specific middleware hosts in the format host:port, if unset uses SRV
-	RandomizeMiddlewareHosts bool     `confkey:"plugin.choria.randomize_middleware_hosts" deprecated:"1" default:"true"` // Shuffle middleware hosts before connecting to spread traffic of initial connections
+	NatsUser        string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`           // The user to connect to the NATS server as. When unset no username is used.
+	NatsPass        string   `confkey:"plugin.nats.pass" environment:"MCOLLECTIVE_NATS_PASSWORD"`           // The password to use when connecting to the NATS server
+	NatsCredentials string   `confkey:"plugin.nats.credentials" environment:"MCOLLECTIVE_NATS_CREDENTIALS"` // The NATS 2.0 credentials to use, required for accessing NGS
+	MiddlewareHosts []string `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`                  // Set specific middleware hosts in the format host:port, if unset uses SRV
 
 	NetworkListenAddress               string        `confkey:"plugin.choria.network.listen_address" default:"::" url:"https://choria.io/docs/deployment/broker/"` // Address the Network Broker will listen on
 	NetworkWebSocketPort               int           `confkey:"plugin.choria.network.websocket_port" url:"https://choria.io/docs/deployment/broker/"`              // Port to listen on for websocket connections
@@ -125,10 +124,9 @@ type ChoriaPluginConfig struct {
 	ChoriaSecuritySeedFile       string   `confkey:"plugin.security.choria.seed_file" type:"path_string"`       // The path to the seed file
 	ChoriaSecuritySignReplies    bool     `confkey:"plugin.security.choria.sign_replies" default:"true"`        // Disables signing replies which would significantly trim down the size of replies but would remove the ability to verify signatures or verify message origin
 
-	FileSecurityCertificate string `confkey:"plugin.security.file.certificate" type:"path_string"`          // When using file security provider, the path to the public certificate
-	FileSecurityKey         string `confkey:"plugin.security.file.key" type:"path_string"`                  // When using file security provider, the path to the private key
-	FileSecurityCA          string `confkey:"plugin.security.file.ca" type:"path_string"`                   // When using file security provider, the path to the Certificate Authority public certificate
-	FileSecurityCache       string `confkey:"plugin.security.file.cache" type:"path_string" deprecated:"1"` // When using file security provider, the path to the client cache
+	FileSecurityCertificate string `confkey:"plugin.security.file.certificate" type:"path_string"` // When using file security provider, the path to the public certificate
+	FileSecurityKey         string `confkey:"plugin.security.file.key" type:"path_string"`         // When using file security provider, the path to the private key
+	FileSecurityCA          string `confkey:"plugin.security.file.ca" type:"path_string"`          // When using file security provider, the path to the Certificate Authority public certificate
 
 	CertManagerSecurityNamespace  string   `confkey:"plugin.security.certmanager.namespace" default:"choria"`   // When using Cert Manager security provider, the namespace the issuer is in
 	CertManagerSecurityIssuer     string   `confkey:"plugin.security.certmanager.issuer"`                       // When using Cert Manager security provider, the name of the issuer

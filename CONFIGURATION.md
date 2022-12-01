@@ -20,12 +20,10 @@ A few special types are defined, the rest map to standard Go types
 | | |
 |-|-|
 |[classesfile](#classesfile)|[collectives](#collectives)|
-|[color](#color)|[connection_timeout](#connection_timeout)|
-|[connector](#connector)|[default_discovery_method](#default_discovery_method)|
-|[default_discovery_options](#default_discovery_options)|[direct_addressing](#direct_addressing)|
-|[discovery_timeout](#discovery_timeout)|[identity](#identity)|
-|[libdir](#libdir)|[logfile](#logfile)|
-|[logger_type](#logger_type)|[loglevel](#loglevel)|
+|[color](#color)|[default_discovery_method](#default_discovery_method)|
+|[default_discovery_options](#default_discovery_options)|[discovery_timeout](#discovery_timeout)|
+|[identity](#identity)|[libdir](#libdir)|
+|[logfile](#logfile)|[loglevel](#loglevel)|
 |[main_collective](#main_collective)|[plugin.choria.adapters](#pluginchoriaadapters)|
 |[plugin.choria.agent_provider.mcorpc.agent_shim](#pluginchoriaagent_providermcorpcagent_shim)|[plugin.choria.agent_provider.mcorpc.config](#pluginchoriaagent_providermcorpcconfig)|
 |[plugin.choria.agent_provider.mcorpc.libdir](#pluginchoriaagent_providermcorpclibdir)|[plugin.choria.broker_federation](#pluginchoriabroker_federation)|
@@ -56,44 +54,42 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.puppetca_host](#pluginchoriapuppetca_host)|[plugin.choria.puppetca_port](#pluginchoriapuppetca_port)|
 |[plugin.choria.puppetdb_host](#pluginchoriapuppetdb_host)|[plugin.choria.puppetdb_port](#pluginchoriapuppetdb_port)|
 |[plugin.choria.puppetserver_host](#pluginchoriapuppetserver_host)|[plugin.choria.puppetserver_port](#pluginchoriapuppetserver_port)|
-|[plugin.choria.randomize_middleware_hosts](#pluginchoriarandomize_middleware_hosts)|[plugin.choria.registration.file_content.compression](#pluginchoriaregistrationfile_contentcompression)|
-|[plugin.choria.registration.file_content.data](#pluginchoriaregistrationfile_contentdata)|[plugin.choria.registration.file_content.target](#pluginchoriaregistrationfile_contenttarget)|
-|[plugin.choria.registration.inventory_content.compression](#pluginchoriaregistrationinventory_contentcompression)|[plugin.choria.registration.inventory_content.target](#pluginchoriaregistrationinventory_contenttarget)|
-|[plugin.choria.require_client_filter](#pluginchoriarequire_client_filter)|[plugin.choria.security.certname_whitelist](#pluginchoriasecuritycertname_whitelist)|
-|[plugin.choria.security.privileged_users](#pluginchoriasecurityprivileged_users)|[plugin.choria.security.request_signer.seed_file](#pluginchoriasecurityrequest_signerseed_file)|
-|[plugin.choria.security.request_signer.service](#pluginchoriasecurityrequest_signerservice)|[plugin.choria.security.request_signer.token_file](#pluginchoriasecurityrequest_signertoken_file)|
-|[plugin.choria.security.request_signer.url](#pluginchoriasecurityrequest_signerurl)|[plugin.choria.security.server.seed_file](#pluginchoriasecurityserverseed_file)|
-|[plugin.choria.security.server.token_file](#pluginchoriasecurityservertoken_file)|[plugin.choria.server.provision](#pluginchoriaserverprovision)|
-|[plugin.choria.server.provision.allow_update](#pluginchoriaserverprovisionallow_update)|[plugin.choria.services.registry.cache](#pluginchoriaservicesregistrycache)|
-|[plugin.choria.services.registry.store](#pluginchoriaservicesregistrystore)|[plugin.choria.srv_domain](#pluginchoriasrv_domain)|
-|[plugin.choria.ssldir](#pluginchoriassldir)|[plugin.choria.stats_address](#pluginchoriastats_address)|
-|[plugin.choria.stats_port](#pluginchoriastats_port)|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|
-|[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|[plugin.choria.submission.max_spool_size](#pluginchoriasubmissionmax_spool_size)|
-|[plugin.choria.submission.spool](#pluginchoriasubmissionspool)|[plugin.choria.use_srv](#pluginchoriause_srv)|
-|[plugin.login.aaasvc.login.url](#pluginloginaaasvcloginurl)|[plugin.nats.credentials](#pluginnatscredentials)|
-|[plugin.nats.pass](#pluginnatspass)|[plugin.nats.user](#pluginnatsuser)|
-|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|[plugin.scout.goss.denied_local_resources](#pluginscoutgossdenied_local_resources)|
-|[plugin.scout.goss.denied_remote_resources](#pluginscoutgossdenied_remote_resources)|[plugin.scout.overrides](#pluginscoutoverrides)|
-|[plugin.scout.tags](#pluginscouttags)|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|
-|[plugin.security.certmanager.api_version](#pluginsecuritycertmanagerapi_version)|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|
-|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|
-|[plugin.security.choria.ca](#pluginsecuritychoriaca)|[plugin.security.choria.certificate](#pluginsecuritychoriacertificate)|
-|[plugin.security.choria.key](#pluginsecuritychoriakey)|[plugin.security.choria.seed_file](#pluginsecuritychoriaseed_file)|
-|[plugin.security.choria.sign_replies](#pluginsecuritychoriasign_replies)|[plugin.security.choria.token_file](#pluginsecuritychoriatoken_file)|
-|[plugin.security.choria.trusted_signers](#pluginsecuritychoriatrusted_signers)|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|
-|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|
-|[plugin.security.file.ca](#pluginsecurityfileca)|[plugin.security.file.cache](#pluginsecurityfilecache)|
+|[plugin.choria.registration.file_content.compression](#pluginchoriaregistrationfile_contentcompression)|[plugin.choria.registration.file_content.data](#pluginchoriaregistrationfile_contentdata)|
+|[plugin.choria.registration.file_content.target](#pluginchoriaregistrationfile_contenttarget)|[plugin.choria.registration.inventory_content.compression](#pluginchoriaregistrationinventory_contentcompression)|
+|[plugin.choria.registration.inventory_content.target](#pluginchoriaregistrationinventory_contenttarget)|[plugin.choria.require_client_filter](#pluginchoriarequire_client_filter)|
+|[plugin.choria.security.certname_whitelist](#pluginchoriasecuritycertname_whitelist)|[plugin.choria.security.privileged_users](#pluginchoriasecurityprivileged_users)|
+|[plugin.choria.security.request_signer.seed_file](#pluginchoriasecurityrequest_signerseed_file)|[plugin.choria.security.request_signer.service](#pluginchoriasecurityrequest_signerservice)|
+|[plugin.choria.security.request_signer.token_file](#pluginchoriasecurityrequest_signertoken_file)|[plugin.choria.security.request_signer.url](#pluginchoriasecurityrequest_signerurl)|
+|[plugin.choria.security.server.seed_file](#pluginchoriasecurityserverseed_file)|[plugin.choria.security.server.token_file](#pluginchoriasecurityservertoken_file)|
+|[plugin.choria.server.provision](#pluginchoriaserverprovision)|[plugin.choria.server.provision.allow_update](#pluginchoriaserverprovisionallow_update)|
+|[plugin.choria.services.registry.cache](#pluginchoriaservicesregistrycache)|[plugin.choria.services.registry.store](#pluginchoriaservicesregistrystore)|
+|[plugin.choria.srv_domain](#pluginchoriasrv_domain)|[plugin.choria.ssldir](#pluginchoriassldir)|
+|[plugin.choria.stats_address](#pluginchoriastats_address)|[plugin.choria.stats_port](#pluginchoriastats_port)|
+|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|
+|[plugin.choria.submission.max_spool_size](#pluginchoriasubmissionmax_spool_size)|[plugin.choria.submission.spool](#pluginchoriasubmissionspool)|
+|[plugin.choria.use_srv](#pluginchoriause_srv)|[plugin.login.aaasvc.login.url](#pluginloginaaasvcloginurl)|
+|[plugin.nats.credentials](#pluginnatscredentials)|[plugin.nats.pass](#pluginnatspass)|
+|[plugin.nats.user](#pluginnatsuser)|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|
+|[plugin.scout.goss.denied_local_resources](#pluginscoutgossdenied_local_resources)|[plugin.scout.goss.denied_remote_resources](#pluginscoutgossdenied_remote_resources)|
+|[plugin.scout.overrides](#pluginscoutoverrides)|[plugin.scout.tags](#pluginscouttags)|
+|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|[plugin.security.certmanager.api_version](#pluginsecuritycertmanagerapi_version)|
+|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|
+|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|[plugin.security.choria.ca](#pluginsecuritychoriaca)|
+|[plugin.security.choria.certificate](#pluginsecuritychoriacertificate)|[plugin.security.choria.key](#pluginsecuritychoriakey)|
+|[plugin.security.choria.seed_file](#pluginsecuritychoriaseed_file)|[plugin.security.choria.sign_replies](#pluginsecuritychoriasign_replies)|
+|[plugin.security.choria.token_file](#pluginsecuritychoriatoken_file)|[plugin.security.choria.trusted_signers](#pluginsecuritychoriatrusted_signers)|
+|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|
+|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|[plugin.security.file.ca](#pluginsecurityfileca)|
 |[plugin.security.file.certificate](#pluginsecurityfilecertificate)|[plugin.security.file.key](#pluginsecurityfilekey)|
 |[plugin.security.issuer.names](#pluginsecurityissuernames)|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|
 |[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|[plugin.security.provider](#pluginsecurityprovider)|
 |[plugin.security.server_anon_tls](#pluginsecurityserver_anon_tls)|[plugin.security.support_legacy_certificates](#pluginsecuritysupport_legacy_certificates)|
-|[plugin.yaml](#pluginyaml)|[publish_timeout](#publish_timeout)|
-|[registerinterval](#registerinterval)|[registration](#registration)|
-|[registration_collective](#registration_collective)|[registration_splay](#registration_splay)|
-|[rpcaudit](#rpcaudit)|[rpcauditprovider](#rpcauditprovider)|
+|[plugin.yaml](#pluginyaml)|[registerinterval](#registerinterval)|
+|[registration](#registration)|[registration_collective](#registration_collective)|
+|[registration_splay](#registration_splay)|[rpcaudit](#rpcaudit)|
 |[rpcauthorization](#rpcauthorization)|[rpcauthprovider](#rpcauthprovider)|
 |[rpclimitmethod](#rpclimitmethod)|[soft_shutdown_timeout](#soft_shutdown_timeout)|
-|[threaded](#threaded)|[ttl](#ttl)|
+|[ttl](#ttl)|[](#)|
 
 
 ## classesfile
@@ -116,23 +112,6 @@ The list of known Sub Collectives this node will join or communicate with, Serve
 
 Disables or enable CLI color
 
-## connection_timeout
-
- * **Type:** integer
-
-Ruby clients use this to determine how long they will try to connect, fails after timeout
-
-**This setting is deprecated or already unused**
-
-## connector
-
- * **Type:** title_string
- * **Default Value:** nats
-
-Configures the network connector to use, only sensible value is "nats", unused in Go based code
-
-**This setting is deprecated or already unused**
-
 ## default_discovery_method
 
  * **Type:** string
@@ -146,15 +125,6 @@ The default discovery plugin to use. The default "mc" uses a network broadcast, 
  * **Type:** strings
 
 Default options to pass to the discovery plugin
-
-## direct_addressing
-
- * **Type:** boolean
- * **Default Value:** true
-
-Enables the direct-to-node communications pattern, unused in the Go clients
-
-**This setting is deprecated or already unused**
 
 ## discovery_timeout
 
@@ -181,16 +151,6 @@ The directory where Agents, DDLs and other plugins are found
  * **Default Value:** stdout
 
 The file to write logs to, when set to 'discard' logging will be disabled. Also supports 'stdout' and 'stderr' as special log destinations.
-
-## logger_type
-
- * **Type:** string
- * **Validation:** enum=console,file,syslog
- * **Default Value:** file
-
-The type of logging to use, unused in Go based programs
-
-**This setting is deprecated or already unused**
 
 ## loglevel
 
@@ -600,15 +560,6 @@ The hostname where your Puppet Server can be found
 
 The port your Puppet Server listens on
 
-## plugin.choria.randomize_middleware_hosts
-
- * **Type:** boolean
- * **Default Value:** true
-
-Shuffle middleware hosts before connecting to spread traffic of initial connections
-
-**This setting is deprecated or already unused**
-
 ## plugin.choria.registration.file_content.compression
 
  * **Type:** boolean
@@ -953,14 +904,6 @@ List of allowed ECC curves
 
 When using file security provider, the path to the Certificate Authority public certificate
 
-## plugin.security.file.cache
-
- * **Type:** path_string
-
-When using file security provider, the path to the client cache
-
-**This setting is deprecated or already unused**
-
 ## plugin.security.file.certificate
 
  * **Type:** path_string
@@ -1022,15 +965,6 @@ Allow certificates without SANs to be used
 
 Where to look for YAML or JSON based facts
 
-## publish_timeout
-
- * **Type:** integer
- * **Default Value:** 2
-
-Ruby clients use this to determine how long they will allow when publishing requests
-
-**This setting is deprecated or already unused**
-
 ## registerinterval
 
  * **Type:** integer
@@ -1065,15 +999,6 @@ When true delays initial registration publish by a random period up to registeri
 
 When enabled uses rpcauditprovider to audit RPC requests processed by the server
 
-## rpcauditprovider
-
- * **Type:** title_string
- * **Additional Information:** https://choria.io/docs/configuration/aaa/
-
-The audit provider to use, unused at present as there is only a "choria" one
-
-**This setting is deprecated or already unused**
-
 ## rpcauthorization
 
  * **Type:** boolean
@@ -1104,15 +1029,6 @@ When limiting nodes to a subset of discovered nodes this is the method to use, r
  * **Default Value:** 2
 
 The amount of time to allow the server to exit, after this memory and thread dumps will be performed and a force exit will be done
-
-## threaded
-
- * **Type:** boolean
- * **Default Value:** false
-
-Enables multi threaded mode in the Ruby client, generally a bad idea
-
-**This setting is deprecated or already unused**
 
 ## ttl
 
