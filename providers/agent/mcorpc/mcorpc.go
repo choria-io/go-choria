@@ -88,6 +88,7 @@ type Request struct {
 	Time             time.Time        `json:"time"`
 	Filter           *protocol.Filter `json:"-"`
 	CallerPublicData string           `json:"-"`
+	SignerPublicData string           `json:"-"`
 }
 
 // ParseRequestData parses the request parameters received from the client into a target structure

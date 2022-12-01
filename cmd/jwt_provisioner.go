@@ -43,7 +43,7 @@ func (p *jWTCreateProvCommand) Setup() (err error) {
 		p.cmd = jwt.Cmd().Command("provisioning", "Create a Provisioning JWT token").Alias("prov").Alias("provision").Alias("p")
 		p.cmd.Arg("file", "The JWT file to act on").Required().StringVar(&p.file)
 		p.cmd.Arg("signing-key", "Path to a private key used to sign the JWT").Required().StringVar(&p.signingKey)
-		p.cmd.Flag("insecure", "Disable TLS security during provisioning").UnNegatableBoolVar(&p.insecure)
+		p.cmd.Flag("insecure", "Disable TLS security during provisioning").Default("true").BoolVar(&p.insecure)
 		p.cmd.Flag("token", "Token used to secure access to the provisioning agent").StringVar(&p.token)
 		p.cmd.Flag("urls", "URLs to connect to for provisioning").StringsVar(&p.urls)
 		p.cmd.Flag("srv", "Domain to query for SRV records to find provisioning urls").StringVar(&p.srvDomain)

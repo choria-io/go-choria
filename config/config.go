@@ -96,7 +96,7 @@ type Config struct {
 	// The type of logging to use, unused in Go based programs
 	LoggerType string `confkey:"logger_type" default:"file" validate:"enum=console,file,syslog" deprecated:"true"`
 
-	// Enables multi threaded mode in the Ruby client, generally a bad idea
+	// Enables multithreaded mode in the Ruby client, generally a bad idea
 	Threaded bool `confkey:"threaded" default:"false" deprecated:"true"`
 
 	// How long published messages are allowed to linger on the network, lower numbers have a higher reliance on clocks being in sync
