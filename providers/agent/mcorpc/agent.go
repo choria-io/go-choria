@@ -205,6 +205,7 @@ func (a *Agent) parseIncomingMessage(msg []byte, request protocol.Request) (*Req
 	r.SenderID = request.SenderID()
 	r.Collective = request.Collective()
 	r.CallerPublicData = request.CallerPublicData()
+	r.SignerPublicData = request.SignerPublicData()
 	r.TTL = request.TTL()
 	r.Time = request.Time()
 	r.Filter, _ = request.Filter()
@@ -221,20 +222,30 @@ func (a *Agent) authorize(req *Request) bool {
 		return true
 	}
 
-	switch strings.ToLower(a.Config.RPCAuthorizationProvider) {
+	prov := strings.ToLower(a.Config.RPCAuthorizationProvider)
+
+	switch prov {
 	case "action_policy":
 		return actionPolicyAuthorize(req, a, a.Log)
 
 	case "rego_policy":
 		auth, err := regoPolicyAuthorize(req, a, a.Log)
 		if err != nil {
-			a.Log.Errorf("Something has occurred: %v", err)
+			a.Log.Errorf("Could not process Open Policy Agent policy: %v", err)
+			return false
+		}
+		return auth
+
+	case "aaasvc", "aaasvc_policy":
+		auth, err := aaasvcPolicyAuthorize(req, a, a.Log)
+		if err != nil {
+			a.Log.Errorf("Could not process JWT policy: %v", err)
 			return false
 		}
 		return auth
 
 	default:
-		a.Log.Errorf("Unsupported authorization provider: %s", strings.ToLower(a.Config.RPCAuthorizationProvider))
+		a.Log.Errorf("Unsupported authorization provider: %s", prov)
 
 	}
 

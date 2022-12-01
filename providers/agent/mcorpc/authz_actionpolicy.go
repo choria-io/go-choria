@@ -21,16 +21,6 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type policyMatcher interface {
-	Set(caller string, actions string, facts string, classes string, groups map[string][]string)
-	MatchesFacts(cfg *config.Config, log *logrus.Entry) (bool, error)
-	MatchesClasses(classesFile string, log *logrus.Entry) (bool, error)
-	MatchesAction(act string) bool
-	MatchesCallerID(id string) bool
-	IsCompound(line string) bool
-	SetFile(f string)
-}
-
 func actionPolicyAuthorize(req *Request, agent *Agent, log *logrus.Entry) bool {
 	logger := log.WithFields(logrus.Fields{
 		"authorizer": "actionpolicy",
@@ -60,7 +50,7 @@ type actionPolicy struct {
 	req     *Request
 	agent   *Agent
 	log     *logrus.Entry
-	matcher policyMatcher
+	matcher *actionPolicyPolicy
 	groups  map[string][]string
 }
 
@@ -192,7 +182,7 @@ func (a *actionPolicy) checkRequestAgainstPolicy() (bool, error) {
 }
 
 func (a *actionPolicy) allowUnconfigured() bool {
-	unconfigured, err := util.StrToBool(a.cfg.Option("plugin.actionpolicy.allow_unconfiguredt", "n"))
+	unconfigured, err := util.StrToBool(a.cfg.Option("plugin.actionpolicy.allow_unconfigured", "n"))
 	if err != nil {
 		return false
 	}

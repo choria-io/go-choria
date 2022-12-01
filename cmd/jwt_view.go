@@ -90,10 +90,10 @@ func (v *tJWTViewCommand) validateServerToken(token string) error {
 		return err
 	}
 	if tcm != "" {
-		fmt.Printf("      Trust Chain: %s\n", tcm)
+		fmt.Printf("          Trust Chain: %s\n", tcm)
 
 		if claims.IssuerExpiresAt != nil {
-			fmt.Printf("   Issuer Expires: %s (%s)\n", claims.IssuerExpiresAt.Time, iu.RenderDuration(time.Until(claims.IssuerExpiresAt.Time)))
+			fmt.Printf("       Issuer Expires: %s (%s)\n", claims.IssuerExpiresAt.Time, iu.RenderDuration(time.Until(claims.IssuerExpiresAt.Time)))
 		}
 	}
 
