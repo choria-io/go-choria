@@ -52,7 +52,6 @@ func (p *tProvisionerCommand) Configure() error {
 	}
 
 	cfg.LogFile = ""
-	cfg.LoggerType = "console"
 	cfg.DisableSecurityProviderVerify = true
 	cfg.Choria.Provision = true
 	if debug {
