@@ -70,10 +70,11 @@ func (v *tJWTViewCommand) validateServerToken(token string) error {
 	}
 
 	fmt.Printf("             Identity: %s\n", claims.ChoriaIdentity)
-	if claims.ExpiresAt != nil && time.Now().After(claims.ExpiresAt.Time) {
-		fmt.Printf("           Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Since(claims.ExpiresAt.Time)))
-	} else if claims.ExpiresAt != nil {
-		fmt.Printf("           Expires At: %s (%s)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Until(claims.ExpiresAt.Time)))
+	exp := claims.ExpireTime()
+	if !exp.IsZero() && time.Now().After(exp) {
+		fmt.Printf("           Expires At: %s (expired %s ago)\n", exp, iu.RenderDuration(time.Since(exp)))
+	} else if !exp.IsZero() {
+		fmt.Printf("           Expires At: %s (%s)\n", exp, iu.RenderDuration(time.Until(exp)))
 	}
 	fmt.Printf("          Collectives: %s\n", strings.Join(claims.Collectives, ", "))
 	fmt.Printf("           Public Key: %s\n", claims.PublicKey)
@@ -91,10 +92,6 @@ func (v *tJWTViewCommand) validateServerToken(token string) error {
 	}
 	if tcm != "" {
 		fmt.Printf("          Trust Chain: %s\n", tcm)
-
-		if claims.IssuerExpiresAt != nil {
-			fmt.Printf("       Issuer Expires: %s (%s)\n", claims.IssuerExpiresAt.Time, iu.RenderDuration(time.Until(claims.IssuerExpiresAt.Time)))
-		}
 	}
 
 	if claims.Permissions != nil {
@@ -156,10 +153,11 @@ func (v *tJWTViewCommand) validateProvisionToken(token string) error {
 		fmt.Printf("Unvalidated Provisioning Token %s\n\n", v.file)
 	}
 
-	if claims.ExpiresAt != nil && time.Now().After(claims.ExpiresAt.Time) {
-		fmt.Printf("                    Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Since(claims.ExpiresAt.Time)))
-	} else if claims.ExpiresAt != nil {
-		fmt.Printf("                    Expires At: %s (%s)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Until(claims.ExpiresAt.Time)))
+	exp := claims.ExpireTime()
+	if !exp.IsZero() && time.Now().After(exp) {
+		fmt.Printf("                    Expires At: %s (expired %s ago)\n", exp, iu.RenderDuration(time.Since(exp)))
+	} else if !exp.IsZero() {
+		fmt.Printf("                    Expires At: %s (%s)\n", exp, iu.RenderDuration(time.Until(exp)))
 	}
 	fmt.Printf("                         Token: %s\n", claims.Token)
 	fmt.Printf("                        Secure: %t\n", claims.Secure)
@@ -257,10 +255,12 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 	fmt.Printf("         Public Key: %s\n", claims.PublicKey)
 	_, uid := claims.UniqueID()
 	fmt.Printf(" Private Network ID: %s\n", uid)
-	if claims.ExpiresAt != nil && time.Now().After(claims.ExpiresAt.Time) {
-		fmt.Printf("         Expires At: %s (expired %s ago)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Since(claims.ExpiresAt.Time)))
-	} else if claims.ExpiresAt != nil {
-		fmt.Printf("         Expires At: %s (%s)\n", claims.ExpiresAt.Time, iu.RenderDuration(time.Until(claims.ExpiresAt.Time)))
+
+	exp := claims.ExpireTime()
+	if !exp.IsZero() && time.Now().After(exp) {
+		fmt.Printf("         Expires At: %s (expired %s ago)\n", exp, iu.RenderDuration(time.Since(exp)))
+	} else if !exp.IsZero() {
+		fmt.Printf("         Expires At: %s (%s)\n", exp, iu.RenderDuration(time.Until(exp)))
 	}
 	if len(claims.AdditionalSubscribeSubjects) > 0 {
 		fmt.Printf(" Subscribe Subjects: %s\n", strings.Join(claims.AdditionalSubscribeSubjects, ", "))
@@ -275,10 +275,6 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 	}
 	if tcm != "" {
 		fmt.Printf("        Trust Chain: %s\n", tcm)
-
-		if claims.IssuerExpiresAt != nil {
-			fmt.Printf("     Issuer Expires: %s (%s)\n", claims.IssuerExpiresAt.Time, iu.RenderDuration(time.Until(claims.IssuerExpiresAt.Time)))
-		}
 	}
 
 	if claims.Permissions != nil {

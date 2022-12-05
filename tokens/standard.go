@@ -31,6 +31,36 @@ type StandardClaims struct {
 	jwt.RegisteredClaims
 }
 
+// ExpireTime determines the expiry time based on issuer expiry and token expiry
+func (s *StandardClaims) ExpireTime() time.Time {
+	var iexp, exp time.Time
+	if s.IssuerExpiresAt != nil {
+		iexp = s.IssuerExpiresAt.Time
+	}
+	if s.ExpiresAt != nil {
+		exp = s.ExpiresAt.Time
+	}
+
+	if iexp.IsZero() {
+		return exp
+	}
+
+	if exp.IsZero() {
+		return iexp
+	}
+
+	if iexp.Before(exp) {
+		return iexp
+	}
+
+	return exp
+}
+
+// IsExpired checks if the token has expired
+func (s *StandardClaims) IsExpired() bool {
+	return time.Now().After(s.ExpireTime())
+}
+
 // AddOrgIssuerData adds the data that a Chain Issuer needs to be able to issue clients in an Org managed by an Issuer
 func (c *StandardClaims) AddOrgIssuerData(priK ed25519.PrivateKey) error {
 	dat, err := c.OrgIssuerChainData()
@@ -71,13 +101,14 @@ func (c *StandardClaims) AddChainIssuerData(chainIssuer *ClientIDClaims, prik ed
 	return nil
 }
 
+// true if not expired
 func (c *StandardClaims) verifyIssuerExpiry(req bool) bool {
 	// org issuer tokens has a tcs but the org issuer has no expiry time so we can skip
 	if !strings.HasPrefix(c.Issuer, ChainIssuerPrefix) {
 		return !req
 	}
 
-	// without a tcs this isnt a chained token so there's no point in validating
+	// without a tcs this isn't a chained token so there's no point in validating
 	if c.TrustChainSignature == "" {
 		return !req
 	}
@@ -86,7 +117,7 @@ func (c *StandardClaims) verifyIssuerExpiry(req bool) bool {
 		return !req
 	}
 
-	return c.IssuerExpiresAt.After(time.Now())
+	return !c.IsExpired()
 }
 
 // IsChainedIssuer determines if this is a token capable of issuing users as part of a chain

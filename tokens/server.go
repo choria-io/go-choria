@@ -220,7 +220,7 @@ func ParseServerToken(token string, pk any) (*ServerClaims, error) {
 
 	if claims.TrustChainSignature != "" {
 		// if we have a tcs we require an issuer expiry to be set and it to not have expired
-		if !claims.StandardClaims.verifyIssuerExpiry(true) {
+		if !claims.verifyIssuerExpiry(true) {
 			return nil, jwt.ErrTokenExpired
 		}
 	}

@@ -123,8 +123,9 @@ var _ = Describe("Choria", func() {
 				cfg.Choria.ServerAnonTLS = true
 				fw.Config.InitiatedByServer = true
 				cfg.Choria.ServerTokenFile = filepath.Join(td, "good-server.jwt")
-				caller, id, token, err := fw.UniqueIDFromUnverifiedToken()
+				caller, id, exp, token, err := fw.UniqueIDFromUnverifiedToken()
 				Expect(err).ToNot(HaveOccurred())
+				Expect(exp).To(BeTemporally("~", time.Now().Add(time.Hour), time.Second))
 
 				expectedT, err := os.ReadFile(cfg.Choria.ServerTokenFile)
 				Expect(err).ToNot(HaveOccurred())
@@ -137,8 +138,9 @@ var _ = Describe("Choria", func() {
 			It("Should extract the correct items for clients", func() {
 				cfg.Choria.ClientAnonTLS = true
 				cfg.Choria.RemoteSignerTokenFile = filepath.Join(td, "good-client.jwt")
-				caller, id, token, err := fw.UniqueIDFromUnverifiedToken()
+				caller, id, exp, token, err := fw.UniqueIDFromUnverifiedToken()
 				Expect(err).ToNot(HaveOccurred())
+				Expect(exp).To(BeTemporally("~", time.Now().Add(time.Hour), time.Second))
 
 				expectedT, err := os.ReadFile(cfg.Choria.RemoteSignerTokenFile)
 				Expect(err).ToNot(HaveOccurred())
@@ -190,14 +192,14 @@ var _ = Describe("Choria", func() {
 
 		Describe("SignerToken", func() {
 			It("Should error when there is no way to find a token", func() {
-				t, err := fw.SignerToken()
+				t, _, err := fw.SignerToken()
 				Expect(t).To(BeEmpty())
 				Expect(err).To(MatchError("no token file defined"))
 			})
 
 			It("Should prefer choria security seed file", func() {
 				cfg.Choria.ChoriaSecurityTokenFile = filepath.Join(td, "good-server.jwt")
-				t, err := fw.SignerToken()
+				t, _, err := fw.SignerToken()
 				Expect(err).ToNot(HaveOccurred())
 				dt, err := os.ReadFile(cfg.Choria.ChoriaSecurityTokenFile)
 				Expect(err).ToNot(HaveOccurred())
@@ -207,7 +209,7 @@ var _ = Describe("Choria", func() {
 			It("Should support server file tokens", func() {
 				cfg.Choria.ServerAnonTLS = true
 				cfg.Choria.ServerTokenFile = filepath.Join(td, "good-server.jwt")
-				t, err := fw.SignerToken()
+				t, _, err := fw.SignerToken()
 				Expect(err).ToNot(HaveOccurred())
 				dt, err := os.ReadFile(cfg.Choria.ServerTokenFile)
 				Expect(err).ToNot(HaveOccurred())
@@ -217,7 +219,7 @@ var _ = Describe("Choria", func() {
 			It("Should support client file tokens", func() {
 				cfg.Choria.ClientAnonTLS = true
 				cfg.Choria.RemoteSignerTokenFile = filepath.Join(td, "good-client.jwt")
-				t, err := fw.SignerToken()
+				t, _, err := fw.SignerToken()
 				Expect(err).ToNot(HaveOccurred())
 				dt, err := os.ReadFile(cfg.Choria.RemoteSignerTokenFile)
 				Expect(err).ToNot(HaveOccurred())
@@ -293,7 +295,7 @@ var _ = Describe("Choria", func() {
 			build.ProvisionBrokerURLs = "nats://n1:4222"
 			build.ProvisionModeDefault = "false"
 
-			// no token path set here so token wont be considered
+			// no token path set here so token won't be considered
 			// even though we are in server anon tls mode
 			fw, err := NewWithConfig(c)
 			Expect(err).ToNot(HaveOccurred())

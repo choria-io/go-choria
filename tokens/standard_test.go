@@ -37,6 +37,48 @@ var _ = Describe("StandardClaims", func() {
 			c.ID = iu.UniqueID()
 		})
 
+		Describe("ExpireTime", func() {
+			BeforeEach(func() {
+				c = StandardClaims{}
+			})
+
+			It("Should handle all nil", func() {
+				Expect(c.ExpireTime().IsZero()).To(BeTrue())
+			})
+
+			It("Should handle nil issuer exp", func() {
+				c.ExpiresAt = jwt.NewNumericDate(time.Now())
+				Expect(c.ExpireTime()).To(Equal(c.ExpiresAt.Time))
+			})
+
+			It("Should handle nil exp", func() {
+				c.IssuerExpiresAt = jwt.NewNumericDate(time.Now())
+				Expect(c.ExpireTime()).To(Equal(c.IssuerExpiresAt.Time))
+			})
+
+			It("Should use the issuer if before token", func() {
+				c.IssuerExpiresAt = jwt.NewNumericDate(time.Now())
+				c.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Hour))
+				Expect(c.ExpireTime()).To(Equal(c.IssuerExpiresAt.Time))
+			})
+
+			It("Should use the token if before issuer", func() {
+				c.IssuerExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Hour))
+				c.ExpiresAt = jwt.NewNumericDate(time.Now())
+				Expect(c.ExpireTime()).To(Equal(c.ExpiresAt.Time))
+			})
+		})
+
+		Describe("IsExpired", func() {
+			It("Should detect expiry correctly", func() {
+				c = StandardClaims{}
+				c.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Minute))
+				Expect(c.IsExpired()).To(BeFalse())
+				c.ExpiresAt = jwt.NewNumericDate(time.Now().Add(-1 * time.Minute))
+				Expect(c.IsExpired()).To(BeTrue())
+			})
+		})
+
 		Describe("verifyIssuerExpiry", func() {
 			BeforeEach(func() {
 				c = StandardClaims{}

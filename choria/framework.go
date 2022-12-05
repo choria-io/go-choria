@@ -189,7 +189,7 @@ func (fw *Framework) ProvisionMode() bool {
 	// Regardless how it happened this is bad because the node will subscribe to its
 	// node subject with its identity set but the token will have another identity in
 	// it causing the broker to not set appropriate allow rules for that connection
-	caller, _, _, _ := fw.UniqueIDFromUnverifiedToken()
+	caller, _, _, _, _ := fw.UniqueIDFromUnverifiedToken()
 	if caller != "" {
 		if fw.Config.Identity != caller {
 			fw.log.Warnf("Caller %q from server token does not match identity %q, enabling provisioning", caller, fw.Config.Identity)
@@ -657,7 +657,7 @@ func (fw *Framework) UniqueID() string {
 
 // CallerID determines the cert based callerid
 func (fw *Framework) CallerID() string {
-	caller, _, _, err := fw.UniqueIDFromUnverifiedToken()
+	caller, _, _, _, err := fw.UniqueIDFromUnverifiedToken()
 	if err == nil {
 		return caller
 	}
@@ -692,26 +692,26 @@ func (fw *Framework) Configuration() *config.Config {
 }
 
 // UniqueIDFromUnverifiedToken extracts the caller id or identity from a token, the token is not verified as we do not have the certificate
-func (fw *Framework) UniqueIDFromUnverifiedToken() (id string, uid string, token string, err error) {
-	ts, err := fw.SignerToken()
+func (fw *Framework) UniqueIDFromUnverifiedToken() (id string, uid string, exp time.Time, token string, err error) {
+	ts, exp, err := fw.SignerToken()
 	if err != nil {
-		return "", "", "", err
+		return "", "", exp, "", err
 	}
 
 	if fw.Config.InitiatedByServer {
 		t, id, err := tokens.UnverifiedIdentityFromServerToken(ts)
 		if err != nil {
-			return "", "", "", err
+			return "", "", exp, "", err
 		}
 
-		return id, fmt.Sprintf("%x", md5.Sum([]byte(id))), t.Raw, nil
+		return id, fmt.Sprintf("%x", md5.Sum([]byte(id))), exp, t.Raw, nil
 	} else {
 		t, caller, err := tokens.UnverifiedCallerFromClientIDToken(ts)
 		if err != nil {
-			return "", "", "", err
+			return "", "", exp, "", err
 		}
 
-		return caller, fmt.Sprintf("%x", md5.Sum([]byte(caller))), t.Raw, nil
+		return caller, fmt.Sprintf("%x", md5.Sum([]byte(caller))), exp, t.Raw, nil
 	}
 }
 
@@ -759,15 +759,17 @@ func (fw *Framework) SignerTokenFile() (f string, err error) {
 }
 
 // SignerToken retrieves the token used for signing requests or connecting to the broker
-func (fw *Framework) SignerToken() (token string, err error) {
+func (fw *Framework) SignerToken() (token string, expiry time.Time, err error) {
+	var exp time.Time
+
 	tf, err := fw.SignerTokenFile()
 	if err != nil {
-		return "", err
+		return "", exp, err
 	}
 
 	tb, err := os.ReadFile(tf)
 	if err != nil {
-		return "", fmt.Errorf("could not read token file: %v", err)
+		return "", exp, fmt.Errorf("could not read token file: %v", err)
 	}
 
 	purpose := tokens.TokenPurpose(string(tb))
@@ -775,33 +777,35 @@ func (fw *Framework) SignerToken() (token string, err error) {
 	case tokens.ClientIDPurpose:
 		claims, err := tokens.ParseClientIDTokenUnverified(string(tb))
 		if err != nil {
-			return "", err
+			return "", exp, err
 		}
 		err = claims.Valid()
 		if err != nil {
 			fw.log.Warnf("Authentication token %s is not valid: %v", tf, err)
-			return "", err
+			return "", exp, err
 		}
+		exp = claims.ExpireTime()
 
 	case tokens.ServerPurpose:
 		claims, err := tokens.ParseServerTokenUnverified(string(tb))
 		if err != nil {
-			return "", err
+			return "", exp, err
 		}
 		err = claims.Valid()
 		if err != nil {
 			fw.log.Warnf("Authentication token %s is not valid: %v", tf, err)
-			return "", err
+			return "", exp, err
 		}
+		exp = claims.ExpireTime()
 
 	case tokens.ProvisioningPurpose:
 		// nothing to verify here
 
 	default:
-		return "", fmt.Errorf("cannot use token %s with purpose %q as signer token", tf, purpose)
+		return "", exp, fmt.Errorf("cannot use token %s with purpose %q as signer token", tf, purpose)
 	}
 
-	return strings.TrimSpace(string(tb)), err
+	return strings.TrimSpace(string(tb)), exp, err
 }
 
 // HTTPClient creates a *http.Client prepared by the security provider with certificates and more set

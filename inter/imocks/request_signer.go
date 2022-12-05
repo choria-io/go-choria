@@ -36,6 +36,21 @@ func (m *MockRequestSignerConfig) EXPECT() *MockRequestSignerConfigMockRecorder 
 	return m.recorder
 }
 
+// RemoteSignerSeedFile mocks base method.
+func (m *MockRequestSignerConfig) RemoteSignerSeedFile() (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "RemoteSignerSeedFile")
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// RemoteSignerSeedFile indicates an expected call of RemoteSignerSeedFile.
+func (mr *MockRequestSignerConfigMockRecorder) RemoteSignerSeedFile() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RemoteSignerSeedFile", reflect.TypeOf((*MockRequestSignerConfig)(nil).RemoteSignerSeedFile))
+}
+
 // RemoteSignerToken mocks base method.
 func (m *MockRequestSignerConfig) RemoteSignerToken() ([]byte, error) {
 	m.ctrl.T.Helper()
