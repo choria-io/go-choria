@@ -97,13 +97,13 @@ type Framework interface {
 	SetLogWriter(out io.Writer)
 	SetLogger(logger *logrus.Logger)
 	SetupLogging(debug bool) (err error)
-	SignerToken() (token string, err error)
+	SignerToken() (token string, exp time.Time, err error)
 	SignerTokenFile() (f string, err error)
 	SignerSeedFile() (f string, err error)
 	SupportsProvisioning() bool
 	TLSConfig() (*tls.Config, error)
 	TrySrvLookup(names []string, defaultSrv srvcache.Server) (srvcache.Server, error)
 	UniqueID() string
-	UniqueIDFromUnverifiedToken() (caller string, id string, token string, err error)
+	UniqueIDFromUnverifiedToken() (id string, uid string, exp time.Time, token string, err error)
 	ValidateSecurity() (errors []string, ok bool)
 }

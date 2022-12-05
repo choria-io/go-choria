@@ -82,6 +82,7 @@ type Connection struct {
 	subMu             sync.Mutex
 	conMu             sync.Mutex
 	token             string
+	expire            time.Time
 	uniqueId          string
 	ctx               context.Context
 }
@@ -146,7 +147,8 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 	}
 
 	if conn.isJwtAuth() {
-		caller, id, token, err := fw.UniqueIDFromUnverifiedToken()
+		conn.log = conn.log.WithField("jwtAuth", true)
+		caller, id, exp, token, err := fw.UniqueIDFromUnverifiedToken()
 		if err != nil {
 			return nil, fmt.Errorf("could not parse JWT: %s", err)
 		}
@@ -155,15 +157,15 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 		// set permissions to the identity in the token, which would not match making the node
 		// unusable.
 		//
-		// Server run would have detected this and triggered reprovision but we should double check
+		// Server run would have detected this and triggered reprovision, but we should double-check
 		// here anyway and also for clients would have invalid reply channels
 		if fw.Config.InitiatedByServer && caller != "" && fw.Config.Identity != caller {
 			return nil, fmt.Errorf("identity %s does not match caller %s in JWT token", fw.Config.Identity, caller)
 		}
 
-		conn.log.Infof("Setting JWT token and unique reply queues based on JWT for %q", caller)
-
+		conn.log.Infof("Setting JWT token and unique reply queues based on JWT for %q (valid for %v)", caller, time.Until(exp))
 		conn.token = token
+		conn.expire = exp
 		conn.uniqueId = id
 	}
 
@@ -639,7 +641,12 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}),
 
 		nats.ErrorHandler(func(nc *nats.Conn, sub *nats.Subscription, err error) {
-			conn.log.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrlRedacted(), err)
+			if nc.IsConnected() {
+				conn.log.Errorf("NATS client on %s encountered an error: %s", nc.ConnectedUrlRedacted(), err)
+			} else {
+				conn.log.Errorf("NATS client encountered an error: %s", err)
+			}
+
 			connErrorCtr.Inc()
 		}),
 
@@ -688,17 +695,24 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}
 		options = append(options, nats.Secure(tlsc))
 
-		token, err := conn.fw.SignerToken()
-		if err != nil {
-			return fmt.Errorf("no valid token found to sign connection NONCE: %s", err)
+		if conn.token == "" {
+			return fmt.Errorf("no valid token found to sign connection NONCE")
 		}
-		options = append(options, nats.Token(token))
+		options = append(options, nats.Token(conn.token))
 
 		seedFile, err := conn.fw.SignerSeedFile()
 		if err == nil && seedFile != "" {
 			options = append(options, nats.UserJWT(func() (string, error) {
-				return token, nil
+				if !conn.expire.IsZero() && time.Now().After(conn.expire) {
+					conn.log.Errorf("Cannot sign connection NONCE: token is expired by %v", time.Since(conn.expire))
+					return "", fmt.Errorf("token expired")
+				}
+				return conn.token, nil
 			}, func(n []byte) ([]byte, error) {
+				if !conn.expire.IsZero() && time.Now().After(conn.expire) {
+					conn.log.Errorf("Cannot sign connection NONCE: token is expired by %v", time.Since(conn.expire))
+					return nil, fmt.Errorf("token expired")
+				}
 				conn.log.Debugf("Signing nonce using seed file %s", seedFile)
 				return Ed25519SignWithSeedFile(seedFile, n)
 			}))

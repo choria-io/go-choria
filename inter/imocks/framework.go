@@ -1551,12 +1551,13 @@ func (mr *MockFrameworkMockRecorder) SignerSeedFile() *gomock.Call {
 }
 
 // SignerToken mocks base method.
-func (m *MockFramework) SignerToken() (string, error) {
+func (m *MockFramework) SignerToken() (string, time.Time, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "SignerToken")
 	ret0, _ := ret[0].(string)
-	ret1, _ := ret[1].(error)
-	return ret0, ret1
+	ret1, _ := ret[1].(time.Time)
+	ret2, _ := ret[2].(error)
+	return ret0, ret1, ret2
 }
 
 // SignerToken indicates an expected call of SignerToken.
@@ -1639,14 +1640,15 @@ func (mr *MockFrameworkMockRecorder) UniqueID() *gomock.Call {
 }
 
 // UniqueIDFromUnverifiedToken mocks base method.
-func (m *MockFramework) UniqueIDFromUnverifiedToken() (string, string, string, error) {
+func (m *MockFramework) UniqueIDFromUnverifiedToken() (string, string, time.Time, string, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UniqueIDFromUnverifiedToken")
 	ret0, _ := ret[0].(string)
 	ret1, _ := ret[1].(string)
-	ret2, _ := ret[2].(string)
-	ret3, _ := ret[3].(error)
-	return ret0, ret1, ret2, ret3
+	ret2, _ := ret[2].(time.Time)
+	ret3, _ := ret[3].(string)
+	ret4, _ := ret[4].(error)
+	return ret0, ret1, ret2, ret3, ret4
 }
 
 // UniqueIDFromUnverifiedToken indicates an expected call of UniqueIDFromUnverifiedToken.

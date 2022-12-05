@@ -200,7 +200,7 @@ func ParseClientIDToken(token string, pk any, verifyPurpose bool) (*ClientIDClai
 
 	// if we have a tcs we require an issuer expiry to be set and it to not have expired
 	if claims.TrustChainSignature != "" && strings.HasPrefix(claims.Issuer, ChainIssuerPrefix) {
-		if !claims.StandardClaims.verifyIssuerExpiry(true) {
+		if !claims.verifyIssuerExpiry(true) {
 			return nil, jwt.ErrTokenExpired
 		}
 	}

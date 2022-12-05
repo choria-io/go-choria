@@ -87,7 +87,7 @@ func ParseProvisioningToken(token string, pk any) (*ProvisioningClaims, error) {
 	}
 
 	// if we have a tcs we require an issuer expiry to be set and it to not have expired
-	if !claims.StandardClaims.verifyIssuerExpiry(claims.TrustChainSignature != "") {
+	if !claims.verifyIssuerExpiry(claims.TrustChainSignature != "") {
 		return nil, jwt.ErrTokenExpired
 	}
 

@@ -15,10 +15,8 @@ import (
 	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/inter"
-	"github.com/choria-io/go-choria/statistics"
-	"github.com/choria-io/go-choria/tokens"
-
 	"github.com/choria-io/go-choria/lifecycle"
+	"github.com/choria-io/go-choria/statistics"
 
 	"github.com/choria-io/go-choria/filter/classes"
 	"github.com/choria-io/go-choria/filter/facts"
@@ -212,15 +210,7 @@ func (srv *Instance) Status() *statistics.InstanceStatus {
 		s.CertificateExpires = cert.NotAfter
 	}
 
-	token, _ := srv.fw.SignerToken()
-	if token != "" {
-		claims, err := tokens.ParseServerTokenUnverified(token)
-		if err == nil {
-			if claims.ExpiresAt != nil {
-				s.TokenExpires = claims.ExpiresAt.Time
-			}
-		}
-	}
+	_, s.TokenExpires, _ = srv.fw.SignerToken()
 
 	return s
 }
