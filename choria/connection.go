@@ -148,6 +148,7 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 
 	if conn.isJwtAuth() {
 		conn.log = conn.log.WithField("jwtAuth", true)
+
 		caller, id, exp, token, err := fw.UniqueIDFromUnverifiedToken()
 		if err != nil {
 			return nil, fmt.Errorf("could not parse JWT: %s", err)

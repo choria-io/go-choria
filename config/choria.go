@@ -24,8 +24,8 @@ type ChoriaPluginConfig struct {
 	UseSRVRecords    bool   `confkey:"plugin.choria.use_srv" default:"true" url:"https://choria.io/docs/deployment/dns/"` // If SRV record lookups should be attempted to find Puppet, PuppetDB, Brokers etc
 	SRVDomain        string `confkey:"plugin.choria.srv_domain" url:"https://choria.io/docs/deployment/dns/"`             // The domain to use for SRV records, defaults to the domain the server FQDN is in
 
-	Provision            bool `confkey:"plugin.choria.server.provision" default:"false" url:"https://github.com/choria-io/provisioner"`              // Specifically enable or disable provisioning
-	ProvisionAllowUpdate bool `confkey:"plugin.choria.server.provision.allow_update" default:"false" url:"https://github.com/choria-io/provisioner"` // Allows the provisioner to perform in-place version updates
+	Provision            bool `confkey:"plugin.choria.server.provision" default:"false" url:"https://choria-io.github.io/provisioner/"`              // Specifically enable or disable provisioning
+	ProvisionAllowUpdate bool `confkey:"plugin.choria.server.provision.allow_update" default:"false" url:"https://choria-io.github.io/provisioner/"` // Allows the provisioner to perform in-place version updates
 
 	ExternalDiscoveryCommand         string `confkey:"plugin.choria.discovery.external.command" type:"path_string"` // The command to use for external discovery
 	InventoryDiscoverySource         string `confkey:"plugin.choria.discovery.inventory.source" type:"path_string"` // The file to read for inventory discovery
@@ -99,7 +99,7 @@ type ChoriaPluginConfig struct {
 	SecurityProvider    string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11,certmanager,choria"` // The Security Provider to use
 	ServerAnonTLS       bool     `confkey:"plugin.security.server_anon_tls" default:"false"`                                                 // Use anonymous TLS to the Choria brokers from a server
 	ClientAnonTLS       bool     `confkey:"plugin.security.client_anon_tls" default:"false"`                                                 // Use anonymous TLS to the Choria brokers from a client, also disables security provider verification - only when a remote signer is set
-	AAAServiceLoginURLs []string `confkey:"plugin.login.aaasvc.login.url" url:"https://github.com/choria-io/aaasvc"`                         // List of URLs to attempt to login against when the remote signer is enabled
+	AAAServiceLoginURLs []string `confkey:"plugin.login.aaasvc.login.url" url:"https://choria-io.github.io/aaasvc/"`                         // List of URLs to attempt to login against when the remote signer is enabled
 	CipherSuites        []string `confkey:"plugin.security.cipher_suites" type:"comma_split"`                                                // List of allowed cipher suites
 	ECCCurves           []string `confkey:"plugin.security.ecc_curves" type:"comma_split"`                                                   // List of allowed ECC curves
 	IssuerNames         []string `confkey:"plugin.security.issuer.names" type:"comma_split"`                                                 // List of names of valid issuers this server will accept, set indvidiaul issuer data using plugin.security.issuer.<name>.public
@@ -113,8 +113,8 @@ type ChoriaPluginConfig struct {
 
 	RemoteSignerTokenSeedFile string `confkey:"plugin.choria.security.request_signer.seed_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"`  // Path to the seed file used to access a Central Authenticator
 	RemoteSignerTokenFile     string `confkey:"plugin.choria.security.request_signer.token_file" type:"path_string" url:"https://github.com/choria-io/aaasvc"` // Path to the token used to access a Central Authenticator
-	RemoteSignerURL           string `confkey:"plugin.choria.security.request_signer.url" url:"https://github.com/choria-io/aaasvc"`                           // URL to the Signing Service
-	RemoteSignerService       bool   `confkey:"plugin.choria.security.request_signer.service" url:"https://github.com/choria-io/aaasvc"`                       // Enables signing requests via Choria RPC requests
+	RemoteSignerURL           string `confkey:"plugin.choria.security.request_signer.url" url:"https://choria-io.github.io/aaasvc/"`                           // URL to the Signing Service
+	RemoteSignerService       bool   `confkey:"plugin.choria.security.request_signer.service" url:"https://choria-io.github.io/aaasvc/"`                       // Enables signing requests via Choria RPC requests
 
 	ChoriaSecurityTrustedSigners []string `confkey:"plugin.security.choria.trusted_signers" type:"comma_split"` // Ed25119 public keys of entities allowed to sign client and server JWT tokens in hex encoded format
 	ChoriaSecurityCertificate    string   `confkey:"plugin.security.choria.certificate" type:"path_string"`     // When using choria security provider, the path to the optional public certificate

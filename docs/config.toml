@@ -1,0 +1,39 @@
+baseURL = 'https://choria-io.github.io/go-choria/'
+languageCode = 'en-us'
+title = 'Choria Server and Broker'
+theme = "hugo-theme-relearn"
+canonifyURLs = true
+themeVariant = "choria-relearn"
+
+[outputs]
+home = [ "HTML", "RSS", "JSON"]
+
+[params]
+author = "Choria Project"
+showVisitedLinks = false
+disableLanguageSwitchingButton = true
+themeVariant = "choria-relearn"
+disableInlineCopyToClipBoard = true
+alwaysopen = true
+disableLandingPageButton = true
+
+[[menu.shortcuts]]
+name = "<i class='fab fa-fw fa-github'></i> GitHub"
+identifier = "ds"
+url = "https://github.com/choria-io/go-choria"
+weight = 10
+
+[[menu.shortcuts]]
+name = "<i class='far fa-comments'></i> Discussions"
+url = "https://github.com/choria-io/general/discussions"
+weight = 12
+
+[[menu.shortcuts]]
+name = "<i class='far fa-life-ring'></i> Issues"
+url = "https://github.com/choria-io/go-choria/issues"
+weight = 13
+
+[[menu.shortcuts]]
+name = "<i class='fab fa-slack'></i> #choria"
+url = "https://slack.puppet.com/"
+weight = 14

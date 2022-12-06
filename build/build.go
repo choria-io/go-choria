@@ -18,7 +18,7 @@ var SHA = "unknown"
 var BuildDate = "unknown"
 
 // License is the official Open Source Initiative license abbreviation
-var License = "Apache-2.0"
+const License = "Apache-2.0"
 
 // TLS controls the NATS protocol level TLS
 var TLS = "true"
