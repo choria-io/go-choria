@@ -22,3 +22,4 @@ provisioning_target_provider.go
 *.exe
 *.test
 tokens/testdata/good-server.jwt
+.hugo_build.lock
