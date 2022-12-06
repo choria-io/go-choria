@@ -79,25 +79,24 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 		err         error
 	)
 
+	log := a.log.WithField("stage", "check")
+	remote := c.RemoteAddress()
+	if remote != nil {
+		log = log.WithField("remote", remote.String())
+	}
+	pipeConnection := remote.String() == "pipe"
+
 	tlsc := c.GetTLSConnectionState()
 	if tlsc != nil {
 		tlsVerified = len(tlsc.VerifiedChains) > 0
 	}
 
 	if a.isTLS && tlsc == nil {
-		a.log.Warnf("Did not receive TLS Connection State for connection %s, rejecting", c.RemoteAddress())
+		a.log.Warnf("Did not receive TLS Connection State for connection %s, rejecting", remote)
 		return false
 	}
 
-	log := a.log.WithField("stage", "check")
-
-	remote := c.RemoteAddress()
-	if remote != nil {
-		log = log.WithField("remote", remote.String())
-	}
-
 	systemUser := a.isSystemUser(c)
-	pipeConnection := remote.String() == "pipe"
 
 	switch {
 	case a.isProvisionUser(c):
@@ -244,6 +243,9 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 
 	log = log.WithField("mTLS", tlsVerified)
 	log = log.WithField("name", opts.Name)
+	if pipeConnection {
+		log = log.WithField("pipe", true)
+	}
 
 	if tlsVerified && len(conn.PeerCertificates) > 0 {
 		log = log.WithField("subject", conn.PeerCertificates[0].Subject.CommonName)

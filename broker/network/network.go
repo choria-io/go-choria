@@ -272,7 +272,10 @@ func (s *Server) setupTLS() (err error) {
 	if err != nil {
 		return err
 	}
-	tlsc.ClientAuth = tls.RequireAndVerifyClientCert
+
+	// the auth layer does various checks for tls as we have a varied tls/non tls setup to handle pipe connections
+	// and provisioning connections etc, so this is safe.
+	tlsc.ClientAuth = tls.VerifyClientCertIfGiven
 
 	switch {
 	case s.config.DisableTLSVerify:
@@ -281,14 +284,6 @@ func (s *Server) setupTLS() (err error) {
 		tlsc.ClientAuth = tls.NoClientCert
 
 	case s.config.Choria.NetworkProvisioningTokenSignerFile != "", len(s.config.Choria.NetworkClientTokenSigners) > 0, len(s.config.Choria.IssuerNames) > 0:
-		// if provisioning is allowed we allow unverified tls connections
-		// but the auth system will funnel all of those into the provisioning account
-		//
-		// if the AAA is enabled and we have the public cert we allow unverified TLS
-		// but will extract the caller id from a fully verified JWT and set strict
-		// client only permissions
-		tlsc.ClientAuth = tls.VerifyClientCertIfGiven
-
 		if s.config.Choria.NetworkProvisioningTokenSignerFile != "" {
 			s.log.Warnf("Allowing unverified TLS connections for provisioning purposes")
 		}
