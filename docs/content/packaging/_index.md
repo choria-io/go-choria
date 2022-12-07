@@ -1,8 +1,8 @@
 +++
 title = "Custom Packaging"
 toc = true
-weight = 50
-pre = "<b>5. </b>"
+weight = 60
+pre = "<b>6. </b>"
 +++
 
 Choria binary, being a compiled binary with no external dependencies, needs to be recompiled when adding certain kinds
