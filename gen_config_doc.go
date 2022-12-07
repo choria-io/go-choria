@@ -9,7 +9,9 @@ import (
 	"path"
 	"strings"
 	"text/template"
+	"time"
 
+	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/confkey"
 	"github.com/choria-io/go-choria/internal/fs"
@@ -17,8 +19,10 @@ import (
 )
 
 type configs struct {
-	Keys [][]string
-	Docs []*confkey.Doc
+	Keys    [][]string
+	Docs    []*confkey.Doc
+	Now     string
+	Version string
 }
 
 func panicIfErr(err error) {
@@ -39,7 +43,9 @@ func main() {
 	}
 
 	docs := configs{
-		Docs: []*confkey.Doc{},
+		Docs:    []*confkey.Doc{},
+		Now:     time.Now().UTC().Format(time.RFC822),
+		Version: build.Version,
 	}
 
 	util.SliceGroups(keys, 2, func(grp []string) {
@@ -70,12 +76,12 @@ func main() {
 		return
 	}
 
-	t, err := template.New("templates").Funcs(funcs).Parse(string(templ))
+	t, err := template.New("templates").Funcs(funcs).Delims("<<", ">>").Parse(string(templ))
 	if err != nil {
 		panic(err)
 	}
 
-	outfile := "CONFIGURATION.md"
+	outfile := "docs/content/configuration/_index.md"
 
 	out, err := os.Create(path.Join(outfile))
 	if err != nil {

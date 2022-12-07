@@ -78,15 +78,18 @@ func (b *brokerCommand) prepareNatsCli(pc *fisk.ParseContext, opts *natscli.Opti
 		cfg.Choria.NatsPass = cfg.Choria.NetworkSystemPassword
 	}
 
-	conn, err := c.NewConnector(ctx, c.MiddlewareServers, "cli", c.Logger("connection"))
+	connLogger := c.Logger("conn")
+
+	cliLogger := log.New()
+	// cli does a lot of Printf which is info
+	cliLogger.SetLevel(log.InfoLevel)
+	cliLogger.SetOutput(connLogger.Logger.Out)
+	natscli.SetLogger(cliLogger)
+
+	conn, err := c.NewConnector(ctx, c.MiddlewareServers, "cli", connLogger)
 	if err != nil {
 		return err
 	}
-
-	logger := c.Logger("cli")
-	// cli does a lot of Printf which is info
-	logger.Logger.SetLevel(log.InfoLevel)
-	natscli.SetLogger(logger)
 
 	opts.Conn = conn.Nats()
 	opts.InboxPrefix = conn.InboxPrefix()
@@ -99,7 +102,7 @@ func (b *brokerCommand) prepareNatsCli(pc *fisk.ParseContext, opts *natscli.Opti
 	var jsmOpts []jsm.Option
 
 	if os.Getenv("TRACE") == "1" {
-		logger.Printf("Tracing Choria Streams API interactions due to TRACE environment variable")
+		cliLogger.Warnf("Tracing Choria Streams API interactions due to TRACE environment variable")
 		opts.Trace = true
 		jsmOpts = append(jsmOpts, jsm.WithTrace())
 	}
