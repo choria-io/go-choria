@@ -14,7 +14,6 @@ showVisitedLinks = false
 disableLanguageSwitchingButton = true
 themeVariant = "choria-relearn"
 disableInlineCopyToClipBoard = true
-alwaysopen = true
 disableLandingPageButton = true
 
 [[menu.shortcuts]]
