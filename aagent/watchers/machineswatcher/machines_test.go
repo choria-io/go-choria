@@ -40,6 +40,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 
 		machine = model.NewMockMachine(mockctl)
 		machine.EXPECT().Directory().Return(td).AnyTimes()
+		machine.EXPECT().SignerKey().Return("").AnyTimes()
 
 		wi, err := New(machine, "machines", nil, "", "", "1m", time.Hour, map[string]any{
 			"data_item": "spec",
@@ -74,6 +75,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 
 		It("Should function without a signature", func() {
 			data.Signature = ""
+			machine.EXPECT().SignerKey().Return("").AnyTimes()
 			spec, err := w.loadAndValidateData()
 			Expect(err).ToNot(HaveOccurred())
 			Expect(spec).ToNot(BeNil())
@@ -121,6 +123,26 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 			spec, err := w.loadAndValidateData()
 			Expect(err).To(MatchError("invalid data_item"))
 			Expect(spec).To(BeNil())
+		})
+
+		It("Should allow overrides from config", func() {
+			machine := model.NewMockMachine(mockctl)
+			machine.EXPECT().Directory().Return(td).AnyTimes()
+			machine.EXPECT().SignerKey().Return(hex.EncodeToString(pub)).AnyTimes()
+			machine.EXPECT().DataGet(gomock.Eq("spec")).Return(data, true).AnyTimes()
+
+			wi, err := New(machine, "machines", nil, "", "", "1m", time.Hour, map[string]any{
+				"data_item":  "spec",
+				"public_key": "other",
+			})
+			Expect(err).ToNot(HaveOccurred())
+			w = wi.(*Watcher)
+
+			Expect(w.properties.PublicKey).To(Equal(hex.EncodeToString(pub)))
+
+			spec, err := w.loadAndValidateData()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(spec).To(Equal([]byte("[]")))
 		})
 
 		It("Should handle valid signatures", func() {

@@ -13,7 +13,7 @@ import (
 	sync "sync"
 	time "time"
 
-	"github.com/choria-io/go-choria/inter"
+	inter "github.com/choria-io/go-choria/inter"
 	lifecycle "github.com/choria-io/go-choria/lifecycle"
 	gomock "github.com/golang/mock/gomock"
 	jsm_go "github.com/nats-io/jsm.go"
@@ -58,10 +58,10 @@ func (mr *MockWatcherMockRecorder) AnnounceInterval() *gomock.Call {
 }
 
 // CurrentState mocks base method.
-func (m *MockWatcher) CurrentState() any {
+func (m *MockWatcher) CurrentState() interface{} {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "CurrentState")
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(interface{})
 	return ret0
 }
 
@@ -116,7 +116,7 @@ func (m *MockWatcher) Run(arg0 context.Context, arg1 *sync.WaitGroup) {
 }
 
 // Run indicates an expected call of Run.
-func (mr *MockWatcherMockRecorder) Run(arg0, arg1 any) *gomock.Call {
+func (mr *MockWatcherMockRecorder) Run(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Run", reflect.TypeOf((*MockWatcher)(nil).Run), arg0, arg1)
 }
@@ -173,16 +173,16 @@ func (mr *MockWatcherConstructorMockRecorder) EventType() *gomock.Call {
 }
 
 // New mocks base method.
-func (m *MockWatcherConstructor) New(arg0 Machine, arg1 string, arg2 []string, arg3, arg4, arg5 string, arg6 time.Duration, arg7 map[string]any) (any, error) {
+func (m *MockWatcherConstructor) New(arg0 Machine, arg1 string, arg2 []string, arg3, arg4, arg5 string, arg6 time.Duration, arg7 map[string]interface{}) (interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "New", arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(interface{})
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // New indicates an expected call of New.
-func (mr *MockWatcherConstructorMockRecorder) New(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 any) *gomock.Call {
+func (mr *MockWatcherConstructorMockRecorder) New(arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "New", reflect.TypeOf((*MockWatcherConstructor)(nil).New), arg0, arg1, arg2, arg3, arg4, arg5, arg6, arg7)
 }
@@ -202,16 +202,16 @@ func (mr *MockWatcherConstructorMockRecorder) Type() *gomock.Call {
 }
 
 // UnmarshalNotification mocks base method.
-func (m *MockWatcherConstructor) UnmarshalNotification(arg0 []byte) (any, error) {
+func (m *MockWatcherConstructor) UnmarshalNotification(arg0 []byte) (interface{}, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "UnmarshalNotification", arg0)
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(interface{})
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // UnmarshalNotification indicates an expected call of UnmarshalNotification.
-func (mr *MockWatcherConstructorMockRecorder) UnmarshalNotification(arg0 any) *gomock.Call {
+func (mr *MockWatcherConstructorMockRecorder) UnmarshalNotification(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "UnmarshalNotification", reflect.TypeOf((*MockWatcherConstructor)(nil).UnmarshalNotification), arg0)
 }
@@ -290,7 +290,7 @@ func (m *MockChoriaProvider) Logger(arg0 string) *logrus.Entry {
 }
 
 // Logger indicates an expected call of Logger.
-func (mr *MockChoriaProviderMockRecorder) Logger(arg0 any) *gomock.Call {
+func (mr *MockChoriaProviderMockRecorder) Logger(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Logger", reflect.TypeOf((*MockChoriaProvider)(nil).Logger), arg0)
 }
@@ -332,7 +332,7 @@ func (m *MockChoriaProvider) PublishRaw(arg0 string, arg1 []byte) error {
 }
 
 // PublishRaw indicates an expected call of PublishRaw.
-func (mr *MockChoriaProviderMockRecorder) PublishRaw(arg0, arg1 any) *gomock.Call {
+func (mr *MockChoriaProviderMockRecorder) PublishRaw(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishRaw", reflect.TypeOf((*MockChoriaProvider)(nil).PublishRaw), arg0, arg1)
 }
@@ -405,10 +405,10 @@ func (mr *MockMachineMockRecorder) ChoriaStatusFile() *gomock.Call {
 }
 
 // Data mocks base method.
-func (m *MockMachine) Data() map[string]any {
+func (m *MockMachine) Data() map[string]interface{} {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Data")
-	ret0, _ := ret[0].(map[string]any)
+	ret0, _ := ret[0].(map[string]interface{})
 	return ret0
 }
 
@@ -427,28 +427,28 @@ func (m *MockMachine) DataDelete(arg0 string) error {
 }
 
 // DataDelete indicates an expected call of DataDelete.
-func (mr *MockMachineMockRecorder) DataDelete(arg0 any) *gomock.Call {
+func (mr *MockMachineMockRecorder) DataDelete(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DataDelete", reflect.TypeOf((*MockMachine)(nil).DataDelete), arg0)
 }
 
 // DataGet mocks base method.
-func (m *MockMachine) DataGet(arg0 string) (any, bool) {
+func (m *MockMachine) DataGet(arg0 string) (interface{}, bool) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DataGet", arg0)
-	ret0, _ := ret[0].(any)
+	ret0, _ := ret[0].(interface{})
 	ret1, _ := ret[1].(bool)
 	return ret0, ret1
 }
 
 // DataGet indicates an expected call of DataGet.
-func (mr *MockMachineMockRecorder) DataGet(arg0 any) *gomock.Call {
+func (mr *MockMachineMockRecorder) DataGet(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DataGet", reflect.TypeOf((*MockMachine)(nil).DataGet), arg0)
 }
 
 // DataPut mocks base method.
-func (m *MockMachine) DataPut(arg0 string, arg1 any) error {
+func (m *MockMachine) DataPut(arg0 string, arg1 interface{}) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "DataPut", arg0, arg1)
 	ret0, _ := ret[0].(error)
@@ -456,15 +456,15 @@ func (m *MockMachine) DataPut(arg0 string, arg1 any) error {
 }
 
 // DataPut indicates an expected call of DataPut.
-func (mr *MockMachineMockRecorder) DataPut(arg0, arg1 any) *gomock.Call {
+func (mr *MockMachineMockRecorder) DataPut(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DataPut", reflect.TypeOf((*MockMachine)(nil).DataPut), arg0, arg1)
 }
 
 // Debugf mocks base method.
-func (m *MockMachine) Debugf(arg0, arg1 string, arg2 ...any) {
+func (m *MockMachine) Debugf(arg0, arg1 string, arg2 ...interface{}) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
+	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
@@ -472,9 +472,9 @@ func (m *MockMachine) Debugf(arg0, arg1 string, arg2 ...any) {
 }
 
 // Debugf indicates an expected call of Debugf.
-func (mr *MockMachineMockRecorder) Debugf(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockMachineMockRecorder) Debugf(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Debugf", reflect.TypeOf((*MockMachine)(nil).Debugf), varargs...)
 }
 
@@ -493,9 +493,9 @@ func (mr *MockMachineMockRecorder) Directory() *gomock.Call {
 }
 
 // Errorf mocks base method.
-func (m *MockMachine) Errorf(arg0, arg1 string, arg2 ...any) {
+func (m *MockMachine) Errorf(arg0, arg1 string, arg2 ...interface{}) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
+	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
@@ -503,9 +503,9 @@ func (m *MockMachine) Errorf(arg0, arg1 string, arg2 ...any) {
 }
 
 // Errorf indicates an expected call of Errorf.
-func (mr *MockMachineMockRecorder) Errorf(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockMachineMockRecorder) Errorf(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Errorf", reflect.TypeOf((*MockMachine)(nil).Errorf), varargs...)
 }
 
@@ -538,9 +538,9 @@ func (mr *MockMachineMockRecorder) Identity() *gomock.Call {
 }
 
 // Infof mocks base method.
-func (m *MockMachine) Infof(arg0, arg1 string, arg2 ...any) {
+func (m *MockMachine) Infof(arg0, arg1 string, arg2 ...interface{}) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
+	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
@@ -548,9 +548,9 @@ func (m *MockMachine) Infof(arg0, arg1 string, arg2 ...any) {
 }
 
 // Infof indicates an expected call of Infof.
-func (mr *MockMachineMockRecorder) Infof(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockMachineMockRecorder) Infof(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Infof", reflect.TypeOf((*MockMachine)(nil).Infof), varargs...)
 }
 
@@ -612,13 +612,13 @@ func (mr *MockMachineMockRecorder) Name() *gomock.Call {
 }
 
 // NotifyWatcherState mocks base method.
-func (m *MockMachine) NotifyWatcherState(arg0 string, arg1 any) {
+func (m *MockMachine) NotifyWatcherState(arg0 string, arg1 interface{}) {
 	m.ctrl.T.Helper()
 	m.ctrl.Call(m, "NotifyWatcherState", arg0, arg1)
 }
 
 // NotifyWatcherState indicates an expected call of NotifyWatcherState.
-func (mr *MockMachineMockRecorder) NotifyWatcherState(arg0, arg1 any) *gomock.Call {
+func (mr *MockMachineMockRecorder) NotifyWatcherState(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "NotifyWatcherState", reflect.TypeOf((*MockMachine)(nil).NotifyWatcherState), arg0, arg1)
 }
@@ -641,7 +641,7 @@ func (mr *MockMachineMockRecorder) OverrideData() *gomock.Call {
 // PublishLifecycleEvent mocks base method.
 func (m *MockMachine) PublishLifecycleEvent(arg0 lifecycle.Type, arg1 ...lifecycle.Option) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0}
+	varargs := []interface{}{arg0}
 	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
@@ -649,10 +649,24 @@ func (m *MockMachine) PublishLifecycleEvent(arg0 lifecycle.Type, arg1 ...lifecyc
 }
 
 // PublishLifecycleEvent indicates an expected call of PublishLifecycleEvent.
-func (mr *MockMachineMockRecorder) PublishLifecycleEvent(arg0 any, arg1 ...any) *gomock.Call {
+func (mr *MockMachineMockRecorder) PublishLifecycleEvent(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0}, arg1...)
+	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishLifecycleEvent", reflect.TypeOf((*MockMachine)(nil).PublishLifecycleEvent), varargs...)
+}
+
+// SignerKey mocks base method.
+func (m *MockMachine) SignerKey() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "SignerKey")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// SignerKey indicates an expected call of SignerKey.
+func (mr *MockMachineMockRecorder) SignerKey() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SignerKey", reflect.TypeOf((*MockMachine)(nil).SignerKey))
 }
 
 // State mocks base method.
@@ -698,9 +712,9 @@ func (mr *MockMachineMockRecorder) TimeStampSeconds() *gomock.Call {
 }
 
 // Transition mocks base method.
-func (m *MockMachine) Transition(arg0 string, arg1 ...any) error {
+func (m *MockMachine) Transition(arg0 string, arg1 ...interface{}) error {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0}
+	varargs := []interface{}{arg0}
 	for _, a := range arg1 {
 		varargs = append(varargs, a)
 	}
@@ -710,9 +724,9 @@ func (m *MockMachine) Transition(arg0 string, arg1 ...any) error {
 }
 
 // Transition indicates an expected call of Transition.
-func (mr *MockMachineMockRecorder) Transition(arg0 any, arg1 ...any) *gomock.Call {
+func (mr *MockMachineMockRecorder) Transition(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0}, arg1...)
+	varargs := append([]interface{}{arg0}, arg1...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Transition", reflect.TypeOf((*MockMachine)(nil).Transition), varargs...)
 }
 
@@ -731,9 +745,9 @@ func (mr *MockMachineMockRecorder) Version() *gomock.Call {
 }
 
 // Warnf mocks base method.
-func (m *MockMachine) Warnf(arg0, arg1 string, arg2 ...any) {
+func (m *MockMachine) Warnf(arg0, arg1 string, arg2 ...interface{}) {
 	m.ctrl.T.Helper()
-	varargs := []any{arg0, arg1}
+	varargs := []interface{}{arg0, arg1}
 	for _, a := range arg2 {
 		varargs = append(varargs, a)
 	}
@@ -741,8 +755,8 @@ func (m *MockMachine) Warnf(arg0, arg1 string, arg2 ...any) {
 }
 
 // Warnf indicates an expected call of Warnf.
-func (mr *MockMachineMockRecorder) Warnf(arg0, arg1 any, arg2 ...any) *gomock.Call {
+func (mr *MockMachineMockRecorder) Warnf(arg0, arg1 interface{}, arg2 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	varargs := append([]any{arg0, arg1}, arg2...)
+	varargs := append([]interface{}{arg0, arg1}, arg2...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Warnf", reflect.TypeOf((*MockMachine)(nil).Warnf), varargs...)
 }
