@@ -16,7 +16,6 @@ This is a *Hard Mode* guide that does everything manually and with no Configurat
  * Choria Nightly
  * [Choria AAA Service](https://choria-io.github.io/aaasvc/) Nightly
  * [Choria Provisioner](https://choria-io.github.io/provisioner/) Nightly
- * Optionally Hashicorp Vault
  * Docker on Intel CPU
 
 ### Security Credentials
@@ -27,7 +26,14 @@ Security is by means of a ed25519 key that signs JWTs, some JWTs form a chain an
 
 The Organization Issuer can be kept offline with Provisioning and AAA being delegated authorities capable of signing servers and clients but these are optional components - the Organization Issuer can directly sign Clients and Servers allowing them to operate without the other central components.
 
-We will cover two scenarios, the first case with no Choria Provisioner or AAA integrated demonstrating that a decentralised deployment model is supported and then add Choria Provisioner and Choria AAA Service to bring centralization and configuration management without using systems like Puppet.
+### Deployment Methods
+
+We demonstrate two deployment methods:
+
+ * [Decentralized](#decentralized-deployment) - like traditional Choria with only a broker as shared component
+ * Centralized AAA and Provisioning (TBD) - uses Choria AAA Service and Choria Provisioner for low-touch auto enrolment of Clients and Servers
+
+Additionally we show how Hashicorp Vault can be integrated to manage the Organization Issuer
 
 ### Decentralized deployment
 
@@ -37,7 +43,9 @@ In this model we will deploy a system that resembles the basic architecture diag
 
 We have only the Brokers as central architecture with no Central AAA or Provisioning. 
 
-We will not use mTLS in this case.
+{{% notice tip %}}
+We will not use mTLS in this case. mTLS is supported but a major advantage of this mode is that it's not required.
+{{% /notice %}}
 
 #### Docker
 
@@ -45,6 +53,7 @@ We will need a Docker network and 3 instances - broker, server, client and issue
 
 ```nohighlight
 $ docker network create choria_v2proto
+$ docker network create choria_issuer
 $ docker pull choria/choria:nightly
 $ docker run -ti --rm --entrypoint bash \
       --network choria_v2proto \
@@ -59,6 +68,7 @@ $ docker run -ti --rm --entrypoint bash \
       --hostname client.example.net \
       choria/choria:nightly -l
 $ docker run -ti --rm --entrypoint bash \
+      --network choria_issuer \
       --hostname issuer.example.net choria/choria:nightly -l
 ```
 
@@ -87,13 +97,57 @@ Public Key: b3989a299278750427b00213693c2ca02146476a361667682446230842836da8
 Ed25519 seed saved in development/issuer/private.key
 ```
 
-This key should be kept private and ideally in a Hashicorp Vault server.
+{{% notice warning %}}
+This key should be kept private and ideally in a Hashicorp Vault server. See a later section for guidance on Vault.
+{{% /notice %}}
 
 ##### Broker JWT and Config
 
 Every broker needs a ed25519 Keypair and a signed JWT.
 
-The broker process is identical to the server process except change `server.example.net` to `broker.example.net` in identities.
+First we create a keypair on the broker, the private key never leaves the broker:
+
+```nohighlight
+[choria@broker ~]$ choria jwt keys /etc/choria/private.key /etc/choria/public.key
+Public Key: 8918c1c7a4aeb4d4ad16729dc9b9c12df021d9296106eb5f072b224aa8f8eee9
+
+Ed25519 seed saved in /etc/choria/private.key
+```
+
+Pass the Public Key to the Organization Issuer who creates a JWT:
+
+```nohighlight
+[choria@issuer ~]$ mkdir -p development/broker/broker.example.net
+[choria@issuer ~]$ choria jwt server development/broker/broker.example.net/token.jwt \
+server.example.net \
+8918c1c7a4aeb4d4ad16729dc9b9c12df021d9296106eb5f072b224aa8f8eee9 \
+development/issuer/private.key \
+--collectives=choria
+```
+
+With access to just the Broker public key the Organization Issuer can create a server token, pass this back to the server who stores it in `/etc/choria/broker.jwt`.
+
+{{% notice tip %}}
+Note that for version 2 protocol the default collective is `["choria"]`.
+{{% /notice %}}
+
+```nohighlight
+[choria@issuer ~]$ choria jwt development/broker/broker.example.net/token.jwt development/issuer/public.key
+Validated Server Token development/server/server.example.net/token.jwt
+
+             Identity: server.example.net
+           Expires At: 2023-12-08 13:03:23 +0000 UTC (364d23h59m41s)
+          Collectives: choria
+           Public Key: 8918c1c7a4aeb4d4ad16729dc9b9c12df021d9296106eb5f072b224aa8f8eee9
+    Organization Unit: choria
+   Private Network ID: 92328d88bef9d063480fd4b0ec5e4879
+
+   Broker Permissions:
+
+          No server specific permissions granted
+```
+
+We pass the JWT back to the broker and save in `/etc/choria/broker.jwt`.
 
 The broker need x509 certificates to open the TLS network port, here we just self-sign one but you can get those from anywhere.
 
@@ -122,7 +176,7 @@ With all in place it should look like this:
 
 We create the broker configuration in `/etc/choria/broker.conf` and start it, you need to change your issuer here:
 
-```ini
+```nohighlight
 # The name of the organization to configure, for now only supports choria
 plugin.security.issuer.names = choria
 
@@ -130,11 +184,9 @@ plugin.security.issuer.names = choria
 plugin.security.issuer.choria.public = b3989a299278750427b00213693c2ca02146476a361667682446230842836da8
 
 plugin.choria.network.system.password = sYst3m
-plugin.choria.middleware_hosts = nats://broker.example.net:4222
 plugin.choria.stats_port = 8222
 plugin.choria.broker_network = true
 plugin.choria.network.client_port = 4222
-plugin.choria.network.peer_port = 5222
 plugin.choria.network.stream.store = /data
 plugin.choria.network.system.user = system
 loglevel = info
@@ -163,59 +215,11 @@ INFO[0000] Listening for client connections on [::]:4222  component=network_brok
 
 Every server needs a ed25519 Keypair and a signed JWT.
 
-First we create a keypair on the server, the private key never leaves the server:
-
-```nohighlight
-[choria@server ~]$ choria jwt keys /etc/choria/private.key /etc/choria/public.key
-Public Key: 5ee1e2d1776ecc35716cd6d651a259fe0215d480a6ad2c0c55a395634a3ab717
-
-Ed25519 seed saved in /etc/choria/private.key
-```
-
-Pass the Public Key to the Organization Issuer who creates a JWT:
-
-```nohighlight
-[choria@issuer ~]$ mkdir -p development/server/server.example.net
-[choria@issuer ~]$ choria jwt server development/server/server.example.net/token.jwt \
-server.example.net \
-5ee1e2d1776ecc35716cd6d651a259fe0215d480a6ad2c0c55a395634a3ab717 \
-development/issuer/private.key \
---collectives=choria
-```
-
-With access to just the Server public key the Organization Issuer can create a server token, pass this back to the server who stores it in `/etc/choria/server.jwt`.
-
-Note that for version 2 protocol the default collective is `["choria"]`.
-
-```nohighlight
-[choria@issuer ~]$ choria jwt development/server/server.example.net/token.jwt development/issuer/public.key
-Validated Server Token development/server/server.example.net/token.jwt
-
-             Identity: server.example.net
-           Expires At: 2023-12-08 13:03:23 +0000 UTC (364d23h59m41s)
-          Collectives: choria
-           Public Key: 5ee1e2d1776ecc35716cd6d651a259fe0215d480a6ad2c0c55a395634a3ab717
-    Organization Unit: choria
-   Private Network ID: 77e64440ac709c0836487e5b77334e5b
-
-   Broker Permissions:
-
-          No server specific permissions granted
-```
-
-We pass the JWT back to the server and save in `/etc/choria/server.jwt`.
-
-```nohighlight
-[choria@server ~]$ find /etc/choria/
-/etc/choria/
-/etc/choria/private.key
-/etc/choria/public.key
-/etc/choria/server.jwt
-```
+The server process is identical to the broker process except change `broker.example.net` to `server.example.net` in identities and make obvious file name changes. Servers do not need any x509 certificates like brokers.
 
 Now we can configure and start the server, place this in `/etc/choria/server.conf`:
 
-```ini
+```nohighlight
 # The name of the organization to configure, for now only supports choria
 plugin.security.issuer.names = choria
 
@@ -266,7 +270,9 @@ This client `private.key` should be kept private and not shared, the JWT can be 
 The client pass their Public Key to the Organization Issuer who creates a JWT on the Issuer node:
 
 {{% notice tip %}}
-Here we use `choria` as the identity, this would match the unix user name
+Here we use `choria` as the identity, this would match the unix user name.
+
+If a user is on many machines, create a JWT per machine.
 {{% /notice %}}
 
 ```nohighlight
@@ -319,11 +325,9 @@ Pass the JWT back to the client who saves it in `~/.config/choria/token.jwt`.
 
 We create a system-wide client configuration in `/etc/choria/client.conf`:
 
-```ini
+```nohighlight
 loglevel = warn
-plugin.choria.discovery.broadcast.windowed_timeout = true
 plugin.choria.middleware_hosts = broker.example.net:4222
-plugin.choria.use_srv = false
 plugin.choria.network.system.user = system
 plugin.choria.network.system.password = sYst3m
 
@@ -342,4 +346,4 @@ server.example.net                       time=3 ms
 1 replies max: 4ms min: 4ms avg: 4ms overhead: 12ms
 ```
 
-Other commands like `choria req choria_util info` should work demonstrating authorization works and `choria broker server list` should list the broker indicating Broker System Account access works.
+Other commands like `choria req choria_util info` should work demonstrating authorization works and `choria broker server list` should list the broker indicating Broker System Account access works. After a minute or so `choria broker stream ls` will show a list of Streams demonstrating Choria Streams authority worked.

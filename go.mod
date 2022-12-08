@@ -31,12 +31,12 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.35
-	github.com/nats-io/nats-server/v2 v2.9.8
-	github.com/nats-io/nats.go v1.20.1-0.20221122181159-398a1ecb71df
+	github.com/nats-io/nats-server/v2 v2.9.9
+	github.com/nats-io/nats.go v1.21.0
 	github.com/nats-io/natscli v0.0.35
 	github.com/onsi/ginkgo/v2 v2.5.1
 	github.com/onsi/gomega v1.24.1
-	github.com/open-policy-agent/opa v0.47.0
+	github.com/open-policy-agent/opa v0.47.1
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/client_model v0.3.0
 	github.com/robfig/cron v1.2.0
@@ -46,11 +46,11 @@ require (
 	github.com/tidwall/pretty v1.2.1
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/atomic v1.9.0
-	golang.org/x/crypto v0.3.0
+	golang.org/x/crypto v0.4.0
 	golang.org/x/sys v0.3.0
-	golang.org/x/term v0.2.0
+	golang.org/x/term v0.3.0
 	golang.org/x/text v0.5.0
-	golang.org/x/tools v0.3.0
+	golang.org/x/tools v0.4.0
 	rsc.io/goversion v1.2.0
 )
 
@@ -128,12 +128,13 @@ require (
 	github.com/xiam/to v0.0.0-20200126224905-d60d31e03561 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
+	go.uber.org/automaxprocs v1.5.1 // indirect
 	go.uber.org/goleak v1.2.0 // indirect
 	go.uber.org/multierr v1.8.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/exp v0.0.0-20220921164117-439092de6870 // indirect
 	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/net v0.2.0 // indirect
+	golang.org/x/net v0.4.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gonum.org/v1/gonum v0.12.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
