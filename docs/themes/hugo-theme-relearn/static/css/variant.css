@@ -3,6 +3,7 @@
     this is only possible because every color variant defines this variable, otherwise we would have been lost */
     --INTERNAL-PRIMARY-color: var(--PRIMARY-color, var(--MENU-HEADER-BG-color, rgba( 0, 0, 0, 0 ))); /* not --INTERNAL-MENU-HEADER-BG-color */
     --INTERNAL-SECONDARY-color: var(--SECONDARY-color, var(--MAIN-LINK-color, #486ac9)); /* not --INTERNAL-MAIN-LINK-color */
+    --INTERNAL-ACCENT-color: var(--ACCENT-color, #ffff00);
 
     --INTERNAL-MAIN-LINK-color: var(--MAIN-LINK-color, var(--SECONDARY-color, #486ac9)); /* not --INTERNAL-SECONDARY-color */
     --INTERNAL-MAIN-LINK-HOVER-color: var(--MAIN-LINK-HOVER-color, var(--INTERNAL-MAIN-LINK-color));
@@ -183,6 +184,10 @@ a:hover,
     color: var(--INTERNAL-MENU-SECTIONS-LINK-color);
 }
 
+mark {
+    background-color: var(--INTERNAL-ACCENT-color);
+}
+
 h1 {
     color: var(--INTERNAL-MAIN-TITLES-H1-color);
     font-family: var(--INTERNAL-MAIN-TITLES-H1-font);
@@ -307,6 +312,10 @@ pre {
     color: var(--INTERNAL-CODE-BLOCK-color);
 }
 
+table {
+    background-color: var(--INTERNAL-MAIN-BG-color);
+}
+
 div.featherlight .featherlight-content{
     background-color: var(--INTERNAL-MAIN-BG-color);
 }
@@ -415,4 +424,17 @@ pre .copy-to-clipboard-button:hover {
 #body .tab-nav-button.active {
     background-color: var(--INTERNAL-MAIN-BG-color) !important;
     border-bottom-color: var(--INTERNAL-MAIN-BG-color) !important;
+}
+
+.badge > * {
+    border-color: var(--VARIABLE-BOX-TEXT-color);
+}
+
+.badge > .badge-content {
+    background-color: var(--VARIABLE-BOX-color);
+    color: var(--VARIABLE-BOX-CAPTION-color);
+}
+
+.badge.cstyle.transparent{
+    --VARIABLE-BOX-BG-color: var(--INTERNAL-BOX-BG-color);
 }
