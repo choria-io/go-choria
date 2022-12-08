@@ -1,7 +1,3 @@
-/* this variant does not work well if we use fallback styles for IE11 so better
-   ignore this variant in IE completely */
-@supports not (-ms-high-contrast:none) {
-
 /* here in this showcase we use our own modified chroma syntax highlightning style;
    if you want to use a predefined style instead:
    - remove `markup.highlight.noClasses` from your config.toml
@@ -9,9 +5,14 @@
    - remove the following `@import` of the self-defined chroma stylesheet */
 @import "chroma-neon.css";
 
+/* this variant does not work well if we use fallback styles for IE11 so better
+   ignore this variant in IE completely */
+@supports not (-ms-high-contrast:none) {
+
 :root {
     --PRIMARY-color: #f300b2; /* brand primary color */
     --SECONDARY-color: #1c90f3; /* brand secondary color */
+    --ACCENT-color: #ffaa00; /* brand accent color, used for search highlights */
 
     --MAIN-TEXT-color: #e0e0e0; /* text color of content and h1 titles */
     --MAIN-LINK-HOVER-color: #4cabff; /* hovered link color of content */
@@ -56,7 +57,7 @@
     --BOX-BG-color: rgba( 20, 20, 20, 1 ); /* background color of colored boxes */
     --BOX-TEXT-color: initial; /* text color of colored box content */
 
-    /* optional base colors for colored boxes as in attachments and notice shortcode */
+    /* optional base colors for colored boxes as in attachments, badges, buttons and notice shortcode */
     --BOX-BLUE-color: rgba( 48, 117, 229, 1 ); /* background color of blue boxes */
     --BOX-BLUE-TEXT-color: var( --BOX-BLUE-color ); /* text color of blue boxes */
     --BOX-GREEN-color: rgba( 42, 178, 24, 1 ); /* background color of green boxes */
@@ -223,6 +224,7 @@ body .anchor {
     text-shadow: none;
 }
 
+body .badge,
 body .btn,
 body div.box {
     box-shadow:
@@ -232,6 +234,7 @@ body div.box {
         0 0  4px var(--VARIABLE-BOX-color);
 }
 
+body .badge > .badge-content,
 body .btn,
 body .btn > *,
 body div.box > .box-label {
@@ -242,10 +245,12 @@ body div.box > .box-label {
         0 0  4px var(--VARIABLE-BOX-CAPTION-color);
 }
 
+body .badge.cstyle:not(.transparent),
 body .btn.cstyle {
     --VARIABLE-BOX-TEXT-color: var(--VARIABLE-BOX-CAPTION-color);
 }
 
+body .badge.cstyle.transparent,
 body .btn.cstyle.transparent {
     --VARIABLE-BOX-BG-color: var(--INTERNAL-BOX-BG-color);
 }
