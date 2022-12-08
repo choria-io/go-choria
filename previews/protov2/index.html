@@ -1,0 +1,185 @@
+<!doctype html><html lang=en dir=ltr><head><meta charset=utf-8><meta name=viewport content="height=device-height,width=device-width,initial-scale=1,minimum-scale=1"><meta name=generator content="Hugo 0.98.0"><meta name=generator content="Relearn 5.7.0"><meta name=description content><meta name=author content="Choria Project"><title>V2 Protocol & Security :: Choria Server and Broker</title><link href=https://choria-io.github.io/go-choria/css/fontawesome-all.min.css?1670508675 rel=stylesheet media=print onload='this.media="all",this.onload=null'><noscript><link href=https://choria-io.github.io/go-choria/css/fontawesome-all.min.css?1670508675 rel=stylesheet></noscript><link href=https://choria-io.github.io/go-choria/css/featherlight.min.css?1670508675 rel=stylesheet media=print onload='this.media="all",this.onload=null'><noscript><link href=https://choria-io.github.io/go-choria/css/featherlight.min.css?1670508675 rel=stylesheet></noscript><link href=https://choria-io.github.io/go-choria/css/auto-complete.css?1670508675 rel=stylesheet media=print onload='this.media="all",this.onload=null'><noscript><link href=https://choria-io.github.io/go-choria/css/auto-complete.css?1670508675 rel=stylesheet></noscript><link href=https://choria-io.github.io/go-choria/css/perfect-scrollbar.min.css?1670508675 rel=stylesheet><link href=https://choria-io.github.io/go-choria/css/nucleus.css?1670508675 rel=stylesheet><link href=https://choria-io.github.io/go-choria/css/fonts.css?1670508675 rel=stylesheet media=print onload='this.media="all",this.onload=null'><noscript><link href=https://choria-io.github.io/go-choria/css/fonts.css?1670508675 rel=stylesheet></noscript><link href=https://choria-io.github.io/go-choria/css/theme.css?1670508675 rel=stylesheet><link href=https://choria-io.github.io/go-choria/css/theme-choria-relearn.css?1670508675 rel=stylesheet id=variant-style><link href=https://choria-io.github.io/go-choria/css/ie.css?1670508675 rel=stylesheet><link href=https://choria-io.github.io/go-choria/css/variant.css?1670508675 rel=stylesheet><link href=https://choria-io.github.io/go-choria/css/print.css?1670508675 rel=stylesheet media=print><script src=https://choria-io.github.io/go-choria/js/url.js?1670508675></script>
+<script src=https://choria-io.github.io/go-choria/js/variant.js?1670508675></script>
+<script>window.index_json_url="https://choria-io.github.io/go-choria/index.json";var root_url="https://choria-io.github.io/go-choria/",baseUriFull,baseUri=root_url.replace(/\/$/,'');window.T_Copy_to_clipboard="Copy to clipboard",window.T_Copied_to_clipboard="Copied to clipboard!",window.T_Copy_link_to_clipboard="Copy link to clipboard",window.T_Link_copied_to_clipboard="Copied link to clipboard!",window.T_No_results_found="No results found for \u0022{0}\u0022",window.T_N_results_found="{1} results found for \u0022{0}\u0022",baseUriFull="https://choria-io.github.io/go-choria/",window.variants&&variants.init(["choria-relearn"])</script><script src=https://choria-io.github.io/go-choria/js/jquery.min.js?1670508675 defer></script></head><body class="mobile-support html disableInlineCopyToClipboard" data-url=https://choria-io.github.io/go-choria/previews/protov2/index.html><div id=body class=default-animation><div id=sidebar-overlay></div><div id=toc-overlay></div><nav id=topbar class=highlightable dir=ltr><div><div class=navigation><span class="nav nav-next"><i class="fa fa-chevron-right fa-fw"></i></span></div><div class=navigation><a class="nav nav-prev" href=https://choria-io.github.io/go-choria/previews/index.html title="Tech Previews (&#129104;)"><i class="fas fa-chevron-left fa-fw"></i></a></div><div id=breadcrumbs><span id=sidebar-toggle-span><a href=# id=sidebar-toggle title="Menu (CTRL+ALT+n)"><i class="fas fa-bars fa-fw"></i></a></span>
+<span id=toc-menu title="Table of Contents (CTRL+ALT+t)"><i class="fas fa-list-alt fa-fw"></i></span><ol class=links itemscope itemtype=http://schema.org/BreadcrumbList><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><a itemprop=item href=https://choria-io.github.io/go-choria/index.html><span itemprop=name>Choria Server and Broker</span></a><meta itemprop=position content="1">></li><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><a itemprop=item href=https://choria-io.github.io/go-choria/previews/index.html><span itemprop=name>Tech Previews</span></a><meta itemprop=position content="2">></li><li itemscope itemtype=https://schema.org/ListItem itemprop=itemListElement><span itemprop=name>V2 Protocol & Security</span><meta itemprop=position content="3"></li></ol></div><div class="default-animation progress"><div class=toc-wrapper dir=ltr><nav id=TableOfContents><ul><li><ul><li><a href=#requirements>Requirements</a></li><li><a href=#security-credentials>Security Credentials</a></li><li><a href=#decentralized-deployment>Decentralized deployment</a></li></ul></li></ul></nav></div></div></div></nav><main id=body-inner class="highlightable default" tabindex=-1><div class=flex-block-wrapper><div id=head-tags></div><article class=default><h1 id=v2-protocol-security>V2 Protocol & Security</h1><p>This is a guide for early adopters who wish to test and study the <a href=https://choria-io.github.io/go-choria/adr/001/>Version 2 Protocol and Security</a> project.</p><div class="box notices cstyle warning"><div class=box-label><i class="fa-fw fas fa-exclamation-triangle"></i> Warning</div><div class=box-content><p>This is a <em>Hard Mode</em> guide that does everything manually and with no Configuration Management.</p></div></div><h3 id=requirements>Requirements</h3><ul><li>Choria Nightly</li><li><a href=https://choria-io.github.io/aaasvc/>Choria AAA Service</a> Nightly</li><li><a href=https://choria-io.github.io/provisioner/>Choria Provisioner</a> Nightly</li><li>Optionally Hashicorp Vault</li><li>Docker on Intel CPU</li></ul><h3 id=security-credentials>Security Credentials</h3><p>Security is by means of a ed25519 key that signs JWTs, some JWTs form a chain and can sign others. Regardless of the signer verification can be done using the public key associated with the Organization Issuer.</p><p><a href=https://choria-io.github.io/go-choria/org-issuers.png data-featherlight=image><img src=https://choria-io.github.io/go-choria/org-issuers.png alt="Chain Issuers" style=height:auto;width:auto loading=lazy></a></p><p>The Organization Issuer can be kept offline with Provisioning and AAA being delegated authorities capable of signing servers and clients but these are optional components - the Organization Issuer can directly sign Clients and Servers allowing them to operate without the other central components.</p><p>We will cover two scenarios, the first case with no Choria Provisioner or AAA integrated demonstrating that a decentralised deployment model is supported and then add Choria Provisioner and Choria AAA Service to bring centralization and configuration management without using systems like Puppet.</p><h3 id=decentralized-deployment>Decentralized deployment</h3><p>In this model we will deploy a system that resembles the basic architecture diagram below</p><p><a href=https://choria.io/docs/basic_client_server_overview.png data-featherlight=image><img src=https://choria.io/docs/basic_client_server_overview.png alt=Architecture style=height:auto;width:auto loading=lazy></a></p><p>We have only the Brokers as central architecture with no Central AAA or Provisioning.</p><p>We will not use mTLS in this case.</p><h4 id=docker>Docker</h4><p>We will need a Docker network and 3 instances - broker, server, client and issuer.</p><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>$ docker network create choria_v2proto
+$ docker pull choria/choria:nightly
+$ docker run -ti --rm --entrypoint bash \
+      --network choria_v2proto \
+      --hostname broker.example.net \
+      choria/choria:nightly -l
+$ docker run -ti --rm --entrypoint bash \
+      --network choria_v2proto 
+      --hostname server.example.net \
+      choria/choria:nightly -l
+$ docker run -ti --rm --entrypoint bash \
+      --network choria_v2proto \
+      --hostname client.example.net \
+      choria/choria:nightly -l
+$ docker run -ti --rm --entrypoint bash \
+      --hostname issuer.example.net choria/choria:nightly -l
+</code></pre><p>The issuer is not needed per-se but will demonstrate that the Issuer credentials never need to near the managed network.</p><h4 id=keys-and-jwts>Keys and JWTs</h4><p>In this Scenario we need:</p><ul><li>An Organization Issuer keypair</li><li>A client JWT for each user</li><li>A server JWT for each server</li><li>x509 certificate for the broker TLS port</li></ul><p>In this scenario you are responsible for creating and distributing the keys and tokens.</p><h5 id=organization-issuer>Organization Issuer</h5><p>The Organization Issuer is the root of the Trust Chain and is a ed25519 key, let&rsquo;s create the keypair on the issuer node:</p><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>[choria@issuer ~]$ mkdir -p development/issuer
+[choria@issuer ~]$ choria jwt keys development/issuer/private.key development/issuer/public.key
+Public Key: b3989a299278750427b00213693c2ca02146476a361667682446230842836da8
+
+Ed25519 seed saved in development/issuer/private.key
+</code></pre><p>This key should be kept private and ideally in a Hashicorp Vault server.</p><h5 id=broker-jwt-and-config>Broker JWT and Config</h5><p>Every broker needs a ed25519 Keypair and a signed JWT.</p><p>The broker process is identical to the server process except change <code>server.example.net</code> to <code>broker.example.net</code> in identities.</p><p>The broker need x509 certificates to open the TLS network port, here we just self-sign one but you can get those from anywhere.</p><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>[choria@broker ~]$ openssl genrsa -out /etc/choria/broker-tls.key 2048
+Generating RSA private key, 2048 bit long modulus (2 primes)
+..+++++
+....................................................................................................+++++
+e is 65537 (0x010001)
+[choria@broker ~]$ openssl req -new -x509 -sha256 -key /etc/choria/broker-tls.key \
+   -out /etc/choria/broker-tls.cert -days 365 -subj &#34;/O=Choria.io/CN=broker.example.net&#34;
+</code></pre><p>With all in place it should look like this:</p><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>[choria@broker ~]$ find /etc/choria/
+/etc/choria/
+/etc/choria/broker.conf
+/etc/choria/broker-tls.key
+/etc/choria/broker-tls.cert
+/etc/choria/private.key
+/etc/choria/public.key
+/etc/choria/broker.jwt
+</code></pre><p>We create the broker configuration in <code>/etc/choria/broker.conf</code> and start it, you need to change your issuer here:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=display:flex><span><span style=color:#75715e># The name of the organization to configure, for now only supports choria</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.issuer.names</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>choria</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># The public key from the issuer</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.issuer.choria.public</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>b3989a299278750427b00213693c2ca02146476a361667682446230842836da8</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.network.system.password</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>sYst3m</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.middleware_hosts</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>nats://broker.example.net:4222</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.stats_port</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>8222</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.broker_network</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>true</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.network.client_port</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>4222</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.network.peer_port</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>5222</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.network.stream.store</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>/data</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.network.system.user</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>system</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>loglevel</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>info</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.use_srv</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>false</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.provider</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>choria</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.choria.certificate</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>/etc/choria/broker-tls.cert</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.choria.key</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>/etc/choria/broker-tls.key</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.choria.token_file</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>/etc/choria/broker.jwt</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.choria.seed_file</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>/etc/choria/private.key</span>
+</span></span></code></pre></div><p>Let&rsquo;s start the broker, showing the key lines from the output here:</p><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>$ choria broker run --config /etc/choria/broker.conf
+INFO[0000] Choria Broker version 0.99.0.20221201 starting with config /etc/choria/broker.conf
+INFO[0000] Starting Network Broker
+WARN[0000] Allowing unverified TLS connections for Organization Issuer issued connections  component=network
+WARN[0000] Loaded Organization Issuer choria with public key b3989a299278750427b00213693c2ca02146476a361667682446230842836da8  component=network
+INFO[0000] Listening for client connections on [::]:4222  component=network_broker
+...
+</code></pre><h5 id=server-jwt>Server JWT</h5><p>Every server needs a ed25519 Keypair and a signed JWT.</p><p>First we create a keypair on the server, the private key never leaves the server:</p><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>[choria@server ~]$ choria jwt keys /etc/choria/private.key /etc/choria/public.key
+Public Key: 5ee1e2d1776ecc35716cd6d651a259fe0215d480a6ad2c0c55a395634a3ab717
+
+Ed25519 seed saved in /etc/choria/private.key
+</code></pre><p>Pass the Public Key to the Organization Issuer who creates a JWT:</p><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>[choria@issuer ~]$ mkdir -p development/server/server.example.net
+[choria@issuer ~]$ choria jwt server development/server/server.example.net/token.jwt \
+server.example.net \
+5ee1e2d1776ecc35716cd6d651a259fe0215d480a6ad2c0c55a395634a3ab717 \
+development/issuer/private.key \
+--collectives=choria
+</code></pre><p>With access to just the Server public key the Organization Issuer can create a server token, pass this back to the server who stores it in <code>/etc/choria/server.jwt</code>.</p><p>Note that for version 2 protocol the default collective is <code>["choria"]</code>.</p><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>[choria@issuer ~]$ choria jwt development/server/server.example.net/token.jwt development/issuer/public.key
+Validated Server Token development/server/server.example.net/token.jwt
+
+             Identity: server.example.net
+           Expires At: 2023-12-08 13:03:23 +0000 UTC (364d23h59m41s)
+          Collectives: choria
+           Public Key: 5ee1e2d1776ecc35716cd6d651a259fe0215d480a6ad2c0c55a395634a3ab717
+    Organization Unit: choria
+   Private Network ID: 77e64440ac709c0836487e5b77334e5b
+
+   Broker Permissions:
+
+          No server specific permissions granted
+</code></pre><p>We pass the JWT back to the server and save in <code>/etc/choria/server.jwt</code>.</p><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>[choria@server ~]$ find /etc/choria/
+/etc/choria/
+/etc/choria/private.key
+/etc/choria/public.key
+/etc/choria/server.jwt
+</code></pre><p>Now we can configure and start the server, place this in <code>/etc/choria/server.conf</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=display:flex><span><span style=color:#75715e># The name of the organization to configure, for now only supports choria</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.issuer.names</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>choria</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># The public key from the issuer</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.issuer.choria.public</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>b3989a299278750427b00213693c2ca02146476a361667682446230842836da8</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#75715e># We enable authorization and set it to trust the JWT tokens policy</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>rpcauthorization</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>1</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>rpcauthprovider</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>aaasvc</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.provider</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>choria</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.choria.token_file</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>/etc/choria/server.jwt</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.choria.seed_file</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>/etc/choria/private.key</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.middleware_hosts</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>nats://broker.example.net:4222</span>
+</span></span></code></pre></div><p>And finally let&rsquo;s run the server, showing key log lines only:</p><div class="box notices cstyle tip"><div class=box-label><i class="fa-fw fas fa-lightbulb"></i> Tip</div><div class=box-content><p>Servers usually run as root, here as the <code>choria</code> user as it&rsquo;s in the container</p></div></div><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>[choria@server ~]$ choria server run --config /etc/choria/server.conf
+INFO[0000] Choria Server version 0.99.0.20221201 starting with config /etc/choria/server.conf using protocol version 2
+INFO[0000] Setting JWT token and unique reply queues based on JWT for &#34;server.example.net&#34;  component=server connection=server.example.net identity=server.example.net
+INFO[0000] Setting custom inbox prefix based on unique ID to choria.reply.77e64440ac709c0836487e5b77334e5b  component=server connection=server.example.net identity=server.example.net
+</code></pre><h6 id=client-jwt>Client JWT</h6><p>Every client needs a ed25519 keypair and a signed JWT.</p><p>We will create a client that has access to Choria Streams and the ability to manage the fleet without any AAA Server.</p><p>The client will create their own keypair, so we run that in the client node:</p><pre tabindex=0><code class=language-noghighlight data-lang=noghighlight>[choria@client ~]$ mkdir -p ~/.config/choria/
+[choria@client ~]$ choria jwt keys ~/.config/choria/private.key ~/.config/choria/public.key
+Public Key: 4bbfddb9f70f4b39f5b13bac8e83a9a31c3af49e388da86a666f8615101bc818
+
+Ed25519 seed saved in /home/choria/.config/choria/private.key
+</code></pre><p>This client <code>private.key</code> should be kept private and not shared, the JWT can be created with knowledge of the public key only.</p><p>The client pass their Public Key to the Organization Issuer who creates a JWT on the Issuer node:</p><div class="box notices cstyle tip"><div class=box-label><i class="fa-fw fas fa-lightbulb"></i> Tip</div><div class=box-content><p>Here we use <code>choria</code> as the identity, this would match the unix user name</p></div></div><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>[choria@issuer ~]$ mkdir -p development/client/choria
+[choria@issuer ~]$ choria jwt client development/client/choria/token.jwt choria development/issuer/private.key \
+ --public-key 4bbfddb9f70f4b39f5b13bac8e83a9a31c3af49e388da86a666f8615101bc818 \
+ --stream-admin \
+ --event-viewer \
+ --elections-user \
+ --service \
+ --fleet-management \
+ --agents &#39;*&#39; \
+ --validity 1y
+Saved token to development/client/choria/token.jwt, use &#39;choria jwt view development/client/choria/token.jwt&#39; to view it
+</code></pre><p>With access to the Issuer private key, but not the user private key, we can create a JWT for the user. Since we have no AAA Service we mark this user as a <code>service</code> which allows them to have a long token validity. We set a policy allowing all agent access, in real life this would be an Open Policy Agent policy.</p><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>[choria@issuer ~]$ choria jwt development/client/choria/token.jwt development/issuer/public.key
+Validated Client Identification Token development/client/choria/token.jwt
+
+          Caller ID: choria
+  Organization Unit: choria
+     Allowed Agents: *
+         Public Key: 4bbfddb9f70f4b39f5b13bac8e83a9a31c3af49e388da86a666f8615101bc818
+ Private Network ID: 0a63c70a8817f5ef4d19d055ce6513f1
+         Expires At: 2023-12-08 12:54:07 +0000 UTC (364d23h59m19s)
+
+ Client Permissions:
+
+      Can manage Choria fleet nodes
+      Can use Leader Elections
+      Can view Lifecycle and Autonomous Agent events
+      Can administer Choria Streams
+      Can access the Broker system account
+      Can have an extended token lifetime
+</code></pre><p>Pass the JWT back to the client who saves it in <code>~/.config/choria/token.jwt</code>.</p><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>[choria@client ~]$ find ~/.config
+/home/choria/.config
+/home/choria/.config/choria
+/home/choria/.config/choria/private.key
+/home/choria/.config/choria/public.key
+/home/choria/.config/choria/token.jwt
+</code></pre><p>We create a system-wide client configuration in <code>/etc/choria/client.conf</code>:</p><div class=highlight><pre tabindex=0 style=color:#f8f8f2;background-color:#272822;-moz-tab-size:4;-o-tab-size:4;tab-size:4><code class=language-ini data-lang=ini><span style=display:flex><span><span style=color:#a6e22e>loglevel</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>warn</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.discovery.broadcast.windowed_timeout</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>true</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.middleware_hosts</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>broker.example.net:4222</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.use_srv</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>false</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.network.system.user</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>system</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.choria.network.system.password</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>sYst3m</span>
+</span></span><span style=display:flex><span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.provider</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>choria</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.choria.token_file</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>~/.config/choria/token.jwt</span>
+</span></span><span style=display:flex><span><span style=color:#a6e22e>plugin.security.choria.seed_file</span> <span style=color:#f92672>=</span> <span style=color:#e6db74>~/.config/choria/private.key</span>
+</span></span></code></pre></div><p>We can now test the client:</p><pre tabindex=0><code class=language-nohighlight data-lang=nohighlight>[choria@client ~]$ choria ping
+server.example.net                       time=3 ms
+
+---- ping statistics ----
+1 replies max: 4ms min: 4ms avg: 4ms overhead: 12ms
+</code></pre><p>Other commands like <code>choria req choria_util info</code> should work demonstrating authorization works and <code>choria broker server list</code> should list the broker indicating Broker System Account access works.</p><footer class=footline></footer></article></div></main></div><aside id=sidebar class=default-animation dir=ltr><div id=header-wrapper class=default-animation><div id=header class=default-animation><img src=https://choria-io.github.io/go-choria/logo.png></div><div class="searchbox default-animation"><i class="fas fa-search" title="Search (CTRL+ALT+f)"></i>
+<label class=a11y-only for=search-by>Search</label>
+<input data-search-input id=search-by name=search-by class=search-by type=search placeholder=Search...>
+<span data-search-clear><i class="fas fa-times"></i></span></div><script>var contentLangs=["en"]</script><script src=https://choria-io.github.io/go-choria/js/auto-complete.js?1670508675 defer></script>
+<script src=https://choria-io.github.io/go-choria/js/lunr.min.js?1670508675 defer></script>
+<script src=https://choria-io.github.io/go-choria/js/lunr.stemmer.support.min.js?1670508675 defer></script>
+<script src=https://choria-io.github.io/go-choria/js/lunr.multi.min.js?1670508675 defer></script>
+<script src=https://choria-io.github.io/go-choria/js/lunr.en.min.js?1670508675 defer></script>
+<script src=https://choria-io.github.io/go-choria/js/search.js?1670508675 defer></script></div><div id=content-wrapper class=highlightable><ul class=topics><li data-nav-id=/broker/index.html class=dd-item><a href=https://choria-io.github.io/go-choria/broker/index.html><b>1. </b>Choria Broker</a><ul id=subsections-dfbddd42a1cd83043778d347f4552a1e><li data-nav-id=/broker/monitoring/index.html class=dd-item><a href=https://choria-io.github.io/go-choria/broker/monitoring/index.html><b>1. </b>Monitoring</a></li></ul></li><li data-nav-id=/server/index.html class=dd-item><a href=https://choria-io.github.io/go-choria/server/index.html><b>2. </b>Choria Server</a><ul id=subsections-4c6fcb62c73c779f9a17e7db39822c85><li data-nav-id=/server/monitoring/index.html class=dd-item><a href=https://choria-io.github.io/go-choria/server/monitoring/index.html><b>1. </b>Monitoring</a></li></ul></li><li data-nav-id=/installation/index.html class=dd-item><a href=https://choria-io.github.io/go-choria/installation/index.html><b>3. </b>Installation</a></li><li data-nav-id=/configuration/index.html class=dd-item><a href=https://choria-io.github.io/go-choria/configuration/index.html><b>4. </b>Config Reference</a></li><li data-nav-id=/adr/index.html class=dd-item><a href=https://choria-io.github.io/go-choria/adr/index.html><b>5. </b>Architecture</a><ul id=subsections-55dd4997ce122937146cb3b0f5ba2d2d><li data-nav-id=/adr/001/index.html class=dd-item><a href=https://choria-io.github.io/go-choria/adr/001/index.html><b>1. </b>V2 Network Protocol</a></li></ul></li><li data-nav-id=/packaging/index.html class=dd-item><a href=https://choria-io.github.io/go-choria/packaging/index.html><b>6. </b>Custom Packaging</a></li><li data-nav-id=/previews/index.html class="dd-item parent"><a href=https://choria-io.github.io/go-choria/previews/index.html><b>7. </b>Tech Previews</a><ul id=subsections-c322ebf88a778ba74af3e7821cdcadaa><li data-nav-id=/previews/protov2/index.html class="dd-item active"><a href=https://choria-io.github.io/go-choria/previews/protov2/index.html><b>1. </b>V2 Protocol & Security</a></li></ul></li></ul><div id=shortcuts><div class=nav-title>More</div><ul><li><a class=padding href=https://github.com/choria-io/go-choria><i class="fab fa-fw fa-github"></i> GitHub</a></li><li><a class=padding href=https://github.com/choria-io/general/discussions><i class="far fa-comments"></i> Discussions</a></li><li><a class=padding href=https://github.com/choria-io/go-choria/issues><i class="far fa-life-ring"></i> Issues</a></li><li><a class=padding href=https://slack.puppet.com/><i class="fab fa-slack"></i> #choria</a></li></ul></div><div class="footermargin footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showFooter"></div><hr class="default-animation footerLangSwitch footerVariantSwitch footerVisitedLinks footerFooter showFooter"><div id=prefooter class="footerLangSwitch footerVariantSwitch footerVisitedLinks"><ul><li id=select-language-container class=footerLangSwitch><div class="padding select-container"><i class="fas fa-language fa-fw"></i>
+<span>&nbsp;</span><div class=select-style><label class=a11y-only for=select-language>Language</label>
+<select id=select-language onchange="location=baseUri+this.value"></select></div><div class=select-clear></div></div></li><li id=select-variant-container class=footerVariantSwitch><div class="padding select-container"><i class="fas fa-paint-brush fa-fw"></i>
+<span>&nbsp;</span><div class=select-style><label class=a11y-only for=select-variant>Theme</label>
+<select id=select-variant onchange=window.variants&&variants.changeVariant(this.value)><option id=choria-relearn value=choria-relearn selected>Choria Relearn</option></select></div><div class=select-clear></div></div><script>window.variants&&variants.markSelectedVariant()</script></li><li class=footerVisitedLinks><button class=padding onclick=clearHistory()><i class="fas fa-history fa-fw"></i> Clear History</button></li></ul></div><div id=footer class="footerFooter showFooter"><style>#footer{font-size:13px;height:100px;margin-left:auto;margin-right:auto;padding:2rem 1rem;text-align:center;min-width:230px;max-width:300px}#footer p{margin:0}</style><p>Hosted at <a href=https://github.com/choria-io>GitHub</a> by <a href=https://www.devco.net/>R.I. Pienaar</a></p></div></div></aside><script src=https://choria-io.github.io/go-choria/js/clipboard.min.js?1670508675 defer></script>
+<script src=https://choria-io.github.io/go-choria/js/perfect-scrollbar.min.js?1670508675 defer></script>
+<script src=https://choria-io.github.io/go-choria/js/featherlight.min.js?1670508675 defer></script>
+<script src=https://choria-io.github.io/go-choria/js/theme.js?1670508675 defer></script></body></html>
