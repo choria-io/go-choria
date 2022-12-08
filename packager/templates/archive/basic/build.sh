@@ -16,7 +16,6 @@ then
   EXT=".exe"
 fi
 
-cp -v "${SOURCE_DIR}/CONFIGURATION.md" "${DESTDIR}/"
 cp -v "/tmp/build/{{cpkg_name}}-{{cpkg_version}}/{{cpkg_binary}}" "${DESTDIR}/choria${EXT}"
 cd /tmp/choria
 
