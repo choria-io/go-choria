@@ -273,9 +273,14 @@ func (s *Server) setupTLS() (err error) {
 		return err
 	}
 
-	// the auth layer does various checks for tls as we have a varied tls/non tls setup to handle pipe connections
-	// and provisioning connections etc, so this is safe.
-	tlsc.ClientAuth = tls.VerifyClientCertIfGiven
+	if tlsc.ClientCAs == nil {
+		// if we have no CA configured we cant verify clients
+		tlsc.ClientAuth = tls.NoClientCert
+	} else {
+		// the auth layer does various checks for tls as we have a varied tls/non tls setup to handle pipe connections
+		// and provisioning connections etc, so this is safe.
+		tlsc.ClientAuth = tls.VerifyClientCertIfGiven
+	}
 
 	switch {
 	case s.config.DisableTLSVerify:
