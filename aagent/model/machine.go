@@ -38,6 +38,7 @@ type Machine interface {
 	DataPut(key string, val any) error
 	DataGet(key string) (any, bool)
 	DataDelete(key string) error
+	SignerKey() string
 	Debugf(name string, format string, args ...any)
 	Infof(name string, format string, args ...any)
 	Warnf(name string, format string, args ...any)

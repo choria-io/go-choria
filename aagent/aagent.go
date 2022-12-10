@@ -93,6 +93,7 @@ func (a *AAgent) configureMachine(aa *machine.Machine) {
 	aa.SetOverridesFile(a.fw.ScoutOverridesPath())
 	aa.SetConnection(a.fw.Connector())
 	aa.SetChoriaStatusFile(a.fw.ServerStatusFile())
+	aa.SetSignerKey(a.fw.MachineSignerKey())
 }
 
 func (a *AAgent) loadMachine(ctx context.Context, path string) (err error) {

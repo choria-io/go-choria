@@ -135,6 +135,11 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		}
 	}
 
+	// Loads the public key from plugin.choria.machine.signing_key when set, overriding the value set here
+	if pk := machine.SignerKey(); pk != "" {
+		machines.properties.PublicKey = pk
+	}
+
 	return machines, nil
 }
 

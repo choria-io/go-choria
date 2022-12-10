@@ -22,4 +22,5 @@ type ChoriaProvider interface {
 	MainCollective() string
 	Connector() inter.Connector
 	Facts() json.RawMessage
+	MachineSignerKey() string
 }

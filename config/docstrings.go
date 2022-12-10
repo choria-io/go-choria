@@ -131,6 +131,7 @@ var docStrings = map[string]string{
 	"plugin.security.pkcs11.driver_file":                       "When using the pkcs11 security provider, the path to the PCS11 driver file",
 	"plugin.security.pkcs11.slot":                              "When using the pkcs11 security provider, the slot to use in the device",
 	"plugin.choria.machine.store":                              "Directory where Autonomous Agents are stored",
+	"plugin.choria.machine.signing_key":                        "Public key used to sign data for watchers like machines watcher. Will override the value compiled in or in the watcher definitions if set here. This is primarily to allow development environments to use different private keys.",
 	"plugin.choria.status_file_path":                           "Path to a JSON file to write server health information to regularly",
 	"plugin.choria.status_update_interval":                     "How frequently to write to the status_file_path",
 	"plugin.choria.prometheus_textfile_directory":              "Directory where Prometheus Node Exporter textfile collector reads data",

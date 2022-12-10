@@ -60,6 +60,11 @@ func (srv *Instance) PublishRaw(target string, data []byte) error {
 	return srv.connector.PublishRaw(target, data)
 }
 
+// MachineSignerKey is a key used to sign autonomous agent manifest for watchers like 'machines'
+func (srv *Instance) MachineSignerKey() string {
+	return srv.cfg.Choria.MachinesSignerPublicKey
+}
+
 // Connector is the raw NATS connection, use with care, major vendor lock here - but needed for JetStream
 func (srv *Instance) Connector() inter.Connector {
 	return srv.connector

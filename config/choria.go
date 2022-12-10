@@ -138,6 +138,8 @@ type ChoriaPluginConfig struct {
 	PKCS11Slot       int    `confkey:"plugin.security.pkcs11.slot" url:"https://choria.io/blog/post/2019/09/09/pkcs11/"`                           // When using the pkcs11 security provider, the slot to use in the device
 
 	MachineSourceDir string `confkey:"plugin.choria.machine.store" url:"https://choria.io/docs/autoagents/"` // Directory where Autonomous Agents are stored
+	// Public key used to sign data for watchers like machines watcher. Will override the value compiled in or in the watcher definitions if set here. This is primarily to allow development environments to use different private keys.
+	MachinesSignerPublicKey string `confkey:"plugin.choria.machine.signing_key"`
 
 	StatusFilePath               string   `confkey:"plugin.choria.status_file_path" type:"path_string"`                              // Path to a JSON file to write server health information to regularly
 	StatusUpdateSeconds          int      `confkey:"plugin.choria.status_update_interval" default:"30"`                              // How frequently to write to the status_file_path

@@ -65,6 +65,7 @@ type Machine struct {
 	overridesFile    string
 	choriaStatusFile string
 	mainCollective   string
+	signerKey        string
 	choriaStatusFreq int
 	startTime        time.Time
 
@@ -286,6 +287,22 @@ func (m *Machine) SetMainCollective(collective string) {
 	defer m.Unlock()
 
 	m.mainCollective = collective
+}
+
+// SetSignerKey sets the signer key configured in config file that can override the compiled in one
+func (m *Machine) SetSignerKey(pk string) {
+	m.Lock()
+	defer m.Unlock()
+
+	m.signerKey = pk
+}
+
+// SignerKey is a config setable signer key that will override the one that is compiled in
+func (m *Machine) SignerKey() string {
+	m.Lock()
+	defer m.Unlock()
+
+	return m.signerKey
 }
 
 // SetChoriaStatusFile sets the path and write frequency of the choria status file
