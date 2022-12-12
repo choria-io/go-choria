@@ -228,7 +228,7 @@ func ParseServerToken(token string, pk any) (*ServerClaims, error) {
 	return claims, nil
 }
 
-// ParseServerTokenWithKeyfile parses token and verifies it with the RSA Public key in pkFile, does not support ed25519
+// ParseServerTokenWithKeyfile parses token and verifies it with the RSA Public key or ed25519 public key in pkFile
 func ParseServerTokenWithKeyfile(token string, pkFile string) (*ServerClaims, error) {
 	if pkFile == "" {
 		return nil, fmt.Errorf("invalid public key file")

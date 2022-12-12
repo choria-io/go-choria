@@ -52,7 +52,7 @@ func (cl *jWTCreateClientCommand) Setup() (err error) {
 		cl.cmd = jwt.Cmd().Command("client", "Create a Client JWT token").Alias("c")
 		cl.cmd.Arg("file", "The JWT file to act on").Required().StringVar(&cl.file)
 		cl.cmd.Arg("identity", "The Caller ID for this user").Required().StringVar(&cl.identity)
-		cl.cmd.Arg("signing-key", "Path to a private key used to sign the JWT").Required().ExistingFileVar(&cl.signingKey)
+		cl.cmd.Arg("signing-key", "Path to a private key used to sign the JWT").Required().StringVar(&cl.signingKey)
 		cl.cmd.Flag("agents", "Allow the user to access certain agents").StringsVar(&cl.agents)
 		cl.cmd.Flag("org", "Adds the user to a specific organization").Default("choria").StringVar(&cl.org)
 		cl.cmd.Flag("opa-file", "Path to a file holding a Open Policy Agent Policy for this user").ExistingFileVar(&cl.opaPolicyFile)
@@ -74,7 +74,6 @@ func (cl *jWTCreateClientCommand) Setup() (err error) {
 		cl.cmd.Flag("issuer", "Allow this user to sign other users in a chain of trust").UnNegatableBoolVar(&cl.chain)
 		cl.cmd.Flag("server-provisioner", "Allows the client to provision servers").UnNegatableBoolVar(&cl.serverProvisioner)
 		cl.cmd.Flag("vault", "Use Hashicorp Vault to sign the JWT").UnNegatableBoolVar(&cl.useVault)
-
 	}
 
 	return nil

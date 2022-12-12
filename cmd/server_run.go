@@ -170,7 +170,9 @@ func (r *serverRunCommand) shouldProvisionTokenAndSeed(tokenFile string, seedFil
 }
 
 func (r *serverRunCommand) shouldProvision(cfg *config.Config) bool {
-	prov := bi.ProvisionDefault()
+	if !cfg.InitiatedByServer || (bi.ProvisionBrokerURLs() == "" && bi.ProvisionJWTFile() == "") {
+		return false
+	}
 
 	// we want to make sure we re-provision if ever the seed and jwt isn't aligned
 	if cfg.Choria.ServerAnonTLS && cfg.Choria.ServerTokenSeedFile != "" && cfg.Choria.ServerTokenFile != "" {
@@ -193,7 +195,7 @@ func (r *serverRunCommand) shouldProvision(cfg *config.Config) bool {
 		log.Warnf("plugin.choria.server.provision is true, reprovisioning")
 	}
 
-	return prov
+	return bi.ProvisionDefault()
 }
 
 func (r *serverRunCommand) provisionConfig(f string) (*config.Config, error) {

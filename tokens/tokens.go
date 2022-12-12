@@ -285,7 +285,12 @@ func SaveAndSignTokenWithVault(ctx context.Context, claims jwt.Claims, key strin
 		return fmt.Errorf("invalid signature, no vault:v1 prefix")
 	}
 
-	signed := fmt.Sprintf("%s.%s", ss, strings.TrimPrefix(sigs, vaultSigPrefix))
+	signature, err := base64.StdEncoding.DecodeString(strings.TrimPrefix(sigs, vaultSigPrefix))
+	if err != nil {
+		return fmt.Errorf("could not decode vault response: %w", err)
+	}
+
+	signed := fmt.Sprintf("%s.%s", ss, strings.TrimRight(base64.RawURLEncoding.EncodeToString(signature), "="))
 
 	return os.WriteFile(outFile, []byte(signed), perm)
 }
