@@ -23,7 +23,6 @@ import (
 )
 
 type ProtocolConstructor interface {
-	RequestProtocol() protocol.ProtocolVersion
 	NewMessage(payload []byte, agent string, collective string, msgType string, request Message) (msg Message, err error)
 	NewMessageFromRequest(req protocol.Request, replyto string) (Message, error)
 	NewReply(request protocol.Request) (reply protocol.Reply, err error)
@@ -46,6 +45,7 @@ type ProtocolConstructor interface {
 	NewTransportForSecureRequest(request protocol.SecureRequest) (message protocol.TransportMessage, err error)
 	NewTransportFromJSON(data []byte) (message protocol.TransportMessage, err error)
 	NewTransportMessage(version protocol.ProtocolVersion) (message protocol.TransportMessage, err error)
+	RequestProtocol() protocol.ProtocolVersion
 }
 
 type Framework interface {
@@ -70,8 +70,6 @@ type Framework interface {
 	FederationMiddlewareServers() (servers srvcache.Servers, err error)
 	Getuid() int
 	GovernorSubject(name string) string
-	NewGovernor(ctx context.Context, name string, conn Connector, opts ...governor.Option) (governor.Governor, Connector, error)
-	NewGovernorManager(ctx context.Context, name string, limit uint64, maxAge time.Duration, replicas uint, update bool, conn Connector, opts ...governor.Option) (governor.Manager, Connector, error)
 	HTTPClient(secure bool) (*http.Client, error)
 	HasCollective(collective string) bool
 	IsFederated() (result bool)
@@ -82,6 +80,8 @@ type Framework interface {
 	NetworkBrokerPeers() (servers srvcache.Servers, err error)
 	NewElection(ctx context.Context, conn Connector, name string, imported bool, opts ...election.Option) (Election, error)
 	NewElectionWithConn(ctx context.Context, conn Connector, name string, imported bool, opts ...election.Option) (Election, Connector, error)
+	NewGovernor(ctx context.Context, name string, conn Connector, opts ...governor.Option) (governor.Governor, Connector, error)
+	NewGovernorManager(ctx context.Context, name string, limit uint64, maxAge time.Duration, replicas uint, update bool, conn Connector, opts ...governor.Option) (governor.Manager, Connector, error)
 	OverrideCertname() string
 	PQLQuery(query string) ([]byte, error)
 	PQLQueryCertNames(query string) ([]string, error)
@@ -97,9 +97,9 @@ type Framework interface {
 	SetLogWriter(out io.Writer)
 	SetLogger(logger *logrus.Logger)
 	SetupLogging(debug bool) (err error)
+	SignerSeedFile() (f string, err error)
 	SignerToken() (token string, exp time.Time, err error)
 	SignerTokenFile() (f string, err error)
-	SignerSeedFile() (f string, err error)
 	SupportsProvisioning() bool
 	TLSConfig() (*tls.Config, error)
 	TrySrvLookup(names []string, defaultSrv srvcache.Server) (srvcache.Server, error)

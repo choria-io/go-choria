@@ -144,6 +144,7 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 		jsm.DiscardNew(),
 		jsm.DenyDelete(),
 		jsm.AllowRollup(),
+		jsm.AllowDirect(),
 		jsm.MaxMessagesPerSubject(1))
 	if err != nil {
 		return err
