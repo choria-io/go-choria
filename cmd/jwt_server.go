@@ -47,7 +47,7 @@ func (s *jWTCreateServerCommand) Setup() (err error) {
 		s.cmd.Arg("file", "The JWT file to act on").Required().StringVar(&s.file)
 		s.cmd.Arg("identity", "The identity for this server").Required().StringVar(&s.identity)
 		s.cmd.Arg("public-key", "Ed25519 public key to embed in the token").Required().StringVar(&s.pk)
-		s.cmd.Arg("signing-key", "Path to a private key used to sign the JWT").Required().ExistingFileVar(&s.signingKey)
+		s.cmd.Arg("signing-key", "Path to a private key used to sign the JWT").Required().StringVar(&s.signingKey)
 		s.cmd.Flag("collectives", "Allow the server to access certain collectives").Default(collective).StringsVar(&s.collectives)
 		s.cmd.Flag("org", "Adds the user to a specific organization").Default("choria").StringVar(&s.org)
 		s.cmd.Flag("subjects", "Additional subjects this node may publish to").StringsVar(&s.subjects)

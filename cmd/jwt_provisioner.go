@@ -56,7 +56,8 @@ func (p *jWTCreateProvCommand) Setup() (err error) {
 		p.cmd.Flag("org", "Adds the node to a specific organization for trust validation").Default("choria").StringVar(&p.org)
 		p.cmd.Flag("vault", "Use Hashicorp Vault to sign the JWT").UnNegatableBoolVar(&p.useVault)
 		p.cmd.Flag("protocol-v2", "Use version 2 network protocol and security").UnNegatableBoolVar(&p.v2)
-		p.cmd.Flag("update", "Allow over the air server updates from the Choria Provisioner").UnNegatableBoolVar(&p.allowUpdate)
+		p.cmd.Flag("update", "Allow over the air server upgrades from the Choria Provisioner").Hidden().UnNegatableBoolVar(&p.allowUpdate)
+		p.cmd.Flag("upgrade", "Allow over the air server upgrades from the Choria Provisioner").UnNegatableBoolVar(&p.allowUpdate)
 	}
 
 	return nil
