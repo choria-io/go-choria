@@ -456,7 +456,7 @@ func (m *Machine) buildFSM() error {
 	}
 
 	f := fsm.NewFSM(m.InitialState, events, fsm.Callbacks{
-		"enter_state": func(e *fsm.Event) {
+		"enter_state": func(ctx context.Context, e *fsm.Event) {
 			for i, notifier := range m.notifiers {
 				if i == 0 {
 					m.manager.NotifyStateChance()
@@ -658,7 +658,7 @@ func (m *Machine) Transition(t string, args ...any) error {
 			return err
 		}
 
-		m.fsm.Event(t, args...)
+		m.fsm.Event(m.ctx, t, args...)
 	} else {
 		m.Warnf("machine", "Could not fire '%s' event while in %s", t, m.fsm.Current())
 	}

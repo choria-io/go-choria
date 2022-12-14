@@ -1,5 +1,22 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2022/12/14 | 1939  | Support multi-arch binaries for external agents                                                                    |
+| 2022/12/12 |       | Support `direct` mode for Choria Key-Value Stores to increase scale and throughput                                 |
+| 2022/12/08 | 1934  | Allow the `machines` watcher spec signer public key to be set in config                                            |
+| 2022/12/06 |       | Create a new dedicated backplane docs site https://choria-io.github.io/go-choria                                   |
+| 2022/12/01 |       | Remove numerous deprecated configuration settings                                                                  |
+| 2022/12/01 | 1924  | Add a new RPC Authorization plugin that requires and authorize policies found in client JWTs                       |
+| 2022/11/29 | 1922  | Improve handling defaults in output DDLs for generated clients                                                     |
+| 2022/11/29 | 1918  | Support full Choria version upgrades during provisioning                                                           |
+| 2022/11/29 | 1916  | Support Choria Provisioner using version to Protocol                                                               |
+| 2022/11/28 | 1913  | Allow provisioning over non TLS when holding an Org Issuer signed provisioning JWT                                 | 
+| 2022/11/28 | 1913  | New Client JWT permissions to indicate a client can access the `provisioning` account in the broker                |
+| 2022/11/23 | 1911  | Do not terminate servers on authentication error                                                                   |
+| 2022/11/22 | 1909  | Support Hashicorp Vault as storage for the Organization Issuer and the `choria jwt` command                        |
+| 2022/11/10 | 1900  | Introduce the concept of a Organization Issuer and chain of trust JWT tokens for Server and Client issuers         |
+| 2022/11/09 | 1898  | Enhance the request signing protocol to include signatures made using the private key                              | 
+| 2022/11/06 | 1863  | Choria Message Submit can sign published messages when using Choria Security                                       |
+| 2022/11/07 | 1740  | Introduce Choria JWT based security and Protocol version 2                                                         |
 | 2022/11/07 |       | Release 0.26.2                                                                                                     |
 | 2022/11/01 | 1886  | Allow additional publish and subscribe subjects to be added to client tokens                                       |
 | 2022/10/05 | 1869  | Improve the error handling in `choria tool status` when the status file does not exist                             |
