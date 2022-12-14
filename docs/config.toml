@@ -4,6 +4,7 @@ title = 'Choria Server and Broker'
 theme = "hugo-theme-relearn"
 canonifyURLs = true
 themeVariant = "choria-relearn"
+uglyURLs = false
 
 [outputs]
 home = [ "HTML", "RSS", "JSON"]

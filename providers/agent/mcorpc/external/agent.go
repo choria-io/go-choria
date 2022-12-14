@@ -13,6 +13,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -86,6 +87,21 @@ func (p *Provider) newExternalAgent(ddl *agentddl.DDL, mgr server.AgentManager) 
 	return agent, nil
 }
 
+func (p *Provider) agentPath(name string, dir string) string {
+	base := filepath.Dir(dir)
+	if base == "" {
+		return ""
+	}
+
+	agentNameOrDir := filepath.Join(base, name)
+
+	if !util.FileIsDir(agentNameOrDir) {
+		return agentNameOrDir
+	}
+
+	return filepath.Join(agentNameOrDir, fmt.Sprintf("%s-%s_%s", name, runtime.GOOS, runtime.GOARCH))
+}
+
 func (p *Provider) externalActivationCheck(ddl *agentddl.DDL) (mcorpc.ActivationChecker, error) {
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
 	defer cancel()
@@ -94,9 +110,9 @@ func (p *Provider) externalActivationCheck(ddl *agentddl.DDL) (mcorpc.Activation
 		return nil, fmt.Errorf("do not know where DDL for %s is located on disk, cannot activate", ddl.Metadata.Name)
 	}
 
-	agentPath := filepath.Join(filepath.Dir(ddl.SourceLocation), ddl.Metadata.Name)
-	if !util.FileExist(agentPath) {
-		p.log.Debugf("Agent %s does not exist in %s, not activating", ddl.Metadata.Name, agentPath)
+	agentPath := p.agentPath(ddl.Metadata.Name, ddl.SourceLocation)
+	if agentPath == "" || !util.FileExist(agentPath) {
+		p.log.Debugf("Agent %s does not exist in '%s', not activating", ddl.Metadata.Name, agentPath)
 		return func() bool { return false }, nil
 	}
 
@@ -131,20 +147,18 @@ func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, repl
 		return
 	}
 
-	agentPath := filepath.Join(filepath.Dir(ddlpath), agent.Metadata().Name)
-
 	ddl, ok := p.agentDDL(agent.Name())
 	if !ok {
 		p.abortAction(fmt.Sprintf("Cannot find DDL for agent %s", agent.Name()), agent, reply)
 		return
 	}
 
-	agent.Log.Debugf("Attempting to call external agent %s (%s) with a timeout %d", action, agentPath, agent.Metadata().Timeout)
-
-	if !util.FileExist(agentPath) {
+	agentPath := p.agentPath(agent.Metadata().Name, ddlpath)
+	if agentPath == "" || !util.FileExist(agentPath) {
 		p.abortAction(fmt.Sprintf("Cannot call external agent %s: agent executable %s was not found", action, agentPath), agent, reply)
 		return
 	}
+	agent.Log.Debugf("Attempting to call external agent %s (%s) with a timeout %d", action, agentPath, agent.Metadata().Timeout)
 
 	err := p.validateRequest(ddl, req, agent.Log)
 	if err != nil {

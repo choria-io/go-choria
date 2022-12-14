@@ -23,7 +23,7 @@ type Provider struct {
 }
 
 // Initialize configures the agent provider
-func (p Provider) Initialize(_ *config.Config, _ *logrus.Entry) {}
+func (p *Provider) Initialize(_ *config.Config, _ *logrus.Entry) {}
 
 // Version reports the version for this provider
 func (p *Provider) Version() string {

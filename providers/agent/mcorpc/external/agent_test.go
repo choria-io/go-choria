@@ -7,6 +7,7 @@ package external
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"runtime"
@@ -18,14 +19,13 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
-	agents "github.com/choria-io/go-choria/server/agents"
+	"github.com/choria-io/go-choria/server/agents"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
 
 func Test(t *testing.T) {
-	os.Setenv("MCOLLECTIVE_CERTNAME", "rip.mcollective")
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Providers/Agent/McoRPC/External")
 }
@@ -96,9 +96,29 @@ var _ = Describe("McoRPC/External", func() {
 		})
 
 		It("Should load all the actions", func() {
-			agnt, err := prov.newExternalAgent(ddl, agentMgr)
+			agent, err := prov.newExternalAgent(ddl, agentMgr)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(agnt.ActionNames()).To(Equal([]string{"act1", "act2"}))
+			Expect(agent.ActionNames()).To(Equal([]string{"act1", "act2"}))
+		})
+	})
+
+	Describe("agentPath", func() {
+		It("Should support the basic agent path to a single file", func() {
+			dir := filepath.Join(wd, "testdata/mcollective/agent/ginkgo.json")
+			Expect(prov.agentPath("ginkgo", filepath.Join(wd, "testdata/mcollective/agent/ginkgo.json"))).To(Equal(filepath.Join(filepath.Dir(dir), "ginkgo")))
+		})
+
+		It("Should support the basic os and arch aware agent paths", func() {
+			td, err := os.MkdirTemp("", "")
+			Expect(err).ToNot(HaveOccurred())
+			defer os.RemoveAll(td)
+
+			dir := filepath.Join(td, "na")
+			Expect(os.MkdirAll(dir, 0744)).To(Succeed())
+
+			path := prov.agentPath("na", dir)
+			expected := filepath.Join(dir, fmt.Sprintf("na-%s_%s", runtime.GOOS, runtime.GOARCH))
+			Expect(path).To(Equal(expected))
 		})
 	})
 
@@ -123,18 +143,19 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(c()).To(BeFalse())
 		})
 
-		// TODO: windows
-		if runtime.GOOS != "windows" {
-			It("should handle specifically enabled agents", func() {
-				d := &addl.DDL{
-					SourceLocation: filepath.Join(wd, "testdata/mcollective/agent/activation_checker_enabled.json"),
-					Metadata:       &agents.Metadata{Name: "activation_checker_enabled"},
-				}
-				c, err := prov.externalActivationCheck(d)
-				Expect(err).ToNot(HaveOccurred())
-				Expect(c()).To(BeTrue())
-			})
-		}
+		It("should handle specifically enabled agents", func() {
+			if runtime.GOOS == "windows" {
+				Skip("Windows TODO")
+			}
+
+			d := &addl.DDL{
+				SourceLocation: filepath.Join(wd, "testdata/mcollective/agent/activation_checker_enabled.json"),
+				Metadata:       &agents.Metadata{Name: "activation_checker_enabled"},
+			}
+			c, err := prov.externalActivationCheck(d)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(c()).To(BeTrue())
+		})
 	})
 
 	Describe("externalAction", func() {
@@ -201,26 +222,27 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
 		})
 
-		// TODO: windows
-		if runtime.GOOS != "windows" {
-			It("Should handle execution failures", func() {
-				ctx, cancel := context.WithCancel(context.Background())
-				defer cancel()
+		It("Should handle execution failures", func() {
+			if runtime.GOOS == "windows" {
+				Skip("Windows TODO")
+			}
 
-				prov.paths["ginkgo_abort"] = ddl.SourceLocation
-				ddl.Metadata.Name = "ginkgo_abort"
-				rep := &mcorpc.Reply{}
-				req := &mcorpc.Request{
-					Agent:  "ginkgo_abort",
-					Action: "ping",
-					Data:   json.RawMessage(`{"hello":"world"}`),
-				}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
 
-				prov.externalAction(ctx, req, rep, agent, nil)
-				Expect(rep.Statusmsg).To(MatchRegexp("Could not call.+ginkgo_abort#ping.+exit status 1"))
-				Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
-			})
-		}
+			prov.paths["ginkgo_abort"] = ddl.SourceLocation
+			ddl.Metadata.Name = "ginkgo_abort"
+			rep := &mcorpc.Reply{}
+			req := &mcorpc.Request{
+				Agent:  "ginkgo_abort",
+				Action: "ping",
+				Data:   json.RawMessage(`{"hello":"world"}`),
+			}
+
+			prov.externalAction(ctx, req, rep, agent, nil)
+			Expect(rep.Statusmsg).To(MatchRegexp("Could not call.+ginkgo_abort#ping.+exit status 1"))
+			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
+		})
 
 		It("Should validate the input before executing the agent", func() {
 			ctx, cancel := context.WithCancel(context.Background())
@@ -240,25 +262,26 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
 		})
 
-		// TODO: windows
-		if runtime.GOOS != "windows" {
-			It("Should execute the correct request binary with the correct input and set defaults on the reply", func() {
-				ctx, cancel := context.WithCancel(context.Background())
-				defer cancel()
+		It("Should execute the correct request binary with the correct input and set defaults on the reply", func() {
+			if runtime.GOOS == "windows" {
+				Skip("Windows TODO")
+			}
 
-				rep := &mcorpc.Reply{}
-				req := &mcorpc.Request{
-					Agent:  "ginkgo",
-					Action: "ping",
-					Data:   json.RawMessage(`{"hello":"world"}`),
-				}
+			ctx, cancel := context.WithCancel(context.Background())
+			defer cancel()
 
-				prov.externalAction(ctx, req, rep, agent, nil)
-				Expect(rep.Statusmsg).To(Equal("OK"))
-				Expect(rep.Statuscode).To(Equal(mcorpc.OK))
-				Expect(rep.Data.(map[string]any)["hello"].(string)).To(Equal("world"))
-				Expect(rep.Data.(map[string]any)["optional"].(string)).To(Equal("optional default"))
-			})
-		}
+			rep := &mcorpc.Reply{}
+			req := &mcorpc.Request{
+				Agent:  "ginkgo",
+				Action: "ping",
+				Data:   json.RawMessage(`{"hello":"world"}`),
+			}
+
+			prov.externalAction(ctx, req, rep, agent, nil)
+			Expect(rep.Statusmsg).To(Equal("OK"))
+			Expect(rep.Statuscode).To(Equal(mcorpc.OK))
+			Expect(rep.Data.(map[string]any)["hello"].(string)).To(Equal("world"))
+			Expect(rep.Data.(map[string]any)["optional"].(string)).To(Equal("optional default"))
+		})
 	})
 })
