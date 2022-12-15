@@ -248,7 +248,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 				req, err := fw.NewRequestFromSecureRequest(sreq)
 				Expect(err).ToNot(HaveOccurred())
 
-				rpchandler := rpc.handlerFactory(ctx, cancel)
+				rpchandler := rpc.handlerFactory(ctx, cancel, rpc.opts.totalStats)
 
 				for i := 0; i < 2; i++ {
 					reply, err := v1.NewReply(req, fmt.Sprintf("test.sender.%d", i))
@@ -265,7 +265,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 					Expect(err).ToNot(HaveOccurred())
 
 					cm := imock.NewMockConnectorMessage(mockctl)
-					cm.EXPECT().Data().Return([]byte(tj))
+					cm.EXPECT().Data().Return(tj)
 					rpchandler(ctx, cm)
 				}
 			})

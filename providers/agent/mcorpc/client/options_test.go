@@ -167,7 +167,6 @@ var _ = Describe("McoRPC/Client/Options", func() {
 			Expect(o.Collective).To(Equal("ginkgo"))
 			Expect(o.ProcessReplies).To(BeTrue())
 			Expect(o.Timeout).To(Equal(time.Duration(182) * time.Second))
-			Expect(o.stats).ToNot(BeNil())
 			Expect(o.fw).To(Equal(fw))
 			Expect(o.LimitSeed).To(BeNumerically(">", 0))
 			Expect(o.LimitMethod).To(Equal("first"))
@@ -176,7 +175,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 
 	Describe("Stats", func() {
 		It("Should return the stats", func() {
-			Expect(o.Stats()).To(Equal(o.stats))
+			Expect(o.Stats()).To(Equal(o.totalStats))
 		})
 	})
 

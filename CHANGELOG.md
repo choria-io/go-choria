@@ -1,5 +1,6 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2022/12/15 | 1942  | Support streaming JSON output on `choria req` to assist non-golang clients to be built quicker                     |
 | 2022/12/14 | 1939  | Support multi-arch binaries for external agents                                                                    |
 | 2022/12/12 |       | Support `direct` mode for Choria Key-Value Stores to increase scale and throughput                                 |
 | 2022/12/08 | 1934  | Allow the `machines` watcher spec signer public key to be set in config                                            |
