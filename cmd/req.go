@@ -6,13 +6,16 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/choria-io/go-choria/client/discovery"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/choria-io/go-choria/protocol"
 	rpc "github.com/choria-io/go-choria/providers/agent/mcorpc/client"
@@ -33,21 +36,23 @@ type reqCommand struct {
 	input           map[string]any
 	filter          *protocol.Filter
 
-	displayOverride string
-	noProgress      bool
-	startTime       time.Time
-	limit           string
-	limitSeed       int64
-	batch           int
-	batchSleep      int
-	verbose         bool
-	jsonOnly        bool
-	tableOnly       bool
-	senderNamesOnly bool
-	silent          bool
-	workers         int
-	reply           string
-	sort            bool
+	displayOverride    string
+	noProgress         bool
+	startTime          time.Time
+	discoveryStartTime time.Time
+	limit              string
+	limitSeed          int64
+	batch              int
+	batchSleep         int
+	verbose            bool
+	jsonOnly           bool
+	jsonLinesOnly      bool
+	tableOnly          bool
+	senderNamesOnly    bool
+	silent             bool
+	workers            int
+	reply              string
+	sort               bool
 
 	fo *discovery.StandardOptions
 
@@ -85,6 +90,7 @@ that match the filter.
 	r.cmd.Arg("action", "The action to invoke").Required().StringVar(&r.action)
 	r.cmd.Arg("args", "Arguments to pass to the action in key=val format").StringMapVar(&r.args)
 	r.cmd.Flag("json", "Produce JSON output only").Short('j').UnNegatableBoolVar(&r.jsonOnly)
+	r.cmd.Flag("jsonl", "Produce JSON Lines output only").UnNegatableBoolVar(&r.jsonLinesOnly)
 	r.cmd.Flag("table", "Produce a Table output of successful responses").UnNegatableBoolVar(&r.tableOnly)
 	r.cmd.Flag("senders", "Produce a list of sender identities of successful responses").UnNegatableBoolVar(&r.senderNamesOnly)
 
@@ -114,6 +120,15 @@ func (r *reqCommand) parseFilterOptions() (*protocol.Filter, error) {
 }
 
 func (r *reqCommand) configureProgressBar(count int, expected int) {
+	if r.jsonLinesOnly {
+		r.renderJsonLine(&inter.JsonLineOutput{
+			Kind:             inter.JsonLineDiscoveredKind,
+			Discovered:       expected,
+			DiscoverySeconds: time.Since(r.discoveryStartTime).Seconds(),
+			DiscoveryMethod:  r.fo.DiscoveryMethod,
+		})
+	}
+
 	if r.noProgress || r.progressBar != nil {
 		return
 	}
@@ -126,17 +141,17 @@ func (r *reqCommand) configureProgressBar(count int, expected int) {
 		return
 	}
 
-	r.progressBar = uiprogress.AddBar(count).AppendCompleted().PrependElapsed()
+	r.progressBar = uiprogress.AddBar(expected).AppendCompleted().PrependElapsed()
 	r.progressBar.Width = width
 
 	fmt.Println()
 
 	r.progressBar.PrependFunc(func(b *uiprogress.Bar) string {
 		if b.Current() < expected {
-			return c.Colorize("red", "%d / %d", b.Current(), count)
+			return c.Colorize("red", "%d / %d", b.Current(), expected)
 		}
 
-		return c.Colorize("green", "%d / %d", b.Current(), count)
+		return c.Colorize("green", "%d / %d", b.Current(), expected)
 	})
 
 	uiprogress.Start()
@@ -153,6 +168,29 @@ func (r *reqCommand) responseHandler(results *replyfmt.RPCResults) func(pr proto
 
 		if reply != nil {
 			results.Replies = append(results.Replies, &replyfmt.RPCReply{Sender: pr.SenderID(), RPCReply: reply})
+
+			if !r.jsonLinesOnly {
+				return
+			}
+
+			line := &inter.JsonLineOutput{Kind: inter.JsonLineResultKind}
+			j, err := pr.JSON()
+			if err == nil {
+				line.ProtocolReply = j
+				j, err = json.Marshal(reply)
+				if err == nil {
+					line.RPCReply = j
+				}
+			}
+			if err != nil {
+				line.Error = err.Error()
+			}
+			jl, err := json.Marshal(line)
+			if err != nil {
+				jl = []byte(fmt.Sprintf(`{"error":%s}`, strings.Replace(err.Error(), `"`, `\\"`, -1)))
+			}
+			fmt.Fprintln(r.outputWriter, string(jl))
+			r.outputWriter.Flush()
 		}
 	}
 }
@@ -195,7 +233,7 @@ func (r *reqCommand) prepareConfiguration() (err error) {
 	}
 	r.outputWriter = bufio.NewWriter(r.outputFileHandle)
 
-	if r.jsonOnly || r.senderNamesOnly {
+	if r.jsonLinesOnly || r.jsonOnly || r.senderNamesOnly {
 		r.silent = true
 		r.noProgress = true
 	}
@@ -208,6 +246,23 @@ func (r *reqCommand) prepareConfiguration() (err error) {
 func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
+	if r.jsonLinesOnly {
+		// intercept any error and print an error line output, still chance
+		// for failure in setup, but we'll accept that for now
+		defer func() {
+			if err != nil {
+				if r.outputWriter == nil {
+					if r.outputFileHandle == nil {
+						r.outputFileHandle = os.Stdout
+					}
+					r.outputWriter = bufio.NewWriter(r.outputFileHandle)
+				}
+				r.renderJsonLine(&inter.JsonLineOutput{Kind: inter.JsonLineErrorKind, Error: err.Error()})
+				err = nil
+			}
+		}()
+	}
+
 	r.startTime = time.Now()
 
 	err = r.prepareConfiguration()
@@ -218,7 +273,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 
 	expected := 0
 	publishOnly := false
-	dstart := time.Now()
+	r.discoveryStartTime = time.Now()
 	var nodes []string
 
 	switch {
@@ -258,7 +313,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 		rpc.LimitMethod(cfg.RPCLimitMethod),
 		rpc.ReplyExprFilter(r.exprFilter),
 		rpc.DiscoveryEndCB(func(d, l int) error {
-			r.configureProgressBar(l, expected)
+			r.configureProgressBar(d, l)
 
 			return nil
 		}),
@@ -323,7 +378,7 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	results.Stats = rpcres.Stats()
-	results.Stats.OverrideDiscoveryTime(dstart, dend)
+	results.Stats.OverrideDiscoveryTime(r.discoveryStartTime, dend)
 
 	if !r.noProgress {
 		uiprogress.Stop()
@@ -347,15 +402,31 @@ func (r *reqCommand) Run(wg *sync.WaitGroup) (err error) {
 func (r *reqCommand) displayResults(res *replyfmt.RPCResults) error {
 	defer r.outputWriter.Flush()
 
-	if r.senderNamesOnly {
+	switch {
+	case r.senderNamesOnly:
 		return res.RenderNames(r.outputWriter, r.jsonOnly, r.sort)
-	}
 
-	if r.jsonOnly {
+	case r.jsonOnly:
 		return res.RenderJSON(r.outputWriter, r.actionInterface)
-	}
 
-	if r.tableOnly {
+	case r.jsonLinesOnly:
+		line := inter.JsonLineOutput{Kind: inter.JsonLineSummariesKind}
+		err = res.CalculateAggregates(r.actionInterface)
+		if err != nil {
+			line.Error = err.Error()
+		}
+		line.Aggregates = res.Summaries
+		r.renderJsonLine(&line)
+		line = inter.JsonLineOutput{Kind: inter.JsonLineStatsKind}
+		line.Stats, err = json.Marshal(res.ParsedStats)
+		if err != nil {
+			line.Error = err.Error()
+		}
+		r.renderJsonLine(&line)
+
+		return nil
+
+	case r.tableOnly:
 		return res.RenderTable(r.outputWriter, r.actionInterface)
 	}
 
@@ -374,13 +445,39 @@ func (r *reqCommand) displayResults(res *replyfmt.RPCResults) error {
 	return res.RenderTXT(r.outputWriter, r.actionInterface, r.verbose, r.silent, mode, c.Config.Color, c.Logger("req"))
 }
 
+func (r *reqCommand) renderJsonLine(line *inter.JsonLineOutput) {
+	jl, err := json.Marshal(line)
+	if err != nil {
+		jl = []byte(fmt.Sprintf(`{"error":%s}`, strings.Replace(err.Error(), `"`, `\\"`, -1)))
+	}
+	fmt.Fprintln(r.outputWriter, string(jl))
+	r.outputWriter.Flush()
+}
+
 func (r *reqCommand) Configure() error {
 	protocol.ClientStrictValidation = false
 
-	return commonConfigure()
+	err := commonConfigure()
+	if err != nil {
+		return err
+	}
+
+	// we try not to spam things to stderr in these structured output formats
+	if (r.jsonLinesOnly || r.jsonOnly) && cfg.LogLevel != "debug" {
+		cfg.LogLevel = "fatal"
+	}
+
+	return nil
 }
 
 func (r *reqCommand) discover() ([]string, error) {
+	if r.jsonLinesOnly {
+		r.renderJsonLine(&inter.JsonLineOutput{
+			Kind:            inter.JsonLineDiscoveredKind,
+			DiscoveryMethod: r.fo.DiscoveryMethod,
+		})
+	}
+
 	nodes, _, err := r.fo.Discover(ctx, c, r.agent, true, !r.silent, c.Logger("discovery"))
 	if err != nil {
 		return nil, err

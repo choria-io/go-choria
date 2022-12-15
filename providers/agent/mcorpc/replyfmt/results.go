@@ -266,7 +266,7 @@ func (r *RPCResults) RenderTable(w io.Writer, action ActionDDL) (err error) {
 	return nil
 }
 
-func (r *RPCResults) RenderJSON(w io.Writer, action ActionDDL) (err error) {
+func (r *RPCResults) CalculateAggregates(action ActionDDL) error {
 	for _, reply := range r.Replies {
 		parsed, ok := gjson.ParseBytes(reply.RPCReply.Data).Value().(map[string]any)
 		if ok {
@@ -278,6 +278,12 @@ func (r *RPCResults) RenderJSON(w io.Writer, action ActionDDL) (err error) {
 	// silently failing as this is optional
 	r.Summaries, _ = action.AggregateSummaryJSON()
 	r.ParsedStats = statsFromClient(r.Stats)
+
+	return nil
+}
+
+func (r *RPCResults) RenderJSON(w io.Writer, action ActionDDL) (err error) {
+	r.CalculateAggregates(action)
 
 	j, err := json.MarshalIndent(r, "", "   ")
 	if err != nil {

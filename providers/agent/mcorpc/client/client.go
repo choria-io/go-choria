@@ -230,68 +230,81 @@ func (r *RPC) Do(ctx context.Context, action string, payload any, opts ...Reques
 	r.opts.totalStats.Start()
 	defer r.opts.totalStats.End()
 
-	ctr := 0
-
 	r.opts.totalStats.SetAction(action)
 	r.opts.totalStats.SetAgent(r.agent)
 
-	switch {
-	case r.opts.RequestType == inter.ServiceRequestMessageType:
-		r.opts.stats = NewStats()
-
-		var responded []string
-		handler := r.opts.Handler
-		r.opts.Handler = func(r protocol.Reply, rpc *RPCReply) {
-			responded = append(responded, r.SenderID())
-			if handler != nil {
-				handler(r, rpc)
-			}
-		}
-
-		err = r.request(dctx, msg, cl)
-		if len(responded) > 0 {
-			r.opts.stats.SetDiscoveredNodes(responded)
-			r.opts.totalStats.SetDiscoveredNodes(responded)
-			r.opts.stats.RecordReceived(responded[0])
-		}
-
-		r.opts.stats.End()
-		r.opts.totalStats.Merge(r.opts.stats)
-
+	switch r.opts.RequestType {
+	case inter.ServiceRequestMessageType:
+		err = r.doServiceRequest(dctx, msg, cl)
 	default:
-		// the client is always batched, when batched mode is not request the size of
-		// the batch matches the size of the total targets and during setupMessage()
-		// an appropriate connection will be made
-		err = InGroups(r.opts.Targets, r.opts.BatchSize, func(nodes []string) error {
-			r.opts.stats = NewStats()
-			r.opts.stats.SetDiscoveredNodes(nodes)
-			msg.SetDiscoveredHosts(nodes)
-
-			r.opts.stats.Start()
-			defer r.opts.totalStats.Merge(r.opts.stats)
-			defer r.opts.stats.End()
-
-			if ctr > 0 {
-				err := InterruptableSleep(dctx, r.opts.BatchSleep)
-				if err != nil {
-					return err
-				}
-			}
-
-			r.log.Debugf("Performing batched request %d for %d/%d nodes", ctr, len(nodes), len(r.opts.Targets))
-
-			err = r.request(dctx, msg, cl)
-			if err != nil {
-				return err
-			}
-
-			ctr++
-
-			return nil
-		})
+		err = r.doBatchedRequest(ctx, msg, cl)
 	}
 
 	return &RequestOptions{totalStats: r.opts.totalStats}, err
+}
+
+func (r *RPC) doBatchedRequest(ctx context.Context, msg inter.Message, cl ChoriaClient) error {
+	// the client is always batched, when batched mode is not request the size of
+	// the batch matches the size of the total targets and during setupMessage()
+	// an appropriate connection will be made
+
+	ctr := 0
+
+	return InGroups(r.opts.Targets, r.opts.BatchSize, func(nodes []string) error {
+		stats := NewStats()
+		stats.SetDiscoveredNodes(nodes)
+		msg.SetDiscoveredHosts(nodes)
+
+		stats.Start()
+		defer func(s *Stats) {
+			s.End()
+			r.opts.totalStats.Merge(s)
+		}(stats)
+
+		if ctr > 0 {
+			err := InterruptableSleep(ctx, r.opts.BatchSleep)
+			if err != nil {
+				return err
+			}
+		}
+
+		r.log.Debugf("Performing batched request %d for %d/%d nodes", ctr, len(nodes), len(r.opts.Targets))
+
+		err := r.request(ctx, msg, cl, stats)
+		if err != nil {
+			return err
+		}
+
+		ctr++
+
+		return nil
+	})
+}
+
+func (r *RPC) doServiceRequest(ctx context.Context, msg inter.Message, cl ChoriaClient) error {
+	stats := NewStats()
+
+	var responded []string
+	handler := r.opts.Handler
+	r.opts.Handler = func(r protocol.Reply, rpc *RPCReply) {
+		responded = append(responded, r.SenderID())
+		if handler != nil {
+			handler(r, rpc)
+		}
+	}
+
+	err := r.request(ctx, msg, cl, stats)
+	if len(responded) > 0 {
+		stats.SetDiscoveredNodes(responded)
+		r.opts.totalStats.SetDiscoveredNodes(responded)
+		stats.RecordReceived(responded[0])
+	}
+
+	stats.End()
+
+	r.opts.totalStats.Merge(stats)
+
+	return err
 }
 
 func (r *RPC) discover(ctx context.Context) error {
@@ -406,7 +419,7 @@ func (r *RPC) unbatchedClient() (cl ChoriaClient, err error) {
 }
 
 func (r *RPC) batchedClient(ctx context.Context, msgid string) (cl ChoriaClient, err error) {
-	conn, err := r.connectBatchedConnection(ctx, fmt.Sprintf("%s_batched", msgid))
+	conn, err := r.connectBatchedConnection(ctx, fmt.Sprintf("%s_%s_batched", r.opts.ConnectionName, msgid))
 	if err != nil {
 		return nil, fmt.Errorf("could not connect batched network connection: %s", err)
 	}
@@ -436,11 +449,11 @@ func (r *RPC) Reset() {
 	r.cl = nil
 }
 
-func (r *RPC) request(ctx context.Context, msg inter.Message, cl ChoriaClient) error {
+func (r *RPC) request(ctx context.Context, msg inter.Message, cl ChoriaClient, stats *Stats) error {
 	rctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 
-	err := cl.Request(rctx, msg, r.handlerFactory(rctx, cancel))
+	err := cl.Request(rctx, msg, r.handlerFactory(rctx, cancel, stats))
 	if err != nil {
 		return err
 	}
@@ -448,7 +461,7 @@ func (r *RPC) request(ctx context.Context, msg inter.Message, cl ChoriaClient) e
 	return nil
 }
 
-func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
+func (r *RPC) handlerFactory(_ context.Context, cancel context.CancelFunc, stats *Stats) cclient.Handler {
 	if !r.opts.ProcessReplies {
 		return nil
 	}
@@ -458,27 +471,26 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 	handler := func(ctx context.Context, rawmsg inter.ConnectorMessage) {
 		reply, err := r.fw.NewReplyFromTransportJSON(rawmsg.Data(), false)
 		if err != nil {
-			r.opts.stats.FailedRequestInc()
+			stats.FailedRequestInc()
 			r.log.Errorf("Could not process a reply: %s", err)
 			return
 		}
 
 		// defer because we do not do any discovery so recording the response here would mark it as unknown
 		if r.opts.RequestType != inter.ServiceRequestMessageType {
-			r.opts.stats.RecordReceived(reply.SenderID())
+			stats.RecordReceived(reply.SenderID())
 		}
 
 		rpcreply, err := ParseReply(reply)
-		if err != nil {
-			r.opts.stats.FailedRequestInc()
+		switch {
+		case err != nil:
+			stats.FailedRequestInc()
 			r.log.Errorf("Could not process reply from %s: %s", reply.SenderID(), err)
 			return
-		}
-
-		if rpcreply.Statuscode == mcorpc.OK {
-			r.opts.stats.PassedRequestInc()
-		} else {
-			r.opts.stats.FailedRequestInc()
+		case rpcreply.Statuscode == mcorpc.OK:
+			stats.PassedRequestInc()
+		default:
+			stats.FailedRequestInc()
 		}
 
 		if r.opts.Handler != nil {
@@ -497,7 +509,7 @@ func (r *RPC) handlerFactory(_ context.Context, cancel func()) cclient.Handler {
 			}
 		}
 
-		if r.opts.stats.All() {
+		if stats.All() {
 			cancel()
 			return
 		}
@@ -516,6 +528,7 @@ func (r *RPC) connectBatchedConnection(ctx context.Context, name string) (Connec
 		<-ctx.Done()
 
 		r.log.Debugf("Closing batched connection %s", name)
+		connector.Close()
 		connector.Close()
 	}
 

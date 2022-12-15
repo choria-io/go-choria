@@ -45,9 +45,6 @@ type RequestOptions struct {
 	// merged of all batches
 	totalStats *Stats
 
-	// per batch
-	stats *Stats
-
 	fw inter.Framework
 }
 
@@ -74,7 +71,6 @@ func NewRequestOptions(fw inter.Framework, ddl *agent.DDL) (*RequestOptions, err
 		ProcessReplies:  true,
 		Workers:         3,
 		ConnectionName:  fw.CallerID(),
-		stats:           NewStats(),
 		totalStats:      NewStats(),
 		LimitMethod:     cfg.RPCLimitMethod,
 		LimitSeed:       time.Now().UnixNano(),
