@@ -7,7 +7,6 @@ require (
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.4.0
-	github.com/aelsabbahy/goss v0.3.21-0.20221028222348-e566d708ffde
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
@@ -24,6 +23,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.9
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
+	github.com/goss-org/goss v0.3.21-0.20221225165941-a157ea384d2c
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.5.5
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
@@ -32,11 +32,11 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.35
 	github.com/nats-io/nats-server/v2 v2.9.9
-	github.com/nats-io/nats.go v1.21.0
+	github.com/nats-io/nats.go v1.22.1
 	github.com/nats-io/natscli v0.0.35
-	github.com/onsi/ginkgo/v2 v2.6.0
-	github.com/onsi/gomega v1.24.1
-	github.com/open-policy-agent/opa v0.47.3
+	github.com/onsi/ginkgo/v2 v2.6.1
+	github.com/onsi/gomega v1.24.2
+	github.com/open-policy-agent/opa v0.47.4
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/client_model v0.3.0
 	github.com/robfig/cron v1.2.0
@@ -61,8 +61,6 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3 // indirect
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/achanda/go-sysctl v0.0.0-20160222034550-6be7678c45d2 // indirect
-	github.com/aelsabbahy/GOnetstat v0.0.0-20220505220511-31d79a98d9f2 // indirect
-	github.com/aelsabbahy/go-ps v0.0.0-20201009164808-61c449472dcf // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -72,6 +70,7 @@ require (
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/choria-io/goform v0.0.2 // indirect
 	github.com/creack/pty v1.1.18 // indirect
+	github.com/dgraph-io/badger/v3 v3.2103.5 // indirect
 	github.com/dgryski/trifles v0.0.0-20220729183022-231ecf6ed548 // indirect
 	github.com/emicklei/dot v1.1.0 // indirect
 	github.com/foxcpp/go-mockdns v1.0.0 // indirect
@@ -84,11 +83,13 @@ require (
 	github.com/google/flatbuffers v22.11.23+incompatible // indirect
 	github.com/google/pprof v0.0.0-20221112000123-84eb7ad69597 // indirect
 	github.com/google/uuid v1.3.0 // indirect
+	github.com/goss-org/GOnetstat v0.0.0-20220505220511-31d79a98d9f2 // indirect
+	github.com/goss-org/go-ps v0.0.0-20201009164808-61c449472dcf // indirect
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/hinshun/vt10x v0.0.0-20220301184237-5011da428d02 // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
-	github.com/itchyny/gojq v0.12.10 // indirect
+	github.com/itchyny/gojq v0.12.11 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.13 // indirect
@@ -112,7 +113,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/prometheus/common v0.39.0 // indirect
-	github.com/prometheus/procfs v0.8.0 // indirect
+	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
 	github.com/rogpeppe/go-internal v1.9.0 // indirect

@@ -5,7 +5,7 @@
 package agent
 
 import (
-	gossoutputs "github.com/aelsabbahy/goss/outputs"
+	gossoutputs "github.com/goss-org/goss/outputs"
 )
 
 type GossValidateRequest struct {
