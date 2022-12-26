@@ -16,11 +16,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aelsabbahy/goss"
-	gossoutputs "github.com/aelsabbahy/goss/outputs"
-	"github.com/aelsabbahy/goss/resource"
-	gossutil "github.com/aelsabbahy/goss/util"
 	"github.com/choria-io/go-choria/inter"
+	"github.com/goss-org/goss"
+	gossoutputs "github.com/goss-org/goss/outputs"
+	"github.com/goss-org/goss/resource"
+	gossutil "github.com/goss-org/goss/util"
 
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 )

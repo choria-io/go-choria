@@ -13,9 +13,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/aelsabbahy/goss"
-	"github.com/aelsabbahy/goss/outputs"
-	gossutil "github.com/aelsabbahy/goss/util"
+	"github.com/goss-org/goss"
+	"github.com/goss-org/goss/outputs"
+	gossutil "github.com/goss-org/goss/util"
 )
 
 func (w *Watcher) watchUsingGoss() (state State, output string, err error) {
