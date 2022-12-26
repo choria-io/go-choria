@@ -683,18 +683,21 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 	case conn.isJwtAuth():
 		conn.log.Debug("Setting JWT authentication with NONCE signatures for NATS connection")
 
-		// TODO: need something better to key this off (1740)
-		if conn.fw.security.BackingTechnology() == inter.SecurityTechnologyED25519JWT {
-			conn.log.Debugf("Using TLS Configuration from ed25519+jwt based security system")
-			tlsc, err = conn.fw.ClientTLSConfig()
-			if err != nil {
-				return err
-			}
+		if conn.config.DisableTLS {
+			conn.log.Warnf("Disabling TLS due to configuration override")
 		} else {
-			conn.log.Debugf("Configuring anonymous tls connection")
-			tlsc = conn.anonTLSc()
+			// TODO: need something better to key this off (1740)
+			if conn.fw.security.BackingTechnology() == inter.SecurityTechnologyED25519JWT {
+				conn.log.Debugf("Using TLS Configuration from ed25519+jwt based security system")
+				tlsc, err = conn.fw.ClientTLSConfig()
+				if err != nil {
+					return err
+				}
+			} else {
+				conn.log.Debugf("Configuring anonymous tls connection")
+				tlsc = conn.anonTLSc()
+			}
 		}
-		options = append(options, nats.Secure(tlsc))
 
 		if conn.token == "" {
 			return fmt.Errorf("no valid token found to sign connection NONCE")
@@ -720,7 +723,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		}
 
 	case conn.config.DisableTLS:
-		conn.log.Debugf("Not specifying TLS options on NATS connection: tls: %v creds: %v", conn.config.DisableTLS, conn.config.Choria.NatsCredentials)
+		conn.log.Warnf("Disabling TLS due to configuration override")
 
 	default:
 		tlsc, err = conn.fw.ClientTLSConfig()
