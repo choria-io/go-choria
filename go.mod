@@ -10,8 +10,8 @@ require (
 	github.com/antonmedv/expr v1.9.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.4.0
-	github.com/choria-io/fisk v0.2.1
+	github.com/choria-io/appbuilder v0.4.1
+	github.com/choria-io/fisk v0.3.0
 	github.com/choria-io/go-updater v0.1.0
 	github.com/cloudevents/sdk-go/v2 v2.12.0
 	github.com/dustin/go-humanize v1.0.0
@@ -119,7 +119,6 @@ require (
 	github.com/rogpeppe/go-internal v1.9.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/cast v1.5.0 // indirect
-	github.com/stretchr/testify v1.8.1 // indirect
 	github.com/tadglines/go-pkgs v0.0.0-20210623144937-b983b20f54f9 // indirect
 	github.com/tchap/go-patricia/v2 v2.3.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
