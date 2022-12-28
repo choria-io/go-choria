@@ -5,6 +5,7 @@
 package choria
 
 import (
+	"strings"
 	"time"
 
 	"github.com/choria-io/go-choria/build"
@@ -24,6 +25,11 @@ func BuildInfo() *build.Info {
 // FileExist checks if a file exist
 func FileExist(path string) bool {
 	return util.FileExist(path)
+}
+
+// NewRequestID Creates a new v1 RequestID like random string. Here for backwards compat with older clients
+func NewRequestID() (string, error) {
+	return strings.Replace(util.UniqueID(), "-", "", -1), nil
 }
 
 // ParseDuration is an extended version of go duration parsing that
