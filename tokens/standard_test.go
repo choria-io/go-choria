@@ -14,35 +14,28 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/segmentio/ksuid"
 )
 
 var _ = Describe("StandardClaims", func() {
 	var (
-		c    StandardClaims
+		c    *StandardClaims
 		priK ed25519.PrivateKey
 		pubK ed25519.PublicKey
 		err  error
 	)
 
 	BeforeEach(func() {
-		c = StandardClaims{}
+		c, _ = newStandardClaims("ginkgo", "", time.Hour, false)
 		pubK, priK, err = iu.Ed25519KeyPair()
 		Expect(err).ToNot(HaveOccurred())
 
 	})
 
 	Describe("Chain Issuer", func() {
-		BeforeEach(func() {
-			c = StandardClaims{}
-			c.ID = iu.UniqueID()
-		})
-
 		Describe("ExpireTime", func() {
-			BeforeEach(func() {
-				c = StandardClaims{}
-			})
-
 			It("Should handle all nil", func() {
+				c.ExpiresAt = nil
 				Expect(c.ExpireTime().IsZero()).To(BeTrue())
 			})
 
@@ -71,7 +64,7 @@ var _ = Describe("StandardClaims", func() {
 
 		Describe("IsExpired", func() {
 			It("Should detect expiry correctly", func() {
-				c = StandardClaims{}
+				c = &StandardClaims{}
 				c.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Minute))
 				Expect(c.IsExpired()).To(BeFalse())
 				c.ExpiresAt = jwt.NewNumericDate(time.Now().Add(-1 * time.Minute))
@@ -81,7 +74,7 @@ var _ = Describe("StandardClaims", func() {
 
 		Describe("verifyIssuerExpiry", func() {
 			BeforeEach(func() {
-				c = StandardClaims{}
+				c = &StandardClaims{}
 				c.Issuer = "C-x.x"
 				c.TrustChainSignature = "stub.sig"
 				c.IssuerExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Minute))
@@ -126,7 +119,7 @@ var _ = Describe("StandardClaims", func() {
 
 			It("Should set the correct issuer", func() {
 				ci := &ClientIDClaims{}
-				ci.ID = iu.UniqueID()
+				ci.ID = ksuid.New().String()
 				ci.PublicKey = hex.EncodeToString(pubK[:])
 				Expect(c.SetChainIssuer(ci)).To(Succeed())
 				Expect(c.Issuer).To(Equal(fmt.Sprintf("C-%s.%s", ci.ID, ci.PublicKey)))
@@ -139,7 +132,8 @@ var _ = Describe("StandardClaims", func() {
 				_, err = c.ChainIssuerData("x")
 				Expect(err).To(MatchError("id not set"))
 
-				c.ID = iu.UniqueID()
+				c.ID = ksuid.New().String()
+				c.Issuer = ""
 				_, err = c.ChainIssuerData("x")
 				Expect(err).To(MatchError("issuer not set"))
 
@@ -154,7 +148,7 @@ var _ = Describe("StandardClaims", func() {
 
 			It("Should issue the correct data", func() {
 				ci := &ClientIDClaims{}
-				ci.ID = iu.UniqueID()
+				ci.ID = ksuid.New().String()
 				ci.PublicKey = hex.EncodeToString(pubK[:])
 				Expect(c.SetChainIssuer(ci)).To(Succeed())
 
@@ -169,7 +163,8 @@ var _ = Describe("StandardClaims", func() {
 				c.Issuer = "C-x"
 				c.PublicKey = hex.EncodeToString(pubK)
 				c.TrustChainSignature = "x"
-				c.ID = "ID"
+				c.ID = ksuid.New().String()
+				c.IssuerExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Hour))
 
 				ok, _, err := c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("invalid issuer content"))
@@ -194,8 +189,8 @@ var _ = Describe("StandardClaims", func() {
 			It("Should detect badly formed trust chain sigs", func() {
 				c.Issuer = "C-x." + hex.EncodeToString(pubK)
 				c.PublicKey = hex.EncodeToString(pubK)
-				c.ID = iu.UniqueID()
 				c.TrustChainSignature = "X"
+				c.IssuerExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Hour))
 
 				ok, _, err := c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("invalid trust chain signature"))
@@ -303,8 +298,10 @@ var _ = Describe("StandardClaims", func() {
 					Expect(ok).To(BeFalse())
 				}
 
+				iss := c.Issuer
+				c.Issuer = ""
 				check(nil, fmt.Errorf("no issuer set"))
-				c.Issuer = "issuer"
+				c.Issuer = iss
 
 				check(nil, fmt.Errorf("no public key set"))
 				c.PublicKey = hex.EncodeToString(pubK)
@@ -312,14 +309,38 @@ var _ = Describe("StandardClaims", func() {
 				check(pubK, fmt.Errorf("no trust chain signature set"))
 				c.TrustChainSignature = "x"
 
+				c.IssuedAt = nil
+				check(pubK, fmt.Errorf("no issued time set"))
+				c.IssuedAt = jwt.NewNumericDate(time.Time{})
+				check(pubK, fmt.Errorf("no issued time set"))
+				c.IssuedAt = c.NotBefore
+
+				c.ExpiresAt = nil
+				check(pubK, fmt.Errorf("no expires set"))
+				c.ExpiresAt = jwt.NewNumericDate(time.Time{})
+				check(pubK, fmt.Errorf("no expires set"))
+				c.ExpiresAt = jwt.NewNumericDate(c.IssuedAt.Add(time.Hour))
+
+				c.ID = ""
 				check(pubK, fmt.Errorf("id not set"))
+
+				c.ID = "x"
+				check(pubK, fmt.Errorf("invalid ksuid format"))
+
+				kid, _ := ksuid.NewRandomWithTime(time.Now().Add(time.Hour))
+				c.ID = kid.String()
+				check(pubK, fmt.Errorf("id is not based on issued time"))
+
+				kid, _ = ksuid.NewRandomWithTime(c.IssuedAt.Time)
+				c.ID = kid.String()
+				check(pubK, fmt.Errorf("unsupported issuer format")) // passed validation state
 			})
 
 			It("Should detect invalid issuers", func() {
 				c.Issuer = "issuer"
 				c.PublicKey = hex.EncodeToString(pubK)
 				c.TrustChainSignature = "x"
-				c.ID = "ID"
+				c.ID = ksuid.New().String()
 
 				ok, _, err := c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("unsupported issuer format"))
@@ -330,7 +351,7 @@ var _ = Describe("StandardClaims", func() {
 				c.PublicKey = hex.EncodeToString(pubK)
 				c.Issuer = fmt.Sprintf("I-%s", c.PublicKey)
 				c.TrustChainSignature = "X"
-				c.ID = "ID"
+				c.ID = ksuid.New().String()
 				ok, _, err := c.IsSignedByIssuer(pubK)
 				Expect(err).To(MatchError("invalid trust chain signature: encoding/hex: invalid byte: U+0058 'X'"))
 				Expect(ok).To(BeFalse())
@@ -339,7 +360,7 @@ var _ = Describe("StandardClaims", func() {
 			It("Should detect wrong signatures", func() {
 				c.PublicKey = hex.EncodeToString(pubK)
 				c.Issuer = fmt.Sprintf("I-%s", c.PublicKey)
-				c.ID = iu.UniqueID()
+				c.ID = ksuid.New().String()
 
 				sig, err := iu.Ed25519Sign(priK, []byte("wrong"))
 				Expect(err).ToNot(HaveOccurred())
@@ -353,7 +374,7 @@ var _ = Describe("StandardClaims", func() {
 			It("Should detect correct signatures", func() {
 				c.PublicKey = hex.EncodeToString(pubK)
 				c.Issuer = fmt.Sprintf("I-%s", c.PublicKey)
-				c.ID = iu.UniqueID()
+				c.ID = ksuid.New().String()
 
 				dat, err := c.OrgIssuerChainData()
 				Expect(err).ToNot(HaveOccurred())
@@ -381,13 +402,13 @@ var _ = Describe("StandardClaims", func() {
 
 		Describe("OrgIssuerChainData", func() {
 			It("Should fail for no ID", func() {
+				c.ID = ""
 				d, err := c.OrgIssuerChainData()
 				Expect(d).To(HaveLen(0))
 				Expect(err).To(MatchError("no token id set"))
 			})
 
 			It("Should fail for no PublicKey", func() {
-				c.ID = "x"
 				d, err := c.OrgIssuerChainData()
 				Expect(d).To(HaveLen(0))
 				Expect(err).To(MatchError("no public key set"))

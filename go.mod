@@ -31,7 +31,7 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.35
-	github.com/nats-io/nats-server/v2 v2.9.9
+	github.com/nats-io/nats-server/v2 v2.9.11-0.20221226161432-51678dd8bf2e
 	github.com/nats-io/nats.go v1.22.1
 	github.com/nats-io/natscli v0.0.35
 	github.com/onsi/ginkgo/v2 v2.6.1
@@ -41,6 +41,7 @@ require (
 	github.com/prometheus/client_model v0.3.0
 	github.com/robfig/cron v1.2.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.1.1
+	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.9.0
 	github.com/tidwall/gjson v1.14.4
 	github.com/tidwall/pretty v1.2.1
