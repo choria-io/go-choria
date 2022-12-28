@@ -335,7 +335,7 @@ However if the Org Issuer wants to create a token that can sign other tokens add
 ```json
 {
   "iss": "I-514969e316eb4a7146b8066feb6af5dbc05da0965ec57c9d3a7d3299d5d98fec",
-  "jti": "ffdbaaedc9c141f6a99c14b5b66f62ac",
+  "jti": "0ujsswThIGTUYm2K8FjOOfXtY1K",
   "ou": "choria",
   "public_key": "bd2588d3dc309d536461caa11c0d6f639e89d7a09dc43eae052f3fb32e2d8687",
   "purpose": "choria_client_id",
@@ -343,10 +343,10 @@ However if the Org Issuer wants to create a token that can sign other tokens add
 }
 ```
 
-* `jti` is a unique ID for this token
+* `jti` is a unique ID for this token. It's a [kskuid](https://github.com/segmentio/ksuid), the time component must match the issued at time
 * `iss` field indicates it is signed by a Issuer with public key `514969e316eb4a7146b8066feb6af5dbc05da0965ec57c9d3a7d3299d5d98fec`.
 * `public_key` is the public part of the ed25519 seed for the Chain Issuer `aaa_chain_delegator`
-* `tcs` is a signature made of `[chain issuer id].[chain issuer public key]` using the Org Issuer private key, in other words `sig("ffdbaaedc9c141f6a99c14b5b66f62ac.bd2588d3dc309d536461caa11c0d6f639e89d7a09dc43eae052f3fb32e2d8687", orgIssuerPrik)`
+* `tcs` is a signature made of `[chain issuer id].[chain issuer public key]` using the Org Issuer private key, in other words `sig("0ujsswThIGTUYm2K8FjOOfXtY1K.bd2588d3dc309d536461caa11c0d6f639e89d7a09dc43eae052f3fb32e2d8687", orgIssuerPrik)`
 * The Chain Issuer JWT is signed by the Organization Issuer
 
 This way we can verify that the Chain Issuer comes from the Issuer both by verifying the signature but also we have a piece of information that cannot be changed down the line (the `tcs`, signed by the Org Issuer key) which we will see again later.
@@ -358,7 +358,7 @@ Now when the Chain Issuer wants to issue a new Client or Server token additional
 ```json
 {
   "callerid": "up=rip",
-  "iss": "C-ffdbaaedc9c141f6a99c14b5b66f62ac.bd2588d3dc309d536461caa11c0d6f639e89d7a09dc43eae052f3fb32e2d8687",
+  "iss": "C-0ujsswThIGTUYm2K8FjOOfXtY1K.bd2588d3dc309d536461caa11c0d6f639e89d7a09dc43eae052f3fb32e2d8687",
   "issexp": 1700153647,
   "jti": "b2375f965abe4bfbaf131b585cf5e1a1",
   "ou": "choria",
@@ -369,7 +369,7 @@ Now when the Chain Issuer wants to issue a new Client or Server token additional
 ```
 
 * `jti` is a unique id for this token
-* `iss` indicates a Chain Issuer with token ID (`jti`) `ffdbaaedc9c141f6a99c14b5b66f62ac` issued this token and his public key is `bd2588d3dc309d536461caa11c0d6f639e89d7a09dc43eae052f3fb32e2d8687` (the one from the previous example) 
+* `iss` indicates a Chain Issuer with token ID (`jti`) `0ujsswThIGTUYm2K8FjOOfXtY1K` issued this token and his public key is `bd2588d3dc309d536461caa11c0d6f639e89d7a09dc43eae052f3fb32e2d8687` (the one from the previous example) 
 * `issexp` indicates when the Chain Issuer expires
 * `tcs` is made up of first creating `sigdata` `[client token jti].[chain issuer tcs]` and then combining that `[chain issuer tcs].[sig(sigdata, chainIssuerPrik)]`  
 

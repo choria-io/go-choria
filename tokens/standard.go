@@ -13,6 +13,7 @@ import (
 
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/segmentio/ksuid"
 )
 
 type StandardClaims struct {
@@ -267,19 +268,41 @@ func (c *StandardClaims) ParseChainIssuerData() (id string, pk ed25519.PublicKey
 	return id, hPubk, tcs, sig, err
 }
 
-// IsSignedByIssuer uses the chain data in Issuer and TrustChainSignature to determine if an issuer signed a token
-func (c *StandardClaims) IsSignedByIssuer(pk ed25519.PublicKey) (bool, ed25519.PublicKey, error) {
+func (c *StandardClaims) verifyIssuerRequiredClaims() error {
 	if c.Issuer == "" {
-		return false, nil, fmt.Errorf("no issuer set")
+		return fmt.Errorf("no issuer set")
 	}
 	if c.PublicKey == "" {
-		return false, nil, fmt.Errorf("no public key set")
+		return fmt.Errorf("no public key set")
 	}
 	if c.TrustChainSignature == "" {
-		return false, nil, fmt.Errorf("no trust chain signature set")
+		return fmt.Errorf("no trust chain signature set")
 	}
 	if c.ID == "" {
-		return false, nil, fmt.Errorf("id not set")
+		return fmt.Errorf("id not set")
+	}
+	if c.IssuedAt == nil || c.IssuedAt.IsZero() {
+		return fmt.Errorf("no issued time set")
+	}
+	if c.ExpiresAt == nil || c.ExpiresAt.IsZero() {
+		return fmt.Errorf("no expires set")
+	}
+	kid, err := ksuid.Parse(c.ID)
+	if err != nil {
+		return fmt.Errorf("invalid ksuid format")
+	}
+	if !c.IssuedAt.Equal(kid.Time()) {
+		return fmt.Errorf("id is not based on issued time")
+	}
+
+	return nil
+}
+
+// IsSignedByIssuer uses the chain data in Issuer and TrustChainSignature to determine if an issuer signed a token
+func (c *StandardClaims) IsSignedByIssuer(pk ed25519.PublicKey) (bool, ed25519.PublicKey, error) {
+	err := c.verifyIssuerRequiredClaims()
+	if err != nil {
+		return false, nil, err
 	}
 
 	switch {
@@ -329,6 +352,10 @@ func (c *StandardClaims) IsSignedByIssuer(pk ed25519.PublicKey) (bool, ed25519.P
 		//
 		// We can confirm the tcs is valid and matches whats in the sig made by
 		// the creator because we verify it using the requested issuer pubk
+		if c.IssuerExpiresAt == nil || c.IssuerExpiresAt.IsZero() {
+			return false, nil, fmt.Errorf("no issuer expires set")
+		}
+
 		_, hPubk, tcs, sig, err := c.ParseChainIssuerData()
 		if err != nil {
 			return false, nil, err

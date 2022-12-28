@@ -13,6 +13,7 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -22,8 +23,8 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/build"
-	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/golang-jwt/jwt/v4"
+	"github.com/segmentio/ksuid"
 	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 )
@@ -40,12 +41,16 @@ const (
 	defaultOrg        = "choria"
 	OrgIssuerPrefix   = "I-"
 	ChainIssuerPrefix = "C-"
+	DefaultValidity   = time.Hour
 )
 
 var defaultIssuer = fmt.Sprintf("Choria Tokens Package v%s", build.Version)
 
 // Purpose indicates what kind of token a JWT is and helps us parse it into the right data structure
 type Purpose string
+
+// ErrorNotSignedByIssuer is raised when a token did not pass validation against the issuer chain
+var ErrorNotSignedByIssuer = errors.New("not signed by issuer")
 
 const (
 	// UnknownPurpose is a JWT that does not have a purpose set
@@ -104,10 +109,10 @@ func ParseToken(token string, claims jwt.Claims, pk any) error {
 			if sc != nil {
 				valid, signerPk, err := sc.IsSignedByIssuer(pk)
 				if err != nil {
-					return nil, fmt.Errorf("not signed by issuer: %w", err)
+					return nil, fmt.Errorf("%w: %s", ErrorNotSignedByIssuer, err)
 				}
 				if !valid {
-					return nil, fmt.Errorf("token not signed by issuer")
+					return nil, ErrorNotSignedByIssuer
 				}
 				pk = signerPk
 			}
@@ -301,18 +306,24 @@ func newStandardClaims(issuer string, purpose Purpose, validity time.Duration, s
 	}
 
 	now := jwt.NewNumericDate(time.Now().UTC())
+	id, err := ksuid.NewRandomWithTime(now.Time)
+	if err != nil {
+		return nil, err
+	}
+
+	if validity == 0 {
+		validity = DefaultValidity
+	}
+
 	claims := &StandardClaims{
 		Purpose: purpose,
 		RegisteredClaims: jwt.RegisteredClaims{
-			ID:        strings.ReplaceAll(iu.UniqueID(), "-", ""),
+			ID:        id.String(),
 			Issuer:    issuer,
 			IssuedAt:  now,
 			NotBefore: now,
+			ExpiresAt: jwt.NewNumericDate(now.Add(validity)),
 		},
-	}
-
-	if validity > 0 {
-		claims.RegisteredClaims.ExpiresAt = jwt.NewNumericDate(now.Add(validity))
 	}
 
 	if setSubject {
