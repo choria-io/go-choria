@@ -5,7 +5,6 @@
 package choria
 
 import (
-	"strings"
 	"time"
 
 	"github.com/choria-io/go-choria/build"
@@ -15,11 +14,6 @@ import (
 // UserConfig determines what is the active config file for a user
 func UserConfig() string {
 	return util.UserConfig()
-}
-
-// NewRequestID Creates a new RequestID
-func NewRequestID() (string, error) {
-	return strings.Replace(util.UniqueID(), "-", "", -1), nil
 }
 
 // BuildInfo retrieves build information

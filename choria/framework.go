@@ -32,6 +32,7 @@ import (
 	"github.com/choria-io/go-choria/tokens"
 	"github.com/fatih/color"
 	"github.com/nats-io/nats.go"
+	"github.com/segmentio/ksuid"
 	"golang.org/x/term"
 
 	"github.com/choria-io/go-choria/internal/util"
@@ -647,7 +648,15 @@ func (fw *Framework) PuppetAIOCmd(command string, def string) string {
 
 // NewRequestID Creates a new RequestID
 func (fw *Framework) NewRequestID() (string, error) {
-	return NewRequestID()
+	if fw.RequestProtocol() == protocol.RequestV2 {
+		kid, err := ksuid.NewRandom()
+		if err != nil {
+			return "", err
+		}
+		return kid.String(), nil
+	}
+
+	return strings.Replace(util.UniqueID(), "-", "", -1), nil
 }
 
 // UniqueID creates a new unique ID, usually a v4 uuid, if that fails a random string based ID is made

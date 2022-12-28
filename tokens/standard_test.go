@@ -121,6 +121,7 @@ var _ = Describe("StandardClaims", func() {
 				ci := &ClientIDClaims{}
 				ci.ID = ksuid.New().String()
 				ci.PublicKey = hex.EncodeToString(pubK[:])
+				ci.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Hour))
 				Expect(c.SetChainIssuer(ci)).To(Succeed())
 				Expect(c.Issuer).To(Equal(fmt.Sprintf("C-%s.%s", ci.ID, ci.PublicKey)))
 			})
@@ -150,6 +151,7 @@ var _ = Describe("StandardClaims", func() {
 				ci := &ClientIDClaims{}
 				ci.ID = ksuid.New().String()
 				ci.PublicKey = hex.EncodeToString(pubK[:])
+				ci.ExpiresAt = jwt.NewNumericDate(time.Now().Add(time.Hour))
 				Expect(c.SetChainIssuer(ci)).To(Succeed())
 
 				dat, err := c.ChainIssuerData("x")
