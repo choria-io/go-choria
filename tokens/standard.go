@@ -185,8 +185,16 @@ func (c *StandardClaims) SetChainIssuer(ci *ClientIDClaims) error {
 		return fmt.Errorf("public key not set")
 	}
 
+	if ci.ExpiresAt == nil {
+		return fmt.Errorf("issuer has no expiry")
+	}
+
 	c.Issuer = fmt.Sprintf("%s%s.%s", ChainIssuerPrefix, ci.ID, ci.PublicKey)
 	c.IssuerExpiresAt = ci.ExpiresAt
+
+	if c.ExpiresAt == nil || c.IssuerExpiresAt.Before(c.ExpiresAt.Time) {
+		c.ExpiresAt = ci.ExpiresAt
+	}
 
 	return nil
 }
