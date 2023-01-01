@@ -29,7 +29,7 @@ func (b *brokerCommand) Setup() (err error) {
 	b.cmd = cli.app.Command("broker", "Choria Network Broker and Streams Management Utilities").Alias("b")
 	b.cmd.Flag("choria-config", "Choria Config file to use").Hidden().PlaceHolder("FILE").ExistingFileVar(&configFile)
 
-	opts, err := natscli.ConfigureInCommand(b.cmd, &natscli.Options{NoCheats: true, Timeout: 5 * time.Second}, false, "cheat", "rtt", "backup", "latency", "restore", "bench", "schema", "errors", "kv", "object", "governor", "context")
+	opts, err := natscli.ConfigureInCommand(b.cmd, &natscli.Options{NoCheats: true, Timeout: 5 * time.Second}, false, "cheat", "backup", "restore", "bench", "schema", "errors", "kv", "object", "micro", "context")
 	if err != nil {
 		return err
 	}

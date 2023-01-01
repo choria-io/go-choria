@@ -7,9 +7,8 @@ package client
 import (
 	"fmt"
 	"sync"
+	"sync/atomic"
 	"time"
-
-	"go.uber.org/atomic"
 )
 
 // Stats represent stats for a request
@@ -21,9 +20,9 @@ type Stats struct {
 	outstandingNodes   *NodeList
 	unexpectedRespones *NodeList
 
-	responses atomic.Int32
-	passed    atomic.Int32
-	failed    atomic.Int32
+	responses int32
+	passed    int32
+	failed    int32
 
 	start time.Time
 	end   time.Time
@@ -68,8 +67,8 @@ func (s *Stats) Merge(other *Stats) error {
 
 	s.unexpectedRespones.AddHosts(other.UnexpectedResponseFrom()...)
 
-	s.passed.Add(other.passed.Load())
-	s.failed.Add(other.failed.Load())
+	atomic.AddInt32(&s.passed, other.passed)
+	atomic.AddInt32(&s.failed, other.failed)
 
 	d, err := other.PublishDuration()
 	if err != nil {
@@ -139,12 +138,12 @@ func (s *Stats) SetDiscoveredNodes(nodes []string) {
 
 // FailedRequestInc increments the failed request counter by one
 func (s *Stats) FailedRequestInc() {
-	s.failed.Inc()
+	atomic.AddInt32(&s.failed, 1)
 }
 
 // PassedRequestInc increments the passed request counter by one
 func (s *Stats) PassedRequestInc() {
-	s.passed.Inc()
+	atomic.AddInt32(&s.passed, 1)
 }
 
 // RecordReceived reords the fact that one message was received
@@ -152,7 +151,7 @@ func (s *Stats) RecordReceived(sender string) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 
-	s.responses.Inc()
+	atomic.AddInt32(&s.responses, 1)
 
 	known := s.outstandingNodes.DeleteIfKnown(sender)
 	if !known {
@@ -172,17 +171,17 @@ func (s *Stats) DiscoveredNodes() *[]string {
 
 // FailCount is the number of responses that were failures
 func (s *Stats) FailCount() int {
-	return int(s.failed.Load())
+	return int(atomic.LoadInt32(&s.failed))
 }
 
 // OKCount is the number of responses that were ok
 func (s *Stats) OKCount() int {
-	return int(s.passed.Load())
+	return int(atomic.LoadInt32(&s.passed))
 }
 
 // ResponsesCount if the total amount of nodes that responded so far
 func (s *Stats) ResponsesCount() int {
-	return int(s.responses.Load())
+	return int(atomic.LoadInt32(&s.responses))
 }
 
 // StartPublish records the publish process started

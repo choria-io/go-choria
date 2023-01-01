@@ -127,34 +127,34 @@ var _ = Describe("McoRPC/Client/Stats", func() {
 
 		Describe("FailedRequestInc", func() {
 			It("Should increase the count", func() {
-				Expect(s.failed.Load()).To(Equal(int32(0)))
+				Expect(s.failed).To(Equal(int32(0)))
 				s.FailedRequestInc()
-				Expect(s.failed.Load()).To(Equal(int32(1)))
+				Expect(s.failed).To(Equal(int32(1)))
 			})
 		})
 
 		Describe("PassedRequestInc", func() {
 			It("Should increase the count", func() {
-				Expect(s.passed.Load()).To(Equal(int32(0)))
+				Expect(s.passed).To(Equal(int32(0)))
 				s.PassedRequestInc()
-				Expect(s.passed.Load()).To(Equal(int32(1)))
+				Expect(s.passed).To(Equal(int32(1)))
 			})
 		})
 
 		Describe("RecordReceived", func() {
 			It("Should handle outstanding nodes", func() {
 				s.SetDiscoveredNodes([]string{"host1", "host2"})
-				Expect(s.responses.Load()).To(Equal(int32(0)))
+				Expect(s.responses).To(Equal(int32(0)))
 				s.RecordReceived("host2")
-				Expect(s.responses.Load()).To(Equal(int32(1)))
+				Expect(s.responses).To(Equal(int32(1)))
 				Expect(s.NoResponseFrom()).To(Equal([]string{"host1"}))
 			})
 
 			It("Should handle unexpected nodes", func() {
 				s.SetDiscoveredNodes([]string{"host1", "host2"})
-				Expect(s.responses.Load()).To(Equal(int32(0)))
+				Expect(s.responses).To(Equal(int32(0)))
 				s.RecordReceived("host3")
-				Expect(s.responses.Load()).To(Equal(int32(1)))
+				Expect(s.responses).To(Equal(int32(1)))
 				Expect(s.UnexpectedResponseFrom()).To(Equal([]string{"host3"}))
 			})
 		})
