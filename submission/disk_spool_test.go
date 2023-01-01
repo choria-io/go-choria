@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/choria-io/go-choria/config"
@@ -19,7 +20,6 @@ import (
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-	"go.uber.org/atomic"
 )
 
 var _ = Describe("Directory Spool", func() {
@@ -107,7 +107,7 @@ var _ = Describe("Directory Spool", func() {
 			wg.Add(1)
 
 			tries := 1
-			completed := atomic.NewInt32(0)
+			var completed int32
 
 			err = spool.StartPoll(ctx, wg, func(msgs []*Message) error {
 				defer GinkgoRecover()
@@ -134,7 +134,7 @@ var _ = Describe("Directory Spool", func() {
 					if (msg.Reliable && tries > 0 && msg.Tries%10 == 7) || !msg.Reliable {
 						log.Infof("completing message %s on try %d\n", msg.ID, msg.Tries)
 						spool.Complete(msg)
-						completed.Add(1)
+						atomic.AddInt32(&completed, 1)
 					} else {
 						spool.IncrementTries(msg)
 					}
@@ -147,7 +147,7 @@ var _ = Describe("Directory Spool", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			for i := 0; i < 300; i++ {
-				if completed.Load() == 3 {
+				if atomic.LoadInt32(&completed) == 3 {
 					for k, v := range unreliables {
 						if v != 1 {
 							Fail(fmt.Sprintf("Unreliable message %s was tried %d times", k, v))
