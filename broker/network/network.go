@@ -135,6 +135,8 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 		s.log.Errorf("Could not setup leafnodes: %s", err)
 	}
 
+	issuerBased := len(s.config.Choria.IssuerNames) > 0
+
 	choriaAuth := &ChoriaAuth{
 		clientAllowList: s.config.Choria.NetworkAllowedClientHosts,
 		choriaAccount:   s.choriaAccount,
@@ -148,7 +150,7 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 		issuerTokens:    make(map[string]string),
 	}
 
-	if len(s.config.Choria.IssuerNames) > 0 {
+	if issuerBased {
 		if len(s.config.Choria.NetworkClientTokenSigners) > 0 {
 			return nil, fmt.Errorf("cannot set trusted client signers using plugin.choria.network.client_signer_cert when an issuer is configured")
 		}
@@ -173,6 +175,11 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 
 		if s.config.Choria.NetworkProvisioningClientPassword != "" {
 			s.log.Warnf("Allowing Provisioner connections subject to JWT claims")
+		}
+
+		if s.config.Choria.ChoriaSecurityCA != "" {
+			s.log.Warnf("Allowing standard fully verified mTLS NATS clients to perform Pub-Sub and Stream operations with no access to fleet management subjects")
+			choriaAuth.allowIssuerBasedTLSAccess = true
 		}
 	}
 

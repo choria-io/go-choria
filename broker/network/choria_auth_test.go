@@ -726,6 +726,77 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(verified).To(BeTrue())
 			})
 
+			Context("Org Issuers", func() {
+				var td string
+				var err error
+				var issuerPubk ed25519.PublicKey
+
+				BeforeEach(func() {
+					td, err = os.MkdirTemp("", "")
+					Expect(err).ToNot(HaveOccurred())
+
+					issuerPubk, _, err = iu.Ed25519KeyPair()
+					Expect(err).ToNot(HaveOccurred())
+
+					auth.issuerTokens = map[string]string{"choria": hex.EncodeToString(issuerPubk)}
+
+					DeferCleanup(func() {
+						os.RemoveAll(td)
+					})
+				})
+
+				It("Should deny other clients", func() {
+					auth.isTLS = true
+					auth.allowIssuerBasedTLSAccess = false
+
+					mockClient.EXPECT().GetNonce().Return([]byte("")).AnyTimes()
+					mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}).AnyTimes()
+					mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{}).AnyTimes()
+
+					Expect(auth.Check(mockClient)).To(BeFalse())
+				})
+
+				It("Should support allowing pub sub clients", func() {
+					auth.isTLS = true
+					auth.allowIssuerBasedTLSAccess = true
+					copts.Token = ""
+
+					mockClient.EXPECT().GetNonce().Return([]byte("")).AnyTimes()
+					mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}).AnyTimes()
+					mockClient.EXPECT().GetTLSConnectionState().Return(&tls.ConnectionState{VerifiedChains: [][]*x509.Certificate{nil}}).AnyTimes()
+
+					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+						Expect(user.Username).To(Equal(""))
+						Expect(user.Account).To(Equal(auth.choriaAccount))
+						Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+							Allow: []string{">"},
+							Deny: []string{
+								"*.broadcast.>",
+								"*.node.>",
+								"*.reply.>",
+								"choria.federation.>",
+								"choria.lifecycle.>",
+								"choria.machine.>",
+							},
+						}))
+
+						Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+							Allow: []string{">"},
+							Deny: []string{
+								"*.broadcast.>",
+								"*.node.>",
+								"*.reply.>",
+								"choria.federation.>",
+								"choria.lifecycle.>",
+								"choria.machine.>",
+							},
+						}))
+					})
+
+					Expect(auth.Check(mockClient)).To(BeTrue())
+				})
+			})
+
 			It("Should register other clients without restriction", func() {
 				mockClient.GetOpts().Token = ""
 				mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""})
