@@ -23,7 +23,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.9
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/goss-org/goss v0.3.21-0.20221225165941-a157ea384d2c
+	github.com/goss-org/goss v0.3.21-0.20230101162829-ba8d39eabeb2
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.5.5
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
@@ -83,8 +83,8 @@ require (
 	github.com/google/flatbuffers v22.11.23+incompatible // indirect
 	github.com/google/pprof v0.0.0-20221219190121-3cb0bae90811 // indirect
 	github.com/google/uuid v1.3.0 // indirect
-	github.com/goss-org/GOnetstat v0.0.0-20220505220511-31d79a98d9f2 // indirect
-	github.com/goss-org/go-ps v0.0.0-20201009164808-61c449472dcf // indirect
+	github.com/goss-org/GOnetstat v0.0.0-20230101144325-22be0bd9e64d // indirect
+	github.com/goss-org/go-ps v0.0.0-20230101144351-953ade48a71b // indirect
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/hinshun/vt10x v0.0.0-20220301184237-5011da428d02 // indirect
 	github.com/huandu/xstrings v1.4.0 // indirect
@@ -92,7 +92,7 @@ require (
 	github.com/itchyny/gojq v0.12.11 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.15.13 // indirect
+	github.com/klauspost/compress v1.15.14 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.17 // indirect
@@ -128,7 +128,7 @@ require (
 	github.com/xiam/to v0.0.0-20200126224905-d60d31e03561 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.uber.org/atomic v1.9.0 // indirect
+	go.uber.org/atomic v1.10.0 // indirect
 	go.uber.org/goleak v1.2.0 // indirect
 	go.uber.org/multierr v1.9.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect

@@ -29,7 +29,7 @@ func (b *brokerCommand) Setup() (err error) {
 	b.cmd = cli.app.Command("broker", "Choria Network Broker and Streams Management Utilities").Alias("b")
 	b.cmd.Flag("choria-config", "Choria Config file to use").Hidden().PlaceHolder("FILE").ExistingFileVar(&configFile)
 
-	opts, err := natscli.ConfigureInCommand(b.cmd, &natscli.Options{NoCheats: true, Timeout: 5 * time.Second}, false, "cheat", "backup", "restore", "bench", "schema", "errors", "kv", "object", "micro", "context")
+	opts, err := natscli.ConfigureInCommand(b.cmd, &natscli.Options{NoCheats: true, Timeout: 5 * time.Second}, false, "cheat", "rtt", "latency", "backup", "restore", "bench", "schema", "errors", "kv", "object", "micro", "context")
 	if err != nil {
 		return err
 	}
@@ -81,8 +81,13 @@ func (b *brokerCommand) prepareNatsCli(pc *fisk.ParseContext, opts *natscli.Opti
 	connLogger := c.Logger("conn")
 
 	cliLogger := log.New()
-	// cli does a lot of Printf which is info
-	cliLogger.SetLevel(log.InfoLevel)
+	if debug {
+		cliLogger.SetLevel(log.DebugLevel)
+		connLogger.Logger.SetLevel(log.DebugLevel)
+	} else {
+		// cli does a lot of Printf which is info
+		cliLogger.SetLevel(log.InfoLevel)
+	}
 	cliLogger.SetOutput(connLogger.Logger.Out)
 	natscli.SetLogger(cliLogger)
 
