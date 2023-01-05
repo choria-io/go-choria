@@ -46,22 +46,23 @@ import (
 // fleet or provisioned nodes. This is only enabled if plugin.choria.network.provisioning.signer_cert
 // is set
 type ChoriaAuth struct {
-	clientAllowList         []string
-	isTLS                   bool
-	denyServers             bool
-	provisioningTokenSigner string
-	clientJwtSigners        []string
-	serverJwtSigners        []string
-	issuerTokens            map[string]string
-	choriaAccount           *server.Account
-	systemAccount           *server.Account
-	provisioningAccount     *server.Account
-	provPass                string
-	systemUser              string
-	systemPass              string
-	tokenCache              map[string]ed25519.PublicKey
-	log                     *logrus.Entry
-	mu                      sync.Mutex
+	clientAllowList           []string
+	isTLS                     bool
+	denyServers               bool
+	provisioningTokenSigner   string
+	clientJwtSigners          []string
+	serverJwtSigners          []string
+	allowIssuerBasedTLSAccess bool
+	issuerTokens              map[string]string
+	choriaAccount             *server.Account
+	systemAccount             *server.Account
+	provisioningAccount       *server.Account
+	provPass                  string
+	systemUser                string
+	systemPass                string
+	tokenCache                map[string]ed25519.PublicKey
+	log                       *logrus.Entry
+	mu                        sync.Mutex
 }
 
 const (
@@ -262,7 +263,6 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 	)
 
 	shouldPerformJWTBasedAuth := jwts != emptyString && conn != nil
-
 	if shouldPerformJWTBasedAuth {
 		purpose := tokens.TokenPurpose(jwts)
 		log = log.WithFields(logrus.Fields{"jwt_auth": shouldPerformJWTBasedAuth, "purpose": purpose})
@@ -323,6 +323,23 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 
 	case pipeConnection:
 		log.Debugf("Allowing pipe connection without any limitations")
+
+	case tlsVerified && a.allowIssuerBasedTLSAccess:
+		log.Debugf("Allowing pub-sub access")
+		a.setPubSubPermissions(user)
+
+	case len(a.issuerTokens) > 0:
+		// In issuer mode unless mTLS is in use we do not want to allow any access to any kind of standard nats connection
+		// it should be really hard to reach this code at this point, I can't think of a case, but we handle the deny all
+		// for safety here
+		//
+		// to allow pub-sub access users must set a CA (enables mTLS) and connections must be mTLS which will mean allowIssuerBasedTLSAccess
+		// is true.
+		return false, fmt.Errorf("unknown connection received in issuer mode")
+
+	default:
+		// non issuer mode handled non client || server connections as an allow all
+		log.Warnf("Unknown connection type, allowing without restriction for legacy access")
 	}
 
 	if user.Account != nil {
@@ -1144,6 +1161,32 @@ func (a *ChoriaAuth) setDefaultServerPermissions(user *server.User) {
 			"*.broadcast.service.>",
 			"*.node.>",
 			"choria.federation.*.federation",
+		},
+	}
+}
+
+func (a *ChoriaAuth) setPubSubPermissions(user *server.User) {
+	user.Permissions.Publish = &server.SubjectPermission{
+		Allow: allSubjects,
+		Deny: []string{
+			"*.broadcast.>",
+			"*.node.>",
+			"*.reply.>",
+			"choria.federation.>",
+			"choria.lifecycle.>",
+			"choria.machine.>",
+		},
+	}
+
+	user.Permissions.Subscribe = &server.SubjectPermission{
+		Allow: allSubjects,
+		Deny: []string{
+			"*.broadcast.>",
+			"*.node.>",
+			"*.reply.>",
+			"choria.federation.>",
+			"choria.lifecycle.>",
+			"choria.machine.>",
 		},
 	}
 }
