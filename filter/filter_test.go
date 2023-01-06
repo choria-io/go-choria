@@ -5,6 +5,7 @@
 package filter
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/choria-io/go-choria/protocol"
@@ -160,10 +161,21 @@ var _ = Describe("Filter", func() {
 			t("foo == bar", "foo", "==", "bar")
 		})
 
-		It("Should fail for facts in the wrong format", func() {
-			pf, err := ParseFactFilterString("foo")
-			Expect(err).To(MatchError("could not parse fact foo it does not appear to be in a valid format"))
-			Expect(pf).To(BeNil())
+		It("Should parse gjson facts", func() {
+			t("storage.#(name=\"nvme0n1\").size==64", "storage.#(name=\"nvme0n1\").size", "==", "64")
+			t("storage.#(name='nvme0n1').size==64", "storage.#(name='nvme0n1').size", "==", "64")
+			t("storage.#(name==\"nvme0n1\").size=64", "storage.#(name==\"nvme0n1\").size", "==", "64")
+			t("storage.#(name=\"nvme0n1\").size == 64", "storage.#(name=\"nvme0n1\").size", "==", "64")
+			t("storage.#(name<= \"nvme0n1\" ).size==64", "storage.#(name<= \"nvme0n1\" ).size", "==", "64")
+			t("storage.#(name=\"foo bar\").size=>baz bar", "storage.#(name=\"foo bar\").size", ">=", "baz bar")
+		})
+
+		It("Should fail on invalid fact filters", func() {
+			badFilters := []string{"foobarbaz", "=foo(bar=baz)", "foo=", "foo(bar=baz)>", "=><=="}
+			for _, filterString := range badFilters {
+				_, err := ParseFactFilterString(filterString)
+				Expect(err).To(MatchError(fmt.Errorf("could not parse fact %s it does not appear to be in a valid format", filterString)))
+			}
 		})
 	})
 })
