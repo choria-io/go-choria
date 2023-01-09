@@ -29,11 +29,15 @@ import (
 	"github.com/tidwall/gjson"
 )
 
+var (
+	algRS256     = jwt.SigningMethodRS256.Alg()
+	algRS384     = jwt.SigningMethodRS384.Alg()
+	algRS512     = jwt.SigningMethodRS512.Alg()
+	algEdDSA     = jwt.SigningMethodEdDSA.Alg()
+	validMethods = []string{algRS256, algRS384, algRS512, algEdDSA}
+)
+
 const (
-	algRS256          = "RS256"
-	algRS384          = "RS384"
-	algRS512          = "RS512"
-	algEdDSA          = "EdDSA"
 	rsaKeyHeader      = "-----BEGIN RSA PRIVATE KEY"
 	certHeader        = "-----BEGIN CERTIFICATE"
 	pkHeader          = "-----BEGIN PUBLIC KEY"
@@ -122,7 +126,7 @@ func ParseToken(token string, claims jwt.Claims, pk any) error {
 		default:
 			return nil, fmt.Errorf("unsupported signing method %v in token", t.Method)
 		}
-	})
+	}, jwt.WithValidMethods(validMethods))
 	if err != nil {
 		return err
 	}

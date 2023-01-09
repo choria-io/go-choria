@@ -706,20 +706,11 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 		seedFile, err := conn.fw.SignerSeedFile()
 		if err == nil && seedFile != "" {
-			options = append(options, nats.UserJWT(func() (string, error) {
-				if !conn.expire.IsZero() && time.Now().After(conn.expire) {
-					conn.log.Errorf("Cannot sign connection NONCE: token is expired by %v", time.Since(conn.expire))
-					return "", fmt.Errorf("token expired")
-				}
-				return conn.token, nil
-			}, func(n []byte) ([]byte, error) {
-				if !conn.expire.IsZero() && time.Now().After(conn.expire) {
-					conn.log.Errorf("Cannot sign connection NONCE: token is expired by %v", time.Since(conn.expire))
-					return nil, fmt.Errorf("token expired")
-				}
-				conn.log.Debugf("Signing nonce using seed file %s", seedFile)
-				return Ed25519SignWithSeedFile(seedFile, n)
-			}))
+			_, jwth, sigh, err := NatsConnectionHelpers(conn.token, conn.config.MainCollective, seedFile, conn.log)
+			if err != nil {
+				return err
+			}
+			options = append(options, nats.UserJWT(jwth, sigh))
 		}
 
 	case conn.config.DisableTLS:
