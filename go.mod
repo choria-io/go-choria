@@ -23,7 +23,7 @@ require (
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.9
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
-	github.com/goss-org/goss v0.3.21-0.20230101162829-ba8d39eabeb2
+	github.com/goss-org/goss v0.3.21
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.5.5
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
@@ -31,7 +31,7 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.35
-	github.com/nats-io/nats-server/v2 v2.9.11-0.20221226161432-51678dd8bf2e
+	github.com/nats-io/nats-server/v2 v2.9.11
 	github.com/nats-io/nats.go v1.22.1
 	github.com/nats-io/natscli v0.0.35
 	github.com/onsi/ginkgo/v2 v2.6.1
@@ -46,11 +46,11 @@ require (
 	github.com/tidwall/gjson v1.14.4
 	github.com/tidwall/pretty v1.2.1
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
-	golang.org/x/crypto v0.4.0
-	golang.org/x/sys v0.3.0
-	golang.org/x/term v0.3.0
-	golang.org/x/text v0.5.0
-	golang.org/x/tools v0.4.0
+	golang.org/x/crypto v0.5.0
+	golang.org/x/sys v0.4.0
+	golang.org/x/term v0.4.0
+	golang.org/x/text v0.6.0
+	golang.org/x/tools v0.5.0
 	rsc.io/goversion v1.2.0
 )
 
@@ -134,7 +134,7 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/exp v0.0.0-20220921164117-439092de6870 // indirect
 	golang.org/x/mod v0.7.0 // indirect
-	golang.org/x/net v0.4.0 // indirect
+	golang.org/x/net v0.5.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gonum.org/v1/gonum v0.12.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect

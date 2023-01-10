@@ -131,7 +131,7 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 		}
 
 		if !verified {
-			log.Warnf("Denying connection: verfiied error: %v, unverified error: %v", dfltErr, provErr)
+			log.Warnf("Denying connection: verified error: %v, unverified error: %v", dfltErr, provErr)
 		}
 	}
 
