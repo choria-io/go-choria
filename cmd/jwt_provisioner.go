@@ -34,6 +34,7 @@ type jWTCreateProvCommand struct {
 	useVault    bool
 	v2          bool
 	allowUpdate bool
+	validity    time.Duration
 
 	command
 }
@@ -58,6 +59,7 @@ func (p *jWTCreateProvCommand) Setup() (err error) {
 		p.cmd.Flag("protocol-v2", "Use version 2 network protocol and security").UnNegatableBoolVar(&p.v2)
 		p.cmd.Flag("update", "Allow over the air server upgrades from the Choria Provisioner").Hidden().UnNegatableBoolVar(&p.allowUpdate)
 		p.cmd.Flag("upgrade", "Allow over the air server upgrades from the Choria Provisioner").UnNegatableBoolVar(&p.allowUpdate)
+		p.cmd.Flag("validity", "How long the token should be valid for").Default("1y").DurationVar(&p.validity)
 	}
 
 	return nil
@@ -94,7 +96,7 @@ func (p *jWTCreateProvCommand) createJWT() error {
 	if p.srvDomain == "" && len(p.urls) == 0 {
 		return fmt.Errorf("URLs or a SRV Domain is required")
 	}
-	claims, err := tokens.NewProvisioningClaims(!p.insecure, p.provDefault, p.token, p.uname, p.password, p.urls, p.srvDomain, p.regData, p.facts, p.org, "", 0)
+	claims, err := tokens.NewProvisioningClaims(!p.insecure, p.provDefault, p.token, p.uname, p.password, p.urls, p.srvDomain, p.regData, p.facts, p.org, "", p.validity)
 	if err != nil {
 		return err
 	}
