@@ -18,6 +18,8 @@ import (
 	"github.com/choria-io/go-choria/internal/util"
 )
 
+var validOperators = regexp.MustCompile(`<=|>=|=>|=<|<|>|!=|=~|={1,2}`)
+
 // Logger provides logging facilities
 type Logger interface {
 	Warnf(format string, args ...any)
@@ -173,18 +175,49 @@ func HasFact(fact string, operator string, value string, file string, log Logger
 }
 
 // ParseFactFilterString parses a fact filter string as typically typed on the CLI
-func ParseFactFilterString(f string) (pf [3]string, err error) {
-	if matched := regexp.MustCompile("^([^ ]+?)[ ]*=>[ ]*(.+)").FindStringSubmatch(f); len(matched) > 0 {
-		return [3]string{matched[1], ">=", matched[2]}, nil
-	} else if matched := regexp.MustCompile("^([^ ]+?)[ ]*=<[ ]*(.+)").FindStringSubmatch(f); len(matched) > 0 {
-		return [3]string{matched[1], "<=", matched[2]}, nil
-	} else if matched := regexp.MustCompile("^([^ ]+?)[ ]*(<=|>=|<|>|!=|==|=~)[ ]*(.+)").FindStringSubmatch(f); len(matched) > 0 {
-		return [3]string{matched[1], matched[2], matched[3]}, nil
-	} else if matched := regexp.MustCompile("^(.+?)[ ]*=[ ]*/(.+)/$").FindStringSubmatch(f); len(matched) > 0 {
-		return [3]string{matched[1], "=~", "/" + matched[2] + "/"}, nil
-	} else if matched := regexp.MustCompile("^([^= ]+?)[ ]*=[ ]*(.+)").FindStringSubmatch(f); len(matched) > 0 {
-		return [3]string{matched[1], "==", matched[2]}, nil
+func ParseFactFilterString(f string) ([3]string, error) {
+	operatorIndexes := validOperators.FindAllStringIndex(f, -1)
+	var mainOpIndex []int
+
+	if opCount := len(operatorIndexes); opCount > 1 {
+		// This is a special case where the left operand contains a valid operator.
+		// We skip over everything and use the right most operator.
+		mainOpIndex = operatorIndexes[len(operatorIndexes)-1]
+	} else if opCount == 1 {
+		mainOpIndex = operatorIndexes[0]
 	} else {
 		return [3]string{}, fmt.Errorf("could not parse fact %s it does not appear to be in a valid format", f)
 	}
+
+	op := f[mainOpIndex[0]:mainOpIndex[1]]
+	leftOp := strings.TrimSpace(f[:mainOpIndex[0]])
+	rightOp := strings.TrimSpace(f[mainOpIndex[1]:])
+
+	// validate that the left and right operands are both valid
+	if len(leftOp) == 0 || len(rightOp) == 0 {
+		return [3]string{}, fmt.Errorf("could not parse fact %s it does not appear to be in a valid format", f)
+	}
+
+	lStartString := string(leftOp[0])
+	rEndString := string(rightOp[len(rightOp)-1])
+	if validOperators.MatchString(lStartString) || validOperators.Match([]byte(rEndString)) {
+		return [3]string{}, fmt.Errorf("could not parse fact %s it does not appear to be in a valid format", f)
+	}
+
+	// transform op and value for processing
+	switch op {
+	case "=":
+		op = "=="
+	case "=<":
+		op = "<="
+	case "=>":
+		op = ">="
+	}
+
+	// finally check for old style regex fact matches
+	if rightOp[0] == '/' && rightOp[len(rightOp)-1] == '/' {
+		op = "=~"
+	}
+
+	return [3]string{leftOp, op, rightOp}, nil
 }
