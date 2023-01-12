@@ -29,7 +29,7 @@ import (
 	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/providers/security/choria"
 	"github.com/choria-io/go-choria/providers/signers"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 	"github.com/fatih/color"
 	"github.com/nats-io/nats.go"
 	"github.com/segmentio/ksuid"

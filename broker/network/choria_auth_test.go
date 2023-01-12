@@ -20,7 +20,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/integration/testutil"
 	iu "github.com/choria-io/go-choria/internal/util"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/golang/mock/gomock"
 	"github.com/nats-io/nats-server/v2/server"

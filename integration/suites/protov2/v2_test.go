@@ -22,7 +22,7 @@ import (
 	"github.com/choria-io/go-choria/integration/testutil"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/server"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 	"github.com/golang-jwt/jwt/v4"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

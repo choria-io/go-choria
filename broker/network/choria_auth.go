@@ -17,7 +17,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/internal/util"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/sirupsen/logrus"
@@ -339,7 +339,7 @@ func (a *ChoriaAuth) handleDefaultConnection(c server.ClientAuthentication, conn
 
 	default:
 		// non issuer mode handled non client || server connections as an allow all
-		log.Warnf("Unknown connection type, allowing without restriction for legacy access")
+		log.Debugf("Unknown connection type, allowing without restriction for legacy access")
 	}
 
 	if user.Account != nil {

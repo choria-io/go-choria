@@ -15,7 +15,7 @@ import (
 
 	"github.com/choria-io/go-choria/config"
 	iu "github.com/choria-io/go-choria/internal/util"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 )
 
 type jWTCreateClientCommand struct {

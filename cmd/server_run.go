@@ -14,7 +14,7 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/provtarget"
 	"github.com/choria-io/go-choria/server"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 	log "github.com/sirupsen/logrus"
 )
 

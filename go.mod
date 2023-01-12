@@ -13,6 +13,7 @@ require (
 	github.com/choria-io/appbuilder v0.4.1
 	github.com/choria-io/fisk v0.3.0
 	github.com/choria-io/go-updater v0.1.0
+	github.com/choria-io/tokens v0.0.0-20230112113909-3f753e0400d3
 	github.com/cloudevents/sdk-go/v2 v2.12.0
 	github.com/dustin/go-humanize v1.0.0
 	github.com/fatih/color v1.13.0
@@ -34,7 +35,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.9.11
 	github.com/nats-io/nats.go v1.22.1
 	github.com/nats-io/natscli v0.0.35
-	github.com/onsi/ginkgo/v2 v2.6.1
+	github.com/onsi/ginkgo/v2 v2.7.0
 	github.com/onsi/gomega v1.24.2
 	github.com/open-policy-agent/opa v0.47.4
 	github.com/prometheus/client_golang v1.14.0
