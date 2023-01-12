@@ -161,6 +161,7 @@ var _ = Describe("NagiosWatcher", func() {
 					TTLExpired: 1,
 				},
 				CertificateExpires: now.Add(365 * 24 * time.Hour),
+				TokenExpires:       now.Add(30 * 24 * time.Hour),
 				FileName:           sf,
 				ModTime:            now,
 			}
@@ -169,8 +170,8 @@ var _ = Describe("NagiosWatcher", func() {
 
 			state, output, err := watch.watchUsingChoria()
 			Expect(output).To(Or(
-				Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31536000;;", sf, now.Unix())),
-				Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;;", sf, now.Unix())),
+				Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31536000;; token_expire_seconds=2592000;;", sf, now.Unix())),
+				Equal(fmt.Sprintf("OK: %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;; token_expire_seconds=2591999;;", sf, now.Unix())),
 			))
 			Expect(state).To(Equal(OK))
 			Expect(err).ToNot(HaveOccurred())
@@ -179,21 +180,34 @@ var _ = Describe("NagiosWatcher", func() {
 			status.LastMessage = lm.Unix()
 			sj, _ = json.Marshal(status)
 			os.WriteFile(sf, sj, 0644)
+
 			state, output, err = watch.watchUsingChoria()
 			Expect(state).To(Equal(CRITICAL))
 			Expect(output).To(Or(
-				Equal(fmt.Sprintf("CRITICAL: last message at %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;;", time.Unix(status.LastMessage, 0).UTC(), status.LastMessage)),
-				Equal(fmt.Sprintf("CRITICAL: last message at %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31536000;;", time.Unix(status.LastMessage, 0).UTC(), status.LastMessage)),
+				Equal(fmt.Sprintf("CRITICAL: last message at %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;; token_expire_seconds=2591999;;", time.Unix(status.LastMessage, 0).UTC(), status.LastMessage)),
+				Equal(fmt.Sprintf("CRITICAL: last message at %s|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31536000;; token_expire_seconds=2592000;;", time.Unix(status.LastMessage, 0).UTC(), status.LastMessage)),
 			))
 			Expect(err).ToNot(HaveOccurred())
 
 			watch.properties.CertExpiry = 366 * 24 * time.Hour
 			state, output, err = watch.watchUsingChoria()
+			Expect(err).ToNot(HaveOccurred())
 			Expect(state).To(Equal(CRITICAL))
 			Expect(output).To(Or(
-				Equal(fmt.Sprintf("CRITICAL: certificate expires %s (8760h0m0s)|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;;", status.CertificateExpires, status.LastMessage)),
-				Equal(fmt.Sprintf("CRITICAL: certificate expires %s (8760h0m0s)|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31536000;;", status.CertificateExpires, status.LastMessage)),
+				Equal(fmt.Sprintf("CRITICAL: certificate expires %s (8760h0m0s)|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;; token_expire_seconds=2591999;;", status.CertificateExpires, status.LastMessage)),
+				Equal(fmt.Sprintf("CRITICAL: certificate expires %s (8760h0m0s)|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31536000;; token_expire_seconds=2592000;;", status.CertificateExpires, status.LastMessage)),
 			))
+
+			watch.properties.CertExpiry = 24 * time.Hour
+			watch.properties.TokenExpiry = 365 * 24 * time.Hour
+			state, output, err = watch.watchUsingChoria()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(state).To(Equal(CRITICAL))
+			Expect(output).To(Or(
+				Equal(fmt.Sprintf("CRITICAL: token expires %s (720h0m0s)|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31535999;; token_expire_seconds=2591999;;", status.TokenExpires, status.LastMessage)),
+				Equal(fmt.Sprintf("CRITICAL: token expires %s (720h0m0s)|uptime=1000;; filtered_msgs=1;; invalid_msgs=1;; passed_msgs=1;; replies_msgs=2;; total_msgs=4;; ttlexpired_msgs=1;; last_msg=%d;; cert_expire_seconds=31536000;; token_expire_seconds=2592000;;", status.TokenExpires, status.LastMessage)),
+			))
+
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
