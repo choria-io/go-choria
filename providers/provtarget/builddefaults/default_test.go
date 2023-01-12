@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )

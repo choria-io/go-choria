@@ -13,7 +13,7 @@ import (
 	"github.com/choria-io/go-choria/client/client"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/opa"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 	"github.com/open-policy-agent/opa/ast"
 	"github.com/open-policy-agent/opa/rego"
 	"github.com/open-policy-agent/opa/types"

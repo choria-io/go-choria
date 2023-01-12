@@ -15,7 +15,7 @@ import (
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

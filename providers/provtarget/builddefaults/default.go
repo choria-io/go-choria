@@ -15,7 +15,7 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/srvcache"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/backoff"

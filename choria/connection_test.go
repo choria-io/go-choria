@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 )
@@ -36,7 +36,7 @@ var _ = Describe("Connector", func() {
 
 			t, err := tokens.NewServerClaims(id, []string{"choria"}, "choria", nil, []string{}, pk, "ginkgo", time.Hour)
 			Expect(err).ToNot(HaveOccurred())
-			s, err := tokens.SignTokenWithKeyFile(t, "../tokens/testdata/rsa/signer-key.pem")
+			s, err := tokens.SignTokenWithKeyFile(t, "testdata/rsa/signer-key.pem")
 			Expect(err).ToNot(HaveOccurred())
 
 			_, err = tf.WriteString(s)

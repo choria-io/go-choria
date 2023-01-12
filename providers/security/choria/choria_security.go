@@ -24,7 +24,7 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/tlssetup"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 	"github.com/sirupsen/logrus"
 )
 

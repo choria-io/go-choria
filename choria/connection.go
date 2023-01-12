@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/tokens"
 	"github.com/prometheus/client_golang/prometheus"
 
 	"github.com/choria-io/go-choria/backoff"
@@ -706,7 +707,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 		seedFile, err := conn.fw.SignerSeedFile()
 		if err == nil && seedFile != "" {
-			_, jwth, sigh, err := NatsConnectionHelpers(conn.token, conn.config.MainCollective, seedFile, conn.log)
+			_, jwth, sigh, err := tokens.NatsConnectionHelpers(conn.token, conn.config.MainCollective, seedFile, conn.log)
 			if err != nil {
 				return err
 			}

@@ -20,7 +20,7 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
 	v2 "github.com/choria-io/go-choria/protocol/v2"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 	"github.com/dustin/go-humanize"
 	"github.com/nats-io/nats.go"
 	"github.com/tidwall/gjson"

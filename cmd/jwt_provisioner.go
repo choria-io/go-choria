@@ -14,7 +14,7 @@ import (
 
 	"github.com/AlecAivazis/survey/v2"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/tokens"
+	"github.com/choria-io/tokens"
 )
 
 type jWTCreateProvCommand struct {
