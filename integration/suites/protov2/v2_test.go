@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -33,6 +33,8 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
+type remoteSignerFunc func(context.Context, []byte, inter.RequestSignerConfig) ([]byte, error)
+
 func TestV2Protocol(t *testing.T) {
 	RegisterFailHandler(Fail)
 	RunSpecs(t, "Protocol V2")
@@ -40,21 +42,23 @@ func TestV2Protocol(t *testing.T) {
 
 var _ = Describe("Protocol V2", func() {
 	var (
-		ctx           context.Context
-		cancel        context.CancelFunc
-		wg            sync.WaitGroup
-		logger        *logrus.Logger
-		brokerLogBuff *gbytes.Buffer
-		issuerPubK    ed25519.PublicKey
-		rootDir       string
-		err           error
+		ctx            context.Context
+		cancel         context.CancelFunc
+		wg             sync.WaitGroup
+		logger         *logrus.Logger
+		brokerLogBuff  *gbytes.Buffer
+		issuerPubK     ed25519.PublicKey
+		issuerPubKFile string
+		rootDir        string
+		err            error
 	)
 
 	BeforeEach(func() {
 		rootDir, err = os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
 
-		issuerPubK, _, err = iu.Ed25519KeyPairToFile(filepath.Join(rootDir, "issuer"))
+		issuerPubKFile = filepath.Join(rootDir, "issuer")
+		issuerPubK, _, err = iu.Ed25519KeyPairToFile(issuerPubKFile)
 		Expect(err).ToNot(HaveOccurred())
 
 		brokerLogBuff, logger = testutil.GbytesLogger(logrus.DebugLevel)
@@ -65,17 +69,14 @@ var _ = Describe("Protocol V2", func() {
 			os.RemoveAll(rootDir)
 		})
 
-		brokerPubk, _, err := iu.Ed25519KeyPairToFile(filepath.Join(rootDir, "broker.seed"))
+		tokenFile, _, _, priFile, err := testutil.CreateChoriaTokenAndKeys(rootDir, issuerPubKFile, nil, func(pk ed25519.PublicKey) (jwt.Claims, error) {
+			return tokens.NewServerClaims("localhost", []string{"choria"}, "choria", nil, nil, pk, "", time.Hour)
+		})
 		Expect(err).ToNot(HaveOccurred())
-		brokerClaims, err := tokens.NewServerClaims("localhost", []string{"choria"}, "choria", nil, nil, brokerPubk, "", time.Hour)
-		Expect(err).ToNot(HaveOccurred())
-		token, err := tokens.SignTokenWithKeyFile(brokerClaims, filepath.Join(rootDir, "issuer"))
-		Expect(err).ToNot(HaveOccurred())
-		Expect(os.WriteFile(filepath.Join(rootDir, "broker.jwt"), []byte(token), 0644)).To(Succeed())
 
 		cfg, err := iu.ExecuteTemplateFile("testdata/broker.conf", map[string]any{
-			"seed":   filepath.Join(rootDir, "broker.seed"),
-			"token":  filepath.Join(rootDir, "broker.jwt"),
+			"seed":   priFile,
+			"token":  tokenFile,
 			"issuer": hex.EncodeToString(issuerPubK),
 		}, nil)
 		Expect(err).ToNot(HaveOccurred())
@@ -88,26 +89,27 @@ var _ = Describe("Protocol V2", func() {
 		Eventually(brokerLogBuff, 1).Should(gbytes.Say("Server is ready"))
 	})
 
-	createTemp := func(name string, template string, issuerSeed string, claimsf func(key ed25519.PublicKey) (jwt.Claims, error)) (td, cfile, tfile, sfile string) {
-		td, err := os.MkdirTemp(rootDir, "")
+	// creates a temporary directory and in it seed, public, jwt file and a config file from template
+	createTemp := func(name string, template string, issuerSeedFile string, claimsf func(key ed25519.PublicKey) (jwt.Claims, error)) (td string, cfile string, tfile string, sfile string) {
+		var err error
+		issPubK := issuerPubK
+
+		if issuerSeedFile != "" {
+			issPubK, _, err = iu.Ed25519KeyPairFromSeedFile(issuerSeedFile)
+			Expect(err).ToNot(HaveOccurred())
+		}
+
+		td, err = os.MkdirTemp(rootDir, "")
 		Expect(err).ToNot(HaveOccurred())
 
-		pubk, _, err := iu.Ed25519KeyPairToFile(filepath.Join(td, "seed"))
+		tfn, _, _, sfn, err := testutil.CreateChoriaTokenAndKeys(td, issuerSeedFile, nil, claimsf)
 		Expect(err).ToNot(HaveOccurred())
-
-		claims, err := claimsf(pubk)
-		Expect(err).ToNot(HaveOccurred())
-
-		tfn := filepath.Join(td, "token.jwt")
-		sfn := filepath.Join(td, "seed")
-
-		Expect(tokens.SaveAndSignTokenWithKeyFile(claims, issuerSeed, filepath.Join(td, "token.jwt"), 0600)).To(Succeed())
 
 		cfg, err := iu.ExecuteTemplateFile(template, map[string]any{
 			"name":   name,
 			"token":  tfn,
 			"seed":   sfn,
-			"issuer": hex.EncodeToString(issuerPubK),
+			"issuer": hex.EncodeToString(issPubK),
 		}, nil)
 		Expect(err).ToNot(HaveOccurred())
 
@@ -124,7 +126,7 @@ var _ = Describe("Protocol V2", func() {
 
 		name := fmt.Sprintf("srv-%d.example.net", i)
 		_, cfile, _, _ := createTemp(name, cfgFile, filepath.Join(rootDir, "issuer"), func(pk ed25519.PublicKey) (jwt.Claims, error) {
-			return tokens.NewServerClaims(name, []string{"choria"}, "choria", nil, nil, pk, "ginko", time.Minute)
+			return tokens.NewServerClaims(name, []string{"choria"}, "choria", nil, nil, pk, "ginkgo", time.Minute)
 		})
 
 		srv, err := testutil.StartServerInstance(ctx, &wg, cfile, logger, testutil.ServerWithRPCUtilAgent(), testutil.ServerWithDiscovery())
@@ -139,7 +141,7 @@ var _ = Describe("Protocol V2", func() {
 		return logbuff, srv
 	}
 
-	createRpcUtilClient := func(perms *tokens.ClientPermissions, signer string, remoteSigner func(context.Context, []byte, inter.RequestSignerConfig) ([]byte, error)) (*gbytes.Buffer, *rpcutilclient.RpcutilClient, *choria.Framework, *config.Config) {
+	createRpcUtilClient := func(perms *tokens.ClientPermissions, signer string, remoteSigner remoteSignerFunc) (*gbytes.Buffer, *rpcutilclient.RpcutilClient, *choria.Framework, *config.Config) {
 		logBuff, logger := testutil.GbytesLogger(logrus.DebugLevel)
 
 		if signer == "" {
@@ -166,6 +168,58 @@ var _ = Describe("Protocol V2", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		return logBuff, client, fw, cfg
+	}
+
+	aaaSignGen := func(forceInvalid bool) remoteSignerFunc {
+		return func(ctx context.Context, req []byte, scfg inter.RequestSignerConfig) ([]byte, error) {
+			v2Req, err := v2.NewRequest("", "", "", 0, "", "choria")
+			if err != nil {
+				return nil, err
+			}
+
+			err = json.Unmarshal(req, v2Req)
+			if err != nil {
+				return nil, err
+			}
+
+			signerPub, _, err := iu.Ed25519KeyPairToFile(filepath.Join(rootDir, "fn_signer.seed"))
+			Expect(err).ToNot(HaveOccurred())
+
+			signer := filepath.Join(rootDir, "issuer")
+			// we support generating failing signatures on purpose
+			if forceInvalid {
+				signer = filepath.Join(rootDir, "fn_signer.seed")
+			}
+
+			// create a new directory with our aaa signer tokens, seed etc with the delegator permission
+			_, cfile, tfile, _ := createTemp("localhost", "testdata/client.conf", signer, func(pk ed25519.PublicKey) (jwt.Claims, error) {
+				return tokens.NewClientIDClaims("fn_signer", nil, "choria", nil, "", "", time.Hour, &tokens.ClientPermissions{AuthenticationDelegator: true}, signerPub)
+			})
+
+			// we now create a config for that delegated signer and make sure we use the right seed since createTemp() will have made one too
+			cfg, err := config.NewConfig(cfile)
+			Expect(err).ToNot(HaveOccurred())
+			cfg.CustomLogger = logger
+			cfg.Choria.ChoriaSecuritySeedFile = filepath.Join(rootDir, "fn_signer.seed")
+
+			// signer needs its own security instances
+			fw, err := choria.NewWithConfig(cfg)
+			Expect(err).ToNot(HaveOccurred())
+
+			// this is what aaa service does
+			v2Req.SetCallerID("delegated_client")
+			v2SReq, err := fw.NewSecureRequest(context.Background(), v2Req)
+			if err != nil {
+				return nil, err
+			}
+
+			token, err := os.ReadFile(tfile)
+			Expect(err).ToNot(HaveOccurred())
+
+			v2SReq.SetSigner(token)
+
+			return v2SReq.JSON()
+		}
 	}
 
 	Describe("Basic Operation", func() {
@@ -230,60 +284,19 @@ var _ = Describe("Protocol V2", func() {
 		It("Should support signed clients", func() {
 			serverLogbuff, _ := startServerInstance("testdata/server.conf", 1)
 
-			ctr := 0
+			var forceFail bool
 
 			// we create a client that has a custom remote signer configured, the remote signer does not call any remote AAA server but instead calls a local callback
 			// the local callback will do 1 valid request followed by all future ones signed by an invalid issuer.  This should fully allow 1 request as if it was against
-			// AAA Server thats correctly configured in the issuer and then just forever fail as being from another issuer
+			// AAA Server that's correctly configured in the issuer and then just forever fail as being from another issuer
 			clientLogbuff, client, _, _ := createRpcUtilClient(&tokens.ClientPermissions{SignedFleetManagement: true}, "", func(ctx context.Context, req []byte, scfg inter.RequestSignerConfig) ([]byte, error) {
-				v2Req, err := v2.NewRequest("", "", "", 0, "", "choria")
+				signed, err := aaaSignGen(forceFail)(ctx, req, scfg)
 				if err != nil {
 					return nil, err
 				}
+				forceFail = true
 
-				err = json.Unmarshal(req, v2Req)
-				if err != nil {
-					return nil, err
-				}
-
-				signerPub, _, err := iu.Ed25519KeyPairToFile(filepath.Join(rootDir, "fn_signer.seed"))
-				Expect(err).ToNot(HaveOccurred())
-
-				signer := filepath.Join(rootDir, "issuer")
-				// second time this is called we will try to use a rogue signer not issued by the issuer
-				if ctr > 0 {
-					signer = filepath.Join(rootDir, "fn_signer.seed")
-				}
-				ctr++
-
-				// create a new directory with our aaa signer tokens, seed etc with the delegator permission
-				_, cfile, tfile, _ := createTemp("localhost", "testdata/client.conf", signer, func(pk ed25519.PublicKey) (jwt.Claims, error) {
-					return tokens.NewClientIDClaims("fn_signer", nil, "choria", nil, "", "", time.Hour, &tokens.ClientPermissions{AuthenticationDelegator: true}, signerPub)
-				})
-
-				// we now create a config for that delegated signer and make sure we use the right seed since createTemp() will have made one too
-				cfg, err := config.NewConfig(cfile)
-				Expect(err).ToNot(HaveOccurred())
-				cfg.CustomLogger = logger
-				cfg.Choria.ChoriaSecuritySeedFile = filepath.Join(rootDir, "fn_signer.seed")
-
-				// signer needs its own security instances
-				fw, err := choria.NewWithConfig(cfg)
-				Expect(err).ToNot(HaveOccurred())
-
-				// this is what aaa service does
-				v2Req.SetCallerID("delegated_client")
-				v2SReq, err := fw.NewSecureRequest(context.Background(), v2Req)
-				if err != nil {
-					return nil, err
-				}
-
-				token, err := os.ReadFile(tfile)
-				Expect(err).ToNot(HaveOccurred())
-
-				v2SReq.SetSigner(token)
-
-				return v2SReq.JSON()
+				return signed, nil
 			})
 
 			client.OptionTargets([]string{"srv-1.example.net"})
