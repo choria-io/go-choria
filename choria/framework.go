@@ -53,8 +53,9 @@ import (
 type Framework struct {
 	Config *config.Config
 
-	security inter.SecurityProvider
-	log      *log.Logger
+	customRequestSigner inter.RequestSigner
+	security            inter.SecurityProvider
+	log                 *log.Logger
 
 	bi       *build.Info
 	srvcache *srvcache.Cache
@@ -62,8 +63,18 @@ type Framework struct {
 	mu       *sync.Mutex
 }
 
+type Option func(fw *Framework) error
+
+// WithCustomRequestSigner sets a custom request signer, generally only used in tests
+func WithCustomRequestSigner(s inter.RequestSigner) Option {
+	return func(fw *Framework) error {
+		fw.customRequestSigner = s
+		return nil
+	}
+}
+
 // New sets up a Choria with all its config loaded and so forth
-func New(path string) (*Framework, error) {
+func New(path string, opts ...Option) (*Framework, error) {
 	conf, err := config.NewConfig(path)
 	if err != nil {
 		return nil, err
@@ -71,11 +82,11 @@ func New(path string) (*Framework, error) {
 
 	conf.ApplyBuildSettings(BuildInfo())
 
-	return NewWithConfig(conf)
+	return NewWithConfig(conf, opts...)
 }
 
 // NewWithConfig creates a new instance of the framework with the supplied config instance
-func NewWithConfig(cfg *config.Config) (*Framework, error) {
+func NewWithConfig(cfg *config.Config, opts ...Option) (*Framework, error) {
 	c := Framework{
 		Config: cfg,
 		mu:     &sync.Mutex{},
@@ -83,6 +94,13 @@ func NewWithConfig(cfg *config.Config) (*Framework, error) {
 	}
 
 	rand.Seed(time.Now().UnixNano())
+
+	for _, opt := range opts {
+		err := opt(&c)
+		if err != nil {
+			return nil, err
+		}
+	}
 
 	err := c.SetupLogging(false)
 	if err != nil {
@@ -114,6 +132,8 @@ func (fw *Framework) setupSecurity() error {
 	)
 
 	switch {
+	case fw.customRequestSigner != nil:
+		signer = fw.customRequestSigner
 	case fw.Config.Choria.RemoteSignerService:
 		signer = signers.NewAAAServiceRPCSigner(fw)
 	case fw.Config.Choria.RemoteSignerURL != "":
@@ -517,7 +537,7 @@ func (fw *Framework) SetupLogging(debug bool) (err error) {
 	return
 }
 
-// TrySrvLookup will attempt to lookup a series of names returning the first found
+// TrySrvLookup will attempt to look up a series of names returning the first found
 // if SRV lookups are disabled or nothing is found the default will be returned
 func (fw *Framework) TrySrvLookup(names []string, defaultSrv srvcache.Server) (srvcache.Server, error) {
 	if !fw.Config.Choria.UseSRVRecords {

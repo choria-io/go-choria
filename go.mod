@@ -13,9 +13,9 @@ require (
 	github.com/choria-io/appbuilder v0.4.1
 	github.com/choria-io/fisk v0.3.0
 	github.com/choria-io/go-updater v0.1.0
-	github.com/choria-io/tokens v0.0.0-20230112113909-3f753e0400d3
-	github.com/cloudevents/sdk-go/v2 v2.12.0
-	github.com/dustin/go-humanize v1.0.0
+	github.com/choria-io/tokens v0.0.0-20230112131649-de9d17888ec1
+	github.com/cloudevents/sdk-go/v2 v2.13.0
+	github.com/dustin/go-humanize v1.0.1
 	github.com/fatih/color v1.13.0
 	github.com/fatih/structtag v1.2.0
 	github.com/ghodss/yaml v1.0.0
@@ -37,7 +37,7 @@ require (
 	github.com/nats-io/natscli v0.0.35
 	github.com/onsi/ginkgo/v2 v2.7.0
 	github.com/onsi/gomega v1.24.2
-	github.com/open-policy-agent/opa v0.47.4
+	github.com/open-policy-agent/opa v0.48.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/client_model v0.3.0
 	github.com/robfig/cron v1.2.0
@@ -71,7 +71,6 @@ require (
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/choria-io/goform v0.0.2 // indirect
 	github.com/creack/pty v1.1.18 // indirect
-	github.com/dgraph-io/badger/v3 v3.2103.5 // indirect
 	github.com/dgryski/trifles v0.0.0-20220729183022-231ecf6ed548 // indirect
 	github.com/emicklei/dot v1.1.0 // indirect
 	github.com/foxcpp/go-mockdns v1.0.0 // indirect
