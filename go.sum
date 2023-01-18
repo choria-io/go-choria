@@ -62,8 +62,8 @@ github.com/choria-io/go-updater v0.1.0 h1:+Pt2ifsDh478T/ldA8fnDwavvH3RTQNn1mkrab
 github.com/choria-io/go-updater v0.1.0/go.mod h1:8qj3lwYUC6c0zqsvaKP4pNu8GMHbIr5WGrd5YUWByWw=
 github.com/choria-io/goform v0.0.2 h1:6xVVCM8xtwSVFnn+XY5Aqsq6PWU4sxllkDAbkIoOVd4=
 github.com/choria-io/goform v0.0.2/go.mod h1:duNtNRvWQS+Hf2U4VjM7LDleQOOLGyJjx+OQH+tLM5s=
-github.com/choria-io/tokens v0.0.0-20230112131649-de9d17888ec1 h1:UfK4jYG6emkIAXMEAWcKfzIH2nw2pJPFfxQgQQfukK4=
-github.com/choria-io/tokens v0.0.0-20230112131649-de9d17888ec1/go.mod h1:N519OY0kktSbUSjQYosYASs/53Zb0jCS/I8hbXpQHKo=
+github.com/choria-io/tokens v0.0.0-20230118103245-75e1631f856d h1:GU+6rPSxY1aR17XHvfVYOq/lbrWvkGK0skdSmluRFBU=
+github.com/choria-io/tokens v0.0.0-20230118103245-75e1631f856d/go.mod h1:N519OY0kktSbUSjQYosYASs/53Zb0jCS/I8hbXpQHKo=
 github.com/client9/misspell v0.3.4/go.mod h1:qj6jICC3Q7zFZvVWo7KLAzC3yx5G7kyvSDkc90ppPyw=
 github.com/cloudevents/sdk-go/v2 v2.13.0 h1:2zxDS8RyY1/wVPULGGbdgniGXSzLaRJVl136fLXGsYw=
 github.com/cloudevents/sdk-go/v2 v2.13.0/go.mod h1:xDmKfzNjM8gBvjaF8ijFjM1VYOVUEeUfapHMUX1T5To=

@@ -155,15 +155,29 @@ func (cl *jWTCreateClientCommand) createJWT() error {
 	claims.AdditionalPublishSubjects = cl.additionalPub
 
 	if cl.chain {
-		_, sprik, err := iu.Ed25519KeyPairFromSeedFile(cl.signingKey)
-		if err != nil {
-			return err
-		}
+		if cl.useVault {
+			var tlsc *tls.Config
+			tlsc, err = c.ClientTLSConfig()
+			if err == nil {
+				to, cancel := context.WithTimeout(ctx, 2*time.Second)
+				defer cancel()
 
-		err = claims.AddOrgIssuerData(sprik)
-		if err != nil {
-			return err
+				err = claims.AddOrgIssuerDataUsingVault(to, tlsc, cl.signingKey, c.Logger("jwt"))
+			}
+		} else {
+			_, sprik, err := iu.Ed25519KeyPairFromSeedFile(cl.signingKey)
+			if err != nil {
+				return err
+			}
+
+			err = claims.AddOrgIssuerData(sprik)
+			if err != nil {
+				return err
+			}
 		}
+	}
+	if err != nil {
+		return fmt.Errorf("chained signature failed: %v", err)
 	}
 
 	if cl.useVault {
@@ -178,11 +192,6 @@ func (cl *jWTCreateClientCommand) createJWT() error {
 	} else {
 		err = tokens.SaveAndSignTokenWithKeyFile(claims, cl.signingKey, cl.file, 0600)
 	}
-	if err != nil {
-		return err
-	}
-
-	err = tokens.SaveAndSignTokenWithKeyFile(claims, cl.signingKey, cl.file, 0600)
 	if err != nil {
 		return err
 	}
