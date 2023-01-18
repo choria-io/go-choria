@@ -27,7 +27,20 @@ type Generator struct {
 }
 
 func (c *Generator) ValidateJSON(agent *ddl.DDL) error {
-	errs, err := iu.ValidateSchemaFromFS("schemas/mcorpc/ddl/v1/agent.json", agent)
+	// new validation library wants to only handle pure json type while the previous would take
+	// *agent.DDL and figure it out, now we have to take data and convert it to a basic type before
+	// validation
+	jd, err := json.Marshal(agent)
+	if err != nil {
+		return err
+	}
+	var d any
+	err = json.Unmarshal(jd, &d)
+	if err != nil {
+		return err
+	}
+
+	errs, err := iu.ValidateSchemaFromFS("schemas/mcorpc/ddl/v1/agent.json", d)
 	if err != nil {
 		return err
 	}
