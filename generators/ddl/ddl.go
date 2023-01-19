@@ -199,7 +199,6 @@ func (c *Generator) AskBool(m string) bool {
 	}
 	survey.AskOne(prompt, &should)
 	return should
-
 }
 
 func (c *Generator) askEnum(name string, prompt string, help string, valid []string, v survey.Validator) *survey.Question {
@@ -260,20 +259,6 @@ func (c *Generator) semVerValidator(v any) error {
 	}
 
 	return nil
-}
-
-func (c *Generator) boolValidator(v any) error {
-	vs, ok := v.(string)
-	if !ok {
-		return fmt.Errorf("should be a string")
-	}
-
-	if vs == "" {
-		return nil
-	}
-
-	_, err := iu.StrToBool(vs)
-	return err
 }
 
 func (c *Generator) shortnameValidator(v any) error {
@@ -569,7 +554,8 @@ this metadata is used to keep an internal inventory of all the available service
           URL: A URL one can visit for further information about the agent
       Timeout: Maximum time in seconds any action will be allowed to run
      Provider: The provider to use - ruby for traditional mcollective ones,
-               external for ones complying to the External Agent structure
+               external for ones complying to the External Agent structure,
+               golang for ones delivered as a native Go plugin.
       Service: Indicates an agent will be a service, hosted in a load sharing
                group rather than 1:n as normal agents.\n`)
 
@@ -582,13 +568,14 @@ this metadata is used to keep an internal inventory of all the available service
 		c.askBasicItem("url", "URL", "", survey.ToLower, c.urlValidator),
 		c.askBasicItem("timeout", "Timeout", "", nil, survey.Required),
 		c.askEnum("provider", "Backend Provider", "", []string{"ruby", "external", "golang"}, nil),
-		c.askBasicItem("service", "Service", "", nil, c.boolValidator),
 	}
 
 	err := survey.Ask(qs, agent.Metadata)
 	if err != nil {
 		return err
 	}
+
+	agent.Metadata.Service = c.AskBool("Service")
 
 	c.showJSON("Resulting metadata", agent.Metadata)
 

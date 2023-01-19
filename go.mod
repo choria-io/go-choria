@@ -33,10 +33,10 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.35
 	github.com/nats-io/nats-server/v2 v2.9.11
-	github.com/nats-io/nats.go v1.22.1
+	github.com/nats-io/nats.go v1.23.0
 	github.com/nats-io/natscli v0.0.35
 	github.com/onsi/ginkgo/v2 v2.7.0
-	github.com/onsi/gomega v1.24.2
+	github.com/onsi/gomega v1.25.0
 	github.com/open-policy-agent/opa v0.48.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/client_model v0.3.0
@@ -66,7 +66,7 @@ require (
 	github.com/benbjohnson/clock v1.3.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
-	github.com/brutella/dnssd v1.2.4 // indirect
+	github.com/brutella/dnssd v1.2.5 // indirect
 	github.com/cespare/xxhash/v2 v2.2.0 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/choria-io/goform v0.0.2 // indirect
@@ -81,7 +81,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/flatbuffers v22.11.23+incompatible // indirect
-	github.com/google/pprof v0.0.0-20221219190121-3cb0bae90811 // indirect
+	github.com/google/pprof v0.0.0-20230111200839-76d1ae5aea2b // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/goss-org/GOnetstat v0.0.0-20230101144325-22be0bd9e64d // indirect
 	github.com/goss-org/go-ps v0.0.0-20230101144351-953ade48a71b // indirect
