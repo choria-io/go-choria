@@ -7,7 +7,7 @@ require (
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.4.0
-	github.com/antonmedv/expr v1.9.0
+	github.com/antonmedv/expr v1.10.2
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
 	github.com/choria-io/appbuilder v0.4.1
