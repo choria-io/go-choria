@@ -148,7 +148,7 @@ func (w *Watcher) EnterGovernor(ctx context.Context, name string, timeout time.D
 	w.mu.Lock()
 	gCtx, w.govCancel = context.WithTimeout(ctx, timeout)
 	w.mu.Unlock()
-	defer w.govCancel()
+	defer w.CancelGovernor()
 
 	fin, seq, err := gov.Start(gCtx, fmt.Sprintf("Auto Agent  %s#%s @ %s", w.machine.Name(), w.name, w.machine.Identity()))
 	if err != nil {
