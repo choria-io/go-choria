@@ -38,6 +38,7 @@ package governor
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -105,6 +106,8 @@ type Manager interface {
 	// Connection is the NATS connection used to communicate
 	Connection() *nats.Conn
 }
+
+var errRetry = errors.New("retryable error")
 
 type jsGMgr struct {
 	name     string
@@ -288,10 +291,13 @@ func (g *jsGMgr) Start(ctx context.Context, name string) (Finisher, uint64, erro
 
 		res, err := jsm.ParsePubAck(m)
 		if err != nil {
-			if !jsm.IsNatsError(err, 10077) {
-				g.Errorf("Invalid pub ack: %s", err)
+			// jetstream sent us a puback error, this is retryable in the case of governors
+			if jsm.IsNatsError(err, 10077) {
+				g.Debugf("Could not obtain a slot: %v", err)
+				return errRetry
 			}
 
+			g.Errorf("Invalid pub ack: %s", err)
 			return err
 		}
 
@@ -332,9 +338,19 @@ func (g *jsGMgr) Start(ctx context.Context, name string) (Finisher, uint64, erro
 
 	g.Debugf("Starting to campaign every %v for a slot on %s using %s", g.cint, g.name, g.subj)
 
+	// we try to enter the governor and if it fails in a way thats safe to retry
+	// we will do so else we exit.
+	//
+	// We need to handle thins like context timeout, bucket not found etc specifically
+	// as hard errors since, especially context timeout, it does not mean the message did
+	// not enter the governor, it just means something went wrong, perhaps in getting the
+	// ok reply.  In the case where the message did reach the governor but the reply could
+	// not be processed we will retry again and again potentially filling the governor.
 	err := try()
 	if err == nil {
 		return closer, seq, nil
+	} else if err != errRetry {
+		return nil, 0, err
 	}
 
 	ticker := time.NewTicker(g.cint)
@@ -343,13 +359,18 @@ func (g *jsGMgr) Start(ctx context.Context, name string) (Finisher, uint64, erro
 		select {
 		case <-ticker.C:
 			tries++
+
 			err = try()
 			if err == nil {
 				return closer, seq, nil
+			} else if err != errRetry {
+				return nil, 0, err
 			}
 
 			if g.bo != nil {
-				ticker.Reset(g.bo.Duration(tries))
+				delay := g.bo.Duration(tries)
+				g.Debugf("Retrying after %v", delay)
+				ticker.Reset(delay)
 			}
 
 		case <-ctx.Done():
