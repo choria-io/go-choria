@@ -1,5 +1,11 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2023/01/23 | 1968  | Improve handling of governors on slow nodes and during critical failures                                           |
+| 2023/01/19 | 1966  | Improve `plugin generate ddl` UX                                                                                   |
+| 2023/01/18 | 1964  | Improve DDL schema validation                                                                                      |
+| 2023/01/12 | 1959  | Ensure provisioning tokens have a default non-zero expiry                                                          |
+| 2023/01/12 | 1740  | Extract the `tokens` package into `github.com/choria-io/tokens`                                                    |
+| 2023/01/10 | 1952  | Improve fact filter parsing to handle functions both left and right of the equation                                |
 | 2022/12/15 | 1942  | Support streaming JSON output on `choria req` to assist non-golang clients to be built quicker                     |
 | 2022/12/14 | 1939  | Support multi-arch binaries for external agents                                                                    |
 | 2022/12/12 |       | Support `direct` mode for Choria Key-Value Stores to increase scale and throughput                                 |
