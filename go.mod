@@ -7,7 +7,7 @@ require (
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.4.0
-	github.com/antonmedv/expr v1.10.3
+	github.com/antonmedv/expr v1.10.5
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
 	github.com/choria-io/appbuilder v0.4.1
@@ -16,10 +16,10 @@ require (
 	github.com/choria-io/tokens v0.0.0-20230118103245-75e1631f856d
 	github.com/cloudevents/sdk-go/v2 v2.13.0
 	github.com/dustin/go-humanize v1.0.1
-	github.com/fatih/color v1.14.0
+	github.com/fatih/color v1.14.1
 	github.com/fatih/structtag v1.2.0
 	github.com/ghodss/yaml v1.0.0
-	github.com/gofrs/uuid v4.3.1+incompatible
+	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.4.3
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.9
@@ -36,10 +36,11 @@ require (
 	github.com/nats-io/nats.go v1.23.0
 	github.com/nats-io/natscli v0.0.35
 	github.com/onsi/ginkgo/v2 v2.7.0
-	github.com/onsi/gomega v1.25.0
+	github.com/onsi/gomega v1.26.0
 	github.com/open-policy-agent/opa v0.48.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/client_model v0.3.0
+	github.com/prometheus/common v0.39.0
 	github.com/robfig/cron v1.2.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.1.1
 	github.com/segmentio/ksuid v1.0.4
@@ -112,7 +113,6 @@ require (
 	github.com/oleiade/reflections v1.0.1 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
-	github.com/prometheus/common v0.39.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
