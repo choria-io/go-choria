@@ -28,21 +28,21 @@ require (
 	github.com/gosuri/uiprogress v0.0.1
 	github.com/guptarohit/asciigraph v0.5.5
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
-	github.com/looplab/fsm v1.0.0
+	github.com/looplab/fsm v1.0.1
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.0.35
 	github.com/nats-io/nats-server/v2 v2.9.11
 	github.com/nats-io/nats.go v1.23.0
 	github.com/nats-io/natscli v0.0.35
-	github.com/onsi/ginkgo/v2 v2.7.0
+	github.com/onsi/ginkgo/v2 v2.8.0
 	github.com/onsi/gomega v1.26.0
 	github.com/open-policy-agent/opa v0.48.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/client_model v0.3.0
 	github.com/prometheus/common v0.39.0
 	github.com/robfig/cron v1.2.0
-	github.com/santhosh-tekuri/jsonschema/v5 v5.1.1
+	github.com/santhosh-tekuri/jsonschema/v5 v5.2.0
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.9.0
 	github.com/tidwall/gjson v1.14.4
@@ -82,7 +82,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/flatbuffers v23.1.21+incompatible // indirect
-	github.com/google/pprof v0.0.0-20230111200839-76d1ae5aea2b // indirect
+	github.com/google/pprof v0.0.0-20230131232505-5a9e8f65f08f // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/goss-org/GOnetstat v0.0.0-20230101144325-22be0bd9e64d // indirect
 	github.com/goss-org/go-ps v0.0.0-20230101144351-953ade48a71b // indirect
