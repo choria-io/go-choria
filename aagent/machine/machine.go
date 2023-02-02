@@ -561,7 +561,7 @@ func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) (started chan s
 			}
 		}
 
-		m.Infof(m.MachineName, "Starting Choria Machine %s version %s from %s", m.MachineName, m.MachineVersion, m.directory)
+		m.Infof(m.MachineName, "Starting Choria Machine %s version %s from %s in state %s", m.MachineName, m.MachineVersion, m.directory, m.InitialState)
 
 		err := m.manager.Run(m.ctx, wg)
 		if err != nil {
