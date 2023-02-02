@@ -1,5 +1,8 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2023/02/02 | 1976  | Allow `choria machine run` to be used without a valid Choria install                                               |
+| 2023/02/02 | 1974  | Fix validation of Autonomous Agents that use timer watchers                                                        |
+| 2023/01/26 | 1972  | Create a tool to monitor JWT token health and contents                                                             |
 | 2023/01/23 | 1968  | Improve handling of governors on slow nodes and during critical failures                                           |
 | 2023/01/19 | 1966  | Improve `plugin generate ddl` UX                                                                                   |
 | 2023/01/18 | 1964  | Improve DDL schema validation                                                                                      |

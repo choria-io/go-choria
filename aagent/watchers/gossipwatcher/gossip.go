@@ -163,6 +163,11 @@ func (w *Watcher) startGossip() {
 		}
 
 		publish := func() {
+			if !w.ShouldWatch() {
+				return
+			}
+
+			w.Infof("Gossiping while in state %v", w.machine.State())
 			nc, err := w.getConn()
 			if err != nil {
 				w.Errorf("Could not get NATS connection: %v", err)
