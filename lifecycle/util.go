@@ -5,7 +5,6 @@
 package lifecycle
 
 import (
-	"math/rand"
 	"time"
 
 	"github.com/choria-io/go-choria/internal/util"
@@ -13,10 +12,6 @@ import (
 
 var mockTime int64
 var mockID string
-
-func init() {
-	rand.Seed(time.Now().UnixNano())
-}
 
 func timeStamp() int64 {
 	if mockTime != 0 {

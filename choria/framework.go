@@ -11,7 +11,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"math/rand"
 	"net"
 	"net/http"
 	"net/url"
@@ -92,8 +91,6 @@ func NewWithConfig(cfg *config.Config, opts ...Option) (*Framework, error) {
 		mu:     &sync.Mutex{},
 		bi:     BuildInfo(),
 	}
-
-	rand.Seed(time.Now().UnixNano())
 
 	for _, opt := range opts {
 		err := opt(&c)

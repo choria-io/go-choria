@@ -31,6 +31,7 @@ type jWTCreateServerCommand struct {
 	service     bool
 	pk          string
 	useVault    bool
+	useGovernor bool
 
 	command
 }
@@ -56,6 +57,7 @@ func (s *jWTCreateServerCommand) Setup() (err error) {
 		s.cmd.Flag("validity", "How long the token should be valid for").Default("8760h").DurationVar(&s.validity)
 		s.cmd.Flag("service", "Indicates that the user can have long validity tokens").UnNegatableBoolVar(&s.service)
 		s.cmd.Flag("vault", "Use Hashicorp Vault to sign the JWT").UnNegatableBoolVar(&s.useVault)
+		s.cmd.Flag("governor", "Allows access to all governors").UnNegatableBoolVar(&s.useGovernor)
 	}
 
 	return nil
@@ -91,6 +93,11 @@ func (s *jWTCreateServerCommand) createJWT() error {
 		Submission:  s.submission,
 		Streams:     s.streamUser,
 		ServiceHost: s.service,
+		Governor:    s.useGovernor,
+	}
+
+	if perms.Governor && !perms.Streams {
+		return fmt.Errorf("cannot set --governor unless --stream-user is also set ")
 	}
 
 	pk, err := hex.DecodeString(s.pk)
