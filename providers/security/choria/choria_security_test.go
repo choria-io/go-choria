@@ -40,8 +40,6 @@ var _ = Describe("Providers/Security/Choria", func() {
 	)
 
 	BeforeEach(func() {
-		rand.Seed(time.Now().UnixNano())
-
 		cfg = &Config{}
 		mockCtl = gomock.NewController(GinkgoT())
 		logbuf = gbytes.NewBuffer()
