@@ -675,7 +675,7 @@ func (a *ChoriaAuth) cachedEd25519Token(token string) (ed25519.PublicKey, error)
 func (a *ChoriaAuth) parseServerJWTWithSigners(jwts string) (claims *tokens.ServerClaims, err error) {
 	for _, s := range a.serverJwtSigners {
 		// its a token
-		if len(s) == 64 {
+		if tokens.IsEncodedEd25519Key([]byte(s)) {
 			var pk ed25519.PublicKey
 			pk, err = a.cachedEd25519Token(s)
 			if err != nil {
@@ -777,7 +777,7 @@ func (a *ChoriaAuth) parseServerJWT(jwts string) (claims *tokens.ServerClaims, e
 func (a *ChoriaAuth) parseClientJWTWithSigners(jwts string) (claims *tokens.ClientIDClaims, err error) {
 	for _, s := range a.clientJwtSigners {
 		// its a token
-		if len(s) == 64 {
+		if tokens.IsEncodedEd25519Key([]byte(s)) {
 			var pk ed25519.PublicKey
 			pk, err = a.cachedEd25519Token(s)
 			if err != nil {
