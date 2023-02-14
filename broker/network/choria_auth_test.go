@@ -15,6 +15,8 @@ import (
 	"net"
 	"os"
 	"path/filepath"
+	"runtime"
+	"strings"
 	"time"
 
 	"github.com/choria-io/go-choria/choria"
@@ -193,8 +195,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					privateKey   *rsa.PrivateKey
 					edPrivateKey ed25519.PrivateKey
 					edPublicKey  ed25519.PublicKey
-					// verifiedConn *tls.ConnectionState
-					err error
+					err          error
 				)
 
 				BeforeEach(func() {
@@ -1495,6 +1496,38 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(err).To(MatchError("no public key in claims"))
 			})
 
+			It("Should handle public keys that are 64 long file names", func() {
+				if runtime.GOOS == "windows" {
+					Skip("Not supported on windows")
+				}
+
+				td, err := os.MkdirTemp("/tmp", "")
+				Expect(err).ToNot(HaveOccurred())
+				defer os.RemoveAll(td)
+
+				if len(td) > 50 {
+					Skip("Temp directory is too long for filename test")
+				}
+
+				pkPath := filepath.Join(td, strings.Repeat("x", 65-len(td)-strings.Count(td, string(os.PathSeparator))))
+				Expect(len(pkPath)).To(Equal(64))
+
+				edPublicKey, edPriKey, err := choria.Ed25519KeyPair()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(os.WriteFile(pkPath, []byte(hex.EncodeToString(edPublicKey)), 0600)).To(Succeed())
+
+				auth.serverJwtSigners = []string{pkPath}
+
+				signed := createSignedServerJWT(edPriKey, edPublicKey, map[string]any{
+					"purpose":    tokens.ServerPurpose,
+					"identity":   "ginkgo.example.net",
+					"public_key": hex.EncodeToString(edPublicKey),
+				})
+
+				_, err = auth.parseServerJWT(signed)
+				Expect(err).ToNot(HaveOccurred())
+			})
+
 			It("Should handle multiple public identifiers", func() {
 				edPublicKey, edPriKey, err := choria.Ed25519KeyPair()
 				Expect(err).ToNot(HaveOccurred())
@@ -1671,6 +1704,38 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				claims, err := auth.parseClientIDJWT(signed)
 				Expect(err).To(MatchError("no public key in claims"))
 				Expect(claims).To(BeNil())
+			})
+
+			It("Should handle file names that are exactly 64 characters long", func() {
+				if runtime.GOOS == "windows" {
+					Skip("Not supported on windows")
+				}
+
+				td, err := os.MkdirTemp("/tmp", "")
+				Expect(err).ToNot(HaveOccurred())
+				defer os.RemoveAll(td)
+
+				if len(td) > 50 {
+					Skip("Temp directory is too long for filename test")
+				}
+
+				pkPath := filepath.Join(td, strings.Repeat("x", 65-len(td)-strings.Count(td, string(os.PathSeparator))))
+				Expect(len(pkPath)).To(Equal(64))
+
+				edPublicKey, edPriKey, err := choria.Ed25519KeyPair()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(os.WriteFile(pkPath, []byte(hex.EncodeToString(edPublicKey)), 0600)).To(Succeed())
+
+				auth.clientJwtSigners = []string{pkPath}
+
+				signed := createSignedClientJWT(edPriKey, map[string]any{
+					"purpose":    tokens.ClientIDPurpose,
+					"public_key": hex.EncodeToString(edPublicKey),
+				})
+
+				claims, err := auth.parseClientIDJWT(signed)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(claims.CallerID).To(Equal("up=ginkgo"))
 			})
 
 			It("Should handle multiple public identifiers", func() {
