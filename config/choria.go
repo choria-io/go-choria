@@ -99,7 +99,7 @@ type ChoriaPluginConfig struct {
 	SecurityProvider    string   `confkey:"plugin.security.provider" default:"puppet" validate:"enum=puppet,file,pkcs11,certmanager,choria"` // The Security Provider to use
 	ServerAnonTLS       bool     `confkey:"plugin.security.server_anon_tls" default:"false"`                                                 // Use anonymous TLS to the Choria brokers from a server
 	ClientAnonTLS       bool     `confkey:"plugin.security.client_anon_tls" default:"false"`                                                 // Use anonymous TLS to the Choria brokers from a client, also disables security provider verification - only when a remote signer is set
-	AAAServiceLoginURLs []string `confkey:"plugin.login.aaasvc.login.url" url:"https://choria-io.github.io/aaasvc/"`                         // List of URLs to attempt to login against when the remote signer is enabled
+	AAAServiceLoginURLs []string `confkey:"plugin.login.aaasvc.login.url"  type:"comma_split" url:"https://choria-io.github.io/aaasvc/"`     // List of URLs to attempt to login against when the remote signer is enabled
 	CipherSuites        []string `confkey:"plugin.security.cipher_suites" type:"comma_split"`                                                // List of allowed cipher suites
 	ECCCurves           []string `confkey:"plugin.security.ecc_curves" type:"comma_split"`                                                   // List of allowed ECC curves
 	IssuerNames         []string `confkey:"plugin.security.issuer.names" type:"comma_split"`                                                 // List of names of valid issuers this server will accept, set indvidiaul issuer data using plugin.security.issuer.<name>.public
