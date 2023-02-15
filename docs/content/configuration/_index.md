@@ -8,7 +8,7 @@ pre = "<b>4. </b>"
 This is a list of all known Configuration settings. This list is based on declared settings within the Choria Go code base and so will not cover 100% of settings - plugins can contribute their own settings which are note known at compile time.
 
 {{% notice secondary "Version Hint" code-branch %}}
-Built on *04 Jan 23 16:40 UTC* using version *0.26.2*
+Built on *15 Feb 23 14:40 UTC* using version *0.26.2*
 {{% /notice %}}
 
 ### Run-time configuration
@@ -783,7 +783,7 @@ If SRV record lookups should be attempted to find Puppet, PuppetDB, Brokers etc
 
 ### plugin.login.aaasvc.login.url
 
- * **Type:** strings
+ * **Type:** comma_split
  * **Additional Information:** https://choria-io.github.io/aaasvc/
 
 List of URLs to attempt to login against when the remote signer is enabled
