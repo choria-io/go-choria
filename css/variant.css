@@ -272,6 +272,11 @@ div.box > .box-content {
     --VARIABLE-BOX-TEXT-color: var(--INTERNAL-MAIN-TEXT-color);
 }
 
+.cstyle.accent {
+    --VARIABLE-BOX-color: var(--INTERNAL-ACCENT-color);
+    --VARIABLE-BOX-TEXT-color: var(--INTERNAL-MAIN-TEXT-color);
+}
+
 .cstyle.blue {
     --VARIABLE-BOX-color: var(--INTERNAL-BOX-BLUE-color);
     --VARIABLE-BOX-TEXT-color: var(--INTERNAL-BOX-BLUE-TEXT-color);
@@ -327,7 +332,7 @@ table {
     background-color: var(--INTERNAL-MAIN-BG-color);
 }
 
-div.featherlight .featherlight-content{
+.lightbox img{
     background-color: var(--INTERNAL-MAIN-BG-color);
 }
 
@@ -361,6 +366,18 @@ pre .copy-to-clipboard-button:hover {
     background-color: var(--INTERNAL-MAIN-LINK-color);
     border-color: var(--INTERNAL-MAIN-LINK-color);
     color: var(--INTERNAL-CODE-BLOCK-BG-color);
+}
+
+.expand > label {
+    color: var(--INTERNAL-MAIN-LINK-color);
+}
+
+.expand > label:hover {
+    color: var(--INTERNAL-MAIN-LINK-HOVER-color);
+}
+
+.expand > label:after {
+    background-color: var(--INTERNAL-MAIN-LINK-HOVER-color);
 }
 
 #homelinks {
