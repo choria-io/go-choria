@@ -2,7 +2,7 @@
 
 A theme for [Hugo](https://gohugo.io/) designed for documentation.
 
-![Overview](https://github.com/McShelby/hugo-theme-relearn/raw/main/images/screenshot.png)
+![Overview](https://github.com/McShelby/hugo-theme-relearn/raw/main/images/hero.png)
 
 ## Motivation
 
@@ -20,7 +20,7 @@ The theme is a fork of the great [Learn theme](https://github.com/matcornic/hugo
 - Dedicated search page
 - Support for GFM (GitHub Flavored Markdown)
 - Print whole chapters or even the complete site
-- Multilingual mode for English, Arabic, Simplified Chinese, Traditional Chinese, Dutch, Finnish (Suomi), French, German, Hindi, Indonesian, Italian, Japanese, Korean, Polish, Portuguese, Russian, Spanish, Turkish, Vietnamese
+- Multilingual mode for English, Arabic, Simplified Chinese, Traditional Chinese, Czech, Dutch, Finnish, French, German, Hindi, Indonesian, Italian, Japanese, Korean, Polish, Portuguese, Russian, Spanish, Turkish, Vietnamese
 - Support for languages written right to left
 - Unrestricted menu configuration relating to amount of items and level of nesting
 - Font Awesome icons
@@ -29,6 +29,7 @@ The theme is a fork of the great [Learn theme](https://github.com/matcornic/hugo
 - Syntax highlighting
 - Customizable look and feel
 - Predefined (light, dark) and customizable color variants
+- Automatic switch for light/dark mode dependend on your OS settings
 - Attachments files
 - List child pages
 - Math and chemical formulae using the MathJax library
@@ -55,7 +56,7 @@ See the [What's New](https://mcshelby.github.io/hugo-theme-relearn/basics/migrat
 
 ## Contribution
 
-You are most welcome to contribute bugfixes or even new features to the source code. Please visit the [contribution guidelines](https://github.com/McShelby/hugo-theme-relearn/blob/main/.github/contributing.md) first.
+You are most welcome to contribute bugfixes or even new features to the source code. Please visit the [contribution guidelines](https://mcshelby.github.io/hugo-theme-relearn/dev/contributing) first.
 
 ## License
 

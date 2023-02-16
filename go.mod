@@ -13,7 +13,7 @@ require (
 	github.com/choria-io/appbuilder v0.5.0
 	github.com/choria-io/fisk v0.4.0
 	github.com/choria-io/go-updater v0.1.0
-	github.com/choria-io/tokens v0.0.0-20230214134442-7f04bfd84ca9
+	github.com/choria-io/tokens v0.0.1
 	github.com/cloudevents/sdk-go/v2 v2.13.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/fatih/color v1.14.1
@@ -133,7 +133,7 @@ require (
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/exp v0.0.0-20220921164117-439092de6870 // indirect
 	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/net v0.6.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gonum.org/v1/gonum v0.12.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
