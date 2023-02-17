@@ -22,9 +22,9 @@ func TestDefault(t *testing.T) {
 
 var _ = Describe("Default", func() {
 	var (
-		prov *Resolver
-		td   string
-		err  error
+		td  string
+		err error
+		bi  build.Info
 	)
 
 	createToken := func(claims *tokens.ProvisioningClaims, td string) string {
@@ -41,7 +41,6 @@ var _ = Describe("Default", func() {
 	BeforeEach(func() {
 		td, err = os.MkdirTemp("", "")
 		Expect(err).ToNot(HaveOccurred())
-		prov = &Resolver{}
 	})
 
 	AfterEach(func() {
@@ -51,7 +50,9 @@ var _ = Describe("Default", func() {
 	Describe("Configure", func() {
 		It("Should handle malformed jwt", func() {
 			build.ProvisionJWTFile = "testdata/invalid.jwt"
-			_, err := prov.setBuildBasedOnJWT()
+			reader, _ := os.Open(build.ProvisionJWTFile)
+			defer reader.Close()
+			_, err := SetBuildBasedOnJWT(reader, &bi)
 			Expect(err).To(MatchError("token contains an invalid number of segments"))
 		})
 
@@ -61,7 +62,9 @@ var _ = Describe("Default", func() {
 					Purpose: tokens.ProvisioningPurpose,
 				},
 			}, td)
-			_, err := prov.setBuildBasedOnJWT()
+			reader, _ := os.Open(build.ProvisionJWTFile)
+			defer reader.Close()
+			_, err := SetBuildBasedOnJWT(reader, &bi)
 			Expect(err).To(MatchError("no auth token"))
 		})
 
@@ -72,8 +75,9 @@ var _ = Describe("Default", func() {
 					Purpose: tokens.ProvisioningPurpose,
 				},
 			}, td)
-
-			_, err := prov.setBuildBasedOnJWT()
+			reader, _ := os.Open(build.ProvisionJWTFile)
+			defer reader.Close()
+			_, err := SetBuildBasedOnJWT(reader, &bi)
 			Expect(err).To(MatchError("no srv domain or urls"))
 
 		})
@@ -87,7 +91,9 @@ var _ = Describe("Default", func() {
 					Purpose: tokens.ProvisioningPurpose,
 				},
 			}, td)
-			_, err := prov.setBuildBasedOnJWT()
+			reader, _ := os.Open(build.ProvisionJWTFile)
+			defer reader.Close()
+			_, err := SetBuildBasedOnJWT(reader, &bi)
 			Expect(err).To(MatchError("both srv domain and URLs supplied"))
 		})
 
@@ -100,7 +106,9 @@ var _ = Describe("Default", func() {
 					Purpose: tokens.ProvisioningPurpose,
 				},
 			}, td)
-			_, err := prov.setBuildBasedOnJWT()
+			reader, _ := os.Open(build.ProvisionJWTFile)
+			defer reader.Close()
+			_, err := SetBuildBasedOnJWT(reader, &bi)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(build.ProvisionBrokerURLs).To(Equal("prov.example.net:4222"))
 			Expect(build.ProvisionBrokerSRVDomain).To(Equal(""))
@@ -118,7 +126,9 @@ var _ = Describe("Default", func() {
 					Purpose: tokens.ProvisioningPurpose,
 				},
 			}, td)
-			_, err := prov.setBuildBasedOnJWT()
+			reader, _ := os.Open(build.ProvisionJWTFile)
+			defer reader.Close()
+			_, err := SetBuildBasedOnJWT(reader, &bi)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(build.ProvisionBrokerURLs).To(Equal(""))
 			Expect(build.ProvisionBrokerSRVDomain).To(Equal("example.net"))
@@ -137,7 +147,9 @@ var _ = Describe("Default", func() {
 					Purpose: tokens.ProvisioningPurpose,
 				},
 			}, td)
-			_, err := prov.setBuildBasedOnJWT()
+			reader, _ := os.Open(build.ProvisionJWTFile)
+			defer reader.Close()
+			_, err := SetBuildBasedOnJWT(reader, &bi)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(build.ProvisionBrokerURLs).To(Equal("prov.example.net:4222"))
 			Expect(build.ProvisionBrokerSRVDomain).To(Equal(""))

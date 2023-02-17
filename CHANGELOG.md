@@ -1,5 +1,6 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2023/02/17 | 1987  | Export SetBuildBasedOnJWT in default proftarget plugin
 | 2023/02/15 | 1982  | Ensure multiple AAA Login URLs are parsed correctly                                                                | 
 | 2023/02/14 | 1980  | Correctly detect paths to ed25519 public keys that are 64 characters long as paths                                 |
 | 2023/02/13 | 1978  | Add the `--governor` permission to `choria jwt server`                                                             |
