@@ -7,6 +7,7 @@ package builddefaults
 import (
 	"context"
 	"fmt"
+	"io"
 	"net"
 	"os"
 	"strings"
@@ -55,7 +56,14 @@ func (b *Resolver) Configure(cfg *config.Config, log *logrus.Entry) {
 
 	b.identity = cfg.Identity
 
-	_, err := b.setBuildBasedOnJWT()
+	jwtreader, err := os.Open(b.bi.ProvisionJWTFile())
+	if err != nil {
+		log.Errorf("Configuration of the provisioner settings based on JWT file %s failed: %s", jwtf, err)
+		return
+	}
+	defer jwtreader.Close()
+
+	_, err = SetBuildBasedOnJWT(jwtreader, b.bi)
 	if err != nil {
 		log.Errorf("Configuration of the provisioner settings based on JWT file %s failed: %s", jwtf, err)
 	}
@@ -113,16 +121,14 @@ func (b *Resolver) Targets(ctx context.Context, log *logrus.Entry) []string {
 	return servers.Strings()
 }
 
-// setBuildBasedOnJWT sets build settings based on contents of a JWT file
-func (b *Resolver) setBuildBasedOnJWT() (*tokens.ProvisioningClaims, error) {
-	bi := b.bi
-
-	d, err := os.ReadFile(bi.ProvisionJWTFile())
+// SetBuildBasedOnJWT sets build settings based on contents of a JWT file
+func SetBuildBasedOnJWT(r io.Reader, bi *build.Info) (*tokens.ProvisioningClaims, error) {
+	jwt, err := io.ReadAll(r)
 	if err != nil {
 		return nil, err
 	}
 
-	claims, err := tokens.ParseProvisionTokenUnverified(string(d))
+	claims, err := tokens.ParseProvisionTokenUnverified(string(jwt))
 	if err != nil {
 		return nil, err
 	}
