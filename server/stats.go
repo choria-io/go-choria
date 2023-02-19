@@ -43,6 +43,11 @@ var (
 		Name: "choria_server_ttlexpired",
 		Help: "Number of messages received that were too old and dropped",
 	}, []string{"identity"})
+
+	eventsCtr = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: "choria_server_events",
+		Help: "Number of lifecycle events that were published by this instance",
+	}, []string{"identity"})
 )
 
 func init() {
@@ -53,4 +58,5 @@ func init() {
 	prometheus.MustRegister(repliesCtr)
 	prometheus.MustRegister(ttlExpiredCtr)
 	prometheus.MustRegister(totalCtr)
+	prometheus.MustRegister(eventsCtr)
 }

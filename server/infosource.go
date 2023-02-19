@@ -194,6 +194,7 @@ func (srv *Instance) Stats() statistics.ServerStats {
 		Filtered:   int64(srv.getPromCtrValue(filteredCtr)),
 		Replies:    int64(srv.getPromCtrValue(repliesCtr)),
 		TTLExpired: int64(srv.getPromCtrValue(ttlExpiredCtr)),
+		Events:     int64(srv.getPromCtrValue(eventsCtr)),
 	}
 }
 

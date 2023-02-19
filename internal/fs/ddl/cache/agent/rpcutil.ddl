@@ -54,6 +54,11 @@ action "daemon_stats", :description => "Get statistics from the running daemon" 
          :type        => "string",
          :display_as  => "Config File"
 
+  output :events,
+         :description => "The number of lifecycle events that was published",
+         :type        => "integer",
+         :display_as  => "Events"
+
   output :filtered,
          :description => "Count of message that didn't pass filter checks",
          :type        => "integer",

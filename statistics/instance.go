@@ -20,6 +20,7 @@ type ServerStats struct {
 	Filtered   int64 `json:"filtered"`
 	Replies    int64 `json:"replies"`
 	TTLExpired int64 `json:"ttlexpired"`
+	Events     int64 `json:"events"`
 }
 
 // InstanceStatus describes the current instance status

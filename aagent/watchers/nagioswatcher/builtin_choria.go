@@ -33,7 +33,7 @@ func (w *Watcher) watchUsingChoria() (state State, output string, err error) {
 		te = int(time.Until(status.TokenExpires).Seconds())
 	}
 
-	perfData := fmt.Sprintf("uptime=%d;; filtered_msgs=%d;; invalid_msgs=%d;; passed_msgs=%d;; replies_msgs=%d;; total_msgs=%d;; ttlexpired_msgs=%d;; last_msg=%d;; cert_expire_seconds=%d;; token_expire_seconds=%d;;", status.Uptime, int(status.Stats.Filtered), int(status.Stats.Invalid), int(status.Stats.Passed), int(status.Stats.Replies), int(status.Stats.Total), int(status.Stats.TTLExpired), status.LastMessage, ce, te)
+	perfData := fmt.Sprintf("uptime=%d;; filtered_msgs=%d;; invalid_msgs=%d;; passed_msgs=%d;; replies_msgs=%d;; total_msgs=%d;; ttlexpired_msgs=%d;; last_msg=%d;; cert_expire_seconds=%d;; token_expire_seconds=%d;; events=%d;;", status.Uptime, int(status.Stats.Filtered), int(status.Stats.Invalid), int(status.Stats.Passed), int(status.Stats.Replies), int(status.Stats.Total), int(status.Stats.TTLExpired), status.LastMessage, ce, te, int(status.Stats.Events))
 
 	err = status.CheckFileAge(time.Duration(3*freq) * time.Second)
 	if err != nil {
