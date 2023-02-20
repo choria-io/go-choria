@@ -60,6 +60,7 @@ func (s *ChoriaData) Run(_ context.Context, q data.Query, si agents.ServerInfoSo
 		"replies":          stats.Replies,
 		"total":            stats.Total,
 		"ttlexpired":       stats.TTLExpired,
+		"events":           stats.Events,
 		"unvalidated":      stats.Invalid,
 		"uptime":           si.UpTime(),
 		"validated":        stats.Valid,

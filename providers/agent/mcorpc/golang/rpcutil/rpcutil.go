@@ -94,6 +94,7 @@ type DaemonStatsReply struct {
 	Replies     int64    `json:"replies"`
 	StartTime   int64    `json:"starttime"`
 	TTLExpired  int64    `json:"ttlexpired"`
+	Events      int64    `json:"events"`
 	Times       CPUTimes `json:"times"`
 	Total       int64    `json:"total"`
 	Unvalidated int64    `json:"unvalidated"`
@@ -227,6 +228,7 @@ func daemonStatsAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.R
 		Replies:     stats.Replies,
 		StartTime:   agent.ServerInfoSource.StartTime().Unix(),
 		TTLExpired:  stats.TTLExpired,
+		Events:      stats.Events,
 		Times:       CPUTimes{},
 		Total:       stats.Total,
 		Unvalidated: stats.Invalid,

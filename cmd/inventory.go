@@ -124,6 +124,7 @@ func (i *inventoryCommand) inventoryAgent() error {
 	fmt.Printf("          Messages Filtered: %d\n", stats.Filtered)
 	fmt.Printf("           Expired Messages: %d\n", stats.TTLExpired)
 	fmt.Printf("               Replies Sent: %d\n", stats.Replies)
+	fmt.Printf("           Events Published: %d\n", stats.Events)
 	fmt.Println()
 	fmt.Printf("  Agents:\n\n")
 	util.SliceVerticalGroups(inventory.Agents, 3, func(g []string) {

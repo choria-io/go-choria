@@ -125,6 +125,11 @@
           "description": "Count of messages that did pass TTL checks",
           "display_as": "TTL Expired",
           "type": "integer"
+        },
+        "events": {
+          "description": "The number of lifecycle events that was published",
+          "display_as": "Events",
+          "type": "integer"
         }
       },
       "display": "always",

@@ -27,7 +27,14 @@ func (srv *Instance) PublishEvent(e lifecycle.Event) error {
 		e.SetFormat(lifecycle.CloudEventV1Format)
 	}
 
-	return lifecycle.PublishEvent(e, srv.connector)
+	err := lifecycle.PublishEvent(e, srv.connector)
+	if err != nil {
+		return err
+	}
+
+	eventsCtr.WithLabelValues(srv.cfg.Identity).Inc()
+
+	return nil
 }
 
 func (srv *Instance) eventComponent() string {
