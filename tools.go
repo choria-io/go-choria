@@ -8,8 +8,6 @@ package main
 
 import (
 	_ "github.com/fatih/structtag"
-	_ "github.com/onsi/ginkgo/v2/ginkgo/generators"
-	_ "github.com/onsi/ginkgo/v2/ginkgo/internal"
 )
 
 // this file is here to make things like go generate and ginkgo install
