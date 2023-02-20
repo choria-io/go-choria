@@ -233,8 +233,8 @@ func (fw *Framework) SupportsProvisioning() bool {
 }
 
 // ConfigureProvisioning adjusts the active configuration to match the provisioning profile
-func (fw *Framework) ConfigureProvisioning() {
-	provtarget.Configure(fw.Config, fw.Logger("provtarget"))
+func (fw *Framework) ConfigureProvisioning(ctx context.Context) {
+	provtarget.Configure(ctx, fw.Config, fw.Logger("provtarget"))
 
 	if !fw.ProvisionMode() {
 		return

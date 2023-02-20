@@ -582,15 +582,15 @@ func (mr *MockFrameworkMockRecorder) Configuration() *gomock.Call {
 }
 
 // ConfigureProvisioning mocks base method.
-func (m *MockFramework) ConfigureProvisioning() {
+func (m *MockFramework) ConfigureProvisioning(arg0 context.Context) {
 	m.ctrl.T.Helper()
-	m.ctrl.Call(m, "ConfigureProvisioning")
+	m.ctrl.Call(m, "ConfigureProvisioning", arg0)
 }
 
 // ConfigureProvisioning indicates an expected call of ConfigureProvisioning.
-func (mr *MockFrameworkMockRecorder) ConfigureProvisioning() *gomock.Call {
+func (mr *MockFrameworkMockRecorder) ConfigureProvisioning(arg0 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureProvisioning", reflect.TypeOf((*MockFramework)(nil).ConfigureProvisioning))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ConfigureProvisioning", reflect.TypeOf((*MockFramework)(nil).ConfigureProvisioning), arg0)
 }
 
 // DDLResolvers mocks base method.

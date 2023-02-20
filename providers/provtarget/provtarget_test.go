@@ -19,7 +19,7 @@ import (
 
 func TestServer(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Provtarget")
+	RunSpecs(t, "Providers/Provtarget")
 }
 
 var _ = Describe("Provision", func() {

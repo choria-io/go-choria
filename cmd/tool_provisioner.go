@@ -66,7 +66,7 @@ func (p *tProvisionerCommand) Configure() error {
 func (p *tProvisionerCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	c.ConfigureProvisioning()
+	c.ConfigureProvisioning(ctx)
 
 	if !c.ProvisionMode() {
 		return fmt.Errorf("not a server compiled for auto provisioning or the provisioning target is not functional")
