@@ -20,7 +20,7 @@ require (
 	github.com/fatih/structtag v1.2.0
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/golang-jwt/jwt/v4 v4.4.3
+	github.com/golang-jwt/jwt/v4 v4.5.0
 	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.9
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
@@ -35,12 +35,12 @@ require (
 	github.com/nats-io/nats-server/v2 v2.9.14
 	github.com/nats-io/nats.go v1.23.0
 	github.com/nats-io/natscli v0.0.35
-	github.com/onsi/ginkgo/v2 v2.8.1
-	github.com/onsi/gomega v1.26.0
+	github.com/onsi/ginkgo/v2 v2.8.3
+	github.com/onsi/gomega v1.27.1
 	github.com/open-policy-agent/opa v0.49.0
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/client_model v0.3.0
-	github.com/prometheus/common v0.39.0
+	github.com/prometheus/common v0.40.0
 	github.com/robfig/cron v1.2.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.2.0
 	github.com/segmentio/ksuid v1.0.4
