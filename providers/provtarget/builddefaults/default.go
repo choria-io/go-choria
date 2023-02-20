@@ -42,7 +42,7 @@ func (b *Resolver) Name() string {
 }
 
 // Configure overrides build settings using the contents of the JWT
-func (b *Resolver) Configure(cfg *config.Config, log *logrus.Entry) {
+func (b *Resolver) Configure(ctx context.Context, cfg *config.Config, log *logrus.Entry) {
 	jwtf := b.bi.ProvisionJWTFile()
 	if jwtf == "" {
 		return

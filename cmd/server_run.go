@@ -58,7 +58,7 @@ func (r *serverRunCommand) Configure() error {
 			return fmt.Errorf("could not parse configuration: %s", err)
 		}
 
-		provtarget.Configure(cfg, log.WithField("component", "provtarget"))
+		provtarget.Configure(ctx, cfg, log.WithField("component", "provtarget"))
 
 		if r.shouldProvision(cfg) {
 			if cfg.Choria.ServerTokenSeedFile != "" {
@@ -95,7 +95,7 @@ func (r *serverRunCommand) Configure() error {
 			return fmt.Errorf("could not create default server configuration")
 		}
 
-		provtarget.Configure(cfg, log.WithField("component", "provtarget"))
+		provtarget.Configure(ctx, cfg, log.WithField("component", "provtarget"))
 
 		// if a config file didn't exist and prov is disabled we cant start
 		if !r.shouldProvision(cfg) {
@@ -227,7 +227,7 @@ func (r *serverRunCommand) prepareInstance() (i *server.Instance, err error) {
 		log.Warn("Running with TLS Verification disabled, not compatible with production use.")
 	}
 
-	c.ConfigureProvisioning()
+	c.ConfigureProvisioning(ctx)
 
 	instance, err := server.NewInstance(c)
 	if err != nil {

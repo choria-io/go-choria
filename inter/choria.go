@@ -58,7 +58,7 @@ type Framework interface {
 	Certname() string
 	ClientTLSConfig() (*tls.Config, error)
 	Colorize(c string, format string, a ...any) string
-	ConfigureProvisioning()
+	ConfigureProvisioning(ctx context.Context)
 	DDLResolvers() ([]DDLResolver, error)
 	DisableTLSVerify() bool
 	Enroll(ctx context.Context, wait time.Duration, cb func(digest string, try int)) error

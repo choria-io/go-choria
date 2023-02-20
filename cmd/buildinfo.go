@@ -49,7 +49,7 @@ func (b *buildinfoCommand) Configure() (err error) {
 func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	c.ConfigureProvisioning()
+	c.ConfigureProvisioning(ctx)
 
 	fmt.Println("Choria build settings:")
 	fmt.Println()

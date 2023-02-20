@@ -25,8 +25,16 @@ type TargetResolver interface {
 	Targets(context.Context, *logrus.Entry) []string
 
 	// Configure will be called during server configuration and can be used to configure the target or adjust build settings or configuration
-	// this will always be called even when not in provisioning mode, one can use this to programatically set a provisioner token for example
-	Configure(*config.Config, *logrus.Entry)
+	// this will always be called even when not in provisioning mode, one can use this to programmatically set a provisioner token for example
+	//
+	// The intention of this function is that all the settings needed by provisioning (all the things in build) should be set during configure
+	// stage.  Later when Targets() are called the intention is that either the configured targets are returned verbatim or if for example the
+	// plugin queries something like SRV records those queries are done there.
+	//
+	// Today Configure() is expected to set the JWT file using bi.SetProvisionJWTFile() and that the file should exist before probisioning will
+	// happen, this will be revisited in future. See the shouldProvision() function in server_run.go for current logic that would trigger a
+	// server into provisioning.
+	Configure(context.Context, *config.Config, *logrus.Entry)
 }
 
 var mu = &sync.Mutex{}
@@ -43,7 +51,7 @@ func RegisterTargetResolver(r TargetResolver) error {
 }
 
 // Configure allows the resolver to adjust configuration
-func Configure(cfg *config.Config, log *logrus.Entry) {
+func Configure(ctx context.Context, cfg *config.Config, log *logrus.Entry) {
 	mu.Lock()
 	defer mu.Unlock()
 
@@ -51,7 +59,7 @@ func Configure(cfg *config.Config, log *logrus.Entry) {
 		return
 	}
 
-	resolver.Configure(cfg, log)
+	resolver.Configure(ctx, cfg, log)
 }
 
 // Targets is a list of brokers to connect to
