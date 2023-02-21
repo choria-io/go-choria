@@ -58,6 +58,7 @@ type ChoriaAuth struct {
 	systemAccount             *server.Account
 	provisioningAccount       *server.Account
 	provPass                  string
+	provWithoutToken          bool
 	systemUser                string
 	systemPass                string
 	tokenCache                map[string]ed25519.PublicKey
@@ -427,41 +428,27 @@ func (a *ChoriaAuth) handleVerifiedSystemAccount(c server.ClientAuthentication, 
 }
 
 func (a *ChoriaAuth) handleProvisioningUserConnectionWithIssuer(c server.ClientAuthentication) (bool, error) {
-	if a.provPass == emptyString {
-		return false, fmt.Errorf("provisioning user password not enabled")
-	}
-
-	if a.provisioningAccount == nil {
-		return false, fmt.Errorf("provisioning account is not set")
-	}
-
 	opts := c.GetOpts()
 
-	if opts.Token == "" {
+	if opts.Token == "" && !a.provWithoutToken {
 		return false, fmt.Errorf("no token provided in connection")
 	}
 
-	claims, err := a.parseClientIDJWTWithIssuer(opts.Token)
-	if err != nil {
-		return false, err
-	}
+	if opts.Token != "" {
+		claims, err := a.parseClientIDJWTWithIssuer(opts.Token)
+		if err != nil {
+			return false, err
+		}
 
-	if claims.Permissions == nil || !claims.Permissions.ServerProvisioner {
-		return false, fmt.Errorf("provisioner claim is false in token with caller id '%s'", claims.CallerID)
-	}
-
-	if opts.Password == emptyString {
-		return false, fmt.Errorf("password required")
-	}
-
-	if a.provPass != opts.Password {
-		return false, fmt.Errorf("invalid provisioner password supplied")
+		if claims.Permissions == nil || !claims.Permissions.ServerProvisioner {
+			return false, fmt.Errorf("provisioner claim is false in token with caller id '%s'", claims.CallerID)
+		}
 	}
 
 	user := a.createUser(c)
 	user.Account = a.provisioningAccount
 
-	a.log.Debugf("Registering user '%s' in account '%s' from claims with identity %s", user.Username, user.Account.Name, claims.CallerID)
+	a.log.Debugf("Registering user '%s' in account '%s' from claims with", user.Username, user.Account.Name)
 	c.RegisterUser(user)
 
 	return true, nil
@@ -472,30 +459,12 @@ func (a *ChoriaAuth) handleProvisioningUserConnectionWithTLS(c server.ClientAuth
 		return false, fmt.Errorf("provisioning user is only allowed over verified TLS connections")
 	}
 
-	if a.provPass == emptyString {
-		return false, fmt.Errorf("provisioning user password not enabled")
-	}
-
-	if a.provisioningAccount == nil {
-		return false, fmt.Errorf("provisioning account is not set")
-	}
-
 	if !a.isTLS {
 		return false, fmt.Errorf("provisioning user access requires TLS")
 	}
 
 	if c.GetTLSConnectionState() == nil {
 		return false, fmt.Errorf("provisioning user can only connect over tls")
-	}
-
-	opts := c.GetOpts()
-
-	if opts.Password == emptyString {
-		return false, fmt.Errorf("password required")
-	}
-
-	if a.provPass != opts.Password {
-		return false, fmt.Errorf("invalid provisioner password supplied")
 	}
 
 	user := a.createUser(c)
@@ -508,6 +477,24 @@ func (a *ChoriaAuth) handleProvisioningUserConnectionWithTLS(c server.ClientAuth
 }
 
 func (a *ChoriaAuth) handleProvisioningUserConnection(c server.ClientAuthentication, tlsVerified bool) (bool, error) {
+	if a.provPass == emptyString {
+		return false, fmt.Errorf("provisioning user password not enabled")
+	}
+
+	if a.provisioningAccount == nil {
+		return false, fmt.Errorf("provisioning account is not set")
+	}
+
+	opts := c.GetOpts()
+
+	if opts.Password == emptyString {
+		return false, fmt.Errorf("password required")
+	}
+
+	if a.provPass != opts.Password {
+		return false, fmt.Errorf("invalid provisioner password supplied")
+	}
+
 	if len(a.issuerTokens) > 0 {
 		return a.handleProvisioningUserConnectionWithIssuer(c)
 	}

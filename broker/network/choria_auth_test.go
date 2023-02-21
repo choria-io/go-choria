@@ -1012,6 +1012,26 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(verified).To(BeFalse())
 			})
 
+			It("Should support v1 provisioner connections", func() {
+				auth.provWithoutToken = true
+				auth.provPass = "s3cret"
+				auth.provisioningAccount = &server.Account{Name: provisioningUser}
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: provisioningUser, Password: "s3cret"}).AnyTimes()
+				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
+					Expect(user.Username).To(Equal(provisioningUser))
+					Expect(user.Password).To(Equal("s3cret"))
+					Expect(user.Account).To(Equal(auth.provisioningAccount))
+					Expect(user.Permissions).To(Not(BeNil()))
+					Expect(user.Permissions.Publish).To(BeNil())
+					Expect(user.Permissions.Subscribe).To(BeNil())
+					Expect(user.Permissions.Response).To(BeNil())
+				})
+
+				verified, err := auth.handleProvisioningUserConnection(mockClient, true)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(verified).To(BeTrue())
+			})
+
 			It("Should correctly verify the password and register the user", func() {
 				auth.provPass = "s3cret"
 				auth.provisioningAccount = &server.Account{Name: provisioningUser}
@@ -1047,6 +1067,8 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				auth.isTLS = false
 				auth.provisioningAccount = &server.Account{Name: provisioningUser}
 
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: provisioningUser, Password: "s3cret"}).AnyTimes()
+
 				verified, err := auth.handleProvisioningUserConnection(mockClient, true)
 				Expect(err).To(MatchError("provisioning user access requires TLS"))
 				Expect(verified).To(BeFalse())
@@ -1057,6 +1079,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				auth.isTLS = true
 				auth.provisioningAccount = &server.Account{Name: provisioningUser}
 				mockClient.EXPECT().GetTLSConnectionState().Return(nil).AnyTimes()
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: provisioningUser, Password: "s3cret"}).AnyTimes()
 
 				verified, err := auth.handleProvisioningUserConnection(mockClient, false)
 				Expect(err).To(MatchError("provisioning user is only allowed over verified TLS connections"))
