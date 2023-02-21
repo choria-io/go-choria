@@ -197,6 +197,16 @@ func (d *DaemonStatsOutput) Configfile() string {
 
 }
 
+// Events is the value of the events output
+//
+// Description: The number of lifecycle events that was published
+func (d *DaemonStatsOutput) Events() int64 {
+	val := d.reply["events"]
+
+	return val.(int64)
+
+}
+
 // Filtered is the value of the filtered output
 //
 // Description: Count of message that didn't pass filter checks
