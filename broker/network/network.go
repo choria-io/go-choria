@@ -173,23 +173,32 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 			choriaAuth.issuerTokens[issuer] = pk
 		}
 
-		if s.config.Choria.NetworkProvisioningClientPassword != "" {
-			s.log.Warnf("Allowing Provisioner connections subject to JWT claims")
-		}
-
 		if s.config.Choria.ChoriaSecurityCA != "" {
 			s.log.Warnf("Allowing standard fully verified mTLS NATS clients to perform Pub-Sub and Stream operations with no access to fleet management subjects")
 			choriaAuth.allowIssuerBasedTLSAccess = true
 		}
 	}
 
+	// provisioning happens over clear, so we can't have clear clients and clear provisioning
 	if choriaAuth.isTLS {
-		// provisioning happens over clear, so we can't have clear clients and clear provisioning
 		choriaAuth.provPass = s.config.Choria.NetworkProvisioningClientPassword
 		choriaAuth.provisioningAccount = s.provisioningAccount
 		choriaAuth.provisioningTokenSigner = s.config.Choria.NetworkProvisioningTokenSignerFile
 		choriaAuth.clientJwtSigners = s.config.Choria.NetworkClientTokenSigners
 		choriaAuth.serverJwtSigners = s.config.Choria.NetworkServerTokenSigners
+		choriaAuth.provWithoutToken = s.config.Choria.NetworkProvisioningWithoutToken
+
+		if choriaAuth.provPass != "" {
+			if len(choriaAuth.issuerTokens) > 0 {
+				if choriaAuth.provWithoutToken {
+					s.log.Warnf("Allowing Provisioner connections without JWT claims for version 1 provisioning")
+				} else {
+					s.log.Warnf("Allowing Provisioner connections subject to JWT claims")
+				}
+			} else {
+				s.log.Warnf("Allowing Provisioner connections")
+			}
+		}
 	}
 
 	if len(choriaAuth.clientJwtSigners) > 0 || len(choriaAuth.serverJwtSigners) > 0 || len(choriaAuth.issuerTokens) > 0 {
