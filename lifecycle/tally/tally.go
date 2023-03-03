@@ -8,6 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
 	"strings"
 	"sync"
 	"time"
@@ -43,6 +44,11 @@ type Recorder struct {
 
 	// transitions
 	transitionEvent *prometheus.CounterVec
+
+	// exec watch events
+	execWatchSuccess *prometheus.CounterVec
+	execWatchFail    *prometheus.CounterVec
+	execWatchRuntime *prometheus.SummaryVec
 }
 
 type observations struct {
@@ -282,6 +288,7 @@ func (r *Recorder) componentFromSubject(s string) string {
 func (r *Recorder) Run(ctx context.Context) (err error) {
 	lifeEvents := make(chan inter.ConnectorMessage, 100)
 	machineTransitions := make(chan inter.ConnectorMessage, 100)
+	execWatcherStates := make(chan inter.ConnectorMessage, 100)
 
 	maintSched := time.NewTicker(time.Minute)
 	subid := util.UniqueID()
@@ -298,6 +305,11 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 	err = r.options.Connector.QueueSubscribe(ctx, fmt.Sprintf("tally_transitions_%s", subid), "choria.machine.transition", "", machineTransitions)
 	if err != nil {
 		return fmt.Errorf("could not subscribe to machine transition events: %s", err)
+	}
+
+	err = r.options.Connector.QueueSubscribe(ctx, "tally_exec_watcher_states", "choria.machine.watcher.exec.state", "", execWatcherStates)
+	if err != nil {
+		return err
 	}
 
 	for {
@@ -322,6 +334,13 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 				r.badEvents.WithLabelValues("transition").Inc()
 			}
 
+		case t := <-execWatcherStates:
+			err = r.processExecWatcherState(t)
+			if err != nil {
+				r.options.Log.Errorf("could not process exec watcher event: %s", err)
+				r.badEvents.WithLabelValues("exec_watcher").Inc()
+			}
+
 		case <-maintSched.C:
 			r.maintenance()
 
@@ -329,4 +348,32 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 			return nil
 		}
 	}
+}
+
+func (r *Recorder) processExecWatcherState(m inter.ConnectorMessage) error {
+	ce := cloudevents.NewEvent("1.0")
+	event := &execwatcher.StateNotification{}
+
+	err := json.Unmarshal(m.Data(), &ce)
+	if err != nil {
+		return fmt.Errorf("could not parse cloudevent: %w", err)
+	}
+
+	err = ce.DataAs(event)
+	if err != nil {
+		return fmt.Errorf("could not parse state notification: %w", err)
+	}
+
+	switch event.PreviousOutcome {
+	case "success":
+		r.execWatchSuccess.WithLabelValues(event.Machine, event.Version, event.Name).Inc()
+	case "error":
+		r.execWatchFail.WithLabelValues(event.Machine, event.Version, event.Name).Inc()
+	default:
+		return nil
+	}
+
+	r.execWatchRuntime.WithLabelValues(event.Machine, event.Version, event.Name).Observe(time.Duration(event.PreviousRunTime).Seconds())
+
+	return nil
 }
