@@ -43,6 +43,21 @@ func (r *Recorder) createStats() {
 		Help: "Machine state transition",
 	}, []string{"machine", "version", "transition", "from", "to"})
 
+	r.execWatchSuccess = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: fmt.Sprintf("%s_exec_watcher_success", r.options.StatPrefix),
+		Help: "Machine exec watcher success runs",
+	}, []string{"machine", "version", "watcher"})
+
+	r.execWatchFail = prometheus.NewCounterVec(prometheus.CounterOpts{
+		Name: fmt.Sprintf("%s_exec_watcher_failures", r.options.StatPrefix),
+		Help: "Machine exec watcher failure runs",
+	}, []string{"machine", "version", "watcher"})
+
+	r.execWatchRuntime = prometheus.NewSummaryVec(prometheus.SummaryOpts{
+		Name: fmt.Sprintf("%s_exec_watcher_runtime", r.options.StatPrefix),
+		Help: "Machine exec watcher runtimes",
+	}, []string{"machine", "version", "watcher"})
+
 	r.nodesExpired = prometheus.NewCounterVec(prometheus.CounterOpts{
 		Name: fmt.Sprintf("%s_nodes_expired", r.options.StatPrefix),
 		Help: "The number of nodes that were expired after not receiving alive events",
@@ -62,5 +77,8 @@ func (r *Recorder) createStats() {
 		prometheus.MustRegister(r.transitionEvent)
 		prometheus.MustRegister(r.nodesExpired)
 		prometheus.MustRegister(r.governorEvents)
+		prometheus.MustRegister(r.execWatchFail)
+		prometheus.MustRegister(r.execWatchSuccess)
+		prometheus.MustRegister(r.execWatchRuntime)
 	}
 }
