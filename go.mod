@@ -35,7 +35,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.9.15
 	github.com/nats-io/nats.go v1.24.0
 	github.com/nats-io/natscli v0.0.35
-	github.com/onsi/ginkgo/v2 v2.8.4
+	github.com/onsi/ginkgo/v2 v2.9.0
 	github.com/onsi/gomega v1.27.2
 	github.com/open-policy-agent/opa v0.49.2
 	github.com/prometheus/client_golang v1.14.0
@@ -48,10 +48,10 @@ require (
 	github.com/tidwall/gjson v1.14.4
 	github.com/tidwall/pretty v1.2.1
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
-	golang.org/x/crypto v0.6.0
-	golang.org/x/sys v0.5.0
-	golang.org/x/term v0.5.0
-	golang.org/x/text v0.7.0
+	golang.org/x/crypto v0.7.0
+	golang.org/x/sys v0.6.0
+	golang.org/x/term v0.6.0
+	golang.org/x/text v0.8.0
 	golang.org/x/tools v0.6.0
 	rsc.io/goversion v1.2.0
 )
@@ -80,8 +80,9 @@ require (
 	github.com/go-logr/logr v1.2.3 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20210107165309-348f09dbbbc0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
+	github.com/golang/glog v1.1.0 // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
-	github.com/google/flatbuffers v23.1.21+incompatible // indirect
+	github.com/google/flatbuffers v23.3.3+incompatible // indirect
 	github.com/google/pprof v0.0.0-20230228050547-1710fef4ab10 // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/goss-org/GOnetstat v0.0.0-20230101144325-22be0bd9e64d // indirect
@@ -133,8 +134,8 @@ require (
 	go.uber.org/multierr v1.9.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/exp v0.0.0-20220921164117-439092de6870 // indirect
-	golang.org/x/mod v0.8.0 // indirect
-	golang.org/x/net v0.7.0 // indirect
+	golang.org/x/mod v0.9.0 // indirect
+	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gonum.org/v1/gonum v0.12.0 // indirect
 	google.golang.org/protobuf v1.28.1 // indirect
