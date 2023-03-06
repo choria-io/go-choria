@@ -47,6 +47,9 @@ const (
 
 	// Governor is an event components can publish while interacting with a Governor
 	Governor
+
+	// Upgraded is an event that can be fired to indicate a component was upgraded
+	Upgraded
 )
 
 //lint:ignore U1000 #1768 support for external clients
@@ -62,6 +65,8 @@ func (t Type) String() string {
 		return "Alive"
 	case Governor:
 		return "Governor"
+	case Upgraded:
+		return "Upgraded"
 	default:
 		return "Unknown"
 	}

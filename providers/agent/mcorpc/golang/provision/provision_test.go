@@ -829,7 +829,13 @@ var _ = Describe("Provision/Agent", func() {
 				SenderID:  "go.test",
 			}
 
-			si.EXPECT().NewEvent(lifecycle.Shutdown).Times(1)
+			si.EXPECT().NewEvent(gomock.Any(), gomock.Any()).Do(func(e lifecycle.Type, opts ...lifecycle.Option) error {
+				event, err := lifecycle.New(e, opts...)
+				Expect(err).ToNot(HaveOccurred())
+				Expect(event.Type()).To(Equal(lifecycle.Upgraded))
+				Expect(event.(*lifecycle.UpgradedEvent).NewVersion).To(Equal("0.7.0"))
+				return nil
+			})
 			releaseUpdateAction(ctx, req, reply, prov, nil)
 			Expect(reply.Statuscode).To(Equal(mcorpc.OK))
 			Expect(reply.Statusmsg).To(Equal(""))

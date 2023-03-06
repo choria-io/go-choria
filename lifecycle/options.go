@@ -16,6 +16,12 @@ type VersionEvent interface {
 	SetVersion(string)
 }
 
+// NewVersionEvent is an event that has a new and old version
+type NewVersionEvent interface {
+	VersionEvent
+	SetNewVersion(string)
+}
+
 // ComponentEvent is an event that has a component
 type ComponentEvent interface {
 	SetComponent(string)
@@ -51,6 +57,20 @@ func Version(version string) Option {
 		}
 
 		event.SetVersion(version)
+
+		return nil
+	}
+}
+
+// NewVersion set the version for events
+func NewVersion(version string) Option {
+	return func(e any) error {
+		event, ok := e.(NewVersionEvent)
+		if !ok {
+			return errors.New("cannot set version, event does not implement NewVersionEvent")
+		}
+
+		event.SetNewVersion(version)
 
 		return nil
 	}
