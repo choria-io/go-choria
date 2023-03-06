@@ -63,9 +63,9 @@ func releaseUpdateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc
 		return
 	}
 
-	err = agent.ServerInfoSource.NewEvent(lifecycle.Shutdown)
+	err = agent.ServerInfoSource.NewEvent(lifecycle.Upgraded, lifecycle.NewVersion(args.Version))
 	if err != nil {
-		agent.Log.Errorf("Could not publish shutdown event: %s", err)
+		agent.Log.Errorf("Could not publish upgraded event: %s", err)
 	}
 
 	reply.Data = Reply{"Restarting Choria Server after 2s"}
