@@ -1,5 +1,9 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2023/03/07 | 1998  | Support leader election for tally and label metrics by leader state                                                |
+| 2023/03/06 | 1996  | Emit new `upgraded` events when release upgrading a running server via provisioning                                |
+| 2023/03/03 | 1994  | Record exec watcher events in lifecycle recorder                                                                   |
+| 2023/02/21 | 1740  | Allow protocol v1 provisioners and servers to be provisioned on a v2 broker                                        |
 | 2023/02/20 | 1990  | Add `context.Context` to the provisioner target resolve `Configure()` method                                       |
 | 2023/02/19 | 1984  | Include the number of Lifecycle events published in instance stats, data and rpcutil output                        |
 | 2023/02/17 | 1987  | Export `SetBuildBasedOnJWT` in default proftarget plugin                                                           |

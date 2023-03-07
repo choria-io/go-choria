@@ -9,8 +9,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/choria-io/go-choria/aagent/watchers/execwatcher"
+	"github.com/choria-io/go-choria/backoff"
+	election "github.com/choria-io/go-choria/providers/election/streams"
+	"github.com/nats-io/nats.go"
+	"os"
+	"strconv"
 	"strings"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/machine"
@@ -24,6 +30,7 @@ import (
 // Connector is a connection to the middleware
 type Connector interface {
 	QueueSubscribe(ctx context.Context, name string, subject string, group string, output chan inter.ConnectorMessage) error
+	Nats() *nats.Conn
 }
 
 // Recorder listens for alive events and records the versions and expose the results to Prometheus
@@ -31,6 +38,7 @@ type Recorder struct {
 	sync.Mutex
 
 	options  *options
+	active   int32
 	observed map[string]*observations
 
 	// lifecycle
@@ -78,9 +86,27 @@ func New(opts ...Option) (recorder *Recorder, err error) {
 		return nil, fmt.Errorf("invalid options supplied: %s", err)
 	}
 
+	if recorder.options.Election == "" {
+		recorder.active = 1
+	}
+
 	recorder.createStats()
 
 	return recorder, nil
+}
+
+func (r *Recorder) wonCb() {
+	atomic.StoreInt32(&r.active, 1)
+	r.options.Log.Infof("Became leader")
+}
+
+func (r *Recorder) lostCb() {
+	atomic.StoreInt32(&r.active, 0)
+	r.options.Log.Infof("Lost leadership")
+}
+
+func (r *Recorder) activeLabel() string {
+	return strconv.Itoa(int(atomic.LoadInt32(&r.active)))
 }
 
 func (r *Recorder) processAlive(e lifecycle.Event) error {
@@ -108,7 +134,7 @@ func (r *Recorder) processAlive(e lifecycle.Event) error {
 			ts:        time.Now(),
 		}
 
-		r.versionsTally.WithLabelValues(alive.Component(), alive.Version).Inc()
+		r.versionsTally.WithLabelValues(alive.Component(), alive.Version, r.activeLabel()).Inc()
 
 		return nil
 	}
@@ -116,9 +142,9 @@ func (r *Recorder) processAlive(e lifecycle.Event) error {
 	cobs.hosts[hname].ts = time.Now()
 
 	if obs.version != alive.Version {
-		r.versionsTally.WithLabelValues(alive.Component(), obs.version).Dec()
+		r.versionsTally.WithLabelValues(alive.Component(), obs.version, r.activeLabel()).Dec()
 		obs.version = alive.Version
-		r.versionsTally.WithLabelValues(alive.Component(), obs.version).Inc()
+		r.versionsTally.WithLabelValues(alive.Component(), obs.version, r.activeLabel()).Inc()
 	}
 
 	return nil
@@ -142,7 +168,7 @@ func (r *Recorder) processStartup(e lifecycle.Event) error {
 
 	obs, ok := cobs.hosts[hname]
 	if ok {
-		r.versionsTally.WithLabelValues(startup.Component(), obs.version).Dec()
+		r.versionsTally.WithLabelValues(startup.Component(), obs.version, r.activeLabel()).Dec()
 	}
 
 	cobs.hosts[hname] = &observation{
@@ -151,7 +177,7 @@ func (r *Recorder) processStartup(e lifecycle.Event) error {
 		component: startup.Component(),
 	}
 
-	r.versionsTally.WithLabelValues(startup.Component(), startup.Version).Inc()
+	r.versionsTally.WithLabelValues(startup.Component(), startup.Version, r.activeLabel()).Inc()
 
 	return nil
 }
@@ -174,7 +200,7 @@ func (r *Recorder) processShutdown(e lifecycle.Event) error {
 	}
 
 	delete(cobs.hosts, hname)
-	r.versionsTally.WithLabelValues(shutdown.Component(), obs.version).Dec()
+	r.versionsTally.WithLabelValues(shutdown.Component(), obs.version, r.activeLabel()).Dec()
 
 	return nil
 }
@@ -182,7 +208,7 @@ func (r *Recorder) processShutdown(e lifecycle.Event) error {
 func (r *Recorder) processGovernor(e lifecycle.Event) error {
 	governor := e.(*lifecycle.GovernorEvent)
 
-	r.governorEvents.WithLabelValues(governor.Component(), governor.Governor, string(governor.EventType)).Inc()
+	r.governorEvents.WithLabelValues(governor.Component(), governor.Governor, string(governor.EventType), r.activeLabel()).Inc()
 
 	return nil
 }
@@ -190,11 +216,11 @@ func (r *Recorder) processGovernor(e lifecycle.Event) error {
 func (r *Recorder) process(e lifecycle.Event) (err error) {
 	r.options.Log.Debugf("Processing %s event from %s %s", e.TypeString(), e.Component(), e.Identity())
 
-	timer := r.processTime.WithLabelValues(e.Component())
+	timer := r.processTime.WithLabelValues(e.Component(), r.activeLabel())
 	obs := prometheus.NewTimer(timer)
 	defer obs.ObserveDuration()
 
-	r.eventTypes.WithLabelValues(e.Component(), e.TypeString()).Inc()
+	r.eventTypes.WithLabelValues(e.Component(), e.TypeString(), r.activeLabel()).Inc()
 
 	switch e.Type() {
 	case lifecycle.Alive:
@@ -211,9 +237,9 @@ func (r *Recorder) process(e lifecycle.Event) (err error) {
 	}
 
 	if err == nil {
-		r.okEvents.WithLabelValues(e.Component()).Inc()
+		r.okEvents.WithLabelValues(e.Component(), r.activeLabel()).Inc()
 	} else {
-		r.badEvents.WithLabelValues(e.Component()).Inc()
+		r.badEvents.WithLabelValues(e.Component(), r.activeLabel()).Inc()
 	}
 
 	return err
@@ -234,7 +260,7 @@ func (r *Recorder) maintenance() {
 
 		for host, obs := range r.observed[component].hosts {
 			if obs.ts.Before(oldest) {
-				r.versionsTally.WithLabelValues(obs.component, obs.version).Dec()
+				r.versionsTally.WithLabelValues(obs.component, obs.version, r.activeLabel()).Dec()
 				older[host] = obs
 			}
 		}
@@ -243,7 +269,7 @@ func (r *Recorder) maintenance() {
 			r.options.Log.Debugf("Removing node %s, last seen %v", host, obs.ts)
 
 			delete(r.observed[component].hosts, host)
-			r.nodesExpired.WithLabelValues(obs.component).Inc()
+			r.nodesExpired.WithLabelValues(obs.component, r.activeLabel()).Inc()
 		}
 
 		if len(older) > 0 {
@@ -270,7 +296,7 @@ func (r *Recorder) processStateTransition(m inter.ConnectorMessage) (err error) 
 		return fmt.Errorf("unknown notification protocol %s", event.Protocol)
 	}
 
-	r.transitionEvent.WithLabelValues(event.Machine, event.Version, event.Transition, event.FromState, event.ToState).Inc()
+	r.transitionEvent.WithLabelValues(event.Machine, event.Version, event.Transition, event.FromState, event.ToState, r.activeLabel()).Inc()
 
 	return nil
 }
@@ -312,13 +338,39 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 		return err
 	}
 
+	if r.options.Election != "" {
+		r.options.Log.Warnf("Starting leader election in campaign %s", r.options.Election)
+
+		name, err := os.Hostname()
+		if err != nil {
+			return err
+		}
+
+		js, err := r.options.Connector.Nats().JetStream()
+		if err != nil {
+			return err
+		}
+
+		kv, err := js.KeyValue("CHORIA_LEADER_ELECTION")
+		if err != nil {
+			return fmt.Errorf("cannot access KV Bucket CHORIA_LEADER_ELECTION: %v", err)
+		}
+
+		e, err := election.NewElection(name, r.options.Election, kv, election.WithBackoff(backoff.FiveSec), election.OnWon(r.wonCb), election.OnLost(r.lostCb))
+		if err != nil {
+			return err
+		}
+
+		go e.Start(ctx)
+	}
+
 	for {
 		select {
 		case e := <-lifeEvents:
 			event, err := lifecycle.NewFromJSON(e.Data())
 			if err != nil {
 				r.options.Log.Errorf("could not process event: %s", err)
-				r.badEvents.WithLabelValues(r.componentFromSubject(e.Subject())).Inc()
+				r.badEvents.WithLabelValues(r.componentFromSubject(e.Subject()), r.activeLabel()).Inc()
 				continue
 			}
 
@@ -331,14 +383,14 @@ func (r *Recorder) Run(ctx context.Context) (err error) {
 			err = r.processStateTransition(t)
 			if err != nil {
 				r.options.Log.Errorf("could not process transition event: %s", err)
-				r.badEvents.WithLabelValues("transition").Inc()
+				r.badEvents.WithLabelValues("transition", r.activeLabel()).Inc()
 			}
 
 		case t := <-execWatcherStates:
 			err = r.processExecWatcherState(t)
 			if err != nil {
 				r.options.Log.Errorf("could not process exec watcher event: %s", err)
-				r.badEvents.WithLabelValues("exec_watcher").Inc()
+				r.badEvents.WithLabelValues("exec_watcher", r.activeLabel()).Inc()
 			}
 
 		case <-maintSched.C:
@@ -366,14 +418,14 @@ func (r *Recorder) processExecWatcherState(m inter.ConnectorMessage) error {
 
 	switch event.PreviousOutcome {
 	case "success":
-		r.execWatchSuccess.WithLabelValues(event.Machine, event.Version, event.Name).Inc()
+		r.execWatchSuccess.WithLabelValues(event.Machine, event.Version, event.Name, r.activeLabel()).Inc()
 	case "error":
-		r.execWatchFail.WithLabelValues(event.Machine, event.Version, event.Name).Inc()
+		r.execWatchFail.WithLabelValues(event.Machine, event.Version, event.Name, r.activeLabel()).Inc()
 	default:
 		return nil
 	}
 
-	r.execWatchRuntime.WithLabelValues(event.Machine, event.Version, event.Name).Observe(time.Duration(event.PreviousRunTime).Seconds())
+	r.execWatchRuntime.WithLabelValues(event.Machine, event.Version, event.Name, r.activeLabel()).Observe(time.Duration(event.PreviousRunTime).Seconds())
 
 	return nil
 }

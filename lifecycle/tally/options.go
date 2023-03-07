@@ -17,6 +17,7 @@ type options struct {
 	Log        *logrus.Entry
 	Connector  Connector
 	StatPrefix string
+	Election   string
 }
 
 // Option configures Options
@@ -76,5 +77,12 @@ func Connection(c Connector) Option {
 func StatsPrefix(p string) Option {
 	return func(o *options) {
 		o.StatPrefix = p
+	}
+}
+
+// Election enables leader election between tally instances
+func Election(name string) Option {
+	return func(o *options) {
+		o.Election = name
 	}
 }
