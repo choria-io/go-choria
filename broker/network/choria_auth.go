@@ -965,7 +965,7 @@ func (a *ChoriaAuth) setElectionPermissions(user *server.User, subs []string, pu
 	return subs, pubs
 }
 
-func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string, client *tokens.ClientIDClaims, log *logrus.Entry) (pubs []string, subs []string, err error) {
+func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string, client *tokens.ClientIDClaims, log *logrus.Entry) (pubs []string, subs []string, pubsDeny []string, subsDeny []string, err error) {
 	var perms *tokens.ClientPermissions
 
 	if client != nil {
@@ -974,7 +974,7 @@ func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string,
 
 	if perms != nil && perms.OrgAdmin {
 		log.Infof("Granting user access to all subjects (OrgAdmin)")
-		return allSubjects, allSubjects, nil
+		return allSubjects, allSubjects, nil, nil, nil
 	}
 
 	subs, pubs = a.setMinimalClientPermissions(user, caller, subs, pubs)
@@ -984,59 +984,87 @@ func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string,
 		pubs = append(pubs, client.AdditionalPublishSubjects...)
 	}
 
-	if perms == nil {
-		return pubs, subs, nil
+	if perms != nil {
+		var matched bool
+
+		// Can access full Streams Features
+		if perms.StreamsAdmin {
+			log.Debugf("Granting user Streams Admin access")
+			matched = true
+			subs, pubs = a.setStreamsAdminPermissions(user, subs, pubs)
+		}
+
+		// Can use streams but not make new ones etc
+		if perms.StreamsUser {
+			log.Debugf("Granting user Streams User access")
+			matched = true
+			subs, pubs = a.setStreamsUserPermissions(user, subs, pubs)
+		}
+
+		// Lifecycle and auto agent events
+		if perms.EventsViewer {
+			log.Debugf("Granting user Events Viewer access")
+			matched = true
+			subs, pubs = a.setEventsViewerPermissions(user, subs, pubs)
+		}
+
+		// KV based elections
+		if perms.ElectionUser {
+			log.Debugf("Granting user Leader Election access")
+			matched = true
+			subs, pubs = a.setElectionPermissions(user, subs, pubs)
+		}
+
+		if perms.Governor && (perms.StreamsUser || perms.StreamsAdmin) {
+			log.Debugf("Granting user Governor access")
+			matched = true
+			subs, pubs = a.setClientGovernorPermissions(user, subs, pubs)
+		}
+
+		if perms.FleetManagement || perms.SignedFleetManagement {
+			log.Debugf("Granting user fleet management access")
+			matched = true
+			subs, pubs = a.setClientFleetManagementPermissions(subs, pubs)
+		}
+
+		if !matched {
+			if len(subs) == 0 {
+				subsDeny = allSubjects
+			}
+			if len(pubs) == 0 {
+				pubsDeny = allSubjects
+			}
+		}
 	}
 
-	// Can access full Streams Features
-	if perms.StreamsAdmin {
-		log.Debugf("Granting user Streams Admin access")
-		subs, pubs = a.setStreamsAdminPermissions(user, subs, pubs)
+	// we only lock down the choria account on deny all basis, not relevant today, but eventually we hope to use accounts more
+	if user.Account == a.choriaAccount {
+		// when an allow list is given and no deny, deny is implied.  But no allow means deny is also wide open, so this handles that case
+		if len(pubs) == 0 {
+			pubsDeny = allSubjects
+		}
+		if len(subs) == 0 {
+			subsDeny = allSubjects
+		}
 	}
 
-	// Can use streams but not make new ones etc
-	if perms.StreamsUser {
-		log.Debugf("Granting user Streams User access")
-		subs, pubs = a.setStreamsUserPermissions(user, subs, pubs)
-	}
-
-	// Lifecycle and auto agent events
-	if perms.EventsViewer {
-		log.Debugf("Granting user Events Viewer access")
-		subs, pubs = a.setEventsViewerPermissions(user, subs, pubs)
-	}
-
-	// KV based elections
-	if perms.ElectionUser {
-		log.Debugf("Granting user Leader Election access")
-		subs, pubs = a.setElectionPermissions(user, subs, pubs)
-	}
-
-	if perms.Governor && (perms.StreamsUser || perms.StreamsAdmin) {
-		log.Debugf("Granting user Governor access")
-		subs, pubs = a.setClientGovernorPermissions(user, subs, pubs)
-	}
-
-	if perms.FleetManagement || perms.SignedFleetManagement {
-		log.Debugf("Granting user fleet management access")
-		subs, pubs = a.setClientFleetManagementPermissions(subs, pubs)
-	}
-
-	return pubs, subs, nil
+	return pubs, subs, pubsDeny, subsDeny, nil
 }
 
 func (a *ChoriaAuth) setClientPermissions(user *server.User, caller string, client *tokens.ClientIDClaims, log *logrus.Entry) {
 	user.Permissions.Subscribe = &server.SubjectPermission{}
 	user.Permissions.Publish = &server.SubjectPermission{}
 
-	pubs, subs, err := a.setClientTokenPermissions(user, caller, client, log)
+	pubs, subs, pubDeny, subDeny, err := a.setClientTokenPermissions(user, caller, client, log)
 	if err != nil {
 		log.Warnf("Could not determine permissions for user, denying all: %s", err)
 		user.Permissions.Subscribe.Deny = allSubjects
 		user.Permissions.Publish.Deny = allSubjects
 	} else {
 		user.Permissions.Subscribe.Allow = subs
+		user.Permissions.Subscribe.Deny = subDeny
 		user.Permissions.Publish.Allow = pubs
+		user.Permissions.Publish.Deny = pubDeny
 	}
 
 	log.Debugf("Setting sub permissions: %#v", user.Permissions.Subscribe)

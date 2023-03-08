@@ -37,7 +37,7 @@ type remoteSignerFunc func(context.Context, []byte, inter.RequestSignerConfig) (
 
 func TestV2Protocol(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Protocol V2")
+	RunSpecs(t, "Integration/Protocol V2")
 }
 
 var _ = Describe("Protocol V2", func() {
@@ -266,7 +266,9 @@ var _ = Describe("Protocol V2", func() {
 
 			Eventually(clientLogbuff).Should(gbytes.Say("Setting JWT authentication with NONCE signatures for NATS connection"))
 			Eventually(clientLogbuff).Should(gbytes.Say("Signing nonce using seed file"))
-			Eventually(serverLogbuff).Should(gbytes.Say("access denied: does not have fleet management access"))
+
+			// without fleet access one cannot communicate with the signer even so this should fail
+			Eventually(brokerLogBuff).Should(gbytes.Say(`Publish Violation.+choria.node.srv-1.example.net`))
 
 			// second we allow it only when signed, and we're not signing here
 			clientLogbuff, client, _, _ = createRpcUtilClient(&tokens.ClientPermissions{SignedFleetManagement: true}, "", nil)

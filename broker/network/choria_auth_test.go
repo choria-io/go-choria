@@ -719,7 +719,9 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 						Allow: []string{"*.reply.e33bf0376d4accbb4a8fd24b2f840b2e.>"},
 					}))
-					Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{}))
+					Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+						Deny: allSubjects,
+					}))
 				})
 
 				verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
@@ -1917,6 +1919,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 					Allow: minPub,
+					Deny:  allSubjects,
 				}))
 			})
 		})
@@ -2008,19 +2011,25 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 		Describe("Minimal Permissions", func() {
 			It("Should support caller private reply subjects", func() {
+				user.Account = auth.choriaAccount
 				auth.setClientPermissions(user, "u=ginkgo", nil, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: []string{"*.reply.0f47cbbd2accc01a51e57261d6e64b8b.>"},
 				}))
-				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Deny: allSubjects,
+				}))
 			})
 
 			It("Should support standard reply subjects", func() {
+				user.Account = auth.choriaAccount
 				auth.setClientPermissions(user, "", nil, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: []string{"*.reply.>"},
 				}))
-				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Deny: allSubjects,
+				}))
 			})
 		})
 	})

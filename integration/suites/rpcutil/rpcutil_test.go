@@ -29,7 +29,7 @@ import (
 
 func TestRPCUtilAgent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "rpcutil agent")
+	RunSpecs(t, "Integration/rpcutil Agent")
 }
 
 var _ = Describe("rpcutil agent", func() {
