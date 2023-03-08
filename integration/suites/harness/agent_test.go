@@ -29,7 +29,7 @@ import (
 
 func TestAgentHarnessAgent(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "agent testing harness")
+	RunSpecs(t, "Integration/Agent Testing Harness")
 }
 
 var _ = Describe("testing harness agent", func() {

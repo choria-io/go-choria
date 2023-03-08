@@ -21,7 +21,7 @@ import (
 
 func TestBrokerRemapping(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Broker Remapping")
+	RunSpecs(t, "Integration/Broker Remapping")
 }
 
 var _ = Describe("Authentication", func() {

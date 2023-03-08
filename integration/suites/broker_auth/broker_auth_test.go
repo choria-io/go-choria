@@ -29,7 +29,7 @@ import (
 // to connect to it, bypass restrictions and more
 func TestBrokerAuthentication(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Broker Authentication")
+	RunSpecs(t, "Integration/Broker Authentication")
 }
 
 var _ = Describe("Authentication", func() {
@@ -385,7 +385,7 @@ var _ = Describe("Authentication", func() {
 				nats.ClientCert(testutil.CertPath("two", "rip.mcollective"), testutil.KeyPath("two", "rip.mcollective")),
 				nats.RootCAs(testutil.CertPath("one", "ca")),
 			)
-			Eventually(logbuff, 5).Should(gbytes.Say("failed to verify client certificate: x509: certificate signed by unknown authority"))
+			Eventually(logbuff, 5).Should(gbytes.Say("failed to verify.+certificate: x509: certificate signed by unknown authority"))
 			Expect(err).To(MatchError("remote error: tls: bad certificate"))
 			Expect(nc).To(BeNil())
 			Expect(logbuff).ToNot(gbytes.Say("Registering user"))

@@ -25,7 +25,7 @@ import (
 // TestBrokerLeafnode tests leafnode connections especially as relates to new auth behavior
 func TestBrokerLeafnode(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "Leafnodes")
+	RunSpecs(t, "Integration/Leafnodes")
 }
 
 var _ = Describe("Leafnodes", func() {
