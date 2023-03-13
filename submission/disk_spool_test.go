@@ -181,6 +181,13 @@ var _ = Describe("Directory Spool", func() {
 			msg.Subject = "foo.bar"
 			msg.Payload = []byte("hello world")
 			msg.Sender = "ginkgo"
+
+			msg.Headers = map[string]string{"Nats-X": "x"}
+			err = spool.Submit(msg)
+			Expect(err).To(MatchError(ErrReservedHeaderName))
+
+			msg.Headers = map[string]string{"x": "y"}
+
 			err = spool.Submit(msg)
 			Expect(err).ToNot(HaveOccurred())
 		})
@@ -190,6 +197,7 @@ var _ = Describe("Directory Spool", func() {
 			msg.Subject = "foo.bar"
 			msg.Payload = []byte("hello world")
 			msg.Sender = "ginkgo"
+			msg.Headers = map[string]string{"x": "y"}
 			err := spool.Submit(msg)
 			Expect(err).ToNot(HaveOccurred())
 
@@ -204,6 +212,7 @@ var _ = Describe("Directory Spool", func() {
 			err = json.Unmarshal(jmsg, msg)
 			Expect(err).ToNot(HaveOccurred())
 
+			Expect(msg.Headers).To(Equal(map[string]string{"x": "y"}))
 			Expect(msg.Payload).To(Equal([]byte("hello world")))
 		})
 
