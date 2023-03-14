@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/choria-io/go-choria/internal/util"
@@ -17,19 +18,20 @@ import (
 )
 
 type Message struct {
-	ID       string    `json:"id"`
-	Subject  string    `json:"subject"`
-	Payload  []byte    `json:"payload"`
-	Reliable bool      `json:"reliable"`
-	Priority uint      `json:"priority"`
-	Created  time.Time `json:"created"`
-	TTL      float64   `json:"ttl"`
-	MaxTries uint      `json:"max_tries"`
-	Tries    uint      `json:"tries"`
-	NextTry  time.Time `json:"next_try"`
-	Sender   string    `json:"sender"`
-	Identity string    `json:"identity"`
-	Sign     bool      `json:"sign"`
+	ID       string            `json:"id"`
+	Subject  string            `json:"subject"`
+	Payload  []byte            `json:"payload"`
+	Reliable bool              `json:"reliable"`
+	Priority uint              `json:"priority"`
+	Created  time.Time         `json:"created"`
+	TTL      float64           `json:"ttl"`
+	MaxTries uint              `json:"max_tries"`
+	Tries    uint              `json:"tries"`
+	NextTry  time.Time         `json:"next_try"`
+	Sender   string            `json:"sender"`
+	Identity string            `json:"identity"`
+	Sign     bool              `json:"sign"`
+	Headers  map[string]string `json:"headers"`
 
 	st StoreType
 	sm any
@@ -46,11 +48,12 @@ func newMessage(sender string) *Message {
 }
 
 var (
-	ErrMessageExpired   = errors.New("message has expired")
-	ErrMessageMaxTries  = errors.New("message reached maximum tries")
-	ErrSeedFileNotSet   = errors.New("seed file not set to sign message")
-	ErrSeedFileNotFound = errors.New("seed file not found")
-	ErrSignatureFailed  = errors.New("could not calculate message signature")
+	ErrMessageExpired     = errors.New("message has expired")
+	ErrMessageMaxTries    = errors.New("message reached maximum tries")
+	ErrSeedFileNotSet     = errors.New("seed file not set to sign message")
+	ErrSeedFileNotFound   = errors.New("seed file not found")
+	ErrSignatureFailed    = errors.New("could not calculate message signature")
+	ErrReservedHeaderName = errors.New("headers may not start with 'choria' or 'nats'")
 )
 
 const (
@@ -63,6 +66,8 @@ const (
 	HdrChoriaIdentity  = "Choria-Identity"
 	HdrChoriaToken     = "Choria-Token"
 	HdrChoriaSignature = "Choria-Signature"
+	HdrChoriaPrefix    = "choria"
+	HdrNatsPrefix      = "nats"
 )
 
 func (m *Message) Validate() error {
@@ -98,6 +103,13 @@ func (m *Message) Validate() error {
 		return ErrMessageExpired
 	}
 
+	for k := range m.Headers {
+		kl := strings.ToLower(k)
+		if strings.HasPrefix(kl, HdrChoriaPrefix) || strings.HasPrefix(kl, HdrNatsPrefix) {
+			return ErrReservedHeaderName
+		}
+	}
+
 	return nil
 }
 
@@ -112,6 +124,11 @@ func (m *Message) NatsMessage(prefix string, seed string, token string) (*nats.M
 	}
 
 	msg := nats.NewMsg(prefix + m.Subject)
+
+	for k, v := range m.Headers {
+		msg.Header.Add(k, v)
+	}
+
 	msg.Header.Add(HdrNatsMsgId, m.ID)
 	msg.Header.Add(HdrChoriaPriority, strconv.Itoa(int(m.Priority)))
 	msg.Header.Add(HdrChoriaCreated, strconv.Itoa(int(m.Created.UnixNano())))

@@ -27,6 +27,7 @@ type tSubmitCommand struct {
 	maxTries    uint
 	sender      string
 	sign        bool
+	headers     map[string]string
 }
 
 func (s *tSubmitCommand) Setup() (err error) {
@@ -40,6 +41,7 @@ func (s *tSubmitCommand) Setup() (err error) {
 		s.cmd.Flag("tries", "Maximum amount of attempts made to deliver this message").Default("100").UintVar(&s.maxTries)
 		s.cmd.Flag("sender", "The sender of the message").Default(fmt.Sprintf("user %d", os.Geteuid())).StringVar(&s.sender)
 		s.cmd.Flag("sign", "Request that the server signs the message when publishing").UnNegatableBoolVar(&s.sign)
+		s.cmd.Flag("header", "Adds headers to a message").Short('H').StringMapVar(&s.headers)
 	}
 
 	return nil
@@ -77,6 +79,7 @@ func (s *tSubmitCommand) Run(wg *sync.WaitGroup) (err error) {
 	msg.MaxTries = s.maxTries
 	msg.Sender = s.sender
 	msg.Sign = s.sign
+	msg.Headers = s.headers
 
 	if s.payloadFile == "-" {
 		msg.Payload, err = io.ReadAll(os.Stdin)
