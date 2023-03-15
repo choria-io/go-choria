@@ -53,8 +53,8 @@ github.com/cespare/xxhash/v2 v2.2.0 h1:DC2CZ1Ep5Y4k3ZQ899DldepgrayRUGE6BBZ/cd9Cj
 github.com/cespare/xxhash/v2 v2.2.0/go.mod h1:VGX0DQ3Q6kWi7AoAeZDth3/j3BFtOZR5XLFGgcrjCOs=
 github.com/cheekybits/genny v1.0.0 h1:uGGa4nei+j20rOSeDeP5Of12XVm7TGUd4dJA9RDitfE=
 github.com/cheekybits/genny v1.0.0/go.mod h1:+tQajlRqAUrPI7DOSpB0XAqZYtQakVtB7wXkRAgjxjQ=
-github.com/choria-io/appbuilder v0.5.0 h1:RF6WjKGoVj9lVOJ/DIrA8/iN15fo+SNSiwqQaPxOFXc=
-github.com/choria-io/appbuilder v0.5.0/go.mod h1:ttn9KNE6GpEwzM763rnMYT2ljRZa3mQMeRwoPnrt0VY=
+github.com/choria-io/appbuilder v0.6.1 h1:FuJ2ySs4mRP7iejtFaYPWAXuwlsUQi+vzi5Du4Ib12M=
+github.com/choria-io/appbuilder v0.6.1/go.mod h1:+xlwZlUne5B90fYyiXdMU/SV0gI98w29AUdE84JatXk=
 github.com/choria-io/fisk v0.4.0 h1:V+mh3OpcmE0uBcihUA18dRJeL1J8YUCCLbZZQRa7GMY=
 github.com/choria-io/fisk v0.4.0/go.mod h1:3Rc9XxqKC4y9wBf2GfQ4ovJ1VKELAWcU0J33M/Zgjvs=
 github.com/choria-io/go-updater v0.1.0 h1:+Pt2ifsDh478T/ldA8fnDwavvH3RTQNn1mkrabVZ5eg=
@@ -493,8 +493,8 @@ google.golang.org/protobuf v1.23.1-0.20200526195155-81db48ad09cc/go.mod h1:EGpAD
 google.golang.org/protobuf v1.25.0/go.mod h1:9JNX74DMeImyA3h4bdi1ymwjUzf21/xIlbajtzgsN7c=
 google.golang.org/protobuf v1.26.0-rc.1/go.mod h1:jlhhOSvTdKEhbULTjvd4ARK9grFBp09yW+WbY/TyQbw=
 google.golang.org/protobuf v1.26.0/go.mod h1:9q0QmTI4eRPtz6boOQmLYwt+qCgq0jsYwAQnmE0givc=
-google.golang.org/protobuf v1.29.0 h1:44S3JjaKmLEE4YIkjzexaP+NzZsudE3Zin5Njn/pYX0=
-google.golang.org/protobuf v1.29.0/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
+google.golang.org/protobuf v1.29.1 h1:7QBf+IK2gx70Ap/hDsOmam3GE0v9HicjfEdAxE62UoM=
+google.golang.org/protobuf v1.29.1/go.mod h1:HV8QOd/L58Z+nl8r43ehVNZIU/HEI6OcFqwMG9pJV4I=
 gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61 h1:8ajkpB4hXVftY5ko905id+dOnmorcS2CHNxxHLLDcFM=
 gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61/go.mod h1:IfMagxm39Ys4ybJrDb7W3Ob8RwxftP0Yy+or/NVz1O8=
 gopkg.in/check.v1 v0.0.0-20161208181325-20d25e280405/go.mod h1:Co6ibVJAznAaIkqp8huTwlJQCZ016jof/cbN4VW5Yz0=
