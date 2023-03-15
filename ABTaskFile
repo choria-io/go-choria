@@ -1,0 +1,155 @@
+name: build_tasks
+description: Choria Build Tasks
+
+commands:
+    - name: dependencies
+      type: parent
+      description: Manage dependencies
+      aliases: [d]
+      commands:
+        - name: update
+          description: Update dependencies
+          type: exec
+          aliases: [up]
+          flags:
+            - name: verbose
+              description: Log verbosely
+              bool: true
+            - name: proxy
+              description: Enable using go proxy
+              bool: true
+              default: "true"
+          banner: |
+              >>>
+              >>> Updating all dependencies
+              >>>
+          script: |
+            {{ if eq .Flags.proxy false }}
+            export GOPROXY=direct
+            echo ">>>"
+            echo ">>> Disabling go mod proxy"
+            echo ">>>"
+            echo
+            {{ end }}
+            
+            for i in $(go list -f '{{ "{{if not .Indirect}}{{.Path}}{{end}}" }}' -m all|grep -v go-choria)
+            do
+                echo $i
+                go get -u -n -a {{- if .Flags.verbose }} -d -x {{ end }} $i
+            done
+
+            echo ">>> Running go mod tidy"
+            go mod tidy
+
+    - name: generate
+      type: parent
+      aliases: [gen]
+      description: Performs 'go generate' tasks
+      commands:
+        - name: all
+          description: Generates all files
+          type: exec
+          command: go generate
+
+        - name: plugins
+          description: Generate plugin files
+          type: exec
+          flags:
+           - name: clean
+             description: Removes existing plugin stubs
+             bool: true
+          script: |
+            {{ if .Flags.clean }}
+            rm -f plugin_*_*.go
+            {{ end }}
+            go generate -run plugin
+
+        - name: config
+          description: Generate configuration related files
+          type: exec
+          aliases: [doc]
+          command: go generate -run config
+
+        - name: clients
+          description: Generate rpc clients related files
+          type: exec
+          command: go generate -run client
+
+    - name: test
+      type: parent
+      aliases: [t]
+      description: Perform various tests
+      commands:
+        - name: unit
+          type: exec
+          description: Run ginkgo unit tests
+          aliases: [u]
+          arguments:
+            - name: dir
+              description: Directory to test
+              default: .
+          flags:
+            - name: update
+              description: Updates the ginkgo runtime
+              bool: true
+          script: |
+            set -e
+            
+            {{ if .Flags.update }}
+                  echo ">>> Updating ginkgo binary"
+                  go install github.com/onsi/ginkgo/v2/ginkgo
+            {{ end }}
+            
+            ginkgo -r {{ .Arguments.dir | escape }}
+
+        - name: integration
+          type: exec
+          aliases: [i]
+          description: Run ginkgo integration tests
+          command: ginkgo -r integration
+
+    - name: build
+      type: parent
+      description: Code build steps
+      commands:
+        - name: binary
+          description: Build a basic test binary
+          type: exec
+          banner: |
+              >>>
+              >>> Building 'go-choria' locally
+              >>>
+              >>>               Target: {{ if .Flags.target }}{{ .Flags.target }}{{else}}host{{end}}
+              >>>     provisioning.jwt: {{ .Flags.provisioning }}
+              >>>   Default Collective: {{.Flags.collective}}
+              >>>
+          flags:
+            - name: target
+              description: Target platform to build for
+              enum: ["linux/amd64"]
+              short: T
+            - name: provisioning
+              description: Path to the default provisioning.jwt
+              default: /etc/choria/provisioning.jwt
+            - name: collective
+              description: Sets the default collective
+              default: mcollective
+          script: |
+            set -e
+
+            {{ if eq .Flags.target "linux/amd64" }}
+                export GOOS=linux
+                export GOARCH=amd64
+            {{ end }}
+
+            go build \
+              -ldflags="-s -w \
+                -X 'github.com/choria-io/go-choria/build.Version=0.0.$(date +%s)' \
+                -X 'github.com/choria-io/go-choria/build.DefaultCollectives={{.Flags.collective}}' \
+                {{ if .Flags.provisioning }}-X 'github.com/choria-io/go-choria/build.ProvisionJWTFile={{ .Flags.provisioning }}'{{ end }} \
+                " -o go-choria
+
+            ls -l go-choria
+            echo
+            file go-choria
+            echo

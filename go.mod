@@ -10,7 +10,7 @@ require (
 	github.com/antonmedv/expr v1.12.3
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.5.0
+	github.com/choria-io/appbuilder v0.6.1
 	github.com/choria-io/fisk v0.4.0
 	github.com/choria-io/go-updater v0.1.0
 	github.com/choria-io/tokens v0.0.1
@@ -136,7 +136,7 @@ require (
 	golang.org/x/net v0.8.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gonum.org/v1/gonum v0.12.0 // indirect
-	google.golang.org/protobuf v1.29.0 // indirect
+	google.golang.org/protobuf v1.29.1 // indirect
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
