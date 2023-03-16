@@ -31,12 +31,8 @@ commands:
             echo ">>>"
             echo
             {{ end }}
-            
-            for i in $(go list -f '{{ "{{if not .Indirect}}{{.Path}}{{end}}" }}' -m all|grep -v go-choria)
-            do
-                echo $i
-                go get -u -n -a {{- if .Flags.verbose }} -d -x {{ end }} $i
-            done
+
+            go get -u -n -a -t {{- if .Flags.verbose }} -d -x {{ end }} ./...
 
             echo ">>> Running go mod tidy"
             go mod tidy
@@ -94,13 +90,13 @@ commands:
               bool: true
           script: |
             set -e
-            
+
             {{ if .Flags.update }}
                   echo ">>> Updating ginkgo binary"
                   go install github.com/onsi/ginkgo/v2/ginkgo
             {{ end }}
-            
-            ginkgo -r {{ .Arguments.dir | escape }}
+
+            ginkgo -r --skip Integration {{ .Arguments.dir | escape }}
 
         - name: integration
           type: exec
@@ -108,13 +104,28 @@ commands:
           description: Run ginkgo integration tests
           command: ginkgo -r integration
 
+    - name: docs
+      type: parent
+      description: Documentation related commands
+      commands:
+        - name: serve
+          description: Serves documentation locally
+          type: exec
+          flags:
+            - name: port
+              description: The port to listen on
+              default: "8081"
+          command: hugo serve -p {{ .Flags.port }} -s docs
+
     - name: build
       type: parent
+      aliases: [b]
       description: Code build steps
       commands:
         - name: binary
           description: Build a basic test binary
           type: exec
+          aliases: [bin]
           banner: |
               >>>
               >>> Building 'go-choria' locally
@@ -134,6 +145,10 @@ commands:
             - name: collective
               description: Sets the default collective
               default: mcollective
+            - name: verbose
+              description: Logs packages being build
+              bool: true
+              short: v
           script: |
             set -e
 
@@ -142,14 +157,118 @@ commands:
                 export GOARCH=amd64
             {{ end }}
 
+            {{ if .Flags.verbose }}
+            echo ">>> Packages being build"
+            {{ end }}
+
             go build \
+              {{ if .Flags.verbose }}-v{{ end }} \
               -ldflags="-s -w \
                 -X 'github.com/choria-io/go-choria/build.Version=0.0.$(date +%s)' \
                 -X 'github.com/choria-io/go-choria/build.DefaultCollectives={{.Flags.collective}}' \
                 {{ if .Flags.provisioning }}-X 'github.com/choria-io/go-choria/build.ProvisionJWTFile={{ .Flags.provisioning }}'{{ end }} \
                 " -o go-choria
 
+            echo
             ls -l go-choria
             echo
             file go-choria
             echo
+
+        - name: nightly-docker
+          description: Builds nightly docker container
+          type: exec
+          aliases: [nd]
+          flags:
+            - name: repo
+              description: YUM Repository to use
+              default: https://yum.eu.choria.io/nightly/el/nightly.repo
+            - name: push
+              description: Push the built images
+              default: false
+              bool: true
+          banner: |
+            >>>
+            >>> Building nightly docker container using {{ .Flags.repo }}
+            >>>
+          script: |
+            set -e
+
+            docker pull almalinux:8
+
+            DATE=$(date +%Y%m%d)
+
+            docker build \
+              --no-cache \
+              --build-arg REPO={{ .Flags.repo | escape }} \
+              --tag "choria/choria:nightly-${DATE}" \
+              --tag "choria/choria:nightly" \
+              --tag "registry.choria.io/choria-nightly/choria:nightly-${DATE}" \
+              --tag "registry.choria.io/choria-nightly/choria:nightly" \
+              .
+
+            {{ if .Flags.push }}
+              echo
+              echo ">>> Pushing built containers"
+              echo
+              docker push "choria/choria:nightly"
+              docker push "choria/choria:nightly-${DATE}"
+              docker push "registry.choria.io/choria-nightly/choria:nightly-${DATE}"
+              docker push "registry.choria.io/choria-nightly/choria:nightly"
+
+            {{ else }}
+              echo
+              echo ">>> Skipping container push"
+              echo
+            {{ end }}
+
+        - name: release-docker
+          description: Builds release docker container
+          type: exec
+          aliases: [rd]
+          flags:
+            - name: repo
+              description: YUM Repository to use
+              default: https://yum.eu.choria.io/release/el/release.repo
+            - name: push
+              description: Push the built images
+              default: false
+              bool: true
+          banner: |
+            >>>
+            >>> Building release docker container using {{ .Flags.repo }}
+            >>>
+          script: |
+            set -e
+
+            TAG=$(git tag --points-at HEAD|sed -e s/^v//)
+            if [ -z "${TAG}" ]
+            then
+              echo "!!! HEAD is not a tag"
+              exit 1
+            fi
+
+            docker pull almalinux:8
+
+            docker build \
+              --no-cache \
+              --build-arg REPO={{ .Flags.repo | escape }} \
+              --tag "choria/choria:${TAG}" \
+              --tag "choria/choria:latest" \
+              --tag "registry.choria.io/choria/choria:${TAG}" \
+              --tag "registry.choria.io/choria/choria:latest" \
+              .
+
+            {{ if .Flags.push }}
+              echo
+              echo ">>> Pushing built containers"
+              echo
+              docker push "choria/choria:${TAG}"
+              docker push "choria/choria:latest"
+              docker push "registry.choria.io/choria/choria:${TAG}"
+              docker push "registry.choria.io/choria/choria:latest"
+            {{ else }}
+              echo
+              echo ">>> Skipping container push"
+              echo
+            {{ end }}
