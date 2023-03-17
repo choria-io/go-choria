@@ -1,0 +1,23 @@
+FROM almalinux:8
+
+ARG DATE="unknown"
+
+WORKDIR /
+
+COPY choria-0.99.0.${DATE}-1.el8.x86_64.rpm /tmp
+
+RUN yum -y install nc procps-ng openssl net-tools iproute && \
+    yum -y localinstall /tmp/choria-0.99.0.${DATE}-1.el8.x86_64.rpm && \
+    yum -y clean all
+
+RUN groupadd --gid 2048 choria && \
+    useradd -c "Choria Orchestrator - choria.io" -m --uid 2048 --gid 2048 choria && \
+    chown -R choria:choria /etc/choria && \
+    mkdir /data && \
+    chown choria:choria /data && \
+    rm -f /etc/choria/server.conf
+
+USER choria
+VOLUME /data
+
+ENTRYPOINT ["/usr/bin/choria"]
