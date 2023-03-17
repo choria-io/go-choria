@@ -20,15 +20,15 @@ task :build do
 
   packages.each do |pkg|
     if pkg =~ /^windows/
-      builder = "choria/packager:bullseye-go%s" % [go_version]
+      builder = "registry.choria.io/choria/packager:bullseye-go%s" % [go_version]
     elsif pkg =~ /darwin.+tarball/
-      builder = "choria/packager:el8-go%s" % go_version
+      builder = "registry.choria.io/choria/packager:el8-go%s" % go_version
     elsif pkg =~ /linux.+tarball/
-      builder = "choria/packager:el8-go%s" % go_version
+      builder = "registry.choria.io/choria/packager:el8-go%s" % go_version
     elsif pkg =~ /^(.+?)_(.+)$/
-      builder = "choria/packager:%s-go%s" % [$1, go_version]
+      builder = "registry.choria.io/choria/packager:%s-go%s" % [$1, go_version]
     else
-      builder = "choria/packager:el7-go%s" % go_version
+      builder = "registry.choria.io/choria/packager:el7-go%s" % go_version
     end
 
     sh 'docker run --rm -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e PACKAGE=%s %s' % [
@@ -52,7 +52,7 @@ task :build_binaries do
 
   source = "/go/src/github.com/choria-io/go-choria"
 
-sh 'docker run --rm  -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e BINARY_ONLY=1 choria/packager:el7-go1.18' % [
+  sh 'docker run --rm  -v `pwd`:%s -e SOURCE_DIR=%s -e ARTIFACTS=%s -e SHA1="%s" -e BUILD="%s" -e VERSION="%s" -e BINARY_ONLY=1 registry.choria.io/choria/packager:el7-go1.18' % [
     source,
     source,
     source,

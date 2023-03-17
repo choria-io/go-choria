@@ -13,7 +13,7 @@ needs.
 
 ### Requirements
 
-The host used to perform the compile need to have Docker on it and be able to fetch the `choria/packager` container. You can
+The host used to perform the compile need to have Docker on it and be able to fetch the `registry.choria.io/choria/packager` container. You can
 build a local version of the Packager using [https://github.com/choria-io/packager](https://github.com/choria-io/packager).
 
 In general you should only do this if you know what you are doing, have special needs, want custom agents etc.
