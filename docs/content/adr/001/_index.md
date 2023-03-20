@@ -22,7 +22,7 @@ Choria therefor is built on a protocol that requires x509 semantics and supports
 * User permissions and roles are tied to the identity of the certificate, very limited support for fine-grained roles
 * All JWT files are signed by x509 keys
 * Generally only RSA is supported
-* mTLS is used to create a private network - requiring a purpose specific CA or intermediate CA in practise
+* mTLS is used to create a private network - requiring a purpose specific CA or intermediate CA in practice
 * A local cache of certificates is used like a kind of safety check to catch credentials being re-issued
 * Any NATS client connecting to Choria broker requires a cert/key/ca and do full mTLS
 
@@ -30,7 +30,7 @@ Choria supports a mode combined with the AAA Server where a user does not need h
 
 ### Problem Statement
 
-In practise this works well for most users, but those with very large or complex networks can run into problems either with corporate Certificate Authority policies or corporate CA configuration making it very hard to achieve a secure network with the facilities available. General CA infrastructure is also just getting a bit old and better alternatives exist. JWTs are now used pervasively in modern IT and the user based are more likely to accept their use for our needs.
+In practice this works well for most users, but those with very large or complex networks can run into problems either with corporate Certificate Authority policies or corporate CA configuration making it very hard to achieve a secure network with the facilities available. General CA infrastructure is also just getting a bit old and better alternatives exist. JWTs are now used pervasively in modern IT and the user based are more likely to accept their use for our needs.
 
 We would like to explore, and enable, other use cases outside of server management such as IoT, purpose built backplanes, Kubernetes side cars and more, integration into Certificate Authorities in those cases is really problematic.
 
@@ -63,7 +63,7 @@ In a mTLS secured network trust is established by way of the CA signing all cert
 
 This way there can be no untrusted middlemen or session hijacking in the network path.
 
-In practise, in enterprise networks, there are many challenges:
+In practice, in enterprise networks, there are many challenges:
 
 * it's often highly desirable to be able to hijack connections, for example to audit that PII doesn't leave the legal jurisdiction it belongs in, many companies wish to disable the full mTLS while still maintaining strong identification of entities.
 * it's also desirable to deploy Choria Brokers using websocket protocol and offload the TLS work onto a load balancer - this would be quite complex with the current model.
@@ -86,7 +86,7 @@ Servers and clients will have:
 
 The broker will only allow connections that holds a valid, signed JWT where the signature is made using a trusted ed25519 key.
 
-##### Organisation and Chained Issuers
+##### Organization and Chained Issuers
 
 Conceptually Choria Broker can separate connections into something called "accounts" in NATS terms, for Choria we call this an Organization. Today we support just one Organization - `choria` - but we will look to support more in future.
 
@@ -279,7 +279,7 @@ A secure reply wraps a `Reply`, signs it and prevents any tampering with its con
 
 Like the Secure Request the Secure Reply wraps the Reply in a way that makes it tamper evident via signatures and hashes.
 
-The v2 protocol includes a signature and sender JWT however in practise this is mostly not going to be used as too costly on the receiver, however might be used for registration payload verification.
+The v2 protocol includes a signature and sender JWT however in practice this is mostly not going to be used as too costly on the receiver, however might be used for registration payload verification.
 
 Signatures add quite a bit to the payload here, as the JWT has to be sent with, so it can be disabled using `plugin.security.choria.sign_replies` in the new security provider.
 
@@ -322,7 +322,7 @@ Federation:
 
 We created a Chained Token system in [#1900](https://github.com/choria-io/go-choria/issues/1900) that allows a Organization Issuer to delegate Client and Server creation to Chained Issuers.
 
-From a usage perspective you can say `tokens.ParseClientIDToken(t, pubk)` where the public key is the public part of the Organisation Issuer, even when the token `t` is signed by a Chain Issuer. The intention is to make the configuration of a chain much easier, you only have to configure the issuer for an Organization.
+From a usage perspective you can say `tokens.ParseClientIDToken(t, pubk)` where the public key is the public part of the Organization Issuer, even when the token `t` is signed by a Chain Issuer. The intention is to make the configuration of a chain much easier, you only have to configure the issuer for an Organization.
 
 Additionally the expiry of the Chain Issuer is encoded in the token, if the issuer expires first the issued token is also considered expired.
 
@@ -393,6 +393,6 @@ We will make some general improvements, rename some functions and add a few bits
 * The entire concept of the cache to be removed [#1842](https://github.com/choria-io/go-choria/pull/1842)
 * Default collective when v2 is used will be `choria` [#1885](https://github.com/choria-io/go-choria/pull/1885)
 * Submission can sign messages [#1873](https://github.com/choria-io/go-choria/issues/1873)
-* The protocol code should be instances not a singleton so each can have unique contextes and logging
+* The protocol code should be instances not a singleton so each can have unique contexts and logging
 * Stronger AAA interactions by signing NONCE like data in login and sign requests
 * Potentially entirely remove the concept of Trusted Signers that was a mid term stop gap till this work is complete, only used by 1 users as far as we are aware

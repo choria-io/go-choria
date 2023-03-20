@@ -45,11 +45,13 @@ commands:
         - name: all
           description: Generates all files
           type: exec
+          dir: "{{ AppDir }}"
           command: go generate
 
         - name: plugins
           description: Generate plugin files
           type: exec
+          dir: "{{ AppDir }}"
           flags:
            - name: clean
              description: Removes existing plugin stubs
@@ -63,13 +65,21 @@ commands:
         - name: config
           description: Generate configuration related files
           type: exec
-          aliases: [doc]
+          dir: "{{ AppDir }}"
           command: go generate -run config
 
         - name: clients
           description: Generate rpc clients related files
           type: exec
+          dir: "{{ AppDir }}"
           command: go generate -run client
+
+        - name: imocks
+          description: Generate inter/imocks related files
+          type: exec
+          dir: "{{ AppDir }}"
+          banner: Regenerating mocks in inter/imocks
+          command: go generate -run imocks
 
     - name: test
       type: parent
@@ -78,6 +88,7 @@ commands:
       commands:
         - name: unit
           type: exec
+          dir: "{{ AppDir }}"
           description: Run ginkgo unit tests
           aliases: [u]
           arguments:
@@ -100,9 +111,57 @@ commands:
 
         - name: integration
           type: exec
+          dir: "{{ AppDir }}"
           aliases: [i]
           description: Run ginkgo integration tests
           command: ginkgo -r integration
+
+        - name: lint
+          type: exec
+          dir: "{{ AppDir }}"
+          flags:
+            - name: vet
+              description: Perform go vet
+              bool: true
+              default: true
+            - name: staticcheck
+              description: Perform staticcheck
+              bool: true
+              default: true
+            - name: update
+              description: Updates lint dependencies
+              bool: true
+          script: |
+            set -e
+            
+            {{ if .Flags.update }}
+              echo ">>> Updating linting tools"
+              go install github.com/client9/misspell/cmd/misspell@latest
+              go install honnef.co/go/tools/cmd/staticcheck@latest
+            {{ else }}
+              echo ">>> Run with --update to install required commands"
+              echo
+            {{ end }}
+            
+            echo ">>> Formatting source files"
+            go fmt ./...
+            
+            echo ">>> Tidying go mod"
+            go mod tidy
+
+            echo ">>> Checking spelling"
+            find . -type f -name "*.go" | xargs misspell -error -locale US -i flavour
+            find docs/content -type f -name "*.md" | xargs misspell -error -locale US
+            
+            {{ if .Flags.vet }}
+            echo ">>> Performing go vet"
+            go vet ./...
+            {{ end }}
+            
+            {{ if .Flags.staticcheck }}
+            echo ">>> Running staticcheck"
+            staticcheck ./...
+            {{ end }}
 
     - name: docs
       type: parent
@@ -111,6 +170,7 @@ commands:
         - name: serve
           description: Serves documentation locally
           type: exec
+          dir: "{{ AppDir }}"
           flags:
             - name: port
               description: The port to listen on
@@ -125,6 +185,7 @@ commands:
         - name: binary
           description: Build a basic test binary
           type: exec
+          dir: "{{ AppDir }}"
           aliases: [bin]
           banner: |
               >>>
@@ -175,56 +236,10 @@ commands:
             file go-choria
             echo
 
-        - name: nightly-docker
-          description: Builds nightly docker container
-          type: exec
-          aliases: [nd]
-          flags:
-            - name: repo
-              description: YUM Repository to use
-              default: https://yum.eu.choria.io/nightly/el/nightly.repo
-            - name: push
-              description: Push the built images
-              default: false
-              bool: true
-          banner: |
-            >>>
-            >>> Building nightly docker container using {{ .Flags.repo }}
-            >>>
-          script: |
-            set -e
-
-            docker pull almalinux:8
-
-            DATE=$(date +%Y%m%d)
-
-            docker build \
-              --no-cache \
-              --build-arg REPO={{ .Flags.repo | escape }} \
-              --tag "choria/choria:nightly-${DATE}" \
-              --tag "choria/choria:nightly" \
-              --tag "registry.choria.io/choria-nightly/choria:nightly-${DATE}" \
-              --tag "registry.choria.io/choria-nightly/choria:nightly" \
-              .
-
-            {{ if .Flags.push }}
-              echo
-              echo ">>> Pushing built containers"
-              echo
-              docker push "choria/choria:nightly"
-              docker push "choria/choria:nightly-${DATE}"
-              docker push "registry.choria.io/choria-nightly/choria:nightly-${DATE}"
-              docker push "registry.choria.io/choria-nightly/choria:nightly"
-
-            {{ else }}
-              echo
-              echo ">>> Skipping container push"
-              echo
-            {{ end }}
-
         - name: release-docker
           description: Builds release docker container
           type: exec
+          dir: "{{ AppDir }}"
           aliases: [rd]
           flags:
             - name: repo
