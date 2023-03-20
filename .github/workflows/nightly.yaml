@@ -81,37 +81,14 @@ jobs:
 
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v3
+      - name: Build and Publish Docker Container
+        uses: choria-io/actions/nightly@main
         with:
-          path: src
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v3
-        with:
-          path: artifacts
-
-      - name: Build and Push Container
-        shell: bash
-        run: |
-          set -e
-          
-          DATE=$(date +%Y%m%d)
-          
-          find artifacts -name choria-0.99.0.${DATE}-1.el8.x86_64.rpm | xargs -I {} cp {} src/
-          
-          cd src          
-          docker build \
-              --build-arg DATE="${DATE}" \
-              --tag "registry.choria.io/choria-nightly/choria:nightly-${DATE}" \
-              --tag "registry.choria.io/choria-nightly/choria:nightly" \
-              --file Dockerfile-nightly \
-              .
-          
-          docker login registry.choria.io -u "${{ secrets.REGISTRY_USERNAME }}" -p "${{ secrets.REGISTRY_PASSWORD }}"
-          
-          docker push "registry.choria.io/choria-nightly/choria:nightly-${DATE}"
-          docker push "registry.choria.io/choria-nightly/choria:nightly"
+          package: choria
+          repo: choria
+          dockerfile: Dockerfile-nightly
+          registry_username: "${{ secrets.REGISTRY_USERNAME }}"
+          registry_password: "${{ secrets.REGISTRY_PASSWORD }}"
 
   upload:
     needs:
