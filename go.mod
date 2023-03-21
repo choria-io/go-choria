@@ -7,10 +7,10 @@ require (
 	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.4.0
-	github.com/antonmedv/expr v1.12.3
+	github.com/antonmedv/expr v1.12.5
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.6.1
+	github.com/choria-io/appbuilder v0.6.3
 	github.com/choria-io/fisk v0.4.0
 	github.com/choria-io/go-updater v0.1.0
 	github.com/choria-io/tokens v0.0.1
@@ -37,7 +37,7 @@ require (
 	github.com/nats-io/natscli v0.0.35
 	github.com/onsi/ginkgo/v2 v2.9.1
 	github.com/onsi/gomega v1.27.4
-	github.com/open-policy-agent/opa v0.50.1
+	github.com/open-policy-agent/opa v0.50.2
 	github.com/prometheus/client_golang v1.14.0
 	github.com/prometheus/client_model v0.3.0
 	github.com/prometheus/common v0.42.0
@@ -107,7 +107,7 @@ require (
 	github.com/moby/sys/mountinfo v0.6.2 // indirect
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
-	github.com/nats-io/jwt/v2 v2.3.0 // indirect
+	github.com/nats-io/jwt/v2 v2.4.0 // indirect
 	github.com/nats-io/nkeys v0.4.4 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/oleiade/reflections v1.0.1 // indirect

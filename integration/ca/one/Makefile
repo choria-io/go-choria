@@ -5,7 +5,7 @@ all:
 	cfssl gencsr -key rip.mcollective-key.pem csr.json  | cfssljson -bare rip.mcollective
 	cfssl sign -ca ca.pem -ca-key ca-key.pem rip.mcollective.csr subject.json | cfssljson -bare rip.mcollective && openssl x509 -in rip.mcollective.pem -noout -text
 	openssl verify -CAfile ca.pem rip.mcollective.pem
-	cp rip-mcollective.pem certs/
+	cp rip.mcollective.pem certs/
 	cp ca.pem certs/ca.pem
 	
 localhost:
