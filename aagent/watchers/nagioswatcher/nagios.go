@@ -446,6 +446,8 @@ func (w *Watcher) watchUsingPlugin(ctx context.Context) (state State, output str
 }
 
 func (w *Watcher) watchUsingBuiltin(_ context.Context) (state State, output string, err error) {
+	w.previousPlugin = w.properties.Builtin
+
 	switch {
 	case w.properties.Builtin == "heartbeat":
 		return w.builtinHeartbeat()
