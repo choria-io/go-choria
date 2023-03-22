@@ -56,22 +56,22 @@ We will need two Docker networks and 3 instances - broker, server, client and is
 ```nohighlight
 $ docker network create choria_v2proto
 $ docker network create choria_issuer
-$ docker pull choria/choria:nightly
+$ docker pull registry.choria.io/choria-nightly/choria:nightly
 $ docker run -ti --rm --entrypoint bash \
       --network choria_v2proto \
       --hostname broker.example.net \
-      choria/choria:nightly -l
+      registry.choria.io/choria-nightly/choria:nightly -l
 $ docker run -ti --rm --entrypoint bash \
       --network choria_v2proto \
       --hostname server.example.net \
-      choria/choria:nightly -l
+      registry.choria.io/choria-nightly/choria:nightly -l
 $ docker run -ti --rm --entrypoint bash \
       --network choria_v2proto \
       --hostname client.example.net \
-      choria/choria:nightly -l
+      registry.choria.io/choria-nightly/choria:nightly -l
 $ docker run -ti --rm --entrypoint bash \
       --network choria_issuer \
-      --hostname issuer.example.net choria/choria:nightly -l
+      --hostname issuer.example.net registry.choria.io/choria-nightly/choria:nightly -l
 ```
 
 The issuer is not needed per-se but will demonstrate that the Issuer credentials never need to near the managed network.
@@ -410,7 +410,7 @@ Since the container does not have the `choria` command we have to jump some hoop
 
 ```nohighlight
 host$ mkdir provisioner
-host$ docker run -v `pwd`/provisioner:/etc/choria-provisioner --user root --entrypoint bash --rm -ti choria/choria:nightly -l
+host$ docker run -v `pwd`/provisioner:/etc/choria-provisioner --user root --entrypoint bash --rm -ti registry.choria.io/choria-nightly/choria:nightly -l
 [root@5d96691fa69f /]# choria jwt keys /etc/choria-provisioner/private.key /etc/choria-provisioner/public.key
 Public Key: a8c15c0a4bbae0646d0c5aa92513f4d58c2c0e51464b4b267bb3a42dbebd1c8a
 [root@5d96691fa69f /]# chown -R choria:choria /etc/choria-provisioner/
@@ -527,7 +527,7 @@ host$ docker run -ti --rm \
       --network choria_v2proto \ 
       --hostname server.example.net \
       -v `pwd`/provisioning.jwt:/etc/choria/provisioning.jwt \
-      choria/choria:nightly server run --config /etc/choria/server.conf
+      registry.choria.io/choria-nightly/choria:nightly server run --config /etc/choria/server.conf
 ```
 
 The server will now start and connect to the Broker, communicate with the Provisioner and restart itself.  After restart
@@ -552,7 +552,7 @@ We need to issue 3 sets of credentials here:
 Like the Provisioner the AAA Service container does not have the `choria` binary, so we need to jump some hoops to make the keys and configuration:
 
 ```nohighlight
-host$ docker run -ti --rm -v `pwd`/aaasvc:/etc/aaasvc --user root --entrypoint bash choria/choria:nightly -l
+host$ docker run -ti --rm -v `pwd`/aaasvc:/etc/aaasvc --user root --entrypoint bash registry.choria.io/choria-nightly/choria:nightly -l
 [root@38f75c90e475 /]# openssl genrsa -out /etc/aaasvc/https-private.key 2048
 Generating RSA private key, 2048 bit long modulus (2 primes)
 ........................................................................................+++++
@@ -584,7 +584,7 @@ Copy this file to the temporary AAA container above as `/etc/aaasvc/chain-signer
 Next we create the credentials that will sign every RPC request:
 
 ```nohighlight
-host$ docker run -ti --rm -v `pwd`/aaasvc:/etc/aaasvc --user root --entrypoint bash choria/choria:nightly -l
+host$ docker run -ti --rm -v `pwd`/aaasvc:/etc/aaasvc --user root --entrypoint bash registry.choria.io/choria-nightly/choria:nightly -l
 [root@38f75c90e475 /]# choria jwt keys /etc/aaasvc/request-signer-private.key /etc/aaasvc/reqeuest-signer-public.key
 Public Key: 535e9d337e555b9bf9079269567b8d9cb812fdf54797e5d5441ed778f1db68d8
 
@@ -609,7 +609,7 @@ Place it in `/etc/aaasvc/request-signer.jwt` on the AAA Service container above.
 Finally, we need to create the credentials that allow the request signer to run as a Choria Service. 
 
 ```nohighlight
-host$ docker run -ti --rm -v `pwd`/aaasvc:/etc/aaasvc --user root --entrypoint bash choria/choria:nightly -l
+host$ docker run -ti --rm -v `pwd`/aaasvc:/etc/aaasvc --user root --entrypoint bash registry.choria.io/choria-nightly/choria:nightly -l
 [root@38f75c90e475 /]# choria jwt keys /etc/aaasvc/signer-service-private.key /etc/aaasvc/signer-service-public.key
 Public Key: c5c1323f66bb8324d019249e3476d9f11f9deb70efa60255593dde30ef3b8a01
 
@@ -734,7 +734,7 @@ Lets create a new client container:
 $ docker run -ti --rm --entrypoint bash \
       --network choria_v2proto \
       --hostname client.example.net \
-      choria/choria:nightly -l
+      registry.choria.io/choria-nightly/choria:nightly -l
 ```
 
 We create a system-wide client configuration in `/etc/choria/client.conf`:
