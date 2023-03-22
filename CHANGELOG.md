@@ -1,5 +1,7 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2023/03/22 |       | Release 0.27.0                                                                                                     |
+| 2023/03/21 | 2010  | Record the builtin type as plugin in nagios watcher events                                                         |
 | 2023/03/14 | 2001  | Support adding headers to Choria Message Submit messages                                                           |
 | 2023/03/07 | 1998  | Support leader election for tally and label metrics by leader state                                                |
 | 2023/03/06 | 1996  | Emit new `upgraded` events when release upgrading a running server via provisioning                                |

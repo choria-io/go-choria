@@ -11,9 +11,11 @@ commands:
           description: Update dependencies
           type: exec
           aliases: [up]
+          dir: "{{ AppDir }}"
           flags:
             - name: verbose
               description: Log verbosely
+              short: v
               bool: true
             - name: proxy
               description: Enable using go proxy
