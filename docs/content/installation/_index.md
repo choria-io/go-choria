@@ -55,4 +55,4 @@ deb mirror://mirrorlists.choria.io/apt/release/debian/bullseye/mirrors.txt debia
 
 ## Docker
 
-There is a docker container `choria-io/choria` that has releases only.
+There is a docker container for releases `registry.choria.io/choria/choria:latest` with nightly builds at `registry.choria.io/choria-nightly/choria` with tags `nightly` and `nightly-YYYYMMDD`.
