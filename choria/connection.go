@@ -8,6 +8,7 @@ import (
 	"context"
 	"crypto/md5"
 	"crypto/tls"
+	"errors"
 	"fmt"
 	"net/url"
 	"os"
@@ -77,7 +78,6 @@ type Connection struct {
 	log               *log.Entry
 	fw                *Framework
 	config            *config.Config
-	subscriptions     map[string]*nats.Subscription
 	chanSubscriptions map[string]*channelSubscription
 	outbox            chan *nats.Msg
 	subMu             sync.Mutex
@@ -141,7 +141,6 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 		log:               logger.WithField("connection", name),
 		fw:                fw,
 		config:            fw.Config,
-		subscriptions:     make(map[string]*nats.Subscription),
 		chanSubscriptions: make(map[string]*channelSubscription),
 		outbox:            make(chan *nats.Msg, 1000),
 		ctx:               ctx,
@@ -286,16 +285,21 @@ func (conn *Connection) Unsubscribe(name string) error {
 	conn.subMu.Lock()
 	defer conn.subMu.Unlock()
 
-	if sub, ok := conn.subscriptions[name]; ok {
-		err := sub.Unsubscribe()
-		if err != nil {
-			return fmt.Errorf("could not unsubscribe from %s: %s", name, err)
-		}
-	}
-
 	if sub, ok := conn.chanSubscriptions[name]; ok {
+		if conn.log != nil {
+			conn.log.Debugf("Unsubscribing from %v", sub.subscription.Subject)
+		}
+
 		err := sub.subscription.Unsubscribe()
-		if err != nil {
+
+		// a number of errors basically mean the subscription is either
+		// not there in reality, invalid or the connection is closed etc
+		// so we treat all those as ok
+		switch {
+		case errors.Is(err, nats.ErrBadSubscription):
+		case errors.Is(err, nats.ErrConnectionDraining):
+		case errors.Is(err, nats.ErrConnectionClosed):
+		case err != nil:
 			return fmt.Errorf("could not unsubscribe from %s: %s", name, err)
 		}
 
@@ -775,15 +779,9 @@ func (conn *Connection) Close() {
 	subs := []string{}
 
 	conn.subMu.Lock()
-
 	for s := range conn.chanSubscriptions {
 		subs = append(subs, s)
 	}
-
-	for s := range conn.subscriptions {
-		subs = append(subs, s)
-	}
-
 	conn.subMu.Unlock()
 
 	for _, s := range subs {

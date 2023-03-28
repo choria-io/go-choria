@@ -118,30 +118,109 @@ func (a *Manager) DenyAgent(agent string) {
 	a.denylist = append(a.denylist, agent)
 }
 
+// ReplaceAgent allows an agent manager to replace an agent that is already known, and subsscribed, with another instance to facilitate in-place upgrades
+func (a *Manager) ReplaceAgent(name string, agent Agent) error {
+	if name == "" {
+		return fmt.Errorf("agent name is required")
+	}
+
+	err := a.validateAgent(agent)
+	if err != nil {
+		a.log.Warnf("Denying agent %q update: %v", agent.Name(), err)
+		return fmt.Errorf("invalid agent: %w", err)
+	}
+
+	if !agent.ShouldActivate() {
+		return fmt.Errorf("replacement agent is not activating due to activation checks")
+	}
+
+	md := agent.Metadata()
+
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	ca, found := a.agents[name]
+	if !found {
+		return fmt.Errorf("agent %q is not currently known", name)
+	}
+
+	if ca.Metadata().Service != md.Service {
+		return fmt.Errorf("replacement agent cannot change service property")
+	}
+
+	a.log.Infof("Replacing agent %s of type %s with a new instance moving from version %s to %s", name, md.Name, md.Version, ca.Metadata().Version)
+
+	agent.SetServerInfo(a.serverInfo)
+
+	a.agents[name] = agent
+
+	return nil
+}
+
+func (a *Manager) validateAgent(agent Agent) error {
+	md := agent.Metadata()
+
+	if md.Timeout < 1 {
+		return fmt.Errorf("timeout < 1")
+	}
+
+	if md.Name == "" {
+		return fmt.Errorf("invalid metadata")
+	}
+
+	return nil
+}
+
+// UnRegisterAgent attempts to remove interest in messages for an agent
+//
+// Each agent has a number of subscriptions (one per collective) so this can fail for some
+// while working for others, in this case the agent is essentially in an unrecoverable state
+// however the cases where unsubscribe will error are quite few in the nats client as its
+// not being-connected dependant and we handle most errors correctly.
+//
+// So this function will try to unsubscribe but if it fails, it will continue and finally unload
+// the agent, any stale subscriptions then will be dropped by the handlers so its ok. We will treat
+// unsbuscribe errors as non terminal, only logging errors.
+func (a *Manager) UnRegisterAgent(name string, conn inter.AgentConnector) error {
+	if name == "" {
+		return fmt.Errorf("agent name is required")
+	}
+
+	a.mu.Lock()
+	defer a.mu.Unlock()
+
+	_, found := a.agents[name]
+	if !found {
+		return fmt.Errorf("unknown agent")
+	}
+
+	err := a.unSubscribeAgent(name, conn)
+	if err != nil {
+		a.log.Errorf("Could not unsubscribe all interest for agent %v: %v", name, err)
+	}
+
+	delete(a.agents, name)
+	delete(a.subs, name)
+
+	return nil
+}
+
 // RegisterAgent connects a new agent to the server instance, subscribe to all its targets etc
 func (a *Manager) RegisterAgent(ctx context.Context, name string, agent Agent, conn inter.AgentConnector) error {
 	if name == "" {
 		return fmt.Errorf("agent name is required")
 	}
 
-	md := agent.Metadata()
-
-	if md.Timeout < 1 {
-		msg := fmt.Sprintf("Denying agent %s with a metadata timeout < 1", name)
-		a.log.Warnf(msg)
-		return fmt.Errorf(msg)
-	}
-
-	if md.Name == "" {
-		msg := fmt.Sprintf("Denying agent %s with no name in its metadata", name)
-		a.log.Warnf(msg)
-		return fmt.Errorf(msg)
+	err := a.validateAgent(agent)
+	if err != nil {
+		a.log.Warnf("Denying agent %q: %v", name, err)
+		return fmt.Errorf("invalid agent: %w", err)
 	}
 
 	a.mu.Lock()
 	defer a.mu.Unlock()
 
-	if a.servicesOnly && !md.Service {
+	if a.servicesOnly && !agent.Metadata().Service {
 		a.log.Infof("Denying non Service Agent %s", name)
 		return nil
 	}
@@ -164,7 +243,7 @@ func (a *Manager) RegisterAgent(ctx context.Context, name string, agent Agent, c
 		return fmt.Errorf("agent %s is already registered", name)
 	}
 
-	err := a.subscribeAgent(ctx, name, agent, conn)
+	err = a.subscribeAgent(ctx, name, agent, conn)
 	if err != nil {
 		return fmt.Errorf("could not register agent %s: %s", name, err)
 	}
@@ -198,6 +277,24 @@ func (a *Manager) agentDenied(name string) bool {
 	}
 
 	return false
+}
+
+func (a *Manager) unSubscribeAgent(name string, conn inter.AgentConnector) error {
+	subs, ok := a.subs[name]
+	if !ok {
+		return nil
+	}
+
+	for _, sub := range subs {
+		err := conn.Unsubscribe(sub)
+		if err != nil {
+			return err
+		}
+	}
+
+	delete(a.subs, name)
+
+	return nil
 }
 
 // Subscribes an agent to all its targets on the connector.  Should any subscription fail

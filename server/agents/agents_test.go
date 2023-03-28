@@ -89,6 +89,7 @@ var _ = Describe("Server/Agents", func() {
 		conn = imock.NewMockConnector(mockctl)
 
 		agent = NewMockAgent(mockctl)
+		agent.EXPECT().Name().Return(metadata.Name).AnyTimes()
 		agent.EXPECT().Metadata().Return(&metadata).AnyTimes()
 		agent.EXPECT().SetServerInfo(is).Return().AnyTimes()
 		agent.EXPECT().HandleMessage(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).DoAndReturn(handler).AnyTimes()
@@ -113,13 +114,13 @@ var _ = Describe("Server/Agents", func() {
 		It("Should reject agents with small timeouts", func() {
 			agent.Metadata().Timeout = 0
 			err := mgr.RegisterAgent(ctx, "testing", agent, conn)
-			Expect(err).To(MatchError("Denying agent testing with a metadata timeout < 1"))
+			Expect(err).To(MatchError("invalid agent: timeout < 1"))
 		})
 
 		It("Should reject agents without a name", func() {
 			agent.Metadata().Name = ""
 			err := mgr.RegisterAgent(ctx, "testing", agent, conn)
-			Expect(err).To(MatchError("Denying agent testing with no name in its metadata"))
+			Expect(err).To(MatchError("invalid agent: invalid metadata"))
 		})
 
 		It("Should honor the ShouldActivate wish of the agent", func() {
@@ -217,6 +218,79 @@ var _ = Describe("Server/Agents", func() {
 			a, ok := mgr.Get("stub")
 			Expect(ok).To(BeTrue())
 			Expect(a).To(Equal(agent))
+		})
+	})
+
+	Describe("UnregisterAgent", func() {
+		It("Should unsubscribe and unregister the agent", func() {
+			conn.EXPECT().AgentBroadcastTarget("cone", "stub").Return("cone.stub")
+			conn.EXPECT().AgentBroadcastTarget("ctwo", "stub").Return("ctwo.stub")
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "cone.stub", "cone.stub", "", gomock.Any()).Return(nil).AnyTimes()
+			conn.EXPECT().QueueSubscribe(gomock.Any(), "ctwo.stub", "ctwo.stub", "", gomock.Any()).Return(nil).AnyTimes()
+			agent.EXPECT().ShouldActivate().Return(true).AnyTimes()
+
+			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
+			Expect(err).ToNot(HaveOccurred())
+
+			a, ok := mgr.Get("stub")
+			Expect(ok).To(BeTrue())
+			Expect(a).To(Equal(agent))
+
+			Expect(mgr.agents).To(HaveKey("stub"))
+			Expect(mgr.subs).To(HaveKey("stub"))
+			Expect(mgr.subs["stub"]).To(HaveLen(2))
+
+			conn.EXPECT().Unsubscribe("cone.stub").Return(nil)
+			conn.EXPECT().Unsubscribe("ctwo.stub").Return(fmt.Errorf("fail"))
+			Expect(mgr.UnRegisterAgent("stub", conn)).To(Succeed())
+			Expect(mgr.agents).ToNot(HaveKey("stub"))
+			Expect(mgr.subs).ToNot(HaveKey("stub"))
+		})
+	})
+
+	Describe("ReplaceAgent", func() {
+		var oa *MockAgent
+		BeforeEach(func() {
+			oa = NewMockAgent(mockctl)
+			oa.EXPECT().Metadata().Return(&Metadata{
+				Author:      "stub@example.net",
+				Description: "Stub Agent",
+				License:     "Apache-2.0",
+				Name:        "stub_agent",
+				Timeout:     10,
+				URL:         "https://choria.io/",
+				Version:     "0.99.0",
+			}).AnyTimes()
+		})
+
+		It("Should validate agents", func() {
+			agent.Metadata().Timeout = 0
+			Expect(mgr.ReplaceAgent("testing", agent)).To(MatchError("invalid agent: timeout < 1"))
+		})
+
+		It("Should only replace agents with active agents", func() {
+			agent.EXPECT().ShouldActivate().Return(false).Times(1)
+			Expect(mgr.ReplaceAgent("testing", agent)).To(MatchError("replacement agent is not activating due to activation checks"))
+		})
+
+		It("Should reject replacements of unknown agents", func() {
+			agent.EXPECT().ShouldActivate().Return(true).Times(1)
+			Expect(mgr.ReplaceAgent("testing", agent)).To(MatchError("agent \"testing\" is not currently known"))
+		})
+
+		It("Should not allow the service property to be changed", func() {
+			oa.Metadata().Service = true
+			mgr.agents["testing"] = oa
+			agent.EXPECT().ShouldActivate().Return(true).Times(1)
+			Expect(mgr.ReplaceAgent("testing", agent)).To(MatchError("replacement agent cannot change service property"))
+		})
+
+		It("Should replace the agent", func() {
+			mgr.agents["testing"] = oa
+			agent.EXPECT().ShouldActivate().Return(true).Times(1)
+			Expect(mgr.agents["testing"]).To(Equal(oa))
+			Expect(mgr.ReplaceAgent("testing", agent)).To(Succeed())
+			Expect(mgr.agents["testing"]).To(Equal(agent))
 		})
 	})
 
