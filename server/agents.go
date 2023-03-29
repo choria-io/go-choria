@@ -14,6 +14,8 @@ import (
 
 type AgentManager interface {
 	RegisterAgent(ctx context.Context, name string, agent agents.Agent, conn inter.AgentConnector) error
+	UnregisterAgent(name string, conn inter.AgentConnector) error
+	ReplaceAgent(name string, agent agents.Agent) error
 	Logger() *logrus.Entry
 	Choria() inter.Framework
 }

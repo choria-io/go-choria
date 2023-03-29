@@ -92,7 +92,6 @@ commands:
       commands:
         - name: unit
           type: exec
-          dir: "{{ AppDir }}"
           description: Run ginkgo unit tests
           aliases: [u]
           arguments:

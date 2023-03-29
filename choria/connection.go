@@ -286,21 +286,21 @@ func (conn *Connection) Unsubscribe(name string) error {
 	defer conn.subMu.Unlock()
 
 	if sub, ok := conn.chanSubscriptions[name]; ok {
-		if conn.log != nil {
+		if sub.subscription != nil {
 			conn.log.Debugf("Unsubscribing from %v", sub.subscription.Subject)
-		}
 
-		err := sub.subscription.Unsubscribe()
+			err := sub.subscription.Unsubscribe()
 
-		// a number of errors basically mean the subscription is either
-		// not there in reality, invalid or the connection is closed etc
-		// so we treat all those as ok
-		switch {
-		case errors.Is(err, nats.ErrBadSubscription):
-		case errors.Is(err, nats.ErrConnectionDraining):
-		case errors.Is(err, nats.ErrConnectionClosed):
-		case err != nil:
-			return fmt.Errorf("could not unsubscribe from %s: %s", name, err)
+			// a number of errors basically mean the subscription is either
+			// not there in reality, invalid or the connection is closed etc
+			// so we treat all those as ok
+			switch {
+			case errors.Is(err, nats.ErrBadSubscription):
+			case errors.Is(err, nats.ErrConnectionDraining):
+			case errors.Is(err, nats.ErrConnectionClosed):
+			case err != nil:
+				return fmt.Errorf("could not unsubscribe from %s: %s", name, err)
+			}
 		}
 
 		sub.quit <- true
