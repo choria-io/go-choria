@@ -20,5 +20,5 @@ jobs:
       - name: Integration Tests
         shell: bash
         run: |
-          go install github.com/onsi/ginkgo/v2/ginkgo@latest
+          go install github.com/onsi/ginkgo/v2/ginkgo
           ginkgo --keep-going -vet=off -r integration
