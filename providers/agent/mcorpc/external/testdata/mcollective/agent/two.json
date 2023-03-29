@@ -1,7 +1,7 @@
 {
     "$schema": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
     "metadata": {
-        "name": "one",
+        "name": "two",
         "description": "Manage Operating System Packages",
         "author": "R.I.Pienaar <rip@devco.net>",
         "license": "Apache-2.0",

@@ -111,8 +111,8 @@ func (p *Provider) externalActivationCheck(ddl *agentddl.DDL) (mcorpc.Activation
 	}
 
 	agentPath := p.agentPath(ddl.Metadata.Name, ddl.SourceLocation)
-	if agentPath == "" || !util.FileExist(agentPath) {
-		p.log.Debugf("Agent %s does not exist in '%s', not activating", ddl.Metadata.Name, agentPath)
+	if !util.FileExist(agentPath) {
+		p.log.Debugf("Agent %s does not exist in '%s', cannot perform activation check, not activating", ddl.Metadata.Name, agentPath)
 		return func() bool { return false }, nil
 	}
 
@@ -141,7 +141,9 @@ func (p *Provider) externalActivationCheck(ddl *agentddl.DDL) (mcorpc.Activation
 func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	action := fmt.Sprintf("%s#%s", req.Agent, req.Action)
 
+	p.mu.Lock()
 	ddlpath, ok := p.paths[agent.Name()]
+	p.mu.Unlock()
 	if !ok {
 		p.abortAction(fmt.Sprintf("Cannot determine DDL path for agent %s", agent.Name()), agent, reply)
 		return

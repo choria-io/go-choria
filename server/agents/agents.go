@@ -148,7 +148,7 @@ func (a *Manager) ReplaceAgent(name string, agent Agent) error {
 		return fmt.Errorf("replacement agent cannot change service property")
 	}
 
-	a.log.Infof("Replacing agent %s of type %s with a new instance moving from version %s to %s", name, md.Name, md.Version, ca.Metadata().Version)
+	a.log.Infof("Replacing agent %s of type %s with a new instance moving from version %s to %s", name, md.Name, ca.Metadata().Version, md.Version)
 
 	agent.SetServerInfo(a.serverInfo)
 
@@ -171,7 +171,7 @@ func (a *Manager) validateAgent(agent Agent) error {
 	return nil
 }
 
-// UnRegisterAgent attempts to remove interest in messages for an agent
+// UnregisterAgent attempts to remove interest in messages for an agent
 //
 // Each agent has a number of subscriptions (one per collective) so this can fail for some
 // while working for others, in this case the agent is essentially in an unrecoverable state
@@ -181,7 +181,7 @@ func (a *Manager) validateAgent(agent Agent) error {
 // So this function will try to unsubscribe but if it fails, it will continue and finally unload
 // the agent, any stale subscriptions then will be dropped by the handlers so its ok. We will treat
 // unsbuscribe errors as non terminal, only logging errors.
-func (a *Manager) UnRegisterAgent(name string, conn inter.AgentConnector) error {
+func (a *Manager) UnregisterAgent(name string, conn inter.AgentConnector) error {
 	if name == "" {
 		return fmt.Errorf("agent name is required")
 	}
@@ -193,6 +193,8 @@ func (a *Manager) UnRegisterAgent(name string, conn inter.AgentConnector) error 
 	if !found {
 		return fmt.Errorf("unknown agent")
 	}
+
+	a.log.Debugf("Unregistering agent %v", name)
 
 	err := a.unSubscribeAgent(name, conn)
 	if err != nil {

@@ -10,6 +10,8 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
+	"time"
 
 	"github.com/choria-io/go-choria/inter"
 	"github.com/sirupsen/logrus"
@@ -19,8 +21,14 @@ import (
 	"github.com/choria-io/go-choria/server"
 )
 
-// agents we do not ever wish to load from external agents
-var denylist = []string{"rpcutil", "choria_util", "discovery", "scout"}
+var (
+	// agents we do not ever wish to load from external agents
+	denyList = []string{"rpcutil", "choria_util", "choria_provision", "choria_registry", "discovery", "scout"}
+	// how frequently agents are reconciled
+	watchInterval = time.Minute
+	// we only consider ddl files modified longer than this ago for reconciliation
+	fileChangeGrace = 20 * time.Second
+)
 
 // Provider is a Choria Agent Provider that supports calling agents external to the
 // choria process written in any language
@@ -29,6 +37,7 @@ type Provider struct {
 	log    *logrus.Entry
 	agents []*agent.DDL
 	paths  map[string]string
+	mu     sync.Mutex
 }
 
 // Initialize configures the agent provider
@@ -36,32 +45,178 @@ func (p *Provider) Initialize(cfg *config.Config, log *logrus.Entry) {
 	p.cfg = cfg
 	p.log = log.WithFields(logrus.Fields{"provider": "external"})
 	p.paths = map[string]string{}
-
-	p.loadAgents()
 }
 
-// RegisterAgents registers known ruby agents using a shimm agent
+// RegisterAgents registers known ruby agents using a shim agent and starts a background reconciliation loop to add/remove/update agents without restarts
 func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, connector inter.AgentConnector, log *logrus.Entry) error {
-	for _, ddl := range p.Agents() {
-		agent, err := p.newExternalAgent(ddl, mgr)
-		if err != nil {
-			p.log.Errorf("Could not register external agent %s: %s", agent.Name(), err)
+	go p.watchAgents(ctx, mgr, connector)
+
+	return nil
+}
+
+func (p *Provider) upgradeExistingAgents(foundAgents []*agent.DDL, mgr server.AgentManager) error {
+	for i, currentDDL := range p.agents {
+		candidateDDL := findInAgentList(foundAgents, func(a *agent.DDL) bool {
+			return a.Metadata.Name == currentDDL.Metadata.Name && a.Metadata.Version != currentDDL.Metadata.Version
+		})
+
+		if candidateDDL == nil {
 			continue
 		}
 
-		err = mgr.RegisterAgent(ctx, agent.Name(), agent, connector)
+		newAgent, err := p.newExternalAgent(candidateDDL, mgr)
 		if err != nil {
-			p.log.Errorf("Could not register external agent %s: %s", agent.Name(), err)
+			p.log.Errorf("Could not create upgraded external agent %v: %v", candidateDDL.Metadata.Name, err)
 			continue
+		}
+
+		err = mgr.ReplaceAgent(candidateDDL.Metadata.Name, newAgent)
+		if err != nil {
+			p.log.Errorf("Could not replace upgraded external agent %v: %v", candidateDDL.Metadata.Name, err)
+			continue
+		}
+
+		p.agents[i] = candidateDDL
+	}
+
+	return nil
+}
+
+func (p *Provider) removeOrphanAgents(foundAgents []*agent.DDL, mgr server.AgentManager, connector inter.AgentConnector) error {
+	var remove []int
+
+	for i, known := range p.agents {
+		found := findInAgentList(foundAgents, func(a *agent.DDL) bool {
+			return a.Metadata.Name == known.Metadata.Name
+		})
+
+		if found == nil {
+			p.log.Infof("Removing agent %s after the DDL %s was removed", known.Metadata.Name, known.SourceLocation)
+			err := mgr.UnregisterAgent(known.Metadata.Name, connector)
+			if err != nil {
+				p.log.Errorf("Could not unregister agent %v: %v", known.Metadata.Name, err)
+				continue
+			}
+
+			delete(p.paths, known.Metadata.Name)
+			remove = append(remove, i)
+		}
+	}
+
+	for _, i := range remove {
+		p.agents = append(p.agents[:i], p.agents[i+1:]...)
+	}
+
+	return nil
+}
+
+func (p *Provider) registerNewAgents(ctx context.Context, foundAgents []*agent.DDL, mgr server.AgentManager, connector inter.AgentConnector) error {
+	for _, candidateDDL := range foundAgents {
+		found := findInAgentList(p.agents, func(a *agent.DDL) bool {
+			return candidateDDL.Metadata.Name == a.Metadata.Name
+		})
+
+		if found == nil {
+			p.log.Debugf("Registering new agent %v version %v from %s", candidateDDL.Metadata.Name, candidateDDL.Metadata.Version, candidateDDL.SourceLocation)
+			agent, err := p.newExternalAgent(candidateDDL, mgr)
+			if err != nil {
+				p.log.Errorf("Could not register external agent %s: %s", agent.Name(), err)
+				continue
+			}
+
+			err = mgr.RegisterAgent(ctx, agent.Name(), agent, connector)
+			if err != nil {
+				p.log.Errorf("Could not register external agent %s: %s", agent.Name(), err)
+				continue
+			}
+
+			p.agents = append(p.agents, candidateDDL)
+			p.paths[candidateDDL.Metadata.Name] = candidateDDL.SourceLocation
 		}
 	}
 
 	return nil
 }
 
+func (p *Provider) reconcileAgents(ctx context.Context, mgr server.AgentManager, connector inter.AgentConnector) error {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	p.log.Debugf("Reconciling external agents from disk with running agents")
+
+	var foundAgents []*agent.DDL
+	p.eachAgent(func(candidateDDL *agent.DDL) {
+		if candidateDDL.SourceLocation == "" {
+			return
+		}
+
+		stat, err := os.Stat(candidateDDL.SourceLocation)
+		if err != nil {
+			p.log.Errorf("Could not determine age of DDL file %v: %v", candidateDDL.SourceLocation, err)
+			return
+		}
+
+		since := time.Since(stat.ModTime())
+		if since < fileChangeGrace {
+			p.log.Debugf("Skipping updated DDL file %v that is %v old", candidateDDL.SourceLocation, since)
+			return
+		}
+
+		foundAgents = append(foundAgents, candidateDDL)
+	})
+
+	p.log.Debugf("Found %d external agents on disk", len(foundAgents))
+
+	err := p.registerNewAgents(ctx, foundAgents, mgr, connector)
+	if err != nil {
+		p.log.Warnf("Could not register new agents: %v", err)
+	}
+
+	err = p.upgradeExistingAgents(foundAgents, mgr)
+	if err != nil {
+		p.log.Warnf("Could not upgrade existing agents: %v", err)
+	}
+
+	err = p.removeOrphanAgents(foundAgents, mgr, connector)
+	if err != nil {
+		p.log.Warnf("Could not remove orphaned agents: %v", err)
+	}
+
+	return nil
+}
+
+func (p *Provider) watchAgents(ctx context.Context, mgr server.AgentManager, connector inter.AgentConnector) {
+	err := p.reconcileAgents(ctx, mgr, connector)
+	if err != nil {
+		p.log.Errorf("Initial agent reconcile failed: %v", err)
+	}
+
+	ticker := time.NewTicker(watchInterval)
+	p.log.Debugf("Watching for agent updates every %v", watchInterval)
+
+	for {
+		select {
+		case <-ticker.C:
+			err := p.reconcileAgents(ctx, mgr, connector)
+			if err != nil {
+				p.log.Errorf("Reconciling agents failed: %v", err)
+			}
+
+		case <-ctx.Done():
+			return
+		}
+	}
+}
+
 // Agents provides a list of loaded agent DDLs
 func (p *Provider) Agents() []*agent.DDL {
-	return p.agents
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
+	dst := make([]*agent.DDL, len(p.agents))
+	copy(dst, p.agents)
+
+	return dst
 }
 
 // Version reports the version for this provider
@@ -69,15 +224,10 @@ func (p *Provider) Version() string {
 	return fmt.Sprintf("%s version %s", p.PluginName(), p.PluginVersion())
 }
 
-func (p *Provider) loadAgents() {
-	p.eachAgent(func(a *agent.DDL) {
-		p.log.Debugf("Found external DDL for agent %s", a.Metadata.Name)
-		p.agents = append(p.agents, a)
-		p.paths[a.Metadata.Name] = a.SourceLocation
-	})
-}
-
 func (p *Provider) agentDDL(a string) (*agent.DDL, bool) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+
 	for _, agent := range p.agents {
 		if agent.Metadata.Name == a {
 			return agent, true
@@ -134,12 +284,21 @@ func (p *Provider) eachAgent(cb func(ddl *agent.DDL)) {
 		if err != nil {
 			p.log.Errorf("Could not find agents in %s: %s", agentsdir, err)
 		}
-
 	}
 }
 
+func findInAgentList(agents []*agent.DDL, cb func(*agent.DDL) bool) *agent.DDL {
+	for _, d := range agents {
+		if cb(d) {
+			return d
+		}
+	}
+
+	return nil
+}
+
 func shouldLoadAgent(name string) bool {
-	for _, a := range denylist {
+	for _, a := range denyList {
 		if a == name {
 			return false
 		}

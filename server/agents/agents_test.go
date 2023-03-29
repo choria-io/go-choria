@@ -242,7 +242,7 @@ var _ = Describe("Server/Agents", func() {
 
 			conn.EXPECT().Unsubscribe("cone.stub").Return(nil)
 			conn.EXPECT().Unsubscribe("ctwo.stub").Return(fmt.Errorf("fail"))
-			Expect(mgr.UnRegisterAgent("stub", conn)).To(Succeed())
+			Expect(mgr.UnregisterAgent("stub", conn)).To(Succeed())
 			Expect(mgr.agents).ToNot(HaveKey("stub"))
 			Expect(mgr.subs).ToNot(HaveKey("stub"))
 		})
