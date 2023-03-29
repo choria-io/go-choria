@@ -102,10 +102,10 @@ var _ = Describe("McoRPC/External", func() {
 		}
 
 		It("Should register new agents", func() {
-			mgr.EXPECT().RegisterAgent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(2)
+			mgr.EXPECT().RegisterAgent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(3)
 			Expect(prov.agents).To(HaveLen(0))
 			Expect(prov.reconcileAgents(ctx, mgr, conn)).To(Succeed())
-			Expect(prov.agents).To(HaveLen(2))
+			Expect(prov.agents).To(HaveLen(3))
 		})
 
 		It("Should upgrade changed agents", func() {
@@ -210,12 +210,13 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(prov.reconcileAgents(ctx, mgr, conn)).To(Succeed())
 
 			agents := prov.Agents()
-			Expect(prov.agents).To(HaveLen(2))
+			Expect(prov.agents).To(HaveLen(3))
 			Expect(prov.agents[0].Metadata.Name).To(Equal("echo"))
 			Expect(prov.agents[1].Metadata.Name).To(Equal("one"))
+			Expect(prov.agents[2].Metadata.Name).To(Equal("three"))
 			Expect(agents).To(Equal(prov.agents))
 
-			Expect(prov.paths).To(HaveLen(2))
+			Expect(prov.paths).To(HaveLen(3))
 		})
 	})
 

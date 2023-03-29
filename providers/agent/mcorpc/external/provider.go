@@ -7,6 +7,8 @@ package external
 import (
 	"context"
 	"fmt"
+	"github.com/choria-io/go-choria/internal/util"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -237,34 +239,53 @@ func (p *Provider) agentDDL(a string) (*agent.DDL, bool) {
 	return nil, false
 }
 
+// walks the plugin.choria.agent_provider.mcorpc.libdir directories looking for agents.
+//
+// we support $dir/agent.json and $dir/agent/agent.json
 func (p *Provider) eachAgent(cb func(ddl *agent.DDL)) {
-	for _, dir := range p.cfg.Choria.RubyLibdir {
-		agentsdir := filepath.Join(dir, "mcollective", "agent")
+	for _, libDir := range p.cfg.Choria.RubyLibdir {
+		agentsDir := filepath.Join(libDir, "mcollective", "agent")
 
-		p.log.Debugf("Attempting to load External agents from %s", agentsdir)
+		p.log.Debugf("Attempting to load External agents from %s", agentsDir)
 
-		err := filepath.Walk(agentsdir, func(path string, info os.FileInfo, err error) error {
-			if err != nil {
+		err := filepath.WalkDir(agentsDir, func(path string, info fs.DirEntry, err error) error {
+			if err != nil || path == agentsDir {
 				return err
 			}
 
+			// if early on we decide to skip dir, this will hold that and used everywhere we return on error
+			var retErr error
+
+			// either x.json or x in the case of a directory holding a ddl
+			fname := info.Name()
+
+			// full path, which in the case of a directory holding a ddl will be adjusted to the nested one
+			ddlPath := path
+
 			if info.IsDir() {
-				return nil
+				// We dont want to keep walking into directory so we check if the
+				// ddl matching fname exist then just use that, but we avoid
+				// traversing nested directories
+				ddlPath = filepath.Join(path, fmt.Sprintf("%s.json", fname))
+				retErr = fs.SkipDir
 			}
 
-			fname := info.Name()
-			ext := filepath.Ext(fname)
+			if !util.FileExist(ddlPath) {
+				return retErr
+			}
+
+			ext := filepath.Ext(ddlPath)
 			name := strings.TrimSuffix(fname, ext)
 
 			if ext != ".json" {
-				return nil
+				return retErr
 			}
 
-			p.log.Debugf("Attempting to load %s as an agent DDL", path)
-			ddl, err := agent.New(path)
+			p.log.Debugf("Attempting to load %s as an agent DDL", ddlPath)
+			ddl, err := agent.New(ddlPath)
 			if err != nil {
-				p.log.Errorf("Could not load agent DDL %s: %s", path, err)
-				return nil
+				p.log.Errorf("Could not load agent DDL %s: %s", ddlPath, err)
+				return retErr
 			}
 
 			if ddl.Metadata.Provider != "external" {
@@ -273,16 +294,16 @@ func (p *Provider) eachAgent(cb func(ddl *agent.DDL)) {
 
 			if !shouldLoadAgent(name) {
 				p.log.Warnf("External agents are not allowed to supply an agent called '%s', skipping", name)
-				return nil
+				return retErr
 			}
 
 			cb(ddl)
 
-			return nil
+			return retErr
 		})
 
 		if err != nil {
-			p.log.Errorf("Could not find agents in %s: %s", agentsdir, err)
+			p.log.Errorf("Could not find agents in %s: %s", agentsDir, err)
 		}
 	}
 }
