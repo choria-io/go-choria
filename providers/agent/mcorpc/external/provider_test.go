@@ -7,21 +7,22 @@ package external
 import (
 	"bytes"
 	"context"
-	"github.com/choria-io/go-choria/server/agents"
-	"github.com/onsi/gomega/gbytes"
-	"github.com/sirupsen/logrus"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/golang/mock/gomock"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
+	"github.com/onsi/gomega/gbytes"
+	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server"
-	"github.com/golang/mock/gomock"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
+	"github.com/choria-io/go-choria/server/agents"
 )
 
 var _ = Describe("McoRPC/External", func() {

@@ -7,7 +7,6 @@ package external
 import (
 	"context"
 	"fmt"
-	"github.com/choria-io/go-choria/internal/util"
 	"io/fs"
 	"os"
 	"path/filepath"
@@ -15,10 +14,11 @@ import (
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/inter"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/config"
+	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/server"
 )
@@ -59,7 +59,16 @@ func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, 
 func (p *Provider) upgradeExistingAgents(foundAgents []*agent.DDL, mgr server.AgentManager) error {
 	for i, currentDDL := range p.agents {
 		candidateDDL := findInAgentList(foundAgents, func(a *agent.DDL) bool {
-			return a.Metadata.Name == currentDDL.Metadata.Name && a.Metadata.Version != currentDDL.Metadata.Version
+			if a.Metadata.Name != currentDDL.Metadata.Name {
+				return false
+			}
+
+			// we check the ddl location so that moving a agent to a different place, even when versions match will also reload it
+			if a.Metadata.Version == currentDDL.Metadata.Version && a.SourceLocation == currentDDL.SourceLocation {
+				return false
+			}
+
+			return p.shouldProcessModifiedDDL(a.SourceLocation)
 		})
 
 		if candidateDDL == nil {
@@ -79,6 +88,7 @@ func (p *Provider) upgradeExistingAgents(foundAgents []*agent.DDL, mgr server.Ag
 		}
 
 		p.agents[i] = candidateDDL
+		p.paths[candidateDDL.Metadata.Name] = candidateDDL.SourceLocation
 	}
 
 	return nil
@@ -118,7 +128,7 @@ func (p *Provider) registerNewAgents(ctx context.Context, foundAgents []*agent.D
 			return candidateDDL.Metadata.Name == a.Metadata.Name
 		})
 
-		if found == nil {
+		if found == nil && p.shouldProcessModifiedDDL(candidateDDL.SourceLocation) {
 			p.log.Debugf("Registering new agent %v version %v from %s", candidateDDL.Metadata.Name, candidateDDL.Metadata.Version, candidateDDL.SourceLocation)
 			agent, err := p.newExternalAgent(candidateDDL, mgr)
 			if err != nil {
@@ -140,6 +150,26 @@ func (p *Provider) registerNewAgents(ctx context.Context, foundAgents []*agent.D
 	return nil
 }
 
+func (p *Provider) shouldProcessModifiedDDL(path string) bool {
+	if path == "" {
+		return false
+	}
+
+	stat, err := os.Stat(path)
+	if err != nil {
+		p.log.Errorf("Could not determine age of DDL file %v: %v", path, err)
+		return false
+	}
+
+	since := time.Since(stat.ModTime())
+	if since < fileChangeGrace {
+		p.log.Debugf("Skipping updated DDL file %v that is %v old", path, since)
+		return false
+	}
+
+	return true
+}
+
 func (p *Provider) reconcileAgents(ctx context.Context, mgr server.AgentManager, connector inter.AgentConnector) error {
 	p.mu.Lock()
 	defer p.mu.Unlock()
@@ -149,18 +179,6 @@ func (p *Provider) reconcileAgents(ctx context.Context, mgr server.AgentManager,
 	var foundAgents []*agent.DDL
 	p.eachAgent(func(candidateDDL *agent.DDL) {
 		if candidateDDL.SourceLocation == "" {
-			return
-		}
-
-		stat, err := os.Stat(candidateDDL.SourceLocation)
-		if err != nil {
-			p.log.Errorf("Could not determine age of DDL file %v: %v", candidateDDL.SourceLocation, err)
-			return
-		}
-
-		since := time.Since(stat.ModTime())
-		if since < fileChangeGrace {
-			p.log.Debugf("Skipping updated DDL file %v that is %v old", candidateDDL.SourceLocation, since)
 			return
 		}
 
