@@ -284,28 +284,24 @@ func StrToBool(s string) (bool, error) {
 
 func FileIsRegular(path string) bool {
 	stat, err := os.Stat(path)
-	if os.IsNotExist(err) {
+	if err != nil {
 		return false
 	}
 
-	if !stat.Mode().IsRegular() {
-		return false
-	}
-
-	return true
+	return stat.Mode().IsRegular()
 }
 
 func FileIsDir(path string) bool {
+	if path == "" {
+		return false
+	}
+
 	stat, err := os.Stat(path)
-	if os.IsNotExist(err) {
+	if err != nil {
 		return false
 	}
 
-	if !stat.IsDir() {
-		return false
-	}
-
-	return true
+	return stat.IsDir()
 }
 
 func UniqueStrings(items []string, shouldSort bool) []string {
