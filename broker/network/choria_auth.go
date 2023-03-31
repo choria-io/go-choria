@@ -16,11 +16,12 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/tokens"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/sirupsen/logrus"
+
+	"github.com/choria-io/go-choria/internal/util"
 )
 
 // ChoriaAuth implements the Nats server.Authentication interface and
@@ -181,7 +182,7 @@ func (a *ChoriaAuth) verifyNonceSignature(nonce []byte, sig string, pks string, 
 	return true, nil
 }
 
-// ed25519.Verify() panics on bad pubkeys, this does not
+// ed25519.Sha256VerifyDir() panics on bad pubkeys, this does not
 func (a *ChoriaAuth) ed25519Verify(publicKey ed25519.PublicKey, message []byte, sig []byte) (bool, error) {
 	if len(publicKey) != ed25519.PublicKeySize {
 		return false, fmt.Errorf("invalid public key length %d", len(publicKey))

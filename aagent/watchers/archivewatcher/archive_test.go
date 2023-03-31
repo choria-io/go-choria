@@ -12,10 +12,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+
+	"github.com/choria-io/go-choria/aagent/model"
 )
 
 func TestMachine(t *testing.T) {
@@ -44,6 +45,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 		machine = model.NewMockMachine(mockctl)
 		machine.EXPECT().Directory().Return(td).AnyTimes()
 		machine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+		machine.EXPECT().Warnf(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 		machine.EXPECT().Errorf(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 		machine.EXPECT().Facts().Return(json.RawMessage("{}")).AnyTimes()
 		machine.EXPECT().Data().Return(map[string]any{}).AnyTimes()
@@ -88,26 +90,23 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 
 		It("Should handle bad templates", func() {
 			w.properties.ContentChecksumsChecksum = "{{bad}}"
-			_, _, err := w.verify("testdata/good")
+			err := w.verify("testdata/good")
 			Expect(err).To(MatchError("could not parse template on verify_checksum property"))
 
 			w.properties.ContentChecksumsChecksum = `{{lookup "x" ""}}`
-			_, _, err = w.verify("testdata/good")
+			err = w.verify("testdata/good")
 			Expect(err).To(MatchError("verify_checksum template resulted in an empty string"))
 		})
 
 		It("Should process templates", func() {
 			w.properties.ContentChecksumsChecksum = `{{lookup "x" "40cb790b7199be45f3116354f87b2bdc3aa520a1eb056aa3608911cf40d1f821"}}`
-			ok, _, err := w.verify("testdata/good")
-			Expect(ok).To(BeTrue())
-			Expect(err).ToNot(HaveOccurred())
+			Expect(w.verify("testdata/good")).To(Succeed())
+
 		})
 
 		It("Should handle bad checksums", func() {
 			w.properties.ContentChecksumsChecksum = "x"
-			ok, _, err := w.verify("testdata/good")
-			Expect(ok).To(BeFalse())
-			Expect(err).To(MatchError("checksum file SHA256SUMS has an invalid checksum"))
+			Expect(w.verify("testdata/good")).To(MatchError("checksum file SHA256SUMS has an invalid checksum"))
 		})
 	})
 

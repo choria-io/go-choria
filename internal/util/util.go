@@ -7,13 +7,10 @@ package util
 import (
 	"bytes"
 	"context"
-	"crypto/sha256"
 	"encoding/base64"
-	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"io"
 	"math"
 	"math/rand"
 	"os"
@@ -28,16 +25,18 @@ import (
 	"time"
 	"unicode"
 
-	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 
+	"github.com/choria-io/go-choria/internal/fs"
+
 	"github.com/AlecAivazis/survey/v2"
-	"github.com/choria-io/go-choria/backoff"
-	"github.com/choria-io/go-choria/build"
 	"github.com/gofrs/uuid"
 	xtablewriter "github.com/xlab/tablewriter"
 	"golang.org/x/text/cases"
 	"golang.org/x/text/language"
+
+	"github.com/choria-io/go-choria/backoff"
+	"github.com/choria-io/go-choria/build"
 )
 
 var ConstantBackOffForTests = backoff.Policy{
@@ -565,25 +564,6 @@ func FuncMap(f map[string]any) template.FuncMap {
 	return fm
 }
 
-func FileHasSha256Sum(path string, sum string) (bool, string, error) {
-	s, err := Sha256HashFile(path)
-	if err != nil {
-		return false, "", err
-	}
-
-	return s == sum, s, nil
-}
-
-func Sha256HashBytes(c []byte) (string, error) {
-	hasher := sha256.New()
-	r := bytes.NewReader(c)
-	_, err := io.Copy(hasher, r)
-	if err != nil {
-		return "", err
-	}
-	return hex.EncodeToString(hasher.Sum(nil)), nil
-}
-
 func IsExecutableInPath(c string) bool {
 	p, err := exec.LookPath(c)
 	if err != nil {
@@ -591,22 +571,6 @@ func IsExecutableInPath(c string) bool {
 	}
 
 	return p != ""
-}
-
-func Sha256HashFile(path string) (string, error) {
-	hasher := sha256.New()
-	f, err := os.Open(path)
-	if err != nil {
-		return "", err
-	}
-	defer f.Close()
-
-	_, err = io.Copy(hasher, f)
-	if err != nil {
-		return "", err
-	}
-
-	return hex.EncodeToString(hasher.Sum(nil)), nil
 }
 
 // HasPrefix checks if s has any one of prefixes
