@@ -14,9 +14,7 @@ import (
 	"net/http"
 	"net/url"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 	"strings"
 	"sync"
 	"time"
@@ -180,16 +178,13 @@ func (w *Watcher) verifyCreates() (string, State, error) {
 
 	// TODO: if verify fail on checksum fail of the sha256sums file should I remove the resulting files,
 	//  they are probably compromised so should stop being used maybe a flag to control that
-	_, output, err := w.verify(creates)
+	err := w.verify(creates)
 	if err == nil {
 		w.Infof("Checksums of %s verified successfully using %s", creates, w.properties.ContentChecksums)
 		return creates, VerifiedOK, nil
 	}
 
-	w.Errorf("Checksum verification failed, triggering download: %s", err)
-	if len(output) > 0 {
-		w.Errorf("sha256 output: %s", string(output))
-	}
+	w.Errorf("Checksum verification failed, triggering download: %v", err)
 
 	return creates, VerifyFailed, nil
 }
@@ -292,60 +287,51 @@ func (w *Watcher) extractAndVerifyToTemp(path string) (string, error) {
 		return td, fmt.Errorf("untar failed: %s", err)
 	}
 
-	_, output, err := w.verify(filepath.Join(td, w.properties.Creates))
+	err = w.verify(filepath.Join(td, w.properties.Creates))
 	if err != nil {
-		if len(output) > 0 {
-			w.Errorf("sha256 verify failed: %s", string(output))
-		}
+		w.Errorf("sha256 verify failed: %v", err)
 		return td, err
 	}
 
 	return td, nil
 }
 
-func (w *Watcher) verify(dir string) (bool, []byte, error) {
+func (w *Watcher) verify(dir string) error {
 	ccc, err := w.ProcessTemplate(w.properties.ContentChecksumsChecksum)
 	if err != nil {
-		return false, nil, fmt.Errorf("could not parse template on verify_checksum property")
+		return fmt.Errorf("could not parse template on verify_checksum property")
 	}
 	if ccc == "" {
-		return false, nil, fmt.Errorf("verify_checksum template resulted in an empty string")
+		return fmt.Errorf("verify_checksum template resulted in an empty string")
 	}
 
 	sumsFile := filepath.Join(dir, w.properties.ContentChecksums)
 	if !iu.FileIsRegular(sumsFile) {
-		return false, nil, fmt.Errorf("checksums file %s does not exist in the archive (%s)", w.properties.ContentChecksums, sumsFile)
+		return fmt.Errorf("checksums file %s does not exist in the archive (%s)", w.properties.ContentChecksums, sumsFile)
 	}
 
 	ok, _, err := iu.FileHasSha256Sum(sumsFile, ccc)
 	if err != nil {
-		return false, nil, fmt.Errorf("failed to checksum file %s: %s", w.properties.ContentChecksums, err)
+		return fmt.Errorf("failed to checksum file %s: %s", w.properties.ContentChecksums, err)
 	}
 	if !ok {
-		return false, nil, fmt.Errorf("checksum file %s has an invalid checksum", w.properties.ContentChecksums)
+		return fmt.Errorf("checksum file %s has an invalid checksum", w.properties.ContentChecksums)
 	}
 
-	timeout, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	command := []string{"sha256sum", "--check", "--strict", "--quiet", w.properties.ContentChecksums}
-	if runtime.GOOS == "darwin" {
-		command = []string{"shasum", "-a", "256", "--check", "--strict", "--quiet", w.properties.ContentChecksums}
-	}
-
-	cmd := exec.CommandContext(timeout, command[0], command[1:]...)
-	cmd.Dir = dir
-	out, err := cmd.CombinedOutput()
-	if werr, ok := err.(*exec.ExitError); ok {
-		if werr.Exited() && werr.ExitCode() == 1 {
-			return false, out, fmt.Errorf("checksums failed")
+	ok, err = iu.Sha256VerifyDir(sumsFile, dir, nil, func(file string, ok bool) {
+		if !ok {
+			w.Warnf("Verification checksum failed for %s", file)
 		}
-		return false, out, err
-	} else if err != nil {
-		return false, out, err
+	})
+	if err != nil {
+		return err
 	}
 
-	return true, out, err
+	if !ok {
+		return fmt.Errorf("contents did not pass verification")
+	}
+
+	return nil
 }
 
 func (w *Watcher) untar(s io.Reader, t string) error {
