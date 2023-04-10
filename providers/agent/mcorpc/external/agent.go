@@ -95,11 +95,15 @@ func (p *Provider) agentPath(name string, dir string) string {
 
 	agentNameOrDir := filepath.Join(base, name)
 
-	if !util.FileIsDir(agentNameOrDir) {
+	if util.FileIsRegular(agentNameOrDir) {
+		p.log.Debugf("Using %s as path to agent binary", agentNameOrDir)
 		return agentNameOrDir
 	}
 
-	return filepath.Join(agentNameOrDir, fmt.Sprintf("%s-%s_%s", name, runtime.GOOS, runtime.GOARCH))
+	agentNameOrDir = filepath.Join(agentNameOrDir, fmt.Sprintf("%s-%s_%s", name, runtime.GOOS, runtime.GOARCH))
+	p.log.Debugf("Using %s as path to agent binary", agentNameOrDir)
+
+	return agentNameOrDir
 }
 
 func (p *Provider) externalActivationCheck(ddl *agentddl.DDL) (mcorpc.ActivationChecker, error) {
@@ -157,7 +161,7 @@ func (p *Provider) externalAction(ctx context.Context, req *mcorpc.Request, repl
 
 	agentPath := p.agentPath(agent.Metadata().Name, ddlpath)
 	if agentPath == "" || !util.FileExist(agentPath) {
-		p.abortAction(fmt.Sprintf("Cannot call external agent %s: agent executable %s was not found", action, agentPath), agent, reply)
+		p.abortAction(fmt.Sprintf("Cannot call external agent %s: agent executable was not found", action), agent, reply)
 		return
 	}
 	agent.Log.Debugf("Attempting to call external agent %s (%s) with a timeout %d", action, agentPath, agent.Metadata().Timeout)

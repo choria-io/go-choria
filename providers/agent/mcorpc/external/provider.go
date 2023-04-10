@@ -277,6 +277,10 @@ func (p *Provider) eachAgent(cb func(ddl *agent.DDL)) {
 			// either x.json or x in the case of a directory holding a ddl
 			fname := info.Name()
 
+			if fname == "tmp" {
+				return retErr
+			}
+
 			// full path, which in the case of a directory holding a ddl will be adjusted to the nested one
 			ddlPath := path
 

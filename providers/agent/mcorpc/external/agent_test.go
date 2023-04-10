@@ -218,7 +218,7 @@ var _ = Describe("McoRPC/External", func() {
 			}
 
 			prov.externalAction(ctx, req, rep, agent, nil)
-			Expect(rep.Statusmsg).To(MatchRegexp("Cannot call.+ginkgo_missing#ping.+ginkgo_missing was not found"))
+			Expect(rep.Statusmsg).To(MatchRegexp("Cannot call.+ginkgo_missing#ping.+agent executable was not found"))
 			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
 		})
 
