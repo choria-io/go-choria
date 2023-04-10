@@ -205,15 +205,42 @@ func (r *RPC) CreateCommand(app builder.KingpinCommand) (*fisk.CmdClause, error)
 		r.display = r.def.Display
 	}
 
+	// because we define our own concept of a flag here we cant rely on flag processing from appbuilder
+	// so have to basically duplicate all this from appbuilder code.
 	for _, f := range r.def.Flags {
 		flag := r.cmd.Flag(f.Name, f.Description)
 		if f.Required {
 			flag.Required()
 		}
+
 		if f.PlaceHolder != "" {
 			flag.PlaceHolder(f.PlaceHolder)
 		}
-		r.flags[f.Name] = flag.String()
+
+		if f.Default != nil {
+			flag.Default(fmt.Sprintf("%v", f.Default))
+		}
+
+		if f.EnvVar != "" {
+			flag.Envar(f.EnvVar)
+		}
+
+		if f.Short != "" {
+			flag.Short([]rune(f.Short)[0])
+		}
+
+		switch {
+		case len(f.Enum) > 0:
+			r.flags[f.Name] = flag.Enum(f.Enum...)
+		case f.Bool:
+			if f.Default == true || f.Default == "true" {
+				r.flags[f.Name] = flag.Bool()
+			} else {
+				r.flags[f.Name] = flag.UnNegatableBool()
+			}
+		default:
+			r.flags[f.Name] = flag.String()
+		}
 	}
 
 	return r.cmd, nil
