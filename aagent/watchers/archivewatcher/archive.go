@@ -178,6 +178,10 @@ func (w *Watcher) verifyCreates() (string, State, error) {
 
 	// TODO: if verify fail on checksum fail of the sha256sums file should I remove the resulting files,
 	//  they are probably compromised so should stop being used maybe a flag to control that
+	if w.properties.ContentChecksumsChecksum == "" {
+		return creates, VerifiedOK, nil
+	}
+
 	err := w.verify(creates)
 	if err == nil {
 		w.Infof("Checksums of %s verified successfully using %s", creates, w.properties.ContentChecksums)
@@ -287,10 +291,12 @@ func (w *Watcher) extractAndVerifyToTemp(path string) (string, error) {
 		return td, fmt.Errorf("untar failed: %s", err)
 	}
 
-	err = w.verify(filepath.Join(td, w.properties.Creates))
-	if err != nil {
-		w.Errorf("sha256 verify failed: %v", err)
-		return td, err
+	if w.properties.ContentChecksumsChecksum != "" {
+		err = w.verify(filepath.Join(td, w.properties.Creates))
+		if err != nil {
+			w.Errorf("sha256 verify failed: %v", err)
+			return td, err
+		}
 	}
 
 	return td, nil
@@ -351,6 +357,10 @@ func (w *Watcher) untar(s io.Reader, t string) error {
 
 		if header.Typeflag != tar.TypeReg && header.Typeflag != tar.TypeDir {
 			return fmt.Errorf("only regular files and directories are supported")
+		}
+
+		if strings.Contains(header.Name, "..") {
+			return fmt.Errorf("invalid tar file detected")
 		}
 
 		path := filepath.Join(t, header.Name)

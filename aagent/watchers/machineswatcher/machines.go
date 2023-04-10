@@ -83,6 +83,8 @@ type Properties struct {
 	// PublicKey is the optional ed25519 public key used to sign the specification, when set
 	// the specification received will be validated and any invalid specification will be discarded
 	PublicKey string `mapstructure:"public_key"`
+	// Directory sets the directory where plugins are being deployed into, when empty defaults to machines directory like /etc/choria/machines
+	Directory string `mapstructure:"plugins_directory"`
 }
 
 type Watcher struct {
@@ -283,7 +285,7 @@ func (w *Watcher) handleCheck(s State, err error) error {
 	switch s {
 	case Error:
 		if err != nil {
-			w.Errorf("Managing machines failed: %s", err)
+			w.Errorf("Managing plugins failed: %s", err)
 		}
 
 		w.NotifyWatcherState(w.CurrentState())
@@ -315,12 +317,20 @@ func (w *Watcher) renderMachine(m *ManagedMachine) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func (w *Watcher) targetDirForManagedPlugins() string {
+	if w.properties.Directory != "" {
+		return w.properties.Directory
+	}
+
+	return filepath.Dir(w.machine.Directory())
+}
+
 func (w *Watcher) targetDirForManagerMachine(m string) string {
 	return filepath.Join(filepath.Dir(w.machine.Directory()), fmt.Sprintf("mm_%s", m))
 }
 
 func (w *Watcher) targetDirForManagedMachine(m string) string {
-	return filepath.Join(filepath.Dir(w.machine.Directory()), m)
+	return filepath.Join(w.targetDirForManagedPlugins(), m)
 }
 
 func (w *Watcher) purgeUnknownMachines(ctx context.Context, desired []*ManagedMachine) (bool, error) {
@@ -329,7 +339,7 @@ func (w *Watcher) purgeUnknownMachines(ctx context.Context, desired []*ManagedMa
 		return false, err
 	}
 
-	w.Debugf("Purging unknown machines from current list %v", current)
+	w.Debugf("Purging unknown plugins from current list %v", current)
 
 	purged := false
 	for _, m := range current {
@@ -374,7 +384,7 @@ func (w *Watcher) purgeUnknownMachines(ctx context.Context, desired []*ManagedMa
 }
 
 func (w *Watcher) currentMachines() ([]string, error) {
-	dirs, err := os.ReadDir(filepath.Dir(w.machine.Directory()))
+	dirs, err := os.ReadDir(w.targetDirForManagedPlugins())
 	if err != nil {
 		return nil, err
 	}
@@ -471,7 +481,7 @@ func (w *Watcher) desiredState() ([]*ManagedMachine, error) {
 
 	for _, m := range desired {
 		m.Interval = w.properties.MachineManageInterval.String()
-		m.Target = filepath.Dir(w.machine.Directory())
+		m.Target = w.targetDirForManagedPlugins()
 
 		if m.Name == "" {
 			return nil, fmt.Errorf("name is required")
@@ -549,7 +559,7 @@ func (w *Watcher) validate() error {
 	if w.properties.DataItem == "" {
 		return fmt.Errorf("data_item is required")
 	}
-	if w.machine.Directory() == "" {
+	if w.machine.Directory() == "" && w.properties.Directory == "" {
 		return fmt.Errorf("machine store is not configured")
 	}
 
