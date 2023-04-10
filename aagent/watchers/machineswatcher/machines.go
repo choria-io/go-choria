@@ -85,6 +85,8 @@ type Properties struct {
 	PublicKey string `mapstructure:"public_key"`
 	// Directory sets the directory where plugins are being deployed into, when empty defaults to machines directory like /etc/choria/machines
 	Directory string `mapstructure:"plugins_directory"`
+	// ManagerMachinePrefix the prefix used in constructing names for the managed machines
+	ManagerMachinePrefix string `mapstructure:"manager_machine_prefix"`
 }
 
 type Watcher struct {
@@ -140,6 +142,10 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 	// Loads the public key from plugin.choria.machine.signing_key when set, overriding the value set here
 	if pk := machine.SignerKey(); pk != "" {
 		machines.properties.PublicKey = pk
+	}
+
+	if machines.properties.ManagerMachinePrefix == "" {
+		machines.properties.ManagerMachinePrefix = "mm_"
 	}
 
 	return machines, nil
@@ -326,7 +332,7 @@ func (w *Watcher) targetDirForManagedPlugins() string {
 }
 
 func (w *Watcher) targetDirForManagerMachine(m string) string {
-	return filepath.Join(filepath.Dir(w.machine.Directory()), fmt.Sprintf("mm_%s", m))
+	return filepath.Join(filepath.Dir(w.machine.Directory()), fmt.Sprintf("%s%s", w.properties.ManagerMachinePrefix, m))
 }
 
 func (w *Watcher) targetDirForManagedMachine(m string) string {
