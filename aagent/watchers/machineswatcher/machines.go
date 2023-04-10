@@ -61,6 +61,7 @@ type Specification struct {
 
 type ManagedMachine struct {
 	Name                     string `json:"name" yaml:"name"`
+	NamePrefix               string `json:"-" yaml:"-"`
 	Source                   string `json:"source" yaml:"source"`
 	Username                 string `json:"username" yaml:"username"`
 	Password                 string `json:"password" yaml:"password"`
@@ -142,10 +143,6 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 	// Loads the public key from plugin.choria.machine.signing_key when set, overriding the value set here
 	if pk := machine.SignerKey(); pk != "" {
 		machines.properties.PublicKey = pk
-	}
-
-	if machines.properties.ManagerMachinePrefix == "" {
-		machines.properties.ManagerMachinePrefix = "mm_"
 	}
 
 	return machines, nil
@@ -332,7 +329,7 @@ func (w *Watcher) targetDirForManagedPlugins() string {
 }
 
 func (w *Watcher) targetDirForManagerMachine(m string) string {
-	return filepath.Join(filepath.Dir(w.machine.Directory()), fmt.Sprintf("%s%s", w.properties.ManagerMachinePrefix, m))
+	return filepath.Join(filepath.Dir(w.machine.Directory()), fmt.Sprintf("%s_%s", w.properties.ManagerMachinePrefix, m))
 }
 
 func (w *Watcher) targetDirForManagedMachine(m string) string {
@@ -407,7 +404,7 @@ func (w *Watcher) currentMachines() ([]string, error) {
 			continue
 		}
 
-		if parts[0] == "mm" {
+		if parts[0] == w.properties.ManagerMachinePrefix {
 			found = append(found, parts[1])
 		}
 	}
@@ -479,13 +476,15 @@ func (w *Watcher) desiredState() ([]*ManagedMachine, error) {
 		return nil, err
 	}
 
-	desired := []*ManagedMachine{}
+	var desired []*ManagedMachine
+
 	err = json.Unmarshal(data, &desired)
 	if err != nil {
 		return nil, fmt.Errorf("invalid machines specification: %s", err)
 	}
 
 	for _, m := range desired {
+		m.NamePrefix = w.properties.ManagerMachinePrefix
 		m.Interval = w.properties.MachineManageInterval.String()
 		m.Target = w.targetDirForManagedPlugins()
 
@@ -558,6 +557,10 @@ func (w *Watcher) setProperties(props map[string]any) error {
 		w.properties.PublicKey = PublicKey
 	}
 
+	if w.properties.ManagerMachinePrefix == "" {
+		w.properties.ManagerMachinePrefix = "mm"
+	}
+
 	return w.validate()
 }
 
@@ -567,6 +570,10 @@ func (w *Watcher) validate() error {
 	}
 	if w.machine.Directory() == "" && w.properties.Directory == "" {
 		return fmt.Errorf("machine store is not configured")
+	}
+
+	if strings.Contains(w.properties.ManagerMachinePrefix, "_") {
+		return fmt.Errorf("manager_machine_prefix may not contain underscore")
 	}
 
 	if w.properties.MachineManageInterval == 0 {
