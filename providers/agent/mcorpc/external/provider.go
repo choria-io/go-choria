@@ -14,6 +14,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/backoff"
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/config"
@@ -26,10 +27,8 @@ import (
 var (
 	// agents we do not ever wish to load from external agents
 	denyList = []string{"rpcutil", "choria_util", "choria_provision", "choria_registry", "discovery", "scout"}
-	// how frequently agents are reconciled
-	watchInterval = time.Minute
 	// we only consider ddl files modified longer than this ago for reconciliation
-	fileChangeGrace = 20 * time.Second
+	fileChangeGrace = 5 * time.Second
 )
 
 // Provider is a Choria Agent Provider that supports calling agents external to the
@@ -211,8 +210,8 @@ func (p *Provider) watchAgents(ctx context.Context, mgr server.AgentManager, con
 		p.log.Errorf("Initial agent reconcile failed: %v", err)
 	}
 
-	ticker := time.NewTicker(watchInterval)
-	p.log.Debugf("Watching for agent updates every %v", watchInterval)
+	count := 1
+	ticker := time.NewTicker(backoff.TwentySec.Duration(count))
 
 	for {
 		select {
@@ -221,6 +220,9 @@ func (p *Provider) watchAgents(ctx context.Context, mgr server.AgentManager, con
 			if err != nil {
 				p.log.Errorf("Reconciling agents failed: %v", err)
 			}
+
+			count++
+			ticker.Reset(backoff.TwentySec.Duration(count))
 
 		case <-ctx.Done():
 			return

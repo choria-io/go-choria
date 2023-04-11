@@ -54,11 +54,6 @@ var stateNames = map[State]string{
 	Unchanged: "unchanged",
 }
 
-type Specification struct {
-	Plugins   []byte `json:"plugins"`
-	Signature string `json:"signature,omitempty"`
-}
-
 type ManagedPlugin struct {
 	Name                     string `json:"name" yaml:"name"`
 	NamePrefix               string `json:"-" yaml:"-"`
@@ -253,7 +248,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 			}
 		}
 
-		w.Warnf("Deploying Choria Autonomous Agent %s from %s", m.Name, m.Source)
+		w.Warnf("Deploying plugin %s from %s info %s", m.Name, m.Source, targetDir)
 
 		err = os.MkdirAll(targetDir, 0700)
 		if err != nil {

@@ -10,6 +10,8 @@ import (
 	"encoding/hex"
 	"fmt"
 	"os"
+
+	"github.com/choria-io/tokens"
 )
 
 func Ed25519SignWithSeedFile(f string, msg []byte) ([]byte, error) {
@@ -77,4 +79,12 @@ func Ed25519KeyPairToFile(f string) (ed25519.PublicKey, ed25519.PrivateKey, erro
 	}
 
 	return pubK, priK, nil
+}
+
+func IsEncodedEd25519Key(k []byte) bool {
+	return tokens.IsEncodedEd25519Key(k)
+}
+
+func IsEncodedEd25519KeyString(k string) bool {
+	return tokens.IsEncodedEd25519Key([]byte(k))
 }

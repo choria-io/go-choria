@@ -5,8 +5,6 @@
 package cmd
 
 import (
-	"crypto/ed25519"
-	"encoding/hex"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -18,18 +16,18 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-type mPackCommand struct {
+type mPluginsPackCommand struct {
 	command
-	machines string
-	key      string
-	out      string
-	force    bool
+	source string
+	key    string
+	out    string
+	force  bool
 }
 
-func (r *mPackCommand) Setup() (err error) {
-	if machine, ok := cmdWithFullCommand("machine"); ok {
-		r.cmd = machine.Cmd().Command("plugins", "Encodes and signs data for the plugins watcher")
-		r.cmd.Arg("source", "File containing the plugins definition").Required().ExistingFileVar(&r.machines)
+func (r *mPluginsPackCommand) Setup() (err error) {
+	if machine, ok := cmdWithFullCommand("machine plugins"); ok {
+		r.cmd = machine.Cmd().Command("pack", "Encodes and signs data for the plugins watcher")
+		r.cmd.Arg("source", "File containing the plugins definition").Required().ExistingFileVar(&r.source)
 		r.cmd.Arg("key", "The ed25519 private key to encode with").StringVar(&r.key)
 		r.cmd.Flag("force", "Do not warn about no ed25519 key and support writing empty files").BoolVar(&r.force)
 		r.cmd.Flag("output", "Write result to a file").StringVar(&r.out)
@@ -38,7 +36,7 @@ func (r *mPackCommand) Setup() (err error) {
 	return nil
 }
 
-func (r *mPackCommand) Configure() error {
+func (r *mPluginsPackCommand) Configure() error {
 	if debug {
 		logrus.SetOutput(os.Stdout)
 		logrus.SetLevel(logrus.DebugLevel)
@@ -56,10 +54,10 @@ func (r *mPackCommand) Configure() error {
 	return err
 }
 
-func (r *mPackCommand) Run(wg *sync.WaitGroup) (err error) {
+func (r *mPluginsPackCommand) Run(wg *sync.WaitGroup) (err error) {
 	defer wg.Done()
 
-	data, err := os.ReadFile(r.machines)
+	data, err := os.ReadFile(r.source)
 	if err != nil {
 		return err
 	}
@@ -74,25 +72,12 @@ func (r *mPackCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("no plugins listed in specification, use --force to write an empty list")
 	}
 
-	spec := watcher.Specification{Plugins: data}
-
-	if r.key != "" {
-		var key []byte
-		if iu.FileExist(r.key) {
-			key, err = os.ReadFile(r.key)
-		} else {
-			key, err = hex.DecodeString(r.key)
-		}
-		if err != nil {
-			return err
-		}
-
-		spec.Signature = hex.EncodeToString(ed25519.Sign(key, data))
-	} else if !r.force {
+	if r.key == "" && !r.force {
 		logrus.Warn("No ed25519 private key given, encoding without signing")
 	}
 
-	j, err := json.Marshal(spec)
+	spec := &watcher.Specification{Plugins: data}
+	j, err := spec.Encode(r.key)
 	if err != nil {
 		return err
 	}
@@ -110,5 +95,5 @@ func (r *mPackCommand) Run(wg *sync.WaitGroup) (err error) {
 }
 
 func init() {
-	cli.commands = append(cli.commands, &mPackCommand{})
+	cli.commands = append(cli.commands, &mPluginsPackCommand{})
 }
