@@ -1,4 +1,4 @@
-name: "mm_{{ .Name }}"
+name: "{{ .NamePrefix }}_{{ .Name }}"
 version: 1.0.0
 initial_state: MANAGE
 
@@ -18,12 +18,12 @@ watchers:
     state_match:
       - MANAGE
     properties:
-      source: "{{.Source}}"
       checksum: "{{ .ArchiveChecksum }}"
-      verify: "SHA256SUMS"
-      verify_checksum: "{{ .ContentChecksumsChecksum }}"
       creates: "{{ .Name }}"
+      governor: "{{ .Governor }}"
+      password: "{{ .Password }}"
+      source: "{{.Source}}"
       target: "{{ .Target }}"
       username: "{{ .Username }}"
-      password: "{{ .Password }}"
-      governor: "{{ .Governor }}"
+      verify: "SHA256SUMS"
+      verify_checksum: "{{ .ContentChecksumsChecksum }}"

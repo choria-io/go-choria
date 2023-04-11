@@ -1,0 +1,55 @@
+name: machine_manager
+version: 0.0.2
+initial_state: INITIAL
+
+# States
+#
+#   INITIAL     - Initial KV poll
+#   MANAGE      - Manages machines, poll data
+#   MAINTENANCE - Nothing happens
+
+transitions:
+  - name: enter_maintenance
+    from: [ MANAGE ]
+    destination: MAINTENANCE
+
+  - name: resume
+    from: [ MAINTENANCE ]
+    destination: MANAGE
+
+  - name: to_manage
+    from: [ INITIAL ]
+    destination: MANAGE
+
+watchers:
+  - name: initial_specification
+    type: kv
+    interval: 1m
+    state_match: [ INITIAL ]
+    success_transition: to_manage
+    properties:
+      bucket: MACHINES
+      key: spec
+      mode: poll
+      bucket_prefix: false
+      on_successful_get: true
+
+  - name: specification
+    type: kv
+    interval: 5m
+    state_match: [ MANAGE ]
+    properties:
+      bucket: MACHINES
+      key: spec
+      mode: poll
+      bucket_prefix: false
+
+  - name: manage_machines
+    state_match: [ MANAGE ]
+    type: plugins
+    interval: 6m
+    properties:
+      data_item: spec
+      purge_unknown: true
+      machine_manage_interval: 5m
+      manager_machine_prefix: mm

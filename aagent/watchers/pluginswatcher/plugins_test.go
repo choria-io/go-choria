@@ -10,10 +10,12 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"os"
+	"path/filepath"
 	"testing"
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
+	"github.com/ghodss/yaml"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -21,10 +23,10 @@ import (
 
 func TestMachine(t *testing.T) {
 	RegisterFailHandler(Fail)
-	RunSpecs(t, "AAgent/Watchers/MachinesWatcher")
+	RunSpecs(t, "AAgent/Watchers/PluginsWatcher")
 }
 
-var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
+var _ = Describe("AAgent/Watchers/PluginsWatcher", func() {
 	var (
 		w       *Watcher
 		machine *model.MockMachine
@@ -54,6 +56,48 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 		os.RemoveAll(td)
 	})
 
+	Describe("setProperties", func() {
+		It("Should support defaulting manager machine prefix", func() {
+			err = w.setProperties(map[string]any{})
+			Expect(err).ToNot(HaveOccurred())
+			Expect(w.properties.ManagerMachinePrefix).To(Equal("mm"))
+		})
+
+		It("Should not allow underscores", func() {
+			err = w.setProperties(map[string]any{"manager_machine_prefix": "plugin_foo"})
+			Expect(err).To(MatchError("manager_machine_prefix may not contain underscore"))
+		})
+
+		It("Should support custom manager machine prefix", func() {
+			err = w.setProperties(map[string]any{"manager_machine_prefix": "plugin"})
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(w.properties.ManagerMachinePrefix).To(Equal("plugin"))
+			r, err := w.renderMachine(&ManagedPlugin{
+				Name:       "x",
+				NamePrefix: "plugin",
+			})
+			Expect(err).ToNot(HaveOccurred())
+
+			var m map[string]any
+			Expect(yaml.Unmarshal(r, &m)).To(Succeed())
+
+			Expect(m["name"]).To(Equal("plugin_x"))
+			actual := w.targetDirForManagerMachine("x")
+			expected := filepath.Join(filepath.Dir(w.machine.Directory()), "plugin_x")
+			Expect(actual).To(Equal(expected))
+		})
+	})
+
+	Describe("targetDirForManagerMachine", func() {
+		It("Should set the correct target", func() {
+			err = w.setProperties(map[string]any{"manager_machine_prefix": "plugin"})
+			Expect(err).ToNot(HaveOccurred())
+			actual := w.targetDirForManagerMachine("x")
+			expected := filepath.Join(filepath.Dir(w.machine.Directory()), "plugin_x")
+			Expect(actual).To(Equal(expected))
+		})
+	})
 	Describe("loadAndValidateData", func() {
 		var (
 			data *Specification
@@ -67,7 +111,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 			Expect(err).ToNot(HaveOccurred())
 			spec = []byte("[]")
 			data = &Specification{
-				Machines: []byte(base64.StdEncoding.EncodeToString(spec)),
+				Plugins: []byte(base64.StdEncoding.EncodeToString(spec)),
 			}
 			data.Signature = hex.EncodeToString(ed25519.Sign(pri, spec))
 			machine.EXPECT().DataGet(gomock.Eq("spec")).Return(data, true).AnyTimes()
