@@ -12,7 +12,7 @@ import (
 	"os"
 	"sync"
 
-	machines "github.com/choria-io/go-choria/aagent/watchers/machineswatcher"
+	watcher "github.com/choria-io/go-choria/aagent/watchers/pluginswatcher"
 	"github.com/choria-io/go-choria/config"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/sirupsen/logrus"
@@ -28,8 +28,8 @@ type mPackCommand struct {
 
 func (r *mPackCommand) Setup() (err error) {
 	if machine, ok := cmdWithFullCommand("machine"); ok {
-		r.cmd = machine.Cmd().Command("mms", "Encodes and signs data for the machines watcher")
-		r.cmd.Arg("source", "File containing the machines definition").Required().ExistingFileVar(&r.machines)
+		r.cmd = machine.Cmd().Command("plugins", "Encodes and signs data for the plugins watcher")
+		r.cmd.Arg("source", "File containing the plugins definition").Required().ExistingFileVar(&r.machines)
 		r.cmd.Arg("key", "The ed25519 private key to encode with").StringVar(&r.key)
 		r.cmd.Flag("force", "Do not warn about no ed25519 key and support writing empty files").BoolVar(&r.force)
 		r.cmd.Flag("output", "Write result to a file").StringVar(&r.out)
@@ -64,17 +64,17 @@ func (r *mPackCommand) Run(wg *sync.WaitGroup) (err error) {
 		return err
 	}
 
-	var t []machines.ManagedMachine
+	var t []watcher.ManagedPlugin
 	err = json.Unmarshal(data, &t)
 	if err != nil {
 		return fmt.Errorf("invalid specification: %v", err)
 	}
 
 	if len(t) == 0 && !r.force {
-		return fmt.Errorf("no machines listed in specification, use --force to write an empty list")
+		return fmt.Errorf("no plugins listed in specification, use --force to write an empty list")
 	}
 
-	spec := machines.Specification{Machines: data}
+	spec := watcher.Specification{Plugins: data}
 
 	if r.key != "" {
 		var key []byte

@@ -42,7 +42,7 @@ const (
 	Updated
 	Unchanged
 
-	wtype   = "machines"
+	wtype   = "plugins"
 	version = "v1"
 )
 
@@ -55,12 +55,13 @@ var stateNames = map[State]string{
 }
 
 type Specification struct {
-	Machines  []byte `json:"machines"`
+	Plugins   []byte `json:"plugins"`
 	Signature string `json:"signature,omitempty"`
 }
 
-type ManagedMachine struct {
+type ManagedPlugin struct {
 	Name                     string `json:"name" yaml:"name"`
+	NamePrefix               string `json:"-" yaml:"-"`
 	Source                   string `json:"source" yaml:"source"`
 	Username                 string `json:"username" yaml:"username"`
 	Password                 string `json:"password" yaml:"password"`
@@ -74,15 +75,19 @@ type ManagedMachine struct {
 }
 
 type Properties struct {
-	// DataItem is the data item key to get ManagedMachines from, typically sourced from Key-Value store
+	// DataItem is the data item key to get ManagedPlugin from, typically sourced from Key-Value store
 	DataItem string `mapstructure:"data_item"`
-	// PurgeUnknown will remove machines not declared in DataItem
+	// PurgeUnknown will remove plugins not declared in DataItem
 	PurgeUnknown bool `mapstructure:"purge_unknown"`
-	// MachineManageInterval is the interval that created machines will use to manage their archives
+	// MachineManageInterval is the interval that created management machines will use to manage their archives
 	MachineManageInterval time.Duration
 	// PublicKey is the optional ed25519 public key used to sign the specification, when set
 	// the specification received will be validated and any invalid specification will be discarded
 	PublicKey string `mapstructure:"public_key"`
+	// Directory sets the directory where plugins are being deployed into, when empty defaults to plugins directory like /etc/choria/machines
+	Directory string `mapstructure:"plugins_directory"`
+	// ManagerMachinePrefix the prefix used in constructing names for the management machines
+	ManagerMachinePrefix string `mapstructure:"manager_machine_prefix"`
 }
 
 type Watcher struct {
@@ -93,7 +98,7 @@ type Watcher struct {
 	previous        State
 	interval        time.Duration
 	previousRunTime time.Duration
-	previousManaged []*ManagedMachine
+	previousManaged []*ManagedPlugin
 	properties      *Properties
 
 	lastWatch time.Time
@@ -105,7 +110,7 @@ type Watcher struct {
 func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]any) (any, error) {
 	var err error
 
-	machines := &Watcher{
+	plugins := &Watcher{
 		name:       name,
 		machine:    machine,
 		properties: &Properties{},
@@ -114,39 +119,39 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		mu:         &sync.Mutex{},
 	}
 
-	machines.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
+	plugins.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
 
-	err = machines.setProperties(rawprop)
+	err = plugins.setProperties(rawprop)
 	if err != nil {
 		return nil, fmt.Errorf("could not set properties: %v", err)
 	}
 
 	if interval != "" {
-		machines.interval, err = iu.ParseDuration(interval)
+		plugins.interval, err = iu.ParseDuration(interval)
 		if err != nil {
 			return nil, fmt.Errorf("invalid interval: %v", err)
 		}
 
-		if machines.interval < 2*time.Second {
-			return nil, fmt.Errorf("interval %v is too small", machines.interval)
+		if plugins.interval < 2*time.Second {
+			return nil, fmt.Errorf("interval %v is too small", plugins.interval)
 		}
 	}
 
 	// Loads the public key from plugin.choria.machine.signing_key when set, overriding the value set here
 	if pk := machine.SignerKey(); pk != "" {
-		machines.properties.PublicKey = pk
+		plugins.properties.PublicKey = pk
 	}
 
-	return machines, nil
+	return plugins, nil
 }
 
 func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	w.Infof("machines watcher %s starting", w.name)
+	w.Infof("plugins watcher %s starting", w.name)
 
 	if w.interval != 0 {
 		wg.Add(1)
@@ -193,7 +198,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	updated := false
 
 	if w.properties.PurgeUnknown {
-		purged, err = w.purgeUnknownMachines(ctx, desired)
+		purged, err = w.purgeUnknownPlugins(ctx, desired)
 		if err != nil {
 			return Error, err
 		}
@@ -237,9 +242,9 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 			if ok {
 				w.Debugf("Machine in %s has the correct content, continuing", target)
 				continue
-			} else {
-				w.Warnf("Machine in %s has incorrect content, updating", target)
 			}
+
+			w.Warnf("Machine in %s has incorrect content, updating", target)
 
 			err = os.RemoveAll(targetDir)
 			if err != nil {
@@ -283,7 +288,7 @@ func (w *Watcher) handleCheck(s State, err error) error {
 	switch s {
 	case Error:
 		if err != nil {
-			w.Errorf("Managing machines failed: %s", err)
+			w.Errorf("Managing plugins failed: %s", err)
 		}
 
 		w.NotifyWatcherState(w.CurrentState())
@@ -298,7 +303,7 @@ func (w *Watcher) handleCheck(s State, err error) error {
 	return nil
 }
 
-func (w *Watcher) renderMachine(m *ManagedMachine) ([]byte, error) {
+func (w *Watcher) renderMachine(m *ManagedPlugin) ([]byte, error) {
 	buf := bytes.NewBuffer([]byte{})
 	t := template.New("machine")
 
@@ -315,21 +320,29 @@ func (w *Watcher) renderMachine(m *ManagedMachine) ([]byte, error) {
 	return buf.Bytes(), nil
 }
 
+func (w *Watcher) targetDirForManagedPlugins() string {
+	if w.properties.Directory != "" {
+		return w.properties.Directory
+	}
+
+	return filepath.Dir(w.machine.Directory())
+}
+
 func (w *Watcher) targetDirForManagerMachine(m string) string {
-	return filepath.Join(filepath.Dir(w.machine.Directory()), fmt.Sprintf("mm_%s", m))
+	return filepath.Join(filepath.Dir(w.machine.Directory()), fmt.Sprintf("%s_%s", w.properties.ManagerMachinePrefix, m))
 }
 
-func (w *Watcher) targetDirForManagedMachine(m string) string {
-	return filepath.Join(filepath.Dir(w.machine.Directory()), m)
+func (w *Watcher) targetDirForManagedPlugin(m string) string {
+	return filepath.Join(w.targetDirForManagedPlugins(), m)
 }
 
-func (w *Watcher) purgeUnknownMachines(ctx context.Context, desired []*ManagedMachine) (bool, error) {
-	current, err := w.currentMachines()
+func (w *Watcher) purgeUnknownPlugins(ctx context.Context, desired []*ManagedPlugin) (bool, error) {
+	current, err := w.currentPlugins()
 	if err != nil {
 		return false, err
 	}
 
-	w.Debugf("Purging unknown machines from current list %v", current)
+	w.Debugf("Purging unknown plugins from current list %v", current)
 
 	purged := false
 	for _, m := range current {
@@ -359,7 +372,7 @@ func (w *Watcher) purgeUnknownMachines(ctx context.Context, desired []*ManagedMa
 			w.Debugf("Sleeping for 2 seconds to allow manager to exit")
 			iu.InterruptibleSleep(ctx, 2*time.Second)
 
-			target = w.targetDirForManagedMachine(m)
+			target = w.targetDirForManagedPlugin(m)
 			err = os.RemoveAll(target)
 			if err != nil {
 				w.Errorf("Could not remove %s: %s", target, err)
@@ -373,8 +386,8 @@ func (w *Watcher) purgeUnknownMachines(ctx context.Context, desired []*ManagedMa
 	return purged, nil
 }
 
-func (w *Watcher) currentMachines() ([]string, error) {
-	dirs, err := os.ReadDir(filepath.Dir(w.machine.Directory()))
+func (w *Watcher) currentPlugins() ([]string, error) {
+	dirs, err := os.ReadDir(w.targetDirForManagedPlugins())
 	if err != nil {
 		return nil, err
 	}
@@ -391,7 +404,7 @@ func (w *Watcher) currentMachines() ([]string, error) {
 			continue
 		}
 
-		if parts[0] == "mm" {
+		if parts[0] == w.properties.ManagerMachinePrefix {
 			found = append(found, parts[1])
 		}
 	}
@@ -420,9 +433,9 @@ func (w *Watcher) loadAndValidateData() ([]byte, error) {
 		return nil, err
 	}
 
-	payload, err := base64.StdEncoding.DecodeString(string(spec.Machines))
+	payload, err := base64.StdEncoding.DecodeString(string(spec.Plugins))
 	if err != nil {
-		w.Errorf("Invalid base64 encoded machines specification, removing data: %s", err)
+		w.Errorf("Invalid base64 encoded plugins specification, removing data: %s", err)
 		w.machine.DataDelete(w.properties.DataItem)
 		return nil, fmt.Errorf("invalid data_item")
 	}
@@ -457,21 +470,23 @@ func (w *Watcher) loadAndValidateData() ([]byte, error) {
 	return payload, nil
 }
 
-func (w *Watcher) desiredState() ([]*ManagedMachine, error) {
+func (w *Watcher) desiredState() ([]*ManagedPlugin, error) {
 	data, err := w.loadAndValidateData()
 	if err != nil {
 		return nil, err
 	}
 
-	desired := []*ManagedMachine{}
+	var desired []*ManagedPlugin
+
 	err = json.Unmarshal(data, &desired)
 	if err != nil {
-		return nil, fmt.Errorf("invalid machines specification: %s", err)
+		return nil, fmt.Errorf("invalid plugins specification: %s", err)
 	}
 
 	for _, m := range desired {
+		m.NamePrefix = w.properties.ManagerMachinePrefix
 		m.Interval = w.properties.MachineManageInterval.String()
-		m.Target = filepath.Dir(w.machine.Directory())
+		m.Target = w.targetDirForManagedPlugins()
 
 		if m.Name == "" {
 			return nil, fmt.Errorf("name is required")
@@ -486,7 +501,7 @@ func (w *Watcher) desiredState() ([]*ManagedMachine, error) {
 		}
 
 		if m.Target == "" {
-			return nil, fmt.Errorf("could not determine target for managed machine for %s", m.Name)
+			return nil, fmt.Errorf("could not determine target for managed plugin for %s", m.Name)
 		}
 
 		if m.ContentChecksumsChecksum == "" {
@@ -542,6 +557,10 @@ func (w *Watcher) setProperties(props map[string]any) error {
 		w.properties.PublicKey = PublicKey
 	}
 
+	if w.properties.ManagerMachinePrefix == "" {
+		w.properties.ManagerMachinePrefix = "mm"
+	}
+
 	return w.validate()
 }
 
@@ -549,8 +568,12 @@ func (w *Watcher) validate() error {
 	if w.properties.DataItem == "" {
 		return fmt.Errorf("data_item is required")
 	}
-	if w.machine.Directory() == "" {
+	if w.machine.Directory() == "" && w.properties.Directory == "" {
 		return fmt.Errorf("machine store is not configured")
+	}
+
+	if strings.Contains(w.properties.ManagerMachinePrefix, "_") {
+		return fmt.Errorf("manager_machine_prefix may not contain underscore")
 	}
 
 	if w.properties.MachineManageInterval == 0 {
@@ -565,14 +588,14 @@ func (w *Watcher) CurrentState() any {
 	defer w.mu.Unlock()
 
 	s := &StateNotification{
-		Event:                   event.New(w.name, wtype, version, w.machine),
-		PreviousManagedMachines: []string{},
-		PreviousOutcome:         stateNames[w.previous],
-		PreviousRunTime:         w.previousRunTime.Nanoseconds(),
+		Event:                  event.New(w.name, wtype, version, w.machine),
+		PreviousManagedPlugins: []string{},
+		PreviousOutcome:        stateNames[w.previous],
+		PreviousRunTime:        w.previousRunTime.Nanoseconds(),
 	}
 
 	for _, m := range w.previousManaged {
-		s.PreviousManagedMachines = append(s.PreviousManagedMachines, m.Name)
+		s.PreviousManagedPlugins = append(s.PreviousManagedPlugins, m.Name)
 	}
 
 	return s

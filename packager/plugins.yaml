@@ -20,7 +20,7 @@ timer_watcher: github.com/choria-io/go-choria/aagent/watchers/timerwatcher
 kv_watcher: github.com/choria-io/go-choria/aagent/watchers/kvwatcher
 gossip_watcher: github.com/choria-io/go-choria/aagent/watchers/gossipwatcher
 archive_watcher: github.com/choria-io/go-choria/aagent/watchers/archivewatcher
-machines_watcher: github.com/choria-io/go-choria/aagent/watchers/machineswatcher
+plugins_watcher: github.com/choria-io/go-choria/aagent/watchers/pluginswatcher
 
 # Data Plugins
 machine_data: github.com/choria-io/go-choria/aagent/data/machinedata
