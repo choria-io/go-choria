@@ -23,22 +23,17 @@ func (s *Specification) Encode(key string) ([]byte, error) {
 	var pk ed25519.PrivateKey
 	var err error
 
-	data, err := json.Marshal(s)
-	if err != nil {
-		return nil, err
-	}
-
 	if key != "" {
-		if iu.IsEncodedEd25519KeyString(key) {
-			pk, err = hex.DecodeString(key)
-		} else {
+		if iu.FileExist(key) {
 			_, pk, err = iu.Ed25519KeyPairFromSeedFile(key)
+		} else {
+			pk, err = hex.DecodeString(key)
 		}
 		if err != nil {
 			return nil, err
 		}
 
-		sig, err := iu.Ed25519Sign(pk, data)
+		sig, err := iu.Ed25519Sign(pk, s.Plugins)
 		if err != nil {
 			return nil, err
 		}

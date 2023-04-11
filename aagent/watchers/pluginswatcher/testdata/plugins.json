@@ -1,0 +1,9 @@
+[
+  {
+    "name": "requests",
+    "source": "http://plugins.choria.local/requests-agent_0.0.1_linux_amd64.tar.gz",
+    "verify": "SHA256SUMS",
+    "verify_checksum": "d3ebf8e4ae71245c051b9cb50f3712befbbc2c38c2cdf6e8e374eb7e613b1d11",
+    "checksum": "5e73881403990220ad5e63a971fb3b8fd8299087439843d38d856d3be053fdc0"
+  }
+]

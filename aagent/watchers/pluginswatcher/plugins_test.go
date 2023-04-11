@@ -15,6 +15,7 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/ghodss/yaml"
 	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
@@ -54,6 +55,27 @@ var _ = Describe("AAgent/Watchers/PluginsWatcher", func() {
 	AfterEach(func() {
 		mockctl.Finish()
 		os.RemoveAll(td)
+	})
+
+	Describe("Specification/Encode", func() {
+		It("Should correctly encode the specification", func() {
+			pub, priv, err := iu.Ed25519KeyPair()
+			Expect(err).ToNot(HaveOccurred())
+
+			data, err := os.ReadFile("testdata/plugins.json")
+			Expect(err).ToNot(HaveOccurred())
+
+			spec := &Specification{Plugins: data}
+			_, err = spec.Encode(hex.EncodeToString(priv))
+			Expect(err).ToNot(HaveOccurred())
+
+			sig, err := hex.DecodeString(spec.Signature)
+			Expect(err).ToNot(HaveOccurred())
+
+			ok, err := iu.Ed25519Verify(pub, data, sig)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(ok).To(BeTrue())
+		})
 	})
 
 	Describe("setProperties", func() {
