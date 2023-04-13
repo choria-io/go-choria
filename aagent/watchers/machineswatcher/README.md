@@ -42,7 +42,7 @@ watchers:
     state_match: [MANAGE]
     type: machines
     interval: 1m
-    state_matchin:
+    state_match:
       - MANAGE
     properties:
       data_item: machines
