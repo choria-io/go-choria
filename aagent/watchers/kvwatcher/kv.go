@@ -218,15 +218,16 @@ func (w *Watcher) poll() (State, error) {
 		// we try to handle json files into a map[string]interface this means nested lookups can be done
 		// in other machines using the lookup template func and it works just fine, deep compares are done
 		// on the entire structure later
-		if bytes.HasPrefix(val.Value(), []byte("{")) && bytes.HasSuffix(val.Value(), []byte("}")) {
+		v := bytes.TrimSpace(val.Value())
+		if bytes.HasPrefix(v, []byte("{")) && bytes.HasSuffix(v, []byte("}")) {
 			parsedValue = map[string]any{}
-			err := json.Unmarshal(val.Value(), &parsedValue)
+			err := json.Unmarshal(v, &parsedValue)
 			if err != nil {
 				w.Warnf("unmarshal failed: %s", err)
 			}
-		} else if bytes.HasPrefix(val.Value(), []byte("[")) && bytes.HasSuffix(val.Value(), []byte("]")) {
+		} else if bytes.HasPrefix(v, []byte("[")) && bytes.HasSuffix(v, []byte("]")) {
 			parsedValue = []any{}
-			err := json.Unmarshal(val.Value(), &parsedValue)
+			err := json.Unmarshal(v, &parsedValue)
 			if err != nil {
 				w.Warnf("unmarshal failed: %s", err)
 			}
