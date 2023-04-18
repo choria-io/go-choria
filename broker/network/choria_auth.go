@@ -950,6 +950,7 @@ func (a *ChoriaAuth) setClientGovernorPermissions(user *server.User, subs []stri
 	}
 
 	pubs = append(pubs, "*.governor.*")
+	pubs = append(pubs, "choria.lifecycle.event.governor.>")
 
 	return subs, pubs
 }
