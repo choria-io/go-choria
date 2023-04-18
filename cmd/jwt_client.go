@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -38,6 +38,7 @@ type jWTCreateClientCommand struct {
 	fleetManagement       bool
 	signedFleetManagement bool
 	serverProvisioner     bool
+	useGovernor           bool
 	pk                    string
 	chain                 bool
 	additionalPub         []string
@@ -73,6 +74,7 @@ func (cl *jWTCreateClientCommand) Setup() (err error) {
 		cl.cmd.Flag("subscribe", "Additional subjects the user can subscribe to").StringsVar(&cl.additionalSub)
 		cl.cmd.Flag("issuer", "Allow this user to sign other users in a chain of trust").UnNegatableBoolVar(&cl.chain)
 		cl.cmd.Flag("server-provisioner", "Allows the client to provision servers").UnNegatableBoolVar(&cl.serverProvisioner)
+		cl.cmd.Flag("governor", "Allows access to all governors").UnNegatableBoolVar(&cl.useGovernor)
 		cl.cmd.Flag("vault", "Use Hashicorp Vault to sign the JWT").UnNegatableBoolVar(&cl.useVault)
 	}
 
@@ -127,6 +129,7 @@ func (cl *jWTCreateClientCommand) createJWT() error {
 		FleetManagement:         cl.fleetManagement,
 		SignedFleetManagement:   cl.signedFleetManagement,
 		ServerProvisioner:       cl.serverProvisioner,
+		Governor:                cl.useGovernor,
 	}
 
 	if cl.chain {
