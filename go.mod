@@ -10,7 +10,7 @@ require (
 	github.com/antonmedv/expr v1.12.5
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.6.4
+	github.com/choria-io/appbuilder v0.6.5
 	github.com/choria-io/fisk v0.4.0
 	github.com/choria-io/go-updater v0.1.0
 	github.com/choria-io/tokens v0.0.2
