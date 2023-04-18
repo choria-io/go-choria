@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -1236,7 +1236,11 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 		Context("mTLS", func() {
 			It("Should fail without a signer cert set or present", func() {
-				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{}).AnyTimes()
+				t, err := os.ReadFile("testdata/provisioning/invalid.jwt")
+				Expect(err).ToNot(HaveOccurred())
+
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Token: string(t)}).AnyTimes()
+				auth.provisioningAccount = &server.Account{Name: "provisioning"}
 
 				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
 				Expect(validated).To(BeFalse())
@@ -1256,6 +1260,16 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
 				Expect(validated).To(BeFalse())
 				Expect(err).To(MatchError("provisioning account is not set"))
+			})
+
+			It("Should fail without a token", func() {
+				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{}).AnyTimes()
+				auth.provisioningAccount = &server.Account{Name: "provisioning"}
+				auth.provisioningTokenSigner = "testdata/ssl/certs/rip.mcollective.pem"
+
+				validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
+				Expect(validated).To(BeFalse())
+				Expect(err).To(MatchError("provisioning requires a token"))
 			})
 
 			Describe("Servers", func() {
