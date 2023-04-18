@@ -13,7 +13,7 @@ require (
 	github.com/choria-io/appbuilder v0.6.4
 	github.com/choria-io/fisk v0.4.0
 	github.com/choria-io/go-updater v0.1.0
-	github.com/choria-io/tokens v0.0.1
+	github.com/choria-io/tokens v0.0.2
 	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/dustin/go-humanize v1.0.1
 	github.com/fatih/color v1.15.0

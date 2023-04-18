@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -68,8 +68,9 @@ type ChoriaAuth struct {
 }
 
 const (
-	provisioningUser = "provisioner"
-	emptyString      = ""
+	provisioningUser   = "provisioner"
+	emptyString        = ""
+	edDSASigningMethod = "EdDSA"
 )
 
 var allSubjects = []string{">"}
@@ -508,14 +509,6 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnectionWithIssuer(c server.C
 		return false, fmt.Errorf("provisioning is not enabled")
 	}
 
-	if a.provisioningAccount == nil {
-		return false, fmt.Errorf("provisioning account is not set")
-	}
-
-	if opts.Token == emptyString {
-		return false, fmt.Errorf("provisioning requires a token")
-	}
-
 	user := a.createUser(c)
 	user.Account = a.provisioningAccount
 
@@ -574,14 +567,6 @@ func (a *ChoriaAuth) handleUnverifiedProvisioningConnectionWithTLS(c server.Clie
 		return false, fmt.Errorf("provisioning signer certificate %s does not exist", a.provisioningTokenSigner)
 	}
 
-	if a.provisioningAccount == nil {
-		return false, fmt.Errorf("provisioning account is not set")
-	}
-
-	if opts.Token == emptyString {
-		return false, fmt.Errorf("provisioning requires a token")
-	}
-
 	user := a.createUser(c)
 	user.Account = a.provisioningAccount
 
@@ -627,12 +612,31 @@ func (a *ChoriaAuth) setProvisioningServerPermissions(user *server.User) {
 }
 
 func (a *ChoriaAuth) handleUnverifiedProvisioningConnection(c server.ClientAuthentication) (bool, error) {
+	if a.provisioningAccount == nil {
+		return false, fmt.Errorf("provisioning account is not set")
+	}
+
 	opts := c.GetOpts()
 	if opts.Username == provisioningUser {
 		return false, fmt.Errorf("provisioning user requires a verified connection")
 	}
 
-	if len(a.issuerTokens) > 0 {
+	if opts.Token == emptyString {
+		return false, fmt.Errorf("provisioning requires a token")
+	}
+
+	// we only handle ed25519 signed tokens as issuer tokens
+	// since we support also provisioning v1 nodes we have to
+	// assume those might have rsa signatures - v2 ones never
+	//
+	// so we restrict the issuer based validation to ones with ed25519
+	// based signatures
+	alg, err := tokens.TokenSigningAlgorithm(opts.Token)
+	if err != nil {
+		return false, fmt.Errorf("could not determine token algorithm: %v", err)
+	}
+
+	if alg == edDSASigningMethod && len(a.issuerTokens) > 0 {
 		return a.handleUnverifiedProvisioningConnectionWithIssuer(c, opts)
 	}
 
