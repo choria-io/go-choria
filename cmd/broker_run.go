@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,6 +15,7 @@ import (
 	"github.com/choria-io/go-choria/broker/adapter"
 	"github.com/choria-io/go-choria/broker/federation"
 	"github.com/choria-io/go-choria/broker/network"
+	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/statistics"
 	log "github.com/sirupsen/logrus"
@@ -89,13 +90,6 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		log.Warn("Running with TLS Verification disabled, not compatible with production use.")
 	}
 
-	if len(adapters) > 0 {
-		log.Info("Starting Protocol Adapters")
-
-		wg.Add(1)
-		go r.runAdapters(ctx, wg)
-	}
-
 	if net {
 		log.Info("Starting Network Broker")
 		if err = r.runBroker(ctx, wg); err != nil {
@@ -110,6 +104,13 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		}
 	}
 
+	if len(adapters) > 0 {
+		log.Info("Starting Protocol Adapters")
+
+		wg.Add(1)
+		go r.runAdapters(ctx, wg)
+	}
+
 	r.startStats()
 
 	return
@@ -118,10 +119,20 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 func (r *brokerRunCommand) runAdapters(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	err := adapter.RunAdapters(ctx, c, wg)
+	fw, err := choria.New(cfg.ConfigFile)
+	if err != nil {
+		log.Errorf("Failed to run Protocol Adapters: %v", err)
+		return
+	}
+
+	// when we are running in-process with a broker, we connect to that broker
+	if r.server != nil {
+		fw.SetInProcessConnProvider(r.server)
+	}
+
+	err = adapter.RunAdapters(ctx, fw, wg)
 	if err != nil {
 		log.Errorf("Failed to run Protocol Adapters: %s", err)
-		cancel()
 	}
 }
 

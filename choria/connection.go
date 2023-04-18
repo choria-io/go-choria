@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -85,6 +85,7 @@ type Connection struct {
 	token             string
 	expire            time.Time
 	uniqueId          string
+	ipc               bool
 	ctx               context.Context
 }
 
@@ -146,7 +147,10 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 		ctx:               ctx,
 	}
 
-	if conn.isJwtAuth() {
+	prov, _ := conn.fw.InProcessConn()
+	conn.ipc = prov != nil
+
+	if !conn.ipc && conn.isJwtAuth() {
 		conn.log = conn.log.WithField("jwtAuth", true)
 
 		caller, id, exp, token, err := fw.UniqueIDFromUnverifiedToken()
@@ -170,12 +174,14 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 		conn.uniqueId = id
 	}
 
-	var err error
 	if !skipConnect {
-		err = conn.Connect(ctx)
+		err := conn.Connect(ctx)
+		if err != nil {
+			return nil, err
+		}
 	}
 
-	return conn, err
+	return conn, nil
 }
 
 func (conn *Connection) ConnectionOptions() nats.Options {
@@ -674,6 +680,11 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 	var tlsc *tls.Config
 
 	switch {
+	case conn.ipc:
+		conn.log.Warnf("Using in-process connection to connect to NATS")
+		options = append(options, nats.InProcessServer(conn.fw))
+		options = append(options, nats.Secure(conn.anonTLSc()))
+
 	case conn.fw.ProvisionMode():
 		if util.FileExist(conn.fw.bi.ProvisionJWTFile()) {
 			t, err := os.ReadFile(conn.fw.bi.ProvisionJWTFile())
