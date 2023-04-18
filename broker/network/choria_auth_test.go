@@ -1905,6 +1905,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						"$JS.ACK.>",
 						"$JS.FC.>",
 						"*.governor.*",
+						"choria.lifecycle.event.governor.>",
 					}...),
 				}))
 			})
