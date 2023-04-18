@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -52,6 +52,7 @@ import (
 type Framework struct {
 	Config *config.Config
 
+	inProcessConnection nats.InProcessConnProvider
 	customRequestSigner inter.RequestSigner
 	security            inter.SecurityProvider
 	log                 *log.Logger
@@ -115,6 +116,26 @@ func NewWithConfig(cfg *config.Config, opts ...Option) (*Framework, error) {
 	}
 
 	return &c, nil
+}
+
+// SetInProcessConnProvider sets a nats.InProcessConnProvider to use, connector will make connections using that if set
+func (fw *Framework) SetInProcessConnProvider(p nats.InProcessConnProvider) {
+	fw.mu.Lock()
+	fw.inProcessConnection = p
+	fw.mu.Unlock()
+}
+
+// InProcessConn provides an in-process connection for nats if configured using SetInProcessConnProvider()
+func (fw *Framework) InProcessConn() (net.Conn, error) {
+	fw.mu.Lock()
+	ipc := fw.inProcessConnection
+	fw.mu.Unlock()
+
+	if ipc == nil {
+		return nil, fmt.Errorf("invalid connection")
+	}
+
+	return ipc.InProcessConn()
 }
 
 // BuildInfo retrieves build information
