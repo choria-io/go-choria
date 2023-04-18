@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -22,12 +22,14 @@ import (
 
 type brokerCommand struct {
 	command
+	timeout time.Duration
 }
 
 // broker
 func (b *brokerCommand) Setup() (err error) {
 	b.cmd = cli.app.Command("broker", "Choria Network Broker and Streams Management Utilities").Alias("b")
 	b.cmd.Flag("choria-config", "Choria Config file to use").Hidden().PlaceHolder("FILE").ExistingFileVar(&configFile)
+	b.cmd.Flag("connect-timeout", "Connection timeout").Default("5s").DurationVar(&b.timeout)
 
 	opts, err := natscli.ConfigureInCommand(b.cmd, &natscli.Options{NoCheats: true, Timeout: 5 * time.Second}, false, "cheat", "rtt", "latency", "backup", "restore", "bench", "schema", "errors", "kv", "object", "micro", "context")
 	if err != nil {
@@ -91,9 +93,20 @@ func (b *brokerCommand) prepareNatsCli(pc *fisk.ParseContext, opts *natscli.Opti
 	cliLogger.SetOutput(connLogger.Logger.Out)
 	natscli.SetLogger(cliLogger)
 
+	var to *time.Timer
+	if b.timeout > 0 {
+		to = time.AfterFunc(b.timeout, func() {
+			connLogger.Warnf("Initial connection timeout, shutting down, adjust using --connect-timeout")
+		})
+	}
+
 	conn, err := c.NewConnector(ctx, c.MiddlewareServers, "cli", connLogger)
 	if err != nil {
 		return err
+	}
+
+	if b != nil {
+		to.Stop()
 	}
 
 	opts.Conn = conn.Nats()
