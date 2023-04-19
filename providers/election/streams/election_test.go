@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -62,12 +62,14 @@ var _ = Describe("Choria KV Leader Election", func() {
 		It("Should validate the TTL", func() {
 			kv, err := js.CreateKeyValue(&nats.KeyValueConfig{
 				Bucket: "LE",
-				TTL:    time.Second,
+				TTL:    100 * time.Millisecond,
 			})
 			Expect(err).ToNot(HaveOccurred())
 
-			_, err = NewElection("test", "test.key", kv)
-			Expect(err).To(MatchError("bucket TTL should be 5 seconds or more"))
+			election, err := NewElection("test", "test.key", kv)
+			Expect(err).ToNot(HaveOccurred())
+			err = election.Start(context.Background())
+			Expect(err).To(MatchError("bucket TTL should be 1 second or more"))
 
 			err = js.DeleteKeyValue("LE")
 			Expect(err).ToNot(HaveOccurred())
@@ -78,7 +80,9 @@ var _ = Describe("Choria KV Leader Election", func() {
 			})
 			Expect(err).ToNot(HaveOccurred())
 
-			_, err = NewElection("test", "test.key", kv)
+			election, err = NewElection("test", "test.key", kv)
+			Expect(err).ToNot(HaveOccurred())
+			err = election.Start(context.Background())
 			Expect(err).To(MatchError("bucket TTL should be less than or equal to 1 hour"))
 		})
 
