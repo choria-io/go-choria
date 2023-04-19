@@ -1,5 +1,16 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2023/04/19 | 2052  | Ensure stream users can access KV and Object stores                                                                |
+| 2023/04/18 | 2049  | Timeout initial connection attempts while preparing embedded nats CLI connection                                   |
+| 2023/04/18 | 2047  | Grant access to governor lifecycle events for clients with the governor permission                                 |
+| 2023/04/18 | 2045  | Expose the client governor permission on the jwt cli                                                               |
+| 2023/04/18 | 2043  | Support using in-process connections for adapter communications                                                    |
+| 2023/04/18 | 2041  | Only validate ed25519 signed provisioner tokens using the Issuer flow, fall back for rsa signed tokens             |
+| 2023/04/14 | 2037  | Trim spaces in received kv data in order to determine if it's JSON data or not                                     |
+| 2023/04/11 | 2029  | Adds a new `plugins` watcher that can manage auto agents and external rpc agents                                   |
+| 2023/04/10 | 2026  | Support booleans, enums and more in the `rpc` builder command flags parsing                                        |
+| 2023/03/31 | 2022  | Use a native sha256 checker rather than rely on OS provided binary in the `archive` watcher                        |
+| 2023/03/30 | 2019  | Support runtime reloading and relocation of external agents without restarting the server                          |
 | 2023/03/22 |       | Release 0.27.0                                                                                                     |
 | 2023/03/21 | 2010  | Record the builtin type as plugin in nagios watcher events                                                         |
 | 2023/03/14 | 2001  | Support adding headers to Choria Message Submit messages                                                           |

@@ -1,4 +1,4 @@
-name: machine_manager
+name: machines_manager
 version: 0.0.2
 initial_state: INITIAL
 
@@ -28,8 +28,8 @@ watchers:
     state_match: [ INITIAL ]
     success_transition: to_manage
     properties:
-      bucket: MACHINES
-      key: spec
+      bucket: PLUGINS
+      key: machines
       mode: poll
       bucket_prefix: false
       on_successful_get: true
@@ -39,8 +39,8 @@ watchers:
     interval: 5m
     state_match: [ MANAGE ]
     properties:
-      bucket: MACHINES
-      key: spec
+      bucket: PLUGINS
+      key: machines
       mode: poll
       bucket_prefix: false
 

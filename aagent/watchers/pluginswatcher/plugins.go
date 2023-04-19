@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -74,8 +74,8 @@ type Properties struct {
 	DataItem string `mapstructure:"data_item"`
 	// PurgeUnknown will remove plugins not declared in DataItem
 	PurgeUnknown bool `mapstructure:"purge_unknown"`
-	// MachineManageInterval is the interval that created management machines will use to manage their archives
-	MachineManageInterval time.Duration
+	// PluginManageInterval is the interval that created management machines will use to manage their archives
+	PluginManageInterval time.Duration `mapstructure:"plugin_manage_interval"`
 	// PublicKey is the optional ed25519 public key used to sign the specification, when set
 	// the specification received will be validated and any invalid specification will be discarded
 	PublicKey string `mapstructure:"public_key"`
@@ -480,7 +480,7 @@ func (w *Watcher) desiredState() ([]*ManagedPlugin, error) {
 
 	for _, m := range desired {
 		m.NamePrefix = w.properties.ManagerMachinePrefix
-		m.Interval = w.properties.MachineManageInterval.String()
+		m.Interval = w.properties.PluginManageInterval.String()
 		m.Target = w.targetDirForManagedPlugins()
 
 		if m.Name == "" {
@@ -571,8 +571,8 @@ func (w *Watcher) validate() error {
 		return fmt.Errorf("manager_machine_prefix may not contain underscore")
 	}
 
-	if w.properties.MachineManageInterval == 0 {
-		w.properties.MachineManageInterval = 2 * time.Minute
+	if w.properties.PluginManageInterval == 0 {
+		w.properties.PluginManageInterval = 2 * time.Minute
 	}
 
 	return nil
