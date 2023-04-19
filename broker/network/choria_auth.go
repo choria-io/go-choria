@@ -924,7 +924,10 @@ func (a *ChoriaAuth) setStreamsUserPermissions(user *server.User, subs []string,
 		"$JS.API.CONSUMER.INFO.*.*",
 		"$JS.API.CONSUMER.MSG.NEXT.*.*",
 		"$JS.ACK.>",
-		"$JS.FC.>")
+		"$JS.FC.>",
+		"$KV.>",
+		"$O.>",
+	)
 
 	return subs, pubs
 }
