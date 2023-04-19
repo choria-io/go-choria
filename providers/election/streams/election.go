@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +12,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/choria-io/go-choria/backoff"
 	"github.com/nats-io/nats.go"
 )
 
@@ -86,39 +87,56 @@ func NewElection(name string, key string, bucket nats.KeyValue, opts ...Option) 
 		},
 	}
 
-	status, err := bucket.Status()
-	if err != nil {
-		return nil, err
-	}
-
-	e.opts.ttl = status.TTL()
-	if !skipValidate {
-		if e.opts.ttl < 5*time.Second {
-			return nil, fmt.Errorf("bucket TTL should be 5 seconds or more")
-		}
-		if e.opts.ttl > time.Hour {
-			return nil, fmt.Errorf("bucket TTL should be less than or equal to 1 hour")
-		}
-	}
-
-	e.opts.cInterval = time.Duration(float64(e.opts.ttl) * 0.75)
-
 	for _, opt := range opts {
 		opt(e.opts)
 	}
 
-	if !skipValidate {
-		if e.opts.cInterval.Seconds() < 1 {
-			return nil, fmt.Errorf("campaign interval %v too small", e.opts.cInterval)
+	return e, nil
+}
+
+func (e *election) configure(ctx context.Context) error {
+	var status nats.KeyValueStatus
+
+	err := backoff.Default.For(ctx, func(try int) error {
+		var err error
+
+		status, err = e.opts.bucket.Status()
+		if err != nil {
+			e.debugf("Obtaining bucket stats failed on try %d: %v", try, err)
 		}
+
+		return err
+	})
+	if err != nil {
+		return err
+	}
+
+	e.opts.ttl = status.TTL()
+	if e.opts.cInterval == 0 {
+		e.opts.cInterval = time.Duration(float64(e.opts.ttl) * 0.75)
+	}
+
+	if !skipValidate {
+		if e.opts.ttl < time.Second {
+			return fmt.Errorf("bucket TTL should be 1 second or more")
+		}
+
+		if e.opts.ttl > time.Hour {
+			return fmt.Errorf("bucket TTL should be less than or equal to 1 hour")
+		}
+
+		if e.opts.cInterval.Seconds() < 1 {
+			return fmt.Errorf("campaign interval %v too small", e.opts.cInterval)
+		}
+
 		if e.opts.ttl.Seconds()-e.opts.cInterval.Seconds() < 1 {
-			return nil, fmt.Errorf("campaign interval %v is too close to bucket ttl %v", e.opts.cInterval, e.opts.ttl)
+			return fmt.Errorf("campaign interval %v is too close to bucket ttl %v", e.opts.cInterval, e.opts.ttl)
 		}
 	}
 
 	e.debugf("Campaign interval: %v", e.opts.cInterval)
 
-	return e, nil
+	return nil
 }
 
 func (e *election) debugf(format string, a ...any) {
@@ -269,6 +287,11 @@ func (e *election) Start(ctx context.Context) error {
 		return fmt.Errorf("already running")
 	}
 
+	err := e.configure(ctx)
+	if err != nil {
+		return err
+	}
+
 	e.ctx, e.cancel = context.WithCancel(ctx)
 	e.started = true
 	e.mu.Unlock()
@@ -276,7 +299,7 @@ func (e *election) Start(ctx context.Context) error {
 	wg := &sync.WaitGroup{}
 	wg.Add(1)
 
-	err := e.campaign(wg)
+	err = e.campaign(wg)
 	if err != nil {
 		e.stop()
 		return err
