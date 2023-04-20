@@ -95,7 +95,8 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 		tlsVerified = len(tlsc.VerifiedChains) > 0
 	}
 
-	if a.isTLS && tlsc == nil {
+	// no tls over pipes
+	if !pipeConnection && a.isTLS && tlsc == nil {
 		a.log.Warnf("Did not receive TLS Connection State for connection %s, rejecting", remote)
 		return false
 	}
