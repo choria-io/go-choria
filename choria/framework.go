@@ -125,17 +125,12 @@ func (fw *Framework) SetInProcessConnProvider(p nats.InProcessConnProvider) {
 	fw.mu.Unlock()
 }
 
-// InProcessConn provides an in-process connection for nats if configured using SetInProcessConnProvider()
-func (fw *Framework) InProcessConn() (net.Conn, error) {
+// InProcessConnProvider provides an in-process connection for nats if configured using SetInProcessConnProvider(), nil when not set
+func (fw *Framework) InProcessConnProvider() nats.InProcessConnProvider {
 	fw.mu.Lock()
-	ipc := fw.inProcessConnection
-	fw.mu.Unlock()
+	defer fw.mu.Unlock()
 
-	if ipc == nil {
-		return nil, fmt.Errorf("invalid connection")
-	}
-
-	return ipc.InProcessConn()
+	return fw.inProcessConnection
 }
 
 // BuildInfo retrieves build information

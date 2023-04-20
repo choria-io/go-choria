@@ -147,7 +147,7 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 		ctx:               ctx,
 	}
 
-	prov, _ := conn.fw.InProcessConn()
+	prov := conn.fw.InProcessConnProvider()
 	conn.ipc = prov != nil
 
 	if !conn.ipc && conn.isJwtAuth() {
@@ -682,8 +682,8 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 	switch {
 	case conn.ipc:
 		conn.log.Warnf("Using in-process connection to connect to NATS")
-		options = append(options, nats.InProcessServer(conn.fw))
-		options = append(options, nats.Secure(conn.anonTLSc()))
+		options = append(options, nats.InProcessServer(conn.fw.InProcessConnProvider()))
+		tlsc = conn.anonTLSc()
 
 	case conn.fw.ProvisionMode():
 		if util.FileExist(conn.fw.bi.ProvisionJWTFile()) {

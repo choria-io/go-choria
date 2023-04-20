@@ -119,7 +119,13 @@ func (r *brokerRunCommand) Run(wg *sync.WaitGroup) (err error) {
 func (r *brokerRunCommand) runAdapters(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	fw, err := choria.New(cfg.ConfigFile)
+	cfg, err := config.NewSystemConfig(cfg.ConfigFile, true)
+	if err != nil {
+		log.Errorf("Failed to configure Protocol Adapters: %v", err)
+		return
+	}
+
+	fw, err := choria.NewWithConfig(cfg)
 	if err != nil {
 		log.Errorf("Failed to run Protocol Adapters: %v", err)
 		return
