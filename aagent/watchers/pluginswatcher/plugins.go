@@ -7,8 +7,6 @@ package machines
 import (
 	"bytes"
 	"context"
-	"crypto/ed25519"
-	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -428,13 +426,6 @@ func (w *Watcher) loadAndValidateData() ([]byte, error) {
 		return nil, err
 	}
 
-	payload, err := base64.StdEncoding.DecodeString(string(spec.Plugins))
-	if err != nil {
-		w.Errorf("Invalid base64 encoded plugins specification, removing data: %s", err)
-		w.machine.DataDelete(w.properties.DataItem)
-		return nil, fmt.Errorf("invalid data_item")
-	}
-
 	if w.properties.PublicKey != "" {
 		if len(spec.Signature) == 0 {
 			w.Errorf("No signature found in specification, removing data")
@@ -448,21 +439,15 @@ func (w *Watcher) loadAndValidateData() ([]byte, error) {
 			return nil, fmt.Errorf("invalid data_item")
 		}
 
-		sig, err := hex.DecodeString(spec.Signature)
-		if err != nil {
-			w.Errorf("invalid signature string, removing data %s: %s", w.properties.DataItem, err)
-			w.machine.DataDelete(w.properties.DataItem)
-			return nil, fmt.Errorf("invalid data_item")
-		}
-
-		if !ed25519.Verify(pk, payload, sig) {
+		verified, _ := spec.VerifySignature(pk)
+		if !verified {
 			w.Errorf("Signature in data_item %s did not verify using configured public key '%s', removing data", w.properties.DataItem, w.properties.PublicKey)
 			w.machine.DataDelete(w.properties.DataItem)
 			return nil, fmt.Errorf("invalid data_item")
 		}
 	}
 
-	return payload, nil
+	return spec.Plugins, nil
 }
 
 func (w *Watcher) desiredState() ([]*ManagedPlugin, error) {

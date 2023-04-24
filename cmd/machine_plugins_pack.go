@@ -28,7 +28,7 @@ func (r *mPluginsPackCommand) Setup() (err error) {
 	if machine, ok := cmdWithFullCommand("machine plugins"); ok {
 		r.cmd = machine.Cmd().Command("pack", "Encodes and signs data for the plugins watcher")
 		r.cmd.Arg("source", "File containing the plugins definition").Required().ExistingFileVar(&r.source)
-		r.cmd.Arg("key", "The ed25519 private key to encode with").StringVar(&r.key)
+		r.cmd.Arg("seed", "The ed25519 seed file to encode with").StringVar(&r.key)
 		r.cmd.Flag("force", "Do not warn about no ed25519 key and support writing empty files").BoolVar(&r.force)
 		r.cmd.Flag("output", "Write result to a file").StringVar(&r.out)
 	}
