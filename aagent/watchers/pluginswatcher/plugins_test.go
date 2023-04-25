@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,6 @@ package machines
 import (
 	"crypto/ed25519"
 	"crypto/rand"
-	"encoding/base64"
 	"encoding/hex"
 	"os"
 	"path/filepath"
@@ -132,9 +131,7 @@ var _ = Describe("AAgent/Watchers/PluginsWatcher", func() {
 			pub, pri, err = ed25519.GenerateKey(rand.Reader)
 			Expect(err).ToNot(HaveOccurred())
 			spec = []byte("[]")
-			data = &Specification{
-				Plugins: []byte(base64.StdEncoding.EncodeToString(spec)),
-			}
+			data = &Specification{Plugins: spec}
 			data.Signature = hex.EncodeToString(ed25519.Sign(pri, spec))
 			machine.EXPECT().DataGet(gomock.Eq("spec")).Return(data, true).AnyTimes()
 		})
@@ -170,7 +167,7 @@ var _ = Describe("AAgent/Watchers/PluginsWatcher", func() {
 			data.Signature = "x"
 
 			machine.EXPECT().DataDelete(gomock.Eq("spec"))
-			machine.EXPECT().Errorf(gomock.Any(), gomock.Eq("invalid signature string, removing data %s: %s"), gomock.Eq("spec"), gomock.Any())
+			machine.EXPECT().Errorf(gomock.Any(), gomock.Eq("Signature in data_item %s did not verify using configured public key '%s', removing data"), gomock.Eq("spec"), gomock.Eq(hex.EncodeToString(pub)))
 			spec, err := w.loadAndValidateData()
 			Expect(err).To(MatchError("invalid data_item"))
 			Expect(spec).To(BeNil())

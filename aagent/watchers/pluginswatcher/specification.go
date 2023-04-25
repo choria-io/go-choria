@@ -8,6 +8,7 @@ import (
 	"crypto/ed25519"
 	"encoding/hex"
 	"encoding/json"
+	"fmt"
 
 	iu "github.com/choria-io/go-choria/internal/util"
 )
@@ -42,4 +43,14 @@ func (s *Specification) Encode(key string) ([]byte, error) {
 	}
 
 	return json.Marshal(s)
+}
+
+// VerifySignature verifies that the data is signed using the supplied key
+func (s *Specification) VerifySignature(key ed25519.PublicKey) (bool, error) {
+	sig, err := hex.DecodeString(s.Signature)
+	if err != nil {
+		return false, fmt.Errorf("invalid signature data: %w", err)
+	}
+
+	return iu.Ed25519Verify(key, s.Plugins, sig)
 }
