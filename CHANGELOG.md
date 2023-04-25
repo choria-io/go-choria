@@ -1,5 +1,7 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2023/04/24 | 2059  | Support verifying packed plugin specifications in `machine pugins` and `mms`                                       |
+| 2023/04/19 | 2055  | Retry calls to streams that can fail in early election setup                                                       |
 | 2023/04/19 | 2052  | Ensure stream users can access KV and Object stores                                                                |
 | 2023/04/18 | 2049  | Timeout initial connection attempts while preparing embedded nats CLI connection                                   |
 | 2023/04/18 | 2047  | Grant access to governor lifecycle events for clients with the governor permission                                 |
