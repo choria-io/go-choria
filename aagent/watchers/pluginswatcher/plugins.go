@@ -7,6 +7,7 @@ package pluginswatcher
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -447,7 +448,12 @@ func (w *Watcher) loadAndValidateData() ([]byte, error) {
 		}
 	}
 
-	return spec.Plugins, nil
+	pb, err := base64.StdEncoding.DecodeString(spec.Plugins)
+	if err != nil {
+		return nil, err
+	}
+
+	return pb, nil
 }
 
 func (w *Watcher) desiredState() ([]*ManagedPlugin, error) {

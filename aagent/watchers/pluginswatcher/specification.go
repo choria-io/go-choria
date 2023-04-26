@@ -15,7 +15,7 @@ import (
 
 // Specification holds []ManagedPlugin marshaled to JSON with an optional ed25519 signature
 type Specification struct {
-	Plugins   []byte `json:"plugins"`
+	Plugins   string `json:"plugins"`
 	Signature string `json:"signature,omitempty"`
 }
 
@@ -34,7 +34,7 @@ func (s *Specification) Encode(key string) ([]byte, error) {
 			return nil, err
 		}
 
-		sig, err := iu.Ed25519Sign(pk, s.Plugins)
+		sig, err := iu.Ed25519Sign(pk, []byte(s.Plugins))
 		if err != nil {
 			return nil, err
 		}
@@ -52,5 +52,5 @@ func (s *Specification) VerifySignature(key ed25519.PublicKey) (bool, error) {
 		return false, fmt.Errorf("invalid signature data: %w", err)
 	}
 
-	return iu.Ed25519Verify(key, s.Plugins, sig)
+	return iu.Ed25519Verify(key, []byte(s.Plugins), sig)
 }

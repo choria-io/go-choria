@@ -7,6 +7,7 @@ package pluginswatcher
 import (
 	"crypto/ed25519"
 	"crypto/rand"
+	"encoding/base64"
 	"encoding/hex"
 	"os"
 	"path/filepath"
@@ -64,7 +65,7 @@ var _ = Describe("AAgent/Watchers/PluginsWatcher", func() {
 			data, err := os.ReadFile("testdata/plugins.json")
 			Expect(err).ToNot(HaveOccurred())
 
-			spec := &Specification{Plugins: data}
+			spec := &Specification{Plugins: string(data)}
 			_, err = spec.Encode(hex.EncodeToString(priv))
 			Expect(err).ToNot(HaveOccurred())
 
@@ -124,15 +125,15 @@ var _ = Describe("AAgent/Watchers/PluginsWatcher", func() {
 			data *Specification
 			pri  ed25519.PrivateKey
 			pub  ed25519.PublicKey
-			spec []byte
+			spec string
 		)
 
 		BeforeEach(func() {
 			pub, pri, err = ed25519.GenerateKey(rand.Reader)
 			Expect(err).ToNot(HaveOccurred())
-			spec = []byte("[]")
-			data = &Specification{Plugins: spec}
-			data.Signature = hex.EncodeToString(ed25519.Sign(pri, spec))
+			spec = base64.StdEncoding.EncodeToString([]byte("[]"))
+			data = &Specification{Plugins: string(spec)}
+			data.Signature = hex.EncodeToString(ed25519.Sign(pri, []byte(spec)))
 			machine.EXPECT().DataGet(gomock.Eq("spec")).Return(data, true).AnyTimes()
 		})
 
