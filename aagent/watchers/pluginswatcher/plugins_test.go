@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package machines
+package pluginswatcher
 
 import (
 	"crypto/ed25519"
