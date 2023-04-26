@@ -5,6 +5,7 @@
 package cmd
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -76,7 +77,7 @@ func (r *mPluginsPackCommand) Run(wg *sync.WaitGroup) (err error) {
 		logrus.Warn("No ed25519 private key given, encoding without signing")
 	}
 
-	spec := &watcher.Specification{Plugins: data}
+	spec := &watcher.Specification{Plugins: base64.StdEncoding.EncodeToString(data)}
 	j, err := spec.Encode(r.key)
 	if err != nil {
 		return err
