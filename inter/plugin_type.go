@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,26 @@ package inter
 
 // PluginType are types of choria plugin
 type PluginType int
+
+var pluginTypeNames = map[PluginType]string{
+	AgentProviderPlugin:           "Agent Provider",
+	AgentPlugin:                   "Agent",
+	ProvisionTargetResolverPlugin: "Provisioning Target Resolver",
+	ConfigMutatorPlugin:           "Configuration Mutator",
+	MachineWatcherPlugin:          "Machine Watcher",
+	DataPlugin:                    "Data Source",
+	MachinePlugin:                 "Autonomous Agent",
+	UnknownPlugin:                 "Unknown Plugin Type",
+}
+
+func (t PluginType) String() string {
+	s, ok := pluginTypeNames[t]
+	if ok {
+		return s
+	}
+
+	return pluginTypeNames[UnknownPlugin]
+}
 
 const (
 	// UnknownPlugin is a unknown plugin type

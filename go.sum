@@ -43,8 +43,8 @@ github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6r
 github.com/blang/semver/v4 v4.0.0 h1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=
 github.com/blang/semver/v4 v4.0.0/go.mod h1:IbckMUScFkM3pff0VJDNKRiT6TG/YpiHIM2yvyW5YoQ=
 github.com/brutella/dnssd v1.2.1/go.mod h1:FpJqlQ8+XU6w1vbnG1zJiQPTRE5fvQIRdrcBojMVuuQ=
-github.com/brutella/dnssd v1.2.6 h1:/0P13JkHLRzeLQkWRPEn4hJCr4T3NfknIFw3aNPIC34=
-github.com/brutella/dnssd v1.2.6/go.mod h1:JoW2sJUrmVIef25G6lrLj7HS6Xdwh6q8WUIvMkkBYXs=
+github.com/brutella/dnssd v1.2.7 h1:Uq2NgLzlUz5JWIzcug9xRU6v0UApHrlxbsREA5B1RrY=
+github.com/brutella/dnssd v1.2.7/go.mod h1:JoW2sJUrmVIef25G6lrLj7HS6Xdwh6q8WUIvMkkBYXs=
 github.com/brutella/hc v1.2.5 h1:P1tHqJtrGngob6Lv5E7RVGlLcdo54X/03Gseo5+soVw=
 github.com/brutella/hc v1.2.5/go.mod h1:kluioDmG4z8OweN0boeTf08696sH8odlhPDdq3gwuZw=
 github.com/bytecodealliance/wasmtime-go/v3 v3.0.2 h1:3uZCA/BLTIu+DqCfguByNMJa2HVHpXvjfy0Dy7g6fuA=
@@ -56,8 +56,8 @@ github.com/cheekybits/genny v1.0.0 h1:uGGa4nei+j20rOSeDeP5Of12XVm7TGUd4dJA9RDitf
 github.com/cheekybits/genny v1.0.0/go.mod h1:+tQajlRqAUrPI7DOSpB0XAqZYtQakVtB7wXkRAgjxjQ=
 github.com/choria-io/appbuilder v0.6.5 h1:xUE8Xx0vKWQl5Hoebthl5c08BtFsKrx1K+GufBTh2XA=
 github.com/choria-io/appbuilder v0.6.5/go.mod h1:8RXjWmDygf0Lp5RqqAaG8yOyOjyvaMajvfSX/F5Fi1g=
-github.com/choria-io/fisk v0.4.0 h1:V+mh3OpcmE0uBcihUA18dRJeL1J8YUCCLbZZQRa7GMY=
-github.com/choria-io/fisk v0.4.0/go.mod h1:3Rc9XxqKC4y9wBf2GfQ4ovJ1VKELAWcU0J33M/Zgjvs=
+github.com/choria-io/fisk v0.5.0 h1:JewH64yVJEDsiABIGt3z6YLz6ZuN6yRlvvEMUPpN/oU=
+github.com/choria-io/fisk v0.5.0/go.mod h1:3Rc9XxqKC4y9wBf2GfQ4ovJ1VKELAWcU0J33M/Zgjvs=
 github.com/choria-io/go-updater v0.1.0 h1:+Pt2ifsDh478T/ldA8fnDwavvH3RTQNn1mkrabVZ5eg=
 github.com/choria-io/go-updater v0.1.0/go.mod h1:8qj3lwYUC6c0zqsvaKP4pNu8GMHbIr5WGrd5YUWByWw=
 github.com/choria-io/goform v0.0.2 h1:6xVVCM8xtwSVFnn+XY5Aqsq6PWU4sxllkDAbkIoOVd4=
@@ -151,8 +151,8 @@ github.com/google/go-cmp v0.5.5/go.mod h1:v8dTdLbMG2kIc/vJvl+f65V22dbkXbowE6jgT/
 github.com/google/go-cmp v0.5.9 h1:O2Tfq5qg4qc4AmwVlvv0oLiVAGB7enBSJ2x2DqQFi38=
 github.com/google/go-cmp v0.5.9/go.mod h1:17dUlkBOakJ0+DkrSSNjCkIjxS6bF9zb3elmeNGIjoY=
 github.com/google/gofuzz v1.0.0/go.mod h1:dBl0BpW6vV/+mYPU4Po3pmUjxk6FQPldtuIdl/M65Eg=
-github.com/google/pprof v0.0.0-20230406165453-00490a63f317 h1:hFhpt7CTmR3DX+b4R19ydQFtofxT0Sv3QsKNMVQYTMQ=
-github.com/google/pprof v0.0.0-20230406165453-00490a63f317/go.mod h1:79YE0hCXdHag9sBkw2o+N/YnZtTkXi0UT9Nnixa5eYk=
+github.com/google/pprof v0.0.0-20230426061923-93006964c1fc h1:AGDHt781oIcL4EFk7cPnvBUYTwU8BEU6GDTO3ZMn1sE=
+github.com/google/pprof v0.0.0-20230426061923-93006964c1fc/go.mod h1:79YE0hCXdHag9sBkw2o+N/YnZtTkXi0UT9Nnixa5eYk=
 github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510 h1:El6M4kTTCOh6aBiKaUGG7oYTSPP8MxqL4YI3kZKwcP4=
 github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510/go.mod h1:pupxD2MaaD3pAXIBCelhxNneeOaAeabZDe5s4K6zSpQ=
 github.com/google/uuid v1.1.1/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
