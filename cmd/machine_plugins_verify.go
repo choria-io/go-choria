@@ -31,8 +31,8 @@ func init() {
 func (r *mPluginsVerifyCommand) Setup() (err error) {
 	if machine, ok := cmdWithFullCommand("machine plugins"); ok {
 		r.cmd = machine.Cmd().Command("verify", "Verifies a file made using pack is signed correctly")
-		r.cmd.Arg("source", "The signed artifact to validate").ExistingFileVar(&r.source)
-		r.cmd.Arg("key", "The ed25519 public key to verify with").StringVar(&r.key)
+		r.cmd.Arg("source", "The signed artifact to validate").Required().ExistingFileVar(&r.source)
+		r.cmd.Arg("key", "The ed25519 public key to verify with").Required().StringVar(&r.key)
 	}
 
 	return nil

@@ -681,7 +681,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 
 	switch {
 	case conn.ipc:
-		conn.log.Warnf("Using in-process connection to connect to NATS")
+		conn.log.Infof("Using in-process connection to connect to NATS")
 		options = append(options, nats.InProcessServer(conn.fw.InProcessConnProvider()))
 		tlsc = conn.anonTLSc()
 
