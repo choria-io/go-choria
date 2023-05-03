@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -169,7 +169,7 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 				continue
 			}
 
-			s.log.Warnf("Loaded Organization Issuer %s with public key %s", issuer, pk)
+			s.log.Infof("Loaded Organization Issuer %s with public key %s", issuer, pk)
 			choriaAuth.issuerTokens[issuer] = pk
 		}
 
