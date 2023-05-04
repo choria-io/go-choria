@@ -247,7 +247,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 			}
 		}
 
-		w.Warnf("Deploying plugin %s from %s into %s", m.Name, m.Source, targetDir)
+		w.Warnf("Deploying plugin %s from %s into %s", m.Name, m.Source, m.Target)
 
 		err = os.MkdirAll(targetDir, 0700)
 		if err != nil {

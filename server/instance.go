@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -42,6 +42,7 @@ type Instance struct {
 
 	shutdown    func()
 	stopProcess func()
+	readyFunc   func(context.Context)
 
 	mu *sync.Mutex
 }
@@ -150,6 +151,9 @@ func (srv *Instance) RunServiceHost(ctx context.Context, wg *sync.WaitGroup) err
 	wg.Add(1)
 	go srv.processRequests(pctx, wg)
 
+	wg.Add(1)
+	go srv.triggerReadyFunc(ctx, wg)
+
 	return nil
 }
 
@@ -254,6 +258,9 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	wg.Add(1)
 	go srv.processRequests(pctx, wg)
 
+	wg.Add(1)
+	go srv.triggerReadyFunc(ctx, wg)
+
 	return nil
 }
 
@@ -273,4 +280,24 @@ func (srv *Instance) DenyAgent(agent string) {
 	defer srv.mu.Unlock()
 
 	srv.agentDenyList = append(srv.agentDenyList, agent)
+}
+
+func (srv *Instance) triggerReadyFunc(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	if srv.readyFunc == nil || srv.fw.ProvisionMode() {
+		return
+	}
+
+	srv.log.Infof("Triggering ready function")
+	srv.readyFunc(ctx)
+}
+
+// RegisterReadyCallback registers a function that will be called once a fully provisioned instance is handling requests
+//
+// Ready functions must terminate when the context is canceled else server shutdown could be delayed
+func (srv *Instance) RegisterReadyCallback(cb func(context.Context)) {
+	srv.mu.Lock()
+	srv.readyFunc = cb
+	srv.mu.Unlock()
 }
