@@ -11,7 +11,7 @@ require (
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
 	github.com/choria-io/appbuilder v0.6.6
-	github.com/choria-io/fisk v0.5.0
+	github.com/choria-io/fisk v0.5.2
 	github.com/choria-io/go-updater v0.1.0
 	github.com/choria-io/tokens v0.0.2
 	github.com/cloudevents/sdk-go/v2 v2.14.0
@@ -35,12 +35,12 @@ require (
 	github.com/nats-io/nats-server/v2 v2.9.16
 	github.com/nats-io/nats.go v1.25.0
 	github.com/nats-io/natscli v0.0.35
-	github.com/onsi/ginkgo/v2 v2.9.3
+	github.com/onsi/ginkgo/v2 v2.9.4
 	github.com/onsi/gomega v1.27.6
 	github.com/open-policy-agent/opa v0.52.0
 	github.com/prometheus/client_golang v1.15.1
-	github.com/prometheus/client_model v0.3.0
-	github.com/prometheus/common v0.42.0
+	github.com/prometheus/client_model v0.4.0
+	github.com/prometheus/common v0.43.0
 	github.com/robfig/cron v1.2.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.0
 	github.com/segmentio/ksuid v1.0.4
@@ -48,11 +48,11 @@ require (
 	github.com/tidwall/gjson v1.14.4
 	github.com/tidwall/pretty v1.2.1
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
-	golang.org/x/crypto v0.8.0
-	golang.org/x/sys v0.7.0
-	golang.org/x/term v0.7.0
+	golang.org/x/crypto v0.9.0
+	golang.org/x/sys v0.8.0
+	golang.org/x/term v0.8.0
 	golang.org/x/text v0.9.0
-	golang.org/x/tools v0.8.0
+	golang.org/x/tools v0.9.1
 	rsc.io/goversion v1.2.0
 )
 
@@ -82,7 +82,7 @@ require (
 	github.com/golang/glog v1.1.0 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/google/flatbuffers v23.3.3+incompatible // indirect
-	github.com/google/pprof v0.0.0-20230502171905-255e3b9b56de // indirect
+	github.com/google/pprof v0.0.0-20230509042627-b1315fad0c5a // indirect
 	github.com/google/uuid v1.3.0 // indirect
 	github.com/goss-org/GOnetstat v0.0.0-20230101144325-22be0bd9e64d // indirect
 	github.com/goss-org/go-ps v0.0.0-20230101144351-953ade48a71b // indirect
@@ -127,13 +127,13 @@ require (
 	github.com/xiam/to v0.0.0-20200126224905-d60d31e03561 // indirect
 	github.com/yashtewari/glob-intersection v0.1.0 // indirect
 	go.opencensus.io v0.24.0 // indirect
-	go.uber.org/atomic v1.10.0 // indirect
+	go.uber.org/atomic v1.11.0 // indirect
 	go.uber.org/goleak v1.2.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.24.0 // indirect
 	golang.org/x/exp v0.0.0-20220921164117-439092de6870 // indirect
 	golang.org/x/mod v0.10.0 // indirect
-	golang.org/x/net v0.9.0 // indirect
+	golang.org/x/net v0.10.0 // indirect
 	golang.org/x/time v0.3.0 // indirect
 	gonum.org/v1/gonum v0.12.0 // indirect
 	google.golang.org/protobuf v1.30.0 // indirect
