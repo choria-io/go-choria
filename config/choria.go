@@ -39,10 +39,11 @@ type ChoriaPluginConfig struct {
 	StatsPort             int    `confkey:"plugin.choria.stats_port" default:"0"`              // The port to listen on for HTTP requests for statistics, setting to 0 disables it
 	LegacyLifeCycleFormat bool   `confkey:"plugin.choria.legacy_lifecycle_format" default:"0"` // When enabled will publish lifecycle events in the legacy format, else Cloud Events format is used
 
-	NatsUser        string   `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`           // The user to connect to the NATS server as. When unset no username is used.
-	NatsPass        string   `confkey:"plugin.nats.pass" environment:"MCOLLECTIVE_NATS_PASSWORD"`           // The password to use when connecting to the NATS server
-	NatsCredentials string   `confkey:"plugin.nats.credentials" environment:"MCOLLECTIVE_NATS_CREDENTIALS"` // The NATS 2.0 credentials to use, required for accessing NGS
-	MiddlewareHosts []string `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`                  // Set specific middleware hosts in the format host:port, if unset uses SRV
+	NatsUser           string          `confkey:"plugin.nats.user" environment:"MCOLLECTIVE_NATS_USERNAME"`                                                 // The user to connect to the NATS server as. When unset no username is used.
+	NatsPass           string          `confkey:"plugin.nats.pass" environment:"MCOLLECTIVE_NATS_PASSWORD"`                                                 // The password to use when connecting to the NATS server
+	NatsCredentials    string          `confkey:"plugin.nats.credentials" environment:"MCOLLECTIVE_NATS_CREDENTIALS"`                                       // The NATS 2.0 credentials to use, required for accessing NGS
+	NatsConnectTimeout time.Duration   `confkey:"plugin.nats.connect_timeout" default:"2s" type:"duration" environment:"MCOLLECTIVE_NATS_CONNECT_TIMEOUT"`  // The NATS 2.0 connect timeout
+	MiddlewareHosts    []string        `confkey:"plugin.choria.middleware_hosts" type:"comma_split"`                                                        // Set specific middleware hosts in the format host:port, if unset uses SRV
 
 	NetworkAllowedClientHosts          []string      `confkey:"plugin.choria.network.client_hosts" type:"comma_split"`                                             // CIDRs to limit client connections from, appropriate ACLs are added based on this
 	NetworkClientAdvertiseName         string        `confkey:"plugin.choria.network.public_url"`                                                                  // Name:Port to advertise to clients, useful when fronted by a proxy

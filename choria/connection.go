@@ -751,6 +751,9 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		options = append(options, nats.UserCredentials(conn.config.Choria.NatsCredentials))
 	}
 
+	conn.log.Warnf("Setting NATS connect timeout to %v", conn.config.Choria.NatsConnectTimeout)
+	options = append(options, nats.Timeout(conn.config.Choria.NatsConnectTimeout))
+
 	return backoff.Default.For(ctx, func(try int) error {
 		servers, err := conn.servers()
 		if err != nil {
