@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -66,7 +66,7 @@ func ParseCLI() (err error) {
 	// cli tools
 	//
 	// TODO: too janky, need to do a better job here, looking at the name is not enough
-	if !strings.Contains(os.Args[0], "choria") {
+	if runtime.GOOS != "windows" && !strings.Contains(strings.ToLower(os.Args[0]), "choria") {
 		runBuilder()
 	}
 
