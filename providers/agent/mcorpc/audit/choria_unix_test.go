@@ -1,8 +1,8 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
+
 //go:build !windows
-// +build !windows
 
 package audit
 
@@ -12,16 +12,16 @@ import (
 	"strconv"
 	"syscall"
 
-	"github.com/onsi/gomega"
+	. "github.com/onsi/gomega"
 )
 
 func checkFileGid(stat os.FileInfo, group string) {
 	gid := stat.Sys().(*syscall.Stat_t).Gid
 	grp, err := user.LookupGroup(group)
-	gomega.Expect(err).ToNot(gomega.HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
 	expectedGid, err := strconv.Atoi(grp.Gid)
-	gomega.Expect(err).ToNot(gomega.HaveOccurred())
+	Expect(err).ToNot(HaveOccurred())
 
-	gomega.Expect(int(gid)).To(gomega.Equal(int(expectedGid)))
+	Expect(int(gid)).To(Equal(expectedGid))
 }
