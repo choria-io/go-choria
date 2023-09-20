@@ -10,7 +10,10 @@ package audit
 import (
 	"encoding/json"
 	"fmt"
+	"io/fs"
 	"os"
+	"os/user"
+	"strconv"
 	"sync"
 	"time"
 
@@ -41,9 +44,17 @@ func Request(request protocol.Request, agent string, action string, data json.Ra
 	}
 
 	logfile := cfg.Option("plugin.rpcaudit.logfile", "")
+	logfileGroup := cfg.Option("plugin.rpcaudit.logfile.group", "")
+	logfileModeOpt := cfg.Option("plugin.rpcaudit.logfile.mode", "0600")
 
 	if logfile == "" {
 		log.Warnf("Choria RPC Auditing is enabled but no logfile is configured, skipping")
+		return false
+	}
+
+	logfileMode, err := strconv.ParseUint(logfileModeOpt, 0, 32)
+	if err != nil {
+		log.Errorf("Failed to parse plugin.rpcaudit.logfile.mode: %s", err)
 		return false
 	}
 
@@ -67,7 +78,7 @@ func Request(request protocol.Request, agent string, action string, data json.Ra
 	mu.Lock()
 	defer mu.Unlock()
 
-	f, err := os.OpenFile(logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, 0600)
+	f, err := createAuditLog(logfile, logfileGroup, logfileMode)
 	if err != nil {
 		log.Warnf("Auditing is not functional because opening the logfile '%s' failed: %s", logfile, err)
 		return false
@@ -81,4 +92,35 @@ func Request(request protocol.Request, agent string, action string, data json.Ra
 	}
 
 	return true
+}
+
+func createAuditLog(logfile string, logfileGroup string, logfileMode uint64) (*os.File, error) {
+	f, err := os.OpenFile(logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, fs.FileMode(logfileMode))
+	if err != nil {
+		return f, err
+	}
+
+	if logfileGroup == "" {
+		return f, nil
+	}
+
+	grp, err := user.LookupGroup(logfileGroup)
+	if err != nil {
+		f.Close()
+		return f, err
+	}
+
+	gid, err := strconv.Atoi(grp.Gid)
+	if err != nil {
+		f.Close()
+		return f, err
+	}
+
+	err = os.Chown(logfile, os.Getuid(), gid)
+	if err != nil {
+		f.Close()
+		return f, err
+	}
+
+	return f, nil
 }
