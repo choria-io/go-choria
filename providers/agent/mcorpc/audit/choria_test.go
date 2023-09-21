@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -24,30 +24,42 @@ func Test(t *testing.T) {
 }
 
 var _ = Describe("McoRPC/Audit", func() {
-	It("Should correctly audit the request", func() {
-		var cfg *config.Config
-		var err error
+	var cfg *config.Config
+	var err error
 
+	BeforeEach(func() {
 		if runtime.GOOS == "windows" {
 			cfg, err = config.NewConfig("testdata/audit_windows.cfg")
 		} else {
 			cfg, err = config.NewConfig("testdata/audit.cfg")
 		}
-
-		os.Remove(cfg.Option("plugin.rpcaudit.logfile", "/tmp/rpc_audit.log"))
-
 		Expect(err).ToNot(HaveOccurred())
+
+		// use a temp file to ensure left over files dont cause problems
+		tf, err := os.CreateTemp("", "")
+		Expect(err).ToNot(HaveOccurred())
+		Expect(tf.Close()).To(Succeed())
+		Expect(os.Remove(tf.Name())).To(Succeed())
+
+		cfg.Choria.RPCAuditLogfile = tf.Name()
+
+		DeferCleanup(func() {
+			os.Remove(tf.Name())
+		})
+	})
+
+	It("Should correctly audit the request", func() {
 		Expect(cfg.RPCAudit).To(BeTrue())
-		Expect(cfg.Option("plugin.rpcaudit.logfile", "")).ToNot(BeAnExistingFile())
+		Expect(cfg.Choria.RPCAuditLogfile).ToNot(BeAnExistingFile())
 
 		req, err := v1.NewRequest("test_agent", "test.node", "choria=rip.mcollective", 120, "uniq_req_id", "mcollective")
 		Expect(err).ToNot(HaveOccurred())
 
 		ok := Request(req, "test_agent", "test_action", json.RawMessage(`{"hello":"world"}`), cfg)
 		Expect(ok).To(BeTrue())
-		Expect(cfg.Option("plugin.rpcaudit.logfile", "")).To(BeAnExistingFile())
+		Expect(cfg.Choria.RPCAuditLogfile).To(BeAnExistingFile())
 
-		j, err := os.ReadFile(cfg.Option("plugin.rpcaudit.logfile", ""))
+		j, err := os.ReadFile(cfg.Choria.RPCAuditLogfile)
 		Expect(err).ToNot(HaveOccurred())
 
 		am := Message{}
@@ -64,29 +76,26 @@ var _ = Describe("McoRPC/Audit", func() {
 	})
 
 	It("Should correctly audit the request with logfile group and mode set", func() {
-		var cfg *config.Config
-		var err error
-
-		if runtime.GOOS == "windows" {
-			cfg, err = config.NewConfig("testdata/audit_windows.cfg")
-		} else {
-			cfg, err = config.NewConfig("testdata/audit-group-mode.cfg")
+		if os.Getuid() != 0 {
+			Skip("File mode test only ran as root user")
 		}
 
-		os.Remove(cfg.Option("plugin.rpcaudit.logfile", "/tmp/rpc_audit.log"))
-
+		tf := cfg.Choria.RPCAuditLogfile
+		cfg, err = config.NewConfig("testdata/audit-group-mode.cfg")
 		Expect(err).ToNot(HaveOccurred())
+		cfg.Choria.RPCAuditLogfile = tf
+
 		Expect(cfg.RPCAudit).To(BeTrue())
-		Expect(cfg.Option("plugin.rpcaudit.logfile", "")).ToNot(BeAnExistingFile())
+		Expect(cfg.Choria.RPCAuditLogfile).ToNot(BeAnExistingFile())
 
 		req, err := v1.NewRequest("test_agent", "test.node", "choria=rip.mcollective", 120, "uniq_req_id", "mcollective")
 		Expect(err).ToNot(HaveOccurred())
 
 		ok := Request(req, "test_agent", "test_action", json.RawMessage(`{"hello":"world"}`), cfg)
 		Expect(ok).To(BeTrue())
-		Expect(cfg.Option("plugin.rpcaudit.logfile", "")).To(BeAnExistingFile())
+		Expect(cfg.Choria.RPCAuditLogfile).To(BeAnExistingFile())
 
-		j, err := os.ReadFile(cfg.Option("plugin.rpcaudit.logfile", ""))
+		j, err := os.ReadFile(cfg.Choria.RPCAuditLogfile)
 		Expect(err).ToNot(HaveOccurred())
 
 		am := Message{}
@@ -102,14 +111,14 @@ var _ = Describe("McoRPC/Audit", func() {
 		Expect(am.Data).To(Equal(json.RawMessage(`{"hello":"world"}`)))
 
 		if runtime.GOOS != "windows" {
-			stat, err := os.Stat(cfg.Option("plugin.rpcaudit.logfile", ""))
+			stat, err := os.Stat(cfg.Choria.RPCAuditLogfile)
 			Expect(err).ToNot(HaveOccurred())
 
 			unixPerms := stat.Mode() & os.ModePerm
 			permString := fmt.Sprintf("%v", unixPerms)
 			Expect(permString).To(Equal("-rw-r-----"))
 
-			group := cfg.Option("plugin.rpcaudit.logfile.group", "")
+			group := cfg.Choria.RPCAuditLogfileGroup
 			checkFileGid(stat, group)
 		}
 	})

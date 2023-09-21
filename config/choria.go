@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -158,6 +158,10 @@ type ChoriaPluginConfig struct {
 
 	SubmissionSpool        string `confkey:"plugin.choria.submission.spool" type:"path_string"`     // Path to a directory holding messages to submit to the middleware
 	SubmissionSpoolMaxSize int    `confkey:"plugin.choria.submission.max_spool_size" default:"500"` // Maximum amount of messages allowed into each priority
+
+	RPCAuditLogfile      string `confkey:"plugin.rpcaudit.logfile" type:"path_string"`  // Path to the RPC audit log
+	RPCAuditLogfileGroup string `confkey:"plugin.rpcaudit.logfile.group"`               // User group to set file ownership to
+	RPCAuditLogFileMode  string `confkey:"plugin.rpcaudit.logfile.mode" default:"0600"` // File mode to apply to the file
 }
 
 func newChoria() *ChoriaPluginConfig {

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2023, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -43,18 +43,17 @@ func Request(request protocol.Request, agent string, action string, data json.Ra
 		return false
 	}
 
-	logfile := cfg.Option("plugin.rpcaudit.logfile", "")
-	logfileGroup := cfg.Option("plugin.rpcaudit.logfile.group", "")
-	logfileModeOpt := cfg.Option("plugin.rpcaudit.logfile.mode", "0600")
+	logfile := cfg.Choria.RPCAuditLogfile
+	logfileGroup := cfg.Choria.RPCAuditLogfileGroup
 
-	if logfile == "" {
-		log.Warnf("Choria RPC Auditing is enabled but no logfile is configured, skipping")
+	logfileMode, err := strconv.ParseUint(cfg.Choria.RPCAuditLogFileMode, 0, 32)
+	if err != nil {
+		log.Errorf("Failed to parse plugin.rpcaudit.logfile.mode: %v", err)
 		return false
 	}
 
-	logfileMode, err := strconv.ParseUint(logfileModeOpt, 0, 32)
-	if err != nil {
-		log.Errorf("Failed to parse plugin.rpcaudit.logfile.mode: %s", err)
+	if logfile == "" {
+		log.Warnf("Choria RPC Auditing is enabled but no logfile is configured, skipping")
 		return false
 	}
 
@@ -78,7 +77,7 @@ func Request(request protocol.Request, agent string, action string, data json.Ra
 	mu.Lock()
 	defer mu.Unlock()
 
-	f, err := createAuditLog(logfile, logfileGroup, logfileMode)
+	f, err := createAuditLog(logfile, logfileGroup, uint32(logfileMode))
 	if err != nil {
 		log.Warnf("Auditing is not functional because opening the logfile '%s' failed: %s", logfile, err)
 		return false
@@ -94,7 +93,7 @@ func Request(request protocol.Request, agent string, action string, data json.Ra
 	return true
 }
 
-func createAuditLog(logfile string, logfileGroup string, logfileMode uint64) (*os.File, error) {
+func createAuditLog(logfile string, logfileGroup string, logfileMode uint32) (*os.File, error) {
 	f, err := os.OpenFile(logfile, os.O_CREATE|os.O_APPEND|os.O_WRONLY, fs.FileMode(logfileMode))
 	if err != nil {
 		return f, err
