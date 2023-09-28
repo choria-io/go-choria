@@ -34,7 +34,7 @@ require (
 	github.com/nats-io/jsm.go v0.0.35
 	github.com/nats-io/nats-server/v2 v2.9.22
 	github.com/nats-io/nats.go v1.29.0
-	github.com/nats-io/natscli v0.0.35
+	github.com/nats-io/natscli v0.0.36-0.20230928131159-48df2a0a5d78
 	github.com/onsi/ginkgo/v2 v2.12.0
 	github.com/onsi/gomega v1.27.10
 	github.com/open-policy-agent/opa v0.56.0
