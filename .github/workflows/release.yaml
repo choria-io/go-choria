@@ -12,7 +12,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el7_64
-          packager_tag: el7-go1.20
+          packager_tag: el7-go1.21
           version: tag
 
   el8_64:
@@ -22,7 +22,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el8_64
-          packager_tag: el8-go1.20
+          packager_tag: el8-go1.21
           version: tag
 
   el9_64:
@@ -32,7 +32,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el9_64
-          packager_tag: el9-go1.20
+          packager_tag: el9-go1.21
           version: tag
 
   el7_ppc64le:
@@ -42,7 +42,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el7_ppc64le
-          packager_tag: el7-go1.20
+          packager_tag: el7-go1.21
           version: tag
 
   el8_ppc64le:
@@ -52,7 +52,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el8_ppc64le
-          packager_tag: el8-go1.20
+          packager_tag: el8-go1.21
           version: tag
 
   el9_ppc64le:
@@ -62,7 +62,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el9_ppc64le
-          packager_tag: el9-go1.20
+          packager_tag: el9-go1.21
           version: tag
 
   buster_armhf:
@@ -72,7 +72,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: buster_armhf
-          packager_tag: buster-go1.20
+          packager_tag: buster-go1.21
           version: tag
 
   buster_armel:
@@ -82,7 +82,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: buster_armel
-          packager_tag: buster-go1.20
+          packager_tag: buster-go1.21
           version: tag
 
   buster_64:
@@ -92,7 +92,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: buster_64
-          packager_tag: buster-go1.20
+          packager_tag: buster-go1.21
           version: tag
 
   buster_aarch64:
@@ -102,7 +102,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: buster_aarch64
-          packager_tag: buster-go1.20
+          packager_tag: buster-go1.21
           version: tag
 
   bullseye_64:
@@ -112,7 +112,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bullseye_64
-          packager_tag: bullseye-go1.20
+          packager_tag: bullseye-go1.21
           version: tag
 
   bullseye_aarch64:
@@ -122,7 +122,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bullseye_aarch64
-          packager_tag: bullseye-go1.20
+          packager_tag: bullseye-go1.21
           version: tag
 
   bullseye_armel:
@@ -132,7 +132,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bullseye_armel
-          packager_tag: bullseye-go1.20
+          packager_tag: bullseye-go1.21
           version: tag
 
   bullseye_armhf:
@@ -142,7 +142,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bullseye_armhf
-          packager_tag: bullseye-go1.20
+          packager_tag: bullseye-go1.21
           version: tag
 
   bionic_64:
@@ -152,7 +152,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bionic_64
-          packager_tag: bullseye-go1.20
+          packager_tag: bullseye-go1.21
           version: tag
 
   bionic_aarch64:
@@ -162,7 +162,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bionic_aarch64
-          packager_tag: bullseye-go1.20
+          packager_tag: bullseye-go1.21
           version: tag
 
   focal_64:
@@ -172,7 +172,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: focal_64
-          packager_tag: focal-go1.20
+          packager_tag: focal-go1.21
           version: tag
 
   focal_aarch64:
@@ -182,7 +182,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: focal_aarch64
-          packager_tag: focal-go1.20
+          packager_tag: focal-go1.21
           version: tag
 
   jammy_64:
@@ -192,7 +192,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: jammy_64
-          packager_tag: jammy-go1.20
+          packager_tag: jammy-go1.21
           version: tag
 
   jammy_aarch64:
@@ -202,7 +202,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: jammy_aarch64
-          packager_tag: jammy-go1.20
+          packager_tag: jammy-go1.21
           version: tag
 
   windows_64:
@@ -212,7 +212,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: windows_64
-          packager_tag: focal-go1.20
+          packager_tag: focal-go1.21
           version: tag
 
   upload:
