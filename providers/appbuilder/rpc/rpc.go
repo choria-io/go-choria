@@ -436,7 +436,7 @@ func (r *RPC) transformResults(w io.Writer, results *replyfmt.RPCResults, action
 		return err
 	}
 
-	res, err := r.def.Transform.TransformBytes(r.ctx, out.Bytes(), r.flags, r.arguments, r.b.Configuration())
+	res, err := r.def.Transform.TransformBytes(r.ctx, out.Bytes(), r.flags, r.arguments, r.b)
 	if err != nil {
 		return err
 	}

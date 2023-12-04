@@ -143,7 +143,7 @@ func (r *KV) getAction(kv nats.KeyValue) error {
 
 	switch {
 	case r.def.Transform != nil:
-		res, err := r.def.Transform.TransformBytes(r.ctx, entry.Value(), r.arguments, r.flags, r.b.Configuration())
+		res, err := r.def.Transform.TransformBytes(r.ctx, entry.Value(), r.arguments, r.flags, r.b)
 		if err != nil {
 			return err
 		}

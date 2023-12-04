@@ -8,8 +8,8 @@ import (
 	"fmt"
 	"regexp"
 
-	"github.com/antonmedv/expr"
 	iu "github.com/choria-io/go-choria/internal/util"
+	"github.com/expr-lang/expr"
 )
 
 func (w *Watcher) identityMatchFunc(re string) bool {

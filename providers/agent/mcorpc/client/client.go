@@ -10,8 +10,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/antonmedv/expr/vm"
 	"github.com/choria-io/go-choria/inter"
+	"github.com/expr-lang/expr/vm"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/providers/discovery/broadcast"
