@@ -55,7 +55,7 @@ var _ = Describe("Reply", func() {
 	Describe("RecordNetworkHop", func() {
 		It("Should record the hop correctly", func() {
 			r := &Reply{}
-			Expect(r.seenBy).To(HaveLen(0))
+			Expect(r.seenBy).To(BeEmpty())
 			r.RecordNetworkHop("ginkgo.in", "server1", "ginkgo.out")
 			Expect(r.seenBy).To(HaveLen(1))
 			r.RecordNetworkHop("ginkgo.in", "server2", "ginkgo.out")
@@ -106,7 +106,7 @@ var _ = Describe("Reply", func() {
 				r := &Reply{}
 				t, federated := r.FederationTargets()
 				Expect(federated).To(BeFalse())
-				Expect(t).To(HaveLen(0))
+				Expect(t).To(BeEmpty())
 				r.SetFederationTargets([]string{"1", "2"})
 				t, federated = r.FederationTargets()
 				Expect(federated).To(BeTrue())
@@ -152,7 +152,7 @@ var _ = Describe("Reply", func() {
 			Expect(protocol.VersionFromJSON(j)).To(Equal(protocol.ReplyV2))
 			Expect(reply.Version()).To(Equal(protocol.ReplyV2))
 			Expect(reply.Message()).To(Equal([]byte("hello world")))
-			Expect(len(reply.RequestID())).To(Equal(32))
+			Expect(reply.RequestID()).To(HaveLen(32))
 			Expect(reply.SenderID()).To(Equal("testing"))
 			Expect(reply.Agent()).To(Equal("test"))
 			Expect(reply.Time()).To(BeTemporally("~", time.Now(), time.Second))

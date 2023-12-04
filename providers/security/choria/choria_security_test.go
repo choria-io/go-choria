@@ -679,7 +679,7 @@ var _ = Describe("Providers/Security/Choria", func() {
 			Expect(c.InsecureSkipVerify).To(BeTrue())
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(c.Certificates).To(HaveLen(0))
+			Expect(c.Certificates).To(BeEmpty())
 		})
 
 		It("Should produce a valid TLS Config", func() {

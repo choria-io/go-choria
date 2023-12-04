@@ -156,7 +156,7 @@ var _ = Describe("McoRPC/Client/Options", func() {
 
 			Expect(msg.Type()).To(Equal(inter.ServiceRequestMessageType))
 			Expect(msg.Filter().Empty()).To(BeTrue())
-			Expect(msg.DiscoveredHosts()).To(HaveLen(0))
+			Expect(msg.DiscoveredHosts()).To(BeEmpty())
 		})
 	})
 

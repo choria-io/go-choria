@@ -325,13 +325,13 @@ var _ = Describe("Confkey", func() {
 			for _, v := range []string{"1", "YES", "y", "tRue", "t"} {
 				err := SetStructFieldWithKey(&d, "bool", v)
 				Expect(err).ToNot(HaveOccurred())
-				Expect(d.Bool).To(Equal(true))
+				Expect(d.Bool).To(BeTrue())
 			}
 
 			for _, v := range []string{"0", "NO", "f", "FalSE", "n", "invalid"} {
 				err := SetStructFieldWithKey(&d, "bool", v)
 				Expect(err).ToNot(HaveOccurred())
-				Expect(d.Bool).To(Equal(false))
+				Expect(d.Bool).To(BeFalse())
 			}
 		})
 

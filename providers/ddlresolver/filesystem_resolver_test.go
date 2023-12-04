@@ -61,7 +61,7 @@ var _ = Describe("FileSystemDDLResolver", func() {
 			Expect(err).ToNot(HaveOccurred())
 			expected, err := os.ReadFile("testdata/dir2/mcollective/agent/four.json")
 			Expect(err).ToNot(HaveOccurred())
-			Expect(expected).ToNot(HaveLen(0))
+			Expect(expected).ToNot(BeEmpty())
 			Expect(b).To(Equal(expected))
 		})
 	})

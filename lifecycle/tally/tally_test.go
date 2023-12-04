@@ -68,7 +68,7 @@ var _ = Describe("Tally", func() {
 
 			recorder.observed["ginkgo"].hosts["ginkgo.example.net"].ts = recorder.observed["ginkgo"].hosts["ginkgo.example.net"].ts.Add(-1 * (90 * time.Minute))
 			recorder.maintenance()
-			Expect(recorder.observed["ginkgo"].hosts).To(HaveLen(0))
+			Expect(recorder.observed["ginkgo"].hosts).To(BeEmpty())
 		})
 	})
 
@@ -121,7 +121,7 @@ var _ = Describe("Tally", func() {
 				Expect(err).ToNot(HaveOccurred())
 				recorder.process(event)
 
-				Expect(recorder.observed["ginkgo"].hosts).To(HaveLen(0))
+				Expect(recorder.observed["ginkgo"].hosts).To(BeEmpty())
 				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(0.0))
 			})
 
@@ -130,7 +130,7 @@ var _ = Describe("Tally", func() {
 				Expect(err).ToNot(HaveOccurred())
 				recorder.process(event)
 
-				Expect(recorder.observed).To(HaveLen(0))
+				Expect(recorder.observed).To(BeEmpty())
 				Expect(getPromGaugeValue(recorder.versionsTally, "ginkgo", "1.2.3")).To(Equal(0.0))
 			})
 		})
@@ -140,7 +140,7 @@ var _ = Describe("Tally", func() {
 				event, err := lifecycle.New(lifecycle.Startup, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
 				Expect(err).ToNot(HaveOccurred())
 
-				Expect(recorder.observed).To(HaveLen(0))
+				Expect(recorder.observed).To(BeEmpty())
 				recorder.process(event)
 				Expect(recorder.observed["ginkgo"].hosts).To(HaveLen(1))
 
@@ -152,7 +152,7 @@ var _ = Describe("Tally", func() {
 				event, err := lifecycle.New(lifecycle.Startup, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
 				Expect(err).ToNot(HaveOccurred())
 
-				Expect(recorder.observed).To(HaveLen(0))
+				Expect(recorder.observed).To(BeEmpty())
 				recorder.process(event)
 				Expect(recorder.observed["ginkgo"].hosts).To(HaveLen(1))
 
@@ -190,7 +190,7 @@ var _ = Describe("Tally", func() {
 				event, err := lifecycle.New(lifecycle.Alive, lifecycle.Component("ginkgo"), lifecycle.Version("1.2.3"), lifecycle.Identity("ginkgo.example.net"))
 				Expect(err).ToNot(HaveOccurred())
 
-				Expect(recorder.observed).To(HaveLen(0))
+				Expect(recorder.observed).To(BeEmpty())
 				recorder.process(event)
 				Expect(recorder.observed["ginkgo"].hosts).To(HaveLen(1))
 

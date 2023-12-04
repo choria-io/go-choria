@@ -183,7 +183,7 @@ var _ = Describe("FileSecurity", func() {
 			setTLS(cfg, goodStub, "rip.mcollective", "")
 
 			errs, ok := prov.Validate()
-			Expect(errs).To(HaveLen(0))
+			Expect(errs).To(BeEmpty())
 			Expect(ok).To(BeTrue())
 		})
 	})
@@ -502,7 +502,7 @@ var _ = Describe("FileSecurity", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.TLSConfig.CipherSuites).ToNot(BeNil())
-			Expect(len(prov.conf.TLSConfig.CipherSuites)).To(Equal(1))
+			Expect(prov.conf.TLSConfig.CipherSuites).To(HaveLen(1))
 		})
 
 		It("Should work with one curve", func() {
@@ -517,7 +517,7 @@ var _ = Describe("FileSecurity", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			Expect(prov.conf.TLSConfig.CurvePreferences).ToNot(BeNil())
-			Expect(len(prov.conf.TLSConfig.CurvePreferences)).To(Equal(1))
+			Expect(prov.conf.TLSConfig.CurvePreferences).To(HaveLen(1))
 
 		})
 

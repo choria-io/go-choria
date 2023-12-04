@@ -103,7 +103,7 @@ var _ = Describe("Providers/McoRPC/DDL/Agent", func() {
 		It("Should generate ruby ddls", func() {
 			out, err := pkg.ToRuby()
 			Expect(err).ToNot(HaveOccurred())
-			Expect(out).ToNot(HaveLen(0))
+			Expect(out).ToNot(BeEmpty())
 		})
 	})
 

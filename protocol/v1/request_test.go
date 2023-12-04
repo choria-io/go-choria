@@ -23,7 +23,7 @@ var _ = Describe("Request", func() {
 
 		Expect(protocol.VersionFromJSON(j)).To(Equal(protocol.RequestV1))
 		Expect(request.Message()).To(Equal([]byte("hello world")))
-		Expect(len(request.RequestID())).To(Equal(32))
+		Expect(request.RequestID()).To(HaveLen(32))
 		Expect(request.SenderID()).To(Equal("go.tests"))
 		Expect(request.CallerID()).To(Equal("choria=test"))
 		Expect(request.Collective()).To(Equal("mcollective"))

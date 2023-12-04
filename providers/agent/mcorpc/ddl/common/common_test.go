@@ -34,41 +34,41 @@ var _ = Describe("Providers/McoRPC/DDL/Common", func() {
 	Describe("validateStringValidation", func() {
 		It("Should support shellsafe", func() {
 			w, err := validateStringValidation("shellsafe", ">")
-			Expect(w).To(HaveLen(0))
+			Expect(w).To(BeEmpty())
 			Expect(err).To(MatchError("may not contain '>'"))
 
 			w, err = validateStringValidation("shellsafe", "foo")
-			Expect(w).To(HaveLen(0))
+			Expect(w).To(BeEmpty())
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("Should support ipv4address", func() {
 			w, err := validateStringValidation("ipv4address", "2a00:1450:4002:807::200e")
-			Expect(w).To(HaveLen(0))
+			Expect(w).To(BeEmpty())
 			Expect(err).To(MatchError("2a00:1450:4002:807::200e is not an IPv4 address"))
 
 			w, err = validateStringValidation("ipv4address", "1.1.1.1")
-			Expect(w).To(HaveLen(0))
+			Expect(w).To(BeEmpty())
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("Should support ipv6address", func() {
 			w, err := validateStringValidation("ipv6address", "2a00:1450:4002:807::200e")
-			Expect(w).To(HaveLen(0))
+			Expect(w).To(BeEmpty())
 			Expect(err).ToNot(HaveOccurred())
 
 			w, err = validateStringValidation("ipv6address", "1.1.1.1")
-			Expect(w).To(HaveLen(0))
+			Expect(w).To(BeEmpty())
 			Expect(err).To(MatchError("1.1.1.1 is not an IPv6 address"))
 		})
 
 		It("Should support ipaddress", func() {
 			w, err := validateStringValidation("ipaddress", "2a00:1450:4002:807::200e")
-			Expect(w).To(HaveLen(0))
+			Expect(w).To(BeEmpty())
 			Expect(err).ToNot(HaveOccurred())
 
 			w, err = validateStringValidation("ipaddress", "bob")
-			Expect(w).To(HaveLen(0))
+			Expect(w).To(BeEmpty())
 			Expect(err).To(MatchError("bob is not an IP address"))
 		})
 
@@ -81,11 +81,11 @@ var _ = Describe("Providers/McoRPC/DDL/Common", func() {
 
 		It("Should support regex validators", func() {
 			w, err := validateStringValidation("^2a00", "2a00:1450:4002:807::200e")
-			Expect(w).To(HaveLen(0))
+			Expect(w).To(BeEmpty())
 			Expect(err).ToNot(HaveOccurred())
 
 			w, err = validateStringValidation("\\d+", "bob")
-			Expect(w).To(HaveLen(0))
+			Expect(w).To(BeEmpty())
 			Expect(err).To(MatchError("input does not match '\\d+'"))
 		})
 	})

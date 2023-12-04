@@ -40,7 +40,7 @@ var _ = Describe("Choria/Config/Mutator", func() {
 			m1.EXPECT().Mutate(gomock.Any(), gomock.Any()).Do(func(c *Config, _ *logrus.Entry) { c.Identity = "set_by_1" }).Times(1)
 			m2.EXPECT().Mutate(gomock.Any(), gomock.Any()).Do(func(c *Config, _ *logrus.Entry) { c.LogFile = "set_by_2" }).Times(1)
 
-			Expect(mutators).To(HaveLen(0))
+			Expect(mutators).To(BeEmpty())
 			RegisterMutator("m1", m1)
 			RegisterMutator("m2", m2)
 			Expect(mutators).To(HaveLen(2))

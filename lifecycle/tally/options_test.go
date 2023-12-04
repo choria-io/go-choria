@@ -28,7 +28,7 @@ var _ = Describe("Options", func() {
 				Component: "ginkgo",
 				Connector: imock.NewMockConnector(ctrl),
 			}
-			Expect(opt.Validate()).To(BeNil())
+			Expect(opt.Validate()).To(Succeed())
 			Expect(opt.StatPrefix).To(Equal("lifecycle_tally"))
 			Expect(opt.Log).ToNot(BeNil())
 		})

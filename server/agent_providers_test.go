@@ -34,7 +34,7 @@ var _ = Describe("Server/AgentProviders", func() {
 	It("Should add the provider to the list of providers", func() {
 		bi := util.BuildInfo()
 
-		Expect(additionalAgentProviders).To(HaveLen(0))
+		Expect(additionalAgentProviders).To(BeEmpty())
 		Expect(bi.AgentProviders()).To(BeEmpty())
 
 		provider.EXPECT().Version().Return("Mock Provider").AnyTimes()

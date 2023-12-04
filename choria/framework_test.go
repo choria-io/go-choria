@@ -244,9 +244,9 @@ var _ = Describe("Choria", func() {
 
 			build.ProvisionBrokerURLs = "nats://n1:4222"
 			build.ProvisionModeDefault = "true"
-			Expect(fw.ProvisionMode()).To(Equal(false))
+			Expect(fw.ProvisionMode()).To(BeFalse())
 			c.InitiatedByServer = true
-			Expect(fw.ProvisionMode()).To(Equal(true))
+			Expect(fw.ProvisionMode()).To(BeTrue())
 		})
 
 		It("Should use the default when not configured and brokers are compiled in", func() {
@@ -257,13 +257,13 @@ var _ = Describe("Choria", func() {
 			fw, err := NewWithConfig(c)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(fw.ProvisionMode()).To(Equal(false))
+			Expect(fw.ProvisionMode()).To(BeFalse())
 
 			build.ProvisionBrokerURLs = "nats://n1:4222"
 			build.ProvisionModeDefault = "true"
 			c.InitiatedByServer = true
 
-			Expect(fw.ProvisionMode()).To(Equal(true))
+			Expect(fw.ProvisionMode()).To(BeTrue())
 		})
 
 		It("Should use the configured value when set and when brokers are compiled in", func() {
@@ -278,12 +278,12 @@ var _ = Describe("Choria", func() {
 			build.ProvisionBrokerURLs = "nats://n1:4222"
 			c.InitiatedByServer = true
 
-			Expect(fw.ProvisionMode()).To(Equal(true))
+			Expect(fw.ProvisionMode()).To(BeTrue())
 
 			c.Choria.Provision = false
 			build.ProvisionModeDefault = "true"
 
-			Expect(fw.ProvisionMode()).To(Equal(false))
+			Expect(fw.ProvisionMode()).To(BeFalse())
 		})
 
 		It("Should be true when the JWT token does not match the running identity", func() {
@@ -299,7 +299,7 @@ var _ = Describe("Choria", func() {
 			// even though we are in server anon tls mode
 			fw, err := NewWithConfig(c)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(fw.ProvisionMode()).To(Equal(false))
+			Expect(fw.ProvisionMode()).To(BeFalse())
 
 			// now we create a token file with other.example.net as id and config with
 			// ginkgo.example.net as id so at this point it should trigger true
@@ -321,7 +321,7 @@ var _ = Describe("Choria", func() {
 
 			c.Choria.ServerTokenFile = tf.Name()
 
-			Expect(fw.ProvisionMode()).To(Equal(true))
+			Expect(fw.ProvisionMode()).To(BeTrue())
 		})
 
 		It("Should be false if there are no brokers", func() {
@@ -335,7 +335,7 @@ var _ = Describe("Choria", func() {
 
 			c.InitiatedByServer = true
 
-			Expect(fw.ProvisionMode()).To(Equal(false))
+			Expect(fw.ProvisionMode()).To(BeFalse())
 		})
 	})
 })

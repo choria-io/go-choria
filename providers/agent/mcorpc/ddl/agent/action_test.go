@@ -52,7 +52,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 			}
 
 			converted, warnings, err := act.ValidateAndConvertToDDLTypes(orig)
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 			Expect(err).ToNot(HaveOccurred())
 			Expect(converted["int"].(int64)).To(Equal(int64(10)))
 			Expect(converted["float"].(float64)).To(Equal(100.2))
@@ -68,7 +68,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 				"string": "123456789012345678901234567890",
 			}
 			_, warnings, err := act.ValidateAndConvertToDDLTypes(orig)
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 			Expect(err).To(MatchError("invalid value for 'string': is longer than 20 characters"))
 		})
 
@@ -77,7 +77,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 				"int": "1",
 			}
 			_, warnings, err := act.ValidateAndConvertToDDLTypes(orig)
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 			Expect(err).To(MatchError("input 'string' is required"))
 		})
 
@@ -93,7 +93,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 			act.Input["boolean"].Optional = true
 
 			res, warnings, err := act.ValidateAndConvertToDDLTypes(orig)
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res).To(HaveKey("int"))
 			Expect(res["int"].(int)).To(Equal(1))
@@ -110,7 +110,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 			orig := map[string]string{}
 
 			_, warnings, err := basicAct.ValidateAndConvertToDDLTypes(orig)
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
@@ -127,75 +127,75 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 	Describe("ValidateInputValue", func() {
 		It("Should validate integer", func() {
 			warnings, err := act.ValidateInputValue("int", 10)
-			Expect(err).To(BeNil())
-			Expect(warnings).To(HaveLen(0))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(warnings).To(BeEmpty())
 
 			warnings, err = act.ValidateInputValue("int", "a")
 			Expect(err).To(MatchError("is not an integer"))
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 		})
 
 		It("Should validate number", func() {
 			warnings, err := act.ValidateInputValue("number", 10)
-			Expect(err).To(BeNil())
-			Expect(warnings).To(HaveLen(0))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(warnings).To(BeEmpty())
 
 			warnings, err = act.ValidateInputValue("number", 10.2)
-			Expect(err).To(BeNil())
-			Expect(warnings).To(HaveLen(0))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(warnings).To(BeEmpty())
 
 			warnings, err = act.ValidateInputValue("number", "a")
 			Expect(err).To(MatchError("is not a number"))
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 		})
 
 		It("Should validate float", func() {
 			warnings, err := act.ValidateInputValue("float", 10.2)
-			Expect(err).To(BeNil())
-			Expect(warnings).To(HaveLen(0))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(warnings).To(BeEmpty())
 
 			warnings, err = act.ValidateInputValue("float", "a")
 			Expect(err).To(MatchError("is not a float"))
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 		})
 
 		It("Should validate string", func() {
 			warnings, err := act.ValidateInputValue("string", "hello world")
-			Expect(err).To(BeNil())
-			Expect(warnings).To(HaveLen(0))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(warnings).To(BeEmpty())
 
 			warnings, err = act.ValidateInputValue("string", "123456789012345678901234567890")
 			Expect(err).To(MatchError("is longer than 20 characters"))
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 
 			act.Input["string"].MaxLength = 0
 			warnings, err = act.ValidateInputValue("string", "123456789012345678901234567890")
-			Expect(err).To(BeNil())
-			Expect(warnings).To(HaveLen(0))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(warnings).To(BeEmpty())
 		})
 
 		It("Should validate boolean", func() {
 			warnings, err := act.ValidateInputValue("boolean", true)
-			Expect(err).To(BeNil())
-			Expect(warnings).To(HaveLen(0))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(warnings).To(BeEmpty())
 
 			warnings, err = act.ValidateInputValue("boolean", false)
-			Expect(err).To(BeNil())
-			Expect(warnings).To(HaveLen(0))
+			Expect(err).ToNot(HaveOccurred())
+			Expect(warnings).To(BeEmpty())
 
 			warnings, err = act.ValidateInputValue("boolean", "foo")
 			Expect(err).To(MatchError("is not a boolean"))
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 		})
 
 		It("Should validate list", func() {
 			warnings, err := act.ValidateInputValue("list", "one")
 			Expect(err).ToNot(HaveOccurred())
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 
 			warnings, err = act.ValidateInputValue("list", "two")
 			Expect(err).ToNot(HaveOccurred())
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 
 			_, err = act.ValidateInputValue("list", "three")
 			Expect(err).To(MatchError("should be one of one, two"))
@@ -208,11 +208,11 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 			act.Input["unkn"] = &common.InputItem{Type: "unknown"}
 
 			warnings, err := act.ValidateInputValue("unkn", "one")
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 			Expect(err).To(MatchError("unsupported input type 'unknown'"))
 
 			warnings, err = act.ValidateInputValue("invalid", "one")
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 			Expect(err).To(MatchError("unknown input 'invalid'"))
 		})
 
@@ -220,7 +220,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 			act.Input["string"].Validation = "^bob"
 			warnings, err := act.ValidateInputValue("string", "hello world")
 			Expect(err).To(MatchError("input does not match '^bob'"))
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 
 			act.Input["string"].Validation = "bob"
 			warnings, err = act.ValidateInputValue("string", "hello world")
@@ -230,21 +230,21 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 
 		It("Should validate hash content", func() {
 			warnings, err := act.ValidateInputValue("hash", "hello world")
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 			Expect(err).To(MatchError("is not a hash map"))
 
 			warnings, err = act.ValidateInputValue("hash", map[string]string{"hello": "world"})
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 			Expect(err).ToNot(HaveOccurred())
 		})
 
 		It("Should validate array content", func() {
 			warnings, err := act.ValidateInputValue("array", "hello world")
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 			Expect(err).To(MatchError("is not an array"))
 
 			warnings, err = act.ValidateInputValue("array", []string{"hello", "world"})
-			Expect(warnings).To(HaveLen(0))
+			Expect(warnings).To(BeEmpty())
 			Expect(err).ToNot(HaveOccurred())
 		})
 	})
@@ -286,7 +286,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 
 				w, err := cu.ValidateRequestData(map[string]any{})
 				Expect(err).ToNot(HaveOccurred())
-				Expect(w).To(HaveLen(0))
+				Expect(w).To(BeEmpty())
 			})
 			It("should ignore the process_results flag in inputs", func() {
 				cu, err := pkg.ActionInterface("apt_checkupdates")
@@ -294,7 +294,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 
 				w, err := cu.ValidateRequestData(map[string]any{"process_results": true})
 				Expect(err).ToNot(HaveOccurred())
-				Expect(w).To(HaveLen(0))
+				Expect(w).To(BeEmpty())
 			})
 			It("Should handle actions with no inputs but inputs being received", func() {
 				cu, err := pkg.ActionInterface("apt_checkupdates")
@@ -302,7 +302,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 
 				w, err := cu.ValidateRequestData(map[string]any{"test": "test"})
 				Expect(err).To(MatchError("request contains inputs while none are declared in the DDL"))
-				Expect(w).To(HaveLen(0))
+				Expect(w).To(BeEmpty())
 			})
 		})
 
@@ -313,7 +313,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 
 				w, err := install.ValidateRequestData(map[string]any{})
 				Expect(err).To(MatchError("input 'package' is required"))
-				Expect(w).To(HaveLen(0))
+				Expect(w).To(BeEmpty())
 			})
 
 			It("Should ignore the process_results flag in inputs", func() {
@@ -325,7 +325,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 					"process_results": true,
 				})
 				Expect(err).ToNot(HaveOccurred())
-				Expect(w).To(HaveLen(0))
+				Expect(w).To(BeEmpty())
 			})
 			It("Should detect extra inputs", func() {
 				install, err := pkg.ActionInterface("install")
@@ -336,7 +336,7 @@ var _ = Describe("McoRPC/DDL/Agent/Action", func() {
 					"other":   "test",
 				})
 				Expect(err).To(MatchError("request contains an input 'other' that is not declared in the DDL. Valid inputs are: package, version"))
-				Expect(w).To(HaveLen(0))
+				Expect(w).To(BeEmpty())
 			})
 		})
 	})
