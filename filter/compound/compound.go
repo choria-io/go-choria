@@ -9,8 +9,8 @@ import (
 	"fmt"
 
 	"github.com/Masterminds/semver"
-	"github.com/antonmedv/expr"
-	"github.com/antonmedv/expr/vm"
+	"github.com/expr-lang/expr"
+	"github.com/expr-lang/expr/vm"
 	"github.com/google/go-cmp/cmp"
 	"github.com/tidwall/gjson"
 

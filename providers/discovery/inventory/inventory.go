@@ -12,8 +12,8 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/antonmedv/expr/vm"
 	"github.com/choria-io/go-choria/inter"
+	"github.com/expr-lang/expr/vm"
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 

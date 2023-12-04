@@ -31,7 +31,8 @@ func (b *brokerCommand) Setup() (err error) {
 	b.cmd.Flag("choria-config", "Choria Config file to use").Hidden().PlaceHolder("FILE").ExistingFileVar(&configFile)
 	b.cmd.Flag("connect-timeout", "Connection timeout").Default("5s").DurationVar(&b.timeout)
 
-	opts, err := natscli.ConfigureInCommand(b.cmd, &natscli.Options{NoCheats: true, Timeout: 5 * time.Second}, false, "cheat", "rtt", "latency", "backup", "restore", "bench", "schema", "errors", "kv", "object", "micro", "context")
+	opts, err := natscli.ConfigureInCommand(b.cmd, &natscli.Options{NoCheats: true, Timeout: 5 * time.Second}, false,
+		"cheat", "rtt", "latency", "backup", "restore", "bench", "schema", "errors", "kv", "object", "micro", "context", "auth", "service")
 	if err != nil {
 		return err
 	}

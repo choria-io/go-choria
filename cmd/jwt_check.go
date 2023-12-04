@@ -13,12 +13,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/antonmedv/expr"
 	"github.com/choria-io/fisk"
 	"github.com/choria-io/go-choria/config"
-	"github.com/choria-io/go-choria/internal/monitor"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/tokens"
+	"github.com/expr-lang/expr"
+	"github.com/nats-io/natscli/monitor"
 )
 
 type jwtCheckCommand struct {

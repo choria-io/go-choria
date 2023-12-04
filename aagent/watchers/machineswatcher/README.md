@@ -82,7 +82,7 @@ $ cat spec.json | choria kv put MACHINES machines -
 
 After this the machines will be downloaded and maintained. In the `pack` command above the key is optional so the same command can be used to encode the specification without signing. They key can be read from the environment variable `KEY`.
 
-Note the `has_command('facter')` for the `matcher` key, this is a small [expr](https://github.com/antonmedv/expr) expression
+Note the `has_command('facter')` for the `matcher` key, this is a small [expr](https://github.com/expr-lang/expr) expression
 that is run on the node to determine if a specific machine should go on a node. The Key-Value is for the entire connected
 DC so in order to allow heterogeneous environments machines that should not go on the entire fleet can be limited using matchers.
 
@@ -137,4 +137,3 @@ machines_manager: github.com/choria-io/go-choria/aagent/watchers/machineswatcher
 ```
 
 Do `go generate` and recompile, this will include the watcher.
-
