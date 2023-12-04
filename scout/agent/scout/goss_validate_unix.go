@@ -14,7 +14,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 
 	"github.com/choria-io/go-choria/inter"
 	"github.com/goss-org/goss"
@@ -120,7 +119,7 @@ func gossValidateAction(_ context.Context, req *mcorpc.Request, reply *mcorpc.Re
 		return
 	}
 
-	_, err = goss.Validate(cfg, time.Now())
+	_, err = goss.Validate(cfg)
 	if err != nil {
 		abort(fmt.Sprintf("Could not validate: %s", err), reply)
 		return

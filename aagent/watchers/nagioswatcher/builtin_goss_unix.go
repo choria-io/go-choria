@@ -11,7 +11,6 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"time"
 
 	"github.com/goss-org/goss"
 	"github.com/goss-org/goss/outputs"
@@ -37,7 +36,7 @@ func (w *Watcher) watchUsingGoss() (state State, output string, err error) {
 		return UNKNOWN, fmt.Sprintf("UNKNOWN: goss configuration failed: %s", err), err
 	}
 
-	_, err = goss.Validate(cfg, time.Now())
+	_, err = goss.Validate(cfg)
 	if err != nil {
 		return UNKNOWN, fmt.Sprintf("UNKNOWN: goss validate failed: %s", err), err
 	}
