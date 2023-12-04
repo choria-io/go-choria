@@ -1229,7 +1229,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 					validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
 					Expect(validated).To(BeTrue())
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 				})
 			})
 		})
@@ -1316,7 +1316,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 					validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
 					Expect(validated).To(BeTrue())
-					Expect(err).To(BeNil())
+					Expect(err).ToNot(HaveOccurred())
 				})
 			})
 		})
@@ -1549,7 +1549,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				}
 
 				pkPath := filepath.Join(td, strings.Repeat("x", 65-len(td)-strings.Count(td, string(os.PathSeparator))))
-				Expect(len(pkPath)).To(Equal(64))
+				Expect(pkPath).To(HaveLen(64))
 
 				edPublicKey, edPriKey, err := choria.Ed25519KeyPair()
 				Expect(err).ToNot(HaveOccurred())
@@ -1759,7 +1759,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				}
 
 				pkPath := filepath.Join(td, strings.Repeat("x", 65-len(td)-strings.Count(td, string(os.PathSeparator))))
-				Expect(len(pkPath)).To(Equal(64))
+				Expect(pkPath).To(HaveLen(64))
 
 				edPublicKey, edPriKey, err := choria.Ed25519KeyPair()
 				Expect(err).ToNot(HaveOccurred())
@@ -2068,7 +2068,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				"choria.federation.*.federation",
 			}))
 
-			Expect(user.Permissions.Subscribe.Allow).To(HaveLen(0))
+			Expect(user.Permissions.Subscribe.Allow).To(BeEmpty())
 			Expect(user.Permissions.Subscribe.Deny).To(Equal([]string{
 				"*.reply.>",
 				"choria.federation.>",

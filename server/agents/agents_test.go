@@ -180,7 +180,7 @@ var _ = Describe("Server/Agents", func() {
 
 			err := mgr.RegisterAgent(ctx, "stub", agent, conn)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(mgr.agents).To(HaveLen(0))
+			Expect(mgr.agents).To(BeEmpty())
 
 			agent.Metadata().Service = true
 			conn.EXPECT().ServiceBroadcastTarget("cone", "stub").Return("cone.stub")

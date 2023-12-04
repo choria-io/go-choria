@@ -104,7 +104,7 @@ var _ = Describe("McoRPC/External", func() {
 
 		It("Should register new agents", func() {
 			mgr.EXPECT().RegisterAgent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(3)
-			Expect(prov.agents).To(HaveLen(0))
+			Expect(prov.agents).To(BeEmpty())
 			Expect(prov.reconcileAgents(ctx, mgr, conn)).To(Succeed())
 			Expect(prov.agents).To(HaveLen(3))
 		})
@@ -117,7 +117,7 @@ var _ = Describe("McoRPC/External", func() {
 			mgr.EXPECT().RegisterAgent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 
 			// load what we have
-			Expect(prov.agents).To(HaveLen(0))
+			Expect(prov.agents).To(BeEmpty())
 			Expect(prov.reconcileAgents(ctx, mgr, conn)).To(Succeed())
 			Expect(prov.agents).To(HaveLen(1))
 			Expect(prov.paths).To(HaveLen(1))
@@ -165,7 +165,7 @@ var _ = Describe("McoRPC/External", func() {
 			mgr.EXPECT().ReplaceAgent(gomock.Any(), gomock.Any()).Times(1)
 
 			Expect(prov.reconcileAgents(ctx, mgr, conn)).To(Succeed())
-			Expect(prov.agents).To(HaveLen(0))
+			Expect(prov.agents).To(BeEmpty())
 
 			copyAgentFile("one.json")
 			Expect(prov.reconcileAgents(ctx, mgr, conn)).To(Succeed())

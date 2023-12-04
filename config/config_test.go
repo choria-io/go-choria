@@ -112,7 +112,7 @@ var _ = Describe("Choria/Config", func() {
 			c, err := ProjectConfigurationFiles("testdata/project")
 			Expect(err).ToNot(HaveOccurred())
 			pwd, _ := os.Getwd()
-			Expect(len(c)).To(BeNumerically(">=", 1))
+			Expect(c).ToNot(BeEmpty())
 			Expect(c[len(c)-1]).To(Equal(filepath.Join(pwd, "testdata", "project", "choria.conf")))
 		})
 

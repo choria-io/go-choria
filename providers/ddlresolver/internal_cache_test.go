@@ -57,7 +57,7 @@ var _ = Describe("InternalCachedDDLResolver", func() {
 			Expect(err).ToNot(HaveOccurred())
 			expected, err := fs.FS.ReadFile("ddl/cache/agent/choria_util.json")
 			Expect(err).ToNot(HaveOccurred())
-			Expect(expected).ToNot(HaveLen(0))
+			Expect(expected).ToNot(BeEmpty())
 			Expect(b).To(Equal(expected))
 		})
 	})

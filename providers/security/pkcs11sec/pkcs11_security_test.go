@@ -80,7 +80,7 @@ var _ = Describe("Pkcs11Security", func() {
 	Describe("Validate", func() {
 		It("Should return true if provider was successfully initialized", func() {
 			errs, ok := prov.Validate()
-			Expect(errs).To(HaveLen(0))
+			Expect(errs).To(BeEmpty())
 			Expect(ok).To(BeTrue())
 		})
 		It("Should handle missing files", func() {

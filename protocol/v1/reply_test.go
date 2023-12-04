@@ -26,7 +26,7 @@ var _ = Describe("Reply", func() {
 
 		Expect(protocol.VersionFromJSON(j)).To(Equal(protocol.ReplyV1))
 		Expect(reply.Message()).To(Equal([]byte("hello world")))
-		Expect(len(reply.RequestID())).To(Equal(32))
+		Expect(reply.RequestID()).To(HaveLen(32))
 		Expect(reply.SenderID()).To(Equal("testing"))
 		Expect(reply.Agent()).To(Equal("test"))
 		Expect(reply.Time()).To(BeTemporally("~", time.Now(), time.Second))

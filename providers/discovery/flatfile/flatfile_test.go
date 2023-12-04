@@ -23,7 +23,7 @@ var _ = Describe("Flatfile", func() {
 	It("Should expect a source", func() {
 		ff := &FlatFile{}
 		n, err := ff.Discover(context.Background())
-		Expect(n).To(HaveLen(0))
+		Expect(n).To(BeEmpty())
 		Expect(err).To(MatchError("source file not specified"))
 	})
 
@@ -32,7 +32,7 @@ var _ = Describe("Flatfile", func() {
 		filter.AddAgentFilter("test")
 		ff := &FlatFile{}
 		n, err := ff.Discover(context.Background(), Filter(filter), File("testdata/nodes.txt"))
-		Expect(n).To(HaveLen(0))
+		Expect(n).To(BeEmpty())
 		Expect(err).To(MatchError("only identity filters are supported"))
 	})
 

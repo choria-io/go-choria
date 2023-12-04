@@ -69,7 +69,7 @@ var _ = Describe("Request", func() {
 	Describe("RecordNetworkHop", func() {
 		It("Should record the hop correctly", func() {
 			r := &Request{}
-			Expect(r.ReqEnvelope.seenBy).To(HaveLen(0))
+			Expect(r.ReqEnvelope.seenBy).To(BeEmpty())
 			r.RecordNetworkHop("ginkgo.in", "server1", "ginkgo.out")
 			Expect(r.ReqEnvelope.seenBy).To(HaveLen(1))
 			r.RecordNetworkHop("ginkgo.in", "server2", "ginkgo.out")
@@ -120,7 +120,7 @@ var _ = Describe("Request", func() {
 				r := &Request{}
 				t, federated := r.FederationTargets()
 				Expect(federated).To(BeFalse())
-				Expect(t).To(HaveLen(0))
+				Expect(t).To(BeEmpty())
 				r.SetFederationTargets([]string{"1", "2"})
 				t, federated = r.FederationTargets()
 				Expect(federated).To(BeTrue())
@@ -173,7 +173,7 @@ var _ = Describe("Request", func() {
 			Expect(protocol.VersionFromJSON(j)).To(Equal(protocol.RequestV2))
 			Expect(request.Version()).To(Equal(protocol.RequestV2))
 			Expect(request.Message()).To(Equal([]byte("hello world")))
-			Expect(len(request.RequestID())).To(Equal(32))
+			Expect(request.RequestID()).To(HaveLen(32))
 			Expect(request.SenderID()).To(Equal("go.tests"))
 			Expect(request.CallerID()).To(Equal("choria=test"))
 			Expect(request.Collective()).To(Equal("mcollective"))

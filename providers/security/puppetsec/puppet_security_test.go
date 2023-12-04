@@ -159,7 +159,7 @@ var _ = Describe("PuppetSSL", func() {
 		It("Should accept valid directories", func() {
 			cfg.Identity = "rip.mcollective"
 			errs, ok := prov.Validate()
-			Expect(errs).To(HaveLen(0))
+			Expect(errs).To(BeEmpty())
 			Expect(ok).To(BeTrue())
 		})
 	})

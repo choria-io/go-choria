@@ -65,7 +65,7 @@ var _ = Describe("RegoPolicy", func() {
 
 			facts, err = os.ReadFile(cfg.FactSourceFile)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(facts).ToNot(HaveLen(0))
+			Expect(facts).ToNot(BeEmpty())
 
 			klasses, err := classes.ReadClasses(cfg.ClassesFile)
 			Expect(err).ToNot(HaveOccurred())
@@ -245,7 +245,7 @@ var _ = Describe("RegoPolicy", func() {
 
 			facts, err = os.ReadFile(cfg.FactSourceFile)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(facts).ToNot(HaveLen(0))
+			Expect(facts).ToNot(BeEmpty())
 
 			klasses, err := classes.ReadClasses(cfg.ClassesFile)
 			Expect(err).ToNot(HaveOccurred())
@@ -381,7 +381,7 @@ var _ = Describe("RegoPolicy", func() {
 
 			facts, err = os.ReadFile(cfg.FactSourceFile)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(facts).ToNot(HaveLen(0))
+			Expect(facts).ToNot(BeEmpty())
 
 			klasses, err := classes.ReadClasses(cfg.ClassesFile)
 			Expect(err).ToNot(HaveOccurred())

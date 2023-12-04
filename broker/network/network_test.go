@@ -236,7 +236,7 @@ var _ = Describe("Network Broker", func() {
 				srv, err = NewServer(fw, bi, false)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(srv.opts.LeafNode.Port).To(Equal(6222))
-				Expect(srv.opts.LeafNode.Remotes).To(HaveLen(0))
+				Expect(srv.opts.LeafNode.Remotes).To(BeEmpty())
 			})
 
 			It("Should support connecting to leafnodes", func() {
@@ -251,7 +251,7 @@ var _ = Describe("Network Broker", func() {
 				Expect(srv.opts.LeafNode.Port).To(Equal(6222))
 				Expect(srv.opts.LeafNode.Remotes).To(HaveLen(2))
 				Expect(srv.opts.LeafNode.Remotes[0].URLs[0].String()).To(Equal("leafnode://ln1-1.example.net:6222"))
-				Expect(srv.opts.LeafNode.Remotes[0].TLS).ToNot(BeFalse())
+				Expect(srv.opts.LeafNode.Remotes[0].TLS).To(BeTrue())
 				Expect(srv.opts.LeafNode.Remotes[1].URLs[0].String()).To(Equal("leafnode://ln2.example.net:6222"))
 			})
 

@@ -154,14 +154,14 @@ var _ = Describe("McoRPC/Ruby", func() {
 			cfg, err := config.NewConfig("testdata/one_agent_enabled.cfg")
 			Expect(err).ToNot(HaveOccurred())
 			fw.Config = cfg
-			Expect(activationCheck(d, agentMgr)()).To(Equal(true))
+			Expect(activationCheck(d, agentMgr)()).To(BeTrue())
 		})
 
 		It("Should respect false value activate_agent setting", func() {
 			cfg, err := config.NewConfig("testdata/one_agent_disabled.cfg")
 			Expect(err).ToNot(HaveOccurred())
 			fw.Config = cfg
-			Expect(activationCheck(d, agentMgr)()).To(Equal(false))
+			Expect(activationCheck(d, agentMgr)()).To(BeFalse())
 		})
 
 		It("Should default to the correct value", func() {
