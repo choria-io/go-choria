@@ -98,13 +98,9 @@ func (v *ValidateCommand) renderTableResult(table *xtablewriter.Table, vr *scout
 		case res.Result == resource.SKIP && v.opts.Display != "ok":
 			table.AddRow(skip, "", res.ResourceType, res.ResourceId, fmt.Sprintf("%s: skipped", res.Property))
 		case res.Result == resource.SUCCESS && v.opts.Display != "failed":
-			for _, e := range res.Expected {
-				table.AddRow(ok, "", res.ResourceType, res.ResourceId, fmt.Sprintf("%s: matches expectation: %v", res.Property, e))
-			}
+			table.AddRow(ok, "", res.ResourceType, res.ResourceId, res.SummaryLineCompact)
 		case res.Result == resource.FAIL && v.opts.Display != "ok":
-			for _, e := range res.Expected {
-				table.AddRow(fail, "", res.ResourceType, res.ResourceId, fmt.Sprintf("%s: does not match expectation: %v", res.Property, e))
-			}
+			table.AddRow(fail, "", res.ResourceType, res.ResourceId, res.SummaryLineCompact)
 		}
 	}
 
@@ -139,7 +135,7 @@ func (v *ValidateCommand) renderTextResult(vr *scoutagent.GossValidateResponse, 
 			if lb {
 				fmt.Println()
 			}
-			fmt.Printf("   %s %s: %s: %s: skipped\n", v.fw.Colorize("yellow", "?"), res.ResourceType, res.ResourceId, res.Property)
+			fmt.Printf("   %s %s\n", v.fw.Colorize("yellow", "?"), res.SummaryLineCompact)
 			lb = false
 		case res.Result == resource.FAIL && v.opts.Display != "ok":
 			if i != 0 {
@@ -152,9 +148,8 @@ func (v *ValidateCommand) renderTextResult(vr *scoutagent.GossValidateResponse, 
 			if lb {
 				fmt.Println()
 			}
-			for _, e := range res.Expected {
-				fmt.Printf("   %s %s: %s: %s: matches expectation: %v\n", v.fw.Colorize("green", "✓"), res.ResourceType, res.ResourceId, res.Property, e)
-			}
+
+			fmt.Printf("   %s %s\n", v.fw.Colorize("green", "✓"), res.SummaryLineCompact)
 
 			lb = false
 		}
@@ -197,7 +192,7 @@ func (v *ValidateCommand) localValidate() error {
 		return err
 	}
 
-	_, err = goss.Validate(cfg, time.Now())
+	_, err = goss.Validate(cfg)
 	if err != nil {
 		return err
 	}
