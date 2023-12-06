@@ -9,7 +9,7 @@ require (
 	github.com/adrg/xdg v0.4.0
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.9.0
+	github.com/choria-io/appbuilder v0.9.1-0.20231206212603-ba0ccaadd57a
 	github.com/choria-io/fisk v0.6.1
 	github.com/choria-io/go-updater v0.1.0
 	github.com/choria-io/tokens v0.0.3
@@ -31,10 +31,10 @@ require (
 	github.com/looplab/fsm v1.0.1
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.1.1-0.20231116110128-840023588118
-	github.com/nats-io/nats-server/v2 v2.10.6
+	github.com/nats-io/jsm.go v0.1.1-0.20231204140718-1ad3bcd9702c
+	github.com/nats-io/nats-server/v2 v2.10.7
 	github.com/nats-io/nats.go v1.31.0
-	github.com/nats-io/natscli v0.1.2-0.20231204145229-10b7961a9c3d
+	github.com/nats-io/natscli v0.1.2-0.20231206213629-ded94d8ba8dc
 	github.com/onsi/ginkgo/v2 v2.13.2
 	github.com/onsi/gomega v1.30.0
 	github.com/open-policy-agent/opa v0.59.0
@@ -63,7 +63,6 @@ require (
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/achanda/go-sysctl v0.0.0-20160222034550-6be7678c45d2 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
-	github.com/antonmedv/expr v1.15.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/brutella/dnssd v1.2.10 // indirect
@@ -81,7 +80,7 @@ require (
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/google/flatbuffers v23.3.3+incompatible // indirect
-	github.com/google/pprof v0.0.0-20231203200248-ad67f76aa53d // indirect
+	github.com/google/pprof v0.0.0-20231205033806-a5a03c77bf08 // indirect
 	github.com/google/uuid v1.4.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/goss-org/GOnetstat v0.0.0-20230101144325-22be0bd9e64d // indirect
@@ -121,7 +120,7 @@ require (
 	github.com/prometheus/procfs v0.12.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rivo/uniseg v0.4.4 // indirect
-	github.com/samber/lo v1.38.1 // indirect
+	github.com/samber/lo v1.39.0 // indirect
 	github.com/shopspring/decimal v1.3.1 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
 	github.com/synadia-io/jwt-auth-builder.go v0.0.0-20231201125238-9011ec8a3346 // indirect
@@ -140,7 +139,7 @@ require (
 	go.uber.org/goleak v1.2.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/exp v0.0.0-20231127185646-65229373498e // indirect
+	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb // indirect
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
