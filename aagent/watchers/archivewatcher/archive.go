@@ -369,7 +369,6 @@ func (w *Watcher) untar(s io.Reader, t string) error {
 		}
 
 		nfo := header.FileInfo()
-		w.Debugf("untar: %s", path)
 		if nfo.IsDir() {
 			err = os.MkdirAll(path, nfo.Mode())
 			if err != nil {

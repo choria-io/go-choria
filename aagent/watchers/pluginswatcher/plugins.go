@@ -57,12 +57,12 @@ type ManagedPlugin struct {
 	Name                     string `json:"name" yaml:"name"`
 	NamePrefix               string `json:"-" yaml:"-"`
 	Source                   string `json:"source" yaml:"source"`
-	Username                 string `json:"username" yaml:"username"`
-	Password                 string `json:"password" yaml:"password"`
+	Username                 string `json:"username,omitempty" yaml:"username"`
+	Password                 string `json:"password,omitempty" yaml:"password"`
 	ContentChecksumsChecksum string `json:"verify_checksum" yaml:"verify_checksum" mapstructure:"verify_checksum"`
 	ArchiveChecksum          string `json:"checksum" yaml:"checksum" mapstructure:"checksum"`
-	Matcher                  string `json:"match" yaml:"match" mapstructure:"match"`
-	Governor                 string `json:"governor" yaml:"governor" mapstructure:"governor"`
+	Matcher                  string `json:"match,omitempty" yaml:"match" mapstructure:"match"`
+	Governor                 string `json:"governor,omitempty" yaml:"governor" mapstructure:"governor"`
 
 	Interval string `json:"-"`
 	Target   string `json:"-"`
@@ -364,7 +364,10 @@ func (w *Watcher) purgeUnknownPlugins(ctx context.Context, desired []*ManagedPlu
 			}
 
 			w.Debugf("Sleeping for 2 seconds to allow manager to exit")
-			iu.InterruptibleSleep(ctx, 2*time.Second)
+			err = iu.InterruptibleSleep(ctx, 2*time.Second)
+			if err != nil {
+				return false, err
+			}
 
 			target = w.targetDirForManagedPlugin(m)
 			err = os.RemoveAll(target)
