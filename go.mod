@@ -15,7 +15,7 @@ require (
 	github.com/choria-io/tokens v0.0.3
 	github.com/cloudevents/sdk-go/v2 v2.14.0
 	github.com/dustin/go-humanize v1.0.1
-	github.com/expr-lang/expr v1.15.6
+	github.com/expr-lang/expr v1.15.7
 	github.com/fatih/color v1.16.0
 	github.com/fatih/structtag v1.2.0
 	github.com/ghodss/yaml v1.0.0
@@ -47,11 +47,11 @@ require (
 	github.com/tidwall/gjson v1.17.0
 	github.com/tidwall/pretty v1.2.1
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
-	golang.org/x/crypto v0.16.0
+	golang.org/x/crypto v0.17.0
 	golang.org/x/sys v0.15.0
 	golang.org/x/term v0.15.0
 	golang.org/x/text v0.14.0
-	golang.org/x/tools v0.16.0
+	golang.org/x/tools v0.16.1
 	rsc.io/goversion v1.2.0
 )
 
@@ -73,15 +73,15 @@ require (
 	github.com/dgryski/trifles v0.0.0-20220729183022-231ecf6ed548 // indirect
 	github.com/emicklei/dot v1.6.0 // indirect
 	github.com/gdamore/encoding v1.0.0 // indirect
-	github.com/gdamore/tcell/v2 v2.6.0 // indirect
+	github.com/gdamore/tcell/v2 v2.7.0 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
 	github.com/go-logr/logr v1.3.0 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-task/slim-sprig v0.0.0-20230315185526-52ccab3ef572 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/google/flatbuffers v23.3.3+incompatible // indirect
-	github.com/google/pprof v0.0.0-20231205033806-a5a03c77bf08 // indirect
-	github.com/google/uuid v1.4.0 // indirect
+	github.com/google/pprof v0.0.0-20231212022811-ec68065c825e // indirect
+	github.com/google/uuid v1.5.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/goss-org/GOnetstat v0.0.0-20230101144325-22be0bd9e64d // indirect
 	github.com/goss-org/go-ps v0.0.0-20230609005227-7b318e6a56e5 // indirect
@@ -139,7 +139,7 @@ require (
 	go.uber.org/goleak v1.2.1 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.26.0 // indirect
-	golang.org/x/exp v0.0.0-20231206192017-f3f8817b8deb // indirect
+	golang.org/x/exp v0.0.0-20231214170342-aacd6d4b4611 // indirect
 	golang.org/x/mod v0.14.0 // indirect
 	golang.org/x/net v0.19.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
