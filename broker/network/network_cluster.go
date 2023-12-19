@@ -31,7 +31,7 @@ func (s *Server) setupCluster() (err error) {
 	s.opts.Cluster.Port = s.config.Choria.NetworkPeerPort
 	s.opts.Cluster.Username = s.config.Choria.NetworkPeerUser
 	s.opts.Cluster.Password = s.config.Choria.NetworkPeerPassword
-	s.opts.Cluster.PinnedAccounts = []string{"system"} // required to avoid a chicken and egg in cluster pools starting up
+	s.opts.Cluster.PoolSize = -1
 
 	for _, p := range peers.Servers() {
 		u, err := p.URL()
