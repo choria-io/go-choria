@@ -82,6 +82,7 @@ type ChoriaPluginConfig struct {
 	NetworkWebSocketAdvertise          string        `confkey:"plugin.choria.network.websocket_advertise" url:"https://choria.io/docs/deployment/broker/"`         // The URL to advertise for websocket connections
 	NetworkWebSocketPort               int           `confkey:"plugin.choria.network.websocket_port" url:"https://choria.io/docs/deployment/broker/"`              // Port to listen on for websocket connections
 	NetworkWriteDeadline               time.Duration `confkey:"plugin.choria.network.write_deadline" type:"duration" default:"10s"`                                // How long to allow clients to process traffic before treating them as slow, increase this on large networks or slow networks
+	NetworkSoftShutdownTimeout         int           `confkey:"plugin.choria.network.soft_shutdown_timeout" default:"60"`                                          // The amount of time to allow the broker to exit, after this memory and thread dumps will be performed and a force exit will be done
 
 	BrokerNetwork    bool     `confkey:"plugin.choria.broker_network" default:"false" url:"https://choria.io/docs/deployment/broker/"` // Enables the Network Broker
 	BrokerFederation bool     `confkey:"plugin.choria.broker_federation" default:"false" url:"https://choria.io/docs/federation/"`     // Enables the Federation Broker

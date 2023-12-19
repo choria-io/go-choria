@@ -40,19 +40,20 @@ type application struct {
 }
 
 var (
-	cli        = application{}
-	debug      = false
-	configFile = ""
-	c          *choria.Framework
-	cfg        *config.Config
-	ctx        context.Context
-	cancel     func()
-	wg         *sync.WaitGroup
-	mu         = &sync.Mutex{}
-	cpuProfile string
-	bi         *build.Info
-	err        error
-	ran        bool
+	cli           = application{}
+	debug         = false
+	configFile    = ""
+	c             *choria.Framework
+	cfg           *config.Config
+	ctx           context.Context
+	cancel        func()
+	wg            *sync.WaitGroup
+	mu            = &sync.Mutex{}
+	cpuProfile    string
+	bi            *build.Info
+	err           error
+	ran           bool
+	shutdownGrace = 10 * time.Second
 )
 
 func ParseCLI() (err error) {
@@ -252,19 +253,19 @@ func Run() (err error) {
 }
 
 func forcequit() {
-	grace := 10 * time.Second
-
 	if cfg != nil {
 		if cfg.SoftShutdownTimeout > 0 {
-			grace = time.Duration(cfg.SoftShutdownTimeout) * time.Second
+			shutdownGrace = time.Duration(cfg.SoftShutdownTimeout) * time.Second
 		}
 	}
 
-	<-time.After(grace)
+	log.Infof("Setting forced shutdown to %v", shutdownGrace)
+
+	<-time.After(shutdownGrace)
 
 	dumpGoRoutines()
 
-	log.Errorf("Forced shutdown triggered after %v", grace)
+	log.Errorf("Forced shutdown triggered after %v", shutdownGrace)
 
 	os.Exit(1)
 }
