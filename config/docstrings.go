@@ -86,6 +86,7 @@ var docStrings = map[string]string{
 	"plugin.choria.network.websocket_advertise":                    "The URL to advertise for websocket connections",
 	"plugin.choria.network.websocket_port":                         "Port to listen on for websocket connections",
 	"plugin.choria.network.write_deadline":                         "How long to allow clients to process traffic before treating them as slow, increase this on large networks or slow networks",
+	"plugin.choria.network.soft_shutdown_timeout":                  "The amount of time to allow the broker to exit, after this memory and thread dumps will be performed and a force exit will be done",
 	"plugin.choria.broker_network":                                 "Enables the Network Broker",
 	"plugin.choria.broker_federation":                              "Enables the Federation Broker",
 	"plugin.choria.adapters":                                       "The list of Data Adapters to activate",
@@ -146,4 +147,7 @@ var docStrings = map[string]string{
 	"plugin.choria.services.registry.cache":                        "Directory where the Registry client stores DDLs found in the registry",
 	"plugin.choria.submission.spool":                               "Path to a directory holding messages to submit to the middleware",
 	"plugin.choria.submission.max_spool_size":                      "Maximum amount of messages allowed into each priority",
+	"plugin.rpcaudit.logfile":                                      "Path to the RPC audit log",
+	"plugin.rpcaudit.logfile.group":                                "User group to set file ownership to",
+	"plugin.rpcaudit.logfile.mode":                                 "File mode to apply to the file",
 }
