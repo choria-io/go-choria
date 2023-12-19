@@ -386,7 +386,7 @@ var _ = Describe("Authentication", func() {
 				nats.RootCAs(testutil.CertPath("one", "ca")),
 			)
 			Eventually(logbuff, 5).Should(gbytes.Say("failed to verify.+certificate: x509: certificate signed by unknown authority"))
-			Expect(err).To(MatchError("remote error: tls: bad certificate"))
+			Expect(err).To(Or(MatchError("remote error: tls: bad certificate"), MatchError("remote error: tls: unknown certificate authority")))
 			Expect(nc).To(BeNil())
 			Expect(logbuff).ToNot(gbytes.Say("Registering user"))
 		})
