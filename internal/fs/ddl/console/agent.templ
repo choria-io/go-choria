@@ -15,7 +15,7 @@ Plugin Metadata:
    Service: true
 {{- end }}
 
-Available Action: {{ .ActionNames | StringsJoin }}
+Available Actions: {{ .ActionNames | StringsJoin }}
 
 {{ Bold "Actions:" }}
 {{ range $action := .Actions }}

@@ -720,7 +720,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 						Allow: []string{"*.reply.e33bf0376d4accbb4a8fd24b2f840b2e.>"},
 					}))
 					Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
-						Deny: allSubjects,
+						Allow: []string{"$SYS.REQ.USER.INFO"},
 					}))
 				})
 
@@ -1803,15 +1803,13 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 	Describe("setClientPermissions", func() {
 		var (
 			log    *logrus.Entry
-			minSub []string
-			minPub []string
+			minSub = []string{"*.reply.>"}
+			minPub = []string{"$SYS.REQ.USER.INFO"}
 		)
 
 		BeforeEach(func() {
 			log = logrus.NewEntry(logrus.New())
 			log.Logger.SetOutput(GinkgoWriter)
-
-			minSub = []string{"*.reply.>"}
 		})
 
 		Describe("System User", func() {
@@ -1833,7 +1831,9 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
 					Allow: minSub,
 				}))
-				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{}))
+				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
+					Allow: []string{"$SYS.REQ.USER.INFO"},
+				}))
 			})
 
 			It("Should set correct permissions for the choria user", func() {
@@ -1938,7 +1938,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 					Allow: minPub,
-					Deny:  allSubjects,
+					Deny:  nil,
 				}))
 			})
 		})
@@ -2002,12 +2002,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					Allow: minSub,
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
-					Allow: []string{
-						"*.broadcast.agent.>",
-						"*.broadcast.service.>",
-						"*.node.>",
-						"choria.federation.*.federation",
-					},
+					Allow: append(minPub, "*.broadcast.agent.>", "*.broadcast.service.>", "*.node.>", "choria.federation.*.federation"),
 				}))
 			})
 		})
@@ -2023,7 +2018,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					Allow: append(minSub, "sub.>"),
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
-					Allow: []string{"pub.>"},
+					Allow: append(minPub, "pub.>"),
 				}))
 			})
 		})
@@ -2036,7 +2031,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					Allow: []string{"*.reply.0f47cbbd2accc01a51e57261d6e64b8b.>"},
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
-					Deny: allSubjects,
+					Allow: minPub,
 				}))
 			})
 
@@ -2047,7 +2042,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					Allow: []string{"*.reply.>"},
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
-					Deny: allSubjects,
+					Allow: minPub,
 				}))
 			})
 		})

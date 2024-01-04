@@ -887,6 +887,7 @@ func (a *ChoriaAuth) setMinimalClientPermissions(_ *server.User, caller string, 
 	}
 
 	subs = append(subs, replys)
+	pubs = append(pubs, "$SYS.REQ.USER.INFO")
 
 	return subs, pubs
 }
