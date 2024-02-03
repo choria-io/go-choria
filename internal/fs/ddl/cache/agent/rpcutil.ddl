@@ -1,8 +1,12 @@
+--  Copyright (c) 2024, R.I. Pienaar and the Choria Project contributors
+--
+--  SPDX-License-Identifier: Apache-2.0
+
 metadata :name        => "rpcutil",
          :description => "Utility actions that expose information about the state of the running Server",
          :author      => "R.I.Pienaar <rip@devco.net>",
          :license     => "Apache-2.0",
-         :version     => "0.27.0",
+         :version     => "0.28.0",
          :url         => "https://choria.io/",
          :timeout     => 2
 

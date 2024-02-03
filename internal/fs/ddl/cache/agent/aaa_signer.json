@@ -5,7 +5,7 @@
     "author": "R.I.Pienaar \u003crip@devco.net\u003e",
     "timeout": 10,
     "name": "aaa_signer",
-    "version": "0.27.0",
+    "version": "0.28.0",
     "url": "https://github.com/choria-io/aaasvc",
     "description": "Request Signer for Choria AAA Service",
     "provider": "golang",

@@ -1,5 +1,15 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2024/02/03 |       | Release 0.28.0                                                                                                     |
+| 2024/01/04 | 2104  | Allow clients to view the ACLs applied to their connections in various utilities                                   |
+| 2024/12/19 | 2101  | Improve shutdown reliability by giving Stream brokers more shutdown grace                                          |
+| 2023/12/18 | 2096  | Allow setting SRV domain using the `CHORIA_SRV_DOMAIN` environment variable                          >             |
+| 2023/12/07 | 2094  | Adds additional utilities to maintain autonomous agent plugin manifests under `choria machine plugins`             |
+| 2023/12/04 |       | Upgrade to NATS Server 2.10.x and updates the embedded `nats` command line                                         |
+| 2023/09/20 | 2077  | Various improvements to audit logging and expose its settings in `choria tool config`                              |
+| 2023/09/07 | 2077  | Allow audit log ownership to be set using `plugin.rpcaudit.logfile.group` and `plugin.rpcaudit.logfile.mode`       |
+| 2023/08/25 | 2079  | Disable `appbuilder` on Windows                                                                                    |
+| 2024/05/04 | 2066  | Allow those who embed Choria Server to get notified when it's ready using `RegisterReadyCallback()`                |
 | 2023/04/24 | 2059  | Support verifying packed plugin specifications in `machine pugins` and `mms`                                       |
 | 2023/04/19 | 2055  | Retry calls to streams that can fail in early election setup                                                       |
 | 2023/04/19 | 2052  | Ensure stream users can access KV and Object stores                                                                |

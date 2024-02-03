@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,7 +9,7 @@ import (
 )
 
 // Version the application version
-var Version = "0.27.0"
+var Version = "0.28.0"
 
 // SHA is the git reference used to build this package
 var SHA = "unknown"
