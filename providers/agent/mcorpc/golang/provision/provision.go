@@ -5,11 +5,13 @@
 package provision
 
 import (
+	"context"
 	"runtime"
 	"sync"
 	"time"
 
 	"github.com/choria-io/go-choria/build"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/plugin"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server"
@@ -22,11 +24,21 @@ type Reply struct {
 	Message string `json:"message"`
 }
 
-var mu = &sync.Mutex{}
-var allowRestart = true
-var ecdhPublic []byte
-var ecdhPrivate []byte
-var log *logrus.Entry
+var (
+	// LockedError is the error that will be produced when another provisioning is busy provisioning this server
+	LockedError = "Could not obtain provisioning lock"
+	// LockWindow is how long provisioning locks will be held or extended for
+	LockWindow = 2 * time.Minute
+
+	mu           = &sync.Mutex{}
+	allowRestart = true
+	ecdhPublic   []byte
+	ecdhPrivate  []byte
+	log          *logrus.Entry
+	lockMu       sync.Mutex
+	lockedUntil  time.Time
+	lockedBy     string
+)
 
 var metadata = &agents.Metadata{
 	Name:        "choria_provision",
@@ -48,7 +60,6 @@ func init() {
 	default:
 		SetRestartAction(restart)
 	}
-
 }
 
 // New creates a new instance of the agent
@@ -61,16 +72,28 @@ func New(mgr server.AgentManager) (agents.Agent, error) {
 		return mgr.Choria().SupportsProvisioning()
 	})
 
-	agent.MustRegisterAction("gencsr", csrAction)
-	agent.MustRegisterAction("gen25519", ed25519Action)
-	agent.MustRegisterAction("configure", configureAction)
+	agent.MustRegisterAction("configure", lockedAction(configureAction))
+	agent.MustRegisterAction("gen25519", lockedAction(ed25519Action))
+	agent.MustRegisterAction("gencsr", lockedAction(csrAction))
+	agent.MustRegisterAction("jwt", lockedAction(jwtAction))
+	agent.MustRegisterAction("release_update", lockedAction(releaseUpdateAction))
+	agent.MustRegisterAction("reprovision", reprovisionAction)
 	agent.MustRegisterAction("restart", restartAction)
 	agent.MustRegisterAction("shutdown", shutdownAction)
-	agent.MustRegisterAction("reprovision", reprovisionAction)
-	agent.MustRegisterAction("jwt", jwtAction)
-	agent.MustRegisterAction("release_update", releaseUpdateAction)
 
 	return agent, nil
+}
+
+// middleware to ensure actions will only be run by a caller who are currently provisioning the server
+func lockedAction(next mcorpc.Action) mcorpc.Action {
+	return func(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
+		if locked, _ := lockFor(req.SenderID, req.CallerID); !locked {
+			abort(LockedError, reply)
+			return
+		}
+
+		next(ctx, req, reply, agent, conn)
+	}
 }
 
 // ChoriaPlugin creates the choria plugin hooks

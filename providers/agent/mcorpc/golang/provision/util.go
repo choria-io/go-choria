@@ -10,6 +10,7 @@ import (
 	"encoding/hex"
 	"encoding/pem"
 	"fmt"
+	"time"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
@@ -92,4 +93,34 @@ func decryptPrivateKey(privateKey string, ecdhPublic string) ([]byte, error) {
 	}
 
 	return out.Bytes(), nil
+}
+
+func isLockedFor(sender string, caller string) bool {
+	if time.Until(lockedUntil) <= 0 {
+		return false
+	}
+
+	return lockedBy == fmt.Sprintf("%s.%s", sender, caller)
+}
+
+func lockFor(sender string, caller string) (bool, time.Time) {
+	lockMu.Lock()
+	defer lockMu.Unlock()
+
+	// caller holds the lock, extend it
+	if isLockedFor(sender, caller) {
+		lockedUntil = time.Now().Add(LockWindow).UTC()
+		return true, lockedUntil
+	}
+
+	// its locked by someone else
+	if time.Until(lockedUntil) > 0 {
+		return false, lockedUntil
+	}
+
+	// its not locked so we lock it for the caller
+	lockedUntil = time.Now().Add(LockWindow).UTC()
+	lockedBy = fmt.Sprintf("%s.%s", sender, caller)
+
+	return true, lockedUntil
 }
