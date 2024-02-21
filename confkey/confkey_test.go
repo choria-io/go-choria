@@ -10,12 +10,11 @@ import (
 	"reflect"
 	"runtime"
 	"strings"
+	"testing"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
-
-	"testing"
 )
 
 func TestFileContent(t *testing.T) {
@@ -24,7 +23,7 @@ func TestFileContent(t *testing.T) {
 }
 
 type TestData struct {
-	PlainString string        `confkey:"plain_string" validate:"shellsafe"`
+	PlainString string        `confkey:"plain_string" validate:"shellsafe" environment:"P"`
 	CommaSplit  []string      `confkey:"comma_split" type:"comma_split"`
 	PathSplit   []string      `confkey:"path_split" type:"path_split"`
 	ColonSplit  []string      `confkey:"colon_split" type:"colon_split"`
@@ -286,6 +285,20 @@ var _ = Describe("Confkey", func() {
 
 			Expect(err).ToNot(HaveOccurred())
 			Expect(d.PathSplit).To(Equal([]string{"/foo", "/bar", "/baz"}))
+		})
+
+		It("Should support getting values from the environment", func() {
+			err := SetStructDefaults(&d)
+			Expect(err).ToNot(HaveOccurred())
+
+			err = SetStructFieldWithKey(&d, "plain_string", "")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(d.PlainString).To(Equal(""))
+
+			os.Setenv("P", "ENV SETTING")
+			err = SetStructFieldWithKey(&d, "plain_string", "")
+			Expect(err).ToNot(HaveOccurred())
+			Expect(d.PlainString).To(Equal("ENV SETTING"))
 		})
 
 		It("Should support ints", func() {
