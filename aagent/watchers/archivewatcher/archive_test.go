@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -106,7 +106,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 
 		It("Should handle bad checksums", func() {
 			w.properties.ContentChecksumsChecksum = "x"
-			Expect(w.verify("testdata/good")).To(MatchError("checksum file SHA256SUMS has an invalid checksum"))
+			Expect(w.verify("testdata/good")).To(MatchError("checksum file SHA256SUMS has an invalid checksum \"40cb790b7199be45f3116354f87b2bdc3aa520a1eb056aa3608911cf40d1f821\" != \"x\""))
 		})
 	})
 
