@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -49,6 +49,7 @@ type Properties struct {
 	OutputAsData            bool          `mapstructure:"parse_as_data"`
 	SuppressSuccessAnnounce bool          `mapstructure:"suppress_success_announce"`
 	GatherInitialState      bool          `mapstructure:"gather_initial_state"`
+	Disown                  bool          `mapstructure:"disown"`
 	Timeout                 time.Duration
 }
 
@@ -301,7 +302,12 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	}
 	defer os.Remove(ff)
 
-	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], args...)
+	var cmd *exec.Cmd
+	if w.properties.Disown {
+		cmd = exec.Command(splitcmd[0], args...)
+	} else {
+		cmd = exec.CommandContext(timeoutCtx, splitcmd[0], args...)
+	}
 	cmd.Dir = w.machine.Directory()
 
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
@@ -318,7 +324,22 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 		cmd.Env = append(cmd.Env, es)
 	}
 
-	output, err := cmd.CombinedOutput()
+	var output []byte
+
+	if w.properties.Disown {
+		w.Infof("Running command disowned from parent")
+		err = disown(cmd)
+		if err != nil {
+			return Error, fmt.Errorf("could not disown process: %w", err)
+		}
+		err = cmd.Start()
+		if err == nil {
+			go func() { cmd.Wait() }()
+		}
+	} else {
+		output, err = cmd.CombinedOutput()
+	}
+
 	if err != nil {
 		w.Errorf("Exec watcher %s failed: %s", w.properties.Command, err)
 		return Error, err

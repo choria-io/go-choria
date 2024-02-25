@@ -4,7 +4,7 @@ clone_folder: c:\gopath\src\github.com\choria-io\go-choria
 
 environment:
   GOPATH: c:\gopath
-  GOVERSION: "1.20"
+  GOVERSION: "1.21.0"
   MCOLLECTIVE_CERTNAME: rip.mcollective
   RUBY_VERSION: 24
   CGO_ENABLED: 0
@@ -12,7 +12,7 @@ environment:
 init:
   - git config --global core.autocrlf input
 
-stack: go 1.18
+stack: go 1.21
 
 install:
   # Install the specific Go version.
