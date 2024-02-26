@@ -75,7 +75,7 @@ var _ = Describe("Internal/Util/Sha256sums", func() {
 
 		It("Should handle corrupt sum files", func() {
 			ok, err := Sha256VerifyDir("testdata/SHA256SUM.corrupt", "testdata", log, func(string, bool) {})
-			Expect(err).To(MatchError("invalid sums file: malformed line 0"))
+			Expect(err).To(MatchError("invalid sums file: malformed line 1"))
 			Expect(ok).To(BeFalse())
 		})
 	})
