@@ -87,7 +87,12 @@ func Sha256ChecksumDir(dir string) ([]byte, error) {
 			return err
 		}
 
-		_, err = fmt.Fprintf(sums, "%s  %s\n", sum, strings.TrimPrefix(strings.TrimPrefix(path, filepath.ToSlash(dir)), `/`))
+		if dir != "." {
+			path = strings.TrimPrefix(path, filepath.ToSlash(dir))
+		}
+		path = strings.TrimPrefix(path, "/")
+
+		_, err = fmt.Fprintf(sums, "%s  %s\n", sum, path)
 
 		return err
 	})
@@ -122,9 +127,15 @@ func Sha256VerifyDir(sumsFile string, dir string, log *logrus.Entry, cb FileRepo
 	lc := 0
 	failed := false
 	for scanner.Scan() {
+		lc++
+
 		line := scanner.Text()
 		if log != nil {
 			log.Debugf("Checking line: %v", line)
+		}
+
+		if len(line) == 0 {
+			continue
 		}
 
 		matches := sumsMatcherRe.FindStringSubmatch(line)
@@ -134,6 +145,10 @@ func Sha256VerifyDir(sumsFile string, dir string, log *logrus.Entry, cb FileRepo
 
 		if log != nil {
 			log.Debugf("Checking file %v", matches[2])
+		}
+
+		if matches[2] == sumsFile {
+			continue
 		}
 
 		ok, _, err := FileHasSha256Sum(filepath.Join(dir, matches[2]), matches[1])
