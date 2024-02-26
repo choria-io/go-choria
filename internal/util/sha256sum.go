@@ -78,7 +78,7 @@ func Sha256ChecksumDir(dir string) ([]byte, error) {
 			return err
 		}
 
-		if d.IsDir() {
+		if !d.Type().IsRegular() {
 			return nil
 		}
 
