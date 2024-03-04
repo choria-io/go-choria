@@ -325,21 +325,16 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	}
 
 	var output []byte
-
 	if w.properties.Disown {
-		w.Infof("Running command disowned from parent")
-		err = disown(cmd)
-		if err != nil {
-			return Error, fmt.Errorf("could not disown process: %w", err)
-		}
+		w.Debugf("Running command disowned from parent")
 		err = cmd.Start()
-		if err == nil {
-			go func() { cmd.Wait() }()
+		if err != nil {
+			return 0, err
 		}
+		err = cmd.Wait()
 	} else {
 		output, err = cmd.CombinedOutput()
 	}
-
 	if err != nil {
 		w.Errorf("Exec watcher %s failed: %s", w.properties.Command, err)
 		return Error, err
