@@ -1,13 +1,13 @@
-FROM almalinux:8
+FROM almalinux:9
 
 ARG DATE="unknown"
 
 WORKDIR /
 
-COPY choria-0.99.0.${DATE}-1.el8.x86_64.rpm /tmp
+COPY choria-0.99.0.${DATE}-1.el9.x86_64.rpm /tmp
 
 RUN yum -y install nc procps-ng openssl net-tools iproute && \
-    yum -y localinstall /tmp/choria-0.99.0.${DATE}-1.el8.x86_64.rpm && \
+    yum -y localinstall /tmp/choria-0.99.0.${DATE}-1.el9.x86_64.rpm && \
     yum -y clean all
 
 RUN groupadd --gid 2048 choria && \
