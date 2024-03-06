@@ -34,7 +34,7 @@ require (
 	github.com/nats-io/jsm.go v0.1.1-0.20240207100149-2665d2ce5928
 	github.com/nats-io/nats-server/v2 v2.11.0-preview.1
 	github.com/nats-io/nats.go v1.33.1
-	github.com/nats-io/natscli v0.1.3
+	github.com/nats-io/natscli v0.1.4-0.20240306091009-fd49b70f4639
 	github.com/onsi/ginkgo/v2 v2.16.0
 	github.com/onsi/gomega v1.31.1
 	github.com/open-policy-agent/opa v0.61.0
@@ -51,7 +51,7 @@ require (
 	golang.org/x/sys v0.18.0
 	golang.org/x/term v0.18.0
 	golang.org/x/text v0.14.0
-	golang.org/x/tools v0.18.0
+	golang.org/x/tools v0.19.0
 	rsc.io/goversion v1.2.0
 )
 
@@ -137,10 +137,10 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225 // indirect
 	golang.org/x/mod v0.16.0 // indirect
-	golang.org/x/net v0.21.0 // indirect
+	golang.org/x/net v0.22.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	gonum.org/v1/gonum v0.12.0 // indirect
-	google.golang.org/protobuf v1.32.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
