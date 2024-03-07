@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -112,6 +112,7 @@ func savePromState(td string, log logger) error {
 	if err != nil {
 		return fmt.Errorf("failed to create prometheus metric in %q: %s", td, err)
 	}
+	defer tfile.Close()
 
 	for name, pm := range pmetrics {
 		if len(pm.values) == 0 {
@@ -125,7 +126,6 @@ func savePromState(td string, log logger) error {
 		}
 	}
 
-	tfile.Close()
 	os.Chmod(tfile.Name(), 0644)
 	return os.Rename(tfile.Name(), filepath.Join(td, "choria_machine_metrics_watcher_status.prom"))
 }

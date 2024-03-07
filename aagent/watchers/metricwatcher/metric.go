@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -235,8 +235,14 @@ func (w *Watcher) handleCheck(output []byte, err error) error {
 	if err == nil {
 		if bytes.HasPrefix(bytes.TrimSpace(output), []byte("{")) {
 			metric, err = w.parseJSONCheck(output)
+			if err != nil {
+				w.Errorf("Failed to parse metric output: %v", err)
+			}
 		} else {
 			metric, err = w.parseNagiosCheck(output)
+			if err != nil {
+				w.Errorf("Failed to parse perf data output: %v", err)
+			}
 		}
 	}
 
