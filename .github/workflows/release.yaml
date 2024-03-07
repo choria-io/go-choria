@@ -105,6 +105,46 @@ jobs:
           packager_tag: buster-go1.21
           version: tag
 
+  bookworm_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: bookworm_64
+          packager_tag: bookworm-go1.21
+          version: tag
+
+  bookworm_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: bookworm_aarch64
+          packager_tag: bookworm-go1.21
+          version: tag
+
+  bookworm_armel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: bookworm_armel
+          packager_tag: bookworm-go1.21
+          version: tag
+
+  bookworm_armhf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: bookworm_armhf
+          packager_tag: bookworm-go1.21
+          version: tag
+
   bullseye_64:
     runs-on: ubuntu-latest
     steps:
