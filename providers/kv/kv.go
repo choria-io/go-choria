@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -118,6 +118,10 @@ func NewKV(nc *nats.Conn, name string, create bool, opts ...Option) (nats.KeyVal
 		Duplicates:    2 * time.Minute,
 		RollupAllowed: true,
 		DenyDelete:    true,
+	}
+
+	if cfg.Duplicates > cfg.MaxAge {
+		cfg.Duplicates = cfg.MaxAge
 	}
 
 	_, err = mgr.NewStreamFromDefault(cfg.Name, cfg)
