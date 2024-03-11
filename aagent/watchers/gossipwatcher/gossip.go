@@ -6,6 +6,7 @@ package gossipwatcher
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"regexp"
@@ -34,22 +35,24 @@ const (
 var (
 	validBasicName    = `[a-zA-Z][a-zA-Z\d_-]*`
 	validServiceRegex = regexp.MustCompile(`^` + validBasicName + `$`)
+	stubUUID          = ""
 )
 
-type registration struct {
-	Cluster  string
-	Service  string
-	Protocol string
-	IP       string
-	Port     uint
-	Priority uint
-	Prefix   string
+type Registration struct {
+	Cluster     string            `json:"cluster"`
+	Service     string            `json:"service"`
+	Protocol    string            `json:"protocol"`
+	IP          string            `json:"address"`
+	Port        uint              `json:"port"`
+	Priority    uint              `json:"priority"`
+	Annotations map[string]string `json:"annotations"`
+	Prefix      string            `json:"-"`
 }
 
 type properties struct {
 	Subject      string
 	Payload      string
-	Registration *registration
+	Registration *Registration
 }
 
 type Watcher struct {
@@ -271,7 +274,6 @@ func (w *Watcher) validate() error {
 		if w.properties.Payload == "" {
 			return fmt.Errorf("payload is required")
 		}
-
 	default:
 		if w.properties.Subject != "" {
 			return fmt.Errorf("subject cannot be set with registration")
@@ -301,17 +303,16 @@ func (w *Watcher) validate() error {
 		if reg.IP == "" {
 			return fmt.Errorf("ip is required")
 		}
-		nip := net.ParseIP(reg.IP)
-		if nip == nil {
+		if net.ParseIP(reg.IP) == nil {
 			return fmt.Errorf("invalid ip")
 		}
 		if reg.Port == 0 {
 			return fmt.Errorf("port is required")
 		}
 
-		subj := fmt.Sprintf(`%s.%s.member.%s.%s.P.%d.%d`, reg.Cluster, reg.Service, reg.Protocol, reg.IP, reg.Port, reg.Priority)
+		subj := fmt.Sprintf("%s.%s.%s.%s", reg.Cluster, reg.Protocol, reg.Service, w.uuid())
 		if reg.Prefix == "" {
-			w.properties.Subject = fmt.Sprintf("choria.hoist.%s", subj)
+			w.properties.Subject = fmt.Sprintf("$KV.CHORIA_SERVICES.%s", subj)
 		} else {
 			w.properties.Subject = fmt.Sprintf("%s.%s", reg.Prefix, subj)
 		}
@@ -320,7 +321,11 @@ func (w *Watcher) validate() error {
 			return fmt.Errorf("invalid registration properties")
 		}
 
-		w.properties.Payload = "1"
+		pj, err := json.Marshal(w.properties.Registration)
+		if err != nil {
+			return err
+		}
+		w.properties.Payload = string(pj)
 	}
 
 	if w.interval == 0 {
@@ -328,6 +333,14 @@ func (w *Watcher) validate() error {
 	}
 
 	return nil
+}
+
+func (w *Watcher) uuid() string {
+	if stubUUID != "" {
+		return stubUUID
+	}
+
+	return strings.ReplaceAll(iu.UniqueID(), "-", "")
 }
 
 func (w *Watcher) Delete() {
