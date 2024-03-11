@@ -73,21 +73,33 @@ var _ = Describe("ExecWatcher", func() {
 					"ip":       "192.168.1.1",
 					"port":     8080,
 					"priority": 1,
+					"annotations": map[string]string{
+						"test": "annotation",
+					},
 				},
 			}
 
+			stubUUID = "fakeuuid"
+
 			watch.properties = nil
 			Expect(watch.setProperties(prop)).To(Succeed())
-			Expect(watch.properties.Registration).To(Equal(&registration{
+			Expect(watch.properties.Registration).To(Equal(&Registration{
 				Cluster:  "lon",
 				Service:  "ginkgo",
 				Protocol: "http",
 				IP:       "192.168.1.1",
 				Port:     8080,
 				Priority: 1,
+				Annotations: map[string]string{
+					"test": "annotation",
+				},
 			}))
 
-			Expect(watch.properties.Subject).To(Equal("choria.hoist.lon.ginkgo.member.http.192.168.1.1.P.8080.1"))
+			rj, err := json.Marshal(watch.properties.Registration)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(watch.properties.Subject).To(Equal("$KV.CHORIA_SERVICES.lon.http.ginkgo.fakeuuid"))
+			Expect(watch.properties.Payload).To(Equal(string(rj)))
 		})
 
 		It("Should handle errors", func() {
