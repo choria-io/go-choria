@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -35,7 +35,6 @@ const (
 var (
 	validBasicName    = `[a-zA-Z][a-zA-Z\d_-]*`
 	validServiceRegex = regexp.MustCompile(`^` + validBasicName + `$`)
-	stubUUID          = ""
 )
 
 type Registration struct {
@@ -45,7 +44,7 @@ type Registration struct {
 	IP          string            `json:"address"`
 	Port        uint              `json:"port"`
 	Priority    uint              `json:"priority"`
-	Annotations map[string]string `json:"annotations"`
+	Annotations map[string]string `json:"annotations,omitempty"`
 	Prefix      string            `json:"-"`
 }
 
@@ -310,7 +309,7 @@ func (w *Watcher) validate() error {
 			return fmt.Errorf("port is required")
 		}
 
-		subj := fmt.Sprintf("%s.%s.%s.%s", reg.Cluster, reg.Protocol, reg.Service, w.uuid())
+		subj := fmt.Sprintf("%s.%s.%s.%s", reg.Cluster, reg.Protocol, reg.Service, w.machine.InstanceID())
 		if reg.Prefix == "" {
 			w.properties.Subject = fmt.Sprintf("$KV.CHORIA_SERVICES.%s", subj)
 		} else {
@@ -333,14 +332,6 @@ func (w *Watcher) validate() error {
 	}
 
 	return nil
-}
-
-func (w *Watcher) uuid() string {
-	if stubUUID != "" {
-		return stubUUID
-	}
-
-	return strings.ReplaceAll(iu.UniqueID(), "-", "")
 }
 
 func (w *Watcher) Delete() {

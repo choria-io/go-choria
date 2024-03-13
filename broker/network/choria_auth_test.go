@@ -743,13 +743,16 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 					auth.issuerTokens = map[string]string{"choria": hex.EncodeToString(issuerPubk)}
 
+					// make sure no token is set so not accidentally entering jwt validation
+					copts.Token = ""
+					auth.isTLS = true
+
 					DeferCleanup(func() {
 						os.RemoveAll(td)
 					})
 				})
 
 				It("Should deny other clients", func() {
-					auth.isTLS = true
 					auth.allowIssuerBasedTLSAccess = false
 
 					mockClient.EXPECT().GetNonce().Return([]byte("")).AnyTimes()
@@ -760,9 +763,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				})
 
 				It("Should support allowing pub sub clients", func() {
-					auth.isTLS = true
 					auth.allowIssuerBasedTLSAccess = true
-					copts.Token = ""
 
 					mockClient.EXPECT().GetNonce().Return([]byte("")).AnyTimes()
 					mockClient.EXPECT().RemoteAddress().Return(&net.IPAddr{IP: net.ParseIP("192.168.0.1"), Zone: ""}).AnyTimes()

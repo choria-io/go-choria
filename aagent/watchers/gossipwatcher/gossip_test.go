@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -79,8 +79,6 @@ var _ = Describe("ExecWatcher", func() {
 				},
 			}
 
-			stubUUID = "fakeuuid"
-
 			watch.properties = nil
 			Expect(watch.setProperties(prop)).To(Succeed())
 			Expect(watch.properties.Registration).To(Equal(&Registration{
@@ -98,7 +96,8 @@ var _ = Describe("ExecWatcher", func() {
 			rj, err := json.Marshal(watch.properties.Registration)
 			Expect(err).ToNot(HaveOccurred())
 
-			Expect(watch.properties.Subject).To(Equal("$KV.CHORIA_SERVICES.lon.http.ginkgo.fakeuuid"))
+			Expect(watch.machine.InstanceID()).To(Equal("1234567890"))
+			Expect(watch.properties.Subject).To(Equal("$KV.CHORIA_SERVICES.lon.http.ginkgo.1234567890"))
 			Expect(watch.properties.Payload).To(Equal(string(rj)))
 		})
 
