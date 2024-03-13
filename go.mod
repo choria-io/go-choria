@@ -13,7 +13,7 @@ require (
 	github.com/choria-io/fisk v0.6.2
 	github.com/choria-io/go-updater v0.1.0
 	github.com/choria-io/tokens v0.0.3
-	github.com/cloudevents/sdk-go/v2 v2.15.1
+	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/dustin/go-humanize v1.0.1
 	github.com/expr-lang/expr v1.16.1
 	github.com/fatih/color v1.16.0
@@ -31,10 +31,10 @@ require (
 	github.com/looplab/fsm v1.0.1
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.1.1-0.20240207100149-2665d2ce5928
-	github.com/nats-io/nats-server/v2 v2.11.0-preview.1
+	github.com/nats-io/jsm.go v0.1.1
+	github.com/nats-io/nats-server/v2 v2.10.12
 	github.com/nats-io/nats.go v1.33.1
-	github.com/nats-io/natscli v0.1.4-0.20240306091009-fd49b70f4639
+	github.com/nats-io/natscli v0.1.4
 	github.com/onsi/ginkgo/v2 v2.16.0
 	github.com/onsi/gomega v1.31.1
 	github.com/open-policy-agent/opa v0.61.0
@@ -63,7 +63,6 @@ require (
 	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/achanda/go-sysctl v0.0.0-20160222034550-6be7678c45d2 // indirect
 	github.com/agnivade/levenshtein v1.1.1 // indirect
-	github.com/antonmedv/expr v1.15.5 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/brutella/dnssd v1.2.10 // indirect
@@ -115,7 +114,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/common v0.47.0 // indirect
-	github.com/prometheus/procfs v0.12.0 // indirect
+	github.com/prometheus/procfs v0.13.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20201227073835-cf1acfcdf475 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/samber/lo v1.39.0 // indirect
