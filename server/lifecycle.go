@@ -6,6 +6,7 @@ package server
 
 import (
 	"context"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"math/rand"
 	"sync"
 	"time"
@@ -49,7 +50,7 @@ func (srv *Instance) eventComponent() string {
 	return "server"
 }
 
-func (srv *Instance) publichShutdownEvent() {
+func (srv *Instance) publishShutdownEvent() {
 	event, err := lifecycle.New(lifecycle.Shutdown, lifecycle.Identity(srv.cfg.Identity), lifecycle.Component(srv.eventComponent()))
 	if err != nil {
 		srv.log.Errorf("Could not create new shutdown event: %s", err)
@@ -78,7 +79,7 @@ func (srv *Instance) publishStartupEvent() {
 func (srv *Instance) publishAliveEvents(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	delay := time.Duration(rand.Intn(60)) * time.Minute
+	delay := time.Duration(rand.Intn(30)) * time.Minute
 	event, err := lifecycle.New(lifecycle.Alive, lifecycle.Identity(srv.cfg.Identity), lifecycle.Version(srv.fw.BuildInfo().Version()), lifecycle.Component(srv.eventComponent()))
 	if err != nil {
 		srv.log.Errorf("Could not create new alive event: %s", err)
@@ -86,10 +87,8 @@ func (srv *Instance) publishAliveEvents(ctx context.Context, wg *sync.WaitGroup)
 	}
 
 	srv.log.Debugf("Sleeping %v until first alive event", delay)
-
-	select {
-	case <-time.NewTimer(delay).C:
-	case <-ctx.Done():
+	err = iu.InterruptibleSleep(ctx, delay)
+	if err != nil {
 		return
 	}
 
@@ -101,7 +100,7 @@ func (srv *Instance) publishAliveEvents(ctx context.Context, wg *sync.WaitGroup)
 		}
 	}
 
-	ticker := time.NewTicker(60 * time.Minute)
+	ticker := time.NewTicker(30 * time.Minute)
 
 	f()
 
