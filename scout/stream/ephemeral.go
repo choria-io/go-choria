@@ -175,7 +175,7 @@ func (e *Ephemeral) createConsumer(msgq chan *nats.Msg) error {
 			e.cons.Delete()
 		}
 
-		e.sub, err = e.conn.ChanSubscribe(nats.NewInbox(), msgq)
+		e.sub, err = e.conn.ChanSubscribe(e.conn.NewRespInbox(), msgq)
 		if err != nil {
 			e.log.Warnf("Subscription failed on try %d: %s", i, err)
 			return err
