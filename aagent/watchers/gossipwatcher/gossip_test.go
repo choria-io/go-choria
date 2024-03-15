@@ -88,7 +88,7 @@ var _ = Describe("ExecWatcher", func() {
 				IP:       "192.168.1.1",
 				Port:     8080,
 				Priority: 1,
-				Annotations: map[string]string{
+				Annotations: map[string]any{
 					"test": "annotation",
 				},
 			}))
