@@ -141,39 +141,59 @@ func (aa *AAgent) startMachines(ctx context.Context, wg *sync.WaitGroup) error {
 	return nil
 }
 
+// LoadPlugin allows for runtime loading of plugins into a running autonomous agent subsystem.
+func (a *AAgent) LoadPlugin(ctx context.Context, p model.MachineConstructor) error {
+	if a == nil {
+		return fmt.Errorf("autonomous agent subsystem not initialized")
+	}
+
+	a.Lock()
+	defer a.Unlock()
+
+	machine, err := machine.FromPlugin(p, watchers.New(ctx), a.logger.WithField("plugin", p.PluginName()))
+	if err != nil {
+		a.logger.Errorf("Could not load machine plugin from %s: %s", p.PluginName(), err)
+		return err
+	}
+
+	err = machine.SetDirectory(filepath.Join(a.source, machine.MachineName), a.source)
+	if err != nil {
+		a.logger.Errorf("Could not set machine directory store: %v", err)
+		return err
+	}
+
+	managed := &managedMachine{
+		loaded:  time.Now(),
+		machine: machine,
+		path:    filepath.Join(a.source, machine.MachineName),
+		plugin:  true,
+	}
+
+	if !util.FileIsDir(managed.path) {
+		err = os.MkdirAll(managed.path, 0700)
+		if err != nil {
+			return err
+		}
+	}
+
+	a.configureMachine(machine)
+
+	a.machines = append(a.machines, managed)
+
+	return nil
+}
+
 func (a *AAgent) loadPlugins(ctx context.Context) error {
 	mu.Lock()
 	compiledPlugins := plugins
 	mu.Unlock()
 
 	for _, p := range compiledPlugins {
-		machine, err := machine.FromPlugin(p, watchers.New(ctx), a.logger.WithField("plugin", p.PluginName()))
+		err := a.LoadPlugin(ctx, p)
 		if err != nil {
 			a.logger.Errorf("Could not load machine plugin from %s: %s", p.PluginName(), err)
 			continue
 		}
-
-		machine.SetDirectory(filepath.Join(a.source, machine.MachineName), a.source)
-
-		managed := &managedMachine{
-			loaded:  time.Now(),
-			machine: machine,
-			path:    filepath.Join(a.source, machine.MachineName),
-			plugin:  true,
-		}
-
-		if !util.FileIsDir(managed.path) {
-			err = os.MkdirAll(managed.path, 0700)
-			if err != nil {
-				return err
-			}
-		}
-
-		a.configureMachine(machine)
-
-		a.Lock()
-		a.machines = append(a.machines, managed)
-		a.Unlock()
 	}
 
 	return nil
@@ -223,7 +243,7 @@ func (a *AAgent) loadFromSource(ctx context.Context) error {
 
 		err = a.loadMachine(ctx, path)
 		if err != nil {
-			a.logger.Errorf("Could not load Autonomous Agent from %s: %s", path, err)
+			a.logger.Errorf("Could not load Autonomous Agent from %s: %v", path, err)
 		}
 	}
 

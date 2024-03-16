@@ -8,7 +8,7 @@ pre = "<b>4. </b>"
 This is a list of all known Configuration settings. This list is based on declared settings within the Choria Go code base and so will not cover 100% of settings - plugins can contribute their own settings which are note known at compile time.
 
 {{% notice secondary "Version Hint" code-branch %}}
-Built on *03 Feb 24 12:57 UTC* using version *0.28.0*
+Built on *16 Mar 24 15:26 UTC* using version *0.28.0*
 {{% /notice %}}
 
 ### Run-time configuration
@@ -100,30 +100,33 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.stats_port](#pluginchoriastats_port)|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|
 |[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|[plugin.choria.submission.max_spool_size](#pluginchoriasubmissionmax_spool_size)|
 |[plugin.choria.submission.spool](#pluginchoriasubmissionspool)|[plugin.choria.use_srv](#pluginchoriause_srv)|
-|[plugin.login.aaasvc.login.url](#pluginloginaaasvcloginurl)|[plugin.nats.credentials](#pluginnatscredentials)|
-|[plugin.nats.pass](#pluginnatspass)|[plugin.nats.user](#pluginnatsuser)|
-|[plugin.rpcaudit.logfile](#pluginrpcauditlogfile)|[plugin.rpcaudit.logfile.group](#pluginrpcauditlogfilegroup)|
-|[plugin.rpcaudit.logfile.mode](#pluginrpcauditlogfilemode)|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|
-|[plugin.scout.goss.denied_local_resources](#pluginscoutgossdenied_local_resources)|[plugin.scout.goss.denied_remote_resources](#pluginscoutgossdenied_remote_resources)|
-|[plugin.scout.overrides](#pluginscoutoverrides)|[plugin.scout.tags](#pluginscouttags)|
-|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|[plugin.security.certmanager.api_version](#pluginsecuritycertmanagerapi_version)|
-|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|
-|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|[plugin.security.choria.ca](#pluginsecuritychoriaca)|
-|[plugin.security.choria.certificate](#pluginsecuritychoriacertificate)|[plugin.security.choria.key](#pluginsecuritychoriakey)|
-|[plugin.security.choria.seed_file](#pluginsecuritychoriaseed_file)|[plugin.security.choria.sign_replies](#pluginsecuritychoriasign_replies)|
-|[plugin.security.choria.token_file](#pluginsecuritychoriatoken_file)|[plugin.security.choria.trusted_signers](#pluginsecuritychoriatrusted_signers)|
-|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|
-|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|[plugin.security.file.ca](#pluginsecurityfileca)|
-|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|[plugin.security.file.key](#pluginsecurityfilekey)|
-|[plugin.security.issuer.names](#pluginsecurityissuernames)|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|
-|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|[plugin.security.provider](#pluginsecurityprovider)|
-|[plugin.security.server_anon_tls](#pluginsecurityserver_anon_tls)|[plugin.security.support_legacy_certificates](#pluginsecuritysupport_legacy_certificates)|
-|[plugin.yaml](#pluginyaml)|[registerinterval](#registerinterval)|
-|[registration](#registration)|[registration_collective](#registration_collective)|
-|[registration_splay](#registration_splay)|[rpcaudit](#rpcaudit)|
-|[rpcauthorization](#rpcauthorization)|[rpcauthprovider](#rpcauthprovider)|
-|[rpclimitmethod](#rpclimitmethod)|[soft_shutdown_timeout](#soft_shutdown_timeout)|
-|[ttl](#ttl)|[](#)|
+|[plugin.login.aaasvc.login.url](#pluginloginaaasvcloginurl)|[plugin.machines.bucket](#pluginmachinesbucket)|
+|[plugin.machines.check_interval](#pluginmachinescheck_interval)|[plugin.machines.download](#pluginmachinesdownload)|
+|[plugin.machines.key](#pluginmachineskey)|[plugin.machines.poll_interval](#pluginmachinespoll_interval)|
+|[plugin.machines.purge](#pluginmachinespurge)|[plugin.machines.signing_key](#pluginmachinessigning_key)|
+|[plugin.nats.credentials](#pluginnatscredentials)|[plugin.nats.pass](#pluginnatspass)|
+|[plugin.nats.user](#pluginnatsuser)|[plugin.rpcaudit.logfile](#pluginrpcauditlogfile)|
+|[plugin.rpcaudit.logfile.group](#pluginrpcauditlogfilegroup)|[plugin.rpcaudit.logfile.mode](#pluginrpcauditlogfilemode)|
+|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|[plugin.scout.goss.denied_local_resources](#pluginscoutgossdenied_local_resources)|
+|[plugin.scout.goss.denied_remote_resources](#pluginscoutgossdenied_remote_resources)|[plugin.scout.overrides](#pluginscoutoverrides)|
+|[plugin.scout.tags](#pluginscouttags)|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|
+|[plugin.security.certmanager.api_version](#pluginsecuritycertmanagerapi_version)|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|
+|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|
+|[plugin.security.choria.ca](#pluginsecuritychoriaca)|[plugin.security.choria.certificate](#pluginsecuritychoriacertificate)|
+|[plugin.security.choria.key](#pluginsecuritychoriakey)|[plugin.security.choria.seed_file](#pluginsecuritychoriaseed_file)|
+|[plugin.security.choria.sign_replies](#pluginsecuritychoriasign_replies)|[plugin.security.choria.token_file](#pluginsecuritychoriatoken_file)|
+|[plugin.security.choria.trusted_signers](#pluginsecuritychoriatrusted_signers)|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|
+|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|
+|[plugin.security.file.ca](#pluginsecurityfileca)|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|
+|[plugin.security.file.key](#pluginsecurityfilekey)|[plugin.security.issuer.names](#pluginsecurityissuernames)|
+|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|
+|[plugin.security.provider](#pluginsecurityprovider)|[plugin.security.server_anon_tls](#pluginsecurityserver_anon_tls)|
+|[plugin.security.support_legacy_certificates](#pluginsecuritysupport_legacy_certificates)|[plugin.yaml](#pluginyaml)|
+|[registerinterval](#registerinterval)|[registration](#registration)|
+|[registration_collective](#registration_collective)|[registration_splay](#registration_splay)|
+|[rpcaudit](#rpcaudit)|[rpcauthorization](#rpcauthorization)|
+|[rpcauthprovider](#rpcauthprovider)|[rpclimitmethod](#rpclimitmethod)|
+|[soft_shutdown_timeout](#soft_shutdown_timeout)|[ttl](#ttl)|
 
 
 ### classesfile
@@ -805,6 +808,53 @@ If SRV record lookups should be attempted to find Puppet, PuppetDB, Brokers etc
 
 List of URLs to attempt to login against when the remote signer is enabled
 
+### plugin.machines.bucket
+
+ * **Type:** string
+ * **Default Value:** CHORIA_PLUGINS
+
+The KV bucket to query for plugins to install
+
+### plugin.machines.check_interval
+
+ * **Type:** string
+ * **Default Value:** 30s
+
+How frequently to integrity check deployed autonomous agents
+
+### plugin.machines.download
+
+ * **Type:** boolean
+
+Activate run-time installation of Autonomous Agents
+
+### plugin.machines.key
+
+ * **Type:** string
+ * **Default Value:** machines
+
+The Key to query in KV bucket for plugins to install
+
+### plugin.machines.poll_interval
+
+ * **Type:** string
+ * **Default Value:** 1m
+
+How frequently to poll the KV bucket for updates
+
+### plugin.machines.purge
+
+ * **Type:** boolean
+ * **Default Value:** true
+
+Purge autonomous agents installed using other methods
+
+### plugin.machines.signing_key
+
+ * **Type:** string
+
+The public key to validate the plugins manifest with
+
 ### plugin.nats.credentials
 
  * **Type:** string
@@ -1034,7 +1084,6 @@ Allow certificates without SANs to be used
 ### plugin.yaml
 
  * **Type:** path_string
- * **Default Value:** /etc/puppetlabs/mcollective/generated-facts.yaml
 
 Where to look for YAML or JSON based facts
 

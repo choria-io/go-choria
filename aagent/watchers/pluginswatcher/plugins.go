@@ -439,7 +439,7 @@ func (w *Watcher) loadAndValidateData() ([]byte, error) {
 
 		pk, err := hex.DecodeString(w.properties.PublicKey)
 		if err != nil {
-			w.Errorf("invalid public key: %s", err)
+			w.Errorf("invalid public key %s: %s", w.properties.PublicKey, err)
 			return nil, fmt.Errorf("invalid data_item")
 		}
 

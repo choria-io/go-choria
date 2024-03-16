@@ -122,7 +122,7 @@ type WatcherManager interface {
 }
 
 func yamlPath(dir string) string {
-	return dir + "/" + "machine.yaml"
+	return filepath.Join(dir, "machine.yaml")
 }
 
 func FromPlugin(p model.MachineConstructor, manager WatcherManager, log *logrus.Entry) (*Machine, error) {
@@ -151,7 +151,7 @@ func FromDir(dir string, manager WatcherManager) (m *Machine, err error) {
 	mpath := yamlPath(dir)
 
 	if !util.FileExist(mpath) {
-		return nil, fmt.Errorf("cannot read %s: %s", mpath, err)
+		return nil, fmt.Errorf("cannot read %s", mpath)
 	}
 
 	m, err = FromYAML(mpath, manager)

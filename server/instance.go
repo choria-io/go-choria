@@ -255,6 +255,11 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		srv.log.Errorf("Could not start Choria Autonomous Agent host: %s", err)
 	}
 
+	err = srv.StartInternalMachines(sctx)
+	if err != nil {
+		srv.log.Errorf("Could not start built-in Autonomous Agents: %v", err)
+	}
+
 	wg.Add(1)
 	go srv.processRequests(pctx, wg)
 
