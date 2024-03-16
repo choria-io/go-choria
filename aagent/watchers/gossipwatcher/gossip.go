@@ -38,14 +38,14 @@ var (
 )
 
 type Registration struct {
-	Cluster     string         `json:"cluster"`
-	Service     string         `json:"service"`
-	Protocol    string         `json:"protocol"`
-	IP          string         `json:"address"`
-	Port        uint           `json:"port"`
-	Priority    uint           `json:"priority"`
-	Annotations map[string]any `json:"annotations,omitempty"`
-	Prefix      string         `json:"-"`
+	Cluster     string            `json:"cluster"`
+	Service     string            `json:"service"`
+	Protocol    string            `json:"protocol"`
+	IP          string            `json:"address"`
+	Port        uint              `json:"port"`
+	Priority    uint              `json:"priority"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+	Prefix      string            `json:"-"`
 }
 
 type properties struct {
