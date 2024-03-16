@@ -289,7 +289,7 @@ func (w *Watcher) poll() (State, error) {
 }
 
 func (w *Watcher) handleState(s State, err error) error {
-	w.Debugf("handling state for %s.%s: %s: %s", w.properties.Bucket, w.properties.Key, stateNames[s], err)
+	w.Debugf("handling state for %s.%s: %s: err:%v", w.properties.Bucket, w.properties.Key, stateNames[s], err)
 
 	w.mu.Lock()
 	w.previousState = s

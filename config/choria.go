@@ -163,6 +163,14 @@ type ChoriaPluginConfig struct {
 	RPCAuditLogfile      string `confkey:"plugin.rpcaudit.logfile" type:"path_string"`  // Path to the RPC audit log
 	RPCAuditLogfileGroup string `confkey:"plugin.rpcaudit.logfile.group"`               // User group to set file ownership to
 	RPCAuditLogFileMode  string `confkey:"plugin.rpcaudit.logfile.mode" default:"0600"` // File mode to apply to the file
+
+	AutonomousAgentsDownload           bool   `confkey:"plugin.machines.download"`                        // Activate run-time installation of Autonomous Agents
+	AutonomousAgentsBucket             string `confkey:"plugin.machines.bucket" default:"CHORIA_PLUGINS"` // The KV bucket to query for plugins to install
+	AutonomousAgentsKey                string `confkey:"plugin.machines.key" default:"machines"`          // The Key to query in KV bucket for plugins to install
+	AutonomousAgentsPurge              bool   `confkey:"plugin.machines.purge" default:"true"`            // Purge autonomous agents installed using other methods
+	AutonomousAgentsBucketPollInterval string `confkey:"plugin.machines.poll_interval" default:"1m"`      // How frequently to poll the KV bucket for updates
+	AutonomousAgentCheckInterval       string `confkey:"plugin.machines.check_interval" default:"30s"`    // How frequently to integrity check deployed autonomous agents
+	AutonomousAgentPublicKey           string `confkey:"plugin.machines.signing_key"`                     // The public key to validate the plugins manifest with
 }
 
 func newChoria() *ChoriaPluginConfig {

@@ -12,7 +12,7 @@ require (
 	github.com/choria-io/appbuilder v0.9.1-0.20231206212603-ba0ccaadd57a
 	github.com/choria-io/fisk v0.6.2
 	github.com/choria-io/go-updater v0.1.0
-	github.com/choria-io/tokens v0.0.3
+	github.com/choria-io/tokens v0.0.4-0.20240316144214-a929d9325d48
 	github.com/cloudevents/sdk-go/v2 v2.15.2
 	github.com/dustin/go-humanize v1.0.1
 	github.com/expr-lang/expr v1.16.1

@@ -150,4 +150,11 @@ var docStrings = map[string]string{
 	"plugin.rpcaudit.logfile":                                      "Path to the RPC audit log",
 	"plugin.rpcaudit.logfile.group":                                "User group to set file ownership to",
 	"plugin.rpcaudit.logfile.mode":                                 "File mode to apply to the file",
+	"plugin.machines.download":                                     "Activate run-time installation of Autonomous Agents",
+	"plugin.machines.bucket":                                       "The KV bucket to query for plugins to install",
+	"plugin.machines.key":                                          "The Key to query in KV bucket for plugins to install",
+	"plugin.machines.purge":                                        "Purge autonomous agents installed using other methods",
+	"plugin.machines.poll_interval":                                "How frequently to poll the KV bucket for updates",
+	"plugin.machines.check_interval":                               "How frequently to integrity check deployed autonomous agents",
+	"plugin.machines.signing_key":                                  "The public key to validate the plugins manifest with",
 }
