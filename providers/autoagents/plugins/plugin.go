@@ -6,6 +6,7 @@ package plugins
 
 import (
 	"fmt"
+
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/aagent/plugin"
 	"github.com/choria-io/go-choria/aagent/watchers"
@@ -37,7 +38,7 @@ func ChoriaPlugin(cfg *config.Config) (*plugin.MachinePlugin, error) {
 		MachineVersion: build.Version,
 		Transitions: []*machine.Transition{
 			{
-				Name:        "enter_maintenance",
+				Name:        "maintenance",
 				From:        []string{"MANAGE"},
 				Destination: "MAINTENANCE",
 				Description: "Stops actively managing plugins",
