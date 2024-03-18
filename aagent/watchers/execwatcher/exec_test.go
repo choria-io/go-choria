@@ -103,6 +103,14 @@ var _ = Describe("ExecWatcher", func() {
 			Expect(watch.properties.Command).To(Equal("cmd"))
 			Expect(watch.properties.Timeout).To(Equal(time.Second))
 		})
+
+		It("Should fail for invalid combinations", func() {
+			err := watch.setProperties(map[string]any{
+				"disown":        true,
+				"parse_as_data": true,
+			})
+			Expect(err).To(MatchError("cannot parse output as data while disowning child processes"))
+		})
 	})
 
 	Describe("CurrentState", func() {

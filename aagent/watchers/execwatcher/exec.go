@@ -120,6 +120,10 @@ func (w *Watcher) validate() error {
 		w.properties.GovernorTimeout = 5 * time.Minute
 	}
 
+	if w.properties.Disown && w.properties.OutputAsData {
+		return fmt.Errorf("cannot parse output as data while disowning child processes")
+	}
+
 	return nil
 }
 
@@ -331,7 +335,17 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 		if err != nil {
 			return 0, err
 		}
-		err = cmd.Wait()
+
+		errc := make(chan error)
+		go func() {
+			errc <- cmd.Wait()
+		}()
+
+		select {
+		case err = <-errc:
+		case <-ctx.Done():
+			err = ctx.Err()
+		}
 	} else {
 		output, err = cmd.CombinedOutput()
 	}
