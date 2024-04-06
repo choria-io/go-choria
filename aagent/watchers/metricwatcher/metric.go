@@ -34,6 +34,7 @@ const (
 type Metric struct {
 	Labels  map[string]string  `json:"labels"`
 	Metrics map[string]float64 `json:"metrics"`
+	Time    int64              `json:"time"`
 	name    string
 	machine string
 	seen    int
@@ -262,6 +263,8 @@ func (w *Watcher) handleCheck(ctx context.Context, output []byte, err error) err
 		return w.FailureTransition()
 	}
 
+	metric.Time = time.Now().Unix()
+
 	for k, v := range w.properties.Labels {
 		metric.Labels[k] = v
 	}
@@ -297,7 +300,7 @@ func (w *Watcher) storeMetricAsData(metric *Metric) error {
 
 	w.Debugf("Storing metrics to machine data")
 
-	return w.machine.DataPut("metric", metric)
+	return w.machine.DataPut("metric", map[string]any{w.name: metric})
 }
 
 func (w *Watcher) publishToGraphite(ctx context.Context, metric *Metric) error {
@@ -342,8 +345,6 @@ func (w *Watcher) publishToGraphite(ctx context.Context, metric *Metric) error {
 	}
 	defer conn.Close()
 
-	now := time.Now().Unix()
-
 	// copy it so we can add stuff to it without impacting other parts
 	// TODO: use maps.Copy() later
 	m := make(map[string]float64)
@@ -359,7 +360,7 @@ func (w *Watcher) publishToGraphite(ctx context.Context, metric *Metric) error {
 		}
 
 		name := fmt.Sprintf("%s.%s", prefix, k)
-		_, err = conn.Write([]byte(fmt.Sprintf("%s %f %d\n", name, v, now)))
+		_, err = conn.Write([]byte(fmt.Sprintf("%s %f %d\n", name, v, metric.Time)))
 		if err != nil {
 			return err
 		}
