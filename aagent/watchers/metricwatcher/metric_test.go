@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -199,6 +199,7 @@ var _ = Describe("MetricWatcher", func() {
 						"metrics": map[string]any{
 							"choria_runtime_seconds": 0.5,
 						},
+						"time": float64(0),
 					},
 				},
 			}))
