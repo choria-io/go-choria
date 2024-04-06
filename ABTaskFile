@@ -205,7 +205,7 @@ commands:
           flags:
             - name: target
               description: Target platform to build for
-              enum: ["linux/amd64"]
+              enum: ["linux/amd64", "linux/arm64"]
               short: T
             - name: provisioning
               description: Path to the default provisioning.jwt
@@ -225,6 +225,9 @@ commands:
             {{ if eq .Flags.target "linux/amd64" }}
                 export GOOS=linux
                 export GOARCH=amd64
+            {{ else if eq .Flags.target "linux/arm64" }}
+                export GOOS=linux
+                export GOARCH=arm64
             {{ end }}
 
             {{ if .Flags.verbose }}

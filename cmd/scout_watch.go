@@ -32,7 +32,7 @@ func (w *sWatchCommand) Setup() (err error) {
 		w.cmd.Flag("perf", "Show performance data").UnNegatableBoolVar(&w.perf)
 		w.cmd.Flag("history", "Retrieve a certain period of history from Choria Streaming Server").DurationVar(&w.history)
 		w.cmd.Flag("ok", "Include OK status updates").Default("true").BoolVar(&w.ok)
-		w.cmd.Flag("ignore-machine-transition", "Ignore transitions from certain machines").StringsVar(&w.ignoreMachineEvents)
+		w.cmd.Flag("ignore-machine-transition", "Ignore transitions from certain machines").PlaceHolder("MACHINE").StringsVar(&w.ignoreMachineEvents)
 	}
 
 	return nil
