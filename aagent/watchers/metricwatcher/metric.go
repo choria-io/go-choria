@@ -328,7 +328,15 @@ func (w *Watcher) publishToGraphite(ctx context.Context, metric *Metric) error {
 
 	now := time.Now().Unix()
 
+	// copy it so we can add stuff to it without impacting other parts
+	// TODO: use maps.Copy() later
+	m := make(map[string]float64)
 	for k, v := range metric.Metrics {
+		m[k] = v
+	}
+	m["runtime"] = w.previousRunTime.Seconds()
+
+	for k, v := range m {
 		prefix, err := w.ProcessTemplate(w.properties.GraphitePrefix)
 		if err != nil {
 			return err
