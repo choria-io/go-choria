@@ -13,6 +13,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 	"sync"
 	"time"
@@ -43,7 +44,7 @@ type properties struct {
 	Interval       time.Duration
 	Labels         map[string]string
 	GraphiteHost   string `mapstructure:"graphite_host"`
-	GraphitePort   int    `mapstructure:"graphite_port"`
+	GraphitePort   string `mapstructure:"graphite_port"`
 	GraphitePrefix string `mapstructure:"graphite_prefix"`
 }
 
@@ -289,7 +290,7 @@ func (w *Watcher) publishToGraphite(ctx context.Context, metric *Metric) error {
 		return nil
 	}
 
-	if w.properties.GraphitePort == 0 {
+	if w.properties.GraphitePort == "" {
 		w.Debugf("Skipping graphite publish without a port defined")
 		return nil
 	}
@@ -302,10 +303,24 @@ func (w *Watcher) publishToGraphite(ctx context.Context, metric *Metric) error {
 	connCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
 	defer cancel()
 
-	host := fmt.Sprintf("%s:%d", w.properties.GraphiteHost, w.properties.GraphitePort)
-	w.Debugf("Sending %d metrics to graphite %s", len(metric.Metrics), host)
+	host, err := w.ProcessTemplate(w.properties.GraphiteHost)
+	if err != nil {
+		return err
+	}
+	portString, err := w.ProcessTemplate(w.properties.GraphitePort)
+	if err != nil {
+		return err
+	}
+	port, err := strconv.Atoi(portString)
+	if err != nil {
+		return err
+	}
+
+	hostPort := fmt.Sprintf("%s:%d", host, port)
+
+	w.Debugf("Sending %d metrics to graphite %s", len(metric.Metrics), hostPort)
 	var d net.Dialer
-	conn, err := d.DialContext(connCtx, "tcp", host)
+	conn, err := d.DialContext(connCtx, "tcp", hostPort)
 	if err != nil {
 		return err
 	}
