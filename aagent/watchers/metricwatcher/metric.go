@@ -314,8 +314,13 @@ func (w *Watcher) publishToGraphite(ctx context.Context, metric *Metric) error {
 	now := time.Now().Unix()
 
 	for k, v := range metric.Metrics {
-		name := fmt.Sprintf("%s.%s", w.properties.GraphitePrefix, k)
-		_, err := conn.Write([]byte(fmt.Sprintf("%s %f %d\n", name, v, now)))
+		prefix, err := w.ProcessTemplate(w.properties.GraphitePrefix)
+		if err != nil {
+			return err
+		}
+
+		name := fmt.Sprintf("%s.%s", prefix, k)
+		_, err = conn.Write([]byte(fmt.Sprintf("%s %f %d\n", name, v, now)))
 		if err != nil {
 			return err
 		}
