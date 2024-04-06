@@ -43,6 +43,7 @@ type properties struct {
 	Command        string
 	Interval       time.Duration
 	Labels         map[string]string
+	StoreAsData    bool   `mapstructure:"store"`
 	GraphiteHost   string `mapstructure:"graphite_host"`
 	GraphitePort   string `mapstructure:"graphite_port"`
 	GraphitePrefix string `mapstructure:"graphite_prefix"`
@@ -275,6 +276,11 @@ func (w *Watcher) handleCheck(ctx context.Context, output []byte, err error) err
 		return err
 	}
 
+	err = w.storeMetricAsData(metric)
+	if err != nil {
+		return err
+	}
+
 	w.mu.Lock()
 	w.previousResult = metric
 	w.mu.Unlock()
@@ -282,6 +288,16 @@ func (w *Watcher) handleCheck(ctx context.Context, output []byte, err error) err
 	w.NotifyWatcherState(w.CurrentState())
 
 	return nil
+}
+
+func (w *Watcher) storeMetricAsData(metric *Metric) error {
+	if !w.properties.StoreAsData {
+		return nil
+	}
+
+	w.Debugf("Storing metrics to machine data")
+
+	return w.machine.DataPut("metric", metric)
 }
 
 func (w *Watcher) publishToGraphite(ctx context.Context, metric *Metric) error {
