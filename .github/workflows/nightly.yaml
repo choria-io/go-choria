@@ -2,7 +2,7 @@ name: Choria Nightly
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "40 4 * * *"
+    - cron: "40 0 * * *"
 
 jobs:
   el7_64:
