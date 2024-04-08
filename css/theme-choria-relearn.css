@@ -1,5 +1,6 @@
 /* my-custom-variant */
 :root {
+  --CODE-theme: relearn-light;
   --MAIN-LINK-color: #66c188; /* link color of content */
   --MAIN-LINK-HOVER-color: #66c188; /* hoverd link color of content */
   --MAIN-BG-color: #ffffff; /* background color of content */

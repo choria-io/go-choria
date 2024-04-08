@@ -1,97 +1,95 @@
 @import "theme-relearn-light.css";
+@import "chroma-relearn-light.css";
 
-#sidebar {
+#R-sidebar {
     display: none;
 }
-#body {
+#R-body {
     margin-left: 0 !important;
     margin-right: 0 !important;
     min-width: 100% !important;
     max-width: 100% !important;
     width: 100% !important;
 }
-#body #navigation {
+#R-body #navigation {
     display: none;
 }
 html{
     font-size: 8.763pt;
 }
 body {
-    background-color: white;
+    background-color: rgba( 255, 255, 255, 1 );
 }
 code.copy-to-clipboard-code {
     border-start-end-radius: 2px;
     border-end-end-radius: 2px;
     border-inline-end-width: 1px;
 }
-pre {
-    border: 1px solid #ccc;
+pre:not(.mermaid) {
+    border: 1px solid rgba( 204, 204, 204, 1 );
 }
-#body #topbar{
-    background-color: #fff; /* avoid background bleeding*/
-    border-bottom: 1px solid #ddd;
+#R-body #R-topbar{
+    background-color: rgba( 255, 255, 255, 1 ); /* avoid background bleeding*/
+    border-bottom: 1px solid rgba( 221, 221, 221, 1 );
     border-radius: 0;
-    color: #777;
+    color: rgba( 119, 119, 119, 1 );
     padding-left: 0; /* for print, we want to align with the footer to ease the layout */
     padding-right: 0;
 }
-.navigation,
-#top-print-link,
-#top-github-link {
-    /* we don't need this while printing */
-    display: none;
+#R-body .topbar-button {
+    /* we don't need the buttons while printing */
+    /* we need !important to turn off JS topbar button handling setting element styles */
+    display: none !important;
 }
-#body #breadcrumbs {
-    width: 100%;
+@media screen and (max-width: 47.999rem) {
+    #R-body .topbar-breadcrumbs {
+        visibility: visible;
+    }
 }
-#body #breadcrumbs .links {
-    overflow-x: hidden;
-    visibility: visible;
-}
-.copy-to-clipboard-button {
+#R-body .copy-to-clipboard-button {
     display: none;
 }
 
-#body h1, #body h2, #body h3, #body .article-subheading, #body h4, #body h5, #body h6 {
-    /* better contrast for colored elements */
-    color: black;
-}
-#body th, #body td,
-#body code, #body strong, #body b,
-#body li, #body dd, #body dt,
-#body p,
-#body a, #body button, #body .badge .badge-content {
-    /* better contrast for colored elements */
-    color: black;
-}
-#body .anchor{
+#R-body .svg-reset-button {
     display: none;
 }
-#body pre,
-#body code {
-    background-color: white;
-    border-color: #ddd;
+
+#R-body h1, #R-body h2, #R-body h3, #R-body .article-subheading, #R-body h4, #R-body h5, #R-body h6 {
+    /* better contrast for colored elements */
+    color: rgba( 0, 0, 0, 1 );
+}
+#R-body th, #R-body td,
+#R-body code, #R-body strong, #R-body b,
+#R-body li, #R-body dd, #R-body dt,
+#R-body p,
+#R-body a, #R-body button, #R-body .badge .badge-content {
+    /* better contrast for colored elements */
+    color: rgba( 0, 0, 0, 1 );
+}
+#R-body .anchor{
+    display: none;
+}
+#R-body pre:not(.mermaid),
+#R-body code {
+    background-color: rgba( 255, 255, 255, 1 );
+    border-color: rgba( 221, 221, 221, 1 );
 }
 
 hr{
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid rgba( 221, 221, 221, 1 );
 }
-body,
-#body,
-#body-inner {
-    overflow: visible !important; /* turn off limitations for perfect scrollbar */
-}
-#body #body-inner {
+#R-body #R-body-inner {
+    overflow: visible; /* turn off limitations for perfect scrollbar */
     /* reset paddings for chapters in screen */
     padding: 0 3.25rem 4rem 3.25rem;
 }
 
-#body #body-inner h1 {
-    border-bottom: 1px solid #ddd;
+#R-body #R-body-inner h1 {
+    border-bottom: 1px solid rgba( 221, 221, 221, 1 );
     margin-bottom: 2rem;
     padding-bottom: .75rem;
 }
-#body-inner .chapter h3:first-of-type {
+#R-body-inner .chapter h3:first-of-type {
     margin-top: 2rem;
 }
 
@@ -105,126 +103,72 @@ body,
 
 .footline {
     /* in print mode show footer line to signal reader the end of document */
-    border-top: 1px solid #ddd;
-    color: #777;
+    border-top: 1px solid rgba( 221, 221, 221, 1 );
+    color: rgba( 119, 119, 119, 1 );
     margin-top: 1.5rem;
     padding-top: .75rem;
 }
-#body #body-inner .footline a,
-#body #body-inner .btn a {
+
+h1 + .footline{
+    /* if we have no content in the page we remove the footer as it is of no real value in print */
+    display: none;
+}
+
+#R-body #R-body-inner .headline a,
+#R-body #R-body-inner .footline a,
+#R-body #R-body-inner .btn a {
     text-decoration: none;
 }
-#body #body-inner a {
+#R-body #R-body-inner a {
     /* in print we want to distinguish links in our content from
     normal text even if printed black/white;
     don't use a.highlight in selector to also get links that are
     put as HTML into markdown */
     text-decoration-line: underline;
 }
-#toc-menu {
-    /* we don't need this while printing */
-    display: none;
-}
-#body #sidebar-toggle-span {
-    /* we don't need this while printing */
-    display: none;
-}
-#breadcrumbs .links {
-    display: inline;
-}
-#topbar{
+#R-topbar{
     /* the header is sticky which is not suitable for print; */
     position: inherit; /* IE11 doesn't know "initial" here */
 }
-#topbar > div {
-    background-color: #ffffff; /* IE11 doesn't know "initial" here */
+#R-topbar > .topbar-wrapper {
+    background-color: rgba( 255, 255, 255, 1 ); /* IE11 doesn't know "initial" here */
 }
-#body .tab-nav-button:not(.active) {
-    opacity: .5;
+#R-body .topbar-sidebar-divider {
+    border-width: 0;
 }
-#head-tags {
+.term-list {
     display: none;
 }
-mark {
+mark.search {
     background: inherit;
     color: inherit;
 }
-.mermaid > svg:hover {
+.mermaid.zoom:hover {
     border-color: transparent;
 }
-div.box {
-    border: 1px solid #ddd;
-}
 div.box > .box-content {
-    background-color: white;
-}
-
-rapi-doc{
-    /* adjust rapi-doc internals to fill out available space with render-style=read */
-    margin-left: calc( -80px );
-    width: calc( 100% + 80px + 80px );
-}
-@media (max-width: 1023px) {
-    rapi-doc {
-        margin-left: calc( -8px );
-        width: calc( 100% + 8px + 8px );
-    }
-}
-rapi-doc::part(section-tag) {
-    /* adjust rapi-doc internals to fill out available space with render-style=read */
-    margin-left: 80px;
-    margin-right: 80px;
-    padding-left: 0;
-    padding-right: 0;
-}
-@media (max-width: 1023px) {
-    rapi-doc::part(section-tag) {
-        margin-left: 8px;
-        margin-right: 8px;
-        padding-left: 0;
-        padding-right: 0;
-    }
-}
-
-rapi-doc::part(section-main-content) {
-    /* override variables for adapting rapidoc design to print theme */
-    --fg: black;
-    --fg2: black;
-    --fg3: black;
-}
-
-rapi-doc::part(section-overview-title) {
-    /* set print color for titles */
-    color: black !important;
-}
-
-rapi-doc::part(operation-divider) {
-    /* remove whitespace */
-    margin-bottom: 1rem;
-    margin-top: 1rem;
-}
-
-rapi-doc::part(section-navbar) {
-    /* removes the nav bar for render-style=read */
-    display: none;
+    background-color: rgba( 255, 255, 255, 1 );
 }
 
 .btn,
-#body .tab-nav-button {
-    color: black !important;
+#R-body .tab-nav-button {
+    color: rgba( 0, 0, 0, 1 );
 }
-#body .tab-nav-button.active {
-    background-color: white !important;
-    border-bottom-color: white !important;
-    color: black;
+#R-body .tab-nav-button.active {
+    border-bottom-color: rgba( 255, 255, 255, 1 );
+    color: rgba( 0, 0, 0, 1 );
 }
-#body .tab-nav-button:not(.active) {
-    opacity: 1;
+#R-body .tab-nav-button.active > .tab-nav-text {
+    background-color: rgba( 255, 255, 255, 1 );
+}
+#R-body .tab-content-text {
+    background-color: rgba( 255, 255, 255, 1 ) ;
+    color: rgba( 0, 0, 0, 1 );
 }
 
 article {
     break-before: page;
 }
-#body-inner > * > article:first-of-type {
+#R-body-inner > * > article:first-of-type {
     break-before: avoid;
 }
