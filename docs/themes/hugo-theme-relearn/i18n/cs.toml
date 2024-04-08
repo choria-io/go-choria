@@ -7,6 +7,9 @@ other = "Hledat"
 [Search-placeholder]
 other = "Hledat..."
 
+[Clear-search]
+other = "Vymazat vyhledávání"
+
 [No-results-found]
 other = "Žádné výsledky pro \"{0}\""
 
@@ -16,11 +19,17 @@ other = "{1} výsledků pro \"{0}\""
 [Clear-History]
 other = "Vymazat historii"
 
+[Reset-view]
+other = "Obnovit zobrazení"
+
+[View-reset]
+other = "Resetovat zobrazení!"
+
 [Attachments-label]
 other = "Přílohy"
 
 [title-404]
-other = "Error 404"
+other = "Nelokalizované"
 
 [message-404]
 other = "Ups. Zdá se, že tato stránka neexistuje ¯\\_(ツ)_/¯."
@@ -33,6 +42,9 @@ other = "Upravit"
 
 [Print-this-chapter]
 other = "Vytisknout kapitolu"
+
+[More-action]
+other = "Více"
 
 [Shortcuts-Title]
 other = "Více"
@@ -93,3 +105,15 @@ other = "Podmenu {{.}}"
 
 [Subsections]
 other = "Podsekce {{.}}"
+
+[tags]
+other = "Klíčová Slova"
+
+[tag]
+other = "Klíčové Slovo"
+
+[categories]
+other = "Kategorie"
+
+[category]
+other = "Kategorie"

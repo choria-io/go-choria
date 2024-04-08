@@ -92,7 +92,7 @@ require (
 	github.com/imdario/mergo v0.3.16 // indirect
 	github.com/itchyny/gojq v0.12.15 // indirect
 	github.com/itchyny/timefmt-go v0.1.5 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.5.7 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.5.8 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.17.7 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect

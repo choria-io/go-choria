@@ -7,6 +7,9 @@ other = "Procurar"
 [Search-placeholder]
 other = "Procurar..."
 
+[Clear-search]
+other = "Limpar pesquisa"
+
 [No-results-found]
 other = "Nenhum resultado encontrado para \"{0}\""
 
@@ -16,11 +19,17 @@ other = "{1} resultados encontrados para \"{0}\""
 [Clear-History]
 other = "Limpar Histórico"
 
+[Reset-view]
+other = "Repor vista"
+
+[View-reset]
+other = "Ver reposição!"
+
 [Attachments-label]
 other = "Anexos"
 
 [title-404]
-other = "Erro"
+other = "Não localizado"
 
 [message-404]
 other = "Ops. Parece que a página não existe ¯\\_(ツ)_/¯."
@@ -33,6 +42,9 @@ other = "Editar"
 
 [Print-this-chapter]
 other = "Imprimir capítulo inteiro"
+
+[More-action]
+other = "Mais"
 
 [Shortcuts-Title]
 other = "Mais"
@@ -93,3 +105,15 @@ other = "Submenu {{.}}"
 
 [Subsections]
 other = "Subsecções de {{.}}"
+
+[tags]
+other = "Etiquetas"
+
+[tag]
+other = "Etiqueta"
+
+[categories]
+other = "Categorias"
+
+[category]
+other = "Categoria"
