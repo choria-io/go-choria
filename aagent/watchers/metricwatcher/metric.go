@@ -44,6 +44,7 @@ type properties struct {
 	Command        string
 	Interval       time.Duration
 	Labels         map[string]string
+	SkipPrometheus bool   `mapstructure:"skip_prometheus"`
 	StoreAsData    bool   `mapstructure:"store"`
 	GraphiteHost   string `mapstructure:"graphite_host"`
 	GraphitePort   string `mapstructure:"graphite_port"`
@@ -86,15 +87,19 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		mw.properties.GraphitePrefix = fmt.Sprintf("choria.%s", strings.ReplaceAll(name, " ", "-"))
 	}
 
-	savePromState(machine.TextFileDirectory(), mw)
+	if !mw.properties.SkipPrometheus {
+		savePromState(machine.TextFileDirectory(), mw)
+	}
 
 	return mw, nil
 }
 
 func (w *Watcher) Delete() {
-	err := deletePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name)
-	if err != nil {
-		w.Errorf("could not delete from prometheus: %s", err)
+	if !w.properties.SkipPrometheus {
+		err := deletePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name)
+		if err != nil {
+			w.Errorf("could not delete from prometheus: %s", err)
+		}
 	}
 }
 
@@ -269,9 +274,11 @@ func (w *Watcher) handleCheck(ctx context.Context, output []byte, err error) err
 		metric.Labels[k] = v
 	}
 
-	err = updatePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name, metric)
-	if err != nil {
-		w.Errorf("Could not update prometheus: %s", err)
+	if !w.properties.SkipPrometheus {
+		err = updatePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name, metric)
+		if err != nil {
+			w.Errorf("Could not update prometheus: %s", err)
+		}
 	}
 
 	err = w.publishToGraphite(ctx, metric)
