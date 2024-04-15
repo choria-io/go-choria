@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -688,7 +688,7 @@ func (m *Machine) KnownStates() []string {
 	defer m.Unlock()
 
 	lister := func() []string {
-		states := []string{}
+		var states []string
 
 		for k := range m.knownStates {
 			states = append(states, k)
