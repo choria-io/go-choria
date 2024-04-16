@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package expression
+package expressionwatcher
 
 import (
 	"github.com/choria-io/go-choria/aagent/watchers/plugin"
