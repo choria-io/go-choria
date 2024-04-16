@@ -84,7 +84,7 @@ func (r *mRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	}
 
 	if r.dataFile != "" {
-		dat := make(map[string]string)
+		dat := make(map[string]any)
 		df, err := os.ReadFile(r.dataFile)
 		if err != nil {
 			return err
