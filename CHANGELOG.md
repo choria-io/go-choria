@@ -1,5 +1,21 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2024/04/16 | 2162  | Adds a new `expression` watcher that can react to values store in autonomous agent data                            |
+| 2024/04/12 | 2160  | Allow an individual `metric` watcher to disable Prometheus integration                                             |
+| 2024/04/06 | 2156  | Support storing metric values in autonomous agent data                                                             |
+| 2024/04/06 | 2150  | Support publishing metrics to Graphite from the `metric` watcher                                                   |
+| 2024/04/05 | 2147  | Allow the `scout watch` command to ignore some autonomous agents                                                   |
+| 2024/3/16  | 2142  | Create a built-in agent and autonomous agent plugin service to support non CM deployments                          |
+| 2024/03/14 | 2139  | Send `alive` events every 30 minutes instead of every 1 hour                                                       |
+| 2024/03/14 | 2137  | Use correct private inboxes for `scout watch` to support protocol v2 deployments                                   |
+| 2024/03/11 | 2133  | Redesign the gossip service discovery for upcoming NATS 2.11 due June 2024                                         |
+| 2024/03/09 | 2131  | Ensure the duplicate window alins with the kv TTL when creating buckets                                            |
+| 2024/03/07 | 2129  | Adds `skip_trigger_on_reenter` to the `scheduler` watcher to avoid some duplicate triggers                         |
+| 2024/03/07 | 2127  | Support for Debian Bookworm                                                                                        |
+| 2024/02/26 | 2120  | Adds `choria tool sha256` to compute recursive checksums compatible with `archive` and `plugins`                   |
+| 2024/02/25 | 2118  | Miscellaneous fixes and UX improvements for the `archive` watcher                                                  |
+| 2024/02/25 | 2116  | Support a `disown` setting in exec that ensures executed commands run after Choria stops                           |
+| 2024/02/08 | 2110  | All concurrent provisioners by maintaining a provisioner-lock on the agent                                         |
 | 2024/02/03 |       | Release 0.28.0                                                                                                     |
 | 2024/01/04 | 2104  | Allow clients to view the ACLs applied to their connections in various utilities                                   |
 | 2024/12/19 | 2101  | Improve shutdown reliability by giving Stream brokers more shutdown grace                                          |
