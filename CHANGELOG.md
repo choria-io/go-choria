@@ -9,7 +9,7 @@
 | 2024/03/14 | 2139  | Send `alive` events every 30 minutes instead of every 1 hour                                                       |
 | 2024/03/14 | 2137  | Use correct private inboxes for `scout watch` to support protocol v2 deployments                                   |
 | 2024/03/11 | 2133  | Redesign the gossip service discovery for upcoming NATS 2.11 due June 2024                                         |
-| 2024/03/09 | 2131  | Ensure the duplicate window alins with the kv TTL when creating buckets                                            |
+| 2024/03/09 | 2131  | Ensure the duplicate window aligns with the kv TTL when creating buckets                                           |
 | 2024/03/07 | 2129  | Adds `skip_trigger_on_reenter` to the `scheduler` watcher to avoid some duplicate triggers                         |
 | 2024/03/07 | 2127  | Support for Debian Bookworm                                                                                        |
 | 2024/02/26 | 2120  | Adds `choria tool sha256` to compute recursive checksums compatible with `archive` and `plugins`                   |

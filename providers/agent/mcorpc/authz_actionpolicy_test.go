@@ -554,6 +554,16 @@ var _ = Describe("Policy", func() {
 			matched, err = pol.MatchesFacts(cfg, logger)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(matched).To(BeTrue())
+
+			pol.facts = "nested.facts=~/^al/"
+			matched, err = pol.MatchesFacts(cfg, logger)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(matched).To(BeFalse())
+
+			pol.facts = "nested.facts=~/^val/"
+			matched, err = pol.MatchesFacts(cfg, logger)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(matched).To(BeTrue())
 		})
 	})
 
