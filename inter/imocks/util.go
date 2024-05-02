@@ -76,6 +76,12 @@ func WithDDLFiles(kind string, plugin string, path string) fwMockOption {
 	}
 }
 
+func WithFederations(federations []string) fwMockOption {
+	return func(o *fwMockOpts) {
+		o.cfg.Choria.FederationCollectives = federations
+	}
+}
+
 func NewFrameworkForTests(ctrl *gomock.Controller, logWriter io.Writer, opts ...fwMockOption) (*MockFramework, *config.Config) {
 	mopts := &fwMockOpts{
 		cfg:      config.NewConfigForTests(),
@@ -96,6 +102,16 @@ func NewFrameworkForTests(ctrl *gomock.Controller, logWriter io.Writer, opts ...
 	fw.EXPECT().Configuration().Return(mopts.cfg).AnyTimes()
 	fw.EXPECT().Logger(gomock.AssignableToTypeOf("")).Return(logrus.NewEntry(logger)).AnyTimes()
 	fw.EXPECT().NewRequestID().Return(util.RandomHexString(), nil).AnyTimes()
+	fw.EXPECT().FederationCollectives().DoAndReturn(
+		func() []string {
+			if len(fw.Configuration().Choria.FederationCollectives) == 0 {
+				retval := strings.Split(os.Getenv("CHORIA_FED_COLLECTIVE"), ",")
+				if retval[0] == "" {
+					return []string{}
+				}
+			}
+			return fw.Configuration().Choria.FederationCollectives
+		}).AnyTimes()
 	fw.EXPECT().HasCollective(gomock.AssignableToTypeOf("")).DoAndReturn(func(c string) bool {
 		for _, collective := range fw.Configuration().Collectives {
 			if c == collective {

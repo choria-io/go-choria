@@ -30,12 +30,14 @@ expected = {
     "identity" => []
   },
   "collective" => "ginkgo",
-  "federations" => [],
+  "federations" => ["alpha", "beta"],
   "timeout" => 2,
 }
 
 if request != expected
-  write_output({"error" => "invalid filter received: "+request.pretty_inspect})
+  write_output({"error" => "invalid filter received: " + (request.to_a - expected.to_a).pretty_inspect})
+
+  # write_output({"error" => "invalid filter received: "+request.pretty_inspect})
 else
   write_output({"protocol" => "io.choria.choria.discovery.v1.external_reply", "nodes" => ["one","two"]})
 end

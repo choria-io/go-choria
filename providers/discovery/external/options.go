@@ -11,11 +11,12 @@ import (
 )
 
 type dOpts struct {
-	filter     *protocol.Filter
-	collective string
-	timeout    time.Duration
-	command    string
-	do         map[string]string
+	filter      *protocol.Filter
+	collective  string
+	federations []string
+	timeout     time.Duration
+	command     string
+	do          map[string]string
 }
 
 // DiscoverOption configures the broadcast discovery method
@@ -32,6 +33,13 @@ func Filter(f *protocol.Filter) DiscoverOption {
 func Collective(c string) DiscoverOption {
 	return func(o *dOpts) {
 		o.collective = c
+	}
+}
+
+// Federations sets the list of federated collectives to discover in
+func Federations(f []string) DiscoverOption {
+	return func(o *dOpts) {
+		o.federations = f
 	}
 }
 
