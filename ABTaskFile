@@ -237,7 +237,7 @@ commands:
             go build \
               {{ if .Flags.verbose }}-v{{ end }} \
               -ldflags="-s -w \
-                -X 'github.com/choria-io/go-choria/build.Version=0.0.$(date +%s)' \
+                -X 'github.com/choria-io/go-choria/build.Version=0.98.0.$(date +%s)' \
                 -X 'github.com/choria-io/go-choria/build.DefaultCollectives={{.Flags.collective}}' \
                 {{ if .Flags.provisioning }}-X 'github.com/choria-io/go-choria/build.ProvisionJWTFile={{ .Flags.provisioning }}'{{ end }} \
                 " -o go-choria
