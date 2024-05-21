@@ -40,12 +40,13 @@ type Response struct {
 
 // Request is the request sent to the external script on its STDIN
 type Request struct {
-	Protocol   string            `json:"protocol"`
-	Collective string            `json:"collective"`
-	Filter     *protocol.Filter  `json:"filter"`
-	Options    map[string]string `json:"options"`
-	Schema     string            `json:"$schema"`
-	Timeout    float64           `json:"timeout"`
+	Protocol    string            `json:"protocol"`
+	Collective  string            `json:"collective"`
+	Filter      *protocol.Filter  `json:"filter"`
+	Federations []string          `json:"federations"`
+	Options     map[string]string `json:"options"`
+	Schema      string            `json:"$schema"`
+	Timeout     float64           `json:"timeout"`
 }
 
 const (
@@ -67,10 +68,11 @@ func New(fw inter.Framework) *External {
 
 func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []string, err error) {
 	dopts := &dOpts{
-		collective: e.fw.Configuration().MainCollective,
-		timeout:    e.timeout,
-		command:    e.fw.Configuration().Choria.ExternalDiscoveryCommand,
-		do:         make(map[string]string),
+		collective:  e.fw.Configuration().MainCollective,
+		timeout:     e.timeout,
+		command:     e.fw.Configuration().Choria.ExternalDiscoveryCommand,
+		federations: e.fw.FederationCollectives(),
+		do:          make(map[string]string),
 	}
 
 	for _, opt := range opts {
@@ -100,12 +102,13 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 	defer cancel()
 
 	idat := &Request{
-		Schema:     RequestSchema,
-		Protocol:   RequestProtocol,
-		Timeout:    dopts.timeout.Seconds(),
-		Collective: dopts.collective,
-		Filter:     dopts.filter,
-		Options:    dopts.do,
+		Schema:      RequestSchema,
+		Protocol:    RequestProtocol,
+		Timeout:     dopts.timeout.Seconds(),
+		Collective:  dopts.collective,
+		Federations: dopts.federations,
+		Filter:      dopts.filter,
+		Options:     dopts.do,
 	}
 
 	req, err := json.Marshal(idat)
@@ -145,6 +148,7 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 
 	cmd := exec.CommandContext(timeoutCtx, command, args[1:]...)
 	cmd.Dir = os.TempDir()
+
 	cmd.Env = []string{
 		"CHORIA_EXTERNAL_REQUEST=" + reqfile.Name(),
 		"CHORIA_EXTERNAL_REPLY=" + repfile.Name(),

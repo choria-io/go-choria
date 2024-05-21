@@ -61,6 +61,8 @@ type reqCommand struct {
 
 	outputWriter     *bufio.Writer
 	outputFileHandle *os.File
+
+	federations string
 }
 
 func (r *reqCommand) Setup() (err error) {
@@ -98,6 +100,8 @@ that match the filter.
 	r.fo.AddFilterFlags(r.cmd)
 	r.fo.AddFlatFileFlags(r.cmd)
 	r.fo.AddSelectionFlags(r.cmd)
+
+	r.cmd.Flag("federations", "List of federations to search for collectives in, comma separated").StringVar(&r.federations)
 
 	r.cmd.Flag("limit", "Limits request to a set of targets eg 10 or 10%").StringVar(&r.limit)
 	r.cmd.Flag("limit-seed", "Seed value for deterministic random limits").PlaceHolder("SEED").Int64Var(&r.limitSeed)
@@ -460,6 +464,11 @@ func (r *reqCommand) Configure() error {
 	err := commonConfigure()
 	if err != nil {
 		return err
+	}
+
+	// If list of federations is specified on the CLI, mutate the configuration directly
+	if len(r.federations) > 0 {
+		cfg.Choria.FederationCollectives = strings.Split(r.federations, ",")
 	}
 
 	// we try not to spam things to stderr in these structured output formats

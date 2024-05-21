@@ -11,6 +11,7 @@ import (
 	"fmt"
 	"math"
 	"sort"
+	"strings"
 	"sync"
 	"time"
 
@@ -34,6 +35,8 @@ type pingCommand struct {
 
 	fo *discovery.StandardOptions
 
+	federations string
+
 	namesOnly bool
 
 	start     time.Time
@@ -53,6 +56,8 @@ func (p *pingCommand) Setup() (err error) {
 
 	p.fo = discovery.NewStandardOptions()
 	p.fo.AddFilterFlags(p.cmd)
+
+	p.cmd.Flag("federations", "Comma-separated list of federations to target").StringVar(&p.federations)
 
 	p.cmd.Flag("expect", "Wait until this many replies were received or timeout").IntVar(&p.waitfor)
 	p.cmd.Flag("timeout", "How long to wait for responses").IntVar(&p.timeout)
@@ -195,7 +200,14 @@ func (p *pingCommand) createMessage(filter *protocol.Filter) (inter.Message, err
 func (p *pingCommand) Configure() error {
 	protocol.ClientStrictValidation = false
 
-	return commonConfigure()
+	err := commonConfigure()
+
+	// If list of federations is specified on the CLI, mutate the configuration directly
+	if len(p.federations) > 0 {
+		cfg.Choria.FederationCollectives = strings.Split(p.federations, ",")
+	}
+
+	return err
 }
 
 // chart takes all the received time stamps and put them
