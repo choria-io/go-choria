@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -117,8 +117,16 @@ func builderOptions() []builder.Option {
 }
 
 func runBuilder() {
-	err := builder.RunStandardCLI(ctx, filepath.Base(os.Args[0]), false, nil, builderOptions()...)
+	cmd := filepath.Base(os.Args[0])
+	var err error
+
+	if cmd == "abt" {
+		err = builder.RunTaskCLI(ctx, false, builderOptions()...)
+	} else {
+		err = builder.RunStandardCLI(ctx, cmd, false, nil, builderOptions()...)
+	}
 	if err != nil {
+		// TODO: move to error types in appbuilder
 		if strings.Contains(err.Error(), "must select a") {
 			fmt.Println(err.Error())
 		} else {
