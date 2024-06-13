@@ -76,6 +76,11 @@ func (d *SignResult) Stats() Stats {
 	return d.stats
 }
 
+// RPCClientStats is the rpc request stats
+func (d *SignResult) RPCClientStats() *rpcclient.Stats {
+	return d.stats
+}
+
 // ResultDetails is the details about the request
 func (d *SignOutput) ResultDetails() *ResultDetails {
 	return d.details
