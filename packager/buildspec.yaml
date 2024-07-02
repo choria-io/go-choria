@@ -138,24 +138,6 @@ foss:
       os: windows
       format: zip
 
-    el7_32:
-      template: el/el7
-      dist: el7
-      target_arch: i686
-      binary: 32bit_linux
-
-    el7_64:
-      template: el/el7
-      dist: el7
-      target_arch: x86_64
-      binary: 64bit_linux
-
-    el7_ppc64le:
-      template: el/el7
-      dist: el7
-      target_arch: ppc64le
-      binary: ppc64le_linux
-
     el8_64:
       template: el/el8
       dist: el8
@@ -215,30 +197,6 @@ foss:
       target_arch: aarch64-linux-gnu
       binary: aarch64_linux
       distro: jammy
-
-    buster_64:
-      template: debian/generic
-      target_arch: x86_64-linux-gnu
-      binary: 64bit_linux
-      distro: buster
-
-    buster_armel:
-      template: debian/generic
-      target_arch: arm-linux-gnueabi
-      binary: armv5_linux
-      distro: buster
-
-    buster_armhf:
-      template: debian/generic
-      target_arch: arm-linux-gnueabihf
-      binary: armv7_linux
-      distro: buster
-
-    buster_aarch64:
-      template: debian/generic
-      target_arch: aarch64-linux-gnu
-      binary: aarch64_linux
-      distro: buster
 
     bullseye_armel:
       template: debian/generic
