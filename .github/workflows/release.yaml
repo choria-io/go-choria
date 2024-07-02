@@ -5,16 +5,6 @@ on:
       - '*'
 
 jobs:
-  el7_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: el7_64
-          packager_tag: el7-go1.21
-          version: tag
-
   el8_64:
     runs-on: ubuntu-latest
     steps:
@@ -35,16 +25,6 @@ jobs:
           packager_tag: el9-go1.21
           version: tag
 
-  el7_ppc64le:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: el7_ppc64le
-          packager_tag: el7-go1.21
-          version: tag
-
   el8_ppc64le:
     runs-on: ubuntu-latest
     steps:
@@ -63,46 +43,6 @@ jobs:
         with:
           build_package: el9_ppc64le
           packager_tag: el9-go1.21
-          version: tag
-
-  buster_armhf:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: buster_armhf
-          packager_tag: buster-go1.21
-          version: tag
-
-  buster_armel:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: buster_armel
-          packager_tag: buster-go1.21
-          version: tag
-
-  buster_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: buster_64
-          packager_tag: buster-go1.21
-          version: tag
-
-  buster_aarch64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: buster_aarch64
-          packager_tag: buster-go1.21
           version: tag
 
   bookworm_64:
@@ -263,12 +203,6 @@ jobs:
       - bullseye_aarch64
       - bullseye_armel
       - bullseye_armhf
-      - buster_64
-      - buster_aarch64
-      - buster_armel
-      - buster_armhf
-      - el7_64
-      - el7_ppc64le
       - el8_64
       - el8_ppc64le
       - el9_64

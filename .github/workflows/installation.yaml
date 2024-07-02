@@ -5,13 +5,6 @@ on:
     - cron: "40 5 * * *"
 
 jobs:
-  el7_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: EL7 Installation Tests
-        shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:el7-go1.21
-
   el8_64:
     runs-on: ubuntu-latest
     steps:
@@ -39,13 +32,6 @@ jobs:
       - name: Focal Installation Tests
         shell: bash
         run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:focal-go1.21
-
-  buster_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Buster Installation Tests
-        shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:buster-go1.21
 
   bullseye_64:
     runs-on: ubuntu-latest
