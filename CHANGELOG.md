@@ -1,5 +1,7 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2024/06/05 | 2176  | Support being called as `abt`                                                                                      |
+| 2024/05/02 | 2169  | Pass federation name to external discovery agent                                                                   |
 | 2024/04/16 | 2162  | Adds a new `expression` watcher that can react to values store in autonomous agent data                            |
 | 2024/04/12 | 2160  | Allow an individual `metric` watcher to disable Prometheus integration                                             |
 | 2024/04/06 | 2156  | Support storing metric values in autonomous agent data                                                             |
