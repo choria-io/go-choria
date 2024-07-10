@@ -1,5 +1,6 @@
 | Date       | Issue | Description                                                                                                        |
 |------------|-------|--------------------------------------------------------------------------------------------------------------------|
+| 2024/07/17 |       | Release 0.29.0                                                                                                     |
 | 2024/06/05 | 2176  | Support being called as `abt`                                                                                      |
 | 2024/05/02 | 2169  | Pass federation name to external discovery agent                                                                   |
 | 2024/04/16 | 2162  | Adds a new `expression` watcher that can react to values store in autonomous agent data                            |
