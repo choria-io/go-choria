@@ -198,6 +198,30 @@ foss:
       binary: aarch64_linux
       distro: jammy
 
+    bookworm_armel:
+      template: debian/generic
+      target_arch: arm-linux-gnueabi
+      binary: armv5_linux
+      distro: bookworm
+
+    bookworm_armhf:
+      template: debian/generic
+      target_arch: arm-linux-gnueabihf
+      binary: armv7_linux
+      distro: bookworm
+
+    bookworm_64:
+      template: debian/generic
+      target_arch: x86_64-linux-gnu
+      binary: 64bit_linux
+      distro: bookworm
+
+    bookworm_aarch64:
+      template: debian/generic
+      target_arch: aarch64-linux-gnu
+      binary: aarch64_linux
+      distro: bookworm
+
     bullseye_armel:
       template: debian/generic
       target_arch: arm-linux-gnueabi
