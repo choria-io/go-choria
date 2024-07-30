@@ -198,6 +198,18 @@ foss:
       binary: aarch64_linux
       distro: jammy
 
+    noble_64:
+      template: debian/generic
+      target_arch: x86_64-linux-gnu
+      binary: 64bit_linux
+      distro: noble
+
+    noble_aarch64:
+      template: debian/generic
+      target_arch: aarch64-linux-gnu
+      binary: aarch64_linux
+      distro: noble
+
     bookworm_armel:
       template: debian/generic
       target_arch: arm-linux-gnueabi
