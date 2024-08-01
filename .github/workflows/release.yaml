@@ -185,6 +185,26 @@ jobs:
           packager_tag: jammy-go1.22
           version: tag
 
+  noble_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: noble_64
+          packager_tag: noble-go1.22
+          version: tag
+
+  noble_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: noble_aarch64
+          packager_tag: noble-go1.22
+          version: tag
+
   windows_64:
     runs-on: ubuntu-latest
     steps:
@@ -215,6 +235,8 @@ jobs:
       - focal_aarch64
       - jammy_64
       - jammy_aarch64
+      - noble_64
+      - noble_aarch64
       - windows_64
 
     runs-on: ubuntu-latest
