@@ -52,6 +52,8 @@ var _ = Describe("MetricWatcher", func() {
 		mockMachine.EXPECT().Directory().Return(".").AnyTimes()
 		mockMachine.EXPECT().TextFileDirectory().Return(td).AnyTimes()
 		mockMachine.EXPECT().State().Return("run").AnyTimes()
+		mockMachine.EXPECT().Facts().Return([]byte(`{"fqdn":"ginkgo.example.net"}`)).AnyTimes()
+		mockMachine.EXPECT().Data().Return(map[string]any{}).AnyTimes()
 
 		wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]any{
 			"command": "metric.sh",

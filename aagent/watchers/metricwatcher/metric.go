@@ -170,14 +170,19 @@ func (w *Watcher) watch(ctx context.Context) (state []byte, err error) {
 		w.mu.Unlock()
 	}()
 
-	w.Infof("Running %s", w.properties.Command)
+	command, err := w.ProcessTemplate(w.properties.Command)
+	if err != nil {
+		return nil, err
+	}
+
+	w.Infof("Running %s", command)
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 
-	splitcmd, err := shlex.Split(w.properties.Command)
+	splitcmd, err := shlex.Split(command)
 	if err != nil {
-		w.Errorf("Metric watcher %s failed: %s", w.properties.Command, err)
+		w.Errorf("Metric watcher %s failed: %s", command, err)
 		return nil, err
 	}
 
@@ -189,11 +194,11 @@ func (w *Watcher) watch(ctx context.Context) (state []byte, err error) {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		w.Errorf("Metric watcher %s failed: %s", w.properties.Command, err)
+		w.Errorf("Metric watcher %s failed: %s", command, err)
 		return nil, err
 	}
 
-	w.Debugf("Output from %s: %s", w.properties.Command, output)
+	w.Debugf("Output from %s: %s", command, output)
 
 	return output, nil
 }
