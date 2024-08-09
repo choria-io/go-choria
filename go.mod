@@ -35,23 +35,23 @@ require (
 	github.com/nats-io/nats-server/v2 v2.10.18
 	github.com/nats-io/nats.go v1.36.0
 	github.com/nats-io/natscli v0.1.5
-	github.com/onsi/ginkgo/v2 v2.19.1
+	github.com/onsi/ginkgo/v2 v2.20.0
 	github.com/onsi/gomega v1.34.1
-	github.com/open-policy-agent/opa v0.67.0
+	github.com/open-policy-agent/opa v0.67.1
 	github.com/prometheus/client_golang v1.19.1
 	github.com/prometheus/client_model v0.6.1
 	github.com/robfig/cron v1.2.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.9.3
-	github.com/tidwall/gjson v1.17.2
+	github.com/tidwall/gjson v1.17.3
 	github.com/tidwall/pretty v1.2.1
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
-	golang.org/x/crypto v0.25.0
-	golang.org/x/sys v0.22.0
-	golang.org/x/term v0.22.0
-	golang.org/x/text v0.16.0
-	golang.org/x/tools v0.23.0
+	golang.org/x/crypto v0.26.0
+	golang.org/x/sys v0.24.0
+	golang.org/x/term v0.23.0
+	golang.org/x/text v0.17.0
+	golang.org/x/tools v0.24.0
 	rsc.io/goversion v1.2.0
 )
 
@@ -65,7 +65,7 @@ require (
 	github.com/agnivade/levenshtein v1.1.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
-	github.com/brutella/dnssd v1.2.11 // indirect
+	github.com/brutella/dnssd v1.2.12 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/choria-io/goform v0.0.3 // indirect
@@ -120,11 +120,13 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/samber/lo v1.46.0 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
-	github.com/spf13/cast v1.6.0 // indirect
+	github.com/spf13/cast v1.7.0 // indirect
 	github.com/tadglines/go-pkgs v0.0.0-20210623144937-b983b20f54f9 // indirect
 	github.com/tchap/go-patricia/v2 v2.3.1 // indirect
 	github.com/tidwall/match v1.1.1 // indirect
 	github.com/tylertreat/hdrhistogram-writer v0.0.0-20210816161836-2e440612a39f // indirect
+	github.com/vishvananda/netlink v1.2.1-beta.2 // indirect
+	github.com/vishvananda/netns v0.0.4 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xiam/to v0.0.0-20200126224905-d60d31e03561 // indirect
@@ -135,11 +137,11 @@ require (
 	go.opentelemetry.io/otel/trace v1.28.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
-	golang.org/x/mod v0.19.0 // indirect
-	golang.org/x/net v0.27.0 // indirect
-	golang.org/x/sync v0.7.0 // indirect
-	golang.org/x/time v0.5.0 // indirect
+	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa // indirect
+	golang.org/x/mod v0.20.0 // indirect
+	golang.org/x/net v0.28.0 // indirect
+	golang.org/x/sync v0.8.0 // indirect
+	golang.org/x/time v0.6.0 // indirect
 	gonum.org/v1/gonum v0.12.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
 	gopkg.in/alessio/shellescape.v1 v1.0.0-20170105083845-52074bc9df61 // indirect
