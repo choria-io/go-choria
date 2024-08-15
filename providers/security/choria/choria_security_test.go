@@ -8,7 +8,7 @@ import (
 	"crypto/ed25519"
 	"crypto/tls"
 	"encoding/hex"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"path/filepath"
 	"testing"
@@ -484,7 +484,7 @@ var _ = Describe("Providers/Security/Choria", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				// just shuffle the trusted tokens to test multi signer support automatically
-				if rand.Intn(10) <= 5 {
+				if rand.N(10) <= 5 {
 					cfg.TrustedTokenSigners = []ed25519.PublicKey{otherPubk, signerPubk}
 				} else {
 					cfg.TrustedTokenSigners = []ed25519.PublicKey{signerPubk, otherPubk}

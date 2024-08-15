@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"os/exec"
 	"sync"
@@ -168,7 +168,7 @@ func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 
 	tick := time.NewTicker(w.interval)
 	if w.properties.GatherInitialState {
-		splay := time.Duration(rand.Intn(30)) * time.Second
+		splay := rand.N(30 * time.Second)
 		w.Infof("Performing initial execution after %v", splay)
 		if splay < 1 {
 			splay = 1

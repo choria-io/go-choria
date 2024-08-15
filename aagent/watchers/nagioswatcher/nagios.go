@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,7 +9,7 @@ import (
 	"context"
 	"fmt"
 	"html/template"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"os/exec"
 	"strings"
@@ -282,7 +282,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	splay := time.Duration(rand.Intn(int(w.interval.Seconds()))) * time.Second
+	splay := rand.N(w.interval)
 	w.Infof("Splaying first check by %v", splay)
 
 	select {

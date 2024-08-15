@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,7 @@ package provision
 import (
 	"context"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 
 	"github.com/choria-io/go-choria/build"
@@ -62,7 +62,7 @@ func reprovisionAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.R
 		return
 	}
 
-	splay := time.Duration(rand.Intn(10)+2) * time.Second
+	splay := time.Duration(rand.N(10)+2) * time.Second
 	go restartCb(splay, agent.ServerInfoSource, agent.Log)
 
 	reply.Data = Reply{fmt.Sprintf("Restarting after %v", splay)}

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,7 @@ package server
 import (
 	"context"
 	iu "github.com/choria-io/go-choria/internal/util"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"time"
 
@@ -79,7 +79,7 @@ func (srv *Instance) publishStartupEvent() {
 func (srv *Instance) publishAliveEvents(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	delay := time.Duration(rand.Intn(30)) * time.Minute
+	delay := time.Duration(rand.N(30)) * time.Minute
 	event, err := lifecycle.New(lifecycle.Alive, lifecycle.Identity(srv.cfg.Identity), lifecycle.Version(srv.fw.BuildInfo().Version()), lifecycle.Component(srv.eventComponent()))
 	if err != nil {
 		srv.log.Errorf("Could not create new alive event: %s", err)

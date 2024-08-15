@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"path/filepath"
 	"sync"
@@ -546,7 +546,7 @@ func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) (started chan s
 
 	runf := func() {
 		if m.SplayStart > 0 {
-			sleep := time.Duration(rand.Intn(m.SplayStart)) * time.Second
+			sleep := time.Duration(rand.N(m.SplayStart)) * time.Second
 			m.Infof(m.MachineName, "Sleeping %v before starting Autonomous Agent", sleep)
 
 			t := time.NewTimer(sleep)
