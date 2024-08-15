@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -154,7 +154,7 @@ func rubyAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, a
 		}
 	}()
 
-	_, err = io.WriteString(stdin, string(shimr))
+	_, err = io.Writer.Write(stdin, shimr)
 	if err != nil {
 		abortAction(fmt.Sprintf("Could not send request to the Shim for Ruby action %s: %s", action, err), agent, reply)
 		return

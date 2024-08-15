@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,7 @@ package timerwatcher
 import (
 	"context"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"time"
 
@@ -184,7 +184,7 @@ func (w *Watcher) validate() error {
 	}
 
 	if w.properties.Splay {
-		w.properties.Timer = time.Duration(rand.Int63n(int64(w.properties.Timer)))
+		w.properties.Timer = rand.N(w.properties.Timer)
 		w.Infof("Adjusting timer to %v due to splay setting", w.properties.Timer)
 	}
 

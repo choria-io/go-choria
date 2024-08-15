@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,7 @@ package provision
 import (
 	"context"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"strings"
 	"syscall"
@@ -60,7 +60,7 @@ func restartAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply
 		args.Splay = 10
 	}
 
-	splay := time.Duration(rand.Intn(args.Splay)+2) * time.Second
+	splay := time.Duration(rand.N(args.Splay)+2) * time.Second
 	agent.Log.Warnf("Restarting server via request %s from %s (%s) with splay %v", req.RequestID, req.CallerID, req.SenderID, splay)
 
 	go restartCb(splay, agent.ServerInfoSource, agent.Log)

@@ -9,7 +9,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"net"
 	"os"
 	"os/exec"
@@ -108,7 +108,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	w.Infof("metric watcher for %s starting", w.properties.Command)
 
-	splay := time.Duration(rand.Intn(int(w.properties.Interval.Seconds()))) * time.Second
+	splay := rand.N(w.properties.Interval)
 	w.Infof("Splaying first check by %v", splay)
 
 	select {

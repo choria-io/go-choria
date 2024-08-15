@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,7 @@ package registration
 import (
 	"context"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"time"
 
@@ -121,7 +121,7 @@ func (reg *Manager) registrationWorker(ctx context.Context, wg *sync.WaitGroup, 
 	defer wg.Done()
 
 	if reg.cfg.RegistrationSplay {
-		sleepTime := time.Duration(rand.Intn(reg.cfg.RegisterInterval)) * time.Second
+		sleepTime := time.Duration(rand.N(reg.cfg.RegisterInterval)) * time.Second
 		reg.log.Infof("Sleeping %s seconds before first poll due to RegistrationSplay", sleepTime)
 		err := util.InterruptibleSleep(ctx, sleepTime)
 		if err != nil {

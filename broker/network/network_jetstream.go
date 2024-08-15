@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 
 	"github.com/choria-io/go-choria/backoff"
@@ -55,7 +55,7 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 
 	cfg := s.config.Choria
 	if cfg.NetworkEventStoreReplicas == -1 || cfg.NetworkMachineStoreReplicas == -1 || cfg.NetworkStreamAdvisoryReplicas == -1 || cfg.NetworkLeaderElectionReplicas == -1 {
-		delay := time.Duration(rand.Intn(60)+10) * time.Second
+		delay := time.Duration(rand.N(60)+10) * time.Second
 		s.log.Infof("Configuring system streams after %v", delay)
 		err = backoff.Default.Sleep(ctx, delay)
 		if err != nil {
