@@ -10,32 +10,46 @@ jobs:
     steps:
       - name: EL8 Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:el8-go1.21
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:el8-go1.22
 
   el9_64:
     runs-on: ubuntu-latest
     steps:
       - name: EL9 Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:el9-go1.21
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:el9-go1.22
 
   bionic_64:
     runs-on: ubuntu-latest
     steps:
       - name: Bionic Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:bionic-go1.21
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:bionic-go1.22
 
   focal_64:
     runs-on: ubuntu-latest
     steps:
       - name: Focal Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:focal-go1.21
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:focal-go1.22
+
+  noble_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Noble Installation Tests
+        shell: bash
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:noble-go1.22
 
   bullseye_64:
     runs-on: ubuntu-latest
     steps:
       - name: Bullseye Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:bullseye-go1.21
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:bullseye-go1.22
+
+  bookworm_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bookworm Installation Tests
+        shell: bash
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:bookworm-go1.22
