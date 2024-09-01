@@ -1,23 +1,21 @@
-// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
 package cmd
 
 import (
-	"bufio"
 	"fmt"
-	"os"
-	"runtime"
-	"strings"
-	"sync"
-	"unicode/utf8"
-
 	"github.com/choria-io/go-choria/config"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/providers/provtarget"
 	gnatsd "github.com/nats-io/nats-server/v2/server"
-	"rsc.io/goversion/version"
+	"runtime"
+	rd "runtime/debug"
+	"sort"
+	"strings"
+	"sync"
 )
 
 type buildinfoCommand struct {
@@ -185,15 +183,9 @@ func (b *buildinfoCommand) Run(wg *sync.WaitGroup) (err error) {
 }
 
 func (b *buildinfoCommand) printGoMods() {
-	binary, err := os.Executable()
-	if err != nil {
-		fmt.Printf("Could not read dependency information: %s\n", err)
-		return
-	}
-
-	fver, err := version.ReadExe(binary)
-	if err != nil {
-		fmt.Printf("Could not read dependency information: %s\n", err)
+	nfo, ok := rd.ReadBuildInfo()
+	if !ok {
+		fmt.Println("Could not read dependency information")
 		return
 	}
 
@@ -201,58 +193,25 @@ func (b *buildinfoCommand) printGoMods() {
 	fmt.Println("Compile time module dependencies:")
 	fmt.Println()
 
-	if fver.ModuleInfo != "" {
-		b.printModuleInfo(fver.ModuleInfo)
-	} else {
+	if len(nfo.Deps) == 0 {
 		fmt.Println("No module dependencies found")
+		return
 	}
 
-}
-
-func (b *buildinfoCommand) printModuleInfo(modinfo string) {
-	var rows [][]string
-	for _, line := range strings.Split(strings.TrimSpace(modinfo), "\n") {
-		row := strings.Split(line, "\t")
-		if row[0] != "dep" {
-			continue
-		}
-
-		if len(row) > 3 {
-			row = row[:3]
-		}
-
-		rows = append(rows, row[1:])
+	mods := []string{}
+	versions := map[string]string{}
+	for _, mod := range nfo.Deps {
+		mods = append(mods, mod.Path)
+		versions[mod.Path] = mod.Version
 	}
 
-	var max []int
-	for _, row := range rows {
-		for i, c := range row {
-			n := utf8.RuneCountInString(c)
-			if i >= len(max) {
-				max = append(max, n)
-			} else if max[i] < n {
-				max[i] = n
-			}
-		}
-	}
+	longest := iu.LongestString(mods, 50)
+	sort.Strings(mods)
 
-	out := bufio.NewWriter(os.Stdout)
-	for _, row := range rows {
-		out.WriteString("\t")
-		for len(row) > 0 && row[len(row)-1] == "" {
-			row = row[:len(row)-1]
-		}
-		for i, c := range row {
-			out.WriteString(c)
-			if i+1 < len(row) {
-				for j := utf8.RuneCountInString(c); j < max[i]+2; j++ {
-					out.WriteRune(' ')
-				}
-			}
-		}
-		out.WriteRune('\n')
+	format := fmt.Sprintf("  %%%ds %%s\n", longest)
+	for _, mod := range mods {
+		fmt.Printf(format, mod, versions[mod])
 	}
-	out.Flush()
 }
 
 func init() {
