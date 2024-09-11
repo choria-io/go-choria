@@ -252,7 +252,7 @@ jobs:
           cd artifacts
           for i in foss*
           do
-            mv -v $i $(echo $i|cut -d_ -f 2)
+            mv -v $i $(echo $i|cut -d_ -f2-)
           done
 
       - name: Upload artifacts to Spaces
