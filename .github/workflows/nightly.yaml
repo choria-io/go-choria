@@ -96,6 +96,15 @@ jobs:
         with:
           path: artifacts
 
+      - name: Artifacts normalization
+        shell: bash
+        run: |
+          cd artifacts
+          for i in foss*
+          do
+            mv -v $i $(echo $i|cut -d_ -f 2)
+          done
+
       - name: Upload artifacts to Spaces
         uses: jakejarvis/s3-sync-action@master
         with:
