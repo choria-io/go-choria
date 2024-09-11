@@ -104,5 +104,5 @@ jobs:
           AWS_S3_BUCKET: choria-packages-ams
           AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SPACES_SECRET_ACCESS_KEY }}
-          SOURCE_DIR: artifacts/foss
+          SOURCE_DIR: artifacts
           DEST_DIR: nightly
