@@ -242,9 +242,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
+
+      - name: Artifacts normalization
+        shell: bash
+        run: |
+          cd artifacts
+          for i in foss*
+          do
+            mv -v $i $(echo $i|cut -d_ -f 2)
+          done
 
       - name: Upload artifacts to Spaces
         uses: jakejarvis/s3-sync-action@master
@@ -254,5 +263,5 @@ jobs:
           AWS_S3_BUCKET: choria-packages-ams
           AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SPACES_SECRET_ACCESS_KEY }}
-          SOURCE_DIR: artifacts/foss
+          SOURCE_DIR: artifacts
           DEST_DIR: release
