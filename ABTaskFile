@@ -276,9 +276,8 @@ commands:
               ab_panic HEAD is not a tag
             fi
 
-            docker pull almalinux:8
-
             docker build \
+              --pull \
               --no-cache \
               --build-arg REPO={{ .Flags.repo | escape }} \
               --tag "choria/choria:${TAG}" \
