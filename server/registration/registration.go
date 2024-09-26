@@ -92,7 +92,7 @@ func (reg *Manager) Start(ctx context.Context, wg *sync.WaitGroup) error {
 		case "inventory_content":
 			registrator, err = registration.NewInventoryContent(reg.cfg, reg.si, reg.log)
 			if err != nil {
-				return fmt.Errorf("cannot start File Content Registrator: %s", err)
+				return fmt.Errorf("cannot start Inventory Content Registrator: %s", err)
 			}
 
 		default:
