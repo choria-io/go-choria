@@ -2,7 +2,13 @@
 
 action="$1"
 
-if [ "$action" = remove ]; then
-	systemctl --no-reload disable choria-server.service choria-broker.service
-	systemctl stop choria-server.service choria-broker.service
+if command -v systemctl 2>&1 >/dev/null
+then
+  if [ "$action" = remove ]; then
+    systemctl --no-reload disable choria-server.service choria-broker.service
+    systemctl stop choria-server.service choria-broker.service
+  fi
+else
+  echo "systemctl could not be found, skipping service disable & remove."
+  exit 0
 fi
