@@ -5,15 +5,15 @@ action="$1"
 if [ "$action" = configure ]; then
 	old_version="$2"
 
-  if command -v systemctl 2>&1 >/dev/null
-  then
-    if [ -z "$old_version" ]; then
-      systemctl enable choria-server.service
-    else
-      systemctl try-restart choria-broker.service choria-server.service
-    fi
-  else
-    echo "systemctl could not be found, skipping service start."
-    exit 0
-  fi
+	if command -v systemctl 2>&1 >/dev/null
+	then
+		if [ -z "$old_version" ]; then
+			systemctl enable choria-server.service
+		else
+			systemctl try-restart choria-broker.service choria-server.service
+		fi
+	else
+		echo "systemctl could not be found, skipping service start."
+		exit 0
+	fi
 fi

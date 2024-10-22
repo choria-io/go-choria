@@ -2,8 +2,8 @@
 
 if command -v systemctl 2>&1 >/dev/null
 then
-  systemctl daemon-reload
+	systemctl daemon-reload
 else
-  echo "systemctl could not be found, skipping daemon reload."
-  exit 0
+	echo "systemctl could not be found, skipping daemon reload."
+	exit 0
 fi
