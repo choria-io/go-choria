@@ -11,8 +11,8 @@ import (
 	net "net"
 	reflect "reflect"
 
-	gomock "github.com/golang/mock/gomock"
 	server "github.com/nats-io/nats-server/v2/server"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockClientAuthentication is a mock of ClientAuthentication interface.

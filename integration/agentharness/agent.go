@@ -17,9 +17,9 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
-	"github.com/golang/mock/gomock"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 )
 
 // NewWithDDLBytes creates a new test harness based on a ddl contained in ddlBytes

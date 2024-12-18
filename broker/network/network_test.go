@@ -11,7 +11,7 @@ import (
 
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/srvcache"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"github.com/choria-io/go-choria/config"
 	. "github.com/onsi/ginkgo/v2"

@@ -15,9 +15,9 @@ import (
 
 	inter "github.com/choria-io/go-choria/inter"
 	lifecycle "github.com/choria-io/go-choria/lifecycle"
-	gomock "github.com/golang/mock/gomock"
 	jsm_go "github.com/nats-io/jsm.go"
 	logrus "github.com/sirupsen/logrus"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockWatcher is a mock of Watcher interface.

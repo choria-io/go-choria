@@ -20,7 +20,7 @@ import (
 	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/choria-io/go-choria/providers/security/filesec"
 
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"github.com/choria-io/go-choria/config"
 

@@ -17,7 +17,7 @@ import (
 	protocol "github.com/choria-io/go-choria/protocol"
 	ddl "github.com/choria-io/go-choria/providers/data/ddl"
 	statistics "github.com/choria-io/go-choria/statistics"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockAgent is a mock of Agent interface.

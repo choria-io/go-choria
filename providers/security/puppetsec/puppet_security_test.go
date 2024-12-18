@@ -20,9 +20,9 @@ import (
 	"github.com/choria-io/go-choria/srvcache"
 	"github.com/sirupsen/logrus"
 
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 func TestPuppetSecurity(t *testing.T) {

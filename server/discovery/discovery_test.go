@@ -10,7 +10,7 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	"github.com/choria-io/go-choria/filter/classes"
 	"github.com/choria-io/go-choria/filter/facts"
