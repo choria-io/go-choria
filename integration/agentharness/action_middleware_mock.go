@@ -16,7 +16,7 @@ import (
 
 	inter "github.com/choria-io/go-choria/inter"
 	mcorpc "github.com/choria-io/go-choria/providers/agent/mcorpc"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockActionMiddleware is a mock of ActionMiddleware interface.

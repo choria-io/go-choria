@@ -11,9 +11,9 @@ import (
 
 	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 func TestMachine(t *testing.T) {

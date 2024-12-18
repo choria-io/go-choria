@@ -13,7 +13,7 @@ import (
 	ddl "github.com/choria-io/go-choria/providers/data/ddl"
 	agents "github.com/choria-io/go-choria/server/agents"
 	statistics "github.com/choria-io/go-choria/statistics"
-	gomock "github.com/golang/mock/gomock"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockServerInfoSource is a mock of ServerInfoSource interface.

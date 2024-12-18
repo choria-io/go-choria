@@ -18,9 +18,9 @@ import (
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/message"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 func TestClient(t *testing.T) {

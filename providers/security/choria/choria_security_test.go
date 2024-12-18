@@ -18,10 +18,10 @@ import (
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/tokens"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
+	"go.uber.org/mock/gomock"
 )
 
 func TestFileSecurity(t *testing.T) {

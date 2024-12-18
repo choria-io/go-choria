@@ -20,11 +20,11 @@ import (
 	"github.com/choria-io/go-choria/internal/fs"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 )
 
 func TestAgentHarnessAgent(t *testing.T) {

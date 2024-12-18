@@ -24,11 +24,11 @@ import (
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/tokens"
 	"github.com/golang-jwt/jwt/v4"
-	"github.com/golang/mock/gomock"
 	"github.com/nats-io/nats-server/v2/server"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("Network Broker/ChoriaAuth", func() {
