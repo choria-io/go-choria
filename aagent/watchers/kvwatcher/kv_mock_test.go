@@ -2,7 +2,7 @@
 // Source: github.com/nats-io/nats.go (interfaces: KeyValue,KeyValueEntry)
 //
 // mockgen -package kvwatcher -destination kv_mock_test.go github.com/nats-io/nats.go KeyValue,KeyValueEntry
-//
+
 // Package kvwatcher is a generated GoMock package.
 package kvwatcher
 
@@ -307,6 +307,26 @@ func (m *MockKeyValue) WatchAll(arg0 ...nats.WatchOpt) (nats.KeyWatcher, error) 
 func (mr *MockKeyValueMockRecorder) WatchAll(arg0 ...interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatchAll", reflect.TypeOf((*MockKeyValue)(nil).WatchAll), arg0...)
+}
+
+// WatchFiltered mocks base method.
+func (m *MockKeyValue) WatchFiltered(arg0 []string, arg1 ...nats.WatchOpt) (nats.KeyWatcher, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{arg0}
+	for _, a := range arg1 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "WatchFiltered", varargs...)
+	ret0, _ := ret[0].(nats.KeyWatcher)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// WatchFiltered indicates an expected call of WatchFiltered.
+func (mr *MockKeyValueMockRecorder) WatchFiltered(arg0 interface{}, arg1 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	varargs := append([]interface{}{arg0}, arg1...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "WatchFiltered", reflect.TypeOf((*MockKeyValue)(nil).WatchFiltered), varargs...)
 }
 
 // MockKeyValueEntry is a mock of KeyValueEntry interface.
