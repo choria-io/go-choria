@@ -2,12 +2,12 @@ package io.choria.mcorpc.authpolicy
 
 default allow = false
 
-allow {
+allow if {
    input.agent = "ginkgo"
    input.action = "boop"
 }
 
-allow {
+allow if {
    input.agent = "other"
    input.action = "poob"
 }

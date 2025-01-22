@@ -621,8 +621,8 @@ func exitPath(spool string, id string) string {
 	return filepath.Join(spool, id, "exit")
 }
 
-func exitJson(exitCode int, error string) json.RawMessage {
-	return []byte(fmt.Sprintf(`{"code":%d,"error":%q}`, exitCode, error))
+func exitJson(exitCode int, err string) json.RawMessage {
+	return []byte(fmt.Sprintf(`{"code":%d,"error":%q}`, exitCode, err))
 }
 
 func newSubmissionMessage(submit Submitter, subject string) *submission.Message {
