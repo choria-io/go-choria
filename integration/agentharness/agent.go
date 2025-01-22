@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -70,7 +70,7 @@ type ActionMiddleware interface {
 type AgentHarness struct {
 	name    string
 	ddl     *addl.DDL
-	fw      mcorpc.ChoriaFramework
+	fw      inter.Framework
 	log     *logrus.Entry
 	actions map[string]*MockActionMiddleware
 }

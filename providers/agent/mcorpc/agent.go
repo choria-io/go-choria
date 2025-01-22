@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -30,7 +30,7 @@ type ActivationChecker func() bool
 type Agent struct {
 	Log              *logrus.Entry
 	Config           *config.Config
-	Choria           ChoriaFramework
+	Choria           inter.Framework
 	ServerInfoSource agents.ServerInfoSource
 
 	activationCheck ActivationChecker
@@ -39,7 +39,7 @@ type Agent struct {
 }
 
 // New creates a new MCollective SimpleRPC compatible agent
-func New(name string, metadata *agents.Metadata, fw ChoriaFramework, log *logrus.Entry) *Agent {
+func New(name string, metadata *agents.Metadata, fw inter.Framework, log *logrus.Entry) *Agent {
 	a := &Agent{
 		meta:            metadata,
 		Log:             log.WithFields(logrus.Fields{"agent": name}),
@@ -218,34 +218,60 @@ func (a *Agent) parseIncomingMessage(msg []byte, request protocol.Request) (*Req
 }
 
 func (a *Agent) authorize(req *Request) bool {
-	if !a.Config.RPCAuthorization {
-		return true
+	if req.Agent != a.Name() {
+		a.Log.Errorf("Could not process authorization for request for a different agent")
+		return false
 	}
 
-	prov := strings.ToLower(a.Config.RPCAuthorizationProvider)
+	return AuthorizeRequest(a.Choria, req, a.Config, a.ServerInfoSource, a.Log)
+}
+
+// AuthorizeRequest authorizes a request using the configured authorizer
+func AuthorizeRequest(fw inter.Framework, req *Request, cfg *config.Config, si agents.ServerInfoSource, log *logrus.Entry) bool {
+	if cfg == nil {
+		log.Errorf("Could not process authorization without a configuration")
+		return false
+	}
+	if !cfg.RPCAuthorization {
+		return true
+	}
+	if req == nil {
+		log.Errorf("Could not process authorization without a request")
+		return false
+	}
+	if req.Agent == "" {
+		log.Errorf("Could not process authorization without a agent name")
+		return false
+	}
+	if si == nil {
+		log.Errorf("Could not process authorization without a server info source")
+		return false
+	}
+
+	prov := strings.ToLower(cfg.RPCAuthorizationProvider)
 
 	switch prov {
 	case "action_policy":
-		return actionPolicyAuthorize(req, a, a.Log)
+		return actionPolicyAuthorize(req, cfg, log)
 
 	case "rego_policy":
-		auth, err := regoPolicyAuthorize(req, a, a.Log)
+		auth, err := regoPolicyAuthorize(req, fw, si, cfg, log)
 		if err != nil {
-			a.Log.Errorf("Could not process Open Policy Agent policy: %v", err)
+			log.Errorf("Could not process Open Policy Agent policy: %v", err)
 			return false
 		}
 		return auth
 
 	case "aaasvc", "aaasvc_policy":
-		auth, err := aaasvcPolicyAuthorize(req, a, a.Log)
+		auth, err := aaasvcPolicyAuthorize(req, cfg, log)
 		if err != nil {
-			a.Log.Errorf("Could not process JWT policy: %v", err)
+			log.Errorf("Could not process JWT policy: %v", err)
 			return false
 		}
 		return auth
 
 	default:
-		a.Log.Errorf("Unsupported authorization provider: %s", prov)
+		log.Errorf("Unsupported authorization provider: %s", prov)
 
 	}
 

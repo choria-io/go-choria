@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -21,7 +21,6 @@ var _ = Describe("ActionPolicy", func() {
 		pol       *actionPolicyPolicy
 		logger    *logrus.Entry
 		mockctl   *gomock.Controller
-		fw        *imock.MockFramework
 		cfg       *config.Config
 		logbuffer *bytes.Buffer
 	)
@@ -33,7 +32,7 @@ var _ = Describe("ActionPolicy", func() {
 		pol = &actionPolicyPolicy{log: logger}
 
 		mockctl = gomock.NewController(GinkgoT())
-		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
+		_, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
 		cfg.ClassesFile = "testdata/classes.txt"
 		cfg.FactSourceFile = "testdata/facts.json"
 		cfg.DisableSecurityProviderVerify = true
@@ -47,11 +46,6 @@ var _ = Describe("ActionPolicy", func() {
 				Agent:    "ginkgo",
 				Action:   "test",
 				CallerID: "choria=ginkgo.mcollective",
-			},
-			agent: &Agent{
-				Log:    logger,
-				Config: cfg,
-				Choria: fw,
 			},
 		}
 	})
