@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -163,6 +163,8 @@ type ChoriaPluginConfig struct {
 	RPCAuditLogfile      string `confkey:"plugin.rpcaudit.logfile" type:"path_string"`  // Path to the RPC audit log
 	RPCAuditLogfileGroup string `confkey:"plugin.rpcaudit.logfile.group"`               // User group to set file ownership to
 	RPCAuditLogFileMode  string `confkey:"plugin.rpcaudit.logfile.mode" default:"0600"` // File mode to apply to the file
+
+	ExecutorSpool string `confkey:"plugin.choria.executor.spool" type:"path_string"` // Path where the command executor writes state
 
 	AutonomousAgentsDownload           bool   `confkey:"plugin.machines.download"`                        // Activate run-time installation of Autonomous Agents
 	AutonomousAgentsBucket             string `confkey:"plugin.machines.bucket" default:"CHORIA_PLUGINS"` // The KV bucket to query for plugins to install

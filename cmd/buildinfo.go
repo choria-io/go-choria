@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,16 +6,17 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/choria-io/go-choria/config"
-	iu "github.com/choria-io/go-choria/internal/util"
-	"github.com/choria-io/go-choria/protocol"
-	"github.com/choria-io/go-choria/providers/provtarget"
-	gnatsd "github.com/nats-io/nats-server/v2/server"
 	"runtime"
 	rd "runtime/debug"
 	"sort"
 	"strings"
 	"sync"
+
+	"github.com/choria-io/go-choria/config"
+	iu "github.com/choria-io/go-choria/internal/util"
+	"github.com/choria-io/go-choria/protocol"
+	"github.com/choria-io/go-choria/providers/provtarget"
+	gnatsd "github.com/nats-io/nats-server/v2/server"
 )
 
 type buildinfoCommand struct {
