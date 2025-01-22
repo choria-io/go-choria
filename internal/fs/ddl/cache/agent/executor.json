@@ -1,0 +1,92 @@
+{
+  "$schema": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
+  "metadata": {
+    "license": "Apache-2.0",
+    "author": "R.I.Pienaar \u003crip@devco.net\u003e",
+    "timeout": 20,
+    "name": "executor",
+    "version": "0.29.4",
+    "url": "https://choria.io",
+    "description": "Choria Process Executor Management",
+    "provider": "golang"
+  },
+  "actions": [
+    {
+      "action": "status",
+      "input": {
+        "id": {
+          "prompt": "Job ID",
+          "description": "The unique ID for the job",
+          "type": "string",
+          "maxlength": 20,
+          "validation": ".",
+          "optional": false
+        }
+      },
+      "output": {
+        "action": {
+          "description": "The RPC Action that started the process",
+          "display_as": "Action",
+          "type": "string"
+        },
+        "agent": {
+          "description": "The RPC Agent that started the process",
+          "display_as": "Agent",
+          "type": "string"
+        },
+        "caller": {
+          "description": "The Caller ID who started the process",
+          "display_as": "Caller",
+          "type": "string"
+        },
+        "exit_code": {
+          "description": "The exit code the process terminated with",
+          "display_as": "Exit Code",
+          "type": "integer"
+        },
+        "pid": {
+          "description": "The OS Process ID",
+          "display_as": "Pid",
+          "type": "integer"
+        },
+        "requestid": {
+          "description": "The Request ID that started the process",
+          "display_as": "Request ID",
+          "type": "string"
+        },
+        "running": {
+          "description": "Indicates if the process is still running",
+          "display_as": "Running",
+          "type": "boolean"
+        },
+        "started": {
+          "description": "Indicates if the process was started",
+          "display_as": "Started",
+          "type": "boolean"
+        },
+        "start_time": {
+          "description": "Time that the process started",
+          "display_as": "Started",
+          "type": "string"
+        },
+        "terminate_time": {
+          "description": "Time that the process terminated",
+          "display_as": "Terminated",
+          "type": "string"
+        },
+        "stdout_bytes": {
+          "description": "The number of bytes of STDOUT output available",
+          "display_as": "STDOUT Bytes",
+          "type": "integer"
+        },
+        "stderr_bytes": {
+          "description": "The number of bytes of STDERR output available",
+          "display_as": "STDERR Bytes",
+          "type": "integer"
+        }
+      },
+      "display": "always",
+      "description": "Requests the status of a job by ID"
+    }
+  ]
+}
