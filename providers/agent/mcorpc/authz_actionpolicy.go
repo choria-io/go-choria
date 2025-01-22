@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -21,17 +21,16 @@ import (
 	"github.com/sirupsen/logrus"
 )
 
-func actionPolicyAuthorize(req *Request, agent *Agent, log *logrus.Entry) bool {
+func actionPolicyAuthorize(req *Request, cfg *config.Config, log *logrus.Entry) bool {
 	logger := log.WithFields(logrus.Fields{
 		"authorizer": "actionpolicy",
-		"agent":      agent.Name(),
+		"agent":      req.Agent,
 		"request":    req.RequestID,
 	})
 
 	authz := &actionPolicy{
-		cfg:     agent.Config,
+		cfg:     cfg,
 		req:     req,
-		agent:   agent,
 		matcher: &actionPolicyPolicy{log: logger},
 		groups:  make(map[string][]string),
 		log:     logger,
@@ -48,7 +47,6 @@ func actionPolicyAuthorize(req *Request, agent *Agent, log *logrus.Entry) bool {
 type actionPolicy struct {
 	cfg     *config.Config
 	req     *Request
-	agent   *Agent
 	log     *logrus.Entry
 	matcher *actionPolicyPolicy
 	groups  map[string][]string
@@ -168,7 +166,7 @@ func (a *actionPolicy) checkRequestAgainstPolicy() (bool, error) {
 		return false, nil
 	}
 
-	factsMatched, err := pol.MatchesFacts(a.agent.Config, a.log)
+	factsMatched, err := pol.MatchesFacts(a.cfg, a.log)
 	if err != nil {
 		return false, err
 	}
@@ -204,7 +202,7 @@ func (a *actionPolicy) defaultPolicyFileName() string {
 }
 
 func (a *actionPolicy) lookupPolicyFile() (string, error) {
-	agentPolicy := filepath.Join(filepath.Dir(a.cfg.ConfigFile), "policies", a.agent.Name()+".policy")
+	agentPolicy := filepath.Join(filepath.Dir(a.cfg.ConfigFile), "policies", a.req.Agent+".policy")
 
 	a.log.Debugf("Looking up agent policy in %s", agentPolicy)
 	if util.FileExist(agentPolicy) {
@@ -218,7 +216,7 @@ func (a *actionPolicy) lookupPolicyFile() (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("no policy found for %s", a.agent.Name())
+	return "", fmt.Errorf("no policy found for %s", a.req.Agent)
 }
 
 func (a *actionPolicy) parseGroupFile(gfile string) error {

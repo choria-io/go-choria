@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -18,23 +18,9 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/choria-io/go-choria/srvcache"
 	"github.com/choria-io/go-choria/validator"
 )
-
-// ChoriaFramework provides access to the choria framework
-type ChoriaFramework interface {
-	Configuration() *config.Config
-	FacterDomain() (string, error)
-	FacterCmd() string
-	MiddlewareServers() (srvcache.Servers, error)
-	NewTransportFromJSON(data []byte) (protocol.TransportMessage, error)
-	ProvisionMode() bool
-	UniqueID() string
-	Certname() string
-}
 
 // StatusCode is a reply status as defined by MCollective SimpleRPC - integers 0 to 5
 //
