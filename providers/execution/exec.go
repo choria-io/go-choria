@@ -29,20 +29,26 @@ import (
 
 // Process describes a process managed by the execution provider
 type Process struct {
-	Command     string            `json:"command"`
-	Args        []string          `json:"args"`
-	Environment map[string]string `json:"environment"`
-	StdoutFile  string            `json:"stdout"`
-	StderrFile  string            `json:"stderr"`
-	PidFile     string            `json:"pid"`
-	HeartBeat   time.Duration     `json:"heartbeat"`
-	ID          string            `json:"id"`
-	Identity    string            `json:"identity"`
-	Caller      string            `json:"caller"`
-	Agent       string            `json:"agent"`
-	Action      string            `json:"action"`
-	RequestID   string            `json:"requestid"`
-	StartTime   time.Time         `json:"start,omitempty"`
+	Command       string            `json:"command"`
+	Args          []string          `json:"args"`
+	Environment   map[string]string `json:"environment"`
+	StdoutFile    string            `json:"stdout"`
+	StderrFile    string            `json:"stderr"`
+	PidFile       string            `json:"pid"`
+	HeartBeat     time.Duration     `json:"heartbeat"`
+	ID            string            `json:"id"`
+	Identity      string            `json:"identity"`
+	Caller        string            `json:"caller"`
+	Agent         string            `json:"agent"`
+	Action        string            `json:"action"`
+	RequestID     string            `json:"requestid"`
+	StartTime     time.Time         `json:"start,omitempty"`
+	TerminateTime time.Time         `json:"terminate,omitempty"`
+}
+
+type ExitCode struct {
+	Code  int    `json:"code"`
+	Error string `json:"error"`
 }
 
 type Submitter interface {
@@ -265,14 +271,26 @@ func (p *Process) StartSupervised(ctx context.Context, spool string, submit Subm
 	}
 
 	err = cmd.Wait()
+	// always save then handle the error from waiting
+	p.TerminateTime = time.Now().UTC()
+	_, saveErr := saveJobSpec(spool, p)
+	if saveErr != nil {
+		log.Errorf("Could not save job after execution: %v", err)
+	}
+
 	if err != nil {
 		var exiterr *exec.ExitError
 		if errors.As(err, &exiterr) {
 			msg := newSubmissionMessage(submit, fmt.Sprintf("%s.exit", prefix))
-			msg.Payload = []byte(fmt.Sprintf("%d %v", exiterr.ExitCode(), err.Error()))
-			err = submit.Submit(msg)
+			msg.Payload = exitJson(exiterr.ExitCode(), err.Error())
+			err := submit.Submit(msg)
 			if err != nil {
 				log.Errorf("Failed to publish exit update: %v", err)
+			}
+
+			err = os.WriteFile(exitPath(spool, p.ID), msg.Payload, 0700)
+			if err != nil {
+				log.Errorf("Failed to write exit code: %v", err)
 			}
 		}
 
@@ -288,10 +306,14 @@ func (p *Process) StartSupervised(ctx context.Context, spool string, submit Subm
 	wg.Wait()
 
 	msg = newSubmissionMessage(submit, fmt.Sprintf("%s.exit", prefix))
-	msg.Payload = []byte("0")
+	msg.Payload = exitJson(0, "")
 	err = submit.Submit(msg)
 	if err != nil {
 		log.Errorf("Failed to publish exit update: %v", err)
+	}
+	err = os.WriteFile(exitPath(spool, p.ID), msg.Payload, 0700)
+	if err != nil {
+		log.Errorf("Failed to write exit code: %v", err)
 	}
 
 	log.Infof("Finished supervised process")
@@ -392,6 +414,34 @@ func (p *Process) ParsePid() (int, error) {
 	return pid, nil
 }
 
+// ParseExitCode parse the exist code file, -1 on error
+func (p *Process) ParseExitCode() (int, error) {
+	started, err := p.HasStarted()
+	if err != nil {
+		return -1, err
+	}
+	if !started {
+		return -1, fmt.Errorf("%w: process not started", ErrInvalidProcess)
+	}
+
+	exitBytes, err := os.ReadFile(exitPath(filepath.Dir(filepath.Dir(p.PidFile)), p.ID))
+	if err != nil {
+		return 0, fmt.Errorf("%w: %w", ErrInvalidProcess, err)
+	}
+
+	var exit ExitCode
+	err = json.Unmarshal(exitBytes, &exit)
+	if err != nil {
+		return -1, fmt.Errorf("%w: %w", ErrInvalidProcess, err)
+	}
+
+	if exit.Error != "" {
+		return -1, errors.New(exit.Error)
+	}
+
+	return exit.Code, nil
+}
+
 func watchOutputReader(wg *sync.WaitGroup, r io.Reader, origin string, out chan watchedLine, log *logrus.Entry) {
 	defer wg.Done()
 
@@ -464,6 +514,10 @@ func watchOutput(wg *sync.WaitGroup, stdout io.Reader, stderr io.Reader, submit 
 	}()
 
 	publish := func(prev string, buff *bytes.Buffer) {
+		if buff.Len() == 0 {
+			return
+		}
+
 		msg := newSubmissionMessage(submit, "")
 
 		switch prev {
@@ -519,7 +573,28 @@ func saveJobSpec(spool string, proc *Process) (json.RawMessage, error) {
 		return nil, err
 	}
 
-	return j, os.WriteFile(specPath(spool, proc.ID), j, 0700)
+	tf, err := os.CreateTemp(spool, "")
+	if err != nil {
+		return nil, err
+	}
+
+	err = os.Chmod(tf.Name(), 0700)
+	if err != nil {
+		tf.Close()
+		os.Remove(tf.Name())
+
+		return nil, err
+	}
+
+	_, err = tf.Write(j)
+	if err != nil {
+		tf.Close()
+		os.Remove(tf.Name())
+		return nil, err
+	}
+	tf.Close()
+
+	return j, os.Rename(tf.Name(), specPath(spool, proc.ID))
 }
 
 func hasJob(spool string, id string) (bool, error) {
@@ -540,6 +615,14 @@ func stdErrPath(spool string, id string) string {
 
 func specPath(spool string, id string) string {
 	return filepath.Join(spool, id, "spec.json")
+}
+
+func exitPath(spool string, id string) string {
+	return filepath.Join(spool, id, "exit")
+}
+
+func exitJson(exitCode int, err string) json.RawMessage {
+	return []byte(fmt.Sprintf(`{"code":%d,"error":%q}`, exitCode, err))
 }
 
 func newSubmissionMessage(submit Submitter, subject string) *submission.Message {
