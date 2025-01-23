@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT
 
-package aaa_signerclient
+package executorclient
 
 import (
 	"context"
@@ -198,7 +198,7 @@ type MetaNS struct {
 func NewMetaNS(opts *discovery.StandardOptions, enablePipeMode bool) *MetaNS {
 	return &MetaNS{
 		Options:               opts,
-		Agent:                 "aaa_signer",
+		Agent:                 "executor",
 		DisablePipedDiscovery: !enablePipeMode,
 		nodeCache:             []string{},
 	}

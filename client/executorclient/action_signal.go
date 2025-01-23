@@ -1,8 +1,8 @@
 // generated code; DO NOT EDIT
 //
-// Client for Choria RPC Agent 'choria_provision' Version 0.29.4 generated using Choria version 0.29.4
+// Client for Choria RPC Agent 'executor' Version 0.29.4 generated using Choria version 0.29.4
 
-package choria_provisionclient
+package executorclient
 
 import (
 	"context"
@@ -17,28 +17,28 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
 )
 
-// GencsrRequester performs a RPC request to choria_provision#gencsr
-type GencsrRequester struct {
+// SignalRequester performs a RPC request to executor#signal
+type SignalRequester struct {
 	r    *requester
-	outc chan *GencsrOutput
+	outc chan *SignalOutput
 }
 
-// GencsrOutput is the output from the gencsr action
-type GencsrOutput struct {
+// SignalOutput is the output from the signal action
+type SignalOutput struct {
 	details *ResultDetails
 	reply   map[string]any
 }
 
-// GencsrResult is the result from a gencsr action
-type GencsrResult struct {
+// SignalResult is the result from a signal action
+type SignalResult struct {
 	ddl        *agent.DDL
 	stats      *rpcclient.Stats
-	outputs    []*GencsrOutput
+	outputs    []*SignalOutput
 	rpcreplies []*replyfmt.RPCReply
 	mu         sync.Mutex
 }
 
-func (d *GencsrResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, colorize bool, log Log) error {
+func (d *SignalResult) RenderResults(w io.Writer, format RenderFormat, displayMode DisplayMode, verbose bool, silent bool, colorize bool, log Log) error {
 	d.mu.Lock()
 	defer d.mu.Unlock()
 
@@ -72,27 +72,27 @@ func (d *GencsrResult) RenderResults(w io.Writer, format RenderFormat, displayMo
 }
 
 // Stats is the rpc request stats
-func (d *GencsrResult) Stats() Stats {
+func (d *SignalResult) Stats() Stats {
 	return d.stats
 }
 
 // ResultDetails is the details about the request
-func (d *GencsrOutput) ResultDetails() *ResultDetails {
+func (d *SignalOutput) ResultDetails() *ResultDetails {
 	return d.details
 }
 
 // HashMap is the raw output data
-func (d *GencsrOutput) HashMap() map[string]any {
+func (d *SignalOutput) HashMap() map[string]any {
 	return d.reply
 }
 
 // JSON is the JSON representation of the output data
-func (d *GencsrOutput) JSON() ([]byte, error) {
+func (d *SignalOutput) JSON() ([]byte, error) {
 	return json.Marshal(d.reply)
 }
 
-// ParseGencsrOutput parses the result value from the Gencsr action into target
-func (d *GencsrOutput) ParseGencsrOutput(target any) error {
+// ParseSignalOutput parses the result value from the Signal action into target
+func (d *SignalOutput) ParseSignalOutput(target any) error {
 	j, err := d.JSON()
 	if err != nil {
 		return fmt.Errorf("could not access payload: %s", err)
@@ -107,8 +107,8 @@ func (d *GencsrOutput) ParseGencsrOutput(target any) error {
 }
 
 // Do performs the request
-func (d *GencsrRequester) Do(ctx context.Context) (*GencsrResult, error) {
-	dres := &GencsrResult{ddl: d.r.client.ddl}
+func (d *SignalRequester) Do(ctx context.Context) (*SignalResult, error) {
+	dres := &SignalResult{ddl: d.r.client.ddl}
 
 	addl, err := dres.ddl.ActionInterface(d.r.action)
 	if err != nil {
@@ -121,7 +121,7 @@ func (d *GencsrRequester) Do(ctx context.Context) (*GencsrResult, error) {
 			return
 		}
 
-		output := &GencsrOutput{
+		output := &SignalOutput{
 			reply: make(map[string]any),
 			details: &ResultDetails{
 				sender:  pr.SenderID(),
@@ -166,97 +166,33 @@ func (d *GencsrRequester) Do(ctx context.Context) (*GencsrResult, error) {
 }
 
 // AllOutputs provide access to all outputs
-func (d *GencsrResult) AllOutputs() []*GencsrOutput {
+func (d *SignalResult) AllOutputs() []*SignalOutput {
 	return d.outputs
 }
 
 // EachOutput iterates over all results received
-func (d *GencsrResult) EachOutput(h func(r *GencsrOutput)) {
+func (d *SignalResult) EachOutput(h func(r *SignalOutput)) {
 	for _, resp := range d.outputs {
 		h(resp)
 	}
 }
 
-// C is an optional input to the gencsr action
+// Pid is the value of the pid output
 //
-// Description: Country Code
-func (d *GencsrRequester) C(v string) *GencsrRequester {
-	d.r.args["c"] = v
+// Description: The PID that was signaled
+func (d *SignalOutput) Pid() int64 {
+	val := d.reply["pid"]
 
-	return d
-}
-
-// L is an optional input to the gencsr action
-//
-// Description: Locality or municipality (such as city or town name)
-func (d *GencsrRequester) L(v string) *GencsrRequester {
-	d.r.args["l"] = v
-
-	return d
-}
-
-// O is an optional input to the gencsr action
-//
-// Description: Organization
-func (d *GencsrRequester) O(v string) *GencsrRequester {
-	d.r.args["o"] = v
-
-	return d
-}
-
-// Ou is an optional input to the gencsr action
-//
-// Description: Organizational Unit
-func (d *GencsrRequester) Ou(v string) *GencsrRequester {
-	d.r.args["ou"] = v
-
-	return d
-}
-
-// St is an optional input to the gencsr action
-//
-// Description: State
-func (d *GencsrRequester) St(v string) *GencsrRequester {
-	d.r.args["st"] = v
-
-	return d
-}
-
-// Cn is an optional input to the gencsr action
-//
-// Description: The certificate Common Name to place in the CSR
-func (d *GencsrRequester) Cn(v string) *GencsrRequester {
-	d.r.args["cn"] = v
-
-	return d
-}
-
-// Csr is the value of the csr output
-//
-// Description: PEM text block for the CSR
-func (d *GencsrOutput) Csr() string {
-	val := d.reply["csr"]
-
-	return val.(string)
+	return val.(int64)
 
 }
 
-// PublicKey is the value of the public_key output
+// Running is the value of the running output
 //
-// Description: PEM text block of the public key that made the CSR
-func (d *GencsrOutput) PublicKey() string {
-	val := d.reply["public_key"]
+// Description: If the process was running after signaling
+func (d *SignalOutput) Running() bool {
+	val := d.reply["running"]
 
-	return val.(string)
-
-}
-
-// Ssldir is the value of the ssldir output
-//
-// Description: SSL directory as determined by the server
-func (d *GencsrOutput) Ssldir() string {
-	val := d.reply["ssldir"]
-
-	return val.(string)
+	return val.(bool)
 
 }

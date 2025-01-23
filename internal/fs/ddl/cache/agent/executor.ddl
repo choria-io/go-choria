@@ -1,3 +1,7 @@
+--  Copyright (c) 2025, R.I. Pienaar and the Choria Project contributors
+--
+--  SPDX-License-Identifier: Apache-2.0
+
 metadata :name        => "executor",
          :description => "Choria Process Executor Management",
          :author      => "R.I.Pienaar <rip@devco.net>",
@@ -30,12 +34,12 @@ action "signal", :description => "Sends a signal to a process" do
 
 
   output :pid,
-         :description => "The PID that was signalled",
+         :description => "The PID that was signaled",
          :type        => "integer",
          :display_as  => "PID"
 
   output :running,
-         :description => "If the process was running after signalling",
+         :description => "If the process was running after signaling",
          :type        => "boolean",
          :display_as  => "Running"
 

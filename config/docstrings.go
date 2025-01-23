@@ -150,6 +150,8 @@ var docStrings = map[string]string{
 	"plugin.rpcaudit.logfile":                                      "Path to the RPC audit log",
 	"plugin.rpcaudit.logfile.group":                                "User group to set file ownership to",
 	"plugin.rpcaudit.logfile.mode":                                 "File mode to apply to the file",
+	"plugin.choria.executor.enabled":                               "Enables the long running command executor",
+	"plugin.choria.executor.spool":                                 "Path where the command executor writes state",
 	"plugin.machines.download":                                     "Activate run-time installation of Autonomous Agents",
 	"plugin.machines.bucket":                                       "The KV bucket to query for plugins to install",
 	"plugin.machines.key":                                          "The Key to query in KV bucket for plugins to install",

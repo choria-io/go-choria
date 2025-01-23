@@ -8,7 +8,7 @@ pre = "<b>4. </b>"
 This is a list of all known Configuration settings. This list is based on declared settings within the Choria Go code base and so will not cover 100% of settings - plugins can contribute their own settings which are note known at compile time.
 
 {{% notice secondary "Version Hint" code-branch %}}
-Built on *29 Jul 24 19:20 UTC* using version *0.29.3*
+Built on *23 Jan 25 21:36 UTC* using version *0.29.4*
 {{% /notice %}}
 
 ### Run-time configuration
@@ -60,6 +60,7 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.agent_provider.mcorpc.libdir](#pluginchoriaagent_providermcorpclibdir)|[plugin.choria.broker_federation](#pluginchoriabroker_federation)|
 |[plugin.choria.broker_network](#pluginchoriabroker_network)|[plugin.choria.discovery.broadcast.windowed_timeout](#pluginchoriadiscoverybroadcastwindowed_timeout)|
 |[plugin.choria.discovery.external.command](#pluginchoriadiscoveryexternalcommand)|[plugin.choria.discovery.inventory.source](#pluginchoriadiscoveryinventorysource)|
+|[plugin.choria.executor.enabled](#pluginchoriaexecutorenabled)|[plugin.choria.executor.spool](#pluginchoriaexecutorspool)|
 |[plugin.choria.federation.cluster](#pluginchoriafederationcluster)|[plugin.choria.federation.collectives](#pluginchoriafederationcollectives)|
 |[plugin.choria.federation_middleware_hosts](#pluginchoriafederation_middleware_hosts)|[plugin.choria.legacy_lifecycle_format](#pluginchorialegacy_lifecycle_format)|
 |[plugin.choria.machine.signing_key](#pluginchoriamachinesigning_key)|[plugin.choria.machine.store](#pluginchoriamachinestore)|
@@ -261,6 +262,19 @@ The command to use for external discovery
  * **Type:** path_string
 
 The file to read for inventory discovery
+
+### plugin.choria.executor.enabled
+
+ * **Type:** boolean
+ * **Default Value:** false
+
+Enables the long running command executor
+
+### plugin.choria.executor.spool
+
+ * **Type:** path_string
+
+Path where the command executor writes state
 
 ### plugin.choria.federation.cluster
 
