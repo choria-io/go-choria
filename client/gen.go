@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -48,7 +48,7 @@ func generate(agent string, ddl string, pkg string) error {
 }
 
 func main() {
-	for _, agent := range []string{"rpcutil", "choria_util", "scout", "choria_provision", "choria_registry", "aaa_signer"} {
+	for _, agent := range []string{"rpcutil", "choria_util", "scout", "choria_provision", "choria_registry", "aaa_signer", "executor"} {
 		err := generate(agent, "", "")
 		if err != nil {
 			panic(err)

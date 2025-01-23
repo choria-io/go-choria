@@ -1,6 +1,6 @@
 // generated code; DO NOT EDIT
 //
-// Client for Choria RPC Agent 'scout' Version 0.29.1 generated using Choria version 0.29.3
+// Client for Choria RPC Agent 'scout' Version 0.29.4 generated using Choria version 0.29.4
 
 package scoutclient
 

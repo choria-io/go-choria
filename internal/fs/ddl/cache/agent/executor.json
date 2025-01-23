@@ -32,12 +32,12 @@
       },
       "output": {
         "pid": {
-          "description": "The PID that was signalled",
+          "description": "The PID that was signaled",
           "type": "integer",
           "display_as": "PID"
         },
         "running": {
-          "description": "If the process was running after signalling",
+          "description": "If the process was running after signaling",
           "type": "boolean",
           "display_as": "Running"
         }

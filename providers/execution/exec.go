@@ -271,8 +271,14 @@ func (p *Process) StartSupervised(ctx context.Context, spool string, submit Subm
 		log.Errorf("Failed to publish start update: %v", err)
 	}
 
-	err = cmd.Wait()
-	cancel()
+	var state *os.ProcessState
+	var waitErr error
+
+	if cmd.Process == nil {
+		waitErr = ErrStartFailed
+	} else {
+		state, waitErr = cmd.Process.Wait()
+	}
 
 	// always save then handle the error from waiting
 	p.TerminateTime = time.Now().UTC()
@@ -281,25 +287,7 @@ func (p *Process) StartSupervised(ctx context.Context, spool string, submit Subm
 		log.Errorf("Could not save job after execution: %v", err)
 	}
 
-	if err != nil {
-		var exiterr *exec.ExitError
-		if errors.As(err, &exiterr) {
-			msg := newSubmissionMessage(submit, fmt.Sprintf("%s.exit", prefix))
-			msg.Payload = exitJson(exiterr.ExitCode(), err.Error())
-			submitErr := submit.Submit(msg)
-			if submitErr != nil {
-				log.Errorf("Failed to publish exit update: %v", submitErr)
-			}
-
-			saveErr := os.WriteFile(exitPath(spool, p.ID), msg.Payload, 0700)
-			if saveErr != nil {
-				log.Errorf("Failed to write exit code: %v", saveErr)
-			}
-		}
-
-		return fmt.Errorf("%w: %w", ErrStartFailed, err)
-	}
-
+	cancel()
 	for _, closer := range closers {
 		closer.Close()
 	}
@@ -307,14 +295,32 @@ func (p *Process) StartSupervised(ctx context.Context, spool string, submit Subm
 	wg.Wait()
 
 	msg = newSubmissionMessage(submit, fmt.Sprintf("%s.exit", prefix))
-	msg.Payload = exitJson(0, "")
+	errMsg := ""
+	if waitErr != nil {
+		errMsg = waitErr.Error()
+	}
+	if state == nil {
+		msg.Payload = exitJson(-1, errMsg)
+	} else {
+		exitCode := state.ExitCode()
+		if exitCode == -1 {
+			errMsg = "process killed"
+		}
+		msg.Payload = exitJson(exitCode, errMsg)
+	}
 	err = submit.Submit(msg)
 	if err != nil {
 		log.Errorf("Failed to publish exit update: %v", err)
 	}
+
 	err = os.WriteFile(exitPath(spool, p.ID), msg.Payload, 0700)
 	if err != nil {
-		log.Errorf("Failed to write exit code: %v", err)
+		log.Errorf("Failed to write exit code: %v", saveErr)
+	}
+
+	if waitErr != nil {
+		log.Errorf("Failed to wait for process to exit: %v", waitErr)
+		return nil
 	}
 
 	log.Infof("Finished supervised process")
@@ -450,10 +456,6 @@ func watchOutputReader(wg *sync.WaitGroup, r io.Reader, origin string, out chan 
 	for scanner.Scan() {
 		out <- watchedLine{origin: origin, line: scanner.Bytes()}
 	}
-	if err := scanner.Err(); err != nil {
-		log.Warnf("Failed to read %s: %v", origin, err)
-	}
-	log.Infof("Finished watching %q output", origin)
 }
 
 func hb(ctx context.Context, wg *sync.WaitGroup, heartbeat time.Duration, submit Submitter, prefix string, p *Process, log *logrus.Entry) {

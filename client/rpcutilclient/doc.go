@@ -1,8 +1,8 @@
 // generated code; DO NOT EDIT
 //
-// Client for Choria RPC Agent 'rpcutil' Version 0.29.1 generated using Choria version 0.29.3
+// Client for Choria RPC Agent 'rpcutil' Version 0.29.4 generated using Choria version 0.29.4
 
-// Package rpcutilclient is an API client to the Choria Rpcutil agent Version 0.29.1.
+// Package rpcutilclient is an API client to the Choria Rpcutil agent Version 0.29.4.
 //
 // Actions:
 //   - AgentInventory - Inventory of all agents on the server including versions, licenses and more

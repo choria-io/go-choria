@@ -7,6 +7,7 @@ package executor
 import (
 	"context"
 	"syscall"
+	"time"
 
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
@@ -75,6 +76,8 @@ func signalAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply,
 		abort(reply, "Could not send signal: %v", err.Error())
 		return
 	}
+
+	time.Sleep(500 * time.Millisecond)
 
 	resp.Running = p.IsRunning()
 
