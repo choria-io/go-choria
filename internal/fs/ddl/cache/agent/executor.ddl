@@ -8,6 +8,39 @@ metadata :name        => "executor",
          :timeout     => 20
 
 
+action "signal", :description => "Sends a signal to a process" do
+  display :always
+
+  input :id,
+        :prompt      => "Job ID",
+        :description => "The unique ID for the job",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 20,
+        :optional    => false
+
+
+  input :signal,
+        :prompt      => "Signal",
+        :description => "The signal to send",
+        :type        => :integer,
+        :optional    => false
+
+
+
+
+  output :pid,
+         :description => "The PID that was signalled",
+         :type        => "integer",
+         :display_as  => "PID"
+
+  output :running,
+         :description => "If the process was running after signalling",
+         :type        => "boolean",
+         :display_as  => "Running"
+
+end
+
 action "status", :description => "Requests the status of a job by ID" do
   display :always
 
@@ -32,15 +65,30 @@ action "status", :description => "Requests the status of a job by ID" do
          :type        => "string",
          :display_as  => "Agent"
 
+  output :args,
+         :description => "The command arguments, if the caller has access",
+         :type        => "string",
+         :display_as  => "Arguments"
+
   output :caller,
          :description => "The Caller ID who started the process",
          :type        => "string",
          :display_as  => "Caller"
 
+  output :command,
+         :description => "The command being executed, if the caller has access",
+         :type        => "string",
+         :display_as  => "Command"
+
   output :exit_code,
          :description => "The exit code the process terminated with",
          :type        => "integer",
          :display_as  => "Exit Code"
+
+  output :exit_reason,
+         :description => "If the process failed, the reason for th failure",
+         :type        => "string",
+         :display_as  => "Exit Reason"
 
   output :pid,
          :description => "The OS Process ID",

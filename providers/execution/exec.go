@@ -73,6 +73,7 @@ var (
 	ErrInvalidPid             = errors.New("invalid pid file")
 	ErrAlreadyStarted         = errors.New("already started")
 	ErrSpoolCreationFailed    = errors.New("spool creation failed")
+	ErrProcessFailed          = errors.New("process failed")
 )
 
 func New(caller string, agent string, action string, reqID string, identity string, id string, command string, args []string, env map[string]string) (*Process, error) {
@@ -271,6 +272,8 @@ func (p *Process) StartSupervised(ctx context.Context, spool string, submit Subm
 	}
 
 	err = cmd.Wait()
+	cancel()
+
 	// always save then handle the error from waiting
 	p.TerminateTime = time.Now().UTC()
 	_, saveErr := saveJobSpec(spool, p)
@@ -283,21 +286,19 @@ func (p *Process) StartSupervised(ctx context.Context, spool string, submit Subm
 		if errors.As(err, &exiterr) {
 			msg := newSubmissionMessage(submit, fmt.Sprintf("%s.exit", prefix))
 			msg.Payload = exitJson(exiterr.ExitCode(), err.Error())
-			err := submit.Submit(msg)
-			if err != nil {
-				log.Errorf("Failed to publish exit update: %v", err)
+			submitErr := submit.Submit(msg)
+			if submitErr != nil {
+				log.Errorf("Failed to publish exit update: %v", submitErr)
 			}
 
-			err = os.WriteFile(exitPath(spool, p.ID), msg.Payload, 0700)
-			if err != nil {
-				log.Errorf("Failed to write exit code: %v", err)
+			saveErr := os.WriteFile(exitPath(spool, p.ID), msg.Payload, 0700)
+			if saveErr != nil {
+				log.Errorf("Failed to write exit code: %v", saveErr)
 			}
 		}
 
 		return fmt.Errorf("%w: %w", ErrStartFailed, err)
 	}
-
-	cancel()
 
 	for _, closer := range closers {
 		closer.Close()
@@ -436,7 +437,7 @@ func (p *Process) ParseExitCode() (int, error) {
 	}
 
 	if exit.Error != "" {
-		return -1, errors.New(exit.Error)
+		return -1, fmt.Errorf("%w: %w", ErrProcessFailed, errors.New(exit.Error))
 	}
 
 	return exit.Code, nil
