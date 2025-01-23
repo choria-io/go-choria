@@ -6,10 +6,13 @@ package executor
 
 import (
 	"context"
+	"errors"
+	"strings"
+	"time"
+
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/providers/execution"
-	"time"
 )
 
 type StatusRequest struct {
@@ -17,10 +20,13 @@ type StatusRequest struct {
 }
 
 type StatusResponse struct {
+	Command       string    `json:"command"`
+	Args          string    `json:"args"`
 	Started       bool      `json:"started"`
 	StartTime     time.Time `json:"start_time"`
 	TerminateTime time.Time `json:"terminate_time"`
 	ExitCode      int       `json:"exit_code"`
+	ExitReason    string    `json:"exit_reason"`
 	Running       bool      `json:"running"`
 	Agent         string    `json:"agent"`
 	Action        string    `json:"action"`
@@ -33,7 +39,6 @@ type StatusResponse struct {
 
 func statusAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
 	spool := agent.Config.Choria.ExecutorSpool
-
 	if spool == "" {
 		abort(reply, "Executor spool is not configured")
 		return
@@ -44,15 +49,18 @@ func statusAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply,
 		return
 	}
 
+	if args.JobID == "" {
+		abort(reply, "ID is required")
+	}
+
 	p, err := execution.Load(spool, args.JobID)
 	if err != nil {
-		reply.Statuscode = mcorpc.Aborted
-		reply.Statusmsg = err.Error()
-		abort(reply, "Could not load job: %v", err)
+		abort(reply, "Could not load job: %v", err.Error())
 		return
 	}
 
 	resp := &StatusResponse{
+		Command:       "Not authorized",
 		Running:       p.IsRunning(),
 		StartTime:     p.StartTime,
 		TerminateTime: p.TerminateTime,
@@ -62,6 +70,11 @@ func statusAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply,
 		Caller:        p.Caller,
 		Pid:           -1,
 		ExitCode:      -1,
+	}
+
+	if proxyAuthorize(p, req, agent) {
+		resp.Command = p.Command
+		resp.Args = strings.Join(p.Args, " ")
 	}
 
 	resp.Started, err = p.HasStarted()
@@ -80,7 +93,9 @@ func statusAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply,
 
 	if !resp.Running && resp.Started {
 		resp.ExitCode, err = p.ParseExitCode()
-		if err != nil {
+		if errors.Is(err, execution.ErrProcessFailed) {
+			resp.ExitReason = err.Error()
+		} else if err != nil {
 			abort(reply, "Could not parse exit code: %v", err)
 			return
 		}

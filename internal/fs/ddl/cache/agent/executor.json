@@ -12,7 +12,41 @@
   },
   "actions": [
     {
+      "action": "signal",
+      "description": "Sends a signal to a process",
+      "display": "always",
+      "input": {
+        "id": {
+          "prompt": "Job ID",
+          "description": "The unique ID for the job",
+          "type": "string",
+          "maxlength": 20,
+          "validation": ".",
+          "optional": false
+        },
+        "signal": {
+          "prompt": "Signal",
+          "description": "The signal to send",
+          "type": "integer"
+        }
+      },
+      "output": {
+        "pid": {
+          "description": "The PID that was signalled",
+          "type": "integer",
+          "display_as": "PID"
+        },
+        "running": {
+          "description": "If the process was running after signalling",
+          "type": "boolean",
+          "display_as": "Running"
+        }
+      }
+    },
+    {
       "action": "status",
+      "display": "always",
+      "description": "Requests the status of a job by ID",
       "input": {
         "id": {
           "prompt": "Job ID",
@@ -24,6 +58,16 @@
         }
       },
       "output": {
+        "command": {
+          "description": "The command being executed, if the caller has access",
+          "type": "string",
+          "display_as": "Command"
+        },
+        "args": {
+          "description": "The command arguments, if the caller has access",
+          "type": "string",
+          "display_as": "Arguments"
+        },
         "action": {
           "description": "The RPC Action that started the process",
           "display_as": "Action",
@@ -43,6 +87,11 @@
           "description": "The exit code the process terminated with",
           "display_as": "Exit Code",
           "type": "integer"
+        },
+        "exit_reason": {
+          "description": "If the process failed, the reason for th failure",
+          "display_as": "Exit Reason",
+          "type": "string"
         },
         "pid": {
           "description": "The OS Process ID",
@@ -84,9 +133,7 @@
           "display_as": "STDERR Bytes",
           "type": "integer"
         }
-      },
-      "display": "always",
-      "description": "Requests the status of a job by ID"
+      }
     }
   ]
 }
