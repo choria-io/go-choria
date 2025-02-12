@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -55,7 +55,7 @@ var _ = Describe("Client", func() {
 	})
 
 	Describe("Request", func() {
-		It("Should support fire and forget requests", func() {
+		It("Should support fire and forget requests", func(ctx context.Context) {
 			pubStarted := false
 			pubEnded := false
 
@@ -70,9 +70,6 @@ var _ = Describe("Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 			msg.SetReplyTo("custom")
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
 			conn.EXPECT().Publish(gomock.Any()).AnyTimes()
 
 			err = client.Request(ctx, msg, nil)
@@ -82,7 +79,7 @@ var _ = Describe("Client", func() {
 			Expect(pubEnded).To(BeTrue())
 		})
 
-		It("Should perform the request and call the handler for each reply", func() {
+		It("Should perform the request and call the handler for each reply", func(ctx context.Context) {
 			seen := []string{}
 			pubStarted := false
 			pubEnded := false
@@ -108,9 +105,6 @@ var _ = Describe("Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			msg.SetReplyTo(fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(msg.CallerID()))), msg.RequestID()))
-
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
 
 			conn.EXPECT().QueueSubscribe(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), client.replies).
 				AnyTimes().

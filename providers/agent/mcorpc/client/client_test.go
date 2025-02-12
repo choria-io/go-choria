@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -43,8 +43,6 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 		rpc     *RPC
 		mockctl *gomock.Controller
 		cl      *MockChoriaClient
-		ctx     context.Context
-		cancel  func()
 		err     error
 	)
 
@@ -72,11 +70,9 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 		Expect(err).ToNot(HaveOccurred())
 
 		rpc.cl = cl
-		ctx, cancel = context.WithCancel(context.Background())
 	})
 
 	AfterEach(func() {
-		cancel()
 		mockctl.Finish()
 	})
 
@@ -144,7 +140,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 	})
 
 	Describe("Do", func() {
-		It("Should only accept DDLs for the requested agent", func() {
+		It("Should only accept DDLs for the requested agent", func(ctx context.Context) {
 			ddl := &agent.DDL{
 				Metadata: &agents.Metadata{
 					Name:        "backplane",
@@ -171,7 +167,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 			Expect(err).To(MatchError("the DDL does not describe the package agent"))
 		})
 
-		It("Should perform the request", func() {
+		It("Should perform the request", func(ctx context.Context) {
 			reqid := ""
 			handled := 0
 
@@ -248,7 +244,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 				req, err := fw.NewRequestFromSecureRequest(sreq)
 				Expect(err).ToNot(HaveOccurred())
 
-				rpchandler := rpc.handlerFactory(ctx, cancel, rpc.opts.totalStats)
+				rpchandler := rpc.handlerFactory(ctx, func() {}, rpc.opts.totalStats)
 
 				for i := 0; i < 2; i++ {
 					reply, err := v1.NewReply(req, fmt.Sprintf("test.sender.%d", i))
@@ -309,7 +305,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 			Expect(stats.Agent()).To(Equal("package"))
 		})
 
-		It("Should support discovery callbacks and limits", func() {
+		It("Should support discovery callbacks and limits", func(ctx context.Context) {
 			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg inter.Message, handler client.Handler) {
 				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1"}))
 			})
@@ -333,7 +329,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 			Expect(limitedCnt).To(Equal(1))
 		})
 
-		It("Should interruptable by the discovery callback", func() {
+		It("Should interruptable by the discovery callback", func(ctx context.Context) {
 			_, err := rpc.Do(ctx, "test_action", request{Testing: true},
 				Targets([]string{"host1", "host2", "host3", "host4"}),
 				LimitSize("1"),
@@ -346,7 +342,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 			Expect(err).To(MatchError("simulated"))
 		})
 
-		It("Should support batched mode", func() {
+		It("Should support batched mode", func(ctx context.Context) {
 			batch1 := cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg inter.Message, handler client.Handler) {
 				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1", "host2"}))
 			})
@@ -358,7 +354,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 			rpc.Do(ctx, "test_action", request{Testing: true}, Targets([]string{"host1", "host2", "host3", "host4"}), InBatches(2, -1))
 		})
 
-		It("Should support making requests without processing replies unbatched", func() {
+		It("Should support making requests without processing replies unbatched", func(ctx context.Context) {
 			cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg inter.Message, handler client.Handler) {
 				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1", "host2"}))
 				Expect(msg.ReplyTo()).To(Equal("custom.reply.to"))
@@ -369,7 +365,7 @@ var _ = Describe("Providers/Agent/McoRPC/Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Should support making requests without processing replies batched", func() {
+		It("Should support making requests without processing replies batched", func(ctx context.Context) {
 			batch1 := cl.EXPECT().Request(gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Do(func(ctx context.Context, msg inter.Message, handler client.Handler) {
 				Expect(msg.DiscoveredHosts()).To(Equal([]string{"host1"}))
 				Expect(msg.ReplyTo()).To(Equal("custom.reply.to"))

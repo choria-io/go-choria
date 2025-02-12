@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -92,10 +92,7 @@ var _ = Describe("Broadcast", func() {
 	})
 
 	Describe("Discover", func() {
-		It("Should request and return discovered nodes", func() {
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
+		It("Should request and return discovered nodes", func(ctx context.Context) {
 			f := protocol.NewFilter()
 			f.AddAgentFilter("choria")
 
