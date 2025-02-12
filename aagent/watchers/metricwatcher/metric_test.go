@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -68,7 +68,7 @@ var _ = Describe("MetricWatcher", func() {
 	})
 
 	Describe("performWatch", func() {
-		It("Should run the script and correctly parse nagios style metrics", func() {
+		It("Should run the script and correctly parse nagios style metrics", func(ctx context.Context) {
 			if runtime.GOOS == "windows" {
 				Skip("not tested on windows yet")
 			}
@@ -94,14 +94,11 @@ var _ = Describe("MetricWatcher", func() {
 			Expect(err).ToNot(HaveOccurred())
 			watch = wi.(*Watcher)
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
 			watch.performWatch(ctx)
 			Expect(handled).To(BeTrue())
 		})
 
-		It("Should run the script and correctly parse choria style metrics", func() {
+		It("Should run the script and correctly parse choria style metrics", func(ctx context.Context) {
 			if runtime.GOOS == "windows" {
 				Skip("not tested on windows yet")
 			}
@@ -125,9 +122,6 @@ var _ = Describe("MetricWatcher", func() {
 			})
 			Expect(err).ToNot(HaveOccurred())
 			watch = wi.(*Watcher)
-
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
 
 			watch.performWatch(ctx)
 			Expect(handled).To(BeTrue())

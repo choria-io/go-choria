@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -33,8 +33,6 @@ var _ = Describe("McoRPC/External", func() {
 		conn    *imock.MockConnector
 		cfg     *config.Config
 		prov    *Provider
-		ctx     context.Context
-		cancel  context.CancelFunc
 	)
 
 	BeforeEach(func() {
@@ -65,10 +63,7 @@ var _ = Describe("McoRPC/External", func() {
 		}
 		prov.log.Logger.SetLevel(logrus.DebugLevel)
 
-		ctx, cancel = context.WithCancel(context.Background())
-
 		DeferCleanup(func() {
-			cancel()
 			mockctl.Finish()
 		})
 	})
@@ -102,14 +97,14 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(err).ToNot(HaveOccurred())
 		}
 
-		It("Should register new agents", func() {
+		It("Should register new agents", func(ctx context.Context) {
 			mgr.EXPECT().RegisterAgent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).Times(3)
 			Expect(prov.agents).To(BeEmpty())
 			Expect(prov.reconcileAgents(ctx, mgr, conn)).To(Succeed())
 			Expect(prov.agents).To(HaveLen(3))
 		})
 
-		It("Should upgrade changed agents", func() {
+		It("Should upgrade changed agents", func(ctx context.Context) {
 			fileChangeGrace = 0
 
 			copyAgentFile("one.json")
@@ -139,7 +134,7 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(prov.agents[0].Metadata.Version).To(Equal("6.0.0"))
 		})
 
-		It("Should remove orphaned agents", func() {
+		It("Should remove orphaned agents", func(ctx context.Context) {
 			copyAgentFile("one.json")
 			copyAgentFile("go_agent.json")
 			prov.cfg.Choria.RubyLibdir = []string{td}
@@ -156,7 +151,7 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(prov.agents[0].Metadata.Name).To(Equal("echo"))
 		})
 
-		It("Should work in sequence", func() {
+		It("Should work in sequence", func(ctx context.Context) {
 			fileChangeGrace = 0
 			prov.cfg.Choria.RubyLibdir = []string{td}
 
@@ -206,7 +201,7 @@ var _ = Describe("McoRPC/External", func() {
 	})
 
 	Describe("Agents", func() {
-		It("Should return all the agent ddls", func() {
+		It("Should return all the agent ddls", func(ctx context.Context) {
 			mgr.EXPECT().RegisterAgent(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any()).Return(nil).AnyTimes()
 			Expect(prov.reconcileAgents(ctx, mgr, conn)).To(Succeed())
 

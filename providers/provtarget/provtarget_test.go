@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -27,8 +27,6 @@ var _ = Describe("Provision", func() {
 		mockctl      *gomock.Controller
 		mockresolver *MockTargetResolver
 		log          *logrus.Entry
-		ctx          context.Context
-		cancel       func()
 	)
 
 	BeforeEach(func() {
@@ -36,14 +34,12 @@ var _ = Describe("Provision", func() {
 		mockresolver = NewMockTargetResolver(mockctl)
 		mockresolver.EXPECT().Name().Return("Mock Resolver").AnyTimes()
 		RegisterTargetResolver(builddefaults.Provider())
-		ctx, cancel = context.WithCancel(context.Background())
 		log = logrus.NewEntry(logrus.New())
 		log.Logger.Out = io.Discard
 	})
 
 	AfterEach(func() {
 		mockctl.Finish()
-		cancel()
 	})
 
 	Describe("RegisterTargetResolver", func() {
@@ -55,28 +51,28 @@ var _ = Describe("Provision", func() {
 	})
 
 	Describe("Targets", func() {
-		It("Should handle no resolver", func() {
+		It("Should handle no resolver", func(ctx context.Context) {
 			resolver = nil
 			t, err := Targets(ctx, log)
 			Expect(err).To(MatchError("no Provisioning Target Resolver registered"))
 			Expect(t.Count()).To(Equal(0))
 		})
 
-		It("Should handle empty response from the resolver", func() {
+		It("Should handle empty response from the resolver", func(ctx context.Context) {
 			build.ProvisionBrokerURLs = ""
 			t, err := Targets(ctx, log)
 			Expect(err).To(MatchError("provisioning target plugin Choria JWT Resolver returned no servers"))
 			Expect(t.Count()).To(Equal(0))
 		})
 
-		It("Should handle invalid format hosts", func() {
+		It("Should handle invalid format hosts", func(ctx context.Context) {
 			build.ProvisionBrokerURLs = "foo,bar"
 			t, err := Targets(ctx, log)
 			Expect(err).To(MatchError("could not determine provisioning servers using Choria JWT Resolver provisioning target plugin: could not parse host foo: address foo: missing port in address"))
 			Expect(t.Count()).To(Equal(0))
 		})
 
-		It("Should handle valid format hosts", func() {
+		It("Should handle valid format hosts", func(ctx context.Context) {
 			build.ProvisionBrokerURLs = "foo:4222, nats://bar:4222"
 			t, err := Targets(ctx, log)
 			Expect(err).ToNot(HaveOccurred())

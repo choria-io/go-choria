@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -26,8 +26,6 @@ var _ = Describe("Server/Connection", func() {
 			fw      *imock.MockFramework
 			srv     *Instance
 			err     error
-			ctx     context.Context
-			cancel  func()
 		)
 
 		BeforeEach(func() {
@@ -40,16 +38,13 @@ var _ = Describe("Server/Connection", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			logrus.SetLevel(logrus.FatalLevel)
-
-			ctx, cancel = context.WithCancel(context.Background())
 		})
 
 		AfterEach(func() {
-			cancel()
 			mockctl.Finish()
 		})
 
-		It("Should support provisioning", func() {
+		It("Should support provisioning", func(ctx context.Context) {
 			build.ProvisionModeDefault = "true"
 			build.ProvisionBrokerURLs = "nats1:4222, nats2:4222"
 			cfg.InitiatedByServer = true
@@ -64,7 +59,7 @@ var _ = Describe("Server/Connection", func() {
 			Expect(found[1].Host()).To(Equal("nats2"))
 		})
 
-		It("Should fail gracefully for incorrect format provisioning servers", func() {
+		It("Should fail gracefully for incorrect format provisioning servers", func(ctx context.Context) {
 			build.ProvisionModeDefault = "true"
 			build.ProvisionBrokerURLs = "invalid stuff"
 
@@ -80,7 +75,7 @@ var _ = Describe("Server/Connection", func() {
 			Expect(found[1].Host()).To(Equal("d2"))
 		})
 
-		It("Should fail gracefully when no servers are compiled in but provisioning is on", func() {
+		It("Should fail gracefully when no servers are compiled in but provisioning is on", func(ctx context.Context) {
 			build.ProvisionModeDefault = "true"
 			build.ProvisionBrokerURLs = ""
 
@@ -97,7 +92,7 @@ var _ = Describe("Server/Connection", func() {
 			Expect(found[1].Host()).To(Equal("d2"))
 		})
 
-		It("Should default to unprovisioned mode", func() {
+		It("Should default to unprovisioned mode", func(ctx context.Context) {
 			fw.EXPECT().ProvisionMode().Return(false).AnyTimes()
 			fw.EXPECT().MiddlewareServers().Return(srvcache.StringHostsToServers(cfg.Choria.MiddlewareHosts, "nats"))
 

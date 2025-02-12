@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -30,7 +30,6 @@ var _ = Describe("Choria NATS Egest", func() {
 	)
 
 	BeforeEach(func() {
-		ctx, cancel = context.WithCancel(context.Background())
 		var gblogger *log.Logger
 		logbuf, gblogger = testutil.GbytesLogger(log.DebugLevel)
 		logger = log.NewEntry(gblogger)
@@ -59,6 +58,7 @@ var _ = Describe("Choria NATS Egest", func() {
 		manager = &stubConnectionManager{}
 		connector.connection = manager
 
+		ctx, cancel = context.WithCancel(context.Background())
 		go connector.Run(ctx)
 	})
 
