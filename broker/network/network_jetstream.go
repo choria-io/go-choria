@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -132,6 +132,29 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 	err = scout.ConfigureStreams(nc, s.log.WithField("component", "scout"))
 	if err != nil {
 		return err
+	}
+
+	if cfg.NetworkExecutorStoreDuration > 0 {
+		execCfg, err := jsm.NewStreamConfiguration(jsm.DefaultStream,
+			jsm.Subjects("choria.submission.choria.execution.>"),
+			jsm.StreamDescription("Choria Executor Events"),
+			jsm.Replicas(cfg.NetworkExecutorReplicas),
+			jsm.MaxAge(cfg.NetworkExecutorStoreDuration),
+			jsm.FileStorage(),
+			jsm.AllowDirect(),
+		)
+		if err != nil {
+			return err
+		}
+		execCfg.SubjectTransform = &api.SubjectTransformConfig{ // TODO: next jsm has a option func for this
+			Source:      "choria.submission.choria.execution.>",
+			Destination: "choria.execution.>",
+		}
+
+		err = s.createOrUpdateStreamWithConfig("CHORIA_EXECUTOR", *execCfg, mgr)
+		if err != nil {
+			return err
+		}
 	}
 
 	eCfg, err := jsm.NewStreamConfiguration(jsm.DefaultStream,
