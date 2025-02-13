@@ -141,7 +141,7 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 
 	if cfg.NetworkExecutorStoreDuration > 0 {
 		execCfg, err := jsm.NewStreamConfiguration(jsm.DefaultStream,
-			jsm.Subjects("choria.submission.choria.execution.>"),
+			jsm.Subjects("choria.submission.in.choria.executor.>"),
 			jsm.StreamDescription("Choria Executor Events"),
 			jsm.Replicas(cfg.NetworkExecutorReplicas),
 			jsm.MaxAge(cfg.NetworkExecutorStoreDuration),
@@ -152,8 +152,8 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 			return err
 		}
 		execCfg.SubjectTransform = &api.SubjectTransformConfig{ // TODO: next jsm has a option func for this
-			Source:      "choria.submission.choria.execution.>",
-			Destination: "choria.execution.>",
+			Source:      "choria.submission.in.choria.executor.>",
+			Destination: "choria.executor.>",
 		}
 
 		err = s.createOrUpdateStreamWithConfig("CHORIA_EXECUTOR", *execCfg, mgr)
