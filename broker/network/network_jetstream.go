@@ -54,7 +54,7 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 	var err error
 
 	cfg := s.config.Choria
-	if cfg.NetworkEventStoreReplicas == -1 || cfg.NetworkMachineStoreReplicas == -1 || cfg.NetworkStreamAdvisoryReplicas == -1 || cfg.NetworkLeaderElectionReplicas == -1 {
+	if cfg.NetworkExecutorReplicas == -1 || cfg.NetworkEventStoreReplicas == -1 || cfg.NetworkMachineStoreReplicas == -1 || cfg.NetworkStreamAdvisoryReplicas == -1 || cfg.NetworkLeaderElectionReplicas == -1 {
 		delay := time.Duration(rand.N(60)+10) * time.Second
 		s.log.Infof("Configuring system streams after %v", delay)
 		err = backoff.Default.Sleep(ctx, delay)
@@ -91,6 +91,11 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 		if cfg.NetworkLeaderElectionReplicas == -1 {
 			s.log.Infof("Setting Choria Streams Leader election Replicas to %d", count)
 			cfg.NetworkLeaderElectionReplicas = count
+		}
+
+		if cfg.NetworkExecutorReplicas == -1 {
+			s.log.Infof("Setting Choria Streams Executor Replicas to %d", count)
+			cfg.NetworkExecutorReplicas = count
 		}
 	}
 
