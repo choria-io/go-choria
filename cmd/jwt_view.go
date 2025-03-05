@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -263,7 +263,7 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 		fmt.Printf("         Expires At: %s (%s)\n", exp, iu.RenderDuration(time.Until(exp)))
 	}
 	if len(claims.AdditionalSubscribeSubjects) > 0 {
-		fmt.Printf(" Subscribe Subjects: %s\n", strings.Join(claims.AdditionalSubscribeSubjects, ", "))
+		fmt.Printf(" Subscriptions Subjects: %s\n", strings.Join(claims.AdditionalSubscribeSubjects, ", "))
 	}
 	if len(claims.AdditionalPublishSubjects) > 0 {
 		fmt.Printf("   Publish Subjects: %s\n", strings.Join(claims.AdditionalPublishSubjects, ", "))

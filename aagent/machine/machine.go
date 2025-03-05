@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -91,6 +91,8 @@ type Machine struct {
 	backoffTimer      *time.Timer
 	transitionCounter int
 
+	externalMachineNotifier func(*TransitionNotification)
+
 	ctx    context.Context
 	cancel context.CancelFunc
 	dataMu sync.Mutex
@@ -108,8 +110,17 @@ type Transition struct {
 	// Destination is the name of the target state this event will move the machine into
 	Destination string `json:"destination" yaml:"destination"`
 
+	// Subscriptions triggers transitions based on transitions in other machines
+	Subscriptions []MachineSubscription `json:"subscribe" yaml:"subscribe"`
+
 	// Description is a human friendly description of the purpose of this transition
 	Description string `json:"description" yaml:"description"`
+}
+
+// MachineSubscription describes a remote machine event that might trigger this machine to transition
+type MachineSubscription struct {
+	MachineName string `json:"machine_name" yaml:"machine_name"`
+	Event       string `json:"event" yaml:"event"`
 }
 
 // WatcherManager manages watchers
@@ -211,6 +222,17 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 		return nil, err
 	}
 
+	for _, t := range m.Transitions {
+		for _, sub := range t.Subscriptions {
+			if sub.MachineName == "" {
+				return nil, fmt.Errorf("machine name is required on subscription for transition %q", t.Name)
+			}
+
+			if sub.Event == "" {
+				return nil, fmt.Errorf("event name is required on subscription for transition %q", t.Name)
+			}
+		}
+	}
 	return m, nil
 }
 
@@ -229,6 +251,26 @@ func ValidateDir(dir string) (validationErrors []string, err error) {
 	}
 
 	return util.ValidateSchemaFromFS("schemas/choria/machine/v1/manifest.json", dat)
+}
+
+func (m *Machine) ExternalEventNotify(event *TransitionNotification) {
+	for _, transition := range m.Transitions {
+		for _, sub := range transition.Subscriptions {
+			if sub.MachineName == event.Machine && sub.Event == event.Transition {
+				m.Infof("machine", "Triggering %s transition via %s#%s", transition.Name, event.Machine, event.Transition)
+				err := m.Transition(transition.Name)
+				if err != nil {
+					m.Errorf("machine", "Could not trigger %q transition based on foreign subscription %s#%s: %v", transition.Name, event.Machine, event.Transition, err)
+				}
+			}
+		}
+	}
+}
+
+func (m *Machine) SetExternalMachineNotifier(f func(*TransitionNotification)) {
+	m.Lock()
+	m.externalMachineNotifier = f
+	m.Unlock()
 }
 
 func (m *Machine) SetDirectory(dir string, manifest string) error {
@@ -457,23 +499,29 @@ func (m *Machine) buildFSM() error {
 
 	f := fsm.NewFSM(m.InitialState, events, fsm.Callbacks{
 		"enter_state": func(ctx context.Context, e *fsm.Event) {
+			notification := &TransitionNotification{
+				Protocol:   "io.choria.machine.v1.transition",
+				Identity:   m.Identity(),
+				ID:         m.InstanceID(),
+				Version:    m.Version(),
+				Timestamp:  m.TimeStampSeconds(),
+				Machine:    m.MachineName,
+				Transition: e.Event,
+				FromState:  e.Src,
+				ToState:    e.Dst,
+				Info:       m,
+			}
+
+			if m.externalMachineNotifier != nil {
+				m.externalMachineNotifier(notification)
+			}
+
 			for i, notifier := range m.notifiers {
 				if i == 0 {
 					m.manager.NotifyStateChance()
 				}
 
-				err := notifier.NotifyPostTransition(&TransitionNotification{
-					Protocol:   "io.choria.machine.v1.transition",
-					Identity:   m.Identity(),
-					ID:         m.InstanceID(),
-					Version:    m.Version(),
-					Timestamp:  m.TimeStampSeconds(),
-					Machine:    m.MachineName,
-					Transition: e.Event,
-					FromState:  e.Src,
-					ToState:    e.Dst,
-					Info:       m,
-				})
+				err := notifier.NotifyPostTransition(notification)
 				if err != nil {
 					m.Errorf("machine", "Could not publish event notification for %s: %s", e.Event, err)
 				}
