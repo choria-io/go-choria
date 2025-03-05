@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -247,4 +247,5 @@ func (m *Manager) NotifyStateChance() {
 	for _, watcher := range m.watchers {
 		watcher.NotifyStateChance()
 	}
+
 }

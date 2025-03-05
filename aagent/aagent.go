@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -94,6 +94,17 @@ func (a *AAgent) configureMachine(aa *machine.Machine) {
 	aa.SetConnection(a.fw.Connector())
 	aa.SetChoriaStatusFile(a.fw.ServerStatusFile())
 	aa.SetSignerKey(a.fw.MachineSignerKey())
+	aa.SetExternalMachineNotifier(a.notifyMachinesAfterTransition)
+}
+
+func (a *AAgent) notifyMachinesAfterTransition(event *machine.TransitionNotification) {
+	a.Lock()
+	defer a.Unlock()
+
+	for _, m := range a.machines {
+		a.logger.Debugf("Notifying machine %s about transition %s#%s", m.machine.MachineName, event.Machine, event.Transition)
+		go m.machine.ExternalEventNotify(event)
+	}
 }
 
 func (a *AAgent) loadMachine(ctx context.Context, path string) (err error) {

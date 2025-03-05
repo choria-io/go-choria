@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,7 @@ package network
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	gnatsd "github.com/nats-io/nats-server/v2/server"
 
@@ -57,7 +58,12 @@ func (s *Server) setupLeafNodes() (err error) {
 			continue
 		}
 
-		remote := &gnatsd.RemoteLeafOpts{LocalAccount: account, Credentials: credentials, URLs: urlU}
+		remote := &gnatsd.RemoteLeafOpts{
+			LocalAccount:     account,
+			Credentials:      credentials,
+			URLs:             urlU,
+			FirstInfoTimeout: 2 * time.Second,
+		}
 
 		if s.IsTLS() {
 			remote.TLS = true

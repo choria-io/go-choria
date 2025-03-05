@@ -1,6 +1,6 @@
 module github.com/choria-io/go-choria
 
-go 1.23.0
+go 1.23.6
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
@@ -21,7 +21,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.1
-	github.com/google/go-cmp v0.6.0
+	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/goss-org/goss v0.4.9
 	github.com/gosuri/uiprogress v0.0.1
@@ -31,13 +31,13 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.1.2
-	github.com/nats-io/nats-server/v2 v2.10.25
-	github.com/nats-io/nats.go v1.39.0
+	github.com/nats-io/nats-server/v2 v2.10.26
+	github.com/nats-io/nats.go v1.39.1
 	github.com/nats-io/natscli v0.1.6
 	github.com/onsi/ginkgo/v2 v2.22.2
 	github.com/onsi/gomega v1.36.2
-	github.com/open-policy-agent/opa v1.1.0
-	github.com/prometheus/client_golang v1.20.5
+	github.com/open-policy-agent/opa v1.2.0
+	github.com/prometheus/client_golang v1.21.1
 	github.com/prometheus/client_model v0.6.1
 	github.com/robfig/cron v1.2.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
@@ -47,7 +47,7 @@ require (
 	github.com/tidwall/pretty v1.2.1
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/mock v0.5.0
-	golang.org/x/crypto v0.33.0
+	golang.org/x/crypto v0.35.0
 	golang.org/x/sys v0.30.0
 	golang.org/x/term v0.29.0
 	golang.org/x/text v0.22.0
@@ -61,7 +61,6 @@ require (
 	github.com/Masterminds/goutils v1.1.1 // indirect
 	github.com/Masterminds/semver/v3 v3.3.1 // indirect
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
-	github.com/OneOfOne/xxhash v1.2.8 // indirect
 	github.com/achanda/go-sysctl v0.0.0-20160222034550-6be7678c45d2 // indirect
 	github.com/agnivade/levenshtein v1.2.1 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
@@ -71,7 +70,7 @@ require (
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/choria-io/goform v0.0.3 // indirect
 	github.com/choria-io/scaffold v0.0.2 // indirect
-	github.com/emicklei/dot v1.6.4 // indirect
+	github.com/emicklei/dot v1.7.0 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
 	github.com/gdamore/tcell/v2 v2.8.1 // indirect
 	github.com/go-ini/ini v1.67.0 // indirect
@@ -79,7 +78,7 @@ require (
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
-	github.com/google/pprof v0.0.0-20250208200701-d0013a598941 // indirect
+	github.com/google/pprof v0.0.0-20250302191652-9094ed2288e7 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/gorilla/mux v1.8.1 // indirect
 	github.com/goss-org/GOnetstat v0.0.0-20230101144325-22be0bd9e64d // indirect
@@ -89,9 +88,9 @@ require (
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/itchyny/gojq v0.12.17 // indirect
 	github.com/itchyny/timefmt-go v0.1.6 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.6.6 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.6.7 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.17.11 // indirect
+	github.com/klauspost/compress v1.18.0 // indirect
 	github.com/lucasb-eyer/go-colorful v1.2.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
@@ -135,9 +134,9 @@ require (
 	go.opentelemetry.io/otel/trace v1.34.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
-	golang.org/x/exp v0.0.0-20250210185358-939b2ce775ac // indirect
+	golang.org/x/exp v0.0.0-20250228200357-dead58393ab7 // indirect
 	golang.org/x/mod v0.23.0 // indirect
-	golang.org/x/net v0.35.0 // indirect
+	golang.org/x/net v0.36.0 // indirect
 	golang.org/x/sync v0.11.0 // indirect
 	golang.org/x/time v0.10.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
