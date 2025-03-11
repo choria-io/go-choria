@@ -92,6 +92,7 @@ type Machine struct {
 	transitionCounter int
 
 	externalMachineNotifier func(*TransitionNotification)
+	externalMachineQuery    func(string) (string, error)
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -265,6 +266,23 @@ func (m *Machine) ExternalEventNotify(event *TransitionNotification) {
 			}
 		}
 	}
+}
+
+func (m *Machine) LookupExternalMachineState(name string) (string, error) {
+	m.Lock()
+	defer m.Unlock()
+
+	if m.externalMachineQuery == nil {
+		return "", fmt.Errorf("no external machine query registered")
+	}
+
+	return m.externalMachineQuery(name)
+}
+
+func (m *Machine) SetExternalMachineStateQuery(f func(machine string) (string, error)) {
+	m.Lock()
+	m.externalMachineQuery = f
+	m.Unlock()
 }
 
 func (m *Machine) SetExternalMachineNotifier(f func(*TransitionNotification)) {

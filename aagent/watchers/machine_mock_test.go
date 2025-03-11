@@ -238,6 +238,21 @@ func (mr *MockMachineMockRecorder) JetStreamConnection() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JetStreamConnection", reflect.TypeOf((*MockMachine)(nil).JetStreamConnection))
 }
 
+// LookupExternalMachineState mocks base method.
+func (m *MockMachine) LookupExternalMachineState(name string) (string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "LookupExternalMachineState", name)
+	ret0, _ := ret[0].(string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// LookupExternalMachineState indicates an expected call of LookupExternalMachineState.
+func (mr *MockMachineMockRecorder) LookupExternalMachineState(name any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "LookupExternalMachineState", reflect.TypeOf((*MockMachine)(nil).LookupExternalMachineState), name)
+}
+
 // MainCollective mocks base method.
 func (m *MockMachine) MainCollective() string {
 	m.ctrl.T.Helper()

@@ -1,4 +1,4 @@
-// Copyright (c) 2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2024-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -40,7 +40,7 @@ var _ = Describe("AAgent/Watchers/ExpressionsWatcher", func() {
 		machine.EXPECT().SignerKey().Return("").AnyTimes()
 
 		var wi any
-		wi, err = New(machine, "ginkgo_machine", nil, "FAIL_EVENT", "SUCCESS_EVENT", "1m", time.Hour, map[string]any{
+		wi, err = New(machine, "ginkgo_machine", nil, nil, "FAIL_EVENT", "SUCCESS_EVENT", "1m", time.Hour, map[string]any{
 			"success_when": "true",
 		})
 		Expect(err).ToNot(HaveOccurred())

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"context"
 	"fmt"
+	"github.com/choria-io/go-choria/aagent/watchers"
 	"html/template"
 	"math/rand/v2"
 	"os"
@@ -112,7 +113,7 @@ type Watcher struct {
 	mu       *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
+func New(machine model.Machine, name string, states []string, required []watchers.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
 	var err error
 
 	nw := &Watcher{
@@ -125,7 +126,7 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		mu:          &sync.Mutex{},
 	}
 
-	nw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
+	nw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, required, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}

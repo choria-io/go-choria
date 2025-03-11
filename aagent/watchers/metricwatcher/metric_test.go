@@ -55,7 +55,7 @@ var _ = Describe("MetricWatcher", func() {
 		mockMachine.EXPECT().Facts().Return([]byte(`{"fqdn":"ginkgo.example.net"}`)).AnyTimes()
 		mockMachine.EXPECT().Data().Return(map[string]any{}).AnyTimes()
 
-		wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]any{
+		wi, err := New(mockMachine, "ginkgo", []string{"run"}, nil, "fail", "success", "", time.Second, map[string]any{
 			"command": "metric.sh",
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -87,7 +87,7 @@ var _ = Describe("MetricWatcher", func() {
 				handled = true
 			})
 
-			wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]any{
+			wi, err := New(mockMachine, "ginkgo", []string{"run"}, nil, "fail", "success", "", time.Second, map[string]any{
 				"command": filepath.Join("testdata", "nagios.sh"),
 				"labels":  map[string]string{"dupe": "w"},
 			})
@@ -116,7 +116,7 @@ var _ = Describe("MetricWatcher", func() {
 				handled = true
 			})
 
-			wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]any{
+			wi, err := New(mockMachine, "ginkgo", []string{"run"}, nil, "fail", "success", "", time.Second, map[string]any{
 				"command": filepath.Join("testdata", "metric.sh"),
 				"labels":  map[string]string{"dupe": "w"},
 			})

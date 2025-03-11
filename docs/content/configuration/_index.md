@@ -8,7 +8,7 @@ pre = "<b>4. </b>"
 This is a list of all known Configuration settings. This list is based on declared settings within the Choria Go code base and so will not cover 100% of settings - plugins can contribute their own settings which are note known at compile time.
 
 {{% notice secondary "Version Hint" code-branch %}}
-Built on *23 Jan 25 21:36 UTC* using version *0.29.4*
+Built on *12 Feb 25 15:22 UTC* using version *0.29.4*
 {{% /notice %}}
 
 ### Run-time configuration

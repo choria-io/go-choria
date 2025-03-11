@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -38,7 +38,7 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 		machine.EXPECT().Data().Return(map[string]any{}).MinTimes(1)
 		machine.EXPECT().DataGet("machines").MinTimes(1)
 
-		wi, err := New(machine, "kv", nil, "", "", "1m", time.Hour, map[string]any{
+		wi, err := New(machine, "kv", nil, nil, "", "", "1m", time.Hour, map[string]any{
 			"bucket":        "PLUGINS",
 			"key":           "machines",
 			"mode":          "poll",

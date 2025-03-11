@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -39,6 +39,7 @@ type Machine interface {
 	DataGet(key string) (any, bool)
 	DataDelete(key string) error
 	SignerKey() string
+	LookupExternalMachineState(name string) (string, error)
 	Debugf(name string, format string, args ...any)
 	Infof(name string, format string, args ...any)
 	Warnf(name string, format string, args ...any)
