@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -51,7 +51,7 @@ var _ = Describe("NagiosWatcher", func() {
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
 		mockMachine.EXPECT().TextFileDirectory().Return(td).AnyTimes()
 
-		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "1s", time.Second, map[string]any{
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, nil, "fail", "success", "1s", time.Second, map[string]any{
 			"plugin": "/bin/sh",
 		})
 		Expect(err).ToNot(HaveOccurred())

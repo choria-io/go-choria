@@ -81,11 +81,20 @@ commands:
         - name: imocks
           description: Generate inter/imocks related files
           type: exec
+          flags:
+            - name: update
+              description: Updates the mockgen runtime
+              bool: true
           dir: "{{ AppDir }}"
           script: |
             set -e
 
             . "{{ BashHelperPath }}"
+
+            {{ if .Flags.update }}
+                  ab_say Updating mockgen binary
+                  go install go.uber.org/mock/mockgen@latest
+            {{ end }}
 
             ab_say "Generating imocks"
 
@@ -161,6 +170,9 @@ commands:
             cd ./aagent/machine
             mockgen -write_generate_directive -package machine -destination notifications_mock_test.go -source notifications.go
             mockgen -write_generate_directive -package machine -destination machine_mock_test.go -source machine.go
+            cd -
+            cd ./aagent/model
+            mockgen -package model -destination model_mock.go github.com/choria-io/go-choria/aagent/model Watcher,WatcherConstructor,ChoriaProvider,Machine
             cd -
 
             ab_say "Generating KV Watcher Mocks"

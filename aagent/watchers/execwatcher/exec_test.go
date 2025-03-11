@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -42,7 +42,7 @@ var _ = Describe("ExecWatcher", func() {
 
 		now = time.Unix(1606924953, 0)
 
-		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]any{
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, nil, "fail", "success", "2m", time.Second, map[string]any{
 			"command": "foo",
 		})
 		Expect(err).ToNot(HaveOccurred())

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,7 @@ package plugin
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/choria-io/go-choria/aagent/watchers"
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
@@ -16,7 +17,7 @@ import (
 	"golang.org/x/text/language"
 )
 
-func NewWatcherPlugin(wtype string, version string, notification func() any, new func(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error)) *WatcherPlugin {
+func NewWatcherPlugin(wtype string, version string, notification func() any, new func(machine model.Machine, name string, states []string, requiredStates []watchers.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error)) *WatcherPlugin {
 	return &WatcherPlugin{
 		Name: wtype,
 		Creator: &watcherCreator{
@@ -37,7 +38,7 @@ type watcherCreator struct {
 	wtype        string
 	version      string
 	notification func() any
-	new          func(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error)
+	new          func(machine model.Machine, name string, states []string, requiredStates []watchers.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error)
 }
 
 func (c *watcherCreator) Type() string {
@@ -55,8 +56,8 @@ func (c *watcherCreator) UnmarshalNotification(n []byte) (any, error) {
 	return state, err
 }
 
-func (c *watcherCreator) New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
-	return c.new(machine, name, states, failEvent, successEvent, interval, ai, properties)
+func (c *watcherCreator) New(machine model.Machine, name string, states []string, requiredStates []watchers.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
+	return c.new(machine, name, states, requiredStates, failEvent, successEvent, interval, ai, properties)
 }
 
 // PluginInstance implements plugin.Pluggable

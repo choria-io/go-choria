@@ -119,6 +119,11 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 		return err
 	}
 
+	err = s.createOrUpdateStream("CHORIA_EXECUTOR", []string{"choria.submission.choria.executor.>"}, cfg.NetworkEventStoreDuration, cfg.NetworkEventStoreReplicas, mgr)
+	if err != nil {
+		return err
+	}
+
 	err = s.createOrUpdateStream("CHORIA_EVENTS", []string{"choria.lifecycle.>"}, cfg.NetworkEventStoreDuration, cfg.NetworkEventStoreReplicas, mgr)
 	if err != nil {
 		return err

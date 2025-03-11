@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -50,7 +50,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 		machine.EXPECT().Facts().Return(json.RawMessage("{}")).AnyTimes()
 		machine.EXPECT().Data().Return(map[string]any{}).AnyTimes()
 
-		wi, err := New(machine, "machines", nil, "", "", "1m", time.Hour, map[string]any{
+		wi, err := New(machine, "machines", nil, nil, "", "", "1m", time.Hour, map[string]any{
 			"source":   "https://example.net",
 			"creates":  "testdata/creates",
 			"target":   td,

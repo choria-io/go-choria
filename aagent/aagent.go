@@ -95,6 +95,7 @@ func (a *AAgent) configureMachine(aa *machine.Machine) {
 	aa.SetChoriaStatusFile(a.fw.ServerStatusFile())
 	aa.SetSignerKey(a.fw.MachineSignerKey())
 	aa.SetExternalMachineNotifier(a.notifyMachinesAfterTransition)
+	aa.SetExternalMachineStateQuery(a.machineStateLookup)
 }
 
 func (a *AAgent) notifyMachinesAfterTransition(event *machine.TransitionNotification) {
@@ -105,6 +106,15 @@ func (a *AAgent) notifyMachinesAfterTransition(event *machine.TransitionNotifica
 		a.logger.Debugf("Notifying machine %s about transition %s#%s", m.machine.MachineName, event.Machine, event.Transition)
 		go m.machine.ExternalEventNotify(event)
 	}
+}
+
+func (a *AAgent) machineStateLookup(name string) (string, error) {
+	m := a.findMachine(name, "", "", "")
+	if m == nil {
+		return "", fmt.Errorf("could not find machine matching ame='%s'", name)
+	}
+
+	return m.machine.MachineName, nil
 }
 
 func (a *AAgent) loadMachine(ctx context.Context, path string) (err error) {
