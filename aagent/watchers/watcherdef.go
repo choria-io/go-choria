@@ -14,21 +14,21 @@ import (
 // WatcherDef is the core definition of a watcher, watcher type specific
 // properties get stored in Properties and parsed by each watcher type
 type WatcherDef struct {
-	Name                string                `json:"name" yaml:"name"`
-	Type                string                `json:"type" yaml:"type"`
-	StateMatch          []string              `json:"state_match" yaml:"state_match"`
-	FailTransition      string                `json:"fail_transition" yaml:"fail_transition"`
-	SuccessTransition   string                `json:"success_transition" yaml:"success_transition"`
-	Interval            string                `json:"interval" yaml:"interval"`
-	AnnounceInterval    string                `json:"announce_interval" yaml:"announce_interval"`
-	Properties          map[string]any        `json:"properties" yaml:"properties"`
-	RequireMachineState []ForeignMachineState `json:"require_machine_state" yaml:"require_machine_state"`
-	AnnounceDuration    time.Duration         `json:"-" yaml:"-"`
+	Name                 string                `json:"name" yaml:"name"`
+	Type                 string                `json:"type" yaml:"type"`
+	StateMatch           []string              `json:"state_match" yaml:"state_match"`
+	ForeignStateRequired []ForeignMachineState `json:"foreign_state_required" yaml:"foreign_state_required"`
+	FailTransition       string                `json:"fail_transition" yaml:"fail_transition"`
+	SuccessTransition    string                `json:"success_transition" yaml:"success_transition"`
+	Interval             string                `json:"interval" yaml:"interval"`
+	AnnounceInterval     string                `json:"announce_interval" yaml:"announce_interval"`
+	Properties           map[string]any        `json:"properties" yaml:"properties"`
+	AnnounceDuration     time.Duration         `json:"-" yaml:"-"`
 }
 
 // ForeignMachineState describe a requirement on a foreign machine state
 type ForeignMachineState struct {
-	MachineName  string `json:"name" yaml:"name"`
+	MachineName  string `json:"machine_name" yaml:"machine_name"`
 	MachineState string `json:"state" yaml:"state"`
 }
 
