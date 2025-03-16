@@ -257,6 +257,8 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 		return Error, fmt.Errorf("rename failed: %s", err)
 	}
 
+	w.Warnf("Archive %v was deployed successfully to %v", w.properties.Source, w.properties.Creates)
+
 	return Downloaded, nil
 }
 
