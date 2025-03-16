@@ -171,7 +171,7 @@ type ChoriaPluginConfig struct {
 
 	AutonomousAgentsDownload           bool   `confkey:"plugin.machines.download"`                        // Activate run-time installation of Autonomous Agents
 	AutonomousAgentsBucket             string `confkey:"plugin.machines.bucket" default:"CHORIA_PLUGINS"` // The KV bucket to query for plugins to install
-	AutonomousAgentsKey                string `confkey:"plugin.machines.key" default:"machines"`          // The Key to query in KV bucket for plugins to install
+	AutonomousAgentsKey                string `confkey:"plugin.machines.key" default:"plugins"`           // The Key to query in KV bucket for plugins to install
 	AutonomousAgentsPurge              bool   `confkey:"plugin.machines.purge" default:"true"`            // Purge autonomous agents installed using other methods
 	AutonomousAgentsBucketPollInterval string `confkey:"plugin.machines.poll_interval" default:"1m"`      // How frequently to poll the KV bucket for updates
 	AutonomousAgentCheckInterval       string `confkey:"plugin.machines.check_interval" default:"30s"`    // How frequently to integrity check deployed autonomous agents

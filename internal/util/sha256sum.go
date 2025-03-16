@@ -1,4 +1,4 @@
-// Copyright (c) 2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2023-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -65,6 +65,62 @@ func FileHasSha256Sum(path string, sum string) (bool, string, error) {
 	}
 
 	return s == sum, s, nil
+}
+
+// Sha256ChecksumDirWithExclude produce a file similar to those produced by sha256sum on the command line.
+//
+// This function will walk the directory and checksum all files in all subdirectories
+func Sha256ChecksumDirWithExclude(dir string, exclude string) (checksums []byte, skipped []string, err error) {
+	sums := bytes.NewBuffer([]byte{})
+
+	skip := []*regexp.Regexp{}
+
+	if exclude != "" {
+		for _, pat := range strings.Split(exclude, ",") {
+			re, err := regexp.Compile(pat)
+			if err != nil {
+				return nil, nil, err
+			}
+
+			skip = append(skip, re)
+		}
+	}
+
+	err = filepath.WalkDir(dir, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !d.Type().IsRegular() {
+			return nil
+		}
+
+		for _, re := range skip {
+			if re.MatchString(path) {
+				skipped = append(skipped, path)
+				return nil
+			}
+		}
+
+		sum, err := Sha256HashFile(path)
+		if err != nil {
+			return err
+		}
+
+		if dir != "." {
+			path = strings.TrimPrefix(path, filepath.ToSlash(dir))
+		}
+		path = strings.TrimPrefix(path, "/")
+
+		_, err = fmt.Fprintf(sums, "%s  %s\n", sum, path)
+
+		return err
+	})
+	if err != nil {
+		return nil, nil, fmt.Errorf("%w: %v", ErrorChecksumError, err)
+	}
+
+	return sums.Bytes(), nil, nil
 }
 
 // Sha256ChecksumDir produce a file similar to those produced by sha256sum on the command line.
