@@ -9,7 +9,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/choria-io/go-choria/aagent/watchers"
 	"os"
 	"sync"
 	"text/template"
@@ -29,7 +28,7 @@ type Watcher struct {
 	announceInterval time.Duration
 	statechg         chan struct{}
 	activeStates     []string
-	requiredStates   []watchers.ForeignMachineState
+	requiredStates   []model.ForeignMachineState
 	machine          model.Machine
 	succEvent        string
 	failEvent        string
@@ -41,7 +40,7 @@ type Watcher struct {
 	mu sync.Mutex
 }
 
-func NewWatcher(name string, wtype string, announceInterval time.Duration, activeStates []string, requireState []watchers.ForeignMachineState, machine model.Machine, fail string, success string) (*Watcher, error) {
+func NewWatcher(name string, wtype string, announceInterval time.Duration, activeStates []string, requireState []model.ForeignMachineState, machine model.Machine, fail string, success string) (*Watcher, error) {
 	if name == "" {
 		return nil, fmt.Errorf("name is required")
 	}

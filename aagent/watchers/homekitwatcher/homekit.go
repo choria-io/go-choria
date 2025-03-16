@@ -8,7 +8,6 @@ import (
 	"context"
 	"crypto/md5"
 	"fmt"
-	"github.com/choria-io/go-choria/aagent/watchers"
 	"path/filepath"
 	"strings"
 	"sync"
@@ -77,7 +76,7 @@ type Watcher struct {
 	mu          *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, required []watchers.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]any) (any, error) {
+func New(machine model.Machine, name string, states []string, required []model.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]any) (any, error) {
 	var err error
 
 	hkw := &Watcher{

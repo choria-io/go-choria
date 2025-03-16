@@ -5,12 +5,12 @@
 package watcher
 
 import (
+	"testing"
+
 	"github.com/choria-io/go-choria/aagent/model"
-	"github.com/choria-io/go-choria/aagent/watchers"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/mock/gomock"
-	"testing"
 )
 
 func Test(t *testing.T) {
@@ -55,7 +55,7 @@ var _ = Describe("Watcher", func() {
 		})
 
 		It("Should handle only requirements", func() {
-			w.requiredStates = []watchers.ForeignMachineState{
+			w.requiredStates = []model.ForeignMachineState{
 				{MachineName: "other", MachineState: "ok"},
 			}
 
@@ -67,7 +67,7 @@ var _ = Describe("Watcher", func() {
 
 			mockmachine.EXPECT().LookupExternalMachineState(gomock.Eq("other1")).Return("ok", nil).Times(1)
 			mockmachine.EXPECT().LookupExternalMachineState(gomock.Eq("other2")).Return("ok", nil).Times(1)
-			w.requiredStates = []watchers.ForeignMachineState{
+			w.requiredStates = []model.ForeignMachineState{
 				{MachineName: "other1", MachineState: "ok"},
 				{MachineName: "other2", MachineState: "ok"},
 			}
@@ -75,7 +75,7 @@ var _ = Describe("Watcher", func() {
 
 			mockmachine.EXPECT().LookupExternalMachineState(gomock.Eq("other1")).Return("ok", nil).Times(1)
 			mockmachine.EXPECT().LookupExternalMachineState(gomock.Eq("other2")).Return("ok", nil).Times(1)
-			w.requiredStates = []watchers.ForeignMachineState{
+			w.requiredStates = []model.ForeignMachineState{
 				{MachineName: "other1", MachineState: "ok"},
 				{MachineName: "other2", MachineState: "notok"},
 			}
@@ -83,7 +83,7 @@ var _ = Describe("Watcher", func() {
 		})
 
 		It("Should handle states and requirements", func() {
-			w.requiredStates = []watchers.ForeignMachineState{
+			w.requiredStates = []model.ForeignMachineState{
 				{MachineName: "other", MachineState: "ok"},
 			}
 			w.activeStates = []string{"ok", "notok"}

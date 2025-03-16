@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -100,7 +100,7 @@ var _ = Describe("Aagent/Watchers", func() {
 			})
 
 			watcher.EXPECT().Name().Return("mwatcher").AnyTimes()
-			watcherC.EXPECT().New(machine, "mwatcher", []string{"one"}, "failed", "passed", "1m", 0*time.Second, map[string]any{
+			watcherC.EXPECT().New(machine, "mwatcher", []string{"one"}, nil, "failed", "passed", "1m", 0*time.Second, map[string]any{
 				"path": "/dev/null",
 			}).Return(watcher, nil).AnyTimes()
 

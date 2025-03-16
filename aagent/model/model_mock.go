@@ -178,18 +178,18 @@ func (mr *MockWatcherConstructorMockRecorder) EventType() *gomock.Call {
 }
 
 // New mocks base method.
-func (m *MockWatcherConstructor) New(machine Machine, name string, states []string, failEvent, successEvent, interval string, ai time.Duration, properties map[string]any) (any, error) {
+func (m *MockWatcherConstructor) New(machine Machine, name string, states []string, requiredState []ForeignMachineState, failEvent, successEvent, interval string, ai time.Duration, properties map[string]any) (any, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "New", machine, name, states, failEvent, successEvent, interval, ai, properties)
+	ret := m.ctrl.Call(m, "New", machine, name, states, requiredState, failEvent, successEvent, interval, ai, properties)
 	ret0, _ := ret[0].(any)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // New indicates an expected call of New.
-func (mr *MockWatcherConstructorMockRecorder) New(machine, name, states, failEvent, successEvent, interval, ai, properties any) *gomock.Call {
+func (mr *MockWatcherConstructorMockRecorder) New(machine, name, states, requiredState, failEvent, successEvent, interval, ai, properties any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "New", reflect.TypeOf((*MockWatcherConstructor)(nil).New), machine, name, states, failEvent, successEvent, interval, ai, properties)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "New", reflect.TypeOf((*MockWatcherConstructor)(nil).New), machine, name, states, requiredState, failEvent, successEvent, interval, ai, properties)
 }
 
 // Type mocks base method.
