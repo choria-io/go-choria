@@ -221,6 +221,37 @@ func (p *ExecutorClient) Signal(inputId string, inputSignal int64) *SignalReques
 	return d
 }
 
+// List performs the list action
+//
+// Description: Lists jobs matching certain criteria
+//
+// Optional Inputs:
+//   - action (string) - The action that created a job
+//   - agent (string) - The agent that create a job
+//   - before (int64) - Unix timestamp to limit jobs on
+//   - caller (string) - The caller id that created a job
+//   - command (string) - The command that was executed
+//   - completed (bool) - Limit to jobs that were completed
+//   - identity (string) - The host identity that created the job
+//   - requestid (string) - The Request ID that created the job
+//   - running (bool) - Limits to running jobs
+//   - since (int64) - Unix timestamp to limit jobs on
+func (p *ExecutorClient) List() *ListRequester {
+	d := &ListRequester{
+		outc: nil,
+		r: &requester{
+			args:   map[string]any{},
+			action: "list",
+			client: p,
+		},
+	}
+
+	action, _ := p.ddl.ActionInterface(d.r.action)
+	action.SetDefaults(d.r.args)
+
+	return d
+}
+
 // Status performs the status action
 //
 // Description: Requests the status of a job by ID

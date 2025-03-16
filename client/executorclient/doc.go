@@ -6,5 +6,6 @@
 //
 // Actions:
 //   - Signal - Sends a signal to a process
+//   - List - Lists jobs matching certain criteria
 //   - Status - Requests the status of a job by ID
 package executorclient

@@ -12,10 +12,12 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"os"
 	"os/exec"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strconv"
 	"sync"
 	"syscall"
@@ -29,21 +31,36 @@ import (
 
 // Process describes a process managed by the execution provider
 type Process struct {
-	Command       string            `json:"command"`
+	Action        string            `json:"action"`
+	Agent         string            `json:"agent"`
 	Args          []string          `json:"args"`
+	Caller        string            `json:"caller"`
+	Created       time.Time         `json:"created"`
+	Command       string            `json:"command"`
 	Environment   map[string]string `json:"environment"`
-	StdoutFile    string            `json:"stdout"`
-	StderrFile    string            `json:"stderr"`
-	PidFile       string            `json:"pid"`
 	HeartBeat     time.Duration     `json:"heartbeat"`
 	ID            string            `json:"id"`
 	Identity      string            `json:"identity"`
-	Caller        string            `json:"caller"`
-	Agent         string            `json:"agent"`
-	Action        string            `json:"action"`
+	PidFile       string            `json:"pid"`
 	RequestID     string            `json:"requestid"`
 	StartTime     time.Time         `json:"start,omitempty"`
+	StderrFile    string            `json:"stderr"`
+	StdoutFile    string            `json:"stdout"`
 	TerminateTime time.Time         `json:"terminate,omitempty"`
+}
+
+// ListQuery configures the job lister
+type ListQuery struct {
+	Action    string    `json:"action"`
+	Agent     string    `json:"agent"`
+	Before    time.Time `json:"before"`
+	Caller    string    `json:"caller"`
+	Command   string    `json:"command"`
+	Completed bool      `json:"completed"`
+	Identity  string    `json:"identity"`
+	RequestID string    `json:"requestid"`
+	Running   bool      `json:"running"`
+	Since     time.Time `json:"since"`
 }
 
 type ExitCode struct {
@@ -74,6 +91,7 @@ var (
 	ErrAlreadyStarted         = errors.New("already started")
 	ErrSpoolCreationFailed    = errors.New("spool creation failed")
 	ErrProcessFailed          = errors.New("process failed")
+	ErrQueryRequired          = errors.New("query required")
 )
 
 func New(caller string, agent string, action string, reqID string, identity string, id string, command string, args []string, env map[string]string) (*Process, error) {
@@ -103,7 +121,49 @@ func New(caller string, agent string, action string, reqID string, identity stri
 		RequestID:   reqID,
 		Agent:       agent,
 		Action:      action,
+		Created:     time.Now().UTC(),
 	}, nil
+}
+
+func List(spool string, q *ListQuery) ([]*Process, error) {
+	if spool == "" {
+		return nil, ErrSpoolNotConfigured
+	}
+	if q == nil {
+		return nil, ErrQueryRequired
+	}
+
+	result := make([]*Process, 0)
+
+	err := filepath.WalkDir(spool, func(path string, d fs.DirEntry, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if !d.Type().IsRegular() {
+			return nil
+		}
+
+		proc, err := Load(spool, d.Name())
+		if err != nil {
+			return nil
+		}
+
+		if proc.IsMatch(q) {
+			result = append(result, proc)
+		}
+
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func ListWithChoria(fw inter.Framework, q *ListQuery) ([]*Process, error) {
+	return List(fw.Configuration().Choria.ExecutorSpool, q)
 }
 
 func Load(spool string, id string) (*Process, error) {
@@ -137,6 +197,33 @@ func Load(spool string, id string) (*Process, error) {
 
 func LoadWithChoria(fw inter.Framework, id string) (*Process, error) {
 	return Load(fw.Configuration().Choria.ExecutorSpool, id)
+}
+
+// IsMatch determines if the processes matches the query
+func (p *Process) IsMatch(q *ListQuery) bool {
+	matcher := func(matched []bool, should bool, property bool) []bool {
+		if !should {
+			return matched
+		}
+
+		matched = append(matched, property)
+
+		return matched
+	}
+	started, _ := p.HasStarted()
+
+	matched := matcher(nil, q.Running, p.IsRunning())
+	matched = matcher(matched, q.Completed, started && !p.IsRunning())
+	matched = matcher(matched, q.Caller != "", p.Caller == q.Caller)
+	matched = matcher(matched, q.Agent != "", p.Agent == q.Agent)
+	matched = matcher(matched, q.Action != "", p.Action == q.Action)
+	matched = matcher(matched, q.RequestID != "", p.RequestID == q.RequestID)
+	matched = matcher(matched, q.Command != "", p.Command == q.Command)
+	matched = matcher(matched, q.Identity != "", p.Identity == q.Identity)
+	matched = matcher(matched, !q.Since.IsZero(), p.Created.After(q.Since))
+	matched = matcher(matched, !q.Before.IsZero(), p.Created.Before(q.Before))
+
+	return len(matched) > 0 && !slices.Contains(matched, false)
 }
 
 // CreateSpool creates the spool and saves the spec, fails if already created

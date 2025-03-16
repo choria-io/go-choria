@@ -44,6 +44,92 @@
       }
     },
     {
+      "action": "list",
+      "display": "always",
+      "description": "Lists jobs matching certain criteria",
+      "input": {
+        "action": {
+          "prompt": "Action",
+          "description": "The action that created a job",
+          "type": "string",
+          "maxlength": 20,
+          "optional": true,
+          "validation": "^[\\w]+$"
+        },
+        "agent": {
+          "prompt": "Agent",
+          "description": "The agent that create a job",
+          "type": "string",
+          "maxlength": 20,
+          "optional": true,
+          "validation": "^[\\w]+$"
+        },
+        "before": {
+          "prompt": "Before",
+          "description": "Unix timestamp to limit jobs on",
+          "type": "integer",
+          "optional": true
+        },
+        "caller": {
+          "prompt": "Caller",
+          "description": "The caller id that created a job",
+          "type": "string",
+          "maxlength": 50,
+          "validation": ".",
+          "optional": true
+        },
+        "command": {
+          "prompt": "Command",
+          "description": "The command that was executed",
+          "type": "string",
+          "maxlength": 256,
+          "validation": ".",
+          "optional": true
+        },
+        "completed": {
+          "prompt": "Completed",
+          "description": "Limit to jobs that were completed",
+          "type": "boolean",
+          "optional": true
+        },
+        "identity": {
+          "prompt": "Identity",
+          "description": "The host identity that created the job",
+          "type": "string",
+          "maxlength": 256,
+          "validation": ".",
+          "optional": true
+        },
+        "requestid": {
+          "prompt": "Request",
+          "description": "The Request ID that created the job",
+          "type": "string",
+          "maxlength": 20,
+          "validation": ".",
+          "optional": true
+        },
+        "running": {
+          "prompt": "Running",
+          "description": "Limits to running jobs",
+          "type": "boolean",
+          "optional": true
+        },
+        "since": {
+          "prompt": "Since",
+          "description": "Unix timestamp to limit jobs on",
+          "type": "integer",
+          "optional": true
+        }
+      },
+      "output": {
+        "jobs": {
+          "description": "List of matched jobs",
+          "type": "hash",
+          "display_as": "Jobs"
+        }
+      }
+    },
+    {
       "action": "status",
       "display": "always",
       "description": "Requests the status of a job by ID",
