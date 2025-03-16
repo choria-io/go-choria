@@ -8,7 +8,7 @@ pre = "<b>4. </b>"
 This is a list of all known Configuration settings. This list is based on declared settings within the Choria Go code base and so will not cover 100% of settings - plugins can contribute their own settings which are note known at compile time.
 
 {{% notice secondary "Version Hint" code-branch %}}
-Built on *16 Mar 25 13:40 UTC* using version *0.29.4*
+Built on *16 Mar 25 20:07 UTC* using version *0.29.4*
 {{% /notice %}}
 
 ### Run-time configuration
@@ -860,7 +860,7 @@ Activate run-time installation of Autonomous Agents
 ### plugin.machines.key
 
  * **Type:** string
- * **Default Value:** machines
+ * **Default Value:** plugins
 
 The Key to query in KV bucket for plugins to install
 

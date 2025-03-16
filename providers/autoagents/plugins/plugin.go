@@ -1,4 +1,4 @@
-// Copyright (c) 2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2024-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -39,7 +39,7 @@ func ChoriaPlugin(cfg *config.Config) (*plugin.MachinePlugin, error) {
 		Transitions: []*machine.Transition{
 			{
 				Name:        "maintenance",
-				From:        []string{"MANAGE"},
+				From:        []string{"MANAGE", "INITIAL"},
 				Destination: "MAINTENANCE",
 				Description: "Stops actively managing plugins",
 			},
