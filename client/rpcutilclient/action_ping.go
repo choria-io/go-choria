@@ -76,6 +76,11 @@ func (d *PingResult) Stats() Stats {
 	return d.stats
 }
 
+// RPCClientStats is the rpc request stats
+func (d *PingResult) RPCClientStats() *rpcclient.Stats {
+	return d.stats
+}
+
 // ResultDetails is the details about the request
 func (d *PingOutput) ResultDetails() *ResultDetails {
 	return d.details
