@@ -31,6 +31,7 @@ func New(mgr server.AgentManager) (*mcorpc.Agent, error) {
 
 	agent.MustRegisterAction("status", statusAction)
 	agent.MustRegisterAction("signal", signalAction)
+	agent.MustRegisterAction("list", listAction)
 
 	return agent, nil
 }

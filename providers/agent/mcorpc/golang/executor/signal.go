@@ -32,7 +32,6 @@ func signalAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply,
 	}
 
 	args := &SignalRequest{}
-
 	if !mcorpc.ParseRequestData(args, req, reply) {
 		return
 	}

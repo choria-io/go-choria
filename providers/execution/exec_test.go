@@ -6,14 +6,16 @@ package execution
 
 import (
 	"encoding/json"
-	iu "github.com/choria-io/go-choria/internal/util"
-	. "github.com/onsi/ginkgo/v2"
-	. "github.com/onsi/gomega"
 	"os"
 	"path/filepath"
 	"runtime"
 	"strconv"
 	"testing"
+	"time"
+
+	iu "github.com/choria-io/go-choria/internal/util"
+	. "github.com/onsi/ginkgo/v2"
+	. "github.com/onsi/gomega"
 )
 
 func TestGovernor(t *testing.T) {
@@ -53,6 +55,56 @@ var _ = Describe("Execution", func() {
 
 			_, err = New("x", "X", "x", "x", "x", "x", "", nil, nil)
 			Expect(err).To(MatchError(ContainSubstring("no command")))
+		})
+	})
+
+	Describe("IsMatch", func() {
+		It("Should match", func() {
+			Expect(p.IsMatch(&ListQuery{})).To(BeFalse())
+
+			Expect(p.IsMatch(&ListQuery{Action: "action"})).To(BeTrue())
+			Expect(p.IsMatch(&ListQuery{Action: "other"})).To(BeFalse())
+
+			Expect(p.IsMatch(&ListQuery{Agent: "agent"})).To(BeTrue())
+			Expect(p.IsMatch(&ListQuery{Agent: "other"})).To(BeFalse())
+
+			Expect(p.IsMatch(&ListQuery{Before: time.Now().Add(-time.Hour)})).To(BeFalse())
+			Expect(p.IsMatch(&ListQuery{Before: time.Now().Add(time.Hour)})).To(BeTrue())
+
+			Expect(p.IsMatch(&ListQuery{Caller: "ginkgo"})).To(BeTrue())
+			Expect(p.IsMatch(&ListQuery{Caller: "other"})).To(BeFalse())
+
+			Expect(p.IsMatch(&ListQuery{Command: "echo"})).To(BeTrue())
+			Expect(p.IsMatch(&ListQuery{Command: "other"})).To(BeFalse())
+
+			p.PidFile = filepath.Join(td, "pid")
+			Expect(p.IsMatch(&ListQuery{Running: true})).To(BeFalse())
+			Expect(os.WriteFile(p.PidFile, []byte(strconv.Itoa(os.Getpid())), 0700)).To(Succeed())
+			Expect(p.IsMatch(&ListQuery{Running: true})).To(BeTrue())
+			Expect(p.IsMatch(&ListQuery{Completed: true})).To(BeFalse())
+			Expect(p.IsMatch(&ListQuery{Completed: true})).To(BeFalse())
+			Expect(os.WriteFile(p.PidFile, []byte("0"), 0700)).To(Succeed())
+			Expect(p.IsMatch(&ListQuery{Completed: true})).To(BeTrue())
+			Expect(p.IsMatch(&ListQuery{Running: true})).To(BeFalse())
+
+			Expect(p.IsMatch(&ListQuery{Identity: "ginkgo.example.net"})).To(BeTrue())
+			Expect(p.IsMatch(&ListQuery{Identity: "other"})).To(BeFalse())
+
+			Expect(p.IsMatch(&ListQuery{RequestID: p.RequestID})).To(BeTrue())
+			Expect(p.IsMatch(&ListQuery{RequestID: "other"})).To(BeFalse())
+
+			Expect(p.IsMatch(&ListQuery{Since: time.Now()})).To(BeFalse())
+			Expect(p.IsMatch(&ListQuery{Since: time.Now().Add(-time.Hour)})).To(BeTrue())
+
+			Expect(p.IsMatch(&ListQuery{
+				Identity: "ginkgo.example.net",
+				Caller:   "ginkgo",
+			})).To(BeTrue())
+
+			Expect(p.IsMatch(&ListQuery{
+				Identity: "ginkgo.example.net",
+				Caller:   "other",
+			})).To(BeFalse())
 		})
 	})
 

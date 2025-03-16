@@ -54,6 +54,8 @@ var docStrings = map[string]string{
 	"plugin.choria.network.client_tls_force_required":              "Force requiring/not requiring TLS for all clients",
 	"plugin.choria.network.client_signer_cert":                     "Fully qualified paths to the public certificates used by the AAA Service to sign client JWT tokens. This enables users with signed JWTs to use unverified TLS to connect. Can also be a list of ed25519 public keys.",
 	"plugin.choria.network.deny_server_connections":                "Set ACLs denying server connections to this broker",
+	"plugin.choria.network.stream.executor_retention":              "When not zero enables retaining Executor events in the Stream Store",
+	"plugin.choria.network.stream.executor_replicas":               "When configuring Executor events ensure data is replicated in the cluster over this many servers, -1 means count of peers",
 	"plugin.choria.network.stream.event_retention":                 "When not zero enables retaining Lifecycle events in the Stream Store",
 	"plugin.choria.network.stream.event_replicas":                  "When configuring LifeCycle events ensure data is replicated in the cluster over this many servers, -1 means count of peers",
 	"plugin.choria.network.gateway_name":                           "Name for the Super Cluster",

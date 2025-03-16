@@ -8,7 +8,7 @@ pre = "<b>4. </b>"
 This is a list of all known Configuration settings. This list is based on declared settings within the Choria Go code base and so will not cover 100% of settings - plugins can contribute their own settings which are note known at compile time.
 
 {{% notice secondary "Version Hint" code-branch %}}
-Built on *12 Feb 25 15:22 UTC* using version *0.29.4*
+Built on *16 Mar 25 11:47 UTC* using version *0.29.4*
 {{% /notice %}}
 
 ### Run-time configuration
@@ -78,6 +78,7 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.network.server_signer_cert](#pluginchorianetworkserver_signer_cert)|[plugin.choria.network.soft_shutdown_timeout](#pluginchorianetworksoft_shutdown_timeout)|
 |[plugin.choria.network.stream.advisory_replicas](#pluginchorianetworkstreamadvisory_replicas)|[plugin.choria.network.stream.advisory_retention](#pluginchorianetworkstreamadvisory_retention)|
 |[plugin.choria.network.stream.event_replicas](#pluginchorianetworkstreamevent_replicas)|[plugin.choria.network.stream.event_retention](#pluginchorianetworkstreamevent_retention)|
+|[plugin.choria.network.stream.executor_replicas](#pluginchorianetworkstreamexecutor_replicas)|[plugin.choria.network.stream.executor_retention](#pluginchorianetworkstreamexecutor_retention)|
 |[plugin.choria.network.stream.leader_election_replicas](#pluginchorianetworkstreamleader_election_replicas)|[plugin.choria.network.stream.leader_election_ttl](#pluginchorianetworkstreamleader_election_ttl)|
 |[plugin.choria.network.stream.machine_replicas](#pluginchorianetworkstreammachine_replicas)|[plugin.choria.network.stream.machine_retention](#pluginchorianetworkstreammachine_retention)|
 |[plugin.choria.network.stream.manage_streams](#pluginchorianetworkstreammanage_streams)|[plugin.choria.network.stream.store](#pluginchorianetworkstreamstore)|
@@ -501,6 +502,20 @@ When configuring LifeCycle events ensure data is replicated in the cluster over 
  * **Default Value:** 24h
 
 When not zero enables retaining Lifecycle events in the Stream Store
+
+### plugin.choria.network.stream.executor_replicas
+
+ * **Type:** integer
+ * **Default Value:** -1
+
+When configuring Executor events ensure data is replicated in the cluster over this many servers, -1 means count of peers
+
+### plugin.choria.network.stream.executor_retention
+
+ * **Type:** duration
+ * **Default Value:** 24h
+
+When not zero enables retaining Executor events in the Stream Store
 
 ### plugin.choria.network.stream.leader_election_replicas
 

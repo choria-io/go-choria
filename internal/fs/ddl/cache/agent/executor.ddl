@@ -1,7 +1,3 @@
---  Copyright (c) 2025, R.I. Pienaar and the Choria Project contributors
---
---  SPDX-License-Identifier: Apache-2.0
-
 metadata :name        => "executor",
          :description => "Choria Process Executor Management",
          :author      => "R.I.Pienaar <rip@devco.net>",
@@ -42,6 +38,100 @@ action "signal", :description => "Sends a signal to a process" do
          :description => "If the process was running after signaling",
          :type        => "boolean",
          :display_as  => "Running"
+
+end
+
+action "list", :description => "Lists jobs matching certain criteria" do
+  display :always
+
+  input :action,
+        :prompt      => "Action",
+        :description => "The action that created a job",
+        :type        => :string,
+        :validation  => '^[\w]+$',
+        :maxlength   => 20,
+        :optional    => true
+
+
+  input :agent,
+        :prompt      => "Agent",
+        :description => "The agent that create a job",
+        :type        => :string,
+        :validation  => '^[\w]+$',
+        :maxlength   => 20,
+        :optional    => true
+
+
+  input :before,
+        :prompt      => "Before",
+        :description => "Unix timestamp to limit jobs on",
+        :type        => :integer,
+        :optional    => true
+
+
+  input :caller,
+        :prompt      => "Caller",
+        :description => "The caller id that created a job",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 50,
+        :optional    => true
+
+
+  input :command,
+        :prompt      => "Command",
+        :description => "The command that was executed",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 256,
+        :optional    => true
+
+
+  input :completed,
+        :prompt      => "Completed",
+        :description => "Limit to jobs that were completed",
+        :type        => :boolean,
+        :optional    => true
+
+
+  input :identity,
+        :prompt      => "Identity",
+        :description => "The host identity that created the job",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 256,
+        :optional    => true
+
+
+  input :requestid,
+        :prompt      => "Request",
+        :description => "The Request ID that created the job",
+        :type        => :string,
+        :validation  => '.',
+        :maxlength   => 20,
+        :optional    => true
+
+
+  input :running,
+        :prompt      => "Running",
+        :description => "Limits to running jobs",
+        :type        => :boolean,
+        :optional    => true
+
+
+  input :since,
+        :prompt      => "Since",
+        :description => "Unix timestamp to limit jobs on",
+        :type        => :integer,
+        :optional    => true
+
+
+
+
+  output :jobs,
+         :description => "List of matched jobs",
+         :type        => "hash",
+         :display_as  => "Jobs"
 
 end
 
