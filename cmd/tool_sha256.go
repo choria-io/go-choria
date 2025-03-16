@@ -1,4 +1,4 @@
-// Copyright (c) 2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2024-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,11 +6,12 @@ package cmd
 
 import (
 	"fmt"
+	"os"
+	"sync"
+
 	"github.com/choria-io/go-choria/config"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/sirupsen/logrus"
-	"os"
-	"sync"
 )
 
 type tSha256Command struct {
@@ -18,6 +19,7 @@ type tSha256Command struct {
 
 	directory string
 	sumsFile  string
+	ignore    string
 }
 
 func init() {
@@ -28,6 +30,7 @@ func (r *tSha256Command) Setup() error {
 	if machine, ok := cmdWithFullCommand("tool"); ok {
 		r.cmd = machine.Cmd().Command("sha256", "Checksums a directory of files recursively using SHA256")
 		r.cmd.Arg("dir", "The directory to recursively checksum").Required().ExistingDirVar(&r.directory)
+		r.cmd.Flag("ignore", "A comma separated list of patterns to ignore").StringVar(&r.ignore)
 		r.cmd.Flag("validate", "Checksum file used to validate the directory").ExistingFileVar(&r.sumsFile)
 	}
 
@@ -82,7 +85,7 @@ func (r *tSha256Command) validate() error {
 }
 
 func (r *tSha256Command) create() error {
-	sums, err := iu.Sha256ChecksumDir(r.directory)
+	sums, _, err := iu.Sha256ChecksumDirWithExclude(r.directory, r.ignore)
 	if err != nil {
 		return err
 	}
