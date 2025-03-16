@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -112,9 +112,10 @@ var _ = Describe("Network Broker", func() {
 			Expect(srv.opts.Cluster.Port).To(Equal(8082))
 			Expect(srv.opts.Cluster.Username).To(Equal("bob"))
 			Expect(srv.opts.Cluster.Password).To(Equal("secret"))
-			Expect(srv.opts.Routes).To(HaveLen(2))
+			Expect(srv.opts.Routes).To(HaveLen(3))
 			Expect(srv.opts.Routes[0].Host).To(Equal("localhost:9000"))
 			Expect(srv.opts.Routes[1].Host).To(Equal("localhost:9001"))
+			Expect(srv.opts.Routes[2].Host).To(Equal("localhost:8082"))
 			Expect(srv.opts.TLS).To(BeTrue())
 			Expect(srv.opts.TLSVerify).To(BeTrue())
 			Expect(srv.opts.TLSTimeout).To(Equal(float64(2)))
