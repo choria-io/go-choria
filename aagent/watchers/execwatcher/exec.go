@@ -368,7 +368,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 }
 
 func (w *Watcher) setOutputAsData(output []byte) error {
-	dat := map[string]string{}
+	dat := map[string]any{}
 	err := json.Unmarshal(output, &dat)
 	if err != nil {
 		return err
