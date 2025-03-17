@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -49,7 +49,7 @@ func (srv *Instance) StartInternalMachines(ctx context.Context) (err error) {
 
 	srv.log.Info("Starting built-in Autonomous Agent Plugin Manager")
 
-	m, err := plugins.ChoriaPlugin(srv.cfg)
+	m, err := plugins.ChoriaPlugin(srv.cfg, srv.log)
 	if err != nil {
 		return err
 	}
