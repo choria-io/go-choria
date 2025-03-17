@@ -128,7 +128,7 @@ func (a *AAgent) loadMachine(ctx context.Context, path string) (err error) {
 		return err
 	}
 
-	a.logger.Infof("Loaded Autonomous Agent %s version %s from %s (%s)", aa.Name(), aa.Version(), path, sum)
+	a.logger.Warnf("Loaded Autonomous Agent %s version %s from %s (%s)", aa.Name(), aa.Version(), path, sum)
 	a.configureMachine(aa)
 
 	managed := &managedMachine{
