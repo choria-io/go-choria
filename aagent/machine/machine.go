@@ -255,6 +255,8 @@ func ValidateDir(dir string) (validationErrors []string, err error) {
 }
 
 func (m *Machine) ExternalEventNotify(event *TransitionNotification) {
+	m.Debugf("machine", "Received external event %s from %s", event.Transition, event.Machine)
+
 	for _, transition := range m.Transitions {
 		for _, sub := range transition.Subscriptions {
 			if sub.MachineName == event.Machine && sub.Event == event.Transition {

@@ -6,6 +6,7 @@ package cmd
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"sync"
 
@@ -22,9 +23,13 @@ type mRunCommand struct {
 	factsFile  string
 	dataFile   string
 	connect    bool
+	machines   map[string]*machine.Machine
+	mu         sync.Mutex
 }
 
 func (r *mRunCommand) Setup() (err error) {
+	r.machines = make(map[string]*machine.Machine)
+
 	if machine, ok := cmdWithFullCommand("machine"); ok {
 		r.cmd = machine.Cmd().Command("run", "Runs an autonomous agent locally")
 		r.cmd.Arg("source", "Directories containing the machine definitions").Required().ExistingDirsVar(&r.sourceDirs)
@@ -71,9 +76,15 @@ func (r *mRunCommand) Run(wg *sync.WaitGroup) (err error) {
 			return err
 		}
 
+		r.mu.Lock()
+		r.machines[m.MachineName] = m
+		r.mu.Unlock()
+
 		m.SetIdentity("cli")
 		m.RegisterNotifier(&console.Notifier{})
 		m.SetMainCollective(cfg.MainCollective)
+		m.SetExternalMachineNotifier(r.notifyMachinesAfterTransition)
+		m.SetExternalMachineStateQuery(r.machineStateLookup)
 
 		if r.factsFile != "" {
 			facts, err := os.ReadFile(r.factsFile)
@@ -119,6 +130,29 @@ func (r *mRunCommand) Run(wg *sync.WaitGroup) (err error) {
 	<-ctx.Done()
 
 	return nil
+}
+
+func (r *mRunCommand) notifyMachinesAfterTransition(event *machine.TransitionNotification) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, m := range r.machines {
+		logrus.Infof("Notifying %s about event %s from %s", m.MachineName, event.Transition, event.Machine)
+		go m.ExternalEventNotify(event)
+	}
+}
+
+func (r *mRunCommand) machineStateLookup(name string) (string, error) {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
+	for _, m := range r.machines {
+		if m.Name() == name {
+			return m.State(), nil
+		}
+	}
+
+	return "", fmt.Errorf("could not find machine matching ame='%s'", name)
 }
 
 func init() {
