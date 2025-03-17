@@ -111,10 +111,10 @@ func (a *AAgent) notifyMachinesAfterTransition(event *machine.TransitionNotifica
 func (a *AAgent) machineStateLookup(name string) (string, error) {
 	m := a.findMachine(name, "", "", "")
 	if m == nil {
-		return "", fmt.Errorf("could not find machine matching ame='%s'", name)
+		return "", fmt.Errorf("could not find machine matching name='%s'", name)
 	}
 
-	return m.machine.MachineName, nil
+	return m.machine.State(), nil
 }
 
 func (a *AAgent) loadMachine(ctx context.Context, path string) (err error) {
