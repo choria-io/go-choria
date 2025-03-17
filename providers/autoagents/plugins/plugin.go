@@ -6,6 +6,7 @@ package plugins
 
 import (
 	"fmt"
+	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/aagent/plugin"
@@ -19,7 +20,7 @@ func init() {
 	bi.RegisterMachine(fmt.Sprintf("Autonomous Agent Plugins Manager version %s", build.Version))
 }
 
-func ChoriaPlugin(cfg *config.Config) (*plugin.MachinePlugin, error) {
+func ChoriaPlugin(cfg *config.Config, log *logrus.Entry) (*plugin.MachinePlugin, error) {
 	if !cfg.Choria.AutonomousAgentsDownload {
 		return nil, fmt.Errorf("autonomous agent plugin management is not enabled")
 	}
@@ -31,6 +32,8 @@ func ChoriaPlugin(cfg *config.Config) (*plugin.MachinePlugin, error) {
 	checkInterval := cfg.Choria.AutonomousAgentCheckInterval
 	pluginsDirectory := cfg.Choria.MachineSourceDir
 	publicKey := cfg.Choria.AutonomousAgentPublicKey
+
+	log.Warnf("Startring autonomous agent plugin management using KV %s > %s", bucket, key)
 
 	m := machine.Machine{
 		MachineName:    "plugins_manager",
