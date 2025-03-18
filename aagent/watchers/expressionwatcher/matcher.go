@@ -1,4 +1,4 @@
-// Copyright (c) 2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2024-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,7 @@ package expressionwatcher
 
 import (
 	"fmt"
+	"github.com/tidwall/gjson"
 
 	"github.com/expr-lang/expr"
 )
@@ -18,6 +19,7 @@ func (w *Watcher) evaluateExpression(e string) (bool, error) {
 	env := map[string]any{
 		"data":     w.machine.Data(),
 		"facts":    w.machine.Facts(),
+		"get_fact": func(query string) any { return gjson.GetBytes(w.machine.Facts(), query).Value() },
 		"identity": w.machine.Identity(),
 	}
 
