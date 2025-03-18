@@ -6,6 +6,7 @@ package pluginswatcher
 
 import (
 	"fmt"
+	"github.com/tidwall/gjson"
 	"regexp"
 
 	iu "github.com/choria-io/go-choria/internal/util"
@@ -29,7 +30,7 @@ func (w *Watcher) isNodeMatch(machine *ManagedPlugin) (bool, error) {
 
 	env := map[string]any{
 		"identity":      w.identityMatchFunc,
-		"facts":         w.machine.Facts(),
+		"get_fact":      func(query string) any { return gjson.GetBytes(w.machine.Facts(), query).Value() },
 		"has_file":      iu.FileExist,
 		"has_directory": iu.FileIsDir,
 		"has_command":   iu.IsExecutableInPath,

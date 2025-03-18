@@ -136,6 +136,11 @@ var _ = Describe("AAgent/Watchers/ExpressionsWatcher", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(state).To(Equal(SuccessWhen))
 
+			w.properties.SuccessWhen = "get_fact('fqdn') == 'ginkgo.example.net'"
+			state, err = w.watch()
+			Expect(err).ToNot(HaveOccurred())
+			Expect(state).To(Equal(SuccessWhen))
+
 			w.properties.SuccessWhen = "data.test == 2"
 			state, err = w.watch()
 			Expect(err).ToNot(HaveOccurred())
