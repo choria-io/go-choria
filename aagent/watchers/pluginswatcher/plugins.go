@@ -203,7 +203,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 			continue
 		}
 
-		match, err := w.isNodeMatch(m)
+		match, err := IsNodeMatch(w.machine.Facts(), w.machine.Identity(), m.Matcher, w)
 		if err != nil {
 			w.Debugf("Could not match machine %s to node: %s", m.Name, err)
 			continue
@@ -347,7 +347,8 @@ func (w *Watcher) purgeUnknownPlugins(ctx context.Context, desired []*ManagedPlu
 			}
 
 			if m == d.Name {
-				if ok, _ := w.isNodeMatch(d); ok {
+				match, _ := IsNodeMatch(w.machine.Facts(), w.machine.Identity(), d.Matcher, w)
+				if match {
 					keep = true
 					break
 				}
