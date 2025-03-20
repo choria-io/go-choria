@@ -7,6 +7,7 @@ package registration
 import (
 	"context"
 	"fmt"
+	"math"
 	"math/rand/v2"
 	"sync"
 	"time"
@@ -45,23 +46,27 @@ type Connection interface {
 
 // Manager of registration plugins
 type Manager struct {
-	log       *logrus.Entry
-	choria    ChoriaFramework
-	cfg       *config.Config
-	connector Connection
-	datac     chan *data.RegistrationItem
-	si        registration.ServerInfoSource
+	log               *logrus.Entry
+	choria            ChoriaFramework
+	cfg               *config.Config
+	connector         Connection
+	datac             chan *data.RegistrationItem
+	si                registration.ServerInfoSource
+	lastPublishedSize int
+	lastPublishedTime int64
 }
 
 // New creates a new instance of the registration subsystem manager
 func New(c ChoriaFramework, si registration.ServerInfoSource, conn Connection, logger *logrus.Entry) *Manager {
 	r := &Manager{
-		log:       logger.WithFields(logrus.Fields{"subsystem": "registration"}),
-		choria:    c,
-		si:        si,
-		cfg:       c.Configuration(),
-		connector: conn,
-		datac:     make(chan *data.RegistrationItem, 1),
+		log:               logger.WithFields(logrus.Fields{"subsystem": "registration"}),
+		choria:            c,
+		si:                si,
+		cfg:               c.Configuration(),
+		connector:         conn,
+		datac:             make(chan *data.RegistrationItem, 1),
+		lastPublishedSize: 0,
+		lastPublishedTime: 0,
 	}
 
 	return r
@@ -131,7 +136,13 @@ func (reg *Manager) registrationWorker(ctx context.Context, wg *sync.WaitGroup, 
 	}
 
 	wg.Add(1)
-	go registrator.StartRegistration(ctx, wg, reg.cfg.RegisterInterval, reg.datac)
+	if reg.cfg.Choria.RegistrationSizeTrigger > 0 {
+		reg.log.Debugf("RegistrationSizeTrigger defined at: %d", reg.cfg.Choria.RegistrationSizeTrigger)
+		go registrator.StartRegistration(ctx, wg, reg.cfg.Choria.RegistrationSizeInterval, reg.datac)
+	} else {
+		reg.log.Debugf("RegistrationSizeTrigger is not defined, using RegisterInterval")
+		go registrator.StartRegistration(ctx, wg, reg.cfg.RegisterInterval, reg.datac)
+	}
 
 	for {
 		select {
@@ -146,17 +157,17 @@ func (reg *Manager) registrationWorker(ctx context.Context, wg *sync.WaitGroup, 
 
 func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 	if rmsg == nil {
-		reg.log.Warnf("Received nil data from Registratoin Plugin, skipping")
+		reg.log.Warnf("Received nil data from Registration Plugin, skipping")
 		return
 	}
 
 	if rmsg.Data == nil {
-		reg.log.Warnf("Received nil data from Registratoin Plugin, skipping")
+		reg.log.Warnf("Received nil data from Registration Plugin, skipping")
 		return
 	}
 
 	if len(rmsg.Data) == 0 {
-		reg.log.Warnf("Received empty data from Registratoin Plugin, skipping")
+		reg.log.Warnf("Received empty data from Registration Plugin, skipping")
 		return
 	}
 
@@ -170,16 +181,38 @@ func (reg *Manager) publish(rmsg *data.RegistrationItem) {
 		return
 	}
 
-	msg.SetReplyTo("dev.null")
-	msg.SetCustomTarget(rmsg.Destination)
+	reg.log.Debugf("Last published size is: %d, current message size is: %d", reg.lastPublishedSize, len(rmsg.Data))
+	currentTime := time.Now().Unix()
+	reg.log.Debugf("Time since last publish: %d", (currentTime - reg.lastPublishedTime))
+	if (currentTime - reg.lastPublishedTime) >= int64(reg.cfg.RegisterInterval) {
+		reg.log.Debugf("Passed the RegisterInterval since we last published. Setting last published size as %d and last published time as %d", len(rmsg.Data), currentTime)
+		reg.lastPublishedSize = len(rmsg.Data)
+		reg.lastPublishedTime = currentTime
+		reg.publishMsg(msg, rmsg.Destination)
+		return
+	}
 
-	if reg.connector.IsConnected() {
-		err = reg.connector.Publish(msg)
-		if err != nil {
-			reg.log.Warnf("Could not publish registration Message: %s", err)
+	if reg.cfg.Choria.RegistrationSizeTrigger != 0 {
+		publishSizeDifference := math.Abs(float64(reg.lastPublishedSize - len(rmsg.Data)))
+		if publishSizeDifference >= float64(reg.cfg.Choria.RegistrationSizeTrigger) {
+			reg.log.Debugf("Published size difference is: %f", publishSizeDifference)
+			reg.log.Debugf("Breached threshold for registration message size. Publishing and Setting lastPublishedSize as %d and lastPublishedTime as %d", len(rmsg.Data), currentTime)
+			reg.lastPublishedSize = len(rmsg.Data)
+			reg.lastPublishedTime = currentTime
+			reg.publishMsg(msg, rmsg.Destination)
 			return
 		}
-	} else {
-		reg.log.Warnf("Skipping registration publish while not connected to the network")
+	}
+}
+
+// publishMsg will publish to message to the appropriate stream
+func (reg *Manager) publishMsg(msg inter.Message, destination string) {
+	msg.SetReplyTo("dev.null")
+	msg.SetCustomTarget(destination)
+	if reg.connector.IsConnected() {
+		err := reg.connector.Publish(msg)
+		if err != nil {
+			reg.log.Warnf("Could not publish registration Message: %s", err)
+		}
 	}
 }
