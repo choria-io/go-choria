@@ -214,7 +214,5 @@ func (reg *Manager) publishMsg(msg inter.Message, destination string) {
 		if err != nil {
 			reg.log.Warnf("Could not publish registration Message: %s", err)
 		}
-		return
 	}
-	return
 }
