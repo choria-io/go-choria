@@ -95,6 +95,8 @@ type ChoriaPluginConfig struct {
 	FileContentCompression             bool   `confkey:"plugin.choria.registration.file_content.compression" default:"true"`      // Enables gzip compression of registration data
 	InventoryContentCompression        bool   `confkey:"plugin.choria.registration.inventory_content.compression" default:"true"` // Enables gzip compression of registration data
 	InventoryContentRegistrationTarget string `confkey:"plugin.choria.registration.inventory_content.target" default:""`          // NATS Subject to publish registration data to
+	RegistrationSizeTrigger            int    `confkey:"plugin.choria.registration.size_trigger" default:"0"`                     // Enables a trigger that will publish a registration message if the size of the message has changed by greater than the trigger amount in bytes
+	RegistrationSizeInterval           int    `confkey:"plugin.choria.registration.size_interval" default:"30"`                   // When the RegistrationSizeTrigger is defined, this property will be used to define how often we check for a change in message size. Default value is 30 seconds
 
 	RubyAgentShim   string   `confkey:"plugin.choria.agent_provider.mcorpc.agent_shim"`               // Path to the helper used to call MCollective Ruby agents
 	RubyAgentConfig string   `confkey:"plugin.choria.agent_provider.mcorpc.config"`                   // Path to the MCollective configuration file used when running MCollective Ruby agents
