@@ -169,25 +169,34 @@ func (w *Watcher) EnterGovernor(ctx context.Context, name string, timeout time.D
 	return finisher, nil
 }
 
-func (w *Watcher) ProcessTemplate(s string) (string, error) {
+func (w *Watcher) ProcessTemplateBytes(s string) ([]byte, error) {
 	funcs, err := w.templateFuncMap()
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	t, err := template.New("machine").Funcs(funcs).Parse(s)
 	if err != nil {
-		return "", err
+		return nil, err
 	}
 
 	buf := bytes.NewBuffer([]byte{})
 
 	err = t.Execute(buf, nil)
 	if err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func (w *Watcher) ProcessTemplate(s string) (string, error) {
+	res, err := w.ProcessTemplateBytes(s)
+	if err != nil {
 		return "", err
 	}
 
-	return buf.String(), nil
+	return string(res), nil
 }
 
 func (w *Watcher) templateFuncMap() (template.FuncMap, error) {

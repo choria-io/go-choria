@@ -8,7 +8,10 @@ import (
 	"context"
 	"fmt"
 	"os"
+	"os/user"
 	"path/filepath"
+	"runtime"
+	"strconv"
 	"sync"
 	"time"
 
@@ -22,14 +25,16 @@ import (
 type State int
 
 const (
+	wtype   = "file"
+	version = "v1"
+)
+
+const (
 	Unknown State = iota
 	Error
 	Skipped
 	Unchanged
 	Changed
-
-	wtype   = "file"
-	version = "v1"
 )
 
 var stateNames = map[State]string{
@@ -41,8 +46,12 @@ var stateNames = map[State]string{
 }
 
 type Properties struct {
-	Path    string
-	Initial bool `mapstructure:"gather_initial_state"`
+	Path     string
+	Initial  bool `mapstructure:"gather_initial_state"`
+	Contents string
+	Owner    string
+	Group    string
+	Mode     string
 }
 
 type Watcher struct {
@@ -182,28 +191,185 @@ func (w *Watcher) handleCheck(s State, err error) error {
 	return nil
 }
 
+func (w *Watcher) watchFileStat() (state State, err error) {
+	stat, err := os.Stat(w.properties.Path)
+	switch {
+	case err == nil && stat.ModTime().After(w.mtime):
+		w.mtime = stat.ModTime()
+		return Changed, nil
+
+	case os.IsNotExist(err):
+		w.mtime = time.Time{}
+		return Error, fmt.Errorf("does not exist")
+
+	case err != nil:
+		w.mtime = time.Time{}
+		return Error, err
+
+	default:
+		return Unchanged, err
+	}
+}
+
+func (w *Watcher) createFile(content []byte, mode os.FileMode) (state State, err error) {
+	dir, err := filepath.Abs(filepath.Dir(w.properties.Path))
+	if err != nil {
+		return Error, err
+	}
+
+	tf, err := os.CreateTemp(dir, "choria-fwatcher-*")
+	if err != nil {
+		return Error, fmt.Errorf("could not create temporary file: %w", err)
+	}
+	defer tf.Close()
+	defer os.Remove(tf.Name())
+
+	err = tf.Chmod(mode)
+	if err != nil {
+		return Error, fmt.Errorf("could not change file permissions: %w", err)
+	}
+
+	_, err = tf.Write(content)
+	if err != nil {
+		return Error, fmt.Errorf("could not write temporary file: %w", err)
+	}
+
+	if runtime.GOOS != "windows" {
+		owner, err := w.ProcessTemplate(w.properties.Owner)
+		if err != nil {
+			return Error, fmt.Errorf("could not process file owner template: %w", err)
+		}
+
+		group, err := w.ProcessTemplate(w.properties.Group)
+		if err != nil {
+			return Error, fmt.Errorf("could not process file owner template: %w", err)
+		}
+
+		if owner != "" && group != "" {
+			usrIdString, err := user.Lookup(owner)
+			if err != nil {
+				return Error, fmt.Errorf("could not lookup user %q (%q): %w", owner, w.properties.Owner, err)
+			}
+			uid, err := strconv.Atoi(usrIdString.Uid)
+			if err != nil {
+				return Error, fmt.Errorf("could not convert user id %s to integer: %w", usrIdString.Uid, err)
+			}
+
+			grpIdString, err := user.LookupGroup(group)
+			if err != nil {
+				return Error, fmt.Errorf("could not lookup group %s: %w", group, err)
+			}
+			gid, err := strconv.Atoi(grpIdString.Gid)
+			if err != nil {
+				return Error, fmt.Errorf("could not convert group id %s to integer: %w", grpIdString.Gid, err)
+			}
+
+			err = tf.Chown(uid, gid)
+			if err != nil {
+				return Error, fmt.Errorf("could not change file ownership: %w", err)
+			}
+		}
+	}
+
+	err = tf.Close()
+	if err != nil {
+		return Error, fmt.Errorf("could not close temporary file: %w", err)
+	}
+
+	err = os.Rename(tf.Name(), w.properties.Path)
+	if err != nil {
+		return Error, fmt.Errorf("could not rename temporary file: %w", err)
+	}
+
+	stat, err := os.Stat(w.properties.Path)
+	if err == nil {
+		w.mtime = stat.ModTime()
+	}
+
+	return Changed, nil
+}
+
+func (w *Watcher) watchFileContent() (state State, err error) {
+	mode, err := w.ProcessTemplate(w.properties.Mode)
+	if err != nil {
+		return Error, fmt.Errorf("could not process file mode template: %w", err)
+	}
+	if mode == "" {
+		return Error, fmt.Errorf("mode template result is empty")
+	}
+
+	wantMode, err := strconv.ParseUint(mode, 0, 32)
+	if err != nil {
+		return Error, fmt.Errorf("invalid mode, must be a string like 0700")
+	}
+
+	content, err := w.ProcessTemplateBytes(w.properties.Contents)
+	if err != nil {
+		return Error, fmt.Errorf("could not process template: %s", err)
+	}
+
+	stat, err := os.Stat(w.properties.Path)
+	if err != nil {
+		return w.createFile(content, os.FileMode(wantMode))
+	}
+
+	if stat.ModTime().After(w.mtime) {
+		return w.createFile(content, os.FileMode(wantMode))
+	}
+
+	if stat.Mode() != os.FileMode(wantMode) {
+		return w.createFile(content, os.FileMode(wantMode))
+	}
+
+	cHash, err := iu.Sha256HashBytes(content)
+	if err != nil {
+		return Error, fmt.Errorf("could not hash content: %s", err)
+	}
+
+	fHash, err := iu.Sha256HashFile(w.properties.Path)
+	if err != nil {
+		return Error, fmt.Errorf("could not hash file: %s", err)
+	}
+
+	if cHash != fHash {
+		return w.createFile(content, os.FileMode(wantMode))
+	}
+
+	return Unchanged, nil
+}
+
 func (w *Watcher) watch() (state State, err error) {
 	if !w.Watcher.ShouldWatch() {
 		return Skipped, nil
 	}
 
-	stat, err := os.Stat(w.properties.Path)
-	if err != nil {
-		w.mtime = time.Time{}
-		return Error, fmt.Errorf("does not exist")
+	if w.properties.Contents == "" {
+		return w.watchFileStat()
 	}
 
-	if stat.ModTime().After(w.mtime) {
-		w.mtime = stat.ModTime()
-		return Changed, nil
-	}
-
-	return Unchanged, err
+	return w.watchFileContent()
 }
 
 func (w *Watcher) validate() error {
 	if w.properties.Path == "" {
 		return fmt.Errorf("path is required")
+	}
+
+	if w.properties.Contents != "" {
+		if w.properties.Owner == "" {
+			return fmt.Errorf("owner is required when managing content")
+		}
+		if w.properties.Group == "" {
+			return fmt.Errorf("group is required when managing content")
+		}
+		if w.properties.Mode == "" {
+			return fmt.Errorf("mode is required when managing content")
+		}
+
+		_, err := strconv.ParseUint(w.properties.Mode, 10, 32)
+		if err != nil {
+			return fmt.Errorf("invalid mode, must be a string like 0700")
+		}
 	}
 
 	return nil

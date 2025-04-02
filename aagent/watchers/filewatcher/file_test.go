@@ -6,6 +6,8 @@ package filewatcher
 
 import (
 	"encoding/json"
+	"os"
+	"os/user"
 	"path/filepath"
 	"testing"
 	"time"
@@ -68,6 +70,140 @@ var _ = Describe("ExecWatcher", func() {
 			watch.properties = &Properties{}
 			err := watch.setProperties(map[string]any{})
 			Expect(err).To(MatchError("path is required"))
+		})
+
+		It("Should require a owner when managing content", func() {
+			watch.properties = &Properties{
+				Path:     "/some/file",
+				Contents: "test",
+			}
+			err := watch.setProperties(map[string]any{})
+			Expect(err).To(MatchError("owner is required when managing content"))
+		})
+
+		It("Should require a group when managing content", func() {
+			watch.properties = &Properties{
+				Path:     "/some/file",
+				Contents: "test",
+				Owner:    "ginkgo",
+			}
+			err := watch.setProperties(map[string]any{})
+			Expect(err).To(MatchError("group is required when managing content"))
+		})
+
+		It("Should require a mode when managing content", func() {
+			watch.properties = &Properties{
+				Path:     "/some/file",
+				Contents: "test",
+				Owner:    "ginkgo",
+				Group:    "ginkgo",
+			}
+			err := watch.setProperties(map[string]any{})
+			Expect(err).To(MatchError("mode is required when managing content"))
+		})
+
+		It("Should require a valid mode when managing content", func() {
+			watch.properties = &Properties{
+				Path:     "/some/file",
+				Contents: "test",
+				Owner:    "ginkgo",
+				Group:    "ginkgo",
+				Mode:     "foo",
+			}
+			err := watch.setProperties(map[string]any{})
+			Expect(err).To(MatchError("invalid mode, must be a string like 0700"))
+		})
+
+		It("Should allow content to be managed", func() {
+			watch.properties = &Properties{
+				Path:     "/some/file",
+				Contents: "test",
+				Owner:    "root",
+				Group:    "root",
+				Mode:     "0700",
+			}
+			err := watch.setProperties(map[string]any{})
+			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
+	Describe("watch", func() {
+		When("Managing content", func() {
+			var (
+				td  string
+				f   string
+				usr *user.User
+				grp *user.Group
+			)
+
+			BeforeEach(func() {
+				var err error
+
+				usr, err = user.Current()
+				Expect(err).ToNot(HaveOccurred())
+
+				grp, err = user.LookupGroupId(usr.Gid)
+				Expect(err).ToNot(HaveOccurred())
+
+				mockMachine.EXPECT().State().Return("always").AnyTimes()
+				mockMachine.EXPECT().Facts().Return([]byte("{}")).AnyTimes()
+				mockMachine.EXPECT().Data().Return(map[string]any{
+					"test":  "test_data",
+					"group": grp.Name,
+					"owner": usr.Name,
+					"mode":  "0700",
+				}).AnyTimes()
+
+				td = GinkgoT().TempDir()
+				f = filepath.Join(td, "the.file")
+
+			})
+
+			It("Should correctly manage the file", func() {
+				watch.properties = &Properties{
+					Path:     f,
+					Contents: `{{ lookup "data.test" "default" | ToUpper }}`,
+					Owner:    `{{ lookup "data.owner" "nobody"}}`,
+					Group:    `{{ lookup "data.group" "nobody"}}`,
+					Mode:     `{{ lookup "data.mode" "0000"}}`,
+				}
+
+				st, err := watch.watch()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(st).To(Equal(Changed))
+
+				st, err = watch.watch()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(st).To(Equal(Unchanged))
+
+				stat, err := os.Stat(watch.properties.Path)
+				Expect(err).ToNot(HaveOccurred())
+				b, err := os.ReadFile(watch.properties.Path)
+				Expect(err).ToNot(HaveOccurred())
+
+				Expect(stat.Mode()).To(Equal(os.FileMode(0700)))
+				Expect(b).To(Equal([]byte("TEST_DATA")))
+
+				Expect(os.Chmod(f, os.FileMode(0600))).To(Succeed())
+
+				st, err = watch.watch()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(st).To(Equal(Changed))
+
+				st, err = watch.watch()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(st).To(Equal(Unchanged))
+
+				Expect(os.WriteFile(f, []byte("bad"), 0700)).To(Succeed())
+
+				st, err = watch.watch()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(st).To(Equal(Changed))
+
+				st, err = watch.watch()
+				Expect(err).ToNot(HaveOccurred())
+				Expect(st).To(Equal(Unchanged))
+			})
 		})
 	})
 
