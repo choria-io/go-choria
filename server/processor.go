@@ -108,7 +108,7 @@ func (srv *Instance) processRequests(ctx context.Context, wg *sync.WaitGroup) {
 		case <-ctx.Done():
 			srv.log.Infof("Request processor existing on interrupt")
 
-			srv.publichShutdownEvent()
+			srv.publishShutdownEvent()
 			srv.connector.Close()
 
 			return

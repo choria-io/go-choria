@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,21 +8,23 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/internal/util"
 )
 
 // WatcherDef is the core definition of a watcher, watcher type specific
 // properties get stored in Properties and parsed by each watcher type
 type WatcherDef struct {
-	Name              string         `json:"name" yaml:"name"`
-	Type              string         `json:"type" yaml:"type"`
-	StateMatch        []string       `json:"state_match" yaml:"state_match"`
-	FailTransition    string         `json:"fail_transition" yaml:"fail_transition"`
-	SuccessTransition string         `json:"success_transition" yaml:"success_transition"`
-	Interval          string         `json:"interval" yaml:"interval"`
-	AnnounceInterval  string         `json:"announce_interval" yaml:"announce_interval"`
-	Properties        map[string]any `json:"properties" yaml:"properties"`
-	AnnounceDuration  time.Duration  `json:"-" yaml:"-"`
+	Name                 string                      `json:"name" yaml:"name"`
+	Type                 string                      `json:"type" yaml:"type"`
+	StateMatch           []string                    `json:"state_match" yaml:"state_match"`
+	ForeignStateRequired []model.ForeignMachineState `json:"foreign_state_required" yaml:"foreign_state_required"`
+	FailTransition       string                      `json:"fail_transition" yaml:"fail_transition"`
+	SuccessTransition    string                      `json:"success_transition" yaml:"success_transition"`
+	Interval             string                      `json:"interval" yaml:"interval"`
+	AnnounceInterval     string                      `json:"announce_interval" yaml:"announce_interval"`
+	Properties           map[string]any              `json:"properties" yaml:"properties"`
+	AnnounceDuration     time.Duration               `json:"-" yaml:"-"`
 }
 
 // ParseAnnounceInterval parses the announce interval and ensures its not too small

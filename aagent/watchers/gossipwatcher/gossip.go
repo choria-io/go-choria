@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,7 @@ package gossipwatcher
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"net"
 	"regexp"
@@ -36,20 +37,21 @@ var (
 	validServiceRegex = regexp.MustCompile(`^` + validBasicName + `$`)
 )
 
-type registration struct {
-	Cluster  string
-	Service  string
-	Protocol string
-	IP       string
-	Port     uint
-	Priority uint
-	Prefix   string
+type Registration struct {
+	Cluster     string            `json:"cluster"`
+	Service     string            `json:"service"`
+	Protocol    string            `json:"protocol"`
+	IP          string            `json:"address"`
+	Port        uint              `json:"port"`
+	Priority    uint              `json:"priority"`
+	Annotations map[string]string `json:"annotations,omitempty"`
+	Prefix      string            `json:"-"`
 }
 
 type properties struct {
 	Subject      string
 	Payload      string
-	Registration *registration
+	Registration *Registration
 }
 
 type Watcher struct {
@@ -71,7 +73,7 @@ type Watcher struct {
 	mu        *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
+func New(machine model.Machine, name string, states []string, required []model.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
 	var err error
 
 	tw := &Watcher{
@@ -86,7 +88,7 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		return nil, err
 	}
 
-	tw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
+	tw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, required, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -271,7 +273,6 @@ func (w *Watcher) validate() error {
 		if w.properties.Payload == "" {
 			return fmt.Errorf("payload is required")
 		}
-
 	default:
 		if w.properties.Subject != "" {
 			return fmt.Errorf("subject cannot be set with registration")
@@ -301,17 +302,16 @@ func (w *Watcher) validate() error {
 		if reg.IP == "" {
 			return fmt.Errorf("ip is required")
 		}
-		nip := net.ParseIP(reg.IP)
-		if nip == nil {
+		if net.ParseIP(reg.IP) == nil {
 			return fmt.Errorf("invalid ip")
 		}
 		if reg.Port == 0 {
 			return fmt.Errorf("port is required")
 		}
 
-		subj := fmt.Sprintf(`%s.%s.member.%s.%s.P.%d.%d`, reg.Cluster, reg.Service, reg.Protocol, reg.IP, reg.Port, reg.Priority)
+		subj := fmt.Sprintf("%s.%s.%s.%s", reg.Cluster, reg.Protocol, reg.Service, w.machine.InstanceID())
 		if reg.Prefix == "" {
-			w.properties.Subject = fmt.Sprintf("choria.hoist.%s", subj)
+			w.properties.Subject = fmt.Sprintf("$KV.CHORIA_SERVICES.%s", subj)
 		} else {
 			w.properties.Subject = fmt.Sprintf("%s.%s", reg.Prefix, subj)
 		}
@@ -320,7 +320,11 @@ func (w *Watcher) validate() error {
 			return fmt.Errorf("invalid registration properties")
 		}
 
-		w.properties.Payload = "1"
+		pj, err := json.Marshal(w.properties.Registration)
+		if err != nil {
+			return err
+		}
+		w.properties.Payload = string(pj)
 	}
 
 	if w.interval == 0 {

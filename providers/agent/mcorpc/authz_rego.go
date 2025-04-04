@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,34 +8,38 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/server/agents"
 	"path/filepath"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/opa"
-	"github.com/open-policy-agent/opa/ast"
+	"github.com/open-policy-agent/opa/v1/ast"
 	"github.com/sirupsen/logrus"
 )
 
 type regoPolicy struct {
-	cfg   *config.Config
-	req   *Request
-	agent *Agent
-	log   *logrus.Entry
+	cfg *config.Config
+	req *Request
+	fw  inter.Framework
+	si  agents.ServerInfoSource
+	log *logrus.Entry
 }
 
-func regoPolicyAuthorize(req *Request, agent *Agent, log *logrus.Entry) (bool, error) {
+func regoPolicyAuthorize(req *Request, fw inter.Framework, si agents.ServerInfoSource, cfg *config.Config, log *logrus.Entry) (bool, error) {
 	logger := log.WithFields(logrus.Fields{
 		"authorizer": "regoPolicy",
-		"agent":      agent.Name(),
+		"agent":      req.Agent,
 		"request":    req.RequestID,
 	})
 
 	authz := &regoPolicy{
-		cfg:   agent.Config,
-		req:   req,
-		agent: agent,
-		log:   logger,
+		cfg: cfg,
+		req: req,
+		si:  si,
+		fw:  fw,
+		log: logger,
 	}
 
 	return authz.authorize()
@@ -66,7 +70,8 @@ func (r *regoPolicy) authorize() (bool, error) {
 		return false, err
 	}
 
-	allowed, err := evaluator.Evaluate(context.Background(), r.regoInputs())
+	inputs := r.regoInputs()
+	allowed, err := evaluator.Evaluate(context.Background(), inputs)
 	switch err := err.(type) {
 	case nil:
 		break
@@ -84,10 +89,15 @@ func (r *regoPolicy) authorize() (bool, error) {
 	return allowed, nil
 }
 
+var overRideRegoName string
+
 func (r *regoPolicy) lookupPolicyFile() (string, error) {
 	dir := filepath.Join(filepath.Dir(r.cfg.ConfigFile), "policies", "rego")
 
-	regoPolicy := filepath.Join(dir, r.agent.Name()+".rego")
+	regoPolicy := filepath.Join(dir, r.req.Agent+".rego")
+	if overRideRegoName != "" {
+		regoPolicy = filepath.Join(dir, overRideRegoName+".rego")
+	}
 
 	r.log.Debugf("Looking up rego policy in %s", regoPolicy)
 	if util.FileExist(regoPolicy) {
@@ -100,14 +110,14 @@ func (r *regoPolicy) lookupPolicyFile() (string, error) {
 		r.log.Debugf("Using policy file: %s", defaultPolicy)
 		return defaultPolicy, nil
 	}
-	return "", fmt.Errorf("no policy %s found for %s in %s", defaultPolicy, r.agent.Name(), dir)
+	return "", fmt.Errorf("no policy %s found for %s in %s", defaultPolicy, r.req.Agent, dir)
 
 }
 
 func (r *regoPolicy) regoInputs() map[string]any {
 	facts := map[string]any{}
 
-	sif := r.agent.ServerInfoSource.Facts()
+	sif := r.si.Facts()
 	err := json.Unmarshal(sif, &facts)
 	if err != nil {
 		r.log.Errorf("could not marshal facts for rego policy: %v", err)
@@ -128,9 +138,9 @@ func (r *regoPolicy) regoInputs() map[string]any {
 		"ttl":            r.req.TTL,
 		"time":           r.req.Time,
 		"facts":          facts,
-		"classes":        r.agent.ServerInfoSource.Classes(),
-		"agents":         r.agent.ServerInfoSource.KnownAgents(),
-		"provision_mode": r.agent.Choria.ProvisionMode(),
+		"classes":        r.si.Classes(),
+		"agents":         r.si.KnownAgents(),
+		"provision_mode": r.fw.ProvisionMode(),
 	}
 }
 

@@ -85,7 +85,7 @@ type Config struct {
 	DefaultDiscoveryMethod string `confkey:"default_discovery_method" default:"mc" validate:"enum=mc,broadcast,puppetdb,choria,external,inventory"`
 
 	// Where to look for YAML or JSON based facts
-	FactSourceFile string `confkey:"plugin.yaml" default:"/etc/puppetlabs/mcollective/generated-facts.yaml" type:"path_string"`
+	FactSourceFile string `confkey:"plugin.yaml" type:"path_string"`
 
 	// Default options to pass to the discovery plugin
 	DefaultDiscoveryOptions []string `confkey:"default_discovery_options"`

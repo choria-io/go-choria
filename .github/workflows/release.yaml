@@ -5,16 +5,6 @@ on:
       - '*'
 
 jobs:
-  el7_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: el7_64
-          packager_tag: el7-go1.21
-          version: tag
-
   el8_64:
     runs-on: ubuntu-latest
     steps:
@@ -22,7 +12,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el8_64
-          packager_tag: el8-go1.21
+          packager_tag: el8-go1.23
           version: tag
 
   el9_64:
@@ -32,17 +22,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el9_64
-          packager_tag: el9-go1.21
-          version: tag
-
-  el7_ppc64le:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: el7_ppc64le
-          packager_tag: el7-go1.21
+          packager_tag: el9-go1.23
           version: tag
 
   el8_ppc64le:
@@ -52,7 +32,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el8_ppc64le
-          packager_tag: el8-go1.21
+          packager_tag: el8-go1.23
           version: tag
 
   el9_ppc64le:
@@ -62,47 +42,47 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el9_ppc64le
-          packager_tag: el9-go1.21
+          packager_tag: el9-go1.23
           version: tag
 
-  buster_armhf:
+  bookworm_64:
     runs-on: ubuntu-latest
     steps:
       - name: Build
         uses: choria-io/actions/packager@main
         with:
-          build_package: buster_armhf
-          packager_tag: buster-go1.21
+          build_package: bookworm_64
+          packager_tag: bookworm-go1.23
           version: tag
 
-  buster_armel:
+  bookworm_aarch64:
     runs-on: ubuntu-latest
     steps:
       - name: Build
         uses: choria-io/actions/packager@main
         with:
-          build_package: buster_armel
-          packager_tag: buster-go1.21
+          build_package: bookworm_aarch64
+          packager_tag: bookworm-go1.23
           version: tag
 
-  buster_64:
+  bookworm_armel:
     runs-on: ubuntu-latest
     steps:
       - name: Build
         uses: choria-io/actions/packager@main
         with:
-          build_package: buster_64
-          packager_tag: buster-go1.21
+          build_package: bookworm_armel
+          packager_tag: bookworm-go1.23
           version: tag
 
-  buster_aarch64:
+  bookworm_armhf:
     runs-on: ubuntu-latest
     steps:
       - name: Build
         uses: choria-io/actions/packager@main
         with:
-          build_package: buster_aarch64
-          packager_tag: buster-go1.21
+          build_package: bookworm_armhf
+          packager_tag: bookworm-go1.23
           version: tag
 
   bullseye_64:
@@ -112,7 +92,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bullseye_64
-          packager_tag: bullseye-go1.21
+          packager_tag: bullseye-go1.23
           version: tag
 
   bullseye_aarch64:
@@ -122,7 +102,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bullseye_aarch64
-          packager_tag: bullseye-go1.21
+          packager_tag: bullseye-go1.23
           version: tag
 
   bullseye_armel:
@@ -132,7 +112,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bullseye_armel
-          packager_tag: bullseye-go1.21
+          packager_tag: bullseye-go1.23
           version: tag
 
   bullseye_armhf:
@@ -142,7 +122,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bullseye_armhf
-          packager_tag: bullseye-go1.21
+          packager_tag: bullseye-go1.23
           version: tag
 
   bionic_64:
@@ -152,7 +132,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bionic_64
-          packager_tag: bullseye-go1.21
+          packager_tag: bullseye-go1.23
           version: tag
 
   bionic_aarch64:
@@ -162,7 +142,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bionic_aarch64
-          packager_tag: bullseye-go1.21
+          packager_tag: bullseye-go1.23
           version: tag
 
   focal_64:
@@ -172,7 +152,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: focal_64
-          packager_tag: focal-go1.21
+          packager_tag: focal-go1.23
           version: tag
 
   focal_aarch64:
@@ -182,7 +162,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: focal_aarch64
-          packager_tag: focal-go1.21
+          packager_tag: focal-go1.23
           version: tag
 
   jammy_64:
@@ -192,7 +172,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: jammy_64
-          packager_tag: jammy-go1.21
+          packager_tag: jammy-go1.23
           version: tag
 
   jammy_aarch64:
@@ -202,7 +182,27 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: jammy_aarch64
-          packager_tag: jammy-go1.21
+          packager_tag: jammy-go1.23
+          version: tag
+
+  noble_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: noble_64
+          packager_tag: noble-go1.23
+          version: tag
+
+  noble_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: noble_aarch64
+          packager_tag: noble-go1.23
           version: tag
 
   windows_64:
@@ -212,7 +212,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: windows_64
-          packager_tag: focal-go1.21
+          packager_tag: focal-go1.23
           version: tag
 
   upload:
@@ -223,12 +223,10 @@ jobs:
       - bullseye_aarch64
       - bullseye_armel
       - bullseye_armhf
-      - buster_64
-      - buster_aarch64
-      - buster_armel
-      - buster_armhf
-      - el7_64
-      - el7_ppc64le
+      - bookworm_64
+      - bookworm_aarch64
+      - bookworm_armel
+      - bookworm_armhf
       - el8_64
       - el8_ppc64le
       - el9_64
@@ -237,14 +235,25 @@ jobs:
       - focal_aarch64
       - jammy_64
       - jammy_aarch64
+      - noble_64
+      - noble_aarch64
       - windows_64
 
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
+
+      - name: Artifacts normalization
+        shell: bash
+        run: |
+          cd artifacts
+          for i in foss*
+          do
+            mv -v $i $(echo $i|cut -d_ -f2-)
+          done
 
       - name: Upload artifacts to Spaces
         uses: jakejarvis/s3-sync-action@master
@@ -254,5 +263,5 @@ jobs:
           AWS_S3_BUCKET: choria-packages-ams
           AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SPACES_SECRET_ACCESS_KEY }}
-          SOURCE_DIR: artifacts/foss
+          SOURCE_DIR: artifacts
           DEST_DIR: release

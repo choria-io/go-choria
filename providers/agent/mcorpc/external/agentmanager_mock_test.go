@@ -12,8 +12,8 @@ import (
 
 	inter "github.com/choria-io/go-choria/inter"
 	agents "github.com/choria-io/go-choria/server/agents"
-	gomock "github.com/golang/mock/gomock"
 	logrus "github.com/sirupsen/logrus"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockAgentManager is a mock of AgentManager interface.

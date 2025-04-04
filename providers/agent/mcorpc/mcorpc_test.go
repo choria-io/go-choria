@@ -17,10 +17,10 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"
+	"go.uber.org/mock/gomock"
 )
 
 func TestMcoRPC(t *testing.T) {

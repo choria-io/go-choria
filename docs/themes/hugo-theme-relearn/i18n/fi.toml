@@ -7,6 +7,9 @@ other = "Etsi"
 [Search-placeholder]
 other = "Etsi..."
 
+[Clear-search]
+other = "Tyhjennä haku"
+
 [No-results-found]
 other = "Ei tuloksia haulle \"{0}\""
 
@@ -16,11 +19,17 @@ other = "{1} tulosta löytyi haulle \"{0}\""
 [Clear-History]
 other = "Tyhjennä historia"
 
+[Reset-view]
+other = "Palauta näkymä"
+
+[View-reset]
+other = "Näkymä nollattu!"
+
 [Attachments-label]
 other = "Liitteet"
 
 [title-404]
-other = "Virhe"
+other = "Paikantamaton"
 
 [message-404]
 other = "Sivua ei ole ¯\\_(ツ)_/¯."
@@ -33,6 +42,9 @@ other = "Muokkaa"
 
 [Print-this-chapter]
 other = "Tulosta koko luku"
+
+[More-action]
+other = "Lisää"
 
 [Shortcuts-Title]
 other = "Lisää"
@@ -93,3 +105,15 @@ other = "Alavalikko {{.}}"
 
 [Subsections]
 other = "Osa {{.}}"
+
+[tags]
+other = "Tunnisteet"
+
+[tag]
+other = "Tag"
+
+[categories]
+other = "Luokat"
+
+[category]
+other = "Kategoria"

@@ -7,6 +7,9 @@ other = "Rechercher"
 [Search-placeholder]
 other = "Rechercher..."
 
+[Clear-search]
+other = "Recherche claire"
+
 [No-results-found]
 other = "Aucun résultat trouvé pour \"{0}\""
 
@@ -16,11 +19,17 @@ other = "{1} résultats trouvés pour \"{0}\""
 [Clear-History]
 other = "Supprimer l'historique"
 
+[Reset-view]
+other = "Réinitialiser la vue"
+
+[View-reset]
+other = "Vue réinitialisée!"
+
 [Attachments-label]
 other = "Pièces jointes"
 
 [title-404]
-other = "Erreur"
+other = "Non localisé"
 
 [message-404]
 other = "Oups. On dirait que cette page n'existe pas ¯\\_(ツ)_/¯"
@@ -33,6 +42,9 @@ other = "Éditer"
 
 [Print-this-chapter]
 other = "Imprimer le chapitre entier"
+
+[More-action]
+other = "Aller plus loin"
 
 [Shortcuts-Title]
 other = "Aller plus loin"
@@ -93,3 +105,15 @@ other = "Sous-menu {{.}}"
 
 [Subsections]
 other = "Sous-sections de {{.}}"
+
+[tags]
+other = "Mots-clés"
+
+[tag]
+other = "Mot-clé"
+
+[categories]
+other = "Catégories"
+
+[category]
+other = "Catégorie"

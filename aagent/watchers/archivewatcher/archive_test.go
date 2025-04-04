@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,9 +12,9 @@ import (
 	"testing"
 	"time"
 
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 
 	"github.com/choria-io/go-choria/aagent/model"
 )
@@ -50,7 +50,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 		machine.EXPECT().Facts().Return(json.RawMessage("{}")).AnyTimes()
 		machine.EXPECT().Data().Return(map[string]any{}).AnyTimes()
 
-		wi, err := New(machine, "machines", nil, "", "", "1m", time.Hour, map[string]any{
+		wi, err := New(machine, "machines", nil, nil, "", "", "1m", time.Hour, map[string]any{
 			"source":   "https://example.net",
 			"creates":  "testdata/creates",
 			"target":   td,
@@ -106,7 +106,7 @@ var _ = Describe("AAgent/Watchers/MachinesWatcher", func() {
 
 		It("Should handle bad checksums", func() {
 			w.properties.ContentChecksumsChecksum = "x"
-			Expect(w.verify("testdata/good")).To(MatchError("checksum file SHA256SUMS has an invalid checksum"))
+			Expect(w.verify("testdata/good")).To(MatchError("checksum file SHA256SUMS has an invalid checksum \"40cb790b7199be45f3116354f87b2bdc3aa520a1eb056aa3608911cf40d1f821\" != \"x\""))
 		})
 	})
 

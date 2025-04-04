@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -216,7 +216,7 @@ func (o *StandardOptions) isPiped() bool {
 	return (fi.Mode() & os.ModeCharDevice) == 0
 }
 
-// SetDefaultsFromChoria sets the defaults based on cfg
+// SetDefaultsFromChoria sets the defaults based on choria
 func (o *StandardOptions) SetDefaultsFromChoria(fw inter.Framework) {
 	o.SetDefaultsFromConfig(fw.Configuration())
 }

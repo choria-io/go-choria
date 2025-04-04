@@ -1,74 +1,8 @@
 {
 	"frontMatter.content.snippets": {
-		"Attachments": {
-			"body": [
-				"{{< attachments title=\"[[&title]]\" pattern=\"[[&pattern]]\" sort=\"[[&sort]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" />}}"
-			],
-			"description": "Displays a list of files attached to the page",
-			"fields": [
-				{
-					"default": "",
-					"name": "title",
-					"title": "Title",
-					"type": "string"
-				},
-				{
-					"default": "",
-					"name": "pattern",
-					"title": "Regex for filtering file names",
-					"type": "string"
-				},
-				{
-					"choices": [
-						"",
-						"asc",
-						"desc"
-					],
-					"default": "",
-					"name": "sort",
-					"title": "Sorting order",
-					"type": "choice"
-				},
-				{
-					"choices": [
-						"",
-						"info",
-						"note",
-						"tip",
-						"warning",
-						"primary",
-						"secondary",
-						"accent",
-						"blue",
-						"green",
-						"gray",
-						"orange",
-						"red",
-						"default",
-						"transparent"
-					],
-					"default": "",
-					"name": "style",
-					"title": "Style scheme",
-					"type": "choice"
-				},
-				{
-					"default": "",
-					"name": "color",
-					"title": "CSS color value",
-					"type": "string"
-				},
-				{
-					"default": "",
-					"name": "icon",
-					"title": "Font Awesome icon",
-					"type": "string"
-				}
-			]
-		},
 		"Badge": {
 			"body": [
-				"{{< badge title=\"[[&title]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" >}}[[&content]]{{< /badge >}}"
+				"{{% badge title=\"[[&title]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" %}}[[&content]]{{% /badge %}}"
 			],
 			"description": "Displays a little marker in the text",
 			"fields": [
@@ -100,7 +34,8 @@
 						"orange",
 						"red",
 						"default",
-						"transparent"
+						"transparent",
+						"code"
 					],
 					"default": "",
 					"name": "style",
@@ -123,7 +58,7 @@
 		},
 		"Button": {
 			"body": [
-				"{{< button href=\"[[&href]]\" target=\"[[&target]]\" type=\"[[&type]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" iconposition=\"[[&iconposition]]\" >}}[[&content]]{{< /button >}}"
+				"{{% button href=\"[[&href]]\" target=\"[[&target]]\" type=\"[[&type]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" iconposition=\"[[&iconposition]]\" %}}[[&content]]{{% /button %}}"
 			],
 			"description": "Displays a clickable button",
 			"fields": [
@@ -167,7 +102,8 @@
 						"orange",
 						"red",
 						"default",
-						"transparent"
+						"transparent",
+						"code"
 					],
 					"default": "",
 					"name": "style",
@@ -201,7 +137,7 @@
 		},
 		"Children": {
 			"body": [
-				"{{< children description=\"[[&description]]\" depth=\"[[&depth]]\" sort=\"[[&sort]]\" showhidden=\"[[&showhidden]]\" containerstyle=\"[[&containerstyle]]\" style=\"[[&style]]\" >}}"
+				"{{% children description=\"[[&description]]\" depth=\"[[&depth]]\" sort=\"[[&sort]]\" showhidden=\"[[&showhidden]]\" containerstyle=\"[[&containerstyle]]\" style=\"[[&style]]\" %}}"
 			],
 			"description": "Displays a list of child pages for the page",
 			"fields": [
@@ -264,12 +200,101 @@
 					"name": "content",
 					"title": "Text",
 					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "title",
+					"title": "Title",
+					"type": "string"
+				},
+				{
+					"choices": [
+						"",
+						"false",
+						"true"
+					],
+					"default": "",
+					"name": "open",
+					"title": "Initially expand section",
+					"type": "choice"
+				}
+			]
+		},
+		"Highlight": {
+			"body": [
+				"````[[&type]] title=\"[[&title]]\" wrap=\"[[&wrap]]\" lineNos=\"[[&lineNos]]\" anchorLineNos=\"[[&anchorLineNos]]\" lineAnchors=\"[[&lineAnchors]]\" lineNoStart=\"[[&lineNoStart]]\" hl_Lines=\"[[&hl_Lines]]\"",
+				"[[&content]]",
+				"````"
+			],
+			"description": "Displays syntaxhighlighted code",
+			"fields": [
+				{
+					"default": "FM_SELECTED_TEXT",
+					"name": "content",
+					"title": "Text",
+					"type": "string"
+				},
+				{
+					"name": "title",
+					"title": "Title",
+					"type": "string"
+				},
+				{
+					"choices": [
+						"",
+						"false",
+						"true"
+					],
+					"default": "",
+					"name": "wrap",
+					"title": "Wrap lines",
+					"type": "choice"
+				},
+				{
+					"choices": [
+						"",
+						"false",
+						"true"
+					],
+					"default": "",
+					"name": "lineNos",
+					"title": "Display line number",
+					"type": "choice"
+				},
+				{
+					"choices": [
+						"",
+						"false",
+						"true"
+					],
+					"default": "",
+					"name": "anchorLineNos",
+					"title": "Line numbers linkable",
+					"type": "choice"
+				},
+				{
+					"default": "",
+					"name": "lineAnchors",
+					"title": "Unique prefix for linkable line numbers",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "lineNoStart",
+					"title": "First line number",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "hl_Lines",
+					"title": "Markable lines",
+					"type": "string"
 				}
 			]
 		},
 		"Icon": {
 			"body": [
-				"{{< icon [[&icon]] >}}"
+				"{{% icon [[&icon]] %}}"
 			],
 			"description": "Displays a Font Awesome icon",
 			"fields": [
@@ -282,7 +307,7 @@
 		},
 		"Include": {
 			"body": [
-				"{{< include file=\"[[&file]]\" hidefirstheading=\"[[&hidefirstheading]]\" >}}"
+				"{{% include file=\"[[&file]]\" hidefirstheading=\"[[&hidefirstheading]]\" %}}"
 			],
 			"description": "Displays the content of another file",
 			"fields": [
@@ -405,7 +430,8 @@
 						"orange",
 						"red",
 						"default",
-						"transparent"
+						"transparent",
+						"code"
 					],
 					"default": "",
 					"name": "style",
@@ -426,9 +452,89 @@
 				}
 			]
 		},
-		"Siteparam": {
+		"OpenAPI": {
 			"body": [
-				"{{< siteparam [[&name]] >}}"
+				"{{< openapi src=\"[[&src]]\" >}}"
+			],
+			"description": "Displays a OpenAPI / Swagger specification",
+			"fields": [
+				{
+					"name": "src",
+					"title": "URL to the OpenAPI specification",
+					"type": "string"
+				}
+			]
+		},
+		"Resources": {
+			"body": [
+				"{{% resources title=\"[[&title]]\" pattern=\"[[&pattern]]\" sort=\"[[&sort]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" /%}}"
+			],
+			"description": "Displays a list of resources contained in a page bundle",
+			"fields": [
+				{
+					"default": "",
+					"name": "title",
+					"title": "Title",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "pattern",
+					"title": "Regex for filtering file names",
+					"type": "string"
+				},
+				{
+					"choices": [
+						"",
+						"asc",
+						"desc"
+					],
+					"default": "",
+					"name": "sort",
+					"title": "Sorting order",
+					"type": "choice"
+				},
+				{
+					"choices": [
+						"",
+						"info",
+						"note",
+						"tip",
+						"warning",
+						"primary",
+						"secondary",
+						"accent",
+						"blue",
+						"green",
+						"gray",
+						"orange",
+						"red",
+						"default",
+						"transparent",
+						"code"
+					],
+					"default": "",
+					"name": "style",
+					"title": "Style scheme",
+					"type": "choice"
+				},
+				{
+					"default": "",
+					"name": "color",
+					"title": "CSS color value",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "icon",
+					"title": "Font Awesome icon",
+					"type": "string"
+				}
+			]
+		},
+		"Site Param": {
+			"body": [
+				"{{% siteparam name=\"[[&name]]\" %}}"
 			],
 			"description": "Displays the value of a site parameter",
 			"fields": [
@@ -439,58 +545,216 @@
 				}
 			]
 		},
-		"Swagger": {
+		"Tab": {
 			"body": [
-				"{{< swagger src=\"[[&src]]\" >}}"
+				"{{% tab title=\"[[&title]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" %}}",
+				"[[&content]]",
+				"{{% /tab %}}"
 			],
-			"description": "Displays a Swagger / Open API Specification",
+			"description": "Display a single tab",
 			"fields": [
 				{
-					"name": "src",
-					"title": "URL to the Open API Specification",
+					"default": "FM_SELECTED_TEXT",
+					"name": "content",
+					"title": "Text",
+					"type": "string"
+				},
+				{
+					"name": "title",
+					"title": "Titel",
+					"type": "string"
+				},
+				{
+					"choices": [
+						"",
+						"info",
+						"note",
+						"tip",
+						"warning",
+						"primary",
+						"secondary",
+						"accent",
+						"blue",
+						"green",
+						"gray",
+						"orange",
+						"red",
+						"default",
+						"transparent",
+						"code"
+					],
+					"default": "",
+					"name": "style",
+					"title": "Style scheme",
+					"type": "choice"
+				},
+				{
+					"default": "",
+					"name": "color",
+					"title": "CSS color value",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "icon",
+					"title": "Font Awesome icon",
 					"type": "string"
 				}
 			]
 		},
 		"Tabs": {
 			"body": [
-				"{{< tabs groupid=\"[[&groupid]]\" >}}",
-				"{{% tab name=\"[[&name1]]\" %}}",
+				"{{< tabs title=\"[[&title]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" groupid=\"[[&groupid]]\" >}}",
+				"{{% tab title=\"[[&title1]]\" style=\"[[&style1]]\" color=\"[[&color1]]\" icon=\"[[&icon1]]\" %}}",
 				"[[&content1]]",
 				"{{% /tab %}}",
-				"{{% tab name=\"[[&name2]]\" %}}",
+				"{{% tab title=\"[[&title2]]\" style=\"[[&style2]]\" color=\"[[&color2]]\" icon=\"[[&icon2]]\" %}}",
 				"[[&content2]]",
 				"{{% /tab %}}",
 				"{{< /tabs >}}"
 			],
-			"description": "Display a set of tabs",
+			"description": "Display a set of tabs in a tab view",
 			"fields": [
 				{
 					"default": "",
-					"name": "groupid",
-					"title": "ID to synchronize the tab selection of multiple Tabs snippets",
+					"name": "title",
+					"title": "Title of the tab view",
 					"type": "string"
 				},
 				{
-					"name": "name1",
-					"title": "Title of the first tab",
+					"choices": [
+						"",
+						"info",
+						"note",
+						"tip",
+						"warning",
+						"primary",
+						"secondary",
+						"accent",
+						"blue",
+						"green",
+						"gray",
+						"orange",
+						"red",
+						"default",
+						"transparent",
+						"code"
+					],
+					"default": "",
+					"name": "style",
+					"title": "Default style scheme of all tabs",
+					"type": "choice"
+				},
+				{
+					"default": "",
+					"name": "color",
+					"title": "Default CSS color value of all tabs",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "icon",
+					"title": "Font Awesome icon of the tab view",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "groupid",
+					"title": "ID to synchronize the tab selection of multiple Tab snippets",
 					"type": "string"
 				},
 				{
 					"default": "FM_SELECTED_TEXT",
 					"name": "content1",
-					"title": "Text for the first tab",
+					"title": "Text of the first tab",
 					"type": "string"
 				},
 				{
-					"name": "name2",
-					"title": "Title of the second tab",
+					"name": "title1",
+					"title": "Title of the first tab",
+					"type": "string"
+				},
+				{
+					"choices": [
+						"",
+						"info",
+						"note",
+						"tip",
+						"warning",
+						"primary",
+						"secondary",
+						"accent",
+						"blue",
+						"green",
+						"gray",
+						"orange",
+						"red",
+						"default",
+						"transparent",
+						"code"
+					],
+					"default": "",
+					"name": "style1",
+					"title": "Style scheme of the first tab",
+					"type": "choice"
+				},
+				{
+					"default": "",
+					"name": "color1",
+					"title": "CSS color value of the first tab",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "icon1",
+					"title": "Font Awesome icon of the first tab",
 					"type": "string"
 				},
 				{
 					"default": "",
 					"name": "content2",
-					"title": "Text for the second tab",
+					"title": "Text of the second tab",
+					"type": "string"
+				},
+				{
+					"name": "title2",
+					"title": "Title of the second tab",
+					"type": "string"
+				},
+				{
+					"choices": [
+						"",
+						"info",
+						"note",
+						"tip",
+						"warning",
+						"primary",
+						"secondary",
+						"accent",
+						"blue",
+						"green",
+						"gray",
+						"orange",
+						"red",
+						"default",
+						"transparent",
+						"code"
+					],
+					"default": "",
+					"name": "style2",
+					"title": "Style scheme of the second tab",
+					"type": "choice"
+				},
+				{
+					"default": "",
+					"name": "color2",
+					"title": "CSS color value of the second tab",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "icon2",
+					"title": "Font Awesome icon of the second tab",
 					"type": "string"
 				}
 			]

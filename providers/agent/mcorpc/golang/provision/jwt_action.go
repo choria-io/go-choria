@@ -25,6 +25,9 @@ type JWTReply struct {
 }
 
 func jwtAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	if !agent.Choria.ProvisionMode() {
 		abort("Cannot reconfigure a server that is not in provisioning mode", reply)
 		return
@@ -54,9 +57,6 @@ func jwtAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, ag
 		abort(fmt.Sprintf("Could not read Provisioning JWT: %s", err), reply)
 		return
 	}
-
-	mu.Lock()
-	defer mu.Unlock()
 
 	err = updateECDHLocked()
 	if err != nil {

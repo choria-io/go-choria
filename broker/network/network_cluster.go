@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,8 +6,6 @@ package network
 
 import (
 	"fmt"
-
-	gnatsd "github.com/nats-io/nats-server/v2/server"
 )
 
 func (s *Server) setupCluster() (err error) {
@@ -41,14 +39,6 @@ func (s *Server) setupCluster() (err error) {
 
 		s.log.Infof("Adding %s as network peer", u.String())
 		s.opts.Routes = append(s.opts.Routes, u)
-	}
-
-	// Remove any host/ip that points to itself in Route
-	newroutes, err := gnatsd.RemoveSelfReference(s.opts.Cluster.Port, s.opts.Routes)
-	if err != nil {
-		s.log.Warnf("could not remove own Self from cluster configuration: %s", err)
-	} else {
-		s.opts.Routes = newroutes
 	}
 
 	return

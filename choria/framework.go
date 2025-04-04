@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -479,25 +479,30 @@ func (fw *Framework) SetLogWriter(out io.Writer) {
 }
 
 func (fw *Framework) commonLogOpener() error {
+	return CommonLogOpener(fw.Config.LogFile, fw.log)
+}
+
+// CommonLogOpener opens a logfile
+func CommonLogOpener(logFile string, logger *log.Logger) error {
 	switch {
-	case strings.ToLower(fw.Config.LogFile) == "discard":
-		fw.log.SetOutput(io.Discard)
+	case strings.ToLower(logFile) == "discard":
+		log.SetOutput(io.Discard)
 
-	case strings.ToLower(fw.Config.LogFile) == "stdout":
-		fw.log.SetOutput(os.Stdout)
+	case strings.ToLower(logFile) == "stdout":
+		log.SetOutput(os.Stdout)
 
-	case strings.ToLower(fw.Config.LogFile) == "stderr":
-		fw.log.SetOutput(os.Stderr)
+	case strings.ToLower(logFile) == "stderr":
+		log.SetOutput(os.Stderr)
 
-	case fw.Config.LogFile != "":
-		fw.log.Formatter = &log.JSONFormatter{}
+	case logFile != "":
+		logger.Formatter = &log.JSONFormatter{}
 
-		file, err := os.OpenFile(fw.Config.LogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
+		file, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0666)
 		if err != nil {
 			return fmt.Errorf("could not set up logging: %s", err)
 		}
 
-		fw.log.SetOutput(file)
+		logger.SetOutput(file)
 	}
 
 	return nil

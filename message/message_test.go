@@ -14,9 +14,9 @@ import (
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	v1 "github.com/choria-io/go-choria/protocol/v1"
 	"github.com/choria-io/go-choria/providers/security/filesec"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/protocol"

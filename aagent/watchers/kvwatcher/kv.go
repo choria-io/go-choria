@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -71,7 +71,7 @@ type Watcher struct {
 	mu        *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
+func New(machine model.Machine, name string, states []string, required []model.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
 	var err error
 
 	tw := &Watcher{
@@ -86,7 +86,7 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		return nil, err
 	}
 
-	tw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
+	tw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, required, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -289,7 +289,7 @@ func (w *Watcher) poll() (State, error) {
 }
 
 func (w *Watcher) handleState(s State, err error) error {
-	w.Debugf("handling state for %s.%s: %s: %s", w.properties.Bucket, w.properties.Key, stateNames[s], err)
+	w.Debugf("handling state for %s.%s: %s: err:%v", w.properties.Bucket, w.properties.Key, stateNames[s], err)
 
 	w.mu.Lock()
 	w.previousState = s

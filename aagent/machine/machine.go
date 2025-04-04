@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"path/filepath"
 	"sync"
@@ -91,6 +91,9 @@ type Machine struct {
 	backoffTimer      *time.Timer
 	transitionCounter int
 
+	externalMachineNotifier func(*TransitionNotification)
+	externalMachineQuery    func(string) (string, error)
+
 	ctx    context.Context
 	cancel context.CancelFunc
 	dataMu sync.Mutex
@@ -108,8 +111,17 @@ type Transition struct {
 	// Destination is the name of the target state this event will move the machine into
 	Destination string `json:"destination" yaml:"destination"`
 
+	// Subscriptions triggers transitions based on transitions in other machines
+	Subscriptions []MachineSubscription `json:"subscribe" yaml:"subscribe"`
+
 	// Description is a human friendly description of the purpose of this transition
 	Description string `json:"description" yaml:"description"`
+}
+
+// MachineSubscription describes a remote machine event that might trigger this machine to transition
+type MachineSubscription struct {
+	MachineName string `json:"machine_name" yaml:"machine_name"`
+	Event       string `json:"event" yaml:"event"`
 }
 
 // WatcherManager manages watchers
@@ -122,7 +134,7 @@ type WatcherManager interface {
 }
 
 func yamlPath(dir string) string {
-	return dir + "/" + "machine.yaml"
+	return filepath.Join(dir, "machine.yaml")
 }
 
 func FromPlugin(p model.MachineConstructor, manager WatcherManager, log *logrus.Entry) (*Machine, error) {
@@ -151,7 +163,7 @@ func FromDir(dir string, manager WatcherManager) (m *Machine, err error) {
 	mpath := yamlPath(dir)
 
 	if !util.FileExist(mpath) {
-		return nil, fmt.Errorf("cannot read %s: %s", mpath, err)
+		return nil, fmt.Errorf("cannot read %s", mpath)
 	}
 
 	m, err = FromYAML(mpath, manager)
@@ -211,6 +223,17 @@ func FromYAML(file string, manager WatcherManager) (m *Machine, err error) {
 		return nil, err
 	}
 
+	for _, t := range m.Transitions {
+		for _, sub := range t.Subscriptions {
+			if sub.MachineName == "" {
+				return nil, fmt.Errorf("machine name is required on subscription for transition %q", t.Name)
+			}
+
+			if sub.Event == "" {
+				return nil, fmt.Errorf("event name is required on subscription for transition %q", t.Name)
+			}
+		}
+	}
 	return m, nil
 }
 
@@ -229,6 +252,45 @@ func ValidateDir(dir string) (validationErrors []string, err error) {
 	}
 
 	return util.ValidateSchemaFromFS("schemas/choria/machine/v1/manifest.json", dat)
+}
+
+func (m *Machine) ExternalEventNotify(event *TransitionNotification) {
+	m.Debugf("machine", "Received external event %s from %s", event.Transition, event.Machine)
+
+	for _, transition := range m.Transitions {
+		for _, sub := range transition.Subscriptions {
+			if sub.MachineName == event.Machine && sub.Event == event.Transition {
+				m.Infof("machine", "Triggering %s transition via %s#%s", transition.Name, event.Machine, event.Transition)
+				err := m.Transition(transition.Name)
+				if err != nil {
+					m.Errorf("machine", "Could not trigger %q transition based on foreign subscription %s#%s: %v", transition.Name, event.Machine, event.Transition, err)
+				}
+			}
+		}
+	}
+}
+
+func (m *Machine) LookupExternalMachineState(name string) (string, error) {
+	m.Lock()
+	defer m.Unlock()
+
+	if m.externalMachineQuery == nil {
+		return "", fmt.Errorf("no external machine query registered")
+	}
+
+	return m.externalMachineQuery(name)
+}
+
+func (m *Machine) SetExternalMachineStateQuery(f func(machine string) (string, error)) {
+	m.Lock()
+	m.externalMachineQuery = f
+	m.Unlock()
+}
+
+func (m *Machine) SetExternalMachineNotifier(f func(*TransitionNotification)) {
+	m.Lock()
+	m.externalMachineNotifier = f
+	m.Unlock()
 }
 
 func (m *Machine) SetDirectory(dir string, manifest string) error {
@@ -457,23 +519,29 @@ func (m *Machine) buildFSM() error {
 
 	f := fsm.NewFSM(m.InitialState, events, fsm.Callbacks{
 		"enter_state": func(ctx context.Context, e *fsm.Event) {
+			notification := &TransitionNotification{
+				Protocol:   "io.choria.machine.v1.transition",
+				Identity:   m.Identity(),
+				ID:         m.InstanceID(),
+				Version:    m.Version(),
+				Timestamp:  m.TimeStampSeconds(),
+				Machine:    m.MachineName,
+				Transition: e.Event,
+				FromState:  e.Src,
+				ToState:    e.Dst,
+				Info:       m,
+			}
+
+			if m.externalMachineNotifier != nil {
+				m.externalMachineNotifier(notification)
+			}
+
 			for i, notifier := range m.notifiers {
 				if i == 0 {
 					m.manager.NotifyStateChance()
 				}
 
-				err := notifier.NotifyPostTransition(&TransitionNotification{
-					Protocol:   "io.choria.machine.v1.transition",
-					Identity:   m.Identity(),
-					ID:         m.InstanceID(),
-					Version:    m.Version(),
-					Timestamp:  m.TimeStampSeconds(),
-					Machine:    m.MachineName,
-					Transition: e.Event,
-					FromState:  e.Src,
-					ToState:    e.Dst,
-					Info:       m,
-				})
+				err := notifier.NotifyPostTransition(notification)
 				if err != nil {
 					m.Errorf("machine", "Could not publish event notification for %s: %s", e.Event, err)
 				}
@@ -546,7 +614,7 @@ func (m *Machine) Start(ctx context.Context, wg *sync.WaitGroup) (started chan s
 
 	runf := func() {
 		if m.SplayStart > 0 {
-			sleep := time.Duration(rand.Intn(m.SplayStart)) * time.Second
+			sleep := time.Duration(rand.N(m.SplayStart)) * time.Second
 			m.Infof(m.MachineName, "Sleeping %v before starting Autonomous Agent", sleep)
 
 			t := time.NewTimer(sleep)
@@ -688,7 +756,7 @@ func (m *Machine) KnownStates() []string {
 	defer m.Unlock()
 
 	lister := func() []string {
-		states := []string{}
+		var states []string
 
 		for k := range m.knownStates {
 			states = append(states, k)

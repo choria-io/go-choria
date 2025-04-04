@@ -7,6 +7,9 @@ other = "Поиск"
 [Search-placeholder]
 other = "Поиск..."
 
+[Clear-search]
+other = "Очистить поиск"
+
 [No-results-found]
 other = "Ничего не найдено для \"{0}\""
 
@@ -16,11 +19,17 @@ other = "{1} результатов найдено для \"{0}\""
 [Clear-History]
 other = "Очистить историю"
 
+[Reset-view]
+other = "Вид на сброс"
+
+[View-reset]
+other = "Посмотреть сброс!"
+
 [Attachments-label]
 other = "Присоединенные файлы"
 
 [title-404]
-other = "Ошибка"
+other = "Не обнаружено"
 
 [message-404]
 other = "Упс. Выглядит будто такой страницы нет ¯\\_(ツ)_/¯."
@@ -33,6 +42,9 @@ other = "редактировать"
 
 [Print-this-chapter]
 other = "Печать всей главы"
+
+[More-action]
+other = "Еще"
 
 [Shortcuts-Title]
 other = "Еще"
@@ -93,3 +105,15 @@ other = "Подменю {{.}}"
 
 [Subsections]
 other = "Подразделы {{.}}"
+
+[tags]
+other = "Теги"
+
+[tag]
+other = "Tag"
+
+[categories]
+other = "Категории"
+
+[category]
+other = "Категория"

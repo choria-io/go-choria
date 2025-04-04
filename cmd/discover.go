@@ -8,6 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/choria-io/go-choria/internal/fs"
@@ -23,6 +24,8 @@ type discoverCommand struct {
 	verbose    bool
 	silent     bool
 	fo         *discovery.StandardOptions
+
+	federations string
 }
 
 func (d *discoverCommand) Setup() error {
@@ -35,6 +38,8 @@ func (d *discoverCommand) Setup() error {
 	d.fo.AddSelectionFlags(d.cmd)
 	d.fo.AddFlatFileFlags(d.cmd)
 
+	d.cmd.Flag("federations", "Comma-separated list of federations to target").StringVar(&d.federations)
+
 	d.cmd.Flag("verbose", "Log verbosely").Default("false").Short('v').UnNegatableBoolVar(&d.verbose)
 	d.cmd.Flag("json", "Produce JSON output").Short('j').UnNegatableBoolVar(&d.jsonFormat)
 	d.cmd.Flag("silent", "Produce as little logging as possible").Hidden().UnNegatableBoolVar(&d.silent)
@@ -44,6 +49,12 @@ func (d *discoverCommand) Setup() error {
 
 func (d *discoverCommand) Configure() error {
 	err = commonConfigure()
+
+	// If list of federations is specified on the CLI, mutate the configuration directly
+	if len(d.federations) > 0 {
+		cfg.Choria.FederationCollectives = strings.Split(d.federations, ",")
+	}
+
 	if err != nil {
 		return err
 	}

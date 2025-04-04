@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,10 +14,12 @@ import (
 	"github.com/choria-io/fisk"
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
-	"github.com/choria-io/go-choria/internal/util"
 	"github.com/nats-io/jsm.go"
+	"github.com/nats-io/nats.go/jetstream"
 	natscli "github.com/nats-io/natscli/cli"
+	"github.com/nats-io/natscli/options"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/exp/slices"
 )
 
 type brokerCommand struct {
@@ -31,8 +33,8 @@ func (b *brokerCommand) Setup() (err error) {
 	b.cmd.Flag("choria-config", "Choria Config file to use").Hidden().PlaceHolder("FILE").ExistingFileVar(&configFile)
 	b.cmd.Flag("connect-timeout", "Connection timeout").Default("5s").DurationVar(&b.timeout)
 
-	opts, err := natscli.ConfigureInCommand(b.cmd, &natscli.Options{NoCheats: true, Timeout: 5 * time.Second}, false,
-		"cheat", "rtt", "latency", "backup", "restore", "bench", "schema", "errors", "kv", "object", "micro", "context", "auth", "service")
+	opts, err := natscli.ConfigureInCommand(b.cmd, &options.Options{NoCheats: true, Timeout: 5 * time.Second}, false,
+		"audit", "run", "cheat", "rtt", "latency", "backup", "restore", "bench", "schema", "errors", "kv", "object", "micro", "context", "auth", "service")
 	if err != nil {
 		return err
 	}
@@ -44,7 +46,7 @@ func (b *brokerCommand) Setup() (err error) {
 	return
 }
 
-func (b *brokerCommand) prepareNatsCli(pc *fisk.ParseContext, opts *natscli.Options) error {
+func (b *brokerCommand) prepareNatsCli(pc *fisk.ParseContext, opts *options.Options) error {
 	cmd := pc.String()
 	if cmd == "broker" || cmd == "broker run" {
 		return nil
@@ -72,7 +74,19 @@ func (b *brokerCommand) prepareNatsCli(pc *fisk.ParseContext, opts *natscli.Opti
 	natscli.SetContext(ctx)
 	natscli.SetVersion(build.Version)
 
-	if strings.HasPrefix(cmd, "broker server") && !util.HasPrefix(cmd, "broker server check stream", "broker server check kv", "broker server check jetstream", "broker server check consumer") {
+	should := []bool{
+		strings.HasPrefix(cmd, "broker top"),
+		strings.HasPrefix(cmd, "broker server") && (!strings.HasPrefix(cmd, "broker server check stream") &&
+			!strings.HasPrefix(cmd, "broker server check kv") &&
+			!strings.HasPrefix(cmd, "broker server check jetstream") &&
+			!strings.HasPrefix(cmd, "broker server check consumer") &&
+			!strings.HasPrefix(cmd, "broker server check connection") &&
+			!strings.HasPrefix(cmd, "broker server check request") &&
+			!strings.HasPrefix(cmd, "broker server check credential") &&
+			!strings.HasPrefix(cmd, "broker server check message")),
+	}
+
+	if slices.Contains(should, true) {
 		if cfg.Choria.NetworkSystemUsername == "" || cfg.Choria.NetworkSystemPassword == "" {
 			return fmt.Errorf("the %q command needs system username and password set using plugin.choria.network.system.*", cmd)
 		}
@@ -113,7 +127,7 @@ func (b *brokerCommand) prepareNatsCli(pc *fisk.ParseContext, opts *natscli.Opti
 	opts.Conn = conn.Nats()
 	opts.InboxPrefix = conn.InboxPrefix()
 
-	opts.JSc, err = opts.Conn.JetStream()
+	opts.JSc, err = jetstream.New(opts.Conn)
 	if err != nil {
 		return err
 	}

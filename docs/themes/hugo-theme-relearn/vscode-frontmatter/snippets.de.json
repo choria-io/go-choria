@@ -1,74 +1,8 @@
 {
 	"frontMatter.content.snippets": {
-		"Attachments": {
-			"body": [
-				"{{< attachments title=\"[[&title]]\" pattern=\"[[&pattern]]\" sort=\"[[&sort]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" />}}"
-			],
-			"description": "Zeigt eine Liste der Dateianhänge der Seite an",
-			"fields": [
-				{
-					"default": "",
-					"name": "title",
-					"title": "Titel",
-					"type": "string"
-				},
-				{
-					"default": "",
-					"name": "pattern",
-					"title": "Regex zum Filtern der Dateinamen",
-					"type": "string"
-				},
-				{
-					"choices": [
-						"",
-						"asc",
-						"desc"
-					],
-					"default": "",
-					"name": "sort",
-					"title": "Ausgabereihenfolge",
-					"type": "choice"
-				},
-				{
-					"choices": [
-						"",
-						"info",
-						"note",
-						"tip",
-						"warning",
-						"primary",
-						"secondary",
-						"accent",
-						"blue",
-						"green",
-						"gray",
-						"orange",
-						"red",
-						"default",
-						"transparent"
-					],
-					"default": "",
-					"name": "style",
-					"title": "Stil-Schema",
-					"type": "choice"
-				},
-				{
-					"default": "",
-					"name": "color",
-					"title": "CSS-Farbwert",
-					"type": "string"
-				},
-				{
-					"default": "",
-					"name": "icon",
-					"title": "Font Awesome Icon",
-					"type": "string"
-				}
-			]
-		},
 		"Badge": {
 			"body": [
-				"{{< badge title=\"[[&title]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" >}}[[&content]]{{< /badge >}}"
+				"{{% badge title=\"[[&title]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" %}}[[&content]]{{% /badge %}}"
 			],
 			"description": "Zeigt einen kleinen Marker im Text an",
 			"fields": [
@@ -100,7 +34,8 @@
 						"orange",
 						"red",
 						"default",
-						"transparent"
+						"transparent",
+						"code"
 					],
 					"default": "",
 					"name": "style",
@@ -123,7 +58,7 @@
 		},
 		"Button": {
 			"body": [
-				"{{< button href=\"[[&href]]\" target=\"[[&target]]\" type=\"[[&type]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" iconposition=\"[[&iconposition]]\" >}}[[&content]]{{< /button >}}"
+				"{{% button href=\"[[&href]]\" target=\"[[&target]]\" type=\"[[&type]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" iconposition=\"[[&iconposition]]\" %}}[[&content]]{{% /button %}}"
 			],
 			"description": "Zeigt eine anklickbare Schaltfläche an",
 			"fields": [
@@ -167,7 +102,8 @@
 						"orange",
 						"red",
 						"default",
-						"transparent"
+						"transparent",
+						"code"
 					],
 					"default": "",
 					"name": "style",
@@ -201,7 +137,7 @@
 		},
 		"Children": {
 			"body": [
-				"{{< children description=\"[[&description]]\" depth=\"[[&depth]]\" sort=\"[[&sort]]\" showhidden=\"[[&showhidden]]\" containerstyle=\"[[&containerstyle]]\" style=\"[[&style]]\" >}}"
+				"{{% children description=\"[[&description]]\" depth=\"[[&depth]]\" sort=\"[[&sort]]\" showhidden=\"[[&showhidden]]\" containerstyle=\"[[&containerstyle]]\" style=\"[[&style]]\" %}}"
 			],
 			"description": "Zeigt eine Liste der Unterseiten dieser Seite an",
 			"fields": [
@@ -264,12 +200,101 @@
 					"name": "content",
 					"title": "Text",
 					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "title",
+					"title": "Titel",
+					"type": "string"
+				},
+				{
+					"choices": [
+						"",
+						"false",
+						"true"
+					],
+					"default": "",
+					"name": "open",
+					"title": "Textblock initial ausklappen",
+					"type": "choice"
+				}
+			]
+		},
+		"Highlight": {
+			"body": [
+				"````[[&type]] title=\"[[&title]]\" wrap=\"[[&wrap]]\" lineNos=\"[[&lineNos]]\" anchorLineNos=\"[[&anchorLineNos]]\" lineAnchors=\"[[&lineAnchors]]\" lineNoStart=\"[[&lineNoStart]]\" hl_Lines=\"[[&hl_Lines]]\"",
+				"[[&content]]",
+				"````"
+			],
+			"description": "Zeigt formatierten Code an",
+			"fields": [
+				{
+					"default": "FM_SELECTED_TEXT",
+					"name": "content",
+					"title": "Text",
+					"type": "string"
+				},
+				{
+					"name": "title",
+					"title": "Titel",
+					"type": "string"
+				},
+				{
+					"choices": [
+						"",
+						"false",
+						"true"
+					],
+					"default": "",
+					"name": "wrap",
+					"title": "Zeilen umbrechen",
+					"type": "choice"
+				},
+				{
+					"choices": [
+						"",
+						"false",
+						"true"
+					],
+					"default": "",
+					"name": "lineNos",
+					"title": "Zeilennummern anzeigen",
+					"type": "choice"
+				},
+				{
+					"choices": [
+						"",
+						"false",
+						"true"
+					],
+					"default": "",
+					"name": "anchorLineNos",
+					"title": "Zeilennummern verlinkbar",
+					"type": "choice"
+				},
+				{
+					"default": "",
+					"name": "lineAnchors",
+					"title": "Eindeutiges Prefix für verlinkbare Zeilennummern",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "lineNoStart",
+					"title": "Erste Zeilennummer",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "hl_Lines",
+					"title": "Zu markierende Zeilen",
+					"type": "string"
 				}
 			]
 		},
 		"Icon": {
 			"body": [
-				"{{< icon [[&icon]] >}}"
+				"{{% icon [[&icon]] %}}"
 			],
 			"description": "Zeigt ein Font Awesome Icon an",
 			"fields": [
@@ -282,7 +307,7 @@
 		},
 		"Include": {
 			"body": [
-				"{{< include file=\"[[&file]]\" hidefirstheading=\"[[&hidefirstheading]]\" >}}"
+				"{{% include file=\"[[&file]]\" hidefirstheading=\"[[&hidefirstheading]]\" %}}"
 			],
 			"description": "Zeigt den Inhalt einer Datei an",
 			"fields": [
@@ -405,7 +430,8 @@
 						"orange",
 						"red",
 						"default",
-						"transparent"
+						"transparent",
+						"code"
 					],
 					"default": "",
 					"name": "style",
@@ -426,9 +452,89 @@
 				}
 			]
 		},
-		"Siteparam": {
+		"OpenAPI": {
 			"body": [
-				"{{< siteparam [[&name]] >}}"
+				"{{< openapi src=\"[[&src]]\" >}}"
+			],
+			"description": "Zeigt eine OpenAPI / Swagger Spezifikation an",
+			"fields": [
+				{
+					"name": "src",
+					"title": "URL zur OpenAPI Specifikation",
+					"type": "string"
+				}
+			]
+		},
+		"Resources": {
+			"body": [
+				"{{% resources title=\"[[&title]]\" pattern=\"[[&pattern]]\" sort=\"[[&sort]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" /%}}"
+			],
+			"description": "Zeigt eine Liste von Resourcen eines Page Bundles an",
+			"fields": [
+				{
+					"default": "",
+					"name": "title",
+					"title": "Titel",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "pattern",
+					"title": "Regex zum Filtern der Dateinamen",
+					"type": "string"
+				},
+				{
+					"choices": [
+						"",
+						"asc",
+						"desc"
+					],
+					"default": "",
+					"name": "sort",
+					"title": "Ausgabereihenfolge",
+					"type": "choice"
+				},
+				{
+					"choices": [
+						"",
+						"info",
+						"note",
+						"tip",
+						"warning",
+						"primary",
+						"secondary",
+						"accent",
+						"blue",
+						"green",
+						"gray",
+						"orange",
+						"red",
+						"default",
+						"transparent",
+						"code"
+					],
+					"default": "",
+					"name": "style",
+					"title": "Stil-Schema",
+					"type": "choice"
+				},
+				{
+					"default": "",
+					"name": "color",
+					"title": "CSS-Farbwert",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "icon",
+					"title": "Font Awesome Icon",
+					"type": "string"
+				}
+			]
+		},
+		"Site Param": {
+			"body": [
+				"{{% siteparam name=\"[[&name]]\" %}}"
 			],
 			"description": "Zeigt einen \"site parameter\" an",
 			"fields": [
@@ -439,26 +545,70 @@
 				}
 			]
 		},
-		"Swagger": {
+		"Tab": {
 			"body": [
-				"{{< swagger src=\"[[&src]]\" >}}"
+				"{{% tab title=\"[[&title]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" %}}",
+				"[[&content]]",
+				"{{% /tab %}}"
 			],
-			"description": "Zeigt eine Swagger / Open API Specification an",
+			"description": "Zeigt einen einzelnen Tab an",
 			"fields": [
 				{
-					"name": "src",
-					"title": "URL zur Open API Specification",
+					"default": "FM_SELECTED_TEXT",
+					"name": "content",
+					"title": "Text",
+					"type": "string"
+				},
+				{
+					"name": "title",
+					"title": "Titel",
+					"type": "string"
+				},
+				{
+					"choices": [
+						"",
+						"info",
+						"note",
+						"tip",
+						"warning",
+						"primary",
+						"secondary",
+						"accent",
+						"blue",
+						"green",
+						"gray",
+						"orange",
+						"red",
+						"default",
+						"transparent",
+						"code"
+					],
+					"default": "",
+					"name": "style",
+					"title": "Stil-Schema",
+					"type": "choice"
+				},
+				{
+					"default": "",
+					"name": "color",
+					"title": "CSS-Farbwert",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "icon",
+					"title": "Font Awesome Icon",
 					"type": "string"
 				}
 			]
 		},
 		"Tabs": {
 			"body": [
-				"{{< tabs groupid=\"[[&groupid]]\" >}}",
-				"{{% tab name=\"[[&name1]]\" %}}",
+				"{{< tabs title=\"[[&title]]\" style=\"[[&style]]\" color=\"[[&color]]\" icon=\"[[&icon]]\" groupid=\"[[&groupid]]\" >}}",
+				"{{% tab title=\"[[&title1]]\" style=\"[[&style1]]\" color=\"[[&color1]]\" icon=\"[[&icon1]]\" %}}",
 				"[[&content1]]",
 				"{{% /tab %}}",
-				"{{% tab name=\"[[&name2]]\" %}}",
+				"{{% tab title=\"[[&title2]]\" style=\"[[&style2]]\" color=\"[[&color2]]\" icon=\"[[&icon2]]\" %}}",
 				"[[&content2]]",
 				"{{% /tab %}}",
 				"{{< /tabs >}}"
@@ -467,13 +617,50 @@
 			"fields": [
 				{
 					"default": "",
-					"name": "groupid",
-					"title": "ID, die zum synchronisieren der Tabauswahl über mehrere Tabs Snippets benutzt werden soll",
+					"name": "title",
+					"title": "Titel der Tabgruppe",
 					"type": "string"
 				},
 				{
-					"name": "name1",
-					"title": "Titel des ersten Tabs",
+					"choices": [
+						"",
+						"info",
+						"note",
+						"tip",
+						"warning",
+						"primary",
+						"secondary",
+						"accent",
+						"blue",
+						"green",
+						"gray",
+						"orange",
+						"red",
+						"default",
+						"transparent",
+						"code"
+					],
+					"default": "",
+					"name": "style",
+					"title": "Standard-Stil-Schema aller Tabs",
+					"type": "choice"
+				},
+				{
+					"default": "",
+					"name": "color",
+					"title": "Standard-CSS-Farbwert aller Tabs",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "icon",
+					"title": "Font Awesome Icon der Tabgruppe",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "groupid",
+					"title": "ID, die zum synchronisieren der Tabauswahl über mehrere Tabgruppen hinweg benutzt werden soll",
 					"type": "string"
 				},
 				{
@@ -483,14 +670,91 @@
 					"type": "string"
 				},
 				{
-					"name": "name2",
-					"title": "Titel des zweiten Tabs",
+					"name": "title1",
+					"title": "Titel des ersten Tabs",
+					"type": "string"
+				},
+				{
+					"choices": [
+						"",
+						"info",
+						"note",
+						"tip",
+						"warning",
+						"primary",
+						"secondary",
+						"accent",
+						"blue",
+						"green",
+						"gray",
+						"orange",
+						"red",
+						"default",
+						"transparent",
+						"code"
+					],
+					"default": "",
+					"name": "style1",
+					"title": "Stil-Schema des ersten Tabs",
+					"type": "choice"
+				},
+				{
+					"default": "",
+					"name": "color1",
+					"title": "CSS-Farbwert des ersten Tabs",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "icon1",
+					"title": "Font Awesome Icon des ersten Tabs",
 					"type": "string"
 				},
 				{
 					"default": "",
 					"name": "content2",
 					"title": "Text des zweiten Tabs",
+					"type": "string"
+				},
+				{
+					"name": "title2",
+					"title": "Titel des zweiten Tabs",
+					"type": "string"
+				},
+				{
+					"choices": [
+						"",
+						"info",
+						"note",
+						"tip",
+						"warning",
+						"primary",
+						"secondary",
+						"accent",
+						"blue",
+						"green",
+						"gray",
+						"orange",
+						"red",
+						"default",
+						"transparent",
+						"code"
+					],
+					"default": "",
+					"name": "style2",
+					"title": "Stil-Schema des zweiten Tabs",
+					"type": "choice"
+				},
+				{
+					"default": "",
+					"name": "color2",
+					"title": "CSS-Farbwert des zweiten Tabs",
+					"type": "string"
+				},
+				{
+					"default": "",
+					"name": "icon2",
+					"title": "Font Awesome Icon des zweiten Tabs",
 					"type": "string"
 				}
 			]

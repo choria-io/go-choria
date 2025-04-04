@@ -7,6 +7,9 @@ other = "Search"
 [Search-placeholder]
 other = "Search..."
 
+[Clear-search]
+other = "Clear search"
+
 [No-results-found]
 other = "No results found for \"{0}\""
 
@@ -16,11 +19,17 @@ other = "{1} results found for \"{0}\""
 [Clear-History]
 other = "Clear History"
 
+[Reset-view]
+other = "Reset view"
+
+[View-reset]
+other = "View reset!"
+
 [Attachments-label]
 other = "Attachments"
 
 [title-404]
-other = "Error"
+other = "Not found"
 
 [message-404]
 other = "Woops. Looks like this page doesn't exist ¯\\_(ツ)_/¯."
@@ -33,6 +42,9 @@ other = "Edit"
 
 [Print-this-chapter]
 other = "Print whole chapter"
+
+[More-action]
+other = "More"
 
 [Shortcuts-Title]
 other = "More"
@@ -93,3 +105,15 @@ other = "Submenu {{.}}"
 
 [Subsections]
 other = "Subsections of {{.}}"
+
+[tags]
+other = "Tags"
+
+[tag]
+other = "Tag"
+
+[categories]
+other = "Categories"
+
+[category]
+other = "Category"

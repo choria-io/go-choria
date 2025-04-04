@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,11 +16,11 @@ import (
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/tokens"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
 	"github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("McoRPC/JWTAuthorizer", func() {
@@ -86,14 +86,14 @@ var _ = Describe("McoRPC/JWTAuthorizer", func() {
 		})
 
 		It("Should fail for no caller public data", func() {
-			allowed, err := aaasvcPolicyAuthorize(req, agent, log)
+			allowed, err := aaasvcPolicyAuthorize(req, agent.Config, log)
 			Expect(err).To(MatchError("no policy received in request"))
 			Expect(allowed).To(BeFalse())
 		})
 
 		It("Should handle invalid tokens", func() {
 			req.CallerPublicData = "blah"
-			allowed, err := aaasvcPolicyAuthorize(req, agent, log)
+			allowed, err := aaasvcPolicyAuthorize(req, agent.Config, log)
 			Expect(err).To(MatchError("invalid token in request: token contains an invalid number of segments"))
 			Expect(allowed).To(BeFalse())
 		})
@@ -105,7 +105,7 @@ var _ = Describe("McoRPC/JWTAuthorizer", func() {
 			Expect(err).ToNot(HaveOccurred())
 
 			req.Agent = "discovery"
-			allowed, err := aaasvcPolicyAuthorize(req, agent, log)
+			allowed, err := aaasvcPolicyAuthorize(req, agent.Config, log)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(allowed).To(BeTrue())
 			Expect(logBuff).To(gbytes.Say("Allowing discovery request"))
@@ -117,7 +117,7 @@ var _ = Describe("McoRPC/JWTAuthorizer", func() {
 			req.CallerPublicData, err = tokens.SignToken(claims, prik)
 			Expect(err).ToNot(HaveOccurred())
 
-			allowed, err := aaasvcPolicyAuthorize(req, agent, log)
+			allowed, err := aaasvcPolicyAuthorize(req, agent.Config, log)
 			Expect(err).To(MatchError("no policy received in token"))
 			Expect(allowed).To(BeFalse())
 		})
@@ -129,7 +129,7 @@ var _ = Describe("McoRPC/JWTAuthorizer", func() {
 				req.CallerPublicData, err = tokens.SignToken(claims, prik)
 				Expect(err).ToNot(HaveOccurred())
 
-				allowed, err := aaasvcPolicyAuthorize(req, agent, log)
+				allowed, err := aaasvcPolicyAuthorize(req, agent.Config, log)
 				Expect(err).To(MatchError("invalid agent policy: fail"))
 				Expect(allowed).To(BeFalse())
 			})
@@ -140,7 +140,7 @@ var _ = Describe("McoRPC/JWTAuthorizer", func() {
 				req.CallerPublicData, err = tokens.SignToken(claims, prik)
 				Expect(err).ToNot(HaveOccurred())
 
-				allowed, err := aaasvcPolicyAuthorize(req, agent, log)
+				allowed, err := aaasvcPolicyAuthorize(req, agent.Config, log)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(allowed).To(BeTrue())
 			})
@@ -153,7 +153,7 @@ var _ = Describe("McoRPC/JWTAuthorizer", func() {
 				req.CallerPublicData, err = tokens.SignToken(claims, prik)
 				Expect(err).ToNot(HaveOccurred())
 
-				allowed, err := aaasvcPolicyAuthorize(req, agent, log)
+				allowed, err := aaasvcPolicyAuthorize(req, agent.Config, log)
 				Expect(err).To(HaveOccurred())
 				Expect(err.Error()).To(MatchRegexp("could not initialize opa evaluator"))
 				Expect(allowed).To(BeFalse())
@@ -165,7 +165,7 @@ var _ = Describe("McoRPC/JWTAuthorizer", func() {
 				req.CallerPublicData, err = tokens.SignToken(claims, prik)
 				Expect(err).ToNot(HaveOccurred())
 
-				allowed, err := aaasvcPolicyAuthorize(req, agent, log)
+				allowed, err := aaasvcPolicyAuthorize(req, agent.Config, log)
 				Expect(err).ToNot(HaveOccurred())
 				Expect(allowed).To(BeTrue())
 			})

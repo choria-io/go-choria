@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,6 +12,7 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/choriautil"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/discovery"
+	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/executor"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/golang/rpcutil"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/go-choria/server/agents"
@@ -38,7 +39,6 @@ func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, 
 	if err != nil {
 		return err
 	}
-
 	err = mgr.RegisterAgent(ctx, "discovery", agent, connector)
 	if err != nil {
 		return err
@@ -48,7 +48,6 @@ func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, 
 	if err != nil {
 		return err
 	}
-
 	err = mgr.RegisterAgent(ctx, "rpcutil", agent, connector)
 	if err != nil {
 		return err
@@ -58,8 +57,16 @@ func (p *Provider) RegisterAgents(ctx context.Context, mgr server.AgentManager, 
 	if err != nil {
 		return err
 	}
-
 	err = mgr.RegisterAgent(ctx, "choria_util", agent, connector)
+	if err != nil {
+		return err
+	}
+
+	agent, err = executor.New(mgr)
+	if err != nil {
+		return err
+	}
+	err = mgr.RegisterAgent(ctx, "executor", agent, connector)
 	if err != nil {
 		return err
 	}

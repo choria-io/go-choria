@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,7 +6,7 @@ package schedulewatcher
 
 import (
 	"context"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"time"
 
@@ -58,7 +58,7 @@ func (s *scheduleItem) check(ctx context.Context) {
 
 		sleep := time.Duration(0)
 		if s.randomize > 0 {
-			sleep = time.Duration(rand.Int63n(int64(s.randomize)))
+			sleep = rand.N(s.randomize)
 			s.watcher.Infof("Splay sleeping %v before starting schedule", sleep)
 			err := util.InterruptibleSleep(ctx, sleep)
 			if err != nil {

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,9 +6,11 @@ package election
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"math"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"time"
 
@@ -187,7 +189,7 @@ func (e *election) maintainLeadership() error {
 	if e.notifyNext {
 		e.notifyNext = false
 		if e.opts.wonCb != nil {
-			ctxSleep(e.ctx, 200*time.Millisecond)
+			iu.InterruptibleSleep(e.ctx, 200*time.Millisecond)
 			e.opts.wonCb()
 		}
 	}
@@ -223,8 +225,11 @@ func (e *election) campaign(wg *sync.WaitGroup) error {
 	e.mu.Unlock()
 
 	// spread out startups a bit
-	splay := time.Duration(rand.Intn(5000)) * time.Millisecond
-	ctxSleep(e.ctx, splay)
+	splay := time.Duration(rand.N(5000)) * time.Millisecond
+	err := iu.InterruptibleSleep(e.ctx, splay)
+	if errors.Is(err, context.Canceled) {
+		return err
+	}
 
 	var ticker *time.Ticker
 	if e.opts.bo != nil {
@@ -338,17 +343,4 @@ func (e *election) State() State {
 	defer e.mu.Unlock()
 
 	return e.state
-}
-
-func ctxSleep(ctx context.Context, duration time.Duration) error {
-	if ctx.Err() != nil {
-		return ctx.Err()
-	}
-
-	sctx, cancel := context.WithTimeout(ctx, duration)
-	defer cancel()
-
-	<-sctx.Done()
-
-	return ctx.Err()
 }

@@ -1,0 +1,21 @@
+name: Subscriber
+version: 0.0.1
+initial_state: unknown
+splay_start: 10
+
+transitions:
+  - name: fire_1
+    from: [unknown]
+    destination: one
+    subscribe:
+      - machine_name: TestMachine
+        event: fire_1
+
+watchers:
+  - name: true_1
+    type: exec
+    state_match: [unknown]
+    fail_transition: fire_1
+    success_transition: fire_1
+    properties:
+      command: /usr/bin/true

@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,31 +14,29 @@ import (
 	"github.com/choria-io/go-choria/config"
 	"github.com/choria-io/go-choria/opa"
 	"github.com/choria-io/tokens"
-	"github.com/open-policy-agent/opa/ast"
-	"github.com/open-policy-agent/opa/rego"
-	"github.com/open-policy-agent/opa/types"
+	"github.com/open-policy-agent/opa/v1/ast"
+	"github.com/open-policy-agent/opa/v1/rego"
+	"github.com/open-policy-agent/opa/v1/types"
 	"github.com/sirupsen/logrus"
 )
 
 type aaasvcPolicy struct {
-	cfg   *config.Config
-	req   *Request
-	agent *Agent
-	log   *logrus.Entry
+	cfg *config.Config
+	req *Request
+	log *logrus.Entry
 }
 
-func aaasvcPolicyAuthorize(req *Request, agent *Agent, log *logrus.Entry) (bool, error) {
+func aaasvcPolicyAuthorize(req *Request, cfg *config.Config, log *logrus.Entry) (bool, error) {
 	logger := log.WithFields(logrus.Fields{
 		"authorizer": "aaasvc",
-		"agent":      agent.Name(),
+		"agent":      req.Agent,
 		"request":    req.RequestID,
 	})
 
 	authz := &aaasvcPolicy{
-		cfg:   agent.Config,
-		req:   req,
-		agent: agent,
-		log:   logger,
+		cfg: cfg,
+		req: req,
+		log: logger,
 	}
 
 	return authz.authorize()

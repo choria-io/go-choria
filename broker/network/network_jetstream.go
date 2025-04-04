@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@ import (
 	"context"
 	"crypto/tls"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 
 	"github.com/choria-io/go-choria/backoff"
@@ -54,8 +54,8 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 	var err error
 
 	cfg := s.config.Choria
-	if cfg.NetworkEventStoreReplicas == -1 || cfg.NetworkMachineStoreReplicas == -1 || cfg.NetworkStreamAdvisoryReplicas == -1 || cfg.NetworkLeaderElectionReplicas == -1 {
-		delay := time.Duration(rand.Intn(60)+10) * time.Second
+	if cfg.NetworkExecutorReplicas == -1 || cfg.NetworkEventStoreReplicas == -1 || cfg.NetworkMachineStoreReplicas == -1 || cfg.NetworkStreamAdvisoryReplicas == -1 || cfg.NetworkLeaderElectionReplicas == -1 {
+		delay := time.Duration(rand.N(60)+10) * time.Second
 		s.log.Infof("Configuring system streams after %v", delay)
 		err = backoff.Default.Sleep(ctx, delay)
 		if err != nil {
@@ -92,6 +92,11 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 			s.log.Infof("Setting Choria Streams Leader election Replicas to %d", count)
 			cfg.NetworkLeaderElectionReplicas = count
 		}
+
+		if cfg.NetworkExecutorReplicas == -1 {
+			s.log.Infof("Setting Choria Streams Executor Replicas to %d", count)
+			cfg.NetworkExecutorReplicas = count
+		}
 	}
 
 	err = backoff.TwentySec.For(ctx, func(try int) error {
@@ -114,6 +119,11 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 		return err
 	}
 
+	err = s.createOrUpdateStream("CHORIA_EXECUTOR", []string{"choria.submission.choria.executor.>"}, cfg.NetworkEventStoreDuration, cfg.NetworkEventStoreReplicas, mgr)
+	if err != nil {
+		return err
+	}
+
 	err = s.createOrUpdateStream("CHORIA_EVENTS", []string{"choria.lifecycle.>"}, cfg.NetworkEventStoreDuration, cfg.NetworkEventStoreReplicas, mgr)
 	if err != nil {
 		return err
@@ -132,6 +142,29 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 	err = scout.ConfigureStreams(nc, s.log.WithField("component", "scout"))
 	if err != nil {
 		return err
+	}
+
+	if cfg.NetworkExecutorStoreDuration > 0 {
+		execCfg, err := jsm.NewStreamConfiguration(jsm.DefaultStream,
+			jsm.Subjects("choria.submission.in.choria.executor.>"),
+			jsm.StreamDescription("Choria Executor Events"),
+			jsm.Replicas(cfg.NetworkExecutorReplicas),
+			jsm.MaxAge(cfg.NetworkExecutorStoreDuration),
+			jsm.FileStorage(),
+			jsm.AllowDirect(),
+		)
+		if err != nil {
+			return err
+		}
+		execCfg.SubjectTransform = &api.SubjectTransformConfig{ // TODO: next jsm has a option func for this
+			Source:      "choria.submission.in.choria.executor.>",
+			Destination: "choria.executor.>",
+		}
+
+		err = s.createOrUpdateStreamWithConfig("CHORIA_EXECUTOR", *execCfg, mgr)
+		if err != nil {
+			return err
+		}
 	}
 
 	eCfg, err := jsm.NewStreamConfiguration(jsm.DefaultStream,

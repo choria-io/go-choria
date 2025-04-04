@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,9 +17,9 @@ import (
 	"github.com/ghodss/yaml"
 	"github.com/sirupsen/logrus"
 
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 func TestMachine(t *testing.T) {
@@ -162,15 +162,13 @@ var _ = Describe("Aagent/Machine", func() {
 	})
 
 	Describe("Start", func() {
-		It("Should start the machine using the manager", func() {
+		It("Should start the machine using the manager", func(ctx context.Context) {
 			wg := &sync.WaitGroup{}
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
 
 			manager.EXPECT().SetMachine(gomock.AssignableToTypeOf(&Machine{}))
 			machine, err = FromYAML("testdata/machine.yaml", manager)
 			Expect(err).ToNot(HaveOccurred())
-			manager.EXPECT().Run(gomock.AssignableToTypeOf(ctx), wg)
+			manager.EXPECT().Run(gomock.Any(), wg)
 
 			machine.SplayStart = 0
 

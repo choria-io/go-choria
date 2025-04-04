@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -13,12 +13,13 @@ import (
 )
 
 type sWatchCommand struct {
-	identity string
-	check    string
-	perf     bool
-	ok       bool
-	history  time.Duration
-	watch    *scoutcmd.WatchCommand
+	identity            string
+	check               string
+	perf                bool
+	ok                  bool
+	history             time.Duration
+	watch               *scoutcmd.WatchCommand
+	ignoreMachineEvents []string
 
 	command
 }
@@ -31,6 +32,7 @@ func (w *sWatchCommand) Setup() (err error) {
 		w.cmd.Flag("perf", "Show performance data").UnNegatableBoolVar(&w.perf)
 		w.cmd.Flag("history", "Retrieve a certain period of history from Choria Streaming Server").DurationVar(&w.history)
 		w.cmd.Flag("ok", "Include OK status updates").Default("true").BoolVar(&w.ok)
+		w.cmd.Flag("ignore-machine-transition", "Ignore transitions from certain machines").PlaceHolder("MACHINE").StringsVar(&w.ignoreMachineEvents)
 	}
 
 	return nil
@@ -48,7 +50,7 @@ func (w *sWatchCommand) Run(wg *sync.WaitGroup) (err error) {
 		return fmt.Errorf("cannot connect: %s", err)
 	}
 
-	w.watch, err = scoutcmd.NewWatchCommand(w.identity, w.check, w.perf, !w.ok, w.history, conn, c.Logger("scout"))
+	w.watch, err = scoutcmd.NewWatchCommand(w.identity, w.check, w.ignoreMachineEvents, w.perf, !w.ok, w.history, conn, c.Logger("scout"))
 	if err != nil {
 		return err
 	}

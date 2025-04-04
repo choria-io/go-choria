@@ -16,10 +16,10 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	ddl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("McoRPC/Ruby", func() {

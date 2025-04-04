@@ -1,16 +1,8 @@
---  Copyright (c) 2024, R.I. Pienaar and the Choria Project contributors
---
---  SPDX-License-Identifier: Apache-2.0
-
---  Copyright (c) 2024, R.I. Pienaar and the Choria Project contributors
---
---  SPDX-License-Identifier: Apache-2.0
-
 metadata :name        => "choria_provision",
          :description => "Choria Provisioner",
          :author      => "R.I.Pienaar <rip@devco.net>",
          :license     => "Apache-2.0",
-         :version     => "0.28.0",
+         :version     => "0.29.4",
          :url         => "https://choria.io",
          :timeout     => 20
 

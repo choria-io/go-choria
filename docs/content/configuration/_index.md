@@ -8,7 +8,7 @@ pre = "<b>4. </b>"
 This is a list of all known Configuration settings. This list is based on declared settings within the Choria Go code base and so will not cover 100% of settings - plugins can contribute their own settings which are note known at compile time.
 
 {{% notice secondary "Version Hint" code-branch %}}
-Built on *03 Feb 24 12:57 UTC* using version *0.28.0*
+Built on *16 Mar 25 20:07 UTC* using version *0.29.4*
 {{% /notice %}}
 
 ### Run-time configuration
@@ -60,6 +60,7 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.agent_provider.mcorpc.libdir](#pluginchoriaagent_providermcorpclibdir)|[plugin.choria.broker_federation](#pluginchoriabroker_federation)|
 |[plugin.choria.broker_network](#pluginchoriabroker_network)|[plugin.choria.discovery.broadcast.windowed_timeout](#pluginchoriadiscoverybroadcastwindowed_timeout)|
 |[plugin.choria.discovery.external.command](#pluginchoriadiscoveryexternalcommand)|[plugin.choria.discovery.inventory.source](#pluginchoriadiscoveryinventorysource)|
+|[plugin.choria.executor.enabled](#pluginchoriaexecutorenabled)|[plugin.choria.executor.spool](#pluginchoriaexecutorspool)|
 |[plugin.choria.federation.cluster](#pluginchoriafederationcluster)|[plugin.choria.federation.collectives](#pluginchoriafederationcollectives)|
 |[plugin.choria.federation_middleware_hosts](#pluginchoriafederation_middleware_hosts)|[plugin.choria.legacy_lifecycle_format](#pluginchorialegacy_lifecycle_format)|
 |[plugin.choria.machine.signing_key](#pluginchoriamachinesigning_key)|[plugin.choria.machine.store](#pluginchoriamachinestore)|
@@ -77,6 +78,7 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.network.server_signer_cert](#pluginchorianetworkserver_signer_cert)|[plugin.choria.network.soft_shutdown_timeout](#pluginchorianetworksoft_shutdown_timeout)|
 |[plugin.choria.network.stream.advisory_replicas](#pluginchorianetworkstreamadvisory_replicas)|[plugin.choria.network.stream.advisory_retention](#pluginchorianetworkstreamadvisory_retention)|
 |[plugin.choria.network.stream.event_replicas](#pluginchorianetworkstreamevent_replicas)|[plugin.choria.network.stream.event_retention](#pluginchorianetworkstreamevent_retention)|
+|[plugin.choria.network.stream.executor_replicas](#pluginchorianetworkstreamexecutor_replicas)|[plugin.choria.network.stream.executor_retention](#pluginchorianetworkstreamexecutor_retention)|
 |[plugin.choria.network.stream.leader_election_replicas](#pluginchorianetworkstreamleader_election_replicas)|[plugin.choria.network.stream.leader_election_ttl](#pluginchorianetworkstreamleader_election_ttl)|
 |[plugin.choria.network.stream.machine_replicas](#pluginchorianetworkstreammachine_replicas)|[plugin.choria.network.stream.machine_retention](#pluginchorianetworkstreammachine_retention)|
 |[plugin.choria.network.stream.manage_streams](#pluginchorianetworkstreammanage_streams)|[plugin.choria.network.stream.store](#pluginchorianetworkstreamstore)|
@@ -100,30 +102,33 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.stats_port](#pluginchoriastats_port)|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|
 |[plugin.choria.status_update_interval](#pluginchoriastatus_update_interval)|[plugin.choria.submission.max_spool_size](#pluginchoriasubmissionmax_spool_size)|
 |[plugin.choria.submission.spool](#pluginchoriasubmissionspool)|[plugin.choria.use_srv](#pluginchoriause_srv)|
-|[plugin.login.aaasvc.login.url](#pluginloginaaasvcloginurl)|[plugin.nats.credentials](#pluginnatscredentials)|
-|[plugin.nats.pass](#pluginnatspass)|[plugin.nats.user](#pluginnatsuser)|
-|[plugin.rpcaudit.logfile](#pluginrpcauditlogfile)|[plugin.rpcaudit.logfile.group](#pluginrpcauditlogfilegroup)|
-|[plugin.rpcaudit.logfile.mode](#pluginrpcauditlogfilemode)|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|
-|[plugin.scout.goss.denied_local_resources](#pluginscoutgossdenied_local_resources)|[plugin.scout.goss.denied_remote_resources](#pluginscoutgossdenied_remote_resources)|
-|[plugin.scout.overrides](#pluginscoutoverrides)|[plugin.scout.tags](#pluginscouttags)|
-|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|[plugin.security.certmanager.api_version](#pluginsecuritycertmanagerapi_version)|
-|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|
-|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|[plugin.security.choria.ca](#pluginsecuritychoriaca)|
-|[plugin.security.choria.certificate](#pluginsecuritychoriacertificate)|[plugin.security.choria.key](#pluginsecuritychoriakey)|
-|[plugin.security.choria.seed_file](#pluginsecuritychoriaseed_file)|[plugin.security.choria.sign_replies](#pluginsecuritychoriasign_replies)|
-|[plugin.security.choria.token_file](#pluginsecuritychoriatoken_file)|[plugin.security.choria.trusted_signers](#pluginsecuritychoriatrusted_signers)|
-|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|
-|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|[plugin.security.file.ca](#pluginsecurityfileca)|
-|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|[plugin.security.file.key](#pluginsecurityfilekey)|
-|[plugin.security.issuer.names](#pluginsecurityissuernames)|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|
-|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|[plugin.security.provider](#pluginsecurityprovider)|
-|[plugin.security.server_anon_tls](#pluginsecurityserver_anon_tls)|[plugin.security.support_legacy_certificates](#pluginsecuritysupport_legacy_certificates)|
-|[plugin.yaml](#pluginyaml)|[registerinterval](#registerinterval)|
-|[registration](#registration)|[registration_collective](#registration_collective)|
-|[registration_splay](#registration_splay)|[rpcaudit](#rpcaudit)|
-|[rpcauthorization](#rpcauthorization)|[rpcauthprovider](#rpcauthprovider)|
-|[rpclimitmethod](#rpclimitmethod)|[soft_shutdown_timeout](#soft_shutdown_timeout)|
-|[ttl](#ttl)|[](#)|
+|[plugin.login.aaasvc.login.url](#pluginloginaaasvcloginurl)|[plugin.machines.bucket](#pluginmachinesbucket)|
+|[plugin.machines.check_interval](#pluginmachinescheck_interval)|[plugin.machines.download](#pluginmachinesdownload)|
+|[plugin.machines.key](#pluginmachineskey)|[plugin.machines.poll_interval](#pluginmachinespoll_interval)|
+|[plugin.machines.purge](#pluginmachinespurge)|[plugin.machines.signing_key](#pluginmachinessigning_key)|
+|[plugin.nats.credentials](#pluginnatscredentials)|[plugin.nats.pass](#pluginnatspass)|
+|[plugin.nats.user](#pluginnatsuser)|[plugin.rpcaudit.logfile](#pluginrpcauditlogfile)|
+|[plugin.rpcaudit.logfile.group](#pluginrpcauditlogfilegroup)|[plugin.rpcaudit.logfile.mode](#pluginrpcauditlogfilemode)|
+|[plugin.scout.agent_disabled](#pluginscoutagent_disabled)|[plugin.scout.goss.denied_local_resources](#pluginscoutgossdenied_local_resources)|
+|[plugin.scout.goss.denied_remote_resources](#pluginscoutgossdenied_remote_resources)|[plugin.scout.overrides](#pluginscoutoverrides)|
+|[plugin.scout.tags](#pluginscouttags)|[plugin.security.certmanager.alt_names](#pluginsecuritycertmanageralt_names)|
+|[plugin.security.certmanager.api_version](#pluginsecuritycertmanagerapi_version)|[plugin.security.certmanager.issuer](#pluginsecuritycertmanagerissuer)|
+|[plugin.security.certmanager.namespace](#pluginsecuritycertmanagernamespace)|[plugin.security.certmanager.replace](#pluginsecuritycertmanagerreplace)|
+|[plugin.security.choria.ca](#pluginsecuritychoriaca)|[plugin.security.choria.certificate](#pluginsecuritychoriacertificate)|
+|[plugin.security.choria.key](#pluginsecuritychoriakey)|[plugin.security.choria.seed_file](#pluginsecuritychoriaseed_file)|
+|[plugin.security.choria.sign_replies](#pluginsecuritychoriasign_replies)|[plugin.security.choria.token_file](#pluginsecuritychoriatoken_file)|
+|[plugin.security.choria.trusted_signers](#pluginsecuritychoriatrusted_signers)|[plugin.security.cipher_suites](#pluginsecuritycipher_suites)|
+|[plugin.security.client_anon_tls](#pluginsecurityclient_anon_tls)|[plugin.security.ecc_curves](#pluginsecurityecc_curves)|
+|[plugin.security.file.ca](#pluginsecurityfileca)|[plugin.security.file.certificate](#pluginsecurityfilecertificate)|
+|[plugin.security.file.key](#pluginsecurityfilekey)|[plugin.security.issuer.names](#pluginsecurityissuernames)|
+|[plugin.security.pkcs11.driver_file](#pluginsecuritypkcs11driver_file)|[plugin.security.pkcs11.slot](#pluginsecuritypkcs11slot)|
+|[plugin.security.provider](#pluginsecurityprovider)|[plugin.security.server_anon_tls](#pluginsecurityserver_anon_tls)|
+|[plugin.security.support_legacy_certificates](#pluginsecuritysupport_legacy_certificates)|[plugin.yaml](#pluginyaml)|
+|[registerinterval](#registerinterval)|[registration](#registration)|
+|[registration_collective](#registration_collective)|[registration_splay](#registration_splay)|
+|[rpcaudit](#rpcaudit)|[rpcauthorization](#rpcauthorization)|
+|[rpcauthprovider](#rpcauthprovider)|[rpclimitmethod](#rpclimitmethod)|
+|[soft_shutdown_timeout](#soft_shutdown_timeout)|[ttl](#ttl)|
 
 
 ### classesfile
@@ -258,6 +263,19 @@ The command to use for external discovery
  * **Type:** path_string
 
 The file to read for inventory discovery
+
+### plugin.choria.executor.enabled
+
+ * **Type:** boolean
+ * **Default Value:** false
+
+Enables the long running command executor
+
+### plugin.choria.executor.spool
+
+ * **Type:** path_string
+
+Path where the command executor writes state
 
 ### plugin.choria.federation.cluster
 
@@ -484,6 +502,20 @@ When configuring LifeCycle events ensure data is replicated in the cluster over 
  * **Default Value:** 24h
 
 When not zero enables retaining Lifecycle events in the Stream Store
+
+### plugin.choria.network.stream.executor_replicas
+
+ * **Type:** integer
+ * **Default Value:** -1
+
+When configuring Executor events ensure data is replicated in the cluster over this many servers, -1 means count of peers
+
+### plugin.choria.network.stream.executor_retention
+
+ * **Type:** duration
+ * **Default Value:** 24h
+
+When not zero enables retaining Executor events in the Stream Store
 
 ### plugin.choria.network.stream.leader_election_replicas
 
@@ -805,6 +837,53 @@ If SRV record lookups should be attempted to find Puppet, PuppetDB, Brokers etc
 
 List of URLs to attempt to login against when the remote signer is enabled
 
+### plugin.machines.bucket
+
+ * **Type:** string
+ * **Default Value:** CHORIA_PLUGINS
+
+The KV bucket to query for plugins to install
+
+### plugin.machines.check_interval
+
+ * **Type:** string
+ * **Default Value:** 30s
+
+How frequently to integrity check deployed autonomous agents
+
+### plugin.machines.download
+
+ * **Type:** boolean
+
+Activate run-time installation of Autonomous Agents
+
+### plugin.machines.key
+
+ * **Type:** string
+ * **Default Value:** plugins
+
+The Key to query in KV bucket for plugins to install
+
+### plugin.machines.poll_interval
+
+ * **Type:** string
+ * **Default Value:** 1m
+
+How frequently to poll the KV bucket for updates
+
+### plugin.machines.purge
+
+ * **Type:** boolean
+ * **Default Value:** true
+
+Purge autonomous agents installed using other methods
+
+### plugin.machines.signing_key
+
+ * **Type:** string
+
+The public key to validate the plugins manifest with
+
 ### plugin.nats.credentials
 
  * **Type:** string
@@ -1034,7 +1113,6 @@ Allow certificates without SANs to be used
 ### plugin.yaml
 
  * **Type:** path_string
- * **Default Value:** /etc/puppetlabs/mcollective/generated-facts.yaml
 
 Where to look for YAML or JSON based facts
 

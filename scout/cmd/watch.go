@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,6 +11,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"slices"
 	"strconv"
 	"strings"
 	"sync"
@@ -30,15 +31,16 @@ import (
 )
 
 type WatchCommand struct {
-	identity     string
-	check        string
-	perf         bool
-	noOK         bool
-	longestCheck int
-	longestId    int
-	statePattern string
-	history      time.Duration
-	nc           inter.Connector
+	identity                 string
+	check                    string
+	ignoreMachineTransitions []string
+	perf                     bool
+	noOK                     bool
+	longestCheck             int
+	longestId                int
+	statePattern             string
+	history                  time.Duration
+	nc                       inter.Connector
 
 	transEph *stream.Ephemeral
 	stateEph *stream.Ephemeral
@@ -51,18 +53,19 @@ type WatchCommand struct {
 	sync.Mutex
 }
 
-func NewWatchCommand(idf string, checkf string, perf bool, noOK bool, history time.Duration, nc inter.Connector, log *logrus.Entry) (*WatchCommand, error) {
+func NewWatchCommand(idf string, checkf string, ignoreMachineTransitions []string, perf bool, noOK bool, history time.Duration, nc inter.Connector, log *logrus.Entry) (*WatchCommand, error) {
 	w := &WatchCommand{
-		identity:  idf,
-		check:     checkf,
-		perf:      perf,
-		noOK:      noOK,
-		history:   history,
-		nc:        nc,
-		log:       log,
-		status:    make(map[string]map[string]string),
-		seen:      make(map[string]time.Time),
-		vwBuffers: make(map[string][]string),
+		identity:                 idf,
+		check:                    checkf,
+		ignoreMachineTransitions: ignoreMachineTransitions,
+		perf:                     perf,
+		noOK:                     noOK,
+		history:                  history,
+		nc:                       nc,
+		log:                      log,
+		status:                   make(map[string]map[string]string),
+		seen:                     make(map[string]time.Time),
+		vwBuffers:                make(map[string][]string),
 	}
 
 	return w, nil
@@ -157,6 +160,9 @@ func (w *WatchCommand) handleTransition(m *nats.Msg, gui *gocui.Gui) {
 		return
 	}
 
+	if slices.Contains(w.ignoreMachineTransitions, transition.Machine) {
+		return
+	}
 	if w.identity != "" && !strings.Contains(transition.Identity, w.identity) {
 		return
 	}

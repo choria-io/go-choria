@@ -8,10 +8,10 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/tidwall/gjson"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("TransportMessage", func() {

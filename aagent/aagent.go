@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -94,6 +94,27 @@ func (a *AAgent) configureMachine(aa *machine.Machine) {
 	aa.SetConnection(a.fw.Connector())
 	aa.SetChoriaStatusFile(a.fw.ServerStatusFile())
 	aa.SetSignerKey(a.fw.MachineSignerKey())
+	aa.SetExternalMachineNotifier(a.notifyMachinesAfterTransition)
+	aa.SetExternalMachineStateQuery(a.machineStateLookup)
+}
+
+func (a *AAgent) notifyMachinesAfterTransition(event *machine.TransitionNotification) {
+	a.Lock()
+	defer a.Unlock()
+
+	for _, m := range a.machines {
+		a.logger.Debugf("Notifying machine %s about transition %s#%s", m.machine.MachineName, event.Machine, event.Transition)
+		go m.machine.ExternalEventNotify(event)
+	}
+}
+
+func (a *AAgent) machineStateLookup(name string) (string, error) {
+	m := a.findMachine(name, "", "", "")
+	if m == nil {
+		return "", fmt.Errorf("could not find machine matching name='%s'", name)
+	}
+
+	return m.machine.State(), nil
 }
 
 func (a *AAgent) loadMachine(ctx context.Context, path string) (err error) {
@@ -107,7 +128,7 @@ func (a *AAgent) loadMachine(ctx context.Context, path string) (err error) {
 		return err
 	}
 
-	a.logger.Infof("Loaded Autonomous Agent %s version %s from %s (%s)", aa.Name(), aa.Version(), path, sum)
+	a.logger.Warnf("Loaded Autonomous Agent %s version %s from %s (%s)", aa.Name(), aa.Version(), path, sum)
 	a.configureMachine(aa)
 
 	managed := &managedMachine{
@@ -141,39 +162,59 @@ func (aa *AAgent) startMachines(ctx context.Context, wg *sync.WaitGroup) error {
 	return nil
 }
 
+// LoadPlugin allows for runtime loading of plugins into a running autonomous agent subsystem.
+func (a *AAgent) LoadPlugin(ctx context.Context, p model.MachineConstructor) error {
+	if a == nil {
+		return fmt.Errorf("autonomous agent subsystem not initialized")
+	}
+
+	a.Lock()
+	defer a.Unlock()
+
+	machine, err := machine.FromPlugin(p, watchers.New(ctx), a.logger.WithField("plugin", p.PluginName()))
+	if err != nil {
+		a.logger.Errorf("Could not load machine plugin from %s: %s", p.PluginName(), err)
+		return err
+	}
+
+	err = machine.SetDirectory(filepath.Join(a.source, machine.MachineName), a.source)
+	if err != nil {
+		a.logger.Errorf("Could not set machine directory store: %v", err)
+		return err
+	}
+
+	managed := &managedMachine{
+		loaded:  time.Now(),
+		machine: machine,
+		path:    filepath.Join(a.source, machine.MachineName),
+		plugin:  true,
+	}
+
+	if !util.FileIsDir(managed.path) {
+		err = os.MkdirAll(managed.path, 0700)
+		if err != nil {
+			return err
+		}
+	}
+
+	a.configureMachine(machine)
+
+	a.machines = append(a.machines, managed)
+
+	return nil
+}
+
 func (a *AAgent) loadPlugins(ctx context.Context) error {
 	mu.Lock()
 	compiledPlugins := plugins
 	mu.Unlock()
 
 	for _, p := range compiledPlugins {
-		machine, err := machine.FromPlugin(p, watchers.New(ctx), a.logger.WithField("plugin", p.PluginName()))
+		err := a.LoadPlugin(ctx, p)
 		if err != nil {
 			a.logger.Errorf("Could not load machine plugin from %s: %s", p.PluginName(), err)
 			continue
 		}
-
-		machine.SetDirectory(filepath.Join(a.source, machine.MachineName), a.source)
-
-		managed := &managedMachine{
-			loaded:  time.Now(),
-			machine: machine,
-			path:    filepath.Join(a.source, machine.MachineName),
-			plugin:  true,
-		}
-
-		if !util.FileIsDir(managed.path) {
-			err = os.MkdirAll(managed.path, 0700)
-			if err != nil {
-				return err
-			}
-		}
-
-		a.configureMachine(machine)
-
-		a.Lock()
-		a.machines = append(a.machines, managed)
-		a.Unlock()
 	}
 
 	return nil
@@ -223,7 +264,7 @@ func (a *AAgent) loadFromSource(ctx context.Context) error {
 
 		err = a.loadMachine(ctx, path)
 		if err != nil {
-			a.logger.Errorf("Could not load Autonomous Agent from %s: %s", path, err)
+			a.logger.Errorf("Could not load Autonomous Agent from %s: %v", path, err)
 		}
 	}
 

@@ -1,4 +1,6 @@
+{{- $id := "" }}
 {{- partial "shortcodes/swagger.html" (dict
-  "context" .
+  "page"    .Page
   "src"     (.Get "src")
+  "id"      $id
 ) }}

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -20,9 +20,9 @@ import (
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/common"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 func Test(t *testing.T) {
@@ -204,10 +204,7 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Should handle a missing executable", func() {
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
+		It("Should handle a missing executable", func(ctx context.Context) {
 			prov.paths["ginkgo_missing"] = ddl.SourceLocation
 			ddl.Metadata.Name = "ginkgo_missing"
 			rep := &mcorpc.Reply{}
@@ -222,13 +219,10 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
 		})
 
-		It("Should handle execution failures", func() {
+		It("Should handle execution failures", func(ctx context.Context) {
 			if runtime.GOOS == "windows" {
 				Skip("Windows TODO")
 			}
-
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
 
 			prov.paths["ginkgo_abort"] = ddl.SourceLocation
 			ddl.Metadata.Name = "ginkgo_abort"
@@ -244,10 +238,7 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
 		})
 
-		It("Should validate the input before executing the agent", func() {
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
+		It("Should validate the input before executing the agent", func(ctx context.Context) {
 			prov.paths["ginkgo_abort"] = ddl.SourceLocation
 			ddl.Metadata.Name = "ginkgo_abort"
 			rep := &mcorpc.Reply{}
@@ -262,13 +253,10 @@ var _ = Describe("McoRPC/External", func() {
 			Expect(rep.Statuscode).To(Equal(mcorpc.Aborted))
 		})
 
-		It("Should execute the correct request binary with the correct input and set defaults on the reply", func() {
+		It("Should execute the correct request binary with the correct input and set defaults on the reply", func(ctx context.Context) {
 			if runtime.GOOS == "windows" {
 				Skip("Windows TODO")
 			}
-
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
 
 			rep := &mcorpc.Reply{}
 			req := &mcorpc.Request{

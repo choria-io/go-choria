@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,9 +17,9 @@ import (
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/server/agents"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("RegoPolicy", func() {
@@ -39,6 +39,7 @@ var _ = Describe("RegoPolicy", func() {
 	)
 
 	BeforeEach(func() {
+		overRideRegoName = ""
 		mockctl = gomock.NewController(GinkgoT())
 		fw, cfg = imock.NewFrameworkForTests(mockctl, GinkgoWriter)
 		fw.EXPECT().ProvisionMode().Return(false).AnyTimes()
@@ -121,6 +122,8 @@ var _ = Describe("RegoPolicy", func() {
 			authz = &regoPolicy{
 				cfg: cfg,
 				log: fw.Logger("x"),
+				si:  srvInfo,
+				fw:  am.Choria(),
 				req: &Request{
 					Agent:    ginkgoAgent.meta.Name,
 					Action:   "boop",
@@ -130,7 +133,6 @@ var _ = Describe("RegoPolicy", func() {
 					Time:     time.Now(),
 					Filter:   protocol.NewFilter(),
 				},
-				agent: ginkgoAgent,
 			}
 		})
 
@@ -149,7 +151,7 @@ var _ = Describe("RegoPolicy", func() {
 				})
 
 				It("Default policy should fail", func() {
-					authz.agent.meta.Name = "boop"
+					authz.req.Agent = "boop"
 					auth, err := authz.authorize()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -160,7 +162,7 @@ var _ = Describe("RegoPolicy", func() {
 
 			Context("When facts are correct", func() {
 				It("Should succeed", func() {
-					authz.agent.meta.Name = "facts"
+					authz.req.Agent = "facts"
 					auth, err := authz.authorize()
 					Expect(err).ToNot(HaveOccurred())
 					Expect(auth).To(BeTrue())
@@ -170,7 +172,7 @@ var _ = Describe("RegoPolicy", func() {
 
 			Context("When classes are present and available", func() {
 				It("Should succeed", func() {
-					authz.agent.meta.Name = "classes"
+					authz.req.Agent = "classes"
 					auth, err := authz.authorize()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -191,8 +193,7 @@ var _ = Describe("RegoPolicy", func() {
 
 				It("Should fail with a default policy", func() {
 					authz.req.CallerID = "not=it"
-					authz.agent.meta.Name = "boop"
-					Expect(authz.agent.Name()).To(Equal("boop"))
+					authz.req.Agent = "boop"
 
 					authz.cfg.SetOption("plugin.regopolicy.enable_default", "y")
 					auth, err := authz.authorize()
@@ -206,7 +207,7 @@ var _ = Describe("RegoPolicy", func() {
 		Describe("Agents", func() {
 			Context("If agent exists on the server", func() {
 				It("Should succeed", func() {
-					authz.agent.meta.Name = "agent"
+					authz.req.Agent = "agent"
 					auth, err := authz.authorize()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -218,7 +219,7 @@ var _ = Describe("RegoPolicy", func() {
 		Describe("Request data", func() {
 			Context("It should succeed if the request parameters are set right", func() {
 				It("Should succeed", func() {
-					authz.agent.meta.Name = "data"
+					authz.req.Agent = "data"
 					auth, err := authz.authorize()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -280,6 +281,8 @@ var _ = Describe("RegoPolicy", func() {
 			authz = &regoPolicy{
 				cfg: cfg,
 				log: fw.Logger(""),
+				si:  srvInfo,
+				fw:  am.Choria(),
 				req: &Request{
 					Agent:    ginkgoAgent.meta.Name,
 					Action:   "boop",
@@ -290,7 +293,6 @@ var _ = Describe("RegoPolicy", func() {
 					Time:     time.Now(),
 					Filter:   protocol.NewFilter(),
 				},
-				agent: ginkgoAgent,
 			}
 
 		})
@@ -308,7 +310,7 @@ var _ = Describe("RegoPolicy", func() {
 				})
 
 				It("Default policy should fail", func() {
-					authz.agent.meta.Name = "boop"
+					authz.req.Agent = "boop"
 					auth, err := authz.authorize()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -319,8 +321,7 @@ var _ = Describe("RegoPolicy", func() {
 
 			Context("When facts are incorrect", func() {
 				It("Should deny", func() {
-
-					authz.agent.meta.Name = "facts"
+					authz.req.Agent = "facts"
 					auth, err := authz.authorize()
 					Expect(err).ToNot(HaveOccurred())
 					Expect(auth).To(BeFalse())
@@ -330,7 +331,7 @@ var _ = Describe("RegoPolicy", func() {
 
 			Context("When classes are different but available", func() {
 				It("Should fail", func() {
-					authz.agent.meta.Name = "classes"
+					authz.req.Agent = "classes"
 					auth, err := authz.authorize()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -342,7 +343,7 @@ var _ = Describe("RegoPolicy", func() {
 		Describe("Agents", func() {
 			Context("If agent does not exist on the server", func() {
 				It("Should fail", func() {
-					authz.agent.meta.Name = "agent"
+					authz.req.Agent = "agent"
 					auth, err := authz.authorize()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -354,7 +355,7 @@ var _ = Describe("RegoPolicy", func() {
 		Describe("Request data", func() {
 			Context("The request parameters aren't set right", func() {
 				It("Should fail", func() {
-					authz.agent.meta.Name = "data"
+					authz.req.Agent = "data"
 					auth, err := authz.authorize()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -424,6 +425,8 @@ var _ = Describe("RegoPolicy", func() {
 				authz = &regoPolicy{
 					cfg: cfg,
 					log: fw.Logger(""),
+					si:  srvInfo,
+					fw:  am.Choria(),
 					req: &Request{
 						Agent:    ginkgoAgent.meta.Name,
 						Action:   "boop",
@@ -434,15 +437,13 @@ var _ = Describe("RegoPolicy", func() {
 						Time:     time.Now(),
 						Filter:   protocol.NewFilter(),
 					},
-					agent: ginkgoAgent,
 				}
 			})
 
 			Context("with multiple allow statements", func() {
 				It("Should allow", func() {
-					authz.agent.meta.Name = "multiple"
+					overRideRegoName = "multiple"
 					auth, err := authz.authorize()
-
 					Expect(err).ToNot(HaveOccurred())
 					Expect(auth).To(BeTrue())
 				})
@@ -472,6 +473,8 @@ var _ = Describe("RegoPolicy", func() {
 				authz = &regoPolicy{
 					cfg: cfg,
 					log: fw.Logger(""),
+					si:  srvInfo,
+					fw:  am.Choria(),
 					req: &Request{
 						Agent:    ginkgoAgent.meta.Name,
 						Action:   "poob",
@@ -482,13 +485,12 @@ var _ = Describe("RegoPolicy", func() {
 						Time:     time.Now(),
 						Filter:   protocol.NewFilter(),
 					},
-					agent: ginkgoAgent,
 				}
 			})
 
 			Context("with multiple allow statements", func() {
 				It("Should allow", func() {
-					authz.agent.meta.Name = "multiple"
+					overRideRegoName = "multiple"
 					auth, err := authz.authorize()
 
 					Expect(err).ToNot(HaveOccurred())
@@ -520,6 +522,8 @@ var _ = Describe("RegoPolicy", func() {
 				authz = &regoPolicy{
 					cfg: cfg,
 					log: fw.Logger(""),
+					si:  srvInfo,
+					fw:  am.Choria(),
 					req: &Request{
 						Agent:    ginkgoAgent.meta.Name,
 						Action:   "poob",
@@ -530,13 +534,12 @@ var _ = Describe("RegoPolicy", func() {
 						Time:     time.Now(),
 						Filter:   protocol.NewFilter(),
 					},
-					agent: ginkgoAgent,
 				}
 			})
 
 			Context("with multiple allow statements", func() {
 				It("Should deny", func() {
-					authz.agent.meta.Name = "multiple"
+					overRideRegoName = "multiple"
 					auth, err := authz.authorize()
 
 					Expect(err).ToNot(HaveOccurred())

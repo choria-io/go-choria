@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,10 +8,10 @@ package cmd
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
-	"runtime"
 	"strings"
 	"sync"
 	"syscall"
@@ -115,13 +115,11 @@ func (f *tElectRunCommand) handleCampaignerState() {
 	}
 
 	if f.killOnLost {
-		if runtime.GOOS != "windows" {
-			f.log.Warnf("Sending SIGINT to %d", process.Pid)
-			process.Signal(syscall.SIGINT)
+		f.log.Warnf("Sending SIGINT to %d", process.Pid)
+		process.Signal(syscall.SIGINT)
 
-			if iu.InterruptibleSleep(ctx, time.Second) == context.Canceled {
-				return
-			}
+		if errors.Is(iu.InterruptibleSleep(ctx, time.Second), context.Canceled) {
+			return
 		}
 		f.log.Warnf("Sending SIGTERM to %d", process.Pid)
 		process.Signal(syscall.SIGTERM)

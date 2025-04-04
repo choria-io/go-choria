@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,9 +9,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
+	"net"
 	"os"
 	"os/exec"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -31,15 +34,21 @@ const (
 type Metric struct {
 	Labels  map[string]string  `json:"labels"`
 	Metrics map[string]float64 `json:"metrics"`
+	Time    int64              `json:"time"`
 	name    string
 	machine string
 	seen    int
 }
 
 type properties struct {
-	Command  string
-	Interval time.Duration
-	Labels   map[string]string
+	Command        string
+	Interval       time.Duration
+	Labels         map[string]string
+	SkipPrometheus bool   `mapstructure:"skip_prometheus"`
+	StoreAsData    bool   `mapstructure:"store"`
+	GraphiteHost   string `mapstructure:"graphite_host"`
+	GraphitePort   string `mapstructure:"graphite_port"`
+	GraphitePrefix string `mapstructure:"graphite_prefix"`
 }
 
 type Watcher struct {
@@ -55,7 +64,7 @@ type Watcher struct {
 	mu       *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprops map[string]any) (any, error) {
+func New(machine model.Machine, name string, states []string, required []model.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, rawprops map[string]any) (any, error) {
 	var err error
 
 	mw := &Watcher{
@@ -64,7 +73,7 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		mu:      &sync.Mutex{},
 	}
 
-	mw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
+	mw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, required, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -74,15 +83,23 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		return nil, fmt.Errorf("could not set properties: %s", err)
 	}
 
-	savePromState(machine.TextFileDirectory(), mw)
+	if mw.properties.GraphitePrefix == "" {
+		mw.properties.GraphitePrefix = fmt.Sprintf("choria.%s", strings.ReplaceAll(name, " ", "-"))
+	}
+
+	if !mw.properties.SkipPrometheus {
+		savePromState(machine.TextFileDirectory(), mw)
+	}
 
 	return mw, nil
 }
 
 func (w *Watcher) Delete() {
-	err := deletePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name)
-	if err != nil {
-		w.Errorf("could not delete from prometheus: %s", err)
+	if !w.properties.SkipPrometheus {
+		err := deletePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name)
+		if err != nil {
+			w.Errorf("could not delete from prometheus: %s", err)
+		}
 	}
 }
 
@@ -91,7 +108,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	w.Infof("metric watcher for %s starting", w.properties.Command)
 
-	splay := time.Duration(rand.Intn(int(w.properties.Interval.Seconds()))) * time.Second
+	splay := rand.N(w.properties.Interval)
 	w.Infof("Splaying first check by %v", splay)
 
 	select {
@@ -153,14 +170,19 @@ func (w *Watcher) watch(ctx context.Context) (state []byte, err error) {
 		w.mu.Unlock()
 	}()
 
-	w.Infof("Running %s", w.properties.Command)
+	command, err := w.ProcessTemplate(w.properties.Command)
+	if err != nil {
+		return nil, err
+	}
+
+	w.Infof("Running %s", command)
 
 	timeoutCtx, cancel := context.WithTimeout(ctx, time.Second)
 	defer cancel()
 
-	splitcmd, err := shlex.Split(w.properties.Command)
+	splitcmd, err := shlex.Split(command)
 	if err != nil {
-		w.Errorf("Metric watcher %s failed: %s", w.properties.Command, err)
+		w.Errorf("Metric watcher %s failed: %s", command, err)
 		return nil, err
 	}
 
@@ -172,11 +194,11 @@ func (w *Watcher) watch(ctx context.Context) (state []byte, err error) {
 
 	output, err := cmd.CombinedOutput()
 	if err != nil {
-		w.Errorf("Metric watcher %s failed: %s", w.properties.Command, err)
+		w.Errorf("Metric watcher %s failed: %s", command, err)
 		return nil, err
 	}
 
-	w.Debugf("Output from %s: %s", w.properties.Command, output)
+	w.Debugf("Output from %s: %s", command, output)
 
 	return output, nil
 }
@@ -187,7 +209,7 @@ func (w *Watcher) performWatch(ctx context.Context) {
 	}
 
 	metric, err := w.watch(ctx)
-	err = w.handleCheck(metric, err)
+	err = w.handleCheck(ctx, metric, err)
 	if err != nil {
 		w.Errorf("could not handle watcher event: %s", err)
 	}
@@ -229,14 +251,20 @@ func (w *Watcher) parseNagiosCheck(output []byte) (*Metric, error) {
 	return metric, nil
 }
 
-func (w *Watcher) handleCheck(output []byte, err error) error {
+func (w *Watcher) handleCheck(ctx context.Context, output []byte, err error) error {
 	var metric *Metric
 
 	if err == nil {
 		if bytes.HasPrefix(bytes.TrimSpace(output), []byte("{")) {
 			metric, err = w.parseJSONCheck(output)
+			if err != nil {
+				w.Errorf("Failed to parse metric output: %v", err)
+			}
 		} else {
 			metric, err = w.parseNagiosCheck(output)
+			if err != nil {
+				w.Errorf("Failed to parse perf data output: %v", err)
+			}
 		}
 	}
 
@@ -245,13 +273,27 @@ func (w *Watcher) handleCheck(output []byte, err error) error {
 		return w.FailureTransition()
 	}
 
+	metric.Time = time.Now().Unix()
+
 	for k, v := range w.properties.Labels {
 		metric.Labels[k] = v
 	}
 
-	err = updatePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name, metric)
+	if !w.properties.SkipPrometheus {
+		err = updatePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name, metric)
+		if err != nil {
+			w.Errorf("Could not update prometheus: %s", err)
+		}
+	}
+
+	err = w.publishToGraphite(ctx, metric)
 	if err != nil {
-		w.Errorf("Could not update prometheus: %s", err)
+		return err
+	}
+
+	err = w.storeMetricAsData(metric)
+	if err != nil {
+		return err
 	}
 
 	w.mu.Lock()
@@ -259,6 +301,82 @@ func (w *Watcher) handleCheck(output []byte, err error) error {
 	w.mu.Unlock()
 
 	w.NotifyWatcherState(w.CurrentState())
+
+	return nil
+}
+
+func (w *Watcher) storeMetricAsData(metric *Metric) error {
+	if !w.properties.StoreAsData {
+		return nil
+	}
+
+	w.Debugf("Storing metrics to machine data")
+
+	return w.machine.DataPut("metric", map[string]any{w.name: metric})
+}
+
+func (w *Watcher) publishToGraphite(ctx context.Context, metric *Metric) error {
+	if w.properties.GraphiteHost == "" {
+		w.Debugf("Skipping graphite publish without a host defined")
+		return nil
+	}
+
+	if w.properties.GraphitePort == "" {
+		w.Debugf("Skipping graphite publish without a port defined")
+		return nil
+	}
+
+	if len(metric.Metrics) == 0 {
+		w.Debugf("Skipping graphite publish without any metrics")
+		return nil
+	}
+
+	connCtx, cancel := context.WithTimeout(ctx, 2*time.Second)
+	defer cancel()
+
+	host, err := w.ProcessTemplate(w.properties.GraphiteHost)
+	if err != nil {
+		return err
+	}
+	portString, err := w.ProcessTemplate(w.properties.GraphitePort)
+	if err != nil {
+		return err
+	}
+	port, err := strconv.Atoi(portString)
+	if err != nil {
+		return err
+	}
+
+	hostPort := fmt.Sprintf("%s:%d", host, port)
+
+	w.Debugf("Sending %d metrics to graphite %s", len(metric.Metrics), hostPort)
+	var d net.Dialer
+	conn, err := d.DialContext(connCtx, "tcp", hostPort)
+	if err != nil {
+		return err
+	}
+	defer conn.Close()
+
+	// copy it so we can add stuff to it without impacting other parts
+	// TODO: use maps.Copy() later
+	m := make(map[string]float64)
+	for k, v := range metric.Metrics {
+		m[k] = v
+	}
+	m["runtime"] = w.previousRunTime.Seconds()
+
+	for k, v := range m {
+		prefix, err := w.ProcessTemplate(w.properties.GraphitePrefix)
+		if err != nil {
+			return err
+		}
+
+		name := fmt.Sprintf("%s.%s", prefix, k)
+		_, err = conn.Write([]byte(fmt.Sprintf("%s %f %d\n", name, v, metric.Time)))
+		if err != nil {
+			return err
+		}
+	}
 
 	return nil
 }

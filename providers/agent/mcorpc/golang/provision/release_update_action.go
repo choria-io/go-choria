@@ -24,6 +24,9 @@ type ReleaseUpdateRequest struct {
 var updaterf func(...updater.Option) error
 
 func releaseUpdateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Reply, agent *mcorpc.Agent, conn inter.ConnectorInfo) {
+	mu.Lock()
+	defer mu.Unlock()
+
 	if !agent.Choria.ProvisionMode() {
 		abort("Cannot update a server that is not in provisioning mode", reply)
 		return
@@ -33,9 +36,6 @@ func releaseUpdateAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc
 		abort("Version updates is not enabled in the configuration", reply)
 		return
 	}
-
-	mu.Lock()
-	defer mu.Unlock()
 
 	args := ReleaseUpdateRequest{}
 	if !mcorpc.ParseRequestData(&args, req, reply) {

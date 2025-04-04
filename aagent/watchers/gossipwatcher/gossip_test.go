@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 func Test(t *testing.T) {
@@ -42,7 +42,7 @@ var _ = Describe("ExecWatcher", func() {
 
 		now = time.Unix(1606924953, 0)
 
-		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "10s", time.Second, map[string]any{
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, nil, "fail", "success", "10s", time.Second, map[string]any{
 			"subject": "foo.bar",
 			"payload": "msg.msg",
 		})
@@ -73,21 +73,32 @@ var _ = Describe("ExecWatcher", func() {
 					"ip":       "192.168.1.1",
 					"port":     8080,
 					"priority": 1,
+					"annotations": map[string]string{
+						"test": "annotation",
+					},
 				},
 			}
 
 			watch.properties = nil
 			Expect(watch.setProperties(prop)).To(Succeed())
-			Expect(watch.properties.Registration).To(Equal(&registration{
+			Expect(watch.properties.Registration).To(Equal(&Registration{
 				Cluster:  "lon",
 				Service:  "ginkgo",
 				Protocol: "http",
 				IP:       "192.168.1.1",
 				Port:     8080,
 				Priority: 1,
+				Annotations: map[string]string{
+					"test": "annotation",
+				},
 			}))
 
-			Expect(watch.properties.Subject).To(Equal("choria.hoist.lon.ginkgo.member.http.192.168.1.1.P.8080.1"))
+			rj, err := json.Marshal(watch.properties.Registration)
+			Expect(err).ToNot(HaveOccurred())
+
+			Expect(watch.machine.InstanceID()).To(Equal("1234567890"))
+			Expect(watch.properties.Subject).To(Equal("$KV.CHORIA_SERVICES.lon.http.ginkgo.1234567890"))
+			Expect(watch.properties.Payload).To(Equal(string(rj)))
 		})
 
 		It("Should handle errors", func() {

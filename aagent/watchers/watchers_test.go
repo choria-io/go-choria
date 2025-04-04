@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,9 +11,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 
 	"github.com/choria-io/go-choria/build"
 )
@@ -100,7 +100,7 @@ var _ = Describe("Aagent/Watchers", func() {
 			})
 
 			watcher.EXPECT().Name().Return("mwatcher").AnyTimes()
-			watcherC.EXPECT().New(machine, "mwatcher", []string{"one"}, "failed", "passed", "1m", 0*time.Second, map[string]any{
+			watcherC.EXPECT().New(machine, "mwatcher", []string{"one"}, nil, "failed", "passed", "1m", 0*time.Second, map[string]any{
 				"path": "/dev/null",
 			}).Return(watcher, nil).AnyTimes()
 

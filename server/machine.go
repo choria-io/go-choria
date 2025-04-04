@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,7 @@ package server
 
 import (
 	"context"
+	"github.com/choria-io/go-choria/providers/autoagents/plugins"
 	"os"
 	"sync"
 
@@ -38,4 +39,20 @@ func (srv *Instance) StartMachine(ctx context.Context, wg *sync.WaitGroup) (err 
 	}
 
 	return srv.machines.ManageMachines(ctx, wg)
+}
+
+// StartInternalMachines starts built-in autonomous agents
+func (srv *Instance) StartInternalMachines(ctx context.Context) (err error) {
+	if !srv.cfg.Choria.AutonomousAgentsDownload {
+		return
+	}
+
+	srv.log.Info("Starting built-in Autonomous Agent Plugin Manager")
+
+	m, err := plugins.ChoriaPlugin(srv.cfg, srv.log)
+	if err != nil {
+		return err
+	}
+
+	return srv.machines.LoadPlugin(ctx, m)
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,7 +25,7 @@ func TLSConfig(c *config.Config) *Config {
 		cfg.CurvePreferences = DefaultCurvePreferences()
 
 		return cfg
-	} else if c.Choria.CipherSuites == nil || len(c.Choria.CipherSuites) == 0 {
+	} else if len(c.Choria.CipherSuites) == 0 {
 		cfg.CipherSuites = DefaultCipherSuites()
 	} else {
 		cfg.CipherSuites = make([]uint16, 0)
@@ -37,7 +37,7 @@ func TLSConfig(c *config.Config) *Config {
 		}
 	}
 
-	if c.Choria.ECCCurves == nil || len(c.Choria.ECCCurves) == 0 {
+	if len(c.Choria.ECCCurves) == 0 {
 		cfg.CurvePreferences = DefaultCurvePreferences()
 	} else {
 		cfg.CurvePreferences = []tls.CurveID{}

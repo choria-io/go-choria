@@ -8,7 +8,7 @@ import (
 	"crypto/ed25519"
 	"crypto/tls"
 	"encoding/hex"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"path/filepath"
 	"testing"
@@ -18,10 +18,10 @@ import (
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/tokens"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
+	"go.uber.org/mock/gomock"
 )
 
 func TestFileSecurity(t *testing.T) {
@@ -484,7 +484,7 @@ var _ = Describe("Providers/Security/Choria", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				// just shuffle the trusted tokens to test multi signer support automatically
-				if rand.Intn(10) <= 5 {
+				if rand.N(10) <= 5 {
 					cfg.TrustedTokenSigners = []ed25519.PublicKey{otherPubk, signerPubk}
 				} else {
 					cfg.TrustedTokenSigners = []ed25519.PublicKey{signerPubk, otherPubk}

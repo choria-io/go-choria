@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -50,6 +50,8 @@ type ChoriaPluginConfig struct {
 	NetworkClientTLSForce              bool          `confkey:"plugin.choria.network.client_tls_force_required"`                                                   // Force requiring/not requiring TLS for all clients
 	NetworkClientTokenSigners          []string      `confkey:"plugin.choria.network.client_signer_cert" type:"comma_split"`                                       // Fully qualified paths to the public certificates used by the AAA Service to sign client JWT tokens. This enables users with signed JWTs to use unverified TLS to connect. Can also be a list of ed25519 public keys.
 	NetworkDenyServers                 bool          `confkey:"plugin.choria.network.deny_server_connections"`                                                     // Set ACLs denying server connections to this broker
+	NetworkExecutorStoreDuration       time.Duration `confkey:"plugin.choria.network.stream.executor_retention" type:"duration" default:"24h"`                     // When not zero enables retaining Executor events in the Stream Store
+	NetworkExecutorReplicas            int           `confkey:"plugin.choria.network.stream.executor_replicas" default:"-1"`                                       // When configuring Executor events ensure data is replicated in the cluster over this many servers, -1 means count of peers
 	NetworkEventStoreDuration          time.Duration `confkey:"plugin.choria.network.stream.event_retention" type:"duration" default:"24h"`                        // When not zero enables retaining Lifecycle events in the Stream Store
 	NetworkEventStoreReplicas          int           `confkey:"plugin.choria.network.stream.event_replicas" default:"-1"`                                          // When configuring LifeCycle events ensure data is replicated in the cluster over this many servers, -1 means count of peers
 	NetworkGatewayName                 string        `confkey:"plugin.choria.network.gateway_name" default:"CHORIA"`                                               // Name for the Super Cluster
@@ -93,6 +95,8 @@ type ChoriaPluginConfig struct {
 	FileContentCompression             bool   `confkey:"plugin.choria.registration.file_content.compression" default:"true"`      // Enables gzip compression of registration data
 	InventoryContentCompression        bool   `confkey:"plugin.choria.registration.inventory_content.compression" default:"true"` // Enables gzip compression of registration data
 	InventoryContentRegistrationTarget string `confkey:"plugin.choria.registration.inventory_content.target" default:""`          // NATS Subject to publish registration data to
+	RegistrationSizeTrigger            int    `confkey:"plugin.choria.registration.size_trigger" default:"0"`                     // Enables a trigger that will publish a registration message if the size of the message has changed by greater than the trigger amount in bytes
+	RegistrationSizeInterval           int    `confkey:"plugin.choria.registration.size_interval" default:"30"`                   // When the RegistrationSizeTrigger is defined, this property will be used to define how often we check for a change in message size. Default value is 30 seconds
 
 	RubyAgentShim   string   `confkey:"plugin.choria.agent_provider.mcorpc.agent_shim"`               // Path to the helper used to call MCollective Ruby agents
 	RubyAgentConfig string   `confkey:"plugin.choria.agent_provider.mcorpc.config"`                   // Path to the MCollective configuration file used when running MCollective Ruby agents
@@ -163,6 +167,17 @@ type ChoriaPluginConfig struct {
 	RPCAuditLogfile      string `confkey:"plugin.rpcaudit.logfile" type:"path_string"`  // Path to the RPC audit log
 	RPCAuditLogfileGroup string `confkey:"plugin.rpcaudit.logfile.group"`               // User group to set file ownership to
 	RPCAuditLogFileMode  string `confkey:"plugin.rpcaudit.logfile.mode" default:"0600"` // File mode to apply to the file
+
+	ExecutorEnabled bool   `confkey:"plugin.choria.executor.enabled" default:"false"`  // Enables the long running command executor
+	ExecutorSpool   string `confkey:"plugin.choria.executor.spool" type:"path_string"` // Path where the command executor writes state
+
+	AutonomousAgentsDownload           bool   `confkey:"plugin.machines.download"`                        // Activate run-time installation of Autonomous Agents
+	AutonomousAgentsBucket             string `confkey:"plugin.machines.bucket" default:"CHORIA_PLUGINS"` // The KV bucket to query for plugins to install
+	AutonomousAgentsKey                string `confkey:"plugin.machines.key" default:"plugins"`           // The Key to query in KV bucket for plugins to install
+	AutonomousAgentsPurge              bool   `confkey:"plugin.machines.purge" default:"true"`            // Purge autonomous agents installed using other methods
+	AutonomousAgentsBucketPollInterval string `confkey:"plugin.machines.poll_interval" default:"1m"`      // How frequently to poll the KV bucket for updates
+	AutonomousAgentCheckInterval       string `confkey:"plugin.machines.check_interval" default:"30s"`    // How frequently to integrity check deployed autonomous agents
+	AutonomousAgentPublicKey           string `confkey:"plugin.machines.signing_key"`                     // The public key to validate the plugins manifest with
 }
 
 func newChoria() *ChoriaPluginConfig {

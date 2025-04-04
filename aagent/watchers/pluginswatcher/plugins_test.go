@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,9 +17,9 @@ import (
 	"github.com/choria-io/go-choria/aagent/model"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/ghodss/yaml"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 func TestMachine(t *testing.T) {
@@ -45,7 +45,7 @@ var _ = Describe("AAgent/Watchers/PluginsWatcher", func() {
 		machine.EXPECT().Directory().Return(td).AnyTimes()
 		machine.EXPECT().SignerKey().Return("").AnyTimes()
 
-		wi, err := New(machine, "machines", nil, "", "", "1m", time.Hour, map[string]any{
+		wi, err := New(machine, "machines", nil, nil, "", "", "1m", time.Hour, map[string]any{
 			"data_item": "spec",
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -195,7 +195,7 @@ var _ = Describe("AAgent/Watchers/PluginsWatcher", func() {
 			machine.EXPECT().SignerKey().Return(hex.EncodeToString(pub)).AnyTimes()
 			machine.EXPECT().DataGet(gomock.Eq("spec")).Return(data, true).AnyTimes()
 
-			wi, err := New(machine, "machines", nil, "", "", "1m", time.Hour, map[string]any{
+			wi, err := New(machine, "machines", nil, nil, "", "", "1m", time.Hour, map[string]any{
 				"data_item":  "spec",
 				"public_key": "other",
 			})

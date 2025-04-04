@@ -2,19 +2,9 @@ name: Choria Nightly
 on:
   workflow_dispatch: {}
   schedule:
-    - cron: "40 4 * * *"
+    - cron: "40 0 * * *"
 
 jobs:
-  el7_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: el7_64
-          packager_tag: el7-go1.21
-          version: nightly
-
   el8_64:
     runs-on: ubuntu-latest
     steps:
@@ -22,7 +12,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el8_64
-          packager_tag: el8-go1.21
+          packager_tag: el8-go1.23
           version: nightly
 
   el9_64:
@@ -32,7 +22,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el9_64
-          packager_tag: el9-go1.21
+          packager_tag: el9-go1.23
           version: nightly
 
   linux_tarball:
@@ -42,7 +32,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: linux_64_tarball
-          packager_tag: el8-go1.21
+          packager_tag: el8-go1.23
           version: nightly
 
   darwin_amd64_tarball:
@@ -52,7 +42,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: darwin_amd64_tarball
-          packager_tag: el8-go1.21
+          packager_tag: el8-go1.23
           version: nightly
 
   darwin_arm64_tarball:
@@ -62,7 +52,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: darwin_arm64_tarball
-          packager_tag: el8-go1.21
+          packager_tag: el8-go1.23
           version: nightly
 
   windows_zip:
@@ -72,7 +62,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: windows_64_zip
-          packager_tag: el8-go1.21
+          packager_tag: el8-go1.23
           version: nightly
 
   docker:
@@ -92,7 +82,6 @@ jobs:
 
   upload:
     needs:
-      - el7_64
       - el8_64
       - el9_64
       - linux_tarball
@@ -103,9 +92,18 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download all artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
+
+      - name: Artifacts normalization
+        shell: bash
+        run: |
+          cd artifacts
+          for i in foss*
+          do
+            mv -v $i $(echo $i|cut -d_ -f2-)
+          done
 
       - name: Upload artifacts to Spaces
         uses: jakejarvis/s3-sync-action@master
@@ -115,5 +113,5 @@ jobs:
           AWS_S3_BUCKET: choria-packages-ams
           AWS_ACCESS_KEY_ID: ${{ secrets.SPACES_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.SPACES_SECRET_ACCESS_KEY }}
-          SOURCE_DIR: artifacts/foss
+          SOURCE_DIR: artifacts
           DEST_DIR: nightly

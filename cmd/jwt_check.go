@@ -1,4 +1,4 @@
-// Copyright (c) 2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2023-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -18,7 +18,7 @@ import (
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/tokens"
 	"github.com/expr-lang/expr"
-	"github.com/nats-io/natscli/monitor"
+	"github.com/nats-io/jsm.go/monitor"
 )
 
 type jwtCheckCommand struct {

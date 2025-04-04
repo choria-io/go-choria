@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,7 @@ package server
 import (
 	"context"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -157,6 +158,14 @@ func (srv *Instance) RunServiceHost(ctx context.Context, wg *sync.WaitGroup) err
 	return nil
 }
 
+func (srv *Instance) setupExecutor() error {
+	if !srv.cfg.Choria.ExecutorEnabled || srv.cfg.Choria.ExecutorSpool == "" {
+		srv.log.Infof("Skipping executor setup as no spool is configured")
+	}
+
+	return os.MkdirAll(srv.cfg.Choria.ExecutorSpool, 0700)
+}
+
 func (srv *Instance) SetupSubmissions(ctx context.Context, wg *sync.WaitGroup) error {
 	if srv.cfg.Choria.SubmissionSpool == "" {
 		srv.log.Infof("Skipping submission startup as no spool is configured")
@@ -245,6 +254,11 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 		srv.log.Errorf("Submission setup failed: %s", err)
 	}
 
+	err = srv.setupExecutor()
+	if err != nil {
+		srv.log.Errorf("Could not setup choria executor: %s", err)
+	}
+
 	srv.publishStartupEvent()
 
 	wg.Add(1)
@@ -253,6 +267,11 @@ func (srv *Instance) Run(ctx context.Context, wg *sync.WaitGroup) error {
 	err = srv.StartMachine(sctx, wg)
 	if err != nil {
 		srv.log.Errorf("Could not start Choria Autonomous Agent host: %s", err)
+	}
+
+	err = srv.StartInternalMachines(sctx)
+	if err != nil {
+		srv.log.Errorf("Could not start built-in Autonomous Agents: %v", err)
 	}
 
 	wg.Add(1)

@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -98,7 +98,7 @@ type Watcher struct {
 	mu  *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]any) (any, error) {
+func New(machine model.Machine, name string, states []string, required []model.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]any) (any, error) {
 	var err error
 
 	archive := &Watcher{
@@ -110,7 +110,7 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		mu:         &sync.Mutex{},
 	}
 
-	archive.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
+	archive.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, required, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -172,7 +172,7 @@ func (w *Watcher) verifyCreates() (string, State, error) {
 
 	checksums := filepath.Join(creates, w.properties.ContentChecksums)
 	if !iu.FileExist(checksums) {
-		w.Errorf("Checksums file %s does not exist in %s, triggering download: %s", creates, w.properties.ContentChecksums)
+		w.Errorf("Checksums file %s does not exist in %s, triggering download: %s", checksums, w.properties.ContentChecksums)
 		return creates, MissingChecksums, nil
 	}
 
@@ -257,6 +257,8 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 		return Error, fmt.Errorf("rename failed: %s", err)
 	}
 
+	w.Warnf("Archive %v was deployed successfully to %v", w.properties.Source, w.properties.Creates)
+
 	return Downloaded, nil
 }
 
@@ -316,12 +318,12 @@ func (w *Watcher) verify(dir string) error {
 		return fmt.Errorf("checksums file %s does not exist in the archive (%s)", w.properties.ContentChecksums, sumsFile)
 	}
 
-	ok, _, err := iu.FileHasSha256Sum(sumsFile, ccc)
+	ok, sum, err := iu.FileHasSha256Sum(sumsFile, ccc)
 	if err != nil {
 		return fmt.Errorf("failed to checksum file %s: %s", w.properties.ContentChecksums, err)
 	}
 	if !ok {
-		return fmt.Errorf("checksum file %s has an invalid checksum", w.properties.ContentChecksums)
+		return fmt.Errorf("checksum file %s has an invalid checksum %q != %q", w.properties.ContentChecksums, sum, ccc)
 	}
 
 	ok, err = iu.Sha256VerifyDir(sumsFile, dir, nil, func(file string, ok bool) {
@@ -466,7 +468,16 @@ func (w *Watcher) downloadSourceToTemp(ctx context.Context) (string, error) {
 		req.Header.Add("User-Agent", fmt.Sprintf("Choria Archive Watcher %s", build.Version))
 
 		if w.properties.Username != "" {
-			req.SetBasicAuth(w.properties.Username, w.properties.Password)
+			user, err := w.ProcessTemplate(w.properties.Username)
+			if err != nil {
+				return fmt.Errorf("invalid username template: %v", err)
+			}
+			pass, err := w.ProcessTemplate(w.properties.Password)
+			if err != nil {
+				return fmt.Errorf("invalid password template: %v", err)
+			}
+
+			req.SetBasicAuth(user, pass)
 		}
 
 		resp, err := client.Do(req)
@@ -482,12 +493,12 @@ func (w *Watcher) downloadSourceToTemp(ctx context.Context) (string, error) {
 
 		tf.Close()
 
-		ok, _, err := iu.FileHasSha256Sum(tf.Name(), sourceChecksum)
+		ok, sum, err := iu.FileHasSha256Sum(tf.Name(), sourceChecksum)
 		if err != nil {
 			return fmt.Errorf("archive checksum calculation failed: %s", err)
 		}
 		if !ok {
-			return fmt.Errorf("archive checksum missmatch")
+			return fmt.Errorf("archive checksum %s != %s missmatch", sum, sourceChecksum)
 		}
 
 		return nil
@@ -554,6 +565,14 @@ func (w *Watcher) handleCheck(s State, err error) error {
 	case Downloaded:
 		w.NotifyWatcherState(w.CurrentState())
 		return w.SuccessTransition()
+
+	case VerifiedOK:
+		w.NotifyWatcherState(w.CurrentState())
+		return w.SuccessTransition()
+
+	case VerifyFailed:
+		w.NotifyWatcherState(w.CurrentState())
+		return w.FailureTransition()
 
 	}
 

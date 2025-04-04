@@ -44,7 +44,7 @@ func (b *BroadcastNS) Discover(ctx context.Context, fw inter.Framework, filters 
 		return out
 	}
 
-	if !(b.nodeCache == nil || len(b.nodeCache) == 0) {
+	if len(b.nodeCache) > 0 {
 		return copier(), nil
 	}
 
@@ -97,7 +97,7 @@ func (p *ExternalNS) Discover(ctx context.Context, fw inter.Framework, filters [
 		return out
 	}
 
-	if !(p.nodeCache == nil || len(p.nodeCache) == 0) {
+	if len(p.nodeCache) > 0 {
 		return copier(), nil
 	}
 
@@ -150,7 +150,7 @@ func (p *PuppetDBNS) Discover(ctx context.Context, fw inter.Framework, filters [
 		return out
 	}
 
-	if !(p.nodeCache == nil || len(p.nodeCache) == 0) {
+	if len(p.nodeCache) > 0 {
 		return copier(), nil
 	}
 
@@ -224,7 +224,7 @@ func (p *MetaNS) Discover(ctx context.Context, fw inter.Framework, _ []FilterFun
 		return out
 	}
 
-	if !(p.nodeCache == nil || len(p.nodeCache) == 0) {
+	if len(p.nodeCache) > 0 {
 		return copier(), nil
 	}
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -36,9 +36,10 @@ var stateNames = map[State]string{
 }
 
 type properties struct {
-	Duration   time.Duration
-	StartSplay time.Duration `mapstructure:"start_splay"`
-	Schedules  []string
+	Duration             time.Duration
+	StartSplay           time.Duration `mapstructure:"start_splay"`
+	SkipTriggerOnReenter bool          `mapstructure:"skip_trigger_on_reenter"`
+	Schedules            []string
 }
 
 type Watcher struct {
@@ -54,13 +55,15 @@ type Watcher struct {
 	ctrq chan int
 	ctr  int
 
+	triggered bool
+
 	state         State
 	previousState State
 
 	mu *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
+func New(machine model.Machine, name string, states []string, required []model.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, properties map[string]any) (any, error) {
 	var err error
 
 	sw := &Watcher{
@@ -71,7 +74,7 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		mu:      &sync.Mutex{},
 	}
 
-	sw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
+	sw.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, required, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +93,7 @@ func (w *Watcher) watchSchedule(ctx context.Context, wg *sync.WaitGroup) {
 	for {
 		select {
 		case i := <-w.ctrq:
-			w.Infof("Handling state change counter %v while ctr=%v", i, w.ctr)
+			w.Debugf("Handling state change counter %v while ctr=%v", i, w.ctr)
 			w.mu.Lock()
 
 			w.ctr = w.ctr + i
@@ -101,10 +104,10 @@ func (w *Watcher) watchSchedule(ctx context.Context, wg *sync.WaitGroup) {
 			}
 
 			if w.ctr == 0 {
-				w.Infof("State going off due to ctr change to 0")
+				w.Debugf("State going off due to ctr change to 0")
 				w.state = Off
 			} else {
-				w.Infof("State going on due to ctr change of %v", i)
+				w.Debugf("State going on due to ctr change of %v", i)
 				w.state = On
 			}
 
@@ -139,10 +142,17 @@ func (w *Watcher) watch() (err error) {
 
 	switch w.state {
 	case Off, Unknown:
+		w.setTriggered(false)
 		w.NotifyWatcherState(w.CurrentState())
 		return w.FailureTransition()
 
 	case On:
+		if w.properties.SkipTriggerOnReenter && w.didTrigger() {
+			w.Debugf("Skipping success transition that's already fired in this schedule due to skip_trigger_on_reenter")
+			return nil
+		}
+
+		w.setTriggered(true)
 		w.setPreviousState(w.state)
 		w.NotifyWatcherState(w.CurrentState())
 		return w.SuccessTransition()
@@ -153,6 +163,19 @@ func (w *Watcher) watch() (err error) {
 	}
 
 	return nil
+}
+
+func (w *Watcher) setTriggered(s bool) {
+	w.mu.Lock()
+	w.triggered = s
+	w.mu.Unlock()
+}
+
+func (w *Watcher) didTrigger() bool {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	return w.triggered
 }
 
 func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {

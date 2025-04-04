@@ -8,7 +8,7 @@ package backoff
 
 import (
 	"context"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 )
 
@@ -103,5 +103,5 @@ func jitter(millis int) int {
 		return 0
 	}
 
-	return millis/2 + rand.Intn(millis)
+	return millis/2 + rand.N(millis)
 }

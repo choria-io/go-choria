@@ -3,5 +3,8 @@
     "two": "two two",
     "three": "three three three",
     "digit": 1,
-    "boolean": false
+    "boolean": false,
+    "nested": {
+        "facts": "value"
+    }
 }

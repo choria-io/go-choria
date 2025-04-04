@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -179,7 +179,7 @@ func (m *Manager) configureWatchers() (err error) {
 			return fmt.Errorf("unknown watcher '%s'", w.Type)
 		}
 
-		wi, err := plugin.New(m.machine, w.Name, w.StateMatch, w.FailTransition, w.SuccessTransition, w.Interval, w.AnnounceDuration, w.Properties)
+		wi, err := plugin.New(m.machine, w.Name, w.StateMatch, w.ForeignStateRequired, w.FailTransition, w.SuccessTransition, w.Interval, w.AnnounceDuration, w.Properties)
 		if err != nil {
 			return fmt.Errorf("could not create %s watcher '%s': %s", w.Type, w.Name, err)
 		}
@@ -247,4 +247,5 @@ func (m *Manager) NotifyStateChance() {
 	for _, watcher := range m.watchers {
 		watcher.NotifyStateChance()
 	}
+
 }

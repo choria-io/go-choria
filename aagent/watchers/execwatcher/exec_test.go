@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 func Test(t *testing.T) {
@@ -42,7 +42,7 @@ var _ = Describe("ExecWatcher", func() {
 
 		now = time.Unix(1606924953, 0)
 
-		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "success", "2m", time.Second, map[string]any{
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, nil, "fail", "success", "2m", time.Second, map[string]any{
 			"command": "foo",
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -102,6 +102,14 @@ var _ = Describe("ExecWatcher", func() {
 			Expect(err).ToNot(HaveOccurred())
 			Expect(watch.properties.Command).To(Equal("cmd"))
 			Expect(watch.properties.Timeout).To(Equal(time.Second))
+		})
+
+		It("Should fail for invalid combinations", func() {
+			err := watch.setProperties(map[string]any{
+				"disown":        true,
+				"parse_as_data": true,
+			})
+			Expect(err).To(MatchError("cannot parse output as data while disowning child processes"))
 		})
 	})
 

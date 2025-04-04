@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -17,9 +17,9 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	addl "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
-	"github.com/golang/mock/gomock"
 	"github.com/onsi/ginkgo/v2"
 	"github.com/sirupsen/logrus"
+	"go.uber.org/mock/gomock"
 )
 
 // NewWithDDLBytes creates a new test harness based on a ddl contained in ddlBytes
@@ -70,7 +70,7 @@ type ActionMiddleware interface {
 type AgentHarness struct {
 	name    string
 	ddl     *addl.DDL
-	fw      mcorpc.ChoriaFramework
+	fw      inter.Framework
 	log     *logrus.Entry
 	actions map[string]*MockActionMiddleware
 }

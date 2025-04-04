@@ -55,10 +55,6 @@ a {
   background: transparent;
   text-decoration: none; }
 
-a:active,
-a:hover {
-  outline: 0; }
-
 abbr[title] {
   border-bottom: 1px dotted; }
 
@@ -82,6 +78,9 @@ sup {
 sub {
   bottom: -0.25em; }
 
+iframe {
+  border: 0; }
+
 img {
   border: 0;
   max-width: 100%; }
@@ -95,7 +94,7 @@ figure {
 hr {
   height: 0; }
 
-pre {
+pre:not(.mermaid) {
   overflow: auto; }
 
 button,
@@ -194,7 +193,7 @@ cite {
   cite:before {
     content: "\2014 \0020"; }
 
-pre {
+pre:not(.mermaid) {
   margin: 1.5rem 0;
   padding: 0.938rem; }
 
@@ -256,6 +255,8 @@ select {
 button,
 input[type="submit"] {
   cursor: pointer;
+  -ms-user-select: none;
+  -webkit-user-select: none;
   user-select: none;
   white-space: nowrap;
   border: inherit; }

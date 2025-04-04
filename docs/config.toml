@@ -7,10 +7,10 @@ themeVariant = "choria-relearn"
 uglyURLs = false
 
 [outputs]
-home = [ "HTML", "RSS", "JSON"]
+home = [ "HTML", "RSS", "SEARCH"]
 
 [params]
-author = "Choria Project"
+author.name = "Choria Project"
 showVisitedLinks = false
 disableLanguageSwitchingButton = true
 themeVariant = "choria-relearn"

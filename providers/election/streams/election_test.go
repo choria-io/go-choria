@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,7 @@ package election
 import (
 	"context"
 	"fmt"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"os"
 	"sync"
 	"testing"
@@ -185,7 +186,7 @@ var _ = Describe("Choria KV Leader Election", func() {
 			// fail until the corruption is removed by the MaxAge limit
 			kills := 0
 			for {
-				if ctxSleep(ctx, 400*time.Millisecond) != nil {
+				if iu.InterruptibleSleep(ctx, 400*time.Millisecond) != nil {
 					break
 				}
 

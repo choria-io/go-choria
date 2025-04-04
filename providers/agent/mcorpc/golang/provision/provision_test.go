@@ -31,7 +31,7 @@ import (
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
 	"github.com/choria-io/go-choria/server/agents"
 	"github.com/choria-io/go-updater"
-	"github.com/golang/mock/gomock"
+	"go.uber.org/mock/gomock"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -106,6 +106,36 @@ var _ = Describe("Provision/Agent", func() {
 	Describe("New", func() {
 		It("Should create all the actions", func() {
 			Expect(prov.ActionNames()).To(Equal([]string{"configure", "gen25519", "gencsr", "jwt", "release_update", "reprovision", "restart", "shutdown"}))
+		})
+	})
+
+	Describe("lockedAction", func() {
+		It("Should obtain a lock and not let others interact while locked", func() {
+			build.ProvisionToken = ""
+			LockWindow = 500 * time.Millisecond
+
+			// first call will lock it for 2 minutes, we reach the wrapped action that produce a error
+			lockedAction(shutdownAction)(ctx, &mcorpc.Request{CallerID: "one", SenderID: "ginkgo"}, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
+			Expect(reply.Statusmsg).To(Equal("Cannot shutdown a server that is not in provisioning mode or with no token set"))
+			Expect(lockedUntil).To(BeTemporally("~", time.Now().Add(LockWindow), time.Millisecond))
+			Expect(lockedBy).To(Equal("ginkgo.one"))
+
+			// now someone else calls and we expect locked error
+			lockedAction(shutdownAction)(ctx, &mcorpc.Request{CallerID: "two", SenderID: "ginkgo"}, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
+			Expect(reply.Statusmsg).To(Equal(LockedError))
+
+			// but when we call we expect it to work and get through to the wrapped action
+			lockedAction(shutdownAction)(ctx, &mcorpc.Request{CallerID: "one", SenderID: "ginkgo"}, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
+			Expect(reply.Statusmsg).To(Equal("Cannot shutdown a server that is not in provisioning mode or with no token set"))
+
+			// now we let the lock window pass, we expect another caller to be able to reach the server
+			time.Sleep(500 * time.Millisecond)
+			lockedAction(shutdownAction)(ctx, &mcorpc.Request{CallerID: "two", SenderID: "ginkgo"}, reply, prov, nil)
+			Expect(reply.Statuscode).To(Equal(mcorpc.Aborted))
+			Expect(reply.Statusmsg).To(Equal("Cannot shutdown a server that is not in provisioning mode or with no token set"))
 		})
 	})
 

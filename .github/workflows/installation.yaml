@@ -5,51 +5,51 @@ on:
     - cron: "40 5 * * *"
 
 jobs:
-  el7_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: EL7 Installation Tests
-        shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:el7-go1.20
-
   el8_64:
     runs-on: ubuntu-latest
     steps:
       - name: EL8 Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:el8-go1.20
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:el8-go1.23
 
   el9_64:
     runs-on: ubuntu-latest
     steps:
       - name: EL9 Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:el9-go1.20
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:el9-go1.23
 
   bionic_64:
     runs-on: ubuntu-latest
     steps:
       - name: Bionic Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:bionic-go1.20
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:bionic-go1.23
 
   focal_64:
     runs-on: ubuntu-latest
     steps:
       - name: Focal Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:focal-go1.20
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:focal-go1.23
 
-  buster_64:
+  noble_64:
     runs-on: ubuntu-latest
     steps:
-      - name: Buster Installation Tests
+      - name: Noble Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:buster-go1.20
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:noble-go1.23
 
   bullseye_64:
     runs-on: ubuntu-latest
     steps:
       - name: Bullseye Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:bullseye-go1.20
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:bullseye-go1.23
+
+  bookworm_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Bookworm Installation Tests
+        shell: bash
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:bookworm-go1.23

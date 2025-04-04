@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -101,7 +101,7 @@ type Watcher struct {
 	mu  *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]any) (any, error) {
+func New(machine model.Machine, name string, states []string, required []model.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]any) (any, error) {
 	var err error
 
 	plugins := &Watcher{
@@ -113,7 +113,7 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		mu:         &sync.Mutex{},
 	}
 
-	plugins.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
+	plugins.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, required, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -203,7 +203,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 			continue
 		}
 
-		match, err := w.isNodeMatch(m)
+		match, err := IsNodeMatch(w.machine.Facts(), w.machine.Identity(), m.Matcher, w)
 		if err != nil {
 			w.Debugf("Could not match machine %s to node: %s", m.Name, err)
 			continue
@@ -347,7 +347,8 @@ func (w *Watcher) purgeUnknownPlugins(ctx context.Context, desired []*ManagedPlu
 			}
 
 			if m == d.Name {
-				if ok, _ := w.isNodeMatch(d); ok {
+				match, _ := IsNodeMatch(w.machine.Facts(), w.machine.Identity(), d.Matcher, w)
+				if match {
 					keep = true
 					break
 				}
@@ -439,7 +440,7 @@ func (w *Watcher) loadAndValidateData() ([]byte, error) {
 
 		pk, err := hex.DecodeString(w.properties.PublicKey)
 		if err != nil {
-			w.Errorf("invalid public key: %s", err)
+			w.Errorf("invalid public key %s: %s", w.properties.PublicKey, err)
 			return nil, fmt.Errorf("invalid data_item")
 		}
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 func Test(t *testing.T) {
@@ -40,7 +40,7 @@ var _ = Describe("TimerWatcher", func() {
 		mockMachine.EXPECT().TimeStampSeconds().Return(now.Unix()).AnyTimes()
 		mockMachine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 
-		wi, err := New(mockMachine, "ginkgo", []string{"always"}, "fail", "", "2m", time.Second, map[string]any{})
+		wi, err := New(mockMachine, "ginkgo", []string{"always"}, nil, "fail", "", "2m", time.Second, map[string]any{})
 		Expect(err).ToNot(HaveOccurred())
 		watch = wi.(*Watcher)
 	})

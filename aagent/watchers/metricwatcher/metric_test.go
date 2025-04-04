@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 func Test(t *testing.T) {
@@ -52,8 +52,10 @@ var _ = Describe("MetricWatcher", func() {
 		mockMachine.EXPECT().Directory().Return(".").AnyTimes()
 		mockMachine.EXPECT().TextFileDirectory().Return(td).AnyTimes()
 		mockMachine.EXPECT().State().Return("run").AnyTimes()
+		mockMachine.EXPECT().Facts().Return([]byte(`{"fqdn":"ginkgo.example.net"}`)).AnyTimes()
+		mockMachine.EXPECT().Data().Return(map[string]any{}).AnyTimes()
 
-		wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]any{
+		wi, err := New(mockMachine, "ginkgo", []string{"run"}, nil, "fail", "success", "", time.Second, map[string]any{
 			"command": "metric.sh",
 		})
 		Expect(err).ToNot(HaveOccurred())
@@ -66,7 +68,7 @@ var _ = Describe("MetricWatcher", func() {
 	})
 
 	Describe("performWatch", func() {
-		It("Should run the script and correctly parse nagios style metrics", func() {
+		It("Should run the script and correctly parse nagios style metrics", func(ctx context.Context) {
 			if runtime.GOOS == "windows" {
 				Skip("not tested on windows yet")
 			}
@@ -85,21 +87,18 @@ var _ = Describe("MetricWatcher", func() {
 				handled = true
 			})
 
-			wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]any{
+			wi, err := New(mockMachine, "ginkgo", []string{"run"}, nil, "fail", "success", "", time.Second, map[string]any{
 				"command": filepath.Join("testdata", "nagios.sh"),
 				"labels":  map[string]string{"dupe": "w"},
 			})
 			Expect(err).ToNot(HaveOccurred())
 			watch = wi.(*Watcher)
 
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
-
 			watch.performWatch(ctx)
 			Expect(handled).To(BeTrue())
 		})
 
-		It("Should run the script and correctly parse choria style metrics", func() {
+		It("Should run the script and correctly parse choria style metrics", func(ctx context.Context) {
 			if runtime.GOOS == "windows" {
 				Skip("not tested on windows yet")
 			}
@@ -117,15 +116,12 @@ var _ = Describe("MetricWatcher", func() {
 				handled = true
 			})
 
-			wi, err := New(mockMachine, "ginkgo", []string{"run"}, "fail", "success", "", time.Second, map[string]any{
+			wi, err := New(mockMachine, "ginkgo", []string{"run"}, nil, "fail", "success", "", time.Second, map[string]any{
 				"command": filepath.Join("testdata", "metric.sh"),
 				"labels":  map[string]string{"dupe": "w"},
 			})
 			Expect(err).ToNot(HaveOccurred())
 			watch = wi.(*Watcher)
-
-			ctx, cancel := context.WithCancel(context.Background())
-			defer cancel()
 
 			watch.performWatch(ctx)
 			Expect(handled).To(BeTrue())
@@ -199,6 +195,7 @@ var _ = Describe("MetricWatcher", func() {
 						"metrics": map[string]any{
 							"choria_runtime_seconds": 0.5,
 						},
+						"time": float64(0),
 					},
 				},
 			}))

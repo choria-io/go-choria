@@ -30,6 +30,7 @@ expected = {
     "identity" => []
   },
   "collective" => "ginkgo",
+  "federations" => [],
   "timeout" => 2,
 }
 

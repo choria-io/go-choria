@@ -10,8 +10,8 @@ import (
 
 	config "github.com/choria-io/go-choria/config"
 	inter "github.com/choria-io/go-choria/inter"
-	gomock "github.com/golang/mock/gomock"
 	logrus "github.com/sirupsen/logrus"
+	gomock "go.uber.org/mock/gomock"
 )
 
 // MockAgentProvider is a mock of AgentProvider interface.

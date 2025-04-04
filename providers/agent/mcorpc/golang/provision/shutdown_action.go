@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,7 +7,7 @@ package provision
 import (
 	"context"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"time"
 
 	"github.com/choria-io/go-choria/build"
@@ -37,7 +37,7 @@ func shutdownAction(ctx context.Context, req *mcorpc.Request, reply *mcorpc.Repl
 		return
 	}
 
-	splay := time.Duration(rand.Intn(10)) * time.Second
+	splay := time.Duration(rand.IntN(10)) * time.Second
 	agent.Log.Warnf("Shutting server down via request %s from %s (%s) with splay %v", req.RequestID, req.CallerID, req.SenderID, splay)
 
 	go shutdownCb(splay, agent.ServerInfoSource, agent.Log)

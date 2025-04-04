@@ -1,4 +1,4 @@
-// Copyright (c) 2019-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"os"
 	"os/exec"
 	"sync"
@@ -49,6 +49,7 @@ type Properties struct {
 	OutputAsData            bool          `mapstructure:"parse_as_data"`
 	SuppressSuccessAnnounce bool          `mapstructure:"suppress_success_announce"`
 	GatherInitialState      bool          `mapstructure:"gather_initial_state"`
+	Disown                  bool          `mapstructure:"disown"`
 	Timeout                 time.Duration
 }
 
@@ -68,7 +69,7 @@ type Watcher struct {
 	mu  *sync.Mutex
 }
 
-func New(machine model.Machine, name string, states []string, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]any) (any, error) {
+func New(machine model.Machine, name string, states []string, required []model.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, rawprop map[string]any) (any, error) {
 	var err error
 
 	exec := &Watcher{
@@ -81,7 +82,7 @@ func New(machine model.Machine, name string, states []string, failEvent string, 
 		},
 	}
 
-	exec.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, machine, failEvent, successEvent)
+	exec.Watcher, err = watcher.NewWatcher(name, wtype, ai, states, required, machine, failEvent, successEvent)
 	if err != nil {
 		return nil, err
 	}
@@ -117,6 +118,10 @@ func (w *Watcher) validate() error {
 	if w.properties.Governor != "" && w.properties.GovernorTimeout == 0 {
 		w.Infof("Setting Governor timeout to 5 minutes while unset")
 		w.properties.GovernorTimeout = 5 * time.Minute
+	}
+
+	if w.properties.Disown && w.properties.OutputAsData {
+		return fmt.Errorf("cannot parse output as data while disowning child processes")
 	}
 
 	return nil
@@ -163,7 +168,7 @@ func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 
 	tick := time.NewTicker(w.interval)
 	if w.properties.GatherInitialState {
-		splay := time.Duration(rand.Intn(30)) * time.Second
+		splay := rand.N(30 * time.Second)
 		w.Infof("Performing initial execution after %v", splay)
 		if splay < 1 {
 			splay = 1
@@ -301,7 +306,12 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 	}
 	defer os.Remove(ff)
 
-	cmd := exec.CommandContext(timeoutCtx, splitcmd[0], args...)
+	var cmd *exec.Cmd
+	if w.properties.Disown {
+		cmd = exec.Command(splitcmd[0], args...)
+	} else {
+		cmd = exec.CommandContext(timeoutCtx, splitcmd[0], args...)
+	}
 	cmd.Dir = w.machine.Directory()
 
 	cmd.Env = append(cmd.Env, fmt.Sprintf("MACHINE_WATCHER_NAME=%s", w.name))
@@ -318,7 +328,27 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 		cmd.Env = append(cmd.Env, es)
 	}
 
-	output, err := cmd.CombinedOutput()
+	var output []byte
+	if w.properties.Disown {
+		w.Debugf("Running command disowned from parent")
+		err = cmd.Start()
+		if err != nil {
+			return 0, err
+		}
+
+		errc := make(chan error)
+		go func() {
+			errc <- cmd.Wait()
+		}()
+
+		select {
+		case err = <-errc:
+		case <-ctx.Done():
+			err = ctx.Err()
+		}
+	} else {
+		output, err = cmd.CombinedOutput()
+	}
 	if err != nil {
 		w.Errorf("Exec watcher %s failed: %s", w.properties.Command, err)
 		return Error, err
@@ -338,7 +368,7 @@ func (w *Watcher) watch(ctx context.Context) (state State, err error) {
 }
 
 func (w *Watcher) setOutputAsData(output []byte) error {
-	dat := map[string]string{}
+	dat := map[string]any{}
 	err := json.Unmarshal(output, &dat)
 	if err != nil {
 		return err

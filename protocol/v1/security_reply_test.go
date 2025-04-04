@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2024, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -11,8 +11,8 @@ import (
 	"github.com/choria-io/go-choria/inter"
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/protocol"
-	"github.com/golang/mock/gomock"
 	"github.com/tidwall/gjson"
+	"go.uber.org/mock/gomock"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

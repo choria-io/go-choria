@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,9 +10,9 @@ import (
 	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/go-choria/internal/fs"
 	agentDDL "github.com/choria-io/go-choria/providers/agent/mcorpc/ddl/agent"
-	"github.com/golang/mock/gomock"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("InternalCachedDDLResolver", func() {
@@ -71,7 +71,7 @@ var _ = Describe("InternalCachedDDLResolver", func() {
 		It("Should find the correct names", func() {
 			names, err := res.DDLNames(context.Background(), "agent", fw)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(names).To(Equal([]string{"aaa_signer", "choria_provision", "choria_registry", "choria_util", "rpcutil", "scout"}))
+			Expect(names).To(Equal([]string{"aaa_signer", "choria_provision", "choria_registry", "choria_util", "executor", "rpcutil", "scout"}))
 		})
 	})
 })

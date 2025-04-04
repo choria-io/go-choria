@@ -1,0 +1,225 @@
+{
+  "$schema": "https://choria.io/schemas/mcorpc/ddl/v1/agent.json",
+  "metadata": {
+    "license": "Apache-2.0",
+    "author": "R.I.Pienaar \u003crip@devco.net\u003e",
+    "timeout": 20,
+    "name": "executor",
+    "version": "0.29.4",
+    "url": "https://choria.io",
+    "description": "Choria Process Executor Management",
+    "provider": "golang"
+  },
+  "actions": [
+    {
+      "action": "signal",
+      "description": "Sends a signal to a process",
+      "display": "always",
+      "input": {
+        "id": {
+          "prompt": "Job ID",
+          "description": "The unique ID for the job",
+          "type": "string",
+          "maxlength": 20,
+          "validation": ".",
+          "optional": false
+        },
+        "signal": {
+          "prompt": "Signal",
+          "description": "The signal to send",
+          "type": "integer"
+        }
+      },
+      "output": {
+        "pid": {
+          "description": "The PID that was signaled",
+          "type": "integer",
+          "display_as": "PID"
+        },
+        "running": {
+          "description": "If the process was running after signaling",
+          "type": "boolean",
+          "display_as": "Running"
+        }
+      }
+    },
+    {
+      "action": "list",
+      "display": "always",
+      "description": "Lists jobs matching certain criteria",
+      "input": {
+        "action": {
+          "prompt": "Action",
+          "description": "The action that created a job",
+          "type": "string",
+          "maxlength": 20,
+          "optional": true,
+          "validation": "^[\\w]+$"
+        },
+        "agent": {
+          "prompt": "Agent",
+          "description": "The agent that create a job",
+          "type": "string",
+          "maxlength": 20,
+          "optional": true,
+          "validation": "^[\\w]+$"
+        },
+        "before": {
+          "prompt": "Before",
+          "description": "Unix timestamp to limit jobs on",
+          "type": "integer",
+          "optional": true
+        },
+        "caller": {
+          "prompt": "Caller",
+          "description": "The caller id that created a job",
+          "type": "string",
+          "maxlength": 50,
+          "validation": ".",
+          "optional": true
+        },
+        "command": {
+          "prompt": "Command",
+          "description": "The command that was executed",
+          "type": "string",
+          "maxlength": 256,
+          "validation": ".",
+          "optional": true
+        },
+        "completed": {
+          "prompt": "Completed",
+          "description": "Limit to jobs that were completed",
+          "type": "boolean",
+          "optional": true
+        },
+        "identity": {
+          "prompt": "Identity",
+          "description": "The host identity that created the job",
+          "type": "string",
+          "maxlength": 256,
+          "validation": ".",
+          "optional": true
+        },
+        "requestid": {
+          "prompt": "Request",
+          "description": "The Request ID that created the job",
+          "type": "string",
+          "maxlength": 20,
+          "validation": ".",
+          "optional": true
+        },
+        "running": {
+          "prompt": "Running",
+          "description": "Limits to running jobs",
+          "type": "boolean",
+          "optional": true
+        },
+        "since": {
+          "prompt": "Since",
+          "description": "Unix timestamp to limit jobs on",
+          "type": "integer",
+          "optional": true
+        }
+      },
+      "output": {
+        "jobs": {
+          "description": "List of matched jobs",
+          "type": "hash",
+          "display_as": "Jobs"
+        }
+      }
+    },
+    {
+      "action": "status",
+      "display": "always",
+      "description": "Requests the status of a job by ID",
+      "input": {
+        "id": {
+          "prompt": "Job ID",
+          "description": "The unique ID for the job",
+          "type": "string",
+          "maxlength": 20,
+          "validation": ".",
+          "optional": false
+        }
+      },
+      "output": {
+        "command": {
+          "description": "The command being executed, if the caller has access",
+          "type": "string",
+          "display_as": "Command"
+        },
+        "args": {
+          "description": "The command arguments, if the caller has access",
+          "type": "string",
+          "display_as": "Arguments"
+        },
+        "action": {
+          "description": "The RPC Action that started the process",
+          "display_as": "Action",
+          "type": "string"
+        },
+        "agent": {
+          "description": "The RPC Agent that started the process",
+          "display_as": "Agent",
+          "type": "string"
+        },
+        "caller": {
+          "description": "The Caller ID who started the process",
+          "display_as": "Caller",
+          "type": "string"
+        },
+        "exit_code": {
+          "description": "The exit code the process terminated with",
+          "display_as": "Exit Code",
+          "type": "integer"
+        },
+        "exit_reason": {
+          "description": "If the process failed, the reason for th failure",
+          "display_as": "Exit Reason",
+          "type": "string"
+        },
+        "pid": {
+          "description": "The OS Process ID",
+          "display_as": "Pid",
+          "type": "integer"
+        },
+        "requestid": {
+          "description": "The Request ID that started the process",
+          "display_as": "Request ID",
+          "type": "string"
+        },
+        "running": {
+          "description": "Indicates if the process is still running",
+          "display_as": "Running",
+          "type": "boolean"
+        },
+        "started": {
+          "description": "Indicates if the process was started",
+          "display_as": "Started",
+          "type": "boolean"
+        },
+        "start_time": {
+          "description": "Time that the process started",
+          "display_as": "Started",
+          "type": "string"
+        },
+        "terminate_time": {
+          "description": "Time that the process terminated",
+          "display_as": "Terminated",
+          "type": "string"
+        },
+        "stdout_bytes": {
+          "description": "The number of bytes of STDOUT output available",
+          "display_as": "STDOUT Bytes",
+          "type": "integer"
+        },
+        "stderr_bytes": {
+          "description": "The number of bytes of STDERR output available",
+          "display_as": "STDERR Bytes",
+          "type": "integer"
+        }
+      }
+    }
+  ]
+}

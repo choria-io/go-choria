@@ -8,7 +8,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"math/rand"
+	"math/rand/v2"
 	"sync"
 	"time"
 
@@ -79,7 +79,7 @@ func (ic *InventoryContent) Init(c *config.Config, logger *logrus.Entry) {
 func (ic *InventoryContent) StartRegistration(ctx context.Context, wg *sync.WaitGroup, interval int, output chan *data.RegistrationItem) {
 	defer wg.Done()
 
-	delay := time.Duration(rand.Intn(4)+1) * time.Second
+	delay := time.Duration(rand.N(4)+1) * time.Second
 	ic.log.Infof("Sleeping %v before first registration publish", delay)
 	err := util.InterruptibleSleep(ctx, delay)
 	if err != nil {

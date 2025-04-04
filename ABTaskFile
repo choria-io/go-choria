@@ -81,9 +81,107 @@ commands:
         - name: imocks
           description: Generate inter/imocks related files
           type: exec
+          flags:
+            - name: update
+              description: Updates the mockgen runtime
+              bool: true
           dir: "{{ AppDir }}"
-          banner: Regenerating mocks in inter/imocks
-          command: go generate -run imocks
+          script: |
+            set -e
+
+            . "{{ BashHelperPath }}"
+
+            {{ if .Flags.update }}
+                  ab_say Updating mockgen binary
+                  go install go.uber.org/mock/mockgen@latest
+            {{ end }}
+
+            ab_say "Generating imocks"
+
+            go generate -run imocks
+
+            ab_say "Generating broker mocks"
+            cd ./broker/network
+            mockgen -write_generate_directive -source network.go -destination network_mock_test.go -package network
+            cd -
+
+            ab_say "Generating config mocks"
+            cd ./config
+            mockgen -write_generate_directive -source mutators.go -package config -destination mutator_mock_test.go
+            cd -
+
+            ab_say "Generating puppetsec mocks"
+            cd ./providers/security/puppetsec
+            mockgen -write_generate_directive -source puppet_security.go -package puppetsec -destination resolver_mock_test.go
+            cd -
+
+            ab_say "Generating discovery client mocks"
+            cd ./providers/discovery/broadcast
+            mockgen -write_generate_directive -source broadcast.go -package broadcast -destination choria_client_mock_test.go
+            cd -
+
+            ab_say "Generating mcorpc mocks"
+            cd ./providers/agent/mcorpc
+            mockgen -write_generate_directive -package mcorpc -destination server_info_source_mock_test.go github.com/choria-io/go-choria/server/agents ServerInfoSource
+            cd -
+
+            ab_say "Generating external rpc provider mocks"
+            cd ./providers/agent/mcorpc/external
+            mockgen -write_generate_directive -destination server_info_source_mock_test.go -package external github.com/choria-io/go-choria/server/agents ServerInfoSource
+            cd -
+
+            ab_say "Generating rpc client mocks"
+            cd ./providers/agent/mcorpc/client
+            mockgen -write_generate_directive -destination choria_client_mock_test.go -source client.go -package client 
+            cd -
+
+            ab_say "Generating ruby rpc provider mocks"
+            cd ./providers/agent/mcorpc/ruby
+            mockgen -write_generate_directive -destination agentmanager_mock_test.go -package ruby github.com/choria-io/go-choria/server AgentManager
+            cd -
+
+            ab_say "Generating proftarget mocks"
+            cd ./providers/provtarget
+            mockgen -write_generate_directive -package provtarget -destination target_resolver_mock_test.go -source provtarget.go
+            cd -
+
+            ab_say "Generating message mocks"
+            cd ./message
+            mockgen -write_generate_directive -package message -destination protocol_mock_test.go -source ../protocol/protocol.go
+            cd -
+
+            ab_say "Generating server discovery mocks"
+            cd ./server/discovery
+            mockgen -write_generate_directive -package discovery -destination server_info_mock_test.go -source discovery.go
+            cd -
+
+            ab_say "Generating server mocks"
+            cd ./server
+            mockgen -write_generate_directive -package server -destination agentmanager_mock_test.go -source agents/agents.go
+            cd -
+
+            ab_say "Generating protocol mocks"
+            cd ./protocol
+            mockgen -write_generate_directive -package protocol -destination server_info_mock_test.go -source filter.go
+            mockgen -write_generate_directive -package protocol -destination protocol_mock_test.go -source protocol.go
+            cd -
+
+            ab_say "Generating autonomous agent mocks"
+            cd ./aagent/machine
+            mockgen -write_generate_directive -package machine -destination notifications_mock_test.go -source notifications.go
+            mockgen -write_generate_directive -package machine -destination machine_mock_test.go -source machine.go
+            cd -
+            cd ./aagent/model
+            mockgen -package model -destination model_mock.go github.com/choria-io/go-choria/aagent/model Watcher,WatcherConstructor,ChoriaProvider,Machine
+            cd -
+
+            ab_say "Generating KV Watcher Mocks"
+            mockgen -write_generate_directive -package kvwatcher -destination aagent/watchers/kvwatcher/kv_mock_test.go github.com/nats-io/nats.go KeyValue,KeyValueEntry 
+
+            ab_say "Generating Watchers Mocks"
+            cd ./aagent/watchers
+            mockgen -write_generate_directive -package watchers -destination machine_mock_test.go github.com/choria-io/go-choria/aagent/watchers Machine
+            cd -
 
     - name: test
       type: parent
@@ -205,7 +303,7 @@ commands:
           flags:
             - name: target
               description: Target platform to build for
-              enum: ["linux/amd64"]
+              enum: ["linux/amd64", "linux/arm64"]
               short: T
             - name: provisioning
               description: Path to the default provisioning.jwt
@@ -225,6 +323,9 @@ commands:
             {{ if eq .Flags.target "linux/amd64" }}
                 export GOOS=linux
                 export GOARCH=amd64
+            {{ else if eq .Flags.target "linux/arm64" }}
+                export GOOS=linux
+                export GOARCH=arm64
             {{ end }}
 
             {{ if .Flags.verbose }}
@@ -234,7 +335,7 @@ commands:
             go build \
               {{ if .Flags.verbose }}-v{{ end }} \
               -ldflags="-s -w \
-                -X 'github.com/choria-io/go-choria/build.Version=0.0.$(date +%s)' \
+                -X 'github.com/choria-io/go-choria/build.Version=0.98.0.$(date +%s)' \
                 -X 'github.com/choria-io/go-choria/build.DefaultCollectives={{.Flags.collective}}' \
                 {{ if .Flags.provisioning }}-X 'github.com/choria-io/go-choria/build.ProvisionJWTFile={{ .Flags.provisioning }}'{{ end }} \
                 " -o go-choria
@@ -273,9 +374,8 @@ commands:
               ab_panic HEAD is not a tag
             fi
 
-            docker pull almalinux:8
-
             docker build \
+              --pull \
               --no-cache \
               --build-arg REPO={{ .Flags.repo | escape }} \
               --tag "choria/choria:${TAG}" \
