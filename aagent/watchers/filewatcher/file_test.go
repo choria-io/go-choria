@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/user"
 	"path/filepath"
+	"runtime"
 	"testing"
 	"time"
 
@@ -160,6 +161,10 @@ var _ = Describe("ExecWatcher", func() {
 			})
 
 			It("Should correctly manage the file", func() {
+				if runtime.GOOS == "windows" {
+					Skip("windows file ownership issues")
+				}
+
 				watch.properties = &Properties{
 					Path:     f,
 					Contents: `{{ lookup "data.test" "default" | ToUpper }}`,
