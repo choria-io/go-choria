@@ -5,7 +5,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go: ["1.23", "1.24"]
+        go: ["1.23.9", "1.24"] # using 1.23.9 temporarily because of some github actions cache issue
 
     runs-on: ubuntu-latest
     steps:
@@ -16,6 +16,7 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: ${{matrix.go}}
+          check-latest: true
 
       - name: Lint and Test
         uses: choria-io/actions/lint_and_test/go@main
