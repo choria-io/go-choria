@@ -161,6 +161,7 @@ func (srv *Instance) RunServiceHost(ctx context.Context, wg *sync.WaitGroup) err
 func (srv *Instance) setupExecutor() error {
 	if !srv.cfg.Choria.ExecutorEnabled || srv.cfg.Choria.ExecutorSpool == "" {
 		srv.log.Infof("Skipping executor setup as no spool is configured")
+		return nil
 	}
 
 	return os.MkdirAll(srv.cfg.Choria.ExecutorSpool, 0700)
