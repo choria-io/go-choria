@@ -4,7 +4,6 @@ go 1.23.9
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
-	github.com/Freman/eventloghook v0.0.0-20191003051739-e4d803b6b48b
 	github.com/Masterminds/semver v1.5.0
 	github.com/adrg/xdg v0.5.3
 	github.com/awesome-gocui/gocui v1.1.0
@@ -15,9 +14,10 @@ require (
 	github.com/choria-io/tokens v0.0.4-0.20240316144214-a929d9325d48
 	github.com/cloudevents/sdk-go/v2 v2.16.0
 	github.com/dustin/go-humanize v1.0.1
-	github.com/expr-lang/expr v1.17.4
+	github.com/expr-lang/expr v1.17.5
 	github.com/fatih/color v1.18.0
 	github.com/fatih/structtag v1.2.0
+	github.com/freman/eventloghook v0.0.0-20250604093238-a195f2852650
 	github.com/ghodss/yaml v1.0.0
 	github.com/gofrs/uuid v4.4.0+incompatible
 	github.com/golang-jwt/jwt/v4 v4.5.2
@@ -32,11 +32,11 @@ require (
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.2.3
 	github.com/nats-io/nats-server/v2 v2.11.4
-	github.com/nats-io/nats.go v1.42.0
+	github.com/nats-io/nats.go v1.43.0
 	github.com/nats-io/natscli v0.2.3
 	github.com/onsi/ginkgo/v2 v2.23.4
 	github.com/onsi/gomega v1.37.0
-	github.com/open-policy-agent/opa v1.5.0
+	github.com/open-policy-agent/opa v1.5.1
 	github.com/prometheus/client_golang v1.22.0
 	github.com/prometheus/client_model v0.6.2
 	github.com/robfig/cron v1.2.0
