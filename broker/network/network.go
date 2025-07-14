@@ -62,6 +62,7 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 	s.opts.Host = s.config.Choria.NetworkListenAddress
 	s.opts.Port = s.config.Choria.NetworkClientPort
 	s.opts.WriteDeadline = s.config.Choria.NetworkWriteDeadline
+	s.opts.AuthTimeout = float64(s.config.Choria.NetworkAuthTimeout)
 	s.opts.MaxConn = bi.MaxBrokerClients()
 	s.opts.NoSigs = true
 	s.opts.Logtime = false

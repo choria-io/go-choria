@@ -119,6 +119,7 @@ var _ = Describe("Network Broker", func() {
 			Expect(srv.opts.TLS).To(BeTrue())
 			Expect(srv.opts.TLSVerify).To(BeTrue())
 			Expect(srv.opts.TLSTimeout).To(Equal(float64(2)))
+			Expect(srv.opts.AuthTimeout).To(Equal(float64(2)))
 			Expect(srv.opts.LeafNode.Host).To(Equal(""))
 			Expect(srv.opts.LeafNode.Port).To(Equal(0))
 		})

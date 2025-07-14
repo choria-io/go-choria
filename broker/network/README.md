@@ -47,6 +47,7 @@ It also uses the `build.maxBrokerClients` build time configuration in Choria to 
 |`plugin.choria.network.client_hosts`|List of hosts - ip addresses or cidrs - that are allowed to use clients|all|
 |`plugin.choria.network.client_tls_force_required`|Force TLS on for client connections regardless of build settings|`false`|
 |`plugin.choria.network.tls_timeout`|Sets the timeout for establishing TLS connections|`2`|
+|`plugin.choria.network.auth_timeout`|Sets the timeout for client authentication|`2`|
 
 ### Cluster Settings
 
