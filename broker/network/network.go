@@ -55,6 +55,11 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 		mu:      &sync.Mutex{},
 	}
 
+	// Validate timeouts
+	if s.config.Choria.NetworkAuthTimeout > 60*time.Second || s.config.Choria.NetworkTLSTimeout > 60*time.Second {
+		return nil, fmt.Errorf("plugin.choria.network.auth_timeout and plugin.choria.network.tls_timeout must not exceed 60 seconds")
+	}
+
 	if s.config.Identity != "" {
 		s.opts.ServerName = s.config.Identity
 	}
@@ -62,6 +67,7 @@ func NewServer(c inter.Framework, bi BuildInfoProvider, debug bool) (s *Server, 
 	s.opts.Host = s.config.Choria.NetworkListenAddress
 	s.opts.Port = s.config.Choria.NetworkClientPort
 	s.opts.WriteDeadline = s.config.Choria.NetworkWriteDeadline
+	s.opts.AuthTimeout = s.config.Choria.NetworkAuthTimeout.Seconds()
 	s.opts.MaxConn = bi.MaxBrokerClients()
 	s.opts.NoSigs = true
 	s.opts.Logtime = false
@@ -282,7 +288,7 @@ func (s *Server) setupTLS() (err error) {
 	s.opts.TLS = true
 	s.opts.AllowNonTLS = false
 	s.opts.TLSVerify = true
-	s.opts.TLSTimeout = float64(s.config.Choria.NetworkTLSTimeout)
+	s.opts.TLSTimeout = s.config.Choria.NetworkTLSTimeout.Seconds()
 
 	tlsc, err := s.choria.TLSConfig()
 	if err != nil {
