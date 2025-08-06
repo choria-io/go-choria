@@ -95,7 +95,7 @@ var _ = Describe("Connector", func() {
 			// Cancel the context immediately
 			cancel()
 
-			// Create a connection with the cancelled context
+			// Create a connection with the canceled context
 			conn := &Connection{
 				ctx:  ctx,
 				nats: nil, // Not used in this test
@@ -121,7 +121,7 @@ var _ = Describe("Connector", func() {
 			// Cancel the context immediately
 			cancel()
 
-			// Create a connection with the cancelled context
+			// Create a connection with the canceled context
 			conn := &Connection{
 				ctx:  ctx,
 				nats: nil, // Not used in this test

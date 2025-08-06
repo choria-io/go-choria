@@ -145,7 +145,7 @@ var _ = Describe("Client", func() {
 			Expect(err).ToNot(HaveOccurred())
 			msg.SetReplyTo("custom")
 
-			// Create a context that will be cancelled
+			// Create a context that will be canceled
 			ctx, cancel := context.WithCancel(context.Background())
 
 			// Cancel the context immediately
@@ -161,7 +161,7 @@ var _ = Describe("Client", func() {
 			clientWithoutConn, err := New(fw, Timeout(100*time.Millisecond), Name("test-no-conn"))
 			Expect(err).ToNot(HaveOccurred())
 
-			// Create a context that will be cancelled
+			// Create a context that will be canceled
 			ctx, cancel := context.WithCancel(context.Background())
 
 			// Cancel the context immediately
