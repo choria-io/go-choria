@@ -165,7 +165,7 @@ func (s *Spool) Run(ctx context.Context, wg *sync.WaitGroup, conn inter.RawNATSC
 					return ctx.Err()
 				default:
 				}
-				
+
 				err = s.conn.PublishRawMsg(msg)
 				if err != nil {
 					s.log.Errorf("Could not publish unreliable message %s, discarding: %s", m.ID, err)
