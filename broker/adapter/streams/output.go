@@ -124,6 +124,12 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 		defer obs.ObserveDuration()
 		defer func() { workqlen.Set(float64(len(sc.work))) }()
 
+		select {
+		case <-ctx.Done():
+			return
+		default:
+		}
+
 		j, err := json.Marshal(transformer.TransformToOutput(r, "choria_streams"))
 		if err != nil {
 			sc.log.Warnf("Cannot JSON encode message for publishing to Choria Streams, discarding: %s", err)

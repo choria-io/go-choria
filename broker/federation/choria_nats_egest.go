@@ -65,6 +65,12 @@ func NewChoriaNatsEgest(workers int, mode int, capacity int, broker *FederationB
 			}
 
 			for _, target := range cm.Targets {
+				select {
+				case <-ctx.Done():
+					return
+				default:
+				}
+				
 				if err = nc.PublishRaw(target, []byte(j)); err != nil {
 					logger.Errorf("Could not publish message '%s' to '%s': %s", cm.RequestID, target, err)
 					ectr.Inc()

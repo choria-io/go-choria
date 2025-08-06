@@ -138,5 +138,43 @@ var _ = Describe("Client", func() {
 			sort.Strings(seen)
 			Expect(seen).To(Equal([]string{"test.sender.0", "test.sender.1", "test.sender.2", "test.sender.3", "test.sender.4", "test.sender.5", "test.sender.6", "test.sender.7", "test.sender.8", "test.sender.9"}))
 		})
+
+		It("Should respect context cancellation during publish", func() {
+			ping := base64.StdEncoding.EncodeToString([]byte("ping"))
+			msg, err := message.NewMessage([]byte(ping), "discovery", "mcollective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+			msg.SetReplyTo("custom")
+
+			// Create a context that will be cancelled
+			ctx, cancel := context.WithCancel(context.Background())
+
+			// Cancel the context immediately
+			cancel()
+
+			// The publish should fail due to context cancellation
+			err = client.Request(ctx, msg, nil)
+			Expect(err).To(Equal(context.Canceled))
+		})
+
+		It("Should respect context cancellation during connection", func() {
+			// Create a client without a pre-configured connection
+			clientWithoutConn, err := New(fw, Timeout(100*time.Millisecond), Name("test-no-conn"))
+			Expect(err).ToNot(HaveOccurred())
+
+			// Create a context that will be cancelled
+			ctx, cancel := context.WithCancel(context.Background())
+
+			// Cancel the context immediately
+			cancel()
+
+			ping := base64.StdEncoding.EncodeToString([]byte("ping"))
+			msg, err := message.NewMessage([]byte(ping), "discovery", "mcollective", "request", nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+			msg.SetReplyTo("custom")
+
+			// The request should fail due to context cancellation during connection
+			err = clientWithoutConn.Request(ctx, msg, nil)
+			Expect(err).To(Equal(context.Canceled))
+		})
 	})
 })

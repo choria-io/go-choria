@@ -160,6 +160,12 @@ func (s *Spool) Run(ctx context.Context, wg *sync.WaitGroup, conn inter.RawNATSC
 
 			// always do 1 attempt to publish unreliable messages
 			if !m.Reliable {
+				select {
+				case <-ctx.Done():
+					return ctx.Err()
+				default:
+				}
+				
 				err = s.conn.PublishRawMsg(msg)
 				if err != nil {
 					s.log.Errorf("Could not publish unreliable message %s, discarding: %s", m.ID, err)
