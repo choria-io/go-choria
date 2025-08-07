@@ -319,6 +319,12 @@ func (conn *Connection) Unsubscribe(name string) error {
 
 // PublishRaw allows any data to be published to any target
 func (conn *Connection) PublishRaw(target string, data []byte) error {
+	select {
+	case <-conn.ctx.Done():
+		return conn.ctx.Err()
+	default:
+	}
+
 	conn.log.Debugf("Publishing %d bytes to %s", len(data), target)
 
 	return conn.nats.Publish(target, data)
@@ -326,6 +332,12 @@ func (conn *Connection) PublishRaw(target string, data []byte) error {
 
 // PublishRawMsg allows any nats message to be published to any target
 func (conn *Connection) PublishRawMsg(msg *nats.Msg) error {
+	select {
+	case <-conn.ctx.Done():
+		return conn.ctx.Err()
+	default:
+	}
+
 	conn.log.Debugf("Publishing %d bytes to %s", len(msg.Data), msg.Subject)
 	return conn.nats.PublishMsg(msg)
 }
