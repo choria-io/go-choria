@@ -928,7 +928,26 @@ func (fw *Framework) PQLQueryCertNames(query string) ([]string, error) {
 
 // Colorize returns a string of either 'red', 'green' or 'yellow'. If the 'color' configuration
 // is set to false then the string will have no color hints
-func (fw *Framework) Colorize(c string, format string, a ...any) string {
+func (fw *Framework) Colorize(c string, s string) string {
+	if !fw.Config.Color {
+		return fmt.Sprint(s)
+	}
+
+	switch c {
+	case "red":
+		return color.RedString(s)
+	case "green":
+		return color.GreenString(s)
+	case "yellow":
+		return color.YellowString(s)
+	default:
+		return s
+	}
+}
+
+// Colorizef returns a string of either 'red', 'green' or 'yellow'. If the 'color' configuration
+// is set to false then the string will have no color hints
+func (fw *Framework) Colorizef(c string, format string, a ...any) string {
 	if !fw.Config.Color {
 		return fmt.Sprintf(format, a...)
 	}

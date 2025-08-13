@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,7 @@ import (
 	"bufio"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -205,7 +206,7 @@ func (e *External) Discover(ctx context.Context, opts ...DiscoverOption) (n []st
 	}
 
 	if resp.Error != "" {
-		return nil, fmt.Errorf(resp.Error)
+		return nil, errors.New(resp.Error)
 	}
 
 	if resp.Protocol != ResponseProtocol {

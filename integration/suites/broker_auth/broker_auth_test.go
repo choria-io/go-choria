@@ -1,3 +1,7 @@
+// Copyright (c) 2025, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 package broker_auth
 
 import (
@@ -140,7 +144,7 @@ var _ = Describe("Authentication", func() {
 
 				nc, err := nats.Connect("nats://localhost:4222",
 					nats.ErrorHandler(func(_ *nats.Conn, _ *nats.Subscription, err error) {
-						clLogger.Errorf(strings.ReplaceAll(err.Error(), `"`, ``))
+						clLogger.Error(strings.ReplaceAll(err.Error(), `"`, ``))
 					}),
 					nats.Secure(&tls.Config{InsecureSkipVerify: true}),
 					nats.Token(jwt),
@@ -271,7 +275,7 @@ var _ = Describe("Authentication", func() {
 
 				nc, err := nats.Connect("nats://localhost:4222",
 					nats.ErrorHandler(func(_ *nats.Conn, _ *nats.Subscription, err error) {
-						clLogger.Errorf(strings.ReplaceAll(err.Error(), `"`, ``))
+						clLogger.Error(strings.ReplaceAll(err.Error(), `"`, ``))
 					}),
 					nats.Secure(&tls.Config{InsecureSkipVerify: true}),
 					nats.Token(jwt),

@@ -5,7 +5,7 @@ jobs:
   test:
     strategy:
       matrix:
-        go: ["1.23.9", "1.24"] # using 1.23.9 temporarily because of some github actions cache issue
+        go: ["1.24", "1.25"]
 
     runs-on: ubuntu-latest
     steps:

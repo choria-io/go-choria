@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -210,7 +210,7 @@ func (p *Provider) validateRequest(ddl *agentddl.DDL, req *mcorpc.Request, log *
 
 	if len(warnings) > 0 {
 		for _, w := range warnings {
-			log.Warnf(fmt.Sprintf("Validation on input %s to %s#%s returned a warning: %s", req.Action, req.Agent, req.Action, w))
+			log.Warn(fmt.Sprintf("Validation on input %s to %s#%s returned a warning: %s", req.Action, req.Agent, req.Action, w))
 		}
 	}
 

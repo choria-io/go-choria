@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,6 +8,7 @@ import (
 	"bytes"
 	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"math/rand/v2"
@@ -158,7 +159,7 @@ func (p *loginCommand) login() error {
 	}
 
 	if login["error"] != "" {
-		return fmt.Errorf(login["error"])
+		return errors.New(login["error"])
 	}
 
 	if login["token"] == "" {
