@@ -1,3 +1,7 @@
+// Copyright (c) 2025, R.I. Pienaar and the Choria Project contributors
+//
+// SPDX-License-Identifier: Apache-2.0
+
 // generated code; DO NOT EDIT
 
 package choria_utilclient
@@ -133,10 +137,10 @@ func (r *requester) configureProgress(count int) {
 
 	r.progress.PrependFunc(func(b *uiprogress.Bar) string {
 		if b.Current() < count {
-			return r.client.fw.Colorize("red", "%d / %d", b.Current(), count)
+			return r.client.fw.Colorizef("red", "%d / %d", b.Current(), count)
 		}
 
-		return r.client.fw.Colorize("green", "%d / %d", b.Current(), count)
+		return r.client.fw.Colorizef("green", "%d / %d", b.Current(), count)
 	})
 
 	uiprogress.Start()

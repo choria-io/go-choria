@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -295,10 +295,10 @@ func (s *ChoriaSecurity) verifyByteSignatureByDelegation(dat []byte, sig []byte,
 			s.log.Warnf("Checking using signer %x", signer)
 			pks, name, err = checkDelegate(signer, delegate)
 			if errors.Is(err, errPermissionDenied) {
-				s.log.Warnf(err.Error())
+				s.log.Warn(err.Error())
 				return false, ""
 			} else if err != nil {
-				s.log.Warnf(err.Error())
+				s.log.Warn(err.Error())
 				continue
 			} else if err == nil {
 				break

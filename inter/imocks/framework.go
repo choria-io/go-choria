@@ -560,22 +560,36 @@ func (mr *MockFrameworkMockRecorder) ClientTLSConfig() *gomock.Call {
 }
 
 // Colorize mocks base method.
-func (m *MockFramework) Colorize(c, format string, a ...any) string {
+func (m *MockFramework) Colorize(c, st string) string {
 	m.ctrl.T.Helper()
-	varargs := []any{c, format}
-	for _, a_2 := range a {
-		varargs = append(varargs, a_2)
-	}
-	ret := m.ctrl.Call(m, "Colorize", varargs...)
+	ret := m.ctrl.Call(m, "Colorize", c, st)
 	ret0, _ := ret[0].(string)
 	return ret0
 }
 
 // Colorize indicates an expected call of Colorize.
-func (mr *MockFrameworkMockRecorder) Colorize(c, format any, a ...any) *gomock.Call {
+func (mr *MockFrameworkMockRecorder) Colorize(c, st any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Colorize", reflect.TypeOf((*MockFramework)(nil).Colorize), c, st)
+}
+
+// Colorizef mocks base method.
+func (m *MockFramework) Colorizef(c, format string, a ...any) string {
+	m.ctrl.T.Helper()
+	varargs := []any{c, format}
+	for _, a_2 := range a {
+		varargs = append(varargs, a_2)
+	}
+	ret := m.ctrl.Call(m, "Colorizef", varargs...)
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// Colorizef indicates an expected call of Colorizef.
+func (mr *MockFrameworkMockRecorder) Colorizef(c, format any, a ...any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{c, format}, a...)
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Colorize", reflect.TypeOf((*MockFramework)(nil).Colorize), varargs...)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Colorizef", reflect.TypeOf((*MockFramework)(nil).Colorizef), varargs...)
 }
 
 // Configuration mocks base method.

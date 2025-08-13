@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -264,10 +264,10 @@ func (r *RPC) configureProgressBar(fw inter.Framework, count int, expected int) 
 
 	r.progressBar.PrependFunc(func(b *uiprogress.Bar) string {
 		if b.Current() < expected {
-			return fw.Colorize("red", "%d / %d", b.Current(), count)
+			return fw.Colorizef("red", "%d / %d", b.Current(), count)
 		}
 
-		return fw.Colorize("green", "%d / %d", b.Current(), count)
+		return fw.Colorizef("green", "%d / %d", b.Current(), count)
 	})
 
 	uiprogress.Start()

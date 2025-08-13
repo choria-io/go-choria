@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -57,7 +57,8 @@ type Framework interface {
 	CallerID() string
 	Certname() string
 	ClientTLSConfig() (*tls.Config, error)
-	Colorize(c string, format string, a ...any) string
+	Colorize(c string, st string) string
+	Colorizef(c string, format string, a ...any) string
 	ConfigureProvisioning(ctx context.Context)
 	DDLResolvers() ([]DDLResolver, error)
 	DisableTLSVerify() bool

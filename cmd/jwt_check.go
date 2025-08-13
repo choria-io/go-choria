@@ -104,7 +104,7 @@ func (c *jwtCheckCommand) Run(wg *sync.WaitGroup) (err error) {
 
 func (c *jwtCheckCommand) check(result *monitor.Result) {
 	if c.file == "" {
-		result.Critical("token file is required")
+		result.Criticalf("token file is required")
 		return
 	}
 
@@ -114,7 +114,7 @@ func (c *jwtCheckCommand) check(result *monitor.Result) {
 	}
 
 	token, err := os.ReadFile(c.file)
-	if result.CriticalIfErr(err, "token cannot be read: %v", err) {
+	if result.CriticalIfErrf(err, "token cannot be read: %v", err) {
 		return
 	}
 
@@ -138,7 +138,7 @@ func (c *jwtCheckCommand) check(result *monitor.Result) {
 	case tokens.ProvisioningPurpose:
 		c.checkProvToken(string(token), issuer, result)
 	case tokens.UnknownPurpose:
-		result.Critical("unknown token purpose")
+		result.Criticalf("unknown token purpose")
 	}
 }
 
@@ -151,39 +151,39 @@ func (c *jwtCheckCommand) checkClientToken(token string, issuer ed25519.PublicKe
 	} else {
 		jwt, err = tokens.ParseClientIDToken(token, issuer, false)
 	}
-	if result.CriticalIfErr(err, "%s", err) {
+	if result.CriticalIfErrf(err, "%s", err) {
 		return
 	}
 
 	if c.identity != "" && jwt.CallerID != c.identity {
-		result.Critical("identity %s", jwt.CallerID)
+		result.Criticalf("identity %s", jwt.CallerID)
 	}
 
 	if jwt.PublicKey == "" {
-		result.Critical("no public key")
+		result.Criticalf("no public key")
 	}
 
 	if c.chainIssuerSet {
 		isIssuer := jwt.IsChainedIssuer(true)
 
 		if isIssuer != c.chainIssuer {
-			result.Critical("chain issuer: %t", isIssuer)
+			result.Criticalf("chain issuer: %t", isIssuer)
 		}
 	}
 
 	if c.opa && jwt.OPAPolicy == "" {
-		result.Critical("no OPA policy")
+		result.Criticalf("no OPA policy")
 	}
 
 	for _, sub := range c.sub {
 		if !iu.StringInList(jwt.AdditionalSubscribeSubjects, sub) {
-			result.Critical("subscribe %v", sub)
+			result.Criticalf("subscribe %v", sub)
 		}
 	}
 
 	for _, pub := range c.pub {
 		if !iu.StringInList(jwt.AdditionalPublishSubjects, pub) {
-			result.Critical("subscribe %v", pub)
+			result.Criticalf("subscribe %v", pub)
 		}
 	}
 
@@ -202,21 +202,21 @@ func (c *jwtCheckCommand) checkServerToken(token string, issuer ed25519.PublicKe
 	} else {
 		jwt, err = tokens.ParseServerToken(token, issuer)
 	}
-	if result.CriticalIfErr(err, "%s", err) {
+	if result.CriticalIfErrf(err, "%s", err) {
 		return
 	}
 
 	if c.identity != "" && jwt.ChoriaIdentity != c.identity {
-		result.Critical("identity %s", jwt.ChoriaIdentity)
+		result.Criticalf("identity %s", jwt.ChoriaIdentity)
 	}
 
 	if jwt.PublicKey == "" {
-		result.Critical("no public key")
+		result.Criticalf("no public key")
 	}
 
 	for _, pub := range c.pub {
 		if !iu.StringInList(jwt.AdditionalPublishSubjects, pub) {
-			result.Critical("publish %v", pub)
+			result.Criticalf("publish %v", pub)
 		}
 	}
 
@@ -234,7 +234,7 @@ func (c *jwtCheckCommand) checkProvToken(token string, issuer ed25519.PublicKey,
 	} else {
 		jwt, err = tokens.ParseProvisioningToken(token, issuer)
 	}
-	if result.CriticalIfErr(err, "%s", err) {
+	if result.CriticalIfErrf(err, "%s", err) {
 		return
 	}
 
@@ -247,13 +247,13 @@ func (c *jwtCheckCommand) commonChecks(claims tokens.StandardClaims, result *mon
 	c.checkValidity(claims, result)
 
 	if claims.ID == "" {
-		result.Critical("no id")
+		result.Criticalf("no id")
 	}
 	if claims.ExpireTime().IsZero() {
-		result.Critical("no expiry")
+		result.Criticalf("no expiry")
 	}
 	if claims.NotBefore == nil || claims.NotBefore.IsZero() {
-		result.Critical("no not before")
+		result.Criticalf("no not before")
 	}
 }
 
@@ -261,26 +261,26 @@ func (c *jwtCheckCommand) checkValidity(claims tokens.StandardClaims, result *mo
 	exp := claims.ExpireTime()
 	untilExp := time.Until(exp)
 	if exp.IsZero() {
-		result.Critical("no expires time")
+		result.Criticalf("no expires time")
 		return
 	}
 
 	result.Pd(&monitor.PerfDataItem{Name: "expires", Value: untilExp.Seconds(), Unit: "s", Help: "Seconds until expiry"})
 
 	if claims.IsExpired() {
-		result.Critical("expired")
+		result.Criticalf("expired")
 		return
 	}
 
 	if c.validityMin > 0 {
 		if untilExp < c.validityMin {
-			result.Critical("expires in %v", iu.RenderDuration(untilExp))
+			result.Criticalf("expires in %v", iu.RenderDuration(untilExp))
 		}
 	}
 
 	if c.validityMax > 0 {
 		if untilExp > c.validityMax {
-			result.Critical("expires in %v", iu.RenderDuration(untilExp))
+			result.Criticalf("expires in %v", iu.RenderDuration(untilExp))
 		}
 	}
 }
@@ -297,7 +297,7 @@ func (c *jwtCheckCommand) checkPurpose(purpose tokens.Purpose, result *monitor.R
 			should = tokens.ProvisioningPurpose
 		}
 		if purpose != should {
-			result.Critical("%s purpose", purpose)
+			result.Criticalf("%s purpose", purpose)
 		}
 	}
 }
@@ -311,18 +311,18 @@ func (c *jwtCheckCommand) checkQueries(token any, result *monitor.Result) {
 		json.Unmarshal(dat, &claims)
 
 		prog, err := expr.Compile(query, expr.AsBool())
-		if result.CriticalIfErr(err, "invalid query: %s: %v", query, err) {
+		if result.CriticalIfErrf(err, "invalid query: %s: %v", query, err) {
 			return
 		}
 
 		res, err := expr.Run(prog, claims)
-		if result.CriticalIfErr(err, "invalid query: %s: %v", query, err) {
+		if result.CriticalIfErrf(err, "invalid query: %s: %v", query, err) {
 			return
 		}
 
 		b, ok := res.(bool)
 		if !ok {
-			result.Critical("query not boolean")
+			result.Criticalf("query not boolean")
 			return
 		}
 
