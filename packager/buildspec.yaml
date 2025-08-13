@@ -162,6 +162,18 @@ foss:
       target_arch: ppc64le
       binary: ppc64le_linux
 
+    el10_64:
+      template: el/el10
+      dist: el10
+      target_arch: x86_64
+      binary: 64bit_linux
+
+    el10_ppc64le:
+      template: el/el10
+      dist: el10
+      target_arch: ppc64le
+      binary: ppc64le_linux
+
     bionic_64:
       template: debian/generic
       target_arch: x86_64-linux-gnu
