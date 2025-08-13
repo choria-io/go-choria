@@ -1,6 +1,6 @@
 module github.com/choria-io/go-choria
 
-go 1.23.9
+go 1.24.0
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
@@ -9,12 +9,12 @@ require (
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
 	github.com/choria-io/appbuilder v0.11.0
-	github.com/choria-io/fisk v0.7.1
+	github.com/choria-io/fisk v0.7.2
 	github.com/choria-io/go-updater v0.1.0
 	github.com/choria-io/tokens v0.0.4-0.20240316144214-a929d9325d48
 	github.com/cloudevents/sdk-go/v2 v2.16.1
 	github.com/dustin/go-humanize v1.0.1
-	github.com/expr-lang/expr v1.17.5
+	github.com/expr-lang/expr v1.17.6
 	github.com/fatih/color v1.18.0
 	github.com/fatih/structtag v1.2.0
 	github.com/freman/eventloghook v0.0.0-20250604093238-a195f2852650
@@ -47,12 +47,12 @@ require (
 	github.com/tidwall/pretty v1.2.1
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/mock v0.5.2
-	golang.org/x/crypto v0.40.0
-	golang.org/x/exp v0.0.0-20250718183923-645b1fa84792
+	golang.org/x/crypto v0.41.0
+	golang.org/x/exp v0.0.0-20250813145105-42675adae3e6
 	golang.org/x/sys v0.35.0
 	golang.org/x/term v0.34.0
 	golang.org/x/text v0.28.0
-	golang.org/x/tools v0.35.0
+	golang.org/x/tools v0.36.0
 )
 
 require (
@@ -106,7 +106,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
-	github.com/nats-io/jwt/v2 v2.7.4 // indirect
+	github.com/nats-io/jwt/v2 v2.8.0 // indirect
 	github.com/nats-io/nkeys v0.4.11 // indirect
 	github.com/nats-io/nsc/v2 v2.11.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
@@ -145,7 +145,7 @@ require (
 	go.uber.org/zap v1.27.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	golang.org/x/mod v0.27.0 // indirect
-	golang.org/x/net v0.42.0 // indirect
+	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
 	golang.org/x/time v0.12.0 // indirect
 	google.golang.org/protobuf v1.36.7 // indirect
