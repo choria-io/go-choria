@@ -94,6 +94,7 @@ jobs:
     needs:
       - el8_64
       - el9_64
+      - el10_64
       - linux_tarball
       - windows_zip
       - darwin_amd64_tarball
