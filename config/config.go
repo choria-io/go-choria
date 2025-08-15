@@ -21,8 +21,6 @@ import (
 	"github.com/choria-io/go-choria/puppet"
 )
 
-var forceDotParse bool
-
 // Config represents Choria cofnfiguration
 //
 // NOTE: When adding or updating doc strings please run `go generate` in the root of the repository
@@ -95,6 +93,9 @@ type Config struct {
 
 	// ConfigFile is the main configuration that got parsed
 	ConfigFile string
+
+	// The system-wide configuration directory. Plugins are loaded from there
+	SystemConfigDirectory string
 
 	// ParsedFiles is a list of all files parsed to create the current config
 	ParsedFiles []string
@@ -408,23 +409,24 @@ func (c *Config) UnParsedOptions() map[string]string {
 }
 
 func (c *Config) dotdDir() string {
-	if !forceDotParse {
-		home, err := iu.HomeDir()
-		if err == nil {
-			if strings.HasPrefix(c.ConfigFile, home) {
-				return ""
-			}
-		}
-	}
-
-	return filepath.Join(filepath.Dir(c.ConfigFile), "plugin.d")
+	return filepath.Join(c.SystemConfigDirectory, "plugin.d")
 }
 
 func newConfig() *Config {
+	scd := ""
+	if iu.FileExist("/etc/choria") {
+		scd = "/etc/choria"
+	} else if iu.FileExist("/usr/local/etc/choria") {
+		scd = "/usr/local/etc/choria"
+	} else if iu.FileExist("C:\\ProgramData\\choria\\etc") {
+		scd = "C:\\ProgramData\\choria\\etc"
+	}
+
 	m := &Config{
-		Choria:  newChoria(),
-		rawOpts: make(map[string]string),
-		Puppet:  puppet.New(),
+		Choria:                newChoria(),
+		rawOpts:               make(map[string]string),
+		Puppet:                puppet.New(),
+		SystemConfigDirectory: scd,
 	}
 
 	err := confkey.SetStructDefaults(m)
