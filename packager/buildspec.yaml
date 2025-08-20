@@ -270,6 +270,30 @@ foss:
       binary: aarch64_linux
       distro: bullseye
 
+    trixie_armel:
+      template: debian/generic
+      target_arch: arm-linux-gnueabi
+      binary: armv5_linux
+      distro: trixie
+
+    trixie_armhf:
+      template: debian/generic
+      target_arch: arm-linux-gnueabihf
+      binary: armv7_linux
+      distro: trixie
+
+    trixie_64:
+      template: debian/generic
+      target_arch: x86_64-linux-gnu
+      binary: 64bit_linux
+      distro: trixie
+
+    trixie_aarch64:
+      template: debian/generic
+      target_arch: aarch64-linux-gnu
+      binary: aarch64_linux
+      distro: trixie
+
     windows_64:
       name: Choria
       display_name: Choria Orchestrator
