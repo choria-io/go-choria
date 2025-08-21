@@ -35,6 +35,16 @@ jobs:
           packager_tag: el10-go1.24
           version: nightly
 
+  trixie_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: trixie_64
+          packager_tag: trixie-go1.24
+          version: nightly
+
   linux_tarball:
     runs-on: ubuntu-latest
     steps:
