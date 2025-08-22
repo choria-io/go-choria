@@ -5,6 +5,8 @@ on:
       - '*'
 
 jobs:
+  # RedHat
+
   el8_64:
     runs-on: ubuntu-latest
     steps:
@@ -44,6 +46,8 @@ jobs:
           build_package: el9_ppc64le
           packager_tag: el9-go1.24
           version: tag
+
+  # Debian
 
   bookworm_64:
     runs-on: ubuntu-latest
@@ -125,6 +129,48 @@ jobs:
           packager_tag: bullseye-go1.24
           version: tag
 
+  trixie_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: trixie_64
+          packager_tag: trixie-go1.24
+          version: tag
+
+  trixie_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: trixie_aarch64
+          packager_tag: trixie-go1.24
+          version: tag
+
+  trixie_armel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: trixie_armel
+          packager_tag: trixie-go1.24
+          version: tag
+
+  trixie_armhf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: trixie_armhf
+          packager_tag: trixie-go1.24
+          version: tag
+
+  # Ubuntu
+
   bionic_64:
     runs-on: ubuntu-latest
     steps:
@@ -205,6 +251,8 @@ jobs:
           packager_tag: noble-go1.24
           version: tag
 
+  # Windows
+
   windows_64:
     runs-on: ubuntu-latest
     steps:
@@ -227,6 +275,10 @@ jobs:
       - bookworm_aarch64
       - bookworm_armel
       - bookworm_armhf
+      - trixie_64
+      - trixie_aarch64
+      - trixie_armel
+      - trixie_armhf
       - el8_64
       - el8_ppc64le
       - el9_64
