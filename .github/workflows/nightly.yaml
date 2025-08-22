@@ -109,6 +109,7 @@ jobs:
       - windows_zip
       - darwin_amd64_tarball
       - darwin_arm64_tarball
+      - trixie_64
 
     runs-on: ubuntu-latest
     steps:
