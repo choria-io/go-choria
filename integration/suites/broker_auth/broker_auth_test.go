@@ -297,7 +297,7 @@ var _ = Describe("Authentication", func() {
 				// should only access its own replies
 				_, err = nc.Subscribe("c1.reply.xxxx.>", func(_ *nats.Msg) {})
 				Expect(err).ToNot(HaveOccurred())
-				Eventually(logbuff, 1).Should(gbytes.Say("Subscription Violation - User .+up=ginkgo.+, Subject .+c1.reply.xxxx.>"))
+				Eventually(logbuff, 1).Should(gbytes.Say("\"choria/user:up=ginkgo.+Subscription Violation - Subject .+c1.reply.xxxx.>"))
 				Eventually(clBuffer, 1).Should(gbytes.Say("Permissions Violation for Subscription to c1.reply.xxxx.>"))
 
 				_, err = nc.Subscribe("c1.reply.e33bf0376d4accbb4a8fd24b2f840b2e.>", func(_ *nats.Msg) {})
