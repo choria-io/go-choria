@@ -16,6 +16,7 @@ import (
 	"github.com/choria-io/go-choria/choria"
 	"github.com/choria-io/go-choria/client/rpcutilclient"
 	"github.com/choria-io/go-choria/config"
+	. "github.com/choria-io/go-choria/integration/matchers"
 	"github.com/choria-io/go-choria/integration/testbroker"
 	"github.com/choria-io/go-choria/integration/testutil"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc"
@@ -117,11 +118,10 @@ var _ = Describe("rpcutil agent", func() {
 		It("Should get the right inventory", func() {
 			res, err := rpcutilClient.OptionTargets([]string{"localhost"}).AgentInventory().Do(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Stats().OKCount()).To(Equal(1))
+			Expect(res).To(HaveOnlySuccessfulResponses())
 
 			r := rpcutil.AgentInventoryReply{}
 			Expect(res.AllOutputs()[0].ParseAgentInventoryOutput(&r)).ToNot(HaveOccurred())
-
 			Expect(r.Agents).To(HaveLen(1))
 			Expect(r.Agents[0].Agent).To(Equal("rpcutil"))
 			Expect(r.Agents[0].Name).To(Equal("rpcutil"))
@@ -133,7 +133,7 @@ var _ = Describe("rpcutil agent", func() {
 		It("Should fetch correct collective info", func() {
 			res, err := rpcutilClient.OptionTargets([]string{"localhost"}).CollectiveInfo().Do(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Stats().OKCount()).To(Equal(1))
+			Expect(res).To(HaveOnlySuccessfulResponses())
 
 			r := res.AllOutputs()[0]
 			Expect(r.Collectives()).To(Equal([]any{"mcollective", "other"}))
@@ -145,7 +145,7 @@ var _ = Describe("rpcutil agent", func() {
 		It("Should fetch correct instance stats", func() {
 			res, err := rpcutilClient.OptionTargets([]string{"localhost"}).DaemonStats().Do(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Stats().OKCount()).To(Equal(1))
+			Expect(res).To(HaveOnlySuccessfulResponses())
 
 			r := res.AllOutputs()[0]
 
@@ -160,7 +160,7 @@ var _ = Describe("rpcutil agent", func() {
 		It("Should fetch correct item", func() {
 			res, err := rpcutilClient.OptionTargets([]string{"localhost"}).GetConfigItem("classesfile").Do(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Stats().OKCount()).To(Equal(1))
+			Expect(res).To(HaveOnlySuccessfulResponses())
 
 			r := res.AllOutputs()[0]
 			Expect(r.Item()).To(Equal("classesfile"))
@@ -172,7 +172,7 @@ var _ = Describe("rpcutil agent", func() {
 		It("Should get the right data", func() {
 			res, err := rpcutilClient.OptionTargets([]string{"localhost"}).GetData("choria").Do(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Stats().OKCount()).To(Equal(1))
+			Expect(res).To(HaveOnlySuccessfulResponses())
 
 			r := res.AllOutputs()[0].HashMap()
 
@@ -186,7 +186,7 @@ var _ = Describe("rpcutil agent", func() {
 		It("Should get the right value", func() {
 			res, err := rpcutilClient.OptionTargets([]string{"localhost"}).GetFact("struct.foo").Do(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Stats().OKCount()).To(Equal(1))
+			Expect(res).To(HaveOnlySuccessfulResponses())
 
 			r := res.AllOutputs()[0]
 			Expect(r.Fact()).To(Equal("struct.foo"))
@@ -198,7 +198,7 @@ var _ = Describe("rpcutil agent", func() {
 		It("Should get the right value", func() {
 			res, err := rpcutilClient.OptionTargets([]string{"localhost"}).GetFacts("struct.foo,bool").Do(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Stats().OKCount()).To(Equal(1))
+			Expect(res).To(HaveOnlySuccessfulResponses())
 
 			r := res.AllOutputs()[0].Values()
 			Expect(r).To(HaveKeyWithValue("struct.foo", any("bar")))
@@ -210,7 +210,7 @@ var _ = Describe("rpcutil agent", func() {
 		It("Should retrieve the correct info", func() {
 			res, err := rpcutilClient.OptionTargets([]string{"localhost"}).Inventory().Do(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Stats().OKCount()).To(Equal(1))
+			Expect(res).To(HaveOnlySuccessfulResponses())
 
 			r := res.AllOutputs()[0]
 			Expect(r.Agents()).To(Equal([]any{"rpcutil"}))
@@ -229,7 +229,7 @@ var _ = Describe("rpcutil agent", func() {
 		It("Should do the correct pong", func() {
 			res, err := rpcutilClient.OptionTargets([]string{"localhost"}).Ping().Do(ctx)
 			Expect(err).ToNot(HaveOccurred())
-			Expect(res.Stats().OKCount()).To(Equal(1))
+			Expect(res).To(HaveOnlySuccessfulResponses())
 
 			r := res.AllOutputs()[0]
 			Expect(err).ToNot(HaveOccurred())

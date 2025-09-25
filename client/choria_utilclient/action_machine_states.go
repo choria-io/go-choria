@@ -76,6 +76,11 @@ func (d *MachineStatesResult) Stats() Stats {
 	return d.stats
 }
 
+// RPCClientStats is the rpc request stats
+func (d *MachineStatesResult) RPCClientStats() *rpcclient.Stats {
+	return d.stats
+}
+
 // ResultDetails is the details about the request
 func (d *MachineStatesOutput) ResultDetails() *ResultDetails {
 	return d.details

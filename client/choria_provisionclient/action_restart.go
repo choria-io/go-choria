@@ -76,6 +76,11 @@ func (d *RestartResult) Stats() Stats {
 	return d.stats
 }
 
+// RPCClientStats is the rpc request stats
+func (d *RestartResult) RPCClientStats() *rpcclient.Stats {
+	return d.stats
+}
+
 // ResultDetails is the details about the request
 func (d *RestartOutput) ResultDetails() *ResultDetails {
 	return d.details

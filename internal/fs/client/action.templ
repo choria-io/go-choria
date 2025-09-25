@@ -73,6 +73,11 @@ func (d *{{ .ActionName | SnakeToCamel }}Result) Stats() Stats {
 	return d.stats
 }
 
+// RPCClientStats is the rpc request stats
+func (d *{{ .ActionName | SnakeToCamel }}Result) RPCClientStats() *rpcclient.Stats {
+	return d.stats
+}
+
 // ResultDetails is the details about the request
 func (d *{{ .ActionName | SnakeToCamel }}Output) ResultDetails() *ResultDetails {
 	return d.details

@@ -76,6 +76,11 @@ func (d *GossValidateResult) Stats() Stats {
 	return d.stats
 }
 
+// RPCClientStats is the rpc request stats
+func (d *GossValidateResult) RPCClientStats() *rpcclient.Stats {
+	return d.stats
+}
+
 // ResultDetails is the details about the request
 func (d *GossValidateOutput) ResultDetails() *ResultDetails {
 	return d.details

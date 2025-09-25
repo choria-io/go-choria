@@ -76,6 +76,11 @@ func (d *Gen25519Result) Stats() Stats {
 	return d.stats
 }
 
+// RPCClientStats is the rpc request stats
+func (d *Gen25519Result) RPCClientStats() *rpcclient.Stats {
+	return d.stats
+}
+
 // ResultDetails is the details about the request
 func (d *Gen25519Output) ResultDetails() *ResultDetails {
 	return d.details

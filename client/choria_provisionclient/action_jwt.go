@@ -76,6 +76,11 @@ func (d *JwtResult) Stats() Stats {
 	return d.stats
 }
 
+// RPCClientStats is the rpc request stats
+func (d *JwtResult) RPCClientStats() *rpcclient.Stats {
+	return d.stats
+}
+
 // ResultDetails is the details about the request
 func (d *JwtOutput) ResultDetails() *ResultDetails {
 	return d.details
