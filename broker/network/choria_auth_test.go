@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -1841,7 +1841,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				user.Account = auth.choriaAccount
 				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{StreamsUser: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-					Allow: minSub,
+					Allow: append(minSub, "*.republish.>"),
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 					Allow: append(minPub,
@@ -1885,7 +1885,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				user.Account = auth.choriaAccount
 				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{StreamsUser: true, Governor: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-					Allow: minSub,
+					Allow: append(minSub, "*.republish.>"),
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 					Allow: append(minPub, []string{

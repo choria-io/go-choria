@@ -8,7 +8,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"strconv"
+	"strings"
 	"sync"
 	"time"
 
@@ -47,9 +50,10 @@ type properties struct {
 	Bucket                    string
 	Key                       string
 	Mode                      string
-	TransitionOnSuccessfulGet bool `mapstructure:"on_successful_get"`
-	TransitionOnMatch         bool `mapstructure:"on_matching_update"`
-	BucketPrefix              bool `mapstructure:"bucket_prefix"`
+	TransitionOnSuccessfulGet bool   `mapstructure:"on_successful_get"`
+	TransitionOnMatch         bool   `mapstructure:"on_matching_update"`
+	BucketPrefix              bool   `mapstructure:"bucket_prefix"`
+	RepublishTrigger          string `mapstructure:"republish_trigger"`
 }
 
 type Watcher struct {
@@ -59,6 +63,7 @@ type Watcher struct {
 	name     string
 	machine  model.Machine
 	kv       nats.KeyValue
+	sub      *nats.Subscription
 	interval time.Duration
 
 	previousVal   any
@@ -166,6 +171,168 @@ func (w *Watcher) connectKV() error {
 	return nil
 }
 
+func (w *Watcher) setupRepubListener(ctx context.Context) error {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	var err error
+	mgr, err := w.machine.JetStreamConnection()
+	if err != nil {
+		return err
+	}
+	nc := mgr.NatsConn()
+
+	parsed, err := w.ProcessTemplate(w.properties.RepublishTrigger)
+	if err != nil {
+		return fmt.Errorf("could not parse template for republish trigger: %v", err)
+	}
+
+	w.Infof("Setting up republish listener on %q", parsed)
+
+	w.sub, err = nc.Subscribe(parsed, func(msg *nats.Msg) {
+		if !iu.IsNATSRepublishHeaders(msg.Header) {
+			w.Warnf("Received non republished message on %q: %s", msg.Subject, string(msg.Data))
+			return
+		}
+
+		state, err := w.repubHandler(msg)
+		w.Infof("Republish handler returned state %s: %v", stateNames[state], err)
+		w.handleState(state, err)
+	})
+
+	if err == nil {
+		go func() {
+			<-ctx.Done()
+			w.mu.Lock()
+			w.sub.Unsubscribe()
+			w.sub = nil
+			w.mu.Unlock()
+		}()
+	}
+
+	return err
+}
+
+// handles a published message as if its a kv poll result, logic update here should also be changed in poll()
+func (w *Watcher) repubHandler(msg *nats.Msg) (State, error) {
+	if !w.ShouldWatch() {
+		return Skipped, nil
+	}
+
+	w.mu.Lock()
+	if w.polling {
+		w.mu.Unlock()
+		return Skipped, nil
+	}
+	w.polling = true
+	w.mu.Unlock()
+
+	w.Infof("Received republish trigger on subject %s", msg.Subject)
+
+	defer w.stopPolling()
+
+	parsedKey, err := w.ProcessTemplate(w.properties.Key)
+	if err != nil {
+		return Error, fmt.Errorf("could not parse template for key: %v", err)
+	}
+
+	if !strings.HasSuffix(msg.Subject, parsedKey) {
+		return Error, fmt.Errorf("received republish message on %s that does not match expected key %s", msg.Subject, parsedKey)
+	}
+
+	dk := w.dataKey()
+	if w.previousVal == nil {
+		w.previousVal, _ = w.machine.DataGet(dk)
+	}
+
+	val := msg.Data
+	op := msg.Header.Get("KV-Operation")
+
+	seq, err := strconv.ParseUint(msg.Header.Get("Nats-Sequence"), 10, 64)
+	if err != nil {
+		return Error, err
+	}
+
+	parsedValue, err := w.parseValue(val)
+	switch {
+	case err != nil:
+		w.Errorf("Could not parse value %s.%s: %s", w.properties.Bucket, w.properties.Key, err)
+		return Error, err
+
+	case (op == "DEL" || op == "PURGE") && w.previousVal == nil:
+		return Unchanged, nil
+
+	// deleted
+	case (op == "DEL" || op == "PURGE") && w.previousVal != nil:
+		w.Debugf("Removing data from %s", dk)
+		err = w.machine.DataDelete(dk)
+		if err != nil {
+			w.Errorf("Could not delete key %s from machine: %s", dk, err)
+			return Error, err
+		}
+
+		w.previousVal = nil
+		w.previousSeq = seq
+
+		return Changed, err
+
+	// a change
+	case !cmp.Equal(w.previousVal, parsedValue):
+		err = w.machine.DataPut(dk, parsedValue)
+		if err != nil {
+			return Error, err
+		}
+
+		w.previousSeq = seq
+		w.previousVal = parsedValue
+
+		return Changed, nil
+
+	// a put that didn't update, but we are asked to transition anyway
+	// we do not trigger this on first start of the machine only once its running (previousSeq is 0)
+	case cmp.Equal(w.previousVal, parsedValue) && w.properties.TransitionOnMatch && w.previousSeq > 0 && seq > w.previousSeq:
+		w.previousSeq = seq
+
+		return Changed, nil
+
+	default:
+		w.previousSeq = seq
+		if w.properties.TransitionOnSuccessfulGet {
+			return Changed, nil
+		}
+
+		return Unchanged, nil
+	}
+}
+
+func (w *Watcher) parseValue(val []byte) (any, error) {
+	var parsedValue any
+
+	// we try to handle json files into a map[string]any this means nested lookups can be done
+	// in other machines using the lookup template func and it works just fine, deep compares are done
+	// on the entire structure later
+	v := bytes.TrimSpace(val)
+	if bytes.HasPrefix(v, []byte("{")) && bytes.HasSuffix(v, []byte("}")) {
+		parsedValue = map[string]any{}
+		err := json.Unmarshal(v, &parsedValue)
+		if err != nil {
+			w.Warnf("unmarshal failed: %s", err)
+		}
+	} else if bytes.HasPrefix(v, []byte("[")) && bytes.HasSuffix(v, []byte("]")) {
+		parsedValue = []any{}
+		err := json.Unmarshal(v, &parsedValue)
+		if err != nil {
+			w.Warnf("unmarshal failed: %s", err)
+		}
+	}
+
+	if parsedValue == nil {
+		parsedValue = string(val)
+	}
+
+	return parsedValue, nil
+}
+
 func (w *Watcher) poll() (State, error) {
 	if !w.ShouldWatch() {
 		return Skipped, nil
@@ -201,7 +368,7 @@ func (w *Watcher) poll() (State, error) {
 
 	parsedKey, err := w.ProcessTemplate(w.properties.Key)
 	if err != nil {
-		return 0, fmt.Errorf("could not parse template for key: %v", err)
+		return Error, fmt.Errorf("could not parse template for key: %v", err)
 	}
 
 	w.Infof("Polling for %s.%s", w.properties.Bucket, parsedKey)
@@ -215,36 +382,22 @@ func (w *Watcher) poll() (State, error) {
 
 	val, err := w.kv.Get(parsedKey)
 	if err == nil {
-		// we try to handle json files into a map[string]interface this means nested lookups can be done
-		// in other machines using the lookup template func and it works just fine, deep compares are done
-		// on the entire structure later
-		v := bytes.TrimSpace(val.Value())
-		if bytes.HasPrefix(v, []byte("{")) && bytes.HasSuffix(v, []byte("}")) {
-			parsedValue = map[string]any{}
-			err := json.Unmarshal(v, &parsedValue)
-			if err != nil {
-				w.Warnf("unmarshal failed: %s", err)
-			}
-		} else if bytes.HasPrefix(v, []byte("[")) && bytes.HasSuffix(v, []byte("]")) {
-			parsedValue = []any{}
-			err := json.Unmarshal(v, &parsedValue)
-			if err != nil {
-				w.Warnf("unmarshal failed: %s", err)
-			}
-		}
-
-		if parsedValue == nil {
-			parsedValue = string(val.Value())
+		var err error // kv.Get() error is checked below so dont overwrite it
+		parsedValue, err = w.parseValue(val.Value())
+		if err != nil {
+			w.Errorf("Could not parse value %s.%s: %s", w.properties.Bucket, parsedKey, err)
+			return Error, err
 		}
 	}
 
+	// if this changes also update repub handler
 	switch {
 	// key isn't there, nothing was previously found its unchanged
-	case err == nats.ErrKeyNotFound && w.previousVal == nil:
+	case errors.Is(err, nats.ErrKeyNotFound) && w.previousVal == nil:
 		return Unchanged, nil
 
 	// key isn't there, we had a value before its a change due to delete
-	case err == nats.ErrKeyNotFound && w.previousVal != nil:
+	case errors.Is(err, nats.ErrKeyNotFound) && w.previousVal != nil:
 		w.Debugf("Removing data from %s", dk)
 		err = w.machine.DataDelete(dk)
 		if err != nil {
@@ -253,6 +406,7 @@ func (w *Watcher) poll() (State, error) {
 		}
 
 		w.previousVal = nil
+		w.previousSeq = 0
 
 		return Changed, err
 
@@ -352,6 +506,13 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 
 	watchCtx, watchCancel := context.WithCancel(ctx)
 	defer watchCancel()
+
+	if w.properties.RepublishTrigger != "" {
+		err := w.setupRepubListener(ctx)
+		if err != nil {
+			w.Errorf("Could not set up republish listener: %s", err)
+		}
+	}
 
 	switch w.properties.Mode {
 	case watchMode:

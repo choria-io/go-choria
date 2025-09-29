@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,6 +25,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/nats-io/nats.go"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 
 	"github.com/choria-io/go-choria/internal/fs"
@@ -80,6 +81,22 @@ func UserConfig() string {
 	}
 
 	return "/etc/puppetlabs/mcollective/client.cfg"
+}
+
+// IsNATSRepublishHeaders checks if all republish headers are present
+func IsNATSRepublishHeaders(header nats.Header) bool {
+	if header == nil {
+		return false
+	}
+
+	for _, h := range [5]string{"Nats-Stream", "Nats-Subject", "Nats-Sequence", "Nats-Time-Stamp", "Nats-Last-Sequence"} {
+		v := header.Get(h)
+		if v == "" {
+			return false
+		}
+	}
+
+	return true
 }
 
 // FileExist checks if a file exist on disk
