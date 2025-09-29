@@ -6,6 +6,7 @@ package network
 
 import (
 	"crypto/ed25519"
+	"crypto/md5"
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
@@ -2077,6 +2078,76 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			auth.setServerPermissions(user, nil, log)
 			Expect(user.Permissions.Publish.Deny).To(Equal([]string{">"}))
 			Expect(user.Permissions.Publish.Allow).To(BeNil())
+		})
+
+		It("Should deny access when claims lack collectives", func() {
+			claims := &tokens.ServerClaims{}
+
+			auth.setServerPermissions(user, claims, log)
+
+			Expect(user.Permissions.Publish.Allow).To(BeNil())
+			Expect(user.Permissions.Publish.Deny).To(Equal(allSubjects))
+			Expect(user.Permissions.Subscribe.Allow).To(BeNil())
+			Expect(user.Permissions.Subscribe.Deny).To(Equal(allSubjects))
+		})
+
+		It("Should apply claims based server permissions", func() {
+			collective := "mcollective"
+			identity := "ginkgo.example.net"
+			claims := &tokens.ServerClaims{
+				ChoriaIdentity:            identity,
+				Collectives:               []string{collective},
+				OrganizationUnit:          "other",
+				AdditionalPublishSubjects: []string{"custom.publish.subject"},
+				Permissions: &tokens.ServerPermissions{
+					Submission:  true,
+					Streams:     true,
+					Governor:    true,
+					ServiceHost: true,
+				},
+			}
+
+			auth.setServerPermissions(user, claims, log)
+
+			hash := md5.Sum([]byte(identity))
+			replyHash := hex.EncodeToString(hash[:])
+
+			expectedSubscribe := []string{
+				collective + ".broadcast.agent.>",
+				collective + ".node." + identity,
+				collective + ".reply." + replyHash + ".>",
+				collective + ".broadcast.service.>",
+				collective + ".republish.>",
+			}
+
+			expectedPublish := []string{
+				"choria.lifecycle.>",
+				"choria.machine.transition",
+				"choria.machine.watcher.>",
+				"custom.publish.subject",
+				collective + ".reply.>",
+				collective + ".broadcast.agent.registration",
+				"choria.federation." + collective + ".collective",
+				collective + ".submission.in.>",
+				collective + ".governor.*",
+				"choria.streams.STREAM.INFO.*",
+				"choria.streams.STREAM.MSG.GET.*",
+				"choria.streams.STREAM.MSG.DELETE.*",
+				"choria.streams.DIRECT.GET.*",
+				"choria.streams.DIRECT.GET.*.>",
+				"choria.streams.CONSUMER.CREATE.*",
+				"choria.streams.CONSUMER.CREATE.*.>",
+				"choria.streams.CONSUMER.DURABLE.CREATE.*.*",
+				"choria.streams.CONSUMER.INFO.*.*",
+				"choria.streams.CONSUMER.MSG.NEXT.*.*",
+				"$JS.ACK.>",
+				"$JS.FC.>",
+			}
+
+			Expect(user.Permissions.Subscribe.Allow).To(Equal(expectedSubscribe))
+			Expect(user.Permissions.Subscribe.Deny).To(BeNil())
+			Expect(user.Permissions.Publish.Allow).To(Equal(expectedPublish))
+			Expect(user.Permissions.Publish.Deny).To(BeNil())
 		})
 	})
 })
