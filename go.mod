@@ -12,7 +12,7 @@ require (
 	github.com/choria-io/fisk v0.7.2
 	github.com/choria-io/go-updater v0.1.0
 	github.com/choria-io/tokens v0.0.4-0.20250903080437-7d289cbf3db9
-	github.com/cloudevents/sdk-go/v2 v2.16.1
+	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/dustin/go-humanize v1.0.1
 	github.com/expr-lang/expr v1.17.6
 	github.com/fatih/color v1.18.0
@@ -30,19 +30,19 @@ require (
 	github.com/looplab/fsm v1.0.3
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.2.5-0.20250813194955-1e93ec03b8b2
+	github.com/nats-io/jsm.go v0.3.0
 	github.com/nats-io/nats-server/v2 v2.12.0
-	github.com/nats-io/nats.go v1.45.0
-	github.com/nats-io/natscli v0.2.5-0.20250813200024-1178d5630c54
+	github.com/nats-io/nats.go v1.46.0
+	github.com/nats-io/natscli v0.3.0
 	github.com/onsi/ginkgo/v2 v2.25.3
 	github.com/onsi/gomega v1.38.2
-	github.com/open-policy-agent/opa v1.8.0
+	github.com/open-policy-agent/opa v1.9.0
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model v0.6.2
 	github.com/robfig/cron v1.2.0
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/segmentio/ksuid v1.0.4
-	github.com/sirupsen/logrus v1.9.3
+	github.com/sirupsen/logrus v1.9.4-0.20230606125235-dd1b4c2e81af
 	github.com/tidwall/gjson v1.18.0
 	github.com/tidwall/pretty v1.2.1
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
@@ -83,7 +83,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/google/go-tpm v0.9.6 // indirect
-	github.com/google/pprof v0.0.0-20250919162441-8b542baf5bcf // indirect
+	github.com/google/pprof v0.0.0-20250923004556-9e5a51aed1e8 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/goss-org/GOnetstat v0.0.0-20230101144325-22be0bd9e64d // indirect
 	github.com/goss-org/go-ps v0.0.0-20230609005227-7b318e6a56e5 // indirect
@@ -106,7 +106,7 @@ require (
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
-	github.com/mattn/go-runewidth v0.0.16 // indirect
+	github.com/mattn/go-runewidth v0.0.17 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/miekg/dns v1.1.68 // indirect
 	github.com/minio/highwayhash v1.0.3 // indirect
@@ -119,22 +119,22 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nats-io/jwt/v2 v2.8.0 // indirect
 	github.com/nats-io/nkeys v0.4.11 // indirect
-	github.com/nats-io/nsc/v2 v2.11.1 // indirect
+	github.com/nats-io/nsc/v2 v2.12.0 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/nsf/termbox-go v1.1.1 // indirect
 	github.com/oleiade/reflections v1.1.0 // indirect
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/common v0.66.1 // indirect
 	github.com/prometheus/procfs v0.17.0 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/samber/lo v1.51.0 // indirect
-	github.com/segmentio/asm v1.2.0 // indirect
+	github.com/segmentio/asm v1.2.1 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/synadia-io/jwt-auth-builder.go v0.0.9 // indirect
-	github.com/synadia-io/orbit.go/jetstreamext v0.1.0 // indirect
+	github.com/synadia-io/orbit.go/jetstreamext v0.2.0 // indirect
 	github.com/synadia-io/orbit.go/natsext v0.1.1 // indirect
 	github.com/tadglines/go-pkgs v0.0.0-20210623144937-b983b20f54f9 // indirect
 	github.com/tchap/go-patricia/v2 v2.3.3 // indirect

@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -908,6 +908,8 @@ func (a *ChoriaAuth) setStreamsUserPermissions(user *server.User, subs []string,
 		return subs, pubs
 	}
 
+	subs = append(subs, "*.republish.>")
+
 	pubs = append(pubs,
 		"$JS.API.INFO",
 		"$JS.API.STREAM.NAMES",
@@ -1142,6 +1144,9 @@ func (a *ChoriaAuth) setClaimsBasedServerPermissions(user *server.User, claims *
 			if claims.Permissions.Governor && claims.Permissions.Streams {
 				user.Permissions.Publish.Allow = append(user.Permissions.Publish.Allow,
 					fmt.Sprintf("%s.governor.*", c),
+				)
+				user.Permissions.Subscribe.Allow = append(user.Permissions.Subscribe.Allow,
+					fmt.Sprintf("%s.republish.>", c),
 				)
 			}
 		}

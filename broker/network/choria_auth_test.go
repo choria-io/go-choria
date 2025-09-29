@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,7 @@ package network
 
 import (
 	"crypto/ed25519"
+	"crypto/md5"
 	"crypto/rsa"
 	"crypto/tls"
 	"crypto/x509"
@@ -1841,7 +1842,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				user.Account = auth.choriaAccount
 				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{StreamsUser: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-					Allow: minSub,
+					Allow: append(minSub, "*.republish.>"),
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 					Allow: append(minPub,
@@ -1885,7 +1886,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				user.Account = auth.choriaAccount
 				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{StreamsUser: true, Governor: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-					Allow: minSub,
+					Allow: append(minSub, "*.republish.>"),
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 					Allow: append(minPub, []string{
@@ -2077,6 +2078,76 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			auth.setServerPermissions(user, nil, log)
 			Expect(user.Permissions.Publish.Deny).To(Equal([]string{">"}))
 			Expect(user.Permissions.Publish.Allow).To(BeNil())
+		})
+
+		It("Should deny access when claims lack collectives", func() {
+			claims := &tokens.ServerClaims{}
+
+			auth.setServerPermissions(user, claims, log)
+
+			Expect(user.Permissions.Publish.Allow).To(BeNil())
+			Expect(user.Permissions.Publish.Deny).To(Equal(allSubjects))
+			Expect(user.Permissions.Subscribe.Allow).To(BeNil())
+			Expect(user.Permissions.Subscribe.Deny).To(Equal(allSubjects))
+		})
+
+		It("Should apply claims based server permissions", func() {
+			collective := "mcollective"
+			identity := "ginkgo.example.net"
+			claims := &tokens.ServerClaims{
+				ChoriaIdentity:            identity,
+				Collectives:               []string{collective},
+				OrganizationUnit:          "other",
+				AdditionalPublishSubjects: []string{"custom.publish.subject"},
+				Permissions: &tokens.ServerPermissions{
+					Submission:  true,
+					Streams:     true,
+					Governor:    true,
+					ServiceHost: true,
+				},
+			}
+
+			auth.setServerPermissions(user, claims, log)
+
+			hash := md5.Sum([]byte(identity))
+			replyHash := hex.EncodeToString(hash[:])
+
+			expectedSubscribe := []string{
+				collective + ".broadcast.agent.>",
+				collective + ".node." + identity,
+				collective + ".reply." + replyHash + ".>",
+				collective + ".broadcast.service.>",
+				collective + ".republish.>",
+			}
+
+			expectedPublish := []string{
+				"choria.lifecycle.>",
+				"choria.machine.transition",
+				"choria.machine.watcher.>",
+				"custom.publish.subject",
+				collective + ".reply.>",
+				collective + ".broadcast.agent.registration",
+				"choria.federation." + collective + ".collective",
+				collective + ".submission.in.>",
+				collective + ".governor.*",
+				"choria.streams.STREAM.INFO.*",
+				"choria.streams.STREAM.MSG.GET.*",
+				"choria.streams.STREAM.MSG.DELETE.*",
+				"choria.streams.DIRECT.GET.*",
+				"choria.streams.DIRECT.GET.*.>",
+				"choria.streams.CONSUMER.CREATE.*",
+				"choria.streams.CONSUMER.CREATE.*.>",
+				"choria.streams.CONSUMER.DURABLE.CREATE.*.*",
+				"choria.streams.CONSUMER.INFO.*.*",
+				"choria.streams.CONSUMER.MSG.NEXT.*.*",
+				"$JS.ACK.>",
+				"$JS.FC.>",
+			}
+
+			Expect(user.Permissions.Subscribe.Allow).To(Equal(expectedSubscribe))
+			Expect(user.Permissions.Subscribe.Deny).To(BeNil())
+			Expect(user.Permissions.Publish.Allow).To(Equal(expectedPublish))
+			Expect(user.Permissions.Publish.Deny).To(BeNil())
 		})
 	})
 })
