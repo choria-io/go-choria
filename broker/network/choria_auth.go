@@ -903,12 +903,12 @@ func (a *ChoriaAuth) setStreamsAdminPermissions(user *server.User, subs []string
 	return subs, pubs
 }
 
-func (a *ChoriaAuth) setStreamsUserPermissions(user *server.User, subs []string, pubs []string) ([]string, []string) {
+func (a *ChoriaAuth) setStreamsUserPermissions(user *server.User, org string, subs []string, pubs []string) ([]string, []string) {
 	if user.Account != a.choriaAccount {
 		return subs, pubs
 	}
 
-	subs = append(subs, "*.republish.>")
+	subs = append(subs, fmt.Sprintf("%s.republish.>", org))
 
 	pubs = append(pubs,
 		"$JS.API.INFO",
@@ -980,9 +980,11 @@ func (a *ChoriaAuth) setElectionPermissions(user *server.User, subs []string, pu
 
 func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string, client *tokens.ClientIDClaims, log *logrus.Entry) (pubs []string, subs []string, pubsDeny []string, subsDeny []string, err error) {
 	var perms *tokens.ClientPermissions
+	var org string
 
 	if client != nil {
 		perms = client.Permissions
+		org = client.OrganizationUnit
 	}
 
 	if perms != nil && perms.OrgAdmin {
@@ -1011,7 +1013,7 @@ func (a *ChoriaAuth) setClientTokenPermissions(user *server.User, caller string,
 		if perms.StreamsUser {
 			log.Debugf("Granting user Streams User access")
 			matched = true
-			subs, pubs = a.setStreamsUserPermissions(user, subs, pubs)
+			subs, pubs = a.setStreamsUserPermissions(user, org, subs, pubs)
 		}
 
 		// Lifecycle and auto agent events
@@ -1145,9 +1147,6 @@ func (a *ChoriaAuth) setClaimsBasedServerPermissions(user *server.User, claims *
 				user.Permissions.Publish.Allow = append(user.Permissions.Publish.Allow,
 					fmt.Sprintf("%s.governor.*", c),
 				)
-				user.Permissions.Subscribe.Allow = append(user.Permissions.Subscribe.Allow,
-					fmt.Sprintf("%s.republish.>", c),
-				)
 			}
 		}
 	}
@@ -1157,6 +1156,8 @@ func (a *ChoriaAuth) setClaimsBasedServerPermissions(user *server.User, claims *
 		if claims.OrganizationUnit != "choria" {
 			prefix = "choria.streams"
 		}
+
+		user.Permissions.Subscribe.Allow = append(user.Permissions.Subscribe.Allow, fmt.Sprintf("%s.republish.>", claims.OrganizationUnit))
 
 		user.Permissions.Publish.Allow = append(user.Permissions.Publish.Allow,
 			fmt.Sprintf("%s.STREAM.INFO.*", prefix),

@@ -1840,9 +1840,9 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 			It("Should set correct permissions for the choria user", func() {
 				user.Account = auth.choriaAccount
-				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{StreamsUser: true}}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{OrganizationUnit: "other", Permissions: &tokens.ClientPermissions{StreamsUser: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-					Allow: append(minSub, "*.republish.>"),
+					Allow: append(minSub, "other.republish.>"),
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 					Allow: append(minPub,
@@ -1884,9 +1884,9 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 			It("Should set choria permissions", func() {
 				user.Account = auth.choriaAccount
-				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{Permissions: &tokens.ClientPermissions{StreamsUser: true, Governor: true}}, log)
+				auth.setClientPermissions(user, "", &tokens.ClientIDClaims{OrganizationUnit: "other", Permissions: &tokens.ClientPermissions{StreamsUser: true, Governor: true}}, log)
 				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-					Allow: append(minSub, "*.republish.>"),
+					Allow: append(minSub, "other.republish.>"),
 				}))
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 					Allow: append(minPub, []string{
@@ -2117,7 +2117,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				collective + ".node." + identity,
 				collective + ".reply." + replyHash + ".>",
 				collective + ".broadcast.service.>",
-				collective + ".republish.>",
+				claims.OrganizationUnit + ".republish.>",
 			}
 
 			expectedPublish := []string{
