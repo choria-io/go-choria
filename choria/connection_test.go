@@ -10,9 +10,11 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/config"
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/tokens"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("Connector", func() {
@@ -75,6 +77,61 @@ var _ = Describe("Connector", func() {
 			conn, err := fw.NewConnector(context.Background(), fw.MiddlewareServers, "ginkgo", fw.Logger("ginkgo"))
 			Expect(err).ToNot(HaveOccurred())
 			Expect(conn).ToNot(BeNil())
+		})
+	})
+
+	Describe("Context Cancellation", func() {
+		It("Should return context.Canceled when context is done", func() {
+			// Create a mock controller
+			ctrl := gomock.NewController(GinkgoT())
+			defer ctrl.Finish()
+
+			// Create a mock framework
+			fw, _ := imock.NewFrameworkForTests(ctrl, GinkgoWriter, imock.WithCallerID())
+
+			// Create a context that we can cancel
+			ctx, cancel := context.WithCancel(context.Background())
+
+			// Cancel the context immediately
+			cancel()
+
+			// Create a connection with the canceled context
+			conn := &Connection{
+				ctx:  ctx,
+				nats: nil, // Not used in this test
+				log:  fw.Logger("ginkgo"),
+			}
+
+			// The PublishRaw method should check the context and return context.Canceled
+			err := conn.PublishRaw("test.subject", []byte("test data"))
+			Expect(err).To(Equal(context.Canceled))
+		})
+
+		It("Should return context.Canceled when context is done for PublishRawMsg", func() {
+			// Create a mock controller
+			ctrl := gomock.NewController(GinkgoT())
+			defer ctrl.Finish()
+
+			// Create a mock framework
+			fw, _ := imock.NewFrameworkForTests(ctrl, GinkgoWriter, imock.WithCallerID())
+
+			// Create a context that we can cancel
+			ctx, cancel := context.WithCancel(context.Background())
+
+			// Cancel the context immediately
+			cancel()
+
+			// Create a connection with the canceled context
+			conn := &Connection{
+				ctx:  ctx,
+				nats: nil, // Not used in this test
+				log:  fw.Logger("ginkgo"),
+			}
+
+			// The PublishRawMsg method should check the context and return context.Canceled
+			// We pass nil since we're just testing the context cancellation logic
+			err := conn.PublishRawMsg(nil)
+			Expect(err).To(Equal(context.Canceled))
 		})
 	})
 })

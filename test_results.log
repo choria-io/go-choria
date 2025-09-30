@@ -1,0 +1,54 @@
+=== RUN   TestChoria
+Running Suite: Choria - /home/random/git/go-choria/choria
+=========================================================
+Random Seed: [1m1754431845[0m
+
+Will run [1m20[0m of [1m20[0m specs
+[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0mtime="2025-08-05T15:10:46-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+[38;5;10m•[0m[38;5;10m•[0mtime="2025-08-05T15:10:46-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m
+
+[38;5;10m[1mRan 20 of 20 Specs in 0.786 seconds[0m
+[38;5;10m[1mSUCCESS![0m -- [38;5;10m[1m20 Passed[0m | [38;5;9m[1m0 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m0 Skipped[0m
+--- PASS: TestChoria (0.79s)
+PASS
+ok  	github.com/choria-io/go-choria/choria	(cached)
+time="2025-08-05T15:10:45-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+=== RUN   TestFederation
+Running Suite: Broker/Federation - /home/random/git/go-choria/broker/federation
+===============================================================================
+Random Seed: [1m1754431845[0m
+
+Will run [1m20[0m of [1m20[0m specs
+time="2025-08-05T15:10:45-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+[38;5;10m•[0mtime="2025-08-05T15:10:45-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+[38;5;10m•[0mtime="2025-08-05T15:10:45-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+[38;5;10m•[0mtime="2025-08-05T15:10:45-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+[38;5;10m•[0mtime="2025-08-05T15:10:45-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0mtime="2025-08-05T15:10:45-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+[38;5;10m•[0mtime="2025-08-05T15:10:45-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+[38;5;10m•[0mtime="2025-08-05T15:10:45-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+[38;5;10m•[0mtime="2025-08-05T15:10:45-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+[38;5;10m•[0mtime="2025-08-05T15:10:45-07:00" level=info msg="Enabling support for legacy SAN free certificates" component=security security=file
+[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m
+
+[38;5;10m[1mRan 20 of 20 Specs in 0.172 seconds[0m
+[38;5;10m[1mSUCCESS![0m -- [38;5;10m[1m20 Passed[0m | [38;5;9m[1m0 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m0 Skipped[0m
+--- PASS: TestFederation (0.17s)
+PASS
+ok  	github.com/choria-io/go-choria/broker/federation	(cached)
+?   	github.com/choria-io/go-choria/broker/federation/stats	[no test files]
+?   	github.com/choria-io/go-choria/broker/adapter/streams	[no test files]
+=== RUN   TestSpool
+Running Suite: Spool - /home/random/git/go-choria/submission
+============================================================
+Random Seed: [1m1754431845[0m
+
+Will run [1m5[0m of [1m5[0m specs
+[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m[38;5;10m•[0m
+
+[38;5;10m[1mRan 5 of 5 Specs in 0.309 seconds[0m
+[38;5;10m[1mSUCCESS![0m -- [38;5;10m[1m5 Passed[0m | [38;5;9m[1m0 Failed[0m | [38;5;11m[1m0 Pending[0m | [38;5;14m[1m0 Skipped[0m
+--- PASS: TestSpool (0.31s)
+PASS
+ok  	github.com/choria-io/go-choria/submission	(cached)
