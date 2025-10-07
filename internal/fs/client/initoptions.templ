@@ -46,6 +46,8 @@ func DiscoveryMethod(m string) InitializationOption {
 		switch m {
 		case "choria", "puppetdb", "pdb":
 			o.ns = &PuppetDBNS{}
+        case "inventory":
+            o.ns = &InventoryNS{}
 		default:
 			o.ns = &BroadcastNS{}
 		}
