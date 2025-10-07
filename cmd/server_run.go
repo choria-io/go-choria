@@ -166,6 +166,11 @@ func (r *serverRunCommand) shouldProvisionTokenAndSeed(tokenFile string, seedFil
 		return true
 	}
 
+	if token.IsExpired() {
+		log.Warnf("The existing server token %s is expired, reprovisioning", tokenFile)
+		return true
+	}
+
 	return false
 }
 
