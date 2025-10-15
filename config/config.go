@@ -63,6 +63,9 @@ type Config struct {
 	// Path to a file listing configuration classes applied to a node, used in matches using Class filters
 	ClassesFile string `confkey:"classesfile" default:"/opt/puppetlabs/puppet/cache/state/classes.txt" type:"path_string"`
 
+	// How long it can take to establish a connection to a Broker
+    ConnectTimeout int `confkey:"connect_timeout" default:"3"`
+
 	// How long to wait for responses while doing broadcast discovery
 	DiscoveryTimeout int `confkey:"discovery_timeout" default:"2"`
 

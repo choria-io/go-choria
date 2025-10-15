@@ -15,6 +15,7 @@ var docStrings = map[string]string{
 	"identity":                        "The identity this machine is known as, when empty it's derived based on the operating system hostname or by calling facter fqdn",
 	"color":                           "Disables or enable CLI color",
 	"classesfile":                     "Path to a file listing configuration classes applied to a node, used in matches using Class filters",
+	"connect_timeout":                 "It limits the maximum time the client will wait to establish a full connection to the server, including the TCP connection, TLS handshake, and authentication. Increase this value on slow or very large networks. It should be generally larger than plugin.choria.network.auth_timeout",
 	"discovery_timeout":               "How long to wait for responses while doing broadcast discovery",
 	"rpcaudit":                        "When enabled uses rpcauditprovider to audit RPC requests processed by the server",
 	"rpcauthorization":                "When enables authorization is performed on every RPC request based on rpcauthprovider",

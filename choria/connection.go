@@ -620,6 +620,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		nats.MaxReconnects(-1),
 		nats.IgnoreAuthErrorAbort(),
 		nats.Name(conn.name),
+		nats.Timeout(time.Duration(conn.config.ConnectTimeout) * time.Second),
 
 		// This is specifically set quite small, just about enough to handle short
 		// reconnects rather than the 8MB long buffer that's default.  30 000 nodes
