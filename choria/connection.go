@@ -147,6 +147,11 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 		ctx:               ctx,
 	}
 
+	// Validate connect timeout
+	if conn.config.Choria.NetworkConnectTimeout > 120*time.Second {
+		return nil, fmt.Errorf("plugin.choria.network.connect_timeout must not exceed 120 seconds")
+	}
+
 	prov := conn.fw.InProcessConnProvider()
 	conn.ipc = prov != nil
 
@@ -620,6 +625,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		nats.MaxReconnects(-1),
 		nats.IgnoreAuthErrorAbort(),
 		nats.Name(conn.name),
+		nats.Timeout(conn.config.Choria.NetworkConnectTimeout),
 
 		// This is specifically set quite small, just about enough to handle short
 		// reconnects rather than the 8MB long buffer that's default.  30 000 nodes
