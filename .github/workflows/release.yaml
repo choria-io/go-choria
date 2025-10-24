@@ -47,6 +47,16 @@ jobs:
           packager_tag: el9-go1.24
           version: tag
 
+  el9_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: el9_aarch64
+          packager_tag: el9-go1.24
+          version: tag
+
   # Debian
 
   bookworm_64:
