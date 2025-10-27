@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -8,7 +8,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/Masterminds/semver"
+	"github.com/Masterminds/semver/v3"
 	"github.com/expr-lang/expr"
 	"github.com/expr-lang/expr/vm"
 	"github.com/google/go-cmp/cmp"
