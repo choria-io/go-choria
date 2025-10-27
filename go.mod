@@ -4,7 +4,7 @@ go 1.24.6
 
 require (
 	github.com/AlecAivazis/survey/v2 v2.3.7
-	github.com/Masterminds/semver v1.5.0
+	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/adrg/xdg v0.5.3
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
@@ -34,7 +34,7 @@ require (
 	github.com/nats-io/nats-server/v2 v2.12.1
 	github.com/nats-io/nats.go v1.47.0
 	github.com/nats-io/natscli v0.3.0
-	github.com/onsi/ginkgo/v2 v2.26.0
+	github.com/onsi/ginkgo/v2 v2.27.1
 	github.com/onsi/gomega v1.38.2
 	github.com/open-policy-agent/opa v1.9.0
 	github.com/prometheus/client_golang v1.23.2
@@ -48,7 +48,7 @@ require (
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.43.0
-	golang.org/x/exp v0.0.0-20251017212417-90e834f514db
+	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546
 	golang.org/x/sys v0.37.0
 	golang.org/x/term v0.36.0
 	golang.org/x/text v0.30.0
@@ -60,7 +60,6 @@ require (
 	dario.cat/mergo v1.0.2 // indirect
 	github.com/HdrHistogram/hdrhistogram-go v1.1.2 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.4.0 // indirect
 	github.com/Masterminds/sprig/v3 v3.3.0 // indirect
 	github.com/achanda/go-sysctl v0.0.0-20160222034550-6be7678c45d2 // indirect
 	github.com/agnivade/levenshtein v1.2.1 // indirect
@@ -72,7 +71,8 @@ require (
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/choria-io/goform v0.0.3 // indirect
 	github.com/choria-io/scaffold v0.0.5 // indirect
-	github.com/clipperhouse/uax29/v2 v2.2.0 // indirect
+	github.com/clipperhouse/stringish v0.1.1 // indirect
+	github.com/clipperhouse/uax29/v2 v2.3.0 // indirect
 	github.com/decred/dcrd/dcrec/secp256k1/v4 v4.4.0 // indirect
 	github.com/emicklei/dot v1.9.2 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
@@ -127,7 +127,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/common v0.67.1 // indirect
-	github.com/prometheus/procfs v0.17.0 // indirect
+	github.com/prometheus/procfs v0.19.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 // indirect
 	github.com/samber/lo v1.52.0 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
