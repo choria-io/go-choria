@@ -51,6 +51,7 @@ type Registration struct {
 type properties struct {
 	Subject      string
 	Payload      string
+	TTLSeconds   int `mapstructure:"ttl_seconds"`
 	Registration *Registration
 }
 
@@ -189,7 +190,14 @@ func (w *Watcher) startGossip() {
 			}
 
 			w.Debugf("Publishing gossip to %s", subject)
-			nc.Publish(subject, []byte(payload))
+
+			msg := nats.NewMsg(subject)
+			msg.Data = []byte(payload)
+			if w.properties.TTLSeconds > 0 {
+				msg.Header.Add("Nats-TTLSeconds", fmt.Sprintf("%ds", w.properties.TTLSeconds))
+			}
+
+			nc.PublishMsg(msg)
 
 			w.mu.Lock()
 			w.lastGossip = time.Now()
@@ -316,15 +324,15 @@ func (w *Watcher) validate() error {
 			w.properties.Subject = fmt.Sprintf("%s.%s", reg.Prefix, subj)
 		}
 
-		if strings.ContainsAny(w.properties.Subject, " ^*") || strings.Contains(w.properties.Subject, "..") {
-			return fmt.Errorf("invalid registration properties")
-		}
-
 		pj, err := json.Marshal(w.properties.Registration)
 		if err != nil {
 			return err
 		}
 		w.properties.Payload = string(pj)
+	}
+
+	if strings.ContainsAny(w.properties.Subject, " ^*") || strings.Contains(w.properties.Subject, "..") {
+		return fmt.Errorf("invalid registration subject")
 	}
 
 	if w.interval == 0 {
