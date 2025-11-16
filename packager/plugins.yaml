@@ -12,7 +12,6 @@ scout: github.com/choria-io/go-choria/scout/agent/scout
 # Autonomous Agent Watchers
 exec_watcher: github.com/choria-io/go-choria/aagent/watchers/execwatcher
 file_watcher: github.com/choria-io/go-choria/aagent/watchers/filewatcher
-homekit_watcher: github.com/choria-io/go-choria/aagent/watchers/homekitwatcher
 metric_watcher: github.com/choria-io/go-choria/aagent/watchers/metricwatcher
 nagios_watcher: github.com/choria-io/go-choria/aagent/watchers/nagioswatcher
 schedule_watcher: github.com/choria-io/go-choria/aagent/watchers/schedulewatcher
