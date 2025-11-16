@@ -29,7 +29,7 @@ func (s *Server) setupStreaming() error {
 
 	s.log.Infof("Enabling Choria Streams for account %s", s.choriaAccount)
 
-	err := s.choriaAccount.EnableJetStream(nil)
+	err := s.choriaAccount.EnableJetStream(nil, nil)
 	if err != nil {
 		s.log.Errorf("Could not enable Choria Streams for the %s account: %s", s.choriaAccount.Name, err)
 	}
