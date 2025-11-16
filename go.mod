@@ -31,7 +31,7 @@ require (
 	github.com/miekg/pkcs11 v1.1.1
 	github.com/mitchellh/mapstructure v1.5.0
 	github.com/nats-io/jsm.go v0.3.0
-	github.com/nats-io/nats-server/v2 v2.12.1
+	github.com/nats-io/nats-server/v2 v2.12.2
 	github.com/nats-io/nats.go v1.47.0
 	github.com/nats-io/natscli v0.3.0
 	github.com/onsi/ginkgo/v2 v2.27.2
@@ -48,11 +48,11 @@ require (
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.44.0
-	golang.org/x/exp v0.0.0-20251023183803-a4bb9ffd2546
+	golang.org/x/exp v0.0.0-20251113190631-e25ba8c21ef6
 	golang.org/x/sys v0.38.0
 	golang.org/x/term v0.37.0
 	golang.org/x/text v0.31.0
-	golang.org/x/tools v0.38.0
+	golang.org/x/tools v0.39.0
 )
 
 require (
@@ -66,7 +66,6 @@ require (
 	github.com/antithesishq/antithesis-sdk-go v0.5.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
-	github.com/brutella/dnssd v1.2.14 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
 	github.com/choria-io/goform v0.0.3 // indirect
@@ -84,7 +83,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/google/go-tpm v0.9.7 // indirect
-	github.com/google/pprof v0.0.0-20251007162407-5df77e3f7d1d // indirect
+	github.com/google/pprof v0.0.0-20251114195745-4902fdda35c8 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/goss-org/GOnetstat v0.0.0-20230101144325-22be0bd9e64d // indirect
 	github.com/goss-org/go-ps v0.0.0-20230609005227-7b318e6a56e5 // indirect
@@ -93,7 +92,7 @@ require (
 	github.com/huandu/xstrings v1.5.0 // indirect
 	github.com/itchyny/gojq v0.12.17 // indirect
 	github.com/itchyny/timefmt-go v0.1.7 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.7.1 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.7.2 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.18.1 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.4 // indirect
@@ -110,7 +109,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.19 // indirect
 	github.com/mgutz/ansi v0.0.0-20200706080929-d51e80ef957d // indirect
 	github.com/miekg/dns v1.1.68 // indirect
-	github.com/minio/highwayhash v1.0.3 // indirect
+	github.com/minio/highwayhash v1.0.4-0.20251030100505-070ab1a87a76 // indirect
 	github.com/mitchellh/copystructure v1.2.0 // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
 	github.com/mitchellh/reflectwalk v1.0.2 // indirect
@@ -136,14 +135,11 @@ require (
 	github.com/synadia-io/jwt-auth-builder.go v0.0.9 // indirect
 	github.com/synadia-io/orbit.go/jetstreamext v0.2.0 // indirect
 	github.com/synadia-io/orbit.go/natsext v0.1.1 // indirect
-	github.com/tadglines/go-pkgs v0.0.0-20210623144937-b983b20f54f9 // indirect
 	github.com/tchap/go-patricia/v2 v2.3.3 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tylertreat/hdrhistogram-writer v0.0.0-20210816161836-2e440612a39f // indirect
 	github.com/valyala/fastjson v1.6.4 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.31 // indirect
-	github.com/vishvananda/netlink v1.3.1 // indirect
-	github.com/vishvananda/netns v0.0.5 // indirect
 	github.com/xeipuuv/gojsonpointer v0.0.0-20190905194746-02993c407bfb // indirect
 	github.com/xeipuuv/gojsonreference v0.0.0-20180127040603-bd5ef7bd5415 // indirect
 	github.com/xiam/to v0.0.0-20200126224905-d60d31e03561 // indirect
