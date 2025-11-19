@@ -15,17 +15,15 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
+	"github.com/choria-io/go-choria/aagent/watchers"
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/ghodss/yaml"
+	"github.com/looplab/fsm"
 	"github.com/nats-io/jsm.go"
 	"github.com/sirupsen/logrus"
-
-	"github.com/choria-io/go-choria/aagent/watchers"
-	"github.com/choria-io/go-choria/internal/util"
-
-	"github.com/looplab/fsm"
 )
 
 const dataFileName = "machine_data.json"
@@ -69,15 +67,16 @@ type Machine struct {
 	choriaStatusFreq int
 	startTime        time.Time
 
-	embedded    bool
-	data        map[string]any
-	facts       func() json.RawMessage
-	jsm         *jsm.Manager
-	conn        inter.Connector
-	manager     WatcherManager
-	fsm         *fsm.FSM
-	notifiers   []NotificationService
-	knownStates map[string]bool
+	embedded     bool
+	data         map[string]any
+	facts        func() json.RawMessage
+	jsm          *jsm.Manager
+	conn         inter.Connector
+	manager      WatcherManager
+	fsm          *fsm.FSM
+	notifiers    []NotificationService
+	knownStates  map[string]bool
+	haHttpServer model.HttpManager
 
 	// we use a 5 second backoff to limit fast transitions
 	// this when this timer fires it will reset the try counter
@@ -308,6 +307,19 @@ func (m *Machine) SetDirectory(dir string, manifest string) error {
 	}
 
 	return nil
+}
+
+func (m *Machine) HttpManager() model.HttpManager {
+	m.Lock()
+	defer m.Unlock()
+
+	return m.haHttpServer
+}
+
+func (m *Machine) SetHttpManager(h model.HttpManager) {
+	m.Lock()
+	m.haHttpServer = h
+	m.Unlock()
 }
 
 func (m *Machine) IsEmbedded() bool {

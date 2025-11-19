@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -23,4 +23,5 @@ type ChoriaProvider interface {
 	Connector() inter.Connector
 	Facts() json.RawMessage
 	MachineSignerKey() string
+	MachineHTTPPort() int
 }

@@ -6,27 +6,30 @@ package aagent
 
 import (
 	"context"
+	"errors"
 	"fmt"
+	"net"
+	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/model"
-	"github.com/sirupsen/logrus"
-
 	"github.com/choria-io/go-choria/aagent/machine"
+	"github.com/choria-io/go-choria/aagent/model"
 	notifier "github.com/choria-io/go-choria/aagent/notifiers/choria"
 	"github.com/choria-io/go-choria/aagent/watchers"
 	"github.com/choria-io/go-choria/internal/util"
+	"github.com/sirupsen/logrus"
 )
 
 type AAgent struct {
-	fw       model.ChoriaProvider
-	logger   *logrus.Entry
-	machines []*managedMachine
-	notifier *notifier.Notifier
+	fw          model.ChoriaProvider
+	logger      *logrus.Entry
+	machines    []*managedMachine
+	notifier    *notifier.Notifier
+	httpManager model.HttpManager
 
 	source string
 
@@ -57,10 +60,42 @@ func New(dir string, fw model.ChoriaProvider) (aa *AAgent, err error) {
 	}, nil
 }
 
+func (a *AAgent) startHTTPListeners(ctx context.Context, wg *sync.WaitGroup) {
+	defer wg.Done()
+
+	if a.fw.MachineHTTPPort() == 0 {
+		return
+	}
+
+	a.logger.Infof("Starting Autonomous Agent HTTP listeners on port %d", a.fw.MachineHTTPPort())
+
+	var err error
+	a.httpManager, err = NewHTTPServer()
+	if err != nil {
+		a.logger.Errorf("Could not start Autonomous Agent HTTP listeners: %s", err)
+	}
+
+	mux := http.NewServeMux()
+	mux.HandleFunc("/choria/homeassistant/v1/{machine}/{watcher}", a.httpManager.SwitchHandler)
+
+	srv := &http.Server{
+		BaseContext: func(_ net.Listener) context.Context { return ctx },
+		Handler:     mux,
+		Addr:        fmt.Sprintf(":%d", a.fw.MachineHTTPPort()),
+	}
+	err = srv.ListenAndServe()
+	if errors.Is(err, http.ErrServerClosed) {
+		return
+	}
+
+	a.logger.Errorf("Could not start Autonomous Agent HTTP listeners: %s", err)
+}
+
 // ManageMachines start observing the source directories starting and stopping machines based on changes on disk
 func (a *AAgent) ManageMachines(ctx context.Context, wg *sync.WaitGroup) error {
 	wg.Add(1)
 	go a.watchSource(ctx, wg)
+	go a.startHTTPListeners(ctx, wg)
 
 	return nil
 }
@@ -145,11 +180,11 @@ func (a *AAgent) loadMachine(ctx context.Context, path string) (err error) {
 	return nil
 }
 
-func (aa *AAgent) startMachines(ctx context.Context, wg *sync.WaitGroup) error {
-	aa.Lock()
-	machines := make([]*managedMachine, len(aa.machines))
-	copy(machines, aa.machines)
-	aa.Unlock()
+func (a *AAgent) startMachines(ctx context.Context, wg *sync.WaitGroup) error {
+	a.Lock()
+	machines := make([]*managedMachine, len(a.machines))
+	copy(machines, a.machines)
+	a.Unlock()
 
 	for _, m := range machines {
 		if m.machine.IsStarted() {

@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,14 +14,12 @@ import (
 
 	"github.com/choria-io/go-choria/aagent"
 	"github.com/choria-io/go-choria/build"
-	"github.com/choria-io/go-choria/inter"
-	"github.com/choria-io/go-choria/lifecycle"
-	"github.com/choria-io/go-choria/statistics"
-
 	"github.com/choria-io/go-choria/filter/classes"
 	"github.com/choria-io/go-choria/filter/facts"
+	"github.com/choria-io/go-choria/inter"
+	"github.com/choria-io/go-choria/lifecycle"
 	"github.com/choria-io/go-choria/server/agents"
-
+	"github.com/choria-io/go-choria/statistics"
 	"github.com/prometheus/client_golang/prometheus"
 	dto "github.com/prometheus/client_model/go"
 )
@@ -63,6 +61,11 @@ func (srv *Instance) PublishRaw(target string, data []byte) error {
 // MachineSignerKey is a key used to sign autonomous agent manifest for watchers like 'machines'
 func (srv *Instance) MachineSignerKey() string {
 	return srv.cfg.Choria.MachinesSignerPublicKey
+}
+
+// MachineHTTPPort is the port used for autonomous machine http interactions
+func (srv *Instance) MachineHTTPPort() int {
+	return srv.cfg.Choria.MachinesHTTPPort
 }
 
 // Connector is the raw NATS connection, use with care, major vendor lock here - but needed for JetStream

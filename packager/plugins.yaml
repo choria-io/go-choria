@@ -21,6 +21,7 @@ gossip_watcher: github.com/choria-io/go-choria/aagent/watchers/gossipwatcher
 archive_watcher: github.com/choria-io/go-choria/aagent/watchers/archivewatcher
 plugins_watcher: github.com/choria-io/go-choria/aagent/watchers/pluginswatcher
 expression_watcher: github.com/choria-io/go-choria/aagent/watchers/expressionwatcher
+haswitch_watcher: github.com/choria-io/go-choria/aagent/watchers/haswitchwatcher
 
 # Data Plugins
 machine_data: github.com/choria-io/go-choria/aagent/data/machinedata
