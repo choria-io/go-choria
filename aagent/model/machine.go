@@ -40,6 +40,8 @@ type Machine interface {
 	DataDelete(key string) error
 	SignerKey() string
 	LookupExternalMachineState(name string) (string, error)
+	SetHttpManager(HttpManager)
+	HttpManager() HttpManager
 	Debugf(name string, format string, args ...any)
 	Infof(name string, format string, args ...any)
 	Warnf(name string, format string, args ...any)

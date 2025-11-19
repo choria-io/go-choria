@@ -148,6 +148,7 @@ type ChoriaPluginConfig struct {
 	MachineSourceDir string `confkey:"plugin.choria.machine.store" url:"https://choria.io/docs/autoagents/"` // Directory where Autonomous Agents are stored
 	// Public key used to sign data for watchers like machines watcher. Will override the value compiled in or in the watcher definitions if set here. This is primarily to allow development environments to use different private keys.
 	MachinesSignerPublicKey string `confkey:"plugin.choria.machine.signing_key"`
+	MachinesHTTPPort        int    `confkey:"plugin.choria.machine.http_port"` // Enables interacting with autonomous agents via HTTP
 
 	StatusFilePath               string   `confkey:"plugin.choria.status_file_path" type:"path_string"`                              // Path to a JSON file to write server health information to regularly
 	StatusUpdateSeconds          int      `confkey:"plugin.choria.status_update_interval" default:"30"`                              // How frequently to write to the status_file_path
