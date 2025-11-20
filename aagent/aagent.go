@@ -16,6 +16,7 @@ import (
 	"sync"
 	"time"
 
+	aahttp "github.com/choria-io/go-choria/aagent/http"
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/aagent/model"
 	notifier "github.com/choria-io/go-choria/aagent/notifiers/choria"
@@ -45,7 +46,8 @@ type managedMachine struct {
 }
 
 const (
-	HTTPSwitchHandlerPattern = "/choria/machine/v1/{machine}/{watcher}"
+	HTTPSwitchHandlerPattern = "/choria/machine/switch/v1/{machine}/{watcher}"
+	HTTPMetricHandlerPattern = "/choria/machine/metric/v1/{machine}/{watcher}"
 )
 
 // New creates a new instance of the choria autonomous agent host
@@ -76,13 +78,14 @@ func (a *AAgent) startHTTPListeners(ctx context.Context, wg *sync.WaitGroup) {
 	a.logger.Infof("Starting Autonomous Agent HTTP listeners on port %d", httpPort)
 
 	var err error
-	a.httpManager, err = NewHTTPServer(a.logger.WithField("port", httpPort))
+	a.httpManager, err = aahttp.NewHTTPServer(a.logger.WithField("port", httpPort))
 	if err != nil {
 		a.logger.Errorf("Could not start Autonomous Agent HTTP listeners: %s", err)
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc(HTTPSwitchHandlerPattern, a.httpManager.SwitchHandler)
+	mux.Handle(HTTPSwitchHandlerPattern, aahttp.LoggingMiddleware(a.logger, http.HandlerFunc(a.httpManager.SwitchHandler)))
+	mux.Handle(HTTPMetricHandlerPattern, aahttp.LoggingMiddleware(a.logger, http.HandlerFunc(a.httpManager.MetricHandler)))
 
 	srv := &http.Server{
 		BaseContext: func(_ net.Listener) context.Context { return ctx },

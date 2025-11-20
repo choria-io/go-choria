@@ -19,11 +19,10 @@ import (
 	"time"
 
 	"github.com/choria-io/go-choria/aagent/model"
-	"github.com/google/shlex"
-
 	"github.com/choria-io/go-choria/aagent/util"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
+	"github.com/google/shlex"
 )
 
 const (
@@ -40,12 +39,17 @@ type Metric struct {
 	seen    int
 }
 
+func (m *Metric) GetLabels() map[string]string   { return m.Labels }
+func (m *Metric) GetMetrics() map[string]float64 { return m.Metrics }
+func (m *Metric) GetTime() int64                 { return m.Time }
+
 type properties struct {
 	Command        string
 	Interval       time.Duration
 	Labels         map[string]string
 	SkipPrometheus bool   `mapstructure:"skip_prometheus"`
 	StoreAsData    bool   `mapstructure:"store"`
+	HTTP           bool   `mapstructure:"http"`
 	GraphiteHost   string `mapstructure:"graphite_host"`
 	GraphitePort   string `mapstructure:"graphite_port"`
 	GraphitePrefix string `mapstructure:"graphite_prefix"`
@@ -60,8 +64,10 @@ type Watcher struct {
 	previousResult  *Metric
 	properties      *properties
 
-	watching bool
-	mu       *sync.Mutex
+	watching    bool
+	httpStarted bool
+
+	mu *sync.Mutex
 }
 
 func New(machine model.Machine, name string, states []string, required []model.ForeignMachineState, failEvent string, successEvent string, interval string, ai time.Duration, rawprops map[string]any) (any, error) {
@@ -95,6 +101,7 @@ func New(machine model.Machine, name string, states []string, required []model.F
 }
 
 func (w *Watcher) Delete() {
+	w.removeFromHTTP()
 	if !w.properties.SkipPrometheus {
 		err := deletePromState(w.machine.TextFileDirectory(), w, w.machine.Name(), w.name)
 		if err != nil {
@@ -107,6 +114,8 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	w.Infof("metric watcher for %s starting", w.properties.Command)
+
+	w.registerWithHTTP()
 
 	splay := rand.N(w.properties.Interval)
 	w.Infof("Splaying first check by %v", splay)
@@ -121,6 +130,8 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	tick := time.NewTicker(w.properties.Interval)
 
 	for {
+		w.registerWithHTTP()
+
 		select {
 		case <-tick.C:
 			w.performWatch(ctx)
@@ -131,6 +142,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 		case <-ctx.Done():
 			w.Infof("Stopping on context interrupt")
 			tick.Stop()
+			w.removeFromHTTP()
 			return
 		}
 	}
@@ -208,7 +220,15 @@ func (w *Watcher) performWatch(ctx context.Context) {
 		return
 	}
 
+	if !w.ShouldWatch() {
+		return
+	}
+
 	metric, err := w.watch(ctx)
+	if err != nil {
+		return
+	}
+
 	err = w.handleCheck(ctx, metric, err)
 	if err != nil {
 		w.Errorf("could not handle watcher event: %s", err)
@@ -381,11 +401,51 @@ func (w *Watcher) publishToGraphite(ctx context.Context, metric *Metric) error {
 	return nil
 }
 
+func (w *Watcher) LastMetric() model.HttpMetric {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	if w.previousResult == nil {
+		return &Metric{
+			Labels:  map[string]string{},
+			Metrics: map[string]float64{},
+		}
+	}
+
+	return w.previousResult
+}
+
+func (w *Watcher) removeFromHTTP() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	mgr := w.machine.HttpManager()
+	if mgr != nil {
+		mgr.RemoveMetricWatcher(w.machine.Name(), w)
+	}
+}
+
+func (w *Watcher) registerWithHTTP() {
+	w.mu.Lock()
+	defer w.mu.Unlock()
+
+	if w.httpStarted {
+		return
+	}
+
+	ham := w.machine.HttpManager()
+	if ham != nil {
+		ham.AddMetricWatcher(w.machine.Name(), w)
+		w.httpStarted = true
+	}
+}
+
 func (w *Watcher) CurrentState() any {
 	w.mu.Lock()
 	defer w.mu.Unlock()
 
 	var res Metric
+
 	if w.previousResult == nil {
 		res = Metric{
 			Labels:  make(map[string]string),
