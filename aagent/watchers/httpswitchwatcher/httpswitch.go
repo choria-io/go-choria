@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package haswitchwatcher
+package httpswitchwatcher
 
 import (
 	"context"
@@ -26,7 +26,7 @@ const (
 	OnNoTransition
 	OffNoTransition
 
-	wtype   = "haswitch"
+	wtype   = "httpswitch"
 	version = "v1"
 )
 
@@ -38,11 +38,10 @@ var stateNames = map[State]string{
 
 type properties struct {
 	Initial       bool
-	ShouldOn      []string `mapstructure:"on_when"`
-	ShouldOff     []string `mapstructure:"off_when"`
-	ShouldDisable []string `mapstructure:"disable_when"`
-
-	InitialState State `mapstructure:"-"`
+	ShouldOn      []string          `mapstructure:"on_when"`
+	ShouldOff     []string          `mapstructure:"off_when"`
+	ShouldDisable []string          `mapstructure:"disable_when"`
+	Annotations   map[string]string `mapstructure:"annotations"`
 }
 
 type Watcher struct {
@@ -119,16 +118,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
 	if w.ShouldWatch() {
-		w.Infof("haswitch watcher for %s starting in state %s", w.name, stateNames[w.properties.InitialState])
-		switch w.properties.InitialState {
-		case On, Off:
-			err := w.handleStateChange(w.properties.InitialState)
-			if err != nil {
-				w.Errorf("Could not handle initial state %s: %v", stateNames[w.properties.InitialState], err)
-			}
-		default:
-			w.Watcher.StateChangeC() <- struct{}{}
-		}
+		w.Watcher.StateChangeC() <- struct{}{}
 	}
 
 	for {
@@ -249,23 +239,13 @@ func (w *Watcher) setProperties(props map[string]any) error {
 			ShouldDisable: []string{},
 			ShouldOff:     []string{},
 			ShouldOn:      []string{},
+			Annotations:   make(map[string]string),
 		}
 	}
 
 	err := util.ParseMapStructure(props, w.properties)
 	if err != nil {
 		return err
-	}
-
-	_, set := props["initial"]
-	switch {
-	case !set:
-		w.properties.InitialState = Unknown
-	case w.properties.Initial:
-		w.properties.InitialState = On
-	default:
-		w.properties.InitialState = Off
-
 	}
 
 	return w.validate()
@@ -279,6 +259,11 @@ func (w *Watcher) CurrentState() any {
 		Event:           event.New(w.name, wtype, version, w.machine),
 		PreviousOutcome: stateNames[w.previous],
 		IsOn:            w.previous == On,
+		Annotations:     w.properties.Annotations,
+	}
+
+	if s.Annotations == nil {
+		s.Annotations = make(map[string]string)
 	}
 
 	return s
