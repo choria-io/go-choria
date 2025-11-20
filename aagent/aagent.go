@@ -44,6 +44,10 @@ type managedMachine struct {
 	plugin     bool
 }
 
+const (
+	HTTPSwitchHandlerPattern = "/choria/machine/v1/{machine}/{watcher}"
+)
+
 // New creates a new instance of the choria autonomous agent host
 func New(dir string, fw model.ChoriaProvider) (aa *AAgent, err error) {
 	n, err := notifier.New(fw)
@@ -63,25 +67,27 @@ func New(dir string, fw model.ChoriaProvider) (aa *AAgent, err error) {
 func (a *AAgent) startHTTPListeners(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	if a.fw.MachineHTTPPort() == 0 {
+	httpPort := a.fw.MachineHTTPPort()
+
+	if httpPort == 0 {
 		return
 	}
 
-	a.logger.Infof("Starting Autonomous Agent HTTP listeners on port %d", a.fw.MachineHTTPPort())
+	a.logger.Infof("Starting Autonomous Agent HTTP listeners on port %d", httpPort)
 
 	var err error
-	a.httpManager, err = NewHTTPServer()
+	a.httpManager, err = NewHTTPServer(a.logger.WithField("port", httpPort))
 	if err != nil {
 		a.logger.Errorf("Could not start Autonomous Agent HTTP listeners: %s", err)
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/choria/homeassistant/v1/{machine}/{watcher}", a.httpManager.SwitchHandler)
+	mux.HandleFunc(HTTPSwitchHandlerPattern, a.httpManager.SwitchHandler)
 
 	srv := &http.Server{
 		BaseContext: func(_ net.Listener) context.Context { return ctx },
 		Handler:     mux,
-		Addr:        fmt.Sprintf(":%d", a.fw.MachineHTTPPort()),
+		Addr:        fmt.Sprintf(":%d", httpPort),
 	}
 	err = srv.ListenAndServe()
 	if errors.Is(err, http.ErrServerClosed) {

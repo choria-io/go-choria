@@ -166,20 +166,20 @@ func (r *mRunCommand) machineStateLookup(name string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("could not find machine matching ame='%s'", name)
+	return "", fmt.Errorf("could not find machine matching name='%s'", name)
 }
 
 func (r *mRunCommand) startHttpServer() {
 	var err error
 
-	r.haHttp, err = aagent.NewHTTPServer()
+	r.haHttp, err = aagent.NewHTTPServer(logrus.WithField("port", r.httpPort))
 	if err != nil {
 		logrus.Errorf("Could not start HTTP server: %s", err)
 		return
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc("/choria/homeassistant/v1/{machine}/{watcher}", r.haHttp.SwitchHandler)
+	mux.HandleFunc(aagent.HTTPSwitchHandlerPattern, r.haHttp.SwitchHandler)
 
 	logrus.Infof("Starting HTTP server on port %d", r.httpPort)
 

@@ -10,13 +10,15 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/aagent/model"
-	"github.com/choria-io/go-choria/aagent/watchers/haswitchwatcher"
+	"github.com/choria-io/go-choria/aagent/watchers/httpswitchwatcher"
+	"github.com/sirupsen/logrus"
 )
 
 type SwitchStatusGetResponse struct {
-	IsOn   bool                               `json:"is_on"`
-	Status string                             `json:"status"`
-	Detail *haswitchwatcher.StateNotification `json:"detail,omitempty"`
+	IsOn   bool                                 `json:"is_on"`
+	IsOff  bool                                 `json:"is_off"`
+	Status string                               `json:"status"`
+	Detail *httpswitchwatcher.StateNotification `json:"detail,omitempty"`
 }
 
 type SwitchPostRequest struct {
@@ -29,16 +31,26 @@ type SwitchPostResponse struct {
 
 type HTTPServer struct {
 	switches map[string]map[string]model.HomeAssistantSwitchWatcher
+	logger   *logrus.Entry
 
 	sync.Mutex
 }
 
-func NewHTTPServer() (*HTTPServer, error) {
-	return &HTTPServer{switches: make(map[string]map[string]model.HomeAssistantSwitchWatcher)}, nil
+func NewHTTPServer(log *logrus.Entry) (*HTTPServer, error) {
+	return &HTTPServer{
+		switches: make(map[string]map[string]model.HomeAssistantSwitchWatcher),
+		logger:   log,
+	}, nil
+}
+
+func (s *HTTPServer) logRequest(r *http.Request) {
+	s.logger.WithFields(logrus.Fields{"remote": r.RemoteAddr, "method": r.Method, "path": r.RequestURI}).Debugf("HTTP Request")
 }
 
 func (s *HTTPServer) SwitchHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
+
+	s.logRequest(r)
 
 	switch r.Method {
 	case http.MethodGet:
@@ -68,7 +80,7 @@ func (s *HTTPServer) SwitchGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sstatus, ok := sw.CurrentState().(*haswitchwatcher.StateNotification)
+	sstatus, ok := sw.CurrentState().(*httpswitchwatcher.StateNotification)
 	if !ok {
 		w.WriteHeader(http.StatusBadRequest)
 		w.Write([]byte("invalid state"))
@@ -78,6 +90,7 @@ func (s *HTTPServer) SwitchGetHandler(w http.ResponseWriter, r *http.Request) {
 	j, err := json.Marshal(&SwitchStatusGetResponse{
 		Status: sstatus.PreviousOutcome,
 		IsOn:   sstatus.IsOn,
+		IsOff:  !sstatus.IsOn,
 		Detail: sstatus,
 	})
 	if err != nil {

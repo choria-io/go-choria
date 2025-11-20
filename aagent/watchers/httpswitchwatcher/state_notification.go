@@ -2,7 +2,7 @@
 //
 // SPDX-License-Identifier: Apache-2.0
 
-package haswitchwatcher
+package httpswitchwatcher
 
 import (
 	"encoding/json"
@@ -16,8 +16,9 @@ import (
 // described by io.choria.machine.watcher.haswitch.v1.state
 type StateNotification struct {
 	event.Event
-	PreviousOutcome string `json:"status"`
-	IsOn            bool   `json:"is_on"`
+	PreviousOutcome string            `json:"status"`
+	IsOn            bool              `json:"is_on"`
+	Annotations     map[string]string `json:"annotations"`
 }
 
 // CloudEvent creates a CloudEvent from the state notification
