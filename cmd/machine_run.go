@@ -13,6 +13,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/go-choria/aagent"
+	aahttp "github.com/choria-io/go-choria/aagent/http"
 	"github.com/choria-io/go-choria/aagent/machine"
 	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/aagent/notifiers/console"
@@ -172,14 +173,15 @@ func (r *mRunCommand) machineStateLookup(name string) (string, error) {
 func (r *mRunCommand) startHttpServer() {
 	var err error
 
-	r.haHttp, err = aagent.NewHTTPServer(logrus.WithField("port", r.httpPort))
+	r.haHttp, err = aahttp.NewHTTPServer(logrus.WithField("port", r.httpPort))
 	if err != nil {
 		logrus.Errorf("Could not start HTTP server: %s", err)
 		return
 	}
 
 	mux := http.NewServeMux()
-	mux.HandleFunc(aagent.HTTPSwitchHandlerPattern, r.haHttp.SwitchHandler)
+	mux.Handle(aagent.HTTPSwitchHandlerPattern, aahttp.LoggingMiddleware(logrus.WithField("port", r.httpPort), http.HandlerFunc(r.haHttp.SwitchHandler)))
+	mux.Handle(aagent.HTTPMetricHandlerPattern, aahttp.LoggingMiddleware(logrus.WithField("port", r.httpPort), http.HandlerFunc(r.haHttp.MetricHandler)))
 
 	logrus.Infof("Starting HTTP server on port %d", r.httpPort)
 
