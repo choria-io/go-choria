@@ -84,6 +84,9 @@ func (w *Watcher) TurnOn() (bool, error) {
 	if w.shouldBeDisabled(w.machine.State()) {
 		return false, fmt.Errorf("watcher is disabled")
 	}
+	if !w.ShouldWatch() {
+		return false, fmt.Errorf("watcher is not in an active state")
+	}
 
 	w.buttonPress <- On
 
@@ -92,6 +95,9 @@ func (w *Watcher) TurnOn() (bool, error) {
 func (w *Watcher) TurnOff() (bool, error) {
 	if w.shouldBeDisabled(w.machine.State()) {
 		return false, fmt.Errorf("watcher is disabled")
+	}
+	if !w.ShouldWatch() {
+		return false, fmt.Errorf("switch is not in an active state")
 	}
 
 	w.buttonPress <- Off
