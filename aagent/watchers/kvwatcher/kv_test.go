@@ -34,7 +34,7 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 
 		machine = model.NewMockMachine(mockctl)
 		machine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
-		machine.EXPECT().Facts().Return(json.RawMessage(`{}`)).MinTimes(1)
+		machine.EXPECT().Facts().Return(json.RawMessage(`{"fqdn":"ginkgo.example.net"}`)).MinTimes(1)
 		machine.EXPECT().Data().Return(map[string]any{}).MinTimes(1)
 		machine.EXPECT().DataGet("machines").MinTimes(1)
 
@@ -77,6 +77,51 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 			machine.EXPECT().DataPut("machines", map[string]any{"spec": "foo"}).Return(nil).Times(1)
 			_, err := w.poll()
 			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should handle tiny hiera data with a override match", func() {
+			data := `{
+    "hierarchy": {
+        "order": [
+            "fqdn:%{fqdn}"
+        ]
+    },
+    "configuration": {
+        "test": "value"
+    },
+    "fqdn:ginkgo.example.net": {
+        "test": "override"
+    }
+}`
+
+			w.properties.HieraConfig = true
+			kve.EXPECT().Value().Return([]byte(data)).MinTimes(1)
+			machine.EXPECT().DataPut("machines", map[string]any{"test": "override"}).Return(nil).Times(1)
+			_, err := w.poll()
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should handle tiny hiera data without a override match", func() {
+			data := `{
+    "hierarchy": {
+        "order": [
+            "fqdn:%{fqdn}"
+        ]
+    },
+    "configuration": {
+        "test": "value"
+    },
+    "fqdn:other.example.net": {
+        "test": "override"
+    }
+}`
+
+			w.properties.HieraConfig = true
+			kve.EXPECT().Value().Return([]byte(data)).MinTimes(1)
+			machine.EXPECT().DataPut("machines", map[string]any{"test": "value"}).Return(nil).Times(1)
+			_, err := w.poll()
+			Expect(err).ToNot(HaveOccurred())
+
 		})
 	})
 })

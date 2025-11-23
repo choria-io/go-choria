@@ -57,6 +57,12 @@ github.com/choria-io/goform v0.0.3 h1:4LhR1Wwj1bre8ZHfhSIseGDhAzDL4U5LQcfYP75QGn
 github.com/choria-io/goform v0.0.3/go.mod h1:4GNaHJmxkdyotYENaUh/jXc3CESkdgnSDMBOOrwFrw8=
 github.com/choria-io/scaffold v0.0.5 h1:Nv8tY/CJtLNAmg4CqHXgY73rVuG1FCMQXRJp4VkAy2g=
 github.com/choria-io/scaffold v0.0.5/go.mod h1:4NvrSKLOjkMSxaTOdqNntNMJ5oE67jiu8d5PHzNBHMY=
+github.com/choria-io/tinyhiera v0.0.0-20251123145305-0b9d5520df5c h1:CSf7N9En6VAq7AwQa8efGlu5CB02HtlmIZb12KcFEX4=
+github.com/choria-io/tinyhiera v0.0.0-20251123145305-0b9d5520df5c/go.mod h1:32+ZWiPHlisaroR7ONVbGGqqaCSOVELtqnINXwZuKTw=
+github.com/choria-io/tinyhiera v0.0.0-20251123150625-611ddfb2bd2e h1:/W7Wbm31fPkMhQ3X73ZQmsbnj4zMPPnpEgosJCfxSRw=
+github.com/choria-io/tinyhiera v0.0.0-20251123150625-611ddfb2bd2e/go.mod h1:32+ZWiPHlisaroR7ONVbGGqqaCSOVELtqnINXwZuKTw=
+github.com/choria-io/tinyhiera v0.0.0-20251123153951-b63090c1793e h1:usmT7qGiDDc+W5Jzo4SwVuJo+hziGsijhzSlHMzVjmo=
+github.com/choria-io/tinyhiera v0.0.0-20251123153951-b63090c1793e/go.mod h1:32+ZWiPHlisaroR7ONVbGGqqaCSOVELtqnINXwZuKTw=
 github.com/choria-io/tokens v0.0.4-0.20250903080437-7d289cbf3db9 h1:QzTsfk28/r4coX5jtQQhF7R7lG7griCuMLqB4curBoY=
 github.com/choria-io/tokens v0.0.4-0.20250903080437-7d289cbf3db9/go.mod h1:6Z0LvjOYLVOU3T0S5eBaSVJxbsb7aq6ggAROS3GHuVQ=
 github.com/clipperhouse/stringish v0.1.1 h1:+NSqMOr3GR6k1FdRhhnXrLfztGzuG+VuFDfatpWHKCs=
