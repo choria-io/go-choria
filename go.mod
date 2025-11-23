@@ -11,6 +11,7 @@ require (
 	github.com/choria-io/appbuilder v0.11.0
 	github.com/choria-io/fisk v0.7.2
 	github.com/choria-io/go-updater v0.1.0
+	github.com/choria-io/tinyhiera v0.0.0-20251123153951-b63090c1793e
 	github.com/choria-io/tokens v0.0.4-0.20250903080437-7d289cbf3db9
 	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/dustin/go-humanize v1.0.1
@@ -82,6 +83,7 @@ require (
 	github.com/go-task/slim-sprig/v3 v3.0.0 // indirect
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
+	github.com/goccy/go-yaml v1.18.0 // indirect
 	github.com/google/go-tpm v0.9.7 // indirect
 	github.com/google/pprof v0.0.0-20251114195745-4902fdda35c8 // indirect
 	github.com/google/uuid v1.6.0 // indirect

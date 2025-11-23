@@ -21,6 +21,7 @@ import (
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/kv"
+	"github.com/choria-io/tinyhiera"
 	"github.com/google/go-cmp/cmp"
 	"github.com/nats-io/nats.go"
 )
@@ -54,6 +55,7 @@ type properties struct {
 	TransitionOnMatch         bool   `mapstructure:"on_matching_update"`
 	BucketPrefix              bool   `mapstructure:"bucket_prefix"`
 	RepublishTrigger          string `mapstructure:"republish_trigger"`
+	HieraConfig               bool   `mapstructure:"hiera_config"`
 }
 
 type Watcher struct {
@@ -213,7 +215,7 @@ func (w *Watcher) setupRepubListener(ctx context.Context) error {
 	return err
 }
 
-// handles a published message as if its a kv poll result, logic update here should also be changed in poll()
+// handles a published message as if its kv poll result, logic update here should also be changed in poll()
 func (w *Watcher) repubHandler(msg *nats.Msg) (State, error) {
 	if !w.ShouldWatch() {
 		return Skipped, nil
@@ -309,20 +311,41 @@ func (w *Watcher) parseValue(val []byte) (any, error) {
 	var parsedValue any
 
 	// we try to handle json files into a map[string]any this means nested lookups can be done
-	// in other machines using the lookup template func and it works just fine, deep compares are done
+	// in other machines using the lookup template func, and it works just fine, deep compares are done
 	// on the entire structure later
 	v := bytes.TrimSpace(val)
 	if bytes.HasPrefix(v, []byte("{")) && bytes.HasSuffix(v, []byte("}")) {
-		parsedValue = map[string]any{}
-		err := json.Unmarshal(v, &parsedValue)
+		parsedMapValue := map[string]any{}
+		err := json.Unmarshal(v, &parsedMapValue)
 		if err != nil {
 			w.Warnf("unmarshal failed: %s", err)
 		}
+
+		// the data holds a tiny hiera configuration, we parse and merge it based on facts and use the result as parsed value
+		if w.properties.HieraConfig {
+			facts := map[string]any{}
+			err := json.Unmarshal(w.machine.Facts(), &facts)
+			if err != nil {
+				return nil, err
+			}
+
+			parsedValue, err = tinyhiera.Resolve(parsedMapValue, facts)
+			if err != nil {
+				return nil, err
+			}
+		} else {
+			parsedValue = parsedMapValue
+		}
+
 	} else if bytes.HasPrefix(v, []byte("[")) && bytes.HasSuffix(v, []byte("]")) {
 		parsedValue = []any{}
 		err := json.Unmarshal(v, &parsedValue)
 		if err != nil {
 			w.Warnf("unmarshal failed: %s", err)
+		}
+
+		if w.properties.HieraConfig {
+			return nil, fmt.Errorf("hiera config not supported for arrays")
 		}
 	}
 
@@ -382,7 +405,7 @@ func (w *Watcher) poll() (State, error) {
 
 	val, err := w.kv.Get(parsedKey)
 	if err == nil {
-		var err error // kv.Get() error is checked below so dont overwrite it
+		var err error // kv.Get() error is checked below so don't overwrite it
 		parsedValue, err = w.parseValue(val.Value())
 		if err != nil {
 			w.Errorf("Could not parse value %s.%s: %s", w.properties.Bucket, parsedKey, err)
@@ -392,11 +415,11 @@ func (w *Watcher) poll() (State, error) {
 
 	// if this changes also update repub handler
 	switch {
-	// key isn't there, nothing was previously found its unchanged
+	// key isn't there, nothing was previously found unchanged
 	case errors.Is(err, nats.ErrKeyNotFound) && w.previousVal == nil:
 		return Unchanged, nil
 
-	// key isn't there, we had a value before its a change due to delete
+	// key isn't there, we had a value before its change due to delete
 	case errors.Is(err, nats.ErrKeyNotFound) && w.previousVal != nil:
 		w.Debugf("Removing data from %s", dk)
 		err = w.machine.DataDelete(dk)
