@@ -324,12 +324,13 @@ func (w *Watcher) parseValue(val []byte) (any, error) {
 		// the data holds a tiny hiera configuration, we parse and merge it based on facts and use the result as parsed value
 		if w.properties.HieraConfig {
 			facts := map[string]any{}
+
 			err := json.Unmarshal(w.machine.Facts(), &facts)
 			if err != nil {
 				return nil, err
 			}
 
-			parsedValue, err = tinyhiera.Resolve(parsedMapValue, facts)
+			parsedValue, err = tinyhiera.Resolve(parsedMapValue, map[string]any{"facts": facts})
 			if err != nil {
 				return nil, err
 			}

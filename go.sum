@@ -57,12 +57,8 @@ github.com/choria-io/goform v0.0.3 h1:4LhR1Wwj1bre8ZHfhSIseGDhAzDL4U5LQcfYP75QGn
 github.com/choria-io/goform v0.0.3/go.mod h1:4GNaHJmxkdyotYENaUh/jXc3CESkdgnSDMBOOrwFrw8=
 github.com/choria-io/scaffold v0.0.5 h1:Nv8tY/CJtLNAmg4CqHXgY73rVuG1FCMQXRJp4VkAy2g=
 github.com/choria-io/scaffold v0.0.5/go.mod h1:4NvrSKLOjkMSxaTOdqNntNMJ5oE67jiu8d5PHzNBHMY=
-github.com/choria-io/tinyhiera v0.0.0-20251123145305-0b9d5520df5c h1:CSf7N9En6VAq7AwQa8efGlu5CB02HtlmIZb12KcFEX4=
-github.com/choria-io/tinyhiera v0.0.0-20251123145305-0b9d5520df5c/go.mod h1:32+ZWiPHlisaroR7ONVbGGqqaCSOVELtqnINXwZuKTw=
-github.com/choria-io/tinyhiera v0.0.0-20251123150625-611ddfb2bd2e h1:/W7Wbm31fPkMhQ3X73ZQmsbnj4zMPPnpEgosJCfxSRw=
-github.com/choria-io/tinyhiera v0.0.0-20251123150625-611ddfb2bd2e/go.mod h1:32+ZWiPHlisaroR7ONVbGGqqaCSOVELtqnINXwZuKTw=
-github.com/choria-io/tinyhiera v0.0.0-20251123153951-b63090c1793e h1:usmT7qGiDDc+W5Jzo4SwVuJo+hziGsijhzSlHMzVjmo=
-github.com/choria-io/tinyhiera v0.0.0-20251123153951-b63090c1793e/go.mod h1:32+ZWiPHlisaroR7ONVbGGqqaCSOVELtqnINXwZuKTw=
+github.com/choria-io/tinyhiera v0.0.4 h1:NchaJi5ncCbkvE5oCchH6XRGCFbl+EZmdL6hCsZdiYk=
+github.com/choria-io/tinyhiera v0.0.4/go.mod h1:o+FNfgaHX7fE57Qc/rLq17jpO0d7sFCprVt7K6esq+o=
 github.com/choria-io/tokens v0.0.4-0.20250903080437-7d289cbf3db9 h1:QzTsfk28/r4coX5jtQQhF7R7lG7griCuMLqB4curBoY=
 github.com/choria-io/tokens v0.0.4-0.20250903080437-7d289cbf3db9/go.mod h1:6Z0LvjOYLVOU3T0S5eBaSVJxbsb7aq6ggAROS3GHuVQ=
 github.com/clipperhouse/stringish v0.1.1 h1:+NSqMOr3GR6k1FdRhhnXrLfztGzuG+VuFDfatpWHKCs=
@@ -111,8 +107,8 @@ github.com/gdamore/encoding v1.0.0/go.mod h1:alR0ol34c49FCSBLjhosxzcPHQbf2trDkoo
 github.com/gdamore/encoding v1.0.1 h1:YzKZckdBL6jVt2Gc+5p82qhrGiqMdG/eNs6Wy0u3Uhw=
 github.com/gdamore/encoding v1.0.1/go.mod h1:0Z0cMFinngz9kS1QfMjCP8TY7em3bZYeeklsSDPivEo=
 github.com/gdamore/tcell/v2 v2.4.0/go.mod h1:cTTuF84Dlj/RqmaCIV5p4w8uG1zWdk0SF6oBpwHp4fU=
-github.com/gdamore/tcell/v2 v2.10.0 h1:u/czxSDixtjOR7UzXXtxHyO4Av2aoZvr2te9TGOaANo=
-github.com/gdamore/tcell/v2 v2.10.0/go.mod h1:K2DslmrxoadNP0709mqdgVuM6QcJjzYvJisintiFBfY=
+github.com/gdamore/tcell/v2 v2.12.0 h1:7nsWSL2G32QC19BcoGcFCqB2tc9fIvHH5pfi/ZYv8gw=
+github.com/gdamore/tcell/v2 v2.12.0/go.mod h1:+Wfe208WDdB7INEtCsNrAN6O2m+wsTPk1RAovjaILlo=
 github.com/ghodss/yaml v1.0.0 h1:wQHKEahhL6wmXdzwWG11gIVCkOv05bNOh+Rxn0yngAk=
 github.com/ghodss/yaml v1.0.0/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
 github.com/gkampitakis/ciinfo v0.3.2 h1:JcuOPk8ZU7nZQjdUhctuhQofk7BGHuIy0c9Ez8BNhXs=
@@ -272,8 +268,8 @@ github.com/nats-io/nats.go v1.47.0 h1:YQdADw6J/UfGUd2Oy6tn4Hq6YHxCaJrVKayxxFqYrg
 github.com/nats-io/nats.go v1.47.0/go.mod h1:iRWIPokVIFbVijxuMQq4y9ttaBTMe0SFdlZfMDd+33g=
 github.com/nats-io/natscli v0.3.0 h1:DdoXZy96D1Di9ePuIVgnhEeAaE9rRr1NSG/jrzLhDz0=
 github.com/nats-io/natscli v0.3.0/go.mod h1:SM7kLorE9Vx/iQPEqDlDYi7Ga13rTuW+d9H+N7fo610=
-github.com/nats-io/nkeys v0.4.11 h1:q44qGV008kYd9W1b1nEBkNzvnWxtRSQ7A8BoqRrcfa0=
-github.com/nats-io/nkeys v0.4.11/go.mod h1:szDimtgmfOi9n25JpfIdGw12tZFYXqhGxjhVxsatHVE=
+github.com/nats-io/nkeys v0.4.12 h1:nssm7JKOG9/x4J8II47VWCL1Ds29avyiQDRn0ckMvDc=
+github.com/nats-io/nkeys v0.4.12/go.mod h1:MT59A1HYcjIcyQDJStTfaOY6vhy9XTUjOFo+SVsvpBg=
 github.com/nats-io/nsc/v2 v2.12.0 h1:YCs8axEfQkbVLZDuYF4V6aJvPrDmlKJe8mWV+Rgqrzo=
 github.com/nats-io/nsc/v2 v2.12.0/go.mod h1:t9++ulcLFythYtRTC/2k4Mg324JTxrvpCddW/XP7j2A=
 github.com/nats-io/nuid v1.0.1 h1:5iA8DT8V7q8WK2EScv2padNa/rTESc1KdnPw4TC2paw=
@@ -298,8 +294,8 @@ github.com/prometheus/client_golang v1.23.2 h1:Je96obch5RDVy3FDMndoUsjAhG5Edi49h
 github.com/prometheus/client_golang v1.23.2/go.mod h1:Tb1a6LWHB3/SPIzCoaDXI4I8UHKeFTEQ1YCr+0Gyqmg=
 github.com/prometheus/client_model v0.6.2 h1:oBsgwpGs7iVziMvrGhE53c/GrLUsZdHnqNwqPLxwZyk=
 github.com/prometheus/client_model v0.6.2/go.mod h1:y3m2F6Gdpfy6Ut/GBsUqTWZqCUvMVzSfMLjcu6wAwpE=
-github.com/prometheus/common v0.67.3 h1:shd26MlnwTw5jksTDhC7rTQIteBxy+ZZDr3t7F2xN2Q=
-github.com/prometheus/common v0.67.3/go.mod h1:gP0fq6YjjNCLssJCQp0yk4M8W6ikLURwkdd/YKtTbyI=
+github.com/prometheus/common v0.67.4 h1:yR3NqWO1/UyO1w2PhUvXlGQs/PtFmoveVO0KZ4+Lvsc=
+github.com/prometheus/common v0.67.4/go.mod h1:gP0fq6YjjNCLssJCQp0yk4M8W6ikLURwkdd/YKtTbyI=
 github.com/prometheus/procfs v0.19.2 h1:zUMhqEW66Ex7OXIiDkll3tl9a1ZdilUOd/F6ZXw4Vws=
 github.com/prometheus/procfs v0.19.2/go.mod h1:M0aotyiemPhBCM0z5w87kL22CxfcH05ZpYlu+b4J7mw=
 github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 h1:bsUq1dX0N8AOIL7EB/X911+m4EHsnWEHeJ0c+3TTBrg=
