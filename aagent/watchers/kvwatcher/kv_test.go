@@ -83,14 +83,16 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 			data := `{
     "hierarchy": {
         "order": [
-            "fqdn:%{fqdn}"
+            "fqdn:{{ lookup('facts.fqdn') }}"
         ]
     },
-    "configuration": {
+    "data": {
         "test": "value"
     },
-    "fqdn:ginkgo.example.net": {
-        "test": "override"
+    "overrides": {
+		"fqdn:ginkgo.example.net": {
+			"test": "override"
+		}
     }
 }`
 
@@ -105,15 +107,17 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 			data := `{
     "hierarchy": {
         "order": [
-            "fqdn:%{fqdn}"
+            "fqdn:{{lookup('facts.fqdn')}}"
         ]
     },
-    "configuration": {
+    "data": {
         "test": "value"
     },
-    "fqdn:other.example.net": {
-        "test": "override"
-    }
+    "overrides": {
+		"fqdn:other.example.net": {
+			"test": "override"
+		}
+	}
 }`
 
 			w.properties.HieraConfig = true
