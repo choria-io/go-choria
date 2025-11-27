@@ -182,6 +182,7 @@ func (r *mRunCommand) startHttpServer() {
 	mux := http.NewServeMux()
 	mux.Handle(aagent.HTTPSwitchHandlerPattern, aahttp.LoggingMiddleware(logrus.WithField("port", r.httpPort), http.HandlerFunc(r.haHttp.SwitchHandler)))
 	mux.Handle(aagent.HTTPMetricHandlerPattern, aahttp.LoggingMiddleware(logrus.WithField("port", r.httpPort), http.HandlerFunc(r.haHttp.MetricHandler)))
+	mux.Handle(aagent.HomeAssistantSwitchHandlerPattern, aahttp.LoggingMiddleware(logrus.WithField("port", r.httpPort), http.HandlerFunc(r.haHttp.HASwitchHandler)))
 
 	logrus.Infof("Starting HTTP server on port %d", r.httpPort)
 

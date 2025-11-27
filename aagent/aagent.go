@@ -46,8 +46,9 @@ type managedMachine struct {
 }
 
 const (
-	HTTPSwitchHandlerPattern = "/choria/machine/switch/v1/{machine}/{watcher}"
-	HTTPMetricHandlerPattern = "/choria/machine/metric/v1/{machine}/{watcher}"
+	HTTPSwitchHandlerPattern          = "/choria/machine/switch/v1/{machine}/{watcher}"
+	HomeAssistantSwitchHandlerPattern = "/choria/homeassistant/switch/v1/{machine}/{watcher}"
+	HTTPMetricHandlerPattern          = "/choria/machine/metric/v1/{machine}/{watcher}"
 )
 
 // New creates a new instance of the choria autonomous agent host
@@ -86,6 +87,7 @@ func (a *AAgent) startHTTPListeners(ctx context.Context, wg *sync.WaitGroup) {
 	mux := http.NewServeMux()
 	mux.Handle(HTTPSwitchHandlerPattern, aahttp.LoggingMiddleware(a.logger, http.HandlerFunc(a.httpManager.SwitchHandler)))
 	mux.Handle(HTTPMetricHandlerPattern, aahttp.LoggingMiddleware(a.logger, http.HandlerFunc(a.httpManager.MetricHandler)))
+	mux.Handle(HomeAssistantSwitchHandlerPattern, aahttp.LoggingMiddleware(a.logger, http.HandlerFunc(a.httpManager.HASwitchHandler)))
 
 	srv := &http.Server{
 		BaseContext: func(_ net.Listener) context.Context { return ctx },
