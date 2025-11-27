@@ -6,7 +6,10 @@ package http
 
 import (
 	"encoding/json"
+	"fmt"
+	"io"
 	"net/http"
+	"strings"
 	"sync"
 
 	"github.com/choria-io/go-choria/aagent/model"
@@ -82,6 +85,19 @@ func (s *HTTPServer) SwitchHandler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+func (s *HTTPServer) HASwitchHandler(w http.ResponseWriter, r *http.Request) {
+	defer r.Body.Close()
+
+	switch r.Method {
+	case http.MethodGet:
+		s.haSwitchGetHandler(w, r)
+	case http.MethodPost:
+		s.haSwitchPostHandler(w, r)
+	default:
+		w.WriteHeader(http.StatusNotFound)
+	}
+}
+
 func (s *HTTPServer) MetricHandler(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
@@ -129,6 +145,49 @@ func (s *HTTPServer) metricGetHandler(w http.ResponseWriter, r *http.Request) {
 	w.Write(j)
 }
 
+func (s *HTTPServer) switchGetImpl(machine string, watcher string) (*SwitchStatusGetResponse, error) {
+	sw, ok := s.getSwitch(machine, watcher)
+	if !ok {
+		return nil, fmt.Errorf("switch not found")
+	}
+
+	sstatus, ok := sw.CurrentState().(*httpswitchwatcher.StateNotification)
+	if !ok {
+		return nil, fmt.Errorf("invalid state")
+	}
+
+	return &SwitchStatusGetResponse{
+		Status: sstatus.PreviousOutcome,
+		IsOn:   sstatus.IsOn,
+		IsOff:  !sstatus.IsOn,
+		Detail: sstatus,
+	}, nil
+}
+
+func (s *HTTPServer) haSwitchGetHandler(w http.ResponseWriter, r *http.Request) {
+	machine := r.PathValue("machine")
+	watcher := r.PathValue("watcher")
+
+	if machine == "" || watcher == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("machine and watcher are required"))
+		return
+	}
+
+	resp, err := s.switchGetImpl(machine, watcher)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	if resp.IsOn {
+		w.Write([]byte("ON"))
+	} else {
+		w.Write([]byte("OFF"))
+	}
+}
+
 // switchGetHandler handles requests for GET /switch/{machine}/{watcher}
 func (s *HTTPServer) switchGetHandler(w http.ResponseWriter, r *http.Request) {
 	machine := r.PathValue("machine")
@@ -140,26 +199,13 @@ func (s *HTTPServer) switchGetHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	sw, ok := s.getSwitch(machine, watcher)
-	if !ok {
+	resp, err := s.switchGetImpl(machine, watcher)
+	if err != nil {
 		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("switch not found"))
-		return
+		w.Write([]byte(err.Error()))
 	}
 
-	sstatus, ok := sw.CurrentState().(*httpswitchwatcher.StateNotification)
-	if !ok {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("invalid state"))
-		return
-	}
-
-	j, err := json.Marshal(&SwitchStatusGetResponse{
-		Status: sstatus.PreviousOutcome,
-		IsOn:   sstatus.IsOn,
-		IsOff:  !sstatus.IsOn,
-		Detail: sstatus,
-	})
+	j, err := json.Marshal(resp)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))
@@ -197,6 +243,65 @@ func (s *HTTPServer) getMetric(machine string, watcher string) (model.MetricWatc
 	return mw, ok
 }
 
+func (s *HTTPServer) haSwitchPostHandler(w http.ResponseWriter, r *http.Request) {
+	machine := r.PathValue("machine")
+	watcher := r.PathValue("watcher")
+
+	if machine == "" || watcher == "" {
+		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("machine and watcher are required"))
+		return
+	}
+
+	body, err := io.ReadAll(r.Body)
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	var isOn bool
+
+	if strings.HasPrefix(string(body), "ON") {
+		isOn, err = s.switchPostImpl(machine, watcher, true)
+	} else {
+		isOn, err = s.switchPostImpl(machine, watcher, false)
+	}
+	if err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		w.Write([]byte(err.Error()))
+		return
+	}
+
+	if isOn {
+		w.Write([]byte("ON"))
+	} else {
+		w.Write([]byte("OFF"))
+	}
+}
+
+func (s *HTTPServer) switchPostImpl(machine string, watcher string, on bool) (bool, error) {
+	var ok bool
+	var err error
+
+	hasw, ok := s.getSwitch(machine, watcher)
+	if !ok {
+		return false, fmt.Errorf("switch not found")
+	}
+
+	switch on {
+	case true:
+		ok, err = hasw.TurnOn()
+	case false:
+		ok, err = hasw.TurnOff()
+	}
+	if err != nil {
+		return false, err
+	}
+
+	return ok, nil
+}
+
 // switchPostHandler handles requests for POST /switch/{machine}/{watcher}
 func (s *HTTPServer) switchPostHandler(w http.ResponseWriter, r *http.Request) {
 	machine := r.PathValue("machine")
@@ -208,13 +313,6 @@ func (s *HTTPServer) switchPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hasw, ok := s.getSwitch(machine, watcher)
-	if !ok {
-		w.WriteHeader(http.StatusNotFound)
-		w.Write([]byte("switch not found"))
-		return
-	}
-
 	req := &SwitchPostRequest{}
 	err := json.NewDecoder(r.Body).Decode(req)
 	if err != nil {
@@ -223,12 +321,7 @@ func (s *HTTPServer) switchPostHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	switch req.On {
-	case true:
-		ok, err = hasw.TurnOn()
-	case false:
-		ok, err = hasw.TurnOff()
-	}
+	ok, err := s.switchPostImpl(machine, watcher, req.On)
 	if err != nil {
 		w.WriteHeader(http.StatusInternalServerError)
 		w.Write([]byte(err.Error()))

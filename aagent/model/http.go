@@ -38,4 +38,5 @@ type HttpManager interface {
 	RemoveMetricWatcher(machine string, watcher MetricWatcher)
 	SwitchHandler(w http.ResponseWriter, r *http.Request)
 	MetricHandler(w http.ResponseWriter, r *http.Request)
+	HASwitchHandler(w http.ResponseWriter, r *http.Request)
 }
