@@ -46,12 +46,18 @@ var stateNames = map[State]string{
 }
 
 type Properties struct {
-	Path     string
-	Initial  bool `mapstructure:"gather_initial_state"`
+	// Path is path to the file to watch relative to the watcher manifest directory
+	Path string
+	// Initial gathers the initial file mode, stats etc for regular announces but only perform first watch after interval
+	Initial bool `mapstructure:"gather_initial_state"`
+	// Contents place specific content into the file, supports template parsing and data lookup
 	Contents string
-	Owner    string
-	Group    string
-	Mode     string
+	// Owner is should own the file when managing content
+	Owner string
+	// Group is what group should own the file when managing content
+	Group string
+	// Mode is the file mode to apply when managing content, must be a string like "0700"
+	Mode string
 }
 
 type Watcher struct {
