@@ -37,11 +37,14 @@ var stateNames = map[State]string{
 }
 
 type properties struct {
-	Initial       bool
-	ShouldOn      []string          `mapstructure:"on_when"`
-	ShouldOff     []string          `mapstructure:"off_when"`
-	ShouldDisable []string          `mapstructure:"disable_when"`
-	Annotations   map[string]string `mapstructure:"annotations"`
+	// ShouldOn when the machine is in any of these states the button will be report as on
+	ShouldOn []string `mapstructure:"on_when"`
+	// ShouldOff when the machine is in any of these states the button will be report as off
+	ShouldOff []string `mapstructure:"off_when"`
+	// ShouldDisable when the machine is in any of these states the button will stop functioning
+	ShouldDisable []string `mapstructure:"disable_when"`
+	// Annotations are additional annotations to apply to the watcher
+	Annotations map[string]string `mapstructure:"annotations"`
 }
 
 type Watcher struct {

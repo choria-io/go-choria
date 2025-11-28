@@ -44,14 +44,23 @@ func (m *Metric) GetMetrics() map[string]float64 { return m.Metrics }
 func (m *Metric) GetTime() int64                 { return m.Time }
 
 type properties struct {
-	Command        string
-	Interval       time.Duration
-	Labels         map[string]string
-	SkipPrometheus bool   `mapstructure:"skip_prometheus"`
-	StoreAsData    bool   `mapstructure:"store"`
-	HTTP           bool   `mapstructure:"http"`
-	GraphiteHost   string `mapstructure:"graphite_host"`
-	GraphitePort   string `mapstructure:"graphite_port"`
+	// Command is the path to the command to run to retrieve the metric
+	Command string
+	// Interval is the duration for how frequently to gather metrics
+	Interval time.Duration
+	// Labels are key=value pairs of strings of additional labels to add to gathered metrics
+	Labels map[string]string
+	// SkipPrometheus disables publishing metrics to Prometheus
+	SkipPrometheus bool `mapstructure:"skip_prometheus"`
+	// StoreAsData stores the metric to the Machine Data
+	StoreAsData bool `mapstructure:"store"`
+	// HTTP Expose metrics over the HTTP port
+	HTTP bool `mapstructure:"http"`
+	// GraphiteHost graphite host to send metrics to
+	GraphiteHost string `mapstructure:"graphite_host"`
+	// GraphitePort graphite port to send metrics to
+	GraphitePort string `mapstructure:"graphite_port"`
+	// GraphitePrefix prefix to apply to Graphite metrics
 	GraphitePrefix string `mapstructure:"graphite_prefix"`
 }
 
