@@ -1,0 +1,4 @@
+﻿VERIFICATION
+
+Head to https://github.com/choria-io/go-choria/releases/tag/v0.24.1, 
+download `Choria-0.24.1.msi` and create its checksum.
