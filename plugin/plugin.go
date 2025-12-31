@@ -1,4 +1,4 @@
-// Copyright (c) 2018-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2018-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -10,9 +10,10 @@ import (
 	"sort"
 	"time"
 
+	"github.com/goccy/go-yaml"
+
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/fs"
-	"github.com/ghodss/yaml"
 )
 
 // List is a list of plugins to load
