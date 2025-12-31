@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -12,10 +12,11 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/choria-io/go-choria/inter"
 	"github.com/expr-lang/expr/vm"
-	"github.com/ghodss/yaml"
+	"github.com/goccy/go-yaml"
 	"github.com/sirupsen/logrus"
+
+	"github.com/choria-io/go-choria/inter"
 
 	"github.com/choria-io/go-choria/filter/compound"
 	"github.com/choria-io/go-choria/internal/util"

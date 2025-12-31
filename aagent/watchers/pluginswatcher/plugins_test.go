@@ -14,12 +14,13 @@ import (
 	"testing"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/model"
-	iu "github.com/choria-io/go-choria/internal/util"
-	"github.com/ghodss/yaml"
+	"github.com/goccy/go-yaml"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/mock/gomock"
+
+	"github.com/choria-io/go-choria/aagent/model"
+	iu "github.com/choria-io/go-choria/internal/util"
 )
 
 func TestMachine(t *testing.T) {

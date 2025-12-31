@@ -14,16 +14,17 @@ import (
 	"sync"
 	"time"
 
+	"github.com/goccy/go-yaml"
+	"github.com/looplab/fsm"
+	"github.com/nats-io/jsm.go"
+	"github.com/sirupsen/logrus"
+
 	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/aagent/watchers"
 	"github.com/choria-io/go-choria/backoff"
 	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/lifecycle"
-	"github.com/ghodss/yaml"
-	"github.com/looplab/fsm"
-	"github.com/nats-io/jsm.go"
-	"github.com/sirupsen/logrus"
 )
 
 const dataFileName = "machine_data.json"

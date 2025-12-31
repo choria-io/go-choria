@@ -16,7 +16,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/ghodss/yaml"
+	"github.com/goccy/go-yaml"
 
 	"github.com/choria-io/ccm/manager"
 	ccmmodel "github.com/choria-io/ccm/model"
