@@ -9,10 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/model"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/mock/gomock"
+
+	"github.com/choria-io/go-choria/aagent/model"
 )
 
 func TestMachine(t *testing.T) {
@@ -34,6 +35,7 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 
 		machine = model.NewMockMachine(mockctl)
 		machine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+		machine.EXPECT().Debugf(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 		machine.EXPECT().Facts().Return(json.RawMessage(`{"fqdn":"ginkgo.example.net"}`)).MinTimes(1)
 		machine.EXPECT().Data().Return(map[string]any{}).MinTimes(1)
 		machine.EXPECT().DataGet("machines").MinTimes(1)
@@ -79,7 +81,7 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Should handle tiny hiera data with a override match", func() {
+		It("Should handle ccm hiera data with a override match", func() {
 			data := `{
     "hierarchy": {
         "order": [
@@ -103,7 +105,7 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
-		It("Should handle tiny hiera data without a override match", func() {
+		It("Should handle ccm hiera data without a override match", func() {
 			data := `{
     "hierarchy": {
         "order": [

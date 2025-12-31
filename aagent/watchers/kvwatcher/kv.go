@@ -15,15 +15,17 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/nats-io/nats.go"
+
+	"github.com/choria-io/ccm/hiera"
 	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/aagent/util"
+	"github.com/choria-io/go-choria/aagent/watchers/ccmmanifestwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/kv"
-	"github.com/choria-io/tinyhiera"
-	"github.com/google/go-cmp/cmp"
-	"github.com/nats-io/nats.go"
 )
 
 type State int
@@ -320,22 +322,18 @@ func (w *Watcher) parseValue(val []byte) (any, error) {
 		if err != nil {
 			w.Warnf("unmarshal failed: %s", err)
 		}
+		parsedValue = parsedMapValue
 
-		// the data holds a tiny hiera configuration, we parse and merge it based on facts and use the result as parsed value
 		if w.properties.HieraConfig {
 			facts := map[string]any{}
-
 			err := json.Unmarshal(w.machine.Facts(), &facts)
 			if err != nil {
 				return nil, err
 			}
-
-			parsedValue, err = tinyhiera.Resolve(parsedMapValue, map[string]any{"facts": facts})
+			parsedValue, err = hiera.Resolve(parsedMapValue, facts, hiera.DefaultOptions, ccmmanifestwatcher.NewCCMLogger(w))
 			if err != nil {
 				return nil, err
 			}
-		} else {
-			parsedValue = parsedMapValue
 		}
 
 	} else if bytes.HasPrefix(v, []byte("[")) && bytes.HasSuffix(v, []byte("]")) {
@@ -343,10 +341,6 @@ func (w *Watcher) parseValue(val []byte) (any, error) {
 		err := json.Unmarshal(v, &parsedValue)
 		if err != nil {
 			w.Warnf("unmarshal failed: %s", err)
-		}
-
-		if w.properties.HieraConfig {
-			return nil, fmt.Errorf("hiera config not supported for arrays")
 		}
 	}
 
