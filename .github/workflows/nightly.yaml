@@ -5,16 +5,6 @@ on:
     - cron: "40 0 * * *"
 
 jobs:
-  el8_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: el8_64
-          packager_tag: el8-go1.24
-          version: nightly
-
   el9_64:
     runs-on: ubuntu-latest
     steps:
@@ -26,6 +16,26 @@ jobs:
           version: nightly
 
   el10_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: el10_64
+          packager_tag: el10-go1.24
+          version: nightly
+
+  el9_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: el9_64
+          packager_tag: el9-go1.24
+          version: nightly
+
+  el10_aarch64:
     runs-on: ubuntu-latest
     steps:
       - name: Build
@@ -102,9 +112,9 @@ jobs:
 
   upload:
     needs:
-      - el8_64
       - el9_64
       - el10_64
+      - el10_aarch64
       - linux_tarball
       - windows_zip
       - darwin_amd64_tarball
