@@ -31,7 +31,7 @@ jobs:
       - name: Build
         uses: choria-io/actions/packager@main
         with:
-          build_package: el9_64
+          build_package: el9_aarch64
           packager_tag: el9-go1.24
           version: nightly
 
@@ -41,7 +41,7 @@ jobs:
       - name: Build
         uses: choria-io/actions/packager@main
         with:
-          build_package: el10_64
+          build_package: el9_aarch64
           packager_tag: el10-go1.24
           version: nightly
 
@@ -85,15 +85,15 @@ jobs:
           packager_tag: el8-go1.24
           version: nightly
 
-  windows_zip:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: windows_64_zip
-          packager_tag: el8-go1.24
-          version: nightly
+#  windows_zip:
+#    runs-on: ubuntu-latest
+#    steps:
+#      - name: Build
+#        uses: choria-io/actions/packager@main
+#        with:
+#          build_package: windows_64_zip
+#          packager_tag: el8-go1.24
+#          version: nightly
 
   docker:
     needs:
@@ -113,10 +113,11 @@ jobs:
   upload:
     needs:
       - el9_64
+      - el9_aarch64
       - el10_64
       - el10_aarch64
       - linux_tarball
-      - windows_zip
+#      - windows_zip
       - darwin_amd64_tarball
       - darwin_arm64_tarball
       - trixie_64
