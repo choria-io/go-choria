@@ -9,7 +9,7 @@ require (
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
 	github.com/choria-io/appbuilder v0.11.1-0.20251222140838-cc945dfe0c1d
-	github.com/choria-io/ccm v0.0.7
+	github.com/choria-io/ccm v0.0.8-0.20260101161415-f51a3c1f87bf
 	github.com/choria-io/fisk v0.7.2
 	github.com/choria-io/go-updater v0.1.0
 	github.com/choria-io/tokens v0.0.4-0.20250903080437-7d289cbf3db9
@@ -138,7 +138,7 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/samber/lo v1.52.0 // indirect
 	github.com/segmentio/asm v1.2.1 // indirect
-	github.com/shirou/gopsutil/v4 v4.25.11 // indirect
+	github.com/shirou/gopsutil/v4 v4.25.12 // indirect
 	github.com/shopspring/decimal v1.4.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/synadia-io/jwt-auth-builder.go v0.0.9 // indirect
