@@ -41,7 +41,7 @@ jobs:
       - name: Build
         uses: choria-io/actions/packager@main
         with:
-          build_package: el9_aarch64
+          build_package: el10_aarch64
           packager_tag: el10-go1.24
           version: nightly
 
