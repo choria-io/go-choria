@@ -85,15 +85,15 @@ jobs:
           packager_tag: el8-go1.24
           version: nightly
 
-#  windows_zip:
-#    runs-on: ubuntu-latest
-#    steps:
-#      - name: Build
-#        uses: choria-io/actions/packager@main
-#        with:
-#          build_package: windows_64_zip
-#          packager_tag: el8-go1.24
-#          version: nightly
+  windows_zip:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: windows_64_zip
+          packager_tag: el8-go1.24
+          version: nightly
 
   docker:
     needs:
@@ -117,7 +117,7 @@ jobs:
       - el10_64
       - el10_aarch64
       - linux_tarball
-#      - windows_zip
+      - windows_zip
       - darwin_amd64_tarball
       - darwin_arm64_tarball
       - trixie_64

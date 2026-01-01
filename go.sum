@@ -54,8 +54,8 @@ github.com/cheekybits/genny v1.0.0 h1:uGGa4nei+j20rOSeDeP5Of12XVm7TGUd4dJA9RDitf
 github.com/cheekybits/genny v1.0.0/go.mod h1:+tQajlRqAUrPI7DOSpB0XAqZYtQakVtB7wXkRAgjxjQ=
 github.com/choria-io/appbuilder v0.11.1-0.20251222140838-cc945dfe0c1d h1:2TWBp0bPcy1fqiwPaH4bCeiAPhaDfDdwa15f8tXxoW8=
 github.com/choria-io/appbuilder v0.11.1-0.20251222140838-cc945dfe0c1d/go.mod h1:i4tCDGfkPo/b5da5aMmVTbBh70PywPLJnx79LIoGCpk=
-github.com/choria-io/ccm v0.0.7 h1:OoAzkEC0xezQeXLUd0dmE8IMAb23sO+31zF6wRSYzGg=
-github.com/choria-io/ccm v0.0.7/go.mod h1:1w9xSIL0UXQhM64y/3cCUEPfytGndqOnhnkRv8h14tc=
+github.com/choria-io/ccm v0.0.8-0.20260101161415-f51a3c1f87bf h1:0I9aTtMCY7Eitla1BqWUzE8TS5AUP4zcqhlQBVWx6Og=
+github.com/choria-io/ccm v0.0.8-0.20260101161415-f51a3c1f87bf/go.mod h1:1w9xSIL0UXQhM64y/3cCUEPfytGndqOnhnkRv8h14tc=
 github.com/choria-io/fisk v0.7.2 h1:d1F+XbGSJqLbBrPg4bu1uMJDBy+/2VB4HT2m6U9JE98=
 github.com/choria-io/fisk v0.7.2/go.mod h1:eepMPckPWRQ5H0FOdcHlKCH4q9En+490iIvs2c1N5Us=
 github.com/choria-io/go-updater v0.1.0 h1:+Pt2ifsDh478T/ldA8fnDwavvH3RTQNn1mkrabVZ5eg=
@@ -329,8 +329,8 @@ github.com/segmentio/ksuid v1.0.4 h1:sBo2BdShXjmcugAMwjugoGUdUV0pcxY5mW4xKRn3v4c
 github.com/segmentio/ksuid v1.0.4/go.mod h1:/XUiZBD3kVx5SmUOl55voK5yeAbBNNIed+2O73XgrPE=
 github.com/sergi/go-diff v1.4.0 h1:n/SP9D5ad1fORl+llWyN+D6qoUETXNZARKjyY2/KVCw=
 github.com/sergi/go-diff v1.4.0/go.mod h1:A0bzQcvG0E7Rwjx0REVgAGH58e96+X0MeOfepqsbeW4=
-github.com/shirou/gopsutil/v4 v4.25.11 h1:X53gB7muL9Gnwwo2evPSE+SfOrltMoR6V3xJAXZILTY=
-github.com/shirou/gopsutil/v4 v4.25.11/go.mod h1:EivAfP5x2EhLp2ovdpKSozecVXn1TmuG7SMzs/Wh4PU=
+github.com/shirou/gopsutil/v4 v4.25.12 h1:e7PvW/0RmJ8p8vPGJH4jvNkOyLmbkXgXW4m6ZPic6CY=
+github.com/shirou/gopsutil/v4 v4.25.12/go.mod h1:EivAfP5x2EhLp2ovdpKSozecVXn1TmuG7SMzs/Wh4PU=
 github.com/shopspring/decimal v1.4.0 h1:bxl37RwXBklmTi0C79JfXCEBD1cqqHt0bbgBAGFp81k=
 github.com/shopspring/decimal v1.4.0/go.mod h1:gawqmDU56v4yIKSwfBSFip1HdCCXN8/+DMd9qYNcwME=
 github.com/sirupsen/logrus v1.9.4-0.20230606125235-dd1b4c2e81af h1:Sp5TG9f7K39yfB+If0vjp97vuT74F72r8hfRpP8jLU0=
