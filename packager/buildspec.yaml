@@ -162,6 +162,12 @@ foss:
       target_arch: ppc64le
       binary: ppc64le_linux
 
+    el9_aarch64:
+      template: el/el9
+      dist: el9
+      target_arch: aarch64
+      binary: aarch64_linux
+
     el10_64:
       template: el/el10
       dist: el10
@@ -173,6 +179,12 @@ foss:
       dist: el10
       target_arch: ppc64le
       binary: ppc64le_linux
+
+    el10_aarch64:
+      template: el/el10
+      dist: el10
+      target_arch: aarch64
+      binary: aarch64_linux
 
     bionic_64:
       template: debian/generic
