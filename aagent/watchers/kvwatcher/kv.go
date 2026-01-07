@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -58,6 +58,7 @@ type properties struct {
 	BucketPrefix              bool   `mapstructure:"bucket_prefix"`
 	RepublishTrigger          string `mapstructure:"republish_trigger"`
 	HieraConfig               bool   `mapstructure:"hiera_config"`
+	StoreKey                  string `mapstructure:"store_key"`
 }
 
 type Watcher struct {
@@ -479,7 +480,16 @@ func (w *Watcher) handleState(s State, err error) error {
 }
 
 func (w *Watcher) dataKey() string {
-	parsedKey, err := w.ProcessTemplate(w.properties.Key)
+	var key string
+
+	if w.properties.StoreKey == "" {
+		key = w.properties.Key
+	} else {
+		key = w.properties.StoreKey
+
+	}
+
+	parsedKey, err := w.ProcessTemplate(key)
 	if err != nil {
 		w.Warnf("Failed to parse key value %s: %v", w.properties.Key, err)
 		return w.properties.Key
