@@ -17,6 +17,7 @@ import (
 
 	"github.com/google/go-cmp/cmp"
 	"github.com/nats-io/nats.go"
+	"github.com/tidwall/gjson"
 
 	"github.com/choria-io/ccm/hiera"
 	"github.com/choria-io/go-choria/aagent/model"
@@ -59,6 +60,7 @@ type properties struct {
 	RepublishTrigger          string `mapstructure:"republish_trigger"`
 	HieraConfig               bool   `mapstructure:"hiera_config"`
 	StoreKey                  string `mapstructure:"store_key"`
+	Query                     string `mapstructure:"query"`
 }
 
 type Watcher struct {
@@ -337,6 +339,15 @@ func (w *Watcher) parseValue(val []byte) (any, error) {
 			}
 		}
 
+		if w.properties.Query != "" {
+			j, err := json.Marshal(parsedValue)
+			if err != nil {
+				return nil, fmt.Errorf("could not marshal data for query: %w", err)
+			}
+
+			res := gjson.GetBytes(j, w.properties.Query)
+			parsedValue = res.Value()
+		}
 	} else if bytes.HasPrefix(v, []byte("[")) && bytes.HasSuffix(v, []byte("]")) {
 		parsedValue = []any{}
 		err := json.Unmarshal(v, &parsedValue)
