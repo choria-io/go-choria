@@ -9,7 +9,7 @@ require (
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
 	github.com/choria-io/appbuilder v0.11.1-0.20251222140838-cc945dfe0c1d
-	github.com/choria-io/ccm v0.0.8-0.20260101161415-f51a3c1f87bf
+	github.com/choria-io/ccm v0.0.8
 	github.com/choria-io/fisk v0.7.2
 	github.com/choria-io/go-updater v0.1.0
 	github.com/choria-io/tokens v0.0.4-0.20250903080437-7d289cbf3db9
@@ -38,7 +38,7 @@ require (
 	github.com/nats-io/natscli v0.3.0
 	github.com/onsi/ginkgo/v2 v2.27.3
 	github.com/onsi/gomega v1.38.3
-	github.com/open-policy-agent/opa v1.12.1
+	github.com/open-policy-agent/opa v1.12.2
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model v0.6.2
 	github.com/robfig/cron v1.2.0
@@ -89,7 +89,7 @@ require (
 	github.com/gobwas/glob v0.2.3 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/google/go-tpm v0.9.8 // indirect
-	github.com/google/pprof v0.0.0-20251213031049-b05bdaca462f // indirect
+	github.com/google/pprof v0.0.0-20260106004452-d7df1bf2cac7 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/goss-org/GOnetstat v0.0.0-20230101144325-22be0bd9e64d // indirect
 	github.com/goss-org/go-ps v0.0.0-20230609005227-7b318e6a56e5 // indirect
@@ -132,7 +132,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/power-devops/perfstat v0.0.0-20240221224432-82ca36839d55 // indirect
-	github.com/prometheus/common v0.67.4 // indirect
+	github.com/prometheus/common v0.67.5 // indirect
 	github.com/prometheus/procfs v0.19.2 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 // indirect
 	github.com/rivo/uniseg v0.4.7 // indirect
