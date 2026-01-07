@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -38,7 +38,7 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 		machine.EXPECT().Debugf(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
 		machine.EXPECT().Facts().Return(json.RawMessage(`{"fqdn":"ginkgo.example.net"}`)).MinTimes(1)
 		machine.EXPECT().Data().Return(map[string]any{}).MinTimes(1)
-		machine.EXPECT().DataGet("machines").MinTimes(1)
+		machine.EXPECT().DataGet("machines").AnyTimes()
 
 		wi, err := New(machine, "kv", nil, nil, "", "", "1m", time.Hour, map[string]any{
 			"bucket":        "PLUGINS",
@@ -70,6 +70,15 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 		It("Should handle a leading and trailing newline", func() {
 			kve.EXPECT().Value().Return([]byte("\n{\"spec\": \"foo\"}\n")).MinTimes(1)
 			machine.EXPECT().DataPut("machines", map[string]any{"spec": "foo"}).Return(nil).Times(1)
+			_, err := w.poll()
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should support custom store keys", func() {
+			w.properties.StoreKey = "key"
+			kve.EXPECT().Value().Return([]byte("\n{\"spec\": \"foo\"}\n")).MinTimes(1)
+			machine.EXPECT().DataGet("key").MinTimes(1)
+			machine.EXPECT().DataPut("key", map[string]any{"spec": "foo"}).Return(nil).Times(1)
 			_, err := w.poll()
 			Expect(err).ToNot(HaveOccurred())
 		})
