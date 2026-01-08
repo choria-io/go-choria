@@ -83,6 +83,14 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
+		It("Should support data queries", func() {
+			w.properties.Query = "spec"
+			kve.EXPECT().Value().Return([]byte("{\"spec\": \"foo\"}")).MinTimes(1)
+			machine.EXPECT().DataPut("machines", "foo").Return(nil).Times(1)
+			_, err := w.poll()
+			Expect(err).ToNot(HaveOccurred())
+		})
+
 		It("Should handle a leading and trailing unicode whitespace", func() {
 			kve.EXPECT().Value().Return([]byte("\n   \t{\"spec\": \"foo\"}\t  \n")).MinTimes(1)
 			machine.EXPECT().DataPut("machines", map[string]any{"spec": "foo"}).Return(nil).Times(1)
