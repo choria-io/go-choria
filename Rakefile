@@ -4,7 +4,7 @@ ENV['MCOLLECTIVE_CERTNAME'] = 'rip.mcollective'
 
 desc "Run just tests no measurements"
 task :test do
-  sh "ginkgo -r ."
+  sh "go tool ginkgo -r ."
 end
 
 desc "Builds packages"
