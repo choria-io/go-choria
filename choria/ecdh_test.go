@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -23,6 +23,11 @@ var _ = Describe("EDCH", func() {
 	})
 
 	Describe("ECDHSharedSecret", func() {
+		It("Should fail with invalid input", func() {
+			_, err := ECDHSharedSecret([]byte{}, []byte{})
+			Expect(err).To(HaveOccurred())
+		})
+
 		It("Should correctly calculate secrets", func() {
 			alicePri, alicePub, err := ECDHKeyPair()
 			Expect(err).ToNot(HaveOccurred())

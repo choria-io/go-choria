@@ -1,4 +1,4 @@
-// Copyright (c) 2024-2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2024-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,7 @@ package plugins
 
 import (
 	"fmt"
+
 	"github.com/sirupsen/logrus"
 
 	"github.com/choria-io/go-choria/aagent/machine"
@@ -33,7 +34,7 @@ func ChoriaPlugin(cfg *config.Config, log *logrus.Entry) (*plugin.MachinePlugin,
 	pluginsDirectory := cfg.Choria.MachineSourceDir
 	publicKey := cfg.Choria.AutonomousAgentPublicKey
 
-	log.Warnf("Startring autonomous agent plugin management using KV %s > %s", bucket, key)
+	log.Warnf("Starting autonomous agent plugin management using KV %s > %s", bucket, key)
 
 	m := machine.Machine{
 		MachineName:    "plugins_manager",
