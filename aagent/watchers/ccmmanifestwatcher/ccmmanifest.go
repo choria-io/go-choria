@@ -1,4 +1,4 @@
-// Copyright (c) 2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2025-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -128,6 +128,10 @@ func (w *Watcher) validate() error {
 		return fmt.Errorf("manifest_file or manifest is required")
 	}
 
+	if w.properties.Noop && w.properties.HealthCheckOnly {
+		return fmt.Errorf("cannot run in noop mode and healthcheck_only")
+	}
+
 	if w.properties.Timeout == 0 {
 		w.properties.Timeout = time.Minute
 	}
@@ -170,7 +174,7 @@ func (w *Watcher) Run(ctx context.Context, wg *sync.WaitGroup) {
 func (w *Watcher) intervalWatcher(ctx context.Context, wg *sync.WaitGroup) {
 	defer wg.Done()
 
-	tick := time.NewTicker(time.Millisecond)
+	tick := time.NewTicker(50 * time.Millisecond)
 	if w.properties.Splay {
 		splay := rand.N(30 * time.Second)
 		w.Infof("Performing initial execution after %v", splay)
@@ -300,6 +304,7 @@ func (w *Watcher) ccmManager(data map[string]any, facts json.RawMessage) (*manag
 	log := NewCCMLogger(w)
 	var opts []manager.Option
 	if w.properties.Noop {
+		w.Infof("Running in noop mode")
 		opts = append(opts, manager.WithNoop())
 	}
 

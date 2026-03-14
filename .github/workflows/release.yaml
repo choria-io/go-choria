@@ -14,7 +14,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el8_64
-          packager_tag: el8-go1.24
+          packager_tag: el8-go1.25
           version: tag
 
   el9_64:
@@ -24,7 +24,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el9_64
-          packager_tag: el9-go1.24
+          packager_tag: el9-go1.25
           version: tag
 
   el8_ppc64le:
@@ -34,7 +34,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el8_ppc64le
-          packager_tag: el8-go1.24
+          packager_tag: el8-go1.25
           version: tag
 
   el9_ppc64le:
@@ -44,7 +44,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el9_ppc64le
-          packager_tag: el9-go1.24
+          packager_tag: el9-go1.25
           version: tag
 
   # Debian
@@ -56,7 +56,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bookworm_64
-          packager_tag: bookworm-go1.24
+          packager_tag: bookworm-go1.25
           version: tag
 
   bookworm_aarch64:
@@ -66,7 +66,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bookworm_aarch64
-          packager_tag: bookworm-go1.24
+          packager_tag: bookworm-go1.25
           version: tag
 
   bookworm_armel:
@@ -76,7 +76,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bookworm_armel
-          packager_tag: bookworm-go1.24
+          packager_tag: bookworm-go1.25
           version: tag
 
   bookworm_armhf:
@@ -86,7 +86,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bookworm_armhf
-          packager_tag: bookworm-go1.24
+          packager_tag: bookworm-go1.25
           version: tag
 
   bullseye_64:
@@ -96,7 +96,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bullseye_64
-          packager_tag: bullseye-go1.24
+          packager_tag: bullseye-go1.25
           version: tag
 
   bullseye_aarch64:
@@ -106,7 +106,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bullseye_aarch64
-          packager_tag: bullseye-go1.24
+          packager_tag: bullseye-go1.25
           version: tag
 
   bullseye_armel:
@@ -116,7 +116,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bullseye_armel
-          packager_tag: bullseye-go1.24
+          packager_tag: bullseye-go1.25
           version: tag
 
   bullseye_armhf:
@@ -126,7 +126,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bullseye_armhf
-          packager_tag: bullseye-go1.24
+          packager_tag: bullseye-go1.25
           version: tag
 
   trixie_64:
@@ -136,7 +136,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: trixie_64
-          packager_tag: trixie-go1.24
+          packager_tag: trixie-go1.25
           version: tag
 
   trixie_aarch64:
@@ -146,7 +146,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: trixie_aarch64
-          packager_tag: trixie-go1.24
+          packager_tag: trixie-go1.25
           version: tag
 
   trixie_armel:
@@ -156,7 +156,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: trixie_armel
-          packager_tag: trixie-go1.24
+          packager_tag: trixie-go1.25
           version: tag
 
   trixie_armhf:
@@ -166,7 +166,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: trixie_armhf
-          packager_tag: trixie-go1.24
+          packager_tag: trixie-go1.25
           version: tag
 
   # Ubuntu
@@ -178,7 +178,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bionic_64
-          packager_tag: bullseye-go1.24
+          packager_tag: bullseye-go1.25
           version: tag
 
   bionic_aarch64:
@@ -188,7 +188,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: bionic_aarch64
-          packager_tag: bullseye-go1.24
+          packager_tag: bullseye-go1.25
           version: tag
 
   focal_64:
@@ -198,7 +198,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: focal_64
-          packager_tag: focal-go1.24
+          packager_tag: focal-go1.25
           version: tag
 
   focal_aarch64:
@@ -208,7 +208,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: focal_aarch64
-          packager_tag: focal-go1.24
+          packager_tag: focal-go1.25
           version: tag
 
   jammy_64:
@@ -218,7 +218,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: jammy_64
-          packager_tag: jammy-go1.24
+          packager_tag: jammy-go1.25
           version: tag
 
   jammy_aarch64:
@@ -228,7 +228,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: jammy_aarch64
-          packager_tag: jammy-go1.24
+          packager_tag: jammy-go1.25
           version: tag
 
   noble_64:
@@ -238,7 +238,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: noble_64
-          packager_tag: noble-go1.24
+          packager_tag: noble-go1.25
           version: tag
 
   noble_aarch64:
@@ -248,7 +248,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: noble_aarch64
-          packager_tag: noble-go1.24
+          packager_tag: noble-go1.25
           version: tag
 
   # Windows
@@ -260,7 +260,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: windows_64
-          packager_tag: focal-go1.24
+          packager_tag: focal-go1.25
           version: tag
 
   upload:
