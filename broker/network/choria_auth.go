@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -7,6 +7,7 @@ package network
 import (
 	"crypto/ed25519"
 	"crypto/md5"
+	"crypto/subtle"
 	"crypto/tls"
 	"encoding/base64"
 	"encoding/hex"
@@ -85,10 +86,10 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 
 	log := a.log.WithField("stage", "check")
 	remote := c.RemoteAddress()
+	pipeConnection := remote != nil && remote.String() == "pipe"
 	if remote != nil {
 		log = log.WithField("remote", remote.String())
 	}
-	pipeConnection := remote.String() == "pipe"
 
 	tlsc := c.GetTLSConnectionState()
 	if tlsc != nil {
@@ -107,7 +108,7 @@ func (a *ChoriaAuth) Check(c server.ClientAuthentication) bool {
 	case a.isProvisionUser(c):
 		verified, err = a.handleProvisioningUserConnection(c, tlsVerified)
 		if err != nil {
-			log.Warnf("Handling provisioning user connection failed, denying %s: %s", c.RemoteAddress().String(), err)
+			log.Warnf("Handling provisioning user connection failed, denying: %s", err)
 		}
 
 	case systemUser && (tlsVerified || pipeConnection):
@@ -417,7 +418,7 @@ func (a *ChoriaAuth) handleVerifiedSystemAccount(c server.ClientAuthentication, 
 
 	opts := c.GetOpts()
 
-	if !(opts.Username == a.systemUser && opts.Password == a.systemPass) {
+	if subtle.ConstantTimeCompare([]byte(opts.Username), []byte(a.systemUser)) != 1 || subtle.ConstantTimeCompare([]byte(opts.Password), []byte(a.systemPass)) != 1 {
 		return false, fmt.Errorf("invalid system credentials")
 	}
 
@@ -451,7 +452,7 @@ func (a *ChoriaAuth) handleProvisioningUserConnectionWithIssuer(c server.ClientA
 	user := a.createUser(c)
 	user.Account = a.provisioningAccount
 
-	a.log.Debugf("Registering user '%s' in account '%s' from claims with", user.Username, user.Account.Name)
+	a.log.Debugf("Registering user '%s' in account '%s' from claims", user.Username, user.Account.Name)
 	c.RegisterUser(user)
 
 	return true, nil
@@ -494,7 +495,7 @@ func (a *ChoriaAuth) handleProvisioningUserConnection(c server.ClientAuthenticat
 		return false, fmt.Errorf("password required")
 	}
 
-	if a.provPass != opts.Password {
+	if subtle.ConstantTimeCompare([]byte(a.provPass), []byte(opts.Password)) != 1 {
 		return false, fmt.Errorf("invalid provisioner password supplied")
 	}
 
@@ -712,7 +713,7 @@ func (a *ChoriaAuth) parseServerJWTWithIssuer(jwts string) (claims *tokens.Serve
 
 	ous, ok := ou.(string)
 	if !ok {
-		return nil, fmt.Errorf("invald ou in token")
+		return nil, fmt.Errorf("invalid ou in token")
 	}
 
 	issuer, ok := a.issuerTokens[ous]
@@ -816,7 +817,7 @@ func (a *ChoriaAuth) parseClientIDJWTWithIssuer(jwts string) (claims *tokens.Cli
 
 	ous, ok := ou.(string)
 	if !ok {
-		return nil, fmt.Errorf("invald ou in token")
+		return nil, fmt.Errorf("invalid ou in token")
 	}
 
 	issuer, ok := a.issuerTokens[ous]

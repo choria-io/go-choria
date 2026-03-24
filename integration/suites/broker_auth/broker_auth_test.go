@@ -1,4 +1,4 @@
-// Copyright (c) 2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2025-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -547,7 +547,7 @@ var _ = Describe("Authentication", func() {
 				nats.RootCAs(testutil.CertPath("one", "ca")),
 			)
 			Expect(err).To(MatchError("nats: Authorization Violation"))
-			Expect(string(logbuff.Contents())).To(MatchRegexp("Handling provisioning user connection failed, denying.+: password required"))
+			Expect(string(logbuff.Contents())).To(MatchRegexp("Handling provisioning user connection failed.+: password required"))
 		})
 
 		It("Should register the connection into the provisioning account", func() {
