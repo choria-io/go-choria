@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -119,24 +119,19 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 		return err
 	}
 
-	err = s.createOrUpdateStream("CHORIA_EXECUTOR", []string{"choria.submission.choria.executor.>"}, cfg.NetworkEventStoreDuration, cfg.NetworkEventStoreReplicas, mgr)
-	if err != nil {
-		return err
-	}
-
 	err = s.createOrUpdateStream("CHORIA_EVENTS", []string{"choria.lifecycle.>"}, cfg.NetworkEventStoreDuration, cfg.NetworkEventStoreReplicas, mgr)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create stream CHORIA_EVENTS: %w", err)
 	}
 
 	err = s.createOrUpdateStream("CHORIA_MACHINE", []string{"choria.machine.>"}, cfg.NetworkMachineStoreDuration, cfg.NetworkMachineStoreReplicas, mgr)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create stream CHORIA_MACHINE: %w", err)
 	}
 
 	err = s.createOrUpdateStream("CHORIA_STREAM_ADVISORIES", []string{"$JS.EVENT.ADVISORY.>"}, cfg.NetworkStreamAdvisoryDuration, cfg.NetworkStreamAdvisoryReplicas, mgr)
 	if err != nil {
-		return err
+		return fmt.Errorf("could not create stream CHORIA_STREAM_ADVISORIES: %w", err)
 	}
 
 	err = scout.ConfigureStreams(nc, s.log.WithField("component", "scout"))
@@ -163,7 +158,7 @@ func (s *Server) configureSystemStreams(ctx context.Context) error {
 
 		err = s.createOrUpdateStreamWithConfig("CHORIA_EXECUTOR", *execCfg, mgr)
 		if err != nil {
-			return err
+			return fmt.Errorf("could not create stream CHORIA_EXECUTOR: %w", err)
 		}
 	}
 
