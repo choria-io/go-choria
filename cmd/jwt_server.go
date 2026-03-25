@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,12 +9,14 @@ import (
 	"crypto/tls"
 	"encoding/hex"
 	"fmt"
+	"os"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/config"
+	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/tokens"
 )
 
@@ -100,7 +102,16 @@ func (s *jWTCreateServerCommand) createJWT() error {
 		return fmt.Errorf("cannot set --governor unless --stream-user is also set ")
 	}
 
-	pk, err := hex.DecodeString(s.pk)
+	pks := s.pk
+	if iu.FileExist(s.pk) {
+		f, err := os.ReadFile(s.pk)
+		if err != nil {
+			return err
+		}
+		pks = string(f)
+	}
+
+	pk, err := hex.DecodeString(pks)
 	if err != nil {
 		return err
 	}
