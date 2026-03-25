@@ -12,10 +12,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/goccy/go-yaml"
+	"github.com/sirupsen/logrus"
+
 	"github.com/choria-io/go-choria/aagent/plugin"
 	"github.com/choria-io/go-choria/aagent/watchers"
-	"github.com/ghodss/yaml"
-	"github.com/sirupsen/logrus"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"

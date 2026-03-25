@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -145,6 +145,11 @@ func (fw *Framework) NewConnector(ctx context.Context, servers func() (srvcache.
 		chanSubscriptions: make(map[string]*channelSubscription),
 		outbox:            make(chan *nats.Msg, 1000),
 		ctx:               ctx,
+	}
+
+	// Validate connect timeout
+	if conn.config.Choria.NetworkConnectTimeout > 120*time.Second {
+		return nil, fmt.Errorf("plugin.choria.network.connect_timeout must not exceed 120 seconds")
 	}
 
 	prov := conn.fw.InProcessConnProvider()
@@ -620,6 +625,7 @@ func (conn *Connection) Connect(ctx context.Context) (err error) {
 		nats.MaxReconnects(-1),
 		nats.IgnoreAuthErrorAbort(),
 		nats.Name(conn.name),
+		nats.Timeout(conn.config.Choria.NetworkConnectTimeout),
 
 		// This is specifically set quite small, just about enough to handle short
 		// reconnects rather than the 8MB long buffer that's default.  30 000 nodes

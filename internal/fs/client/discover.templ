@@ -11,10 +11,69 @@ import (
 	"github.com/choria-io/go-choria/client/discovery"
 	"github.com/choria-io/go-choria/providers/discovery/broadcast"
 	"github.com/choria-io/go-choria/providers/discovery/external"
+	"github.com/choria-io/go-choria/providers/discovery/inventory"
 	"github.com/choria-io/go-choria/providers/discovery/puppetdb"
 	"github.com/choria-io/go-choria/protocol"
 	"github.com/choria-io/go-choria/inter"
 )
+
+// InventoryNS is a NodeSource that uses Choria inventory to discover nodes
+type InventoryNS struct {
+	nodeCache []string
+	f         *protocol.Filter
+
+	sync.Mutex
+}
+
+// Reset resets the internal node cache
+func (i *InventoryNS) Reset() {
+	i.Lock()
+	defer i.Unlock()
+
+	i.nodeCache = []string{}
+}
+
+// Discover performs the discovery of nodes against the Choria Network
+func (b *InventoryNS) Discover(ctx context.Context, fw inter.Framework, filters []FilterFunc) ([]string, error) {
+	b.Lock()
+	defer b.Unlock()
+
+	copier := func() []string {
+		out := make([]string, len(b.nodeCache))
+		copy(out, b.nodeCache)
+
+		return out
+	}
+
+	if len(b.nodeCache) > 0 {
+		return copier(), nil
+	}
+
+	var err error
+
+	source := fw.Configuration().Choria.InventoryDiscoverySource
+	if source == "" {
+		return nil, fmt.Errorf("inventory discovery source is not set, cannot discover nodes")
+	}
+
+	b.f, err = parseFilters(filters)
+	if err != nil {
+		return nil, err
+	}
+
+	if b.nodeCache == nil {
+		b.nodeCache = []string{}
+	}
+
+	nodes, err := inventory.New(fw).Discover(ctx, inventory.Filter(b.f), inventory.File(source))
+	if err != nil {
+		return []string{}, err
+	}
+
+	b.nodeCache = nodes
+
+	return copier(), nil
+}
 
 // BroadcastNS is a NodeSource that uses the Choria network broadcast method to discover nodes
 type BroadcastNS struct {

@@ -6,11 +6,16 @@ package cmd
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
+	"net/http"
 	"os"
 	"sync"
 
+	"github.com/choria-io/go-choria/aagent"
+	aahttp "github.com/choria-io/go-choria/aagent/http"
 	"github.com/choria-io/go-choria/aagent/machine"
+	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/aagent/notifiers/console"
 	"github.com/choria-io/go-choria/aagent/watchers"
 	"github.com/choria-io/go-choria/config"
@@ -22,8 +27,10 @@ type mRunCommand struct {
 	sourceDirs []string
 	factsFile  string
 	dataFile   string
+	httpPort   int
 	connect    bool
 	machines   map[string]*machine.Machine
+	haHttp     model.HttpManager
 	mu         sync.Mutex
 }
 
@@ -36,6 +43,7 @@ func (r *mRunCommand) Setup() (err error) {
 		r.cmd.Flag("facts", "JSON format facts file to supply to the machine as run time facts").ExistingFileVar(&r.factsFile)
 		r.cmd.Flag("data", "JSON format data file to supply to the machine as run time data").ExistingFileVar(&r.dataFile)
 		r.cmd.Flag("connect", "Connects to the Choria Broker when running the autonomous agent").UnNegatableBoolVar(&r.connect)
+		r.cmd.Flag("http", "Starts a HTTP server to interact with the machine").IntVar(&r.httpPort)
 	}
 
 	return nil
@@ -70,6 +78,10 @@ func (r *mRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		logrus.SetLevel(logrus.DebugLevel)
 	}
 
+	if r.httpPort > 0 {
+		r.startHttpServer()
+	}
+
 	for _, sourceDir := range r.sourceDirs {
 		m, err := machine.FromDir(sourceDir, watchers.New(ctx))
 		if err != nil {
@@ -85,6 +97,9 @@ func (r *mRunCommand) Run(wg *sync.WaitGroup) (err error) {
 		m.SetMainCollective(cfg.MainCollective)
 		m.SetExternalMachineNotifier(r.notifyMachinesAfterTransition)
 		m.SetExternalMachineStateQuery(r.machineStateLookup)
+		if r.haHttp != nil {
+			m.SetHttpManager(r.haHttp)
+		}
 
 		if r.factsFile != "" {
 			facts, err := os.ReadFile(r.factsFile)
@@ -152,7 +167,33 @@ func (r *mRunCommand) machineStateLookup(name string) (string, error) {
 		}
 	}
 
-	return "", fmt.Errorf("could not find machine matching ame='%s'", name)
+	return "", fmt.Errorf("could not find machine matching name='%s'", name)
+}
+
+func (r *mRunCommand) startHttpServer() {
+	var err error
+
+	r.haHttp, err = aahttp.NewHTTPServer(logrus.WithField("port", r.httpPort))
+	if err != nil {
+		logrus.Errorf("Could not start HTTP server: %s", err)
+		return
+	}
+
+	mux := http.NewServeMux()
+	mux.Handle(aagent.HTTPSwitchHandlerPattern, aahttp.LoggingMiddleware(logrus.WithField("port", r.httpPort), http.HandlerFunc(r.haHttp.SwitchHandler)))
+	mux.Handle(aagent.HTTPMetricHandlerPattern, aahttp.LoggingMiddleware(logrus.WithField("port", r.httpPort), http.HandlerFunc(r.haHttp.MetricHandler)))
+	mux.Handle(aagent.HomeAssistantSwitchHandlerPattern, aahttp.LoggingMiddleware(logrus.WithField("port", r.httpPort), http.HandlerFunc(r.haHttp.HASwitchHandler)))
+
+	logrus.Infof("Starting HTTP server on port %d", r.httpPort)
+
+	go func() {
+		err = http.ListenAndServe(fmt.Sprintf(":%d", r.httpPort), mux)
+		if errors.Is(err, http.ErrServerClosed) {
+			return
+		}
+
+		logrus.Errorf("HTTP server failed: %s", err)
+	}()
 }
 
 func init() {

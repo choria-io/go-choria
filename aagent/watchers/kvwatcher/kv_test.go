@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -9,10 +9,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/choria-io/go-choria/aagent/model"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/mock/gomock"
+
+	"github.com/choria-io/go-choria/aagent/model"
 )
 
 func TestMachine(t *testing.T) {
@@ -34,9 +35,10 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 
 		machine = model.NewMockMachine(mockctl)
 		machine.EXPECT().Infof(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
-		machine.EXPECT().Facts().Return(json.RawMessage(`{}`)).MinTimes(1)
+		machine.EXPECT().Debugf(gomock.Any(), gomock.Any(), gomock.Any()).AnyTimes()
+		machine.EXPECT().Facts().Return(json.RawMessage(`{"fqdn":"ginkgo.example.net"}`)).MinTimes(1)
 		machine.EXPECT().Data().Return(map[string]any{}).MinTimes(1)
-		machine.EXPECT().DataGet("machines").MinTimes(1)
+		machine.EXPECT().DataGet("machines").AnyTimes()
 
 		wi, err := New(machine, "kv", nil, nil, "", "", "1m", time.Hour, map[string]any{
 			"bucket":        "PLUGINS",
@@ -72,11 +74,77 @@ var _ = Describe("AAgent/Watchers/KvWatcher", func() {
 			Expect(err).ToNot(HaveOccurred())
 		})
 
+		It("Should support custom store keys", func() {
+			w.properties.StoreKey = "key"
+			kve.EXPECT().Value().Return([]byte("\n{\"spec\": \"foo\"}\n")).MinTimes(1)
+			machine.EXPECT().DataGet("key").MinTimes(1)
+			machine.EXPECT().DataPut("key", map[string]any{"spec": "foo"}).Return(nil).Times(1)
+			_, err := w.poll()
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should support data queries", func() {
+			w.properties.Query = "spec"
+			kve.EXPECT().Value().Return([]byte("{\"spec\": \"foo\"}")).MinTimes(1)
+			machine.EXPECT().DataPut("machines", "foo").Return(nil).Times(1)
+			_, err := w.poll()
+			Expect(err).ToNot(HaveOccurred())
+		})
+
 		It("Should handle a leading and trailing unicode whitespace", func() {
 			kve.EXPECT().Value().Return([]byte("\n   \t{\"spec\": \"foo\"}\t  \n")).MinTimes(1)
 			machine.EXPECT().DataPut("machines", map[string]any{"spec": "foo"}).Return(nil).Times(1)
 			_, err := w.poll()
 			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should handle ccm hiera data with a override match", func() {
+			data := `{
+    "hierarchy": {
+        "order": [
+            "fqdn:{{ lookup('facts.fqdn') }}"
+        ]
+    },
+    "data": {
+        "test": "value"
+    },
+    "overrides": {
+		"fqdn:ginkgo.example.net": {
+			"test": "override"
+		}
+    }
+}`
+
+			w.properties.HieraConfig = true
+			kve.EXPECT().Value().Return([]byte(data)).MinTimes(1)
+			machine.EXPECT().DataPut("machines", map[string]any{"test": "override"}).Return(nil).Times(1)
+			_, err := w.poll()
+			Expect(err).ToNot(HaveOccurred())
+		})
+
+		It("Should handle ccm hiera data without a override match", func() {
+			data := `{
+    "hierarchy": {
+        "order": [
+            "fqdn:{{lookup('facts.fqdn')}}"
+        ]
+    },
+    "data": {
+        "test": "value"
+    },
+    "overrides": {
+		"fqdn:other.example.net": {
+			"test": "override"
+		}
+	}
+}`
+
+			w.properties.HieraConfig = true
+			kve.EXPECT().Value().Return([]byte(data)).MinTimes(1)
+			machine.EXPECT().DataPut("machines", map[string]any{"test": "value"}).Return(nil).Times(1)
+			_, err := w.poll()
+			Expect(err).ToNot(HaveOccurred())
+
 		})
 	})
 })

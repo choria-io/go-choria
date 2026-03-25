@@ -13,6 +13,7 @@ import (
 	json "encoding/json"
 	reflect "reflect"
 
+	model "github.com/choria-io/go-choria/aagent/model"
 	lifecycle "github.com/choria-io/go-choria/lifecycle"
 	jsm "github.com/nats-io/jsm.go"
 	gomock "go.uber.org/mock/gomock"
@@ -178,6 +179,20 @@ func (mr *MockMachineMockRecorder) Facts() *gomock.Call {
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "Facts", reflect.TypeOf((*MockMachine)(nil).Facts))
 }
 
+// HttpManager mocks base method.
+func (m *MockMachine) HttpManager() model.HttpManager {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "HttpManager")
+	ret0, _ := ret[0].(model.HttpManager)
+	return ret0
+}
+
+// HttpManager indicates an expected call of HttpManager.
+func (mr *MockMachineMockRecorder) HttpManager() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "HttpManager", reflect.TypeOf((*MockMachine)(nil).HttpManager))
+}
+
 // Identity mocks base method.
 func (m *MockMachine) Identity() string {
 	m.ctrl.T.Helper()
@@ -323,6 +338,18 @@ func (mr *MockMachineMockRecorder) PublishLifecycleEvent(t any, opts ...any) *go
 	mr.mock.ctrl.T.Helper()
 	varargs := append([]any{t}, opts...)
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "PublishLifecycleEvent", reflect.TypeOf((*MockMachine)(nil).PublishLifecycleEvent), varargs...)
+}
+
+// SetHttpManager mocks base method.
+func (m *MockMachine) SetHttpManager(arg0 model.HttpManager) {
+	m.ctrl.T.Helper()
+	m.ctrl.Call(m, "SetHttpManager", arg0)
+}
+
+// SetHttpManager indicates an expected call of SetHttpManager.
+func (mr *MockMachineMockRecorder) SetHttpManager(arg0 any) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "SetHttpManager", reflect.TypeOf((*MockMachine)(nil).SetHttpManager), arg0)
 }
 
 // SignerKey mocks base method.

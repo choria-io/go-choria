@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -16,14 +16,13 @@ import (
 	"strings"
 	"time"
 
-	"github.com/choria-io/go-choria/inter"
+	"github.com/goccy/go-yaml"
+	"github.com/sirupsen/logrus"
 	"github.com/tidwall/gjson"
 
 	"github.com/choria-io/go-choria/filter/identity"
+	"github.com/choria-io/go-choria/inter"
 	"github.com/choria-io/go-choria/providers/agent/mcorpc/replyfmt"
-
-	"github.com/ghodss/yaml"
-	"github.com/sirupsen/logrus"
 )
 
 const validIdentity = `^(([a-zA-Z0-9]|[a-zA-Z0-9][a-zA-Z0-9\-]*[a-zA-Z0-9])\.)*([A-Za-z0-9]|[A-Za-z0-9][A-Za-z0-9\-]*[A-Za-z0-9])$`

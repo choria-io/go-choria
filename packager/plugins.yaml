@@ -12,7 +12,6 @@ scout: github.com/choria-io/go-choria/scout/agent/scout
 # Autonomous Agent Watchers
 exec_watcher: github.com/choria-io/go-choria/aagent/watchers/execwatcher
 file_watcher: github.com/choria-io/go-choria/aagent/watchers/filewatcher
-homekit_watcher: github.com/choria-io/go-choria/aagent/watchers/homekitwatcher
 metric_watcher: github.com/choria-io/go-choria/aagent/watchers/metricwatcher
 nagios_watcher: github.com/choria-io/go-choria/aagent/watchers/nagioswatcher
 schedule_watcher: github.com/choria-io/go-choria/aagent/watchers/schedulewatcher
@@ -22,6 +21,8 @@ gossip_watcher: github.com/choria-io/go-choria/aagent/watchers/gossipwatcher
 archive_watcher: github.com/choria-io/go-choria/aagent/watchers/archivewatcher
 plugins_watcher: github.com/choria-io/go-choria/aagent/watchers/pluginswatcher
 expression_watcher: github.com/choria-io/go-choria/aagent/watchers/expressionwatcher
+httpswitch_watcher: github.com/choria-io/go-choria/aagent/watchers/httpswitchwatcher
+ccmmanifest_watcher: github.com/choria-io/go-choria/aagent/watchers/ccmmanifestwatcher
 
 # Data Plugins
 machine_data: github.com/choria-io/go-choria/aagent/data/machinedata

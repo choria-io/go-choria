@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -15,14 +15,18 @@ import (
 	"sync"
 	"time"
 
+	"github.com/google/go-cmp/cmp"
+	"github.com/nats-io/nats.go"
+	"github.com/tidwall/gjson"
+
+	"github.com/choria-io/ccm/hiera"
 	"github.com/choria-io/go-choria/aagent/model"
 	"github.com/choria-io/go-choria/aagent/util"
+	"github.com/choria-io/go-choria/aagent/watchers/ccmmanifestwatcher"
 	"github.com/choria-io/go-choria/aagent/watchers/event"
 	"github.com/choria-io/go-choria/aagent/watchers/watcher"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/go-choria/providers/kv"
-	"github.com/google/go-cmp/cmp"
-	"github.com/nats-io/nats.go"
 )
 
 type State int
@@ -54,6 +58,9 @@ type properties struct {
 	TransitionOnMatch         bool   `mapstructure:"on_matching_update"`
 	BucketPrefix              bool   `mapstructure:"bucket_prefix"`
 	RepublishTrigger          string `mapstructure:"republish_trigger"`
+	HieraConfig               bool   `mapstructure:"hiera_config"`
+	StoreKey                  string `mapstructure:"store_key"`
+	Query                     string `mapstructure:"query"`
 }
 
 type Watcher struct {
@@ -213,7 +220,7 @@ func (w *Watcher) setupRepubListener(ctx context.Context) error {
 	return err
 }
 
-// handles a published message as if its a kv poll result, logic update here should also be changed in poll()
+// handles a published message as if its kv poll result, logic update here should also be changed in poll()
 func (w *Watcher) repubHandler(msg *nats.Msg) (State, error) {
 	if !w.ShouldWatch() {
 		return Skipped, nil
@@ -309,14 +316,37 @@ func (w *Watcher) parseValue(val []byte) (any, error) {
 	var parsedValue any
 
 	// we try to handle json files into a map[string]any this means nested lookups can be done
-	// in other machines using the lookup template func and it works just fine, deep compares are done
+	// in other machines using the lookup template func, and it works just fine, deep compares are done
 	// on the entire structure later
 	v := bytes.TrimSpace(val)
 	if bytes.HasPrefix(v, []byte("{")) && bytes.HasSuffix(v, []byte("}")) {
-		parsedValue = map[string]any{}
-		err := json.Unmarshal(v, &parsedValue)
+		parsedMapValue := map[string]any{}
+		err := json.Unmarshal(v, &parsedMapValue)
 		if err != nil {
 			w.Warnf("unmarshal failed: %s", err)
+		}
+		parsedValue = parsedMapValue
+
+		if w.properties.HieraConfig {
+			facts := map[string]any{}
+			err := json.Unmarshal(w.machine.Facts(), &facts)
+			if err != nil {
+				return nil, err
+			}
+			parsedValue, err = hiera.Resolve(parsedMapValue, facts, hiera.DefaultOptions, ccmmanifestwatcher.NewCCMLogger(w))
+			if err != nil {
+				return nil, err
+			}
+		}
+
+		if w.properties.Query != "" {
+			j, err := json.Marshal(parsedValue)
+			if err != nil {
+				return nil, fmt.Errorf("could not marshal data for query: %w", err)
+			}
+
+			res := gjson.GetBytes(j, w.properties.Query)
+			parsedValue = res.Value()
 		}
 	} else if bytes.HasPrefix(v, []byte("[")) && bytes.HasSuffix(v, []byte("]")) {
 		parsedValue = []any{}
@@ -382,7 +412,7 @@ func (w *Watcher) poll() (State, error) {
 
 	val, err := w.kv.Get(parsedKey)
 	if err == nil {
-		var err error // kv.Get() error is checked below so dont overwrite it
+		var err error // kv.Get() error is checked below so don't overwrite it
 		parsedValue, err = w.parseValue(val.Value())
 		if err != nil {
 			w.Errorf("Could not parse value %s.%s: %s", w.properties.Bucket, parsedKey, err)
@@ -392,11 +422,11 @@ func (w *Watcher) poll() (State, error) {
 
 	// if this changes also update repub handler
 	switch {
-	// key isn't there, nothing was previously found its unchanged
+	// key isn't there, nothing was previously found unchanged
 	case errors.Is(err, nats.ErrKeyNotFound) && w.previousVal == nil:
 		return Unchanged, nil
 
-	// key isn't there, we had a value before its a change due to delete
+	// key isn't there, we had a value before its change due to delete
 	case errors.Is(err, nats.ErrKeyNotFound) && w.previousVal != nil:
 		w.Debugf("Removing data from %s", dk)
 		err = w.machine.DataDelete(dk)
@@ -461,7 +491,16 @@ func (w *Watcher) handleState(s State, err error) error {
 }
 
 func (w *Watcher) dataKey() string {
-	parsedKey, err := w.ProcessTemplate(w.properties.Key)
+	var key string
+
+	if w.properties.StoreKey == "" {
+		key = w.properties.Key
+	} else {
+		key = w.properties.StoreKey
+
+	}
+
+	parsedKey, err := w.ProcessTemplate(key)
 	if err != nil {
 		w.Warnf("Failed to parse key value %s: %v", w.properties.Key, err)
 		return w.properties.Key

@@ -8,7 +8,7 @@ pre = "<b>4. </b>"
 This is a list of all known Configuration settings. This list is based on declared settings within the Choria Go code base and so will not cover 100% of settings - plugins can contribute their own settings which are note known at compile time.
 
 {{% notice secondary "Version Hint" code-branch %}}
-Built on *14 Jul 25 00:54 UTC* using version *0.29.4*
+Built on *14 Mar 26 10:51 UTC* using version *0.29.4*
 {{% /notice %}}
 
 ### Run-time configuration
@@ -63,10 +63,11 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.executor.enabled](#pluginchoriaexecutorenabled)|[plugin.choria.executor.spool](#pluginchoriaexecutorspool)|
 |[plugin.choria.federation.cluster](#pluginchoriafederationcluster)|[plugin.choria.federation.collectives](#pluginchoriafederationcollectives)|
 |[plugin.choria.federation_middleware_hosts](#pluginchoriafederation_middleware_hosts)|[plugin.choria.legacy_lifecycle_format](#pluginchorialegacy_lifecycle_format)|
-|[plugin.choria.machine.signing_key](#pluginchoriamachinesigning_key)|[plugin.choria.machine.store](#pluginchoriamachinestore)|
-|[plugin.choria.middleware_hosts](#pluginchoriamiddleware_hosts)|[plugin.choria.network.auth_timeout](#pluginchorianetworkauth_timeout)|
-|[plugin.choria.network.client_hosts](#pluginchorianetworkclient_hosts)|[plugin.choria.network.client_port](#pluginchorianetworkclient_port)|
-|[plugin.choria.network.client_signer_cert](#pluginchorianetworkclient_signer_cert)|[plugin.choria.network.client_tls_force_required](#pluginchorianetworkclient_tls_force_required)|
+|[plugin.choria.machine.http_port](#pluginchoriamachinehttp_port)|[plugin.choria.machine.signing_key](#pluginchoriamachinesigning_key)|
+|[plugin.choria.machine.store](#pluginchoriamachinestore)|[plugin.choria.middleware_hosts](#pluginchoriamiddleware_hosts)|
+|[plugin.choria.network.auth_timeout](#pluginchorianetworkauth_timeout)|[plugin.choria.network.client_hosts](#pluginchorianetworkclient_hosts)|
+|[plugin.choria.network.client_port](#pluginchorianetworkclient_port)|[plugin.choria.network.client_signer_cert](#pluginchorianetworkclient_signer_cert)|
+|[plugin.choria.network.client_tls_force_required](#pluginchorianetworkclient_tls_force_required)|[plugin.choria.network.connect_timeout](#pluginchorianetworkconnect_timeout)|
 |[plugin.choria.network.deny_server_connections](#pluginchorianetworkdeny_server_connections)|[plugin.choria.network.gateway_name](#pluginchorianetworkgateway_name)|
 |[plugin.choria.network.gateway_port](#pluginchorianetworkgateway_port)|[plugin.choria.network.gateway_remotes](#pluginchorianetworkgateway_remotes)|
 |[plugin.choria.network.leafnode_port](#pluginchorianetworkleafnode_port)|[plugin.choria.network.leafnode_remotes](#pluginchorianetworkleafnode_remotes)|
@@ -309,6 +310,12 @@ Middleware brokers used by the Federation Broker, if unset uses SRV
 
 When enabled will publish lifecycle events in the legacy format, else Cloud Events format is used
 
+### plugin.choria.machine.http_port
+
+ * **Type:** integer
+
+Enables interacting with autonomous agents via HTTP
+
 ### plugin.choria.machine.signing_key
 
  * **Type:** string
@@ -330,10 +337,10 @@ Set specific middleware hosts in the format host:port, if unset uses SRV
 
 ### plugin.choria.network.auth_timeout
 
- * **Type:** integer
- * **Default Value:** 2
+ * **Type:** duration
+ * **Default Value:** 2s
 
-Time to allow for clients to authenticate, increase on slow or very large networks
+Affects only the Network Broker (NATS server). Time to allow for Choria Server (NATS clients) to authenticate on the Network Broker and it is scheduled after the TLS handshake, increase on slow or very large networks. It must not exceed 60 seconds.
 
 ### plugin.choria.network.client_hosts
 
@@ -360,6 +367,13 @@ Fully qualified paths to the public certificates used by the AAA Service to sign
  * **Type:** boolean
 
 Force requiring/not requiring TLS for all clients
+
+### plugin.choria.network.connect_timeout
+
+ * **Type:** duration
+ * **Default Value:** 2s
+
+Affects only Choria Servers (NATS clients). Maximum time the NATS client will wait to establish a full connection to the Network Broker (NATS server), including the TCP connection, TLS handshake, and authorization. Increase this value on slow or very large networks. It should be generally larger than plugin.choria.network.tls_timeout + plugin.choria.network.auth_timeout. It must not exceed 120 seconds.
 
 ### plugin.choria.network.deny_server_connections
 
@@ -581,10 +595,10 @@ Username used to access the Choria system account
 
 ### plugin.choria.network.tls_timeout
 
- * **Type:** integer
- * **Default Value:** 2
+ * **Type:** duration
+ * **Default Value:** 2s
 
-Time to allow for TLS connections to establish, increase on slow or very large networks
+Affects only the Network Broker (NATS server). Time to allow for TLS connections to establish, increase on slow or very large networks. It must not exceed 60 seconds.
 
 ### plugin.choria.network.websocket_advertise
 
