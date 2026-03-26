@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -142,6 +142,14 @@ func (cl *jWTCreateClientCommand) createJWT() error {
 	}
 	if perms.ServerProvisioner {
 		perms.FleetManagement = true
+	}
+
+	if cl.signingKey != "" && iu.FileExist(cl.signingKey) {
+		b, err := os.ReadFile(cl.signingKey)
+		if err != nil {
+			return err
+		}
+		cl.signingKey = string(b)
 	}
 
 	pk, err := hex.DecodeString(cl.pk)

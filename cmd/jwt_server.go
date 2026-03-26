@@ -102,16 +102,15 @@ func (s *jWTCreateServerCommand) createJWT() error {
 		return fmt.Errorf("cannot set --governor unless --stream-user is also set ")
 	}
 
-	pks := s.pk
-	if iu.FileExist(s.pk) {
+	if s.pk != "" && iu.FileExist(s.pk) {
 		f, err := os.ReadFile(s.pk)
 		if err != nil {
 			return err
 		}
-		pks = string(f)
+		s.pk = string(f)
 	}
 
-	pk, err := hex.DecodeString(pks)
+	pk, err := hex.DecodeString(s.pk)
 	if err != nil {
 		return err
 	}
