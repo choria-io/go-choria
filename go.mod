@@ -32,7 +32,7 @@ require (
 	github.com/looplab/fsm v1.0.3
 	github.com/miekg/pkcs11 v1.1.2
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.3.1-0.20260325211011-562dfe8b7c05
+	github.com/nats-io/jsm.go v0.3.1-0.20260326112400-08c3d99de9aa
 	github.com/nats-io/nats-server/v2 v2.12.1-0.20260324122033-7755ef725c6c
 	github.com/nats-io/nats.go v1.50.0
 	github.com/nats-io/natscli v0.3.2-0.20260325111417-afd640576c9a
@@ -141,9 +141,9 @@ require (
 	github.com/spf13/cast v1.10.0 // indirect
 	github.com/synadia-io/jwt-auth-builder.go v0.0.9 // indirect
 	github.com/synadia-io/orbit.go/counters v0.1.0 // indirect
-	github.com/synadia-io/orbit.go/jetstreamext v0.2.0 // indirect
-	github.com/synadia-io/orbit.go/natscontext v0.1.1 // indirect
-	github.com/synadia-io/orbit.go/natsext v0.1.1 // indirect
+	github.com/synadia-io/orbit.go/jetstreamext v0.2.1 // indirect
+	github.com/synadia-io/orbit.go/natscontext v0.1.2 // indirect
+	github.com/synadia-io/orbit.go/natsext v0.1.2 // indirect
 	github.com/tchap/go-patricia/v2 v2.3.3 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.16 // indirect
