@@ -1,4 +1,4 @@
-// Copyright (c) 2020-2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2020-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,8 +6,10 @@ package network
 
 import (
 	"crypto/ed25519"
+	"crypto/fips140"
 	"crypto/md5"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/base64"
@@ -24,7 +26,7 @@ import (
 	"github.com/choria-io/go-choria/integration/testutil"
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/tokens"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/nats-io/nats-server/v2/server"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -371,16 +373,31 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
 						Expect(user.Username).To(Equal("ginkgo.example.net"))
 						Expect(user.Account).To(Equal(auth.choriaAccount))
-						Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-							Allow: []string{
-								"c1.broadcast.agent.>",
-								"c1.node.ginkgo.example.net",
-								"c1.reply.3f7c3a791b0eb10da51dca4cdedb9418.>",
-								"c2.broadcast.agent.>",
-								"c2.node.ginkgo.example.net",
-								"c2.reply.3f7c3a791b0eb10da51dca4cdedb9418.>",
-							},
-						}))
+						if fips140.Enabled() {
+							Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+								Allow: []string{
+									"c1.broadcast.agent.>",
+									"c1.node.ginkgo.example.net",
+									"c1.reply.d20fc1727ae10ccda51352aef09b2ffcbacb1a8a29236eac3eb7e1f66bfd8c57.>",
+									"c2.broadcast.agent.>",
+									"c2.node.ginkgo.example.net",
+									"c2.reply.d20fc1727ae10ccda51352aef09b2ffcbacb1a8a29236eac3eb7e1f66bfd8c57.>",
+								},
+							}))
+						} else {
+							Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+								Allow: []string{
+									"c1.broadcast.agent.>",
+									"c1.node.ginkgo.example.net",
+									"c1.reply.3f7c3a791b0eb10da51dca4cdedb9418.>",
+									"c1.reply.d20fc1727ae10ccda51352aef09b2ffcbacb1a8a29236eac3eb7e1f66bfd8c57.>",
+									"c2.broadcast.agent.>",
+									"c2.node.ginkgo.example.net",
+									"c2.reply.3f7c3a791b0eb10da51dca4cdedb9418.>",
+									"c2.reply.d20fc1727ae10ccda51352aef09b2ffcbacb1a8a29236eac3eb7e1f66bfd8c57.>",
+								},
+							}))
+						}
 						Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 							Allow: []string{
 								"choria.lifecycle.>",
@@ -452,18 +469,35 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 					mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
 						Expect(user.Username).To(Equal("ginkgo.example.net"))
 						Expect(user.Account).To(Equal(auth.choriaAccount))
-						Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-							Allow: []string{
-								"c1.broadcast.agent.>",
-								"c1.node.ginkgo.example.net",
-								"c1.reply.3f7c3a791b0eb10da51dca4cdedb9418.>",
-								"c1.broadcast.service.>",
-								"c2.broadcast.agent.>",
-								"c2.node.ginkgo.example.net",
-								"c2.reply.3f7c3a791b0eb10da51dca4cdedb9418.>",
-								"c2.broadcast.service.>",
-							},
-						}))
+						if fips140.Enabled() {
+							Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+								Allow: []string{
+									"c1.broadcast.agent.>",
+									"c1.node.ginkgo.example.net",
+									"c1.reply.d20fc1727ae10ccda51352aef09b2ffcbacb1a8a29236eac3eb7e1f66bfd8c57.>",
+									"c1.broadcast.service.>",
+									"c2.broadcast.agent.>",
+									"c2.node.ginkgo.example.net",
+									"c2.reply.d20fc1727ae10ccda51352aef09b2ffcbacb1a8a29236eac3eb7e1f66bfd8c57.>",
+									"c2.broadcast.service.>",
+								},
+							}))
+						} else {
+							Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+								Allow: []string{
+									"c1.broadcast.agent.>",
+									"c1.node.ginkgo.example.net",
+									"c1.reply.3f7c3a791b0eb10da51dca4cdedb9418.>",
+									"c1.reply.d20fc1727ae10ccda51352aef09b2ffcbacb1a8a29236eac3eb7e1f66bfd8c57.>",
+									"c1.broadcast.service.>",
+									"c2.broadcast.agent.>",
+									"c2.node.ginkgo.example.net",
+									"c2.reply.3f7c3a791b0eb10da51dca4cdedb9418.>",
+									"c2.reply.d20fc1727ae10ccda51352aef09b2ffcbacb1a8a29236eac3eb7e1f66bfd8c57.>",
+									"c2.broadcast.service.>",
+								},
+							}))
+						}
 					})
 
 					verified, err := auth.handleDefaultConnection(mockClient, verifiedConn, true, log)
@@ -717,9 +751,15 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				mockClient.EXPECT().RegisterUser(gomock.Any()).Do(func(user *server.User) {
 					Expect(user.Username).To(Equal("up=ginkgo"))
 					Expect(user.Account).To(Equal(auth.choriaAccount))
-					Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-						Allow: []string{"*.reply.e33bf0376d4accbb4a8fd24b2f840b2e.>"},
-					}))
+					if fips140.Enabled() {
+						Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+							Allow: []string{"*.reply.f76b6d2a7755caf66ca1908e16dd59f01a466a1615e5273df535df56f471386d.>"},
+						}))
+					} else {
+						Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+							Allow: []string{"*.reply.e33bf0376d4accbb4a8fd24b2f840b2e.>", "*.reply.f76b6d2a7755caf66ca1908e16dd59f01a466a1615e5273df535df56f471386d.>"},
+						}))
+					}
 					Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 						Allow: []string{"$SYS.REQ.USER.INFO"},
 					}))
@@ -993,7 +1033,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				mockClient.EXPECT().GetOpts().Return(&server.ClientOpts{Username: provisioningUser, Password: "s3cret", Token: signed}).AnyTimes()
 
 				verified, err := auth.handleProvisioningUserConnection(mockClient, true)
-				Expect(err.Error()).To(MatchRegexp("token is expired by 1h"))
+				Expect(err.Error()).To(MatchRegexp("token is expired"))
 				Expect(verified).To(BeFalse())
 			})
 
@@ -1188,7 +1228,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 					validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
 					Expect(validated).To(BeFalse())
-					Expect(err.Error()).To(MatchRegexp("token is expired by"))
+					Expect(err.Error()).To(MatchRegexp("token is expired"))
 				})
 
 				It("Should detect missing ou claims", func() {
@@ -1288,7 +1328,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 					validated, err := auth.handleUnverifiedProvisioningConnection(mockClient)
 					Expect(validated).To(BeFalse())
-					Expect(err).To(MatchError("could not parse provisioner token: crypto/rsa: verification error"))
+					Expect(err).To(MatchError("could not parse provisioner token: token signature is invalid: crypto/rsa: verification error"))
 				})
 
 				It("Should set server permissions and register", func() {
@@ -1694,7 +1734,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				})
 
 				_, err := auth.parseClientIDJWT(signed)
-				Expect(err.Error()).To(MatchRegexp("token is expired by"))
+				Expect(err.Error()).To(MatchRegexp("token is expired"))
 			})
 
 			It("Should detect missing callers", func() {
@@ -1790,7 +1830,7 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 				// should fail the public key not there
 				auth.clientJwtSigners = []string{filepath.Join(td, "public.pem")}
 				claims, err := auth.parseClientIDJWT(signed)
-				Expect(err).To(MatchError("could not parse client id token: ed25519 public key required"))
+				Expect(err).To(MatchError(ContainSubstring("ed25519 public key required")))
 				Expect(claims).To(BeNil())
 
 				// should now pass after having done a multi check
@@ -2029,9 +2069,15 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 			It("Should support caller private reply subjects", func() {
 				user.Account = auth.choriaAccount
 				auth.setClientPermissions(user, "u=ginkgo", nil, log)
-				Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
-					Allow: []string{"*.reply.0f47cbbd2accc01a51e57261d6e64b8b.>"},
-				}))
+				if fips140.Enabled() {
+					Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+						Allow: []string{"*.reply.67646c695fa94352ee5c860d2d0456d6d9fa98c0e213685e8ad39e9b54afae89.>"},
+					}))
+				} else {
+					Expect(user.Permissions.Subscribe).To(Equal(&server.SubjectPermission{
+						Allow: []string{"*.reply.0f47cbbd2accc01a51e57261d6e64b8b.>", "*.reply.67646c695fa94352ee5c860d2d0456d6d9fa98c0e213685e8ad39e9b54afae89.>"},
+					}))
+				}
 				Expect(user.Permissions.Publish).To(Equal(&server.SubjectPermission{
 					Allow: minPub,
 				}))
@@ -2109,15 +2155,29 @@ var _ = Describe("Network Broker/ChoriaAuth", func() {
 
 			auth.setServerPermissions(user, claims, log)
 
-			hash := md5.Sum([]byte(identity))
-			replyHash := hex.EncodeToString(hash[:])
+			mdhash := md5.Sum([]byte(identity))
+			shahash := sha256.Sum256([]byte(identity))
+			replyMdHash := hex.EncodeToString(mdhash[:])
+			replyShaHash := hex.EncodeToString(shahash[:])
+			var expectedSubscribe []string
 
-			expectedSubscribe := []string{
-				collective + ".broadcast.agent.>",
-				collective + ".node." + identity,
-				collective + ".reply." + replyHash + ".>",
-				collective + ".broadcast.service.>",
-				claims.OrganizationUnit + ".republish.>",
+			if fips140.Enabled() {
+				expectedSubscribe = []string{
+					collective + ".broadcast.agent.>",
+					collective + ".node." + identity,
+					collective + ".reply." + replyShaHash + ".>",
+					collective + ".broadcast.service.>",
+					claims.OrganizationUnit + ".republish.>",
+				}
+			} else {
+				expectedSubscribe = []string{
+					collective + ".broadcast.agent.>",
+					collective + ".node." + identity,
+					collective + ".reply." + replyMdHash + ".>",
+					collective + ".reply." + replyShaHash + ".>",
+					collective + ".broadcast.service.>",
+					claims.OrganizationUnit + ".republish.>",
+				}
 			}
 
 			expectedPublish := []string{

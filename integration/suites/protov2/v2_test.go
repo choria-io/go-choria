@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2023, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -26,7 +26,7 @@ import (
 	v2 "github.com/choria-io/go-choria/protocol/v2"
 	"github.com/choria-io/go-choria/server"
 	"github.com/choria-io/tokens"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/onsi/gomega/gbytes"
@@ -316,7 +316,7 @@ var _ = Describe("Protocol V2", func() {
 			res, err = client.Ping().Do(ctx)
 			Expect(err).ToNot(HaveOccurred())
 			Expect(res.Stats().OKCount()).To(Equal(0))
-			Eventually(serverLogbuff).Should(gbytes.Say("could not parse client token: could not parse client id token: ed25519: verification error"))
+			Eventually(serverLogbuff).Should(gbytes.Say("could not parse client token: could not parse client id token: token signature is invalid: ed25519: verification error"))
 			Eventually(serverLogbuff).Should(gbytes.Say("Could not decode incoming request: secure request messages created from Transport Message did not pass security validation"))
 		})
 

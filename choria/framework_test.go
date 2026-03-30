@@ -6,11 +6,15 @@ package choria
 
 import (
 	"bytes"
+	"crypto/fips140"
+	"crypto/md5"
 	"crypto/rand"
 	"crypto/rsa"
+	"crypto/sha256"
 	"crypto/x509"
 	"crypto/x509/pkix"
 	"encoding/pem"
+	"fmt"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -131,7 +135,11 @@ var _ = Describe("Choria", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(token).To(Equal(strings.TrimSpace(string(expectedT))))
-				Expect(id).To(Equal("3f7c3a791b0eb10da51dca4cdedb9418"))
+				if fips140.Enabled() {
+					Expect(id).To(Equal(fmt.Sprintf("%x", sha256.Sum256([]byte("ginkgo.example.net")))))
+				} else {
+					Expect(id).To(Equal(fmt.Sprintf("%x", md5.Sum([]byte("ginkgo.example.net")))))
+				}
 				Expect(caller).To(Equal("ginkgo.example.net"))
 			})
 
@@ -146,7 +154,11 @@ var _ = Describe("Choria", func() {
 				Expect(err).ToNot(HaveOccurred())
 
 				Expect(token).To(Equal(strings.TrimSpace(string(expectedT))))
-				Expect(id).To(Equal("e33bf0376d4accbb4a8fd24b2f840b2e"))
+				if fips140.Enabled() {
+					Expect(id).To(Equal(fmt.Sprintf("%x", sha256.Sum256([]byte("up=ginkgo")))))
+				} else {
+					Expect(id).To(Equal(fmt.Sprintf("%x", md5.Sum([]byte("up=ginkgo")))))
+				}
 				Expect(caller).To(Equal("up=ginkgo"))
 			})
 		})

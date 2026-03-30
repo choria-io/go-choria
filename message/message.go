@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,7 +6,9 @@ package message
 
 import (
 	"context"
+	"crypto/fips140"
 	"crypto/md5"
+	"crypto/sha256"
 	"encoding/base64"
 	"errors"
 	"fmt"
@@ -424,5 +426,9 @@ func (m *Message) SetDiscoveredHosts(hosts []string) { m.discoveredHosts = hosts
 func (m *Message) Request() inter.Message            { return m.request }
 func (m *Message) SetTTL(ttl int)                    { m.ttl = ttl }
 func (m *Message) ReplyTarget() string {
+	if fips140.Enabled() {
+		return fmt.Sprintf("%s.reply.%s.%s", m.Collective(), fmt.Sprintf("%x", sha256.Sum256([]byte(m.CallerID()))), m.requestID)
+	}
+
 	return fmt.Sprintf("%s.reply.%s.%s", m.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(m.CallerID()))), m.requestID)
 }

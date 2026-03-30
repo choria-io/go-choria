@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,6 +6,11 @@ package message
 
 import (
 	"context"
+	"crypto/fips140"
+	"crypto/md5"
+	"crypto/sha256"
+	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -501,6 +506,30 @@ var _ = Describe("Choria/Message", func() {
 
 			err = m.SetCollective("test_collective")
 			Expect(err).ToNot(HaveOccurred())
+		})
+	})
+
+	Describe("ReplyTarget", func() {
+		It("Should produce the correct reply target", func() {
+			m, err := NewMessage([]byte("hello world"), "ginkgo", "test_collective", inter.RequestMessageType, nil, fw)
+			Expect(err).ToNot(HaveOccurred())
+
+			msg := m.(*Message)
+			msg.requestID = "abc123"
+
+			result := msg.ReplyTarget()
+
+			parts := strings.Split(result, ".")
+			Expect(parts).To(HaveLen(4))
+			Expect(parts[0]).To(Equal("test_collective"))
+			Expect(parts[1]).To(Equal("reply"))
+			Expect(parts[3]).To(Equal("abc123"))
+
+			if fips140.Enabled() {
+				Expect(parts[2]).To(Equal(fmt.Sprintf("%x", sha256.Sum256([]byte(msg.CallerID())))))
+			} else {
+				Expect(parts[2]).To(Equal(fmt.Sprintf("%x", md5.Sum([]byte(msg.CallerID())))))
+			}
 		})
 	})
 

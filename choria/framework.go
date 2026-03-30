@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,7 +6,9 @@ package choria
 
 import (
 	"context"
+	"crypto/fips140"
 	"crypto/md5"
+	"crypto/sha256"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -30,6 +32,7 @@ import (
 	"github.com/choria-io/go-choria/providers/signers"
 	"github.com/choria-io/tokens"
 	"github.com/fatih/color"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/nats-io/nats.go"
 	"github.com/segmentio/ksuid"
 	"golang.org/x/term"
@@ -745,21 +748,23 @@ func (fw *Framework) UniqueIDFromUnverifiedToken() (id string, uid string, exp t
 		return "", "", exp, "", err
 	}
 
+	var t *jwt.Token
+	var tid string
+
 	if fw.Config.InitiatedByServer {
-		t, id, err := tokens.UnverifiedIdentityFromServerToken(ts)
-		if err != nil {
-			return "", "", exp, "", err
-		}
-
-		return id, fmt.Sprintf("%x", md5.Sum([]byte(id))), exp, t.Raw, nil
+		t, tid, err = tokens.UnverifiedIdentityFromServerToken(ts)
 	} else {
-		t, caller, err := tokens.UnverifiedCallerFromClientIDToken(ts)
-		if err != nil {
-			return "", "", exp, "", err
-		}
-
-		return caller, fmt.Sprintf("%x", md5.Sum([]byte(caller))), exp, t.Raw, nil
+		t, tid, err = tokens.UnverifiedCallerFromClientIDToken(ts)
 	}
+	if err != nil {
+		return "", "", exp, "", err
+	}
+
+	if fips140.Enabled() {
+		return tid, fmt.Sprintf("%x", sha256.Sum256([]byte(tid))), exp, t.Raw, nil
+	}
+
+	return tid, fmt.Sprintf("%x", md5.Sum([]byte(tid))), exp, t.Raw, nil
 }
 
 // SignerSeedFile is the path to the seed file for JWT auth
@@ -826,7 +831,7 @@ func (fw *Framework) SignerToken() (token string, expiry time.Time, err error) {
 		if err != nil {
 			return "", exp, err
 		}
-		err = claims.Valid()
+		err = util.IsValidJwt(claims)
 		if err != nil {
 			fw.log.Warnf("Authentication token %s is not valid: %v", tf, err)
 			return "", exp, err
@@ -838,7 +843,7 @@ func (fw *Framework) SignerToken() (token string, expiry time.Time, err error) {
 		if err != nil {
 			return "", exp, err
 		}
-		err = claims.Valid()
+		err = util.IsValidJwt(claims)
 		if err != nil {
 			fw.log.Warnf("Authentication token %s is not valid: %v", tf, err)
 			return "", exp, err
