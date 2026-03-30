@@ -6,7 +6,6 @@ package client
 
 import (
 	"context"
-	"crypto/md5"
 	"encoding/base64"
 	"fmt"
 	"sort"
@@ -104,7 +103,7 @@ var _ = Describe("Client", func() {
 			msg, err := message.NewMessage([]byte(ping), "discovery", "mcollective", "request", nil, fw)
 			Expect(err).ToNot(HaveOccurred())
 
-			msg.SetReplyTo(fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(msg.CallerID()))), msg.RequestID()))
+			msg.SetReplyTo(msg.ReplyTarget())
 
 			conn.EXPECT().QueueSubscribe(gomock.Any(), gomock.Any(), gomock.Any(), gomock.Any(), client.replies).
 				AnyTimes().

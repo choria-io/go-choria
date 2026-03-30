@@ -1,4 +1,4 @@
-// Copyright (c) 2023-2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2023-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,5 +14,6 @@ package main
 //go:generate mockgen -write_generate_directive -destination framework.go -package imock github.com/choria-io/go-choria/inter ConfigurationProvider,ProtocolConstructor,ConnectionManager,Framework
 //go:generate mockgen -write_generate_directive -destination ddl_resolver.go -package imock github.com/choria-io/go-choria/inter DDLResolver
 //go:generate mockgen -write_generate_directive -destination security.go -package imock github.com/choria-io/go-choria/inter SecurityProvider
+//go:generate mockgen -write_generate_directive -destination message.go -package imock github.com/choria-io/go-choria/inter Message
 
 func main() {}

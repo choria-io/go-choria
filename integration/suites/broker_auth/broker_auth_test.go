@@ -103,7 +103,7 @@ var _ = Describe("Authentication", func() {
 				)
 				Expect(err).To(MatchError("nats: Authorization Violation"))
 				Eventually(logbuff, 5).Should(gbytes.Say("Performing JWT based authentication verification"))
-				Eventually(logbuff, 1).Should(gbytes.Say("could not parse server id token: crypto/rsa: verification error"))
+				Eventually(logbuff, 1).Should(gbytes.Say("could not parse server id token: token signature is invalid: crypto/rsa: verification error"))
 				Eventually(logbuff, 1).Should(gbytes.Say("invalid nonce signature or jwt token"))
 				Eventually(logbuff, 1).ShouldNot(gbytes.Say("Registering user"))
 			})
@@ -210,7 +210,7 @@ var _ = Describe("Authentication", func() {
 				)
 				Expect(err).To(MatchError("nats: Authorization Violation"))
 				Eventually(logbuff, 5).Should(gbytes.Say("Performing JWT based authentication verification"))
-				Eventually(logbuff, 1).Should(gbytes.Say("could not parse client id token: crypto/rsa: verification error"))
+				Eventually(logbuff, 1).Should(gbytes.Say("could not parse client id token: token signature is invalid: crypto/rsa: verification error"))
 				Eventually(logbuff, 1).Should(gbytes.Say("invalid nonce signature or jwt token"))
 				Eventually(logbuff, 1).ShouldNot(gbytes.Say("Registering user"))
 			})
@@ -291,7 +291,7 @@ var _ = Describe("Authentication", func() {
 				Eventually(logbuff, 5).Should(gbytes.Say("Performing JWT based authentication verification"))
 				Eventually(logbuff, 1).Should(gbytes.Say("Successfully verified nonce signature"))
 				Eventually(logbuff, 1).Should(gbytes.Say("Extracted caller id up=ginkgo from JWT token"))
-				Eventually(logbuff, 1).Should(gbytes.Say("Creating ACLs for a private reply subject on \\*.reply.e33bf0376d4accbb4a8fd24b2f840b2e.>"))
+				Eventually(logbuff, 1).Should(gbytes.Say("Creating ACLs for a private reply subject for e33bf0376d4accbb4a8fd24b2f840b2e and f76b6d2a7755caf66ca1908e16dd59f01a466a1615e5273df535df56f471386d"))
 				Eventually(logbuff, 1).Should(gbytes.Say("Registering user 'up=ginkgo' in account 'choria'"))
 
 				// should only access its own replies
@@ -486,7 +486,7 @@ var _ = Describe("Authentication", func() {
 			Expect(err).To(MatchError("nats: Authorization Violation"))
 
 			Expect(logbuff).To(gbytes.Say("Performing JWT based authentication verification"))
-			Expect(logbuff).To(gbytes.Say("could not parse provisioner token: crypto/rsa: verification error"))
+			Expect(logbuff).To(gbytes.Say("could not parse provisioner token: token signature is invalid: crypto/rsa: verification error"))
 			Expect(logbuff).ToNot(gbytes.Say("Registering user"))
 		})
 

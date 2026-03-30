@@ -6,7 +6,9 @@ package network
 
 import (
 	"crypto/ed25519"
+	"crypto/fips140"
 	"crypto/md5"
+	"crypto/sha256"
 	"crypto/subtle"
 	"crypto/tls"
 	"encoding/base64"
@@ -18,7 +20,7 @@ import (
 	"sync"
 
 	"github.com/choria-io/tokens"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/nats-io/nats-server/v2/server"
 	"github.com/sirupsen/logrus"
 
@@ -881,13 +883,26 @@ func (a *ChoriaAuth) setClientFleetManagementPermissions(subs []string, pubs []s
 }
 
 func (a *ChoriaAuth) setMinimalClientPermissions(_ *server.User, caller string, subs []string, pubs []string) ([]string, []string) {
-	replys := "*.reply.>"
-	if caller != emptyString {
-		replys = fmt.Sprintf("*.reply.%x.>", md5.Sum([]byte(caller)))
-		a.log.Debugf("Creating ACLs for a private reply subject on %s", replys)
+	switch {
+	case caller == emptyString:
+		subs = append(subs, "*.reply.>")
+	case fips140.Enabled():
+		sha256Hash := sha256.Sum256([]byte(caller))
+		subs = append(subs,
+			fmt.Sprintf("*.reply.%x.>", sha256Hash),
+		)
+		a.log.Debugf("Creating FIPS140 ACLs for a private reply subject for %q", sha256Hash)
+
+	default:
+		md5Hash := md5.Sum([]byte(caller))
+		sha256Hash := sha256.Sum256([]byte(caller))
+		subs = append(subs,
+			fmt.Sprintf("*.reply.%x.>", md5Hash),
+			fmt.Sprintf("*.reply.%x.>", sha256Hash),
+		)
+		a.log.Debugf("Creating ACLs for a private reply subject for %x and %x", md5Hash, sha256Hash)
 	}
 
-	subs = append(subs, replys)
 	pubs = append(pubs, "$SYS.REQ.USER.INFO")
 
 	return subs, pubs
@@ -1128,8 +1143,19 @@ func (a *ChoriaAuth) setClaimsBasedServerPermissions(user *server.User, claims *
 		user.Permissions.Subscribe.Allow = append(user.Permissions.Subscribe.Allow,
 			fmt.Sprintf("%s.broadcast.agent.>", c),
 			fmt.Sprintf("%s.node.%s", c, claims.ChoriaIdentity),
-			fmt.Sprintf("%s.reply.%x.>", c, md5.Sum([]byte(claims.ChoriaIdentity))),
 		)
+
+		if fips140.Enabled() {
+			user.Permissions.Subscribe.Allow = append(user.Permissions.Subscribe.Allow,
+				fmt.Sprintf("%s.reply.%x.>", c, sha256.Sum256([]byte(claims.ChoriaIdentity))),
+			)
+		} else {
+			// adding both now for an eventual transition to sha256 only
+			user.Permissions.Subscribe.Allow = append(user.Permissions.Subscribe.Allow,
+				fmt.Sprintf("%s.reply.%x.>", c, md5.Sum([]byte(claims.ChoriaIdentity))),
+				fmt.Sprintf("%s.reply.%x.>", c, sha256.Sum256([]byte(claims.ChoriaIdentity))),
+			)
+		}
 
 		if claims.Permissions != nil {
 			if claims.Permissions.ServiceHost {

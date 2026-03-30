@@ -1,4 +1,4 @@
-// Copyright (c) 2022, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -14,7 +14,7 @@ import (
 
 	iu "github.com/choria-io/go-choria/internal/util"
 	"github.com/choria-io/tokens"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func CreateChoriaTokenAndKeys(targetDir string, tokenSignerFile string, public ed25519.PublicKey, create func(pubK ed25519.PublicKey) (jwt.Claims, error)) (tokenFile string, signedToken string, pubFile string, priFile string, err error) {

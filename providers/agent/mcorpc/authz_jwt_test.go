@@ -1,4 +1,4 @@
-// Copyright (c) 2022-2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2022-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -94,7 +94,7 @@ var _ = Describe("McoRPC/JWTAuthorizer", func() {
 		It("Should handle invalid tokens", func() {
 			req.CallerPublicData = "blah"
 			allowed, err := aaasvcPolicyAuthorize(req, agent.Config, log)
-			Expect(err).To(MatchError("invalid token in request: token contains an invalid number of segments"))
+			Expect(err).To(MatchError("invalid token in request: token is malformed: token contains an invalid number of segments"))
 			Expect(allowed).To(BeFalse())
 		})
 

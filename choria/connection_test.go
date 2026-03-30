@@ -6,13 +6,20 @@ package choria
 
 import (
 	"context"
+	"crypto/fips140"
+	"crypto/md5"
+	"crypto/sha256"
+	"fmt"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/choria-io/go-choria/config"
+	imock "github.com/choria-io/go-choria/inter/imocks"
 	"github.com/choria-io/tokens"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"go.uber.org/mock/gomock"
 )
 
 var _ = Describe("Connector", func() {
@@ -24,6 +31,53 @@ var _ = Describe("Connector", func() {
 		cfg = config.NewConfigForTests()
 		cfg.DisableTLS = true
 		cfg.Choria.SSLDir = "/nonexisting"
+	})
+
+	Describe("ReplyTarget", func() {
+		It("Should produce the correct reply target", func() {
+			mockctl := gomock.NewController(GinkgoT())
+			msg := imock.NewMockMessage(mockctl)
+			msg.EXPECT().Collective().Return("mcollective").AnyTimes()
+			msg.EXPECT().CallerID().Return("choria=rip.mcollective").AnyTimes()
+
+			result := ReplyTarget(msg, "abc123")
+
+			parts := strings.Split(result, ".")
+			Expect(parts).To(HaveLen(4))
+			Expect(parts[0]).To(Equal("mcollective"))
+			Expect(parts[1]).To(Equal("reply"))
+			Expect(parts[3]).To(Equal("abc123"))
+
+			if fips140.Enabled() {
+				expected := fmt.Sprintf("%x", sha256.Sum256([]byte("choria=rip.mcollective")))
+				Expect(parts[2]).To(Equal(expected))
+			} else {
+				expected := fmt.Sprintf("%x", md5.Sum([]byte("choria=rip.mcollective")))
+				Expect(parts[2]).To(Equal(expected))
+			}
+		})
+	})
+
+	Describe("Inbox", func() {
+		It("Should produce the correct inbox", func() {
+			result := Inbox("mcollective", "choria=rip.mcollective")
+
+			parts := strings.Split(result, ".")
+			Expect(parts).To(HaveLen(4))
+			Expect(parts[0]).To(Equal("mcollective"))
+			Expect(parts[1]).To(Equal("reply"))
+
+			if fips140.Enabled() {
+				expected := fmt.Sprintf("%x", sha256.Sum256([]byte("choria=rip.mcollective")))
+				Expect(parts[2]).To(Equal(expected))
+			} else {
+				expected := fmt.Sprintf("%x", md5.Sum([]byte("choria=rip.mcollective")))
+				Expect(parts[2]).To(Equal(expected))
+			}
+
+			// last part is a unique ID, just check it's not empty
+			Expect(parts[3]).ToNot(BeEmpty())
+		})
 	})
 
 	Describe("NewConnector", func() {

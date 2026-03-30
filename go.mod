@@ -12,7 +12,7 @@ require (
 	github.com/choria-io/ccm v0.0.20
 	github.com/choria-io/fisk v0.8.0
 	github.com/choria-io/go-updater v0.1.0
-	github.com/choria-io/tokens v0.0.4-0.20250903080437-7d289cbf3db9
+	github.com/choria-io/tokens v0.0.4-0.20260330095821-b91f2ad57ea0
 	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/dustin/go-humanize v1.0.1
 	github.com/expr-lang/expr v1.17.8
@@ -22,7 +22,7 @@ require (
 	github.com/ghodss/yaml v1.0.0
 	github.com/goccy/go-yaml v1.19.2
 	github.com/gofrs/uuid v4.4.0+incompatible
-	github.com/golang-jwt/jwt/v4 v4.5.2
+	github.com/golang-jwt/jwt/v5 v5.3.1
 	github.com/google/go-cmp v0.7.0
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/goss-org/goss v0.4.9

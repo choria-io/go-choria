@@ -1,4 +1,4 @@
-// Copyright (c) 2017-2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2017-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -6,7 +6,9 @@ package choria
 
 import (
 	"context"
+	"crypto/fips140"
 	"crypto/md5"
+	"crypto/sha256"
 	"crypto/tls"
 	"errors"
 	"fmt"
@@ -556,10 +558,18 @@ func (conn *Connection) AgentBroadcastTarget(collective string, agent string) st
 
 func ReplyTarget(msg inter.Message, requestid string) string {
 	// NOTE: also update msg.ReplyTarget
+	if fips140.Enabled() {
+		return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), fmt.Sprintf("%x", sha256.Sum256([]byte(msg.CallerID()))), requestid)
+	}
+
 	return fmt.Sprintf("%s.reply.%s.%s", msg.Collective(), fmt.Sprintf("%x", md5.Sum([]byte(msg.CallerID()))), requestid)
 }
 
 func Inbox(collective string, caller string) string {
+	if fips140.Enabled() {
+		return fmt.Sprintf("%s.reply.%s.%s", collective, fmt.Sprintf("%x", sha256.Sum256([]byte(caller))), util.UniqueID())
+	}
+
 	return fmt.Sprintf("%s.reply.%s.%s", collective, fmt.Sprintf("%x", md5.Sum([]byte(caller))), util.UniqueID())
 }
 

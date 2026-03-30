@@ -1,4 +1,4 @@
-// Copyright (c) 2021, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -53,7 +53,7 @@ var _ = Describe("Default", func() {
 			reader, _ := os.Open(build.ProvisionJWTFile)
 			defer reader.Close()
 			_, err := SetBuildBasedOnJWT(reader, &bi)
-			Expect(err).To(MatchError("token contains an invalid number of segments"))
+			Expect(err).To(MatchError("token is malformed: token contains an invalid number of segments"))
 		})
 
 		It("Should detect missing auth token", func() {

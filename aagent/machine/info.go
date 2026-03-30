@@ -1,19 +1,13 @@
-// Copyright (c) 2019-2024, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2019-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
 package machine
 
 import (
-	"crypto/md5"
-	"fmt"
-	"io"
-	"math/rand/v2"
-	"os"
-	"strings"
 	"time"
 
-	"github.com/gofrs/uuid"
+	iu "github.com/choria-io/go-choria/internal/util"
 )
 
 // WatcherState is the status of a given watcher, boolean result is false for unknown watchers
@@ -77,46 +71,10 @@ func (m *Machine) TimeStampSeconds() int64 {
 
 // UniqueID creates a new unique ID, usually a v4 uuid, if that fails a random string based ID is made
 func (m *Machine) UniqueID() (id string) {
-	uuid, err := uuid.NewV4()
-	if err == nil {
-		return uuid.String()
-	}
-
-	parts := []string{}
-	parts = append(parts, randStringRunes(8))
-	parts = append(parts, randStringRunes(4))
-	parts = append(parts, randStringRunes(4))
-	parts = append(parts, randStringRunes(12))
-
-	return strings.Join(parts, "-")
+	return iu.UniqueID()
 }
 
-// Hash computes a md5 hash of the manifest
+// Hash computes a sha256 hash of the manifest
 func (m *Machine) Hash() (string, error) {
-	return filemd5(m.manifest)
-}
-
-func randStringRunes(n int) string {
-	letterRunes := []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ")
-
-	b := make([]rune, n)
-	for i := range b {
-		b[i] = letterRunes[rand.N(len(letterRunes))]
-	}
-	return string(b)
-}
-
-func filemd5(path string) (string, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return "", fmt.Errorf("could not open data for md5 hash: %s", err)
-	}
-	defer f.Close()
-
-	h := md5.New()
-	if _, err := io.Copy(h, f); err != nil {
-		return "", fmt.Errorf("could not copy data to md5: %s", err)
-	}
-
-	return fmt.Sprintf("%x", h.Sum(nil)), nil
+	return iu.Sha256HashFile(m.manifest)
 }

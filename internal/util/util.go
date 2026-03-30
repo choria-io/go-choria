@@ -1,4 +1,4 @@
-// Copyright (c) 2021-2025, R.I. Pienaar and the Choria Project contributors
+// Copyright (c) 2021-2026, R.I. Pienaar and the Choria Project contributors
 //
 // SPDX-License-Identifier: Apache-2.0
 
@@ -25,6 +25,7 @@ import (
 	"time"
 	"unicode"
 
+	"github.com/golang-jwt/jwt/v5"
 	"github.com/nats-io/nats.go"
 	"github.com/santhosh-tekuri/jsonschema/v5"
 
@@ -640,4 +641,10 @@ func ValidateSchemaFromFS(schemaPath string, data any) (errors []string, err err
 	}
 
 	return nil, nil
+}
+
+// IsValidJwt validates a JWT using a common validation method
+func IsValidJwt(c jwt.Claims) error {
+	validator := jwt.NewValidator(jwt.WithLeeway(5 * time.Second))
+	return validator.Validate(c)
 }
