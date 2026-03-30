@@ -144,12 +144,12 @@ func (cl *jWTCreateClientCommand) createJWT() error {
 		perms.FleetManagement = true
 	}
 
-	if cl.signingKey != "" && iu.FileExist(cl.signingKey) {
-		b, err := os.ReadFile(cl.signingKey)
+	if iu.FileExist(cl.pk) {
+		b, err := os.ReadFile(cl.pk)
 		if err != nil {
-			return err
+			return fmt.Errorf("x: %w", err)
 		}
-		cl.signingKey = string(b)
+		cl.pk = string(b)
 	}
 
 	pk, err := hex.DecodeString(cl.pk)
