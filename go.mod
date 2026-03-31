@@ -27,18 +27,18 @@ require (
 	github.com/google/shlex v0.0.0-20191202100458-e7afc7fbc510
 	github.com/goss-org/goss v0.4.9
 	github.com/gosuri/uiprogress v0.0.1
-	github.com/guptarohit/asciigraph v0.8.1
+	github.com/guptarohit/asciigraph v0.9.0
 	github.com/kballard/go-shellquote v0.0.0-20180428030007-95032a82bc51
 	github.com/looplab/fsm v1.0.3
 	github.com/miekg/pkcs11 v1.1.2
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.3.1-0.20260326112400-08c3d99de9aa
+	github.com/nats-io/jsm.go v0.3.1-0.20260331092434-ff068e4ccf92
 	github.com/nats-io/nats-server/v2 v2.12.1-0.20260324122033-7755ef725c6c
 	github.com/nats-io/nats.go v1.50.0
-	github.com/nats-io/natscli v0.3.2-0.20260325111417-afd640576c9a
+	github.com/nats-io/natscli v0.3.2-0.20260331092833-b29c7cc69e61
 	github.com/onsi/ginkgo/v2 v2.28.1
 	github.com/onsi/gomega v1.39.1
-	github.com/open-policy-agent/opa v1.14.1
+	github.com/open-policy-agent/opa v1.15.1
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model v0.6.2
 	github.com/robfig/cron v1.2.0
@@ -102,11 +102,11 @@ require (
 	github.com/lestrrat-go/dsig v1.0.0 // indirect
 	github.com/lestrrat-go/dsig-secp256k1 v1.0.0 // indirect
 	github.com/lestrrat-go/httpcc v1.0.1 // indirect
-	github.com/lestrrat-go/httprc/v3 v3.0.4 // indirect
+	github.com/lestrrat-go/httprc/v3 v3.0.5 // indirect
 	github.com/lestrrat-go/jwx/v3 v3.0.13 // indirect
 	github.com/lestrrat-go/option/v2 v2.0.0 // indirect
-	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
-	github.com/lufia/plan9stats v0.0.0-20260324052639-156f7da3f749 // indirect
+	github.com/lucasb-eyer/go-colorful v1.4.0 // indirect
+	github.com/lufia/plan9stats v0.0.0-20260330125221-c963978e514e // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.20 // indirect
 	github.com/mattn/go-runewidth v0.0.21 // indirect
