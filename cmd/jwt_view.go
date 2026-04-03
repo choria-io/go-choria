@@ -48,7 +48,7 @@ func (v *tJWTViewCommand) Configure() error {
 	return nil
 }
 
-func (v *tJWTViewCommand) validateServerToken(token string) error {
+func (v *tJWTViewCommand) validateServerToken(token string) (bool, error) {
 	var claims *tokens.ServerClaims
 	var err error
 	var validated bool
@@ -60,7 +60,7 @@ func (v *tJWTViewCommand) validateServerToken(token string) error {
 		validated = true
 	}
 	if err != nil {
-		return fmt.Errorf("could not parse token: %s", err)
+		return false, fmt.Errorf("could not parse token: %s", err)
 	}
 
 	if validated {
@@ -71,7 +71,8 @@ func (v *tJWTViewCommand) validateServerToken(token string) error {
 
 	fmt.Printf("             Identity: %s\n", claims.ChoriaIdentity)
 	exp := claims.ExpireTime()
-	if !exp.IsZero() && time.Now().After(exp) {
+	expired := !exp.IsZero() && time.Now().After(exp)
+	if expired {
 		fmt.Printf("           Expires At: %s (expired %s ago)\n", exp, iu.RenderDuration(time.Since(exp)))
 	} else if !exp.IsZero() {
 		fmt.Printf("           Expires At: %s (%s)\n", exp, iu.RenderDuration(time.Until(exp)))
@@ -88,7 +89,7 @@ func (v *tJWTViewCommand) validateServerToken(token string) error {
 
 	tcm, err := v.trustChainDescription(claims.StandardClaims)
 	if err != nil {
-		return err
+		return expired, err
 	}
 	if tcm != "" {
 		fmt.Printf("          Trust Chain: %s\n", tcm)
@@ -125,10 +126,10 @@ func (v *tJWTViewCommand) validateServerToken(token string) error {
 		fmt.Println()
 	}
 
-	return nil
+	return expired, nil
 }
 
-func (v *tJWTViewCommand) validateProvisionToken(token string) error {
+func (v *tJWTViewCommand) validateProvisionToken(token string) (bool, error) {
 	var claims *tokens.ProvisioningClaims
 	var err error
 	var validated bool
@@ -140,7 +141,7 @@ func (v *tJWTViewCommand) validateProvisionToken(token string) error {
 		validated = true
 	}
 	if err != nil {
-		return fmt.Errorf("could not parse token: %s", err)
+		return false, fmt.Errorf("could not parse token: %s", err)
 	}
 
 	if claims.Token != "" {
@@ -154,7 +155,9 @@ func (v *tJWTViewCommand) validateProvisionToken(token string) error {
 	}
 
 	exp := claims.ExpireTime()
-	if !exp.IsZero() && time.Now().After(exp) {
+	expired := !exp.IsZero() && time.Now().After(exp)
+
+	if expired {
 		fmt.Printf("                    Expires At: %s (expired %s ago)\n", exp, iu.RenderDuration(time.Since(exp)))
 	} else if !exp.IsZero() {
 		fmt.Printf("                    Expires At: %s (%s)\n", exp, iu.RenderDuration(time.Until(exp)))
@@ -188,19 +191,18 @@ func (v *tJWTViewCommand) validateProvisionToken(token string) error {
 	if len(claims.Extensions) > 0 {
 		ext, err := json.MarshalIndent(claims.Extensions, "                                ", "  ")
 		if err != nil {
-			return nil
+			return expired, err
 		}
 		fmt.Printf("                    Extensions: %s\n", string(ext))
 
 	}
 
 	stdc, err := json.MarshalIndent(claims.StandardClaims, "                                ", "  ")
-	if err != nil {
-		return nil
+	if err == nil {
+		fmt.Printf("               Standard Claims: %s\n", string(stdc))
 	}
-	fmt.Printf("               Standard Claims: %s\n", string(stdc))
 
-	return nil
+	return expired, nil
 }
 
 func (v *tJWTViewCommand) trustChainDescription(claims tokens.StandardClaims) (string, error) {
@@ -224,7 +226,7 @@ func (v *tJWTViewCommand) trustChainDescription(claims tokens.StandardClaims) (s
 	return fmt.Sprintf("Issued by %s", id), nil
 }
 
-func (v *tJWTViewCommand) validateClientToken(token string) error {
+func (v *tJWTViewCommand) validateClientToken(token string) (bool, error) {
 	var claims *tokens.ClientIDClaims
 	var err error
 	var validated bool
@@ -236,7 +238,7 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 		validated = true
 	}
 	if err != nil {
-		return fmt.Errorf("could not parse token: %s", err)
+		return false, fmt.Errorf("could not parse token: %s", err)
 	}
 
 	if validated {
@@ -257,7 +259,9 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 	fmt.Printf(" Private Network ID: %s\n", uid)
 
 	exp := claims.ExpireTime()
-	if !exp.IsZero() && time.Now().After(exp) {
+	expired := !exp.IsZero() && time.Now().After(exp)
+
+	if expired {
 		fmt.Printf("         Expires At: %s (expired %s ago)\n", exp, iu.RenderDuration(time.Since(exp)))
 	} else if !exp.IsZero() {
 		fmt.Printf("         Expires At: %s (%s)\n", exp, iu.RenderDuration(time.Until(exp)))
@@ -271,7 +275,7 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 
 	tcm, err := v.trustChainDescription(claims.StandardClaims)
 	if err != nil {
-		return err
+		return expired, err
 	}
 	if tcm != "" {
 		fmt.Printf("        Trust Chain: %s\n", tcm)
@@ -334,10 +338,9 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 
 	if len(claims.UserProperties) > 0 {
 		jc, err := json.MarshalIndent(claims.UserProperties, strings.Repeat(" ", 21), "  ")
-		if err != nil {
-			return nil
+		if err == nil {
+			fmt.Printf("    User Properties: %s\n", string(jc))
 		}
-		fmt.Printf("    User Properties: %s\n", string(jc))
 	}
 
 	if len(claims.OPAPolicy) > 0 {
@@ -349,16 +352,16 @@ func (v *tJWTViewCommand) validateClientToken(token string) error {
 		}
 	}
 
-	return nil
+	return expired, nil
 }
 
-func (v *tJWTViewCommand) validateAnyToken(token string) error {
+func (v *tJWTViewCommand) validateAnyToken(token string) (bool, error) {
 	claims, err := tokens.ParseTokenUnverified(token)
 	if err != nil {
-		return err
+		return false, err
 	}
 
-	return iu.DumpJSONIndent(claims)
+	return false, iu.DumpJSONIndent(claims)
 }
 
 func (v *tJWTViewCommand) Run(wg *sync.WaitGroup) (err error) {
@@ -372,19 +375,27 @@ func (v *tJWTViewCommand) Run(wg *sync.WaitGroup) (err error) {
 	ts := string(token)
 	purpose := tokens.TokenPurpose(ts)
 
+	var isExpired bool
+
 	switch {
 	case !v.json && purpose == tokens.ProvisioningPurpose:
-		return v.validateProvisionToken(ts)
+		isExpired, err = v.validateProvisionToken(ts)
 
 	case !v.json && purpose == tokens.ClientIDPurpose:
-		return v.validateClientToken(ts)
+		isExpired, err = v.validateClientToken(ts)
 
 	case !v.json && purpose == tokens.ServerPurpose:
-		return v.validateServerToken(ts)
+		isExpired, err = v.validateServerToken(ts)
 
 	default:
-		return v.validateAnyToken(ts)
+		isExpired, err = v.validateAnyToken(ts)
 	}
+
+	if isExpired && err == nil {
+		os.Exit(1)
+	}
+
+	return err
 }
 
 func init() {
