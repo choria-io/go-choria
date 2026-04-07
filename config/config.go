@@ -292,18 +292,9 @@ func (c *Config) normalize() error {
 
 		// if os.Hostname gets a full hostname use that as it's quicker, then try facter if
 		// that's not available then use whatever os.Hostname gave even if its a short name
-		//
-		// kubernetes does not have domain names in the pod hosts so we just take whats there
-		// when running in a pod
 		if strings.Count(hn, ".") > 1 {
 			c.Identity = hn
-		} else if os.Getenv("KUBERNETES_SERVICE_HOST") != "" {
-			c.Identity = hn
-			fqdn, err := DNSFQDN()
-			if err == nil {
-				c.Identity = fqdn
-			}
-		} else if fqdn, _ := DNSFQDN(); fqdn != "" {
+		} else if fqdn, _ := DNSFQDN(); fqdn != "localhost" {
 			c.Identity = fqdn
 		} else if fqdn, _ := c.Puppet.FacterFQDN(); fqdn != "" {
 			c.Identity = fqdn
