@@ -15,6 +15,7 @@ import (
 	"github.com/choria-io/go-choria/build"
 	"github.com/choria-io/go-choria/choria"
 	"github.com/nats-io/jsm.go"
+	"github.com/nats-io/jsm.go/natscontext"
 	"github.com/nats-io/nats.go/jetstream"
 	natscli "github.com/nats-io/natscli/cli"
 	"github.com/nats-io/natscli/options"
@@ -34,7 +35,7 @@ func (b *brokerCommand) Setup() (err error) {
 	b.cmd.Flag("connect-timeout", "Connection timeout").Default("5s").DurationVar(&b.timeout)
 
 	opts, err := natscli.ConfigureInCommand(b.cmd, &options.Options{NoCheats: true, Timeout: 5 * time.Second}, false,
-		"audit", "run", "cheat", "rtt", "latency", "backup", "restore", "bench", "schema", "errors", "kv", "object", "micro", "context", "auth", "service")
+		"audit", "run", "cheat", "rtt", "latency", "backup", "restore", "bench", "schema", "errors", "kv", "micro", "context", "auth", "service")
 	if err != nil {
 		return err
 	}
@@ -73,6 +74,12 @@ func (b *brokerCommand) prepareNatsCli(pc *fisk.ParseContext, opts *options.Opti
 
 	natscli.SetContext(ctx)
 	natscli.SetVersion(build.Version)
+	if opts.Config == nil {
+		ctxCfg, ctxErr := natscontext.New("", false)
+		if ctxErr == nil {
+			opts.Config = ctxCfg
+		}
+	}
 
 	should := []bool{
 		strings.HasPrefix(cmd, "broker top"),
