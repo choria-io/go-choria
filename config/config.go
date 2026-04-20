@@ -401,7 +401,7 @@ func (c *Config) UnParsedOptions() map[string]string {
 func (c *Config) dotdDir() string {
 	if !forceDotParse {
 		home, err := iu.HomeDir()
-		if err == nil {
+		if err == nil && home != "/" {
 			if strings.HasPrefix(c.ConfigFile, home) {
 				return ""
 			}
