@@ -140,7 +140,7 @@ func (c *Client) publish(msg inter.Message) error {
 	select {
 	case <-c.receiverReady:
 	case <-c.ctx.Done():
-		return nil
+		return c.ctx.Err()
 	}
 
 	if c.startPublishCB != nil {
@@ -151,7 +151,12 @@ func (c *Client) publish(msg inter.Message) error {
 		defer c.endPublishCB()
 	}
 
-	// TODO needs context https://github.com/choria-io/go-choria/issues/211
+	select {
+	case <-c.ctx.Done():
+		return c.ctx.Err()
+	default:
+	}
+
 	err = conn.Publish(msg)
 	if err != nil {
 		return err
@@ -211,6 +216,12 @@ func (c *Client) msgHandler(cb Handler) {
 }
 
 func (c *Client) connect(name string) (Connector, error) {
+	select {
+	case <-c.ctx.Done():
+		return nil, c.ctx.Err()
+	default:
+	}
+
 	servers := func() (srvcache.Servers, error) {
 		return c.fw.MiddlewareServers()
 	}
