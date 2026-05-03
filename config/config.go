@@ -290,6 +290,8 @@ func (c *Config) normalize() error {
 			return fmt.Errorf("could not determine hostname: %s", err)
 		}
 
+		c.Identity = hn
+
 		// if os.Hostname gets a full hostname use that as it's quicker, then try facter if
 		// that's not available then use whatever os.Hostname gave even if its a short name
 		if strings.Count(hn, ".") > 1 {
