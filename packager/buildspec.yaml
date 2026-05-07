@@ -186,6 +186,24 @@ foss:
       target_arch: aarch64
       binary: aarch64_linux
 
+    el_generic_64:
+      template: el/generic
+      dist: el
+      target_arch: x86_64
+      binary: 64bit_linux
+
+    el_generic_ppc64le:
+      template: el/generic
+      dist: el
+      target_arch: ppc64le
+      binary: ppc64le_linux
+
+    el_generic_aarch64:
+      template: el/generic
+      dist: el
+      target_arch: aarch64
+      binary: aarch64_linux
+
     bionic_64:
       template: debian/generic
       target_arch: x86_64-linux-gnu
