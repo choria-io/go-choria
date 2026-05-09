@@ -103,13 +103,6 @@ foss:
       broker_start_runlevels: "-"
       broker_start_order: 50
 
-    darwin_arm64_tarball:
-      template: archive/basic
-      target_arch: arm64
-      binary: darwin_arm64
-      os: darwin
-      format: tgz
-
     linux_64_tarball:
       template: archive/basic
       target_arch: x86_64
@@ -314,25 +307,25 @@ foss:
       template: debian/generic
       target_arch: arm-linux-gnueabi
       binary: armv5_linux
-      distro: trixie
+      distro: generic
 
     debian_armhf:
       template: debian/generic
       target_arch: arm-linux-gnueabihf
       binary: armv7_linux
-      distro: trixie
+      distro: generic
 
     debian_64:
       template: debian/generic
       target_arch: x86_64-linux-gnu
       binary: 64bit_linux
-      distro: trixie
+      distro: generic
 
     debian_aarch64:
       template: debian/generic
       target_arch: aarch64-linux-gnu
       binary: aarch64_linux
-      distro: trixie
+      distro: generic
 
     windows_64:
       name: Choria
