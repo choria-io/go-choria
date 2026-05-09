@@ -125,36 +125,6 @@ jobs:
           packager_tag: el8-go1.25
           version: nightly
 
-  darwin_amd64_tarball:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: darwin_amd64_tarball
-          packager_tag: el8-go1.25
-          version: nightly
-
-  darwin_arm64_tarball:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: darwin_arm64_tarball
-          packager_tag: el8-go1.25
-          version: nightly
-
-  windows_zip:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: windows_64_zip
-          packager_tag: el8-go1.25
-          version: nightly
-
   docker:
     needs:
       - upload
@@ -180,9 +150,6 @@ jobs:
       - el10_64
       - el10_aarch64
       - linux_tarball
-      - windows_zip
-      - darwin_amd64_tarball
-      - darwin_arm64_tarball
       - debian_armel
       - debian_armhf
       - debian_64
