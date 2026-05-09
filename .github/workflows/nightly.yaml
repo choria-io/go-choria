@@ -35,46 +35,6 @@ jobs:
           packager_tag: el-go1.26
           version: nightly
 
-  el9_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: el9_64
-          packager_tag: el-go1.26
-          version: nightly
-
-  el10_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: el10_64
-          packager_tag: el-go1.26
-          version: nightly
-
-  el9_aarch64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: el9_aarch64
-          packager_tag: el-go1.26
-          version: nightly
-
-  el10_aarch64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: el10_aarch64
-          packager_tag: el-go1.26
-          version: nightly
-
   debian_64:
     runs-on: ubuntu-latest
     steps:
@@ -145,15 +105,11 @@ jobs:
       - el_generic_64
       - el_generic_ppc64le
       - el_generic_aarch64
-      - el9_64
-      - el9_aarch64
-      - el10_64
-      - el10_aarch64
-      - linux_tarball
       - debian_armel
       - debian_armhf
       - debian_64
       - debian_aarch64
+      - linux_tarball
 
     runs-on: ubuntu-latest
     steps:
