@@ -5,6 +5,36 @@ on:
     - cron: "40 0 * * *"
 
 jobs:
+  el_generic_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: el_aarch64
+          packager_tag: el10-go1.25
+          version: nightly
+
+  el_generic_64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: el_64
+          packager_tag: el10-go1.25
+          version: nightly
+
+  el_generic_ppc64le:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: el_ppc64le
+          packager_tag: el10-go1.25
+          version: nightly
+
   el9_64:
     runs-on: ubuntu-latest
     steps:
@@ -25,16 +55,6 @@ jobs:
           packager_tag: el10-go1.25
           version: nightly
 
-  el_generic_64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: el_generic_64
-          packager_tag: el10-go1.25
-          version: nightly
-
   el9_aarch64:
     runs-on: ubuntu-latest
     steps:
@@ -52,16 +72,6 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el10_aarch64
-          packager_tag: el10-go1.25
-          version: nightly
-
-  el_generic_aarch64:
-    runs-on: ubuntu-latest
-    steps:
-      - name: Build
-        uses: choria-io/actions/packager@main
-        with:
-          build_package: el_generic_aarch64
           packager_tag: el10-go1.25
           version: nightly
 
@@ -132,12 +142,13 @@ jobs:
 
   upload:
     needs:
+      - el_generic_64
+      - el_generic_ppc64le
+      - el_generic_aarch64
       - el9_64
       - el9_aarch64
       - el10_64
-      - el_generic_64
       - el10_aarch64
-      - el_generic_aarch64
       - linux_tarball
       - windows_zip
       - darwin_amd64_tarball
