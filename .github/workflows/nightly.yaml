@@ -12,7 +12,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el_aarch64
-          packager_tag: el10-go1.25
+          packager_tag: el-go1.26
           version: nightly
 
   el_generic_64:
@@ -22,7 +22,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el_64
-          packager_tag: el10-go1.25
+          packager_tag: el-go1.26
           version: nightly
 
   el_generic_ppc64le:
@@ -32,7 +32,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el_ppc64le
-          packager_tag: el10-go1.25
+          packager_tag: el-go1.26
           version: nightly
 
   el9_64:
@@ -42,7 +42,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el9_64
-          packager_tag: el9-go1.25
+          packager_tag: el-go1.26
           version: nightly
 
   el10_64:
@@ -52,7 +52,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el10_64
-          packager_tag: el10-go1.25
+          packager_tag: el-go1.26
           version: nightly
 
   el9_aarch64:
@@ -62,7 +62,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el9_aarch64
-          packager_tag: el9-go1.25
+          packager_tag: el-go1.26
           version: nightly
 
   el10_aarch64:
@@ -72,7 +72,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: el10_aarch64
-          packager_tag: el10-go1.25
+          packager_tag: el-go1.26
           version: nightly
 
   debian_64:
@@ -82,7 +82,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: debian_64
-          packager_tag: trixie-go1.25
+          packager_tag: deb-go1.26
           version: nightly
 
   debian_aarch64:
@@ -92,7 +92,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: debian_aarch64
-          packager_tag: trixie-go1.25
+          packager_tag: deb-go1.26
           version: nightly
 
   debian_armhf:
@@ -102,7 +102,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: debian_armhf
-          packager_tag: trixie-go1.25
+          packager_tag: deb-go1.26
           version: nightly
 
   debian_armel:
@@ -112,7 +112,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: debian_armel
-          packager_tag: trixie-go1.25
+          packager_tag: deb-go1.26
           version: nightly
 
   linux_tarball:
@@ -122,7 +122,7 @@ jobs:
         uses: choria-io/actions/packager@main
         with:
           build_package: linux_64_tarball
-          packager_tag: el8-go1.25
+          packager_tag: el-go1.26
           version: nightly
 
   docker:
