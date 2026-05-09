@@ -1,4 +1,4 @@
-FROM almalinux:9
+FROM almalinux:latest
 
 ARG REPO="https://yum.eu.choria.io/release/el/release.repo"
 
