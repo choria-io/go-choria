@@ -75,13 +75,43 @@ jobs:
           packager_tag: el10-go1.25
           version: nightly
 
-  trixie_64:
+  debian_64:
     runs-on: ubuntu-latest
     steps:
       - name: Build
         uses: choria-io/actions/packager@main
         with:
-          build_package: trixie_64
+          build_package: debian_64
+          packager_tag: trixie-go1.25
+          version: nightly
+
+  debian_aarch64:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: debian_aarch64
+          packager_tag: trixie-go1.25
+          version: nightly
+
+  debian_armhf:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: debian_armhf
+          packager_tag: trixie-go1.25
+          version: nightly
+
+  debian_armel:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build
+        uses: choria-io/actions/packager@main
+        with:
+          build_package: debian_armel
           packager_tag: trixie-go1.25
           version: nightly
 
@@ -153,7 +183,10 @@ jobs:
       - windows_zip
       - darwin_amd64_tarball
       - darwin_arm64_tarball
-      - trixie_64
+      - debian_armel
+      - debian_armhf
+      - debian_64
+      - debian_aarch64
 
     runs-on: ubuntu-latest
     steps:
