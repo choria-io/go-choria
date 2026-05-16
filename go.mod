@@ -10,7 +10,7 @@ require (
 	github.com/brutella/hc v1.2.5
 	github.com/choria-io/appbuilder v0.17.0
 	github.com/choria-io/ccm v0.0.27
-	github.com/choria-io/fisk v0.8.2
+	github.com/choria-io/fisk v0.8.3
 	github.com/choria-io/go-updater v0.1.0
 	github.com/choria-io/tokens v0.0.4
 	github.com/cloudevents/sdk-go/v2 v2.16.2
