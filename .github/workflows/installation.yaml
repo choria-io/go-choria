@@ -4,6 +4,9 @@ on:
   schedule:
     - cron: "40 5 * * *"
 
+permissions:
+  contents: read
+
 jobs:
   el8_64:
     runs-on: ubuntu-latest

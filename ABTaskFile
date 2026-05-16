@@ -45,10 +45,7 @@ commands:
             {{ if .Flags.actions }}
             ab_say Updating actions
             pinact run \
-              --update \
-              --exclude choria-io/actions/packager \
-              --exclude choria-io/actions/lint_and_test/go \
-              --exclude choria-io/actions/nightly
+              --update 
             {{ end }}
 
     - name: generate

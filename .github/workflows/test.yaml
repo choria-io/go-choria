@@ -1,6 +1,9 @@
 name: Unit Tests
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     strategy:
@@ -19,6 +22,6 @@ jobs:
           check-latest: true
 
       - name: Lint and Test
-        uses: choria-io/actions/lint_and_test/go@main
+        uses: choria-io/actions/lint_and_test/go@64294f0e09350d15dcb974c464c11e169622057a # v0.0.1
         with:
           ginkgo: "v2"

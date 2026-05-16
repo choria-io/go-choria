@@ -8,11 +8,11 @@ require (
 	github.com/adrg/xdg v0.5.3
 	github.com/awesome-gocui/gocui v1.1.0
 	github.com/brutella/hc v1.2.5
-	github.com/choria-io/appbuilder v0.16.0
+	github.com/choria-io/appbuilder v0.17.0
 	github.com/choria-io/ccm v0.0.27
-	github.com/choria-io/fisk v0.8.1
+	github.com/choria-io/fisk v0.8.2
 	github.com/choria-io/go-updater v0.1.0
-	github.com/choria-io/tokens v0.0.4-0.20260330095821-b91f2ad57ea0
+	github.com/choria-io/tokens v0.0.4
 	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/dustin/go-humanize v1.0.1
 	github.com/expr-lang/expr v1.17.8
@@ -38,7 +38,7 @@ require (
 	github.com/nats-io/natscli v0.4.0
 	github.com/onsi/ginkgo/v2 v2.28.3
 	github.com/onsi/gomega v1.40.0
-	github.com/open-policy-agent/opa v1.16.1
+	github.com/open-policy-agent/opa v1.16.2
 	github.com/prometheus/client_golang v1.23.2
 	github.com/prometheus/client_model v0.6.2
 	github.com/robfig/cron v1.2.0
@@ -72,7 +72,7 @@ require (
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/cespare/xxhash/v2 v2.3.0 // indirect
 	github.com/cheekybits/genny v1.0.0 // indirect
-	github.com/choria-io/goform v0.0.4 // indirect
+	github.com/choria-io/goform v0.1.0 // indirect
 	github.com/choria-io/scaffold v0.0.11 // indirect
 	github.com/choria-io/validator v0.0.2 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
@@ -147,8 +147,8 @@ require (
 	github.com/synadia-io/orbit.go/natsext v0.1.2 // indirect
 	github.com/tchap/go-patricia/v2 v2.3.3 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
-	github.com/tklauser/go-sysconf v0.3.16 // indirect
-	github.com/tklauser/numcpus v0.11.0 // indirect
+	github.com/tklauser/go-sysconf v0.4.0 // indirect
+	github.com/tklauser/numcpus v0.12.0 // indirect
 	github.com/tylertreat/hdrhistogram-writer v0.0.0-20210816161836-2e440612a39f // indirect
 	github.com/valyala/fastjson v1.6.10 // indirect
 	github.com/vektah/gqlparser/v2 v2.5.33 // indirect
