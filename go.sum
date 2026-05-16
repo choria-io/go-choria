@@ -54,8 +54,8 @@ github.com/choria-io/appbuilder v0.17.0 h1:C8/vxbc8rnl+lVEbJH2f2BrteRBeptC3ZtNV/
 github.com/choria-io/appbuilder v0.17.0/go.mod h1:5z0g7mJrEa6Uvs3qiZku4EjGosq3TpQNe0a2kzezfcI=
 github.com/choria-io/ccm v0.0.27 h1:NynXWP4LCQqJEp8c6I42aACBis9ibNZO9LLIk5SmoW8=
 github.com/choria-io/ccm v0.0.27/go.mod h1:4d4vXAd7MIRd9TztxsKkVfouo0drdqVr9k+yueqw0fI=
-github.com/choria-io/fisk v0.8.2 h1:vuXZ3dFEKHNCUNUEYAkOnhRO11TZBoX4jyTqpk8jtCg=
-github.com/choria-io/fisk v0.8.2/go.mod h1:3pAWCPh73bUYoZ8k9fd0UbuWRlxEBayiKMAIQsiKtVo=
+github.com/choria-io/fisk v0.8.3 h1:YMGnrC93em0p+9A+uOh1EnI2tpnBVvwPc5St4TkOiVM=
+github.com/choria-io/fisk v0.8.3/go.mod h1:3pAWCPh73bUYoZ8k9fd0UbuWRlxEBayiKMAIQsiKtVo=
 github.com/choria-io/go-updater v0.1.0 h1:+Pt2ifsDh478T/ldA8fnDwavvH3RTQNn1mkrabVZ5eg=
 github.com/choria-io/go-updater v0.1.0/go.mod h1:8qj3lwYUC6c0zqsvaKP4pNu8GMHbIr5WGrd5YUWByWw=
 github.com/choria-io/goform v0.1.0 h1:94WX6sDb2FHT2wqIpGlPjnM0CrE44RiFtn8klT0LV4M=
