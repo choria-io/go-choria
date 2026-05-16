@@ -4,12 +4,15 @@ on:
   schedule:
     - cron: "40 0 * * *"
 
+permissions:
+  contents: read
+
 jobs:
   el_aarch64:
     runs-on: ubuntu-latest
     steps:
       - name: Build
-        uses: choria-io/actions/packager@main
+        uses: choria-io/actions/packager@64294f0e09350d15dcb974c464c11e169622057a # v0.0.1
         with:
           build_package: el_aarch64
           packager_tag: el-go1.26
@@ -19,7 +22,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build
-        uses: choria-io/actions/packager@main
+        uses: choria-io/actions/packager@64294f0e09350d15dcb974c464c11e169622057a # v0.0.1
         with:
           build_package: el_64
           packager_tag: el-go1.26
@@ -29,7 +32,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build
-        uses: choria-io/actions/packager@main
+        uses: choria-io/actions/packager@64294f0e09350d15dcb974c464c11e169622057a # v0.0.1
         with:
           build_package: el_ppc64le
           packager_tag: el-go1.26
@@ -39,7 +42,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build
-        uses: choria-io/actions/packager@main
+        uses: choria-io/actions/packager@64294f0e09350d15dcb974c464c11e169622057a # v0.0.1
         with:
           build_package: debian_64
           packager_tag: deb-go1.26
@@ -49,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build
-        uses: choria-io/actions/packager@main
+        uses: choria-io/actions/packager@64294f0e09350d15dcb974c464c11e169622057a # v0.0.1
         with:
           build_package: debian_aarch64
           packager_tag: deb-go1.26
@@ -59,7 +62,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build
-        uses: choria-io/actions/packager@main
+        uses: choria-io/actions/packager@64294f0e09350d15dcb974c464c11e169622057a # v0.0.1
         with:
           build_package: debian_armhf
           packager_tag: deb-go1.26
@@ -69,7 +72,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build
-        uses: choria-io/actions/packager@main
+        uses: choria-io/actions/packager@64294f0e09350d15dcb974c464c11e169622057a # v0.0.1
         with:
           build_package: debian_armel
           packager_tag: deb-go1.26
@@ -79,7 +82,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build
-        uses: choria-io/actions/packager@main
+        uses: choria-io/actions/packager@64294f0e09350d15dcb974c464c11e169622057a # v0.0.1
         with:
           build_package: linux_64_tarball
           packager_tag: el-go1.26
@@ -92,7 +95,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Build and Publish Docker Container
-        uses: choria-io/actions/nightly@main
+        uses: choria-io/actions/nightly@64294f0e09350d15dcb974c464c11e169622057a # v0.0.1
         with:
           package: choria
           repo: choria

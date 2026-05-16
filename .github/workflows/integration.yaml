@@ -1,11 +1,14 @@
 name: Integration Tests
 on: [push, pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     strategy:
       matrix:
-        go: ["1.25"]
+        go: ["1.26"]
 
     runs-on: ubuntu-latest
     steps:
