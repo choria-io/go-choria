@@ -3,6 +3,7 @@ Description=The Choria Orchestrator Server
 After=network.target
 
 [Service]
+SyslogIdentifier=choria-server
 EnvironmentFile=/etc/sysconfig/{{cpkg_name}}-server
 User=root
 Group=root
