@@ -3,6 +3,7 @@ Description=The Choria Orchestrator Server
 After=network.target
 
 [Service]
+SyslogIdentifier=choria-server
 User=root
 Group=root
 ExecStart={{cpkg_bindir}}/{{cpkg_name}} server --config={{cpkg_etcdir}}/server.conf
