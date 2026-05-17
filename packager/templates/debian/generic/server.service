@@ -5,7 +5,7 @@ After=network.target
 [Service]
 User=root
 Group=root
-ExecStart={{cpkg_bindir}}/{{cpkg_name}} server --config={{cpkg_etcdir}}/server.conf
+ExecStart=/bin/sh -c "${COMMAND_PREFIX} {{cpkg_bindir}}/{{cpkg_name}} server --config={{cpkg_etcdir}}/server.conf"
 KillMode=process
 
 [Install]
