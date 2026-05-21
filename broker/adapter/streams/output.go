@@ -123,6 +123,9 @@ func (sc *stream) publisher(ctx context.Context, wg *sync.WaitGroup) {
 		obs := prometheus.NewTimer(timer)
 		defer obs.ObserveDuration()
 		defer func() { workqlen.Set(float64(len(sc.work))) }()
+		if ctx.Err() != nil {
+			return
+		}
 
 		j, err := json.Marshal(transformer.TransformToOutput(r, "choria_streams"))
 		if err != nil {
