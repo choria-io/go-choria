@@ -113,6 +113,7 @@ commands:
             ab_say "Generating broker mocks"
             cd ./broker/network
             mockgen -write_generate_directive -source network.go -destination network_mock_test.go -package network
+            mockgen -write_generate_directive -package network -destination mock_server_client_authentication_test.go github.com/nats-io/nats-server/v2/server ClientAuthentication	
             cd -
 
             ab_say "Generating config mocks"
