@@ -13,11 +13,11 @@ jobs:
     steps:
       - name: EL Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:el-go1.24
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:el-go1.26
 
   deb_64:
     runs-on: ubuntu-latest
     steps:
       - name: Debian Installation Tests
         shell: bash
-        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:deb-go1.24
+        run: docker run --entrypoint=/bin/install-choria.sh registry.choria.io/choria/packager:deb-go1.26
