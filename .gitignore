@@ -23,3 +23,4 @@ provisioning_target_provider.go
 *.test
 tokens/testdata/good-server.jwt
 .hugo_build.lock
+.devcontainer.json
