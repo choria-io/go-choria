@@ -107,9 +107,9 @@ func (p *Wrapper) AIOCmd(command string, def string) string {
 	return path
 }
 
-// Setting retrieves a config setting by shelling out to puppet apply --configprint
+// Setting retrieves a config setting by shelling out to puppet config print
 func (p *Wrapper) Setting(setting string) (string, error) {
-	args := []string{"apply", "--environment", "production", "--configprint", setting}
+	args := []string{"config", "print", "--section", "user", setting}
 
 	out, err := exec.Command(p.AIOCmd("puppet", "puppet"), args...).Output()
 	if err != nil {
