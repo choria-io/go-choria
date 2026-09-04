@@ -75,6 +75,7 @@ var _ = Describe("Choria/Config", func() {
 			forceDotParse = false
 
 			Expect(c.Choria.NetworkWriteDeadline).To(Equal(10 * time.Second))
+			Expect(c.Choria.FederationWorkers).To(Equal(20))
 			Expect(c.Registration).To(Equal([]string{"foo"}))
 			Expect(c.RegisterInterval).To(Equal(10))
 			Expect(c.RegistrationSplay).To(BeTrue())
@@ -105,6 +106,21 @@ var _ = Describe("Choria/Config", func() {
 			Expect(c.Option("plugin.package.setting", "default")).To(Equal("1"))
 			Expect(c.Option("plugin.package.other_setting", "default")).To(Equal("override"))
 		})
+
+		It("Should default federation workers to 10", func() {
+			Expect(newChoria().FederationWorkers).To(Equal(10))
+		})
+
+		DescribeTable("Should reject non-positive federation worker counts", func(workers int) {
+			c := NewConfigForTests()
+			c.Choria.FederationWorkers = workers
+			c.SetOption("plugin.choria.federation.workers", "configured")
+
+			Expect(c.normalize()).To(MatchError("plugin.choria.federation.workers must be greater than zero"))
+		},
+			Entry("when zero", 0),
+			Entry("when negative", -1),
+		)
 	})
 
 	Context("Projects", func() {

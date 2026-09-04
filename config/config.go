@@ -260,6 +260,10 @@ func NewConfigForTests() *Config {
 }
 
 func (c *Config) normalize() error {
+	if c.Choria.FederationWorkers < 1 && c.HasOption("plugin.choria.federation.workers") {
+		return fmt.Errorf("plugin.choria.federation.workers must be greater than zero")
+	}
+
 	if c.Puppet == nil {
 		c.Puppet = puppet.New()
 	}

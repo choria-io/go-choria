@@ -34,6 +34,7 @@ type ChoriaPluginConfig struct {
 	FederationCollectives     []string `confkey:"plugin.choria.federation.collectives" type:"comma_split" environment:"CHORIA_FED_COLLECTIVE" url:"https://choria.io/docs/federation/"` // List of known remote collectives accessible via Federation Brokers
 	FederationMiddlewareHosts []string `confkey:"plugin.choria.federation_middleware_hosts" type:"comma_split" url:"https://choria.io/docs/federation/"`                                // Middleware brokers used by the Federation Broker, if unset uses SRV
 	FederationCluster         string   `confkey:"plugin.choria.federation.cluster" default:"mcollective" url:"https://choria.io/docs/federation/"`                                      // The cluster name a Federation Broker serves
+	FederationWorkers         int      `confkey:"plugin.choria.federation.workers" default:"10" url:"https://choria.io/docs/federation/"`                                               // The number of concurrent workers each Federation Broker processing pool runs
 
 	StatsListenAddress    string `confkey:"plugin.choria.stats_address" default:"127.0.0.1"`   // The address to listen on for statistics
 	StatsPort             int    `confkey:"plugin.choria.stats_port" default:"0"`              // The port to listen on for HTTP requests for statistics, setting to 0 disables it

@@ -61,17 +61,19 @@ func (fb *FederationBroker) Start(ctx context.Context, wg *sync.WaitGroup) {
 
 	defer wg.Done()
 
+	workers := fb.choria.Configuration().Choria.FederationWorkers
+
 	// requests from federation
-	fb.fedIn, _ = NewChoriaNatsIngest(10, Federation, 10000, fb, nil)
-	fb.collectiveOut, _ = NewChoriaNatsEgest(10, Collective, 10000, fb, nil)
-	fb.requestT, _ = NewChoriaRequestTransformer(10, 1000, fb, nil)
+	fb.fedIn, _ = NewChoriaNatsIngest(workers, Federation, 10000, fb, nil)
+	fb.collectiveOut, _ = NewChoriaNatsEgest(workers, Collective, 10000, fb, nil)
+	fb.requestT, _ = NewChoriaRequestTransformer(workers, 1000, fb, nil)
 	fb.fedIn.To(fb.requestT)
 	fb.requestT.To(fb.collectiveOut)
 
 	// replies from collective
-	fb.collectiveIn, _ = NewChoriaNatsIngest(10, Collective, 10000, fb, nil)
-	fb.fedOut, _ = NewChoriaNatsEgest(10, Federation, 10000, fb, nil)
-	fb.replyT, _ = NewChoriaReplyTransformer(10, 1000, fb, nil)
+	fb.collectiveIn, _ = NewChoriaNatsIngest(workers, Collective, 10000, fb, nil)
+	fb.fedOut, _ = NewChoriaNatsEgest(workers, Federation, 10000, fb, nil)
+	fb.replyT, _ = NewChoriaReplyTransformer(workers, 1000, fb, nil)
 	fb.collectiveIn.To(fb.replyT)
 	fb.replyT.To(fb.fedOut)
 

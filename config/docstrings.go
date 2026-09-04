@@ -41,6 +41,7 @@ var docStrings = map[string]string{
 	"plugin.choria.federation.collectives":                         "List of known remote collectives accessible via Federation Brokers",
 	"plugin.choria.federation_middleware_hosts":                    "Middleware brokers used by the Federation Broker, if unset uses SRV",
 	"plugin.choria.federation.cluster":                             "The cluster name a Federation Broker serves",
+	"plugin.choria.federation.workers":                             "The number of concurrent workers each Federation Broker processing pool runs",
 	"plugin.choria.stats_address":                                  "The address to listen on for statistics",
 	"plugin.choria.stats_port":                                     "The port to listen on for HTTP requests for statistics, setting to 0 disables it",
 	"plugin.choria.legacy_lifecycle_format":                        "When enabled will publish lifecycle events in the legacy format, else Cloud Events format is used",
