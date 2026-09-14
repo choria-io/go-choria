@@ -50,10 +50,12 @@ type Instance struct {
 
 // NewInstance creates a new choria server instance
 func NewInstance(fw inter.Framework) (i *Instance, err error) {
+	cfg := fw.Configuration()
+
 	i = &Instance{
 		fw:               fw,
-		cfg:              fw.Configuration(),
-		requests:         make(chan inter.ConnectorMessage, 10),
+		cfg:              cfg,
+		requests:         make(chan inter.ConnectorMessage, cfg.Choria.ServerRequestQueueSize),
 		mu:               &sync.Mutex{},
 		startTime:        time.Now(),
 		lastMsgProcessed: time.Unix(0, 0),

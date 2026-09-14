@@ -264,6 +264,10 @@ func (c *Config) normalize() error {
 		return fmt.Errorf("plugin.choria.federation.workers must be greater than zero")
 	}
 
+	if c.Choria.ServerRequestQueueSize < 1 && c.HasOption("plugin.choria.server.request_queue_size") {
+		return fmt.Errorf("plugin.choria.server.request_queue_size must be greater than zero")
+	}
+
 	if c.Puppet == nil {
 		c.Puppet = puppet.New()
 	}
