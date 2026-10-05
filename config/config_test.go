@@ -76,6 +76,7 @@ var _ = Describe("Choria/Config", func() {
 
 			Expect(c.Choria.NetworkWriteDeadline).To(Equal(10 * time.Second))
 			Expect(c.Choria.FederationWorkers).To(Equal(20))
+			Expect(c.Choria.ServerRequestQueueSize).To(Equal(50))
 			Expect(c.Registration).To(Equal([]string{"foo"}))
 			Expect(c.RegisterInterval).To(Equal(10))
 			Expect(c.RegistrationSplay).To(BeTrue())
@@ -111,12 +112,27 @@ var _ = Describe("Choria/Config", func() {
 			Expect(newChoria().FederationWorkers).To(Equal(10))
 		})
 
+		It("Should default server request queue size", func() {
+			Expect(newChoria().ServerRequestQueueSize).To(Equal(10))
+		})
+
 		DescribeTable("Should reject non-positive federation worker counts", func(workers int) {
 			c := NewConfigForTests()
 			c.Choria.FederationWorkers = workers
 			c.SetOption("plugin.choria.federation.workers", "configured")
 
 			Expect(c.normalize()).To(MatchError("plugin.choria.federation.workers must be greater than zero"))
+		},
+			Entry("when zero", 0),
+			Entry("when negative", -1),
+		)
+
+		DescribeTable("Should reject non-positive server request queue sizes", func(queueSize int) {
+			c := NewConfigForTests()
+			c.Choria.ServerRequestQueueSize = queueSize
+			c.SetOption("plugin.choria.server.request_queue_size", "configured")
+
+			Expect(c.normalize()).To(MatchError("plugin.choria.server.request_queue_size must be greater than zero"))
 		},
 			Entry("when zero", 0),
 			Entry("when negative", -1),
