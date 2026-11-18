@@ -35,6 +35,7 @@ var docStrings = map[string]string{
 	"plugin.choria.srv_domain":        "The domain to use for SRV records, defaults to the domain the server FQDN is in",
 	"plugin.choria.server.provision":  "Specifically enable or disable provisioning",
 	"plugin.choria.server.provision.allow_update":                  "Allows the provisioner to perform in-place version updates",
+	"plugin.choria.server.request_queue_size":                      "The number of incoming server requests buffered",
 	"plugin.choria.discovery.external.command":                     "The command to use for external discovery",
 	"plugin.choria.discovery.inventory.source":                     "The file to read for inventory discovery",
 	"plugin.choria.discovery.broadcast.windowed_timeout":           "Enables the experimental dynamic timeout for choria/mc discovery",

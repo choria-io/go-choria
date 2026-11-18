@@ -24,8 +24,9 @@ type ChoriaPluginConfig struct {
 	UseSRVRecords    bool   `confkey:"plugin.choria.use_srv" default:"true" url:"https://choria.io/docs/deployment/dns/"`                                // If SRV record lookups should be attempted to find Puppet, PuppetDB, Brokers etc
 	SRVDomain        string `confkey:"plugin.choria.srv_domain" environment:"CHORIA_SRV_DOMAIN" default:"" url:"https://choria.io/docs/deployment/dns/"` // The domain to use for SRV records, defaults to the domain the server FQDN is in
 
-	Provision            bool `confkey:"plugin.choria.server.provision" default:"false" url:"https://choria-io.github.io/provisioner/"`              // Specifically enable or disable provisioning
-	ProvisionAllowUpdate bool `confkey:"plugin.choria.server.provision.allow_update" default:"false" url:"https://choria-io.github.io/provisioner/"` // Allows the provisioner to perform in-place version updates
+	Provision              bool `confkey:"plugin.choria.server.provision" default:"false" url:"https://choria-io.github.io/provisioner/"`              // Specifically enable or disable provisioning
+	ProvisionAllowUpdate   bool `confkey:"plugin.choria.server.provision.allow_update" default:"false" url:"https://choria-io.github.io/provisioner/"` // Allows the provisioner to perform in-place version updates
+	ServerRequestQueueSize int  `confkey:"plugin.choria.server.request_queue_size" default:"10"`                                                       // The number of incoming server requests buffered
 
 	ExternalDiscoveryCommand         string `confkey:"plugin.choria.discovery.external.command" type:"path_string"` // The command to use for external discovery
 	InventoryDiscoverySource         string `confkey:"plugin.choria.discovery.inventory.source" type:"path_string"` // The file to read for inventory discovery

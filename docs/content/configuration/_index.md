@@ -8,7 +8,7 @@ pre = "<b>4. </b>"
 This is a list of all known Configuration settings. This list is based on declared settings within the Choria Go code base and so will not cover 100% of settings - plugins can contribute their own settings which are note known at compile time.
 
 {{% notice secondary "Version Hint" code-branch %}}
-Built on *09 Jun 26 20:55 UTC* using version *0.29.4*
+Built on *11 Sep 26 21:31 UTC* using version *0.29.4*
 {{% /notice %}}
 
 ### Run-time configuration
@@ -99,7 +99,8 @@ A few special types are defined, the rest map to standard Go types
 |[plugin.choria.security.request_signer.service](#pluginchoriasecurityrequest_signerservice)|[plugin.choria.security.request_signer.token_file](#pluginchoriasecurityrequest_signertoken_file)|
 |[plugin.choria.security.request_signer.url](#pluginchoriasecurityrequest_signerurl)|[plugin.choria.security.server.seed_file](#pluginchoriasecurityserverseed_file)|
 |[plugin.choria.security.server.token_file](#pluginchoriasecurityservertoken_file)|[plugin.choria.server.provision](#pluginchoriaserverprovision)|
-|[plugin.choria.server.provision.allow_update](#pluginchoriaserverprovisionallow_update)|[plugin.choria.services.registry.cache](#pluginchoriaservicesregistrycache)|
+|[plugin.choria.server.provision.allow_update](#pluginchoriaserverprovisionallow_update)|[plugin.choria.server.request_queue_size](#pluginchoriaserverrequest_queue_size)|
+|[plugin.choria.services.registry.cache](#pluginchoriaservicesregistrycache)|
 |[plugin.choria.services.registry.store](#pluginchoriaservicesregistrystore)|[plugin.choria.srv_domain](#pluginchoriasrv_domain)|
 |[plugin.choria.ssldir](#pluginchoriassldir)|[plugin.choria.stats_address](#pluginchoriastats_address)|
 |[plugin.choria.stats_port](#pluginchoriastats_port)|[plugin.choria.status_file_path](#pluginchoriastatus_file_path)|
@@ -800,6 +801,13 @@ Specifically enable or disable provisioning
 
 Allows the provisioner to perform in-place version updates
 
+### plugin.choria.server.request_queue_size
+
+ * **Type:** integer
+ * **Default Value:** 10
+
+The number of incoming server requests buffered
+
 ### plugin.choria.services.registry.cache
 
  * **Type:** path_string
@@ -1232,4 +1240,3 @@ The amount of time to allow the server to exit, after this memory and thread dum
  * **Default Value:** 60
 
 How long published messages are allowed to linger on the network, lower numbers have a higher reliance on clocks being in sync
-
