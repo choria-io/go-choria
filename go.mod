@@ -15,7 +15,7 @@ require (
 	github.com/choria-io/tokens v0.0.4
 	github.com/cloudevents/sdk-go/v2 v2.16.2
 	github.com/dustin/go-humanize v1.1.0
-	github.com/expr-lang/expr v1.17.8
+	github.com/expr-lang/expr v1.18.1
 	github.com/fatih/color v1.19.0
 	github.com/fatih/structtag v1.2.0
 	github.com/freman/eventloghook v0.0.0-20250604093238-a195f2852650
@@ -32,10 +32,10 @@ require (
 	github.com/looplab/fsm v1.0.4
 	github.com/miekg/pkcs11 v1.1.2
 	github.com/mitchellh/mapstructure v1.5.0
-	github.com/nats-io/jsm.go v0.5.1
+	github.com/nats-io/jsm.go v0.5.2
 	github.com/nats-io/nats-server/v2 v2.15.3
 	github.com/nats-io/nats.go v1.56.0
-	github.com/nats-io/natscli v0.5.1
+	github.com/nats-io/natscli v0.5.2
 	github.com/onsi/ginkgo/v2 v2.34.0
 	github.com/onsi/gomega v1.44.0
 	github.com/open-policy-agent/opa v1.22.4
@@ -45,16 +45,16 @@ require (
 	github.com/santhosh-tekuri/jsonschema/v5 v5.3.1
 	github.com/segmentio/ksuid v1.0.4
 	github.com/sirupsen/logrus v1.10.2
-	github.com/tidwall/gjson v1.20.4
-	github.com/tidwall/pretty v1.3.0
+	github.com/tidwall/gjson v1.20.6
+	github.com/tidwall/pretty v1.3.1
 	github.com/xlab/tablewriter v0.0.0-20160610135559-80b567a11ad5
 	go.uber.org/mock v0.6.0
 	golang.org/x/crypto v0.59.0
-	golang.org/x/exp v0.0.0-20261113113407-e3970619a1a4
+	golang.org/x/exp v0.0.0-20261121134650-e1094eeca1b5
 	golang.org/x/sys v0.50.0
 	golang.org/x/term v0.48.0
 	golang.org/x/text v0.44.0
-	golang.org/x/tools v0.52.1-0.20261106145633-d407941a339a
+	golang.org/x/tools v0.53.0
 )
 
 require (
@@ -87,18 +87,18 @@ require (
 	github.com/gobwas/glob v1.1.0 // indirect
 	github.com/goccy/go-json v0.12.0 // indirect
 	github.com/google/go-tpm v0.9.8 // indirect
-	github.com/google/pprof v0.0.0-20261111200114-fac431ef4d26 // indirect
+	github.com/google/pprof v0.0.0-20261118010117-084b33a85f63 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/goss-org/GOnetstat v0.0.0-20230101144325-22be0bd9e64d // indirect
 	github.com/goss-org/go-ps v0.0.0-20230609005227-7b318e6a56e5 // indirect
 	github.com/gosuri/uilive v0.0.4 // indirect
 	github.com/hashicorp/logutils v1.0.0 // indirect
-	github.com/huandu/xstrings v1.6.3 // indirect
+	github.com/huandu/xstrings v1.6.4 // indirect
 	github.com/itchyny/gojq v0.12.20 // indirect
 	github.com/itchyny/timefmt-go v0.1.9 // indirect
-	github.com/jedib0t/go-pretty/v6 v6.9.2 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.9.3 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/klauspost/compress v1.20.4 // indirect
+	github.com/klauspost/compress v1.20.5 // indirect
 	github.com/lestrrat-go/blackmagic v1.0.4 // indirect
 	github.com/lestrrat-go/dsig v1.4.0 // indirect
 	github.com/lestrrat-go/dsig-secp256k1 v1.0.0 // indirect
@@ -123,7 +123,7 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/nats-io/jwt/v2 v2.8.3 // indirect
 	github.com/nats-io/nkeys v0.4.17 // indirect
-	github.com/nats-io/nsc/v2 v2.15.0 // indirect
+	github.com/nats-io/nsc/v2 v2.15.1 // indirect
 	github.com/nats-io/nuid v1.0.1 // indirect
 	github.com/nsf/termbox-go v1.1.2 // indirect
 	github.com/oleiade/reflections v1.1.0 // indirect
@@ -140,11 +140,11 @@ require (
 	github.com/shirou/gopsutil/v4 v4.26.10 // indirect
 	github.com/shopspring/decimal v1.6.0 // indirect
 	github.com/spf13/cast v1.10.0 // indirect
-	github.com/synadia-io/jwt-auth-builder.go v0.0.10 // indirect
-	github.com/synadia-io/orbit.go/counters v0.1.2 // indirect
-	github.com/synadia-io/orbit.go/jetstreamext v0.3.2 // indirect
-	github.com/synadia-io/orbit.go/natscontext v0.1.3 // indirect
-	github.com/synadia-io/orbit.go/natsext v0.1.3 // indirect
+	github.com/synadia-io/jwt-auth-builder.go v0.0.11 // indirect
+	github.com/synadia-io/orbit.go/counters v0.1.3 // indirect
+	github.com/synadia-io/orbit.go/jetstreamext v0.4.0 // indirect
+	github.com/synadia-io/orbit.go/natscontext v0.1.4 // indirect
+	github.com/synadia-io/orbit.go/natsext v0.1.4 // indirect
 	github.com/tidwall/match v1.2.0 // indirect
 	github.com/tklauser/go-sysconf v0.4.0 // indirect
 	github.com/tklauser/numcpus v0.12.0 // indirect
@@ -160,7 +160,7 @@ require (
 	go.uber.org/zap v1.28.0 // indirect
 	go.yaml.in/yaml/v3 v3.0.6 // indirect
 	golang.org/x/mod v0.43.0 // indirect
-	golang.org/x/net v0.62.0 // indirect
+	golang.org/x/net v0.63.0 // indirect
 	golang.org/x/sync v0.25.0 // indirect
 	golang.org/x/time v0.16.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
